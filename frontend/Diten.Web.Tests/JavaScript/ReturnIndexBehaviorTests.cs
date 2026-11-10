@@ -141,7 +141,7 @@ public sealed class ReturnIndexBehaviorTests
         Assert.Contains("if (INVENTORY_REFERENCE_TARGETS.has(target))", build);
         Assert.Contains("if (reference !== '') body.inventoryTransactionReferenceId = reference;", build);
         Assert.DoesNotContain(".trim(", build);
-        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Received', 'Dispositioned']);", _script);
+        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Dispositioned']);", _script);
         Assert.Contains("const DANGEROUS_TARGETS = new Set(['Rejected', 'Cancelled']);", _script);
         Assert.Contains("window.showConfirm?.(", _script);
         Assert.DoesNotContain("Swal.fire", _script);
@@ -259,6 +259,19 @@ public sealed class ReturnIndexBehaviorTests
         var to = text.IndexOf(end, from, StringComparison.Ordinal);
         Assert.True(to > from, end);
         return text[from..to];
+    }
+
+    [Fact]
+    public void UsesTheSharedCompanySelectorAndTheListFollowsACreatedReturn()
+    {
+        var index = Read("frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml");
+        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js");
+        Assert.Contains("CompanySelection.ResolveAsync(", index);
+        Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
+        Assert.InRange(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal), 0, index.IndexOf("_DataTable.cshtml", StringComparison.Ordinal));
+        Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml"));
+        Assert.DoesNotContain("filterLegalEntity", script);
+        Assert.True(script.IndexOf("adoptCompany(createdScope);", StringComparison.Ordinal) > 0);
     }
 
     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));

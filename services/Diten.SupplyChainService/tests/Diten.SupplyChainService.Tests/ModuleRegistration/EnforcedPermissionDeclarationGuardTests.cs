@@ -25,11 +25,13 @@ public sealed class EnforcedPermissionDeclarationGuardTests
     // WITH the module's UI, never ahead of it. Each entry is self-invalidating: the test fails the moment a provider with
     // that ModuleCode exists or any provider declares a key of that area, which forces the entry out and the keys in when
     // the module's UI is built (R-4).
-    private static readonly IReadOnlyDictionary<string, (string ModuleCode, string Reason)> KnownWithoutProvider =
+    internal static readonly IReadOnlyDictionary<string, (string ModuleCode, string Reason)> KnownWithoutProvider =
         new Dictionary<string, (string, string)>(StringComparer.Ordinal)
         {
             // sandop-plans removed 2026-10-18 (G6): SopWorkflowSignoffsManifestProvider ships with the S&OP UI.
             // capacity-plans removed 2026-10-18 (G6): CapacityPlanningManifestProvider ships with the Capacity UI.
+            // MOD-0147 DL-1 (pack §0.0, F-1): no provider, no catalog permission, no Gateway route until the enabling gates close.
+            ["supplier-performance"] = ("supplier-performance-risk", "provider ships with the enabling change"),
         };
 
     [Fact]

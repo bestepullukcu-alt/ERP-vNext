@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>İş Takibi</title>
+<!--
+  Kule iş takip sayfası — ortak şablon (S-119, sahip kararı 2026-11-01). Kılavuz: ct-tracking-page-template.md
+  Sayfa salt okunurdur. Modül adı, kule adı ve başlık kaynakta sabit yazılmaz; depodaki meta/info belgesinden gelir.
+  Veritabanı (window.claude "db"): "items" koleksiyonu ve "meta/info" belgesi onSnapshot ile canlı okunur.
+  Yayın kuralları: items → read "view", write "owner"; meta → read "view", write "owner".
+  Satırları kule yazar (ArtifactData batch); sayfa kaynağı satır güncellemek için yeniden yayınlanmaz.
+-->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Düzen: sicil defteri; üstte dilim cetveli ve tür sayımı, altta bölüm bölüm satırlar (tür · iş · durum). */
+:root {
+  --bg: #f2f5f6; --fg: #18262c; --muted: #566870; --line: #d5dee1;
+  --accent: #0f5c6e; --accent-soft: #dcebee;
+  --wait: #8a5a00; --wait-soft: #fbf0d7; --done: #1c6b45; --done-soft: #dff1e7;
+  --paused: #5b6470; --paused-soft: #e7eaee;
+  --display: "Bricolage Grotesque", "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11191c; --fg: #e4ecee; --muted: #9db0b7; --line: #2d3c42;
+  --accent: #6fc0d3; --accent-soft: #1b343b;
+  --wait: #e8bd6a; --wait-soft: #3a2e14; --done: #7ed3a5; --done-soft: #17352a;
+  --paused: #aab3bd; --paused-soft: #293138; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #11191c; --fg: #e4ecee; --muted: #9db0b7; --line: #2d3c42;
+  --accent: #6fc0d3; --accent-soft: #1b343b;
+  --wait: #e8bd6a; --wait-soft: #3a2e14; --done: #7ed3a5; --done-soft: #17352a;
+  --paused: #aab3bd; --paused-soft: #293138; color-scheme: dark;
+}
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+header { display: grid; gap: 8px; }
+h1 { font-family: var(--display); font-size: clamp(28px, 5vw, 40px); line-height: 1.1; margin: 0; font-weight: 700; text-wrap: balance; }
+.sub { margin: 0; color: var(--muted); max-width: 70ch; }
+.how { margin: 0; font-size: 14px; color: var(--muted); max-width: 70ch; }
+.stamp { margin: 0; font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.ruler { display: grid; gap: 10px; }
+.ruler-head { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; justify-content: space-between; }
+.ruler-head strong { font-size: 15px; font-weight: 600; }
+.counts { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.cells { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
+.cell { border-top: 4px solid var(--line); padding-top: 6px; min-width: 0; display: grid; gap: 2px; align-content: start; }
+.cell.next { border-top-color: var(--accent); }
+.cell.done { border-top-color: var(--done); }
+.cell b { font-family: var(--mono); font-weight: 500; font-size: 13px; overflow-wrap: anywhere; }
+.cell span { font-size: 12px; line-height: 1.3; color: var(--muted); overflow-wrap: anywhere; }
+.types { margin: 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 14px; }
+nav a { color: var(--accent); text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sections { display: grid; gap: 28px; }
+section { display: grid; gap: 4px; scroll-margin-top: 16px; }
+h2 { font-family: var(--body); font-size: 17px; font-weight: 600; margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; }
+h2 small { font-size: 13px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rows { border-top: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 4px 16px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.body { min-width: 0; display: grid; gap: 3px; }
+.head { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; min-width: 0; }
+.type { display: inline-block; font-size: 11px; font-weight: 500; padding: 1px 6px; border-radius: 3px; line-height: 1.5; white-space: nowrap; border: 1px solid transparent; }
+.type.kod { background: var(--accent-soft); color: var(--accent); }
+.type.belge { background: var(--paused-soft); color: var(--paused); }
+.type.karar { background: var(--wait-soft); color: var(--wait); }
+.type.none { border-color: var(--line); border-style: dashed; color: var(--muted); }
+.title { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.code { font-family: var(--mono); font-size: 12px; color: var(--accent); overflow-wrap: anywhere; }
+.detail { color: var(--fg); max-width: 72ch; }
+.evidence { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.side { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 3px; line-height: 1.4; }
+.pill.acik { background: var(--accent-soft); color: var(--accent); }
+.pill.bekliyor { background: var(--wait-soft); color: var(--wait); }
+.pill.bitti { background: var(--done-soft); color: var(--done); }
+.pill.duraklatildi { background: var(--paused-soft); color: var(--paused); }
+.who { font-size: 12px; color: var(--wait); line-height: 1.35; }
+.tag { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.row.isdone .title, .row.isdone .detail { color: var(--muted); }
+.note { color: var(--muted); padding: 16px 0; margin: 0; }
+.alert { background: var(--wait-soft); color: var(--wait); padding: 8px 12px; border-radius: 3px; font-size: 14px; margin: 0; }
+@media (max-width: 720px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .side { grid-auto-flow: row; }
+  .cell span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1 id="title">İş Takibi</h1>
+    <p class="sub" id="block" hidden></p>
+    <p class="how">Bu sayfa salt okunurdur. Liste depodaki kayıtlardan yazılır ve her karar, prompt, kabul ve PR'dan sonra güncellenir. Bir değişiklik isterseniz <span id="tower">kule</span> sohbetine yazın.</p>
+    <p class="stamp" id="stamp"></p>
+  </header>
+  <div class="ruler" id="ruler" hidden>
+    <div class="ruler-head"><strong id="progress"></strong><span class="counts" id="counts"></span></div>
+    <div class="cells" id="cells"></div>
+  </div>
+  <p class="types" id="types" hidden></p>
+  <p class="alert" id="alert" hidden></p>
+  <nav id="nav" aria-label="Bölümler" hidden></nav>
+  <main id="list"><p class="note">İşler yükleniyor. Burada kalan işler, bekleyen kararlar ve bitenler görünecek.</p></main>
+</div>
+
+<script>
+const SECTIONS = [
+  ["simdi", "Şimdi ve sırada"],
+  ["kararlar", "Karar bekleyenler"],
+  ["fazlar", "Sonraki fazlar"],
+  ["takipler", "Bizim takipler"],
+  ["baskasi", "Başka sahiplerin işi (XMC-001)"],
+  ["ortak", "Ortak bileşenler"],
+  ["duraklatilan", "Duraklatılanlar"],
+];
+const STATUS = { acik: "Açık", bekliyor: "Bekliyor", bitti: "Bitti", duraklatildi: "Duraklatıldı" };
+/* Tür → sayım grubu. kod = Arka uç + Ekran + API + Geçit + Test; belge = Belge + Kural; karar = Karar. */
+const TYPES = { "Belge": "belge", "Arka uç": "kod", "Ekran": "kod", "API": "kod", "Geçit": "kod", "Test": "kod", "Kural": "belge", "Karar": "karar" };
+const DEFAULT_TITLE = "İş Takibi";
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+};
+const fmtDate = (s) => {
+  const d = new Date(String(s) + "T12:00:00");
+  return isNaN(d) ? String(s) : d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
+};
+
+let items = null, meta = null;
+
+function renderMeta() {
+  if (!meta) return;
+  const title = meta.title || DEFAULT_TITLE;
+  $("title").textContent = title;
+  document.title = title;
+  const block = $("block");
+  block.textContent = meta.block || "";
+  block.hidden = !meta.block;
+  $("tower").textContent = meta.tower || "kule";
+  const stamp = [];
+  if (meta.updatedAt) stamp.push("Son güncelleme " + fmtDate(meta.updatedAt));
+  if (meta.branch || meta.head) stamp.push("dal " + (meta.branch || "?") + " @ " + (meta.head || "?"));
+  if (meta.mainAt) stamp.push("ana dal @ " + meta.mainAt);
+  $("stamp").textContent = stamp.join(" · ");
+  const slices = meta.slices || [];
+  const cells = $("cells");
+  cells.replaceChildren();
+  slices.forEach((s) => {
+    const c = el("div", "cell" + (s.done ? " done" : s.state && s.state.startsWith("Sırada") ? " next" : ""));
+    c.title = s.name + ": " + s.state;
+    c.append(el("b", "", s.code), el("span", "", s.name), el("span", "", s.state));
+    cells.append(c);
+  });
+  const finished = slices.filter((s) => s.done).length;
+  $("progress").textContent = finished + "/" + slices.length + " parça bitti · " + (meta.accepted || 0) + " kabul";
+  $("ruler").hidden = !slices.length;
+  if (items && !items.length) renderItems();
+}
+
+function renderRow(it) {
+  const row = el("article", "row" + (it.status === "bitti" ? " isdone" : ""));
+  const body = el("div", "body");
+  const head = el("div", "head");
+  const group = TYPES[it.type];
+  head.append(el("span", "type " + (group || "none"), it.type || "tür yok"));
+  head.append(el("span", "title", it.title));
+  if (it.code) head.append(el("span", "code", it.code));
+  body.append(head);
+  if (it.detail) body.append(el("div", "detail", it.detail));
+  if (it.evidence) body.append(el("div", "evidence", it.evidence));
+  row.append(body);
+  const side = el("div", "side");
+  const label = (STATUS[it.status] || it.status) + (it.status === "bitti" && it.doneAt ? " · " + fmtDate(it.doneAt) : "");
+  side.append(el("span", "pill " + it.status, label));
+  if (it.waitingOn) side.append(el("span", "who", it.waitingOn));
+  if (it.slice) side.append(el("span", "tag", it.slice));
+  row.append(side);
+  return row;
+}
+
+function renderItems() {
+  if (!items) return;
+  const list = $("list");
+  const nav = $("nav");
+  const types = $("types");
+  list.replaceChildren();
+  nav.replaceChildren();
+  if (!items.length) {
+    const who = meta && meta.tower ? meta.tower + " kulesi" : "Kule";
+    list.append(el("p", "note", "Listede henüz iş yok. " + who + " depodaki kayıtlardan dolduracak."));
+    nav.hidden = true;
+    types.hidden = true;
+    return;
+  }
+  let open = 0, waiting = 0, paused = 0, done = 0;
+  let kod = 0, belge = 0, karar = 0;
+  const wrap = el("div", "sections");
+  SECTIONS.forEach(([key, name]) => {
+    const rows = items.filter((i) => i.section === key)
+      .sort((a, b) => (a.status === "bitti") - (b.status === "bitti") || (a.order || 0) - (b.order || 0));
+    if (!rows.length) return;
+    const openHere = rows.filter((r) => r.status !== "bitti").length;
+    rows.forEach((r) => {
+      if (r.status === "bitti") done++; else if (r.status === "bekliyor") waiting++; else if (r.status === "duraklatildi") paused++; else open++;
+      const g = TYPES[r.type];
+      if (g === "kod") kod++; else if (g === "belge") belge++; else if (g === "karar") karar++;
+    });
+    const sec = el("section");
+    sec.id = key;
+    const h = el("h2", "", name);
+    h.append(el("small", "", openHere + " kalan / " + rows.length));
+    const box = el("div", "rows");
+    rows.forEach((r) => box.append(renderRow(r)));
+    sec.append(h, box);
+    wrap.append(sec);
+    const a = el("a", "", name);
+    a.href = "#" + key;
+    nav.append(a);
+  });
+  list.append(wrap);
+  nav.hidden = false;
+  $("counts").textContent = open + " açık · " + waiting + " bekliyor · " + paused + " duraklatıldı · " + done + " bitti";
+  types.textContent = "kod " + kod + " · belge " + belge + " · karar " + karar;
+  types.hidden = false;
+}
+
+function showAlert(text) { const a = $("alert"); a.textContent = text; a.hidden = !text; }
+
+(async function start() {
+  let db = null;
+  try { db = await window.claude?.use("db"); } catch (e) { db = null; }
+  if (!db) {
+    $("list").replaceChildren(el("p", "note", "Liste bu görünümde açılamıyor. Oturum açıp sayfayı claude.ai üzerinden açın."));
+    return;
+  }
+  let confirmed = false;
+  const timer = setTimeout(() => {
+    if (!confirmed) showAlert(items ? "Liste güncel olmayabilir; veriye şu an ulaşılamıyor." : "Listeye henüz ulaşılamıyor; bağlantı gelince kendiliğinden dolacak.");
+  }, 10000);
+  const fail = () => { clearTimeout(timer); showAlert("Liste yüklenemedi. Sayfayı daha sonra yeniden açın."); };
+  db.collection("items").onSnapshot((snap) => {
+    items = snap.docs.map((d) => d.data());
+    if (!snap.metadata.fromCache) { confirmed = true; clearTimeout(timer); showAlert(""); }
+    renderItems();
+  }, fail);
+  db.doc("meta/info").onSnapshot((snap) => {
+    meta = snap.exists ? snap.data() : null;
+    renderMeta();
+  }, fail);
+})();
+</script>
+
+</body>
+</html>

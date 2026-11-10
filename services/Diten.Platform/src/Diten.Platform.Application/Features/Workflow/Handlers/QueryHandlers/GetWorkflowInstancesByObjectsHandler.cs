@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Queries;
+using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -47,8 +48,13 @@ public sealed class GetWorkflowInstancesByObjectsHandler
                 400, WorkflowReasonCodes.WorkflowBatchLimitExceeded, request.CorrelationId);
         }
 
-        var byObject = (await _instances.ListByObjectIdsAsync(objectType, objectIds, ct))
-            .Where(x => x.DeletedAt is null)
+        // MOD-0023 §17.9/1 — the default hide comes from the repository's IsDeleted filter. includeDeleted reads every row of
+        // this tenant, whatever its DeletedAt says, and flags it from IsDeleted (one deletion marker, D32/2).
+        IEnumerable<WorkflowInstance> instances = request.IncludeDeleted
+            ? await _instances.ListByObjectIdsAllRowsAsync(objectType, objectIds, ct)
+            : (await _instances.ListByObjectIdsAsync(objectType, objectIds, ct)).Where(x => x.DeletedAt is null);
+
+        var byObject = instances
             .GroupBy(x => x.ObjectId, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
 
@@ -65,7 +71,9 @@ public sealed class GetWorkflowInstancesByObjectsHandler
                         x.CurrentStage,
                         x.CurrentStep,
                         x.StartedAt,
-                        x.CompletedAt))
+                        x.CompletedAt,
+                        x.IdempotencyKey,
+                        x.IsDeleted))
                     .ToList()))
             .ToList();
 

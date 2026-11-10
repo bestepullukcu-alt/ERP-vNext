@@ -107,6 +107,8 @@
   <data name="ActionVerb_Change" xml:space="preserve"><value>Изменение</value></data>
   <data name="ActionVerb_UpdateBrand" xml:space="preserve"><value>Изменить бренд</value></data>
   <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>Изменение статуса</value></data>
+  <data name="ActionVerb_Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="ActionVerb_Comment" xml:space="preserve"><value>Комментировать</value></data>
   <data name="ActionVerb_Commit" xml:space="preserve"><value>Фиксация</value></data>
   <data name="ActionVerb_Configure" xml:space="preserve"><value>Настройка</value></data>
   <data name="ActionVerb_Confirm" xml:space="preserve"><value>Подтверждение</value></data>

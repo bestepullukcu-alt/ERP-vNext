@@ -28,7 +28,7 @@ public sealed class EvidenceTextParityTests
     public static readonly Family RecallFamily = new("Recall", Path.Combine("Features", "Recall", "Evidence"), "RecallEvidenceText", "Recall",
         ["Recall.Ev.W.", "Recall.Status.", "Recall.Level.", "Recall.Direction.", "Recall.Kind.", "Recall.Event.", "Recall.ReqStatus.", "Recall.NotNeeded.",
             "Recall.Channel.", "Recall.Gap.", "Recall.DrillStatus."],
-        ["Recall.Class.N", "Recall.Drills.ModeAuto", "Recall.Drills.ModeManual"],
+        ["Recall.Class.N", "Recall.Drills.ModeAuto", "Recall.Drills.ModeManual", "Recall.Customer.NameCode", "Recall.Customer.Unresolved", "Recall.Customer.NotFound", "Recall.Customer.Distinguisher", "Recall.Customer.UnresolvedWith", "Recall.Customer.NotFoundWith", "Recall.Customer.LegacyMarked", "Recall.Customer.NoCrmMarked"],
         "RecallPdf.",
         // fr "Page" is French
         ["RecallPdf.Page"]);

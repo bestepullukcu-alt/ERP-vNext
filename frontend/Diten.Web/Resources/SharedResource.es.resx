@@ -847,6 +847,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Conjunto de contenidos</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Elegibilidad</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Casos</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Declaraciones de consumo</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Panel de control</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Modificaciones de fecha</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Simulacros</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Controles de eficacia</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Evidencias</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Excepciones</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Estado de lotes</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Notificaciones</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Políticas</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Solicitudes de cuarentena</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Segregaciones</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Rastreo</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Roles de ubicación</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Paquetes</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Productos</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaña</value></data>
@@ -1195,6 +1211,41 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificador de simulacros de retirada</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Configuración de retirada</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Planificación de necesidades de materiales y reaprovisionamiento</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimización del stock de seguridad</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Operaciones de Almacén</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Tareas de Ubicación</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Roles de Ubicaciones de Almacén</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Envíos de Salida</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Tareas de Preparación</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Embalaje</value>
+  </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Escenarios del plan de capacidad</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>Aprobaciones del plan S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>Instantáneas del plan S&amp;OP</value>
+  </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Recuento cíclico</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Recuentos</value>
+  </data>
 </root>

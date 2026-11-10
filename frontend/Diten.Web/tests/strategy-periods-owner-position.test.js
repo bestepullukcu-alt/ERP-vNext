@@ -2,46 +2,46 @@ const { loadScript } = require("./load-script");
 
 function buildDom() {
   document.body.innerHTML = `
-    <div id="strategy-period-form-error"></div>
-    <div id="strategy-period-readiness-indicator"></div>
-    <div id="strategy-period-readiness-text"></div>
-    <ul id="strategy-period-readiness-missing"></ul>
-    <ul id="strategy-period-readiness-blockers"></ul>
-    <div id="strategy-period-sec-identity-state"></div>
-    <div id="strategy-period-sec-scope-state"></div>
-    <div id="strategy-period-sec-ownership-state"></div>
-    <div id="strategy-period-sec-timing-state"></div>
-    <input id="strategy-period-scope-summary" />
-    <div id="strategy-period-parent-horizon-hint"></div>
-    <select id="strategy-period-cycle"></select>
-    <input id="strategy-period-name" />
-    <input id="strategy-period-code" />
-    <select id="strategy-period-status"><option value="Draft">Draft</option></select>
-    <select id="strategy-period-company"><option value="">Select</option><option value="comp-1">Grand Medical Group</option></select>
-    <select id="strategy-period-owner-company"><option value="">Select</option></select>
-    <div id="strategy-period-owner-company-help"></div>
-    <select id="strategy-period-owner-position"><option value="">Select</option></select>
-    <div id="strategy-period-owner-position-help"></div>
-    <input id="strategy-period-current-owner-person" type="hidden" />
-    <input id="strategy-period-current-owner-person-display" />
-    <div id="strategy-period-current-owner-person-help"></div>
-    <input id="strategy-period-accountability-summary" />
-    <select id="strategy-period-bu"><option value="">Select</option></select>
-    <select id="strategy-period-region"><option value="">Select</option></select>
-    <input id="strategy-period-start" />
-    <input id="strategy-period-end" />
-    <select id="strategy-period-review"><option value="">Select</option></select>
-    <input id="strategy-period-default" type="checkbox" />
-    <textarea id="strategy-period-notes"></textarea>
-    <button id="strategy-period-save" type="button"></button>
-    <button id="strategy-period-refresh" type="button"></button>
-    <button id="strategy-period-reset" type="button"></button>
-    <button id="strategy-period-create" type="button"></button>
-    <input id="strategy-period-search" />
-    <select id="strategy-period-status-filter"></select>
-    <select id="strategy-period-cycle-filter"></select>
-    <select id="strategy-period-company-filter"></select>
-    <select id="strategy-period-review-filter"></select>
+    <div id="cycle-period-form-error"></div>
+    <div id="cycle-period-readiness-indicator"></div>
+    <div id="cycle-period-readiness-text"></div>
+    <ul id="cycle-period-readiness-missing"></ul>
+    <ul id="cycle-period-readiness-blockers"></ul>
+    <div id="cycle-period-sec-identity-state"></div>
+    <div id="cycle-period-sec-scope-state"></div>
+    <div id="cycle-period-sec-ownership-state"></div>
+    <div id="cycle-period-sec-timing-state"></div>
+    <input id="cycle-period-scope-summary" />
+    <div id="cycle-period-parent-horizon-hint"></div>
+    <select id="cycle-period-cycle"></select>
+    <input id="cycle-period-name" />
+    <input id="cycle-period-code" />
+    <select id="cycle-period-status"><option value="Draft">Draft</option></select>
+    <select id="cycle-period-company"><option value="">Select</option><option value="comp-1">Grand Medical Group</option></select>
+    <select id="cycle-period-owner-company"><option value="">Select</option></select>
+    <div id="cycle-period-owner-company-help"></div>
+    <select id="cycle-period-owner-position"><option value="">Select</option></select>
+    <div id="cycle-period-owner-position-help"></div>
+    <input id="cycle-period-current-owner-person" type="hidden" />
+    <input id="cycle-period-current-owner-person-display" />
+    <div id="cycle-period-current-owner-person-help"></div>
+    <input id="cycle-period-accountability-summary" />
+    <select id="cycle-period-bu"><option value="">Select</option></select>
+    <select id="cycle-period-region"><option value="">Select</option></select>
+    <input id="cycle-period-start" />
+    <input id="cycle-period-end" />
+    <select id="cycle-period-review"><option value="">Select</option></select>
+    <input id="cycle-period-default" type="checkbox" />
+    <textarea id="cycle-period-notes"></textarea>
+    <button id="cycle-period-save" type="button"></button>
+    <button id="cycle-period-refresh" type="button"></button>
+    <button id="cycle-period-reset" type="button"></button>
+    <button id="cycle-period-create" type="button"></button>
+    <input id="cycle-period-search" />
+    <select id="cycle-period-status-filter"></select>
+    <select id="cycle-period-cycle-filter"></select>
+    <select id="cycle-period-company-filter"></select>
+    <select id="cycle-period-review-filter"></select>
     <table id="strategy-periods-table"><tbody></tbody></table>
   `;
 }
@@ -64,8 +64,11 @@ function fillSelect(el, items, options = {}) {
   if (current && Array.from(el.options).some((opt) => opt.value === current)) el.value = current;
 }
 
-async function boot() {
+async function boot(positions = [{ PositionId: "3", PositionName: "HEAD OF COUNTRY" }]) {
   buildDom();
+  loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
+  vi.stubGlobal("$", window.jQuery);
+  vi.stubGlobal("DataTable", undefined);
   global.bootstrap = { Modal: function () { return { show() {}, hide() {} }; } };
   window.strategyPeriodEditorMode = "create-page";
   window.enterpriseStrategyUi = { notify: vi.fn(), getErrorMessage: (err, fallback) => err?.message || fallback };
@@ -81,10 +84,11 @@ async function boot() {
     positionDisplayName: (id) => ({ "3": "HEAD OF COUNTRY" }[id] || id),
     positionLoadState: () => ({ status: "success", error: "" }),
     positionOptionsForCompany: () => [],
-    positionOptions: () => [{ value: "3", label: "HEAD OF COUNTRY" }],
+    positionOptions: vi.fn(() => [{ value: "unscoped", label: "Unscoped position" }]),
     usersForOwnershipContext: () => []
   };
   window.strategyPlanningApi = {
+    getAllPositions: vi.fn().mockResolvedValue(positions),
     listCycles: vi.fn().mockResolvedValue([{ id: "cycle-1", name: "Cycle 1", ownerId: "user-1", effectiveFrom: "2026-03-01", effectiveTo: "2026-03-31" }]),
     listStrategyPeriods: vi.fn().mockResolvedValue([]),
     getStrategyPeriod: vi.fn().mockResolvedValue({}),
@@ -106,24 +110,33 @@ async function boot() {
   window.strategyObjectivesApi = { list: vi.fn().mockResolvedValue({ items: [] }) };
 
   loadScript("wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js");
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await window.strategyPeriodsApp.initPage();
 }
 
 describe("strategy period owner position", () => {
-  beforeEach(async () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("uses positions from the planning API, not an unscoped workbook fallback", async () => {
     await boot();
-  });
-
-  it("falls back to API position list when scoped positions are unavailable", async () => {
-    const companyEl = document.getElementById("strategy-period-company");
+    const companyEl = document.getElementById("cycle-period-company");
     companyEl.value = "comp-1";
     companyEl.dispatchEvent(new Event("change", { bubbles: true }));
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const positionEl = document.getElementById("strategy-period-owner-position");
+    const positionEl = document.getElementById("cycle-period-owner-position");
     expect(Array.from(positionEl.options).some((opt) => opt.value === "3")).toBe(true);
-    expect(document.getElementById("strategy-period-owner-position-help").textContent).toContain("Showing API position list");
     expect(positionEl.disabled).toBe(false);
+    expect(window.strategyPlanningApi.getAllPositions).toHaveBeenCalledOnce();
+    expect(window.enterpriseWorkbookOptions.positionOptions).not.toHaveBeenCalled();
+    expect(Array.from(positionEl.options).some((opt) => opt.value === "unscoped")).toBe(false);
+  });
+
+  it("does not broaden an empty API result to workbook-wide positions", async () => {
+    await boot([]);
+    const companyEl = document.getElementById("cycle-period-company");
+    companyEl.value = "comp-1";
+    companyEl.dispatchEvent(new Event("change", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(Array.from(document.getElementById("cycle-period-owner-position").options).filter((opt) => opt.value)).toEqual([]);
+    expect(window.enterpriseWorkbookOptions.positionOptions).not.toHaveBeenCalled();
   });
 });

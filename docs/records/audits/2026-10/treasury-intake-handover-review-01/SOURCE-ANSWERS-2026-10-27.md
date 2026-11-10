@@ -170,6 +170,231 @@ onboarding kalıbı (FU20 / FU22 örnek); (3) D53 paket metni kapısı ve D56 (S
 kaydedilir, DL-1 kabulü D53/2'ye göre "Auth kayıt kodu main'de" şartını bekler. Auth paketini ve MOD-0220 alanını Treasury yazar; yazınca
 inceleme isteği gider. D54 için tarih kapsam netleşince.
 
+## Y-17 — Ali, D54 Auth yapısı (2026-10-28)
+
+D54 Auth veri yapısını da Treasury yazar (D9 / XMC-001 "(a)"): atama kaydı, yazma ucu, parti için geçerli atamalar sorgusu, denetim;
+sahip inceler ve teyit eder; D63/3 düzeltilsin. Pakette açık olacaklar: kiracı izolasyonu (TenantId, kiracılar arası 404), hedef parti
+yok / okunamıyor / eşleşmiyor için 403, en çok 24 saat, onaylayan ve gerekçe kodu, denetim kaydı. Platform dosyaları için XMC-001 Beste'den.
+
+## Y-18 — Ali, Auth eki inceleme bulguları (2026-10-28; onay değil, kararlar sonra)
+
+Auth CT ile inceleme başladı. Üç bulgu: (1) K-W3 / K-A1 — Auth'taki bütün iç uçlar bugün ortak sırla (`X-Internal-Api-Key`) çalışıyor;
+servis kimliği token'ı doğrulayan şema yok; taslağın yolu yeni doğrulama katmanı ister ve pakette dosyası yok; ortak sır kiracıya bağlı
+değil, kiracı token'dan alınmalı. (2) K-W1 — iki yeni Auth anahtarı da açık atama olduğundan koddaki sayı 18 değil 20; paket 8 sayıyor.
+(3) Muafiyeti atayacak kişi: pakette "Hazine yöneticisi ya da K1" yazıyor ama rolde izin yok. → D74.
+
+## Y-19 — Ali, Auth eki ilk kararlar ve şartlı teyit (2026-10-29; onay satırı / ready-for-dev onayı değildir)
+
+(a) İlk üç karar: K-1 **FU27** (kayıt satırı paketle birlikte yazılır); K-7 sabit rol kodu, görünen ad çevirisi kaynak dosyada, kiracı yöneticisi
+7 dilde görür; aday sorgusu **DL-6 ayrı dilim** kalır. Kalan kararlar (K-W5, K-W3, K-W1, K-A2/A3/A4) bulgulara göre revizyondan sonra konuşulur;
+bağımsız inceleme revizyondan sonra, onay satırından önce.
+(b) 04:25 mesajı: Treasury Auth ekini (main 4c08fc75a, D69–D78) **şartla teyit** ediyor; Auth CT kiracı yalıtımını kontrol etti, kapanıyor.
+Şartlar: K-W5 denetim izi için defter kararı ve rol atama adımlarının (rola izin bağlama, kişiye rol verme) denetim borcu **DL-5 kodundan önce**
+kapanmalı; **DL-1'i bunlar bekletmez**. Henüz vermediği: K-W5, K-A1, K-A2, K-A3 ve "önerileri kabul" listesi (K-1b, K-2, K-3, K-5, K-W2,
+K-W4, K-W6); K-W7 ve K-A4b teyidi ayrıca. → D80.
+
+## Y-20 — Beste, MOD-0048 XMC-001 izni (2026-10-29; K1 aktardı)
+
+K1'in aktarımı (2026-10-29): "48 izin alındı" — Beste, MOD-0048 seed PR'ı için B1 (a) yolunu kabul etti: `PlatformLookupProvider.BuildCurrencyOptions`
+yalnız geçerli üç harfli ISO kodlarını döndürür (`¤¤` gibi ICU yer tutucuları elenir) + test; Treasury yazar, PR'ı Beste onaylar. Yazılı metin
+bu kayda alınmadı (sahip aktarımı). `module: BusinessReferenceData` sapması ve O-14 için ayrı cevap gelmedi.
+
+## Y-21 — Ali, Auth eki açık maddeleri (2026-10-29; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+#293'ü gördü. D79/D80 kayıtlarındaki açık maddeleri 29 Ekim'de verdi, hepsi paketin önerisiyle: K-1b paket başına kod · K-2 hiçbiri ·
+K-3 bugünkü davranış · K-W2 (a) · K-W4 `/api/roles/…` · K-W6 sürümlü dosya · K-A1 `/internal/permission-candidates` + sürümlü
+sözleşme · K-A2 (b) tüketici süzer · K-A3 hizmet hesabı aday değil, geçici kilitli aday · K-W5 `auth-gunlugu` + önce-yaz, CT defter
+kararı (DL-5 kodundan önce kapanmalı) · K-W7 ve K-A4b teyit · K-5'te yalnız yöntem kabul: banka / amaç anahtarlarını MOD-0289 /
+MOD-0217 sahibi söyler, Platform dosyaları Beste'den (XMC-001). 7 dilli rol adı tablosu (§14.2) kontrol ediliyor, sonucu ayrıca
+yazacak. "MOD-0220 yeniden onayı açık, §22 alanınız o netleşene kadar ready-for-dev'e geçemez" (hangi paketin §22'si olduğu ve
+D82/2 dilim kapısıyla ilişkisi Ali'ye soruldu — K1 kararı 2026-10-29). → D84.
+
+## Y-22 — Beste, Treasury CT'ye cevap (2026-10-29; K1 aktardı)
+
+(1) #304: sırada #299'dan başlayan PR'lar var; sonra inceleyip merge edecek; bu arada dal güncellenmeyecek (onay düşer).
+(2) DCP-011 `approved`: kabul. Bugünkü sürümün (`4cb9e99a`) UYGUN incelemesi main'de, onay satırı yok. Durum `draft` → `approved`;
+yalnız durum değiştiği için yeni sürüme kısa doğrulama incelemesi yeterli. Durum değişikliği + inceleme satırı + onay satırı (yazan
+gmg-10, onaylayan bestepullukcu-alt) tek PR'da; PR'ı Treasury açar, Beste onaylayıp merge eder.
+(3) K-6: kabul, cevabı "hayır". FinanceTreasuryService Platform kapsam ucunu doğrudan kullanmayacak; dört finans paketi kendi kapsam
+yolunu yazar (O-19 / O-22 / O-14 / O-23). Soranın kimliği yalnız MDM (`DITENMDMSERVICE`); FU27 §5.2 koşullu Platform dosyaları gerekmez.
+(4) SEC-002 eki (FU27 DL-4), Platform tarafı XMC-001: yalnız `TrustedLegalEntityScopeCredentialAuthenticator.cs` (K-5'teki
+`mdm.bank-accounts.*` ve `mdm.contracts.*` anahtarları; `MaxAllowedPairs` eklenen çift kadar; `AllowsPair` ve `IsValidConfiguration`'da
+tek modül kodu → ürün + MOD-0289 + MOD-0217 kümesi; her izin kendi modül koduyla eşleşir; `DITENMDMSERVICE` kontrolü değişmez),
+`TrustedLegalEntityScopeCredentialAuthenticatorTests.cs` (yeni tavan ve çiftler, yanlış modül kodlu çiftin reddi, bilinmeyen çiftin 403'ü;
+sabotaj kanıtı), `docs/guides/operations/post-deploy-steps.md` (ortam ayarı `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs`: sıra,
+geri alma, kontrol). Başka Platform dosyasına dokunulmaz; kapalı-başarısız korunur. K-5 listesini kontrol edecek. Kod FU27 onaylandıktan
+sonra. MDM tarafı (`PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri) MDM sahibinin alanı — XMC-001 ve sıra Ali ile.
+Sıra (FU27 §8): Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+(5) BL-565 (RCS-001): v1 = allocate ucu, atomik sayaç, tür önekleri, şirket kısa kodları. Kesin sözleşme 3 Kasım'da Treasury'de;
+servis v1 hedefi 6 Kasım main. "İKİSİ DE" türleri ve mevcut modüllerin taşınması sonraki dilim. Port + sahte istemci yolu (D59/1)
+uyumlu. Excel ve kısa kod listesi en geç 2 Kasım'da Beste'de olmalı.
+(6) MOD-0262-FU01 servis kimliği: Platform pack revizyonu 2 Kasım'da hazır; Auth tarafı (MDM için iç istemci ve izin) Ali'nin
+alanı — kapsam ve tarih Ali ile; revizyon onaylanınca Platform kodunun tarihi bildirilecek. → D88.
+
+**Özgün metin (K1'in 2026-10-29'da Treasury CT oturumuna yapıştırdığı haliyle, değiştirilmeden):**
+
+> Beste → Treasury CT (gmg-10)
+> Merhaba,
+>
+> * #304: sırada #299’dan başlayan PR’lar var. Onlar alındıktan sonra #304’ü inceleyip merge edeceğim. Lütfen bu arada dalı güncellemeyin, yoksa onay düşüyor.
+> * DCP-011 approved: kabul.
+> * Bugünkü sürümün (`4cb9e99a…`) UYGUN incelemesi main’de, ama onay satırı yok.
+> * Durumu `draft` → `approved` yapın. Yalnız durum değiştiği için yeni sürüme kısa bir doğrulama incelemesi yeterli.
+> * Durum değişikliğini, inceleme satırını ve onay satırını (yazan gmg-10, onaylayan bestepullukcu-alt) tek PR’da hazırlayın. PR’ı siz açın, ben onaylayıp merge ederim.
+> * K-6: kabul, cevabım “hayır”.
+> * FinanceTreasuryService Platform kapsam ucunu doğrudan kullanmayacak. Dört finans paketi kendi kapsam yolunu yazar (O-19 / O-22 / O-14 / O-23).
+> * Soranın kimliği yalnız MDM (`DITENMDMSERVICE`) olarak kalır. FU27 §5.2'deki koşullu Platform dosyaları gerekmiyor.
+> * SEC-002 eki (FU27 DL-4):
+> * Platform tarafı, XMC-001 izni veriyorum. Kapsamı yalnız şu dosyalar:
+> * services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:
+> * izin listesine K-5'teki `mdm.bank-accounts.*` ve `mdm.contracts.*` anahtarları;
+> * `MaxAllowedPairs` tavanının eklenen çift sayısı kadar artırılması;
+> * `AllowsPair` ve `IsValidConfiguration` içindeki tek modül kodunun ürün, MOD-0289 ve MOD-0217 kodlarından oluşan bir kümeye çevrilmesi.
+>
+> Her izin kendi modül koduyla eşleşmeli: bir banka izni ürün modülü adına sorulamaz. `DITENMDMSERVICE` kimlik kontrolü değişmez.
+>
+> * services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs:
+> * yeni tavan ve yeni çiftler;
+> * yanlış modül koduyla gelen çiftin reddi;
+> * bilinmeyen çiftin 403 alması.
+>
+> Sabotaj kanıtıyla.
+>
+> * docs/guides/operations/post-deploy-steps.md: ortam ayarı `TrustedLegalEntityScopeCredential:Mdm:AllowedPairs` için yeni adım; sıra, geri alma ve kontrol.
+>
+> Başka Platform dosyasına dokunulmaz. Kapalı-başarısız davranış korunur: hata, boş liste ya da belirsizlik “erişim yok” demek. K-5 anahtar listesini ilettiğinizde kontrol edeceğim. Kod FU27 onaylandıktan sonra yazılır.
+>
+> * MDM tarafı: `PlatformTrustedLegalEntityScopeProviderClient.cs` ve testleri MDM sahibinin alanı. Lütfen XMC-001 iznini ve sırayı Ali ile netleştirin.
+> * Sıra (FU27 §8): Auth izinleri → Platform kodu → Platform ortam ayarı → MDM istemcisi.
+> * BL-565 (RCS-001 ortak kod servisi):
+> * v1 kapsamı: ayırma (allocate) endpoint’i, atomik sayaç, tür önekleri ve şirket kısa kodları.
+> * Kesin sözleşme 3 Kasım’da sizde olacak, servis v1'in 6 Kasım’da main’de olmasını hedefliyoruz.
+> * “İKİSİ DE” türleri ve mevcut modüllerin taşınması sonraki dilimde.
+> * Port ve sahte istemci yolunuz (D59/1) bu planla uyumlu.
+> * Excel’in ve kısa kod listesinin en geç 2 Kasım’da elimde olması gerekiyor.
+> * MOD-0262-FU01 servis kimliği:
+> * Platform tarafındaki pack revizyonu 2 Kasım’da hazır olacak.
+> * Auth tarafı (MDM için iç istemci ve izin) Ali’nin alanı. Lütfen kapsamı ve tarihi doğrudan Ali ile netleştirin.
+> * Revizyon onaylanınca Platform kodunun tarihini bildireceğim.
+
+## Y-23 — Beste, K-5 kontrolü ve K-6 düzeltmesi (2026-10-29; K1 aktardı)
+
+#304 ve DCP-011 anlaşıldı (DCP-011 PR'ını onaylayıp merge edecek). K-5: paketlerle tutuyor — MOD-0289 9, MOD-0217 14, toplam 23; tavan
+38 → 61; `read-tenant-wide`, `mdm.banks.*`, `mdm.bank-account-purposes.*`, `mdm.contracts.value.*` dışarıda kalabilir. Soru:
+`mdm.contracts.versions.approve` kapsam sormuyorsa onaylayanın yalnız kendi şirketinin sözleşmesini onaylamasını ne sağlıyor; gerekçe
+pakete yazılsın, yoksa listeye eklensin (tavan 62). MDM XMC-001 (3 dosya) aynen geçerli. **K-6 düzeltildi: "evet".** `OrgDataScopeResolver`
+yalnız Platform'da; SEC-002 §6 başka servisin kapsamı kendi hesaplamasına ve Platform veritabanını okumasına izin vermez; MDM ya da token
+alanı yolu doğru değil. Doğru yol Y-4/6: finans servisinde port + Platform güvenilir kapsam ucunu çağıran bağdaştırıcı; Platform ucu
+FinanceTreasuryService'i ikinci tüketici olarak kabul eder (kendi kimliği, gizli anahtarı, izinli çift listesi; kapalı-başarısız aynen;
+MDM bağlaması değişmez). FU27 §5.2 koşullu Platform dosyaları için XMC-001'i şunları gördükten sonra verecek: finans izinli çift listesi;
+değişecek dosya ve satırların tam listesi; sabotajlı testler (MDM kimliği finans çiftlerini soramaz, finans kimliği MDM çiftlerini soramaz,
+bilinmeyen tüketici reddedilir). Dört finans paketinin SEC-002 maddesi bu yola göre yazılabilir. → D92.
+
+## Y-24 — Beste, SEC-002 C, K-5, O-14 kabulü, MOD-0289 onaylayıcılığı (2026-10-29; K1 aktardı)
+
+SEC-002 kapsam yolu C (= K-6 "evet"): finans servisi kendi portuyla Platform güvenilir kapsam ucuna ikinci tüketici (`DITENFINANCETREASURYSERVICE`,
+kendi gizli anahtarı, kendi çift listesi); her izin kendi modül koduyla; kapalı-başarısız; MDM bağlaması değişmez. XMC-001 koşulları Y-23 ile aynı
+(çift listesi, dosya-satır listesi, sabotajlı testler). Dört paketin SEC-002 maddesi ve AC-32 bu yola göre yazılabilir. D (token'a şirket listesi)
+uzun vadeli — Ali ile planlansın. K-5 tekrar teyit (23, tavan 61); `versions.approve` sorusu tekrar. MDM XMC-001 (3 dosya) geçerli. **O-14: öneri
+kabul, iki ekle** — `prefixScope` LegalEntity / Group / Platform; tür başına izinli kapsam (BNK Group; BAC LegalEntity + Group; PAY, APD, ARI, CPS,
+CTP, CTR LegalEntity); 422 `RECORD_CODE_SCOPE_INVALID`; 409 `GROUP_PREFIX_MISSING`; sayaç (kiracı, önek, tür); şirket BAC'ta sahip şirket teyit.
+MOD-0289 onaylayıcısı kabul (K2). MDM tarafı (#311 03): uygun; bu izin Ali'nin kararı; diğer iki dosya (04, 05) da. → D93.
+
+## Y-25 — Beste, dört nota cevap: kimlik, O-14, `CTR` çakışması, sınıflandırılmamış üreticiler (2026-10-29; K1 aktardı)
+
+Kimlik: MOD-0040-FU01 kayıt dosyasında eski takma ad (`module-id-registry.md:137`); RCS-001 kimliği **MOD-0040-FU02 "Record Code Service"**
+(repoda geçmiyor, ön kontrolden geçti); kayıt satırına "parent = Blueprint MOD-0040 (Canonical ID & Correlation Standard), repodaki MOD-0040
+takma adı değil" notu; ön kontrol aracının açığı ayrı iş. O-14: `prefixScope` (Y-24 3. madde). **`CTR` çakışması:** MOD-0144 bugün `CTR-` + 8
+karakter üretiyor; MOD-0217'nin kodu olmadığı için MOD-0217'nin öneki değişsin, öneri **`AGR`** (kural tablosunda ve kodda yok); uygunsa D41/2
+güncellensin, RCS-001 §3 satırını Beste değiştirir; MOD-0144 ile MOD-0217 kapsam çakışması Cihan ile netleştirilsin. Sınıflandırılmamış
+üreticiler: v1 dokunmuyor, mevcut kodlar değişmez; envanter gelince her biri için KALSIN / RCS-001'e geçiş kararı tek tek. → D94.
+
+## Y-26 — Ali, PR #311 kararları + MOD-0262-FU01 + MOD-0220 §22 (2026-10-30; K1 aktardı)
+
+Özgün metin (kelimesi kelimesine, Teams; iki parça): `Y-26-ALI-VERBATIM-2026-10-30.md` (bu klasörde). PR #311'de Ali'nin yorumu yok.
+Aşağıdaki özet o metne dayanır.
+
+**3 (XMC-001):** izin var — MDM istemcisi (`PlatformTrustedLegalEntityScopeProviderClient` + testleri). Sıra: Auth izinleri → Platform
+kodu → Platform ortam ayarı → MDM istemcisi; yalnız o dosya ve testleri. **4 (K-W5 okuma yolu):** 1, 2, 3, 5, 6 kabul. 4. madde (ekran):
+evet, Roller ekranında salt-okunur atama listesi + "Geçmiş" bölümü. Düzeltmeler: (a) iz belirteci iki komut için ayrı bir yazıcı tipinin
+metodu olsun; "WriteOnceAsync + komut adı" biçimi tanımsız ve servis kimliği işleyicisinin istisnasını kaydırır. (b) Auth'un iletici
+anahtarı boşsa okuma satırı sessizce kaybolur; kabul ölçütüne yapılandırma şartı yazılsın. (c) Ekran kiracı tarafındaysa 7 dil.
+**5 (MOD-0057):** ayrı MOD-0018 eki, FU27'ye eklenmez. Kimlik verify_module_id.py ön kontrolüyle açılır. Rol adlarına "Tag" öneki
+önerilir. Açık atama anahtarı sayısı bu kayıtla 21'e çıkar. **MOD-0262-FU01 Auth tarafı:** MDM servisi için istemci kaydı ve hedef
+kitle; yeni kullanıcı izni yok. Kapsamı Auth kulesi yazacak. Tahmini tarih (ölçülmedi): paket metni 3 Kasım, kod onaydan 1–2 gün sonra.
+**MOD-0220 §22:** "§22 alanı" = MOD-0220 paketinin §22'si (TRM-14), FU27 değil. Onay satırı main'de (bestepullukcu-alt, 26 Ekim) ama
+satırı ekleyenle birleştirenin ayrı olup olmadığını Yönetici doğruluyor. Başlığı siz değiştirmeyin. TRM-14'ün DL-1 dilim kapısı olarak
+kalması yeter; ready-for-dev'i bekletme kararı bu doğrulamanın sonucuna bağlı, cevabı ayrıca vereceğim. 7 dilli rol adı tablosunun
+sonucu da ayrıca gelecek. → D97.
+
+## Y-27 — Ali, cevap durumu + MOD-0220 §22 (2026-10-30; K1 aktardı)
+
+Özgün metin:
+
+> Ali → Treasury: #311 kararlarını PR'a yorum olarak yazdım. Meta-denetim teslimi, FU27 son hâli ve Tag rol adları için kontrol sürüyor, cevabı bugün göndereceğim. Rol atama borcu notunu bekliyorum. MOD-0220 §22: yeni onay satırı PR #313'te, Beste birleştirince kalkar.
+
+Ölçüm: #311 yorumu ve #313 tarayıcıda okundu (#313 açık, yalnız `approvals.tsv`'ye 1 satır). #311 yorumu GMG-ERP hesabından "Ali (K1)" imzalı; kayıtlarda K1 = Natig (gmg-10), Ali = MOD-0018 sahibi.
+
+## Y-28 — FU27 §14.2 rol adları teyidi (2026-10-30; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+Gönderen metinde yazmıyor; içerikten (FU27 teyit sahibi, D80/2 (b) notunun alıcısı) Ali olduğu çıkarıldı. Özgün metin:
+
+> FU27 §14.2 rol adları (7 dil): düzeltmelerle teyit. tr: rol 26 "Sözleşme sürümü onaylayıcı", rol 27 "Muafiyet atama yetkilisi". "Manager" çevirisi satırlar arasında tek tipe getirilsin (ru/zh/es/fr). Düzeltmeyi tablo + 7 kaynak dosya olarak siz yazın. ar/ru/zh için anadil kontrolü yapılmadı (düşük güven). D80/2 (b): notun ekine ulaşamadım, lütfen metni mesaj olarak yapıştırın; cevabı o zaman vereceğim.
+
+## Y-29 — Beste, #314 sırası, XMC-001, aday modu, AGR, MOD-0289 PR'ı (2026-10-30; K1 aktardı; XMC-001 ya da onay değildir)
+
+Özgün metin:
+
+> Beste → Treasury CT (gmg-10). Teşekkürler.
+> #314: PR'ları sırayla onaylıyoruz. #305 onaylandıktan sonra sırası gelince #314'ü inceleyip onaylayacağım. Hazır dedikten sonra lütfen dalı güncellemeyin, yoksa onay düşüyor.
+> Platform XMC-001 (finans ikinci tüketici): öneri dosyası bana ulaşmadı, lütfen yeniden gönderin. Dosyayı aldıktan sonra bakacağım: finans çift listesi (70 çift), dosya ve satır listesi, sabotajlı test planı.
+> Aday modu (D92/3): prensipte olumlu bakıyorum. Platform'da kapsam motoru herhangi bir kullanıcı için hesaplayabiliyor; eksik olan yalnız bunu servislere açan dar bir yol. Öneri dosyasıyla birlikte değerlendireceğim. Şu sınırları öneri dosyasına ekleyin: yalnız aday-modu çiftleri (`mdm.contracts.versions.approve` ve finans onay anahtarları); yalnız aynı kiracının kullanıcıları; cevap adayın bütün şirket listesi değil, istenen şirket için yalnız "yetkili / değil"; her aday sorgusu denetim kaydına yazılır; kapalı-başarısız davranış aynen.
+> Sabotajlı testler: aday-modu dışındaki çiftte aday kimliği reddedilir; başka kiracının kullanıcısı 404; cevapta şirket listesi dönmez.
+> AGR satırı (D94): `.antigravity` kural dosyaları Ali'nin sorumluluğunda. RCS-001 §3'teki MOD-0217 satırının `CTR` → `AGR` değişikliğini lütfen Ali ile netleştirin.
+> MOD-0289 onay PR'ı: PR hazırsa açın, onaylayıp merge edebilirim.
+
+## Y-30 — Procurement tarafı CT raporu, MOD-0144 / MOD-0217 ve SUPPLIER 1.3.0 (2026-10-30; K1 aktardı; sahip kararı değildir)
+
+Gönderen metinde yazmıyor; içerikten Procurement tarafı CT oturumu olduğu çıkarıldı. Özet (özgün metin K1'in mesajında):
+
+- SUPPLIER 1.3.0: PR #289 açık, merge bekliyor. `/eligible` (DL-3): DL-1 merge'ünden 1,5–2 hafta sonra, tahmin. `eligibility.read` Auth kataloğuna DL-3 ile aynı gün.
+- MOD-0144 / MOD-0217: aynı kaydı tutmuyor; D39 sınırı var; rota, izin ve ekran çakışması yok. Üç kenar boşluğu: SERVICE / LEASE / LICENSE alım yönü; Supplier karşı taraf türü; madde kütüphanesi Blueprint'te MOD-0218. Öneri: D39 v1 için kalsın, MOD-0217'ye iki netleştirme, MOD-0144'e dokunulmasın.
+- Açık karar: Procurement adına "itiraz yok" demek kimin yetkisinde. Rapor kısmi inceleme olduğunu yazıyor.
+
+## Y-32 — Ali, tek mesaj: önceki parçaların yerine (2026-10-31; K1 aktardı; ready-for-dev ya da kod onayı değildir)
+
+Madde 1, 7, 8 Y-26 ve Y-27 ile aynı. Özgün metin (madde 2–6, 9, 10):
+
+> 2) Meta-denetim teslimi (D99/1): kabul. Geçmiş okuması için ayrı TryForwardAsync; teslim teyidi yoksa veri dönmez, 503 SOD_WAIVER_HISTORY_AUDIT_UNAVAILABLE. Eski üye yeni üyeyi çağırıp sonucu yok saysın (iki yol ayrışmasın). Bilinen bedel: Platform yavaşsa geçmiş ekranı 5 sn'ye kadar bekler, kapalıysa açılmaz; dev ortamda iletici anahtarı boşsa geçmiş hep 503 olur (testler saplamayla koşar).
+> 3) FU27 D79 sonrası hâli (PR #314): teyit. Önceki üç düzeltmem (ayrı yazıcı tipi, iletici anahtarı şartı, 7 dilli Roller ekranı) işlenmiş, çelişki bulunmadı.
+> 4) Tag rol adları (D97/3): TagReader, TagAssigner, TagTaxonomyManager uygun. Kodda ve main'deki paketlerde çakışma yok.
+> 5) Rol adları (D103): terim seçiminize ("Manager" tek terim: fr Gestionnaire, es Gestor, zh 经理, ru Менеджер) itirazım yok. ar/ru/zh için anadil kontrolü yapılmadı (düşük güven). Dosyaların kod diliminde yazılması kabul.
+> 6) Rol atama denetim borcu (D80/2 b): dar yol + B ayrı ek; yetim kayıt "deneme" (önce deneme kaydı, sonra sonuç satırı; sonuç yoksa "sonuçlanmadı" okunur).
+> FU27 DL-5 içinde: muafiyet yetkisini verme/alma ayrı, önce-yaz denetimli komutla yapılır; genel rol/izin komutları bu rol ve iki anahtar için reddeder; K-W5 geçmiş yoluna eklenir.
+> Dört ortak komutun (AssignRole, RevokeRole, AssignPermission, RevokePermission) kayıt-önce-yaz geçişi (B) ayrı bir MOD-0018 eki; kimlik verify_module_id.py ön kontrolüyle, kendi incelemesiyle. B'nin "18→16, 11→9" sayıları yalnız izin komutlarının yeni yazıcısı kabul edilmiş bir ize bağlanırsa doğru; CreateRole/UpdateRole/DeleteRole aynı yazıcıyı kullandığı için ayrı ekte birlikte ele alınsın. Revoke'ta fail-closed mi acil kaldırma önceliği mi kararı ayrı ekte verilecek.
+> Y-19 şartı bu karara göre güncellenir: DL-5 kodu için şart, muafiyet adımının korunması; kalan RBAC borcu ayrı ekin konusu.
+> 8) MOD-0262-FU01 Auth tarafı: MDM servisi için istemci kaydı ve hedef kitle; yeni kullanıcı izni yok. Paket metnini Auth kulesi yazacak, tahmini 3 Kasım (ölçülmedi).
+> 9) MVP-6 sorusu (merkezi denetim ayrıntı alanı): Platform/BuildingBlocks sahibi Beste; karar vermiyorum, ona sorun.
+> 10) MOD-0144 / MOD-0217 (Procurement): Procurement adına teyit veremem. Onay Procurement sahibinde; sorunuzu oraya yöneltin.
+
+## Y-33 — Ali, K-W8, K-W9, AGR, FU29 (2026-10-31; K1 aktardı)
+
+> 1. K-W8: Mevcut auth.users.assign-role izniyle çalışsın; yeni anahtar yok. İki auth.payment-sod-waivers anahtarı role ilk vermede bağlanır. Şart: bir kişi bu yetkiyi kendine verebiliyor mu testi FU27'ye yazılsın; Auth kule bunu kodda doğrulayacak.
+> 2. K-W9: (a) — komut başarılı döner, satır "sonuçlanmadı" okunur.
+> 3. RCS-001 §3 CTR → AGR: Siz hazırlayın; benim yazılı onayımla gider. Sahiplik değişmez, satırı ben değiştirmiyorum.
+> MOD-0018-FU29 (dört ortak komut + Create/Update/DeleteRole): kimlik açmadan önce bana yazın; açma kararı benim.
+
+## Y-34 — Ali, K-W9 (b) (2026-10-31; K1 aktardı)
+
+> K-W9: (b) seçildi — iş yazımı ve sonuç satırı aynı işlemde yazılır, hata olursa ikisi de geri alınır. Önceki "(a) başarılı döner" cevabım geri alındı; kural sahibi benim, K2 kararım (2 Ekim) geçerli.
+> Rol depolarında tek işlemin yapılabilirliğini ölçün. Mümkün değilse kendiniz (a) ya da (c)'ye geçmeyin: aynı işlem içinde outbox gibi K2'nin kabul ettiği yolu da yazıp bana dönün. (a) ve (c) K2'ye uymuyor.
+> FU27 ve Codex ENGEL'i bu karara göre güncellensin.
+
+## Y-35 — Ali, FU27 ekleri (2026-10-31; K1 aktardı)
+
+> FU27 ekleri onaylandı: (1) unresolved-attempts ucu, (2) yetki geçmişi ucu + Roller ekranında salt-okunur bölüm, (3) belirsiz commit kuralı (503 / 409). Kapsam büyümesini kabul ediyorum; yeni izin anahtarı ve yeni kural dosyası eklenmesin.
+> RCS-001 §3 CTR → AGR satırı için önceki mesajınızdaki metin bana ulaşmadı. Lütfen değişecek satırı (eski → yeni) ve gerekçeyi bir mesajda, tek başına gönderin. Metni görmeden yazılı onay vermem.
+
 ## Yanıt → etkilenen paket → işlendiği yer
 
 Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. Her pakette ayrıca en üstte
@@ -206,3 +431,21 @@ Paket yolları `execution/domains/finance-treasury/module-packs/` altındadır. 
 | Y-14 (geçersiz — Y-16) | — | işlenmedi |
 | Y-15 (Auth eki ve MOD-0220 §22 Treasury yazar; XMC-001 sorusu) | altı paket; MOD-0126 (TRM-14) | D63 |
 | Y-16 (Y-14 düzeltmesi; D53 / D56 aynen; MOD-0018 FU20 / FU22 kalıbı) | altı paket | işlenmedi — paket metni değişmez; Auth eki FU20 / FU22 kalıbıyla yazılır |
+| Y-17 (D54 Auth yapısını Treasury yazar; beş kabul şartı) | MOD-0018 Treasury Auth eki; MOD-0126 | D64 |
+| Y-18 (iç uç kimliği, açık atama sayısı, muafiyet atayan) | MOD-0018 Treasury Auth eki | D74 |
+| Y-19 (FU27, K-7, DL-6; şartlı teyit — K-W5 + rol atama denetimi DL-5 kodundan önce) | MOD-0018 Treasury Auth eki; altı paket | D80 |
+| Y-20 (MOD-0048 B1 izni: currencies lookup alpha-3 filtresi) | seed dalı `feature/pss/mod0048-fu01-treasury-seeds`; MOD-0126 / 0119 / 0120 / 0124 seed önkoşulu | seed PR'ında |
+| Y-21 (Auth eki açık maddeleri paket önerisiyle; K-W5 yöntem, K-5 yalnız yöntem; MOD-0220 / §22 notu) | MOD-0018 Treasury Auth eki; ready-for-dev tutuşu | D84 |
+| Y-22 (#304 sırası; DCP-011 onay yolu; K-6 "hayır"; Platform XMC-001 dosya kapsamı; BL-565 ve MOD-0262-FU01 tarihleri) | DCP-011; FU27 DL-4; dört finans paketi SEC-002; RCS-001 | D88 |
+| Y-23 (K-5 kontrolü; `versions.approve` sorusu; **K-6 "evet"** — finans ikinci tüketici; XMC-001 koşulları) | FU27 §5.2; dört finans paketi SEC-002; MOD-0217 aday süzmesi | D92 |
+| Y-24 (SEC-002 C teyidi; O-14 `prefixScope` kabulü; MOD-0289 onaylayıcılığı; D Ali ile) | MOD-0289 AC-60; RCS-001 v0 sözleşmesi; dört finans paketi | D93 |
+| Y-25 (RCS-001 kimliği MOD-0040-FU02; MOD-0217 öneki `AGR`; MOD-0144 / MOD-0217 kapsamı Cihan'a; sınıflandırılmamış üreticiler) | MOD-0217 O-5 / Code; DL-1 hazırlık; RCS-001 §3 | D94 |
+| Y-26 (Ali: MDM XMC-001; K-W5 okuma yolu + ekran; MOD-0057 ayrı Auth eki; MOD-0262-FU01 Auth tarafı; MOD-0220 §22) | FU27 §5.2 / DL-5 / K-W5; MOD-0057 O-5; WP-0126 / WP-0289 P-0 | D97 |
+| Y-27 (cevap durumu; MOD-0220 §22 yeni satır #313) | MOD-0220; FU27 | D103/5 |
+| Y-28 (FU27 §14.2 rol adları düzeltmeli teyit; D80/2 (b) not metni istendi) | FU27 §14.2 | D103 |
+| Y-29 (#314 sırası; XMC-001 dosya; aday modu sınırları; AGR Ali'ye; MOD-0289 PR) | öneri dosyası; RCS-001; MOD-0289 | D104 |
+| Y-30 (Procurement CT raporu: 1.3.0 tarihleri, MOD-0144 / MOD-0217 sınırı) | MOD-0217; MOD-0119; MOD-0289 | D104/6 |
+| Y-32 (FU27 teyidi, D99/1, D80/2 (b) daraltması, Tag adları, MOD-0144 yönlendirmesi) | FU27; FU28; D104/6 | D106 |
+| Y-33 (K-W8, K-W9, AGR hazırlığı, FU29 kararı) | FU27; RCS-001 | D107 |
+| Y-34 (K-W9 (b), aynı işlem; D107/2 geri alındı) | FU27 | D109 |
+| Y-35 (FU27 ekleri onayı; AGR metni yeniden istendi) | FU27; RCS-001 | D113 |

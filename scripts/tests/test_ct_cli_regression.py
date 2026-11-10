@@ -29,7 +29,10 @@ try:
 except ImportError as e:  # a missing dependency is an error, never a skip
     raise RuntimeError("test_ct_cli_regression: openpyxl gerekli — python3 -m pip install -r scripts/requirements-tools.txt") from e
 
-ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0", PYTHONDONTWRITEBYTECODE="1", GIT_CONFIG_NOSYSTEM="1",
+# Every inherited GIT_* goes first: a git hook or `git rebase -x` exports GIT_DIR / GIT_INDEX_FILE, and the fixture's
+# git calls would then land in the developer's repository (review 2026-11-06, test_phase1_base_fetch.py).
+ENV = dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+           GIT_OPTIONAL_LOCKS="0", PYTHONDONTWRITEBYTECODE="1", GIT_CONFIG_NOSYSTEM="1",
            GIT_CONFIG_GLOBAL=os.devnull, GIT_AUTHOR_NAME="R0 Fixture", GIT_AUTHOR_EMAIL="fixture@example.invalid",
            GIT_COMMITTER_NAME="R0 Fixture", GIT_COMMITTER_EMAIL="fixture@example.invalid",
            GIT_AUTHOR_DATE="2026-10-17T12:00:00Z", GIT_COMMITTER_DATE="2026-10-17T12:00:00Z")
@@ -1402,19 +1405,20 @@ class CTFIX05_C1_GovernanceScope(CTFIX04):
     def test_scope(self):
         self.assertExit(self.gate_allowed("source.txt"), 0)
         self.assertExit(self.gate_allowed("docs/**"), 0)
-        for allowed in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "**", "{services,docs}/**", "docs/../services/x.cs"):
+        for allowed in ("services/Diten.HcmService/**", "frontend/x.js", "gateway", "**", "{services,docs}/**", "docs/records/../../services/x.cs"):
             with self.subTest(allowed=allowed):
                 self.assertExit(self.gate_allowed(allowed), 1, "yönetişim işinin izinli yolu")
 
     def test_a_symbolic_link_on_the_way(self):
         (FX.root / "services").mkdir(exist_ok=True)
         (FX.root / "services/a.cs").write_text("x\n", encoding="utf-8")
-        (FX.root / "docs").mkdir(exist_ok=True)
-        os.symlink("../services", FX.root / "docs/alias")
-        FX.git("add", "--", "docs/alias")                 # Fixture.commit lists files; a directory link is staged by name
-        FX.commit("CT-FIX-05: a symbolic link docs/alias -> ../services")
-        self.assertEqual(FX.git("ls-tree", "HEAD", "--", "docs/alias").split()[0], "120000")
-        for allowed in ("docs/alias/New.cs", "docs/alias/sub/New.cs", "docs/alias/**", "docs/**"):
+        # The link sits under docs/records/ so DocsPathGuardTests reads these fixture paths as a known folder.
+        (FX.root / "docs/records").mkdir(parents=True, exist_ok=True)
+        os.symlink("../../services", FX.root / "docs/records/alias")
+        FX.git("add", "--", "docs/records/alias")         # Fixture.commit lists files; a directory link is staged by name
+        FX.commit("CT-FIX-05: a symbolic link docs/records/alias -> ../../services")
+        self.assertEqual(FX.git("ls-tree", "HEAD", "--", "docs/records/alias").split()[0], "120000")
+        for allowed in ("docs/records/alias/New.cs", "docs/records/alias/sub/New.cs", "docs/records/alias/**", "docs/**"):
             with self.subTest(allowed=allowed):
                 self.assertExit(self.gate_allowed(allowed), 1, "sembolik bağ")
 

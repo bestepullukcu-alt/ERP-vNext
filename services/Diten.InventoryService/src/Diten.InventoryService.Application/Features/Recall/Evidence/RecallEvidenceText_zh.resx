@@ -212,4 +212,14 @@
   <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>审核</value></data>
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>放行</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>编写</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>无法解析</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>未找到</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>无法解析（{0}）</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>未找到（{0}）</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0}（旧记录）</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0}（无 CRM 标识）</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>客户名称</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>来自 CRM，导出时</value></data>
 </root>

@@ -1,4 +1,5 @@
 using Diten.InventoryService.Application.Common.Models;
+using Diten.InventoryService.Application.Features.Recall.Ports;
 using Diten.InventoryService.Domain.Recall.Entities;
 using Diten.InventoryService.Domain.Recall.Enums;
 using Diten.InventoryService.Domain.Recall.Repositories;
@@ -15,11 +16,13 @@ public sealed class RecallReads
 {
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public RecallReads(IRecallRepository repository, RecallSupport support)
+    public RecallReads(IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<RecallCaseDetailDto> DetailAsync(RecallCase c, CancellationToken ct)
@@ -45,18 +48,34 @@ public sealed class RecallReads
             ? Response<RecallCaseDetailDto>.Success(await DetailAsync(c, ct))
             : RecallSupport.CaseNotFound<RecallCaseDetailDto>();
 
-    /// <summary>R2: the scope with the snapshot that governs it (the approved one once approved, else the submitted one).</summary>
-    public async Task<RecallScopeViewDto> ScopeAsync(RecallCase c, CancellationToken ct)
+    /// <summary>R2: the scope with the snapshot that governs it (the approved one once approved, else the submitted one). FU01: customer page 1.</summary>
+    public Task<RecallScopeViewDto> ScopeAsync(RecallCase c, CancellationToken ct) => ScopeAsync(c, 1, ct);
+
+    /// <summary>MOD-0177-FU01 (§8.6): the scope with the CRM names of the requested customer page (Page mode — never fails the read).</summary>
+    public async Task<RecallScopeViewDto> ScopeAsync(RecallCase c, int customerPage, CancellationToken ct)
     {
         var snapshotId = c.ApprovedSnapshotId ?? c.SubmittedSnapshotId;
         var snapshot = snapshotId is { } id ? await _repository.FindSnapshotAsync(id, ct) : null;
-        return RecallMapping.Scope(c, await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct)) with { Snapshot = Trace.RecallTraceService.SnapshotRef(snapshot) };
+        var items = await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct);
+        var facts = RecallCustomerDisplay.Facts(items);
+        var names = await _customers.PageAsync(facts.Values, customerPage, ct);
+        return RecallMapping.Scope(c, items, facts, names) with { Snapshot = Trace.RecallTraceService.SnapshotRef(snapshot) };
     }
 
-    public async Task<Response<RecallScopeViewDto>> CurrentScopeAsync(Guid caseId, CancellationToken ct)
+    public Task<Response<RecallScopeViewDto>> CurrentScopeAsync(Guid caseId, CancellationToken ct) => CurrentScopeAsync(caseId, 1, ct);
+
+    public async Task<Response<RecallScopeViewDto>> CurrentScopeAsync(Guid caseId, int customerPage, CancellationToken ct)
         => await _repository.FindCaseAsync(caseId, ct) is { } c
-            ? Response<RecallScopeViewDto>.Success(await ScopeAsync(c, ct))
+            ? Response<RecallScopeViewDto>.Success(await ScopeAsync(c, customerPage, ct))
             : RecallSupport.CaseNotFound<RecallScopeViewDto>();
+
+    /// <summary>
+    /// MOD-0177-FU01 (§8.8) — the sales movements behind a Shipment item: the same lot and <c>DocumentId ?? "TXN-" + TransactionId</c> = the item's
+    /// <c>SourceDocumentId</c> (the getCaseCustomers rule, moved here unchanged — the read order stays the ledger's).
+    /// </summary>
+    public static IReadOnlyList<TraceSalesIssue> MovementsBehind(RecallScopeItem item, IReadOnlyList<TraceSalesIssue> movements)
+        => movements.Where(m => string.Equals(m.LotId, item.LotId, StringComparison.Ordinal)
+                                && string.Equals(m.DocumentId ?? "TXN-" + m.TransactionId, item.SourceDocumentId, StringComparison.Ordinal)).ToList();
 
     /// <summary>The declarations that count: those no later declaration supersedes.</summary>
     public static IReadOnlyList<RecallConsumptionDeclaration> Effective(IReadOnlyList<RecallConsumptionDeclaration> all)
@@ -149,7 +168,7 @@ public static class RecallMapping
             UserAt(c.ScopeApprovedBy, c.ScopeApprovedAtUtc),
             c.ScopeApprovalSignatureId,
             RecallSupport.Wire(c.EffectivenessStartedAtUtc),
-            c.Effectiveness is { } e ? Effectiveness(e) : null,
+            c.Effectiveness is { } e ? Effectiveness(e, Customers(RecallCustomerDisplay.Facts(items), RecallCustomerDisplay.Resolution.None)) : null,
             UserAt(c.EffectivenessCompletedBy, c.EffectivenessCompletedAtUtc),
             c.EffectivenessSignatureId,
             c.Status == RecallCaseStatus.Closed && c.ClosedBy is { } closer
@@ -163,6 +182,11 @@ public static class RecallMapping
     }
 
     public static RecallScopeViewDto Scope(RecallCase c, IReadOnlyList<RecallScopeItem> items)
+        => Scope(c, items, RecallCustomerDisplay.Facts(items), RecallCustomerDisplay.Resolution.None);
+
+    /// <summary>MOD-0177-FU01: the scope view with each Shipment item's customer display (its own source and warning, the page's names).</summary>
+    public static RecallScopeViewDto Scope(RecallCase c, IReadOnlyList<RecallScopeItem> items, IReadOnlyDictionary<string, RecallCustomerDisplay.KeyFacts> facts,
+        RecallCustomerDisplay.Resolution names)
     {
         var byKey = items.ToDictionary(i => i.NodeKey, StringComparer.Ordinal);
         return new RecallScopeViewDto(
@@ -171,9 +195,23 @@ public static class RecallMapping
             RecallCaseRules.CanEditScope(c.Status),
             RecallScopeRules.Excluded(items).Count,
             RecallScopeRules.Sha256(items, c.ScopeRevision),
-            items.OrderBy(i => i.NodeKey, StringComparer.Ordinal).Select(i => Item(i, RecallScopeRules.EffectivelyIncluded(i, byKey))).ToList(),
+            items.OrderBy(i => i.NodeKey, StringComparer.Ordinal)
+                .Select(i => Item(i, RecallScopeRules.EffectivelyIncluded(i, byKey)) with { Customer = ItemCustomer(i, names) }).ToList(),
             c.Version);
     }
+
+    /// <summary>A Shipment item's customer: the item's OWN source and warning (§8.7 ScopeItem), the key's resolution.</summary>
+    private static RecallCustomerDisplayDto? ItemCustomer(RecallScopeItem i, RecallCustomerDisplay.Resolution names)
+    {
+        if (i.Kind != RecallScopeItemKind.Shipment || i.CustomerRef is null) return null;
+        var own = new RecallCustomerDisplay.KeyFacts(i.CustomerRef, i.CustomerRefSource,
+            i.CustomerRefSource == RecallCustomerRefSource.Crm && i.NoCrmWarning);
+        return RecallCustomerDisplay.Display(own, names, i.CustomerRef); // a row without a CRM id shows its own stored text
+    }
+
+    /// <summary>MOD-0177-FU01: the customer display of a key in a table that is not the customer list (effectiveness, return links).</summary>
+    public static Func<string?, RecallCustomerDisplayDto?> Customers(IReadOnlyDictionary<string, RecallCustomerDisplay.KeyFacts> facts, RecallCustomerDisplay.Resolution names)
+        => key => key is null ? null : RecallCustomerDisplay.Display(RecallCustomerDisplay.Of(facts, key), names, key);
 
     public static RecallScopeItemDto Item(RecallScopeItem i, bool effective) => new(
         i.NodeKey,
@@ -195,8 +233,9 @@ public static class RecallMapping
         i.Origin.ToString(),
         i.IsNew);
 
-    public static RecallEffectivenessDto Effectiveness(RecallEffectivenessResult e) => new(
-        e.Class, e.TargetPercent, e.Rows.Select(Row).ToList(), e.Totals.Select(Row).ToList(), RecallSupport.Wire(e.ComputedAtUtc));
+    public static RecallEffectivenessDto Effectiveness(RecallEffectivenessResult e, Func<string?, RecallCustomerDisplayDto?>? customer = null) => new(
+        e.Class, e.TargetPercent, e.Rows.Select(r => Row(r) with { Customer = customer?.Invoke(r.CustomerRef) }).ToList(), e.Totals.Select(Row).ToList(),
+        RecallSupport.Wire(e.ComputedAtUtc));
 
     public static RecallTimelineEntryDto Timeline(RecallCaseEvent e, long seq) => new(
         seq,

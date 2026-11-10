@@ -7,6 +7,7 @@ using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Traceability.Rules;
+using Diten.InventoryService.Domain.Quarantine.Rules;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
@@ -109,7 +110,7 @@ public sealed class GetLotQualityStatusHandler : IRequestHandler<GetLotQualitySt
     private async Task<(List<QuarantineHold> Holds, List<BlockedStock> Blocked, QuarantineDecision? Release)> SnapshotAsync(string lotKey, CancellationToken ct)
     {
         var holds = (await _repository.ListHoldsAsync(new HoldQuery(null, null, null, null, null, null, lotKey, null, 1, OpenRecordsCap), ct)).Items
-            .Where(h => h.Status != HoldStatus.Decided)
+            .Where(h => QuarantineRecordStates.IsOpen(h.Status))
             .ToList();
         var blocked = (await _repository.ListBlockedAsync(new BlockedQuery(null, null, false, null, BlockedStatus.Open, null, 1, OpenRecordsCap), ct)).Items
             .Where(b => string.Equals(b.LotId, lotKey, StringComparison.Ordinal))

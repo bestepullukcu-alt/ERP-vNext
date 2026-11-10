@@ -4,20 +4,20 @@ slug: finance-treasury-intake
 name: Finance & Treasury — kaynak projeden doğrulayarak alma (Treasury intake)
 type: Delivery Capability Pack
 standard: CAP-001
-status: draft
-status_note: "draft — yalnız planlama; production implementation tetiklemez (CAP-001 §5). DCP numarası DCP-011 (Platform sahibi Beste atadı, Y-4/2; dosya adı UNASSIGNED-finance-treasury-intake.md'den 2026-10-27'de değişti). Onaydan önce bağımsız inceleme (CT-APR-02, SOP §20.4) ve sürüme bağlı onay (CT-APR-01) gerekir."
+status: approved
+status_note: "approved — Platform sahibi (Beste) 2026-10-29 kabul etti (kanıt `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`; Y-22 / D88/5). Revizyon D129 (2026-11-04): MOD-0217 aday → üye (TRM-S4), kod alanı yalnız MOD-0289 için açıldı; bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir, onay bu revizyonun PR'ının Beste tarafından birleştirilmesidir. DCP onayı üye pack'lerin ready-for-dev'i değildir (CAP-001 §7: kod için iki koşul)."
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-10-28
+updated: 2026-11-04
 authoring_branch: chore/ct/treasury-intake-ct-01
-current_revision_branch: chore/ct/treasury-intake-ct-04
+current_revision_branch: docs/ct/treasury-dcp011-mod0217-01
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
-canonical_modules: [MOD-0126, MOD-0269, MOD-0119, MOD-0120, MOD-0124, MOD-0289]
-candidate_modules: [MOD-0217]
+canonical_modules: [MOD-0126, MOD-0269, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217]
+candidate_modules: []
 parked_modules: [MOD-0057]
-runtime_code_allowed: false
-runtime_code_scope: "yok — üye pack'lerin hepsi draft; hiçbiri ready-for-dev değil. Kod alma izni MOD-0126/0119/0120/0124 için (D27/5) ve MOD-0289 için (D45/3) verildi, ama kod ancak pack ready-for-dev + DCP approved olunca ve dilim sırasıyla yazılır."
+runtime_code_allowed: true
+runtime_code_scope: "**yürürlük:** bu alan, bu DCP sürümünün CT-APR-01 satırı main'e girince yürürlüğe girer; o ana kadar önceki onaylı sürüm (`4900448d…`, `runtime_code_allowed: false`) geçerlidir ve kod yoktur. Kapsam: yalnız MOD-0289 (TRM-S3; ready-for-dev, D127) — kod dilim sırasıyla (DL-1 → DL-4), paketin o sürüme bağlı CT-APR-01 satırı main'deyken ve her dilimin WP prompt'u kapıdan geçince yazılır (D129/2). Diğer üyeler (MOD-0126, 0119, 0120, 0124, 0217) draft; kod yetkisi vermez — her biri ready-for-dev olunca bu alan yeni bir DCP revizyonuyla genişletilir. Kod alma izni D27/5 ve D45/3."
 inputs:
   - "docs/records/decisions/2026-10/treasury-intake-owner-decisions-01.md (D0–D8)"
   - "docs/records/decisions/2026-10/treasury-intake-owner-decisions-02.md (D9–D35)"
@@ -31,8 +31,12 @@ inputs:
   - "depo dışı: /Users/natig/Projects/treasury-transfer-handoff/ (11 producer paketi + kaynak kanıtları; SHA256SUMS doğrulandı)"
 ---
 
-# Finance & Treasury — Treasury intake (Delivery Capability Pack, TASLAK)
+# Finance & Treasury — Treasury intake (Delivery Capability Pack)
 
+> **Revizyon (2026-10-28, sahip denetimi f2aacc517 KOŞULLU — D72 hizalaması):** üye AC aralıkları güncel pack'lerden: MOD-0119
+> AC-1…44 (yeni AC-44), MOD-0289 AC-1…61 (yeni AC-61); MOD-0140 satırı D72/5'e hizalandı (liste = silinmemiş Active ilişki =
+> `eligibleForTransactions = true`; ek süzgeç yok). Diğer üyelerin aralığı aynı.
+>
 > **Güncelleme (2026-10-25, gap 19/1):** bu DCP sahip kararları D20–D29 ve güncel pack'lerle hizalandı. Üyelerin hepsinin
 > draft pack'i ya da sözleşmesi var; hiçbiri `ready-for-dev` değil.
 >
@@ -59,15 +63,28 @@ inputs:
 > MOD-0120 AC-1…44, MOD-0124 AC-1…38, MOD-0289 AC-1…60, aday MOD-0217 AC-1…65 (yeni ölçütler: kayıt kodu portu ve sabotajı —
 > MOD-0126 AC-45, MOD-0119 AC-43, MOD-0120 AC-44, MOD-0124 AC-38, MOD-0289 AC-60; MOD-0217'de AC-20 genişletildi). Üyelik ve
 > dilimler değişmedi. `status: draft`.
+>
+> **Revizyon (2026-10-28, üye pack'ler ready-for-dev 1. tur: Y-12, D62–D65):** yalnız AC aralığı değişti — MOD-0126 AC-1…46
+> (yeni AC-46: `PartiallyApproved` v1'de kapalı, KARAR D62/2); diğer üyelerin aralığı aynı (MOD-0119 AC-1…43, MOD-0120
+> AC-1…44, MOD-0124 AC-1…38, MOD-0289 AC-1…60, aday MOD-0217 AC-1…65). Üye pack'lere MOD-0023 şablon kodları (Y-12), D64
+> (muafiyetin Auth tarafı MOD-0018 Treasury Auth eki DL-5) ve Auth paket metni dosyası (Y-16) işlendi — ayrıntı üye pack'lerin
+> revizyon notlarında. Üyelik ve dilimler değişmedi. `status: draft`.
+
+>
+> **Revizyon (2026-11-04, KARAR D129):** MOD-0217 aday modülden **üyeye** alındı (TRM-S4; künyede `canonical_modules`,
+> `candidate_modules: []`). Kod alanı yalnız MOD-0289 için açıldı (`runtime_code_allowed: true`; MOD-0289 `ready-for-dev`,
+> D127, #368); bu alan bu DCP sürümünün CT-APR-01 satırı main'e girince yürürlüğe girer. Teslim sırası, diğer üyeler, kapsam dışılar ve AC aralıkları değişmedi. MOD-0217 üyeliği paketin
+> `ready-for-dev`'i değildir: paket draft kalır; kendi açıkları (tam inceleme, onay, `AGR` §3 satırı, aday modu,
+> MOD-0262-FU01) paket kapısındadır. Bu sürüm için yeni CT-APR-02 + CT-APR-01 gerekir.
 
 ## 1. Identity and status
 
-- **Kimlik:** DCP-011 (numara 2026-10-27'de atandı; önceki dosya adı `UNASSIGNED-finance-treasury-intake.md`) · **durum:** `draft` · **standart:** CAP-001.
+- **Kimlik:** DCP-011 (numara 2026-10-27'de atandı; önceki dosya adı `UNASSIGNED-finance-treasury-intake.md`) · **durum:** `approved` (Platform sahibi kabulü 2026-10-29 — `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`; CT-APR-02 bu sürüm için ve CT-APR-01 satırı bu değişiklikle birlikte; merge ile yürürlükte) · **standart:** CAP-001.
 - **Neden DCP (CAP-001 §2):** modüller bir bağımlılık sırasıyla teslim edilmek zorunda; domain'ler arası kararlar var
   (finance-treasury, master-data-management, platform-shared-services, procurement, commercial-suite); birden çok iş
   modülü ortak temele dayanıyor (servis ortak yapı taşları, MOD-0269 sözleşmesi, MOD-0023 §17, CentralAudit).
 - **Bu belge ne değildir:** module pack değildir; üye modüllerin kendi pack'lerinin yerine geçmez; kod, port, servis
-  iskeleti ya da kod alma izni vermez (CAP-001 §7).
+  iskeleti ya da kod alma izni vermez (CAP-001 §7): kod, DCP `approved` ve sıradaki üyenin pack'i `ready-for-dev` olunca, künyedeki `runtime_code_scope` sınırında başlar.
 
 ## 2. Business outcome
 
@@ -97,13 +114,13 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 
 | modül | Blueprint (8.8) | Recovery durumu (kayıt · pack · kod) | rol |
 |---|---|---|---|
-| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…45; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54; AC-44 SoD ayar kaydı, D56/4; AC-45 kayıt kodu portu, D59/1) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
+| MOD-0126 Payments & Approvals | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…46; eski AC-6a → AC-42; AC-43 muafiyet ataması kullanım anı denetimi + parti bağı, D49/4 + D54; AC-44 SoD ayar kaydı, D56/4; AC-45 kayıt kodu portu, D59/1; AC-46 `PartiallyApproved` v1'de kapalı, D62/2) · 0 | üye — ilk (TRM-S1); kod alma izni D27/5 |
 | MOD-0269 Banks/SWIFT/Payments Gateway [External Provider] | W-1, External Provider | kayıt yok (dış sağlayıcı) · **pack yok, sözleşme `bank-dispatch.md` FROZEN 0.1.0** (D27/7) · 0 | üye — yalnız arayüz sözleşmesi + kapalı bağdaştırıcı; **MOD-0126 pack kapısından teslim** (§15) |
-| MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…43; AC-42 istisna ayrılığı — açan çözemez / yeniden açamaz, D50/3; AC-43 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
+| MOD-0119 Accounts Payable (AP) | W-3, Financial Management | `reserved / planned` · draft (AC-1…44; AC-42 istisna ayrılığı — açan çözemez / yeniden açamaz, D50/3; AC-43 kayıt kodu portu, D59/1; AC-44 kanonik tedarikçi kodu, `SupplierMasterId`, ad `getSupplier` ile, D72/1, D72/4) · 0 | üye (TRM-S2); kod alma izni D27/5 |
 | MOD-0120 Accounts Receivable (AR) | W-3, Financial Management | `reserved / planned` · draft (AC-1…44; AC-44 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
 | MOD-0124 Cash Positioning | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…38; AC-38 kayıt kodu portu, D59/1) · 0 | üye (TRM-S2); kod alma izni D27/5 |
-| MOD-0289 Bank Master & Bank Account Registry | W-3, Treasury & Cash | `reserved / planned` · draft (AC-1…60, master-data-management; AC-59 banka listesi araması — kaçırılmış, harf duyarsız, uzunluk sınırlı, D51/4; AC-60 kayıt kodu portu, D59/1) · 0 | üye (TRM-S3) — MDM'de (D20/1). Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
-| MOD-0217 Contract Lifecycle Management (CLM) | Legal Governance | `reserved / planned` · draft (AC-1…65) · 0 | aday modül; taslak pack var (`execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md`); onaylı DCP üyesi değil — yer MDM (D19/1, D38) |
+| MOD-0289 Bank Master & Bank Account Registry | W-3, Treasury & Cash | `reserved / planned` · **ready-for-dev** (D127, #368; AC-1…61, master-data-management; AC-59 banka listesi araması — kaçırılmış, harf duyarsız, uzunluk sınırlı, D51/4; AC-61 çok sayfalı `/eligible`, ek süzgeç yok, D72; AC-60 kayıt kodu portu, D59/1) · 0 | üye (TRM-S3) — MDM'de (D20/1). Kod alma izni D45/3 ile verildi; DCP onaylı ve paket `ready-for-dev` (D127) — kod dilim sırasıyla, künyedeki `runtime_code_scope` sınırında; bu DCP sürümünün onay satırı main'e girene kadar kod yok (D129/2). |
+| MOD-0217 Contract Lifecycle Management (CLM) | Legal Governance | `reserved / planned` · draft (AC-1…65) · 0 | **üye (TRM-S4; KARAR D129/1)** — yer MDM (D19/1, D38); pack `execution/domains/master-data-management/module-packs/MOD-0217-contract-lifecycle-management-clm.md` draft, kod yetkisi vermez |
 | MOD-0057 Semantic Tagging & Taxonomy Management | W-4 | 0 · 0 · 0 | **park** (D19/2) — MOD-0053/0056 gelince yeniden açılır |
 
 **Üye olmayan, değişiklik ya da teyit alacak modüller** (XMC-001; D9 izniyle yalnız ekleme):
@@ -113,7 +130,7 @@ MOD-0146; tedarikçi, müşteri ve LE ana kayıtları (kendi domain'leri).
 | MOD-0220 Legal Entity (MDM) | §22 `approvalStatus` eki, LEGAL-ENTITY-LOOKUP 1.1.0 (TRM-14); LE↔LE ilişki modeli **gerekmez** (TRM-07) | belge PASS; §22 `proposed` |
 | MOD-0023 Workflow (platform-shared-services) | §17: silmeme politikası + guard, okuma alanları, fingerprint düzeltmesi, yarış testleri (TRM-15) | belge PASS; kod MOD-0023 sahibinin WP'siyle (D25/1) |
 | MOD-0143 Invoice Match (procurement) | `invoice-match` 1.1.1 "net" açıklaması + `lineAmount` kontrolü (D26/3) | procurement tarafında |
-| MOD-0140 Supplier (procurement) | `supplier.openapi.yaml` 1.3.0 (aktif şirket ilişkisi; MOD-0289 DL-3 listesi `GET /api/suppliers/eligible` — Active ilişkili bütün tedarikçiler, `eligibleForTransactions` süzgeci yok, KARAR D58) — bugün 1.2.0 | MVP-2 main'e girince; uç MOD-0140 DL-3'te (o zamana dek sahte istemci, D58) |
+| MOD-0140 Supplier (procurement) | `supplier.openapi.yaml` 1.3.0 (aktif şirket ilişkisi; MOD-0289 DL-3 listesi `GET /api/suppliers/eligible` — silinmemiş ve Active şirket ilişkisi = `eligibleForTransactions = true`; ek `onboardingStatus` / `purchasingEnabled` süzgeci yok, KARAR D58 + D72/5; kullanıcı token'ıyla, MOD-0140 S-4) — bugün 1.2.0 | MVP-2 main'e girince; uç MOD-0140 DL-3'te (o zamana dek sahte istemci, D58) |
 | MOD-0149 Customer 360 (commercial-suite) | müşteri doğrulama + dış referans eki (AR O-3, D29/1 sahip payı); kayıt / pack durum çelişkisi (D27/12) | sahibine not |
 | MOD-0048 Reference Data (platform-shared-services) | para birimi küsurat hanesi; `payment-method` kümesi (MOD-0126 O-13, D28) | üretici bağımlılığı, açık |
 
@@ -163,17 +180,17 @@ MOD-0126 → MOD-0289 bağı opak referanstır; MOD-0289 gelene kadar Treasury p
    taşları (DL-1) → alma ve uyarlama → Recovery testleri (dilim kabul kapısı). DL-2 MOD-0023 §17 WP'si main'de olunca.
 6. **Dilim TRM-S2:** MOD-0119, MOD-0120, MOD-0124 (MOD-0126 DL-1'den sonra; birbirinden bağımsız, paralel).
 7. **Dilim TRM-S3:** MOD-0289 (MOD-0140 1.3.0'dan sonra; O-6 güvenlik onayı D33/1 ile verildi — gerçek Mongo şifreleme
-   testleri ve AC-50 DL-2 dilim kabul kapısında). Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı.
-8. **Dilim TRM-S4:** MOD-0217 (koşullar kapanınca). MOD-0057 park.
+   testleri ve AC-50 DL-2 dilim kabul kapısında). Kod alma izni D45/3 ile verildi; DCP onaylı ve paket `ready-for-dev` (D127) — kod dilim sırasıyla, künyedeki `runtime_code_scope` sınırında; bu DCP sürümünün onay satırı main'e girene kadar kod yok (D129/2).
+8. **Dilim TRM-S4:** MOD-0217 — üye (D129/1); pack `ready-for-dev` olunca ve DCP kod alanı genişletilince. MOD-0057 park.
 
 ## 8.1 Delivery slices
 
 | Slice | Kapsam | Not |
 |---|---|---|
-| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…45; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
-| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | draft pack'ler (MOD-0119 AC-1…43 — istisna ayrılığı AC-42; MOD-0120 AC-1…44; MOD-0124 AC-1…38); kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
-| TRM-S3 | MOD-0289 | MDM (D20/1); draft pack (AC-1…60; banka listesi araması AC-59, D51/4); MOD-0140 1.3.0; O-6 güvenlik onayı verildi (D33/1), gerçek Mongo şifreleme testleri DL-2 dilim kabul kapısında; Kod alma izni D45/3 ile verildi; uygulama DCP onayı, modülün `ready-for-dev` olması, CT-APR-01 ve teslim sırası gelene kadar kapalı. |
-| TRM-S4 | MOD-0217 | **planlı, bu DCP onayıyla dağıtılamaz** (§11: aday kapsam dışı) — yer MDM (D19/1, D38), taslak pack var; kapsama girmesi DCP değişikliği ister |
+| TRM-S1 | MOD-0126, MOD-0269 | ilk dikey dilim; MOD-0126 draft pack (AC-1…46; muafiyetli onay AC-43 — atama hedef partiye bağlı, D54; `PartiallyApproved` v1'de kapalı AC-46, D62/2); MOD-0269 yalnız FROZEN sözleşme ve kapalı bağdaştırıcı |
+| TRM-S2 | MOD-0119, MOD-0120, MOD-0124 | draft pack'ler (MOD-0119 AC-1…44 — istisna ayrılığı AC-42, kanonik tedarikçi kodu AC-44; MOD-0120 AC-1…44; MOD-0124 AC-1…38); kapı kararları verildi (D27/1–4); MOD-0126 DL-1'e bağlı |
+| TRM-S3 | MOD-0289 | MDM (D20/1); `ready-for-dev` pack (D127; AC-1…61; banka listesi araması AC-59, D51/4; çok sayfalı tedarikçi listesi AC-61, D72); MOD-0140 1.3.0; O-6 güvenlik onayı verildi (D33/1), gerçek Mongo şifreleme testleri DL-2 dilim kabul kapısında; Kod alma izni D45/3 ile verildi; DCP onaylı ve paket `ready-for-dev` (D127) — kod dilim sırasıyla, künyedeki `runtime_code_scope` sınırında; bu DCP sürümünün onay satırı main'e girene kadar kod yok (D129/2). |
+| TRM-S4 | MOD-0217 | **planlı — üye (D129/1)**; yer MDM (D19/1, D38); pack draft: kod pack `ready-for-dev` + CT-APR-01 satırı + DCP `runtime_code_scope` genişletmesiyle |
 
 ## 9. Prerequisites
 
@@ -279,7 +296,8 @@ MOD-0057 (D19), bankacılık sahibi (D27/8), kod alma izni dört Treasury modül
 bağdaştırıcısı (`IBankDispatchPort` / `NotConfiguredBankDispatchAdapter`, MOD-0126 DL-3) ve FROZEN BANK-DISPATCH 0.1.0
 sözleşmesiyle, MOD-0126 pack kapısından.
 
-**Açık:** DCP onayı; ortak sahipli kararlarda diğer sahiplerin teyidi (D29/1); CT-APR-02 / CT-APR-01.
+**Açık:** ortak sahipli kararlarda diğer sahiplerin teyidi (D29/1). **DCP onayı:** Platform sahibi kabul etti (2026-10-29, `docs/records/decisions/2026-10/dcp011-approval-evidence-01.md`);
+CT-APR-02 (bu sürüm) ve CT-APR-01 satırı (onaylayan bestepullukcu-alt) bu değişiklikle birlikte; üye pack'lerin CT-APR-01'i ayrıdır.
 
 ## 19. Future follow-ups
 
@@ -289,6 +307,6 @@ TP-001'in `.antigravity/rules/`'a alınması.
 
 ## 20. Audit and reconciliation notes
 
-Taslak; implementasyon başlamadı. İlk ölçüm tabanı origin/main 96bedc893; ilk yazım dalı `chore/ct/treasury-intake-ct-01`
+Onaylı DCP (2026-10-29); implementasyon başlamadı. İlk ölçüm tabanı origin/main 96bedc893; ilk yazım dalı `chore/ct/treasury-intake-ct-01`
 (2026-10-25); güncel revizyon dalı `chore/ct/treasury-intake-ct-04` (2026-10-27, CT04a — sahip denetimi). Kaynak bütünlüğü, içerik incelemesi ve gap listeleri:
 `docs/records/audits/2026-10/treasury-intake-handover-review-01/`.

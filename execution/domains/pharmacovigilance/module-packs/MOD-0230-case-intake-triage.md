@@ -83,6 +83,133 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > (`gerekli kanıt`), or scope changed; AC count stays 33. A version-bound approval row for this version is still
 > required.
 >
+> **Revision 13 (2026-10-28, owner "secenek-servis").** Authority: `docs/records/decisions/2026-10/pvg-mod0230-secenek-kaynagi-01.md`
+> (SECENEK-01, S-1 ... S-5; scope S-4 (a) ... (e)), `docs/records/decisions/2026-10/pvg-mod0230-ceviri-dl7b-01.md` (CEVIRI-01,
+> C-3), `docs/records/decisions/2026-10/pvg-mod0230-dalga2-kararlari-01.md` K1 (the option sets stay in one place; screen
+> copies are forbidden), the DL7A prompt review `docs/records/reviews/MOD-0230/prompts/WP-0230-DL7A-v1.2-inceleme-01.md` F-4,
+> and the wave 5 DoR `docs/records/audits/2026-10/pvg-wave5-dor-01/DOR.md` ("CT okumaları" 1). Measured against the repo on
+> 2026-10-28. Five changes:
+> (1) New criterion AC-34 (DL-4, work package WP-0230-DL4D, after WP-0230-DL4B): a read-only service endpoint
+> `GET /api/v1/pv-case-intake-triage/options` returns the report type codes, the product role codes, and the "unknown"
+> country value, sourced only from `PvgIntakeOptionSets`, behind the DL4B JWT and tenant context check, with no tenant data
+> and in stable ordinal order. It is reached through the existing Gateway item route `GET, PUT /api/pv-case-intake-triage/{intakeDraftId}`
+> (intake draft ids are `pvg-draft-<guid>`, `InMemoryPvgIntakeDraftRepository.cs` line 125, so the fixed segment `options`
+> never equals a draft id); `ocelot.json` does not change and AC-16 ("exactly the four MOD-0230 route entries") stands as
+> written. A new criterion, not an extension of AC-31, because AC-31 belongs to another DL-4 work package with
+> DL-2 preconditions (AC-21 ... AC-29) and its acceptance text must not grow under that work package. Aligned in "Gateway / API
+> Routing Decision", "Option-Set Ownership", "Authorization Convention", "Test Expectations", DL-4, and DL-7.
+> (2) AC-32 (S-2, S-5): the report type, product role, and "unknown" country options reach the screen only from that endpoint
+> through the same-origin MVC proxy, under the read key `pvg.case-intake-triage.read`; views and JS hold no code list; the
+> displayed name is the page resx value for the code, or the code itself when no value exists. The four triage validity
+> criteria leave AC-32 and join AC-28's work after QPPV confirms AL-5 (AC-28 now names their API and screen tests). The
+> company-recipient prefill and the picker tests stay, after the owner read contracts.
+> (3) AC-14 (F-4, DoR CT reading 1): the known deviation is stated by OD-PVG-10's categories (bulk delete, export including
+> the BL-452 server-export item, import, select-all, clear-selection, and the wiring tied to them), not by the count "13";
+> none of the other five items may be printed. Aligned in OD-PVG-10, "Frontend File Contract", and DL-7.
+> (4) AC-20 (S-4 (d)): the C# test layer of the proxy mapping (`frontend/Diten.Web.Tests`, test W7
+> `List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size`) is written out; that one test file is added to
+> "Repo Scope" and to DL-7's paths (the DL7A DoR had read it as outside the letter of DL-7's paths).
+> (5) AC-15 (CEVIRI-01 C-3): besides the same key set, no value in the six non-English files equals the `en` value
+> except named language-independent exceptions (today `ChannelPortal` es "Portal", `TriageTitle` fr "Triage").
+> Changed acceptance lines: AC-14, AC-15, AC-20, AC-28, AC-32; new AC-34; AC count 34. No criterion is narrowed: every
+> measurement of revision 12 stays or is restated by category (AC-14) or by the stronger C# layer (AC-20). The `gerekli kanıt`
+> column is unchanged: WP-0230-DL4D takes DL-4's E4 (the slice table holds slice rows `| DL-n |` only). Records bound to
+> revision 12 (DL7A VERIFIED, wave 3-4 records) are not changed (K4); the WP-0230-DL8 acceptance is re-bound to this
+> version by a new smoke run (SECENEK-01 regression assessment). A version-bound approval row for this version is still
+> required.
+> Correction within revision 13 (2026-10-29, before approval and dispatch; no new revision number): AC-32 corrected on
+> review 13 (`docs/records/reviews/MOD-0230/2026-10-29-2d3f1177.md`) F-1 and F-2.
+>
+> **Revision 14 (2026-10-29, owner D-3 "Mongo'yu aç").** Authority: `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md`
+> (DEPO-01, KD-1 ... KD-6), `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-02.md` (DEPO-02: the owner alone approves
+> the DCP-004 change), and `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-03.md` (DEPO-03: S-1 ... S-12 of the
+> revision draft). Applied after WP-0230-DL4D and WP-0230-DL7B were dispatched (DEPO-01 regression assessment). Measured
+> against the repo on <date of application>. Seven changes:
+> (1) MOD-0230 may use one Mongo store under the build/test gate only (local / dev / CI): one collection, tenant-first
+> indexes, and the startup schema bootstrap; never on a production-like host. DCP-004 (header note, §8.1, §10, §11)
+> and domain-config carry the same exception. MOD-0231, MOD-0232, and MOD-0234 are unchanged (KD-2).
+> (2) New slice DL-10 and new section "Build/Test Persistence (Mongo Store)": a separate `Diten.PvgService.Persistence`
+> project (S-2); `TenantId` stored as the token's text (S-3); `CreatedBy` / `UpdatedBy` from the validated subject
+> (S-4); every write in a Mongo transaction with a startup transaction probe (S-5); a third catalog index, tenant +
+> received descending + draft id, and index direction in the catalog record (S-6); keys `Pvg:Persistence:Store`,
+> `Mongo:ConnectionString`, `Mongo:DatabaseName` (S-7); the in-memory store stays the default (S-8).
+> (3) AC-13 is rewritten - from "no Mongo driver" to named guards that keep Mongo in the persistence project, every
+> index tenant-first, the store refused on a production-like host and never selected by committed configuration, soft
+> delete, no delete member, and no unnamed hosted service - and moves from DL-2 to DL-10; new AC-35 measures the store
+> itself (contract, tenant isolation, durability, actor fields, transactions, start refusal, readiness, test harness).
+> AC count 35.
+> (4) DL-5 gains one prerequisite, DL-10's acceptance (KD-3; since revision 15 its sequence meaning is WP-0230-DL10-R1 `INTEGRATED`, KK-7); AC-11, AC-18, AC-33 and the rest of DL-5 are not changed
+> here (S-9).
+> (5) Stale facts corrected: the AUD-001 K4 shared forwarder exists on `main` (`Diten.BuildingBlocks.CentralAudit`;
+> "Dependencies" row, OD-PVG-9 facts); how PvgService enters it stays open (DEPO-01 open items: D-2); the store already
+> carries a record version ("Validation Rules", update concurrency); G-10's owning slice; the `ReceivedAtUtc` index.
+> (6) Aligned wording: the two-gates block, "Still forbidden", the WP-0230-03 note, "Ownership and Boundaries", "Owned
+> Objects", "Repo Scope", "Still blocked", the "Runtime Constraints" persistence statement, "Startup Fail-Closed
+> Requirements" (cross-reference), the `DB-level` paragraph, the runtime packet's forbidden list, DL-2 slice detail,
+> "Test Expectations".
+> (7) Two departures from the letter of DEPO-01 KD-4, both by its own reasons: domain-config line 45 binds only
+> MOD-0231 / MOD-0232 / MOD-0234 and stays (KD-2); the architecture test `DenyAllRegPvBasePortTests` stays because the
+> store lives in a separate persistence project (DEPO-03 S-2).
+> Seed data, permission seed or grant, background jobs, and operational use stay unauthorized (KD-5; since revision 15
+> narrowed only by "Closed Catalog Registration", slice DL-11). The
+> WP-0230-DL8 acceptance is re-bound to this version (S-86). A version-bound approval row for this version is still
+> required (KD-6: pre-review S-93, independent review, HIGH approval).
+> Correction within revision 14 (2026-10-30, pre-review of request 16: AC-35 (e) - the replace test writes its first draft with the fail point off, the two commit-failure tests run sequentially in one non-parallel collection, turn the fail point off in `finally`, and count `commitTransaction` only after the fail point is on). Correction within revision 14 (2026-10-30, Codex review 15, `docs/records/reviews/MOD-0230/2026-10-30-985e5755.md`
+> F-1 and F-2; before approval and dispatch; no new revision number): AC-35 (c2) - one negative fixture per actor
+> field, two different validated actors for create and update, `CreatedBy` kept and `UpdatedBy` changed by the
+> update, and a separate sabotage for each field; AC-35 (e) - a commit-failure scenario for `ReplaceAsync` on an
+> existing draft (data and version unchanged; update, triage, and route all write through it); "Build/Test
+> Persistence (Mongo Store)": a replace never changes `CreatedBy`. AC count (35) and slice table unchanged.
+>
+> **Revision 15 (2026-10-31, owner "Evet, sürsün" 2026-10-31, record `-03`; closed catalog registration).** Authority: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`
+> (KK-1 ... KK-6 and its three CT readings), corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (a CT
+> record), re-confirmed on that corrected information by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`, sequenced by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md` (KK-7 ... KK-10), corrected after the store rejection by `docs/records/decisions/2026-11/pvg-mod0230-kapali-kayit-05.md` (KK-11 ... KK-15), and
+> `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md` (item 3: catalog and grant follow the catalog→Auth sync,
+> no separate seed). Measured by reading the repo at commit `324ec6600`; nothing was built, run, or measured live, with one
+> exception: the triage binding run recorded in `pvg-mod0230-kapali-kayit-04.md` (real host at commit `2bfe93f36`). Changed:
+> (1) New section "Closed Catalog Registration" and new slice DL-11: `Diten.PvgService` carries a manifest for module
+> code `case-intake-triage` with `IsTenantAssignable: false`, `IsBaseline` false, the four frontend routes, every page
+> `IsNavigationVisible: false`, the actions the UI shows, and all five `pvg.case-intake-triage.*` keys. One startup push,
+> not a background job; key and base URL from environment variables only. Two navigation text keys, `Nav.Module.CASEINTAKETRIAGE` and `Nav.Domain.PHARMACOVIGILANCE`,
+> in the seven `SharedResource.*.resx` files.
+> (2) New AC-36 (manifest matches the code), AC-37 (registration is inert and harmless), AC-38 (live, E5), and AC-39 (triage
+> outcome binding, DL-4). AC count 39.
+> AC-13 (f) gains one sentence: its named list grows by exactly one type when DL-11 lands. AC-35 (b) and AC-6 change as in
+> (9). No other existing AC text changes.
+> (3) New row OD-PVG-13 (the WP-0230-08 choice); new row OD-PVG-14 (working live screen, pending the owner, nothing
+> authorized); new gaps G-23, G-24 (DL-4), and G-25 (owner decision, nothing authorized); the WP-0230-08 sentence under "Build Authorization"; the DL-7 "Kapsam dışı" pointer to DL-11;
+> the Control Tower line of "Teslim dilimleri".
+> (4) Lines that blocked this work now state the narrow exception and leave everything else blocked: the revision 14
+> closing line, the two-gates paragraph, "Build Authorization" (authorized list and "Still forbidden"), "Ownership and
+> Boundaries", "Repo Scope" (scope and "Still blocked"), "Runtime Constraints", "Build/Test Persistence (Mongo Store)"
+> ("Not authorized"), "Service Port And Appsettings Policy", "Authorization Convention" (two lines), the runtime packet's
+> forbidden list, "Follow-up Items", the MOD-0018 line of "Teslim dilimleri". "Audited Events" gains one note. "Test
+> Expectations" gains a table row and an entry; "Ready-for-dev Checklist" gains one entry.
+> (5) "Required Approval Gates" and "Validation Required Before Runtime Work Can Be Accepted" gain the `pvg.*` subscription
+> tie (record, CT reading 2) and the catalog change.
+> (6) DCP-004 (header note, §8 item 6, §8.1, §10 guard, gate, and "Audit trail gate" item 3, §11, packet list, change log),
+> domain-config, and WP-0230-08 carry the same exception (KK-4), each once revision 15 is approved on main.
+> (7) Sequencing (KK-7, KK-8, KK-9): a slice's sequence condition on another slice is the queue state `INTEGRATED`.
+> WP-0230-DL10-R1 `INTEGRATED` is the condition for DL-5 and DL-11, in DL-5, DL-10, DL-11, DCP-004 §8 items 5 and 6, and
+> WP-0230-08. WP-0230-DL10 went to `REWORK` on 2026-11-01, a final queue state; its delivery continues as WP-0230-DL10-R1, and
+> R1's `INTEGRATED` covers the content of both. DL-10's own acceptance is not removed. Slices that cannot reach their evidence live stay `INTEGRATED`, with
+> acceptance deferred, not lowered (G-23). OD-PVG-14 (b) reads "after DL-5 is `INTEGRATED`".
+> (8) Who approves: the owner approves this DCP-004 change (`domain-config.md` line 96: DCP-004 changes by user approval).
+> `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-02.md` covered revision 14 only and is not extended. The pack's HIGH
+> approval path is unchanged.
+> (9) This pass (2026-11-01, owner "Paketi düzelt"; `docs/records/decisions/2026-11/pvg-mod0230-kapali-kayit-05.md` KK-11 ... KK-15; `docs/records/audits/2026-10/pvg-wave8-verify-01/VERIFY-DL10.md`): AC-35 (b) measures the same answer
+> as an unknown id, and its test is renamed (KK-11); AC-6 gains one sentence, and the cross-tenant 404 is written as open until
+> DL-4's error-response work (KK-13); this revision's approval no longer waits for the store, while DL-11's start does (KK-12);
+> AC-39 (b)'s sabotage and DCP-004 §10's mutation sentence are corrected (KK-14); the store delivery goes on in WP-0230-DL10-R1
+> (KK-15), whose scope is set by its prompt, not here.
+> Changed in existing delivery text, measured against commit `324ec6600`: AC-13 (f), AC-35 (b), AC-6; DL-4's finish (AC-39),
+> DL-5's prerequisite, the DL-7 pointer, DL-10's last sentence. DL-11 is new. Not changed: the frontmatter; the measurement of
+> any other acceptance criterion; any other content of DL-1 ... DL-10; `.antigravity/**`; MOD-0231, MOD-0232, MOD-0234. Seed data, grant code, menu entries, and operational
+> use stay unauthorized; the catalog→Auth sync is the OD-PVG-1 path, not a seed; a person's role grant in dev, for
+> measurement, is allowed; the operational runtime gate stays closed (KK-6). Open to the owner at this approval:
+> `route` declared; the subscription tie; the automatic grants (SuperAdmin, Viewer); the two resx keys; the platform administrator's direct entitlement call (it writes a row for this module and, through the existing entitlement bridge, puts all five keys on that tenant's `Admin` role and the read key on its `Viewer` role; no menu entry). Order: this revision's approval does not wait for the store; DL-11 starts only after WP-0230-DL10-R1 is `INTEGRATED` (KK-12).
+> A version-bound approval row for this version is still required (KK-4: pre-review, independent review, HIGH approval).
+>
 > **Two gates, not one:**
 >
 > | Gate | State | Authorizes |
@@ -90,8 +217,17 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > | **Build / test** | **OPEN** since 2026-08-09 | Backend code and tests in `services/Diten.PvgService/**`; starting the API host in local / dev / CI on its configured URL to run tests and smoke measurements; the single Gateway route family; the tenant UI. Local / dev / CI only. |
 > | **Operational runtime** | **CLOSED** | Production or production-like use, supplier qualification, validation, real MOD-0019 / MOD-0023 / MOD-0031 adapters. |
 >
-> Not authorized under either gate today: Mongo collections, indexes, or migrations (DCP-004 §10); seed data;
-> permission seed or grant; background jobs; archive, void, export, delete, bulk-delete; AI behaviour.
+> Not authorized under either gate today: seed data; permission seed or grant; background jobs; archive, void, export,
+> delete, bulk-delete; AI behaviour. Mongo: since revision 14 (DEPO-01) the build/test gate authorizes the MOD-0230
+> intake-draft store - one collection, tenant-first indexes, and the startup schema bootstrap, local / dev / CI only
+> ("Build/Test Persistence (Mongo Store)", slice DL-10; DCP-004 §10 exception); no other collection, and no Mongo use
+> under operational runtime without its own approval.
+>
+> Catalog: once revision 15 is approved on main (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`, `-02`, `-03`) the build/test gate authorizes one closed catalog
+> registration of MOD-0230 ("Closed Catalog Registration", slice DL-11; DCP-004 §10 exception): a non-assignable, hidden
+> manifest pushed once at start. That push is not a background job, and the catalog→Auth sync that carries its keys is
+> the OD-PVG-1 path, not a seed. Seed data, grant code, menu entries, and operational use stay unauthorized; a person's
+> role grant in dev, for the AC-38 measurement, is allowed.
 >
 > The operational runtime gate stays closed until real MOD-0019, MOD-0023, and MOD-0031 ship, the owner contracts in
 > "MOD-0230 Owner-Approval Evidence Intake Template" are signed by their owners, a retention / legal-hold owner is
@@ -109,6 +245,8 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 - The tenant UI paths listed in "Repo Scope", including the MVC proxy controller
   `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`.
 - `gateway/Diten.ApiGateway/ocelot.json` - the one MOD-0230 route family, via integration-agent only.
+- Once revision 15 is approved on main: the closed catalog registration of MOD-0230 ("Closed
+  Catalog Registration", slice DL-11), inside `services/Diten.PvgService/**`.
 - Tests for the above.
 
 **Slice 1 scope - commands and queries:**
@@ -123,17 +261,23 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 | Delete, BulkDelete | **Never** | Permanently excluded |
 | Any AI behaviour | **No** | Governed-AI gates absent |
 
-**Still forbidden:** production deployment, supplier qualification, validation approval, Mongo collections / indexes /
-migrations, seed data, permission seed / grant, background jobs, `.antigravity/**` edits, edits to the `AGENTS.md` §3
-port table without an Enterprise Architecture decision, other domains' packs, and any MedDRA data.
+**Still forbidden:** production deployment, supplier qualification, validation approval, any Mongo collection /
+index / schema bootstrap other than the MOD-0230 intake-draft store of DL-10 (revision 14), seed data, permission
+seed / grant (a person's role grant in dev for the AC-38 measurement excepted; revision 15), background jobs (the one
+registration push of DL-11 is a startup step, not a job; revision 15), menu entries, `.antigravity/**` edits, edits to
+the `AGENTS.md` §3 port table without an Enterprise Architecture decision, other domains' packs, and any MedDRA data.
 
 **Historical prerequisite (2026-08-09):** the stale ignored `services/Diten.PvgService/bin` and `obj` folders were to be
 deleted before scaffolding. The tracked scaffold exists since commit `0860632f1` (2026-08-16).
 
 **Implementation work packs:** `execution/domains/pharmacovigilance/work-packs/WP-0230-01` ... `WP-0230-07` carry
-`status: ready`; `WP-0230-08` (module manifest / catalog) is `blocked` pending a governance decision. Two WP files
+`status: ready`; `WP-0230-08` (module manifest / catalog) stays `blocked` until revision 15 is approved on main: the
+choice it waited for is decided (OD-PVG-13), and its work is slice DL-11.
+Two WP files
 disagree with this pack and this pack wins by authority order (they are not changed by this revision):
-`WP-0230-03` is titled "Mongo persistence" while persistence is in-memory only under the build/test gate, and
+`WP-0230-03` is titled "Mongo persistence"; until revision 13 persistence was in-memory only under the build/test
+gate, and since revision 14 the build/test Mongo store is slice DL-10 of this pack, assigned through "Teslim
+dilimleri", not through WP-0230-03 (DEPO-03 S-12: the WP file is not changed); and
 `WP-0230-07` names the controller `CaseIntakeTriageController.cs` and the key family `pvg.case-intake-triage.*`
 while the code uses `PharmacovigilanceCaseIntakeTriageController.cs` and `pvg.mod0230.intake.*`. Work is assigned
 through "Teslim dilimleri".
@@ -151,6 +295,9 @@ commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-1
 (revision 04, intake fields AL-1 ... AL-7) are static facts measured on 2026-10-22 at commit `0a900f634` (rebuilt as
 `26384dceb`, same code tree; the branch history was rebuilt because approvals.tsv is append-only) (`grep` over
 `services/Diten.PvgService/src`, `services/Diten.PvgService/tests`, and the MOD-0230 frontend paths of "Repo Scope").
+Row G-23 (revision 15) is a static fact measured by reading on 2026-10-31 at commit `324ec6600`
+(`pvg-mod0230-kapali-kayit-02.md`); no slice owns it. Row G-24 rests on the run recorded in `pvg-mod0230-kapali-kayit-04.md`;
+row G-25 is measured by reading on 2026-10-31 at the same code.
 
 | # | Gap | Measured fact | Owning slice |
 |---|---|---|---|
@@ -163,7 +310,7 @@ commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-1
 | G-7 | Operational runtime authorization is a configuration flag | `Pvg:Runtime:OperationalRuntimeAuthorized` is read from environment variables or command line (`Program.cs`, `PvgServiceApiHost.cs`); it is not bound to any approval evidence. | DL-3 |
 | G-8 | Error model | Endpoints map `Succeeded` to 200, `Invalid` to 400, and every other outcome to 409 - including not-found (`IntakeDraftNotFound` is returned as `Blocked`), permission denied, and missing tenant / actor / correlation context. This pack requires 404 / empty for not-found and cross-tenant and 401/403 for unauthorized; `multi-tenancy.md` requires 400 for a missing tenant header. | DL-4 |
 | G-9 | Validation runs before the permission gate | `CreateDraftAsync` and `UpdateDraftAsync` validate first; E3 f: an unauthorized caller receives field validation reason codes (safe codes only). Small. | DL-4 |
-| G-10 | Persistence is in-memory | `InMemoryPvgIntakeDraftRepository` (process-local dictionary keyed by tenant); no Mongo driver, collection, index, or migration. `PvgIntakeDraftIndexCatalog` declares a collection name and two index definitions as data only. | DL-2 |
+| G-10 | Persistence is in-memory | `InMemoryPvgIntakeDraftRepository` (process-local dictionary keyed by tenant); no Mongo driver, collection, index, or migration. `PvgIntakeDraftIndexCatalog` declares a collection name and two index definitions as data only. Revision 14 (DEPO-01): the build/test Mongo store is slice DL-10; this row stays a measured fact until DL-10 is accepted. | DL-10 |
 | G-11 | Backend layout differs from Golden Reference | Code: `Application/RegPvBase/*` with one `PvgIntakeDraftApplicationService`; commands `CreateIntakeDraftCommand`, `UpdateIntakeDraftCommand`, `TriageIntakeDraftCommand`, `RouteIntakeDraftCommand`; queries `GetIntakeDraftListQuery`, `GetIntakeDraftByIdQuery`; no `Features/` folder; no `*Handler` classes; no MediatR. | DL-2 |
 | G-12 | Port-conformance names are not in code | `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md` is committed and defines C-01 ... C-17 against `PvgStaticFieldPolicy`, `PvgStaticTransitionGate`, `PvgPendingEvidenceStore`, `IPvgSafetyPartnerAdapter`, `PvgPortResult`, `AddRegPvBasePorts`, and key `Pvg:RegPvBase:UseNonProductionAdapters`; none occurs in `services/Diten.PvgService` (`git grep`, 0 files) and no test names a C-id. Code uses `DenyAll*` adapters, a fourth port `IPvgPermissionGate` not in the document, and `Pvg:Runtime:*` keys. | DL-1 |
 | G-13 | Port 5011 | Not in the `AGENTS.md` §3 table; `AGENTS.md` lists 5011 (`PvgService`) among ports in use awaiting an Enterprise Architecture decision. `.claude/launch.json` entry `web-verify` starts Diten.Web on 5011, so both cannot run locally on defaults. (Decision approved 2026-10-27, records `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-7-port-01.md` and `-port-02.md`: `web-verify` moved to 5002; the `AGENTS.md` §3 table row is pending a setup PR that makes room.) | DL-3 |
@@ -176,6 +323,9 @@ commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-1
 | G-20 | No validity result (AL-5) | MOD-0230 code has no validity field. The only match in PvgService is MOD-0231's `SignalMinimumAssessment.CaseValidityStatus` / `CaseValidityReason` (`Domain/CaseProcessing/SignalMinimumAssessment.cs`) - another pack's field, not consumed here (XMC-001). Model and triage rule DL-2 (AC-28). | DL-2 |
 | G-21 | Reporter is a type plus a free-text summary (AL-6) | `SafetyCaseIntake` holds `ReporterType` (`string`) and `ReporterContactSummary` (`string?`); no reporter source, source id, or snapshot fields; `grep -iE 'ReporterSource\|ReporterSnapshot'` finds nothing. Model and validation DL-2 (AC-29, AC-30). | DL-2 |
 | G-22 | No read access to MOD-0290, MOD-0150, MOD-0288, or a country list | PvgService projects reference only their own projects (`*.csproj`); no `HttpClient` and no call to another service in `services/Diten.PvgService/src`. Each read waits for its owner contract ("Required Interface Contracts"); the pickers of the screen are DL-7 (AC-32). | DL-2 |
+| G-23 | No working live screen exists under the build/test gate | `IPvgPermissionGate` has one production implementation, `DenyAllPermissionGate`, registered in the host (`PvgServiceApiHost.cs:90-96`). No slice or acceptance criterion replaces it: DL-5 covers the audit write and DL-6 the key constants. The real field-security adapter belongs to the operational gate (MOD-0019), so list and create would still be refused if the permission gate alone changed. Tests reach allowed paths only through allow stubs in test code. DL-11 opens the page, not the data ("Closed Catalog Registration"). Required evidence that cannot be reached live while this holds (slice table; `pvg-mod0230-kapali-kayit-02.md` counts tests with allow stubs as E2): DL-2 E4; DL-4 E4 (its refusal paths can be, the paths of a stored record cannot); DL-5 E5; DL-7 E4; DL-10 E4 (its start, bootstrap, and readiness can be, a write through the API cannot); DL-6 E5 in part (AC-38 reaches the key catalog and the MVC gate, not an allowed call in the service). DL-9 E5 is closed by design. DL-1 E1, DL-3 E3, DL-8 E3, and DL-11 E5 can be reached. No slice's level changes here. Acceptance of the listed slices stays deferred, not lowered; they remain `INTEGRATED` until a live path exists (`pvg-mod0230-kapali-kayit-04.md` KK-8; SOP §23.1). | open, OD-PVG-14 |
+| G-24 | A triage with a chosen outcome stops at JSON binding | `Details.cshtml` requires a choice in `TriageOutcome`; `TriageFormInput.ToPayload` sends it as text; `PvgCaseIntakeTriageRequest.TriageOutcome` is `PvgTriageOutcome?`, a plain enum, and PvgService has no JSON string-enum converter. Measured (`pvg-mod0230-kapali-kayit-04.md`): the text `"Triaged"` gets 400 with an empty body before the permission gate; `null` and the number `1` get 409 with `PVG_PERMISSION_DENIED`. The proxy passes the empty body on as `{}` (`TenantShellProxyResponse.cs`), and `details.js` then shows its general error. So the `TRIAGE` button gets no controlled refusal today, and triage would still fail if the gates opened. `PvgCaseIntakeTriageWebTests.cs` measures the proxy side only. The fix and AC-39 are in `PvgCaseIntakeTriageEndpoints.cs`. | DL-4 |
+| G-25 | Edit drops stored data | Measured by reading. The item response (`PvgCaseIntakeDraftResponse`) omits 15 stored fields: `IntakeChannel`, `SourceType`, `SourceReference`, `ReceivedAtUtc`, `ReporterType`, `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`, `AdverseEventNarrative`, `Seriousness`, `IntakePriority`, `TriageOutcome`, `TriageReason`, `RouteTargetQueue`, `EvidenceLinkReferences`. `UpdateDraftAsync` has no status check and rebuilds the record (`BuildIntake`), so an update sets the status back to `IntakeUpdated` and erases `TriageOutcome`, `TriageReason`, and `RouteTargetQueue`. The Edit form does not prefill the optional `ReporterContactSummary`, `EventOnsetDate`, and `EvidenceLinkReferences`, so saving erases them too (`docs/records/audits/2026-10/pvg-wave7-verify-01/VERIFY-DL7B.md`). No test measures this. No write succeeds live today, so no data is lost yet. This revision does not fix it. | open, owner decision; nothing authorized |
 
 Gateway note: route-level `AuthenticationOptions` is absent on most routes by repo norm; the Gateway applies
 authentication and `TenantResolutionMiddleware` pipeline-wide. E3 G1 / G4 (dev profile, 2026-10-20) observed anonymous
@@ -190,7 +340,8 @@ rows are fully decided (OD-PVG-4, OD-PVG-5, OD-PVG-8, OD-PVG-10). Six rows are d
 for another owner's approval named in that column (OD-PVG-1, OD-PVG-2, OD-PVG-3, OD-PVG-6, OD-PVG-7, OD-PVG-9); they
 are not actionable until that approval is recorded, and the acceptance criteria that depend on them stay open.
 Revision 11 (2026-10-27): the owner gave the waiting approval of OD-PVG-1, OD-PVG-2, OD-PVG-6, and OD-PVG-7 (record
-paths in the last column); OD-PVG-3 and OD-PVG-9 still wait. This
+paths in the last column); OD-PVG-3 and OD-PVG-9 still wait. Revision 13 (2026-10-28) adds to the OD-PVG-10 result
+how AC-14 reads that decision (by category, not by count); no decision changed. This
 section records decisions only: it is not the version-bound pack approval row (CT-APR-01 / CT-APR-02), not another
 module owner's approval, and it does not open the operational runtime gate.
 
@@ -199,6 +350,11 @@ records did not settle (review 04 F-3 and F-1). The owner decided both on 2026-1
 `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-03.md` KR-1 (OD-PVG-11) and KR-2 (OD-PVG-12); the same
 record's KR-3 settles the country copied from a linked source ("What is stored" below). The rules are applied from
 today; QPPV receives KR-1 and KR-2 for information. The answers of OD-PVG-1 ... 10 are unchanged.
+
+Revision 15 (2026-10-31) adds two rows: OD-PVG-13, the WP-0230-08 choice (decided), and OD-PVG-14, a working live screen
+under the build/test gate (pending the owner; nothing authorized). The answers of OD-PVG-1 ... 12 are unchanged. Of the
+fourteen rows, eleven are fully decided; OD-PVG-3 and OD-PVG-9 wait for another owner's approval; OD-PVG-14 waits for the
+owner.
 
 | ID | Decision | Facts | Recommended option | Who decides | Owner decision (2026-10-21) |
 |---|---|---|---|---|---|
@@ -210,10 +366,12 @@ today; QPPV receives KR-1 and KR-2 for information. The answers of OD-PVG-1 ... 
 | OD-PVG-6 | Binding the operational-runtime flag to evidence | G-7 | Until the operational runtime authorization row is approved, `Pvg:Runtime:OperationalRuntimeAuthorized=true` is set only inside tests; a static CI scan fails when any committed configuration, launch profile, workflow, or deployment file sets it. When runtime is later approved, the host also requires a configured reference to that approval row. Reason: a flag cannot prove approval; the scan is cheap and measurable now. | PVG paket sahibi with Enterprise Architecture (owner, MIMARI-01) | PVG side decided 2026-10-21 (owner): CI scan decided. **Approved 2026-10-27** (owner as Enterprise Architecture under MIMARI-01, "bayrak-evet"; `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-6-bayrak-01.md`): when `Pvg:Runtime:OperationalRuntimeAuthorized=true` the host also requires `Pvg:Runtime:ApprovalReference`; a missing, empty, or whitespace value refuses the production-like start; a CI check fails when a committed `ApprovalReference` value is not found in the repo's approval records. Record format, the file the check reads, and test names are set by the WP prompt. Implementation pending in DL-3 (AC-10). |
 | OD-PVG-7 | Port allocation | G-13 | Enterprise Architecture allocates 5011 to `Diten.PvgService` in the `AGENTS.md` §3 table, and the `web-verify` entry in `.claude/launch.json` moves to another port. Reason: 5011 is already in `Program.cs`, the four Gateway routes, domain-config (OD-7), and DCP-004; moving `web-verify` touches one local launch entry. | Enterprise Architecture (owner, MIMARI-01); repo owner for `.claude/launch.json` | PVG side decided 2026-10-21 (owner): PVG takes the request to Enterprise Architecture. **Approved 2026-10-27** (owner as Enterprise Architecture under MIMARI-01 and as repo owner for `.claude/launch.json`, "port-evet"; `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-7-port-01.md`, amended by `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-7-port-02.md`): 5011 belongs to `Diten.PvgService`; `web-verify` moved to 5002 and the Gateway CORS origin for it from 5011 to 5002. The `AGENTS.md` §3 table row is **not** written: it does not fit the instruction-size budget (ODPVG7-02) and waits for a setup PR that makes room in `AGENTS.md`; until then `AGENTS.md` still lists 5011 among ports awaiting an Enterprise Architecture decision. |
 | OD-PVG-8 | `data_mode` for the list | G-14; the list endpoint is server-paged (`pageNumber`, `pageSize`); intake records are unbounded. | `data_mode: server` in the frontmatter (declared there since this revision) and `data-dt-data-mode="server"` on the table (DL-7). Reason: `module-pack-standard.md` §3 maps an unbounded entity list to `server`. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
-| OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit trace; new write commands are blocked until the shared forwarder package exists. | Wait for the K4 shared forwarder (path `b`) and the MOD-0021 owner contract, then deliver DL-5; until then, keep every MOD-0230 mutation unable to succeed outside tests (deny-all permission gate). Reason: path `a` is Platform-only and copying the MDM forwarder is forbidden by AUD-001 §5. | Control Tower (K4 package); MOD-0021 owner; PVG paket sahibi | PVG side decided 2026-10-21 (owner); awaiting the Control Tower K4 shared forwarder package and the MOD-0021 owner contract - not actionable until then; the deny-all permission gate stays. |
-| OD-PVG-10 | Verifier items tied to excluded features | G-14 | Record the bulk-delete, export, import, select-all, and related wiring items as a "known deviation" for this module (they contradict the permanent exclusions); fix the other five items in DL-7. Reason: the list-screen touch protocol requires an owner answer; the exclusions are owner decisions already recorded in this pack. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. |
+| OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit trace; new write commands are blocked until the shared forwarder package exists. Revision 14 (measured 2026-10-29): the package exists on `main` - `Diten.BuildingBlocks.CentralAudit` (BL-501, K4 = A), used by InventoryService and SupplyChainService. It runs as a MediatR `IPipelineBehavior` (`CentralAuditServiceCollectionExtensions.cs` line 42) and is K2-safe only when the event is written into the command's Mongo transaction (`CentralAuditTransaction.EnlistAsync`, `CentralAuditRecorder.cs` line 28); PvgService has no MediatR today (OD-PVG-4) and no Mongo store (G-10, DL-10). | Wait for the K4 shared forwarder (path `b`) and the MOD-0021 owner contract, then deliver DL-5; until then, keep every MOD-0230 mutation unable to succeed outside tests (deny-all permission gate). Reason: path `a` is Platform-only and copying the MDM forwarder is forbidden by AUD-001 §5. | Control Tower (K4 package); MOD-0021 owner; PVG paket sahibi | PVG side decided 2026-10-21 (owner). Revision 14: the K4 package exists; still awaiting the decision on how PvgService enters it (open, DEPO-01 open items: D-2) and its delivery, the MOD-0021 owner contract, and DL-10 (DEPO-01 KD-3) - not actionable until then; the deny-all permission gate stays. |
+| OD-PVG-10 | Verifier items tied to excluded features | G-14 | Record the bulk-delete, export, import, select-all, and related wiring items as a "known deviation" for this module (they contradict the permanent exclusions); fix the other five items in DL-7. Reason: the list-screen touch protocol requires an owner answer; the exclusions are owner decisions already recorded in this pack. | PVG paket sahibi | Decided 2026-10-21 (owner): recommended option adopted. Revision 13 (2026-10-28): AC-14 states this deviation by these categories (bulk delete, export, import, select-all, clear-selection, and the wiring tied to them), not by the count "13" of 2026-10-21; the BL-452 server-export item the verifier adds in server mode is an export item (wave 5 DoR `docs/records/audits/2026-10/pvg-wave5-dor-01/DOR.md` "CT okumaları" 1; review `docs/records/reviews/MOD-0230/prompts/WP-0230-DL7A-v1.2-inceleme-01.md` F-4). |
 | OD-PVG-11 | `ReporterCountry` = "unknown" and unchanged stored codes once the country list exists (revision 05) | Review 04 F-3. EK-1 (`pvg-mod0230-intake-fields-02.md`) makes "unknown" the only accepted value of both country fields **until** the list arrives; AL-3 gives the "unknown" option to the **event** country; no record says whether `ReporterCountry` accepts a new or changed "unknown" once the list is present or its read is interrupted, nor what an update does with an unchanged stored list code while the list read is interrupted or after the code has left the list. These were the open cells of the "Country rule table" ("Entity Fields") in the revision 05 draft; they are now filled by KR-1. | (a) `ReporterCountry` keeps accepting "unknown" in every list state, like `EventCountry`; it stays a non-identifier ("Reporter identifiers"). (b) An unchanged stored list code is kept on update in every list state; only a new or changed code is checked against the list. Reason: PV refuses no notification (EK-3); "unknown" and null already mean "no country" for the reporter; a GxP record is not changed by a later list change (AL-6 snapshot principle). | PVG paket sahibi; QPPV if the reporter-country value is treated as regulatory content | **Evet — intake-fields-03 KR-1** (owner, 2026-10-22): recommended option (a) and (b) adopted; applied in the "Country rule table", Validation Rules, and AC-26. QPPV: for information. |
 | OD-PVG-12 | Removing a reporter link on update (revision 05) | Review 04 F-1. AL-6 and EK-4 say a link is made by selection or by the one-time CRM search and that the link id stays when the snapshot is edited; no record said whether a user may remove an existing link (turn a `Crm` / `PersonDirectory` reporter into `Manual`). Now settled by KR-2: removal only through the explicit `RemoveReporterLink` marker; an update without the selection pair and without the marker on a linked record stays rejected 400 (no silent unlink; AC-29). | Allow removal only as an explicit action: the update carries an explicit "remove link" marker instead of simply omitting the pair; the server then writes `ReporterSource = Manual`, clears `ReporterSourceId`, keeps the snapshot values as typed values, and the audit record names the change (field names only). Reason: an omitted pair cannot be told apart from a client defect; an explicit marker is measurable. | PVG paket sahibi; QPPV (the reporter link is the basis of MOD-0231's duplicate check, AL-7) | **Evet — intake-fields-03 KR-2** (owner, 2026-10-22): recommended option adopted; the marker is `RemoveReporterLink` (boolean), applied in the "Reporter selection contract", Validation Rules, Failure Path, and AC-29 / AC-31 / AC-32 / AC-33. QPPV: for information. |
+| OD-PVG-13 | Catalog registration of MOD-0230: the WP-0230-08 choice - A defer, B register non-assignable, C register fully (revision 15) | Every screen action needs a key (AC-2); no `pvg.case-intake-triage.*` key exists under `services/Diten.AuthService`, so no role can hold one and nobody can open the screen (record, measured 2026-10-31 at `c89fda3c4`, by reading). Option A assumed the screen opens by direct address; since DL-7's permission check an unauthorized user gets 403 there. Option C advertises a regulated module whose masking, workflow, and evidence dependencies do not exist. | Option B, narrowed: `IsTenantAssignable: false`, every page `IsNavigationVisible: false`, pushed by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, no Platform or Auth code. All five keys are declared, `route` included (CT reading). | Owner | **Evet, sürsün** (owner, 2026-10-31; `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md` KK-1 ... KK-6 hold with the corrections of `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`; option B, narrowed, applied in "Closed Catalog Registration", slice DL-11. Open to the owner at this approval: `route` declared; the subscription tie; the automatic grants (SuperAdmin, Viewer); the two resx keys; the platform administrator's direct entitlement call (it writes a row for this module and, through the existing entitlement bridge, puts all five keys on that tenant's `Admin` role and the read key on its `Viewer` role; no menu entry). |
+| OD-PVG-14 | Working live screen under the build/test gate (revision 15) | G-23. After DL-11 an authorized user sees the page and the form; the list returns no records and saving is refused. OD-PVG-9 and AUD-001 K2 make that deliberate. `domain-config.md` defines the ports as "interface + deny default only". `pvg-mod0230-kapali-kayit-03.md` re-confirms the closed registration with this known and leaves this row open. Required evidence that cannot be reached live while this holds (slice table; `pvg-mod0230-kapali-kayit-02.md` counts tests with allow stubs as E2): DL-2 E4; DL-4 E4 (its refusal paths can be, the paths of a stored record cannot); DL-5 E5; DL-7 E4; DL-10 E4 (its start, bootstrap, and readiness can be, a write through the API cannot); DL-6 E5 in part (AC-38 reaches the key catalog and the MVC gate, not an allowed call in the service). DL-9 E5 is closed by design. DL-1 E1, DL-3 E3, DL-8 E3, and DL-11 E5 can be reached. No slice's level changes here. | None; the two paths are stated, not chosen. (a) It stays refused until the operational gate opens. (b) Local / dev-only allowing adapters on synthetic data, refused on a production-like host, only after DL-5 is `INTEGRATED` (K2; `pvg-mod0230-kapali-kayit-04.md` KK-9). Path (b) would require changing the "interface + deny default only" rule in `domain-config.md`. | Owner | **Pending owner.** Nothing is authorized by this row or by this revision. |
 
 ## Module Summary
 
@@ -250,9 +408,11 @@ In scope for this build/test-ready pack:
 
 Out of scope for this build/test-ready pack:
 
-- Operational runtime, production deployment, supplier qualification, validation, seed data, Mongo collections /
-  indexes / migrations (the build/test gate uses the in-memory store only), background jobs, permission seed or grant,
-  archive/void, export, delete, bulk-delete, and any surface outside slice 1.
+- Operational runtime, production deployment, supplier qualification, validation, seed data, any Mongo collection /
+  index / schema bootstrap other than the build/test intake-draft store of DL-10 (revision 14), background jobs (the
+  one registration push of DL-11 excepted; revision 15), permission seed or grant (a person's role grant in dev for the
+  AC-38 measurement excepted; revision 15), menu entries, archive/void, export, delete, bulk-delete, and any surface
+  outside slice 1.
 - W-3A0 foundation remediation development.
 - Full Case Processing, MedDRA Coding, Signal Management, reporting/submission, or PV quality runtime.
 - AI summarization, extraction, recommendation, or routing implementation.
@@ -261,7 +421,7 @@ Out of scope for this build/test-ready pack:
 
 | Object | Ownership | Build/test status (measured 2026-10-21) |
 |---|---|---|
-| Safety Case Intake | MOD-0230 SoR for intake-stage Safety Case creation boundary | Domain type `SafetyCaseIntake` exists; stored in the in-memory store only |
+| Safety Case Intake | MOD-0230 SoR for intake-stage Safety Case creation boundary | Domain type `SafetyCaseIntake` exists; stored in the in-memory store only (measured 2026-10-21); the build/test Mongo store is DL-10 (revision 14) |
 | Intake Artifact | MOD-0230 SoR for intake-stage submitted artifacts and source references | Represented only as `SourceReference` and `EvidenceLinkReferences` fields |
 | Triage State | MOD-0230 SoR for initial triage status and routing outcome | `PvgIntakeStatus`, `PvgTriageOutcome` exist |
 | Routing Decision | MOD-0230 SoR for controlled routing decision metadata | Route command exists; `DenyAllWorkflowTransitionGate.EvaluateAsync` denies every route transition |
@@ -556,6 +716,8 @@ Authorized for the build/test gate:
 
 - `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md`
 - `services/Diten.PvgService/**` - MOD-0230 slice 1 code lives in `src/*/RegPvBase/**`, `src/Diten.PvgService.Api/**`,
+  since revision 14 `src/Diten.PvgService.Persistence/**` (DL-10, the only project that references the Mongo driver),
+  since revision 15 `src/Diten.PvgService.Api/ModuleRegistration/**` (DL-11),
   `tests/Diten.PvgService.Api.Tests/**`, and `tests/Diten.PvgService.RegPvBase.Tests/**`. The MOD-0231 / MOD-0232 /
   MOD-0234 folders in the same service belong to their own packs.
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` - the same-origin MVC proxy
@@ -564,7 +726,11 @@ Authorized for the build/test gate:
 - `frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/**`
 - `frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/**`
 - `frontend/Diten.Web/Models/CaseIntakeTriage/**` - listed in WP-0230-07; does not exist today (G-14).
+- `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx` - once revision 15 is approved on main, exactly two keys, `Nav.Module.CASEINTAKETRIAGE` and `Nav.Domain.PHARMACOVIGILANCE`,
+  through the l10n gate (DL-11). Nothing else in these shared files.
 - `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`
+- `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs` - the C# tests of the MVC proxy controller
+  (listed since revision 13; AC-20 W7, AC-32).
 - `gateway/Diten.ApiGateway/ocelot.json` - only the four MOD-0230 route entries (upstream `/api/pv-case-intake-triage*`),
   integration-agent only.
 - `tests/architecture/audit-ledger/Diten.PvgService.md` - removal of a known-debt row only, by DL-5, when that command
@@ -578,7 +744,11 @@ Still blocked:
 
 - Production deployment, supplier qualification, and validation approval (operational runtime gate).
 - Archive, void, and export surfaces (out of slice 1).
-- Mongo collections, indexes, migrations; seed data; permission seed / grant (MOD-0018 / AuthService own seed/grant).
+- Mongo collections, indexes, and schema bootstrap other than the DL-10 build/test intake-draft store (revision 14);
+  seed data; permission seed / grant (MOD-0018 / AuthService own seed/grant). Revision 15: the closed catalog
+  registration of DL-11 is not a seed, and the catalog→Auth sync it triggers is the OD-PVG-1 path; no PVG code writes a
+  permission or a role grant. A person's role grant in dev, for the AC-38 measurement, is allowed.
+- Menu entries, and any catalog work beyond the DL-11 registration (revision 15).
 - Port allocation. The port source is the `AGENTS.md` §3 table, changed only by Enterprise Architecture decision
   (OD-PVG-7). `.antigravity/rules/ports.md` is not the port source.
 
@@ -613,7 +783,7 @@ W-3A0 dependencies are production blockers, not waived:
 | Evidence-Link | MOD-0031 Evidence Linking Service | BLOCKER |
 | TRACE-BUNDLE: canonical ID, Correlation-ID, trace stitching, regulated error model | Blueprint MOD-0040 / platform trace standards | BLOCKER |
 | OTel / operational telemetry | Platform observability foundations | BLOCKER |
-| Audit forwarder for services without an audit trace | AUD-001 §5 K4 shared forwarder package (Control Tower) | BLOCKER for DL-5 |
+| Audit forwarder for services without an audit trace | AUD-001 §5 K4 shared forwarder `Diten.BuildingBlocks.CentralAudit` (BL-501; on `main`, used by InventoryService and SupplyChainService) | BLOCKER for DL-5 until (a) how PvgService enters the forwarder is decided (open, DEPO-01 open items: D-2) and delivered - facts: the forwarder runs as a MediatR `IPipelineBehavior` and PvgService has no MediatR today (OD-PVG-4) - and (b) DL-10 delivers the Mongo store that the same-transaction write (`CentralAuditTransaction.EnlistAsync`) needs |
 | Global Product / GSKU read (revision 04, AL-1) | MOD-0290 Product / Item / SKU Master (master-data-management) | Open - owner contract pending; blocks AC-22 and the product picker of AC-32. PVG does not write to MDM (XMC-001). |
 | CRM contact read (revision 04, AL-6) | MOD-0150 Contact & Relationship Management (commercial-suite) | Open - owner contract pending; blocks AC-30 and the CRM part of the reporter search (AC-32). PVG does not write to CRM (XMC-001). |
 | Person directory read (revision 04, AL-2, AL-6) | MOD-0288 Organization, Person & Position Directory (platform-shared-services) | Open - owner contract pending; blocks AC-24, the person-directory part of AC-30, and the directory part of the pickers (AC-32). PVG does not write to the directory (XMC-001). |
@@ -701,11 +871,17 @@ contract unless the owner explicitly approves the named artifact/version and sup
   measurements, behind the single Gateway route family and the tenant UI. Operational runtime - production or
   production-like use, supplier qualification, validation, real MOD-0019 / MOD-0023 / MOD-0031 adapters - is closed.
   "MOD-0230 Runtime Authorization Packet (Draft / Not Approved)" governs only operational runtime.
-- **Persistence (single statement).** The build/test gate uses the in-memory store only
-  (`InMemoryPvgIntakeDraftRepository`). No Mongo collection, index, or migration is authorized under the build/test
-  gate (DCP-004 §10). `PvgIntakeDraftIndexCatalog` and the `DB-level` column of "Validation Rules" are planned
-  declarations only. A Mongo collection, index, or migration needs the approved runtime authorization packet.
-- Seed data, permission seed / grant, and background jobs are unauthorized.
+- **Persistence (single statement).** Since revision 14 (DEPO-01; DCP-004 §10 exception) the build/test gate
+  authorizes one Mongo store for intake drafts - local / dev / CI only, never on a production-like host - with one
+  collection, the tenant-first indexes of `PvgIntakeDraftIndexCatalog`, and the startup schema bootstrap, as fixed by
+  "Build/Test Persistence (Mongo Store)" (slice DL-10; AC-13, AC-35). The in-memory store
+  (`InMemoryPvgIntakeDraftRepository`) stays the default store (DEPO-03 S-8). Every other `DB-level` entry of
+  "Validation Rules" is a plan only. Any other collection, index, or migration, and any Mongo use under operational
+  runtime, needs the approved runtime authorization packet.
+- Seed data, permission seed / grant, and background jobs are unauthorized. Revision 15 narrows this for one thing
+  only, under the build/test gate: the closed catalog registration ("Closed Catalog Registration", slice DL-11) - one
+  startup push, not a job; the catalog→Auth sync it triggers is the OD-PVG-1 path, not a seed; grant code stays
+  unauthorized, and a person's role grant in dev for the AC-38 measurement is allowed.
 - **Configuration keys (single source: the code).** The host reads `Pvg:Runtime:ProductionLike` (default `false`; the
   environment name `Production` also counts as production-like), `Pvg:Runtime:OperationalRuntimeAuthorized` (default
   `false`), and `Pvg:Runtime:UseNonProductionAdapters` (default `true` when the host is **not** production-like,
@@ -735,7 +911,8 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - Runtime must resolve tenant isolation, regulated data masking, audit, evidence links, workflow/inbox handoff, OTel,
   correlation ID, and error model before acceptance.
 - Tenant-owned data must carry server-resolved `TenantId`; client payloads must not accept `TenantId`. Cross-tenant
-  reads or mutations must return 404 / empty result with no metadata leak.
+  reads or mutations must return 404 / empty result with no metadata leak. Today they answer like an unknown id, 409 with
+  `PVG_INTAKE_DRAFT_NOT_FOUND` (G-8); 404 comes with AC-6 (DL-4).
 - Any sensitive field whose MOD-0019 policy cannot be evaluated must fail closed: deny the field, omit/mask the
   field, or deny the operation according to the field matrix. No implementation may invent a permissive fallback.
 - Raw PHI/PII, reporter identifiers, patient identifiers, source document content, free-text safety narratives,
@@ -743,6 +920,264 @@ contract unless the owner explicitly approves the named artifact/version and sup
 - Delete policy is locked: no hard delete, no bulk delete, and no normal user delete. Archive/void may be introduced
   only after retention/legal-hold approval; it requires reason, actor, UTC timestamp, correlation id, and AuditEvent.
   Archive/void is blocked under legal hold.
+
+## Build/Test Persistence (Mongo Store)
+
+Authority: `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md` (DEPO-01), `-03.md` (DEPO-03), and the
+DCP-004 §10 exception (revision 14). Build/test gate only: local, dev, and CI. Slice DL-10; acceptance AC-13 and AC-35.
+
+- **Where Mongo may appear.** Only `src/Diten.PvgService.Persistence` references `MongoDB.*`. Domain, Application,
+  Infrastructure (deny-all adapters, in-memory store, index catalog), and Api reference no Mongo assembly; Api calls
+  one registration extension of the persistence project. Dependency direction: the persistence project references
+  Domain, Application, and Infrastructure (for the index catalog); only `Diten.PvgService.Api` and the MOD-0230 test
+  projects (`Diten.PvgService.Api.Tests`, `Diten.PvgService.RegPvBase.Tests`) reference the persistence project; a
+  reference from Domain, Application, or Infrastructure would be a project cycle and fails the build.
+- **Store.** One Mongo implementation of `IPvgIntakeDraftStore`. The versioning contract is unchanged; the method
+  signatures change in one place: `AddAsync` and `ReplaceAsync` also take the actor id (`PvgActorContext.ActorId`, resolved from the validated subject, OD-PVG-2); the
+  in-memory store takes it too. One collection, `PvgIntakeDraftIndexCatalog.CollectionName`. Every query, count, and
+  write filters by the server-resolved `TenantId` and `IsDeleted = false`; a draft of another tenant is never read,
+  counted, or replaced. The PVG database holds only named collections: today `pvg_case_intake_drafts`.
+- **Identity.** `_id` is the GUID inside the draft id, stored as a string ("D" format); the API id stays
+  `pvg-draft-{guid:N}` in `IntakeDraftId`; the unique index is tenant-first (`TenantId`, `IntakeDraftId`).
+- **Version.** The stored `Version` starts at 1; a replace is one conditional write on tenant, draft id,
+  `IsDeleted = false`, and the expected version, and sets version + 1; a write that matched nothing is reported as
+  `NotFound` or `VersionConflict` without a second write.
+- **Transactions.** Every `AddAsync` and `ReplaceAsync` runs in one Mongo transaction on a client session (read concern
+  snapshot, write concern majority), so the audit write of DL-5 can join it. The deployment must support transactions
+  (a replica set; tests use a single-node replica set).
+- **Fields beyond the domain record.** `IsDeleted` (false on every write), `DeletedAt` (null), `CreatedAt`,
+  `UpdatedAt` (UTC, set by the store), `CreatedBy` (on create; a replace never changes it) and `UpdatedBy` (on create
+  and replace) - the actor id
+  of the validated subject, never a value from a request body or header. No delete, bulk-delete, archive, void, or
+  export member exists in the store contract or the persistence project. Recorded deviations from
+  `entity-base-template.md`: `TenantId` is the token's text, not normalized (DEPO-03 S-3); the draft id and the actor
+  ids are strings (PVG contracts OD-PVG-2 and AC-34); `Version` is `long`.
+- **Indexes.** `PvgIntakeDraftIndexCatalog` declares three: `ux_pvg_case_intake_drafts_tenant_intake` (`TenantId`,
+  `IntakeDraftId`; unique), `ix_pvg_case_intake_drafts_tenant_status_received` (`TenantId`, `Status`,
+  `ReceivedAtUtc`), and `ix_pvg_case_intake_drafts_tenant_received` (`TenantId`, `ReceivedAtUtc` descending,
+  `IntakeDraftId`). The catalog record carries the descending fields
+  (`PvgPersistenceIndexDefinition.DescendingFields`). The bootstrap creates exactly these - names, fields, order,
+  direction, uniqueness - and each starts with `TenantId`. Every `DescendingFields` entry is one of the same
+  definition's `Fields`. A status-filtered list uses the second index and finishes its sort in memory; that is
+  accepted under the build/test gate and is reviewed again before operational runtime.
+- **Schema bootstrap.** `PvgMongoSchemaBootstrap` runs once at start, before the host serves requests: it creates the
+  collection and the catalog indexes outside any transaction (idempotent), then runs a transaction probe (start, read,
+  abort). If either fails the host does not start (`PVG_PERSISTENCE_STORE_UNREACHABLE`,
+  `PVG_PERSISTENCE_TRANSACTIONS_UNAVAILABLE`). It is a startup step, not a background job: no loop, no timer, no
+  `BackgroundService`. No data is migrated. Its public method is not named `EnsureIndexesAsync` (repository guard on
+  test code, DB-010).
+- **Where it may run.** Selected only by `Pvg:Persistence:Store = Mongo`; the default is `InMemory` (DEPO-03 S-8); any
+  other value refuses the start (`PVG_PERSISTENCE_STORE_UNKNOWN`). The persistence check is the first check of the
+  start: a production-like host (environment name unset or `Production`, or `Pvg:Runtime:ProductionLike = true`) that
+  selects Mongo is refused with `PVG_PERSISTENCE_BUILD_TEST_ONLY` whatever the other runtime flags are, before any
+  connection attempt. No committed appsettings, launch profile, or workflow file selects the Mongo store.
+- **Configuration.** `Mongo:ConnectionString` (through the secrets provider) and `Mongo:DatabaseName` are required when
+  Mongo is selected; the database name is given by the work-package prompt and is not a constant in code; no value is
+  committed. The store's client uses a 5-second server selection timeout, so the bootstrap and the readiness ping
+  fail within seconds instead of waiting for the driver's 30-second default. The persistence project's registration
+  extension takes an optional `Action<MongoClientSettings>` used only by tests (AC-35 (e)); `PvgServiceApiHost` never
+  passes it.
+- **Readiness.** With the Mongo store selected, `/health/ready` returns 503 with `PVG_DEPENDENCY_INTAKE_STORE_UNREACHABLE`
+  when the store does not answer.
+- **Data.** Test and dev data are synthetic; no real PHI/PII is written to any Mongo store under this gate.
+- **Not authorized by this section.** Seed data, permission seed or grant, background jobs, any other collection or
+  index, central-audit wiring (DL-5), and any operational use. The closed catalog registration of DL-11 is authorized by
+  its own section below, not by this one (revision 15).
+
+## Closed Catalog Registration
+
+Authority: `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md` (KK-1 ...
+KK-6), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md` (corrections and measures), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md` (the owner's "Evet, sürsün"), `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md` (KK-7 ... KK-10),
+`docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md` (item 3), and the DCP-004 §10 exception (revision 15). Build/test gate only: local, dev, and CI. Slice DL-11; acceptance AC-36, AC-37, AC-38. This section states a target.
+Measured by reading at commit `324ec6600`; none of it is built, run, or measured live, with one exception: the triage binding
+run recorded in `pvg-mod0230-kapali-kayit-04.md` (real host at commit `2bfe93f36`, fake values, no proxy, no Gateway).
+
+- **Why.** Every screen action needs a key (AC-2), and no `pvg.case-intake-triage.*` key exists in AuthService. No role
+  can hold one, so nobody can open the screen. Registration is the path OD-PVG-1 approved for creating those keys.
+- **Where it lives.** In `Diten.PvgService`, not in Platform (KK-2): code in Platform would reach every environment
+  Platform runs in. Provider `src/Diten.PvgService.Api/ModuleRegistration/PvgCaseIntakeTriageManifestProvider.cs` and hosted
+  service `PvgModuleRegistrationHostedService` in the same folder; DL-11 writes both, neither exists today. They use the
+  shared records and
+  `ModuleRegistrationRetry` of `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions`
+  (one project reference from `Diten.PvgService.Api.csproj`; that project is not changed). Platform and Auth code do not
+  change (KK-3). The push goes straight to Platform: `POST {base URL}/api/internal/module-catalog/register-manifest`
+  with header `X-Internal-Api-Key`, whose value Platform compares with its own `AuthService:InternalApiKey`
+  (`InternalModuleRegistrationController`). `/api/internal` has no Gateway route and none is added. The push carries no
+  user identity; Platform records its actor as `module-manifest-push` (`RegisterModuleManifestCommandHandler`).
+- **When it runs.** At service start, when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like.
+- **Files.** All in `src/Diten.PvgService.Api/ModuleRegistration/`: `IModuleManifestProvider.cs`,
+  `PvgCaseIntakeTriageManifestProvider.cs`, `PvgModuleRegistrationHostedService.cs`, `PvgModuleRegistrationEnvironment.cs` (the
+  environment reader, one interface with a default that reads the process environment), and
+  `PvgModuleRegistrationServiceCollectionExtensions.cs`, whose `AddPvgModuleRegistration` registers the provider, the reader,
+  the named `HttpClient` `PvgModuleRegistration` (`AllowAutoRedirect` false, so `X-Internal-Api-Key` never travels to a redirect
+  target; the category `System.Net.Http.HttpClient.PvgModuleRegistration` filtered to `LogLevel.None`), and the hosted service.
+  The registration line is one call in `AddPvgServiceApiHost`, right after `AddPvgJwtAuthentication`. The hosted service is
+  registered on every host and decides at start whether to call. The test assembly `Diten.PvgService.Api.Tests` clears both
+  variables in a module initializer, so existing host tests never reach a real Platform from a developer's shell.
+- **Module.** ModuleCode `case-intake-triage` (Platform stores `CASE-INTAKE-TRIAGE`). ModuleName and DisplayName `Case
+  Intake & Triage`. Domain `Pharmacovigilance`, Service `PvgService`. ModuleVersion `1.0.0`. SortOrder `230`, which no provider
+  uses today. Icon `bx-shield-quarter`, already used by three providers. `IsTenantAssignable: false` (KK-1). `IsBaseline`
+  false. No `ApiPermissions`: every key has a page or a button (standard §2d). No `NotificationEvents`. No
+  `PermissionOwnerModuleCode` on any page or action: the module owns all five keys.
+- **Labels.** `InternalPermissionsController.Sync` overwrites a key's display name on every sync, so the last row of a push
+  wins. So every page and action that carries a key has that key's one label, in the language of every manifest: `read` -
+  `View Case Intake`; `create` - `Create Case Intake`; `update` - `Edit Case Intake`; `triage` - `Triage Case Intake`;
+  `route` - `Route Case Intake`.
+- **Pages** - the four view routes of `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`,
+  verbatim. `IsNavigationVisible: false` on every page. `/api/*` proxy actions are not pages. PageType values are from the
+  closed list `ModulePageType` (List, Details, Create, Edit, Report, Wizard, Dashboard, Custom); the reconcile turns any other
+  value, such as `Detail`, into `List`.
+
+| PageCode | DisplayName | RoutePath | RequiredPermission | ParentPageCode | PageType | SortOrder |
+|---|---|---|---|---|---|---|
+| `CASE_INTAKE_TRIAGE` | View Case Intake | `/Pharmacovigilance/CaseIntakeTriage` | `pvg.case-intake-triage.read` | none | List | 10 |
+| `CASE_INTAKE_TRIAGE_CREATE` | Create Case Intake | `/Pharmacovigilance/CaseIntakeTriage/Create` | `pvg.case-intake-triage.create` | `CASE_INTAKE_TRIAGE` | Create | 11 |
+| `CASE_INTAKE_TRIAGE_EDIT` | Edit Case Intake | `/Pharmacovigilance/CaseIntakeTriage/Edit/{intakeDraftId}` | `pvg.case-intake-triage.update` | `CASE_INTAKE_TRIAGE` | Edit | 12 |
+| `CASE_INTAKE_TRIAGE_DETAILS` | View Case Intake | `/Pharmacovigilance/CaseIntakeTriage/Details/{intakeDraftId}` | `pvg.case-intake-triage.read` | `CASE_INTAKE_TRIAGE` | Details | 13 |
+
+- **Actions** - the buttons the UI really shows, on the page that shows them (standard §2). None is dangerous. WP-0230-08
+  listed Triage and Route as row actions; the code shows them as forms on Details, and the code wins. ActionType values are
+  from the closed list `ModulePageActionType` (View, Toolbar, RowAction, FormAction, BulkAction, System, Custom). A `Toolbar`
+  row has `IsToolbarAction` true and `IsRowAction` false; a `RowAction` row the reverse.
+
+| Page | ActionCode | DisplayName | PermissionKey | ActionType | SortOrder | Where the UI shows it |
+|---|---|---|---|---|---|---|
+| `CASE_INTAKE_TRIAGE` | `CREATE` | Create Case Intake | `pvg.case-intake-triage.create` | Toolbar | 10 | `Index.cshtml`, link to Create |
+| `CASE_INTAKE_TRIAGE` | `VIEW` | View Case Intake | `pvg.case-intake-triage.read` | RowAction | 20 | `index.js`, `quickView`, opens Details |
+| `CASE_INTAKE_TRIAGE` | `EDIT` | Edit Case Intake | `pvg.case-intake-triage.update` | RowAction | 30 | `index.js`, `edit`, opens Edit |
+| `CASE_INTAKE_TRIAGE_CREATE` | `SAVE` | Create Case Intake | `pvg.case-intake-triage.create` | Toolbar | 10 | `_Form.cshtml`, submit |
+| `CASE_INTAKE_TRIAGE_EDIT` | `SAVE` | Edit Case Intake | `pvg.case-intake-triage.update` | Toolbar | 10 | `_Form.cshtml`, submit |
+| `CASE_INTAKE_TRIAGE_DETAILS` | `EDIT` | Edit Case Intake | `pvg.case-intake-triage.update` | Toolbar | 10 | `Details.cshtml`, link to Edit |
+| `CASE_INTAKE_TRIAGE_DETAILS` | `TRIAGE` | Triage Case Intake | `pvg.case-intake-triage.triage` | Toolbar | 20 | `Details.cshtml`, `pvg-triage-form` submit |
+| `CASE_INTAKE_TRIAGE_DETAILS` | `ROUTE` | Route Case Intake | `pvg.case-intake-triage.route` | Toolbar | 30 | `Details.cshtml`, `pvg-route-form` submit |
+
+- **Keys.** All five `pvg.case-intake-triage.*` keys are declared, and only those; each equals a constant in
+  `PvgIntakeDraftApplicationService` and in the MVC controller (AC-36). `/Pharmacovigilance/...` is not a `/Platform/`
+  route, so the sync scopes them `Tenant` (`ModulePageDescriptorNormalizer.ScopeFromRoute`).
+  **`route` is a CT reading, open to the owner at this revision's approval** (record, "CT okumaları" 1): the key is real
+  and the service always refuses it today (`DenyAllWorkflowTransitionGate`). WP-0230-08 worried that a tenant could grant
+  in good faith a right nobody can use. The operational gate requires the real MOD-0023, so the key cannot reach live
+  use before that module does, and declaring it lets the refusal be measured live (AC-38 (i)).
+- **Deliberate exception to the standard.** `.antigravity/rules/module-self-registration-standard.md` §2 expects
+  `IsNavigationVisible: true` on the top-level page, and its §3 checks that page. Here the top-level page carries `false`.
+  This is a pack-scoped exception, valid only until the operational gate opens (KK-1); the standard is not edited. When
+  the gate opens the page changes to `true` and the exception ends.
+- **The push is one startup step, not a background job.** `PvgModuleRegistrationHostedService` implements `IHostedService`
+  directly. It does not derive from `BackgroundService`, because AC-13 (f) refuses any PvgService type that does; the
+  house `ModuleRegistrationHostedService` is therefore not copied as it stands. `StartAsync` starts one task, does not
+  await it, and returns. It must not block startup, because Platform may be down, and on this host a port accepts no
+  connection until every `StartAsync` has returned (CT measurement, 2026-10-30,
+  `execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL10-v1.0.md`). `StopAsync` cancels that task and waits
+  for it. Retry is bounded: at most 5 attempts, waits of 2, 4, 8, and 16 seconds, and a 5-second timeout per attempt. So
+  the task ends within about 55 seconds. There is no timer, and nothing runs after success or give-up. It pushes again
+  only when the service restarts; Platform's reconcile is idempotent (standard §4).
+
+| State or answer | Calls | Safe log code | Result |
+|---|---|---|---|
+| Key or URL missing, empty, or whitespace-only, or a URL that is not an absolute http/https address | 0 | `PVG_MODULE_REGISTRATION_SKIPPED_NOT_CONFIGURED` | The service starts |
+| Production-like host | 0 | `PVG_MODULE_REGISTRATION_SKIPPED_PRODUCTION_LIKE` | The service starts |
+| 2xx | Stops at this call | `PVG_MODULE_REGISTRATION_SUCCEEDED` | The task ends |
+| 4xx, 3xx (no redirect is followed), or any other answer that is not a 5xx | Stops at this call | `PVG_MODULE_REGISTRATION_REFUSED` | The task ends; no retry |
+| Connection failure, timeout, or 5xx | Up to 5 | `PVG_MODULE_REGISTRATION_RETRYING`, then `PVG_MODULE_REGISTRATION_GAVE_UP` after the fifth | The task ends |
+| Stop signal during the push | No further call | `PVG_MODULE_REGISTRATION_STOPPED` | The task ends |
+
+- **Key and base URL: environment variables only.** `PlatformRegistration__InternalApiKey` and
+  `PlatformRegistration__BaseUrl`, read from the process environment through one small reader that tests can replace, and
+  not through `IConfiguration`, so neither the command line nor a configuration file can supply them. Nothing goes in `appsettings*.json` or launch settings
+  ("Service Port And Appsettings Policy"). Neither value is logged. Log entries carry a safe code, the attempt number, and
+  the status code; never the key, the URL, an exception object, or an exception message. The house service logs the
+  exception, whose text can carry the address; that is not copied either. The framework's own `HttpClient` request logging
+  writes the request address, so it must not reach a log for this call. PvgService adds no logging provider today
+  (`PvgServiceApiHost`, `Program.cs`), so this rule is measured with a capturing provider (AC-37 (g)).
+- **Missing key or URL: no call, and the service still starts.** Missing, empty, and whitespace-only all count as missing,
+  and so does a URL that is not an absolute http/https address.
+  This does not weaken fail-closed: no registration means no permission in AuthService, no permission means no role can
+  hold it, and `RequirePage` / `RequireJson` then answer 403, so the screen stays closed. The registration is not a
+  dependency of `PvgIntakeDraftApplicationService` and is not in `RequiredDependencies` ("Startup Fail-Closed
+  Requirements"). The limit: keys are additive (standard §4), so skipping a later push removes nothing an earlier push
+  created. It never opens anything either.
+- **Production-like host: no call,** whatever values are set, because the exception is build/test only (the two-gates
+  table above: "Local / dev / CI only").
+- **A failed push changes nothing.** It never changes service behaviour, `/health/ready`, or `/health/live`, and no
+  exception reaches the host. The catalog entry, or its absence, is not a readiness condition.
+- **The push's answer is not proof of the result.** A 2xx does not prove the keys exist: `RegisterModuleManifestCommandHandler`
+  returns 200 with skipped pages listed, and `CatalogPermissionSyncService` swallows an AuthService failure. A failed answer
+  does not prove nothing happened either; the reconcile may have finished. The service does not read the answer's body and
+  does not act on it. AC-38 (a) and (b) read the catalog and AuthService themselves. If Auth was down, the next restart
+  repeats the push.
+- **Effects of the existing catalog path (measured by reading; not written by this work, and DL-11 adds no code for
+  them).** The first two are recorded in `pvg-mod0230-kapali-kayit-02.md` Düzeltme 2, which corrects the first record's "the
+  role grant is made by hand"; they are on the owner's list at this approval.
+  1. `InternalPermissionsController.Sync` calls `FullCatalogPermissionGrantService` when a key is first created, so all
+     five keys land on the `SuperAdmin` role of the default tenant.
+  2. `DefaultRolePermissionTemplate.SelectFor` gives a default `Viewer` role every `Tenant`-scoped `read` key. So a
+     `Viewer` role created after the first push (`DefaultRoleProvisioningRule`) holds `pvg.case-intake-triage.read`.
+     Existing roles are not changed. The exclusion list `EntitlementOnlyViewerPermissions` is Auth code and is not
+     changed here.
+  3. A tenant administrator in that environment sees the five keys on the role screen and can grant them (record,
+     "Gerileme değerlendirmesi"). `IsTenantAssignable: false` closes subscription, not the role screen.
+  4. The first push adds the domain `Pharmacovigilance` to Platform's domain lookup
+     (`RegisterModuleManifestCommandHandler.ResolveOrRegisterDomainCodeAsync`).
+  5. `IsTenantAssignable` is an operator-owned catalog value after the first push, so the closed state rests on the
+     catalog row as well as on the manifest. AC-36 measures the manifest; AC-38 measures the row.
+  6. The lists that offer modules for assignment read `GetAssignableAsync`, so they do not offer this one. The direct
+     entitlement call does not check the value: `POST /api/platform/tenants/{tenantId}/commercial/module-entitlements`, platform
+     administrators only, passes `TenantModuleEntitlementCommandSupport.ValidateModuleAsync` and enqueues
+     `TenantEntitlementAddedV1`. **Such a row grants keys** (read from the code, not run; `pvg-mod0230-kapali-kayit-04.md`
+     KK-10). `EntitlementSyncConsumer` reads Platform's entitled modules. That read lists every physical row
+     (`GetTenantModuleEntitlementsQueryHandler`), `TenantModuleEntitlementAccessEvaluator` does not read `IsTenantAssignable`,
+     and `GetTenantEntitledModulePermissionsQueryHandler` returns the five keys the pages and actions declare. Then
+     `EntitlementPermissionSyncService.GrantModuleWithKeysAsync` writes module grants in that tenant: `Admin` gets all five
+     keys, `Viewer` gets `pvg.case-intake-triage.read` (`SelectForRole`). No person grants them, and a user holding them opens
+     the screen. Delivery needs the event bus between Platform and AuthService. Later sync runs apply the row too
+     (`InternalEventsController`, the subscription-change event). Disabling the row revokes those module grants. The row gives no
+     menu entry (`GetTenantNavigationMenuQueryHandler` reads the same list) and no answer from
+     `MongoAuthoritativeEntitlementDecisionSource`, which says `NotApplicable`. The platform system tenant gets nothing
+     (`TenantModuleAccessService`). This limit is on the owner's list at this approval.
+- **What the screen does after registration (read from the code, not run; `pvg-mod0230-kapali-kayit-02.md` Düzeltme 1).**
+  An authorized user sees the page, the form, and the option lists (report type, product role, the "unknown" country; they
+  need the read key, AC-32, and the service's options read calls no permission gate, AC-34). The list returns no records
+  and saving is refused, because four host adapters deny (`PvgServiceApiHost.cs:90-96`):
+  - `DenyAllPermissionGate` and `DenyAllFieldSecurityPolicy` on all six operations (list, open, create, update, triage,
+    route);
+  - `DenyAllWorkflowTransitionGate` on triage and route;
+  - `DenyAllEvidenceLinkPort` on triage and route, and on create and update when they carry evidence links.
+
+  The permission gate runs first, so the reader meets its refusal, `PVG_PERMISSION_DENIED`. One exception today: a triage
+  from the real form with a chosen outcome stops at JSON binding with 400 and an empty body, before any gate (G-24), until
+  AC-39 lands. This is deliberate for the deny adapters; the binding failure is a defect: OD-PVG-9
+  keeps the deny-all gate until the audit path exists, and AUD-001 K2 allows no unaudited write. DL-7's E4, and the other levels listed in G-23, cannot be produced
+  live under this pack: no slice replaces the permission gate (G-23), and whether one should is OD-PVG-14. Accepting DL-11
+  does not close DL-7 and does not open the operational gate.
+- **Two navigation text keys.** `frontend/Diten.Web.Tests/Navigation/NavManifestL10nGuardTests.cs` derives its expected keys
+  from every `*ManifestProvider.cs` under `services/`, whether or not a page is visible, and standard §8 requires the same.
+  So DL-11 adds exactly `Nav.Module.CASEINTAKETRIAGE` and `Nav.Domain.PHARMACOVIGILANCE` to the seven
+  `frontend/Diten.Web/Resources/SharedResource.*.resx` files, in all seven languages, through the l10n gate
+  (`pvg-mod0230-kapali-kayit-02.md` Düzeltme 3; AC-36 (f)). The rest of frontend stays out of scope. No screen prints these
+  keys while the module is hidden. That record is not an owner decision, so this scope is on the owner's list at this
+  approval.
+- **Required evidence: E5.** SOP §23.1 sets E5 for a "Cross-module capability seam", and this slice crosses PvgService,
+  Platform, and AuthService with lasting records. AC-38 is the evidence. E5 needs two things from it: the cross-module run
+  (push, catalog row, keys in AuthService, a person's role grant, login, page, refusal from the service) in one environment,
+  and the restart control.
+- **Baseline and a throwaway run: the limit.** A catalog row cannot be deleted by hand (standard §5), so the baseline is read
+  once. A throwaway run was checked by reading only and was not run. Platform and AuthService read
+  `MongoDbSettings:ConnectionString` and `MongoDbSettings:DatabaseName`, and PvgService reads `Mongo:*`, so environment
+  variables can point all three at another Mongo. On an empty database in Development, `AdminAccountSeed` reaches
+  `DevAccountSeed` for the accounts. Whether Platform then has what a tenant login needs, without the broker and mail setup in
+  `docs/guides/operations/dev-environment.md`, is not established. So a throwaway run is not promised: if it cannot be set
+  up, the acceptance record says the baseline was not measured. Roles must exist before the first push, or a new `Viewer` role
+  takes the read key.
+- **State of the code.** The G-3, G-4, and OD-PVG-1 rows, AC-2's "not applied in code yet", the "Layout & Shell Contract" and
+  "Authorization Convention" `Today` lines, and the "Ready-for-dev Checklist" lines describe the state before delivery. At
+  commit `a333dedba` the code has: the five `pvg.case-intake-triage.*` constants in `PvgIntakeDraftApplicationService` and the
+  MVC controller; `RequirePage` / `RequireJson` on all eleven controller actions; `_LayoutTenantShell` on the four pages; JWT
+  validation in the service (`AddPvgJwtAuthentication`); the options endpoint; and the four Gateway routes. AC-36 reads that
+  code, so it can go green against that base.
+- **Not authorized by this section.** Seed data, grant code, menu entries, Ctrl+K entries, other jobs, other catalog
+  entries, any Platform or Auth change, any other frontend change, any Gateway route, tenant subscription, any allowing
+  adapter (OD-PVG-14), and any operational use (KK-6). A person's
+  role grant in dev, for the AC-38 measurement, is allowed: the owner makes it and the CT measures it (record, "Sonuç").
 
 ## Service Port And Appsettings Policy
 
@@ -763,6 +1198,10 @@ contract unless the owner explicitly approves the named artifact/version and sup
   must not contain secrets, partner credentials, PHI/PII, sample patient/reporter data, permissive fallback flags,
   `Pvg:Runtime:OperationalRuntimeAuthorized=true`, or policy values that bypass RBAC, masking, audit, workflow,
   evidence, trace, or observability gates.
+- **Registration values (revision 15).** The catalog registration key is a secret, so it can never go in such a file.
+  The base URL could pass as a "safe endpoint placeholder" under the sentence above; it does not use that allowance.
+  Both come from environment variables only and are never logged ("Closed Catalog Registration", AC-37). With neither
+  set, the service makes no call and still starts.
 
 ## Startup Fail-Closed Requirements
 
@@ -792,6 +1231,12 @@ Test rules:
   keep their tests.
 - The operational runtime flag is not approval: AC-10 (OD-PVG-6) must hold before any production-like start is
   treated as authorized.
+- Revision 14 (DL-10): three more start refusals live in "Build/Test Persistence (Mongo Store)" - the Mongo store
+  selected on a production-like host (`PVG_PERSISTENCE_BUILD_TEST_ONLY`, checked before every other refusal), an
+  unknown store value (`PVG_PERSISTENCE_STORE_UNKNOWN`), and a selected Mongo store that cannot be reached or cannot run
+  transactions (`PVG_PERSISTENCE_STORE_UNREACHABLE`, `PVG_PERSISTENCE_TRANSACTIONS_UNAVAILABLE`) - and `/health/ready`
+  also returns 503 (`PVG_DEPENDENCY_INTAKE_STORE_UNREACHABLE`) when the selected Mongo store stops answering. Tests:
+  AC-13 (c), AC-35 (d), (e). The AC-8 tests of this section stay as they are.
 
 No degraded path may silently allow a regulated create, update, triage, or route mutation unless the owning authority
 has approved that degraded path and the behavior is covered by tests.
@@ -934,7 +1379,8 @@ beyond the first 100 are unreachable (G-16). The fix is measured by AC-20 (scree
 
 The create/edit field count is 25 (revision 05; revision 04 recorded 32 and the pack before it 16, both including triage / route inputs; see "Entity Fields"), so MOD-0230 follows Golden Reference Compact:
 
-- `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (MVC proxy; 10 actions).
+- `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` (MVC proxy; 10 actions; revision 13:
+  AC-32 adds one JSON action that serves the options of AC-34 under the read key).
 - `Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`,
   `_Form.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `CaseIntakeTriageIndex.cs`.
 - `wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js`, `index.l10n.js`, `form.js`, `details.js`.
@@ -949,7 +1395,9 @@ DataTable verifier (G-14): 18 gaps at `ce3be60cf`. Five are real gaps fixed in D
 the `_Filter` and `_IndexL10n` partial includes, form view model). The other 13 concern bulk delete, export, import,
 select-all, and their wiring (reload-with-toast, clear-selection), which this pack permanently excludes; by OD-PVG-10
 (owner, 2026-10-21) they are recorded as this module's **known deviation** (list-screen touch protocol answered: no
-silent fix and no silent skip).
+silent fix and no silent skip). Since revision 13 the deviation is read by category, not by the count of 2026-10-21:
+bulk delete, export (including the BL-452 server-export item the verifier adds in server mode), import, select-all,
+clear-selection, and the wiring tied to them (AC-14; OD-PVG-10).
 
 Frontend API calls use the same-origin MVC proxy profile. Direct browser-to-Gateway calls and direct service-port calls
 are forbidden for this regulated tenant surface.
@@ -958,9 +1406,10 @@ are forbidden for this regulated tenant surface.
 
 Recorded 2026-08-09 for slice 1 as the PVG package owner's rules for this module's own fields; binding on
 implementation. `Pre-check` is server-side validation before persistence. `DB-level` records a planned Mongo
-index/constraint decision only; no collection or index is authorized under the build/test gate ("Runtime
-Constraints"). The code's `PvgIntakeDraftIndexCatalog` declares two different index definitions (tenant + draft id
-unique; tenant + status + received) as data only.
+index/constraint decision. Since revision 14 (DEPO-03 S-6) `PvgIntakeDraftIndexCatalog` holds three index
+definitions - tenant + draft id (unique); tenant + status + received; tenant + received descending + draft id - and
+the DL-10 store creates exactly these under the build/test gate ("Build/Test Persistence (Mongo Store)"). The
+`ReceivedAtUtc` row below is the third of them. Every other `DB-level` entry stays a plan; this revision adds none.
 
 Order of checks (G-9): tenant / actor / correlation context and the permission check run **before** field validation,
 so an unauthorized caller never receives validation reason codes. Today validation runs first.
@@ -981,7 +1430,7 @@ Route succeed by inventing a queue list must be rejected in review.
 | IntakeChannel | Yes | Controlled option set; no free text | Planned index `(TenantId, IntakeChannel)` | Value must exist in the PVG lookup; unknown value rejected 400 | unknown channel fails closed for routing decisions |
 | SourceType | Yes | Controlled option set; no free text | Planned index `(TenantId, SourceType)` | Value must exist in the PVG lookup; unknown value rejected 400 | unknown source fails closed for routing decisions |
 | SourceReference | No | Max 128 chars; trimmed; non-authoritative external ID | Planned non-unique index `(TenantId, SourceType, SourceReference)` | Duplicate `(SourceType, SourceReference)` in the same tenant returns 409 with a duplicate-candidate reason code; never a silent overwrite | confidential; never authoritative, never a primary key, never raw in logs/audit |
-| ReceivedAtUtc | Yes | UTC instant; rejected if later than server time + 5 min skew or earlier than 1900-01-01 | Planned index `(TenantId, ReceivedAtUtc desc)` | Server re-normalizes to UTC; a client-supplied offset is converted, never trusted as-is | regulated-safety; server-side UTC normalization is mandatory |
+| ReceivedAtUtc | Yes | UTC instant; rejected if later than server time + 5 min skew or earlier than 1900-01-01 | Index `(TenantId, ReceivedAtUtc desc, IntakeDraftId)` in `PvgIntakeDraftIndexCatalog` (`ix_pvg_case_intake_drafts_tenant_received`; revision 14, DEPO-03 S-6), created by the DL-10 store | Server re-normalizes to UTC; a client-supplied offset is converted, never trusted as-is | regulated-safety; server-side UTC normalization is mandatory |
 | ReporterType | Yes | Controlled option set | Planned index `(TenantId, ReporterType)` | Value must exist in the PVG lookup | public-metadata |
 | ReporterContactSummary | No | Max 256 chars; summary only - no full address, no national ID, no account number | Not indexed | Minimum-necessary check: rejected if it exceeds 256 chars | PII; deny/mask/omit when field policy is unavailable |
 | PatientSubjectCode | No | Max 64 chars; pseudonymous code only; no whitespace; must not contain the at-sign character or more than 2 consecutive digit groups resembling a national identifier | Not indexed | Rejected if it fails the pseudonymity pattern | PHI; never returned or audited raw without an approved policy |
@@ -1016,8 +1465,13 @@ Route succeed by inventing a queue list must be rejected in review.
 | EvidenceLinkReferences | No | Max 20 references; each is an object reference only, never document content | Not indexed | Today: `DenyAllEvidenceLinkPort.EvaluateAsync` returns `EvidenceLinkDenied` and records nothing, so a create or update that carries references, and every triage and route, is blocked. Proposed, not in code: requirements recorded as `Pending`, only if the MOD-0031 owner approves a durable pending-evidence state. Completeness never returns `Allowed` in slice 1 | confidential; no fake evidence pack when the evidence service is unavailable |
 
 Update concurrency (G-15): an update, triage, or route based on a stale read must return 409 with no silent
-overwrite. Today no record version exists in any layer; the in-memory store overwrites without a version check and the
-application service reads every `ReplaceAsync` `false` as not-found. Required shape and ownership:
+overwrite. On 2026-10-22 no record version existed in any layer. Measured 2026-10-29: the store contract carries it -
+`IPvgIntakeDraftStore.ReplaceAsync` takes `expectedVersion` and returns `PvgIntakeDraftReplaceResult` (`Replaced`,
+`NotFound`, `VersionConflict`), `PvgPersistedIntakeDraft` carries `Version`, and the in-memory store compares it.
+Since revision 14 the DL-10 Mongo store keeps the same versioning contract: the version is a stored field, a replace is one
+conditional write filtered by tenant, draft id, not-deleted, and expected version that sets the next version, and a
+write that matches nothing is reported as `NotFound` or `VersionConflict` without a second write (AC-35). Required
+shape and ownership:
 
 | Layer | Required change | Slice | Prerequisite |
 |---|---|---|---|
@@ -1053,6 +1507,16 @@ Option-set ownership recorded for draft planning for future validation and UI co
 Static controlled PVG lookups may be planned as PVG-owned reference data only after the approved reference-data
 publication path is selected. Workflow/reference-owned option sets must fail closed when the owning contract is
 unavailable; no hardcoded UI fallback is allowed.
+
+Revision 13 (SECENEK-01 S-1, S-2; DALGA2-01 K1): `PvgIntakeOptionSets`
+(`services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOptionSets.cs`) stays the single place of the
+ReportType and ProductRole codes and of the PVG "unknown" country value; measured 2026-10-28, no other file under
+`services/Diten.PvgService/src` holds one of these codes as a string literal. The screen reads them only through the
+read-only endpoint `GET /api/v1/pv-case-intake-triage/options` (AC-34) via the same-origin MVC proxy (AC-32); views and
+JS hold no code list; the displayed name is the page resx value for the code, or the code itself when no value exists.
+When the reference-data publication path is selected, the set moves there (K1) and the endpoint's source moves with it.
+The endpoint serves no other option set (`ReporterSelectionDirectories`, IntakeChannel, SourceType, ReporterType,
+Seriousness, IntakePriority, TriageOutcome, RouteTargetQueue are not part of it).
 
 Every field included in the final create/edit/list/detail/export surface must have at least one matching test
 expectation proving unauthorized, cross-tenant, missing-policy, and masking-denied behavior.
@@ -1148,7 +1612,8 @@ until then).
 (`docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`): catalog and grant follow the catalog→Auth sync
 path, and the `pvg.*` namespace is listed in PKS-001 §4. The keys below are the implementation target; DL-6 applies
 them in the service and DL-7 on the MVC controller. Until DL-6 lands, the code checks `pvg.mod0230.intake.*`.
-Catalog, seed, and grant ownership stay with MOD-0018 / AuthService; MOD-0230 only defines and consumes keys.
+Catalog, seed, and grant ownership stay with MOD-0018 / AuthService; MOD-0230 only defines and consumes keys, and since
+revision 15 declares them in its manifest ("Closed Catalog Registration").
 
 Policy and enforcement (PKS-001 format, tenant shell):
 
@@ -1203,6 +1668,12 @@ Revision 04 adds no permission key: the new fields are read and written under th
 `update`, and `triage` keys. Reading MOD-0290, MOD-0150, and MOD-0288 data needs those owners' read authorization,
 which their contracts settle ("Required Interface Contracts"); this pack grants nothing in their namespaces.
 
+Revision 13 adds no permission key either (SECENEK-01 S-1, S-2): the service endpoint
+`GET /api/v1/pv-case-intake-triage/options` requires the validated JWT and the tenant context check of DL4B (AC-5) and
+calls no permission gate, because it returns no tenant data and no record (AC-34); the MVC proxy action that serves the
+options to the screen checks the existing key `pvg.case-intake-triage.read` through `RequireJson` before any Gateway call
+(AC-32).
+
 Open authorization decisions:
 
 - Key family: OD-PVG-1 - approved 2026-10-27 (`pvg.case-intake-triage.*`); implementation pending in DL-6 / DL-7.
@@ -1212,7 +1683,10 @@ Open authorization decisions:
 - PHI/PII field-level authorization must align with MOD-0019 before runtime.
 - Export is masked-only unless a later field policy approval explicitly permits more.
 
-No permission seed is authorized by this pack.
+No permission seed is authorized by this pack. Revision 15: the five keys reach AuthService only through the
+catalog→Auth sync (OD-PVG-1 item 3; "Closed Catalog Registration"), which is not a seed. No code of this module writes a
+permission or a role grant. A person may grant a key to a role on the existing role screen in dev, for the AC-38
+measurement.
 
 ## Audited Events
 
@@ -1226,6 +1700,9 @@ command must fail (AUD-001 §4.3). No fail-closed path exists today. Mutations c
 the deny-all permission gate denies every call; any change that lets a MOD-0230 mutation succeed before DL-5 lands
 breaks K2. Path: **OD-PVG-9** - PVG side decided 2026-10-21 (owner): wait for the K4 shared forwarder (path `b`)
 and the MOD-0021 owner contract, keep the deny-all permission gate until then; not actionable until both exist.
+Revision 15 adds no write command and no read of a safety record: the registration push writes no PVG record, and Platform
+audits it (`RegisterModuleManifestCommandHandler`, actor `module-manifest-push`). A person's role grant is audited by
+AuthService (`AssignPermissionCommandHandler`, `RoleAuditEvents.PermissionGranted`).
 Event names below are proposals.
 
 | Command | Event name (proposal) | Object (type) | Path | Before/after or changed fields | Exception class + reason |
@@ -1290,6 +1767,20 @@ Slice 1 sub-resources:
 /api/pv-case-intake-triage/{id}/route
 ```
 
+**Options read (revision 13; SECENEK-01 S-1, S-4 (a); AC-34).** The read-only service endpoint
+`GET /api/v1/pv-case-intake-triage/options` is reached through the existing item route: upstream
+`GET /api/pv-case-intake-triage/options` matches `/api/pv-case-intake-triage/{intakeDraftId}` (methods `GET`, `PUT`) with
+`intakeDraftId = options`, and the Gateway forwards it to `/api/v1/pv-case-intake-triage/options`. In the service the
+literal segment `options` is its own GET endpoint, which routing prefers to `{intakeDraftId}`; `options` also joins the
+reserved id segments (`ReservedIntakeDraftIdSegments`, `PvgCaseIntakeTriageEndpoints.cs` line 13), so PUT, `/triage`, and
+`/route` on it return 404 like `export` or `archive`. No intake draft id can equal `options`: the store generates every id
+as `pvg-draft-<guid>` (`NewDraftId()`, `InMemoryPvgIntakeDraftRepository.cs` line 125) and no request carries an id.
+Therefore `ocelot.json` does not change, no fifth route entry is added, and AC-16 ("exactly the four MOD-0230 route
+entries") stands as written. Measured 2026-10-28: the item route's upstream methods are `GET`, `PUT`
+(`gateway/Diten.ApiGateway/ocelot.json` lines 2873-2886); the service maps GET and PUT on `{intakeDraftId}`
+(`PvgCaseIntakeTriageEndpoints.cs` lines 26 and 28). The browser never calls this path: it reads the options through the
+MVC proxy (AC-32).
+
 Out of slice 1 - must not be routed:
 
 ```text
@@ -1316,25 +1807,25 @@ acceptance record.
 command or test shows the stated result. Items that depend on an open decision cannot be checked before it is decided.
 
 - [ ] AC-1 (zorunlu) — DL-7: Every `.cshtml` under `Views/Pharmacovigilance/CaseIntakeTriage/` that renders a page sets `Layout = "_LayoutTenantShell";` (`grep -L` over `Index`, `Create`, `Edit`, `Details` prints nothing).
-- [ ] AC-2 (zorunlu) — DL-7; OD-PVG-1 approved 2026-10-27 with the catalog-grant path and the `pvg.*` namespace (owner as MOD-0018 / Auth owner, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`): each of the 10 actions of `PharmacovigilanceCaseIntakeTriageController` (10 of 10) checks a key from the target family `pvg.case-intake-triage.*` before any other work, through the Diten.Web house pattern (Diten.Web has no `[HasPermission]` attribute; measured 2026-10-27): the page actions `Index`, `Create`, `Edit`, `Details` through a controller-private `RequirePage(<key>)` that returns a bare `StatusCode(403)`, re-executed to the shared `/Home/Status/403` page, and the JSON actions `List`, `Detail`, `CreateDraft`, `UpdateDraft`, `TriageDraft`, `RouteDraft` through a controller-private `RequireJson(<key>)` that returns 403 with a message body; both decide by `PermissionClaims.HasPermission(User, <key>)` (`frontend/Diten.Web/Security/PermissionClaims.cs`), as in `frontend/Diten.Web/Controllers/CRM/AccountsController.cs` (not applied in code yet).
+- [ ] AC-2 (zorunlu) — DL-7; OD-PVG-1 approved 2026-10-27 with the catalog-grant path and the `pvg.*` namespace (owner as MOD-0018 / Auth owner, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`): each of the 10 actions of `PharmacovigilanceCaseIntakeTriageController` (10 of 10) checks a key from the target family `pvg.case-intake-triage.*` before any other work, through the Diten.Web house pattern (Diten.Web has no `[HasPermission]` attribute; measured 2026-10-27): the page actions `Index`, `Create`, `Edit`, `Details` through a controller-private `RequirePage(<key>)` that returns a bare `StatusCode(403)`, re-executed to the shared `/Home/Status/403` page, and the JSON actions `List`, `Detail`, `CreateDraft`, `UpdateDraft`, `TriageDraft`, `RouteDraft` through a controller-private `RequireJson(<key>)` that returns 403 with a message body (revision 13: the JSON action that AC-32 adds for the options of AC-34 is the 11th action and follows the same rule with `pvg.case-intake-triage.read`, so the count becomes 11 of 11 once it exists; SECENEK-01 S-2); both decide by `PermissionClaims.HasPermission(User, <key>)` (`frontend/Diten.Web/Security/PermissionClaims.cs`), as in `frontend/Diten.Web/Controllers/CRM/AccountsController.cs` (not applied in code yet).
 - [ ] AC-3 (zorunlu) — DL-7: UAS-001: a signed-in tenant user without the read key requesting `/Pharmacovigilance/CaseIntakeTriage` receives the shared unauthorized response; the body contains no `dt-pvg-case-intake-triage` table, form, or filter markup; a named test proves it.
 - [ ] AC-4 (zorunlu) — DL-6; OD-PVG-1 approved 2026-10-27 with the catalog-grant path and the `pvg.*` namespace (owner as MOD-0018 / Auth owner, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`): Scan limited to the MOD-0230 surface (narrowed 2026-10-22, review 02 F-2): `git grep -n 'pvg\.' -- 'services/Diten.PvgService/src/*/RegPvBase/*' services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs` prints only keys of the target family `pvg.case-intake-triage.*` (today it prints the five `pvg.mod0230.intake.*` constants and the five shape-test strings, measured 2026-10-22); the shape test pins the same family, and "Authorization Convention" lists the same strings. The MOD-0231 keys `pvg.mod0231.case-processing.*` (`Application/CaseProcessing/PvgCaseProcessingApplicationService.cs` lines 7-10) are outside this scan: they are the MOD-0231 pack's subject, not this pack's (XMC-001).
 - [ ] AC-5 (zorunlu) — DL-4; OD-PVG-2 approved 2026-10-27: the contract by the owner as Enterprise Architecture (MIMARI-01) and the claim names `tenant_id` and subject by the owner as MOD-0018 / Auth owner (`docs/records/decisions/2026-10/pvg-mod0230-od-pvg-2-onay-01.md`; tenant claim name corrected to `tenant_id` by `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-2-onay-02.md`, ODPVG2-02): No bearer or an invalid bearer -> 401; a caller-supplied `X-Diten-Tenant-Context` or `X-Diten-Actor-Id` that differs from validated context has no effect (test reads no data of the injected tenant); tenant header and token tenant claim mismatch -> denied.
-- [ ] AC-6 (zorunlu) — DL-4; after OD-PVG-3 and MOD-0041 / Ops approval of the regulated error envelope: Target mapping: unknown id and cross-tenant id -> 404 with no record data; missing or invalid token -> 401; permission denied -> 403; missing tenant context and validation -> 400; duplicate, workflow-blocked, evidence-blocked, concurrency conflict -> 409; unexpected failure -> 500 with a non-empty safe envelope; no endpoint returns an empty-body 500; tests in `Diten.PvgService.Api.Tests`. Not applied until that approval.
+- [ ] AC-6 (zorunlu) — DL-4; after OD-PVG-3 and MOD-0041 / Ops approval of the regulated error envelope: Target mapping: unknown id and cross-tenant id -> 404 with no record data; missing or invalid token -> 401; permission denied -> 403; missing tenant context and validation -> 400; duplicate, workflow-blocked, evidence-blocked, concurrency conflict -> 409; unexpected failure -> 500 with a non-empty safe envelope; no endpoint returns an empty-body 500; tests in `Diten.PvgService.Api.Tests`. Not applied until that approval. When it is applied, `Cross_tenant_get_and_put_on_the_mongo_store_answer_like_an_unknown_id` (AC-35 (b)) also measures 404.
 - [ ] AC-7 (zorunlu) — DL-4: An unauthorized caller with an invalid body receives the context / permission outcome, never a validation reason code (test).
 - [ ] AC-8 (zorunlu) — DL-3; form decided by OD-PVG-5, 2026-10-21: "Startup Fail-Closed Requirements" holds: a production-like host refuses to start when a dependency of `PvgIntakeDraftApplicationService` does not resolve, and in every environment `/health/ready` returns 503 when a required port or the store is missing; removing one required registration turns a named test red.
 - [ ] AC-9 (zorunlu) — DL-3: A static test fails if any committed `appsettings*.json`, launch profile, workflow, or deployment file sets `Pvg:Runtime:OperationalRuntimeAuthorized` to `true` or sets `Pvg:Runtime:UseNonProductionAdapters` for a production-like environment.
 - [ ] AC-10 (zorunlu) — DL-3; OD-PVG-6 approved 2026-10-27 by the owner as Enterprise Architecture (MIMARI-01, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-6-bayrak-01.md`), binding form: `Pvg:Runtime:ApprovalReference` required when the flag is true, plus a CI check that every committed `ApprovalReference` value exists in the repo's approval records: A production-like start with `Pvg:Runtime:OperationalRuntimeAuthorized=true` is refused unless the approval-evidence binding is satisfied; a test proves the refusal.
 - [ ] AC-11 (zorunlu) — DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract: No MOD-0230 mutation succeeds without its audit record written in the same unit of work; with the audit writer forced to fail, the result is not `Succeeded` and the store is unchanged (test); the ledger's known-debt list shrinks by the audited commands.
 - [ ] AC-12 (zorunlu) — DL-2: Stale update at the store and application layer ("Validation Rules", update concurrency table): `IPvgIntakeDraftStore.ReplaceAsync` takes the expected version and its result separates not-found from version conflict; update, triage, and route map a conflict to their own reason code, never to `IntakeDraftNotFound`, and the store is unchanged; read results return the current version. Named tests in `tests/Diten.PvgService.RegPvBase.Tests` (names required): `ReplaceAsync_with_stale_version_returns_conflict_not_not_found`, `Update_with_stale_version_returns_version_conflict_and_leaves_store_unchanged`, `Triage_and_route_with_stale_version_return_version_conflict` (with allow-stub ports in the test only).
-- [ ] AC-13 (zorunlu) — DL-2: No Mongo driver reference in PvgService under the build/test gate (existing architecture tests stay green).
-- [ ] AC-14 (zorunlu) — DL-7; OD-PVG-8 and OD-PVG-10 decided 2026-10-21: The DataTable verifier shows no gap other than the recorded known deviation: the 13 items tied to bulk delete, export, import, select-all, and their wiring (reload-with-toast, clear-selection) (G-14, OD-PVG-10). The other five - data mode (`data-dt-data-mode="server"` on the table), `_TableSkeleton`, the `_Filter` and `_IndexL10n` partial includes, form view model - are fixed in DL-7. Open: the verifier still prints 18 gaps (2026-10-21).
-- [ ] AC-15 (zorunlu) — DL-7: The seven `CaseIntakeTriageIndex.*.resx` files exist and carry the same key set.
+- [ ] AC-13 (zorunlu) — DL-10; revision 14 (DEPO-01, DEPO-03; replaces "No Mongo driver reference in PvgService"): Mongo stays a build/test persistence detail. Every new named test in (a)-(f) has a sabotage that compiles, turns at least that test red, and touches only DL-10 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. (a) Test `Only_the_persistence_project_references_the_Mongo_driver` reads every `*.csproj` under `services/Diten.PvgService/src` and the referenced assemblies of Domain, Application, Infrastructure, and Api, and allows `MongoDB.*` only in `Diten.PvgService.Persistence` (sabotage: a `MongoDB.Driver` package reference, version 2.27.0 - the persistence project's version, so restore raises no NU1605 downgrade error - added to `Diten.PvgService.Api.csproj`; or `PvgServiceApiHost.cs` code that calls a `MongoDB.Driver` member directly through the persistence project's transitive reference); test `Only_the_Api_and_MOD0230_test_projects_reference_the_persistence_project` calls a pure check that takes project paths and texts and returns every project reference to `Diten.PvgService.Persistence` from a project other than `Diten.PvgService.Api`, `Diten.PvgService.Api.Tests`, and `Diten.PvgService.RegPvBase.Tests` - once with every `*.csproj` found under `services/Diten.PvgService` (expects none, and - positive control - expects the set of files it read to include `Diten.PvgService.Api.csproj` and `Diten.PvgService.Persistence.csproj`) and once with a fixture project text held as a string in the test code (a non-allowed project that references the persistence project; expects exactly that finding) (sabotage: the allowed list widened to every project, or the check made to return nothing - the fixture finding disappears; or the scan root pointed at a wrong directory - the positive control fails); a reference from Domain, Application, or Infrastructure is a project cycle that fails the build. (b) Test `Mongo_store_creates_exactly_the_catalog_indexes_each_starting_with_TenantId` runs `PvgMongoSchemaBootstrap` against the test's own mongod and compares every index of the collection `pvg_case_intake_drafts` (except `_id_`) with `PvgIntakeDraftIndexCatalog` - same names, fields, order, direction, uniqueness, first key `TenantId` (sabotage: the bootstrap creates one extra index without a leading `TenantId`, or skips one catalog index); test `Pvg_database_holds_only_the_named_collections` compares the collection names of the PVG database after the bootstrap with a named list - today `pvg_case_intake_drafts` only; DL-5 adds its outbox to that list (sabotage: the bootstrap creates one more collection); test `Catalog_declares_the_tenant_received_index_with_received_descending` also asserts that every `DescendingFields` entry is one of the same definition's `Fields` (sabotage: `DescendingFields` of the third definition emptied, or set to a name that is not in its `Fields`); the existing `Persistence_indexes_are_tenant_first_and_do_not_create_global_unique_ids` stays (sabotage: a catalog definition whose first field is not `TenantId`). (c) Test `Mongo_store_is_refused_on_a_production_like_host` with `Pvg:Persistence:Store=Mongo` in two cases - environment `Production` with no other runtime flag, and environment `Development` with `Pvg:Runtime:ProductionLike=true`, `Pvg:Runtime:OperationalRuntimeAuthorized=true`, and a valid `Pvg:Runtime:ApprovalReference` - expects in both a start refusal whose message is `PVG_PERSISTENCE_BUILD_TEST_ONLY` and carries no connection value (sabotage: the persistence check removed, or moved after `ThrowIfUnsafe`'s other checks - the first case then fails with the operational-runtime message, the second with the missing-dependency message); test `In_memory_store_is_the_default_and_mongo_is_opt_in` resolves `IPvgIntakeDraftStore` to the in-memory type without the key and to the Mongo type with `Mongo` (sabotage: the code default changed to `Mongo`); test `Unknown_store_value_refuses_start` (sabotage: an unknown value falls back to `InMemory`); test `No_committed_configuration_selects_the_mongo_store` calls a pure check that takes file paths and texts and returns every setting of `Pvg:Persistence:Store` / `Pvg__Persistence__Store` to `Mongo` - once with the committed files found by name pattern (every `appsettings*.json` and `launchSettings.json` in the repository, `.claude/launch.json`, `.github/workflows/*`; expects none, and - positive control - expects the set of files it read to include `.claude/launch.json` and `.github/workflows/service-tests.yml`) and once with a fixture launch-profile text held as a string in the test code (expects exactly that finding) (sabotage: one of the two key spellings dropped from the check, or the check made to return nothing - the fixture finding disappears; or the scan root pointed at a wrong directory - the positive control fails). (d) Test `Mongo_store_never_reads_counts_or_replaces_a_soft_deleted_draft` (a document with `IsDeleted=true` written by the test is absent from find, list, and count, and a replace returns `NotFound`; sabotage: the `IsDeleted` filter removed from the find query); test `Mongo_store_writes_IsDeleted_false_and_no_DeletedAt_on_create` reads the raw document (sabotage: the insert mapping leaves `IsDeleted` out). (e) Test `Store_contract_and_mongo_store_have_no_delete_bulk_delete_archive_void_or_export_member` covers `IPvgIntakeDraftStore` and every type of the persistence project (sabotage: a public `DeleteAsync` method added to the Mongo store class). (f) Test `Pvg_host_registers_only_the_named_hosted_services` builds the host with `InMemory` and with `Mongo` and compares `GetServices<IHostedService>()` with a named list - the set measured on today's host in the DL-10 DoR, plus `PvgMongoSchemaBootstrap` with `Mongo` - and finds no PvgService type deriving from `BackgroundService` (sabotage: one `AddHostedService<>` registration added to `PvgServiceApiHost`). When DL-11 lands, this named list grows by exactly one type, `PvgModuleRegistrationHostedService` (revision 15, AC-37), and by nothing else. (g) Existing guards stay green: `DenyAllAdapters_are_stateless_and_do_not_reference_persistence_or_network_libraries` (`DenyAllRegPvBasePortTests.cs`), `Persistence_boundary_has_no_delete_bulk_delete_archive_void_or_export_methods` (`PvgIntakeDraftPersistenceBoundaryTests.cs`), the Application-assembly scans in `PvgApplicationContractShapeTests.cs` and `PvgIntakeDraftApplicationServiceTests.cs`, the MOD-0231 / MOD-0232 / MOD-0234 type scans, and the repository guards `MongoClientInstantiation_MustStayInAllowedBootstrapFiles` and `MongoTestDatabaseGuardTests`; this revision claims no new sabotage for them; suite `tests/architecture/TenantArchitecture.ArchitectureTests` 0 failed.
+- [ ] AC-14 (zorunlu) — DL-7; OD-PVG-8 and OD-PVG-10 decided 2026-10-21; category wording since revision 13 (review `docs/records/reviews/MOD-0230/prompts/WP-0230-DL7A-v1.2-inceleme-01.md` F-4, wave 5 DoR "CT okumaları" 1): The DataTable verifier shows no gap other than the recorded known deviation, stated by OD-PVG-10's categories and not by a count: every item the verifier prints belongs to one of bulk delete, export (including the BL-452 server-export item the verifier adds unconditionally in server mode), import, select-all, clear-selection, or the wiring tied to these (for example reload-with-toast) (G-14, OD-PVG-10); none of the other five - data mode (`data-dt-data-mode="server"` on the table), `_TableSkeleton`, the `_Filter` and `_IndexL10n` partial includes, form view model - is printed; they are fixed in DL-7. History: on 2026-10-21 the category held 13 items and the verifier printed 18 gaps.
+- [ ] AC-15 (zorunlu) — DL-7: The seven `CaseIntakeTriageIndex.*.resx` files exist and carry the same key set; since revision 13 (CEVIRI-01 C-3, `docs/records/decisions/2026-10/pvg-mod0230-ceviri-dl7b-01.md`; SECENEK-01 S-4 (e)) also: in each of the six non-English files (tr, fr, es, zh, ar, ru) no value equals the `en` value of the same key, except the language-independent values named in the test's exception list - today `ChannelPortal` (es "Portal") and `TriageTitle` (fr "Triage"); every other equal value is red. Test `pvg resources carry the same key set in seven languages without english echo` in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` (name unchanged; since revision 13 it checks every key, not only the keys one work package adds); sabotage: copying the `en` value of one key into a non-English file, outside the exception list, turns it red. A new exception is named (key and language) in an approved work-package prompt, never added by the worker.
 - [ ] AC-16 (zorunlu) — DL-8: `ocelot.json` holds exactly the four MOD-0230 route entries and no archive, export, delete, or bulk-delete route.
 - [ ] AC-17 (zorunlu) — DL-1: Every command in "Test Expectations" reports 0 failed and `known_failures.py check` exit 0.
 - [ ] AC-18 (zorunlu) — DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract; added 2026-10-22, review 02 F-1: Single-record read audit (AUD-001 §7, "Audited Events" read row): every `GetDraftByIdAsync` call that returns the record (`Succeeded`) writes exactly one `pvg.case-intake.viewed` record through the central path (`b`) carrying object type and id, actor, server-resolved tenant, correlation id, UTC time, and outcome, and no field value from the never-written list - test `GetById_success_writes_one_read_audit_record_without_field_values` (name required); with the read-audit writer forced to fail, the result is the behaviour fixed by `PVG-MOD0230-AuditEvent-v1` - test `GetById_when_read_audit_cannot_be_written_follows_the_MOD0021_contract` (name required). This item cannot be checked before that contract is signed. The deny-all permission gate does not satisfy it.
 - [ ] AC-19 (zorunlu) — DL-4; after DL-2 AC-12; does not wait for OD-PVG-2 / OD-PVG-3 - 409 is today's mapping for every non-success and also OD-PVG-3's target for a concurrency conflict; added 2026-10-22, review 02 F-3 and F-5: API: (a) PUT, `/triage`, and `/route` bodies carry the expected version, GET item and list items return it, and a stale PUT returns 409 with the version-conflict reason code and leaves the store unchanged - test `Put_with_stale_version_returns_409_version_conflict`; (b) the list response carries a total count (all of the tenant's drafts) and a filtered count (after the status filter): with 101 drafts, `pageNumber=2&pageSize=100` returns 1 item, total 101, filtered 101 - test `List_with_101_drafts_returns_second_page_and_total_counts`; with a status filter the filtered count equals the matching drafts - test `List_with_status_filter_returns_filtered_count` (names required; tests in `Diten.PvgService.Api.Tests`). DL-4 owns the whole API-side count: the store count member, `PvgIntakeDraftQueryResult`, `ListDraftsAsync`, and the API response.
-- [ ] AC-20 (zorunlu) — DL-7; after DL-4 AC-19; added 2026-10-22, review 02 F-3 and F-5: Screen, measured in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` (names required): (a) page parameters are passed - the list is the shared list component `DitenDataTable.createList({ dataMode: 'server', … })` (`wwwroot/assets/js/diten-datatable.js`; `index.js` writes no own page request, no `serverSide`, no `ajax.data`, and no fixed `pageNumber=1` / `pageSize=100`), so the browser request for page n carries the DataTables `start=(n-1)×length` and `length` (the table's page size), and the MVC proxy `List` action maps them to the API's `pageNumber = start / length + 1` and `pageSize = length` clamped to at most 100 (house example `GlobalProductsController.BuildListQuery`); the `pageNumber=2` of (b) is this mapped value - test `pvg list sends the requested page number and page size` (asserts the browser's `start` / `length` for page n and the proxy's mapping to `pageNumber=n` and the clamped `pageSize`); (b) with at least 101 records the next page is reachable - given a proxy response with 100 items and total 101, moving to page 2 makes the browser send `start=100&length=100`, the proxy request the API with `pageNumber=2`, and the screen render the 101st record - test `pvg list reaches the 101st record on page 2`; (c) the totals are correct - the table's total and filtered counts come from the API's total and filtered counts, not from the number of rows received - test `pvg list shows the API total and filtered counts`; (d) the version read with the record is sent back on save, triage, and route, and a 409 version conflict shows the controlled-failure alert - test `pvg form sends the record version and shows a conflict as a controlled failure`.
+- [ ] AC-20 (zorunlu) — DL-7; after DL-4 AC-19; added 2026-10-22, review 02 F-3 and F-5: Screen, measured in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` and, for the proxy mapping of (a), in `frontend/Diten.Web.Tests` (names required): (a) page parameters are passed - the list is the shared list component `DitenDataTable.createList({ dataMode: 'server', … })` (`wwwroot/assets/js/diten-datatable.js`; `index.js` writes no own page request, no `serverSide`, no `ajax.data`, and no fixed `pageNumber=1` / `pageSize=100`), so the browser request for page n carries the DataTables `start=(n-1)×length` and `length` (the table's page size), and the MVC proxy `List` action maps them to the API's `pageNumber = start / length + 1` and `pageSize = length` clamped to at most 100 (house example `GlobalProductsController.BuildListQuery`); the `pageNumber=2` of (b) is this mapped value - test `pvg list sends the requested page number and page size` (asserts the browser's `start` / `length` for page n and the proxy's mapping to `pageNumber=n` and the clamped `pageSize`); the proxy's mapping and the clamp to 100 are measured in C# by running the controller's `List` action with a recording Gateway handler, not by vitest source text or a JS double (revision 13; independent review 12 F-1) - test `List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size` (W7) in `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs`, run by `dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj`, with at least the rows `start=100&length=100` -> `pageNumber=2&pageSize=100`, `start=50&length=25` -> `pageNumber=3&pageSize=25`, and `start=0&length=500` -> `pageNumber=1&pageSize=100`; sabotage: a fixed `pageNumber=1`, a removed clamp, or `pageNumber = start / length` without `+ 1` turns it red; (b) with at least 101 records the next page is reachable - given a proxy response with 100 items and total 101, moving to page 2 makes the browser send `start=100&length=100`, the proxy request the API with `pageNumber=2`, and the screen render the 101st record - test `pvg list reaches the 101st record on page 2`; (c) the totals are correct - the table's total and filtered counts come from the API's total and filtered counts, not from the number of rows received - test `pvg list shows the API total and filtered counts`; (d) the version read with the record is sent back on save, triage, and route, and a 409 version conflict shows the controlled-failure alert - test `pvg form sends the record version and shows a conflict as a controlled failure`.
 
 **Intake fields - revision 04 (AL-1 ... AL-7, decision record
 `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md`; added 2026-10-22).** Tests in
@@ -1348,12 +1839,25 @@ say "after ..." and cannot be checked before that approval is recorded.
 - [ ] AC-25 (zorunlu) — DL-2: Event country before the source is settled ("Country rule table" row "Absent"; AL-3, EK-1, G-19): missing `EventCountry` is rejected - test `Create_without_event_country_is_rejected`; the "unknown" value is accepted - test `Event_country_unknown_is_accepted`; any other code is rejected - test `Event_country_code_is_rejected_while_country_source_is_unsettled`; `ReporterCountry` null and "unknown" are accepted and a list code is rejected - test `Reporter_country_accepts_null_and_unknown_only_while_list_is_absent`; `grep` over the MOD-0230 service and frontend paths finds no hardcoded country list.
 - [ ] AC-26 (zorunlu) — DL-2; after the country source is settled with the MOD-0048 owner, see "Required Interface Contracts": Every cell of the "Country rule table" rows "Present" and "Interrupted" ("Entity Fields", revision 05; KR-1): `EventCountry` accepts a code of the list and "unknown" and rejects null and a code not in the list - test `Event_country_accepts_reference_list_codes_and_unknown`; `ReporterCountry` accepts null and a code of the list and rejects a code not in the list - test `Reporter_country_accepts_null_and_reference_list_codes`; list read interrupted -> a list code in either field is rejected with a safe reason code, `EventCountry` "unknown" and `ReporterCountry` null still pass - test `Country_list_unavailable_rejects_codes_other_than_unknown`; a record that holds `ReporterCountry` = "unknown" (stored while the list was absent) and receives it unchanged on update keeps it after the list is present - test `Stored_unknown_reporter_country_is_kept_on_update_after_list_arrives`; the same for `EventCountry` - test `Stored_unknown_event_country_is_kept_on_update`; a new or changed `ReporterCountry` = "unknown" is accepted with the list present and with the list read interrupted (KR-1 a, `pvg-mod0230-intake-fields-03.md`) - test `Reporter_country_unknown_is_accepted_in_every_list_state`; a stored list code received unchanged on update is kept while the list read is interrupted - test `Stored_country_code_is_kept_on_update_while_list_is_interrupted` - and after the code has left the list - test `Stored_country_code_is_kept_on_update_after_it_left_the_list` (KR-1 b; both fields).
 - [ ] AC-27 (zorunlu) — DL-2; the five values count as approved only after QPPV confirms them: Report type (AL-4, G-19): missing `ReportType` is rejected - test `Create_without_report_type_is_rejected`; a value outside the PVG option set is rejected - test `Report_type_outside_option_set_is_rejected`.
-- [ ] AC-28 (zorunlu) — DL-2; after QPPV confirms AL-5: Validity result (AL-5, G-20): triage with all four criteria and at least one `Suspect` line gives `Valid` - test `Triage_with_four_criteria_and_suspect_product_is_valid`; without a `Suspect` line `ValiditySuspectProduct = true` is rejected - test `Suspect_product_criterion_without_suspect_line_is_rejected`; a missing criterion gives `InvalidFollowUpRequired` with that criterion's code - test `Missing_criterion_gives_invalid_with_missing_criterion_code`; the invalid record is still returned by `GetDraftByIdAsync` after triage - test `Invalid_case_remains_a_record_after_triage`; a client-supplied `ValidityResult` is rejected - test `Client_supplied_validity_result_is_rejected`; "unknown" country is not a reporter identifier (revision 05, "Reporter identifiers"): for an unlinked reporter whose other identifiers are empty and whose only value is `ReporterCountry` = "unknown", `ValidityReporterIdentifiable = true` is rejected with a reason code and no field value - test `Reporter_identifiable_true_with_only_unknown_reporter_country_is_rejected`; the same record declared `false` gives `InvalidFollowUpRequired` with the reporter-identifiable criterion code - test `Reporter_with_only_unknown_country_declared_false_gives_invalid_follow_up_required`.
+- [ ] AC-28 (zorunlu) — DL-2; after QPPV confirms AL-5: Validity result (AL-5, G-20): triage with all four criteria and at least one `Suspect` line gives `Valid` - test `Triage_with_four_criteria_and_suspect_product_is_valid`; without a `Suspect` line `ValiditySuspectProduct = true` is rejected - test `Suspect_product_criterion_without_suspect_line_is_rejected`; a missing criterion gives `InvalidFollowUpRequired` with that criterion's code - test `Missing_criterion_gives_invalid_with_missing_criterion_code`; the invalid record is still returned by `GetDraftByIdAsync` after triage - test `Invalid_case_remains_a_record_after_triage`; a client-supplied `ValidityResult` is rejected - test `Client_supplied_validity_result_is_rejected`; "unknown" country is not a reporter identifier (revision 05, "Reporter identifiers"): for an unlinked reporter whose other identifiers are empty and whose only value is `ReporterCountry` = "unknown", `ValidityReporterIdentifiable = true` is rejected with a reason code and no field value - test `Reporter_identifiable_true_with_only_unknown_reporter_country_is_rejected`; the same record declared `false` gives `InvalidFollowUpRequired` with the reporter-identifiable criterion code - test `Reporter_with_only_unknown_country_declared_false_gives_invalid_follow_up_required`. Triage inputs (revision 13, SECENEK-01 S-5; moved here from AC-32 and delivered in the same work as this item, after QPPV confirms AL-5): the `/triage` API request carries the four criteria `ValidityReporterIdentifiable`, `ValidityPatientIdentifiable`, `ValiditySuspectProduct`, `ValidityAdverseEvent` and the item response returns the derived `ValidityResult` and `ValidityMissingCriteria` (DL-4) - test `Post_triage_with_the_four_criteria_returns_the_derived_validity_result` in `Diten.PvgService.Api.Tests`; the triage form has the four criteria and posts them through the same-origin MVC proxy (DL-7) - test `pvg triage form posts the four validity criteria` in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`.
 - [ ] AC-29 (zorunlu) — DL-2: Reporter record and the reporter selection contract (AL-6, G-21; revision 05, "Reporter selection contract"): a manual reporter with no identifier is accepted at create - test `Manual_reporter_without_identifier_is_accepted_at_create`; a create without a reporter selection stores `ReporterSource = Manual` and an empty `ReporterSourceId`, both set by the server - test `Create_without_reporter_selection_stores_manual_source`; a selection with only `ReporterSelectionDirectory` or only `ReporterSelectionId` is rejected with a reason code and no field value - test `Reporter_selection_with_only_directory_or_only_id_is_rejected`; a directory value outside `Crm` / `PersonDirectory` is rejected - test `Reporter_selection_directory_outside_option_set_is_rejected`; while the MOD-0150 / MOD-0288 read contracts are absent every selection is rejected and only `Manual` results - test `Reporter_selection_is_rejected_while_owner_contracts_are_absent`. Removing a link (KR-2, `pvg-mod0230-intake-fields-03.md`; the linked record is placed directly in the in-memory store, so these tests do not wait for the read contracts): an update without the pair and without `RemoveReporterLink` on a linked record is rejected 400 and the link is unchanged (permanent rule) - test `Update_without_reporter_selection_on_linked_record_is_rejected`; an update with `RemoveReporterLink = true` on a linked record stores `ReporterSource = Manual`, an empty `ReporterSourceId`, the unchanged snapshot values as typed values, and `ReporterCrmSearchState = ClosedByUserUnlink` (revision 06, KR-4), and its locally produced audit payload names the changed fields only, with no value - test `Remove_reporter_link_sets_manual_clears_source_id_and_keeps_snapshot`; a new record starts with `ReporterCrmSearchState = Pending` - test `Create_sets_reporter_crm_search_state_pending`; `RemoveReporterLink = true` together with the selection pair is rejected 400 - test `Remove_reporter_link_with_selection_pair_is_rejected`; `RemoveReporterLink = true` on Create or on an unlinked record is rejected 400 - test `Remove_reporter_link_without_existing_link_is_rejected`. The shape test `PvgApplicationContractShapeTests` pins that create and update commands carry `ReporterSelectionDirectory` and `ReporterSelectionId`, the update command also `RemoveReporterLink`, and neither carries `ReporterSource`, `ReporterSourceId`, nor `ReporterCrmSearchState`.
 - [ ] AC-30 (zorunlu) — DL-2; CRM parts after the MOD-0150 owner read contract, person-directory parts after the MOD-0288 owner read contract: CRM link, snapshot, snapshot edit with a **local** audit payload, and the one-time search (AL-6, EK-4): a CRM contact id sent with `ReporterSelectionDirectory = Crm` stores `ReporterSource = Crm`, that id, and the snapshot, all set by the server - test `Crm_selection_sets_source_and_snapshot_on_the_server`; a MOD-0288 person id sent with `ReporterSelectionDirectory = Crm` is rejected - test `Person_directory_id_sent_as_crm_selection_is_rejected`; a CRM contact id of another tenant gives the same not-found result as a missing id - test `Crm_selection_of_another_tenant_is_not_found`; a later change of the source record does not change the case - test `Linked_reporter_snapshot_does_not_change_when_source_changes`; editing a copied snapshot field on the case (EK-4) leaves the source record and `ReporterSourceId` unchanged, and the audit payload the Update command produces locally (today the in-memory `PvgAuditIntent`) names the field only, with no value - for a CRM (MOD-0150) snapshot, test `Edited_crm_snapshot_field_keeps_source_and_link_and_local_payload_names_field_only`, and for a person-directory (MOD-0288) snapshot, test `Edited_person_directory_snapshot_field_keeps_source_and_link_and_local_payload_names_field_only`. This item measures the payload only: a local test double or the in-memory intent is **not** central audit acceptance; the real audit write is DL-5 (criterion 33). Country in the copy (KR-3, `pvg-mod0230-intake-fields-03.md`): with the country list absent, a CRM contact whose `CountryRef` holds a country code is selected - the code is not copied, the case is opened, `ReporterCountry` is null, and the rest of the snapshot is copied - test `Crm_country_code_is_not_copied_while_list_is_absent_and_case_opens_with_null_reporter_country`; the same for a MOD-0288 person whose directory record holds a country, if the MOD-0288 read contract returns one - test `Person_directory_country_is_not_copied_while_list_is_absent`. Trigger of the one-time search (revision 07, KR-5, `pvg-mod0230-intake-fields-05.md`; the CRM read port counts its search calls in every test below): a typed reporter is searched in CRM exactly once, in the first save after which, on a `Manual` and `Pending` record with the contract present, `ReporterNameOrInitials` is filled, and that save sets `ReporterCrmSearchState = Searched`; a later save makes no CRM search call - test `Typed_reporter_is_searched_in_crm_once_on_save`; a record opened without a reporter identifier (EK-3) ends the Create with `Pending` and zero search calls - test `Create_without_reporter_name_keeps_pending_and_makes_no_crm_search`; a later Update after which `ReporterNameOrInitials` is filled makes exactly one search call and sets `Searched` - test `Update_that_first_fills_reporter_name_searches_crm_once`; a further save (name unchanged, changed, or cleared and filled again) makes zero search calls - test `Save_after_searched_state_makes_no_crm_search`; a record whose name was entered while the MOD-0150 read port was absent stays `Pending` with zero calls, and its first save after the port is present (name still filled, no other change needed) makes exactly one search call and sets `Searched`; the next save makes none (KR-5 clarification) - test `Record_named_before_crm_contract_is_searched_once_on_first_save_after_contract`; with the contract present but the CRM read port failing (outage or timeout) in the trigger save, the save succeeds, nothing is linked, the state stays `Pending`, the log entry carries only a safe reason code (no reporter id or name), and the next qualifying save makes exactly one search call and sets `Searched` - test `Crm_read_outage_keeps_pending_and_save_succeeds`; a Create with `ReporterNameOrInitials` filled makes exactly one search call in that Create and sets `Searched` - test `Create_with_reporter_name_searches_crm_once_in_that_save`; a linked reporter (`Crm` / `PersonDirectory`) with the name filled makes zero search calls and stays `Pending` - test `Linked_reporter_with_name_makes_no_crm_search`; an ambiguous match links nothing and still sets `Searched` - test `Ambiguous_crm_match_links_nothing`; no background job is registered (existing host composition tests stay green). Removal versus the one-time search (revision 06, KR-4, `pvg-mod0230-intake-fields-04.md`; the CRM read port returns an exact match for the snapshot in every test below, and the test counts its search calls): (a) a save with `RemoveReporterLink = true` on a CRM-linked record ends with `ReporterSource = Manual`, an empty `ReporterSourceId`, the kept snapshot, `ReporterCrmSearchState = ClosedByUserUnlink`, and zero search calls - test `Remove_reporter_link_with_exact_crm_match_stays_manual_and_keeps_snapshot`; (b) a later Update of that record (snapshot unchanged or edited, no selection pair) is not linked again and makes zero search calls - test `Record_with_user_removed_link_is_not_relinked_by_crm_search_on_later_save`; the same for a record linked from the person directory (MOD-0288) and then unlinked - test `Person_directory_unlinked_record_is_not_relinked_by_crm_search`; (c) after a removal, an Update with the selection pair links again (source, id, and a new snapshot set by the server) and the state stays `ClosedByUserUnlink` - test `Selection_pair_relinks_record_after_user_removed_link`; removing that new link again leaves `Manual` and makes zero search calls - test `Second_removal_after_relink_makes_no_crm_search`.
 - [ ] AC-31 (zorunlu) — DL-4; after DL-2 AC-21, AC-23, AC-25, AC-27, AC-29: API (G-17 ... G-21): create and update request records carry the revision 04 user-entered fields, the reporter link only as the pair `ReporterSelectionDirectory` + `ReporterSelectionId` (revision 05, "Reporter selection contract"); item responses return the fields, including the server-set `ReporterSource` and `ReporterSourceId`, through the field-security port; `ValidityResult`, `ValidityMissingCriteria`, `ReporterSource`, `ReporterSourceId`, and `ReporterCrmSearchState` (revision 06) are response-only (a request value is rejected 400); a request with only one field of the selection pair is rejected 400; an update request carries the `RemoveReporterLink` marker (KR-2) and is rejected 400 when the marker comes with the selection pair; a selection that does not resolve in the named directory, or resolves only in another tenant, returns 404 with no record data; a validation failure on a revision 04 field returns its reason code and no field value. Tests in `Diten.PvgService.Api.Tests`: `Post_with_revision04_fields_round_trips_codes_and_ids`, `Post_with_client_validity_result_is_rejected`, `Post_with_reporter_source_or_source_id_is_rejected`, `Post_with_reporter_crm_search_state_is_rejected`, `Post_with_only_one_reporter_selection_field_is_rejected`, `Put_with_remove_reporter_link_and_selection_pair_is_rejected`, `Put_with_remove_reporter_link_round_trips_manual_source`, `Post_with_unresolved_or_cross_tenant_reporter_selection_returns_404` (after the MOD-0150 or MOD-0288 read contract), `Validation_failure_on_revision04_field_returns_code_without_value`.
-- [ ] AC-32 (zorunlu) — DL-7; field inputs after DL-4 AC-31; pickers after the MOD-0290, MOD-0150, and MOD-0288 owner read contracts and the country-source decision: Screen: `_Form.cshtml` has the product list, awareness, company recipient (prefilled with the acting user's person, changeable), event country with "unknown", report type, and the reporter search with a manual path; the triage form has the four criteria; no option list (country, report type, product role) is hardcoded in views or JS; pickers call only the same-origin MVC proxy; every new label exists in all seven `CaseIntakeTriageIndex.*.resx` files (criterion 15). Tests in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: `pvg form posts the product lines and the reporter selection reference` (a reporter picked in the search posts `ReporterSelectionDirectory` and `ReporterSelectionId` together, a manual reporter posts neither, and no form post carries `ReporterSource` or `ReporterSourceId` - revision 05, "Reporter selection contract"), `pvg edit form sends back the stored reporter selection`, `pvg remove link action posts RemoveReporterLink without the selection pair` (KR-2: the Edit screen's "remove link" action posts `RemoveReporterLink = true` and neither field of the pair; the action exists only on a linked record), `pvg form prefills the company recipient and allows a change`, `pvg pickers call only the mvc proxy`.
+- [ ] AC-32 (zorunlu) — DL-7; field inputs after DL-4 AC-31; option lists (report type, product role, the "unknown" event country) after DL-4 AC-34 (WP-0230-DL4D; revision 13); pickers and the company-recipient prefill after the MOD-0290, MOD-0150, and MOD-0288 owner read contracts and the country-source decision: Screen: `_Form.cshtml` has the product list, awareness, company recipient (prefilled with the acting user's person, changeable), event country with "unknown", report type, and the reporter search with a manual path; no option list (country, report type, product role) is hardcoded in views or JS; option source (revision 13, SECENEK-01 S-2): the report type and product role options and the event country's "unknown" value come only from `GET /api/v1/pv-case-intake-triage/options` (AC-34) through a same-origin MVC proxy action that checks `pvg.case-intake-triage.read` through `RequireJson` before any Gateway call (the AC-2 house pattern); the hardcoding check is bound to the value source of the report type and product role inputs only (review 13 F-1): in the view, the markup of these two inputs holds no `<option>` other than the placeholder, and no JS file of the module holds a code list (array or object constant) that fills these inputs - their options come only from the proxy response; the separate `SourceType` field (not served by the AC-34 endpoint, "Option-Set Ownership") and the code-to-name label mappings of the resx / `_IndexL10n.cshtml` bridge are not option lists; the displayed name of an option is the page resx value for its code, and a code without a resx value is shown as the code itself; when the options read fails, the option inputs and save are disabled; pickers call only the same-origin MVC proxy; every new label exists in all seven `CaseIntakeTriageIndex.*.resx` files (criterion 15). The four triage validity criteria are not part of this item since revision 13: they are measured with AC-28, after QPPV confirms AL-5 (SECENEK-01 S-5). Tests in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: `pvg form posts the product lines and the reporter selection reference` (a reporter picked in the search posts `ReporterSelectionDirectory` and `ReporterSelectionId` together - after the MOD-0150 / MOD-0288 owner read contracts -, a manual reporter posts neither, and no form post carries `ReporterSource` or `ReporterSourceId` - revision 05, "Reporter selection contract"), `pvg edit form sends back the stored reporter selection`, `pvg remove link action posts RemoveReporterLink without the selection pair` (KR-2: the Edit screen's "remove link" action posts `RemoveReporterLink = true` and neither field of the pair; the action exists only on a linked record), `pvg option lists come only from the proxy` (revision 13: the options are drawn from the proxy response; the report type and product role inputs hold no `<option>` in the view other than the placeholder, and no JS code list (array or object constant) fills them - `SourceType` and the resx / `_IndexL10n.cshtml` label mappings are not counted (review 13 F-1); a failed options read disables the option inputs and save; sabotage: a fixed `<option value="Spontaneous">` added to the report type input, or a code list added to the JS that fills these inputs, turns it red), `pvg option without a resx name shows the code itself` (revision 13: a code the proxy returns with no page resx value is shown as the code), `pvg event country offers only unknown while no country list exists` (revision 13; review 13 F-2: bound to the "Country rule table" row "Absent", today's state - the only event country value is the "unknown" value of the options response; no country code input. After the country-source decision the event country input offers the list codes together with "unknown" (row "Present", AC-26); that is measured by the country picker measurement after the country-source decision named in this item's precondition, not by this test), `pvg form prefills the company recipient and allows a change` (after the MOD-0288 owner read contract), `pvg pickers call only the mvc proxy` (after the MOD-0290, MOD-0150, and MOD-0288 owner read contracts). C# test in `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs` (revision 13): `Options_action_checks_the_read_key_first_and_passes_only_codes` - without `pvg.case-intake-triage.read` the options action answers 403 and the recording Gateway handler is not called; with the key the proxy passes the service's codes unchanged.
 - [ ] AC-33 (zorunlu) — DL-5; after OD-PVG-9 and the Control Tower K4 shared forwarder package plus the MOD-0021 owner contract; the snapshot-edit part also after criterion 30, i.e. the MOD-0150 / MOD-0288 owner read contracts: Audit payload of the revision 04 fields ("Audited Events"): create, update, and triage records carry only the listed codes and ids; no as-reported text, lot number, awareness value, reporter source id, or snapshot value - test `Audit_payload_carries_no_reporter_snapshot_or_as_reported_text`. Real audit write of a snapshot edit (EK-4; moved here from criterion 30 in revision 05, review 04 F-5): an Update that edits a copied snapshot field writes, through the real audit path (K4 forwarder, path `b`, under `PVG-MOD0230-AuditEvent-v1`), a record that names the field and carries no value - for a CRM (MOD-0150) snapshot, test `Edited_crm_snapshot_field_is_audited_by_field_name_only`, and for a person-directory (MOD-0288) snapshot, test `Edited_person_directory_snapshot_field_is_audited_by_field_name_only`; the test asserts the record received by the audit path, not a local test double. Real audit write of a link removal (KR-2): an Update with `RemoveReporterLink = true` writes, through the same real audit path, a record that names the changed fields (`ReporterSource`, `ReporterSourceId`, and since revision 06 `ReporterCrmSearchState`) and carries no value - test `Removed_reporter_link_is_audited_by_field_name_only`. Real audit write of the search state (revision 06, KR-4; also after criterion 30): the save in which the one-time CRM search runs writes a record that names `ReporterCrmSearchState` and carries no value - test `Reporter_crm_search_state_change_is_audited_by_field_name_only`.
+
+**Option source - revision 13 (decision record `docs/records/decisions/2026-10/pvg-mod0230-secenek-kaynagi-01.md`,
+SECENEK-01 S-1, S-3, S-4 (a); added 2026-10-28).** Tests in `tests/Diten.PvgService.Api.Tests`; names required.
+
+- [ ] AC-34 (zorunlu) — DL-4 (WP-0230-DL4D); after WP-0230-DL4B (AC-5: service JWT validation and tenant context): Options read (SECENEK-01 S-1): `GET /api/v1/pv-case-intake-triage/options` is a read-only endpoint that returns 200 with exactly three members - `reportTypes` (the codes of `PvgIntakeOptionSets.ReportTypes`), `productRoles` (the codes of `PvgIntakeOptionSets.ProductRoles`), and `unknownCountry` (`PvgIntakeOptionSets.UnknownCountry`) -, each list in `StringComparer.Ordinal` order; its only source is `PvgIntakeOptionSets` (`Domain/RegPvBase/PvgIntakeOptionSets.cs`, not changed by this item); it requires the validated JWT (no bearer or an invalid bearer -> 401) and passes the same tenant context check as the list endpoint (`PvgCaseIntakeRequestContext.From`: the Gateway `X-Tenant-Id` must equal the token's `tenant_id`; a missing or differing tenant is refused with the list endpoint's status and reason code); it reads no store, calls no port and no permission gate, and returns no tenant id, draft id, or record field; it is reached through the existing Gateway item route, `ocelot.json` does not change, and AC-16 stays as written ("Gateway / API Routing Decision"); `options` is a reserved id segment, so PUT, `/triage`, and `/route` on it return 404. Tests: `Options_returns_exactly_the_option_set_codes_in_ordinal_order` (the body equals `PvgIntakeOptionSets` in ordinal order and the five report type codes, the two product role codes, and "unknown" written in the test; sabotage: a value removed from `PvgIntakeOptionSets`, or a value dropped or reordered in the response, turns it red), `Options_endpoint_holds_no_copy_of_the_option_codes` (no `.cs` file under `services/Diten.PvgService/src/Diten.PvgService.Api` holds a code of the sets or "unknown" as a string literal; sabotage: a fixed list written into the endpoint's response turns it red), `Options_without_a_valid_token_is_401` (no bearer and an invalid bearer; the body carries no code), `Options_with_a_missing_or_different_tenant_is_refused_without_codes` (header missing, and header differing from the token's `tenant_id`; same status and reason code as the list endpoint; the body carries no code), `Options_answer_is_the_same_for_every_tenant_and_reads_no_store` (two tenants with seeded drafts receive byte-identical bodies with no tenant id, draft id, or narrative; the store and the permission gate receive no call), `Options_segment_is_reserved_and_never_read_as_an_intake_draft_id` (GET `options` never reaches `GetDraftByIdAsync`; PUT, `/triage`, and `/route` on `options` return 404). Suite `pvg-api` 0 failed.
+
+**Build/test persistence - revision 14**
+
+- [ ] AC-35 (zorunlu) — DL-10; revision 14 (DEPO-01, DEPO-03): the Mongo store works as the store contract says. Every new named test below has a sabotage that compiles, turns at least that test red, and touches only DL-10 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. API-level tests ((b) second test, (c), (c2)) replace the four deny-all adapters in the test host with allow stubs, as `PvgCaseIntakeApiContractTests.cs` already does; the stubs exist only in test code and the non-production branch of `PvgServiceApiHost` stays deny-all, so no mutation succeeds outside tests (AUD-001 K2 unchanged). Tests that stop a mongod or set a fail point ((d) second test, (e)) start their own dedicated mongod and never touch the instance the other tests share. (a) The store contract tests run on both stores (theory over in-memory and Mongo): test `Mongo_ReplaceAsync_with_stale_version_returns_conflict_not_not_found` (sabotage: the expected version dropped from the replace filter); test `Mongo_list_orders_by_received_descending_then_draft_id_and_pages` (sabotage: the list sort made ascending); test `Mongo_count_with_and_without_status_matches_the_in_memory_store` (sabotage: the status filter ignored in the count). (b) Tenant isolation: test `Mongo_store_never_reads_counts_or_replaces_another_tenants_draft` (sabotage: the tenant filter removed from the count); test `Cross_tenant_get_and_put_on_the_mongo_store_answer_like_an_unknown_id` through the API host with `Pvg:Persistence:Store=Mongo`, allow stubs, and two signed tenants - positive control first: the owning tenant's GET returns 200 with the draft; then the other tenant's GET and PUT get the same status code and the same body as an unknown id, carry no record data, and the PUT leaves the record unchanged (sabotage: the tenant filter removed from the find query). Today that answer is 409 with `PVG_INTAKE_DRAFT_NOT_FOUND` (G-8); 404 comes with AC-6. The cross-tenant 404 rule (AGENTS.md core rule 2, AC-6) stays unmet until DL-4's error-response work, which waits for MOD-0041 / Ops approval. (c) Durability: test `Draft_survives_a_host_restart_on_the_mongo_store` creates a draft through the API host, disposes it, and reads the same draft and version from a new host (sabotage: the host registers the in-memory store even when `Mongo` is selected). (c2) Actor fields (DEPO-03 S-4; after WP-0230-DL4B, measured as in DL-10's prerequisites): test `Mongo_store_writes_CreatedBy_and_UpdatedBy_from_the_validated_subject` creates a draft with a token of subject A and updates it with a token of a different subject B of the same tenant (two different validated actors are mandatory), each request also carrying a forged `X-Diten-Actor-Id` header with a third value; it expects `CreatedBy` = A and `UpdatedBy` = A after the create, and `CreatedBy` still A and `UpdatedBy` = B after the update (sabotages, each turning it red on its own: the Mongo store's `ReplaceAsync` stops writing `UpdatedBy` - it stays A; the replace overwrites `CreatedBy` with the updating actor - it becomes B); test `Create_and_update_requests_do_not_accept_CreatedBy_or_UpdatedBy` calls a pure check that takes types and returns every property named `CreatedBy` or `UpdatedBy` (any casing) - once with the application requests (`PvgCreateIntakeDraftRequest` and the update request) and the HTTP body records (`PvgCaseIntakeCreateRequest`, `PvgCaseIntakeUpdateRequest`) (expects none) and once with two fixture records declared in the test code, one carrying only `CreatedBy` and one carrying only `UpdatedBy` (expects exactly one finding for each) (sabotages, each turning it red on its own: `CreatedBy` dropped from the check's names - the first fixture finding disappears; `UpdatedBy` dropped - the second disappears; the check made to return nothing - both disappear); test `Body_createdBy_and_updatedBy_never_reach_the_store` posts a body carrying `createdBy` with a token of subject A, then puts a body carrying `updatedBy` with a token of subject B, and finds `CreatedBy` = A and `UpdatedBy` = B, not the body values, in the stored document (sabotages, in `PvgServiceApiHost.cs`, each turning it red on its own: the JWT bearer `OnTokenValidated` event calls `EnableBuffering` on the request, reads the body as JSON, rewinds the body stream to position 0, ignores a JSON parse error, and, when the body holds `createdBy` - in the second sabotage `updatedBy` -, replaces the `ClaimTypes.NameIdentifier` claim - the mapped `sub`, which the endpoint reads first - with that value; the endpoint then passes the body value as the actor id; requests without that field or with a body that is not JSON are unchanged, so the other actor test stays green). (d) Start refusals and readiness: test `Unreachable_mongo_store_refuses_start` (a connection string to a closed local port; refusal `PVG_PERSISTENCE_STORE_UNREACHABLE` within 15 seconds, no connection value in the message; sabotage: the bootstrap logs the failure and lets the host start); test `Ready_returns_503_when_the_selected_mongo_store_stops_answering` starts its own dedicated mongod, waits for a ready host, stops that mongod, and expects 503 within 15 seconds (sabotage: the readiness check no longer pings the Mongo store). (e) Transactions (DEPO-03 S-5): test `Mongo_write_is_lost_when_its_transaction_commit_fails` runs on its own dedicated single-node replica set with test commands enabled and sets a `failCommand` fail point on `commitTransaction` with `mode: alwaysOn`, `data.appName` equal to the application name of the store's own client, `errorCode: 2` (`BadValue`, not retryable), and `errorLabels: []`; the test builds the Mongo store through the persistence project's registration extension with its test-only `MongoClientSettings` hook, which sets that application name and subscribes to `CommandStartedEvent` on the store's own client; it expects `AddAsync` to fail, no document to exist, and - counted by that subscription - exactly one `commitTransaction` sent (the driver did not retry the commit) (sabotage: the insert written without the session - no commit runs and the document stays); test `Mongo_replace_is_lost_when_its_transaction_commit_fails` uses the same dedicated replica set, store client, and fail point: it writes a draft first (version 1) while the fail point is off, then turns the fail point on and calls `ReplaceAsync` with expected version 1 - the write path of update, triage, and route -; it expects the replace to fail, the stored fields and the version (1) to stay as they were, and exactly one `commitTransaction` sent by the store's client (sabotage: the session removed from the replace call - the replace is written without a transaction, no commit runs, and the stored draft changes); both commit-failure tests run one after the other in one non-parallel test collection, each turns its fail point off in a `finally` block, and each counts `commitTransaction` only from the moment its fail point is turned on; test `Mongo_store_refuses_start_without_transaction_support` against its own standalone mongod expects `PVG_PERSISTENCE_TRANSACTIONS_UNAVAILABLE` (sabotage: the transaction probe removed from the bootstrap). (f) Test harness: test `Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod` checks the harness's pure resolution - a configured address on port 27017 is refused, and no mongod binary is an error, never a skip (sabotage: the 27017 check removed, or a missing binary returns a value instead of an error); Mongo tests share one fixed database name and isolate by a fresh `TenantId` per test (`MongoTestDatabaseGuardTests` stays green; sabotage: `Guid.NewGuid()` bound to a variable named `databaseName` in a PVG test - the identifier the guard matches). Suites `pvg-regpv-base` and `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-36 (zorunlu) — DL-11; revision 15 (`pvg-mod0230-kapali-kayit-01.md` KK-1, KK-3): the manifest matches the code. Every named test below has a sabotage that compiles, turns at least that test red, and touches only DL-11 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. Every sabotage below is made on a DL-11 path (the provider, the test code, or a `SharedResource.*.resx` file); the controller and the views are read, not changed. (a) While the operational gate is closed ("Closed Catalog Registration"), test `Case_intake_manifest_is_not_assignable_not_baseline_and_hidden` expects ModuleCode `case-intake-triage`, `IsTenantAssignable` false, `IsBaseline` false, `IsNavigationVisible` false on every page, and no `ApiPermissions` (sabotages, each turning it red on its own: ModuleCode changed; `IsTenantAssignable: true`; `IsBaseline: true`; `IsNavigationVisible: true` on the top-level page; `IsNavigationVisible: true` on a child page; one `ApiPermissions` entry added). Test `Case_intake_manifest_carries_the_recorded_values` compares ModuleName, the module's DisplayName, ModuleVersion, SortOrder, Icon, Domain, Service, every page's DisplayName, PageType, ParentPageCode, and SortOrder, and every action's DisplayName, ActionType, SortOrder, the two placement flags, and `IsDangerous` false with the tables of "Closed Catalog Registration". It requires no `NotificationEvents`, no `PermissionOwnerModuleCode` on any page or action, and one DisplayName per key across pages and actions (sabotages, each turning it red on its own: PageType `Detail` on a page, a value outside the closed list; a second label for one key; ModuleName changed; ParentPageCode removed from a child page; a page SortOrder changed; `IsDangerous: true` on an action; one `NotificationEvents` entry added; `PermissionOwnerModuleCode: "legal-entity"` on a page; the same on an action). (b) Test `Case_intake_manifest_pages_are_exactly_the_four_frontend_view_routes` reads `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` as text, builds the route set from the class `[Route]` and every `[HttpGet]` whose template does not start with `api/`, finds exactly four, and compares them with the manifest's `RoutePath` values in both directions (sabotages in the provider: `{intakeDraftId}` changed to `{id}` in the Edit route; a fifth page added). (c) Test `Case_intake_manifest_declares_exactly_the_five_keys_and_each_is_a_real_constant` collects every page `RequiredPermission` and action `PermissionKey`, finds exactly five, and compares that set with the five `*Permission` string constants reflected from `PvgIntakeDraftApplicationService` and with the five `*Permission` constants read from the controller text (sabotages: the `ROUTE` action removed - four keys; one key misspelled as `pvg.case-intake-triage.routes`). (d) Test `Case_intake_manifest_page_permissions_match_the_controller_gates` compares each page's `RequiredPermission` with the key of that view action's `RequirePage` call in the controller text (sabotage: the Details page set to the update key). (e) Test `Case_intake_manifest_actions_are_the_buttons_the_ui_shows` calls a pure extractor that takes the texts of `Index.cshtml`, `index.js`, `_Form.cshtml`, and `Details.cshtml` and returns every (page, button) pair: the link to Create on the list; each `key` of the list's `renderActions` call; the form's submit on Create and on Edit; the link to Edit and the two `data-pvg-command-form` forms on Details. It runs once with the real files, compared in both directions with the manifest's (page, action) pairs, and once with a fixture text held in the test code that carries one more button (expects exactly that extra pair). It also requires unique page codes, unique routes, and unique action codes per page (sabotages: the `TRIAGE` action moved to the list page; the `VIEW` action removed; the extractor made to return nothing - the fixture pair disappears). (f) `NavManifestL10nGuardTests` is green with the provider in place: `dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug --filter "FullyQualifiedName~NavManifestL10nGuardTests"` 0 failed (sabotage: `Nav.Module.CASEINTAKETRIAGE` removed from one `SharedResource.*.resx` file; `Nav.Domain.PHARMACOVIGILANCE` removed from one). Suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-37 (zorunlu) — DL-11; revision 15 (`pvg-mod0230-kapali-kayit-01.md` KK-2, KK-6): registration is inert and harmless. Every named test below has a sabotage that compiles, turns at least that test red, and touches only DL-11 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. The tests count calls on a stub HTTP handler and make no network call outside the loopback address of test (i). Every wait in these tests is bounded, so a sabotage turns a test red and never hangs it. (a) Test `Case_intake_registration_posts_the_manifest_once_to_the_internal_endpoint`: with both values set and a 200 answer, exactly one `POST` to `{base URL}/api/internal/module-catalog/register-manifest`, with the key in `X-Internal-Api-Key` and the provider's manifest as the body; a trailing slash on the base URL gives the same address (sabotages: the header name changed; the provider's manifest replaced by another; the trailing-slash handling removed). (b) Test `Case_intake_registration_makes_no_call_without_key_or_url` covers, with the other value valid, the key missing, empty, and whitespace-only, and the URL missing, empty, whitespace-only, relative, and `ftp://`. Each case expects zero calls, the code `PVG_MODULE_REGISTRATION_SKIPPED_NOT_CONFIGURED`, and a started host. The URL has one check, an absolute http/https address, which already refuses a missing, empty, or whitespace-only value, so it has no separate sabotage for those. Sabotages, each turning the test red on its own: the key check removed - every key case makes a call; the key check narrowed to `null` only - the empty and whitespace-only key cases make a call; the key check narrowed to null-or-empty - the whitespace-only key case makes a call; the URL check removed - the `ftp://` case reaches the stub and the other URL cases lose the skip code; the URL check narrowed to any absolute address - the `ftp://` case reaches the stub. Test `Case_intake_registration_makes_no_call_on_a_production_like_host` with both values set: zero calls (sabotage: the production-like check removed). (c) Test `Case_intake_registration_values_come_only_from_the_environment` builds the host with both values in `IConfiguration` and none in the environment reader: zero calls (sabotage: the values bound from `IConfiguration`). Test `No_committed_configuration_carries_the_registration_values` calls a pure check that takes file paths and texts and returns every setting of `PlatformRegistration` / `PlatformRegistration__*` - once with every `appsettings*.json` and `launchSettings.json` under `services/Diten.PvgService`, `.claude/launch.json`, and `.github/workflows/*` (expects none, and - positive control - expects the set of files it read to include `.claude/launch.json` and `.github/workflows/service-tests.yml`) and once with a fixture text held as a string in the test code (expects exactly that finding) (sabotage: one spelling dropped from the check, or the check made to return nothing - the fixture finding disappears; or the scan root pointed at a wrong directory - the positive control fails). Test `Test_assembly_clears_the_registration_variables_before_any_host_starts`: the module initializer of `Diten.PvgService.Api.Tests` clears both variables, so a host started by any test in that assembly finds none even when the developer's shell sets them. The initializer calls a method that takes the setter as a parameter. The test never writes to the process environment: it calls that method with a recording setter and expects both names cleared, finds `[ModuleInitializer]` on the initializer by reflection, and reads both variables as unset (sabotages: one name dropped from the method; the `[ModuleInitializer]` attribute removed). (d) Test `Case_intake_registration_start_returns_before_the_push_finishes` uses a handler that does not answer until the test releases it; it allows `StartAsync` at most 5 seconds, expects it to have returned while the call is still open, and releases the handler in `finally` (sabotage: `StartAsync` awaits the push - the 5-second limit fails the test). Test `Case_intake_registration_stop_cancels_the_pending_push`: `StopAsync` during an open call or a wait ends the task within 5 seconds with no further call (sabotage: `StopAsync` does not cancel). (e) Test `Case_intake_registration_stops_after_the_bounded_attempts` uses an injected delay and a short attempt timeout set by the test, with these five answers in order: connection failure, 500, timeout (the handler waits for the attempt's cancellation), 503, connection failure. It expects exactly 5 calls, waits of 2, 4, 8, and 16 seconds recorded by the injected delay, and no further call (sabotages: the attempt limit raised; a loop added after give-up; a timeout treated as the end of the push). Test `Case_intake_registration_attempt_timeout_defaults_to_five_seconds` reads the default value, with no real wait (sabotage: the default changed). Test `Case_intake_registration_stops_after_success_or_a_refusal`: exactly one call after a 200 and exactly one after a 401 (sabotages: a 4xx made retryable; the push repeated after success). (f) Test `Case_intake_registration_failure_changes_neither_start_nor_readiness`: with a handler that always fails, the host starts and `/health/ready` returns the same status and body as with the values unset (sabotages: the push's exception rethrown from `StartAsync`; a failed push made a missing dependency). (g) Test `Case_intake_registration_logs_neither_key_nor_url` builds the client through the host's own registration with a stub primary handler and a capturing provider at the lowest level, and captures every log entry of every category on each row of the state table: an invalid URL value, a production-like host with both values set, success, refusal, give-up with a handler exception whose message holds the URL, and a stop during the push. It finds neither the key nor the URL in any message or exception (sabotages: the exception object passed to the logger; the base URL added to a log message; the key added to a log message; the framework's `HttpClient` request logging left on for this client). Test `Case_intake_registration_logs_the_safe_code_of_each_state` expects the code of each row of the state table (sabotage: the give-up path logs the refused code). (h) `Pvg_host_registers_only_the_named_hosted_services` (AC-13 (f)) names `PvgModuleRegistrationHostedService` (sabotages: its registration removed from `PvgServiceApiHost`; the type made to derive from `BackgroundService`). (i) Test `Case_intake_registration_does_not_follow_a_redirect` starts a loopback server whose register path answers 307 to a second path, and expects no request on the second path and the refused code (sabotage: `AllowAutoRedirect` left on, so the key would travel to the redirect target). Suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-38 (zorunlu) — DL-11; revision 15 (`pvg-mod0230-kapali-kayit-01.md` KK-1, KK-3; `pvg-mod0230-kapali-kayit-02.md`; `pvg-mod0230-kapali-kayit-03.md`; live, this slice's E5 evidence; not measured yet). Preconditions: PvgService, Platform, Auth, Diten.Web, the Gateway, and PvgService's Mongo store run in dev; PvgService has `JwtSettings__Secret`, `JwtSettings__Issuer`, and `JwtSettings__Audience` equal to AuthService's values, because without them every protected endpoint answers 401 and (f), (g), (i) would show the session message instead of the refusal; the CT sets `PlatformRegistration__BaseUrl` (Platform's direct address) and `PlatformRegistration__InternalApiKey` at process start, takes the key from Platform's own dev configuration (`AuthService:InternalApiKey`), and never writes or logs it. Baseline: on the dev database, before the first push, the CT reads once that the row of (a) and the keys of (b) do not exist. A catalog row cannot be deleted by hand. If a row or a key already exists, AC-38 runs on a throwaway local Mongo for all services and the record says why; if that run cannot be set up, the record says the baseline was not measured ("Closed Catalog Registration", limit). An acceptance record then shows all of: (a) `GET /api/platform/module-catalog?search=CASE-INTAKE-TRIAGE` as a platform administrator returns one row `CASE-INTAKE-TRIAGE` with `IsTenantAssignable` false; (b) the five `pvg.case-intake-triage.*` keys exist in AuthService with `Scope` = `Tenant` (a read-only query of the permission catalog, plus their presence in `GET /api/permissions/tenant-assignable`); (c) `GET /api/platform/module-catalog/assignable` does not list the module; (d) a user whose role holds `pvg.case-intake-triage.read` opens `/Pharmacovigilance/CaseIntakeTriage`: 200, with the `datatables-pvg-case-intake-triage` table markup; (e) a user without it gets the shared 403 (`/Home/Status/403`) with neither that table markup nor `pvg-case-intake-form`; (f) for the user in (d), the list is refused under control: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx, the page keeps its table and shows its refusal sentence in `pvg-list-alert` (`ControlledBlock` while the API answers 409, G-8; `NotAuthorized` once AC-6 maps a permission denial to 403), with no script error, no blank page, and no code standing alone; (g) a user holding the create key and the read key (the form's options need the read key) fills `/Pharmacovigilance/CaseIntakeTriage/Create` with synthetic values and saves: the same refusal, shown in `pvg-form-alert`, and the form stays on the page; (h) the store is unchanged by that save: a read-only count of `pvg_case_intake_drafts` for that tenant is the same before and after (Mongo store, because the in-memory store cannot be read while the list is refused); (i) with an unknown draft id, a user holding the read key and the update, the triage, or the route key posts directly to `/Pharmacovigilance/CaseIntakeTriage/api/update/{id}`, `api/triage/{id}`, or `api/route/{id}` with the antiforgery token of the `Details` page, and gets the controlled refusal: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx. Code order: the antiforgery filter; the proxy's key check; for update only, the proxy's date and link-removal checks, so the update call carries readable dates and no link removal with a selection; the Gateway; the binding of the JSON body; the service's tenant, actor, and correlation checks; the permission gate, which runs before any store read. The triage call sends `TriageOutcome` empty, which `TriageFormInput.ToPayload` sends as null; it stays so until AC-39 lands, and from then on the outcome as the form sends it must get the same refusal. Measured on 2026-10-31 (`pvg-mod0230-kapali-kayit-04.md`) by running the real PvgService host at commit `2bfe93f36` with fake values, without the proxy or the Gateway: the JSON string `"Triaged"`, which the proxy sends for a chosen outcome, gets 400 with an empty body before the permission gate, because `PvgTriageOutcome` is a plain enum and the host has no JSON string-enum converter; `null` and the number `1` get 409 with `PVG_PERMISSION_DENIED`. A user without that key (the read-only user of (d)) gets 403 from the proxy with no Gateway call. Today's refusal sentence ends with the safe reason code (`safeMessage` in `index.js` and `form.js`); (f) and (g) accept that and refuse a code without the sentence. (f), (g), (h), and (i) hold while the host registers the deny adapters (G-23); if OD-PVG-14 changes that, they are read again. An allowed update, triage, or route needs a stored draft, which cannot exist live while create is refused, so AC-38 measures only their refusal. The role grant is made by a person on the existing role screen (`/RoleAssignments`), not by code, and takes effect at the next login. The users in (e), and the keyless user of (i), hold no `*` claim and no role the catalog path filled by itself (`SuperAdmin` of the default tenant; a `Viewer` role created after the first push; "Closed Catalog Registration"). A live measurement has no compiled sabotage; its controls are: the baseline above; the same user gets 403 before the grant and 200 after it, and 403 again after the grant is revoked; the service restarted with the two variables leaves one catalog row, five keys, and `IsTenantAssignable` false (the restart control E5 needs); and the service restarted without them makes no call (Platform logs no `Module manifest registered` entry for that start, and PvgService has no log provider to read), while the screen behaves the same for both users. For (f): a direct `GET /Pharmacovigilance/CaseIntakeTriage/api/options` by the same user returns 200, so the service is up and the refusal is its own; with PvgService stopped, the list shows the list component's outage message instead, not this sentence. For (g): the same save by a user without the create key gets 403 from the MVC proxy with no Gateway call. For (h): the collection is listed in the database (created by the schema bootstrap), so an unchanged count is not a count of a wrong name. For (i): one id, one user at a time, the only difference being the key held. This measures a refusal; no record is listed or saved (G-23, OD-PVG-14). Accepting AC-38 does not close DL-7 (E4) or open the operational gate.
+- [ ] AC-39 (zorunlu) — DL-4; revision 15 (G-24, `pvg-mod0230-kapali-kayit-04.md` KK-10): a triage body with the outcome as the form sends it binds and reaches the permission gate. Every named test below has a sabotage that compiles, turns at least that test red, and touches only DL-4 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. Both tests run the real host and its middleware chain, not the endpoint method directly. (a) Test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` posts `"TriageOutcome"` as each of the texts `Triaged`, `Rejected`, and `Duplicate`, with the deny-all permission gate, and expects the permission refusal with `PVG_PERMISSION_DENIED` and a non-empty body for each (sabotage: the binding change removed from `PvgCaseIntakeTriageEndpoints.cs` - the answer is 400 with an empty body). (b) Test `Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx` posts a text outside the enum, with the deny-all permission gate, and expects 400, no `PVG_PERMISSION_DENIED` in the response, and no store write, because binding refuses the text before the gate (sabotage: the unknown text mapped to `Triaged` - the request then reaches the gate and gets the permission refusal with `PVG_PERMISSION_DENIED`, which fails both the 400 and the absence check). Suite `pvg-api` 0 failed, 0 skipped.
 
 ## Gate State and Acceptance History
 
@@ -1483,6 +1987,18 @@ All gates below must be owner-approved and evidence-backed before MOD-0230 opera
 - [ ] Tenant isolation proof supplied, including the Gateway-service context contract (OD-PVG-2).
 - [ ] Revision 04 read contracts (MOD-0290, MOD-0150, MOD-0288), the country-list source (MOD-0048), and the QPPV
       confirmations for AL-2, AL-4, and AL-5 recorded.
+- [ ] `pvg.*` keys tied to the tenant's subscription on the role screen and at login (revision 15; record
+      `pvg-mod0230-kapali-kayit-01.md`, CT reading 2, open to the owner at that revision's approval). Today
+      `GetTenantAssignablePermissionsQueryHandler` (role screen) and `AssignPermissionCommandHandler` (grant) check only the
+      permission's scope, and `TenantEffectivePermissionResolver` (login and token refresh) filters by subscription only
+      PPM keys. `IsTenantAssignable: false` closes subscription, not the role screen: once the keys exist in an
+      environment, that environment's tenant administrators see them and can grant them. This change is Auth code; ask
+      first when it is due (XMC-001). The default `Viewer` template and the `SuperAdmin` auto-grant ("Closed Catalog
+      Registration") are read at the same time.
+- [ ] The catalog value changed as well as the code. `IsTenantAssignable` is seed-once in
+      `RegisterModuleManifestCommandHandler`: a re-push never overwrites it, so a manifest change alone leaves the module
+      non-assignable. Opening needs the catalog row changed (`UpdateModuleCatalogItemCommandHandler`) and the top-level
+      page set to `IsNavigationVisible: true`, which ends the pack-scoped exception.
 
 ### Allowed Paths After Explicit Runtime Approval
 
@@ -1503,7 +2019,7 @@ For the operational runtime slice (build/test work under the build/test gate is 
 - `frontend/**`
 - `gateway/**`
 - seeds, fixtures, sample PHI/PII, or sample regulated safety data
-- jobs, collections, migrations, repositories, Mongo, or persistence paths unless specifically approved in the runtime packet
+- jobs, collections, migrations, repositories, Mongo, or persistence paths unless specifically approved in the runtime packet (the build/test Mongo store of DL-10, revision 14, and the closed catalog registration of DL-11, revision 15, do not carry into operational runtime)
 - partner integration
 - AI behavior
 - archive, void, export, delete, or bulk-delete
@@ -1520,6 +2036,7 @@ For the operational runtime slice (build/test work under the build/test gate is 
 - missing RBAC, FieldSecurity, AuditEvent, WorkflowTransitionGate, EvidenceLink, trace/correlation, and error-model block tests
 - no sensitive echo tests for results, logs, traces, metrics, validation errors, regulated errors, and audit metadata
 - appsettings policy tests proving no permissive fallback and no production use of non-production adapters
+- role-screen and login tests proving that a `pvg.*` key is neither listed, nor grantable, nor carried in the token for a tenant without the subscription (revision 15, `GetTenantAssignablePermissionsQueryHandler`, `AssignPermissionCommandHandler`, `TenantEffectivePermissionResolver`), and a catalog read showing the `IsTenantAssignable` change, which `RegisterModuleManifestCommandHandler` does not make on a re-push
 - no forbidden path changes
 - no archive, void, export, delete, or bulk-delete runtime surface
 
@@ -1535,13 +2052,16 @@ Slice 1 test expectations - **required before slice 1 is accepted**. Thresholds:
 | Other PVG suites sharing the host (`pvg-case-processing`, `pvg-meddra-coding`, `pvg-signal-management`) | `dotnet test` on each project under `services/Diten.PvgService/tests/` | 0 failed |
 | Known failures | `python3 scripts/known_failures.py check <trx> --suite <suite>` for each TRX | exit 0 |
 | UI test | `npx vitest run tests/pvg-case-intake-triage-ui.test.js` in `frontend/Diten.Web` | 0 failed |
+| MVC proxy C# tests (revision 13; AC-20 W7, AC-32) | `dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug --filter "FullyQualifiedName~PvgCaseIntakeTriageWebTests"` | 0 failed |
+| Nav l10n guard (revision 15; AC-36 (f)) | `dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug --filter "FullyQualifiedName~NavManifestL10nGuardTests"` | 0 failed |
 | DataTable verifier | `python3 .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps` | only recorded known deviations (AC-14) |
 | DCP-002 identity | `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0230 --name "Case Intake & Triage"` | exit 0 |
 | Whitespace | `git diff --check` | clean |
 
 Behaviour that the suites must cover (each with at least one named test):
 
-- Tenant isolation: cross-tenant read and write return 404 with no data (AC-6); caller-supplied tenant / actor
+- Tenant isolation: cross-tenant read and write answer like an unknown id with no data, today 409 (AC-35 (b)), 404 with
+  AC-6 (DL-4); caller-supplied tenant / actor
   headers have no effect (AC-5).
 - Authorization: 401 / 403 paths; permission before validation (AC-7); one key family (AC-4); controller
   permission checks (`RequirePage` / `RequireJson`) and UAS-001 (AC-2, AC-3).
@@ -1569,6 +2089,30 @@ Behaviour that the suites must cover (each with at least one named test):
   only and the real audit write of a snapshot edit, CRM and person directory (AC-33). Items marked "after ..." are measured only after that owner or
   QPPV approval; until then their fail-closed tests (AC-21, AC-23, AC-25, AC-29) are the measurable part. The
   existing `SuspectProductText` tests (5 test files, G-17) are changed in DL-2, not deleted without replacement.
+- Revision 13 (2026-10-28, `docs/records/decisions/2026-10/pvg-mod0230-secenek-kaynagi-01.md`,
+  `docs/records/decisions/2026-10/pvg-mod0230-ceviri-dl7b-01.md`): the options endpoint serves only `PvgIntakeOptionSets`,
+  in ordinal order, behind the JWT and the tenant context check, with no tenant data, and `options` is a reserved id
+  segment (AC-34); the screen reads options only through the MVC proxy under the read key and shows the resx name or the
+  code itself (AC-32); the four triage criteria end to end after QPPV (AC-28); the proxy page mapping in C# (AC-20, W7);
+  no English echo in the six other languages outside named exceptions (AC-15); the verifier's known deviation by
+  category (AC-14).
+- Revision 14 (2026-10-29, `docs/records/decisions/2026-10/pvg-mod0230-kalici-depo-01.md`, `-03.md`): the Mongo driver
+  only in `Diten.PvgService.Persistence`, every index tenant-first and as the catalog declares it, the Mongo store
+  refused on a production-like host and never selected by committed configuration, soft delete honoured by every read,
+  no delete member, only named hosted services (AC-13); the store contract on the Mongo store, tenant isolation at the
+  store and the API, a draft that survives a host restart, `CreatedBy` / `UpdatedBy` from the validated subject, writes
+  inside a Mongo transaction, a start refused when the store or transactions are unavailable, readiness 503 for an
+  unreachable store, and the test harness rules (AC-35). Mongo tests start their own single-node replica set from
+  `DITEN_TEST_MONGOD` (never port 27017), share one fixed database name, isolate by a fresh `TenantId` per test
+  (DB-010), and are never skipped. The architecture suite `tests/architecture/TenantArchitecture.ArchitectureTests`
+  reports 0 failed after DL-10.
+- Revision 15 (2026-10-31, `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`): the manifest
+  matches the code - non-assignable, hidden, four pages, five keys, each a real constant in the service and the
+  controller (AC-36); the registration is inert and harmless - no call without key or URL or on a production-like host,
+  values from the environment only, start not blocked, bounded attempts, no effect on readiness, nothing secret logged,
+  one named hosted service (AC-37); the nav l10n guard green with the two keys (AC-36 (f)); the live catalog, Auth,
+  assignable-list, 200 / 403, and controlled-refusal measurement with an unchanged store (AC-38); a triage body with the
+  outcome as the form sends it reaches the permission gate (AC-39, DL-4).
 - REG-PV-BASE port conformance C-01 ... C-17: the document `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md`
   is committed, but its type names and configuration key are not in the code (G-12). **Until the type names are
   aligned with the code, or a C-id-to-test mapping is recorded, this criterion is unmapped and cannot be checked.**
@@ -1633,6 +2177,11 @@ Behaviour that the suites must cover (each with at least one named test):
       "KOŞULLU" (0 ENGEL, 1 ORTA: F-1, unmeasurable search trigger); revision 07 addresses F-1 under
       `pvg-mod0230-intake-fields-05.md` KR-5 and needs independent review 07 and a new version-bound approval row for
       its version.
+- [ ] Revision 15 closed catalog registration (DL-11, AC-36 ... AC-38) - recorded in this text; not in code. Needs
+      this revision's pre-review, independent review, and HIGH approval (KK-4). Its approval does not wait for the store
+      (KK-12, which changes KK-5 and KK-7). WP-0230-DL10-R1 `INTEGRATED` in the queue is DL-11's own prerequisite in "Teslim
+      dilimleri"; this order adds no prerequisite to any other slice (DCP-004 §8 item 6). DL-5's existing prerequisite on DL-10
+      is the same state.
 
 ## Implementation Notes
 
@@ -1803,7 +2352,8 @@ Behaviour that the suites must cover (each with at least one named test):
 
 MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri" as outside every slice):
 
-- Close build-gate gaps G-1 ... G-22 through slices DL-2 ... DL-8 (G-17 ... G-22: revision 04 intake fields).
+- Close build-gate gaps G-1 ... G-22 through slices DL-2 ... DL-8 (G-17 ... G-22: revision 04 intake fields). G-23 has no
+  slice; it waits for OD-PVG-14. G-24 belongs to DL-4 (AC-39). G-25 has no slice; it waits for an owner decision.
 - Revision 04: ask the MOD-0290, MOD-0150, and MOD-0288 owners for their read contracts and the MOD-0048 owner for the
   country-list source; ask QPPV for AL-2 timestamp trust, the AL-4 values, and AL-5. Drafts only; nothing is sent by
   this pack.
@@ -1817,7 +2367,8 @@ MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri"
 
 Out of slice 1, requiring their own approval:
 
-- Archive / void surfaces, export surfaces, background jobs, seed data.
+- Archive / void surfaces, export surfaces, background jobs, seed data. (The one registration push of DL-11 is a startup
+  step, not a background job; revision 15.)
 - Any AI-assisted intake, extraction, summarization, or routing behaviour.
 
 Named for later modules by AL-7 (2026-10-22) - **future requirements, not that pack's decision**; they are written
@@ -1846,6 +2397,8 @@ into the named pack only by its owner (MOD-0231 / MOD-0233 owners are TBD today)
 | DL-7 | tenant UI ve MVC proxy | Layout & Shell Contract, Frontend File Contract | E4 |
 | DL-8 | Gateway route ailesi | Gateway / API Routing Decision | E3 |
 | DL-9 | operasyonel runtime kapısı (kapalı) | MOD-0230 Runtime Authorization Packet (Draft / Not Approved), Current Handoff Evidence - `MOD0230HandoffReference v0.1` Build/Test, Required Approval Gates, Allowed Paths After Explicit Runtime Approval, Forbidden Until Separately Approved, Validation Required Before Runtime Work Can Be Accepted | E5 |
+| DL-10 | kalıcı depo (yapı/test, Mongo) | Build/Test Persistence (Mongo Store) | E4 |
+| DL-11 | kapalı katalog kaydı (yapı/test) | Closed Catalog Registration | E5 |
 
 `gerekli kanıt` is the minimum evidence level (SOP §23.1) an acceptance record of a work package of that slice must
 reach; it is not lowered under the build/test gate; the acceptance record cites this table row as
@@ -1863,8 +2416,9 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   (satır 157, 239, 321) ve sonuçlarının yorumu, `Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs`,
   `PvgIntakeDraftIndexCatalog.cs`, `tests/Diten.PvgService.RegPvBase.Tests/**`. Önkoşul: OD-PVG-4 kapandı (2026-10-21; belgelenmiş sapma);
   başka dilim önkoşulu yok — DL-4 (AC-19) ve DL-7 (AC-20) sürüm taşımasında DL-2'yi bekler.
-  Kapsam dışı: Mongo koleksiyonu, indeks, migration; komut adlarının değiştirilmesi; API ve MVC/JS sürüm taşıması
-  (DL-4, DL-7); liste toplam sayısı (DL-4). Bitiş: AC-12, AC-13; `pvg-regpv-base` 0 kırmızı.
+  Kapsam dışı: Mongo koleksiyonu, indeks, şema kurulumu (revizyon 14'ten beri DL-10); komut adlarının değiştirilmesi;
+  API ve MVC/JS sürüm taşıması (DL-4, DL-7); liste toplam sayısı (DL-4). Bitiş: AC-12; `pvg-regpv-base` 0 kırmızı
+  (AC-13 revizyon 14'te DL-10'a geçti).
   Revizyon 04 alım alanları (AL-1…AL-7, G-17…G-22) bu dilimdedir: alan tanımları (`PvgIntakeField`,
   `PvgIntakeFieldDefinition`, `SafetyCaseIntake`; `SuspectProductText` ürün listesine dönüşür), doğrulama
   (`PvgIntakeDraftValidator.cs`, yeni neden kodları), `PvgIntakeDraftApplicationService.cs` içinde Create / Update /
@@ -1902,7 +2456,7 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   `pvg-mod0230-od-pvg-2-onay-01.md`; kiracı claim adı `pvg-mod0230-od-pvg-2-onay-02.md` ile `tenant_id` olarak düzeltildi, ODPVG2-02),
   AC-6 için OD-PVG-3 (PVG tarafı karar 2026-10-21; düzenlenmiş hata zarfı MOD-0041 / Ops onayını bekliyor); AC-19 için
   DL-2 (AC-12) — AC-19 OD-PVG-2 / OD-PVG-3'ü beklemez. Kapsam dışı: Gateway ara katmanı, izin tanımı/grant, MOD-0018 sözleşmesi;
-  MVC/JS sayfalama ve sürüm taşıması (DL-7). Bitiş: AC-5, AC-6, AC-7, AC-19; `pvg-api` 0 kırmızı.
+  MVC/JS sayfalama ve sürüm taşıması (DL-7). Bitiş: AC-5, AC-6, AC-7, AC-19, AC-39 (G-24; revizyon 15); `pvg-api` 0 kırmızı.
   Revizyon 04: `PvgCaseIntakeTriageEndpoints.cs` istek ve yanıt kayıtlarında yeni alanlar ve API testleri.
   Revizyon 05 (bildiren seçimi sözleşmesi): istekte bildiren bağı yalnız `ReporterSelectionDirectory` +
   `ReporterSelectionId` çiftiyle gelir (ikisi birlikte ya da hiçbiri; yalnız biri 400); türetilmiş geçerlilik sonucu,
@@ -1911,10 +2465,21 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   işaret seçim çiftiyle birlikte gelirse 400 (KR-2); `ReporterCrmSearchState` yalnız yanıttadır, istekte gelirse 400
   (revizyon 06, KR-4). Önkoşul: DL-2 (AC-21, AC-23, AC-25, AC-27, AC-29).
   Kapsam dışı: alan doğrulaması (DL-2), ekran (DL-7). Bitiş: AC-31.
+  Revizyon 13 (SECENEK-01 S-1, S-3, S-4 (a); `pvg-mod0230-secenek-kaynagi-01.md`): iş paketi **WP-0230-DL4D** bu
+  dilimdedir — salt okunur `GET /api/v1/pv-case-intake-triage/options` ucu. Yollar: `PvgCaseIntakeTriageEndpoints.cs`
+  (yeni uç; `options` ayrılmış kimlik parçalarına eklenir; yanıt kaydı Api projesinde) ve
+  `tests/Diten.PvgService.Api.Tests/**`; kaynak yalnız `PvgIntakeOptionSets` (`Domain/RegPvBase/PvgIntakeOptionSets.cs`
+  okunur, değiştirilmez — DL-2 yolu). Önkoşul: WP-0230-DL4B (servis JWT doğrulaması ve kiracı bağlamı, AC-5).
+  Gerekli kanıt: dilim tablosundaki DL-4 satırı, E4; dilim tablosu yalnız `| DL-n |` satırı taşır
+  (`scripts/pack_approval.py`, `SLICE_ROW`), iş paketi için ayrı satır açılmaz ve seviye dilim satırının altına inmez.
+  Kapsam dışı: `ocelot.json` (mevcut öğe route'u kullanılır; AC-16 değişmez), yeni izin anahtarı ve izin kapısı çağrısı,
+  MVC vekili ve ekran (DL-7, AC-32), seçenek değerlerinin değişmesi (QPPV, AC-27). Bitiş: AC-34; `pvg-api` 0 kırmızı.
+  Revizyon 13 (S-5): triyajın dört geçerlilik ölçütünün `/triage` istek alanları AC-28'in işiyle, QPPV AL-5 onayından
+  sonra yapılır (test `Post_triage_with_the_four_criteria_returns_the_derived_validity_result`).
 - **DL-5** — Yollar: `PvgIntakeDraftApplicationService.cs` içindeki denetim çağrıları (dört yazma komutu ve
   `GetDraftByIdAsync` okuma denetimi), `Application/RegPvBase/` altında denetim yazıcı portu, ilgili testler, defterde yalnız
   borç satırı silme. Önkoşul: OD-PVG-9 (PVG tarafı karar 2026-10-21;
-  K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor); okuma satırı aynı bağımlılığa bağlıdır, ayrı karar açılmadı.
+  K4 ortak iletici paketi (Control Tower) + MOD-0021 sahip sözleşmesi bekleniyor) ve WP-0230-DL10-R1 kuyrukta `INTEGRATED` (revizyon 14, DEPO-01 KD-3; revizyon 15, KK-7); okuma satırı aynı bağımlılığa bağlıdır, ayrı karar açılmadı.
   Kapsam dışı: ileticinin ya da merkezi günlüğün yapımı; liste okumasının denetimi (AUD-001 §7 sınıfı değil).
   Bitiş: AC-11, AC-18 (tekil açılış okuma denetimi); `AuditTrailStandardTests` yeşil ve borç listesi küçülmüş.
   Revizyon 04: yeni alanların denetim yükü yalnız taksonomi kodları ve kimlikler ("Audited Events"); aynı önkoşul.
@@ -1938,13 +2503,16 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Diten.Web'de `[HasPermission]` özniteliği yok), görünüm kökü, JS (`index.js` sayfalaması: `buildListUrl` yerine
   ortak liste bileşeni `DitenDataTable.createList` sunucu modu, tarayıcı `start` / `length` gönderir;
   `form.js` / `details.js` sürüm taşıması dahil), resx,
-  `Models/CaseIntakeTriage/**`, `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`. Önkoşul: DL-6; OD-PVG-8 kapandı (2026-10-21);
+  `Models/CaseIntakeTriage/**`, `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`,
+  `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs` (revizyon 13). Önkoşul: DL-6; OD-PVG-8 kapandı (2026-10-21);
   OD-PVG-10 kapandı (2026-10-21); AC-20 için DL-4 (AC-19: API'de sürüm ve toplam/süzülmüş sayı alanları).
-  Kapsam dışı: `_Layout.cshtml`, ortak partial'lar, menü/manifest (WP-0230-08 blocked); servis yolları (API tarafı toplam sayı DL-4).
+  Kapsam dışı: `_Layout.cshtml`, ortak partial'lar, menü; manifest ve katalog kaydı (DL-11); servis yolları (API tarafı toplam sayı DL-4).
   Bitiş: AC-1, AC-2, AC-3, AC-14, AC-15, AC-20; vitest 0 kırmızı.
   Bilinen sapma (OD-PVG-10): toplu silme, dışa aktarma, içe aktarma, tümünü seç ve bağlantıları (reload-with-toast,
   clear-selection) - doğrulayıcının 13 maddesi; kalan beş madde (veri modu, `_TableSkeleton`, `_Filter` ve `_IndexL10n`
-  partial'ları, form ViewModel'i) DL-7'de düzeltilir.
+  partial'ları, form ViewModel'i) DL-7'de düzeltilir. Revizyon 13: sapma sayıyla değil kategoriyle okunur — toplu silme,
+  dışa aktarma (sunucu modunda koşulsuz basılan BL-452 sunucu dışa aktarma maddesi dahil), içe aktarma, tümünü seç,
+  seçimi temizle ve bunlara bağlı kablolama; "13" 2026-10-21 sayımıdır; kalan beş maddeden hiçbiri basılmaz (AC-14).
   Revizyon 04: `_Form.cshtml` ve triyaj formunda yeni alanlar (ürün listesi, farkına varma anı, şirket alıcısı,
   olay ülkesi "bilinmiyor" ile, rapor türü, bildiren arama + elle giriş, dört geçerlilik ölçütü), denetleyici form
   girdileri, `form.js` / `details.js`, yedi dilde yeni etiketler, seçiciler (ürün, kişi, ülke) yalnız aynı kökenli MVC
@@ -1954,18 +2522,69 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   Önkoşul: alan girdileri için DL-4 (AC-31); seçiciler için MOD-0290, MOD-0150, MOD-0288 okuma
   sözleşmeleri ve ülke listesi kaynağı. Kapsam dışı: servis tarafı doğrulama (DL-2); seçicilerin veri kaynağı yeni
   bir Gateway route'u isterse o DL-8 / integration-agent işidir ve bu revizyonla yetkilendirilmez. Bitiş: AC-32.
+  Revizyon 13 (SECENEK-01 S-2, S-3, S-5; CEVIRI-01 C-3): AC-32'nin önkoşullarına **WP-0230-DL4D** (AC-34) eklenir —
+  rapor türü ve ürün rolü seçenekleri ile olay ülkesinin "bilinmiyor" değeri yalnız bu uçtan, aynı kökenli MVC
+  vekilinde okuma anahtarıyla (`RequireJson` ile `pvg.case-intake-triage.read`) korunan eylem üzerinden gelir; görünüm
+  ve JS'te seçenek kodu listesi yoktur; görünen ad koda göre sayfa resx'inden gelir, karşılığı yoksa kodun kendisi
+  gösterilir. Seçenek ucu mevcut öğe route'undan geçer; yeni Gateway route'u gerekmez. Triyaj formundaki dört geçerlilik
+  ölçütü AC-32'den çıkar; QPPV AL-5 onayından sonra AC-28 ile aynı işte yapılır (yukarıdaki revizyon 04 satırındaki
+  "dört geçerlilik ölçütü" o işe aittir; test `pvg triage form posts the four validity criteria`). AC-15'e altı dilde
+  en ile aynı değer olmaması kuralı eklenir (adlı istisnalar: `ChannelPortal` es, `TriageTitle` fr). Vekil sayfalama
+  eşlemesinin C# testi (W7, `PvgCaseIntakeTriageWebTests.cs`) AC-20'de adıyla yazılıdır.
 - **DL-8** — Yollar: `gateway/Diten.ApiGateway/ocelot.json` içindeki dört MOD-0230 route girdisi (yalnız integration-agent).
   Önkoşul: bugünkü durum için yok. Kapsam dışı: Gateway ara katmanı ve diğer route'lar.
   Bitiş: AC-16; Gateway üzerinden smoke çağrısı servisin sonucunu döndürür.
 - **DL-9** — Yollar: operasyonel runtime paketi onaylanana kadar yok. Önkoşul: "Required Approval Gates"in tamamı.
   Kapsam dışı: bugün her şey; hiçbir WP bu dilimi şimdi alamaz. Bitiş: operasyonel runtime yetki satırı sahip kanıtıyla onaylı.
+- **DL-10** — Yollar: `src/Diten.PvgService.Persistence/**` (yeni proje: Mongo mağazası, eşleme, `PvgMongoSchemaBootstrap`,
+  DI uzantısı); `Infrastructure/RegPvBase/PvgIntakeDraftIndexCatalog.cs` (üçüncü index ve `DescendingFields`) ve
+  `InMemoryPvgIntakeDraftRepository.cs` (aktör parametresi); `Application/RegPvBase/IPvgIntakeDraftStore.cs` (aktör
+  parametresi) ve `PvgIntakeDraftApplicationService.cs` içindeki `AddAsync` / `ReplaceAsync` çağrılarının argümanı;
+  `src/Diten.PvgService.Api/PvgServiceApiHost.cs` ve `Diten.PvgService.Api.csproj` (mağaza seçimi, ilk sıradaki
+  kalıcılık denetimi, hazırlık); `tests/Diten.PvgService.RegPvBase.Tests/**`, `tests/Diten.PvgService.Api.Tests/**`.
+  Önkoşul (DoR'da ölçülür): DEPO-01 ile DCP-004 ve domain-config istisnası aynı committe; PVG kuyruğunda
+  (`execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv`) WP-0230-DL2A, DL2B, DL3A, DL3B, DL3C, DL3D
+  `INTEGRATED` ve DoR koşusunda AC-12'nin üç adlı testi ile AC-8 ve AC-10 testleri yeşil (`pvg-regpv-base`, `pvg-api`
+  0 kırmızı; DL-3 ile ortak dosya `PvgServiceApiHost.cs`); WP-0230-DL4D ve DL7B dağıtılmış. `CreatedBy` /
+  `UpdatedBy` kısmı (AC-35 (c2)) WP-0230-DL4B'yi bekler (DEPO-03 S-4): ölçüsü kuyrukta `INTEGRATED` ve AC-5 testlerinin
+  DoR'da yeşil olması; bu koşul tutmazsa WP bu kısım dışında teslim edilir ve AC-35 (c2) açık kalır. İmza değişikliği:
+  `AddAsync` / `ReplaceAsync`'e eklenen aktör parametresi için test ikameleri (ör. `PvgServiceApiHostTests.cs`
+  içindeki `TestIntakeDraftStore`) ve test dosyalarındaki doğrudan çağrılar güncellenir; AC-12'nin adlı testleri aynı
+  adla ve aynı iddialarla kalır. Sabotaj kanıtı (AC-13, AC-35): depo biçimli, çalışma ağacı dışındaki karalama
+  kopyada; yalnız bu dilimin yollarına dokunur; commit edilmez. DoR ölçümleri: dev mongod'un replica set olup olmadığı salt
+  okunur (DEPO-03 S-11); bugünkü hostun `IHostedService` kümesi (AC-13 (f)'nin taban listesi); `AuditTrailStandardTests`
+  PvgService sayımı (yeni proje taramaya girer; değişmemeli). Kapsam dışı: denetim yazımı ve `AddCentralAudit` (DL-5),
+  MediatR, seed, izin seed'i / grant, arka plan işi, operasyonel kullanım, API / ekran sözleşmesi, MOD-0231 / MOD-0232 /
+  MOD-0234 kodu, `tests/architecture/**`, `.github/workflows/**`. DOĞRULA sırası: önce testin kendi tek düğümlü
+  replica set'i (`DITEN_TEST_MONGOD`, 27017 asla), sonra host; dev smoke'ta önce Mongo, sonra PvgService (Mongo
+  seçiliyken ulaşılamayan depo açılışı reddeder). Bitiş: AC-13, AC-35; `pvg-regpv-base`, `pvg-api`,
+  `pvg-case-processing`, `pvg-meddra-coding`, `pvg-signal-management` ve `tests/architecture/TenantArchitecture.ArchitectureTests`
+  0 kırmızı, atlanan 0. DL-5, WP-0230-DL10-R1'in kuyrukta `INTEGRATED` olmasını bekler (DEPO-01 KD-3; KK-7); DL-10'un kendi kabulü
+  kaldırılmaz, canlı yol açılana kadar ertelenir (KK-8).
+- **DL-11** — Yollar: `services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/**` (bildirim sağlayıcı, açılış
+  gönderimi, ortam değişkeni okuması, kayıt uzantısı), `services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs` (tek kayıt satırı),
+  gerekirse `services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj`
+  (`Diten.BuildingBlocks.ModuleRegistration.Abstractions` başvurusu), `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/**`,
+  yedi `frontend/Diten.Web/Resources/SharedResource.*.resx` dosyası (yalnız `Nav.Module.CASEINTAKETRIAGE` ve
+  `Nav.Domain.PHARMACOVIGILANCE` anahtarları, yedi dilde, l10n kapısından).
+  Önkoşul: WP-0230-DL10-R1 kuyrukta `INTEGRATED` (KK-7, KK-12; WP-0230-DL10 `REWORK` oldu, teslimi R1 ile sürer; iki iş de `PvgServiceApiHost.cs` dosyasına dokunur, AC-13 (f) listesi DL-10'dan gelir); WP-0230-DL4B,
+  WP-0230-DL6, WP-0230-DL7A, WP-0230-DL7B-R1, WP-0230-DL7C, WP-0230-DL4D ve WP-0230-DL8 kuyrukta `INTEGRATED` ya da `ACCEPTED`
+  (AC-36 ve AC-38 bunların kodunu ölçer; WP-0230-DL7B kuyrukta `REWORK`, yani son durumda; düzeltmesi WP-0230-DL7B-R1'dir).
+  Kapsam dışı: Platform ve Auth kodu, Gateway ve `ocelot.json`, `.antigravity/**`, frontend'in geri kalanı, menü; seed, grant kodu,
+  operasyonel kullanım (KK-6); MOD-0231 / MOD-0232 / MOD-0234. Rol izni geliştirme ortamında elle verilir; bu adımı
+  sahip yapar, CT ölçer. Sabotaj kanıtı (AC-36, AC-37): depo biçimli, çalışma ağacı dışındaki karalama kopyada; yalnız bu
+  dilimin yollarına dokunur; commit edilmez. Gerekli kanıt E5 (SOP §23.1 "Cross-module capability seam"); kanıt AC-38'dir: tek
+  koşuda çapraz modül akışı ve yeniden başlatma kontrolü. Bitiş: AC-36 (`NavManifestL10nGuardTests` yeşil dahil), AC-37, AC-38;
+  `pvg-api`, `pvg-regpv-base`, `pvg-case-processing`, `pvg-meddra-coding`, `pvg-signal-management` ve
+  `tests/architecture/TenantArchitecture.ArchitectureTests` 0 kırmızı, atlanan 0. Bu dilimin kabulü DL-7'yi kapatmaz (E4; G-23,
+  OD-PVG-14) ve operasyonel kapıyı açmaz.
 
 Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları yapmaz, yalnız bekler:
 
 - MOD-0019 sahibi (platform-shared-services): modül paketi, sahip ve runtime; "Entity Fields" hassasiyet matrisi (revizyon 05'ten beri 25 oluşturma/düzenleme alanı, triyaj ve yönlendirme girdileri ve sistem alanları) ilk tüketici gereksinimi olarak verilir.
 - MOD-0023 sahibi: triage durum kümesi ve route hedefi gereksinimi.
 - MOD-0031 sahibi: kanıt tamlığı gereksinimi.
-- MOD-0018 sahibi / AuthService: seçilen anahtar ailesinin katalog ve grant'ı (katalog→Auth eşitleme yolu, OD-PVG-1 2026-10-27); `pvg.*` ad alanı PKS-001 §4 tablosuna 2026-10-27'de eklendi.
+- MOD-0018 sahibi / AuthService: seçilen anahtar ailesinin katalog ve grant'ı (katalog→Auth eşitleme yolu, OD-PVG-1 2026-10-27; revizyon 15'ten beri bu modülün manifest bildirimi DL-11'dedir, Auth kodu ve grant kodu burada kalır); `pvg.*` ad alanı PKS-001 §4 tablosuna 2026-10-27'de eklendi.
 - MOD-0021 sahibi ve Control Tower (AUD-001 K4 ortak iletici paketi): denetim yolu.
 - MOD-0041 / Ops ve iz otoritesi (Enterprise Architecture): hata modeli, gözlemlenebilirlik ve TRACE-BUNDLE sözleşmeleri.
 - Kurulum sohbeti: `AGENTS.md`'de yer açan PR; ardından 5011 satırı §3 tablosuna yazılır (OD-PVG-7 kararı 2026-10-27, `pvg-mod0230-od-pvg-7-port-02.md`). `.claude/launch.json` `web-verify` 5002'ye taşındı.
@@ -1980,4 +2599,4 @@ Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları y
   ISO 3166-1 alfa-2 ülke listesi (EK-1, `pvg-mod0230-intake-fields-02.md`; liste gelene kadar yalnız "bilinmiyor").
 - QPPV: güvenilir farkına varma zaman damgası (AL-2, QPPV-02), rapor türü değerleri (AL-4), geçerlilik ölçütleri (AL-5).
 - MOD-0231 / MOD-0233 sahipleri (bugün TBD): AL-7'de adlandırılan gelecek gereksinimler; o paketlerin kararıdır.
-- Control Tower: WP-0230-03 başlığı ile WP-0230-07 denetleyici adı ve anahtar ailesinin bu paketle uzlaştırılması; PVG kuyruğundaki sahip alanının rol etiketiyle hizalanması; PVG-M1-02 inceleme notundaki iki yanlışın düzeltilmesi; WP-0230-08 manifest kararı.
+- Control Tower: WP-0230-03 başlığı ile WP-0230-07 denetleyici adı ve anahtar ailesinin bu paketle uzlaştırılması; PVG kuyruğundaki sahip alanının rol etiketiyle hizalanması; PVG-M1-02 inceleme notundaki iki yanlışın düzeltilmesi. WP-0230-08 seçimi OD-PVG-13'tür (sahip, "Evet, sürsün", 2026-10-31, `pvg-mod0230-kapali-kayit-03.md`); işi DL-11'dedir.
