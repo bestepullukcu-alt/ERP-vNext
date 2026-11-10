@@ -19,6 +19,7 @@ public static class CycleCountServiceCollectionExtensions
     {
         services.TryAddSingleton(new CycleCountTime(TimeProvider.System));
         services.TryAddScoped<ICycleCountReleaseProbe, NoopCycleCountReleaseProbe>();
+        services.TryAddScoped<ICycleCountSubmitProbe, NoopCycleCountSubmitProbe>();
         services.AddScoped<CycleCountSupport>();
         services.AddScoped<ICycleCountRepository, CycleCountRepository>();
         services.AddScoped<ICycleCountAssigneeDirectory, CycleCountAssigneeDirectory>();

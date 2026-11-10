@@ -53,6 +53,27 @@ public sealed record CycleCountSnapshotRow(Guid LocationId, Guid ItemId, Guid Sk
 /// <summary>The snapshot: the scope bins, their balance rows and the ids of the window's movements on them — all from ONE snapshot transaction.</summary>
 public sealed record CycleCountScopeSnapshot(IReadOnlyList<Guid> BinIds, IReadOnlyList<CycleCountSnapshotRow> Rows, IReadOnlyList<Guid> TransactionIds);
 
+/// <summary>The key of a count line (pack §4.2): bin, SKU, level, lot, stock status.</summary>
+public sealed record CycleCountLineKey(Guid LocationId, Guid SkuId, SkuLevel SkuLevel, string? LotId, StockStatus StockStatus)
+{
+    public static CycleCountLineKey Of(CycleCountLine line) => new(line.LocationId, line.SkuId, line.SkuLevel, line.LotId, line.StockStatus);
+}
+
+/// <summary>What the submit's snapshot read covers (pack §8.4): the count's scope bins and the window start <c>SnapshotAt − W</c>.</summary>
+public sealed record CycleCountLedgerRequest(IReadOnlyCollection<Guid> BinIds, DateTimeOffset WindowStart);
+
+/// <summary>One balance leg of a ledger movement on a scope bin (the ledger's own leg rule: source −BaseQuantity, target +BaseQuantity).</summary>
+public sealed record CycleCountLedgerLeg(CycleCountLineKey Key, decimal Delta);
+
+/// <summary>A window movement on the scope bins: its id, its <c>CreatedAt</c> (never <c>PostingDate</c> — pack §8.4) and its legs on those bins.</summary>
+public sealed record CycleCountLedgerMovement(Guid TransactionId, DateTimeOffset CreatedAt, IReadOnlyList<CycleCountLedgerLeg> Legs);
+
+/// <summary>
+/// The submit's ledger read — from ONE snapshot transaction: the window's movements on the scope bins and the scope's balance today per line key
+/// (every AVAILABLE row of those bins, zero and negative included, summed over owner / project).
+/// </summary>
+public sealed record CycleCountLedgerRead(IReadOnlyList<CycleCountLedgerMovement> Movements, IReadOnlyDictionary<CycleCountLineKey, decimal> BalanceToday);
+
 /// <summary>
 /// MOD-0181 counts, lines, timeline and bin claims (pack §3, §4). Every member is bound to the caller's resolved Tenant + LegalEntity — another
 /// company's or tenant's count does not exist here (404). Changes go through <see cref="InTransactionAsync"/>.
@@ -74,6 +95,9 @@ public interface ICycleCountRepository
     Task<CycleCountLinePage> LinesAsync(Guid countId, int page, int pageSize, CancellationToken cancellationToken = default);
 
     Task<CycleCountEventPage> EventsAsync(Guid countId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>A line of a live count of the caller's company.</summary>
+    Task<CycleCountLine?> FindLineAsync(Guid countId, Guid lineId, CancellationToken cancellationToken = default);
 
     Task<CycleCountEvent?> FindKeyEventAsync(Guid countId, Guid actorUserId, string requestOp, string idempotencyKey, CancellationToken cancellationToken = default);
 
@@ -102,6 +126,18 @@ public interface ICycleCountWriteSession
     Task<bool> ReplaceCountAsync(CycleCount count, int expectedVersion, CancellationToken cancellationToken = default);
 
     Task InsertLinesAsync(IReadOnlyList<CycleCountLine> lines, CancellationToken cancellationToken = default);
+
+    /// <summary>Replaces each line if its stored version is still the paired one; false = at least one was not (the transaction is then abandoned).</summary>
+    Task<bool> ReplaceLinesAsync(IReadOnlyList<(CycleCountLine Line, int ExpectedVersion)> lines, CancellationToken cancellationToken = default);
+
+    /// <summary>Every line of the count, read in this transaction.</summary>
+    Task<IReadOnlyList<CycleCountLine>> ReadLinesAsync(Guid countId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Pack §8.4 — IN this snapshot transaction: the window's movements on <see cref="CycleCountLedgerRequest.BinIds"/> and the balance today of
+    /// those bins. A read that cannot be done is <see cref="CycleCountInventoryUnavailableException"/> (503, the submit writes nothing — AC-20).
+    /// </summary>
+    Task<CycleCountLedgerRead> ReadVarianceLedgerAsync(CycleCountLedgerRequest request, CancellationToken cancellationToken = default);
 
     Task InsertEventsAsync(IReadOnlyList<CycleCountEvent> events, CancellationToken cancellationToken = default);
 

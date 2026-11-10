@@ -97,7 +97,8 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal(
             [
                 "GET cycle-counts", "GET cycle-counts/{countId}", "GET cycle-counts/{countId}/events", "GET cycle-counts/{countId}/lines",
-                "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/release",
+                "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/lines",
+                "POST cycle-counts/{countId}/lines/{lineId}/count", "POST cycle-counts/{countId}/release", "POST cycle-counts/{countId}/submit",
                 "POST cycle-counts/{countId}/update"
             ],
             routes);

@@ -18,7 +18,7 @@ public enum CycleCountStatus
     Cancelled
 }
 
-/// <summary>A line's state (pack §8.3 "Satır"). DL-1 writes <see cref="Open"/> only (the snapshot lines); the rest come with DL-2 / DL-3.</summary>
+/// <summary>A line's state (pack §8.3 "Satır"). DL-1 writes Open, DL-2 Counted / NoVariance / AwaitingApproval; the decisions come with DL-3.</summary>
 public enum CycleCountLineStatus
 {
     Open,
@@ -38,7 +38,10 @@ public enum CycleCountLineOrigin
     Recount
 }
 
-/// <summary>The kinds of the insert-only count timeline (pack §4.3). DL-1 writes Created, Updated, Released and Cancelled.</summary>
+/// <summary>
+/// The kinds of the insert-only count timeline (pack §4.3). DL-1 writes Created, Updated, Released and Cancelled; DL-2 LineCounted, LineAdded,
+/// Submitted, VarianceComputed and Closed (a submit whose every line is final).
+/// </summary>
 public enum CycleCountEventKind
 {
     Created,

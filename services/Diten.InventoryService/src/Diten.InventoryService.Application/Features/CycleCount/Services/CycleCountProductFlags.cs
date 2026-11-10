@@ -13,6 +13,9 @@ namespace Diten.InventoryService.Application.Features.CycleCounting.Services;
 /// </summary>
 public sealed class CycleCountProductFlags
 {
+    /// <summary>A SKU's stock behaviour as a found line needs it.</summary>
+    public sealed record CycleCountSkuBehaviour(bool LotControlled, bool SerialControlled, string BaseUomId);
+
     private readonly IProductMasterClient _products;
 
     public CycleCountProductFlags(IProductMasterClient products) => _products = products;
@@ -46,6 +49,41 @@ public sealed class CycleCountProductFlags
         }
 
         return (flags, null);
+    }
+
+    /// <summary>
+    /// DL-2 found line (pack §4.2, §8.9, §12): the SKU's lot / serial behaviour and base UoM from PRODUCT-MASTER, with the ledger's own rule.
+    /// Unknown SKU → 422 <c>UNKNOWN_ITEM</c>; another item's SKU → 422 <c>SKU_ITEM_MISMATCH</c>; unreachable → 503; incomplete → 422.
+    /// </summary>
+    public async Task<(CycleCountSkuBehaviour? Behaviour, Response<T>? Refusal)> LineBehaviourAsync<T>(Guid itemId, Guid skuId, SkuLevel level, CancellationToken ct)
+    {
+        try
+        {
+            var sku = await _products.GetSkuAsync(skuId, level, ct);
+            if (sku is null)
+                return (null, CycleCountSupport.Fail<T>(InventoryErrorCodes.UnknownItem, "PRODUCT-MASTER does not know this SKU at this level.", 422,
+                    new Dictionary<string, object?> { ["skuId"] = skuId.ToString("D"), ["skuLevel"] = WireNames.ToWire(level) }));
+            if (sku.ItemId is { } owner && !string.Equals(owner, itemId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+                return (null, CycleCountSupport.Fail<T>(InventoryErrorCodes.SkuItemMismatch, "The SKU does not belong to this item.", 422,
+                    new Dictionary<string, object?> { ["skuId"] = skuId.ToString("D"), ["itemId"] = itemId.ToString("D") }));
+
+            var productSerial = level == SkuLevel.Gsku ? (await _products.GetProductAsync(itemId, ct))?.SerialControlled : null;
+            var behaviour = ProductMasterStockRules.Behaviour(level, sku.LotControlled, sku.SerialControlled, productSerial);
+            if (behaviour.Refusal is StockBehaviourRefusal.LevelNotStockable)
+            {
+                return (null, CycleCountSupport.Fail<T>(InventoryErrorCodes.SkuLevelNotStockable, "PRODUCT-MASTER does not allow stock of this SKU at this level.", 422,
+                    new Dictionary<string, object?> { ["skuId"] = skuId.ToString("D"), ["skuLevel"] = WireNames.ToWire(level) }));
+            }
+
+            if (behaviour.Refusal is not null) return (null, Incomplete<T>(skuId));
+            var uom = await _products.GetSkuUomAsync(skuId, ct);
+            if (uom is null || string.IsNullOrWhiteSpace(uom.BaseUomId)) return (null, Incomplete<T>(skuId));
+            return (new CycleCountSkuBehaviour(behaviour.LotControlled, behaviour.SerialControlled, uom.BaseUomId), null);
+        }
+        catch (ProductMasterUnavailableException)
+        {
+            return (null, CycleCountSupport.Fail<T>(InventoryErrorCodes.ProductMasterUnavailable, "PRODUCT-MASTER could not be reached; nothing was written.", 503));
+        }
     }
 
     private static Response<T> Incomplete<T>(Guid skuId)

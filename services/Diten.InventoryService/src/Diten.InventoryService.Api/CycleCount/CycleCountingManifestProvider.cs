@@ -35,6 +35,7 @@ public sealed class CycleCountingManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(CycleCountPermissions.CountsCreate, "Open a cycle count", "Tenant"),
                 new ModuleManifestPermission(CycleCountPermissions.CountsUpdate, "Edit and release a cycle count", "Tenant"),
                 new ModuleManifestPermission(CycleCountPermissions.CountsBulkDelete, "Delete draft cycle counts in bulk", "Tenant"),
-                new ModuleManifestPermission(CycleCountPermissions.CountsCancel, "Cancel a cycle count", "Tenant")
+                new ModuleManifestPermission(CycleCountPermissions.CountsCancel, "Cancel a cycle count", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.CountsRecord, "Enter counted quantities, add found stock and submit a count", "Tenant")
             ]);
 }

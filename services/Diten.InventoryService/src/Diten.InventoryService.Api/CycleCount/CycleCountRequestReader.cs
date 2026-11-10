@@ -55,6 +55,36 @@ public static class CycleCountRequestReader
             Uuids("scopeLocationIds"), Uuids("scopeSkuIds"), String("plannedDate") ?? throw new FormatException("plannedDate is required."),
             OptionalUuid("assignedTo"), String("note"));
 
+        /// <summary>
+        /// A quantity member (contract rule 10: a decimal STRING). Absent → null; a string → as sent; any other JSON kind → a text no quantity rule
+        /// accepts, so the handler answers <c>COUNT_QUANTITY_INVALID</c> (AC-14 "sayı değil") rather than a generic shape error.
+        /// </summary>
+        public string? QuantityText(string name)
+        {
+            if (!root.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null) return null;
+            return value.ValueKind == JsonValueKind.String ? value.GetString() : "\u0000" + value.GetRawText();
+        }
+
+        /// <summary>recordCycleCountLine — <c>{ countedQuantity, scanRef? }</c>.</summary>
+        public CycleCountEntryInput Entry() => new(QuantityText("countedQuantity"), String("scanRef"));
+
+        /// <summary>addCycleCountLine — <c>{ locationId, item: { itemId, skuId, skuLevel }, lotId?, countedQuantity, scanRef? }</c> (status: AVAILABLE, Q-8 = A).</summary>
+        public CycleCountFoundLineInput FoundLine()
+        {
+            if (!root.TryGetProperty("item", out var item) || item.ValueKind != JsonValueKind.Object)
+                throw new FormatException("item is required and must be an object { itemId, skuId, skuLevel }.");
+            foreach (var p in item.EnumerateObject())
+            {
+                if (p.Name is not ("itemId" or "skuId" or "skuLevel")) throw new FormatException($"Unknown member 'item.{p.Name}'.");
+            }
+
+            return new CycleCountFoundLineInput(Uuid("locationId"),
+                Id(item, "itemId") ?? throw new FormatException("item.itemId is required and must be a canonical UUID."),
+                Id(item, "skuId") ?? throw new FormatException("item.skuId is required and must be a canonical UUID."),
+                Str(item, "skuLevel") ?? throw new FormatException("item.skuLevel is required."),
+                String("lotId"), QuantityText("countedQuantity"), String("scanRef"));
+        }
+
         /// <summary>bulkDeleteCycleCounts — <c>items: [{ countId, version }]</c>.</summary>
         public IReadOnlyList<CycleCountBulkItemInput> BulkItems()
         {
@@ -130,4 +160,10 @@ public static class CycleCountRequestReader
     public static readonly HashSet<string> ReasonMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason" };
 
     public static readonly HashSet<string> BulkDeleteMembers = new(StringComparer.Ordinal) { "idempotencyKey", "reason", "items" };
+
+    // ── DL-2 members (draft §4.2) ──
+    public static readonly HashSet<string> EntryMembers = new(StringComparer.Ordinal) { "idempotencyKey", "countedQuantity", "scanRef" };
+
+    public static readonly HashSet<string> FoundLineMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "locationId", "item", "lotId", "countedQuantity", "scanRef" };
 }

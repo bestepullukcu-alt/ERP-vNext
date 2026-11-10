@@ -29,9 +29,15 @@ public static class CycleCountPermissions
     /// <summary>DL-3: Variance Trace, the expected / variance view.</summary>
     public const string VariancesRead = "cycle-count.variances.read";
 
-    /// <summary>The keys DL-1's controller enforces (pack §14 "Dilim" column) — exactly the manifest's.</summary>
+    /// <summary>The keys DL-1's controller enforces (pack §14 "Dilim" column).</summary>
     public static readonly IReadOnlyList<string> Dl1 = [CountsRead, CountsCreate, CountsUpdate, CountsBulkDelete, CountsCancel];
 
-    /// <summary>Every key the controllers enforce so far.</summary>
-    public static IReadOnlyList<string> Implemented => Dl1;
+    /// <summary>DL-2 adds the entry / found line / submit key (pack §14).</summary>
+    public static readonly IReadOnlyList<string> Dl2 = [CountsRecord];
+
+    /// <summary>
+    /// Every key the controllers enforce so far — exactly the manifest's. <see cref="VariancesRead"/> is NOT one yet: DL-2 only reads it from the
+    /// token for the blind projection (pack §8.2 rule 5); its endpoints and its manifest entry are DL-3's (pack §14).
+    /// </summary>
+    public static IReadOnlyList<string> Implemented => [.. Dl1, .. Dl2];
 }

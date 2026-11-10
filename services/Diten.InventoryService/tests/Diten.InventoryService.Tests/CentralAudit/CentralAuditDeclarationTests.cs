@@ -43,7 +43,9 @@ public sealed class CentralAuditDeclarationTests
         // the 2 MOD-0175-FU01 commands stay outside that rule — CT S-101, DÜŞÜK).
         // 106 after MOD-0181 DL-1 (XMC-001, Beste 2026-11-06; pack §5 "sayı + dilimin 0181 yazma komutları"): Create, Update, BulkDelete, Release,
         // Cancel CycleCount — 5 of 0181's 16; measured 101 at 81546c373.
-        Assert.Equal(106, WriteCommands.Length);
+        // 109 after MOD-0181 DL-2 (pack §24 DL-2 seam "CentralAuditDeclarationTests (sayı)"): RecordCountLine, AddCountLine, SubmitCycleCount —
+        // 8 of 0181's 16; measured 106 at 081edf122.
+        Assert.Equal(109, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

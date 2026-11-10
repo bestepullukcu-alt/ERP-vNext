@@ -10,7 +10,8 @@ namespace Diten.InventoryService.Tests.CycleCounting;
 /// Pack §17 "Sözleşme" — the WMS-COUNT-BUNDLE v1 DRAFT (<c>docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md</c>) turned into JSON
 /// Schema 2020-12 in the test project (the MOD-0178 <c>WmsDraftContract</c> pattern; the draft file itself is not changed by tests). Derived member
 /// by member from draft §1 (unwrapped success body, the <c>Error</c> envelope, NO JSON null, decimal strings, uuid / date / date-time formats),
-/// §3.1 <c>CycleCount</c>, §3.2 <c>CycleCountLine</c>, §3.3 <c>CycleCountEvent</c>, §3.4 pages and §3.5 <c>BulkDeleteCycleCountsResult</c>. Every
+/// §3.1 <c>CycleCount</c>, §3.2 <c>CycleCountLine</c> (with the DL-2 members), §3.3 <c>CycleCountEvent</c>, §3.4 pages and §3.5
+/// <c>BulkDeleteCycleCountsResult</c>; operations §4.1 (DL-1) and §4.2 (DL-2). Every
 /// object is CLOSED and every enum is the draft's list: a member or a value the draft does not name turns the call red.
 /// </summary>
 public static class CycleCountDraftContract
@@ -22,6 +23,7 @@ public static class CycleCountDraftContract
     public const string LinePage = "CycleCountLinePage";
     public const string EventPage = "CycleCountEventPage";
     public const string BulkDeleteResult = "BulkDeleteCycleCountsResult";
+    public const string Line = "CycleCountLine";
 
     private const string Defs = """
     {
@@ -67,7 +69,8 @@ public static class CycleCountDraftContract
           "status": { "enum": ["Draft", "Released", "Counting", "Submitted", "Closed", "Cancelled"] }, "snapshotAt": { "$ref": "#/$defs/DateTime" },
           "scopeBinIds": { "type": "array", "items": { "$ref": "#/$defs/Uuid" } }, "lineCount": { "type": "integer", "minimum": 0 },
           "recountOfId": { "$ref": "#/$defs/Uuid" }, "createdBy": { "$ref": "#/$defs/Uuid" }, "createdAt": { "$ref": "#/$defs/DateTime" },
-          "updatedAt": { "$ref": "#/$defs/DateTime" }, "cancelledBy": { "$ref": "#/$defs/Uuid" }, "cancelledAt": { "$ref": "#/$defs/DateTime" },
+          "updatedAt": { "$ref": "#/$defs/DateTime" }, "submittedBy": { "$ref": "#/$defs/Uuid" }, "submittedAt": { "$ref": "#/$defs/DateTime" },
+          "cancelledBy": { "$ref": "#/$defs/Uuid" }, "cancelledAt": { "$ref": "#/$defs/DateTime" },
           "cancelReason": { "$ref": "#/$defs/Text" }, "version": { "type": "integer", "minimum": 1 }, "contractVersion": { "$ref": "#/$defs/ContractVersion" }
         }
       },
@@ -84,6 +87,10 @@ public static class CycleCountDraftContract
           "lotId": { "$ref": "#/$defs/Text" }, "stockStatus": { "const": "AVAILABLE" }, "baseUomId": { "$ref": "#/$defs/Text" },
           "origin": { "enum": ["Snapshot", "Found", "Recount"] }, "serialControlled": { "type": "boolean" },
           "expectedQuantity": { "$ref": "#/$defs/Quantity" }, "countedQuantity": { "$ref": "#/$defs/Quantity" },
+          "countedBy": { "$ref": "#/$defs/Uuid" }, "countedAt": { "$ref": "#/$defs/DateTime" },
+          "movementsSinceSnapshot": { "$ref": "#/$defs/Quantity" }, "expectedAtCount": { "$ref": "#/$defs/Quantity" },
+          "varianceQuantity": { "$ref": "#/$defs/Quantity" }, "movementDuringCount": { "type": "boolean" }, "snapshotDrift": { "type": "boolean" },
+          "scanRef": { "type": "string", "minLength": 1, "maxLength": 200 },
           "status": { "enum": ["Open", "Counted", "NoVariance", "AwaitingApproval", "Approved", "Rejected", "Recounted"] },
           "version": { "type": "integer", "minimum": 1 }
         }
@@ -186,7 +193,7 @@ public static class CycleCountDraftContract
     private static Operation Op(string method, string template, string success)
         => new(method, template, new Regex("^/api/warehouse/" + Regex.Escape(template).Replace("\\{id}", "[^/]+") + "/?$", RegexOptions.Compiled), success);
 
-    /// <summary>Draft §4.1 — the DL-1 operations (literal segments first so <c>{id}</c> never shadows them).</summary>
+    /// <summary>Draft §4.1 + §4.2 — the DL-1 and DL-2 operations (literal segments first so <c>{id}</c> never shadows them).</summary>
     internal static readonly Operation[] Operations =
     [
         Op("GET", "cycle-counts", CountPage),
@@ -197,7 +204,10 @@ public static class CycleCountDraftContract
         Op("POST", "cycle-counts/{id}/release", Count),
         Op("POST", "cycle-counts/{id}/cancel", Count),
         Op("GET", "cycle-counts/{id}/lines", LinePage),
-        Op("GET", "cycle-counts/{id}/events", EventPage)
+        Op("GET", "cycle-counts/{id}/events", EventPage),
+        Op("POST", "cycle-counts/{id}/lines", Line),
+        Op("POST", "cycle-counts/{id}/lines/{id}/count", Line),
+        Op("POST", "cycle-counts/{id}/submit", Count)
     ];
 }
 

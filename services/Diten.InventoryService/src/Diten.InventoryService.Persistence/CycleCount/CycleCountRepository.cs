@@ -7,6 +7,7 @@ using Diten.InventoryService.Domain.CycleCounting.Enums;
 using Diten.InventoryService.Domain.CycleCounting.Repositories;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
+using Diten.InventoryService.Domain.Rules;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -28,10 +29,12 @@ public sealed class CycleCountRepository : ICycleCountRepository
     private readonly IMongoCollection<CycleCountEvent> _events;
     private readonly IMongoCollection<CycleCountBinClaim> _claims;
     private readonly ICycleCountReleaseProbe _probe;
+    private readonly ICycleCountSubmitProbe _submitProbe;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
-    public CycleCountRepository(IMongoClient client, IMongoDatabase database, ITenantContext tenant, ICycleCountReleaseProbe probe)
+    public CycleCountRepository(IMongoClient client, IMongoDatabase database, ITenantContext tenant, ICycleCountReleaseProbe probe,
+        ICycleCountSubmitProbe submitProbe)
     {
         _client = client;
         _database = database;
@@ -40,6 +43,7 @@ public sealed class CycleCountRepository : ICycleCountRepository
         _events = database.GetCollection<CycleCountEvent>(CycleCountCollections.Events);
         _claims = database.GetCollection<CycleCountBinClaim>(CycleCountCollections.BinClaims);
         _probe = probe;
+        _submitProbe = submitProbe;
         _tenantId = tenant.TenantId;
         _legalEntityId = tenant.LegalEntityId;
     }
@@ -103,6 +107,10 @@ public sealed class CycleCountRepository : ICycleCountRepository
         var items = await _events.Find(filter).SortBy(x => x.Seq).Skip((page - 1) * pageSize).Limit(pageSize).ToListAsync(cancellationToken);
         return new CycleCountEventPage(items, total);
     }
+
+    public async Task<CycleCountLine?> FindLineAsync(Guid countId, Guid lineId, CancellationToken cancellationToken = default)
+        => await _lines.Find(Company<CycleCountLine>() & Builders<CycleCountLine>.Filter.Eq(x => x.CountId, countId)
+                             & Builders<CycleCountLine>.Filter.Eq(x => x.Id, lineId)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<CycleCountEvent?> FindKeyEventAsync(Guid countId, Guid actorUserId, string requestOp, string idempotencyKey,
         CancellationToken cancellationToken = default)
@@ -221,6 +229,62 @@ public sealed class CycleCountRepository : ICycleCountRepository
             if (lines.Count == 0) return Task.CompletedTask;
             foreach (var l in lines) owner.Stamp(l);
             return owner._lines.InsertManyAsync(session, lines, new InsertManyOptions { IsOrdered = true }, cancellationToken);
+        }
+
+        public async Task<bool> ReplaceLinesAsync(IReadOnlyList<(CycleCountLine Line, int ExpectedVersion)> lines, CancellationToken cancellationToken = default)
+        {
+            if (lines.Count == 0) return true;
+            var lf = Builders<CycleCountLine>.Filter;
+            var models = lines.Select(x =>
+            {
+                owner.Stamp(x.Line);
+                return new ReplaceOneModel<CycleCountLine>(owner.Company<CycleCountLine>() & lf.Eq(l => l.Id, x.Line.Id) & lf.Eq(l => l.Version, x.ExpectedVersion), x.Line);
+            }).ToList();
+            var result = await owner._lines.BulkWriteAsync(session, models, new BulkWriteOptions { IsOrdered = true }, cancellationToken);
+            return result.MatchedCount == lines.Count;
+        }
+
+        public async Task<IReadOnlyList<CycleCountLine>> ReadLinesAsync(Guid countId, CancellationToken cancellationToken = default)
+            => await owner._lines.Find(session, owner.Company<CycleCountLine>() & Builders<CycleCountLine>.Filter.Eq(x => x.CountId, countId)).ToListAsync(cancellationToken);
+
+        public async Task<CycleCountLedgerRead> ReadVarianceLedgerAsync(CycleCountLedgerRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // pack §8.4 test seam (AC-20) — production: no-op; a driver error here is an unreadable ledger
+                await owner._submitProbe.BeforeLedgerReadAsync(cancellationToken);
+                if (request.BinIds.Count == 0) return new CycleCountLedgerRead([], new Dictionary<CycleCountLineKey, decimal>());
+
+                var binText = request.BinIds.Select(b => b.ToString("D")).ToList();
+                var bins = request.BinIds.ToHashSet();
+
+                // the window's movements on the scope bins (CreatedAt, never PostingDate) — the ledger's collection, read only, in THIS snapshot
+                var tf = Builders<InventoryTransaction>.Filter;
+                var window = tf.Eq(x => x.TenantId, owner._tenantId) & tf.Eq(x => x.LegalEntityId, owner._legalEntityId)
+                             & tf.Gte(x => x.CreatedAt, request.WindowStart) & tf.Or(tf.In(x => x.ToLocationId, binText), tf.In(x => x.FromLocationId, binText));
+                var transactions = await owner._database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions).Find(session, window)
+                    .ToListAsync(cancellationToken);
+                var movements = transactions.Select(t => new CycleCountLedgerMovement(t.Id, t.CreatedAt,
+                    LedgerLegs.For(t)
+                        .Where(l => Guid.TryParse(l.Dimension.LocationId, out var bin) && bins.Contains(bin))
+                        .Select(l => new CycleCountLedgerLeg(new CycleCountLineKey(Guid.Parse(l.Dimension.LocationId!), l.Dimension.SkuId, l.Dimension.SkuLevel,
+                            l.Dimension.LotId, l.Dimension.StockStatus), l.Delta))
+                        .ToList())).ToList();
+
+                // the balance today of every AVAILABLE row of those bins (zero / negative too), per line key — the ledger's projection, read only
+                var bf = Builders<InventoryBalance>.Filter;
+                var rows = bf.Eq(x => x.TenantId, owner._tenantId) & bf.Eq(x => x.LegalEntityId, owner._legalEntityId) & bf.Eq(x => x.IsDeleted, false)
+                           & bf.In(x => x.LocationId, binText) & bf.Eq(x => x.StockStatus, StockStatus.Available);
+                var balances = await owner._database.GetCollection<InventoryBalance>(InventoryCollections.Balances).Find(session, rows).ToListAsync(cancellationToken);
+                var today = Rows(balances).GroupBy(r => new CycleCountLineKey(r.LocationId, r.SkuId, r.SkuLevel, r.LotId, r.StockStatus))
+                    .ToDictionary(g => g.Key, g => g.Sum(r => r.OnHand));
+
+                return new CycleCountLedgerRead(movements, today);
+            }
+            catch (MongoException ex) when (!ex.HasErrorLabel("TransientTransactionError") && ex is not MongoWriteException)
+            {
+                throw new CycleCountInventoryUnavailableException("The ledger could not be read for the variance.", ex);
+            }
         }
 
         public Task InsertEventsAsync(IReadOnlyList<CycleCountEvent> events, CancellationToken cancellationToken = default)

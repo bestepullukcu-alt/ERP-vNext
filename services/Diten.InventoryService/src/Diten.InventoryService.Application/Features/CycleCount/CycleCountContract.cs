@@ -29,6 +29,17 @@ public static class CycleCountContract
     public const string OpReleaseCycleCount = "releaseCycleCount";
     public const string OpCancelCycleCount = "cancelCycleCount";
 
+    // DL-2 writes (draft §4.2 → binding with DL-2)
+    public const string OpAddCycleCountLine = "addCycleCountLine";
+    public const string OpRecordCycleCountLine = "recordCycleCountLine";
+    public const string OpSubmitCycleCount = "submitCycleCount";
+
+    /// <summary>The opaque scan reference's bound (MOD-0182 fills it; v1 stores it unchecked — Q-12 = A).</summary>
+    public const int MaxScanRefLength = 200;
+
+    /// <summary>A line write retries its compare-and-set on the count head this many times before 409 (concurrent entries on other lines).</summary>
+    public const int MaxHeadAttempts = 5;
+
     // bulk-delete row outcomes (draft §3.5)
     public const string RowDeleted = "Deleted";
     public const string RowConflict = "Conflict";

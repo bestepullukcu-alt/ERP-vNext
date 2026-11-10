@@ -50,6 +50,11 @@ public sealed class CycleCount : EntityBase
 
     public Guid CreatedBy { get; set; }
 
+    /// <summary>DL-2: who submitted the count and when (MOD-0181's clock) — server-written (pack §4.1).</summary>
+    public Guid? SubmittedBy { get; set; }
+
+    public DateTimeOffset? SubmittedAt { get; set; }
+
     public Guid? CancelledBy { get; set; }
 
     public DateTimeOffset? CancelledAt { get; set; }
@@ -101,7 +106,30 @@ public sealed class CycleCountLine : EntityBase
 
     public decimal? CountedQuantity { get; set; }
 
+    /// <summary>DL-2: who entered the quantity and when — the server's user and MOD-0181's clock (pack §4.2, AC-14).</summary>
+    public Guid? CountedBy { get; set; }
+
+    public DateTimeOffset? CountedAt { get; set; }
+
+    /// <summary>DL-2, written at submit (pack §8.4): the net ledger movement on the key between the snapshot and <see cref="CountedAt"/>.</summary>
+    public decimal? MovementsSinceSnapshot { get; set; }
+
+    /// <summary><c>ExpectedQuantity + MovementsSinceSnapshot</c>.</summary>
+    public decimal? ExpectedAtCount { get; set; }
+
+    /// <summary><c>CountedQuantity − ExpectedAtCount</c>.</summary>
+    public decimal? VarianceQuantity { get; set; }
+
+    /// <summary>Q-6 = B: a movement touched the key between the snapshot and the entry — the line needs a decision even at variance 0.</summary>
+    public bool MovementDuringCount { get; set; }
+
+    /// <summary>F-5: the balance equation failed at submit — the line needs a decision whatever its variance (0 included), never a tolerance.</summary>
+    public bool SnapshotDrift { get; set; }
+
     public bool SerialControlled { get; set; }
+
+    /// <summary>Opaque scan reference (MOD-0182 fills it; v1 stores, never checks — Q-12 = A).</summary>
+    public string? ScanRef { get; set; }
 
     public CycleCountLineStatus Status { get; set; } = CycleCountLineStatus.Open;
 }
