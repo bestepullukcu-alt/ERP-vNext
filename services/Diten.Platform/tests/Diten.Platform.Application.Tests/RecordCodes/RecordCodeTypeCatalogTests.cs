@@ -16,6 +16,17 @@ public sealed class RecordCodeTypeCatalogTests
     /// <summary>The one named difference from §3 (K-7): MOD-0217 is AGR, §3 still says CTR until DL-7 (A-3).</summary>
     private static readonly (string Rule, string Catalog) NamedException = ("CTR", "AGR");
 
+    /// <summary>
+    /// §3 rows that are ahead of the catalogue: the type is OTOMATİK in the rule and its code is issued today by another counter, the
+    /// catalogue entry comes with a later slice. Each row names that slice; the test turns red when the rule row is gone or the catalogue
+    /// gains the type, so the row is removed then. CNT (MOD-0181 count number): MOD-0178's temporary counter (Q-7 = B) until MOD-0040-FU02
+    /// DL-8 (owner decision 2026-11-10, option a).
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> RuleAheadOfCatalogue = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["CNT"] = "MOD-0040-FU02 DL-8",
+    };
+
     [Fact]
     public void AC16_the_catalogue_holds_every_automatic_row_of_RCS001_section_3_and_PLN_and_nothing_else()
     {
@@ -23,7 +34,14 @@ public sealed class RecordCodeTypeCatalogTests
 
         Assert.Contains(NamedException.Rule, automatic); // §3 changed: remove the named exception from this test (DL-7)
         Assert.DoesNotContain(NamedException.Catalog, automatic);
-        var expected = automatic.Select(type => type == NamedException.Rule ? NamedException.Catalog : type).Append("PLN")
+        foreach (var (type, slice) in RuleAheadOfCatalogue)
+        {
+            Assert.True(automatic.Contains(type), $"{type} is no longer an OTOMATİK row of §3: remove it from RuleAheadOfCatalogue");
+            Assert.False(RecordCodeTypeCatalog.TryGet(type, out _), $"{type} is in the catalogue now ({slice}): remove it from RuleAheadOfCatalogue");
+        }
+
+        var expected = automatic.Where(type => !RuleAheadOfCatalogue.ContainsKey(type))
+            .Select(type => type == NamedException.Rule ? NamedException.Catalog : type).Append("PLN")
             .OrderBy(type => type, StringComparer.Ordinal).ToArray();
         Assert.Equal(expected, RecordCodeTypeCatalog.All.Select(d => d.RecordType).OrderBy(type => type, StringComparer.Ordinal).ToArray());
         Assert.All(RecordCodeTypeCatalog.All.Where(d => d.RecordType != "PLN"), d => Assert.Equal("OTOMATİK", d.Class));
