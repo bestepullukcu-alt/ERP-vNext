@@ -31,6 +31,9 @@ public sealed class ProcurementMongoReplicaSet : IAsyncLifetime
     public IMongoClient Client { get; private set; } = null!;
     public int Port { get; private set; }
 
+    /// <summary>MOD-0140 DL-3: the connection string the real host (<c>ProcurementApiFactory</c>) uses for this replica set.</summary>
+    public string ConnectionString => $"mongodb://127.0.0.1:{Port}/?replicaSet=rs0&directConnection=true";
+
     /// <summary>Veritabanını siler ve boş olarak verir. Göç işi bütün kiracıları okuduğu için her test boş bir veritabanıyla başlar.</summary>
     public async Task<IMongoDatabase> FreshDatabaseAsync()
     {
