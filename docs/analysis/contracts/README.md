@@ -31,6 +31,7 @@
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **BANK-DISPATCH** | MOD-0269 (tüketici MOD-0126) | `bank-dispatch.md` (süreç içi port sözleşmesi, OpenAPI değil) | ✅ **0.1.0 FROZEN** (2026-10-25, D27/7): gönderim kapalı, tek sonuç `NotConfigured`; T32 sapması (MOD-0003 yok, D27/1) |
 | **RECORD-CODE-ALLOCATE** | MOD-0040-FU02 (tüketiciler: Treasury MOD-0119/0120/0124/0126, MDM MOD-0289/0217, sonra MOD-0178) | `record-code-allocate.md` (iç uç + süreç içi port sözleşmesi, OpenAPI değil) | ✅ **1.0.0 FROZEN** (2026-11-04): §12 bekleten noktalar kapandı (Treasury CT + Ali) |
+| **WMS-BUNDLE** | MOD-0178 (`Diten.InventoryService`, `/api/warehouse`) | `wms-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **1.0.0 FROZEN** (MOD-0178 pack §19.7 CT dondurma adımı, AC-60; CT-kabullü öneri `drafts/wms-bundle-v1-proposal.md` + pack): S1 — §1 kuralları, putaway aday / görev / onay uçları, lokasyon rolleri (§3.1–§3.9, §4), `WMS_*` hata kodları (§5, Q-06), görev ve onay durum makinesi (§6.1); WAREHOUSE-OUTBOUND 1.0.0'ın yolları ve şemaları **aynen** (superset kuralı — `warehouse-outbound.openapi.yaml` değişmez, eşitlik bir sözleşme testiyle ölçülür); nesneler kapalı, JSON `null` yok (kural 4); DL-2 eklemeleri `TaskConfirmation.error.reason`, `BulkAssignResult` / `BulkDeleteLocationRolesResult.contractVersion` |
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 
