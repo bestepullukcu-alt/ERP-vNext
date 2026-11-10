@@ -86,8 +86,10 @@ public sealed class Mod0178WarehouseRouteTests
         // GET /pick-tasks/{taskId}/events (45). DL-7 adds its 3 S3 reads here (48).
         // MOD-0181 DL-1 (Q-15 = A: the count endpoints live under /api/warehouse; XMC-001 Beste 2026-11-09): + 9 — GET + POST /cycle-counts,
         // POST /cycle-counts/bulk-delete, GET /cycle-counts/{countId}, POST /cycle-counts/{countId}/update | /release | /cancel,
-        // GET /cycle-counts/{countId}/lines | /events (54). Their own coverage test is DL-6's Mod0181CycleCountRouteTests.
-        Assert.Equal(54, endpoints.Count);
+        // GET /cycle-counts/{countId}/lines | /events (54). MOD-0181 DL-2 (XMC-001, Beste 2026-11-10): + 3 — POST /cycle-counts/{countId}/lines,
+        // POST /cycle-counts/{countId}/lines/{lineId}/count, POST /cycle-counts/{countId}/submit (57). Their own coverage test is DL-6's
+        // Mod0181CycleCountRouteTests.
+        Assert.Equal(57, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
