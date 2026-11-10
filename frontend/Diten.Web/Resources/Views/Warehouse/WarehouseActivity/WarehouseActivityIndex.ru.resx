@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию склада, в котором вы работаете. Пока компания не выбрана, данные не показываются.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Список компаний сейчас недоступен; повторите попытку чуть позже.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый Просмотр</value></data>
+  <data name="Searching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Нет результатов</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Не удалось прочитать некоторые названия товаров или мест; показаны идентификаторы.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="SystemActor" xml:space="preserve"><value>Система</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
+  <data name="Warehouse.Event.Created" xml:space="preserve"><value>Создана</value></data>
+  <data name="Warehouse.Event.Updated" xml:space="preserve"><value>Изменена</value></data>
+  <data name="Warehouse.Event.Assigned" xml:space="preserve"><value>Назначена</value></data>
+  <data name="Warehouse.Event.Claimed" xml:space="preserve"><value>Взята</value></data>
+  <data name="Warehouse.Event.SuggestionApplied" xml:space="preserve"><value>Предложение применено</value></data>
+  <data name="Warehouse.Event.ConfirmationRecorded" xml:space="preserve"><value>Подтверждение записано</value></data>
+  <data name="Warehouse.Event.ConfirmationPosted" xml:space="preserve"><value>Подтверждение проведено</value></data>
+  <data name="Warehouse.Event.ConfirmationRefused" xml:space="preserve"><value>Подтверждение отклонено</value></data>
+  <data name="Warehouse.Event.ConfirmationRetried" xml:space="preserve"><value>Подтверждение повторено</value></data>
+  <data name="Warehouse.Event.ConfirmationReconciled" xml:space="preserve"><value>Подтверждение согласовано</value></data>
+  <data name="Warehouse.Event.ConfirmationIntegrityError" xml:space="preserve"><value>Ошибка целостности</value></data>
+  <data name="Warehouse.Event.IntegrityResolved" xml:space="preserve"><value>Ошибка целостности сверена</value></data>
+  <data name="Warehouse.Event.ConfirmationDeviation" xml:space="preserve"><value>Отклонение ячейки</value></data>
+  <data name="Warehouse.Event.ConfirmationSuperseded" xml:space="preserve"><value>Подтверждение заменено</value></data>
+  <data name="Warehouse.Event.ConfirmationReturned" xml:space="preserve"><value>Возвращено в источник</value></data>
+  <data name="Warehouse.Event.ClosedShort" xml:space="preserve"><value>Остаток закрыт</value></data>
+  <data name="Warehouse.Event.Completed" xml:space="preserve"><value>Завершена</value></data>
+  <data name="Warehouse.Event.Cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="Warehouse.Outbound.Event.Created" xml:space="preserve"><value>Создана</value></data>
+  <data name="Warehouse.Outbound.Event.AllocationFailed" xml:space="preserve"><value>Распределение не удалось</value></data>
+  <data name="Warehouse.Outbound.Event.Allocated" xml:space="preserve"><value>Распределена</value></data>
+  <data name="Warehouse.Outbound.Event.Updated" xml:space="preserve"><value>Изменена</value></data>
+  <data name="Warehouse.Outbound.Event.PickCompleted" xml:space="preserve"><value>Сборка завершена</value></data>
+  <data name="Warehouse.Outbound.Event.PackageCreated" xml:space="preserve"><value>Упаковка открыта</value></data>
+  <data name="Warehouse.Outbound.Event.PackageUpdated" xml:space="preserve"><value>Упаковка изменена</value></data>
+  <data name="Warehouse.Outbound.Event.PackageClosed" xml:space="preserve"><value>Упаковка закрыта</value></data>
+  <data name="Warehouse.Outbound.Event.PackageCancelled" xml:space="preserve"><value>Упаковка отменена</value></data>
+  <data name="Warehouse.Outbound.Event.Packed" xml:space="preserve"><value>Упакована</value></data>
+  <data name="Warehouse.Outbound.Event.Released" xml:space="preserve"><value>Готова к отправке</value></data>
+  <data name="Warehouse.Outbound.Event.Shipped" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="Warehouse.Outbound.Event.ReservationsReleased" xml:space="preserve"><value>Резервы сняты</value></data>
+  <data name="Warehouse.Outbound.Event.ReservationReleaseFailed" xml:space="preserve"><value>Не удалось снять резерв — будет повтор</value></data>
+  <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="ActivityTitle" xml:space="preserve"><value>Журнал активности</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Всё, что происходило в складском потоке за период: строки истории задач и отгрузок и движения запасов при размещении и отборе, сначала новые. Выберите период не длиннее 31 дня.</value></data>
+  <data name="ColTime" xml:space="preserve"><value>Время</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="ColEvent" xml:space="preserve"><value>Событие</value></data>
+  <data name="ColRecord" xml:space="preserve"><value>Запись</value></data>
+  <data name="ColActor" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>С</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>По</value></data>
+  <data name="FilterSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="RangeHint" xml:space="preserve"><value>Пустой период = последние 7 дней; не более 31 дня.</value></data>
+  <data name="RangeRequired" xml:space="preserve"><value>Выберите начало и конец периода.</value></data>
+  <data name="RangeOrder" xml:space="preserve"><value>Конец периода раньше его начала.</value></data>
+  <data name="RangeTooLong" xml:space="preserve"><value>Период может быть не длиннее 31 дня.</value></data>
+  <data name="ActionOpen" xml:space="preserve"><value>Открыть Запись</value></data>
+  <data name="SectionDetails" xml:space="preserve"><value>Подробности</value></data>
+  <data name="SectionData" xml:space="preserve"><value>Данные записи</value></data>
+  <data name="FieldTime" xml:space="preserve"><value>Время</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="FieldEvent" xml:space="preserve"><value>Событие</value></data>
+  <data name="FieldRecord" xml:space="preserve"><value>Запись</value></data>
+  <data name="FieldActor" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="FieldSeq" xml:space="preserve"><value>Порядковый номер</value></data>
+  <data name="Warehouse.Activity.Source.PutawayTask" xml:space="preserve"><value>Задача размещения</value></data>
+  <data name="Warehouse.Activity.Source.PickTask" xml:space="preserve"><value>Задача отбора</value></data>
+  <data name="Warehouse.Activity.Source.Outbound" xml:space="preserve"><value>Отгрузка</value></data>
+  <data name="Warehouse.Activity.Source.Movement" xml:space="preserve"><value>Движение запаса</value></data>
+  <data name="Warehouse.Activity.Movement.LOCATION_TRANSFER" xml:space="preserve"><value>Перемещение между ячейками</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Справочник пользователей недоступен; исполнитель не проверен, ничего не сохранено. Повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Выберите исполнителем активного пользователя вашей компании.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>Код компании не подходит для номеров задач; сначала исправьте код компании.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>Остаток изменился во время проводки; подтверждение ожидает — используйте «Повторить».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Это подтверждение сейчас обрабатывается; подождите немного и обновите страницу.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Сверить можно только подтверждение с ошибкой целостности.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Повторить можно только ожидающее подтверждение.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Подтверждение этой задачи ждёт ответа склада; до его завершения доступно только «Повторить».</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Запись тем временем изменил другой пользователь; обновите страницу и повторите.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Это действие невозможно в текущем состоянии задачи.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>На месте хранения есть открытые задачи размещения; сначала закройте или отмените их.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Место хранения не может одновременно быть зоной приёмки и зоной подготовки отгрузки.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>У этого места хранения уже есть запись роли; измените её.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Вышестоящий или нижестоящий узел уже имеет противоположную роль; приёмка и подготовка отгрузки не могут быть на одной ветке.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>Запись роли не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Роль можно назначить только складу, месту хранения, зоне или ячейке.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Это может сделать только назначенный оператор или руководитель.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>В складском журнале уже есть другое движение с ключом этого подтверждения; его должен сверить руководитель.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>Плановое количество не может быть меньше уже подтверждённого или ожидающего.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>Количество больше остатка, ещё открытого в этой строке.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>Количество больше, чем осталось собрать.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Не удалось выдать номер задачи; повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Серийные номера в источнике изменились; отмените эту задачу и создайте новую.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Часть этой партии в том же месте ожидает контроля качества; сначала завершите решение по качеству.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Товар с серийным учётом собирается только целиком; частичное подтверждение невозможно.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>Исходное место хранения не является зоной приёмки.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>В выбранной строке нет остатка; обновите список.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>Остаток помещён в карантин или заблокирован; разместить его нельзя.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Условие хранения неизвестно — заполните его в карточке товара (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Условия хранения недопустимы: выберите не более одного температурного условия.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>Зона подготовки не принимает условия хранения этого товара.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>Целью должна быть активная ячейка того же склада, пригодная для хранения и не являющаяся зоной приёмки или подготовки отгрузки.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>У задачи уже есть исполнитель.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>Задача не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже был отправлен с другим содержимым; закройте окно и начните заново.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Укажите причину длиной не менее 10 символов.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>В источнике недостаточно остатка для этого количества.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>Партия отзывается; её нельзя собрать.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Складская служба недоступна; ничего не сохранено. Повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Некоторые значения недопустимы; проверьте форму.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Сеанс завершён; войдите снова.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>Складская служба сейчас недоступна; повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>Запись не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>Запись тем временем изменилась; обновите страницу и повторите.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>Запрос не принят; проверьте значения и повторите.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Что-то пошло не так; повторите попытку.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Слишком много строк для экспорта; сузьте фильтры.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Отгрузка не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>Не удалось распределить запас по всем строкам; ничего не сохранено.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Отгрузка может содержать не более 100 строк.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>На эту отгрузку ссылается несколько поставок; попросите службу доставки проверить.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>У вас нет права читать поставки; запросите право чтения поставок.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>Служба доставки недоступна; ничего не изменено. Повторите попытку позже.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Отгрузку на уровне позиции нельзя сделать готовой к отправке, пока сторона доставки её не поддерживает.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>Строку позиции не удалось сопоставить со складируемым SKU; проверьте товар.</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>Выбранную партию нельзя распределить; выберите партию из предпросмотра.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Распределение этой отгрузки ещё завершается; обновите страницу чуть позже.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Отгрузку, готовую к отправке или отправленную, нельзя отменить.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Отгрузка готова к отправке и больше не может быть изменена.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Нельзя смешивать строки позиций и строки SKU в одной отгрузке.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Перед закрытием добавьте в упаковку хотя бы одну строку содержимого.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>Упаковки будут содержать больше, чем собрано по распределению.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Упаковка не найдена; обновите страницу.</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>На складе нет зоны подготовки отгрузки; сначала назначьте одной из его ячеек роль «Подготовка».</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>Единица строки должна быть базовой единицей SKU.</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>Партия не первая по FEFO; укажите причину (не менее 10 символов).</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>Ваша компания выдаёт партии только в порядке FEFO; выберите первую подходящую партию.</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>Срок годности партии истёк; её нельзя выдать.</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>Партия заблокирована; её нельзя выдать.</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>Партия подлежит повторному контролю; до него её нельзя выдать.</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>Резерв этого запаса больше не активен; подтверждение отклонено.</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>Запас не соответствует резерву; подтверждение отклонено.</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>Резерв тем временем изменился; обновите и повторите.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Склад или ячейка отсутствует в выбранной компании или неактивна.</value></data>
+</root>

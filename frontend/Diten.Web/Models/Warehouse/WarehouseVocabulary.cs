@@ -171,4 +171,78 @@ public static class WarehouseVocabulary
         .. WarehouseErrorMessages.AllKeys,
         .. RolePageWords
     ];
+
+    // ── DL-7 — the S3 monitoring screens (pack §8.23, §11.4 S2 / S3 r20 — 7 languages) ──
+
+    /// <summary>§8.23 — the nine exception kinds of v1 (WMS draft §9 names).</summary>
+    public static readonly string[] ExceptionKinds =
+    [
+        "PostingRefused", "PostingPendingLong", "PostingIntegrityError", "DispatchNotSeen", "ReservationReleasePending", "ShortDispatchUnresolved",
+        "AllocationOrphanSuspected", "ReservedLotUnderRecall", "AllocationStuck"
+    ];
+
+    /// <summary>§8.23 (r25, son bakış 03 F-1): why a ShortDispatchUnresolved difference was not computed — two closed values.</summary>
+    public static readonly string[] DeferredBy = ["PendingConfirmation", "UnsyncedReadyToShip"];
+
+    /// <summary>§8.21 — the explanatory reason of an unresolved short-dispatch row.</summary>
+    public static readonly string[] ShortDispatchReasons = ["LotMissing", "NotFromStaging", "OverIssued"];
+
+    /// <summary>§8.23 Activity Trace — the four sources (the <c>kind</c> filter).</summary>
+    public static readonly string[] ActivitySources = ["PutawayTask", "PickTask", "Outbound", "Movement"];
+
+    /// <summary>§8.23 Integration Monitor — the four cards (r24, son bakış 02 F-9).</summary>
+    public static readonly string[] IntegrationCards = ["EventQueue", "AwaitingDispatch", "LastSync", "PendingConfirmations"];
+
+    /// <summary>The movement types MOD-0178 posts (putaway, pick and put-back are LOCATION_TRANSFERs — pack §8.3, §8.19).</summary>
+    public static readonly string[] ActivityMovementTypes = ["LOCATION_TRANSFER"];
+
+    private static readonly string[] ExceptionTaskKinds = ["Putaway", "Pick"];
+
+    private static readonly string[] ExceptionPageWords =
+        ["NamesUnavailable", "ActionOpen", "SectionDetails", "SectionStagingDifference", "FieldKind", "FieldRecord", "FieldWarehouse", "FieldOpened", "FieldCode",
+         "FieldStatus", "FieldReason", "FieldExpected", "FieldIssued", "FieldSku", "FieldLot", "FieldAllocSeq", "FieldPendingReleases", "FieldReservationKeys",
+         "FieldQuantity", "FieldSeq", "FieldReadyAt", "FieldCreatedAt", "FieldOutboundStatus", "FieldDeferredBy", "ColDiffLot", "ColDiffOnHand", "ColDiffBound",
+         "ColDiffDifference", "NoLot", "SummaryPosting", "SummaryReady", "SummaryStuck", "SummaryRelease", "SummaryOrphan", "SummaryRecall", "SummaryShort",
+         "SummaryDeferred"];
+
+    private static readonly string[] ActivityPageWords =
+        ["NamesUnavailable", "ActionOpen", "SectionDetails", "SectionData", "FieldTime", "FieldSource", "FieldEvent", "FieldRecord", "FieldWarehouse", "FieldActor",
+         "FieldSeq", "SystemActor", "UnknownUser", "RangeRequired", "RangeTooLong", "RangeOrder", "RangeHint"];
+
+    /// <summary>Every word the exception box's script reads (→ <c>window.L10n.Words</c>).</summary>
+    public static IReadOnlyList<string> ExceptionKeys { get; } =
+    [
+        .. ExceptionKinds.Select(k => "Warehouse.Exception.Kind." + k),
+        .. ExceptionKinds.Select(k => "Warehouse.Exception.Hint." + k),
+        "Warehouse.Exception.Status.Open",
+        .. DeferredBy.Select(d => "Warehouse.Exception.DeferredBy." + d),
+        .. ShortDispatchReasons.Select(r => "Warehouse.Exception.Reason." + r),
+        .. ExceptionTaskKinds.Select(k => "Warehouse.Exception.TaskKind." + k),
+        .. OutboundStatuses.Select(s => "Warehouse.Outbound.Status." + s),
+        .. WarehouseErrorMessages.AllKeys,
+        .. ExceptionPageWords
+    ];
+
+    /// <summary>Every word the activity trace's script reads (→ <c>window.L10n.Words</c>).</summary>
+    public static IReadOnlyList<string> ActivityKeys { get; } =
+    [
+        .. ActivitySources.Select(s => "Warehouse.Activity.Source." + s),
+        .. EventKinds.Select(k => "Warehouse.Event." + k),
+        .. OutboundEventKinds.Select(k => "Warehouse.Outbound.Event." + k),
+        .. ActivityMovementTypes.Select(m => "Warehouse.Activity.Movement." + m),
+        .. WarehouseErrorMessages.AllKeys,
+        .. ActivityPageWords
+    ];
+
+    /// <summary>Every word the integration monitor draws (server-side cards; the script only turns the UTC times into the reader's local time).</summary>
+    public static IReadOnlyList<string> IntegrationKeys { get; } =
+    [
+        .. IntegrationCards.Select(c => "Warehouse.Integration.Card." + c),
+        .. IntegrationCards.Select(c => "Warehouse.Integration.Hint." + c),
+        "Warehouse.Integration.Pending", "Warehouse.Integration.Delivered", "Warehouse.Integration.OldestPendingAge", "Warehouse.Integration.Count",
+        "Warehouse.Integration.OldestReadyAt", "Warehouse.Integration.LastShippedAt", "Warehouse.Integration.Putaway", "Warehouse.Integration.Pick",
+        "Warehouse.Integration.Total", "Warehouse.Integration.Never", "Warehouse.Integration.NoneWaiting", "Warehouse.Integration.AgeMinutes",
+        "Warehouse.Integration.AgeHours", "Warehouse.Integration.AgeDays", "Warehouse.Integration.AsOf", "Warehouse.Integration.Refresh",
+        .. WarehouseErrorMessages.AllKeys
+    ];
 }

@@ -1,0 +1,18 @@
+@using Diten.Web.Views.Warehouse.WarehouseIntegration
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseIntegrationIndex> Localizer
+@*
+    The integration monitor's words for the browser. The cards are drawn by the server (Index.cshtml); the script only turns the UTC times into the
+    reader's local time, so it needs no sentence of its own — the page's resx still goes to Words (one bridge for every warehouse page).
+*@
+@{
+    // Bridge pattern A (dynamic-localization-standard "İKİ KÖPRÜ"; MOD-0286 CI-11): the page's whole resx (current culture + parents) goes to Words.
+    var words = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var entry in Localizer.GetAllStrings(true))
+    {
+        words[entry.Name] = entry.Value;
+    }
+}
+<script id="warehouseintegration-l10n" type="application/json">
+    @Json.Serialize(new { Words = words })
+</script>

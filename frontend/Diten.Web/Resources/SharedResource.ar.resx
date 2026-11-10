@@ -862,6 +862,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>التتبع</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>أدوار المواقع</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>الطرود</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>سجل النشاط</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>مراقبة التكامل</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>
@@ -1231,6 +1233,15 @@
   </data>
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>التغليف</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>صندوق الاستثناءات</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>سجل النشاط</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>مراقبة التكامل</value>
   </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>سيناريوهات خطة السعة</value>

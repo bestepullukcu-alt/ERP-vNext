@@ -928,6 +928,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Trace</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Location Roles</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Packages</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>Activity Trace</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>Integration Monitor</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaign</value></data>
@@ -1290,6 +1292,15 @@
   </data>
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Packing</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Exception Box</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>Activity Trace</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>Integration Monitor</value>
   </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Capacity Plan Scenarios</value>

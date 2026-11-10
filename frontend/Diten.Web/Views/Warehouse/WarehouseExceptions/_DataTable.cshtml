@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Warehouse.WarehouseExceptions
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseExceptionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is localized HERE.
+    //
+    // SERVER data through the proxy profile (pack §11.5): /Warehouse/WarehouseExceptions/api translates paging and the two filters (kind, warehouse)
+    // for listWarehouseExceptions. Read-only — no selection column, no bulk bar.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-warehouseexceptions",
+        DataMode = "server",
+        Slug = "warehouseexceptions",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColKind"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColRecord"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColDetail"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColOpened"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

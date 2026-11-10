@@ -2194,6 +2194,54 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>点击“关闭包裹”。所有分配装箱后，出库单变为“已包装”。</value>
   </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>查看仓库流程中需要有人处理的问题，并前往可解决问题的记录。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>仓库主管和发运计划员。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>按类型筛选</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>在筛选器中选择类型或仓库；每条记录都会用一句话说明发生了什么以及该怎么做。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>前往记录</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>从该行打开任务或出库单并在其中处理；原因消除后记录会自动离开列表。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>跟踪仓库流程中发生的情况——任务和出库单的历史及其产生的库存移动。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>仓库主管、发运计划员和审计人员。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>选择日期范围</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>选择不超过 31 天的范围（为空 = 最近 7 天），并按来源或仓库缩小范围。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>前往记录</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>打开一行查看其数据，或从该行前往任务、出库单或库存移动。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>一眼查看仓库与发运方是否步调一致。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>仓库主管、发运计划员和集成支持团队。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>查看四张卡片</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>事件队列、待发运、最近同步和待处理确认——数字增长或时间过旧说明需要关注的地方；刷新即可重新读取。</value>
+  </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>此页面用于打开产能计划：为所选公司创建计划，或按 ID 打开现有计划。</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>产能与供应计划员</value></data>
   <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>选择公司</value></data>

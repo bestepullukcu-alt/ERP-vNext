@@ -88,8 +88,9 @@ public sealed class Mod0178WarehouseRouteTests
         // POST /cycle-counts/bulk-delete, GET /cycle-counts/{countId}, POST /cycle-counts/{countId}/update | /release | /cancel,
         // GET /cycle-counts/{countId}/lines | /events (54). MOD-0181 DL-2 (XMC-001, Beste 2026-11-10): + 3 — POST /cycle-counts/{countId}/lines,
         // POST /cycle-counts/{countId}/lines/{lineId}/count, POST /cycle-counts/{countId}/submit (57). Their own coverage test is DL-6's
-        // Mod0181CycleCountRouteTests.
-        Assert.Equal(57, endpoints.Count);
+        // Mod0181CycleCountRouteTests. MOD-0178 DL-7 (pack AC-74, WMS draft §9): + 3 S3 reads — GET /exceptions, GET /activity,
+        // GET /integration/status (60).
+        Assert.Equal(60, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
@@ -153,6 +154,10 @@ public sealed class Mod0178WarehouseRouteTests
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations/1/resolve-integrity", "POST")]
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/close-short", "POST")]
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/events", "GET")]
+    // DL-7 (S3 monitoring reads, WMS draft §9)
+    [InlineData("/api/warehouse/exceptions?kind=DispatchNotSeen", "GET")]
+    [InlineData("/api/warehouse/activity?from=2026-11-01T00:00:00Z&to=2026-11-10T00:00:00Z", "GET")]
+    [InlineData("/api/warehouse/integration/status", "GET")]
     public void Named_operations_reach_the_warehouse_route_with_their_method(string path, string method)
     {
         var route = Assert.Single(Matching(path));

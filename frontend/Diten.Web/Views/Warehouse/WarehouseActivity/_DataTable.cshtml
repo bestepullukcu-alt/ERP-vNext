@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Warehouse.WarehouseActivity
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseActivityIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is localized HERE.
+    //
+    // SERVER data through the proxy profile (pack §11.5): /Warehouse/WarehouseActivity/api translates paging and the filters (range, source,
+    // warehouse) for listWarehouseActivity. Newest first (the service's order). Read-only — no selection column, no bulk bar.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-warehouseactivity",
+        DataMode = "server",
+        Slug = "warehouseactivity",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColTime"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColSource"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColEvent"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRecord"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColActor"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

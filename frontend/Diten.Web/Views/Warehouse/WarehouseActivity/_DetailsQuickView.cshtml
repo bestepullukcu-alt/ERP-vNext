@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Warehouse.WarehouseActivity
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseActivityIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    QuickView — READ-ONLY (pack §8.23): the row's time, source, event, record, warehouse and actor, and the row's own data (a timeline row's Data or a
+    movement's type, quantity, lot and locations — never a ship-to). The "go to record" link is drawn by index.js only when the reader holds the record
+    screen's key.
+*@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-history fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="offcanvasDetailsPreviewLabel" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <dl class="row g-3 mb-0 wh-fields">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldTime"]</dt><dd class="col-7 mb-0" id="oc-time">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldSource"]</dt><dd class="col-7 mb-0" id="oc-source">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldEvent"]</dt><dd class="col-7 mb-0" id="oc-event">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldRecord"]</dt><dd class="col-7 mb-0" id="oc-record">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldSeq"]</dt><dd class="col-7 mb-0" id="oc-seq">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldWarehouse"]</dt><dd class="col-7 mb-0" id="oc-warehouse">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldActor"]</dt><dd class="col-7 mb-0" id="oc-actor">-</dd>
+                </dl>
+                <a id="oc-record-link" class="btn btn-label-primary wh-touch mt-3 d-none" href="#"><i class="bx bx-link-external me-1"></i>@Localizer["ActionOpen"]</a>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["SectionData"]</h6>
+                <dl class="row g-2 mb-0 wh-fields" id="oc-data"></dl>
+            </section>
+        </div>
+    </div>
+</div>

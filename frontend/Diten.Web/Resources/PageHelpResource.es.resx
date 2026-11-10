@@ -2194,6 +2194,54 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>Pulse «Cerrar el Bulto». Cuando todas las asignaciones estén embaladas, la salida pasa a «Embalada».</value>
   </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Vea los problemas del flujo de almacén que requieren atención y vaya al registro que los corrige.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Supervisores de almacén y planificadores de envíos.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Filtre por tipo</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Elija un tipo o un almacén en el filtro; cada registro indica en una frase qué ocurrió y qué hacer.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Vaya al registro</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Abra la tarea o la salida desde la fila y actúe allí; el registro sale solo de la lista cuando desaparece su causa.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>Siga lo ocurrido en el flujo de almacén: el historial de tareas y salidas y los movimientos de stock que generaron.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>Supervisores de almacén, planificadores de envíos y auditores.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>Elija un intervalo de fechas</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>Elija un intervalo de 31 días como máximo (vacío = últimos 7 días) y acótelo por origen o almacén.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>Vaya al registro</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>Abra una fila para ver sus datos o vaya desde ella a la tarea, la salida o los movimientos de stock.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>Compruebe de un vistazo si el almacén y el área de envíos van al mismo ritmo.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>Supervisores de almacén, planificadores de envíos y el equipo de soporte de integración.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>Lea las cuatro tarjetas</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>Cola de eventos, pendiente de despacho, última sincronización y confirmaciones pendientes: un número que crece o una hora antigua indica dónde mirar; actualice para volver a leerlas.</value>
+  </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Esta página abre los planes de capacidad: cree un plan para la empresa seleccionada o abra uno existente por su ID.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Planificadores de capacidad y suministro</value></data>
   <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>

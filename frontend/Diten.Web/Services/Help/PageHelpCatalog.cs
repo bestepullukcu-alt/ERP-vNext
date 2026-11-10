@@ -92,6 +92,10 @@ public static class PageHelpCatalog
             ["OUTBOUNDSHIPMENTS"] = ["bx-buildings", "bx-list-check", "bx-sort-up", "bx-cart-download", "bx-send"],
             ["PICKTASKS"] = ["bx-user-plus", "bx-transfer", "bx-package"],
             ["PACKINGSTATION"] = ["bx-box", "bx-ruler", "bx-lock-alt"],
+            // MOD-0178 DL-7 (pack §24, UXH-001): no tour — the S3 monitoring screens
+            ["WAREHOUSEEXCEPTIONS"] = ["bx-filter-alt", "bx-link-external"],
+            ["WAREHOUSEACTIVITY"] = ["bx-calendar", "bx-link-external"],
+            ["WAREHOUSEINTEGRATION"] = ["bx-grid-alt"],
         };
 
     /// <summary>The icon of step <paramref name="step"/> (1-based) of a page, or <see cref="DefaultStepIcon"/>.</summary>

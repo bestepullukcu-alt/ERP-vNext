@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompanyLabel" xml:space="preserve"><value>Société</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Choisissez la société de l’entrepôt dans lequel vous travaillez. Rien n’est affiché tant qu’aucune société n’est choisie.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La liste des sociétés est momentanément illisible ; réessayez dans un instant.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu Rapide</value></data>
+  <data name="Searching" xml:space="preserve"><value>Recherche…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Aucun résultat</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Certains noms de produit ou d’emplacement n’ont pas pu être lus ; les identifiants sont affichés.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Produit</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="ColDiffLot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="Warehouse.Outbound.Status.Allocated" xml:space="preserve"><value>Allouée</value></data>
+  <data name="Warehouse.Outbound.Status.Picked" xml:space="preserve"><value>Prélevée</value></data>
+  <data name="Warehouse.Outbound.Status.Packed" xml:space="preserve"><value>Emballée</value></data>
+  <data name="Warehouse.Outbound.Status.ReadyToShip" xml:space="preserve"><value>Prête à expédier</value></data>
+  <data name="Warehouse.Outbound.Status.Shipped" xml:space="preserve"><value>Expédiée</value></data>
+  <data name="Warehouse.Outbound.Status.Cancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>Boîte des exceptions</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Problèmes du flux d'entrepôt à traiter : confirmations refusées ou en attente prolongée, sorties sans expédition constatée, réservations non libérées, expéditions incomplètes non résolues et lots réservés en rappel. Lecture seule — un enregistrement quitte la liste dès que sa cause disparaît.</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Type</value></data>
+  <data name="ColRecord" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="ColDetail" xml:space="preserve"><value>Détail</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Erreur</value></data>
+  <data name="ColOpened" xml:space="preserve"><value>Ouvert le</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Type</value></data>
+  <data name="ActionOpen" xml:space="preserve"><value>Ouvrir l'Enregistrement</value></data>
+  <data name="SectionDetails" xml:space="preserve"><value>Détails</value></data>
+  <data name="SectionStagingDifference" xml:space="preserve"><value>Écart en zone de préparation</value></data>
+  <data name="FieldKind" xml:space="preserve"><value>Type</value></data>
+  <data name="FieldRecord" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="FieldOpened" xml:space="preserve"><value>Ouvert le</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Erreur</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="FieldExpected" xml:space="preserve"><value>Prélevé (attendu)</value></data>
+  <data name="FieldIssued" xml:space="preserve"><value>Sorti</value></data>
+  <data name="FieldAllocSeq" xml:space="preserve"><value>N° d'allocation</value></data>
+  <data name="FieldPendingReleases" xml:space="preserve"><value>Non libérées</value></data>
+  <data name="FieldReservationKeys" xml:space="preserve"><value>Clés de réservation</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="FieldSeq" xml:space="preserve"><value>N° de confirmation</value></data>
+  <data name="FieldReadyAt" xml:space="preserve"><value>Prête à expédier depuis</value></data>
+  <data name="FieldCreatedAt" xml:space="preserve"><value>Créée le</value></data>
+  <data name="FieldOutboundStatus" xml:space="preserve"><value>Statut de la sortie</value></data>
+  <data name="FieldDeferredBy" xml:space="preserve"><value>Non calculé car</value></data>
+  <data name="ColDiffOnHand" xml:space="preserve"><value>En stock</value></data>
+  <data name="ColDiffBound" xml:space="preserve"><value>Engagé</value></data>
+  <data name="ColDiffDifference" xml:space="preserve"><value>Écart</value></data>
+  <data name="NoLot" xml:space="preserve"><value>Sans lot</value></data>
+  <data name="SummaryPosting" xml:space="preserve"><value>Confirmation n° {0} · {1}</value></data>
+  <data name="SummaryReady" xml:space="preserve"><value>Prête depuis le {0}</value></data>
+  <data name="SummaryStuck" xml:space="preserve"><value>En allocation depuis le {0}</value></data>
+  <data name="SummaryRelease" xml:space="preserve"><value>Allocation n° {0} · réservation non libérée</value></data>
+  <data name="SummaryOrphan" xml:space="preserve"><value>{0} réservation(s) non libérée(s)</value></data>
+  <data name="SummaryRecall" xml:space="preserve"><value>Allocation n° {0} · lot {1} en rappel</value></data>
+  <data name="SummaryShort" xml:space="preserve"><value>{0} · prélevé {1}, sorti {2}</value></data>
+  <data name="SummaryDeferred" xml:space="preserve"><value>Écart non calculé : {0}</value></data>
+  <data name="Warehouse.Exception.Status.Open" xml:space="preserve"><value>Ouvert</value></data>
+  <data name="Warehouse.Exception.DeferredBy.PendingConfirmation" xml:space="preserve"><value>une confirmation vers ou depuis cet emplacement est encore en attente</value></data>
+  <data name="Warehouse.Exception.DeferredBy.UnsyncedReadyToShip" xml:space="preserve"><value>une sortie de cet emplacement est prête à expédier et pas encore synchronisée</value></data>
+  <data name="Warehouse.Exception.Reason.LotMissing" xml:space="preserve"><value>Lot absent sur la ligne d'expédition</value></data>
+  <data name="Warehouse.Exception.Reason.NotFromStaging" xml:space="preserve"><value>Non sorti de la zone de préparation</value></data>
+  <data name="Warehouse.Exception.Reason.OverIssued" xml:space="preserve"><value>Plus sorti que prélevé</value></data>
+  <data name="Warehouse.Exception.TaskKind.Putaway" xml:space="preserve"><value>Tâche de rangement</value></data>
+  <data name="Warehouse.Exception.TaskKind.Pick" xml:space="preserve"><value>Tâche de prélèvement</value></data>
+  <data name="Warehouse.Exception.Kind.PostingRefused" xml:space="preserve"><value>Comptabilisation refusée</value></data>
+  <data name="Warehouse.Exception.Kind.PostingPendingLong" xml:space="preserve"><value>Comptabilisation en attente prolongée</value></data>
+  <data name="Warehouse.Exception.Kind.PostingIntegrityError" xml:space="preserve"><value>Erreur d'intégrité de comptabilisation</value></data>
+  <data name="Warehouse.Exception.Kind.DispatchNotSeen" xml:space="preserve"><value>Expédition non constatée</value></data>
+  <data name="Warehouse.Exception.Kind.ReservationReleasePending" xml:space="preserve"><value>Libération de réservation en attente</value></data>
+  <data name="Warehouse.Exception.Kind.ShortDispatchUnresolved" xml:space="preserve"><value>Expédition incomplète non résolue</value></data>
+  <data name="Warehouse.Exception.Kind.AllocationOrphanSuspected" xml:space="preserve"><value>Réservation orpheline suspectée</value></data>
+  <data name="Warehouse.Exception.Kind.ReservedLotUnderRecall" xml:space="preserve"><value>Lot réservé en rappel</value></data>
+  <data name="Warehouse.Exception.Kind.AllocationStuck" xml:space="preserve"><value>Allocation bloquée</value></data>
+  <data name="Warehouse.Exception.Hint.PostingRefused" xml:space="preserve"><value>Le stock a refusé cette confirmation et elle n'est pas encore clôturée. Ouvrez la tâche : réessayez, marquez-la comme remise en place ou confirmez à nouveau.</value></data>
+  <data name="Warehouse.Exception.Hint.PostingPendingLong" xml:space="preserve"><value>Le stock n'a pas répondu à cette confirmation au-delà du délai d'attente. Ouvrez la tâche et réessayez.</value></data>
+  <data name="Warehouse.Exception.Hint.PostingIntegrityError" xml:space="preserve"><value>Le mouvement trouvé pour cette confirmation ne lui correspond pas. Un responsable la rapproche depuis la tâche.</value></data>
+  <data name="Warehouse.Exception.Hint.DispatchNotSeen" xml:space="preserve"><value>La sortie est prête à expédier depuis plus longtemps que le délai d'expédition et aucune expédition n'a été constatée. Vérifiez l'expédition sur la sortie.</value></data>
+  <data name="Warehouse.Exception.Hint.ReservationReleasePending" xml:space="preserve"><value>La sortie est expédiée ou annulée mais la réservation de cette allocation n'est pas encore libérée. Le service de maintenance réessaie.</value></data>
+  <data name="Warehouse.Exception.Hint.ShortDispatchUnresolved" xml:space="preserve"><value>Moins a été sorti que prélevé et le reste n'a pas pu être remis en place automatiquement. L'enregistrement reste tant que le stock de la zone de préparation ne correspond pas ; corrigez-le par un mouvement de stock ou un inventaire.</value></data>
+  <data name="Warehouse.Exception.Hint.AllocationOrphanSuspected" xml:space="preserve"><value>L'allocation a échoué après la création de certaines réservations. Le service de maintenance les libère par clé ; l'enregistrement disparaît quand toutes sont libérées.</value></data>
+  <data name="Warehouse.Exception.Hint.ReservedLotUnderRecall" xml:space="preserve"><value>Le lot de cette allocation est en rappel ; tant qu'il est réservé, la quarantaine du rappel est bloquée. Annulez la sortie, puis relancez la quarantaine dans Rappels.</value></data>
+  <data name="Warehouse.Exception.Hint.AllocationStuck" xml:space="preserve"><value>L'allocation n'est pas terminée depuis plus de deux délais de maintenance. Le service de maintenance continue d'essayer ; si l'enregistrement reste, vérifiez le service.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>L’annuaire des utilisateurs est injoignable ; l’attributaire n’a pas été vérifié et rien n’a été enregistré. Réessayez dans un instant.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Choisissez comme attributaire un utilisateur actif de votre société.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>Le code société n’est pas valide pour les numéros de tâche ; corrigez d’abord le code société.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>Le stock a changé pendant la comptabilisation ; la confirmation est en attente — utilisez « Réessayer ».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Cette confirmation est en cours de traitement ; patientez un instant puis actualisez.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Seule une confirmation en erreur d’intégrité peut être rapprochée.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Seule une confirmation en attente peut être réessayée.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Une confirmation de cette tâche attend la réponse du stock ; seul « Réessayer » fonctionne jusqu’à son règlement.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Quelqu’un a modifié cet enregistrement entre-temps ; actualisez et réessayez.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Cette action n’est pas possible dans l’état actuel de la tâche.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>L’emplacement a des tâches de rangement ouvertes ; clôturez-les ou annulez-les d’abord.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Un emplacement ne peut pas être à la fois Réception et Préparation à l’expédition.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>Cet emplacement a déjà un enregistrement de rôle ; modifiez celui-ci.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Un nœud supérieur ou inférieur porte déjà le rôle opposé ; Réception et Préparation à l’expédition ne peuvent pas se trouver sur le même chemin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>L’enregistrement de rôle est introuvable ; actualisez la liste.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Un rôle ne peut être attribué qu’à un entrepôt, un lieu de stockage, un secteur ou un casier.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Seul l’opérateur attribué ou un responsable peut effectuer cette action.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>Le registre des stocks contient déjà un autre mouvement sous la clé de cette confirmation ; un responsable doit le rapprocher.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>La quantité prévue ne peut pas être inférieure à la quantité déjà confirmée ou en attente.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>La quantité dépasse le stock encore ouvert sur cette ligne.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>La quantité dépasse le reste à prélever.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Aucun numéro de tâche n’a pu être attribué ; réessayez dans un instant.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Les numéros de série à la source ont changé ; annulez cette tâche et créez-en une nouvelle.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Une partie de ce lot au même emplacement attend la qualité ; finalisez d’abord la décision qualité.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Un produit suivi par numéro de série n'est prélevé qu'en totalité ; une confirmation partielle est impossible.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>L’emplacement source n’est pas un emplacement de réception.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>Aucun stock n’a été trouvé sur la ligne sélectionnée ; actualisez la liste.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>Le stock est passé en quarantaine ou est bloqué ; il ne peut pas être rangé.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Condition de stockage inconnue — à compléter sur la fiche produit (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Les conditions de stockage ne sont pas valides : choisissez au plus une condition de température.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>La zone de préparation n'accepte pas la condition de stockage de ce produit.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>La cible doit être un casier actif et stockable du même entrepôt, qui n’est ni une zone de réception ni de préparation à l’expédition.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>La tâche a déjà un attributaire.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>La tâche est introuvable ; actualisez la liste.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Cette demande a déjà été envoyée avec un autre contenu ; fermez la fenêtre et recommencez.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Saisissez un motif d’au moins 10 caractères.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Le stock à la source est insuffisant pour cette quantité.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>Le lot fait l'objet d'un rappel ; il ne peut pas être prélevé.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Le service de stock est injoignable ; rien n’a été enregistré. Réessayez dans un instant.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Certaines valeurs ne sont pas valides ; vérifiez le formulaire.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Sélectionnez d’abord une société.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>Vous n’avez pas accès à cette action.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Votre session a expiré ; reconnectez-vous.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>Le service entrepôt est momentanément injoignable ; réessayez dans un instant.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>L’enregistrement est introuvable ; actualisez la liste.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>L’enregistrement a changé entre-temps ; actualisez et réessayez.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>La demande n’a pas été acceptée ; vérifiez les valeurs et réessayez.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Une erreur s’est produite ; réessayez.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Trop de lignes à exporter ; affinez les filtres.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Expédition sortante introuvable ; actualisez la liste.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>Le stock n'a pas pu être alloué pour chaque ligne ; rien n'a été enregistré.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Une expédition sortante peut contenir au plus 100 lignes.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Plusieurs expéditions renvoient à cette sortie ; demandez à l'équipe expédition de vérifier.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>Vous ne pouvez pas lire les expéditions ; demandez l'autorisation de lecture des expéditions.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>Le service d'expédition est injoignable ; rien n'a été modifié. Réessayez dans un instant.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Une sortie au niveau article ne peut pas être prête à expédier tant que l'expédition ne la prend pas en charge.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>La ligne d'article n'a pas pu être rattachée à un SKU stockable ; vérifiez le produit.</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>Le lot choisi ne peut pas être alloué ; choisissez un lot de l'aperçu.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>L'allocation de cette sortie est encore en cours ; actualisez dans un instant.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Une sortie prête à expédier ou expédiée ne peut pas être annulée.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>La sortie est prête à expédier et ne peut plus être modifiée.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Les lignes d'article et les lignes de SKU ne peuvent pas être mélangées dans une même sortie.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Ajoutez au moins une ligne de contenu au colis avant de le fermer.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>Les colis contiendraient plus que la quantité prélevée pour une allocation.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Colis introuvable ; actualisez la page.</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>L'entrepôt n'a pas de zone de préparation ; attribuez d'abord le rôle Préparation à l'un de ses emplacements.</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>L'unité de la ligne doit être l'unité de base du SKU.</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>Un lot n'est pas le premier lot FEFO ; indiquez un motif (au moins 10 caractères).</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>Votre société ne sort les lots que dans l'ordre FEFO ; choisissez le premier lot éligible.</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>Le lot est périmé ; il ne peut pas être sorti.</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>Le lot est bloqué ; il ne peut pas être sorti.</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>Le lot doit être recontrôlé ; il ne peut pas être sorti avant.</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>La réservation de ce stock n'est plus active ; la confirmation a été refusée.</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>Le stock ne correspond pas à sa réservation ; la confirmation a été refusée.</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>La réservation a changé entre-temps ; actualisez et réessayez.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>L'entrepôt ou l'emplacement n'existe pas dans la société sélectionnée ou n'est pas actif.</value></data>
+</root>

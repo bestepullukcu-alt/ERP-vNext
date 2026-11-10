@@ -1,0 +1,61 @@
+@using Diten.Web.Views.Warehouse.WarehouseExceptions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseExceptionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    QuickView — READ-ONLY (pack §8.23): the record's kind with its one-sentence meaning, its record and warehouse, the kind's own details and, for a
+    ShortDispatchUnresolved record, the Staging difference per lot (or why it was not computed). No action: acknowledge / resolve are FU-0178-S3-ACT.
+    The "go to record" link is drawn by index.js only when the reader holds the record screen's key.
+*@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-error-alt fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="offcanvasDetailsPreviewLabel" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span id="oc-kind" class="badge bg-label-warning">-</span>
+                    <span id="oc-status" class="badge bg-label-secondary">-</span>
+                </div>
+                <p id="oc-hint" class="text-muted mb-3">-</p>
+                <dl class="row g-3 mb-0 wh-fields" id="oc-fields">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldRecord"]</dt><dd class="col-7 mb-0" id="oc-record">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldWarehouse"]</dt><dd class="col-7 mb-0" id="oc-warehouse">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldOpened"]</dt><dd class="col-7 mb-0" id="oc-opened">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldCode"]</dt><dd class="col-7 mb-0" id="oc-code">-</dd>
+                </dl>
+                <dl class="row g-3 mb-0 mt-0 wh-fields" id="oc-details"></dl>
+                <a id="oc-record-link" class="btn btn-label-primary wh-touch mt-3 d-none" href="#"><i class="bx bx-link-external me-1"></i>@Localizer["ActionOpen"]</a>
+            </section>
+
+            <section class="card backbone-preview-section p-4 d-none" id="oc-difference-section">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["SectionStagingDifference"]</h6>
+                <p id="oc-deferred" class="text-muted mb-0 d-none"></p>
+                <div class="table-responsive" id="oc-difference-table">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["ColDiffLot"]</th>
+                                <th class="text-end">@Localizer["ColDiffOnHand"]</th>
+                                <th class="text-end">@Localizer["ColDiffBound"]</th>
+                                <th class="text-end">@Localizer["ColDiffDifference"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oc-difference-rows"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

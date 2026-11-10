@@ -863,6 +863,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Traçage</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Rôles d'emplacement</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Colis</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>Journal d'activité</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>Suivi de l'intégration</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Produits</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Compte</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campagne</value></data>
@@ -1232,6 +1234,15 @@
   </data>
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Emballage</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Boîte des exceptions</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>Journal d'activité</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>Suivi de l'intégration</value>
   </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Scénarios de plan de capacité</value>

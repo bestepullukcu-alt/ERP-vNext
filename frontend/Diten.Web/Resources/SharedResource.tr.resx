@@ -928,6 +928,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>İzleme</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Lokasyon Rolleri</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Paketler</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>Etkinlik İzi</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>Entegrasyon İzleme</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
@@ -1290,6 +1292,15 @@
   </data>
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Paketleme</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>İstisna Kutusu</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>Etkinlik İzi</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>Entegrasyon İzleme</value>
   </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Kapasite Planı Senaryoları</value>

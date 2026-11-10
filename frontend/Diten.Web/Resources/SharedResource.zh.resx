@@ -862,6 +862,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>追溯</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>库位角色</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>包裹</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>活动轨迹</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>集成监控</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>产品</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>客户</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>营销活动</value></data>
@@ -1231,6 +1233,15 @@
   </data>
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>包装作业</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>异常箱</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>活动轨迹</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>集成监控</value>
   </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>产能计划情景</value>
