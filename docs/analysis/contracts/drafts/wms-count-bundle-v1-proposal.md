@@ -11,9 +11,9 @@
 > Beste 2026-11-06). Bu dosya yalnız kablo şeklidir; paketle çelişirse paket kazanır ve bu dosya düzeltilir. Sahip kararları Q-1…Q-24
 > (paket §19.4) ve F-1 = A (PUT / DELETE yok, komut uçları; tek istisna `PUT /count-settings`).
 >
-> **Dilim durumu:** §4.1 (DL-1) ve §4.2 (DL-2) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract` (test
-> projesi) her `/api/warehouse/cycle-counts*` cevabını bu şemalara karşı doğrular. §4.3 (DL-3 … DL-5) paketin §3 / §8 / §16'sından çıkarılmış
-> **ön taslaktır**; her dilim kendi satırlarını bağlayıcı yapar (gövde ayrıntısı o dilimin ilk adımında kesinleşir).
+> **Dilim durumu:** §4.1 (DL-1), §4.2 (DL-2) ve §4.3 (DL-3) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract`
+> (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve `/count-settings` cevabını bu şemalara karşı doğrular. §4.4 (DL-4 / DL-5)
+> paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır**; her dilim kendi satırlarını bağlayıcı yapar.
 
 ## 1. Rules
 
@@ -50,7 +50,10 @@
 | Kapsam SKU sayısı | 0..200, tekrarsız | paket §4.1 |
 | Not | ≤ 500 karakter (trim; boş = yok) | paket §4.1 |
 | Gerekçe (iptal, toplu silme) | 1..500 karakter (trim) | paket §12 |
-| Satır sınırı (`MaxLinesPerCount`) | 2000 (DL-1'de sabit varsayılan; DL-3'te şirket ayarı) | Q-24 = A |
+| Satır sınırı (`MaxLinesPerCount`) | varsayılan 2000; DL-3'ten beri şirket ayarı (1..5000) | Q-24 = A |
+| Tolerans (DL-3) | `toleranceAbsolute` ≥ 0 (≤ 6 ondalık), `tolerancePercent` 0..100; varsayılan 0 / 0 (her fark onay ister) | Q-3 = A |
+| Yeniden sayım zinciri (DL-3) | `maxRecounts` 0..10, varsayılan 2; bir istekte 1..200 satır | Q-11 = A |
+| Elle `COUNT_*` okuması (DL-3) | `source=manual\|all`: `warehouseId` + `from` < `to` ≤ 31 gün | paket §2.4 |
 | Anlık görüntü penceresi W | 10 dakika | paket §8.2 madde 4 |
 | Toplu silme satırı | ≤ 200 | liste sayfası (WMS-BUNDLE emsali) |
 | Sayfa | `page` ≥ 1 (varsayılan 1), `pageSize` 1..200 (varsayılan 25) | WMS-BUNDLE §3.8 |
@@ -99,7 +102,8 @@
   `scanRef` (opak, ≤ 200; Q-12 = A). **Gizleme (DL-2, r5 SB1/F-6):** `blind = true` sayımda `expectedQuantity`, `movementsSinceSnapshot`,
   `expectedAtCount`, `varianceQuantity` submit'ten önce hiçbir cevapta, submit'ten sonra yalnız `cycle-count.variances.read` taşıyan çağırana
   yazılır; aynı kural olay `data`'sındaki aynı adlı üyelere uygulanır (§3.3). Bayraklar ve durum gizlenmez. DL-3 ekleri: `decision`,
-  `adjustment` (eklemeli, aynı gizleme kuralıyla).
+  `adjustment` (eklemeli, aynı gizleme kuralıyla). **DL-3 ekleri (bağlayıcı):** `decision` (§3.6), `adjustment` (§3.7 — `quantity` üyesi beklenen
+  miktarla aynı gizleme kuralına tabidir), `integrityResolution` (§3.7), `recountOfLineId`, `recountDepth` (yalnız `origin = Recount` satırda, ≥ 1).
 - v1'de satır yalnız `stockStatus = AVAILABLE` olur (Q-8 = A).
 
 ### 3.3 `CycleCountEvent`
@@ -119,6 +123,16 @@ miktarı taşır (F-13). `Submitted.data` = `previousStatus`, `lineCount`, `noVa
 dolu): `expectedQuantity`, `movementsSinceSnapshot`, `expectedAtCount`, `varianceQuantity`, `countedQuantity`, `movementDuringCount`,
 `snapshotDrift`, `status` — kör sayımda ilk dört üye §3.2 gizleme kuralıyla okuma izdüşümünde yazılmaz (saklanan olay değişmez).
 Bütün satırlar son durumdaysa (`NoVariance`) aynı işlemde `Closed` (`reason: AllLinesFinal`, `releasedBinClaims`).
+**DL-3:** `Submitted.data.toleranceApprovedLineCount`; tolerans onayında satır başına `Approved` (`source: Tolerance`) + `AdjustmentPending`.
+`Approved.data` = `source`, `varianceQuantity`, `movementDuringCount`; `AdjustmentPending.data` = `movementType`, `adjustmentQuantity`, `idempotencyKey`,
+`transactionDate`, `postingDate`, `attempts` (retry'da `previousAdjustmentStatus`, `previousRefusalCode`); `AdjustmentPosted.data` = `transactionId`,
+`transactionNumber`, `attempts`; `AdjustmentRefused.data` = `refusalCode`, `refusalStatus`, `attempts`; `AdjustmentIntegrityError.data` = `reason`
+(`KeyReused` \| `HolderReversed`), `holderTransactionId`; `Rejected.data` = `reason`, `previousStatus`, `adjustmentStatus?`; `RecountRequested` (kaynak
+sayımda; anahtar olayı) = `recountCountId`, `recountNumber`, `lineCount`, `reason`, `transferredBinClaims`, `assignedTo?`, `plannedDate`, `note?` + satır
+başına `RecountRequested` (`lineId` dolu); `IntegrityResolved.data` = `decision`, `reason`, `holderTransactionId?`, `lineStatus`, `adjustmentStatus`.
+Yeniden sayımın kendi zaman çizelgesi `Created` (`recountOfId`) + `Released` (yalnız sayılar, `excludedKeyCount`). Kör sayımda `adjustmentQuantity` da
+§3.2 gizleme kuralıyla izdüşümde yazılmaz. Şirket ayarının izi aynı koleksiyondadır: `countId` = ayar kaydının kimliği, `kind = Updated`, `data` =
+önceki / sonraki dört değer (`previousToleranceAbsolute`, `toleranceAbsolute`, …).
 
 ### 3.4 Sayfalar
 `{ items, total, page, pageSize, contractVersion }` (WMS-BUNDLE §3.8 emsali), `pageSize ≤ 200`.
@@ -130,6 +144,43 @@ Bütün satırlar son durumdaysa (`NoVariance`) aynı işlemde `Closed` (`reason
 Satır başına sonuç: `Deleted` (Draft soft delete; `version` = yazılan sürüm), `Conflict` (satırın `version`'ı bayat), `NotFound` (yok / silinmiş /
 başka şirket), `InvalidState` (`Draft` değil — silinmez, AC-10). Replay (kural 5): yazılan satır `Deleted`, yazılmayan `Conflict` / `NotFound` /
 `InvalidState` olarak yeniden değerlendirilir; anahtar yalnız `bulkDeleteCycleCounts` yazımlarında aranır.
+
+### 3.6 `CycleCountDecision` (DL-3)
+```json
+{ "kind": "Approved | Rejected | Recount", "source": "User | Tolerance", "by": "uuid?", "at": "date-time", "reason": "string?" }
+```
+Tolerans onayında `source = Tolerance`, `by` yok; etiket saklanan metin değil `CycleCount.Decision.{kind}` / `CycleCount.Decision.Source.{source}` anahtarıdır.
+
+### 3.7 `CycleCountAdjustment`, `CycleCountIntegrityResolution` (DL-3)
+```json
+{ "movementType": "COUNT_GAIN | COUNT_LOSS", "quantity": "2.000?", "idempotencyKey": "cycle-count:{lineId}",
+  "status": "Pending | Posted | Refused | IntegrityError", "transactionId": "uuid?", "transactionNumber": "string?",
+  "refusalCode": "INSUFFICIENT_STOCK?", "refusalDetails": { }, "refusalStatus": 422, "integrityReason": "KeyReused | HolderReversed?",
+  "holderTransactionId": "uuid?", "transactionDate": "date-time", "postingDate": "date-time", "attempts": 1,
+  "firstAttemptAt": "date-time", "lastAttemptAt": "date-time" }
+{ "kind": "AcceptHolder | Reject", "by": "uuid", "at": "date-time", "reason": "string", "holderTransactionId": "uuid?" }
+```
+`transactionDate` = satırın `countedAt`'i (saniyeye), `postingDate` = ilk denemenin UTC günü; ikisi ilk denemede yazılır, her denemede aynen gönderilir.
+`refusalDetails` defterin `details` nesnesidir (aynen).
+
+### 3.8 `CountVariance` (Variance Trace satırı, DL-3)
+```json
+{ "source": "Count", "countNumber": "GMG-CNT-000001", "line": { CycleCountLine }, "ledgerTransactionId": "uuid?", "ledgerTransactionNumber": "string?",
+  "contractVersion": "v1" }
+{ "source": "Manual", "movement": { "transactionId", "transactionNumber", "movementType": "COUNT_GAIN | COUNT_LOSS", "warehouseId?", "locationId?",
+  "item": { }, "lotId?", "stockStatus?", "quantity", "uomId", "sourceModule", "sourceType", "sourceDocumentId?", "sourceLineId?", "createdBy", "createdAt",
+  "transactionDate", "postingDate", "sourceMismatch": false }, "contractVersion": "v1" }
+```
+`Count` satırının `ledgerTransactionId`'si paket §2.4'ün **iki yönlü** kuralıyla bulunan düzeltme hareketidir (`Posted` → satırın `transactionId`'si;
+`Pending` → anahtar + kaynak beyanı + `createdAt ≥ firstAttemptAt`); `Manual` satır bu kuralla hiçbir satıra eşleşmeyen `COUNT_*` hareketidir,
+`sourceMismatch = true` ⇔ `MOD-0181` beyan ediyor ama eşleşmiyor. Sayfa: `{ items, total, page, pageSize, contractVersion }`.
+
+### 3.9 `CycleCountSettings` (DL-3)
+```json
+{ "toleranceAbsolute": "0.000", "tolerancePercent": "0.000", "maxRecounts": 2, "maxLinesPerCount": 2000, "isDefault": true,
+  "updatedBy": "uuid?", "updatedAt": "date-time?", "version": 0, "contractVersion": "v1" }
+```
+Kayıt yokken varsayılanlar döner (`isDefault`, `version = 0`, ETag `W/"0"`).
 
 ## 4. Operations
 
@@ -178,20 +229,35 @@ statü) için: anlık görüntü sonrası = penceredeki hareketlerden `SnapshotT
 `false` ise; aksi `AwaitingApproval` (tolerans DL-3'tür; DL-2'de her fark onay bekler). Defter okunamazsa 503 `COUNT_INVENTORY_UNAVAILABLE`,
 sayım ve satırlar değişmez.
 
-### 4.3 DL-3 … DL-5 — ön taslak (paket §3; her dilimde bağlayıcı olur)
+### 4.3 DL-3 — bağlayıcı
+
+`CountVariancesController` (`[Route("api/warehouse")]`). Satır kararlarında `If-Match` = **satırın** `version`'ı; yeniden sayımda kaynak sayımın; ayarda
+ayar kaydının (`W/"0"` varsayılanlarda). Anahtar olayı satır kararlarında satırın sayımının zaman çizelgesindedir (§1 kural 5).
+
+| Yöntem + yol | operationId | x-permission | Gövde / parametre | Başarı | x-error-codes |
+|---|---|---|---|---|---|
+| `GET /count-variances` | `listCountVariances` | `cycle-count.variances.read` | `source` = `count` (varsayılan) \| `manual` \| `all`; `warehouseId?`, `from?`, `to?` (`yyyy-MM-dd` ya da UTC an), `status*` (satır durumu, yalnız `Count` satırlarına), `skuId?`, `lotId?`, `page`, `pageSize`; `manual` / `all`'da `warehouseId` + `from` < `to` ≤ 31 gün zorunlu | 200 sayfa `CountVariance` (yeni önce) | INVALID_REQUEST, COUNT_INVENTORY_UNAVAILABLE |
+| `GET /count-variances/{lineId}` | `getCountVariance` | `cycle-count.variances.read` | — (submit'ten önce satır yok sayılır) | 200 `CountVariance` | COUNT_LINE_NOT_FOUND |
+| `POST /count-variances/{lineId}/approve` | `approveCountVariance` | `cycle-count.variances.approve` | If-Match; `{ idempotencyKey }`. Sayım `Submitted`, satır `AwaitingApproval`; dört göz (sayan / submit eden → 403); drift → 409; seri → 422. İşlem 1 (`Approved` + `Pending` düzeltme) → tek posting → işlem 2 | 200 `CycleCountLine` (`Posted` ya da defter reddiyle `Refused`, kod + `details` aynen); sonuç bilinmiyor → 503 (satır `Pending`); anahtar başka içerikle / tutucu ters kaydedilmiş → 409 | IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_SELF_APPROVAL_FORBIDDEN, COUNT_SNAPSHOT_DRIFT, COUNT_SERIAL_NOT_POSTABLE, COUNT_INVENTORY_UNAVAILABLE, COUNT_ADJUSTMENT_INTEGRITY |
+| `POST /count-variances/{lineId}/reject` | `rejectCountVariance` | `cycle-count.variances.reject` | If-Match; `{ idempotencyKey, reason }` (1..500). Satır `AwaitingApproval` \| (`Approved` + `Refused`) | 200 `CycleCountLine` (`Rejected`) | COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE |
+| `POST /cycle-counts/{countId}/recount` | `requestCountRecount` | `cycle-count.variances.recount` | If-Match (kaynak sayım); `{ idempotencyKey, lineIds[1..200], reason, assignedTo?, plannedDate?, note? }` — `blind`, `countType`, kapsam üye **değildir** (400). Paket §8.5 alan tablosu; satırlar yalnız seçili anahtarlar (`origin = Recount`, beklenen = anlık görüntü ya da 0, derinlik + 1); `RecountExcludedKeys` iç üyedir | 201 `CycleCount` (`Released`, `recountOfId`) + ETag (replay 200) | INVALID_REQUEST, COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_RECOUNT_LIMIT, COUNT_ASSIGNEE_INVALID, COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE, COUNT_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, COUNT_RECORD_CODE_UNAVAILABLE, COUNT_SCOPE_OVERLAP, COUNT_INVENTORY_UNAVAILABLE |
+| `POST /count-variances/{lineId}/retry` | `retryCountAdjustment` | `cycle-count.variances.post` | If-Match; `{ idempotencyKey }`. Satır `Approved` + düzeltme `Pending` ya da `Refused` (`INSUFFICIENT_STOCK`); önce defter anahtarı (`Committed` → `Posted`, ikinci hareket yok), yoksa aynı istek aynı anahtarla | approve ile aynı cevap eşlemesi | approve'un kodları (dört göz / drift / seri hariç) |
+| `POST /count-variances/{lineId}/resolve-integrity` | `resolveCountAdjustmentIntegrity` | `cycle-count.variances.resolve` | If-Match; `{ idempotencyKey, decision: AcceptHolder \| Reject, reason }`. `AcceptHolder` yalnız tutucu hareket satırın düzeltmesiyle aynı (tür, miktar, bin, lot, statü, `sourceLineId`) ve ters kaydedilmemişse | 200 `CycleCountLine` (`Posted` + tutucunun işlemi, ya da `Rejected`) | INVALID_REQUEST, COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_ADJUSTMENT_INTEGRITY |
+| `GET /count-settings` | `getCycleCountSettings` | `cycle-count.settings.read` | — | 200 `CycleCountSettings` + ETag | — |
+| `PUT /count-settings` | `updateCycleCountSettings` | `cycle-count.settings.configure` | If-Match; `{ idempotencyKey, toleranceAbsolute, tolerancePercent, maxRecounts, maxLinesPerCount }` — **tek PUT istisnası** (AC-51) | 200 `CycleCountSettings` + ETag (replay 200) | INVALID_REQUEST (`details.field`), IDEMPOTENCY_KEY_REUSED, COUNT_CONFLICT |
+
+**Tolerans (paket §8.5):** submit'te `AwaitingApproval` olan satır `|fark| ≤ toleranceAbsolute` **ve** `|fark| / expectedAtCount × 100 ≤ tolerancePercent`
+(beklenen 0 → sağlanmaz), bayraksız, drift'siz ve seri değilse `Approved` (`source = Tolerance`) olur ve düzeltmesi submit commit olduktan sonra post edilir;
+submit 200 döner (sonucu bilinmeyen düzeltme `Pending` kalır, retry / sweeper toparlar). **Kapanış:** her satır son durumunda (`NoVariance`, `Rejected`,
+`Recounted`, `Approved` + `Posted`; fark 0 bayraklı onay hareketsiz son durumdur) → aynı işlemde `Closed` + bin talepleri `open = false`.
+**Sweeper:** `PendingCountAdjustmentReconcilerHostedService` yalnız `ReconcilePendingCountAdjustmentCommand` gönderir (uç değil); son denemesi yaşlanan
+`Pending` düzeltmeleri anahtar-önce kuralıyla toparlar.
+
+### 4.4 DL-4 / DL-5 — ön taslak (paket §3; her dilimde bağlayıcı olur)
 
 | Yöntem + yol | operationId | x-permission | Dilim |
 |---|---|---|---|
 | `GET /cycle-counts/dashboard` | `getCycleCountDashboard` | `cycle-count.counts.read` | DL-4 (KPI'lar, AC-40) |
-| `GET /count-variances` (`?source=count\|manual\|all`) | `listCountVariances` | `cycle-count.variances.read` | DL-3 |
-| `GET /count-variances/{lineId}` | `getCountVariance` | `cycle-count.variances.read` | DL-3 |
-| `POST /count-variances/{lineId}/approve` | `approveCountVariance` | `cycle-count.variances.approve` | DL-3 |
-| `POST /count-variances/{lineId}/reject` | `rejectCountVariance` | `cycle-count.variances.reject` | DL-3 |
-| `POST /cycle-counts/{countId}/recount` | `requestCountRecount` | `cycle-count.variances.recount` | DL-3 |
-| `POST /count-variances/{lineId}/retry` | `retryCountAdjustment` | `cycle-count.variances.post` | DL-3 |
-| `POST /count-variances/{lineId}/resolve-integrity` | `resolveCountAdjustmentIntegrity` | `cycle-count.variances.resolve` | DL-3 |
-| `GET /count-settings` | `getCycleCountSettings` | `cycle-count.settings.read` | DL-3 |
-| `PUT /count-settings` | `updateCycleCountSettings` | `cycle-count.settings.configure` | DL-3 (tek PUT istisnası) |
 | `POST /cycle-counts/{countId}/evidence-exports` | `createCountEvidenceExport` | `cycle-count.evidence.export` | DL-5 |
 | `GET /count-evidence-exports` | `listCountEvidenceExports` | `cycle-count.evidence.read` | DL-5 |
 | `GET /count-evidence-exports/{exportId}/file` | `getCountEvidenceExportFile` | `cycle-count.evidence.read` | DL-5 |
@@ -232,7 +298,9 @@ sayım ve satırlar değişmez.
 `INVALID_REQUEST`, `IDEMPOTENCY_KEY_REUSED`, `UNKNOWN_LOCATION` (depo yok / `Warehouse` değil / `Active` değil / başka şirketin),
 `LEGAL_ENTITY_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_DATA_INCOMPLETE`, `CROSS_LE_FORBIDDEN` (servis geneli);
 DL-2'de bulunan satır için `UNKNOWN_ITEM`, `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT_STOCKABLE`, `LOT_NOT_ALLOWED` —
-`InventoryErrorCodes`'tan; DL-3'te defter retleri (`INSUFFICIENT_STOCK`, `LOT_BLOCKED`, `LOT_EXPIRED`, `SERIAL_COUNT_MISMATCH`, …) aynen.
+`InventoryErrorCodes`'tan; DL-3'te defter retleri (`INSUFFICIENT_STOCK`, `LOT_BLOCKED`, `LOT_EXPIRED`, `SERIAL_COUNT_MISMATCH`, …) uç cevabının
+kodu değil, satırın `adjustment.refusalCode` / `refusalDetails`'idir (aynen; approve / retry 200 döner). **İstisna:** posting cevabı 400
+`IDEMPOTENCY_KEY_REUSED` bir ret değildir — anahtar sorulur, `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY` (paket §8.6, r5 SB1/F-4).
 
 ## 6. State machine (paket §8.3)
 
@@ -244,7 +312,7 @@ DL-2'de bulunan satır için `UNKNOWN_ITEM`, `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT
 | `Released` \| `Counting` | → `Submitted` | `submitCycleCount` (DL-2) |
 | `Released` \| `Counting` | → `Closed` (submit'te, bütün satırlar `NoVariance`; bin talepleri `open = false`) | `submitCycleCount` (DL-2) |
 | `Released` \| `Counting` | → `Cancelled` (silinmez; bin talepleri `open = false`) | `cancelCycleCount` (gerekçe zorunlu; posting yokken) |
-| `Submitted` | → `Closed` | sistem (DL-3) |
+| `Submitted` | → `Closed` | sistem: son satır son durumuna gelince (onay / ret / posting sonucu / resolve / yeniden sayım — DL-3) |
 | `Closed` \| `Cancelled` | son durum | her yazma 409 `COUNT_INVALID_STATE` |
 
 ## 7. Bin talebi (paket §4.7)
