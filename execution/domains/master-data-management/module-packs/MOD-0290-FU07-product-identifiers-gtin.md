@@ -39,7 +39,7 @@ dependencies:
 > `git log --all -S 'MOD-0290-FU07'` ve `git log --all -- '*MOD-0290-FU07*'`: 0 commit.
 > `--discover "Product Identifiers GTIN Barcode"`: çıkış 0, bulgu 0, rapor-sha256 `0cdf07bba888…`. Kayıtlı keşif [`DISCOVERY-mod0290-fu07-p6.txt`](../../../../docs/records/audits/2026-11/mdm-ct-02-dl1-inspection-01/DISCOVERY-mod0290-fu07-p6.txt) (rapor-sha256 `548c79266bb6…`) ile tek fark ref listesinin özeti. Keşif EKSİK satırları geçerli.
 >
-> **Değişen bölümler:** 2026-11-10 `0d271a2e6` sonrası: §0.4. İnceleme turu 1 (KOŞULLU): K-11…K-14; §2–§25 düzeltildi; §23 eklendi. İnceleme turu 2 (KOŞULLU, engel yok): künye; §4 durum anlamı, hedef kodu; §12 hane kuralı, GTIN-8, hedef durum matrisi; F-18 taslak iptalleri (§12, §13); §15 göç denetimi; §16 TRACE koli / palet; §17 AC numaraları tur 1'e döndü, yeniler AC-15…AC-19; §21 N-7 depo yollarıyla; §23 DL-1 canlı adımı; §24 DL-2 bölümleri. İnceleme turu 3 (KOŞULLU, engel yok): K-15 dizin hazırlığı, K-16 Viewer / Auth değişikliği, K-17 göç komutu; §8, §12 matrisi (LSKU iptali 404), §13, §14, §15, §17 (AC-7, AC-15, AC-17, AC-19, yeni AC-20), §18, §20, §21 N-2 / N-4 / N-7, §23, §25.
+> **Değişen bölümler:** 2026-11-10 `0d271a2e6` sonrası: §0.4. İnceleme turu 1 (KOŞULLU): K-11…K-14; §2–§25 düzeltildi; §23 eklendi. İnceleme turu 2 (KOŞULLU, engel yok): künye; §4 durum anlamı, hedef kodu; §12 hane kuralı, GTIN-8, hedef durum matrisi; F-18 taslak iptalleri (§12, §13); §15 göç denetimi; §16 TRACE koli / palet; §17 AC numaraları tur 1'e döndü, yeniler AC-15…AC-19; §21 N-7 depo yollarıyla; §23 DL-1 canlı adımı; §24 DL-2 bölümleri. İnceleme turu 3 (KOŞULLU, engel yok): K-15 dizin hazırlığı, K-16 Viewer / Auth değişikliği, K-17 göç komutu; §8, §12 matrisi (LSKU iptali 404), §13, §14, §15, §17 (AC-7, AC-15, AC-17, AC-19, yeni AC-20), §18, §20, §21 N-2 / N-4 / N-7, §23, §25. İnceleme turu 4 (KOŞULLU): DL-2 canlı kapısı tek ifade (K-16, §7, §20, §23, AC-19); §23'te Auth dağıtımı ayrı adım; AK-12 kapandı; §10 göç komutu; K-17 notu.
 >
 > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
 
@@ -101,8 +101,8 @@ Sahip kararları butonlarla; kule kararları sahibin bıraktığı yetkiyle.
 | K-13 | `identifiers[]` ve yeni okumalar mevcut **v1.1 taslağına** (dondurulmamış); v1.2 BL-584'e ayrılmış | Kule | §16 |
 | K-14 | **Tüzel kişi kapsamı:** FG / LSKU hedefli her uç `ProductLegalEntityScopeConsumerGuard` ile, kapsam dışı 404; yeni yazıcılar çitli, `KnownUnguardedWriters`'a girmez. Kalem kiracı geneli (FU04 Karar 6) | Kule | §8, §10, §12, §13 |
 | K-15 | **Dizin hazırlığı:** defter yazımları ve göç (TenantId, Gtin) tekil dizini hazır olmadan koşmaz; `IndexOnce` deseni, hazır değilse adlı 503 | Kule (tur 3) | §8, §13, AC-20 |
-| K-16 | **Viewer:** `mdm.product-identifiers.read`'in `EntitlementOnlyViewerPermissions`'a eklenmesi Auth değişikliğidir (XMC-001; sahip izni DL-2'den önce sorulur); bu değişiklik main'e girmeden DL-2 canlıya çıkmaz | Kule (tur 3) | §6, §7, §14, AC-19, §23 |
-| K-17 | **Göç:** koşucu kiracı başına sistem aktörlü `MigrateFinishedGoodGtinsCommand`'ı MediatR'dan gönderir (denetim `AuditForwardingBehavior`'dan); komut çitlidir (`IProductLegalEntityScopeInventoryMutation`), koşucu `ProductIdentityBackgroundScope`'u alır; `KnownUnfencedRecoveryRunners`'a girmez | Kule (tur 3) | §3, §15, §21 N-4 |
+| K-16 | **Viewer:** `mdm.product-identifiers.read`'in `EntitlementOnlyViewerPermissions`'a eklenmesi Auth değişikliğidir: kendi testiyle ayrı küçük XMC-001 işi, bu paketin Repo Scope'una Auth dosyası girmez (sahip izni 2026-11-10, `docs/records/decisions/2026-11/mdm-fu07-auth-viewer-xmc001-owner-decision-01.md`). **K-16'yı taşıyan Auth sürümü pilot ve canlı ortamda dağıtılmış ve doğrulanmış olmadan MDM DL-2 manifesti kaydolmaz.** | Kule (tur 3, 4); sahip izni | §6, §7, §14, AC-19, §23 |
+| K-17 | **Göç:** koşucu kiracı başına sistem aktörlü `MigrateFinishedGoodGtinsCommand`'ı MediatR'dan gönderir (denetim `AuditForwardingBehavior`'dan); komut çitlidir (`IProductLegalEntityScopeInventoryMutation`), koşucu `ProductIdentityBackgroundScope`'u alır; `KnownUnfencedRecoveryRunners`'a girmez — koşucu dosya adı `*RecoveryRunner` değildir; koruma komut düzeyindeki çitten gelir (sabotaj 13) | Kule (tur 3) | §3, §15, §21 N-4 |
 | AK-10 | `target`, onaylayan, ikinci kişi | — | **TBD**; künyedeki tarih tahmin |
 
 ## 1. Module Summary
@@ -159,7 +159,7 @@ Tam liste depo yollarıyla §21 N-7 (yeni dosyalar "(yeni)" işaretli; değişen
 
 ## 6. Protected Paths
 
-`.antigravity/**` · `services/Diten.AuthService/**` · `services/Diten.Platform/**` · `services/Diten.InventoryService/**` · `gateway/**` (`ocelot.json` yalnız integration-agent) · `execution/registries/**` · MOD-0174 / MOD-0177 / MOD-0178 paketleri ve `docs/analysis/contracts/trace.openapi.yaml`. Birine dokunmak gerekirse XMC-001. Auth'taki Viewer değişikliği (K-16) bu paketin kodu değildir; ayrı XMC-001 işi.
+`.antigravity/**` · `services/Diten.AuthService/**` · `services/Diten.Platform/**` · `services/Diten.InventoryService/**` · `gateway/**` (`ocelot.json` yalnız integration-agent) · `execution/registries/**` · MOD-0174 / MOD-0177 / MOD-0178 paketleri ve `docs/analysis/contracts/trace.openapi.yaml`. Birine dokunmak gerekirse XMC-001. Auth'taki Viewer değişikliği (K-16) bu paketin kodu değildir; ayrı XMC-001 işi, Repo Scope'a Auth dosyası girmez.
 
 ## 7. Dependencies
 
@@ -169,7 +169,7 @@ Tam liste depo yollarıyla §21 N-7 (yeni dosyalar "(yeni)" işaretli; değişen
 | P9 | Koli / palet düzey kaydı | yok — geçici bağ (AK-1) |
 | Tüzel kişi kapsamı | `ProductLegalEntityScopeConsumerGuard`, yazma çiti (`IProductLegalEntityScopeInventoryMutation`) | kodda var |
 | Auth özel profili | `ValidateExactDeclaredPermissionSet`: yeni kaynaklar hiçbir kümede sayılmıyor, reddedilmiyor (kod okuması); rol verimi ölçülmedi | DL-2 önkoşulu (§14) |
-| Auth Viewer listesi | `DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions`'a `mdm.product-identifiers.read` (K-16); XMC-001, sahip izni | **DL-2 canlı önkoşulu** — main'de olmadan DL-2 canlıya çıkmaz |
+| Auth Viewer listesi | `DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions`'a `mdm.product-identifiers.read` (K-16); ayrı XMC-001 işi, sahip izni verildi | **DL-2 canlı önkoşulu:** K-16'yı taşıyan Auth sürümü pilot ve canlı ortamda dağıtılmış ve doğrulanmış olmadan MDM DL-2 manifesti kaydolmaz |
 | Denetim | `mdm-merkezi-iletim`, yol b, kabul edilmiş | var |
 | Gateway | `/api/product-identifiers`, `/api/gs1-company-prefixes` | integration-agent satırı (§16) |
 
@@ -187,9 +187,11 @@ Golden Reference slim birebir. Ürün yazıcıları `Features/ProductItemSkuMast
 
 ```text
 Features/ProductItemSkuMaster/ProductIdentifiers/
-├── Commands/   AssignProductIdentifierCommand · RetireProductIdentifierCommand · WithdrawProductIdentifierCommand  (sealed record, IProductLegalEntityScopeInventoryMutation)
+├── Commands/   AssignProductIdentifierCommand · RetireProductIdentifierCommand · WithdrawProductIdentifierCommand
+│               MigrateFinishedGoodGtinsCommand (göç, sistem aktörü)  (hepsi sealed record, IProductLegalEntityScopeInventoryMutation)
 ├── Queries/    GetProductIdentifierListQuery · GetProductIdentifierByIdQuery · ResolveGtinQuery
 ├── Handlers/CommandHandlers/  AssignProductIdentifierHandler · RetireProductIdentifierHandler · WithdrawProductIdentifierHandler
+│                              MigrateFinishedGoodGtinsHandler
 ├── Handlers/QueryHandlers/    GetProductIdentifierListHandler · GetProductIdentifierByIdHandler · ResolveGtinHandler
 ├── Validators/ AssignProductIdentifierValidator · RetireProductIdentifierValidator
 └── ProductIdentifiersModels.cs
@@ -345,7 +347,7 @@ Göç çakışma raporu denetim olayı değildir: günlük satırı + sayaç (ki
 - [ ] AC-16 (zorunlu) — DL-1: `SalesBox` satırı defter uçlarında 422 `GTIN_LEVEL_USE_FINISHED_GOOD_ENDPOINT`.
 - [ ] AC-17 (zorunlu) — DL-1: FG taslak iptali satış kutusu + koli + palet satırlarının hepsini, LSKU taslak iptali LSKU satırını deponun `CancelDraftAsync` işleminde geri çeker; işlem içi hata kancasıyla hiçbiri değişmez; iptal edilen FG taslağına atama 409 `TARGET_DRAFT_CANCELLED`, iptal edilen (yumuşak silinmiş) LSKU'ya atama 404 `TARGET_NOT_FOUND`.
 - [ ] AC-18 (zorunlu) — DL-1: emekli önekle `Own` atama 422 `GTIN_PREFIX_MISMATCH`; önek komutlarında aynı `Idempotency-Key` ikinci yazım yapmaz.
-- [ ] AC-19 (zorunlu) — DL-2: yerel yığında rol verimi §14 tablosuyla aynı (ya da kule kararıyla değişmiş tablo); **modül hakkı olmayan kiracının Viewer'ı `mdm.product-identifiers.read` almaz** (K-16 Auth değişikliği main'de).
+- [ ] AC-19 (zorunlu) — DL-2: yerel yığında rol verimi §14 tablosuyla aynı (ya da kule kararıyla değişmiş tablo); **modül hakkı olmayan kiracının Viewer'ı `mdm.product-identifiers.read` almaz.** K-16'yı taşıyan Auth sürümü pilot ve canlı ortamda dağıtılmış ve doğrulanmış olmadan MDM DL-2 manifesti kaydolmaz.
 - [ ] AC-20 (zorunlu) — DL-1: (TenantId, Gtin) dizini hazır değilken atama, FG ucu ve taslak iptali 503 `PRODUCT_IDENTIFIER_STORE_UNAVAILABLE` döner ve hiçbir koleksiyon değişmez; göç o kiracıyı atlar; dizin hazır olunca aynı istek başarılı (`IndexOnce` deseni).
 
 ## 18. Test Expectations
@@ -384,7 +386,8 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
 - [ ] AK-10 (`target`, onaylayan, ikinci kişi) — TBD
 - [ ] AK-11 stok ekibinin yazılı kabulü — DL-1'i durdurmaz; sözleşme metni kabul gelene kadar "kalıcılığı kabule bağlı" der
 - [ ] AK-6 ölçümü — DL-2 prompt'undan önce
-- [ ] K-16 Auth Viewer değişikliği: sahip izni (XMC-001, AK-12) DL-2'den önce; main'e girmeden DL-2 canlıya çıkmaz
+- [x] K-16 Auth Viewer değişikliği için sahip izni (AK-12, 2026-11-10)
+- [ ] K-16 ayrı XMC-001 işi: K-16'yı taşıyan Auth sürümü pilot ve canlı ortamda dağıtılmış ve doğrulanmış olmadan MDM DL-2 manifesti kaydolmaz
 - [ ] Gateway kuyruk satırı (integration-agent)
 
 ## 21. Implementation Notes
@@ -472,7 +475,7 @@ DL-2: 7 dilde — GTIN, düzeyler, `Own` / `External`, emekli GTIN'in neden yeni
 
 **DL-1 canlı adımı (kademeli dağıtım):** yeni kopyalar açılışta göçü koşar; eski kopyalar o arada defter yazmadan FG GTIN'i atayabilir. Bu yüzden **bütün eski kopyalar durduktan sonra** yeni kopyalardan biri yeniden başlatılır ve göç yeniden koşar (idempotent; arada atananları alır, çakışmaları raporlar). Pilot kiracıda DL-1 denetimi: göç raporu okunur ve kuleye verilir; FG ucunda emekli bir FG'nin GTIN'i 409 `FG_GTIN_CONFLICT`; `GET /product-master/identifiers/{gtin}` bir FG satış kutusunu çözümler ve `getSku` `identifiers[]` döner.
 
-**Sıra:** 1. MDM DL-1 + göç yeniden koşusu + pilot denetimi. 2. Gateway rotası. 3. MDM DL-2 (manifest; FU06 dersi: son başlayan kopya yeni sürüm, eski kopyalar durmadan pilot başlamaz). DL-2 canlıya **K-16 Auth Viewer değişikliği main'e girmeden çıkmaz.** 4. §14 rol verimi pilot kiracıda; modül hakkı olmayan bir kiracıda Viewer'ın anahtarı almadığı denetlenir. 5. Stok ekibine haber (F-3).
+**Sıra:** 1. MDM DL-1 + göç yeniden koşusu + pilot denetimi. 2. Gateway rotası. 3. **Auth dağıtımı (K-16, ayrı XMC-001 işi):** Auth sürümü pilot ve canlı ortamda dağıtılır ve doğrulanır (modül hakkı olmayan kiracının Viewer'ı anahtarı almaz). 4. MDM DL-2 (manifest; FU06 dersi: son başlayan kopya yeni sürüm, eski kopyalar durmadan pilot başlamaz). **K-16'yı taşıyan Auth sürümü pilot ve canlı ortamda dağıtılmış ve doğrulanmış olmadan MDM DL-2 manifesti kaydolmaz.** 5. §14 rol verimi pilot kiracıda. 6. Stok ekibine haber (F-3).
 
 **Geri dönüş: yalnız ileri düzeltme.** Defter eklemelidir, `FinishedGood.Gtin` korunur. Eski MDM'ye dönülürse FG ucu eski davranışa döner (emekli GTIN yeniden serbest, defter yazılmaz); o arada atanan FG GTIN'leri ileri dönüşte göçün tekrarında deftere girer, çakışanlar raporlanır. DL-2 manifest sürümünün geri alınması FU06 §13 / §23'teki budama sorununu doğurur; aynı kural: geri alınmaz, gerekirse önce Auth satırları kaldırılır.
 
@@ -496,6 +499,6 @@ DL-1 çekirdektir; DL-2 DL-1'e dayanır.
 | K-11…K-14 | Göç, tek işlem, sözleşme sürümü, tüzel kişi kapsamı | Kule | **Kapandı** (inceleme turu 1) |
 | K-15…K-17 | Dizin hazırlığı, Viewer / Auth, göç komutu | Kule | **Kapandı** (inceleme turu 3) |
 | AK-6 | Rol verimi ölçümü | Kule + Auth sahibi | Karar kapandı; ölçüm DL-2 öncesi açık iş |
-| AK-12 | K-16 Auth Viewer değişikliği için sahip izni (XMC-001) | Sahip | **Açık;** DL-2'den önce sorulur |
+| AK-12 | K-16 Auth Viewer değişikliği için sahip izni (XMC-001) | Sahip | **Kapandı — sahip izni 2026-11-10 ("İzin ver, ayrı küçük iş"), ayrı iş.** Karar kaydı: `docs/records/decisions/2026-11/mdm-fu07-auth-viewer-xmc001-owner-decision-01.md` |
 | AK-10 | `target` tarihi, onaylayan, ikinci kişi | Kule | **Açık: TBD**; künyedeki tarih sahibin tahmini |
 | AK-11 | LSKU `gtin`'in "P6'ya kadar null" vaadinin "kalıcı null" olması | Stok ekibi (yazılı kabul), kule | **Açık.** DL-1'i durdurmaz; kabul gelmezse `gtin`'in LSKU'da dolması ayrı karar (MOD-0174 / TRACE davranışı değişir) |
