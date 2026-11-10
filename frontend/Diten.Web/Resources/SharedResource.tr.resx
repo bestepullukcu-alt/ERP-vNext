@@ -1317,4 +1317,7 @@
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>Sayımlar</value>
   </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>Sayım farkları</value>
+  </data>
 </root>

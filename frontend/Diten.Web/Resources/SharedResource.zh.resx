@@ -1258,4 +1258,7 @@
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>盘点单</value>
   </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>盘点差异</value>
+  </data>
 </root>

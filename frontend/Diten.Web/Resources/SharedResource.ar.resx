@@ -1258,4 +1258,7 @@
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>عمليات الجرد</value>
   </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>فروقات الجرد</value>
+  </data>
 </root>

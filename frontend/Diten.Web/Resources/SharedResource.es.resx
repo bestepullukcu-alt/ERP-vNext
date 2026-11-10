@@ -1259,4 +1259,7 @@
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>Recuentos</value>
   </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>Diferencias de recuento</value>
+  </data>
 </root>

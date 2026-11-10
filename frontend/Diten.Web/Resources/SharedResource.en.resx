@@ -1317,4 +1317,7 @@
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>Counts</value>
   </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>Count variances</value>
+  </data>
 </root>
