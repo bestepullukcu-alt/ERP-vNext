@@ -553,6 +553,21 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------------ history checks
+# EES 2.14 (owner decision 2026-11-10): the append-only history is checked from this commit on. It is PR #397's merge
+# into main: seven merges inside it (2026-11-02…06) only REORDERED rows of approvals.tsv / reviews.tsv — no row lost,
+# none added (measured) — and every reading has refused every approval since. A commit that is this commit or one of
+# its ancestors is not checked again; ancestry is fixed by the hashes, so no later commit can ever fall under it, and
+# every break after it is still a break. A repository without this commit (a self-test) checks its whole history.
+HISTORY_BASELINE = "7e8aa77d87ff1f7fc30cc6a8fc35a11b6f057fcc"
+
+
+@cached(1)
+def _before_baseline(root: str, c: str) -> bool:
+    if not HISTORY_BASELINE or commit_of(root, HISTORY_BASELINE) != HISTORY_BASELINE:
+        return False
+    return git(root, "merge-base", "--is-ancestor", c, HISTORY_BASELINE, ok_fail=True) is not None
+
+
 def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: str | None = None) -> list[str]:
     """No row ever disappears. Every commit in the full history that changed the file is compared with EVERY parent:
     the BASE parent's rows are the new version's prefix; every other parent's rows appear in it in the same order. The
@@ -570,6 +585,8 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     problems = []
     main = main or main_line(root)
     for c, why in _append_only(root, commit, path, main):
+        if _before_baseline(root, c):
+            continue                                # EES 2.14: history before HISTORY_BASELINE is not checked again
         excepted, ewhy = exception_why(root, main, c, path)
         if excepted:
             continue
@@ -2194,6 +2211,7 @@ def self_test() -> int:
     tmp.cleanup()
     self_test_review(cases)
     self_test_exception(cases)
+    self_test_baseline(cases)
     self_test_deferred(cases)
     self_test_slice_deferred(cases)
     for label, ok in cases:
@@ -2201,6 +2219,59 @@ def self_test() -> int:
     passed = sum(1 for _, ok in cases if ok)
     print(f"self-test: {passed}/{len(cases)} passed")
     return 0 if passed == len(cases) else 1
+
+
+def self_test_baseline(cases: list) -> None:
+    """EES 2.14: breaks at or before HISTORY_BASELINE are not checked again; a break after it still is."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    WHO = ("dev", "dev@x.invalid")
+
+    def g(*args):
+        env = dict(os.environ, GIT_AUTHOR_NAME=WHO[0], GIT_AUTHOR_EMAIL=WHO[1], GIT_COMMITTER_NAME=WHO[0],
+                   GIT_COMMITTER_EMAIL=WHO[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rows, msg):
+        full = os.path.join(root, APPROVALS)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write("\n".join(["\t".join(APPROVAL_COLUMNS)] + rows) + "\n")
+        g("add", "-A")
+        g("commit", "-q", "-m", msg)
+        return g("rev-parse", "HEAD").strip()
+
+    def ar(name):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, "approve", "HIGH", "r", "dev", "lead",
+                          "2026-11-10", "0" * 64, "n"])
+
+    def problems():
+        globals()["_CACHE"].clear()
+        return append_only_problems(root, "main", APPROVALS, g("rev-parse", "main").strip())
+    A, B, C, D = ar("A"), ar("B"), ar("C"), ar("D")
+    g("init", "-q", "-b", "main")
+    put([A, B], "start")
+    old_break = put([B, A], "an old reorder")
+    put([B, A, C], "append after it")
+    saved = globals()["HISTORY_BASELINE"]
+    try:
+        globals()["HISTORY_BASELINE"] = ""
+        cases.append(("EES 2.14 baseline: with no baseline the old reorder is a break", any(old_break[:12] in p
+                                                                                            for p in problems())))
+        globals()["HISTORY_BASELINE"] = "0" * 40
+        cases.append(("EES 2.14 baseline: a baseline commit this repository does not have -> the whole history is "
+                      "checked", any(old_break[:12] in p for p in problems())))
+        globals()["HISTORY_BASELINE"] = g("rev-parse", "main").strip()
+        cases.append(("EES 2.14 baseline: the old reorder at or before the baseline -> not checked again (green)",
+                      problems() == []))
+        new_break = put([B, C, A], "a new reorder after the baseline")
+        found = problems()
+        cases.append(("sabotage EES 2.14 baseline: a reorder AFTER the baseline is still a break, and only it",
+                      len(found) == 1 and new_break[:12] in found[0] and old_break[:12] not in found[0]))
+    finally:
+        globals()["HISTORY_BASELINE"] = saved
+        globals()["_CACHE"].clear()
+    tmp.cleanup()
 
 
 def self_test_exception(cases: list) -> None:
