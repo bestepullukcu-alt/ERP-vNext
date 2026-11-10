@@ -15,7 +15,11 @@ public sealed class SupplierContract130Tests
     /// <summary>SHA-256 of <c>supplier.openapi.yaml</c> 1.2.0 as frozen on main before DL-1 (the fixture is that file).</summary>
     private const string Frozen120Sha256 = "373ebb21bae15f152d1b9ac24e03f7bfd02e595d343cf68cf918da553f5f42f7";
 
-    private static readonly string ContractText = ReadContract();
+    /// <summary>
+    /// The 1.3.0 file DL-1 froze. Since DL-3 the live contract is 1.4.0 (measured by <see cref="SupplierContract140Tests"/>
+    /// against this same file); the DL-1 checks stay on what DL-1 wrote.
+    /// </summary>
+    private static readonly string ContractText = Read(Frozen130RelativePath);
     private static readonly string Frozen120Text = Read(Frozen120RelativePath);
     private static readonly string PackText = Read(PackRelativePath);
 

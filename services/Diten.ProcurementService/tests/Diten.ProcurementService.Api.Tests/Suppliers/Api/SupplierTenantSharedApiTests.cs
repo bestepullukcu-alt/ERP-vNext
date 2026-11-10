@@ -36,7 +36,13 @@ public sealed class SupplierTenantSharedApiTests(ProcurementMongoReplicaSet mong
 
     public async Task InitializeAsync()
     {
-        await SupplierTenantModelIndexConfiguration.EnsureIndexesAsync(await mongo.FreshDatabaseAsync());
+        // The two collections' own indexes (K-2, K-7, one relationship per company) — built here like the migration tests do,
+        // so the unique-index paths are real from the first request (the host's index bootstrap is best-effort, in background).
+        var database = await mongo.FreshDatabaseAsync();
+        await database.GetCollection<SupplierMaster>(SupplierTenantModelIndexConfiguration.MasterCollectionName).Indexes
+            .CreateManyAsync(SupplierTenantModelIndexConfiguration.BuildMasterIndexes());
+        await database.GetCollection<SupplierCompanyRelationship>(SupplierTenantModelIndexConfiguration.RelationshipCollectionName).Indexes
+            .CreateManyAsync(SupplierTenantModelIndexConfiguration.BuildRelationshipIndexes());
         _factory = new ProcurementApiFactory(mongo, "TenantShared");
         _ = _factory.Server;
     }

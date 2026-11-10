@@ -85,7 +85,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3, Indirect: 3),
         ["Diten.PlanningService"] = new(Debt: 2, Exceptions: 0, Indirect: 5),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
-        ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
+        // measured 2026-11-10 — MOD-0140 DL-3 (BL-501, pack §21): the eight supplier write commands audited through
+        // procurement-merkezi-iletim; Create/Update/Delete/BulkDelete Supplier left the debt (35 → 31). SubmitOnboardingCase stays (DL-4).
+        ["Diten.ProcurementService"] = new(Debt: 31, Exceptions: 0),
         ["Diten.SafetyStockService"] = new(Debt: 0, Exceptions: 0),
         // measured 2026-10-21 — WP-A1 (MVP-6, E-2 / BL-501): all 17 write commands audited through supplychain-merkezi-iletim
         // (shared forwarder, written in the command's own transaction), no debt, no exception. CT decision: CT-DECISIONS.md.
@@ -138,6 +140,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // CT decision 2026-11-02 (CRM-AUD-KN-01; owner decisions K-AUD-1 Crm = 19 and K-AUD-2 not K2, Beste 2026-11-02): CRM on
         // the same shared forwarder, path b — first slice: the 34 Knowledge commands, recorded right after they succeed.
         ("Diten.CrmService", "crm-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // MOD-0140 DL-3 (pack §7, §21; Natig HIGH approval of Revizyon 9.3, 2026-11-06): Procurement on the same shared forwarder,
+        // path b, every supplier write enlisted in its own Mongo transaction (RequireEnlistment).
+        ("Diten.ProcurementService", "procurement-merkezi-iletim", "b", "ICentralAuditDeclaration"),
         // CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md): MOD-0022 e-signature commands write their central audit
         // intent INSIDE the business transaction; accepted as a trail, path a markers are NOT added (double record, §4.4).
         ("Diten.Platform", "esign-islem-ici-denetim", "a", "ESignatureAuditIntent.EnqueueAsync"),
