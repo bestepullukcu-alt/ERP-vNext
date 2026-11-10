@@ -11,9 +11,9 @@
 > Beste 2026-11-06). Bu dosya yalnız kablo şeklidir; paketle çelişirse paket kazanır ve bu dosya düzeltilir. Sahip kararları Q-1…Q-24
 > (paket §19.4) ve F-1 = A (PUT / DELETE yok, komut uçları; tek istisna `PUT /count-settings`).
 >
-> **Dilim durumu:** §4.1 (DL-1) **bağlayıcı taslak** — kod bu tabloya karşı yazılır ve `CycleCountDraftContract` (test projesi) her
-> `/api/warehouse/cycle-counts*` cevabını bu şemalara karşı doğrular. §4.2 (DL-2 … DL-5) paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır**;
-> her dilim kendi satırlarını bağlayıcı yapar (gövde ayrıntısı o dilimin ilk adımında kesinleşir).
+> **Dilim durumu:** §4.1 (DL-1) ve §4.2 (DL-2) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract` (test
+> projesi) her `/api/warehouse/cycle-counts*` cevabını bu şemalara karşı doğrular. §4.3 (DL-3 … DL-5) paketin §3 / §8 / §16'sından çıkarılmış
+> **ön taslaktır**; her dilim kendi satırlarını bağlayıcı yapar (gövde ayrıntısı o dilimin ilk adımında kesinleşir).
 
 ## 1. Rules
 
@@ -75,7 +75,7 @@
 ```
 - `scopeBinIds` ve `snapshotAt` `release`'ten sonra yazılır, sonra değişmez; `Draft`'ta `scopeBinIds = []`, `snapshotAt` yok.
 - `snapshotTransactionIds` kablo üyesi **değildir** (iç kanıt; Evidence Pack'te — DL-5).
-- DL-2 ekleri (`submittedBy`, `submittedAt`) eklemeli üyedir.
+- DL-2 ekleri (`submittedBy`, `submittedAt`) eklemeli üyedir — submit'te sunucu yazar.
 - **Durum ve satır durumu metinleri (SB3/F-2):** ekranda ve kanıtta etiket, değerin kendisi değil yerelleştirme anahtarıdır — sayım durumu
   `CycleCount.Status.{Status}`, satır durumu `CycleCount.LineStatus.{Status}`, karar `CycleCount.Decision.{Kind}`, karar kaynağı
   `CycleCount.Decision.Source.{Source}`. Önekler ayrıdır; servis sabitleri `CycleCountTextKeys`'tedir (DL-1'de sabit), her önekin Web
@@ -94,8 +94,12 @@
 }
 ```
 - **Kör sayım (Q-1 = A, paket §8.2 madde 5):** `blind = true` sayımda `expectedQuantity` `Submit`'ten önce **hiçbir** cevapta yazılmaz
-  (yetkiye göre değişmez). DL-2 ekleri: `countedBy`, `countedAt`, `movementsSinceSnapshot`, `expectedAtCount`, `varianceQuantity`,
-  `movementDuringCount`, `snapshotDrift`, `scanRef`; DL-3 ekleri: `decision`, `adjustment` (eklemeli, aynı gizleme kuralıyla).
+  (yetkiye göre değişmez). DL-2 ekleri (eklemeli): `countedBy`, `countedAt` (sunucu yazar — gövdede gelmez), `movementsSinceSnapshot`,
+  `expectedAtCount`, `varianceQuantity` (submit'te yazılır), `movementDuringCount`, `snapshotDrift` (boolean; yalnız submit'ten sonra yazılır),
+  `scanRef` (opak, ≤ 200; Q-12 = A). **Gizleme (DL-2, r5 SB1/F-6):** `blind = true` sayımda `expectedQuantity`, `movementsSinceSnapshot`,
+  `expectedAtCount`, `varianceQuantity` submit'ten önce hiçbir cevapta, submit'ten sonra yalnız `cycle-count.variances.read` taşıyan çağırana
+  yazılır; aynı kural olay `data`'sındaki aynı adlı üyelere uygulanır (§3.3). Bayraklar ve durum gizlenmez. DL-3 ekleri: `decision`,
+  `adjustment` (eklemeli, aynı gizleme kuralıyla).
 - v1'de satır yalnız `stockStatus = AVAILABLE` olur (Q-8 = A).
 
 ### 3.3 `CycleCountEvent`
@@ -108,6 +112,13 @@
 (paket §4.3). Insert-only, iş yazımıyla aynı işlemde. `Released.data` yalnız sayıları taşır (`snapshotAt`, `binCount`, `lineCount`,
 `claimedBinCount`) — satır başına beklenen miktar **hiçbir sayımda** yok (F-13). `Cancelled.data.softDeleted` (`"true"` Draft iptali ve toplu
 silmede), `Cancelled.data.bulk` (`"true"` yalnız toplu silmede) — ayrı `Deleted` türü yok (02/F-4). `data` değerleri dizedir.
+**DL-2:** `LineCounted.data` = `countedQuantity`, `previousCountedQuantity?`, `scanRef?`, `lineVersion`, `countStatus?` (ilk girişte `Counting`);
+`LineAdded.data` = `locationId`, `itemId`, `skuId`, `skuLevel`, `lotId?`, `countedQuantity`, `scanRef?`, `countStatus?` — ikisi de yalnız sayılan
+miktarı taşır (F-13). `Submitted.data` = `previousStatus`, `lineCount`, `noVarianceLineCount`, `awaitingApprovalLineCount`,
+`movementDuringCountLineCount`, `snapshotDriftLineCount` (yalnız sayılar; anahtar olayı budur). Satır başına bir `VarianceComputed` (`lineId`
+dolu): `expectedQuantity`, `movementsSinceSnapshot`, `expectedAtCount`, `varianceQuantity`, `countedQuantity`, `movementDuringCount`,
+`snapshotDrift`, `status` — kör sayımda ilk dört üye §3.2 gizleme kuralıyla okuma izdüşümünde yazılmaz (saklanan olay değişmez).
+Bütün satırlar son durumdaysa (`NoVariance`) aynı işlemde `Closed` (`reason: AllLinesFinal`, `releasedBinClaims`).
 
 ### 3.4 Sayfalar
 `{ items, total, page, pageSize, contractVersion }` (WMS-BUNDLE §3.8 emsali), `pageSize ≤ 200`.
@@ -150,13 +161,27 @@ defter hareketlerinin kimlikleri → `SnapshotTransactionIds` (iç); (d) satırl
 sayımda ya da eşzamanlı release kaybedildi → 409 `COUNT_SCOPE_OVERLAP` (kaybedende talep / satır / olay yok); okuma açılamaz → 503
 `COUNT_INVENTORY_UNAVAILABLE`. Defter hareketi hiçbir koşulda engellenmez (lokasyon kilidi yok, Q-6 = B).
 
-### 4.2 DL-2 … DL-5 — ön taslak (paket §3; her dilimde bağlayıcı olur)
+### 4.2 DL-2 — bağlayıcı
+
+| Yöntem + yol | operationId | x-permission | Gövde / parametre | Başarı | x-error-codes |
+|---|---|---|---|---|---|
+| `POST /cycle-counts/{countId}/lines/{lineId}/count` | `recordCycleCountLine` | `cycle-count.counts.record` | If-Match = **satırın** `version`'ı; `{ idempotencyKey, countedQuantity, scanRef? }` — `countedQuantity` decimal string ≥ 0, ≤ 6 ondalık (seri kontrollüde tam sayı); `countedBy` / `countedAt` sunucudan. Sayım `Released` \| `Counting`, satır `Open` \| `Counted` (submit'e kadar yeniden girilebilir); ilk giriş sayımı `Counting`'e alır | 200 `CycleCountLine` + ETag (satırın; replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_QUANTITY_INVALID, COUNT_NOT_FOUND, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE |
+| `POST /cycle-counts/{countId}/lines` | `addCycleCountLine` | `cycle-count.counts.record` | `{ idempotencyKey, locationId, item: { itemId, skuId, skuLevel }, lotId?, countedQuantity, scanRef? }` — statü üyesi yok (v1 `AVAILABLE`, Q-8 = A); `If-Match` yok (yeni satır). Bin `scopeBinIds`'te, `scopeSkuIds` doluysa SKU onda (aksi 422 `COUNT_LINE_OUT_OF_SCOPE`); lot kontrollüde lot zorunlu (400 `COUNT_LOT_REQUIRED`) ve MOD-0174'te bu SKU için kayıtlı (422 `COUNT_LOT_UNKNOWN`); lot kontrollü değilse lot 422 `LOT_NOT_ALLOWED`; anahtar sayımda varsa 409 `COUNT_LINE_DUPLICATE` | 201 `CycleCountLine` (`origin = Found`, beklenen 0, `Counted`) + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_QUANTITY_INVALID, COUNT_NOT_FOUND, COUNT_INVALID_STATE, COUNT_LINE_OUT_OF_SCOPE, COUNT_LOT_REQUIRED, COUNT_LOT_UNKNOWN, LOT_NOT_ALLOWED, COUNT_LINE_DUPLICATE, UNKNOWN_ITEM, SKU_ITEM_MISMATCH, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, COUNT_CONFLICT |
+| `POST /cycle-counts/{countId}/submit` | `submitCycleCount` | `cycle-count.counts.record` | If-Match (sayımın); `{ idempotencyKey }` — sayım `Released` \| `Counting`; her `Snapshot` ve `Recount` satırı sayılmış (aksi 422, durum değişmez). Fark paket §8.4 (aşağıda) | 200 `CycleCount` (`Submitted`, ya da bütün satırlar `NoVariance` ise `Closed`) + ETag (replay 200) | IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_LINES_UNCOUNTED, COUNT_INVENTORY_UNAVAILABLE |
+
+**Fark (paket §8.4):** submit tek `ReadConcern.Snapshot` işleminde satırları ve defteri okur: kapsam bin'lerine dokunan `CreatedAt ≥ snapshotAt − W`
+hareketleri (zaman ölçütü `CreatedAt`, `PostingDate` değil) ve bin'lerin bugünkü `AVAILABLE` bakiyesi. Satır anahtarı (bin, SKU, seviye, lot,
+statü) için: anlık görüntü sonrası = penceredeki hareketlerden `SnapshotTransactionIds`'te **olmayanlar**; `movementsSinceSnapshot` = bunlardan
+`CreatedAt ≤ countedAt` olanların net etkisi (gelen +, giden −; defterin bacak kuralı); `expectedAtCount = expectedQuantity + movementsSinceSnapshot`;
+`varianceQuantity = countedQuantity − expectedAtCount`; `movementDuringCount` = bunlardan en az biri anahtara dokundu; `snapshotDrift` =
+`expectedQuantity + Σ(anlık görüntü sonrası hareketlerin tümü) ≠ bugünkü bakiye`. Satır `NoVariance` yalnız fark 0 **ve** iki bayrak da
+`false` ise; aksi `AwaitingApproval` (tolerans DL-3'tür; DL-2'de her fark onay bekler). Defter okunamazsa 503 `COUNT_INVENTORY_UNAVAILABLE`,
+sayım ve satırlar değişmez.
+
+### 4.3 DL-3 … DL-5 — ön taslak (paket §3; her dilimde bağlayıcı olur)
 
 | Yöntem + yol | operationId | x-permission | Dilim |
 |---|---|---|---|
-| `POST /cycle-counts/{countId}/lines` | `addCycleCountLine` | `cycle-count.counts.record` | DL-2 |
-| `POST /cycle-counts/{countId}/lines/{lineId}/count` | `recordCycleCountLine` | `cycle-count.counts.record` | DL-2 |
-| `POST /cycle-counts/{countId}/submit` | `submitCycleCount` | `cycle-count.counts.record` | DL-2 |
 | `GET /cycle-counts/dashboard` | `getCycleCountDashboard` | `cycle-count.counts.read` | DL-4 (KPI'lar, AC-40) |
 | `GET /count-variances` (`?source=count\|manual\|all`) | `listCountVariances` | `cycle-count.variances.read` | DL-3 |
 | `GET /count-variances/{lineId}` | `getCountVariance` | `cycle-count.variances.read` | DL-3 |
@@ -205,7 +230,8 @@ sayımda ya da eşzamanlı release kaybedildi → 409 `COUNT_SCOPE_OVERLAP` (kay
 
 ### 5.2 Yeniden tanımlanmayan, kullanılan kodlar
 `INVALID_REQUEST`, `IDEMPOTENCY_KEY_REUSED`, `UNKNOWN_LOCATION` (depo yok / `Warehouse` değil / `Active` değil / başka şirketin),
-`LEGAL_ENTITY_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_DATA_INCOMPLETE`, `CROSS_LE_FORBIDDEN` (servis geneli) —
+`LEGAL_ENTITY_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_UNAVAILABLE`, `PRODUCT_MASTER_DATA_INCOMPLETE`, `CROSS_LE_FORBIDDEN` (servis geneli);
+DL-2'de bulunan satır için `UNKNOWN_ITEM`, `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT_STOCKABLE`, `LOT_NOT_ALLOWED` —
 `InventoryErrorCodes`'tan; DL-3'te defter retleri (`INSUFFICIENT_STOCK`, `LOT_BLOCKED`, `LOT_EXPIRED`, `SERIAL_COUNT_MISMATCH`, …) aynen.
 
 ## 6. State machine (paket §8.3)
@@ -216,6 +242,7 @@ sayımda ya da eşzamanlı release kaybedildi → 409 `COUNT_SCOPE_OVERLAP` (kay
 | `Draft` | → `Cancelled` + soft delete | `cancelCycleCount`, `bulkDeleteCycleCounts` (gerekçe zorunlu) |
 | `Released` | → `Counting` | ilk `recordCycleCountLine` / `addCycleCountLine` (DL-2) |
 | `Released` \| `Counting` | → `Submitted` | `submitCycleCount` (DL-2) |
+| `Released` \| `Counting` | → `Closed` (submit'te, bütün satırlar `NoVariance`; bin talepleri `open = false`) | `submitCycleCount` (DL-2) |
 | `Released` \| `Counting` | → `Cancelled` (silinmez; bin talepleri `open = false`) | `cancelCycleCount` (gerekçe zorunlu; posting yokken) |
 | `Submitted` | → `Closed` | sistem (DL-3) |
 | `Closed` \| `Cancelled` | son durum | her yazma 409 `COUNT_INVALID_STATE` |
