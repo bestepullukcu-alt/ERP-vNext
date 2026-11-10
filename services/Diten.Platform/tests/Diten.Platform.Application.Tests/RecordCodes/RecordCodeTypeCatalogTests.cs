@@ -25,6 +25,10 @@ public sealed class RecordCodeTypeCatalogTests
     private static readonly IReadOnlyDictionary<string, string> RuleAheadOfCatalogue = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["CNT"] = "MOD-0040-FU02 DL-8",
+        ["PUT"] = "MOD-0040-FU02 DL-8",
+        ["PCK"] = "MOD-0040-FU02 DL-8",
+        ["OUT"] = "MOD-0040-FU02 DL-8",
+        ["PKG"] = "MOD-0040-FU02 DL-8",
     };
 
     [Fact]

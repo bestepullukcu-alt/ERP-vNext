@@ -9,7 +9,7 @@
 | Yazan | MVP-5 CT, sahip onayından sonra |
 | Yer | MVP-1 hattı `feature/sce/mod-0173-inventory-ledger-valuation` (Platform test dosyası ve `RuleAheadOfCatalogue` yalnız hatta var) |
 | Kapanış adımı | Hat PR'ı açılmadan önce (dilimleri ve geliştirmeyi engellemez) |
-| Durum | **Taslak — sahip onayı bekliyor** (2026-11-10) |
+| Durum | **Onaylandı** (Beste «İş paketini onaylıyorum», 2026-11-10) — CT yazdı, §2 metni birebir; AC-1…AC-4 ölçüldü (Platform `RecordCodeTypeCatalogTests` 13/13; sabotaj `PKG` satırı silindi → AC16 kırmızı, bayt-eşit geri) |
 
 ## 1. Değişecek dosyalar (yalnız bunlar)
 

@@ -101,6 +101,8 @@ Each **namespace** (first segment) is owned by **exactly one** module/service. T
 | `leave.*` | `Diten.Platform` — MOD-0280-FU02 Leave & Absence Management (placement: ADR-005; the namespace moves with the module if it is extracted to the HCM service) | MOD-0280 (Time, Attendance & Leave) |
 | `pvg.*` | `Diten.PvgService` — Pharmacovigilance (e.g. `pvg.case-intake-triage.*`; owner decision 2026-10-27, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`) | Pharmacovigilance (MOD-0230 family) |
 | `cycle-count.*` | `Diten.InventoryService` — MOD-0181 Cycle Counting (sayımlar, fark izi, kanıt paketi, şirket sayım ayarları; owner decision Q-08 — one namespace per WMS module, MOD-0178 pack §14.1; pack r7 approved 2026-11-06) | MOD-0181 (Cycle Counting) |
+| `inventory.*` | `Diten.InventoryService` — MOD-0173 Inventory Ledger & Valuation (stok okuması, hareketler, lokasyonlar, rezervasyonlar; owner decision 2026-10-01 — `supplychain.inventory.*` → `inventory.*`, `supplychain.*` stays with `Diten.SupplyChainService`; MOD-0173 pack §14) | MOD-0173 (Inventory Ledger & Valuation) |
+| `warehouse.*` | `Diten.InventoryService` — MOD-0178 Putaway / Picking / Packing (putaway / pick görevleri, lokasyon rolleri, outbound, koli, izleme; owner decision Q-08 2026-10-21 — one namespace per WMS module, MOD-0178 pack §14.1; base path `/api/warehouse`) | MOD-0178 (Putaway / Picking / Packing) |
 | *(future business domains)* `crm.*`, `hr.*`, `ppm.*`, … | the respective business-domain module | Blueprint-selected (per AG-STEP-022) |
 
 **Legacy prefixes pending remap (AG-STEP-004B):**
