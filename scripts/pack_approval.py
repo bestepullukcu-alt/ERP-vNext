@@ -947,25 +947,45 @@ def _ones(root: str, c: str, path: str, text: str) -> list[int]:
     return [n for n, l in enumerate(raw, 1) if l.rstrip(" \r") == text]
 
 
+_EXCUSED_MEMO: dict = {}      # (root, main, path) -> the validated S-91R merges (a set while it is being built)
+
+
 def _reorder_excused(root: str, path: str) -> frozenset:
-    """S-91R (Codex round 3): the merges whose `path` main's EXCEPTIONS file excuses as reorder-only ('S-91R:' reason,
-    the empty-loss digest). Only these are followed by row_commit: every other merge keeps git's answer, so a row a
-    later merge re-adds (after a loss, with a trailing space, from an old branch) is never back-dated. A listed row that
-    does not hold makes `history` red, and then no approval passes at all."""
+    """S-91R (Codex rounds 3–4): the merges row_commit may follow — those main's EXCEPTIONS file lists as reorder-only
+    ('S-91R:' reason, the empty-loss digest) AND that hold: the merge is on main's history and breaks append-only there
+    (_append_only), and reorder_only_why accepts it. A listed row that names a merge that is no break, not on main, or
+    not reorder-only is never trusted (Codex round 4: an unchecked row must not move attribution). Every other merge
+    keeps git's answer. Built oldest first, so a candidate's check follows only older, already validated merges."""
     try:
         main = main_line(root)
     except Unreadable:
         return frozenset()
+    key = (root, main, path)
+    if key in _EXCUSED_MEMO:
+        return frozenset(_EXCUSED_MEMO[key])
     raw = read(root, main, EXCEPTIONS) if main else None
-    if not raw:
-        return frozenset()
-    out = set()
-    for l in content_lines(raw.decode("utf-8", errors="replace"))[1:]:
+    listed = set()
+    for l in content_lines(raw.decode("utf-8", errors="replace"))[1:] if raw else []:
         cells = l.split("\t")
         if len(cells) == len(EXCEPTION_COLUMNS) and cells[1] == path and cells[3].startswith(REORDER_REASON) \
                 and cells[2] == lost_digest([]) and re.fullmatch(r"[0-9a-f]{40}", cells[0]):
-            out.add(cells[0])
-    return frozenset(out)
+            listed.add(cells[0])
+    if not listed:
+        _EXCUSED_MEMO[key] = frozenset()
+        return frozenset()
+    breaks = {c for c, _ in _append_only(root, main, path, main)}
+    order = {c: i for i, c in enumerate(git(root, "rev-list", "--topo-order", "--reverse", main).decode().split())}
+    partial: set = set()
+    _EXCUSED_MEMO[key] = partial
+    try:
+        for c in sorted((c for c in listed if c in breaks and c in order), key=order.get):
+            if reorder_only_why(root, c, path) is None:
+                partial.add(c)
+    except BaseException:
+        del _EXCUSED_MEMO[key]
+        raise
+    _EXCUSED_MEMO[key] = frozenset(partial)
+    return _EXCUSED_MEMO[key]
 
 
 def _moved_from(root: str, blamed: str, text: str, path: str, trusted: frozenset) -> list[tuple[str, int]]:
@@ -2850,10 +2870,18 @@ def self_test_reorder(cases: list) -> None:
         pass
     put(APPROVALS, [H_A, A0, QA, QB, S1, QA])
     y = commit("merge writes a second QA")
-    excuse("\t".join([inner, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    # main takes the excused reorder in and lists it, so the trusted set is not empty (the one-copy rule is what holds)
+    g("checkout", "-q", "main")
+    g("reset", "-q", "--hard", inner)
+    put(EXCEPTIONS, ["\t".join(EXCEPTION_COLUMNS),
+                     "\t".join([inner, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"])])
+    commit("exception row for the inner reorder", who=LEAD)
+    globals()["_CACHE"].clear()
+    trusted_now = _reorder_excused(root, APPROVALS) == frozenset({inner})
     raw, _ = _blamed_line(root, y, 6, APPROVALS)
     cases.append(("S-91R (Codex F-1R): a second copy of a row after an excused reorder -> git's own answer for that "
-                  "copy, never the first copy's commit", row_commit(root, y, 6, APPROVALS) == raw and raw != qa
+                  "copy, never the first copy's commit", trusted_now and row_commit(root, y, 6, APPROVALS) == raw
+                  and raw == inner
                   and row_commit(root, y, 3, APPROVALS) == qa))
     # Codex S-91R round 3, F-1: a row lost on one side (D drops A) and brought back by a later, NOT excused merge with a
     # trailing space (git: a new line; the tool: the same row) — git's answer (the merge) stands, never the old commit
@@ -2861,7 +2889,8 @@ def self_test_reorder(cases: list) -> None:
     RA = ar("RA")
     n[0] += 1
     # main is left as it is: its exceptions file (the excused reorder above) must stay readable
-    g("checkout", "-q", "-b", f"r-o-{n[0]}", start)
+    here = g("rev-parse", "main").strip()
+    g("checkout", "-q", "-b", f"r-o-{n[0]}", here)
     put(APPROVALS, [H_A, A0, RA])
     o = commit("O adds RA")
     g("checkout", "-q", "-b", f"r-keep-{n[0]}", o)
@@ -2877,9 +2906,22 @@ def self_test_reorder(cases: list) -> None:
     put(APPROVALS, [H_A, A0, S1, RA + " "])
     yr = commit("merge brings RA back")
     cases.append(("S-91R (Codex round 3 F-1): a lost row brought back by a not-excused merge -> credited to that merge, "
-                  "never to the old commit", row_commit(root, yr, 4, APPROVALS) == yr != o))
+                  "never to the old commit (the trusted set holds the inner reorder)",
+                  _reorder_excused(root, APPROVALS) == frozenset({inner}) and row_commit(root, yr, 4, APPROVALS) == yr != o))
     cases.append(("sabotage S-91R (h): exception-row refuses a merge that brings back a row one side deleted",
                   row_for(yr)[0] == 2 and "(h)" in row_for(yr)[1]))
+    # Codex round 4: that merge lands on main and an S-91R row naming it is written on main anyway — the row does not
+    # hold (h), so it is never trusted: attribution stays git's (sabotage: trust a listed break without reorder_only_why)
+    g("checkout", "-q", "main")
+    g("merge", "-q", "--no-ff", "-m", "land the re-adding merge", yr, who=LEAD)
+    with open(os.path.join(root, EXCEPTIONS), "a", encoding="utf-8", newline="") as f:
+        f.write("\t".join([yr, APPROVALS, lost_digest([]), "S-91R: forged", "dev", "lead", "2026-11-10"]) + "\n")
+    commit("an unchecked S-91R row on main", who=LEAD)
+    globals()["_CACHE"].clear()
+    cases.append(("S-91R (Codex round 4): an S-91R row on main for a merge that is no reorder-only merge -> never "
+                  "trusted, the row stays credited to that merge", yr in {c for c, _ in _append_only(
+                      root, g("rev-parse", "main").strip(), APPROVALS, g("rev-parse", "main").strip())}
+                  and row_commit(root, yr, 4, APPROVALS) == yr))
     # (g): the same row text added by two different commits, moved by the merge — its origin is ambiguous
     RG = ar("RG")
     X1, X2, Y1, Y2 = ar("GX1"), ar("GX2"), ar("GY1"), ar("GY2")
