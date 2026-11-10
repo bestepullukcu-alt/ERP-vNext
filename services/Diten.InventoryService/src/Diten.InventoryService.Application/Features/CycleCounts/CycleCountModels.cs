@@ -63,6 +63,13 @@ public sealed record CycleCountLineDto
     public string? VarianceQuantity { get; init; }
     public bool? MovementDuringCount { get; init; }
     public bool? SnapshotDrift { get; init; }
+    public string? RecountOfLineId { get; init; }
+    public int? RecountDepth { get; init; }
+
+    /// <summary>DL-3 (draft §3.6–§3.7, additive): the decision, the ledger correction and the integrity resolution.</summary>
+    public CountVariances.CycleCountDecisionDto? Decision { get; init; }
+    public CountVariances.CycleCountAdjustmentDto? Adjustment { get; init; }
+    public CountVariances.CycleCountIntegrityResolutionDto? IntegrityResolution { get; init; }
     public string? ScanRef { get; init; }
     public required string Status { get; init; }
     public required int Version { get; init; }

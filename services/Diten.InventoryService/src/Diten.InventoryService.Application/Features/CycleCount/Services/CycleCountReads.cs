@@ -1,6 +1,9 @@
+using System.Text.Json;
+using Diten.InventoryService.Application.Features.CountVariances;
 using Diten.InventoryService.Application.Features.CycleCounts;
 using Diten.InventoryService.Domain.CycleCounting.Entities;
 using Diten.InventoryService.Domain.CycleCounting.Enums;
+using Diten.InventoryService.Domain.CycleCounting.Rules;
 using Diten.InventoryService.Domain.Rules;
 
 namespace Diten.InventoryService.Application.Features.CycleCounting.Services;
@@ -65,9 +68,57 @@ public static class CycleCountReads
         VarianceQuantity = showExpected && l.VarianceQuantity is { } variance ? InventoryQuantity.ToWire(variance) : null,
         MovementDuringCount = l.VarianceQuantity is null ? null : l.MovementDuringCount,
         SnapshotDrift = l.VarianceQuantity is null ? null : l.SnapshotDrift,
+        RecountOfLineId = l.RecountOfLineId?.ToString("D"),
+        RecountDepth = l.Origin == CycleCountLineOrigin.Recount ? l.RecountDepth : null,
+        Decision = l.Decision is { } d ? Decision(d) : null,
+        Adjustment = l.Adjustment is { } a ? Adjustment(a, showExpected) : null,
+        IntegrityResolution = l.IntegrityResolution is { } r ? new CycleCountIntegrityResolutionDto
+        {
+            Kind = r.Kind.ToString(), By = r.By.ToString("D"), At = CycleCountSupport.Wire(r.At), Reason = r.Reason,
+            HolderTransactionId = r.HolderTransactionId?.ToString("D")
+        } : null,
         ScanRef = l.ScanRef,
         Status = l.Status.ToString(),
         Version = l.Version
+    };
+
+    public static CycleCountDecisionDto Decision(CycleCountDecision d) => new()
+    {
+        Kind = d.Kind.ToString(), Source = d.Source.ToString(), By = d.By?.ToString("D"), At = CycleCountSupport.Wire(d.At), Reason = d.Reason
+    };
+
+    /// <summary>The correction; its quantity follows the blind rule (it IS the variance's size — r5 SB1/F-6).</summary>
+    public static CycleCountAdjustmentDto Adjustment(CycleCountAdjustment a, bool showExpected) => new()
+    {
+        MovementType = WireNames.ToWire(a.MovementType),
+        Quantity = showExpected ? InventoryQuantity.ToWire(a.Quantity) : null,
+        IdempotencyKey = a.IdempotencyKey,
+        Status = a.Status.ToString(),
+        TransactionId = a.TransactionId?.ToString("D"),
+        TransactionNumber = a.TransactionNumber,
+        RefusalCode = a.RefusalCode,
+        RefusalDetails = a.RefusalDetailsJson is { Length: > 0 } json ? JsonDocument.Parse(json).RootElement.Clone() : null,
+        RefusalStatus = a.RefusalStatus,
+        IntegrityReason = a.IntegrityReason,
+        HolderTransactionId = a.HolderTransactionId?.ToString("D"),
+        TransactionDate = CycleCountSupport.Wire(a.TransactionDate),
+        PostingDate = CycleCountSupport.Wire(a.PostingDate),
+        Attempts = a.Attempts,
+        FirstAttemptAt = CycleCountSupport.Wire(a.FirstAttemptAt),
+        LastAttemptAt = CycleCountSupport.Wire(a.LastAttemptAt)
+    };
+
+    /// <summary>Pack §4.4: the stored settings, or the defaults (version 0, <c>isDefault</c>).</summary>
+    public static CycleCountSettingsDto Settings(CycleCountSettings? s) => new()
+    {
+        ToleranceAbsolute = InventoryQuantity.ToWire(s?.ToleranceAbsolute ?? CycleCountPolicy.Default.ToleranceAbsolute),
+        TolerancePercent = InventoryQuantity.ToWire(s?.TolerancePercent ?? CycleCountPolicy.Default.TolerancePercent),
+        MaxRecounts = s?.MaxRecounts ?? CycleCountPolicy.Default.MaxRecounts,
+        MaxLinesPerCount = s?.MaxLinesPerCount ?? CycleCountPolicy.Default.MaxLinesPerCount,
+        IsDefault = s is null,
+        UpdatedBy = s?.UpdatedBy?.ToString("D"),
+        UpdatedAt = CycleCountSupport.Wire(s?.UpdatedAt),
+        Version = s?.Version ?? 0
     };
 
     /// <summary>
@@ -75,7 +126,7 @@ public static class CycleCountReads
     /// <c>VarianceComputed</c> rows; projected out of a blind count's timeline exactly as the line fields are (<see cref="ShowsExpected"/>).
     /// </summary>
     public static readonly IReadOnlySet<string> ExpectedDataKeys =
-        new HashSet<string>(StringComparer.Ordinal) { "expectedQuantity", "movementsSinceSnapshot", "expectedAtCount", "varianceQuantity" };
+        new HashSet<string>(StringComparer.Ordinal) { "expectedQuantity", "movementsSinceSnapshot", "expectedAtCount", "varianceQuantity", "adjustmentQuantity" };
 
     public static CycleCountEventDto Event(CycleCountEvent e, bool showExpected) => new()
     {

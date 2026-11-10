@@ -11,7 +11,8 @@ namespace Diten.InventoryService.Tests.CycleCounting;
 /// Schema 2020-12 in the test project (the MOD-0178 <c>WmsDraftContract</c> pattern; the draft file itself is not changed by tests). Derived member
 /// by member from draft §1 (unwrapped success body, the <c>Error</c> envelope, NO JSON null, decimal strings, uuid / date / date-time formats),
 /// §3.1 <c>CycleCount</c>, §3.2 <c>CycleCountLine</c> (with the DL-2 members), §3.3 <c>CycleCountEvent</c>, §3.4 pages and §3.5
-/// <c>BulkDeleteCycleCountsResult</c>; operations §4.1 (DL-1) and §4.2 (DL-2). Every
+/// <c>BulkDeleteCycleCountsResult</c>, DL-3 §3.6–§3.9 (decision, correction, integrity resolution, Variance Trace rows, settings); operations §4.1
+/// (DL-1), §4.2 (DL-2) and §4.3 (DL-3). Every
 /// object is CLOSED and every enum is the draft's list: a member or a value the draft does not name turns the call red.
 /// </summary>
 public static class CycleCountDraftContract
@@ -24,6 +25,9 @@ public static class CycleCountDraftContract
     public const string EventPage = "CycleCountEventPage";
     public const string BulkDeleteResult = "BulkDeleteCycleCountsResult";
     public const string Line = "CycleCountLine";
+    public const string Variance = "CountVariance";
+    public const string VariancePage = "CountVariancePage";
+    public const string Settings = "CycleCountSettings";
 
     private const string Defs = """
     {
@@ -91,8 +95,80 @@ public static class CycleCountDraftContract
           "movementsSinceSnapshot": { "$ref": "#/$defs/Quantity" }, "expectedAtCount": { "$ref": "#/$defs/Quantity" },
           "varianceQuantity": { "$ref": "#/$defs/Quantity" }, "movementDuringCount": { "type": "boolean" }, "snapshotDrift": { "type": "boolean" },
           "scanRef": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "recountOfLineId": { "$ref": "#/$defs/Uuid" }, "recountDepth": { "type": "integer", "minimum": 1 },
+          "decision": { "$ref": "#/$defs/CycleCountDecision" }, "adjustment": { "$ref": "#/$defs/CycleCountAdjustment" },
+          "integrityResolution": { "$ref": "#/$defs/CycleCountIntegrityResolution" },
           "status": { "enum": ["Open", "Counted", "NoVariance", "AwaitingApproval", "Approved", "Rejected", "Recounted"] },
           "version": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "CycleCountDecision": {
+        "type": "object", "additionalProperties": false, "required": ["kind", "source", "at"],
+        "properties": {
+          "kind": { "enum": ["Approved", "Rejected", "Recount"] }, "source": { "enum": ["User", "Tolerance"] }, "by": { "$ref": "#/$defs/Uuid" },
+          "at": { "$ref": "#/$defs/DateTime" }, "reason": { "$ref": "#/$defs/Text" }
+        }
+      },
+      "CycleCountAdjustment": {
+        "type": "object", "additionalProperties": false,
+        "required": ["movementType", "idempotencyKey", "status", "transactionDate", "postingDate", "attempts", "firstAttemptAt", "lastAttemptAt"],
+        "properties": {
+          "movementType": { "enum": ["COUNT_GAIN", "COUNT_LOSS"] }, "quantity": { "$ref": "#/$defs/Quantity" },
+          "idempotencyKey": { "type": "string", "pattern": "^cycle-count:[0-9a-f-]{36}$" },
+          "status": { "enum": ["Pending", "Posted", "Refused", "IntegrityError"] }, "transactionId": { "$ref": "#/$defs/Uuid" },
+          "transactionNumber": { "$ref": "#/$defs/Text" }, "refusalCode": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+          "refusalDetails": { "type": "object" }, "refusalStatus": { "type": "integer", "minimum": 400, "maximum": 499 },
+          "integrityReason": { "enum": ["KeyReused", "HolderReversed"] }, "holderTransactionId": { "$ref": "#/$defs/Uuid" },
+          "transactionDate": { "$ref": "#/$defs/DateTime" }, "postingDate": { "$ref": "#/$defs/DateTime" }, "attempts": { "type": "integer", "minimum": 1 },
+          "firstAttemptAt": { "$ref": "#/$defs/DateTime" }, "lastAttemptAt": { "$ref": "#/$defs/DateTime" }
+        }
+      },
+      "CycleCountIntegrityResolution": {
+        "type": "object", "additionalProperties": false, "required": ["kind", "by", "at", "reason"],
+        "properties": {
+          "kind": { "enum": ["AcceptHolder", "Reject"] }, "by": { "$ref": "#/$defs/Uuid" }, "at": { "$ref": "#/$defs/DateTime" },
+          "reason": { "$ref": "#/$defs/Text" }, "holderTransactionId": { "$ref": "#/$defs/Uuid" }
+        }
+      },
+      "CountManualMovement": {
+        "type": "object", "additionalProperties": false,
+        "required": ["transactionId", "transactionNumber", "movementType", "item", "quantity", "uomId", "sourceModule", "sourceType", "createdBy", "createdAt",
+                     "transactionDate", "postingDate", "sourceMismatch"],
+        "properties": {
+          "transactionId": { "$ref": "#/$defs/Uuid" }, "transactionNumber": { "$ref": "#/$defs/Text" }, "movementType": { "enum": ["COUNT_GAIN", "COUNT_LOSS"] },
+          "warehouseId": { "$ref": "#/$defs/Uuid" }, "locationId": { "$ref": "#/$defs/Uuid" },
+          "item": {
+            "type": "object", "additionalProperties": false, "required": ["itemId", "skuId", "skuLevel"],
+            "properties": { "itemId": { "$ref": "#/$defs/Uuid" }, "skuId": { "$ref": "#/$defs/Uuid" }, "skuLevel": { "$ref": "#/$defs/SkuLevel" } }
+          },
+          "lotId": { "$ref": "#/$defs/Text" }, "stockStatus": { "$ref": "#/$defs/Text" }, "quantity": { "$ref": "#/$defs/Quantity" },
+          "uomId": { "$ref": "#/$defs/Text" }, "sourceModule": { "$ref": "#/$defs/Text" }, "sourceType": { "$ref": "#/$defs/Text" },
+          "sourceDocumentId": { "$ref": "#/$defs/Text" }, "sourceLineId": { "$ref": "#/$defs/Text" }, "createdBy": { "$ref": "#/$defs/Uuid" },
+          "createdAt": { "$ref": "#/$defs/DateTime" }, "transactionDate": { "$ref": "#/$defs/DateTime" }, "postingDate": { "$ref": "#/$defs/DateTime" },
+          "sourceMismatch": { "type": "boolean" }
+        }
+      },
+      "CountVariance": {
+        "type": "object", "additionalProperties": false, "required": ["source", "contractVersion"],
+        "properties": {
+          "source": { "enum": ["Count", "Manual"] }, "countNumber": { "type": "string", "pattern": "^[A-Z]{2,5}-CNT-\\d{6,}$" },
+          "line": { "$ref": "#/$defs/CycleCountLine" }, "ledgerTransactionId": { "$ref": "#/$defs/Uuid" },
+          "ledgerTransactionNumber": { "$ref": "#/$defs/Text" }, "movement": { "$ref": "#/$defs/CountManualMovement" },
+          "contractVersion": { "$ref": "#/$defs/ContractVersion" }
+        },
+        "oneOf": [
+          { "properties": { "source": { "const": "Count" } }, "required": ["line"], "not": { "required": ["movement"] } },
+          { "properties": { "source": { "const": "Manual" } }, "required": ["movement"], "not": { "required": ["line"] } }
+        ]
+      },
+      "CycleCountSettings": {
+        "type": "object", "additionalProperties": false,
+        "required": ["toleranceAbsolute", "tolerancePercent", "maxRecounts", "maxLinesPerCount", "isDefault", "version", "contractVersion"],
+        "properties": {
+          "toleranceAbsolute": { "$ref": "#/$defs/Quantity" }, "tolerancePercent": { "$ref": "#/$defs/Quantity" },
+          "maxRecounts": { "type": "integer", "minimum": 0, "maximum": 10 }, "maxLinesPerCount": { "type": "integer", "minimum": 1, "maximum": 5000 },
+          "isDefault": { "type": "boolean" }, "updatedBy": { "$ref": "#/$defs/Uuid" }, "updatedAt": { "$ref": "#/$defs/DateTime" },
+          "version": { "type": "integer", "minimum": 0 }, "contractVersion": { "$ref": "#/$defs/ContractVersion" }
         }
       },
       "CycleCountEvent": {
@@ -134,6 +210,7 @@ public static class CycleCountDraftContract
         defs[CountPage] = Page(Count);
         defs[LinePage] = Page("CycleCountLine");
         defs[EventPage] = Page("CycleCountEvent");
+        defs[VariancePage] = Page(Variance);
         return defs;
     });
 
@@ -193,7 +270,7 @@ public static class CycleCountDraftContract
     private static Operation Op(string method, string template, string success)
         => new(method, template, new Regex("^/api/warehouse/" + Regex.Escape(template).Replace("\\{id}", "[^/]+") + "/?$", RegexOptions.Compiled), success);
 
-    /// <summary>Draft §4.1 + §4.2 — the DL-1 and DL-2 operations (literal segments first so <c>{id}</c> never shadows them).</summary>
+    /// <summary>Draft §4.1 + §4.2 + §4.3 — the DL-1, DL-2 and DL-3 operations (literal segments first so <c>{id}</c> never shadows them).</summary>
     internal static readonly Operation[] Operations =
     [
         Op("GET", "cycle-counts", CountPage),
@@ -207,7 +284,16 @@ public static class CycleCountDraftContract
         Op("GET", "cycle-counts/{id}/events", EventPage),
         Op("POST", "cycle-counts/{id}/lines", Line),
         Op("POST", "cycle-counts/{id}/lines/{id}/count", Line),
-        Op("POST", "cycle-counts/{id}/submit", Count)
+        Op("POST", "cycle-counts/{id}/submit", Count),
+        Op("POST", "cycle-counts/{id}/recount", Count),
+        Op("GET", "count-variances", VariancePage),
+        Op("GET", "count-variances/{id}", Variance),
+        Op("POST", "count-variances/{id}/approve", Line),
+        Op("POST", "count-variances/{id}/reject", Line),
+        Op("POST", "count-variances/{id}/retry", Line),
+        Op("POST", "count-variances/{id}/resolve-integrity", Line),
+        Op("GET", "count-settings", Settings),
+        Op("PUT", "count-settings", Settings)
     ];
 }
 

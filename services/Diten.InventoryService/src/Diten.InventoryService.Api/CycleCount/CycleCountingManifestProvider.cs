@@ -9,7 +9,8 @@ namespace Diten.InventoryService.Api.CycleCounting;
 /// source module, <c>CycleCountCentralAudit.Module</c>), SortOrder 181, namespace <c>cycle-count.*</c> ONLY.
 /// <para><b>DL-1</b> has no page (the 0176 F1 / 0177 R1 / 0178 DL-1 "sayfasız ilk dilim" pattern): the enforced keys are <c>ApiPermissions</c>.
 /// The pages <c>CYCLECOUNTS</c>, <c>COUNTSHEET</c>, <c>COUNTVARIANCES</c> (DL-4) and <c>COUNTEVIDENCE</c> (DL-5) take their keys over with their
-/// screens; <c>cycle-count.settings.*</c> stay API permissions (no settings screen, F-11).</para>
+/// screens; <c>cycle-count.settings.*</c> stay API permissions (no settings screen, F-11). DL-3 adds the variance and settings keys here too —
+/// until DL-4's pages take the counts / variances keys over, every key is an API permission.</para>
 /// </summary>
 public sealed class CycleCountingManifestProvider : IModuleManifestProvider
 {
@@ -36,6 +37,14 @@ public sealed class CycleCountingManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(CycleCountPermissions.CountsUpdate, "Edit and release a cycle count", "Tenant"),
                 new ModuleManifestPermission(CycleCountPermissions.CountsBulkDelete, "Delete draft cycle counts in bulk", "Tenant"),
                 new ModuleManifestPermission(CycleCountPermissions.CountsCancel, "Cancel a cycle count", "Tenant"),
-                new ModuleManifestPermission(CycleCountPermissions.CountsRecord, "Enter counted quantities, add found stock and submit a count", "Tenant")
+                new ModuleManifestPermission(CycleCountPermissions.CountsRecord, "Enter counted quantities, add found stock and submit a count", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesRead, "Read count variances", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesApprove, "Approve a count variance", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesReject, "Reject a count variance", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesRecount, "Request a recount", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesPost, "Retry a count correction", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.VariancesResolve, "Resolve a count correction integrity error", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.SettingsRead, "Read the count settings", "Tenant"),
+                new ModuleManifestPermission(CycleCountPermissions.SettingsConfigure, "Configure the count settings", "Tenant")
             ]);
 }

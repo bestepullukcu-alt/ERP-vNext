@@ -20,5 +20,8 @@ public static class CycleCountCollections
     /// <summary>The bin claims of the open counts (F-6; a partial unique index, never deleted).</summary>
     public const string BinClaims = "wms_count_bin_claims";
 
-    public static readonly IReadOnlyList<string> All = [Counts, Lines, Events, BinClaims];
+    /// <summary>DL-3 (pack §4.4, Q-3): one settings record per company — tolerance, recount limit, line limit. Not stock.</summary>
+    public const string Settings = "wms_count_settings";
+
+    public static readonly IReadOnlyList<string> All = [Counts, Lines, Events, BinClaims, Settings];
 }

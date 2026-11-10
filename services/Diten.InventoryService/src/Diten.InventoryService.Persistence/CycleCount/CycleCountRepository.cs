@@ -28,6 +28,7 @@ public sealed class CycleCountRepository : ICycleCountRepository
     private readonly IMongoCollection<CycleCountLine> _lines;
     private readonly IMongoCollection<CycleCountEvent> _events;
     private readonly IMongoCollection<CycleCountBinClaim> _claims;
+    private readonly IMongoCollection<CycleCountSettings> _settings;
     private readonly ICycleCountReleaseProbe _probe;
     private readonly ICycleCountSubmitProbe _submitProbe;
     private readonly Guid _tenantId;
@@ -42,6 +43,7 @@ public sealed class CycleCountRepository : ICycleCountRepository
         _lines = database.GetCollection<CycleCountLine>(CycleCountCollections.Lines);
         _events = database.GetCollection<CycleCountEvent>(CycleCountCollections.Events);
         _claims = database.GetCollection<CycleCountBinClaim>(CycleCountCollections.BinClaims);
+        _settings = database.GetCollection<CycleCountSettings>(CycleCountCollections.Settings);
         _probe = probe;
         _submitProbe = submitProbe;
         _tenantId = tenant.TenantId;
@@ -125,6 +127,110 @@ public sealed class CycleCountRepository : ICycleCountRepository
                               & Builders<CycleCountEvent>.Filter.Eq(x => x.RequestOp, requestOp)
                               & Builders<CycleCountEvent>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).ToListAsync(cancellationToken);
 
+    // ── DL-3 reads ────────────────────────────────────────────────────────────────────────────────────────
+
+    public async Task<CycleCountLine?> FindLineByIdAsync(Guid lineId, CancellationToken cancellationToken = default)
+        => await _lines.Find(Company<CycleCountLine>() & Builders<CycleCountLine>.Filter.Eq(x => x.Id, lineId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<CycleCountLine>> FindLinesAsync(IReadOnlyCollection<Guid> lineIds, CancellationToken cancellationToken = default)
+        => lineIds.Count == 0
+            ? []
+            : await _lines.Find(Company<CycleCountLine>() & Builders<CycleCountLine>.Filter.In(x => x.Id, lineIds)).ToListAsync(cancellationToken);
+
+    public async Task<CycleCountLineSet> VarianceLinesAsync(CountVarianceLineQuery query, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<CycleCountLine>.Filter;
+        var filter = Company<CycleCountLine>() & f.Ne(x => x.VarianceQuantity, null);
+        if (query.WarehouseId is { } warehouse) filter &= f.Eq(x => x.WarehouseId, warehouse);
+        if (query.Statuses.Count > 0) filter &= f.In(x => x.Status, query.Statuses);
+        if (query.From is { } from) filter &= f.Gte(x => x.CountedAt, from);
+        if (query.To is { } to) filter &= f.Lt(x => x.CountedAt, to);
+        if (query.SkuId is { } sku) filter &= f.Eq(x => x.SkuId, sku);
+        if (query.LotId is not null) filter &= f.Eq(x => x.LotId, query.LotId);
+
+        var sorted = _lines.Find(filter).Sort(Builders<CycleCountLine>.Sort.Descending(x => x.CountedAt).Ascending(x => x.Id));
+        if (query.All) return new CycleCountLineSet(await sorted.ToListAsync(cancellationToken), -1);
+        var total = await _lines.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        return new CycleCountLineSet(await sorted.Skip((query.Page - 1) * query.PageSize).Limit(query.PageSize).ToListAsync(cancellationToken), total);
+    }
+
+    public async Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default)
+        => await _settings.Find(Company<CycleCountSettings>()).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Guid>> WarehouseNodesAsync(Guid warehouseId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var lf = Builders<Location>.Filter;
+            return await _database.GetCollection<Location>(InventoryCollections.Locations).Find(lf.Eq(x => x.TenantId, _tenantId) & lf.Eq(x => x.LegalEntityId, _legalEntityId)
+                    & lf.AnyEq(x => x.AncestorIds, warehouseId)).Project(x => x.Id).ToListAsync(cancellationToken);
+        }
+        catch (MongoException ex)
+        {
+            throw new CycleCountInventoryUnavailableException("The warehouse's locations could not be read.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Pack §2.4 — the ledger's movement collection, READ only: the company's <c>COUNT_GAIN</c> into / <c>COUNT_LOSS</c> out of the bins, created in
+    /// the window. Each branch rides a bin index (<c>ix_tenant_le_tolocation</c> / <c>ix_tenant_le_fromlocation</c>); there is no movement-type
+    /// index and 0181 adds none (Q-21 = A).
+    /// </summary>
+    public async Task<IReadOnlyList<CycleCountLedgerMovementRow>> CountMovementsAsync(CycleCountManualRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request.BinIds.Count == 0) return [];
+        try
+        {
+            var binText = request.BinIds.Select(b => b.ToString("D")).ToList();
+            var tf = Builders<InventoryTransaction>.Filter;
+            var filter = tf.Eq(x => x.TenantId, _tenantId) & tf.Eq(x => x.LegalEntityId, _legalEntityId)
+                         & tf.Or(tf.In(x => x.ToLocationId, binText) & tf.Eq(x => x.MovementType, MovementType.CountGain),
+                             tf.In(x => x.FromLocationId, binText) & tf.Eq(x => x.MovementType, MovementType.CountLoss))
+                         & tf.Gte(x => x.CreatedAt, request.From) & tf.Lt(x => x.CreatedAt, request.To);
+            return (await _database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions).Find(filter).ToListAsync(cancellationToken))
+                .Select(MovementRow).ToList();
+        }
+        catch (MongoException ex)
+        {
+            throw new CycleCountInventoryUnavailableException("The ledger's count movements could not be read.", ex);
+        }
+    }
+
+    public async Task<IReadOnlyList<CycleCountLedgerMovementRow>> MovementsByKeysAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default)
+    {
+        if (keys.Count == 0) return [];
+        try
+        {
+            var tf = Builders<InventoryTransaction>.Filter;
+            return (await _database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions).Find(tf.Eq(x => x.TenantId, _tenantId)
+                    & tf.Eq(x => x.LegalEntityId, _legalEntityId) & tf.In(x => x.IdempotencyKey, keys)).ToListAsync(cancellationToken))
+                .Select(MovementRow).ToList();
+        }
+        catch (MongoException ex)
+        {
+            throw new CycleCountInventoryUnavailableException("The ledger's movements could not be read.", ex);
+        }
+    }
+
+    public async Task<CycleCountLedgerMovementRow?> LedgerMovementAsync(Guid transactionId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var tf = Builders<InventoryTransaction>.Filter;
+            var found = await _database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions).Find(tf.Eq(x => x.TenantId, _tenantId)
+                & tf.Eq(x => x.LegalEntityId, _legalEntityId) & tf.Eq(x => x.Id, transactionId)).FirstOrDefaultAsync(cancellationToken);
+            return found is null ? null : MovementRow(found);
+        }
+        catch (MongoException ex)
+        {
+            throw new CycleCountInventoryUnavailableException("The ledger movement could not be read.", ex);
+        }
+    }
+
+    private static CycleCountLedgerMovementRow MovementRow(InventoryTransaction t) => new(t.Id, t.TransactionNumber, t.MovementType, t.ItemId, t.SkuId, t.SkuLevel,
+        t.FromWarehouseId, t.FromLocationId, t.ToWarehouseId, t.ToLocationId, t.LotId, t.FromStockStatus, t.ToStockStatus, t.Quantity, t.UomId, t.BaseQuantity,
+        t.SourceModule, t.SourceType, t.SourceDocumentId, t.SourceLineId, t.IdempotencyKey, t.CreatedBy, t.CreatedAt, t.TransactionDate, t.PostingDate);
+
     /// <summary>
     /// The SKUs with AVAILABLE stock in the scope, read OUTSIDE any transaction — only to fetch their PRODUCT-MASTER serial flags before the
     /// release's snapshot transaction opens (no HTTP call while it is open). The snapshot itself is read again inside that transaction.
@@ -197,6 +303,7 @@ public sealed class CycleCountRepository : ICycleCountRepository
         if (message.Contains(CycleCountIndexConfiguration.NumberIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.Number;
         if (message.Contains(CycleCountIndexConfiguration.CreateKeyIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.CreateKey;
         if (message.Contains(CycleCountIndexConfiguration.LineKeyIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.Line;
+        if (message.Contains(CycleCountIndexConfiguration.SettingsIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.Settings;
         return message.Contains(CycleCountIndexConfiguration.EventSeqIndex, StringComparison.Ordinal)
                || message.Contains(CycleCountIndexConfiguration.EventKeyIndex, StringComparison.Ordinal)
             ? CycleCountUniqueIndex.Event
@@ -299,6 +406,36 @@ public sealed class CycleCountRepository : ICycleCountRepository
             if (claims.Count == 0) return Task.CompletedTask;
             foreach (var c in claims) owner.Stamp(c);
             return owner._claims.InsertManyAsync(session, claims, new InsertManyOptions { IsOrdered = true }, cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<Guid>> TransferBinClaimsAsync(Guid fromCountId, Guid toCountId, IReadOnlyCollection<Guid> binIds, DateTimeOffset at,
+            CancellationToken cancellationToken = default)
+        {
+            if (binIds.Count == 0) return [];
+            var cf = Builders<CycleCountBinClaim>.Filter;
+            var filter = owner.Company<CycleCountBinClaim>() & cf.Eq(x => x.CountId, fromCountId) & cf.Eq(x => x.Open, true) & cf.In(x => x.BinId, binIds);
+            var moved = await owner._claims.Find(session, filter).Project(x => x.BinId).ToListAsync(cancellationToken);
+            if (moved.Count == 0) return [];
+            var update = Builders<CycleCountBinClaim>.Update.Set(x => x.CountId, toCountId).Set(x => x.TransferredFromCountId, fromCountId)
+                .Set(x => x.UpdatedAt, at).Inc(x => x.Version, 1);
+            await owner._claims.UpdateManyAsync(session, filter, update, cancellationToken: cancellationToken);
+            return moved;
+        }
+
+        public Task InsertSettingsAsync(CycleCountSettings settings, CancellationToken cancellationToken = default)
+        {
+            owner.Stamp(settings);
+            return owner._settings.InsertOneAsync(session, settings, cancellationToken: cancellationToken);
+        }
+
+        public async Task<bool> ReplaceSettingsAsync(CycleCountSettings settings, int expectedVersion, CancellationToken cancellationToken = default)
+        {
+            owner.Stamp(settings);
+            var sf = Builders<CycleCountSettings>.Filter;
+            var result = await owner._settings.ReplaceOneAsync(session,
+                owner.Company<CycleCountSettings>() & sf.Eq(x => x.Id, settings.Id) & sf.Eq(x => x.Version, expectedVersion), settings,
+                cancellationToken: cancellationToken);
+            return result.MatchedCount == 1;
         }
 
         public async Task<long> ReleaseBinClaimsAsync(Guid countId, DateTimeOffset at, CancellationToken cancellationToken = default)

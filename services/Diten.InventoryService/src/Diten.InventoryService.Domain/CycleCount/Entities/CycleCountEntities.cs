@@ -48,6 +48,12 @@ public sealed class CycleCount : EntityBase
 
     public Guid? RecountOfId { get; set; }
 
+    /// <summary>
+    /// DL-3, a recount only (pack §4.1, r6 SB2/F-2): the keys the recount's snapshot saw with stock on its bins × SKUs that were NOT selected — a
+    /// found line on one of them is 422 <c>COUNT_LINE_OUT_OF_SCOPE</c> (its balance is in no expected quantity). Never changes after.
+    /// </summary>
+    public List<CycleCountKeyRef> RecountExcludedKeys { get; set; } = [];
+
     public Guid CreatedBy { get; set; }
 
     /// <summary>DL-2: who submitted the count and when (MOD-0181's clock) — server-written (pack §4.1).</summary>
@@ -70,6 +76,18 @@ public sealed class CycleCount : EntityBase
     public int EventSeq { get; set; }
 
     public Guid CorrelationId { get; set; }
+
+    /// <summary>A working copy (the stored instance stays as read for the compare-and-set); lists are copied.</summary>
+    public CycleCount Copy()
+    {
+        var copy = (CycleCount)MemberwiseClone();
+        copy.ScopeLocationIds = [.. ScopeLocationIds];
+        copy.ScopeSkuIds = [.. ScopeSkuIds];
+        copy.SnapshotTransactionIds = [.. SnapshotTransactionIds];
+        copy.ScopeBinIds = [.. ScopeBinIds];
+        copy.RecountExcludedKeys = RecountExcludedKeys.Select(k => k.Copy()).ToList();
+        return copy;
+    }
 }
 
 /// <summary>
@@ -132,6 +150,143 @@ public sealed class CycleCountLine : EntityBase
     public string? ScanRef { get; set; }
 
     public CycleCountLineStatus Status { get; set; } = CycleCountLineStatus.Open;
+
+    /// <summary>DL-3 (pack §4.2): the decision — approve (a user or the tolerance), reject or recount. Its label is a key, never stored text.</summary>
+    public CycleCountDecision? Decision { get; set; }
+
+    /// <summary>DL-3 (pack §4.2, §8.6): the ledger correction of an approved variance and its recovery state.</summary>
+    public CycleCountAdjustment? Adjustment { get; set; }
+
+    /// <summary>DL-3 (pack §4.2, F-12): the <c>resolve-integrity</c> decision of an <c>IntegrityError</c> adjustment.</summary>
+    public CycleCountIntegrityResolution? IntegrityResolution { get; set; }
+
+    /// <summary>A working copy (the stored instance stays as read for the compare-and-set); the embedded records are copied.</summary>
+    public CycleCountLine Copy()
+    {
+        var copy = (CycleCountLine)MemberwiseClone();
+        copy.Decision = Decision?.Copy();
+        copy.Adjustment = Adjustment?.Copy();
+        copy.IntegrityResolution = IntegrityResolution?.Copy();
+        return copy;
+    }
+}
+
+/// <summary>A line key as stored (pack §4.1 <c>RecountExcludedKeys</c>): bin, SKU, level, lot, stock status.</summary>
+public sealed class CycleCountKeyRef
+{
+    public Guid LocationId { get; set; }
+
+    public Guid SkuId { get; set; }
+
+    public SkuLevel SkuLevel { get; set; }
+
+    public string? LotId { get; set; }
+
+    public StockStatus StockStatus { get; set; } = StockStatus.Available;
+
+    public CycleCountKeyRef Copy() => (CycleCountKeyRef)MemberwiseClone();
+}
+
+/// <summary>
+/// Pack §4.2 <c>Decision</c>: <c>{ Kind, Source, By?, At, Reason }</c>. A tolerance approval has <c>Source = Tolerance</c> and no <c>By</c>; the
+/// screen and the evidence show the key <c>CycleCount.Decision.Source.{Source}</c>, never a stored label (r5, SB1/F-2).
+/// </summary>
+public sealed class CycleCountDecision
+{
+    public CycleCountDecisionKind Kind { get; set; }
+
+    public CycleCountDecisionSource Source { get; set; } = CycleCountDecisionSource.User;
+
+    public Guid? By { get; set; }
+
+    public DateTimeOffset At { get; set; }
+
+    public string? Reason { get; set; }
+
+    public CycleCountDecision Copy() => (CycleCountDecision)MemberwiseClone();
+}
+
+/// <summary>
+/// Pack §4.2 <c>Adjustment</c> / §8.6: the ONE ledger correction of an approved variance — <c>COUNT_GAIN</c> / <c>COUNT_LOSS</c> of |variance| in the
+/// base unit under the key <c>cycle-count:{lineId:D}</c>. <see cref="TransactionDate"/> (the line's <c>CountedAt</c>) and <see cref="PostingDate"/>
+/// (the first attempt's UTC day) are written on the first attempt and sent byte-identical on every attempt (the ledger fingerprint covers them).
+/// <see cref="FirstAttemptAt"/> is written in transaction 1, before the posting, once (the pack §2.4 match of a Pending line, r4 02/F-2).
+/// </summary>
+public sealed class CycleCountAdjustment
+{
+    public MovementType MovementType { get; set; }
+
+    public decimal Quantity { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
+
+    public CycleCountAdjustmentStatus Status { get; set; } = CycleCountAdjustmentStatus.Pending;
+
+    public Guid? TransactionId { get; set; }
+
+    public string? TransactionNumber { get; set; }
+
+    /// <summary>A ledger refusal's code, details and HTTP status, as the ledger answered them (pack §8.7, AC-27 / AC-28).</summary>
+    public string? RefusalCode { get; set; }
+
+    public string? RefusalDetailsJson { get; set; }
+
+    public int? RefusalStatus { get; set; }
+
+    /// <summary>An integrity error's reason (<c>KeyReused</c> / <c>HolderReversed</c>) and the movement that holds the key.</summary>
+    public string? IntegrityReason { get; set; }
+
+    public Guid? HolderTransactionId { get; set; }
+
+    public DateTimeOffset TransactionDate { get; set; }
+
+    public DateTimeOffset PostingDate { get; set; }
+
+    public int Attempts { get; set; }
+
+    public DateTimeOffset FirstAttemptAt { get; set; }
+
+    public DateTimeOffset LastAttemptAt { get; set; }
+
+    public CycleCountAdjustment Copy() => (CycleCountAdjustment)MemberwiseClone();
+}
+
+/// <summary>Pack §4.2 (F-12): <c>{ Kind: AcceptHolder | Reject, By, At, Reason, HolderTransactionId }</c>.</summary>
+public sealed class CycleCountIntegrityResolution
+{
+    public CycleCountIntegrityDecision Kind { get; set; }
+
+    public Guid By { get; set; }
+
+    public DateTimeOffset At { get; set; }
+
+    public string Reason { get; set; } = string.Empty;
+
+    public Guid? HolderTransactionId { get; set; }
+
+    public CycleCountIntegrityResolution Copy() => (CycleCountIntegrityResolution)MemberwiseClone();
+}
+
+/// <summary>
+/// Pack §4.4 (Q-3 / Q-11 / Q-24 = A): the company's count settings — one record per company; without one the defaults hold (0 / 0 / 2 / 2000:
+/// every variance needs a decision). No value threshold (Q-3, Q-19). Not stock.
+/// </summary>
+public sealed class CycleCountSettings : EntityBase
+{
+    public decimal ToleranceAbsolute { get; set; }
+
+    public decimal TolerancePercent { get; set; }
+
+    public int MaxRecounts { get; set; } = 2;
+
+    public int MaxLinesPerCount { get; set; } = 2000;
+
+    public Guid? UpdatedBy { get; set; }
+
+    /// <summary>The last timeline <c>Seq</c> of the settings' own trail (its rows carry the settings id as their <c>CountId</c>).</summary>
+    public int EventSeq { get; set; }
+
+    public CycleCountSettings Copy() => (CycleCountSettings)MemberwiseClone();
 }
 
 /// <summary>Insert-only count timeline (pack §4.3), written in the same transaction as the change it records; never deleted.</summary>

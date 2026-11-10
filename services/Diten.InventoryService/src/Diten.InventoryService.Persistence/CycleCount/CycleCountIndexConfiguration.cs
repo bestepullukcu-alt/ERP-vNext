@@ -10,8 +10,8 @@ namespace Diten.InventoryService.Persistence.CycleCounting;
 /// <summary>
 /// MOD-0181 indexes of DL-1 (pack §4.6 — tenant + company first). The unique ones are load-bearing: the number (tenant-wide), the create key
 /// (per creating user), the event seq and the key event (per count, actor, operation, key) and — F-6 — the partial unique OPEN bin claim (one
-/// open count per bin). The line key keeps one line per (bin, SKU, level, lot, status). The adjustment-key and adjustment-status indexes of
-/// §4.6 come with DL-3 (their field is DL-3's).
+/// open count per bin). The line key keeps one line per (bin, SKU, level, lot, status). DL-3: the adjustment key (one line per ledger key), the
+/// line status × adjustment status (Variance Trace, sweeper), the sweeper's cross-tenant pending scan and one settings record per company.
 /// </summary>
 public static class CycleCountIndexConfiguration
 {
@@ -21,8 +21,11 @@ public static class CycleCountIndexConfiguration
     public const string EventSeqIndex = "ux_wms_count_event_seq";
     public const string EventKeyIndex = "ux_wms_count_event_key";
     public const string BinClaimOpenIndex = "ux_wms_count_bin_claim_open";
+    public const string AdjustmentKeyIndex = "ux_wms_count_adjustment_key";
+    public const string SettingsIndex = "ux_wms_count_settings_company";
 
-    public static readonly IReadOnlyList<string> UniqueIndexes = [NumberIndex, CreateKeyIndex, LineKeyIndex, EventSeqIndex, EventKeyIndex, BinClaimOpenIndex];
+    public static readonly IReadOnlyList<string> UniqueIndexes =
+        [NumberIndex, CreateKeyIndex, LineKeyIndex, EventSeqIndex, EventKeyIndex, BinClaimOpenIndex, AdjustmentKeyIndex, SettingsIndex];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
 
@@ -46,8 +49,20 @@ public static class CycleCountIndexConfiguration
             new(lines.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CountId), new CreateIndexOptions { Name = "ix_wms_count_line_count" }),
             new(lines.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CountId).Ascending(x => x.LocationId).Ascending(x => x.SkuId)
                     .Ascending(x => x.SkuLevel).Ascending(x => x.LotId).Ascending(x => x.StockStatus),
-                new CreateIndexOptions { Name = LineKeyIndex, Unique = true })
+                new CreateIndexOptions { Name = LineKeyIndex, Unique = true }),
+            // DL-3 (pack §4.6): one line per ledger key; the Variance Trace / sweeper status pair; the sweeper's cross-tenant scan; the trace by bin and time
+            new(new BsonDocument { ["TenantId"] = 1, ["LegalEntityId"] = 1, ["Adjustment.IdempotencyKey"] = 1 },
+                new CreateIndexOptions<CycleCountLine> { Name = AdjustmentKeyIndex, Unique = true, PartialFilterExpression = IsString("Adjustment.IdempotencyKey") }),
+            new(new BsonDocument { ["TenantId"] = 1, ["LegalEntityId"] = 1, ["Status"] = 1, ["Adjustment.Status"] = 1 },
+                new CreateIndexOptions { Name = "ix_wms_count_line_status_adjustment" }),
+            new(new BsonDocument { ["Adjustment.Status"] = 1, ["Adjustment.LastAttemptAt"] = 1 }, new CreateIndexOptions { Name = "ix_wms_count_line_pending" }),
+            new(lines.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.WarehouseId).Descending(x => x.CountedAt),
+                new CreateIndexOptions { Name = "ix_wms_count_line_warehouse_counted" })
         ], ct);
+
+        await database.GetCollection<CycleCountSettings>(CycleCountCollections.Settings).Indexes.CreateOneAsync(
+            new CreateIndexModel<CycleCountSettings>(Builders<CycleCountSettings>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId),
+                new CreateIndexOptions { Name = SettingsIndex, Unique = true }), cancellationToken: ct);
 
         var events = Builders<CycleCountEvent>.IndexKeys;
         await database.GetCollection<CycleCountEvent>(CycleCountCollections.Events).Indexes.CreateManyAsync(

@@ -73,6 +73,10 @@ public sealed class AddCountLineHandler : CycleCountLineCommandHandler, IRequest
                 new Dictionary<string, object?> { ["lotId"] = lotText });
         if (behaviour.SerialControlled && !CycleCountRules.IsWhole(counted))
             return QuantityInvalid("A serial-controlled SKU is counted in whole units.");
+        // DL-3 (pack §8.5, r6 SB2/F-2): a recount's snapshot saw this key with stock but it was not selected — its balance is in no expected quantity
+        if (count.RecountExcludedKeys.Any(k => k.LocationId == input.LocationId && k.SkuId == input.SkuId && k.SkuLevel == level
+                                               && string.Equals(k.LotId, lotText, StringComparison.Ordinal) && k.StockStatus == StockStatus.Available))
+            return OutOfScope("The recount's snapshot holds this key but it was not selected for recount.", ("lotId", lotText ?? string.Empty));
 
         for (var attempt = 1; attempt <= CycleCountContract.MaxHeadAttempts; attempt++)
         {

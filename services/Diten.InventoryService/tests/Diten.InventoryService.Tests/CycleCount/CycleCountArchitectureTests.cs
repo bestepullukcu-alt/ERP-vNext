@@ -19,7 +19,7 @@ namespace Diten.InventoryService.Tests.CycleCounting;
 /// </summary>
 public sealed class CycleCountArchitectureTests
 {
-    private static readonly string[] CycleCountFolders = ["/CycleCount/", "/CycleCounts/", "/CycleCounting/"];
+    private static readonly string[] CycleCountFolders = ["/CycleCount/", "/CycleCounts/", "/CycleCounting/", "/CountVariances/"];
 
     private static IReadOnlyList<SourceScan.SourceFile> CycleCountSources()
         => SourceScan.Production().Where(f => CycleCountFolders.Any(d => ("/" + f.RelativePath).Contains(d, StringComparison.Ordinal))).ToList();
@@ -32,7 +32,7 @@ public sealed class CycleCountArchitectureTests
         var types = typeof(CycleCount).Assembly.GetTypes()
             .Where(t => t.Namespace?.StartsWith("Diten.InventoryService.Domain.CycleCounting", StringComparison.Ordinal) == true && typeof(EntityBase).IsAssignableFrom(t))
             .ToList();
-        Assert.Equal(["CycleCount", "CycleCountBinClaim", "CycleCountEvent", "CycleCountLine"], types.Select(t => t.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(["CycleCount", "CycleCountBinClaim", "CycleCountEvent", "CycleCountLine", "CycleCountSettings"], types.Select(t => t.Name).Order(StringComparer.Ordinal));
         var carriers = types.Where(t => t.GetProperties().Any(p => p.Name is "OnHand" or "Available" or "Reserved")).Select(t => t.Name).ToList();
         Assert.True(carriers.Count == 0, "a MOD-0181 type carries a stock total: " + string.Join(", ", carriers));
     }
@@ -85,23 +85,63 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal(declared.Order(StringComparer.Ordinal), enforced.Select(e => e.Key!).Distinct().Order(StringComparer.Ordinal));
     }
 
-    // ── AC-51 (DL-1 part) ────────────────────────────────────────────────────────────────────────────────
+    // ── AC-51 (closed with DL-3) ─────────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// AC-51: every 0181 controller is based at <c>api/warehouse</c> and opens GET / POST only — with ONE PUT, <c>CountVariancesController:count-settings</c>
+    /// (F-1 = A), and no DELETE. The route list is the contract draft's (§4.1–§4.3).
+    /// </summary>
     [Fact]
-    public void AC51_the_cycle_count_controller_opens_GET_and_POST_only_under_api_warehouse()
+    public void AC51_the_cycle_count_controllers_open_GET_and_POST_only_under_api_warehouse_with_the_one_settings_PUT()
     {
+        Assert.Equal(["CountVariancesController", "CycleCountsController"], Controllers().Select(c => c.Name).Order(StringComparer.Ordinal));
         Assert.All(Controllers(), c => Assert.Equal("api/warehouse", c.GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()?.Template));
-        var verbs = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>()).SelectMany(h => h.HttpMethods).Distinct().Order().ToList();
-        Assert.Equal(["GET", "POST"], verbs);
-        var routes = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().Select(h => $"{h.HttpMethods.Single()} {h.Template}")).Order(StringComparer.Ordinal);
+        var verbs = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().SelectMany(h => h.HttpMethods.Select(v => (Verb: v, Action: a, h.Template))))
+            .ToList();
+        Assert.DoesNotContain(verbs, v => v.Verb == "DELETE");
+        var put = Assert.Single(verbs, v => v.Verb == "PUT");
+        Assert.Equal("CountVariancesController:count-settings", $"{put.Action.DeclaringType!.Name}:{put.Template}");
+        Assert.Equal(["GET", "POST", "PUT"], verbs.Select(v => v.Verb).Distinct().Order().ToList());
+        var routes = verbs.Select(v => $"{v.Verb} {v.Template}").Order(StringComparer.Ordinal);
         Assert.Equal(
             [
+                "GET count-settings", "GET count-variances", "GET count-variances/{lineId}",
                 "GET cycle-counts", "GET cycle-counts/{countId}", "GET cycle-counts/{countId}/events", "GET cycle-counts/{countId}/lines",
+                "POST count-variances/{lineId}/approve", "POST count-variances/{lineId}/reject", "POST count-variances/{lineId}/resolve-integrity",
+                "POST count-variances/{lineId}/retry",
                 "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/lines",
-                "POST cycle-counts/{countId}/lines/{lineId}/count", "POST cycle-counts/{countId}/release", "POST cycle-counts/{countId}/submit",
-                "POST cycle-counts/{countId}/update"
+                "POST cycle-counts/{countId}/lines/{lineId}/count", "POST cycle-counts/{countId}/recount", "POST cycle-counts/{countId}/release",
+                "POST cycle-counts/{countId}/submit", "POST cycle-counts/{countId}/update",
+                "PUT count-settings"
             ],
             routes);
+    }
+
+    // ── AC-29 (the name-free second guard, F-7) ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// AC-29: in the MOD-0181 folders, the stock door port is USED only by the posting engine (its declaration, its one implementation and the DI
+    /// registration apart), and the engine holds exactly ONE <c>.PostAsync(</c> call — whatever the field is named (ExpiryQuarantineTypeExemptionTests
+    /// finds the call by the <c>_poster.PostAsync(</c> text; this guard does not).
+    /// </summary>
+    [Fact]
+    public void AC29_only_the_posting_engine_uses_the_stock_door_and_it_calls_it_once()
+    {
+        var users = CycleCountSources().Where(f => f.Body.Contains("ICycleCountMovementPoster", StringComparison.Ordinal))
+            .Select(f => f.RelativePath).Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(
+            [
+                "Diten.InventoryService.Api/CycleCount/CycleCountServiceCollectionExtensions.cs",
+                "Diten.InventoryService.Application/Features/CycleCount/Ports/ICycleCountMovementPoster.cs",
+                "Diten.InventoryService.Application/Features/CycleCount/Services/CycleCountMovementPoster.cs",
+                "Diten.InventoryService.Application/Features/CycleCount/Services/CycleCountPostingEngine.cs"
+            ],
+            users);
+        var engine = Assert.Single(CycleCountSources(), f => f.RelativePath.EndsWith("/CycleCountPostingEngine.cs", StringComparison.Ordinal));
+        Assert.Equal(1, Regex.Matches(engine.Body, @"\.PostAsync\(").Count);
+        // no other 0181 file reaches MOD-0173's internal posting service
+        Assert.Equal(["Diten.InventoryService.Application/Features/CycleCount/Services/CycleCountMovementPoster.cs"],
+            CycleCountSources().Where(f => f.Body.Contains("InternalMovementPostingService", StringComparison.Ordinal)).Select(f => f.RelativePath).ToList());
     }
 
     /// <summary>

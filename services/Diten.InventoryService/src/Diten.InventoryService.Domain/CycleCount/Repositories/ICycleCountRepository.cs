@@ -31,7 +31,10 @@ public enum CycleCountUniqueIndex
     Line,
 
     /// <summary>The partial unique index on an open bin claim (F-6): the bin is taken by another open count.</summary>
-    BinClaim
+    BinClaim,
+
+    /// <summary>DL-3: <c>(TenantId, LegalEntityId)</c> of <c>wms_count_settings</c> — one settings record per company.</summary>
+    Settings
 }
 
 public sealed class CycleCountDuplicateException(CycleCountUniqueIndex index, Exception? inner = null) : Exception($"Duplicate on {index}.", inner)
@@ -74,6 +77,21 @@ public sealed record CycleCountLedgerMovement(Guid TransactionId, DateTimeOffset
 /// </summary>
 public sealed record CycleCountLedgerRead(IReadOnlyList<CycleCountLedgerMovement> Movements, IReadOnlyDictionary<CycleCountLineKey, decimal> BalanceToday);
 
+/// <summary>DL-3 Variance Trace (pack §2.4, §8.13): the submitted lines of the caller's company, filtered; <c>All</c> = every match, no paging.</summary>
+public sealed record CountVarianceLineQuery(Guid? WarehouseId, IReadOnlyCollection<CycleCountLineStatus> Statuses, DateTimeOffset? From, DateTimeOffset? To,
+    Guid? SkuId, string? LotId, int Page, int PageSize, bool All = false);
+
+public sealed record CycleCountLineSet(IReadOnlyList<CycleCountLine> Items, long Total);
+
+/// <summary>A ledger movement as MOD-0181 reads it (pack §2.4: its source envelope as the caller declared it, its key, who and when) — a Find, never a write.</summary>
+public sealed record CycleCountLedgerMovementRow(Guid TransactionId, string TransactionNumber, MovementType MovementType, Guid ItemId, Guid SkuId, SkuLevel SkuLevel,
+    string? FromWarehouseId, string? FromLocationId, string? ToWarehouseId, string? ToLocationId, string? LotId, StockStatus? FromStockStatus,
+    StockStatus? ToStockStatus, decimal Quantity, string UomId, decimal BaseQuantity, string SourceModule, string SourceType, string? SourceDocumentId,
+    string? SourceLineId, string IdempotencyKey, Guid CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset TransactionDate, DateTimeOffset PostingDate);
+
+/// <summary>Pack §2.4: the <c>COUNT_*</c> movements on <see cref="BinIds"/> created in <c>[From, To)</c> — bin indexes (COUNT_GAIN → to, COUNT_LOSS → from).</summary>
+public sealed record CycleCountManualRequest(IReadOnlyCollection<Guid> BinIds, DateTimeOffset From, DateTimeOffset To);
+
 /// <summary>
 /// MOD-0181 counts, lines, timeline and bin claims (pack §3, §4). Every member is bound to the caller's resolved Tenant + LegalEntity — another
 /// company's or tenant's count does not exist here (404). Changes go through <see cref="InTransactionAsync"/>.
@@ -100,6 +118,32 @@ public interface ICycleCountRepository
     Task<CycleCountLine?> FindLineAsync(Guid countId, Guid lineId, CancellationToken cancellationToken = default);
 
     Task<CycleCountEvent?> FindKeyEventAsync(Guid countId, Guid actorUserId, string requestOp, string idempotencyKey, CancellationToken cancellationToken = default);
+
+    // ── DL-3 ──
+
+    /// <summary>A line of the caller's company by its id alone (the <c>/count-variances/{lineId}</c> family) — its count may be soft-deleted.</summary>
+    Task<CycleCountLine?> FindLineByIdAsync(Guid lineId, CancellationToken cancellationToken = default);
+
+    /// <summary>The lines of the caller's company among <paramref name="lineIds"/>.</summary>
+    Task<IReadOnlyList<CycleCountLine>> FindLinesAsync(IReadOnlyCollection<Guid> lineIds, CancellationToken cancellationToken = default);
+
+    /// <summary>Pack §8.13 Variance Trace (source <c>count</c>): the submitted lines (a variance is written) — newest entry first.</summary>
+    Task<CycleCountLineSet> VarianceLinesAsync(CountVarianceLineQuery query, CancellationToken cancellationToken = default);
+
+    /// <summary>Pack §4.4: the company's settings record, or null (the defaults hold).</summary>
+    Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Pack §2.4: every location node of the warehouse (its subtree, any status — a movement may name a node retired since).</summary>
+    Task<IReadOnlyList<Guid>> WarehouseNodesAsync(Guid warehouseId, CancellationToken cancellationToken = default);
+
+    /// <summary>Pack §2.4 (Q-21 = A): the <c>COUNT_*</c> movements on the bins in the window — the ledger's collection, <c>Find</c> only.</summary>
+    Task<IReadOnlyList<CycleCountLedgerMovementRow>> CountMovementsAsync(CycleCountManualRequest request, CancellationToken cancellationToken = default);
+
+    /// <summary>The ledger movements holding these idempotency keys (the unique key index) — <c>Find</c> only.</summary>
+    Task<IReadOnlyList<CycleCountLedgerMovementRow>> MovementsByKeysAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default);
+
+    /// <summary>One ledger movement of the caller's company by id (the resolve's "same correction" check reads its type) — <c>Find</c> only.</summary>
+    Task<CycleCountLedgerMovementRow?> LedgerMovementAsync(Guid transactionId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<CycleCountEvent>> FindBulkKeyEventsAsync(Guid actorUserId, string requestOp, string idempotencyKey, CancellationToken cancellationToken = default);
 
@@ -143,6 +187,18 @@ public interface ICycleCountWriteSession
 
     Task InsertBinClaimsAsync(IReadOnlyList<CycleCountBinClaim> claims, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// DL-3 recount (pack §4.7): moves the OPEN claims of <paramref name="fromCountId"/> on <paramref name="binIds"/> to <paramref name="toCountId"/>
+    /// (<c>TransferredFromCountId</c> written, still open) and returns the bins moved; a bin whose claim is not the source's is not moved.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> TransferBinClaimsAsync(Guid fromCountId, Guid toCountId, IReadOnlyCollection<Guid> binIds, DateTimeOffset at, CancellationToken cancellationToken = default);
+
+    /// <summary>DL-3: the company's settings record (the unique company index refuses a second one).</summary>
+    Task InsertSettingsAsync(CycleCountSettings settings, CancellationToken cancellationToken = default);
+
+    /// <summary>Replaces the settings if their stored version is still <paramref name="expectedVersion"/>; false = 0 records.</summary>
+    Task<bool> ReplaceSettingsAsync(CycleCountSettings settings, int expectedVersion, CancellationToken cancellationToken = default);
+
     /// <summary>Sets the count's own open claims to <c>Open = false</c> (soft; pack §4.7) and returns how many it released.</summary>
     Task<long> ReleaseBinClaimsAsync(Guid countId, DateTimeOffset at, CancellationToken cancellationToken = default);
 
@@ -152,4 +208,18 @@ public interface ICycleCountWriteSession
     /// (balance + id) or not at all. A read that cannot be done is <see cref="CycleCountInventoryUnavailableException"/>.
     /// </summary>
     Task<CycleCountScopeSnapshot> ReadScopeSnapshotAsync(CycleCountScopeRequest request, CancellationToken cancellationToken = default);
+}
+
+/// <summary>One approved line whose correction is still Pending (pack §8.6 sweeper) — with the scope and the actor its command runs as.</summary>
+public sealed record CycleCountPendingRow(Guid TenantId, Guid LegalEntityId, Guid LineId, Guid ActorUserId);
+
+/// <summary>
+/// The sweeper's scan (pack §8.6, MOD-0178 <c>IWarehousePendingScan</c> pattern): ACROSS tenants, read only, the approved lines whose correction is
+/// Pending and whose last attempt is older than the given age. It writes nothing and opens no transaction; each row's command runs in a fresh
+/// scope of its own tenant + company.
+/// </summary>
+public interface ICycleCountPendingScan
+{
+    Task<IReadOnlyList<CycleCountPendingRow>> PendingAsync(DateTimeOffset lastAttemptBefore, int limit, IReadOnlyCollection<Guid>? onlyTenants,
+        CancellationToken cancellationToken = default);
 }

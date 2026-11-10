@@ -72,8 +72,11 @@ public static class CycleCountRules
 
     public static bool IsUncounted(CycleCountLine line) => MustBeCounted(line) && line.CountedQuantity is null;
 
-    /// <summary>Pack §8.3: a line in its last state — the count closes when every line is (DL-2 reaches NoVariance; the decisions are DL-3's).</summary>
-    public static bool IsFinal(CycleCountLine line) => line.Status is CycleCountLineStatus.NoVariance or CycleCountLineStatus.Rejected or CycleCountLineStatus.Recounted;
+    /// <summary>Pack §8.3: a line in its last state — the count closes when every line is (DL-3: <see cref="CycleCountDecisionRules.IsFinal"/>).</summary>
+    public static bool IsFinal(CycleCountLine line) => CycleCountDecisionRules.IsFinal(line);
+
+    /// <summary>Pack §8.3: decisions are taken only on a Submitted count (a Closed / Cancelled count takes no write — AC-33).</summary>
+    public static bool TakesDecisions(CycleCount count) => count.Status == CycleCountStatus.Submitted;
 
     /// <summary>
     /// Pack §12 <c>CountedQuantity</c>: a decimal string ≥ 0 with at most 6 fraction digits (no sign, exponent or spaces); a serial-controlled

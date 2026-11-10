@@ -4,7 +4,10 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.CycleCounting.Ports;
+using Diten.InventoryService.Application.Features.Inventory;
+using Diten.InventoryService.Application.Features.Inventory.Commands;
 using Diten.InventoryService.Application.Features.CycleCounting.Services;
 using Diten.InventoryService.Application.Features.Warehouse.Ports;
 using Diten.InventoryService.Domain.CycleCounting.Entities;
@@ -14,6 +17,7 @@ using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Domain.Traceability.Enums;
 using Diten.InventoryService.Persistence.CycleCounting;
+using Diten.InventoryService.Persistence.Recall;
 using Diten.InventoryService.Persistence.Traceability;
 using Diten.InventoryService.Persistence.Warehouse;
 using Diten.InventoryService.Tests.TestInfrastructure;
@@ -57,6 +61,16 @@ public sealed class CycleCountApiFactory : WarehouseApiFactory
     /// <summary>DL-2 AC-20: tenants whose submit meets a driver error where the ledger is read (production code must answer 503, write nothing).</summary>
     public ConcurrentDictionary<Guid, bool> LedgerReadDown { get; } = new();
 
+    /// <summary>
+    /// DL-3 AC-25: tenant → the fault the NEXT call of MOD-0181's stock door meets (consumed once): a 5xx answer or a cancellation / exception before
+    /// the ledger is called (nothing committed), or the real posting followed by an exception (committed, answer lost). The pack's "sahte defter yalnız
+    /// 5xx / iptal enjeksiyonunda" — every other posting is the real ledger.
+    /// </summary>
+    public ConcurrentDictionary<Guid, CountPosterFault> PosterFault { get; } = new();
+
+    /// <summary>DL-3: tenant → calls of MOD-0181's stock door.</summary>
+    public ConcurrentDictionary<Guid, int> PosterCalls { get; } = new();
+
     public void TrackCountTenant(Guid tenant)
     {
         _countTenants.Add(tenant);
@@ -66,9 +80,14 @@ public sealed class CycleCountApiFactory : WarehouseApiFactory
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
+        // DL-3: the sweeper runs only when a test calls one tick (CycleCountReconciler.RunOnceAsync for its own tenant) — never on a timer here
+        builder.UseSetting("CycleCount:Reconciler:Enabled", "false");
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton(new CycleCountTime(CountClock));
+            services.AddScoped<CycleCountMovementPoster>();
+            services.AddScoped<ICycleCountMovementPoster>(sp => new SeamedCountPoster(sp.GetRequiredService<CycleCountMovementPoster>(),
+                sp.GetRequiredService<ITenantContext>(), this));
             services.AddScoped<ICycleCountReleaseProbe>(sp => new SeamedReleaseProbe(sp.GetRequiredService<ITenantContext>(), this));
             services.AddScoped<ICycleCountSubmitProbe>(sp => new SeamedSubmitProbe(sp.GetRequiredService<ITenantContext>(), this));
             services.AddScoped<WarehouseRecordCodeAllocator>();
@@ -85,7 +104,7 @@ public sealed class CycleCountApiFactory : WarehouseApiFactory
         if (disposing && !_countTenants.IsEmpty)
         {
             var tenants = new BsonArray(_countTenants.Select(t => t.ToString()));
-            foreach (var name in CycleCountCollections.All.Append(TraceCollections.Lots))
+            foreach (var name in CycleCountCollections.All.Append(TraceCollections.Lots).Append(RecallCollections.LotBlocks))
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }
@@ -105,6 +124,39 @@ public sealed class SeamedSubmitProbe(ITenantContext tenant, CycleCountApiFactor
 {
     public Task BeforeLedgerReadAsync(CancellationToken cancellationToken = default)
         => factory.LedgerReadDown.ContainsKey(tenant.TenantId) ? throw new MongoClientException("ledger unreadable (test seam)") : Task.CompletedTask;
+}
+
+public enum CountPosterFault
+{
+    Status503,
+    Status500,
+    Status502,
+    Status504,
+    Cancelled,
+    Exception,
+    CommitThenException
+}
+
+/// <summary>MOD-0181's REAL stock door (CycleCountMovementPoster → the ledger); only an injected fault on the next call can be staged.</summary>
+public sealed class SeamedCountPoster(CycleCountMovementPoster inner, ITenantContext tenant, CycleCountApiFactory factory) : ICycleCountMovementPoster
+{
+    public async Task<Response<MovementResponseDto>> PostAsync(PostMovementCommand request, Guid legalEntityId, Guid actorUserId, CancellationToken cancellationToken)
+    {
+        factory.PosterCalls.AddOrUpdate(tenant.TenantId, 1, (_, n) => n + 1);
+        if (!factory.PosterFault.TryRemove(tenant.TenantId, out var fault)) return await inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken);
+        switch (fault)
+        {
+            case CountPosterFault.Status503: return Response<MovementResponseDto>.Fail("INVENTORY_UNAVAILABLE", "test seam", 503, null);
+            case CountPosterFault.Status500: return Response<MovementResponseDto>.Fail("INTERNAL_ERROR", "test seam", 500, null);
+            case CountPosterFault.Status502: return Response<MovementResponseDto>.Fail("BAD_GATEWAY", "test seam", 502, null);
+            case CountPosterFault.Status504: return Response<MovementResponseDto>.Fail("GATEWAY_TIMEOUT", "test seam", 504, null);
+            case CountPosterFault.Cancelled: throw new OperationCanceledException("test seam");
+            case CountPosterFault.Exception: throw new InvalidOperationException("test seam");
+            default:
+                await inner.PostAsync(request, legalEntityId, actorUserId, cancellationToken);
+                throw new TimeoutException("test seam: the answer of a committed posting was lost");
+        }
+    }
 }
 
 public sealed class SeamedAllocator(WarehouseRecordCodeAllocator inner, ITenantContext tenant, CycleCountApiFactory factory) : IWarehouseRecordCodeAllocator
@@ -148,6 +200,28 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
     public Task<IReadOnlyList<(Guid ItemId, Guid SkuId, SkuLevel Level)>> ScopeSkusAsync(CycleCountScopeRequest request, CancellationToken cancellationToken = default)
         => inner.ScopeSkusAsync(request, cancellationToken);
 
+    public Task<CycleCountLine?> FindLineByIdAsync(Guid lineId, CancellationToken cancellationToken = default) => inner.FindLineByIdAsync(lineId, cancellationToken);
+
+    public Task<IReadOnlyList<CycleCountLine>> FindLinesAsync(IReadOnlyCollection<Guid> lineIds, CancellationToken cancellationToken = default)
+        => inner.FindLinesAsync(lineIds, cancellationToken);
+
+    public Task<CycleCountLineSet> VarianceLinesAsync(CountVarianceLineQuery query, CancellationToken cancellationToken = default)
+        => inner.VarianceLinesAsync(query, cancellationToken);
+
+    public Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default) => inner.FindSettingsAsync(cancellationToken);
+
+    public Task<IReadOnlyList<Guid>> WarehouseNodesAsync(Guid warehouseId, CancellationToken cancellationToken = default)
+        => inner.WarehouseNodesAsync(warehouseId, cancellationToken);
+
+    public Task<IReadOnlyList<CycleCountLedgerMovementRow>> CountMovementsAsync(CycleCountManualRequest request, CancellationToken cancellationToken = default)
+        => inner.CountMovementsAsync(request, cancellationToken);
+
+    public Task<IReadOnlyList<CycleCountLedgerMovementRow>> MovementsByKeysAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default)
+        => inner.MovementsByKeysAsync(keys, cancellationToken);
+
+    public Task<CycleCountLedgerMovementRow?> LedgerMovementAsync(Guid transactionId, CancellationToken cancellationToken = default)
+        => inner.LedgerMovementAsync(transactionId, cancellationToken);
+
     public async Task<CycleCountWriteOutcome> InTransactionAsync(Func<ICycleCountWriteSession, CancellationToken, Task<CycleCountWriteOutcome>> work,
         CancellationToken cancellationToken = default)
     {
@@ -182,6 +256,14 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
         public Task<long> ReleaseBinClaimsAsync(Guid countId, DateTimeOffset at, CancellationToken cancellationToken = default)
             => inner.ReleaseBinClaimsAsync(countId, at, cancellationToken);
 
+        public Task<IReadOnlyList<Guid>> TransferBinClaimsAsync(Guid fromCountId, Guid toCountId, IReadOnlyCollection<Guid> binIds, DateTimeOffset at,
+            CancellationToken cancellationToken = default) => inner.TransferBinClaimsAsync(fromCountId, toCountId, binIds, at, cancellationToken);
+
+        public Task InsertSettingsAsync(CycleCountSettings settings, CancellationToken cancellationToken = default) => inner.InsertSettingsAsync(settings, cancellationToken);
+
+        public Task<bool> ReplaceSettingsAsync(CycleCountSettings settings, int expectedVersion, CancellationToken cancellationToken = default)
+            => inner.ReplaceSettingsAsync(settings, expectedVersion, cancellationToken);
+
         public Task<CycleCountScopeSnapshot> ReadScopeSnapshotAsync(CycleCountScopeRequest request, CancellationToken cancellationToken = default)
             => inner.ReadScopeSnapshotAsync(request, cancellationToken);
     }
@@ -201,7 +283,18 @@ public sealed class CycleCountScenario
     public const string Cancel = "cycle-count.counts.cancel";
     public const string CountsRecord = "cycle-count.counts.record";
     public const string VariancesRead = "cycle-count.variances.read";
+    public const string VariancesApprove = "cycle-count.variances.approve";
+    public const string VariancesReject = "cycle-count.variances.reject";
+    public const string VariancesRecount = "cycle-count.variances.recount";
+    public const string VariancesPost = "cycle-count.variances.post";
+    public const string VariancesResolve = "cycle-count.variances.resolve";
+    public const string SettingsRead = "cycle-count.settings.read";
+    public const string SettingsConfigure = "cycle-count.settings.configure";
     public const string Reason = "Plan degisti - DEV-2026-181";
+
+    /// <summary>DL-3: every variance / settings key (the approver role — pack §14 "Onaylayıcı").</summary>
+    public static readonly string[] ApproverKeys =
+        [Read, VariancesRead, VariancesApprove, VariancesReject, VariancesRecount, VariancesPost, VariancesResolve, SettingsRead, SettingsConfigure];
 
     private readonly HttpClient _http;
 
@@ -235,6 +328,11 @@ public sealed class CycleCountScenario
 
     public string Token { get; }
 
+    /// <summary>DL-3: a second user of the company (never the counter or the submitter) holding every variance / settings key.</summary>
+    public Guid Approver { get; } = Guid.NewGuid();
+
+    public string ApproverToken => TokenFor(Approver, ApproverKeys);
+
     public string TokenFor(Guid user, params string[] permissions) => TestTokens.Mint(Tenant, LegalEntity, user, permissions);
 
     public static string NewKey() => "cnt-" + Guid.NewGuid().ToString("N");
@@ -242,11 +340,11 @@ public sealed class CycleCountScenario
     public static string Today => DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     /// <summary>A second SKU of this company (own item), known to the PRODUCT-MASTER stub.</summary>
-    public (Guid Item, Guid Sku) AddSku(bool lotControlled = false)
+    public (Guid Item, Guid Sku) AddSku(bool lotControlled = false, bool serialControlled = false)
     {
         var item = Guid.NewGuid();
         var sku = Guid.NewGuid();
-        Factory.Products.AddItem(item, lotControlled);
+        Factory.Products.AddItem(item, lotControlled, serialControlled);
         Factory.Products.AddSku(sku, SkuLevel.Lsku, item);
         Factory.StorageConditions[sku] = [];
         return (item, sku);
@@ -258,7 +356,8 @@ public sealed class CycleCountScenario
 
     // ── stock (REAL ledger API) ─────────────────────────────────────────────────────────────────────────
 
-    public async Task<JsonElement> ReceiveAsync(decimal quantity, Guid bin, (Guid Item, Guid Sku)? sku = null, string? status = null, string? lot = null)
+    public async Task<JsonElement> ReceiveAsync(decimal quantity, Guid bin, (Guid Item, Guid Sku)? sku = null, string? status = null, string? lot = null,
+        string[]? serials = null)
     {
         var body = Inventory.Receipt(Q(quantity), toStatus: status, location: bin.ToString("D"));
         if (sku is { } s)
@@ -268,6 +367,7 @@ public sealed class CycleCountScenario
         }
 
         if (lot is not null) body["lotId"] = lot;
+        if (serials is not null) body["serialIds"] = serials;
         return await Inventory.PostExpectingAsync(body, 201);
     }
 
@@ -411,6 +511,85 @@ public sealed class CycleCountScenario
         });
         return id.ToString("D");
     }
+
+    // ── DL-3: decisions, recovery, recount, settings, Variance Trace ────────────────────────────────────
+
+    /// <summary>
+    /// One counted and submitted line: <paramref name="stock"/> received into <paramref name="bin"/> (BinA), a count of that bin released, the line
+    /// counted at <paramref name="counted"/> and the count submitted — all by the scenario's user (the counter AND the submitter).
+    /// </summary>
+    public async Task<(string CountId, JsonElement Line)> SubmittedLineAsync(decimal stock, decimal counted, Guid? bin = null, (Guid Item, Guid Sku)? sku = null,
+        bool blind = false, string? lot = null, string[]? serials = null)
+    {
+        var at = bin ?? BinA;
+        if (stock > 0) await ReceiveAsync(stock, at, sku, lot: lot, serials: serials);
+        var released = await ReleasedAsync(await CreatedAsync(Form(scope: [at], blind: blind, skus: sku is { } s ? [s.Sku] : null)));
+        var countId = Id(released);
+        await CountedAsync(countId, Assert.Single(await LinesAsync(countId)), counted);
+        await SubmittedAsync(countId);
+        return (countId, Assert.Single(await LinesAsync(countId, ApproverToken)));
+    }
+
+    public Task<HttpResponseMessage> LineCommandAsync(string lineId, string verb, string ifMatch, Dictionary<string, object?>? body = null, string? key = null,
+        string? token = null)
+    {
+        var k = key ?? NewKey();
+        var payload = new Dictionary<string, object?>(body ?? []) { ["idempotencyKey"] = k };
+        return Send(HttpMethod.Post, $"/api/warehouse/count-variances/{lineId}/{verb}", payload, k, ifMatch, token ?? ApproverToken);
+    }
+
+    public Task<HttpResponseMessage> ApproveAsync(JsonElement line, string? key = null, string? token = null)
+        => LineCommandAsync(LineId(line), "approve", ETag(line), null, key, token);
+
+    public Task<HttpResponseMessage> RejectAsync(JsonElement line, string? reason = Reason, string? key = null, string? token = null)
+        => LineCommandAsync(LineId(line), "reject", ETag(line), reason is null ? null : new Dictionary<string, object?> { ["reason"] = reason }, key, token);
+
+    public Task<HttpResponseMessage> RetryAsync(JsonElement line, string? key = null, string? token = null)
+        => LineCommandAsync(LineId(line), "retry", ETag(line), null, key, token);
+
+    public Task<HttpResponseMessage> ResolveAsync(JsonElement line, string decision, string? reason = Reason, string? key = null, string? token = null)
+        => LineCommandAsync(LineId(line), "resolve-integrity", ETag(line),
+            new Dictionary<string, object?> { ["decision"] = decision, ["reason"] = reason }, key, token);
+
+    public Task<HttpResponseMessage> RecountAsync(string countId, string ifMatch, IEnumerable<string> lineIds, string? reason = Reason,
+        Dictionary<string, object?>? extra = null, string? key = null, string? token = null)
+    {
+        var k = key ?? NewKey();
+        var body = new Dictionary<string, object?>(extra ?? []) { ["idempotencyKey"] = k, ["lineIds"] = lineIds.ToArray() };
+        if (reason is not null) body["reason"] = reason;
+        return Send(HttpMethod.Post, $"/api/warehouse/cycle-counts/{countId}/recount", body, k, ifMatch, token ?? ApproverToken);
+    }
+
+    public Task<HttpResponseMessage> SettingsAsync(string? token = null) => GetAsync("/api/warehouse/count-settings", token ?? ApproverToken);
+
+    public Task<HttpResponseMessage> PutSettingsAsync(string ifMatch, string toleranceAbsolute = "0", string tolerancePercent = "0", int maxRecounts = 2,
+        int maxLinesPerCount = 2000, string? key = null, string? token = null)
+    {
+        var k = key ?? NewKey();
+        var body = new Dictionary<string, object?>
+        {
+            ["idempotencyKey"] = k, ["toleranceAbsolute"] = toleranceAbsolute, ["tolerancePercent"] = tolerancePercent, ["maxRecounts"] = maxRecounts,
+            ["maxLinesPerCount"] = maxLinesPerCount
+        };
+        return Send(HttpMethod.Put, "/api/warehouse/count-settings", body, k, ifMatch, token ?? ApproverToken);
+    }
+
+    /// <summary>Sets the company tolerance (absolute / percent) from the defaults or the current record.</summary>
+    public async Task<JsonElement> ToleranceAsync(string absolute, string percent, int maxRecounts = 2)
+    {
+        var current = await Expect(SettingsAsync(), 200);
+        return await Expect(PutSettingsAsync(ETag(current), absolute, percent, maxRecounts), 200);
+    }
+
+    public async Task<JsonElement> LineAsync(string countId, string lineId)
+        => (await LinesAsync(countId, ApproverToken)).Single(l => LineId(l) == lineId);
+
+    public async Task<JsonElement> VariancesAsync(string query, string? token = null)
+        => await Expect(GetAsync("/api/warehouse/count-variances" + query, token ?? ApproverToken), 200);
+
+    /// <summary>The stored ledger movements MOD-0181 posted for this company (by its source module and key prefix).</summary>
+    public List<BsonDocument> CountLedgerMovements()
+        => Factory.Collection("inventory_transactions").Find(new BsonDocument { ["TenantId"] = Tenant.ToString("D"), ["SourceModule"] = "MOD-0181" }).ToList();
 
     public static string LineId(JsonElement line) => line.GetProperty("lineId").GetString()!;
 

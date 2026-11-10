@@ -45,7 +45,10 @@ public sealed class CentralAuditDeclarationTests
         // Cancel CycleCount — 5 of 0181's 16; measured 101 at 81546c373.
         // 109 after MOD-0181 DL-2 (pack §24 DL-2 seam "CentralAuditDeclarationTests (sayı)"): RecordCountLine, AddCountLine, SubmitCycleCount —
         // 8 of 0181's 16; measured 106 at 081edf122.
-        Assert.Equal(109, WriteCommands.Length);
+        // 116 after MOD-0181 DL-3 (pack §24 DL-3 seam "CentralAuditDeclarationTests"): ApproveCountVariance, RejectCountVariance, RequestCountRecount,
+        // RetryCountAdjustment, ResolveCountAdjustmentIntegrity, ReconcilePendingCountAdjustment, UpdateCycleCountSettings — 15 of 0181's 16 (DL-5 adds
+        // the 16th); measured 109 at 65af0e638. The sweeper sends its command and opens no transaction: the sweeper list below is unchanged (F-18).
+        Assert.Equal(116, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

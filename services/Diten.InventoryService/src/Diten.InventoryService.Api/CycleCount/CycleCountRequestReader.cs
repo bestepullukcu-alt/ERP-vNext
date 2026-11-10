@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Diten.InventoryService.Application.Features.CountVariances;
 using Diten.InventoryService.Application.Features.CycleCounting.Services;
 using Diten.InventoryService.Application.Features.CycleCounts;
 
@@ -85,6 +86,28 @@ public static class CycleCountRequestReader
                 String("lotId"), QuantityText("countedQuantity"), String("scanRef"));
         }
 
+        /// <summary>A required JSON integer member.</summary>
+        public int Int(string name)
+        {
+            if (!root.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.Number || !value.TryGetInt32(out var number))
+                throw new FormatException($"{name} is required and must be an integer.");
+            return number;
+        }
+
+        /// <summary>
+        /// DL-3 requestCountRecount — <c>{ lineIds[], reason, assignedTo?, plannedDate?, note? }</c>; <c>blind</c>, <c>countType</c> and the scope are not
+        /// members (pack §8.5: derived or copied — the reader's unknown-member rule answers 400).
+        /// </summary>
+        public CycleCountRecountInput Recount()
+        {
+            if (!root.TryGetProperty("lineIds", out var ids) || ids.ValueKind != JsonValueKind.Array) throw new FormatException("lineIds is required and must be an array.");
+            return new CycleCountRecountInput(Uuids("lineIds"), String("reason"), OptionalUuid("assignedTo"), String("plannedDate"), String("note"));
+        }
+
+        /// <summary>DL-3 updateCycleCountSettings — <c>{ toleranceAbsolute, tolerancePercent, maxRecounts, maxLinesPerCount }</c> (decimals as strings).</summary>
+        public CycleCountSettingsInput Settings()
+            => new(QuantityText("toleranceAbsolute"), QuantityText("tolerancePercent"), Int("maxRecounts"), Int("maxLinesPerCount"));
+
         /// <summary>bulkDeleteCycleCounts — <c>items: [{ countId, version }]</c>.</summary>
         public IReadOnlyList<CycleCountBulkItemInput> BulkItems()
         {
@@ -166,4 +189,13 @@ public static class CycleCountRequestReader
 
     public static readonly HashSet<string> FoundLineMembers = new(StringComparer.Ordinal)
         { "idempotencyKey", "locationId", "item", "lotId", "countedQuantity", "scanRef" };
+
+    // ── DL-3 members (draft §4.3) ──
+    public static readonly HashSet<string> RecountMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "lineIds", "reason", "assignedTo", "plannedDate", "note" };
+
+    public static readonly HashSet<string> ResolveMembers = new(StringComparer.Ordinal) { "idempotencyKey", "decision", "reason" };
+
+    public static readonly HashSet<string> SettingsMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "toleranceAbsolute", "tolerancePercent", "maxRecounts", "maxLinesPerCount" };
 }

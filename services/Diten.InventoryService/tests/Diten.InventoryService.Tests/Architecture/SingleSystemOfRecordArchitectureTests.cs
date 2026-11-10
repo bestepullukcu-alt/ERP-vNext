@@ -84,7 +84,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5.OrderBy(x => x, StringComparer.Ordinal).ToList());
         // MOD-0181 (DL-1, XMC-001 decision Beste 2026-11-06) — the counts, their lines, the insert-only timeline and the open-bin claims, prefix
         // wms_count_ (pack §3, own CycleCountCollections — Q-22). None is stock: a line's expected quantity is count evidence written once.
-        Assert.Equal(["wms_count_bin_claims", "wms_count_counts", "wms_count_events", "wms_count_lines"],
+        // DL-3 (pack §3 / §4.4, XMC-001 decision Beste 2026-11-10 "mevcut 0181 satırına ekle"): + wms_count_settings, the company's count settings.
+        Assert.Equal(["wms_count_bin_claims", "wms_count_counts", "wms_count_events", "wms_count_lines", "wms_count_settings"],
             Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 

@@ -169,6 +169,11 @@ public sealed class LedgerImmutabilityArchitectureTests
         // RECALL-BUNDLE updateDrillPlan (PUT /api/recall/drill-plans/{planId} — a drill plan, master data, frozen since 1.0.0, served by WP-0177-R5)
         Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
         routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
+        // WMS-COUNT-BUNDLE updateCycleCountSettings (PUT /api/warehouse/count-settings — the company's count settings, master-data-like, never stock;
+        // MOD-0181 DL-3, pack §5 / AC-51, F-1 owner decision A, XMC-001 MVP-1 CT Beste): exactly this one is taken out; any other 0181 PUT / DELETE still
+        // turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "CountVariancesController:count-settings");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "CountVariancesController:count-settings");
         Assert.Equal(
             ["ExpiryController:policy", "QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
             routes.Where(r => r.Verb == "PUT").Select(r => r.Route).OrderBy(x => x, StringComparer.Ordinal).ToList());

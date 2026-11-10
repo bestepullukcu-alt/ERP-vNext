@@ -106,7 +106,7 @@ public sealed class CycleCountSubmitTests(CycleCountApiFactory factory) : IClass
         await Expect(s.AddLineAsync(Id(released), s.FoundLine(s.BinA, s.AddSku(), 1)), 201); // born counted
         // r6 (SB2/F-1): the bin-B line becomes a Recount line (DL-3 writes such lines; staged here) — still uncounted, still blocking
         await factory.Collection(CycleCountCollections.Lines).UpdateOneAsync(new BsonDocument("_id", LineId(LineOf(lines, s.BinB))),
-            new BsonDocument("$set", new BsonDocument("Origin", "Recount")));
+            new BsonDocument("$set", new BsonDocument { ["Origin"] = "Recount", ["RecountDepth"] = 1 })); // DL-3: a recount line is at depth ≥ 1
         Assert.Equal("COUNT_LINES_UNCOUNTED", await ErrorCode(s.SubmitAsync(Id(released), ETag(await s.CurrentAsync(Id(released)))), 422));
         Assert.Equal("Counting", (await s.CurrentAsync(Id(released))).GetProperty("status").GetString());
         Assert.DoesNotContain(s.Events(Id(released)), e => e["Kind"].AsString == "Submitted");

@@ -34,6 +34,27 @@ public static class CycleCountContract
     public const string OpRecordCycleCountLine = "recordCycleCountLine";
     public const string OpSubmitCycleCount = "submitCycleCount";
 
+    // DL-3 writes (draft §4.3 → binding with DL-3)
+    public const string OpApproveCountVariance = "approveCountVariance";
+    public const string OpRejectCountVariance = "rejectCountVariance";
+    public const string OpRequestCountRecount = "requestCountRecount";
+    public const string OpRetryCountAdjustment = "retryCountAdjustment";
+    public const string OpResolveCountAdjustmentIntegrity = "resolveCountAdjustmentIntegrity";
+    public const string OpUpdateCycleCountSettings = "updateCycleCountSettings";
+
+    /// <summary>Pack §8.5: a recount selects 1..200 lines.</summary>
+    public const int MaxRecountLines = 200;
+
+    /// <summary>Pack §2.4 / §12: a manual / all Variance Trace read spans at most 31 days.</summary>
+    public const int MaxManualWindowDays = 31;
+
+    // Variance Trace sources (pack §2.4)
+    public const string SourceCount = "count";
+    public const string SourceManual = "manual";
+    public const string SourceAll = "all";
+    public const string RowSourceCount = "Count";
+    public const string RowSourceManual = "Manual";
+
     /// <summary>The opaque scan reference's bound (MOD-0182 fills it; v1 stores it unchecked — Q-12 = A).</summary>
     public const int MaxScanRefLength = 200;
 
