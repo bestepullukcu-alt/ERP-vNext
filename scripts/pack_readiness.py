@@ -17,13 +17,17 @@ this script caught ~11% (9/85, hand-checked; mostly slice tables). A blind fixed
 Default rules (each one function, so a test can switch one off and show its own test turn red):
   R1 (ENGEL)  `## Teslim dilimleri` (DCP: `## 8.1 Delivery slices`) present once; one table; every row has the header's
               cells filled; DL ids unique; every section named in `kapsadığı bölümler` is a heading of the pack
-              (module-pack-standard §6 row 22, §16 CT-APR-02 / plan alignment; same reading as pack_approval.slices).
+              (module-pack-standard §6 row 22, §16 CT-APR-02 / plan alignment). The gate's own reader,
+              pack_approval.slice_ids (loaded read-only), decides too: None is ENGEL, with this tool's hints as the
+              diagnosis. Empty cells are read with the gate's NOT_GIVEN; a DCP's `Not` column may be empty.
   R2 (ÖNEMLİ) a decision id (D30, D45/2, D-3, K-2, KR-1, OD-4, O-11) is written as open in one clause and as decided in
               another clause of the pack — stale decision text. Both lines are reported.
   R3          `path:N` / `path:N-M` references: a full repo path exists at --base (ENGEL); the file has at least M
               lines (ÖNEMLİ); a backtick quote right after the reference shares a word with lines N-3..M+3 (ÖNEMLİ).
               A bare file name is read only if it resolves to exactly one path (planned code is not an alarm).
-              `path:N@sha`, `sha:path:N`, or a commit named on the line: read at that commit. A backticked document
+              `path:N@sha` / `sha:path:N` pin the commit; otherwise commits named on the line, the base, then commits
+              named elsewhere in the bullet or paragraph are tried. A named commit absent from the clone downgrades a
+              missing file to ÖNEMLİ and skips the line checks. A backticked document
               path (docs/, execution/, .antigravity/) without a line must exist (ÖNEMLİ), unless described as to-write.
   R5 (ÖNEMLİ) a port written right next to a service name (`MDM (5059)`, `5059 (MDM)`, `MdmService 5059`) equals that
               service's port in AGENTS.md §3 on --base; a `<Name>Service 50xx` absent from the table is reported.
@@ -40,6 +44,7 @@ revision / history / changelog / reconciliation.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import re
 import subprocess
@@ -85,7 +90,8 @@ class Repo:
 
     def _git(self, *args: str) -> bytes | None:
         try:
-            p = subprocess.run(["git", "-C", self.root, *args], capture_output=True, timeout=120)
+            p = subprocess.run(["git", "-C", self.root, *args], capture_output=True, timeout=120,
+                               env=dict(os.environ, GIT_NO_LAZY_FETCH="1"))   # never fetch a missing object
         except (OSError, subprocess.TimeoutExpired):
             return None
         return p.stdout if p.returncode == 0 else None
@@ -211,10 +217,85 @@ def cells(row: str) -> list[str] | None:
 
 # ------------------------------------------------------------------------------------------------------------------ R1
 SLICE_HEADING = re.compile(r"(?i)^#{2,3}\s+(\d+(\.\d+)*\.?\s*)?(teslim dilimleri|delivery slices)\s*$")
-NOT_GIVEN = re.compile(r"(?i)^\s*(-|—|–|tbd|todo|\.\.\.|…|yok|n/?a|\?+)?\s*$")
+NOT_GIVEN = re.compile(r"(?i)^\s*(-|—|tbd|todo|\.\.\.|…|yok|n/?a)?\s*$")   # = pack_approval.NOT_GIVEN (test pins it)
+DCP_FREE_COLUMNS = 2           # a DCP's `Not` column may be empty (ct_route.parse_slices reads Slice and Kapsam only)
+_GATE: list = []
+
+
+def gate_module():
+    """scripts/pack_approval.py, loaded read-only once: R1 asks the gate's own slice reader (slice_ids)."""
+    if not _GATE:
+        try:
+            here = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pack_approval.py")
+            spec = importlib.util.spec_from_file_location("pack_approval_for_readiness", here)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _GATE.append(mod)
+        except Exception:      # noqa: BLE001 — a missing or broken gate is reported, never a traceback
+            _GATE.append(None)
+    return _GATE[0]
+
+
+def _r1_hints(pack: Pack) -> list[str]:
+    """Why the gate's strict reader may refuse the table (only a diagnosis; the gate's answer decides)."""
+    hints = []
+    if pack.lines and pack.lines[-1].fence and not FENCE.match(pack.lines[-1].raw.strip()):
+        hints.append("kapanmayan kod çiti")
+    for l in pack.body():
+        if l.fence:
+            continue
+        if re.match(r"(?i)^#{3,}\s+(\d+(\.\d+)*\.?\s*)?(teslim dilimleri|delivery slices)\s*$", l.raw.strip()):
+            hints.append(f"satır {l.n}: başlık `##` değil")
+        if (not pack.is_dcp() and re.match(r"(?i)^##\s+\d+\.\d+", l.raw.strip())
+                and re.search(r"(?i)teslim dilimleri", l.raw)):
+            hints.append(f"satır {l.n}: alt numaralı başlık (`## 8.1 …`) okunmaz; `## Teslim dilimleri` ya da `## 22. …`")
+    heads = [l for l in pack.body() if not l.fence and SLICE_HEADING.match(l.raw.strip())]
+    if len(heads) == 1:
+        idx = pack.lines.index(heads[0])
+        body = []
+        for l in pack.lines[idx + 1:]:
+            if not l.fence and HEADING.match(l.raw):
+                break
+            body.append(l)
+        if any("<!--" in l.raw or "-->" in l.raw for l in body):
+            hints.append("bölümde HTML yorumu var")
+        first = next((l for l in body if l.raw.strip()), None)
+        if first is not None and not first.raw.strip().startswith("|"):
+            hints.append(f"satır {first.n}: tablodan önce metin var")
+        rows = [l for l in body if l.raw.strip().startswith("|")]
+        if len(rows) >= 2 and not re.fullmatch(r"\|(\s*:?-+:?\s*\|)+", rows[1].raw.strip().replace(" ", "")):
+            hints.append(f"satır {rows[1].n}: ayırıcı satırı (`|---|`) yok")
+        if any("\\|" in l.raw for l in rows):
+            hints.append("hücrede kaçışlı `\\|` var (kapı hücreleri `|` ile böler)")
+    return hints
 
 
 def r1_slices(pack: Pack, repo: Repo | None) -> list[Item]:
+    """R1 = this tool's own diagnosis + the gate's own reader: pack_approval.slice_ids returning None is ENGEL."""
+    out = _r1_diagnose(pack)
+    if any("tablosu yok" in i.message for i in out):
+        return out
+    gate = gate_module()
+    if gate is None:
+        return out + [Item("R1", 1, ONEMLI, "scripts/pack_approval.py yüklenemedi; kapının dilim okuması ölçülmedi",
+                           ["Teslim dilimleri"])]
+    try:
+        found = gate.slice_ids(pack.path, pack.text)
+    except Exception as e:     # noqa: BLE001 — pack_approval.Unreadable or any reader failure
+        found, why = None, f" ({type(e).__name__})"
+    else:
+        why = ""
+    if found is None:
+        heads = [l.n for l in pack.body() if not l.fence and SLICE_HEADING.match(l.raw.strip())]
+        hints = _r1_hints(pack)
+        detail = ("; olası neden: " + "; ".join(hints)) if hints else ""
+        out.append(Item("R1", heads[0] if heads else 1, ENGEL,
+                        f"pack_approval.slice_ids dilim tablosunu okuyamıyor{why} — onay kapısı bu paketi dilimsiz "
+                        f"sayar{detail}", ["Teslim dilimleri", "slices"]))
+    return out
+
+
+def _r1_diagnose(pack: Pack) -> list[Item]:
     out: list[Item] = []
     heads = [l for l in pack.body() if not l.fence and SLICE_HEADING.match(l.raw.strip())]
     if not heads:
@@ -265,7 +346,9 @@ def r1_slices(pack: Pack, repo: Repo | None) -> list[Item]:
         if len(c) != len(head):
             out.append(Item("R1", row.n, ENGEL, f"{dl}: {len(c)} hücre var, başlıkta {len(head)} sütun var", subj))
             continue
-        for name, val in zip(head, c):
+        for k, (name, val) in enumerate(zip(head, c)):
+            if pack.is_dcp() and k >= DCP_FREE_COLUMNS:
+                continue
             if NOT_GIVEN.match(val):
                 out.append(Item("R1", row.n, ENGEL, f"{dl}: `{name}` hücresi boş ya da yer tutucu", subj))
         if not pack.is_dcp() and len(c) > 2 and not NOT_GIVEN.match(c[2]):
@@ -353,8 +436,11 @@ def r3_references(pack: Pack, repo: Repo | None) -> list[Item]:
     if repo is None:
         return []
     out = []
+    blocks = _blocks(pack)
     for l in pack.body():
-        line_shas = [s for s in SHA.findall(l.raw) if re.search(r"[a-f]", s) and repo.commit(s)]
+        named = blocks.get(l.n, [])
+        line_shas = [s for s in named if repo.commit(s)]
+        absent = [s for s in named if not repo.commit(s)]     # a commit named here that this clone does not have
         for m in REF.finditer(l.raw):
             name, a, b = m.group(1), int(m.group(2)), int(m.group(3) or m.group(2))
             if "://" in l.raw[max(0, m.start() - 60):m.start()] and "/" in name:
@@ -362,7 +448,6 @@ def r3_references(pack: Pack, repo: Repo | None) -> list[Item]:
             ext = name.rsplit(".", 1)[-1].lower()
             if ext not in CODE_EXT:
                 continue
-            ref = line_shas[0] if line_shas else None
             rest = l.raw[m.end():]
             at = AT_SHA.match(rest)
             pre = re.search(r"([0-9a-f]{7,40}):$", l.raw[:m.start()])
@@ -370,17 +455,32 @@ def r3_references(pack: Pack, repo: Repo | None) -> list[Item]:
             if pinned:
                 if not repo.commit(pinned):
                     continue                               # read at a commit this clone does not have: not measurable
-                ref = pinned
+                candidates = [pinned]
                 if at:
                     rest = rest[at.end():]
+            else:                                          # commits on this line, the base, then the rest of the block
+                on_line = [h for h in line_shas if h in l.raw]
+                candidates = on_line + [None] + [h for h in line_shas if h not in on_line]
+            hits, ref = [], None
+            for c in candidates:
+                hits = repo.resolve(name, c)
+                if hits:
+                    ref = c
+                    break
             where = repo.base if ref is None else ref
-            hits = repo.resolve(name, ref)
             full = "/" in name and name.startswith(FULL_ROOTS)
             if not hits:
-                if full:
-                    out.append(Item("R3", l.n, ENGEL, f"`{name}` {where} sürümünde yok (atıf `{name}:{m.group(2)}`)",
+                tried = ", ".join(c[:12] if c else repo.base for c in candidates[:3])
+                if full and absent and not pinned:
+                    out.append(Item("R3", l.n, ONEMLI, f"`{name}` okunan sürümlerde yok ({tried}); maddede adı geçen "
+                                                       f"{', '.join(a[:12] for a in absent[:2])} bu klonda yok — "
+                                                       f"ölçülemedi", [name, os.path.basename(name)]))
+                elif full:
+                    out.append(Item("R3", l.n, ENGEL, f"`{name}` {tried} sürümünde yok (atıf `{name}:{m.group(2)}`)",
                                     [name, os.path.basename(name)]))
                 continue                                   # a bare name found nowhere may be planned code: no alarm
+            if absent and ref is None and not pinned:
+                continue                                   # the lines may be those of a commit this clone lacks
             if len(hits) > 1:
                 continue                                    # ambiguous short name: not measurable, no alarm
             path = hits[0]
@@ -412,7 +512,58 @@ def r3_references(pack: Pack, repo: Repo | None) -> list[Item]:
                     out.append(Item("R3", l.n, ONEMLI, f"`{path}:{a}` çevresinde (±3 satır) alıntı yok: "
                                                        f"`{quote[:60]}` ({where})",
                                     [name, os.path.basename(name), path]))
-        out.extend(_plain_paths(l, repo, line_shas[0] if line_shas else None))
+        if not absent:
+            out.extend(_plain_paths(l, repo, line_shas[0] if line_shas else None))
+    return out
+
+
+BULLET = re.compile(r"^(\s*)(?:[-*+]|\d+[.)])\s")
+
+
+def _commit_like(s: str) -> bool:
+    return bool(re.search(r"[a-f]", s) and re.search(r"\d", s))
+
+
+def _blocks(pack: Pack) -> dict[int, list[str]]:
+    """line -> commit-like hex ids named in its own bullet (with continuation lines) first, then in the rest of its
+    paragraph (contiguous non-blank lines under one heading). A table row is its own block. Measured: MOD-0057 names
+    the pin `R@e4c93c29…` in one bullet (line 788) and cites `TaxonomiesController.cs:596-598` in the next (792)."""
+    def ids_of(lines):
+        out_ids: list[str] = []
+        for g in lines:
+            for h in SHA.findall(g.raw):
+                if _commit_like(h) and h not in out_ids:
+                    out_ids.append(h)
+        return out_ids
+
+    paragraphs: list[list[Line]] = []
+    cur: list[Line] = []
+    for l in pack.body():
+        st = l.raw.strip()
+        if not st or HEADING.match(l.raw) or st.startswith("|"):
+            if cur:
+                paragraphs.append(cur)
+            cur = []
+            if st.startswith("|"):
+                paragraphs.append([l])
+            continue
+        cur.append(l)
+    if cur:
+        paragraphs.append(cur)
+    out: dict[int, list[str]] = {}
+    for para in paragraphs:
+        whole = ids_of(para)
+        bullets: list[list[Line]] = []
+        for l in para:
+            m = BULLET.match(l.raw)
+            if not bullets or (m and not m.group(1)):
+                bullets.append([l])
+            else:
+                bullets[-1].append(l)
+        for bl in bullets:
+            own = ids_of(bl)
+            for l in bl:
+                out[l.n] = own + [h for h in whole if h not in own]
     return out
 
 
@@ -651,7 +802,8 @@ Kurallar:
 
 
 def repo_root(start: str) -> str:
-    p = subprocess.run(["git", "-C", start, "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+    p = subprocess.run(["git", "-C", start, "rev-parse", "--show-toplevel"], capture_output=True, text=True,
+                       env=dict(os.environ, GIT_NO_LAZY_FETCH="1"))
     if p.returncode != 0:
         raise Unreadable("git deposu bulunamadı")
     return p.stdout.strip()

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -111,6 +112,43 @@ FAILING = {
     "R6": variant("- [ ] AC-1 (zorunlu)", "- Owner of the export format: TBD.\n- [ ] AC-1 (zorunlu)"),
 }
 RULE_FUNC = dict(pr.RULES)
+OLD_SEAM = "services/Diten.MdmService/src/Diten.MdmService.Domain/OldSeam.cs"
+
+SLICE_ROW = "| DL-1 | archive guard | Module Summary, Acceptance Criteria, Test Expectations |"
+SLICE_HEAD = "## Teslim dilimleri\n\n| dilim | ad | kapsadığı bölümler |\n|---|---|---|\n"
+# finding 1: tables the tool's own reading accepted but pack_approval.slice_ids refuses
+GATE_ONLY = {
+    "### heading": variant("## Teslim dilimleri\n", "### Teslim dilimleri\n"),
+    "## 8.1 heading": variant("## Teslim dilimleri\n", "## 8.1 Teslim dilimleri\n"),
+    "no separator row": variant("|---|---|---|\n" + SLICE_ROW, SLICE_ROW),
+    "prose before table": variant(SLICE_HEAD, "## Teslim dilimleri\n\nOne slice.\n\n| dilim | ad | kapsadığı bölümler |\n"
+                                              "|---|---|---|\n"),
+    "HTML comment": variant(SLICE_ROW, SLICE_ROW + "\n\n<!-- DL-2 later -->"),
+    "escaped pipe": variant("| DL-1 | archive guard |", "| DL-1 | archive \\| guard |"),
+    "unclosed fence": CLEAN + "\n```text\nan example that never closes\n",
+}
+# finding 4: each history mechanism alone
+BLOCKQUOTE_ONLY = variant("- Decision register:", "> K-1 açık karar in the first draft.\n\n- Decision register:")
+HEADING_ONLY = variant("## Implementation Notes", "## Revizyon geçmişi\n\n- K-1 açık karar in revision 1.\n\n"
+                                                  "## Implementation Notes")
+# finding 2: a pin named elsewhere in the paragraph
+PIN_IN_PARAGRAPH = "- Source read at `R@{old}` (branch, read only).\n- Read: `" + OLD_SEAM + ":3` `LegalEntityGuard`."
+PIN_ABSENT = ("- Source `R@0123456789abcdef0123456789abcdef01234567` (not in this clone).\n"
+              "- Read: `services/Diten.MdmService/src/Diten.MdmService.Domain/Gone.cs:3`.")
+DCP_PATH = "execution/portfolio/delivery-capability-packs/DCP-999-readiness-fixture.md"
+DCP = """---
+id: DCP-999
+status: draft
+---
+
+# DCP-999
+
+## 8.1 Delivery slices
+
+| Slice | Kapsam | Not |
+|---|---|---|
+| S-1 | MOD-9999 |  |
+"""
 
 
 class Fixture(unittest.TestCase):
@@ -121,11 +159,21 @@ class Fixture(unittest.TestCase):
         cls.put("AGENTS.md", AGENTS_MD)
         cls.put("services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs", SOURCE)
         cls.put(PACK_PATH, CLEAN)
+        cls.put(OLD_SEAM, SOURCE)                                # exists only in the first commit
+        cls.git("init", "-q")
+        cls.git("add", "AGENTS.md", "services", "execution")
+        cls.git("commit", "-q", "-m", "fixture: first")
+        cls.old = cls.git("rev-parse", "HEAD").strip()
+        cls.git("rm", "-q", OLD_SEAM)
+        cls.git("commit", "-q", "-m", "fixture: seam removed")
+        cls.repo = pr.Repo(cls.root, "HEAD")
+
+    @classmethod
+    def git(cls, *args: str) -> str:
         env = dict(os.environ, GIT_AUTHOR_NAME="fixture", GIT_AUTHOR_EMAIL="fixture@example.invalid",
                    GIT_COMMITTER_NAME="fixture", GIT_COMMITTER_EMAIL="fixture@example.invalid")
-        for args in (["init", "-q"], ["add", "AGENTS.md", "services", "execution"], ["commit", "-q", "-m", "fixture"]):
-            subprocess.run(["git", "-C", cls.root, *args], check=True, capture_output=True, env=env)
-        cls.repo = pr.Repo(cls.root, "HEAD")
+        return subprocess.run(["git", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", "-C", cls.root,
+                               *args], check=True, capture_output=True, text=True, env=env).stdout
 
     @classmethod
     def put(cls, rel: str, text: str):
@@ -247,6 +295,90 @@ class RuleSets(Fixture):
             self.assertIn(rule, text)
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
             pr.main([])                                          # neither a pack nor --checklist
+
+
+class ReviewFindings(Fixture):
+    """Blind review KOŞULLU findings 1-4, each with its own sabotage."""
+
+    def with_pin(self, template):
+        return variant("## Acceptance Criteria", template.format(old=self.old) + "\n\n## Acceptance Criteria")
+
+    def test_f1_gate_reader_refusal_is_engel(self):
+        for name, text in GATE_ONLY.items():
+            with self.subTest(case=name):
+                got = [i for i in self.assert_fires("R1", text) if "slice_ids" in i.message]
+                self.assertTrue(got and got[0].severity == pr.ENGEL, name)
+
+    def test_f1_sabotage_gate_reader_off(self):
+        stub = mock.Mock(slice_ids=lambda path, text: ["DL-1"])
+        with mock.patch.object(pr, "gate_module", lambda: stub):
+            for name, text in GATE_ONLY.items():
+                if name == "no separator row":
+                    continue                                     # R1's own reading also refuses it (no row left)
+                with self.subTest(case=name), self.assertRaises(AssertionError):
+                    self.assert_fires("R1", text)
+
+    def test_f2_pin_named_in_the_paragraph(self):
+        self.assertNotIn("R3", {i.code for i in self.items(self.with_pin(PIN_IN_PARAGRAPH))})
+        got = self.assert_fires("R3", self.with_pin(PIN_ABSENT))
+        self.assertEqual([i.severity for i in got], [pr.ONEMLI])  # named commit absent: downgraded, not ENGEL
+        self.assertIn("bu klonda yok", got[0].message)
+
+    def test_f2_sabotage_paragraph_pin_off(self):
+        with mock.patch.object(pr, "_blocks", lambda pack: {}):
+            got = self.assert_fires("R3", self.with_pin(PIN_IN_PARAGRAPH))
+            self.assertEqual(got[0].severity, pr.ENGEL)
+            self.assertEqual(self.assert_fires("R3", self.with_pin(PIN_ABSENT))[0].severity, pr.ENGEL)
+
+    def test_f3_empty_cells_read_like_the_gate(self):
+        gate = pr.gate_module()
+        self.assertEqual(pr.NOT_GIVEN.pattern, gate.NOT_GIVEN.pattern)
+        for cell in ("–", "?"):
+            with self.subTest(cell=cell):
+                text = variant("| DL-1 | archive guard |", f"| DL-1 | {cell} |")
+                self.assertNotIn("R1", {i.code for i in self.items(text)})
+        self.assertEqual(gate.slice_ids(DCP_PATH, DCP), ["S-1"])
+        self.assertEqual(pr.check(DCP_PATH, DCP, self.repo), [])  # the DCP `Not` column may be empty
+
+    def test_f3_sabotage_dcp_note_column_checked(self):
+        with mock.patch.object(pr, "DCP_FREE_COLUMNS", 3), self.assertRaises(AssertionError):
+            self.assertEqual([i for i in pr.check(DCP_PATH, DCP, self.repo) if i.code == "R1"], [])
+
+    def test_f4_history_block_quote_only(self):
+        self.assertNotIn("R2", {i.code for i in self.items(BLOCKQUOTE_ONLY)})
+        with mock.patch.object(pr, "BLOCKQUOTE_IS_HISTORY", False):
+            self.assert_fires("R2", BLOCKQUOTE_ONLY)
+
+    def test_f4_history_heading_only(self):
+        self.assertNotIn("R2", {i.code for i in self.items(HEADING_ONLY)})
+        with mock.patch.object(pr, "HISTORY_HEADING", re.compile(r"(?!)")):
+            self.assert_fires("R2", HEADING_ONLY)
+
+
+class GitEnvironment(Fixture):
+    def test_f5_fixture_commits_skip_hooks_and_signing(self):
+        hook = os.path.join(self.root, ".git", "hooks", "pre-commit")
+        os.makedirs(os.path.dirname(hook), exist_ok=True)
+        with open(hook, "w") as f:
+            f.write("#!/bin/sh\nexit 1\n")
+        os.chmod(hook, 0o755)
+        self.addCleanup(os.remove, hook)
+        self.git("commit", "-q", "--allow-empty", "-m", "fixture: hook must not run")   # check=True: a hook would fail
+        self.git("reset", "-q", "--soft", "HEAD~1")
+
+    def test_f6_git_never_lazy_fetches(self):
+        seen = []
+        real = subprocess.run
+
+        def spy(cmd, *a, **k):
+            seen.append(k.get("env") or {})
+            return real(cmd, *a, **k)
+
+        with mock.patch.object(pr.subprocess, "run", spy):
+            pr.Repo(self.root, "HEAD").lines("AGENTS.md")
+            pr.repo_root(self.root)
+        self.assertTrue(seen)
+        self.assertTrue(all(e.get("GIT_NO_LAZY_FETCH") == "1" for e in seen))
 
 
 class SabotageProof(Fixture):
