@@ -775,7 +775,9 @@ def exception_why(root: str, main: str, c: str, path: str, ref: str | None = Non
     pull request merge, merged by its approver (high=evet, not the author's person). Read from MAIN only — a branch
     cannot excuse itself. Else (False, why) — why is "" when there is no row.
     S-91R (second kind, reason starts with REORDER_REASON): instead of the loss conditions, lost_sha256 is
-    lost_digest([]) and reorder_only_why holds (a merge, nothing lost or added, each target's own order kept); every other
+    lost_digest([]), `c` is in main's history (Codex round 5: only the merges _reorder_excused may follow are excused —
+    an excused merge row_commit does not follow would credit a moved approval to the later merge) and reorder_only_why
+    holds (a merge, nothing lost or added, each target's own order kept); every other
     condition (the row on main, its merge, the people) is the same."""
     raw = read(root, main, EXCEPTIONS)
     if not raw:
@@ -792,6 +794,9 @@ def exception_why(root: str, main: str, c: str, path: str, ref: str | None = Non
     if r["reason"].startswith(REORDER_REASON):
         if r["lost_sha256"] != lost_digest([]):
             return False, no + "S-91R satırının lost_sha256'sı boş kaybın özeti değil"
+        if git(root, "merge-base", "--is-ancestor", c, main, ok_fail=True) is None:
+            return False, no + ("S-91R yalnız main'in geçmişindeki bir merge için geçerli — affedilen merge ile satır izinin "
+                                "sürüldüğü merge aynı olmalı (Codex 5. tur)")
         why = reorder_only_why(root, c, path)
         if why is not None:
             return False, no + "S-91R " + why
@@ -3042,6 +3047,25 @@ def self_test_reorder(cases: list) -> None:
     cases.append(("sabotage S-91R (h) (Codex round 4): a deletion hidden from the octopus merge base -> refused, (h)",
                   why is not None and why.startswith("(h)")))
     g("reset", "-q", "--hard")
+    # Codex round 5: a reorder merge that never reached main, listed on main — not excused (an excused merge that
+    # row_commit does not follow would credit a moved approval to the later merge, after a late review)
+    OA, OB = ar("OA"), ar("OB")
+    g("checkout", "-q", "-b", f"om-a-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, OA])
+    commit("off-main approval")
+    g("checkout", "-q", "-b", f"om-b-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, OB])
+    commit("off-main side")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", f"om-a-{n[0]}")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, [H_A, A0, OA, OB])
+    om = commit("off-main reorder")
+    excuse("\t".join([om, APPROVALS, lost_digest([]), "S-91R: test", "dev", "lead", "2026-11-10"]))
+    ok, why = exception_why(root, g("rev-parse", "main").strip(), om, APPROVALS)
+    cases.append(("sabotage S-91R (Codex round 5): a reorder merge off main's history, listed on main -> not excused",
+                  reorder_only_why(root, om, APPROVALS) is None and not ok and "main'in geçmişindeki" in why))
     # Codex S-91R F-3: exception-row refuses the people the checker would refuse
     for label, author, approver in (("an author not on the approver list", "ghost", "lead"),
                                     ("the author as approver", "lead", "lead")):
