@@ -572,7 +572,7 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     problems = []
     main = main or main_line(root)
     for c, why in _append_only(root, commit, path, main):
-        excepted, ewhy = exception_why(root, main, c, path)
+        excepted, ewhy = exception_why(root, main, c, path, commit)
         if excepted:
             continue
         if why is None:
@@ -640,6 +640,13 @@ REORDER_REASON = "S-91R:"      # S-91R: the second exception kind — a merge th
 
 
 def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
+    key = ("blame_map", root, c, path, _main_or_none(root))
+    if key not in _S91R_MEMO:
+        _S91R_MEMO[key] = _blame_map_uncached(root, c, path)
+    return dict(_S91R_MEMO[key])
+
+
+def _blame_map_uncached(root: str, c: str, path: str) -> dict[str, str]:
     """S-91R: each non-empty line of `path` at `c` -> the commit row_commit names for it (one whole-file blame; only
     rows git credits to an excused reordering merge are followed through it, as row_commit does)."""
     out, cur, res = git(root, "blame", "--porcelain", c, "--", path).decode("utf-8", "replace"), None, {}
@@ -669,6 +676,14 @@ def _ever_lines(root: str, c: str, path: str) -> frozenset:
 
 
 def reorder_only_why(root: str, c: str, path: str) -> str | None:
+    """S-91R: see _reorder_only_why_uncached; kept per (commit, path, main) — the answer depends on main's trusted set."""
+    key = ("reorder", root, c, path, _main_or_none(root))
+    if key not in _S91R_MEMO:
+        _S91R_MEMO[key] = _reorder_only_why_uncached(root, c, path)
+    return _S91R_MEMO[key]
+
+
+def _reorder_only_why_uncached(root: str, c: str, path: str) -> str | None:
     """S-91R: None when `c` is a merge whose `path` only REORDERED rows; else why not (Turkish, names the condition).
     (c) `c` has two or more parents. (a) no row lost (lost_rows empty) and no row added by the merge itself: every line
     of the result is a line of some parent. (b) the target order is kept: for every parent and every two rows of it of
@@ -753,7 +768,7 @@ def reorder_only_why(root: str, c: str, path: str) -> str | None:
     return None
 
 
-def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
+def exception_why(root: str, main: str, c: str, path: str, ref: str | None = None) -> tuple[bool, str]:
     """S-91: (True, "") when main's EXCEPTIONS file holds a row for exactly this commit and file, and: the rows `c`
     lost hash to its lost_sha256; nothing but that loss breaks append-only; none of the lost rows was ever in main's
     file (a row that never reached main never carried an approval there); the row reached main by another person's
@@ -790,6 +805,9 @@ def exception_why(root: str, main: str, c: str, path: str) -> tuple[bool, str]:
             return False, no + "satır düşmesinin yanında sıra ya da içerik de değişmiş"
         if _ever_on_main(root, main, path, lost):
             return False, no + "düşen satırlardan biri bir zaman main'deydi"
+        if ref is not None and set(lost) & set(_lines_at(root, ref, path)):
+            return False, no + ("düşen satırlardan biri değerlendirilen sürümde yeniden var — kayıp affı geri gelen "
+                                "satırı kapsamaz (S-91R inceleme r5)")
     added = row_commit(root, main, r["_n"], EXCEPTIONS)
     merge, why = main_merge(root, main, added)
     if merge is None:
@@ -957,6 +975,14 @@ def _ones(root: str, c: str, path: str, text: str) -> list[int]:
 
 
 _EXCUSED_MEMO: dict = {}      # (root, main, path) -> the validated S-91R merges (a set while it is being built)
+_S91R_MEMO: dict = {}         # review r5 (speed): (fn, root, commit, path, main) -> reorder_only_why / _blame_map answer
+
+
+def _main_or_none(root: str) -> str | None:
+    try:
+        return main_line(root)
+    except Unreadable:
+        return None
 
 
 def _reorder_excused(root: str, path: str, main: str | None = None) -> frozenset:
@@ -2820,6 +2846,18 @@ def self_test_reorder(cases: list) -> None:
     code, row = row_for(bad, reason="S-91: loss")
     cases.append(("S-91 exception-row: a pure loss -> prints the loss row with the lost rows' digest",
                   code == 0 and row.split("\t")[2] == lost_digest([B1])))
+    # review r5: the loss excused on main, then the lost row comes back on a branch — the S-91 row covers the loss,
+    # never the row's return (sabotage: drop the ref check in exception_why)
+    excuse(row)
+    on_main = g("rev-parse", "main").strip()
+    g("checkout", "-q", "-b", f"back-{n[0]}", on_main)
+    put(APPROVALS, [H_A, A0, S1, B1])
+    back = commit("the lost row comes back on a branch")
+    g("checkout", "-q", "main")
+    cases.append(("S-91 (review r5): an excused loss whose row is back in the judged version -> the exception no longer "
+                  "holds there", exception_why(root, on_main, bad, APPROVALS)[0]
+                  and not exception_why(root, on_main, bad, APPROVALS, back)[0]
+                  and any("yeniden var" in p for p in append_only_problems(root, back, APPROVALS, on_main))))
     # (6) a merge that adds a row of its own
     X9 = ar("X9")
     bad = reorder(APPROVALS, [B1], [S1], [H_A, A0, S1, B1, X9])
