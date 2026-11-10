@@ -644,13 +644,17 @@ def _blame_map(root: str, c: str, path: str) -> dict[str, str]:
     rows git credits to a merge are followed through it, as row_commit does)."""
     out, cur, res = git(root, "blame", "--porcelain", c, "--", path).decode("utf-8", "replace"), None, {}
     merges: dict[str, bool] = {}
+    copies: dict[str, int] = {}
+    for l in _lines_at(root, c, path):
+        copies[l] = copies.get(l, 0) + 1
     for l in out.split("\n"):
         if l.startswith("\t"):
             text = l[1:].rstrip(" \r")
             if text.strip():
                 if cur not in merges:
                     merges[cur] = len(git(root, "rev-list", "--parents", "-n", "1", cur).decode().split()) > 2
-                res[text] = _follow_moves(root, cur, text, path) if merges[cur] else cur
+                one = copies.get(text) == 1
+                res[text] = _follow_moves(root, cur, text, path) if merges[cur] and one else cur
         elif re.match(r"^[0-9a-f]{40} \d+ \d+", l):
             cur = l[:40]
     return res
@@ -965,7 +969,12 @@ def _follow_moves(root: str, blamed: str, text: str | None, path: str) -> str:
 
 @cached(1)
 def row_commit(root: str, commit: str, line_no: int, path: str = APPROVALS) -> str:
+    """The commit that added line `line_no` of `path` at `commit`. Codex S-91R F-1R: moves are followed only for a row
+    that is ONE copy in the judged file — with two copies git's per-copy answer stands (which copy a later merge added
+    is not knowable from one blame step)."""
     blamed, text = _blamed_line(root, commit, line_no, path)
+    if text is None or len(_ones(root, commit, path, text)) != 1:
+        return blamed
     return _follow_moves(root, blamed, text, path)
 
 
@@ -2759,6 +2768,38 @@ def self_test_reorder(cases: list) -> None:
                   "credited to the merge, the old copy to its own commit",
                   "istisna gerekmez" in row_for(bad)[1] and row_commit(root, bad, 5, APPROVALS) == bad
                   and row_commit(root, bad, 2, APPROVALS) == start))
+    # Codex S-91R F-1R: parents [A,B] (append-only) and [B,A] (an excused reorder); a later merge writes [A,B,A]. The
+    # second A is one of two copies in the judged file, so git's per-copy answer stands — never followed back to the
+    # first A's commit (sabotage: drop the one-copy condition in row_commit)
+    QA, QB = ar("QA"), ar("QB")
+    n[0] += 1
+    g("checkout", "-q", "main")
+    g("reset", "-q", "--hard", start)
+    g("checkout", "-q", "-b", f"q-ab-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, QA])
+    qa = commit("QA")
+    put(APPROVALS, [H_A, A0, QA, QB])
+    commit("QB")
+    g("checkout", "-q", "-b", f"q-ba-{n[0]}", start)
+    put(APPROVALS, [H_A, A0, S1])
+    commit("side")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", f"q-ab-{n[0]}")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, [H_A, A0, S1, QB, QA])
+    commit("reorder QA after QB")
+    g("checkout", "-q", f"q-ab-{n[0]}")
+    try:
+        g("merge", "-q", "--no-commit", "--no-ff", f"q-ba-{n[0]}")
+    except subprocess.CalledProcessError:
+        pass
+    put(APPROVALS, [H_A, A0, QA, QB, S1, QA])
+    y = commit("merge writes a second QA")
+    raw, _ = _blamed_line(root, y, 6, APPROVALS)
+    cases.append(("S-91R (Codex F-1R): a second copy of a row after an excused reorder -> git's own answer for that "
+                  "copy, never the first copy's commit", row_commit(root, y, 6, APPROVALS) == raw and raw != qa
+                  and row_commit(root, y, 3, APPROVALS) == qa))
     # Codex S-91R F-3: exception-row refuses the people the checker would refuse
     for label, author, approver in (("an author not on the approver list", "ghost", "lead"),
                                     ("the author as approver", "lead", "lead")):
