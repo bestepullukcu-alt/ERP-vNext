@@ -44,7 +44,7 @@ from dataclasses import dataclass
 
 WARNING = "warning"
 NOTICE = "notice"
-MAX_ANNOTATIONS = 100
+MAX_ANNOTATIONS = 10
 MAX_SUMMARY_ROWS = 300
 
 MESSAGES = {
@@ -74,32 +74,32 @@ MESSAGES = {
 FAMILIES: dict[str, list[re.Pattern[str]]] = {
     "private-key": [re.compile(r"-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY(?: BLOCK)?-----")],
     "github-token": [
-        re.compile(r"(?<![A-Za-z0-9_])(?P<v>gh[pousr]_[A-Za-z0-9]{36,})"),
-        re.compile(r"(?<![A-Za-z0-9_])(?P<v>github_pat_[A-Za-z0-9_]{22,})"),
+        re.compile(r"(?<![A-Za-z0-9_])(?P<v>gh[pousr]_[A-Za-z0-9]{36,255})"),
+        re.compile(r"(?<![A-Za-z0-9_])(?P<v>github_pat_[A-Za-z0-9_]{22,255})"),
     ],
     "aws-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>(?:AKIA|ASIA)[A-Z0-9]{16})(?![A-Za-z0-9])")],
-    "slack-token": [re.compile(r"(?<![A-Za-z0-9])(?P<v>xox[abprs]-[A-Za-z0-9-]{10,})")],
+    "slack-token": [re.compile(r"(?<![A-Za-z0-9])(?P<v>xox[abprs]-[A-Za-z0-9-]{10,255})")],
     "google-api-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>AIza[0-9A-Za-z_-]{35})")],
-    "stripe-live-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>sk_live_[0-9A-Za-z]{10,})")],
-    "anthropic-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>sk-ant-[A-Za-z0-9_-]{20,})")],
-    "jwt": [re.compile(r"(?<![A-Za-z0-9_-])(?P<v>eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})")],
+    "stripe-live-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>sk_live_[0-9A-Za-z]{10,255})")],
+    "anthropic-key": [re.compile(r"(?<![A-Za-z0-9])(?P<v>sk-ant-[A-Za-z0-9_-]{20,255})")],
+    "jwt": [re.compile(r"(?<![A-Za-z0-9_-])(?P<v>eyJ[A-Za-z0-9_-]{10,1024}\.[A-Za-z0-9_-]{10,2048}\.[A-Za-z0-9_-]{10,1024})")],
     # A connection string: `Password=` / `Pwd=` (no spaces) after a separator, on a line that has another `key=...;`.
-    "conn-password": [re.compile(r"(?i)(?:^|[;\"'\s])(?:password|pwd)=(?P<v>[^;\"'\s]+)")],
+    "conn-password": [re.compile(r"(?i)(?:^|[;\"'\s])(?:password|pwd)=(?P<v>[^;\"'\s]{1,256})")],
     "url-credentials": [
-        re.compile(r"(?i)(?<![A-Za-z0-9+.-])[a-z][a-z0-9+.-]{1,20}://[^\s:/@\"'<>]+:(?P<v>[^\s/@\"'<>]+)@")
+        re.compile(r"(?i)(?<![A-Za-z0-9+.-])[a-z][a-z0-9+.-]{1,20}://[^\s:/@\"'<>]{1,128}:(?P<v>[^\s/@\"'<>]{1,256})@")
     ],
     "secret-assignment": [
         re.compile(
-            r"(?i)(?<![A-Za-z0-9])[\w.-]*(?:secret|token|passw(?:or)?d|pwd|api[_-]?key)[\w.-]*[\"']?"
-            r"\s*(?::=|=>|:|=)\s*[@$]?(?P<q>[\"'])(?P<v>[^\"'\r\n]{8,}?)(?P=q)"
+            r"(?i)(?<![A-Za-z0-9])[\w.-]{0,64}(?:secret|token|passw(?:or)?d|pwd|api[_-]?key)[\w.-]{0,64}[\"']?"
+            r"[ \t]{0,8}(?::=|=>|:|=)[ \t]{0,8}[@$]?(?P<q>[\"'])(?P<v>[^\"'\r\n]{8,512}?)(?P=q)"
         )
     ],
     "home-path": [
-        re.compile(r"(?<![\w./-])/Users/(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]*)/"),
-        re.compile(r"(?<![\w./-])/home/(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]*)/"),
-        re.compile(r"(?<![\w./\\-])[A-Za-z]:(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]*)"),
+        re.compile(r"(?<![\w./-])/Users/(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]{0,63})/"),
+        re.compile(r"(?<![\w./-])/home/(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]{0,63})/"),
+        re.compile(r"(?<![\w./\\-])[A-Za-z]:(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?P<v>[A-Za-z0-9_][A-Za-z0-9._-]{0,63})"),
     ],
-    "email": [re.compile(r"(?<![\w.%+-])(?P<local>[A-Za-z0-9._%+-]+)@(?P<v>(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![\w-])")],
+    "email": [re.compile(r"(?<![\w.%+-])(?P<local>[A-Za-z0-9._%+-]{1,64})@(?P<v>(?:[A-Za-z0-9-]{1,63}\.){1,8}[A-Za-z]{2,24})(?![\w-])")],
     # Newly added files, by name.
     "env-file": [re.compile(r"(?i)(?:^|/)\.env(?:\.(?!(?:example|sample|template)$)[^/]+)?$")],
     "key-file": [re.compile(r"(?i)\.(?:pfx|p12|pem|key)$")],
@@ -107,6 +107,9 @@ FAMILIES: dict[str, list[re.Pattern[str]]] = {
     "trx-file": [re.compile(r"(?i)\.trx$")],
 }
 FILE_KINDS = ("env-file", "key-file", "log-file", "trx-file")
+# A connection-string line: some `key=value;` (bounded, so a long line without ";" stays linear).
+CONN_GUARD = re.compile(r"\w=[^;]{0,256};")
+MAX_LINE = 4096  # characters scanned per added line; the rest is cut and counted in the summary
 
 SECRET_KINDS = ("private-key", "github-token", "aws-key", "slack-token", "google-api-key", "stripe-live-key",
                 "anthropic-key", "jwt", "conn-password", "url-credentials", "secret-assignment")
@@ -158,7 +161,8 @@ class GitError(Exception):
 
 # ------------------------------------------------------------------------------------------------------- git input
 def git(repo: str, *args: str) -> bytes:
-    result = subprocess.run(["git", "-C", repo, "-c", "core.quotePath=false", *args],
+    result = subprocess.run(["git", "-C", repo, "-c", "core.quotePath=false", "-c", "core.attributesFile=" + os.devnull,
+                             *args],
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     if result.returncode != 0:
         raise GitError(f"git {args[0]} çıkış kodu {result.returncode}")
@@ -255,16 +259,26 @@ def parse_raw(data: bytes) -> list[str]:
             added.append((path, fields[3]))
         elif status == "D":
             deleted_blobs.add(fields[2])
-    return [path for path, blob in added if blob not in deleted_blobs]
+    return drop_moved_files(added, deleted_blobs)
 
 
 def collect(repo: str, base: str, head: str) -> tuple[list[tuple[str, int, str]], list[str]]:
     rng = f"{base}...{head}"
-    patch = git(repo, "diff", "--no-renames", "--no-color", "--no-ext-diff", "--no-textconv", "-U0", rng, "--")
+    # --text: a PR-added `.gitattributes` with -diff, or a NUL byte, must not turn added lines into "Binary files differ".
+    patch = git(repo, "diff", "--no-renames", "--text", "--no-color", "--no-ext-diff", "--no-textconv", "-U0", rng, "--")
     raw = git(repo, "diff", "--no-renames", "--raw", "-z", "--no-abbrev", rng, "--")
     added, removed = parse_patch(patch.decode("utf-8", "replace"))
-    added = [(p, n, t) for p, n, t in added if t.strip() == "" or t.strip() not in removed]
-    return added, parse_raw(raw)
+    return drop_moved_lines(added, removed), parse_raw(raw)
+
+
+def drop_moved_lines(added: list[tuple[str, int, str]], removed: set[str]) -> list[tuple[str, int, str]]:
+    """Move cut (lines): an added line whose exact text is also removed in the same diff already existed."""
+    return [(p, n, t) for p, n, t in added if t.strip() == "" or t.strip() not in removed]
+
+
+def drop_moved_files(added: list[tuple[str, str]], deleted_blobs: set[str]) -> list[str]:
+    """Move cut (files): an added file whose blob equals a deleted file's blob already existed."""
+    return [path for path, blob in added if blob not in deleted_blobs]
 
 
 # ----------------------------------------------------------------------------------------------------- the checks
@@ -311,7 +325,7 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
     specific = bool(found)
 
     if not specific:
-        if re.search(r"\w=[^;]*;", text):
+        if ";" in text and CONN_GUARD.search(text):
             for rx in FAMILIES["conn-password"]:
                 for m in rx.finditer(text):
                     if not allowed_value(m.group("v")):
@@ -349,8 +363,10 @@ def file_kind(path: str) -> str | None:
     return None
 
 
-def scan(added: list[tuple[str, int, str]], new_files: list[str]) -> list[Finding]:
+def scan(added: list[tuple[str, int, str]], new_files: list[str], stats: dict | None = None) -> list[Finding]:
+    """stats (optional) receives "truncated": the added lines longer than MAX_LINE (only their start is scanned)."""
     findings: list[Finding] = []
+    truncated = 0
     for path in new_files:
         if SKIP_PATH.search(path):
             continue
@@ -360,11 +376,28 @@ def scan(added: list[tuple[str, int, str]], new_files: list[str]) -> list[Findin
     for path, line_no, text in added:
         if SKIP_PATH.search(path):
             continue
+        if len(text) > MAX_LINE:
+            truncated += 1
+            text = text[:MAX_LINE]
         findings.extend(scan_line(path, line_no, text))
+    if stats is not None:
+        stats["truncated"] = truncated
     return findings
 
 
 # ---------------------------------------------------------------------------------------------------------- output
+CONTROL = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def clean_path(path: str) -> str:
+    return CONTROL.sub("", path)
+
+
+def md_path(path: str) -> str:
+    """A path as Markdown table text: control characters dropped, backslashes / backticks / pipes escaped."""
+    return clean_path(path).replace("\\", "\\\\").replace("`", "\\`").replace("|", "\\|")
+
+
 def esc_data(s: str) -> str:
     return s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
@@ -374,36 +407,36 @@ def esc_prop(s: str) -> str:
 
 
 def annotation(f: Finding) -> str:
-    where = f"file={esc_prop(f.path)}" + (f",line={f.line}" if f.line > 0 else "")
+    where = f"file={esc_prop(clean_path(f.path))}" + (f",line={f.line}" if f.line > 0 else "")
     msg = f"[{f.kind}] {MESSAGES[f.kind]} ({f.hint}). Değer gösterilmez; gerçekse silin, anahtarsa iptal edip yenileyin."
     return f"::{f.severity} {where},title=added-lines-scan::{esc_data(msg)}"
 
 
-def report(findings: list[Finding], out, summary_path: str | None) -> None:
+def report(findings: list[Finding], out, summary_path: str | None, truncated: int = 0) -> None:
     for f in findings[:MAX_ANNOTATIONS]:
         print(annotation(f), file=out)
     if len(findings) > MAX_ANNOTATIONS:
-        print(f"::notice title=added-lines-scan::{len(findings) - MAX_ANNOTATIONS} bulgu daha var; özet tabloya bakın.",
-              file=out)
+        print(f"::notice title=added-lines-scan::{len(findings) - MAX_ANNOTATIONS} bulgu daha var; tamamı iş adımı "
+              "özetinde (step summary).", file=out)
     warnings = sum(1 for f in findings if f.severity == WARNING)
     notices = len(findings) - warnings
     kinds = Counter(f.kind for f in findings)
     by_kind = ", ".join(f"{k}={n}" for k, n in sorted(kinds.items())) or "-"
-    print(f"added-lines-scan: {warnings} uyarı, {notices} not (yalnız eklenen satırlar; engellemez). Türler: {by_kind}",
-          file=out)
+    cut = f" {truncated} satır kısaltıldı (ilk {MAX_LINE} karakter tarandı)." if truncated else ""
+    print(f"added-lines-scan: {warnings} uyarı, {notices} not (yalnız eklenen satırlar; engellemez). Türler: {by_kind}."
+          + cut, file=out)
     if summary_path:
         try:
             with open(summary_path, "a", encoding="utf-8") as fh:
                 fh.write(f"### added-lines-scan\n\n{warnings} uyarı, {notices} not — yalnız eklenen satırlar, "
-                         "uyarı amaçlı; değerler gösterilmez.\n\n")
+                         "uyarı amaçlı; değerler gösterilmez." + cut + "\n\n")
                 if findings:
                     fh.write("| Tür | Sayı |\n|---|---|\n")
                     for k, n in sorted(kinds.items()):
                         fh.write(f"| {k} | {n} |\n")
                     fh.write("\n| Dosya | Satır | Tür | Düzey | İpucu |\n|---|---|---|---|---|\n")
                     for f in findings[:MAX_SUMMARY_ROWS]:
-                        path = f.path.replace("|", "\\|")
-                        fh.write(f"| `{path}` | {f.line or '-'} | {f.kind} | {f.severity} | {f.hint} |\n")
+                        fh.write(f"| {md_path(f.path)} | {f.line or '-'} | {f.kind} | {f.severity} | {f.hint} |\n")
                     if len(findings) > MAX_SUMMARY_ROWS:
                         fh.write(f"\n… {len(findings) - MAX_SUMMARY_ROWS} satır daha.\n")
         except OSError:
@@ -427,7 +460,9 @@ def main(argv: list[str] | None = None, out=None) -> int:
         if not args.base or not args.head or args.base.startswith("-") or args.head.startswith("-"):
             raise GitError("geçersiz --base / --head")
         added, new_files = collect(args.repo, args.base, args.head)
-        report(scan(added, new_files), out, args.summary)
+        stats: dict = {}
+        findings = scan(added, new_files, stats)
+        report(findings, out, args.summary, stats.get("truncated", 0))
     except GitError as exc:
         print(f"::warning title=added-lines-scan::Tarama çalışamadı ({exc}); bu PR denetlenmedi, engellenmez.", file=out)
     except Exception as exc:  # noqa: BLE001 - never block a pull request

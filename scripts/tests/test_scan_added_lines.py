@@ -161,6 +161,12 @@ class AddedLinesScanTests(unittest.TestCase):
             write(r, path, content)
         # an added line that itself starts with "++" must not be read as a file header
         write(r, "cases/plusplus.txt", "++ b/fake\n+++ b/also-fake\n" + GH + "\n")
+        # a PR-added `-diff` attribute and a NUL byte must not hide added lines (--text)
+        write(r, ".gitattributes", "*.dat -diff\n")
+        write(r, "cases/hidden.dat", GH + "\n")
+        write(r, "cases/nul.txt", b"x\x00y\n" + GH.encode() + b"\n")
+        # a line longer than MAX_LINE is cut and counted
+        write(r, "cases/long.txt", "a" * (scan.MAX_LINE + 10) + "\n")
         git(r, "add", "-A")
         git(r, "commit", "-q", "-m", "head")
         cls.head = git(r, "rev-parse", "HEAD")
@@ -231,13 +237,59 @@ class AddedLinesScanTests(unittest.TestCase):
         self.assertEqual([], [f for f in self.findings() if f.path.startswith(("new/", "old/"))])
 
     def test_sabotage_without_the_move_cut_the_moved_content_fires(self) -> None:
-        patch = git(self.root, "diff", "--no-renames", "-U0", f"{self.base}...{self.head}", "--")
-        added, _ = scan.parse_patch(patch)  # no removed-line filter
-        raw = subprocess.run(["git", "-C", self.root, "diff", "--no-renames", "--name-only", "--diff-filter=A",
-                              f"{self.base}...{self.head}"], stdout=subprocess.PIPE, text=True, check=True).stdout
-        moved = scan.scan(added, raw.split())
-        self.assertTrue([f for f in moved if f.path == "new/moved.cs"])
+        # the production cuts switched off: collect() then reports the moved file and its content
+        with mock.patch.object(scan, "drop_moved_lines", lambda added, removed: added), \
+                mock.patch.object(scan, "drop_moved_files", lambda added, deleted: [path for path, _ in added]):
+            added, new_files = scan.collect(self.root, self.base, self.head)
+        moved = scan.scan(added, new_files)
+        self.assertTrue([f for f in moved if f.path == "new/moved.cs" and f.kind == "secret-assignment"])
+        self.assertTrue([f for f in moved if f.path == "new/moved.cs" and f.kind == "aws-key"])
         self.assertTrue([f for f in moved if f.path == "new/moved.log" and f.kind == "log-file"])
+
+    # ------------------------------------------------------------------------------------- hidden lines (--text)
+    def test_a_diff_attribute_or_a_nul_byte_cannot_hide_added_lines(self) -> None:
+        got = {(f.path, f.line, f.kind) for f in self.findings()}
+        self.assertIn(("cases/hidden.dat", 1, "github-token"), got)
+        self.assertIn(("cases/nul.txt", 2, "github-token"), got)
+
+    def test_sabotage_without_text_the_lines_are_hidden(self) -> None:
+        real = scan.git
+
+        def no_text(repo, *args):
+            return real(repo, *[a for a in args if a != "--text"])
+
+        with mock.patch.object(scan, "git", no_text):
+            added, _ = scan.collect(self.root, self.base, self.head)
+        paths = {p for p, _, _ in added}
+        self.assertNotIn("cases/hidden.dat", paths)
+        self.assertNotIn("cases/nul.txt", paths)
+        self.assertIn("cases/gh.txt", paths)
+
+    # ---------------------------------------------------------------------------------------- long lines (ReDoS)
+    ADVERSARIAL = ["_", "a.", "a=", "a", "eyJ", "x@", "a:", "password", "/Users/a", "Password=;", "ghp_", "sk-ant-"]
+
+    def test_a_200_kb_adversarial_line_scans_in_under_a_second(self) -> None:
+        import time
+        for unit in self.ADVERSARIAL:
+            line = (unit * (200_000 // len(unit) + 1))[:200_000]
+            with self.subTest(unit=unit):
+                stats: dict = {}
+                start = time.perf_counter()
+                scan.scan([("f.cs", 1, line)], [], stats)
+                self.assertLess(time.perf_counter() - start, 1.0)
+                self.assertEqual(1, stats["truncated"])
+
+    def test_bounded_patterns_stay_fast_without_the_line_cap(self) -> None:
+        # the cap switched off: the bounded quantifiers alone keep a 20 KB line well under a second
+        # (unbounded, these took 8-15 s in the blind review)
+        import time
+        with mock.patch.object(scan, "MAX_LINE", 10 ** 9):
+            for unit in self.ADVERSARIAL:
+                line = (unit * (20_000 // len(unit) + 1))[:20_000]
+                with self.subTest(unit=unit):
+                    start = time.perf_counter()
+                    scan.scan([("f.cs", 1, line)], [])
+                    self.assertLess(time.perf_counter() - start, 1.0)
 
     # ---------------------------------------------------------------------------------------------- allow-list
     def test_allow_list_cases_do_not_fire(self) -> None:
@@ -269,11 +321,17 @@ class AddedLinesScanTests(unittest.TestCase):
         with open(summary, encoding="utf-8") as fh:
             text_summary = fh.read()
         self.assertEqual(0, code)
-        self.assertIn("::warning file=cases/gh.txt,line=1,title=added-lines-scan::[github-token]", text)
-        self.assertIn("::notice file=services/Svc/tests/FooTests.cs,line=1", text)
+        annotations = [ln for ln in text.splitlines() if ln.startswith(("::warning file=", "::notice file="))]
+        self.assertEqual(scan.MAX_ANNOTATIONS, len(annotations))
+        self.assertEqual(10, scan.MAX_ANNOTATIONS)
         self.assertIn("::warning file=.env,title=added-lines-scan::[env-file]", text)
+        self.assertIn("bulgu daha var; tamamı iş adımı özetinde (step summary).", text)
         self.assertIn("added-lines-scan:", text)
-        self.assertIn("uzunluk 13", text)
+        self.assertIn("1 satır kısaltıldı", text)
+        self.assertIn("1 satır kısaltıldı", text_summary)
+        self.assertIn("| cases/gh.txt | 1 | github-token | warning | uzunluk 40 |", text_summary)
+        self.assertIn("| services/Svc/tests/FooTests.cs | 1 | secret-assignment | notice |", text_summary)
+        self.assertIn("| cases/conn.json | 1 | conn-password | warning | uzunluk 13 |", text_summary)
         for value in SENTINELS:
             for chunk in {value, value[:8], value[-8:]}:
                 self.assertNotIn(chunk, text)
@@ -320,6 +378,25 @@ class AddedLinesScanTests(unittest.TestCase):
     def test_annotation_properties_are_escaped(self) -> None:
         line = scan.annotation(scan.Finding("a,b:c.txt", 3, "jwt", "warning", "uzunluk 9"))
         self.assertTrue(line.startswith("::warning file=a%2Cb%3Ac.txt,line=3,title=added-lines-scan::[jwt]"))
+
+    def test_summary_escapes_backticks_and_drops_control_characters(self) -> None:
+        fd, summary = tempfile.mkstemp(suffix=".md", dir=self.root)
+        os.close(fd)
+        out = io.StringIO()
+        bad = "a`b\x01c|d\x1b[31m.txt"
+        scan.report([scan.Finding(bad, 2, "jwt", "warning", "uzunluk 9")], out, summary)
+        with open(summary, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn("| a\\`bc\\|d[31m.txt | 2 | jwt |", text)
+        for ch in ("\x01", "\x1b"):
+            self.assertNotIn(ch, text)
+            self.assertNotIn(ch, out.getvalue())
+        self.assertNotIn("`a", text)
+
+    def test_sabotage_unescaped_summary_path_is_caught(self) -> None:
+        with mock.patch.object(scan, "md_path", lambda p: p):
+            with self.assertRaises(AssertionError):
+                self.test_summary_escapes_backticks_and_drops_control_characters()
 
     def test_quoted_paths_are_unquoted(self) -> None:
         self.assertEqual("a\tb.txt", scan.unquote_path('"a\\tb.txt"'))
