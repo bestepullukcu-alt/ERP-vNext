@@ -210,8 +210,7 @@ const CountSheet = (function () {
             window.showToast?.(answer.json.message || '', 'success');
             await load();
         };
-        if (window.showConfirm) window.showConfirm(text, run, { entityName: count.number, type: 'warning', confirmButtonText: W('CycleCount.Action.Submit') });
-        else if (window.confirm(text)) run();
+        window.showConfirm?.(text, run, { entityName: count.number, type: 'warning', confirmButtonText: W('CycleCount.Action.Submit') });
     };
 
     const bind = () => {
