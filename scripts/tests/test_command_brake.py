@@ -190,10 +190,13 @@ class RepoSettings(unittest.TestCase):
         # the real probe expression from the registered command, run with a controlled sys.version_info (Codex R2-3)
         import re
         for _, command in self.entries():
-            m = re.search(r"-c '([^']*version_info[^']*)'", command)
-            self.assertIsNotNone(m, "no version probe in the registered command")
+            # exactly one probe, and it is the one whose success execs the brake
+            probes = re.findall(r"\"\$p\" -c '([^']*)' </dev/null >/dev/null 2>&1 && exec \"\$p\" ", command)
+            self.assertEqual(len(probes), 1, "the registered command must hold exactly one probe that guards exec")
+            self.assertEqual(len(re.findall(r"version_info", command)), 1, "a second version probe would go untested")
+            probe = probes[0]
             for version, ok in (((3, 6, 15), False), ((3, 7, 0), True), ((3, 12, 1), True), ((2, 7, 18), False)):
-                code = f"import sys; sys.version_info = {version!r}; exec({m.group(1)!r})"
+                code = f"import sys; sys.version_info = {version!r}; exec({probe!r})"
                 rc = subprocess.run([sys.executable, "-c", code], capture_output=True, timeout=20).returncode
                 self.assertEqual(rc == 0, ok, f"probe on {version}: exit {rc}")
 
