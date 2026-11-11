@@ -102,5 +102,33 @@ class Protocol(unittest.TestCase):
         self.assertEqual(self.run_hook("[1, 2]"), (0, ""))
 
 
+class RepoSettings(unittest.TestCase):
+    """The brake is on for everyone who opens the repository: .claude/settings.json registers it as a PreToolUse hook
+    for Bash and the auto-merge tool, and the registered command, run the way Claude Code runs it, denies a merge."""
+
+    def entries(self):
+        settings = json.loads((ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))
+        return [(e.get("matcher", ""), h.get("command", "")) for e in settings.get("hooks", {}).get("PreToolUse", [])
+                for h in e.get("hooks", []) if h.get("type") == "command" and "scripts/hooks/command_brake.py" in h.get("command", "")]
+
+    def test_registered_for_bash_and_auto_merge(self):
+        import re
+        entries = self.entries()
+        self.assertTrue(entries, "command_brake.py is not a PreToolUse hook in .claude/settings.json")
+        for tool in ("Bash", "mcp__ccd_pr__set_auto_merge"):
+            self.assertTrue(any(re.fullmatch(m, tool) for m, _ in entries), f"no brake matcher covers {tool}")
+
+    def test_registered_command_denies_a_merge(self):
+        import os
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}})
+        entries = self.entries()
+        self.assertTrue(entries, "command_brake.py is not a PreToolUse hook in .claude/settings.json")
+        for _, command in entries:
+            p = subprocess.run(["bash", "-c", command], input=payload, capture_output=True, text=True, timeout=20,
+                               env={**os.environ, "CLAUDE_PROJECT_DIR": str(ROOT)})
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertEqual(json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+
+
 if __name__ == "__main__":
     unittest.main()

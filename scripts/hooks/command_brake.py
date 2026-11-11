@@ -16,7 +16,8 @@ Decisions (Claude Code hook protocol: JSON on stdout, exit 0):
 The command is tokenised with shlex, so text inside a commit message or a grep pattern is never mistaken for a
 command. `bash -c "..."`, `env`, `nohup`, `sudo`, `xargs`, `time` wrappers and `git -C <dir>` are followed.
 Input that cannot be parsed passes (fail-open) so that the brake never stops ordinary work.
-Known limit: the hook itself is enabled in a settings file outside the repository; see the PR description.
+Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse; python3, else python).
+Known limit: a person can switch hooks off locally -- this is a net against agent habit, not against intent.
 """
 from __future__ import annotations
 
