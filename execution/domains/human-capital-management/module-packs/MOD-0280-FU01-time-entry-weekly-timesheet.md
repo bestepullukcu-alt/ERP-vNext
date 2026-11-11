@@ -18,7 +18,7 @@ screens:
 entity_base: TenantScopedEntity   # Platform's live tenant-owned base (TaskItem, Meeting); module-pack-standard's "BaseEntity" is the older name
 status: ready-for-dev
 status_changed: "draft -> ready-for-dev on 2026-09-29 (Control Tower resolved every §25 question and §26 conflict; none left blocking — see §26)"
-decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's four answers 2026-11-11 (§21.4, TT-1…TT-4)"
+decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's answers 2026-11-11 (§21.4, TT-1…TT-5)"
 owner: ali.tufanoglu
 branch: feature/hr/mod-0280-fu01-time-entry-weekly-timesheet   # 'hr' short code: MOD-0251 precedent; not yet in AGENTS.md §9
 started: 2026-09-29
@@ -407,13 +407,14 @@ per-person report is T4b (DL-7) and is **not** in this slice.
    at most 13 weeks; `toWeek` not after the current tenant-local ISO week (R3). A refused range answers 400 before the
    team is resolved and before the pull in rule 4, so a 400 writes nothing (§17 T-34).
 3. **Team (TT-1, TT-2, TT-5).** `ITimeEntryOrgGateway.TeamMembersAsync(callerUserId)` returns the user ids whose
-   **counting seat** is the caller's counting seat or any position below it through `ReportsToPositionId`, at any
-   depth. A person's counting seat is the one seat `PrimarySeatAsync` returns for them — their primary assignment, or,
-   when no primary assignment is active, the first active seat in MOD-0288's order (the D6 rule, `OrgGatewayAdapter`
-   `seats[0]`); every other seat they hold is ignored, so no person is counted under two unrelated managers. The caller
-   is a member (own time counted, TT-1). The walk keeps a visited set (a reporting cycle ends it), passes through vacant
-   and archived positions, and uses today's seats (TT-5, **open owner decision**, §21.4). Caller without a counting seat
-   → 409 `TEAM_TOTALS_NO_PRIMARY_SEAT`, before the pull.
+   **active primary assignment** (`AssignmentType.Primary`) is on the caller's active primary seat or on any position
+   below it through `ReportsToPositionId`, at any depth. Only primary assignments count (TT-5, owner 2026-11-11):
+   a person attached to the subtree only by a secondary, acting or delegated seat is not counted, and a person with no
+   active primary assignment counts in no team. This is stricter than D6's approver lookup (`PrimarySeatAsync` falls
+   back to the first active seat, `seats[0]`); T4a does not use that fallback. No person is counted under two
+   unrelated managers. The caller is a member (own time counted, TT-1). The walk keeps a visited set (a reporting cycle
+   ends it), passes through vacant and archived positions, and reads today's assignments (historical membership is a
+   §20 follow-up). Caller without an active primary assignment → 409 `TEAM_TOTALS_NO_PRIMARY_SEAT`, before the pull.
 4. **Counted data (D11).** Only `TimesheetWeek` rows with `Status == Approved` **and** `InForce == true` whose `WeekKey`
    is in the range, and their `TimeEntry` rows. Draft, Submitted, Superseded and correction-draft revisions, timer
    segments and suggestions are never read. Before reading, the existing pull finalizer
@@ -495,7 +496,7 @@ Error codes and statuses: §12 and §13. The route carries no record id; tenant 
 
 **Preconditions (before DL-6 code).** (1) `time-entry.team-totals.read` in `ExplicitGrantOnlyPermissions` — **done**
 (§7). (2) The §15 gateway pair live — **done** for T2. (3) This pack version reviewed and its DL-6 approval row in main
-(CT-APR-01/02). (4) The owner's answer to TT-5 (§21.4, §25). (5) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
+(CT-APR-01/02). (4) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
 the owner enters shared dev data.
 
 **Done condition.** Every §16 "T4a — team totals" criterion green through its §17 test (T-28…T-36), each guard's sabotage
@@ -892,10 +893,10 @@ One prefix on purpose: on extraction the pair is re-pointed to the new service a
 - [ ] Without `time-entry.team-totals.read` `GET /api/v1/time-entry/team-totals` answers 403 and
       `/TimeEntry/TeamTotals` draws the UAS-001 panel (no skeleton, no redirect); a tenant admin without an explicit
       assignment of the key also gets 403 — explicit-grant enrolment guarded by `AccountKindTests` (T-28).
-- [ ] The team is the caller plus every user whose primary seat is the caller's primary seat or any position below it,
-      at any depth; a sibling unit, a secondary-seat-only holder and a member of another subtree are not counted; a
-      reporting cycle reachable from the caller's seat ends the walk (T-29). Membership by counting seat is the TT-5
-      proposal (open, §21.4).
+- [ ] The team is the caller plus every user whose active primary assignment is on the caller's primary seat or any
+      position below it, at any depth; a sibling unit, a holder attached only by a secondary seat, a person whose
+      primary assignment ended (only a secondary seat left) and a member of another subtree are not counted; a
+      reporting cycle reachable from the caller's seat ends the walk (T-29; TT-5, owner 2026-11-11).
 - [ ] Only in-force `Approved` revisions count; Draft, Submitted (undecided), Superseded and correction-draft
       revisions, timer segments and suggestions add nothing; a week MOD-0023 approved but not yet finalized counts
       after the request with jobs off; a refused range writes nothing, because the range is checked before the pull
@@ -959,7 +960,7 @@ every guard gets a sabotage run (remove the rule, see red, restore, see green) r
 | T-26 | R5 | Reject a timesheet approval with an empty comment → refused by MOD-0023; a task approval (option off) still rejects without a comment | enforce globally → task test red; skip enforcement → timesheet test red |
 | T-27 | A2 | Segments 3 + 4 min same task/day → no row, "too short"; 7 + 8 min → 15; 22.5 min → 30 | truncate instead of round → red |
 | T-28 | T4a | (a) Platform HTTP: caller without the key → 403; with the key → 200. (b) Explicit-grant path (AuthService, existing guards, no AuthService change): `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:67` asserts the key is in `ExplicitGrantOnlyPermissions.Keys`, and `DefaultRolePermissionTemplateTests` proves the mechanism on sibling keys (a key in that list reaches no default role, SuperAdmin included); the time-entry key rides the same list. The DL-6 WP re-runs both. (c) Live (E3, done condition): a tenant admin with the module entitlement but no explicit assignment → 403. (d) Web: page without the key renders the UAS-001 panel only | (a) drop `[HasPermission]` from the action → red; (b) remove `TimeEntryTeamTotalsRead` from `ExplicitGrantOnlyPermissions.Keys` → `AccountKindTests` red (sabotage run in the DL-6 WP's own worktree, reverted); (d) render the skeleton for a caller without the key → red |
-| T-29 | T4a / TT-1, TT-2, TT-5 | Org fixture: caller M → A, B; A → A1 (three levels); sibling S outside; X holds a secondary seat under M with primary seat elsewhere. Members = {M, A, B, A1}. Cycle case: M's own position is written straight to the repository with `ReportsToPositionId = A1` (M → A → A1 → M, reachable from M by the downward walk; MOD-0288 refuses this on its own write path — `PositionReferenceGuard` — so the case stands for legacy or imported data) → same members, 200 within the test timeout | walk direct reports only → A1 missing → red; drop the caller → red; count secondary seats → X present → red; remove the visited set → the cycle case does not finish within its timeout → red |
+| T-29 | T4a / TT-1, TT-2, TT-5 | Org fixture: caller M → A, B; A → A1 (three levels); sibling S outside; X holds a secondary seat under M with primary seat elsewhere; Y's primary assignment has ended and Y holds only a secondary seat under M. Members = {M, A, B, A1}. Cycle case: M's own position is written straight to the repository with `ReportsToPositionId = A1` (M → A → A1 → M, reachable from M by the downward walk; MOD-0288 refuses this on its own write path — `PositionReferenceGuard` — so the case stands for legacy or imported data) → same members, 200 within the test timeout | walk direct reports only → A1 missing → red; drop the caller → red; count secondary seats → X present → red; use the D6 `seats[0]` fallback → Y present → red; remove the visited set → the cycle case does not finish within its timeout → red |
 | T-30 | T4a / D11, D7 | Fixture built only through production commands (save → submit → MOD-0023 approve → finalizer; then a correction approved the same way, so revision 1 becomes `Superseded` / `InForce == false`; plus one Draft week, one Submitted-undecided week, one open correction draft and timer segments) → only the in-force Approved minutes count; a Submitted week approved in MOD-0023 with jobs off → counted after the request | read every revision of the week (no `Status`/`InForce` filter) → the Superseded revision 1 and the drafts add minutes → red; filter `Status != Draft` → Superseded and Submitted counted → red; skip the pull → red |
 | T-31 | T4a / TT-3 | Group with 2 people in W40 → not listed, `hiddenGroupCount == 1`, not in `shownTotalMinutes`; 3 people → listed; group with 3 people in W40 and 1 in W41: total for W40–W41 equals the total for W40; a team of 2 people with approved minutes → empty lists, `hiddenGroupCount` = their group count; a team with no approved minutes → empty lists, `hiddenGroupCount == 0` | apply the floor to the range sum instead of per week → the W40–W41 assertion red; floor `< 2` → red; show a group whose only cells were dropped → the 2-person-team assertion red |
 | T-32 | T4a / §8 item 7 | Reflection scan of the `TeamTotalsDto` tree: no property whose name contains `UserId`, `Person`, `Position`, `Unit`, `Email`, `DisplayName`, `Count` (except `weekCount`, `hiddenGroupCount`, `countsAsWork`), `Percent`, `Ratio`, `Rank`, `Score`, `Share`; serialized response contains no seeded user id or display name; group order is code / `SortOrder` | add a `PersonCount` property → red; sort by minutes → red |
@@ -1084,7 +1085,7 @@ Deferred, each needs its own FU / pack / backlog line:
 - **T4b — per-person weekly report** under `time-entry.person-reports.read` (DL-7): not scheduled; waits for counsel
   on §22 items 2 and 5. Team totals moved into scope as T4a (§5.4, DL-6) on 2026-11-11.
 - T4a extensions, each a new decision: export, charts, comparison between periods or teams, notifications, a
-  tenant-configurable floor (v1 constant 3), membership by historical seat instead of today's seat (TT-5).
+  tenant-configurable floor (v1 constant 3), membership by historical assignment instead of today's (§5.4 rule 3).
 
 ---
 
@@ -1272,8 +1273,8 @@ the job (`docs/guides/operations/dev-environment.md`, job table).
 ### 21.4 T4a decisions — team totals (owner 2026-11-11)
 
 The owner approved the one-page business process "Zaman girişi T4a: ekip toplamları" and answered its four questions
-with "ok" on 2026-11-11 (TT-1…TT-4). TT-5 is **open**: the pack author's proposal, derived from TT-2, waiting for
-the owner's answer (§25).
+with "ok" on 2026-11-11 (TT-1…TT-4). TT-5 was raised by the pack author while writing the slice and answered by the
+owner the same day: "Hayır, yalnız ana görev".
 
 | # | Subject | Decision | Where |
 |---|---|---|---|
@@ -1281,7 +1282,7 @@ the owner's answer (§25).
 | TT-2 | Subtree depth | The whole subtree below the manager's primary seat, not only direct reports | §5.4 rule 3, §17 T-29 |
 | TT-3 | Small-group floor | A group with fewer than 3 people is not shown (KVKK proportionality: no total may point to one person); applied per (group, ISO week) cell so a range choice cannot isolate a hidden cell; added to the acceptance criteria | §5.4 rule 6, §8 item 11, §17 T-31 |
 | TT-4 | Slice table | The CT-APR-02 table from the hcm-time Control Tower branch is measured against current main and taken into this pack (§27) | §23, §27 |
-| TT-5 | Membership basis — **OPEN, owner decision** | Not answered by the owner; the pack author's proposal, applied as the v1 default so DL-6 can be reviewed: membership is resolved at read time from today's seats, and a person counts only by their counting seat (primary assignment first — D6), so a person with only a secondary seat in the subtree is not a member and nobody is counted under two unrelated managers. The owner confirms or changes it before DL-6 code starts (§25); historical membership is a follow-up (§20) | §5.4 rule 3 |
+| TT-5 | Membership basis — primary seat only | Owner decision 2026-11-11 ("Hayır, yalnız ana görev"): only an active primary assignment places a person in a team; a person attached to the team only by a secondary (or acting / delegated) seat is not counted, so nobody is counted under two unrelated managers. Pack v1 rule alongside it: membership is read from today's assignments; historical membership is a follow-up (§20) | §5.4 rule 3, §17 T-29 |
 
 Kept unchanged by these answers: D11 (approved only, explicit grant), §8 item 7 (no ratios, rankings or scores), A7
 and §22 (the per-person report, T4b, waits for counsel on items 2 and 5). *SAP/Oracle/Workday:* SAP CATS analyses,
@@ -1346,8 +1347,7 @@ Control Tower informs the PPM lane; this pack edits no PPM file. The MOD-0117 re
 
 All answered on 2026-09-29 — see §21.1 (A1–A10). Remaining non-blocking follow-ups are in §20.
 
-**Open (2026-11-11), owner decision, gates DL-6 code only:** TT-5 (§21.4) — team membership by today's counting seat,
-secondary seats ignored. Until the owner answers, §5.4 rule 3 states the proposal and DL-6 does not start.
+TT-5 (team membership, raised 2026-11-11 while writing T4a) was answered by the owner the same day — §21.4.
 
 ---
 
@@ -1384,5 +1384,5 @@ pack status.
 | DL-3 | T2a — My Timesheet page, top-bar timer chip, error-code bridge, nav entry (Web; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü 0deba3fd1 |
 | DL-4 | T2b — Task Center timer actions, approvals page, categories, settings, correction diff field, platform-links table (Web + Platform T2 side; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü f49788f9e |
 | DL-5 | T3 — reminders and notifications (§21.3) | T3 | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü b1c970b10 (1. tur) ve 3d4c986ca (2. tur) |
-| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme, DL-6 onay satırı ve TT-5 sahip kararı bekliyor |
+| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme ve DL-6 onay satırı bekliyor |
 | DL-7 | T4b — per-person weekly report (`time-entry.person-reports.read`, access-logged; DL-1'e dayanır) | Follow-up Items / Out of Scope, Delivery Slices (each its own WP), Legal — must confirm before go-live (not a start blocker) | E4 | plan kimliği yok | plan satırı yok | planlanmadı — §22 madde 2 ve 5 hukuk cevabını bekler |
