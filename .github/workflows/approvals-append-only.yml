@@ -7,12 +7,12 @@ name: approvals-append-only
 # high = hayır, the row author's other account, an opener who is not the row's author) makes main red at once — the
 # human step is measured when the row reaches main, not only at the pack's next revision. Only the touched packs are
 # checked (GitHub quota); gh runs with the workflow token.
+# Every pull request runs it (no paths filter): append-only is a REQUIRED check, and a required check whose workflow a
+# paths filter skips never reports — "Expected — Waiting for status to be reported" blocks every unrelated PR (EES
+# 2026-11-11). The history check runs on every pull request (~30-60 s) with no shortcut: a tree diff would miss a row
+# deleted in one commit and restored in the next, which history (commit by commit) catches (blind review, 2026-11-11).
 on:
   pull_request:
-    paths:
-      - "execution/approvals/**"
-      - "scripts/pack_approval.py"
-      - ".github/workflows/approvals-append-only.yml"
   push:
     branches:
       - main

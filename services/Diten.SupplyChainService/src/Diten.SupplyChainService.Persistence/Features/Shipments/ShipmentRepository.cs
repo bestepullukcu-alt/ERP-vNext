@@ -28,14 +28,44 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
         var raw = await _shipmentDocuments.Find(filter).FirstOrDefaultAsync(ct);
         return raw is null ? null : ShipmentDetailMaterializer.Materialize(raw);
     }
-    public async Task<(IReadOnlyList<Shipment> Items, long Total)> QueryAsync(ShipmentScope scope, ShipmentStatus? status, string? sourceDocumentId, int page, int pageSize, CancellationToken ct)
+    public async Task<ShipmentListPage> QueryAsync(ShipmentScope scope, ShipmentListRequest request, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var f = Builders<Shipment>.Filter;
         var filter = Scoped(scope);
-        if (status is not null) filter &= Builders<Shipment>.Filter.Eq(x => x.Status, status.Value);
-        if (sourceDocumentId is not null) filter &= Builders<Shipment>.Filter.Eq(x => x.SourceDocumentId, sourceDocumentId);
-        var count = await _shipments.CountDocumentsAsync(filter, cancellationToken: ct);
-        var items = await _shipments.Find(filter).SortBy(x => x.Id).Skip(checked((page - 1) * pageSize)).Limit(pageSize).ToListAsync(ct);
-        return (items, count);
+        if (request.Status is not null) filter &= f.Eq(x => x.Status, request.Status.Value);
+        if (request.SourceDocumentId is not null) filter &= f.Eq(x => x.SourceDocumentId, request.SourceDocumentId);
+        var total = await _shipments.CountDocumentsAsync(filter, cancellationToken: ct);
+        var filtered = filter;
+        var filteredTotal = total;
+        if (request.Search is not null)
+        {
+            // 3.5.0 search: case-insensitive substring on shipment number and source document only; the term is a literal.
+            var term = new BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(request.Search), "i");
+            filtered &= f.Or(f.Regex(x => x.ShipmentNumber, term), f.Regex(x => x.SourceDocumentId, term));
+            filteredTotal = await _shipments.CountDocumentsAsync(filtered, cancellationToken: ct);
+        }
+        var s = Builders<Shipment>.Sort;
+        var sort = request.OrderBy switch
+        {
+            null => s.Ascending(x => x.Id),
+            var column => s.Combine(Column(column.Value, request.Descending), s.Ascending(x => x.Id))
+        };
+        var items = await _shipments.Find(filtered).Sort(sort).Skip(checked((request.Page - 1) * request.PageSize)).Limit(request.PageSize).ToListAsync(ct);
+        return new ShipmentListPage(items, total, filteredTotal);
+    }
+    private static SortDefinition<Shipment> Column(ShipmentSortColumn column, bool descending)
+    {
+        System.Linq.Expressions.Expression<Func<Shipment, object>> field = column switch
+        {
+            ShipmentSortColumn.ShipmentNumber => x => x.ShipmentNumber,
+            ShipmentSortColumn.SourceDocumentId => x => x.SourceDocumentId,
+            ShipmentSortColumn.Status => x => x.Status,
+            ShipmentSortColumn.PlannedShipAt => x => x.PlannedShipAt,
+            ShipmentSortColumn.PlannedDeliverAt => x => x.PlannedDeliverAt!,
+            _ => throw new ArgumentOutOfRangeException(nameof(column))
+        };
+        return descending ? Builders<Shipment>.Sort.Descending(field) : Builders<Shipment>.Sort.Ascending(field);
     }
     private static FilterDefinition<BsonDocument> ReceiptFilter(ShipmentScope scope, string operation, string key) =>
         new BsonDocument { { "TenantId", scope.TenantId.ToString() }, { "LegalEntityId", scope.LegalEntityId.ToString() }, { "Operation", operation }, { "Key", key } };
