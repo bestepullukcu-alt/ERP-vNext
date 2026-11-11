@@ -64,6 +64,16 @@ public class RecallApiFactory : TraceApiFactory
     /// <summary>WP-0177-R2: the MVP-6 shipment read lands here (the Gateway client of <c>IShipmentReader</c> gets this primary handler).</summary>
     public ShipmentBundleDouble Shipments { get; } = new();
 
+    /// <summary>MOD-0177-FU01: the CRM-ACCOUNT-LOOKUP U-1 read lands here (the Gateway client of <c>IRecallCustomerDirectory</c>).</summary>
+    public CrmDirectoryDouble Crm { get; } = new();
+
+    private int _salesIssueReads;
+
+    /// <summary>MOD-0177-FU01: how many sales-issue reads the recall trace source answered (AC-26 (f), (g)).</summary>
+    public int SalesIssueReads => Volatile.Read(ref _salesIssueReads);
+
+    public void CountSalesIssueRead() => Interlocked.Increment(ref _salesIssueReads);
+
     protected virtual bool UseTestSignature => true;
 
     /// <summary>
@@ -87,6 +97,10 @@ public class RecallApiFactory : TraceApiFactory
         builder.ConfigureTestServices(services =>
         {
             services.AddHttpClient(nameof(IShipmentReader)).ConfigurePrimaryHttpMessageHandler(() => Shipments);
+            services.AddHttpClient(nameof(IRecallCustomerDirectory)).ConfigurePrimaryHttpMessageHandler(() => Crm);
+            // the REAL trace source, wrapped only to count its sales-issue reads (MOD-0177-FU01 AC-26)
+            services.AddScoped<Diten.InventoryService.Persistence.Recall.RecallTraceSource>();
+            services.AddScoped<IRecallTraceSource>(sp => new CountingRecallTraceSource(sp.GetRequiredService<Diten.InventoryService.Persistence.Recall.RecallTraceSource>(), this));
             // R4: the recall MOD-0022 client (production GatewayRecallESignClient) runs over the suite's in-memory MOD-0022 (FakeESignGateway)
             services.AddHttpClient(nameof(Diten.InventoryService.Application.Features.Recall.Ports.IRecallESignClient)).ConfigurePrimaryHttpMessageHandler(() => new FakeESignHandler(ESign));
             services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
@@ -171,6 +185,9 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/recall/cases/{id}/quarantine-requests", [202, 400, 401, 403, 404, 409, 503], "QuarantineRequest[]"),
         Op("POST", "/api/recall/cases/{id}/quarantine-requests/{id}/retry", [202, 400, 401, 403, 404, 409, 503], "QuarantineRequest"),
         Op("GET", "/api/recall/cases/{id}/returns", [200, 400, 401, 403, 404, 503], "CaseReturns"),
+        // R7a (MOD-0177-FU01 AC-16: the two case detail reads are checked too)
+        Op("GET", "/api/recall/cases/{id}/customers", [200, 400, 401, 403, 404, 503], "CustomerRow[]"),
+        Op("GET", "/api/recall/cases/{id}/effectiveness", [200, 400, 401, 403, 404, 503], "Effectiveness"),
         Op("POST", "/api/recall/cases/{id}/return-links", [200, 201, 400, 401, 403, 404, 409, 422, 503], "ReturnLink"),
         Op("POST", "/api/recall/cases/{id}/scope/revisions", [200, 201, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true),
         // R5 — the drills (RECALL 1.4.0)

@@ -99,4 +99,13 @@ public sealed class InventoryTransaction : EntityBase
     /// transaction (null = no hook applied). Stored so an idempotent replay answers the same checks.
     /// </summary>
     public Expiry.Entities.ExpiryChecks? ExpiryChecks { get; set; }
+
+    /// <summary>
+    /// MOD-0173-FU03 §4.3 (INVENTORY 1.7.0): the reservation the request named by <c>reservationId</c> and the ledger accepted; never set on
+    /// a REVERSAL (its restore trace is the audit row). Never changes (append-only).
+    /// </summary>
+    public Guid? ReservationId { get; set; }
+
+    /// <summary>MOD-0173-FU03 §8.3: what this posting did to <see cref="ReservationId"/> — stored so a replay answers the same.</summary>
+    public ReservationConsumptionSnapshot? ReservationConsumption { get; set; }
 }

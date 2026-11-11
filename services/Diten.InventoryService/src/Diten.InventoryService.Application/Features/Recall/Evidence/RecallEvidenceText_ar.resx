@@ -212,4 +212,14 @@
   <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>مراجعة</value></data>
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>إفراج</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>إعداد</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>تعذّر التحديد</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>غير موجود</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>تعذّر التحديد ({0})</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>غير موجود ({0})</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0} (سجل قديم)</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0} (بلا هوية CRM)</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>أسماء العملاء</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>من CRM، وقت التصدير</value></data>
 </root>

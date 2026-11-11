@@ -165,6 +165,74 @@ periodic sweeper (`Inventory:Reservations:SweepIntervalSeconds`, default 60). Re
 outbox event (internal payload) with the request's correlation id; the sweeper uses the system actor and one id per
 sweep.
 
+### 4.1 Scoped reservations (INVENTORY 1.6.0 — MOD-0173-FU03 DL-1)
+
+`ReservationRequest` may name **`warehouseId`** (an Active Warehouse node of the caller's company) and **`lotId`** (a registered
+lot of the SKU; needs `warehouseId`). The hold then protects SKU + warehouse or SKU + warehouse + lot **and** the SKU: every level
+that contains the scope is guarded (`AvailableOnHand − Reserved ≥ q`), in the order LOT → WAREHOUSE → SKU. The warehouse / lot
+levels live in `inventory_reservation_positions` (a projection of the ledger + reservations like `inventory_sku_positions`,
+written in the same transactions, rebuilt at startup). Bins are not pinned (Q-02).
+
+| Situation | Answer (one `InventoryReservationRefused` audit row on every refusal, `Outcome Failed`) |
+|---|---|
+| every level covers it | **201** + `warehouseId`, `lotId`, `remainingQuantity`; `availableAfter` stays the SKU's free quantity |
+| one level does not | **422 `INSUFFICIENT_AVAILABLE`**, `details.level` = `LOT` \| `WAREHOUSE` \| `SKU` (the first that does not cover), `available`, `requested` |
+| warehouse unknown / not a Warehouse / not Active / another company | **422 `UNKNOWN_LOCATION`**; LOCATION unreadable → **503 `LOCATION_MASTER_UNAVAILABLE`** |
+| lot unknown / another SKU / Blocked / expired / retest due / under recall | **422** `UNKNOWN_LOT` / `LOT_SKU_MISMATCH` / `LOT_BLOCKED` / `LOT_EXPIRED` / `LOT_RETEST_DUE` / `LOT_UNDER_RECALL` (a Draft lot is accepted) |
+| `lotId` without `warehouseId` | **400 `INVALID_REQUEST`** |
+
+A request without `warehouseId` / `lotId` behaves as in 1.5.0 and keeps its idempotency fingerprint.
+
+**Issues and transfers** — an AVAILABLE decrease (sales / production issue, scrap, write-off, supplier return, count loss,
+`WAREHOUSE_TRANSFER` W1 → W2 although the SKU nets 0) must leave every warehouse / lot level it touches covered; otherwise **422
+`INSUFFICIENT_STOCK`** with `details.level` and one `InventoryReservationConsumptionRefused` audit row. A `LOCATION_TRANSFER` (same
+warehouse) changes no level. The source-triple consumption (ASSUMPTION-0173-15) consumes a scoped reservation only when its warehouse /
+lot match the movement, and frees every level of its scope.
+
+**GET /reservations/{id}** (`getReservation`, `inventory.stock.read`) — the `ReservationView` (status, `closedReason` Released |
+Consumed | Expired once closed, scope, quantities, source, `etag`) with header `ETag: W/"<version>"`; an unknown, malformed or other
+Tenant / LE id → **404** in the release's shape.
+
+**GET /availability** — `lotId` (needs `warehouseId` and one named SKU; not with `locationId`) and, for one named SKU with
+`warehouseId`, **`scopeReserved`** (ACTIVE, not-yet-due reservations containing the scope) and **`scopeAvailable`** (the scope's
+AVAILABLE on-hand − `scopeReserved`, not floored). `reserved` / `available` keep their meaning.
+
+**In-process port** — `IInventoryReservationPort` (`CreateAsync`, `CreateBatchAsync` 1…100 lines all-or-nothing, `ReleaseAsync`,
+`GetAsync`, `GetScopeFreeAsync`, `FindByIdempotencyKeysAsync`) is MOD-0178's door; same rules as HTTP, no controller uses it, and a
+caller naming another company / tenant gets `InvalidOperationException` before anything is read or written.
+
+### 4.2 Consuming a reservation (INVENTORY 1.7.0 — MOD-0173-FU03 DL-2)
+
+`MovementRequest.reservationId` names the reservation a `GOODS_ISSUE_SALES` / `GOODS_ISSUE_PROD` out of AVAILABLE **consumes** in its posting
+transaction (no source-triple match; all of it → RELEASED + `closedReason Consumed`, part → ACTIVE, `Version` + 1), or a `LOCATION_TRANSFER`
+**moves** (validated, nothing consumed). The answer carries `reservationConsumption { reservationId, consumedQuantity, remainingQuantity,
+status, closedReason }`, replayed verbatim; `TransactionItem.reservationId` shows it in `getTransactions`.
+
+| Situation (all 422, nothing written, one `InventoryReservationConsumptionRefused` audit row) | Code |
+|---|---|
+| any other type / direction, a REVERSAL included | `RESERVATION_NOT_APPLICABLE` |
+| unknown id, another tenant's / company's, or not a UUID — one message | `RESERVATION_NOT_FOUND` |
+| released, consumed or expired (due ones are expired first) | `RESERVATION_NOT_ACTIVE` (`details.status`, `closedReason`) |
+| SKU, source warehouse or lot differs | `RESERVATION_MISMATCH` (`details.field`) |
+| more than the remaining quantity (never taken from free stock) | `RESERVATION_QUANTITY_EXCEEDED` (`details.remaining`, `requested`) |
+
+They come after the recall and FEFO checks (a reservation is not exempt from FEFO) and before the stock / scope guards.
+
+**REVERSAL** — with `restoreReservation: true` (optional, default false; REVERSAL only, else 400) the reversal of a movement that consumed a
+reservation by `reservationId` gives the quantity back in the same transaction (RELEASED/Consumed → ACTIVE; Reserved on every scope level,
+also through a held lot); a holder's release or an EXPIRED reservation stays closed; a restored one past `expiresAt` expires at once
+(`InventoryReservationRestored` then `…Expired`). Without the flag the reservation stays closed. `reservationId` enters the idempotency
+fingerprint only when sent and `restoreReservation` only when true.
+
+### 4.3 FEFO and reserved lots (MOD-0173-FU03 DL-3 — no contract change)
+
+The MOD-0176 FEFO hook of `postMovement` (pre-check and in-transaction re-check alike) counts each lot by its **free** quantity: AVAILABLE
+on-hand − the remaining quantity of the ACTIVE, not yet due lot reservations of that warehouse (floor 0; a due but not yet closed reservation
+is not counted). A lot wholly reserved for another outbound is therefore not "the first eligible lot", and issuing a later lot with its own
+reservation is no FEFO bypass; a partly reserved early lot (free > 0) still is. Warehouse reservations without a lot do not count per lot.
+`getFefoOrder` is unchanged (FEFO-BUNDLE `basis: onHandAvailable`), so its order may now differ from the hook's verdict; the FEFO issue
+snapshot does not record the reserved quantity (the reservation audit rows reconstruct it).
+
 ## 5. Reads
 
 - **GET /availability** — `itemId` or `skuId` required; optional `skuLevel`, `warehouseId`, `locationId` (echoed in

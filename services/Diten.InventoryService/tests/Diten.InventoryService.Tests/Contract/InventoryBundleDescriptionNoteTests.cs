@@ -46,6 +46,36 @@ public sealed class InventoryBundleDescriptionNoteTests
         UnprocessableExamples + "lotBelowMinRemainingShelfLife.", UnprocessableExamples + "lotExpired.", UnprocessableExamples + "lotBlocked."
     ];
 
+    /// <summary>
+    /// The 1.6.0 additions (MOD-0173-FU03 DL-1, §8.8): the reservation scope members, getReservation and its view, the lotId parameter
+    /// and the scope figures of getAvailability, the 400 / 503 of createReservation with its description, and the named refusal examples.
+    /// </summary>
+    private static readonly string[] V160Additions =
+    [
+        "paths./availability.get.parameters[5].",
+        "components.schemas.AvailabilityView.properties.scopeReserved.", "components.schemas.AvailabilityView.properties.scopeAvailable.",
+        "paths./reservations.post.responses.400.", "paths./reservations.post.responses.503.", "paths./reservations.post.description",
+        "paths./reservations/{id}.",
+        "components.schemas.ReservationRequest.properties.warehouseId.", "components.schemas.ReservationRequest.properties.lotId.",
+        "components.schemas.ReservationResponse.properties.availableAfter.description",
+        "components.schemas.ReservationResponse.properties.warehouseId.", "components.schemas.ReservationResponse.properties.lotId.",
+        "components.schemas.ReservationResponse.properties.remainingQuantity.",
+        "components.schemas.ReservationView.", "components.responses.LocationMasterUnavailable.", "components.examples."
+    ];
+
+    /// <summary>
+    /// The 1.7.0 additions (MOD-0173-FU03 DL-2, §8.8): reservationId / restoreReservation on the request, reservationConsumption on the
+    /// response and its schema, reservationId on TransactionItem, and the five RESERVATION_* examples under the existing 422.
+    /// </summary>
+    private static readonly string[] V170Additions =
+    [
+        "components.schemas.MovementRequest.properties.reservationId.", "components.schemas.MovementRequest.properties.restoreReservation.",
+        "components.schemas.MovementResponse.properties.reservationConsumption.", "components.schemas.ReservationConsumption.",
+        "components.schemas.TransactionItem.properties.reservationId.",
+        UnprocessableExamples + "reservationNotFound.", UnprocessableExamples + "reservationNotActive.", UnprocessableExamples + "reservationMismatch.",
+        UnprocessableExamples + "reservationNotApplicable.", UnprocessableExamples + "reservationQuantityExceeded."
+    ];
+
     /// <summary>The 1.1.0 additions (WP-0173-PM2): exactly these subtrees, nothing else.</summary>
     private static readonly string[] AdditivePrefixes =
     [
@@ -57,7 +87,11 @@ public sealed class InventoryBundleDescriptionNoteTests
         // 1.4.0 (WP-0177-R3)
         UnprocessableExamples + "lotUnderRecall.",
         // 1.5.0 (WP-MVP1-NAMES1)
-        CreatedBy
+        CreatedBy,
+        // 1.6.0 (MOD-0173-FU03 DL-1)
+        .. V160Additions,
+        // 1.7.0 (MOD-0173-FU03 DL-2)
+        .. V170Additions
     ];
 
     /// <summary>The 1.5.0 addition (WP-MVP1-NAMES1): the optional <c>TransactionItem.createdBy</c> subtree only.</summary>
@@ -86,7 +120,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.5.0", current["info.version"]); // WP-MVP1-NAMES1: 1.4.0 → 1.5.0 (the createdBy subtree is in AdditivePrefixes)
+        Assert.Equal("1.7.0", current["info.version"]); // MOD-0173-FU03 DL-2: 1.6.0 → 1.7.0 (the reservation consumption subtrees are in AdditivePrefixes)
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -189,7 +223,7 @@ public sealed class InventoryBundleDescriptionNoteTests
     public void The_1_5_0_change_is_the_optional_createdBy_of_TransactionItem_only()
     {
         var frozen = Flatten(Load(FixtureV140Path));
-        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var current = Flatten(Load(FixtureV150Path)); // MOD-0173-FU03 DL-1: the 1.5.0 file as frozen (the live file is 1.6.0)
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
         Assert.Equal(["info.version"], changed);
@@ -202,6 +236,98 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.False(current.ContainsKey(CreatedBy + "required[1]"), "only userId is required inside createdBy");
         Assert.Equal(("uuid", "string"), (current[CreatedBy + "properties.userId.format"], current[CreatedBy + "properties.name.type"]));
         Assert.DoesNotContain(current.Keys, k => k.StartsWith("components.schemas.TransactionItem.required", StringComparison.Ordinal));
+    }
+
+    /// <summary>MOD-0173-FU03 DL-2 (AC-30): the 1.6.0 file as frozen by DL-1, kept byte for byte (LF-normalised; git blob at 0f32e805c).</summary>
+    private const string FrozenV160Sha256 = "020f1b3d37533eb024b657c5e26c61bf076074dc9ef3d3b606260b70233f2422";
+
+    private static string FixtureV160Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.6.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_6_0_fixture_is_the_frozen_1_6_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV160Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV160Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// MOD-0173-FU03 DL-2 (AC-30, §8.8) — 1.6.0 → 1.7.0 is ADDITIVE and OPTIONAL: nothing of 1.6.0 changes but the version and the postMovement
+    /// description (its 1.6.0 text kept as the prefix, the reservation / REVERSAL paragraph appended); the additions are one changelog line and
+    /// exactly the <see cref="V170Additions"/> subtrees; no required list gains a member of the request.
+    /// </summary>
+    [Fact]
+    public void The_1_7_0_change_is_additive_reservation_consumption()
+    {
+        var frozen = Flatten(Load(FixtureV160Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version", PostMovementDescription], changed);
+        Assert.Equal(("1.6.0", "1.7.0"), (frozen["info.version"], current["info.version"]));
+        Assert.StartsWith(frozen[PostMovementDescription], current[PostMovementDescription], StringComparison.Ordinal);
+        Assert.All(new[] { "restoreReservation", "A REVERSAL never carries reservationId", "RESERVATION_NOT_APPLICABLE" },
+            t => Assert.Contains(t, current[PostMovementDescription], StringComparison.Ordinal));
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.7.0 — additive, optional (MOD-0173-FU03 DL-2", current[Assert.Single(lines)]);
+        Assert.All(added.Except(lines), k => Assert.True(V170Additions.Any(p => k.StartsWith(p, StringComparison.Ordinal)), "unexpected 1.7.0 addition: " + k));
+        Assert.All(V170Additions, p => Assert.Contains(added, k => k.StartsWith(p, StringComparison.Ordinal)));
+        Assert.DoesNotContain(added, k => k.StartsWith("components.schemas.MovementRequest.required", StringComparison.Ordinal));
+        Assert.Equal("boolean", current["components.schemas.MovementRequest.properties.restoreReservation.type"]);
+        Assert.Equal("#/components/schemas/ReservationConsumption", current["components.schemas.MovementResponse.properties.reservationConsumption.$ref"]);
+    }
+
+    /// <summary>MOD-0173-FU03 DL-1 (AC-19): the 1.5.0 file as frozen by WP-MVP1-NAMES1, kept byte for byte (LF-normalised; git blob at 84d1fbc05).</summary>
+    private const string FrozenV150Sha256 = "73de0bdeac439832e6984a3e762e1a633417f6cd6b45333d3e3e4154681f5734";
+
+    private static string FixtureV150Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.5.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_5_0_fixture_is_the_frozen_1_5_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV150Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV150Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// MOD-0173-FU03 DL-1 (AC-19, §8.8) — 1.5.0 → 1.6.0 is ADDITIVE and OPTIONAL: every 1.5.0 key keeps its value but the version; the
+    /// additions are one changelog line and exactly the <see cref="V160Additions"/> subtrees. No new member is required on a request; the
+    /// 422 of createReservation still answers through the 1.5.0 response; every code the new examples name is in the closed catalogue.
+    /// </summary>
+    [Fact]
+    public void The_1_6_0_change_is_additive_reservation_scope()
+    {
+        var frozen = Flatten(Load(FixtureV150Path));
+        var current = Flatten(Load(FixtureV160Path)); // MOD-0173-FU03 DL-2: the 1.6.0 file as frozen (the live file is 1.7.0)
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version"], changed);
+        Assert.Equal(("1.5.0", "1.6.0"), (frozen["info.version"], current["info.version"]));
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.6.0 — additive, optional (MOD-0173-FU03 DL-1", current[Assert.Single(lines)]);
+        Assert.All(added.Except(lines), k => Assert.True(V160Additions.Any(p => k.StartsWith(p, StringComparison.Ordinal)), "unexpected 1.6.0 addition: " + k));
+        Assert.All(V160Additions, p => Assert.Contains(added, k => k.StartsWith(p, StringComparison.Ordinal)));
+
+        // the request stays optional: no new member in any required list
+        Assert.DoesNotContain(added, k => k.Contains(".required[", StringComparison.Ordinal) && !k.StartsWith("components.schemas.ReservationView.", StringComparison.Ordinal)
+                                          && !k.StartsWith("paths./reservations/{id}.", StringComparison.Ordinal));
+        Assert.Equal("#/components/responses/InsufficientAvailable", current["paths./reservations.post.responses.422.$ref"]);
+        Assert.Equal(("lotId", "uuid"), (current["paths./availability.get.parameters[5].name"], current["paths./availability.get.parameters[5].schema.format"]));
+
+        const string get = "paths./reservations/{id}.get.";
+        Assert.Equal(("getReservation", "inventory.stock.read"), (current[get + "operationId"], current[get + "x-permission"]));
+        Assert.Equal("#/components/schemas/ReservationView", current[get + "responses.200.content.application/json.schema.$ref"]);
+        Assert.True(current.ContainsKey(get + "responses.200.headers.ETag.schema.type"), "getReservation 200 declares its ETag header");
+        Assert.False(current.ContainsKey(get + "responses.404.content.application/json.example.error.code"), "the 404 has releaseReservation's shape: no code");
+        Assert.Equal(["Released", "Consumed", "Expired"],
+            Enumerable.Range(0, 3).Select(i => current[$"components.schemas.ReservationView.properties.closedReason.enum[{i}]"]));
+
+        var codes = current.Where(kv => kv.Key.StartsWith("components.examples.", StringComparison.Ordinal) && kv.Key.EndsWith(".value.error.code", StringComparison.Ordinal))
+            .Select(kv => kv.Value).ToList();
+        Assert.Equal(["INSUFFICIENT_AVAILABLE", "INSUFFICIENT_STOCK", "LOT_BLOCKED", "LOT_EXPIRED", "LOT_RETEST_DUE", "LOT_SKU_MISMATCH", "LOT_UNDER_RECALL", "UNKNOWN_LOCATION", "UNKNOWN_LOT"],
+            codes.OrderBy(c => c, StringComparer.Ordinal));
+        Assert.All(codes.Append(current["components.responses.LocationMasterUnavailable.content.application/json.example.error.code"]),
+            c => Assert.Contains(c, Diten.InventoryService.Application.Common.InventoryErrorCodes.All));
+        Assert.Equal("LOT", current["components.examples.reservationInsufficientAtLot.value.error.details.level"]);
     }
 
     [Fact]

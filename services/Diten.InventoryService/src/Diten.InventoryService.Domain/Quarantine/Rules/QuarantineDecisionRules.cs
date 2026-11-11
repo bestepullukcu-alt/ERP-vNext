@@ -101,12 +101,14 @@ public static class QuarantineDecisionRules
             ? new(BlockReasonRequired, 400, "Rejecting or blocking needs an active block-reason code.")
             : null;
 
-    /// <summary>V6: the hold is open and no decision is waiting for approval.</summary>
+    /// <summary>V6: the hold is open and no decision is waiting for approval. MOD-0175-FU01 V5: a voided hold is closed too.</summary>
     public static QuarantineViolation? HoldState(HoldStatus status, Guid? activeDecisionId)
     {
-        if (status == HoldStatus.Decided)
+        if (QuarantineRecordStates.IsTerminal(status))
         {
-            return new(HoldClosed, 409, "The hold is already decided.");
+            return new(HoldClosed, 409, status == HoldStatus.Voided
+                ? "The hold is void: its source movement was reversed."
+                : "The hold is already decided.");
         }
 
         return activeDecisionId is not null || status == HoldStatus.DecisionPending
@@ -119,7 +121,9 @@ public static class QuarantineDecisionRules
     {
         if (status != BlockedStatus.Open)
         {
-            return new(BlockedClosed, 409, "The blocked-stock record is closed.");
+            return new(BlockedClosed, 409, status == BlockedStatus.Voided
+                ? "The blocked-stock record is void: its source movement was reversed."
+                : "The blocked-stock record is closed.");
         }
 
         return activeDecisionId is not null

@@ -302,12 +302,27 @@ const walk = (dir, out) => {
   return out;
 };
 
-// The text between a call's parentheses, and a split of it on top-level commas — strings and nesting respected.
+/*
+ * ⚠ COMMENTS ARE NOT CODE (2026-11-06, MVP-1 ortak arayüz kuralları). A `//` line inside a call's options — the reason
+ * written right above `subtextHtml:` — made the pair start with the comment, so its key was not read, and an apostrophe
+ * in it (`dialog's`) opened a "string" that swallowed the commas after it. Quarantine/blocked.js and
+ * Traceability/Lots/status.js still passed `subtextHtml` and the list below read them as gone. The reader skips a
+ * comment outside a string the way the engine does; a `//` inside a string ('https://…') stays text.
+ */
+const commentEnd = (text, i) => {
+  if (text[i] !== "/") { return -1; }
+  if (text[i + 1] === "/") { const end = text.indexOf("\n", i); return end < 0 ? text.length : end; }
+  if (text[i + 1] === "*") { const end = text.indexOf("*/", i + 2); return end < 0 ? text.length : end + 2; }
+  return -1;
+};
+
+// The text between a call's parentheses, and a split of it on top-level commas — strings, comments and nesting respected.
 const readCall = (source, open) => {
   let depth = 1; let quote = null; let i = open;
   for (; i < source.length && depth > 0; i += 1) {
     const c = source[i];
     if (quote) { if (c === "\\") { i += 1; } else if (c === quote) { quote = null; } }
+    else if (commentEnd(source, i) >= 0) { i = commentEnd(source, i) - 1; }
     else if (c === '"' || c === "'" || c === "`") { quote = c; }
     else if (c === "(") { depth += 1; }
     else if (c === ")") { depth -= 1; }
@@ -319,6 +334,7 @@ const splitTop = (text) => {
   for (let i = 0; i < text.length; i += 1) {
     const c = text[i];
     if (quote) { current += c; if (c === "\\") { current += text[i + 1]; i += 1; } else if (c === quote) { quote = null; } }
+    else if (commentEnd(text, i) >= 0) { i = commentEnd(text, i) - 1; }
     else if (c === '"' || c === "'" || c === "`") { quote = c; current += c; }
     else if ("([{".includes(c)) { depth += 1; current += c; }
     else if (")]}".includes(c)) { depth -= 1; current += c; }
@@ -384,9 +400,12 @@ describe("the callers of the shared confirm", () => {
       // sends plain subtext. Before, the list went as escaped `subtext` and the reader saw the <ul> tags as text.
       "wwwroot/assets/js/ESignature/esign-pages.js",
       "wwwroot/assets/js/Platform/AuditLog/index.js",
-      // FU-0175-UI-MANUALHOLD-01 (2e11996bc): the hold confirmation body — the chosen stock line written through textContent.
+      "wwwroot/assets/js/Quarantine/blocked.js", // WP-MVP1-FIX-QUI1: the unblock body (constant template, subject via textContent)
+      // MVP-1 ortak arayüz kuralları (FU-0175-UI-MANUALHOLD-01): the hold body — the view's constant template, the chosen line
+      // via textContent. Not text: `entityName` is one truncated line and would cut the quantity off a long item name.
       "wwwroot/assets/js/Quarantine/manual-hold.js",
       "wwwroot/assets/js/Traceability/LotMigration/index.js", // WP-MVP1-FU-CLEAN1: the migration confirmation body (values escaped, constant tags)
+      "wwwroot/assets/js/Traceability/Lots/status.js", // WP-MVP1-FU-CLEAN1 (FU-QUI1-LOTSTATUS): the status form body (radios + acknowledgement)
     ]);
   });
 

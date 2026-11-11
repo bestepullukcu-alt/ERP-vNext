@@ -6,4 +6,5 @@ public sealed record ReservationCreateResult(
     ReservationCreateOutcome Outcome,
     InventoryReservation? Reservation = null,
     decimal? Available = null,
-    decimal? Requested = null);
+    decimal? Requested = null,
+    string? Level = null);
