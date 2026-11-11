@@ -178,7 +178,9 @@ def cached(*rev_positions: int):
 def git(root: str, *args: str, ok_fail: bool = False) -> bytes | None:
     # Codex K3: `git replace` objects would make a full commit id name different history — they are ignored; a shallow
     # repository is refused (see Ctx), so a cached history answer cannot change when the history deepens
-    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1")
+    # EES 2.14 (Codex): a local .git/info/grafts file would rewrite ancestry too (HISTORY_BASELINE is an ancestry
+    # test) — the graft file is ignored like replace objects
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1", GIT_GRAFT_FILE=os.devnull)
     done = subprocess.run(["git", "-C", root, *args], capture_output=True, env=env)
     if done.returncode != 0:
         if ok_fail:
@@ -553,6 +555,30 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------------ history checks
+# EES 2.14 (owner decision 2026-11-10): the append-only history is checked from this commit on. It is PR #397's merge
+# into main: seven merges inside it (2026-11-02…06) only REORDERED rows of approvals.tsv / reviews.tsv — no row lost,
+# none added (measured) — and every reading has refused every approval since. A commit that is this commit or one of
+# its ancestors is not checked again; ancestry is fixed by the hashes, so no later commit can ever fall under it, and
+# every break after it is still a break. A repository without this commit (a self-test) checks its whole history.
+HISTORY_BASELINE = "7e8aa77d87ff1f7fc30cc6a8fc35a11b6f057fcc"
+# The seven reorder merges under it. git blame credits a row such a merge MOVED to the merge itself, but the merge added
+# no row; so a row credited to one of them has no measurable human step (main_merge refuses it) — never the human step
+# of the pull request that carried the merge (review: 36 reviews.tsv rows are credited to 7bd1d0bae on main; their real
+# commits came in through a nested merge, which fails the human step).
+BASELINE_REORDERS = frozenset({
+    "2f02161a34163810f6311fdb8b29a132c53acfb3", "81546c373ed93f7f3837f511d690388184e7a4fc",
+    "7bd1d0bae30853df5fa3f06310f02e637a09311c", "25e06fe0851490d55f02fe45998f1ec8340e9675",
+    "48d217a22b0b20568a0729748fb34cca68708cea", "1936c9ba34fb19dae15cb9be292778a19710ff3c",
+    "8f9027ad87763927fb7377e9450986142a9bf3eb"})
+
+
+@cached(1)
+def _before_baseline(root: str, c: str) -> bool:
+    if not HISTORY_BASELINE or commit_of(root, HISTORY_BASELINE) != HISTORY_BASELINE:
+        return False
+    return git(root, "merge-base", "--is-ancestor", c, HISTORY_BASELINE, ok_fail=True) is not None
+
+
 def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: str | None = None) -> list[str]:
     """No row ever disappears. Every commit in the full history that changed the file is compared with EVERY parent:
     the BASE parent's rows are the new version's prefix; every other parent's rows appear in it in the same order. The
@@ -570,6 +596,8 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     problems = []
     main = main or main_line(root)
     for c, why in _append_only(root, commit, path, main):
+        if _before_baseline(root, c):
+            continue                                # EES 2.14: history before HISTORY_BASELINE is not checked again
         excepted, ewhy = exception_why(root, main, c, path)
         if excepted:
             continue
@@ -1059,6 +1087,9 @@ def prefix_problem(root: str, ref: str, main: str, target: str) -> str | None:
 @cached(1, 2)
 def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     """The first-parent merge of the main line that brought `added` in, or (None, why)."""
+    if added in BASELINE_REORDERS:
+        return None, (f"satırı git'e göre {added[:12]} ekledi — o, başlangıç noktası öncesi yalnız sıra değiştiren bir "
+                      "merge; satırı eklemedi, gerçek geliş yolu ölçülemez (EES 2.14)")
     if git(root, "merge-base", "--is-ancestor", added, main, ok_fail=True) is None:
         return None, NOT_ON_MAIN
     line = git(root, "rev-list", "--first-parent", main).decode().split()
@@ -2194,6 +2225,7 @@ def self_test() -> int:
     tmp.cleanup()
     self_test_review(cases)
     self_test_exception(cases)
+    self_test_baseline(cases)
     self_test_deferred(cases)
     self_test_slice_deferred(cases)
     for label, ok in cases:
@@ -2201,6 +2233,88 @@ def self_test() -> int:
     passed = sum(1 for _, ok in cases if ok)
     print(f"self-test: {passed}/{len(cases)} passed")
     return 0 if passed == len(cases) else 1
+
+
+def self_test_baseline(cases: list) -> None:
+    """EES 2.14: breaks at or before HISTORY_BASELINE are not checked again; a break after it still is."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    WHO = ("dev", "dev@x.invalid")
+
+    def g(*args):
+        env = dict(os.environ, GIT_AUTHOR_NAME=WHO[0], GIT_AUTHOR_EMAIL=WHO[1], GIT_COMMITTER_NAME=WHO[0],
+                   GIT_COMMITTER_EMAIL=WHO[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rows, msg):
+        full = os.path.join(root, APPROVALS)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write("\n".join(["\t".join(APPROVAL_COLUMNS)] + rows) + "\n")
+        g("add", "-A")
+        g("commit", "-q", "-m", msg)
+        return g("rev-parse", "HEAD").strip()
+
+    def ar(name):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, "approve", "HIGH", "r", "dev", "lead",
+                          "2026-11-10", "0" * 64, "n"])
+
+    def problems():
+        globals()["_CACHE"].clear()
+        return append_only_problems(root, "main", APPROVALS, g("rev-parse", "main").strip())
+    A, B, C, D = ar("A"), ar("B"), ar("C"), ar("D")
+    g("init", "-q", "-b", "main")
+    put([A, B], "start")
+    old_break = put([B, A], "an old reorder")
+    put([B, A, C], "append after it")
+    saved = globals()["HISTORY_BASELINE"]
+    try:
+        globals()["HISTORY_BASELINE"] = ""
+        cases.append(("EES 2.14 baseline: with no baseline the old reorder is a break", any(old_break[:12] in p
+                                                                                            for p in problems())))
+        globals()["HISTORY_BASELINE"] = "0" * 40
+        cases.append(("EES 2.14 baseline: a baseline commit this repository does not have -> the whole history is "
+                      "checked", any(old_break[:12] in p for p in problems())))
+        globals()["HISTORY_BASELINE"] = g("rev-parse", "main").strip()
+        cases.append(("EES 2.14 baseline: the old reorder at or before the baseline -> not checked again (green)",
+                      problems() == []))
+        saved_r = globals()["BASELINE_REORDERS"]
+        globals()["BASELINE_REORDERS"] = frozenset({old_break})
+        try:
+            refused = main_merge(root, g("rev-parse", "main").strip(), old_break)
+        finally:
+            globals()["BASELINE_REORDERS"] = saved_r
+        cases.append(("EES 2.14 baseline: a row git credits to a listed reorder merge has no human step (main_merge "
+                      "refuses for that reason)", refused[0] is None and "başlangıç noktası öncesi" in refused[1]))
+        # Codex: a local graft that makes the new commit's parent look like the baseline is ignored
+        with open(os.path.join(root, ".git", "info", "grafts"), "w", encoding="utf-8") as f:
+            f.write(f"{g('rev-parse', 'main').strip()}\n")       # graft: main tip has no parents
+        globals()["_CACHE"].clear()
+        parents = git(root, "rev-list", "--parents", "-n", "1", "main").decode().split()[1:]
+        os.remove(os.path.join(root, ".git", "info", "grafts"))
+        cases.append(("sabotage EES 2.14 (Codex): a local .git/info/grafts file does not change ancestry for the tool",
+                      len(parents) == 1))
+        new_break = put([B, C, A], "a new reorder after the baseline")
+        found = problems()
+        cases.append(("sabotage EES 2.14 baseline: a reorder AFTER the baseline is still a break, and only it",
+                      len(found) == 1 and new_break[:12] in found[0] and old_break[:12] not in found[0]))
+        # Codex: history on a shallow clone is unreadable, never "clean"
+        stmp = tempfile.TemporaryDirectory()
+        shallow = os.path.join(stmp.name, "s")
+        subprocess.run(["git", "clone", "-q", "--depth", "1", f"file://{root}", shallow], capture_output=True,
+                       check=True, env=dict(os.environ, GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null"))
+        try:
+            history(shallow, "HEAD")
+            shallow_ok = False
+        except Unreadable as e:
+            shallow_ok = "sığ" in str(e)
+        finally:
+            stmp.cleanup()
+        cases.append(("sabotage EES 2.14 (Codex): history on a shallow clone -> unreadable", shallow_ok))
+    finally:
+        globals()["HISTORY_BASELINE"] = saved
+        globals()["_CACHE"].clear()
+    tmp.cleanup()
 
 
 def self_test_exception(cases: list) -> None:
@@ -4197,6 +4311,8 @@ def ci_main(root: str, before: str, after: str) -> tuple[int, list[str]]:
 def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
     """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
     already a problem at `base` (a pull request is red only for a break it brings)."""
+    if git(root, "rev-parse", "--is-shallow-repository").decode().strip() == "true":
+        raise Unreadable("sığ (shallow) depo — onay geçmişi tam değil; tam klonda koşun")   # EES 2.14 (Codex)
     main = main_line(root)
     c = commit_of(root, ref)
     if c is None:
