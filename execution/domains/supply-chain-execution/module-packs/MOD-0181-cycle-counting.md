@@ -16,8 +16,8 @@ screens:
 entity_base: EntityBase
 status: ready-for-dev
 approval_status: pending
-revision: "r7 (2026-11-06) — yalnız künye: status draft → ready-for-dev (S-49; sahip «onayla» Beste 2026-11-06, onay satırı bu sürüme yazılır); gövde r6 (3fdc88a8) ile aynı. Son bakış 03 (3fdc88a8, KOŞULLU, 0 ENGEL, 0 ORTA, 2 DÜŞÜK) DÜŞÜK bulguları DL-1 talimatına (S-101). Önceki: r6 (2026-11-06) — bağımsız son bakış 02 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-b4e3f879-son-bakis-02.md) bulguları SB2/F-1…F-3 kapatıldı (submit koşulu Recount satırlarını kapsar, yeniden sayımda seçilmemiş anahtar için bulunan satır yasağı, Evidence dili taşıma + paylaşılan anahtar paritesi). Önceki: r5 (2026-11-06) — bağımsız son bakış 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-334b07df-son-bakis-01.md) bulguları SB1/F-1…F-9 kapatıldı (yeniden sayım sözleşmesi, Evidence Pack dili, test kancası ve saatler, ilk posting anahtar çakışması, olay izdüşümü, bulunan satır kuralları, ortak resx ve Web rotaları, sabotaj satırları). Önceki: r4 (2026-11-06) — bağımsız inceleme 02 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-170e4d66.md) yeni bulguları F-1…F-7 kapatıldı (SnapshotDrift kapalı-başarısız, iki yönlü Sayım eşleşmesi, dilim atamaları, tek olay türü, controller tabanı, G-0181-01 izin tarafı, .antigravity kapısı). Önceki: r3 (2026-11-06) — bağımsız inceleme 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md) bulguları F-1…F-18 kapatıldı; F-1 sahip kararı A (Beste, 2026-11-06): PUT/DELETE yerine komut uçları, tek adlı istisna PUT /count-settings. Önceki: r2 (2026-11-06) — iki sahip teyidi işlendi (Beste, 2026-11-06): Q-21 = A (elle COUNT_* bugünkü izinle kalır, yeni izin yok, MOD-0173'e dokunulmaz; 0181 yalnız okuma tarafında \"elle\" ayrıştırır) ve Q-22 kapsamı (yalnız görev modeli; Q-7 = B geçerli). Önceki: r1 (2026-11-06) — sahip kararları işlendi, Q-1…Q-24 kapandı, Slim/Compact yeniden sayıldı (8 alan → slim). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; bu sürümde onay satırı yoktur."
-status_note: "ready-for-dev r7 (2026-11-06) — künye S-49 gereği ready-for-dev (onay satırı ready-for-dev künyeli sürüme yazılır); approval_status pending: kod CT-APR-02 künye farkı incelemesi ve CT-APR-01 onay satırından sonra yazılır. ready-for-dev geliştirme başlangıcı ya da kabul değildir. Bağımsız inceleme 01 (F-1…F-18), 02 (F-1…F-7), son bakış 01 (SB1/F-1…F-9), 02 (SB2/F-1…F-3) r3–r6'da kapandı; son bakış 03 (r6, 3fdc88a8) 0 ENGEL / 0 ORTA, iki DÜŞÜK bulgu (numara alma sırası ve boşluk kuralı §8.12; durum öneki parite bekçisi) DL-1 talimatına (S-101). İzlenen kapı: .antigravity/** satırları (PKS-001 §4 cycle-count.*, RCS-001 §3 CNT) — onaylayan Beste, ayrı WP, modül PR'ından önce."
+revision: "r8 (2026-11-11) — EES 2.14 altında yeniden onay sürümü + DL-3 / DL-4 sahip kararları. (1) r7'nin onayı main'de geçersiz okunur: `scripts/pack_approval.py check` (EES 2.14, PR #403) r7'nin inceleme satırını ve onay satırını PR #397'nin iç içe merge'üne (7e8aa77d87) bağlar → yeni sürüm + yeni bağımsız inceleme + yeni onay satırı; onaylayan Ali (GitHub GMG-ERP), satırları yazan hesap Beste'nin (sahip kararı 2026-11-11; emsal MOD-0178 D-6, MOD-0262-FU01 D-3). (2) ORTA-2 sahip kararı (Beste «Ekle», 2026-11-10; DL-3 CT kabul kaydı): `resolve-integrity` `AcceptHolder` aynılığı tutucu hareketin SkuId ve ItemId'sini de karşılaştırır (§8.3, §12, AC-26) — DL-4'te uygulandı ve testli (e9946f076). (3) Dilim durumu kaydedildi (§19.5): DL-1…DL-4 CT VERIFIED (DL-4 ACCEPTED değil), DL-5 / DL-6 başlamadı, WMS-COUNT-BUNDLE taslak. (4) DL-4 kayıt kararları: AC-35 / §9 Layout 'her sayfa görünümünde' (partial hariç); §15 0178 rota testi sayısı; diğerleri §19.5 tablosunda; son bakış 04 DÜŞÜK F-1…F-3 (künye / bant / §18) kapatıldı. Başka AC'nin anlamı değişmedi; davranış değişikliği yalnız AC-26 (uygulanmış). Önceki: r7 (2026-11-06) — yalnız künye: status draft → ready-for-dev (S-49; sahip «onayla» Beste 2026-11-06, onay satırı bu sürüme yazılır); gövde r6 (3fdc88a8) ile aynı. Son bakış 03 (3fdc88a8, KOŞULLU, 0 ENGEL, 0 ORTA, 2 DÜŞÜK) DÜŞÜK bulguları DL-1 talimatına (S-101). Önceki: r6 (2026-11-06) — bağımsız son bakış 02 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-b4e3f879-son-bakis-02.md) bulguları SB2/F-1…F-3 kapatıldı (submit koşulu Recount satırlarını kapsar, yeniden sayımda seçilmemiş anahtar için bulunan satır yasağı, Evidence dili taşıma + paylaşılan anahtar paritesi). Önceki: r5 (2026-11-06) — bağımsız son bakış 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-334b07df-son-bakis-01.md) bulguları SB1/F-1…F-9 kapatıldı (yeniden sayım sözleşmesi, Evidence Pack dili, test kancası ve saatler, ilk posting anahtar çakışması, olay izdüşümü, bulunan satır kuralları, ortak resx ve Web rotaları, sabotaj satırları). Önceki: r4 (2026-11-06) — bağımsız inceleme 02 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-170e4d66.md) yeni bulguları F-1…F-7 kapatıldı (SnapshotDrift kapalı-başarısız, iki yönlü Sayım eşleşmesi, dilim atamaları, tek olay türü, controller tabanı, G-0181-01 izin tarafı, .antigravity kapısı). Önceki: r3 (2026-11-06) — bağımsız inceleme 01 (CT-APR-02, KOŞULLU, docs/records/reviews/MOD-0181/2026-11-06-108cbf41.md) bulguları F-1…F-18 kapatıldı; F-1 sahip kararı A (Beste, 2026-11-06): PUT/DELETE yerine komut uçları, tek adlı istisna PUT /count-settings. Önceki: r2 (2026-11-06) — iki sahip teyidi işlendi (Beste, 2026-11-06): Q-21 = A (elle COUNT_* bugünkü izinle kalır, yeni izin yok, MOD-0173'e dokunulmaz; 0181 yalnız okuma tarafında \"elle\" ayrıştırır) ve Q-22 kapsamı (yalnız görev modeli; Q-7 = B geçerli). Önceki: r1 (2026-11-06) — sahip kararları işlendi, Q-1…Q-24 kapandı, Slim/Compact yeniden sayıldı (8 alan → slim). Önceki: r0 (2026-11-05) — ilk taslak, sahip kararı Beste 2026-11-05 \"başlatalım\" (MVP-5, merkez). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; r0 itibarıyla onay satırı yoktu (ilk onay satırı r7'ye yazıldı, approvals.tsv:67)."
+status_note: "ready-for-dev r8 (2026-11-11) — approval_status pending: r8 yeni bağımsız inceleme (CT-APR-02) ve yeni onay satırı (CT-APR-01, onaylayan Ali / GMG-ERP) bekler; r7'nin onay satırı (approvals.tsv:67) EES 2.14 ile main'de geçersiz okunur (pack_approval.py check: 'iç içe ya da ters merge', 7e8aa77d87, PR #397). Kod durumu (§19.5): DL-1 CT VERIFIED ve main'de (PR #397); DL-2, DL-3, DL-4 CT VERIFIED yalnız MVP-1 hattında (ct/line-ff-2026-11-11b); DL-4 ACCEPTED değil (canlı ölçüm AC-39 / AC-38 / ar ve §24 AuthService rol şablonu kapısı, Q-4 = A, MOD-0018-FU31); DL-5, DL-6 başlamadı; WMS-COUNT-BUNDLE taslak (dondurma ayrı CT adımı). r8 davranış farkı yalnız AC-26 (SKU + kalem aynılığı, ORTA-2, uygulanmış). target: TBD — plan satırı verilmedi (§19.4 Plan hizalaması), sahip tarihi yok. Önceki not: ready-for-dev r7 (2026-11-06) — künye S-49 gereği ready-for-dev (onay satırı ready-for-dev künyeli sürüme yazılır); approval_status pending: kod CT-APR-02 künye farkı incelemesi ve CT-APR-01 onay satırından sonra yazılır. ready-for-dev geliştirme başlangıcı ya da kabul değildir. Bağımsız inceleme 01 (F-1…F-18), 02 (F-1…F-7), son bakış 01 (SB1/F-1…F-9), 02 (SB2/F-1…F-3) r3–r6'da kapandı; son bakış 03 (r6, 3fdc88a8) 0 ENGEL / 0 ORTA, iki DÜŞÜK bulgu (numara alma sırası ve boşluk kuralı §8.12; durum öneki parite bekçisi) DL-1 talimatına (S-101). İzlenen kapı: .antigravity/** satırları (PKS-001 §4 cycle-count.*, RCS-001 §3 CNT) — onaylayan Beste, ayrı WP, modül PR'ından önce."
 owner: supply-chain-execution / merkez (Beste) — MVP-5
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-05
@@ -28,9 +28,45 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03, MOD-0174, MOD-0175, MOD-0
 
 # MOD-0181 — Cycle Counting (Sayım)
 
-> **ready-for-dev (r7, 2026-11-06).** Bu paket `status: ready-for-dev`, `approval_status: pending`'dir (r7 yalnız künye farkıdır; gövde r6
-> ile aynı). **Paket onaylanmadan geliştirme başlamaz:** kod yalnız `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı
-> (CT-APR-01) ile yazılır (AGENTS.md Çekirdek madde 7). Onay satırı `execution/approvals/approvals.tsv`'dedir, bu dosyada değil.
+> **ready-for-dev (r8, 2026-11-11).** Bu paket `status: ready-for-dev`, `approval_status: pending`'dir. **Paket onaylanmadan geliştirme
+> başlamaz:** kod yalnız `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01) ile yazılır (AGENTS.md Çekirdek
+> madde 7). Onay satırları bu dosyada değil, `execution/approvals/approvals.tsv`'ye yazılır. r7'nin onay satırı (`approvals.tsv:67`, sahip «onayla»
+> Beste 2026-11-06) orada durur ama EES 2.14 ile main'de geçersiz okunur (r8 notu); **r8'in onay satırı henüz yoktur** — yeni bağımsız incelemeden
+> sonra yazılacaktır, onaylayan Ali (GitHub `GMG-ERP`). DL-1…DL-4 kodu r7'ye göre yazıldı ve CT doğrulandı (§19.5); r8 yalnız AC-26'nın
+> uygulanmış SKU + kalem aynılığını ve kayıt kararlarını pakete yazar.
+>
+> **Revizyon notu (r8, 2026-11-11).** Yeniden onay sürümü (EES 2.14) + DL-3 / DL-4 CT kabul kayıtlarındaki sahip kararları. Kaynaklar MVP-1 hat
+> etiketi **`ct/line-ff-2026-11-11b`** (`9cfe694d4`) üzerinde okundu (`git show`; DL-2…DL-4 kodu ve kayıtları yalnız orada) — bu notta
+> `LINE:` = o etiket. Kod atıfları `LINE:INV/...:satır` biçimindedir; r0–r7 atıfları `c101e22fa`'da kalır.
+> - **Yeniden onay (EES 2.14, PR #403):** `PYTHONUTF8=1 python scripts/pack_approval.py check <bu paket>` (main `3b42f0005`, 2026-11-11, çıkış 1,
+>   "sonuç: onay geçersiz") şu ENGEL satırlarını verir: «ENGEL: inceleme satır 243: main'e insan adımıyla gelmedi — onay satırı ana çizgiye
+>   7e8aa77d87ff ile geldi ama o merge'ün dalının kendi çizgisinde değil (iç içe ya da ters merge) — satırın PR'ı main'e başka bir kişi tarafından
+>   doğrudan merge edilmeli (dal üzerindeki inceleme satırı sayılmaz)» ve «ENGEL: insan adımı yok: onay satırı ana çizgiye 7e8aa77d87ff ile geldi ama
+>   o merge'ün dalının kendi çizgisinde değil (iç içe ya da ters merge) — satırın PR'ı main'e başka bir kişi tarafından doğrudan merge edilmeli».
+>   (Aynı koşuda `reviews.tsv` `568e8905877b` yalnız-ekleme ENGEL'i — `568e89058` bir dal merge'üdür, "Merge origin/main (#406) into
+>   chore/ct/approval-mod0262-fu01-r8-01" — ve ardından gelen "inceleme dosyası güvenilmez" satırı, aracın GitHub'a soramamasından doğar: bu makinede
+>   `gh` yok. Bu iki satır r7'nin geçersizlik gerekçesi sayılmadı; r8 onay satırı yazılmadan önce `check` `gh`'li bir makinede yeniden koşulmalıdır.)
+>   `7e8aa77d87` = PR #397 merge'ü
+>   (`feature/sce/mod-0173-inventory-ledger-valuation`, 2026-11-09). Sonuç: r8 = yeni sürüm → yeni bağımsız inceleme (CT-APR-02) → yeni onay satırı
+>   (CT-APR-01). **Onaylayan Ali (GitHub `GMG-ERP`)**: satırları yazan hesap Beste'nindir (`bestepullukcu-alt`), EES 2.14'te yazan ≠ onaylayan — sahip
+>   kararı 2026-11-11 (çağıran CT'nin bildirimi; MOD-0181 için ayrı karar kaydı yok), emsal `docs/records/decisions/2026-11/mod0178-owner-decisions-2026-11-11.md`
+>   D-6 ve `mod0262-fu01-owner-decisions-2026-11-11.md` D-3.
+> - **ORTA-2 — `AcceptHolder` aynılığına SKU + kalem (sahip kararı Beste «Ekle», 2026-11-10;** `LINE:docs/records/audits/2026-11/mod-0181-dl3-ct-acceptance-2026-11-10.md:34-37`**):**
+>   r7 aynılığı tür / miktar / bin / lot / statü / `SourceLineId` sayıyordu; aynı anahtarla, aynı bin ve miktarla başka SKU'lu bir tutucu `Posted`
+>   kabul edilebiliyor, sayılan SKU'nun stoğu hiç düzelmiyordu. r8: tutucu hareketin `SkuId` ve `ItemId`'si de satırınkiyle aynı olmalı (§8.3, §12,
+>   AC-26). **Uygulandı** (DL-4): `LINE:INV/Application/Features/CountVariances/Handlers/CommandHandlers/ResolveCountAdjustmentIntegrityHandler.cs:108-122`
+>   (`IsThisCorrection`; SKU `:112`, kalem `:113`); testler `LINE:INVT/CycleCount/CycleCountRecoveryTests.cs:189`, `:211`, `:232`; commit'ler
+>   `88054ac8a`, `e9946f076`. CT sabotajı (kalem karşılaştırması silindi) kırmızı (`LINE:docs/records/audits/2026-11/mod-0181-dl4-ct-acceptance-2026-11-11.md:26`).
+> - **Dilim durumu** kaydedildi (§19.5): DL-1…DL-4 CT VERIFIED; DL-4 ACCEPTED değil; DL-5 / DL-6 başlamadı; WMS-COUNT-BUNDLE taslak.
+> - **DL-4 kayıt kararları ve paket metni:** AC-35 ve §9 "her bir dosyada" → **"her sayfa görünümünde"** (partial `_*.cshtml` hariç — DL-4 kaydı
+>   `:36`, `.antigravity/rules/views-organization.md:39` "her Razor sayfasında"); §15'teki "0178 rota testinin sabit listesine dokunulmaz" cümlesi
+>   olanla çelişiyordu → sahip onaylı sayı değişiklikleri yazıldı. Metni değiştirmeyen kararlar (ORTA-1, DÜŞÜK-1 / DÜŞÜK-2 testleri, "Toplu Sil",
+>   `scanRef`, `Note.ManualCount`) ve açık sahip kararları (brief'ten eksik üç nokta) §19.5 tablolarında; **kapsam eklenmedi**.
+> - **Son bakış 04 (r7, `docs/records/reviews/MOD-0181/2026-11-06-acf91c85-son-bakis-04.md`) DÜŞÜK bulguları:** F-1 §18 ölçülen maddeler
+>   işaretlendi, ready-for-dev sonrası kapılar ayrıldı; F-2 `target: TBD` nedeni status_note'ta; F-3 bant ve revision ifadeleri düzeltildi.
+> Etkiler: künye (revision, status_note), bant, §8.3, §9, §12, §15, §16 (AC-26 — anlam genişledi, uygulanmış; AC-35 — lafız sayfa görünümüne
+> daraltıldı), §18, §19.4 (kalan açık noktalara r8 durumu), §19.5 (yeni), atıf kısaltmaları (`LINE:`). Dilim tablosu (§23) ve diğer AC'ler
+> değişmedi.
 >
 > **Revizyon notu (r6, 2026-11-06).** Bağımsız son bakış 02 (CT-APR-02, r5 @ `b4e3f879…3ad14198`, KOŞULLU, 0 ENGEL / 1 ORTA / 2 DÜŞÜK;
 > `docs/records/reviews/MOD-0181/2026-11-06-b4e3f879-son-bakis-02.md`; SB1'in dokuz bulgusu orada kapandı sayıldı) bulguları kapatıldı. Kimlikler
@@ -161,7 +197,9 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03, MOD-0174, MOD-0175, MOD-0
 > Kod atıfları **`c101e22fa`** (MVP-1 kod hattı ucu, `feature/sce/mod-0173-inventory-ledger-valuation`; MOD-0178 DL-4 ve MOD-0173-FU03
 > kodu yalnız orada) üzerinde ölçüldü ve `c101e22fa:INV/...:satır` biçiminde yazıldı. Paket atıfları `ecf085a0c` üzerindedir;
 > atıf yapılan SCE paketleri ve `domain-config.md` `c101e22fa` ile `ecf085a0c` arasında aynıdır (`git diff --stat` boş — r3 ölçümü, F-15).
-> **Çıkarım** ve **öneri** olarak işaretlenmeyen her cümle bir kaynağa dayanır; kaynaksız değer yazılmadı (bilinmeyen = TBD + Q-).
+> **r8:** `LINE:` = MVP-1 hat etiketi `ct/line-ff-2026-11-11b` (`9cfe694d4`); r8'de eklenen kod / kayıt atıfları orada ölçüldü (`LINE:INV/...:satır`,
+`LINE:docs/...:satır`).
+**Çıkarım** ve **öneri** olarak işaretlenmeyen her cümle bir kaynağa dayanır; kaynaksız değer yazılmadı (bilinmeyen = TBD + Q-).
 
 ## 0. Kimlik ön kontrolü ve keşif
 
@@ -638,7 +676,9 @@ sahibi TBD (yalnız FU-0181-REASON için).
 `MovementDuringCount = true` **ya da** `SnapshotDrift = true`; drift'li satır farkı 0 olsa da onaysız kapanmaz) → `Approved` (onay ya da tolerans içi — §8.5) \| `Rejected` \|
 `Recounted`. `Approved` satırın `Adjustment.Status`'u: `Pending` → `Posted` \| `Refused` \| `IntegrityError`. `Refused` satır için yalnız
 `Reject` ya da `Recount` (rezervasyon engelinde ayrıca `Retry` — §8.7); `IntegrityError` için yalnız `resolve-integrity` (F-12):
-`AcceptHolder` — anahtarı tutan hareket bu satırın düzeltmesiyle **aynı** (tür, miktar, bin, lot, statü, `SourceLineId`) ve ters
+`AcceptHolder` — anahtarı tutan hareket bu satırın düzeltmesiyle **aynı** (tür, **SKU (`SkuId`)**, **kalem (`ItemId`)**, miktar, bin, lot, statü,
+`SourceLineId` — SKU ve kalem r8'de eklendi, ORTA-2 sahip kararı Beste «Ekle» 2026-11-10; uygulama
+`LINE:INV/Application/Features/CountVariances/Handlers/CommandHandlers/ResolveCountAdjustmentIntegrityHandler.cs:108-122`) ve ters
 kaydedilmemişse `Adjustment.Posted` (tutucunun `TransactionId` / `TransactionNumber`'ı; yeni hareket yok); aynı değilse 409
 `COUNT_ADJUSTMENT_INTEGRITY`. `Reject` — satır `Rejected` + gerekçe, `Adjustment.Status` `IntegrityError` olarak kalır (tarihçe), hareket
 yok. Her iki sonuç da satırı son duruma getirir; `Closed` koşulu böylece ulaşılabilir. `SnapshotDrift` satırda yalnız `Reject` / `Recount`.
@@ -824,8 +864,11 @@ Blueprint AI Tier `Assist`, kullanım Summarize / Extract / Recommend / Route, r
 Eval/Drift; Logging" (satır 182 Y–AB). **Karar (Q-14 = A, karar 2026-11-06):** MVP-5 v1 kapsamı **dışında**; hiçbir AI ucu ya da çağrısı yok; FU-0181-AI.
 
 ## 9. Layout & Shell Contract
-- `shell: tenant` → `Views/Warehouse/{CycleCounts,CountVariances,CountEvidenceExports}/*.cshtml` dosyalarının **her birinde**
-  `Layout = "_LayoutTenantShell";` **AÇIKÇA** yazılır (sayım formu `CountSheet.cshtml` dahil); `_ViewStart.cshtml` varsayılanı değişmez.
+- `shell: tenant` → `Views/Warehouse/{CycleCounts,CountVariances,CountEvidenceExports}/` altındaki **her sayfa görünümünde** (`Index.cshtml`,
+  sayım formu `CountSheet.cshtml`; DL-5'te `CountEvidenceExports/Index.cshtml`) `Layout = "_LayoutTenantShell";` **AÇIKÇA** yazılır;
+  partial'lar (`_*.cshtml`) Layout taşımaz — partial'da Layout ikinci kabuk çizer (r8; DL-4 CT kaydı
+  `LINE:docs/records/audits/2026-11/mod-0181-dl4-ct-acceptance-2026-11-11.md:36`, MOD-0178 AC-21 emsali, `.antigravity/rules/views-organization.md:39`
+  "her Razor sayfasında"). `_ViewStart.cshtml` varsayılanı değişmez.
 - View klasörü `Views/Warehouse/{Module}/` (MOD-0178'in `Views/Warehouse/PutawayTasks/` emsali); rota `/Warehouse/{Module}`.
 - Yetkisiz kullanıcıya sayfa iskeleti çizilmez, yönlendirme yapılmaz (UAS-001, `.antigravity/rules/unauthorized-surface-standard.md` §1–§2).
 
@@ -902,7 +945,7 @@ sunucu sayfalıdır.
 | Found satır (Sku/Lot/Bin) | Evet | bin `ScopeBinIds` içinde ve `ScopeSkuIds` doluysa SKU onun içinde (aksi 422 `COUNT_LINE_OUT_OF_SCOPE` — süzgeç dışı SKU'nun bakiyesi beklenene girmediği için kalıcı drift doğardı, SB1/F-7); yeniden sayım sayımında anahtar `RecountExcludedKeys`'te değil (aksi 422 `COUNT_LINE_OUT_OF_SCOPE`, r6, SB2/F-2); anahtar sayımda tekil (aksi 409 `COUNT_LINE_DUPLICATE`); lot kontrollüde lot zorunlu (aksi 400 `COUNT_LOT_REQUIRED`) ve MOD-0174'te kayıtlı (yoksa 422 `COUNT_LOT_UNKNOWN`, Q-10 = A) | tekil satır index'i | PRODUCT-MASTER, MOD-0174 lot okuması |
 | Ret / iptal / toplu silme / `resolve-integrity` / yeniden sayım gerekçesi | Evet | trim, 1..500 | — | — |
 | Yeniden sayım isteği (`POST …/cycle-counts/{countId}/recount`) | Evet | `lineIds` 1..200, uuid, tekrarsız, hepsi `{countId}`'ye ait ve `AwaitingApproval` \| (`Approved` + `Refused`) (aksi 409 `COUNT_INVALID_STATE`); hiçbirinde `RecountDepth ≥ MaxRecounts` (aksi 409 `COUNT_RECOUNT_LIMIT`); `assignedTo` kullanıcı dizininde, şirkette etkin; `plannedDate` ≥ bugün; `note` ≤ 500; `blind` / `countType` / kapsam alanları gövdede gelirse 400 (türetilir, §8.5) (r5, SB1/F-1) | — | kaynak sayım okuması, `If-Match` |
-| `resolve-integrity` kararı | Evet | `AcceptHolder` \| `Reject`; `AcceptHolder` yalnız tutucu hareket satırın düzeltmesiyle aynı ve ters kaydedilmemişse (§8.3) | — | `IPostingKeyLookup` |
+| `resolve-integrity` kararı | Evet | `AcceptHolder` \| `Reject`; `AcceptHolder` yalnız tutucu hareket satırın düzeltmesiyle aynı (tür, SKU, kalem, miktar, bin, lot, statü, `SourceLineId` — r8, ORTA-2) ve ters kaydedilmemişse (§8.3); aksi 409 `COUNT_ADJUSTMENT_INTEGRITY` | — | `IPostingKeyLookup` + tutucunun defter satırı (`SkuId`, `ItemId`) |
 | Tolerans (ayar) | Evet | `ToleranceAbsolute` decimal ≥ 0; `TolerancePercent` 0..100 (Q-3 = A) | tekil şirket kaydı | — |
 | MaxRecounts / MaxLinesPerCount (ayar) | Hayır (varsayılan 2 / 2000) | tam sayı ≥ 0 / ≥ 1 (Q-11, Q-24 = A); üst sınır sözleşme taslağında | tekil şirket kaydı | — |
 | Idempotency-Key | Evet (her yazma) | 8–100 karakter (`WarehouseContract.cs:15-16` emsali) | tekil kısmi index | anahtar araması |
@@ -981,8 +1024,16 @@ SortOrder 181, Pages `CYCLECOUNTS` (nav), `COUNTSHEET` (nav değil), `COUNTVARIA
   `/api/warehouse/count-evidence-exports…` — mevcut `/api/warehouse/{everything}` → 5067 rotasının altında
   (`c101e22fa:gateway/Diten.ApiGateway/ocelot.json:1153-1161`); **`ocelot.json` değişmez**; `ScopedBasePaths` zaten kapsar
   (`InventoryScopeResolutionMiddleware.cs:61`). Gerekli: integration-agent'ın 0181 uç kapsama testi — ayrı dosya (öneri
-  `Mod0181CycleCountRouteTests`; emsal `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs`, onun sabit listesine dokunulmaz) — ve
+  `Mod0181CycleCountRouteTests`; emsal `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs`) — ve
   `/api/warehouse` rota ailesinin sahibi MOD-0178'in onayı (XMC-001; aile tek-yazıcı seam'dir — `domain-config.md` K15).
+- **r8 — 0178 rota testinin sayısı (r7'deki "onun sabit listesine dokunulmaz" cümlesi olanla çelişiyordu, kaldırıldı):** 0181'in uçları
+  `/api/warehouse` altında doğduğu için `Mod0178WarehouseRouteTests`'in yönlendirilen uç sayısı her dilimde yükseldi; her artış sahip onaylıdır ve
+  `ocelot.json` değişmedi: DL-1 45 → 54 (Beste «İkisini de ekle», 2026-11-09 — `LINE:docs/records/audits/2026-11/mod-0181-dl1-ct-acceptance-2026-11-09.md:92-94`),
+  DL-2 54 → 57 (commit `96e25bf9b`, mesajında "XMC-001, Beste 2026-11-10"; DL-2 kabul kaydında ayrıca yazılı değil),
+  DL-3 60 → 69 (Beste «Evet», "69 yap", 2026-11-10 — `LINE:docs/records/audits/2026-11/mod-0181-dl3-ct-acceptance-2026-11-10.md:47`),
+  DL-4 69 → 70 (Beste «70 yap», 2026-11-11 — `LINE:docs/records/audits/2026-11/mod-0181-dl4-ct-acceptance-2026-11-11.md:14`). Ara 57 → 60
+  MOD-0178 DL-7'nindir (`94d40e853`, üç S3 okuma ucu), 0181 değil. Artış yalnız sayıdır, test gevşemez (her yeni uç "tam bir rota → 5067"
+  assert'inden geçer — DL-1 kaydı `:20`). DL-6'nın ayrı kapsama testi (`Mod0181CycleCountRouteTests`, AC-45) hâlâ yapılacaktır.
 - **Seçilmeyen — B:** ayrı taban `/api/cycle-counts` (yeni rota + `ScopedBasePaths` eklemesi) — v1'de yok.
 - Elle `COUNT_*` görünümü (`GET /api/warehouse/count-variances?source=manual|all`) aynı aile altındadır; 0181 MOD-0173'ün `/api/inventory`
   rotasını çağırmaz (defter okuması süreç içi, §2.4) — Gateway'de MOD-0173 rotası değişmez (Q-21 = A, r2).
@@ -1030,7 +1081,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - [ ] AC-23 (zorunlu) — Onay → posting: fark +2 → tek `COUNT_GAIN` (to = satır bin'i, `toStockStatus` = satır statüsü, lot), fark −2 → tek `COUNT_LOSS` (from = bin); miktar 2, baz birim; `sourceModule = MOD-0181`, `sourceType = CYCLE_COUNT`, `sourceDocumentId` = sayım, `sourceLineId` = satır, anahtar `cycle-count:{lineId}`; satır `Adjustment.Posted` + `TransactionNumber`; son satır bitince sayım `Closed`.
 - [ ] AC-24 (zorunlu) — İdempotent posting: aynı satırın onayı iki kez, onay + retry, iki eşzamanlı retry → defterde aynı anahtarla tek hareket; ikinci cevap 200 replay. Sabotaj: anahtara deneme sayacı / rastgele değer ekle → iki hareket, kırmızı.
 - [ ] AC-25 (zorunlu) — Pending kurtarma: defter 503 / 500 / 502 / 504 / iptal / beklenmeyen istisna (ayrı testler) → `Adjustment.Pending` + 503, `Refused` yazılmaz; commit öncesi hata → retry `NotCommitted` bulur, aynı anahtarla post → `Posted`, tek hareket; commit sonrası hata → sweeper ya da retry `Committed` bulur → `Posted`, ikinci hareket yok; `transactionDate` / `postingDate` her denemede bayt-bayt aynı. Sabotaj (ayrı ayrı): sonucu bilinmeyen 5xx'i `Refused`'a eşle → kırmızı; `postingDate`'i her denemede yeniden hesapla → commit sonrası kurguda parmak izi değişir, retry / sweeper'ın `IPostingKeyLookup`'ı `KeyReusedDifferentPayload` döner (`c101e22fa:INV/Application/Features/Inventory/Ports/IPostingKeyLookup.cs:14-15`) ve satır `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY` olur, beklenen `Posted` gelmez, kırmızı (F-8).
-- [ ] AC-26 (zorunlu) — Bütünlük: anahtar başka içerikle defterde (`KeyReusedDifferentPayload`) ya da tutucu hareket ters kaydedilmiş → `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY`; `resolve-integrity` yalnız `cycle-count.variances.resolve` ile ve gerekçeyle (F-12): `AcceptHolder` tutucu hareket satırın düzeltmesiyle aynı ve ters kaydedilmemişse `Adjustment.Posted` + tutucunun `TransactionNumber`'ı, yeni hareket yok; aynı değilse 409; `Reject` → satır `Rejected`, hareket yok; her iki sonuçtan sonra son satırsa sayım `Closed`. Sabotaj: `AcceptHolder`'da aynılık denetimini kaldır → farklı içerikli tutucu `Posted` sayılır, kırmızı. **r5 (SB1/F-4):** ilk posting'te defter 400 `IDEMPOTENCY_KEY_REUSED` dönerse satır `Refused` olmaz: lookup sorulur, `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY`. Sabotaj: bu kodu genel ret eşlemesine bırak → satır `Refused` olur, kırmızı.
+- [ ] AC-26 (zorunlu) — Bütünlük: anahtar başka içerikle defterde (`KeyReusedDifferentPayload`) ya da tutucu hareket ters kaydedilmiş → `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY`; `resolve-integrity` yalnız `cycle-count.variances.resolve` ile ve gerekçeyle (F-12): `AcceptHolder` tutucu hareket satırın düzeltmesiyle aynı (§8.3: tür, SKU, kalem, miktar, bin, lot, statü, `SourceLineId`) ve ters kaydedilmemişse `Adjustment.Posted` + tutucunun `TransactionNumber`'ı, yeni hareket yok; aynı değilse 409; `Reject` → satır `Rejected`, hareket yok; her iki sonuçtan sonra son satırsa sayım `Closed`. Sabotaj: `AcceptHolder`'da aynılık denetimini kaldır → farklı içerikli tutucu `Posted` sayılır, kırmızı. **r8 (ORTA-2, sahip kararı Beste «Ekle» 2026-11-10) ek vaka — uygulandı (DL-4, `88054ac8a` + `e9946f076`):** aynı anahtar, aynı `sourceLineId`, aynı bin ve miktarla **başka SKU'lu** tutucu (aynı kalem) → `IntegrityError` → `resolve-integrity` `AcceptHolder` → 409 `COUNT_ADJUSTMENT_INTEGRITY`, satır `IntegrityError` kalır, `Adjustment.TransactionId` yazılmaz; ayrı vaka olarak **başka kalemli** tutucu (aynı SKU) için de `AcceptHolder` → 409 `COUNT_ADJUSTMENT_INTEGRITY` ve satır `IntegrityError` kalır; gerçek defter API'siyle başka ürünlü (kalem + SKU) tutucuda ayrıca sayılan SKU'nun bakiyesi tutucuyla düzelmemiş kalır (testler `LINE:INVT/CycleCount/CycleCountRecoveryTests.cs:189` `AC26_ORTA2_a_holder_of_another_SKU_is_not_accepted`, `:232` `…another_item…`, `:211` `…another_product…`). Sabotaj (ayrı ayrı): `IsThisCorrection`'dan SKU karşılaştırmasını kaldır (`LINE:…/ResolveCountAdjustmentIntegrityHandler.cs:112`) → başka SKU'lu tutucu `Posted` olur, SKU testi kırmızı; kalem karşılaştırmasını kaldır (`:113`) → başka kalemli tutucu `Posted` olur, kalem testi kırmızı. Kanıt: kalem sabotajı CT'de kırmızı (`LINE:docs/records/audits/2026-11/mod-0181-dl4-ct-acceptance-2026-11-11.md:26`); SKU sabotajı geliştirici ölçümü (ilk biçimde yeşil kaldığı için test yalnız SKU'yu değiştirecek biçimde düzeltildi — `e9946f076` mesajı; geliştiricinin 19 sabotajı kırmızı, DL-4 kaydı `:21`), CT tekrar etmedi. **r5 (SB1/F-4):** ilk posting'te defter 400 `IDEMPOTENCY_KEY_REUSED` dönerse satır `Refused` olmaz: lookup sorulur, `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY`. Sabotaj: bu kodu genel ret eşlemesine bırak → satır `Refused` olur, kırmızı.
 - [ ] AC-27 (zorunlu) — Rezervasyon: AVAILABLE 10, ayrılmış 8, sayılan 1 (fark −9) → onay → defter 422 `INSUFFICIENT_STOCK` + `details.level` → `Adjustment.Refused`, `RefusalCode` ve `details` aynen, hareket yok, Variance Trace'te "rezervasyon engeli"; rezervasyon bırakılınca `retry` (`variances.post`) aynı anahtarla `Posted` (Q-9 = A). Sabotaj: 0181'in ret eşlemesinde 422'yi `Posted` ya da kısmi miktarla yeniden deneme yap → kırmızı.
 - [ ] AC-28 (zorunlu) — Defter retleri aynen: `LOT_BLOCKED`, `LOT_EXPIRED`, `SERIAL_COUNT_MISMATCH`, kaynak satır yetmez `INSUFFICIENT_STOCK` → `Refused`, kod ve `details` değişmeden; satır miktarları değişmez.
 - [ ] AC-29 (zorunlu) — Tek stok kapısı (F-7): `ExpiryQuarantineTypeExemptionTests` 0181'in tek `_poster.PostAsync(` çağrı yerini (`Mod0181StockDoor.PosterCall`, `:124` assert'i) ve tek `InternalMovementPostingService` kullanıcısını (`Mod0181StockDoor.InternalPostingUser`, `:133-134` assert'i) bilir; 0181 mimari testi `ICycleCountMovementPoster`'ın yalnız `CycleCountPostingEngine`'de ve tek `.PostAsync(` çağrısıyla kullanıldığını ölçer (alan adından bağımsız); 0181 yalnız `COUNT_GAIN` / `COUNT_LOSS` yazar. Sabotaj (ayrı ayrı): ikinci bir `_poster.PostAsync(` çağrısı ekle → `ExpiryQuarantineTypeExemptionTests` kırmızı; farklı adlı bir alanla (`_ledgerPoster.PostAsync(`) ikinci çağrı ekle → 0181 mimari testi kırmızı; 0181'den `LOCATION_TRANSFER` iste → 0181 birim testi kırmızı.
@@ -1045,7 +1096,7 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 
 **DL-4 — ekranlar, 7 dil, 375 px**
 
-- [ ] AC-35 (zorunlu) — `Views/Warehouse/CycleCounts/*.cshtml`, `Views/Warehouse/CountVariances/*.cshtml` (ve DL-5'te `CountEvidenceExports`) dosyalarının her birinde `Layout = "_LayoutTenantShell"` açıkça yazılı.
+- [ ] AC-35 (zorunlu) — `Views/Warehouse/CycleCounts/`, `Views/Warehouse/CountVariances/` (ve DL-5'te `CountEvidenceExports/`) altındaki her sayfa görünümünde (`Index.cshtml`, `CountSheet.cshtml`; partial `_*.cshtml` hariç — §9, r8) `Layout = "_LayoutTenantShell"` açıkça yazılı.
 - [ ] AC-36 (zorunlu) — `python3 .antigravity/scripts/verify_datatable_page.py . --area Warehouse --module CycleCounts` ve `--module CountVariances` (DL-5: `CountEvidenceExports`) PASS; `data_mode: server` sayfa beyanıyla aynı; `quality-gate-datatable` PASS.
 - [ ] AC-37 (zorunlu) — 7 dil: her resx anahtarı en, tr, fr, es, zh, ar, ru'da var (parite testi); `ar` sağdan sola düzgün; kullanıcıya görünen hardcoded metin yok; hata kodlarının UI metinleri 7 dilde.
 - [ ] AC-38 (zorunlu) — UAS-001: `cycle-count.counts.read` olmayan kullanıcı `/Warehouse/CycleCounts`'ta ve sayım formunda (`/Warehouse/CycleCounts/Sheet/{countId}`, `COUNTSHEET` — F-14) başlık, kart, boş tablo, satır ya da eylem düğmesi görmez; tek açıklama + ne yapılacağı; yönlendirme yok; `variances.read` olmayan için Variance Trace aynı. Sabotaj: izin denetimini kaldırıp iskeleti çiz → UAS-001 testi kırmızı.
@@ -1088,25 +1139,35 @@ bozma geri alınır (kendi kopyasıyla ölçen test guard sayılmaz).
 - **Sözleşme:** WMS-COUNT-BUNDLE taslağına karşı sözleşme testi (`WmsDraftContract.cs` emsali, `c101e22fa:INVT/Warehouse/WmsDraftContract.cs`).
 
 ## 18. Ready-for-dev Checklist
+**r8 (son bakış 04 F-1):** standart bu listeyi ready-for-dev'den önce onaylanacak maddeler sayar (`module-pack-standard.md:279`). Belge maddeleri
+son bakış 01–03'te ölçüldü ve tuttu (son bakış 04, `docs/records/reviews/MOD-0181/2026-11-06-acf91c85-son-bakis-04.md:30`); r8'de işaretlendi.
+Doğası gereği ready-for-dev **sonrası** olan kapılar ayrı alt başlıktadır.
+
+**Belge maddeleri (ready-for-dev öncesi)**
 - [x] Golden Reference Slim (DEV-0000 + gerçek kod) referans olarak okundu — r4: DEV-0000 pack metninin tamamı `:1-242` okundu (r3'te `:1-175`; 02/F-6), Golden Slim kod ağacı `c101e22fa`'da listelendi (F-16); form alan sayısı 8 → slim (§4.1); sapma G-0181-01 adıyla §10'da
-- [ ] Frontmatter zorunlu alanları dolu (service, shell, golden_reference, data_mode, screens, entity_base)
-- [ ] Layout & Shell Contract'ta `_LayoutTenantShell` açıkça yazılı
-- [ ] Backend File Convention Golden Reference ile birebir
-- [ ] Frontend File Contract Slim dosya listesi tam (Compact dosyası yok)
-- [ ] Validation Rules her alan için yazılı
-- [ ] Failure Path en az 4 senaryo (duplicate, missing, unauthorized, concurrency) — yazılı
-- [ ] Authorization Convention: namespace (Q-16 = A, karar verildi), anahtarlar, politika, aktör
+- [x] Frontmatter zorunlu alanları dolu (service, shell, golden_reference, data_mode, screens, entity_base) — `target: TBD` nedeni status_note'ta (son bakış 04 F-2)
+- [x] Layout & Shell Contract'ta `_LayoutTenantShell` açıkça yazılı (r8: her sayfa görünümünde, partial hariç — §9)
+- [x] Backend File Convention Golden Reference ile birebir (sapma G-0181-01 adıyla, §10)
+- [x] Frontend File Contract Slim dosya listesi tam (Compact dosyası yok)
+- [x] Validation Rules her alan için yazılı
+- [x] Failure Path en az 4 senaryo (duplicate, missing, unauthorized, concurrency) — yazılı
+- [x] Authorization Convention: namespace (Q-16 = A, karar verildi), anahtarlar, politika, aktör
 - [x] Gateway kararı (Q-15 = A) verildi; integration-agent işi tanımlı (AC-45)
-- [ ] Acceptance criteria test edilebilir; her guard sabotajlı
-- [ ] Test expectations build / verifier / RESX / smoke kapsıyor
-- [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor (AUD-001)
-- [ ] Sayfa yardım metni her sayfa için yazılı (UXH-001); tur yok
+- [x] Acceptance criteria test edilebilir; her guard sabotajlı
+- [x] Test expectations build / verifier / RESX / smoke kapsıyor
+- [x] Audited Events tablosu her yazma komutunu tam bir kez içeriyor (AUD-001)
+- [x] Sayfa yardım metni her sayfa için yazılı (UXH-001); tur yok
 - [x] Açık kararlar Q-1…Q-24 sahip kararıyla kapandı (r1, 2026-11-06, §19.4); r1'in iki uygulama notu (PKS-001 §2, Q-22 / Q-7 okunuşu) r2'de sahip teyidiyle kapandı
-- [ ] XMC-001 seam'leri (§5) sahiplerinden onay aldı
+- [x] WMS-COUNT-BUNDLE taslağı yazıldı — `docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md` (main'de var; DL-1 `fca238d20`); **dondurma** ayrı CT adımıdır, henüz yapılmadı (§19.5)
+
+**Ready-for-dev sonrası kapılar (dilim / modül PR'ı)**
+- [ ] Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **r8 için ikisi de yok** (r7'ninki EES 2.14 ile geçersiz; onaylayan Ali / `GMG-ERP`, r8 notu)
+- [ ] XMC-001 seam'leri (§5) sahiplerinden onay aldı — DL-1…DL-4'te dokunulan seam'lerin ve §5 dışı dokunuşların onayları dilim kabul kayıtlarında (§19.5); DL-5 / DL-6 seam'leri açık
 - [ ] `.antigravity/**` kapısı (izlenen, 02/F-7): PKS-001 §4 `cycle-count.*` satırı ve RCS-001 §3 `CNT` satırı — onaylayan Beste (kullanıcı onayı,
-  Çekirdek md. 6), yazan ayrı WP, **kapanış: modül PR'ı açılmadan önce**; paket onayını ve dilim başlangıcını engellemez (§6)
-- [ ] WMS-COUNT-BUNDLE taslağı yazıldı
-- [ ] Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01)
+  Çekirdek md. 6), yazan ayrı WP, **kapanış: modül PR'ı açılmadan önce**; paket onayını ve dilim başlangıcını engellemez (§6). **r8 durumu:** iki satır
+  WP-MOD0181-ANTIGRAVITY-ROWS ile MVP-1 hattında yazıldı (`99ea4c5c1`, sahip onayı Beste 2026-11-10; `LINE:.antigravity/rules/permission-key-standard.md:103`,
+  `LINE:.antigravity/rules/record-coding-standard.md:71`); main'de yok — hat PR'ı main'e girince kapanır
+- [ ] WMS-COUNT-BUNDLE dondurma (CT adımı, `docs/analysis/contracts/wms-count-bundle.openapi.yaml`)
 
 ## 19. Implementation Notes
 
@@ -1258,6 +1319,11 @@ olarak teyit etti (yeni izin yok) ve Q-22'nin kapsamını daralttı (yalnız gö
     yakalar (yanlış post yok, yalnız gereksiz yeniden sayım).
 4. r2'den devreden: elle `COUNT_*` okumasının büyük depoda süresi (aşağıda r2 madde 2) — hâlâ açık.
 
+**r8 durumu (2026-11-11, §19.5):** madde 1 — iki satır WP-MOD0181-ANTIGRAVITY-ROWS ile MVP-1 hattında yazıldı (`99ea4c5c1`, sahip onayı Beste
+2026-11-10), main'de yok; hat PR'ı main'e girince kapanır (§18). Madde 2 — DL-4'te `verify_datatable_page.py` iki modülde PASS (geliştirici ölçümü,
+`LINE:docs/records/audits/2026-11/mod-0181-dl4-ct-acceptance-2026-11-11.md:20`); sapma sorusu doğmadı. Madde 3 — değişmedi. Madde 4 — DL-3'te
+ölçüm testi kuruldu (`LINE:INVT/CycleCount/CycleCountManualMovementTests.cs:141-220`), ölçülen süre bir kayda yazılmadı; açık kalır.
+
 **Kalan açık nokta (r2, tarihçe):**
 1. r1'in iki uygulama notu (Q-21 / PKS-001 §2; Q-22 ile Q-7 = B'nin okunuşu) **r2'de sahip teyidiyle kapandı** (Beste, 2026-11-06): Q-21 = A, yeni
    izin yok; Q-22 yalnız görev modeli, Q-7 = B geçerli.
@@ -1268,6 +1334,68 @@ olarak teyit etti (yeni izin yok) ve Q-22'nin kapsamını daralttı (yalnız gö
 
 **Plan hizalaması (2026-11-01 kuralı):** bu oturuma modülün plan satırı (`1.x.y` yetenek kimliği, plan MVP kimliği) verilmedi; plan dosyası depoda
 değildir. Dilim tablosunda `plan kimliği yok` / `plan satırı yok` yazıldı. Depodaki yol haritası belgesi MVP-5'i söyler (`integration-phase-and-mvp5-start-plan-2026-10-21.md:78`).
+
+### 19.5 r8 — dilim durumu, DL-3 / DL-4 kayıt kararları, açık noktalar (2026-11-11)
+
+**Okunan kaynaklar (r8, salt okuma):** `LINE:docs/records/audits/2026-11/mod-0181-dl1-ct-acceptance-2026-11-09.md` (tamamı; main'de de var),
+`LINE:…/mod-0181-dl2-ct-acceptance-2026-11-10.md`, `LINE:…/mod-0181-dl3-ct-acceptance-2026-11-10.md`, `LINE:…/mod-0181-dl4-ct-acceptance-2026-11-11.md`
+(tamamı); `LINE:INV/Application/Features/CountVariances/Handlers/CommandHandlers/ResolveCountAdjustmentIntegrityHandler.cs:60-122`;
+`LINE:INVT/CycleCount/CycleCountRecoveryTests.cs:180-255`; `LINE:INVT/CycleCount/CycleCountSettingsTests.cs:71-73`,
+`LINE:INVT/CycleCount/CycleCountArchitectureTests.cs:87-95`, `LINE:INVT/CycleCount/CycleCountDecisionRulesTests.cs:23-24`,
+`LINE:INVT/CycleCount/CycleCountRecountTests.cs:123`, `LINE:INVT/CycleCount/CycleCountManualMovementTests.cs:141-220`;
+`LINE:INV/Api/CycleCount/CycleCountRequestReader.cs:69-86`; `LINE:frontend/Diten.Web/Views/Warehouse/{CycleCounts,CountVariances}/` (dosya listesi,
+`Layout` satırları); commit mesajları `88054ac8a`, `e9946f076`, `96e25bf9b`, `5ab424fc0`, `94d40e853`, `99ea4c5c1`;
+`docs/records/reviews/MOD-0181/2026-11-06-acf91c85-son-bakis-04.md`; `docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md:1-12`;
+`scripts/pack_approval.py check` çıktısı (r8 notu); `execution/approvals/approvals.tsv:67`, `execution/approvals/reviews.tsv` (MOD-0181 satırları).
+Ana çizgi ölçümleri `git merge-base --is-ancestor` ile (main = `3b42f0005`).
+
+**Dilim durumu (kaynaklı; "VERIFIED" CT kod doğrulamasıdır, kabul (ACCEPTED) değildir):**
+
+| Dilim | Durum | Kod (commit'ler) | Main'de mi | Kayıt | Açık kalan |
+|---|---|---|---|---|---|
+| DL-1 | **CT VERIFIED** (önce KOŞULLU; WP-0181-DL1-FIX-01 yeniden doğrulaması 2026-11-09) | `fca238d20` (taslak), `6263d10f7`, `2e37b9b0f`, `446cb58db`; düzeltme `7bd8688a7`, `3480daffd` | **evet** — PR #397 (`7e8aa77d87`) | `docs/records/audits/2026-11/mod-0181-dl1-ct-acceptance-2026-11-09.md:10-11`, `:133-134`, `:218` | — (kaydın "açık kalanlar"ı sonraki dilimlere geçti) |
+| DL-2 | **CT VERIFIED (DL-2 kodu)**, 2026-11-10; hat ORTA-1'i (`CNT` katalog testi) sahip kararı (a) ile kapandı | `7e75c22a7`, `967478ad9`, `96e25bf9b` | hayır — yalnız MVP-1 hattında | `LINE:…/mod-0181-dl2-ct-acceptance-2026-11-10.md:7-8`, `:30-35`, `:46` | seri kontrollü satırın tam sayı kuralı ve eşzamanlı giriş testle ölçülmedi (`:43`) |
+| DL-3 | **CT VERIFIED**, 2026-11-10 (ENGEL yok; ORTA-1 / ORTA-2 sahip kararıyla DL-4'e) | `2d42a5380`, `d3728e393`, `65b968b64`, `5ab424fc0` | hayır | `LINE:…/mod-0181-dl3-ct-acceptance-2026-11-10.md:4-7`, `:53` | Role Permissions köprüsü ve `wms_count_settings` onayının teyidi (`:49-50`, aşağıda) |
+| DL-4 | **CT VERIFIED (kod ve testler)**, 2026-11-11 — **ACCEPTED değil** | `ee2538b6d` (main merge), `a46ec0952`, `88054ac8a`, `e0bf26918`, `e89891108`, `e9946f076` | hayır | `LINE:…/mod-0181-dl4-ct-acceptance-2026-11-11.md:4-8`, `:43` | iki kapı: (1) canlı ölçüm — AC-39 375 px, AC-38 yetkisiz yüzey, `ar` ekranı (filo kapalı, kiracı girişi sahipte); (2) §24 DL-4 kabul kapısı AuthService rol şablonu (Q-4 = A; Ali, MOD-0018-FU31) |
+| DL-5 | **başlamadı** | — (`CountEvidenceExport*` hatta 0 dosya) | — | — | AC-43, AC-44, AC-50 |
+| DL-6 | **başlamadı** | — (`Mod0181CycleCountRouteTests` hatta yok) | — | — | AC-45 (integration-agent) |
+| WMS-COUNT-BUNDLE | **taslak** (`docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md`) | `fca238d20`, `2d42a5380`, `a46ec0952` | taslak main'de (DL-1 hali); DL-3 / DL-4 ekleri hatta | DL-4 kaydı `:41` | dondurma ayrı CT adımı; taslağın başlığı kaynak olarak "paket r7"yi anar — r8 onaylanınca taslak güncellenmeli (bu paketin dışında) |
+
+Sıra kuralı (§24, F-10) tutuyor: DL-4 kod doğrulaması DL-3 doğrulamasından sonra. **Dilim tablosu (§23) değişmedi.**
+
+**DL-3 / DL-4 kayıtlarındaki sahip kararları ve bulgular — paket metnine etkisi:**
+
+| Kimlik (kayıt) | Karar / bulgu | Sahip kararı | Uygulama / kanıt | Paket metni |
+|---|---|---|---|---|
+| DL-3 ORTA-1 | AC-49 "manifest `ApiPermissions` tam olarak `settings.read` / `.configure`": DL-3'te test manifest yerine kendi sabitini ölçüyordu | Beste «Tamam», 2026-11-10 (DL-3 kaydı `:31-33`) | DL-4: eşitlik manifestin kendisinde — `LINE:INVT/CycleCount/CycleCountSettingsTests.cs:71-73`, `CycleCountArchitectureTests.cs:87-90` | doğru — **değişmedi** (AC-49 zaten "tam olarak" der) |
+| DL-3 ORTA-2 | `AcceptHolder` aynılığında SKU / kalem yok | Beste «Ekle», 2026-11-10 (`:34-37`) | DL-4: `ResolveCountAdjustmentIntegrityHandler.cs:112-113`; testler `CycleCountRecoveryTests.cs:189`, `:211`, `:232`; CT sabotajı kırmızı (DL-4 kaydı `:26`) | **r8'de değişti** — §8.3, §12, AC-26 |
+| DL-3 DÜŞÜK-1 | tolerans sınırı (`≤`) testsizdi (CT-3 `<` sabotajı yeşil kaldı) | — (DL-4 talimatı) | sınır satırları `LINE:INVT/CycleCount/CycleCountDecisionRulesTests.cs:23-24`; DL-4 kaydı `:29-30` "geliştirici sabotajlarıyla kapandı" | doğru — §8.5 "≤" der; **değişmedi** |
+| DL-3 DÜŞÜK-2 | `MaxRecounts` "isteğin tamamı" karışık derinlikle test edilmemişti | — | `LINE:INVT/CycleCount/CycleCountRecountTests.cs:123` | doğru — §8.5 "isteğin tamamını … reddeder (kısmi yeniden sayım yok)"; **değişmedi** |
+| DL-3 DÜŞÜK-3 | `Perm.Entity.VARIANCES` en / tr Title Case değil | — | DL-4'te kapandı (kayıt `:29-30`) | pakette metin yok |
+| DL-3 DÜŞÜK-4 | §19.4 performans testi her koşuda 120 bin belge yazıyor, sınır (< 30 s) gevşek | — | test `LINE:INVT/CycleCount/CycleCountManualMovementTests.cs:141-220` (500 bin, 120 000 hareket, medyan < 30 000 ms); ölçülen süre yalnız test çıktısına yazılır, bir kayıtta yok | §2.4 / §19.4 "büyük depoda süre ölçülmedi" cümleleri **değişmedi**: ölçüm testi var, sayı kayıtlı değil — açık nokta olarak kalır |
+| Gateway rota sayısı | `Mod0178WarehouseRouteTests` 45 → 54 (DL-1), 54 → 57 (DL-2), 60 → 69 (DL-3), 69 → 70 (DL-4); 57 → 60 MOD-0178 DL-7 | Beste — DL-1 «İkisini de ekle» 2026-11-09; DL-2 commit mesajı 2026-11-10; DL-3 «Evet» "69 yap" 2026-11-10; DL-4 «70 yap» 2026-11-11 | `ocelot.json` değişmedi | **r8'de değişti** — §15 (eski "sabit listesine dokunulmaz" cümlesi kaldırıldı) |
+| DL-4 brief ↔ paket | `Layout` yalnız sayfa görünümlerinde (partial'da çift kabuk; MOD-0178 AC-21 emsali) | CT "paket kazandı, uygun" (DL-4 kaydı `:36`) | `Layout` satırı iki `Index.cshtml` ve `CountSheet.cshtml`'de; `_*.cshtml`'de yok | **r8'de değişti** — AC-35 ve §9 lafzı "her bir dosyada" → "her sayfa görünümünde" (paket lafzı partial'ları da kapsıyordu) |
+| DL-4 brief ↔ paket | "Toplu Sil" (`counts.bulk-delete`) | aynı (`:36-37`) | — | doğru — AC-41 zaten "toplu sil (`counts.bulk-delete`)"; **değişmedi** |
+| DL-4 brief ↔ paket | `scanRef` UI'da yalnız bulunan stok panelinde | aynı | API iki uçta da kabul eder: `LINE:INV/Api/CycleCount/CycleCountRequestReader.cs:69-70` (`count`), `:86` (`lines`) | doğru — AC-46 ("sayım formunda … kabul edilir ve saklanır") ve §21 (`RecordCountLineCommand` → `ScanRef`) API düzeyinde tutuyor; **değişmedi** |
+| DL-4 brief ↔ paket | `Note.ManualCount` paylaşılan yardım paneli `Note.*` çizmediği için `Step1`'e de yazıldı (paneli değiştirmek XMC) | aynı | — | doğru — §25 anahtarı tanımlar; metnin `Step1`'de de bulunması yasak değil; **değişmedi** |
+| DL-2 notu | kör sayımda `movementDuringCount` / `snapshotDrift` bayrakları görünür (paketle uyumlu) | — | DL-2 kaydı `:13-15` | doğru — **değişmedi**; sahip isterse ekranda gizleme ayrı karar |
+
+**Açık sahip kararları (DL-4 brief'inden eksik kalanlar — r8 kapsam eklemez; DL-4 kaydı `:39-40`):**
+
+| Kimlik | Soru | Seçenekler | Karar sahibi | Durum |
+|---|---|---|---|---|
+| Q-25 | Sayım formunda gönderimde "sayılmamış satırlara git" yardımı | A paket revizyonu + DL-4 ek iş · B FU (v1 dışı) | Beste | **açık** |
+| Q-26 | Fark İzi'nde "başlangıçta beklenen" (`ExpectedQuantity`) ve "sayıma kadar hareket" (`MovementsSinceSnapshot`) sütunları | A paket revizyonu + DL-4 ek iş (kör sayım izdüşüm kuralıyla, §4.3) · B FU | Beste | **açık** |
+| Q-27 | Fark İzi'nde "seri" işareti (`SerialControlled`) | A paket revizyonu + DL-4 ek iş · B FU | Beste | **açık** |
+
+**Kayıtlarda açık kalan onay teyitleri ve paket dışı dokunuşlar (bilgi; r8 §5 tablosunu değiştirmedi):** §5 seam tablosunda olmayan, sahip
+onayıyla yapılmış başka-modül dokunuşları: `InventoryLedgerManifestCompletenessTests.cs:223` dışlaması ve `Mod0178WarehouseRouteTests` (DL-1 kaydı
+`:19`, `:92-94`), `Mod0173Pm2InternalInventoryRouteTests` 6 → 7 (DL-1 kaydı `:145`, `:224`), `NavManifestL10nGuardTests` `PagelessUntil` (DL-1 kaydı `:141`),
+Platform `RecordCodeTypeCatalogTests` `RuleAheadOfCatalogue` `CNT` (DL-2 kaydı `:30-35`; MOD-0040-FU02 DL-8 `CNT`'yi kataloğa alınca silinir),
+Governance Role Permissions `RoleAssignmentsIndex.{7}.resx` / `_IndexL10n.cshtml` / `perm-label.js` (DL-3 kaydı `:49-50` — **sahip teyidi
+bekleniyor**; `wms_count_settings` bildirimi de teyit bekliyor), `SharedResource.{7}.resx` `Perm.Entity.COUNTS` / `.VARIANCES` (eklemeli).
+`CentralAuditDeclarationTests` sayısı AC-11'de `c101e22fa` tabanıyla "87 + …" yazılı; ölçüm dilim anındaki tabana göredir (DL-1 101 → 106, DL-3
+109 → 116 — kayıtlar `:18`, `:48`); AC-11 metni değiştirilmedi.
 
 ## 20. Follow-up Items
 - **FU-0181-ABC** — ABC sınıfına göre otomatik döngü (Q-2).
