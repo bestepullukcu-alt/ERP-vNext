@@ -16,7 +16,9 @@ Decisions (Claude Code hook protocol: JSON on stdout, exit 0):
 The command is tokenised with shlex, so text inside a commit message or a grep pattern is never mistaken for a
 command. `bash -c "..."`, `env`, `nohup`, `sudo`, `xargs`, `time` wrappers and `git -C <dir>` are followed.
 Input that cannot be parsed passes (fail-open) so that the brake never stops ordinary work.
-Known limit: the hook itself is enabled in a settings file outside the repository; see the PR description.
+Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse for SHELL_TOOLS and DENY_MCP;
+the first python3/python that is 3.7+ is chosen before it runs, never re-run; a checkout without this file passes; output is ASCII).
+Known limit: a person can switch hooks off locally -- this is a net against agent habit, not against intent.
 """
 from __future__ import annotations
 
@@ -37,6 +39,10 @@ GH_MUTATIONS = re.compile(r"\b(mergePullRequest|addPullRequestReview|submitPullR
                           r"updateBranchProtectionRule|deleteBranchProtectionRule|createBranchProtectionRule|"
                           r"updateRepository|deleteRepository|archiveRepository)\b")
 DENY_MCP = {"mcp__ccd_pr__set_auto_merge"}
+# Every tool that runs a shell command from tool_input.command: the Bash tool, the desktop app's Terminal panel,
+# the background Monitor and the Windows PowerShell tool. .claude/settings.json registers the hook for each of them
+# (scripts/tests/test_command_brake.py keeps the two in step).
+SHELL_TOOLS = {"Bash", "Monitor", "PowerShell", "mcp__terminal__run_in_terminal"}
 
 
 def current_branch(cwd: str | None) -> str:
@@ -290,8 +296,8 @@ def decide(command: str, cwd: str | None = None, branch: str | None = None):
 
 
 def main() -> int:
-    try:
-        data = json.load(sys.stdin)
+    try:   # bytes in, decoded as UTF-8: a Windows ANSI code page (cp1252) must not change what is read
+        data = json.loads(sys.stdin.buffer.read().decode("utf-8", "replace"))
     except Exception:
         return 0
     if not isinstance(data, dict):
@@ -299,8 +305,10 @@ def main() -> int:
     tool = data.get("tool_name")
     if tool in DENY_MCP:
         verdict = ("deny", "Otomatik birleştirmeyi bir insan açar (R1).")
-    elif tool == "Bash":
-        verdict = decide(str((data.get("tool_input") or {}).get("command") or ""), data.get("cwd"))
+    elif tool in SHELL_TOOLS:
+        tool_input = data.get("tool_input")
+        tool_input = tool_input if isinstance(tool_input, dict) else {}
+        verdict = decide(str(tool_input.get("command") or ""), tool_input.get("cwd") or data.get("cwd"))
     else:
         return 0
     if verdict is None:
@@ -310,7 +318,7 @@ def main() -> int:
         "hookEventName": "PreToolUse",
         "permissionDecision": decision,
         "permissionDecisionReason": "EES komut freni: " + reason,
-    }}, ensure_ascii=False))
+    }}, ensure_ascii=True))   # ASCII only: the decision survives any stdout encoding (Codex R1-1, cp1252)
     return 0
 
 
