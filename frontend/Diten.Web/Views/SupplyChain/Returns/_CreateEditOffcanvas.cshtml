@@ -37,15 +37,12 @@
                 </div>
                 <div class="col-12">
                     <label for="returnShipmentId" class="form-label fw-medium">@Localizer["ShipmentId"] <span class="text-danger">*</span></label>
-                    <div class="d-flex gap-2">
-                        <div class="diten-field flex-grow-1">
-                            <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
-                            <input type="text" id="returnShipmentId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
-                                   aria-describedby="returnShipmentIdHelp" />
-                        </div>
-                        <button type="button" class="btn btn-label-primary" id="btnResolveShipment">@Localizer["Resolve"]</button>
+                    @* MOD-0186 r10 §35.3: a search picker (number, customer, date) through api/eligible-shipments; no UUID text input. *@
+                    <div class="diten-field">
+                        <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                        <select id="returnShipmentId" class="form-select" data-placeholder="@Localizer["ShipmentSelect"]" aria-describedby="returnShipmentIdHelp"></select>
                     </div>
-                    <div id="returnShipmentIdHelp" class="form-text">@Localizer["ShipmentIdHelp"]</div>
+                    <div id="returnShipmentIdHelp" class="form-text">@Localizer["ShipmentPickerHelp"]</div>
 
                     <div id="returnShipmentResolved" class="border rounded p-3 mt-2 d-none" aria-live="polite">
                         <div class="small"><span class="text-muted">@Localizer["ShipmentNumber"]:</span> <bdi dir="ltr" id="returnShipmentNumber"></bdi></div>
@@ -68,6 +65,8 @@
                                     <tr>
                                         <th scope="col" class="cell-fit"><span class="visually-hidden">@Localizer["SelectLine"]</span></th>
                                         <th scope="col">@Localizer["LineNumber"]</th>
+                                        <th scope="col">@Localizer["ProductSku"]</th>
+                                        <th scope="col">@Localizer["LotNumber"]</th>
                                         <th scope="col" class="text-end">@Localizer["ShippedQuantity"]</th>
                                         <th scope="col">@Localizer["UomId"]</th>
                                         <th scope="col">@Localizer["ReturnQuantity"]</th>
@@ -85,6 +84,8 @@
                                 <input type="checkbox" class="form-check-input js-line-select" />
                             </td>
                             <td><bdi dir="ltr" class="js-line-number"></bdi></td>
+                            <td class="js-line-sku"></td>
+                            <td><bdi dir="ltr" class="js-line-lot"></bdi></td>
                             <td class="text-end"><bdi dir="ltr" class="js-line-shipped"></bdi></td>
                             <td><bdi dir="ltr" class="js-line-uom"></bdi></td>
                             <td>
@@ -97,12 +98,18 @@
                     </template>
                 </div>
 
-                @* 5 — reasonCode (presence required; empty text allowed; no catalogue) *@
+                @* 5 — reasonCode: the closed module list of r10 §35.3 (OD-186-2), sent through the frozen reasonCode string. *@
                 <div class="col-12">
                     <label for="returnReasonCode" class="form-label fw-medium">@Localizer["ReasonCode"] <span class="text-danger">*</span></label>
                     <div class="diten-field">
                         <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="returnReasonCode" class="form-control" autocomplete="off" />
+                        <select id="returnReasonCode" class="form-select">
+                            <option value="">@Localizer["ReasonSelect"]</option>
+                            @foreach (var code in Diten.Web.Controllers.SupplyChainReturnsController.ReasonCodes)
+                            {
+                                <option value="@code">@Localizer["Reason_" + code]</option>
+                            }
+                        </select>
                     </div>
                 </div>
 

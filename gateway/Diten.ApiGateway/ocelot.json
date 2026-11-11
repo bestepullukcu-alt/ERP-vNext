@@ -6317,6 +6317,22 @@
         "UpstreamScheme": "http"
       },
       {
+        "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 5066
+          }
+        ],
+        "UpstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
+        "UpstreamHttpMethod": [
+          "GET",
+          "OPTIONS"
+        ],
+        "UpstreamScheme": "http"
+      },
+      {
         "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [

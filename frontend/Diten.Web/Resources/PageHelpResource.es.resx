@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Usar el teclado</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>Esta página muestra una devolución: su resumen, sus líneas con producto y lote, y los registros de cuarentena que creó su recepción.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>Personal de devoluciones y almacén</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Lea el resumen</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>El resumen muestra el estado, el envío (enlace a su página), el cliente, el motivo y cuándo se creó la devolución. Una devolución creada antes de que se registrara el cliente en las devoluciones se marca como «Old record».</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Revise las líneas</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Cada línea muestra el producto / SKU, el lote, la cantidad y la unidad, y cómo se registró su stock en la recepción. Una línea no registrada muestra el motivo.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Abra el registro de cuarentena</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>Con acceso a los registros de cuarentena, cada línea recibida muestra su número KRN; haga clic para abrir el registro. Sin ese acceso la columna no se muestra.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>Consulte cuánto tiene de cada producto por almacén, ubicación, lote y estado. La lista es de solo lectura: las existencias solo cambian mediante movimientos.</value>
