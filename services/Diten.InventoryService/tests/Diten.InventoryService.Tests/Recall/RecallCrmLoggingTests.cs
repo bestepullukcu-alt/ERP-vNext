@@ -56,14 +56,12 @@ public sealed class RecallCrmLoggingTests : IClassFixture<RecallApiFactory>
 
 /// <summary>
 /// MOD-0177-FU01 AC-17 — the acceptance gate D-1: the reader's one field name is the frozen SHIPMENT-BUNDLE 3.5.0 getShipment member
-/// (string, uuid). SHIPMENT-BUNDLE is 3.4.0 today: the test is skipped with its named reason until MVP-6 freezes 3.5.0; DL-1 is not accepted
-/// before the Skip is removed and the test is green.
+/// (string, uuid). SHIPMENT-BUNDLE 3.5.0 is frozen on main (PR #400, 3b42f0005): the Skip and its CI allow-list line
+/// (SHIPMENT_BUNDLE_350) are removed and the test runs.
 /// </summary>
 public sealed class ShipmentBundle350AlignmentTests
 {
-    // The reason starts with its CI skip code (scripts/ci-skip-allowlist.tsv, inventory-tests SHIPMENT_BUNDLE_350, max 1);
-    // the line and this Skip go together when MVP-6 freezes 3.5.0.
-    [Fact(Skip = "SHIPMENT_BUNDLE_350: MOD-0177-FU01 D-1 — SHIPMENT-BUNDLE 3.5.0 not frozen")]
+    [Fact]
     public void CustomerRef_field_matches()
     {
         var path = RepoPaths.Contract("shipment-bundle.openapi.yaml");
