@@ -193,7 +193,7 @@ public sealed class RecallContractTests
     public void The_contract_is_frozen_1_9_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.9.0", info["version"]!.GetValue<string>()); // WP-MVP1-FU-CLEAN2: 1.8.0 → 1.9.0 (the drill / return-link person members named)
+        Assert.Equal("1.10.0", info["version"]!.GetValue<string>()); // MOD-0177-FU01: 1.9.0 → 1.10.0 (CustomerDisplay, customerPage, two codes, Q-6)
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -221,6 +221,9 @@ public sealed class RecallContractTests
         // FU-CLEAN2 (1.9.0): the person members of DrillRun / ReturnLink named, nothing required, additionalProperties kept
         Assert.All(new[] { "1.9.0", "WP-MVP1-FU-CLEAN2", "FU-0177-DRILL-STEP-SCHEMA", "DrillRun.startedBy", "ReturnLink.linkedBy", "No member becomes required" },
             t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // MOD-0177-FU01 (1.10.0): the customer display, the customer page, the two directory codes, the one input restriction (Q-6)
+        Assert.All(new[] { "1.10.0", "MOD-0177-FU01", "CustomerDisplay", "customerPage", "RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE",
+            "RECALL_CUSTOMER_DIRECTORY_FORBIDDEN", "DrillRun.customers", "one input restriction" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");

@@ -64,11 +64,11 @@ public sealed class PvgApplicationContractShapeTests
 
     private static readonly string[] AnnexPermissionKeys =
     [
-        "pvg.mod0230.intake.create",
-        "pvg.mod0230.intake.read",
-        "pvg.mod0230.intake.route",
-        "pvg.mod0230.intake.triage",
-        "pvg.mod0230.intake.update"
+        "pvg.case-intake-triage.create",
+        "pvg.case-intake-triage.read",
+        "pvg.case-intake-triage.route",
+        "pvg.case-intake-triage.triage",
+        "pvg.case-intake-triage.update"
     ];
 
     private static readonly string[] SensitiveSamples =
@@ -275,6 +275,28 @@ public sealed class PvgApplicationContractShapeTests
 
         Assert.Equal(AnnexPermissionKeys, permissionKeys);
         AssertNoForbiddenNames(permissionKeys);
+    }
+
+    [Fact]
+    public void Permission_keys_belong_to_the_pvg_case_intake_triage_family()
+    {
+        var permissionFields = typeof(PvgIntakeDraftApplicationService)
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
+            .Where(field => field.Name.EndsWith("Permission", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(AnnexPermissionKeys.Length, permissionFields.Length);
+
+        foreach (var field in permissionFields)
+        {
+            var value = field.GetRawConstantValue()?.ToString();
+            Assert.NotNull(value);
+            Assert.Contains(value, AnnexPermissionKeys);
+
+            var operation = field.Name.Replace("Permission", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
+            var lastSegment = value[(value.LastIndexOf('.') + 1)..];
+            Assert.Equal(operation, lastSegment);
+        }
     }
 
     [Fact]

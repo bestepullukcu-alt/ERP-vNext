@@ -6,6 +6,7 @@ using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Quarantine.Rules;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Handlers;
@@ -67,7 +68,7 @@ public sealed class ListRetestHandler : IRequestHandler<ListRetestQuery, Respons
             if (batch.Items.Count < 500) break;
         }
 
-        var openHolds = retestHolds.Where(h => h.Status != HoldStatus.Decided && h.LotId is not null).ToLookup(h => h.LotId!);
+        var openHolds = retestHolds.Where(h => QuarantineRecordStates.IsOpen(h.Status) && h.LotId is not null).ToLookup(h => h.LotId!);
 
         var items = new List<RetestItemDto>();
         foreach (var lot in lots)

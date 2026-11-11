@@ -1,0 +1,258 @@
+# MOD-0140 paket değişikliği önerisi — tedarikçi kiracıda tek kayıt, şirket bazında ilişki
+
+- WP: WP-MVP2-SUPPLIER-TENANT-01 · aşama P0 (ölçüm + öneri; **kod yok**) · tarih 2026-10-21
+- Dal: `feature/mvp2/supplier-tenant-01` · taban `origin/main` `a00538e17`
+- Ölçüm: `docs/records/audits/2026-10/mvp2-supplier-tenant-01/MEASUREMENT.md` (dosya:satır kanıtları orada)
+- Durum: **PAKET DEĞİŞİKLİĞİ YAZILDI, İNCELEME VE ONAY BEKLİYOR (2026-10-23, §5a)** — MOD-0140 değişikliği
+  CT-APR-02 incelemesi (MVP-1 Control Tower) ve CT-APR-01 onayı (Beste) bekliyor; onaydan sonra S1 başlar. ADR (K-9)
+  yazıldı: `docs/records/decisions/2026-10/mvp2-supplier-tenant-master-management-decision-01.md`.
+
+## 0. Neden
+
+Yönetim kararı (2026-10-21, MVP-6 plan v10.0 sorusu 4 — kullanıcıdan aktarıldı): **bir tedarikçi kiracıda tek kayıttır;
+kiracının bütün şirketleri onu paylaşır. Onay, ödeme koşulları ve satın alma ilişkisi şirket bazında tutulur.**
+
+Bugün bunun tersi geçerli ve onaylı belgelerde yazılı: MOD-0140 §4 / §8 / §12 (`:42, :46, :53, :79, :98`),
+`supplier.openapi.yaml:12`, DCP-010 AD-5 (`:80`). Kararın kaynağı (plan v10.0) repoda yok; onaydan önce bir karar kaydı
+(ADR) olarak yazılması gerekir — K-9.
+
+Emsal: kiracı genelinde ortak ana veri, şirket bazında hareket kalıbı repoda zaten var — MOD-0290 kalem ana kaydı
+("kiracı geneli, şirket kapsamı yok", `MOD-0290-FU04-item-material-master.md:21`, Karar 6) ve CRM hesabı (MOD-0149).
+
+## 1. Hedef model
+
+### 1.1 `Supplier` — kiracıda tek kayıt (tedarikçinin kendisi)
+
+| alan | not |
+|---|---|
+| `Id`, `TenantId` | `LegalEntityId` **yok** (EntityBase alanı boş kalır) |
+| `SupplierId` (kod) | kiracı genelinde tekil; biçim değişmez (`SUP-xxxxxxxx`) |
+| `Name`, `Country`, `TaxId` | `TaxId` normalize edilir (K-2) |
+| `Contacts[]`, `Documents[]` | firmaya ait olgular |
+| `Screening` {KycOutcome, SanctionsOutcome, ScreenedAt} | tarama sonucu firmaya ait (K-3) |
+| `MergedIntoId?` | göçte birleşen kayıtlar için (yalnız göç yazar) |
+| `Version`, soft delete alanları | |
+
+Tekillik: `ux_tenant_supplierid` (TenantId, SupplierId); `ux_tenant_country_taxid` partial (TenantId, Country, TaxIdNormalized;
+dolu + silinmemiş) — `mongo-indexing.md:30-31` örneğiyle uyumlu.
+
+### 1.2 `SupplierCompanyRelationship` — şirket bazında ilişki (ad öneridir)
+
+| alan | not |
+|---|---|
+| `Id`, `TenantId`, `LegalEntityId`, `SupplierRef` (Supplier.Id) | unique (TenantId, LegalEntityId, SupplierRef) |
+| `Status` {Active, OnHold, Blocked, Inactive} | bugünkü `Supplier.Status` buraya taşınır |
+| `OnboardingStatus`, `Approval` {WorkflowInstanceId, DecidedBy, DecidedAt} | onay şirket bazında |
+| `ScreeningOverride?` {Outcome, Reason, By, At} | tarama sonucunu şirketin geçersiz kılması (K-3) |
+| `PaymentTermsCode?` | ödeme koşulu (K-8); banka bilgisi YOK (Finance sınırı, MOD-0140 §20) |
+| `PurchasingEnabled`, `PurchasingSince?` | "satın alma ilişkisi" — bu şirket bu tedarikçiden alabilir mi (K-7) |
+| `SourceSystem?`, `ExternalRef?` | şirketin kendi ERP eşlemesi |
+| `LegacySupplierCodes[]` | göçte bu şirketin eski kodları (K-5); tekil (TenantId, LegalEntityId, kod) |
+| `Version`, soft delete alanları | |
+
+### 1.3 Kiracı izolasyonu ve görünürlük
+
+1. Her sorgu `TenantId` ile sınırlı (AGENTS.md çekirdek 2). `Supplier` sorgusu `TenantId` + `!IsDeleted`; ilişki sorgusu
+   `TenantId` + `LegalEntityId` + `!IsDeleted`.
+2. **Normal okuma ilişki üzerinden gider:** şirket A kullanıcısı yalnız A ile ilişkisi olan tedarikçileri görür (liste,
+   detay, `/validate`). İlişki yoksa 404 — bugünkü davranışın aynısı. Böylece SEC-002 için paket istisnası gerekmez.
+3. Şirket A kullanıcısı B'nin ilişki verisini (onay, ödeme koşulu, durum, harici eşleme) **hiçbir uçta** görmez.
+   Ortak alanlar (ad, vergi no, iletişim, belgeler) her ilişkili şirkette aynıdır.
+4. Kiracı genelinde arama (ilişki kurmak için "bu vergi no'lu firma zaten var mı?") ayrı izin:
+   `procurement.suppliers.read-tenant-wide` (SEC-002 kalıbı, `data-scope-enforcement.md:70-71`; açık verilir). Döndürdüğü
+   en az alan: `supplierId`, `name`, `country` — ilişki verisi dönmez.
+5. **Ortak alanları kim değiştirir:** ayrı izin `procurement.suppliers.master.update` (K-1). İlişki alanları bugünkü
+   `procurement.suppliers.update` / `onboard` izinleriyle ve yalnız kendi şirketinde.
+
+### 1.4 Tüketicilerin uygunluk sorusu
+
+Tek soru: "(kiracı, şirket, tedarikçi kodu) için **aktif ilişki** var mı?" — MVP-6 DC-02'nin istediği "olumlu Tenant+LE
+uygunluk sonucu" tam olarak budur (`OWNER-DECISION-PACK.md:36-37`). Kod çözümü: önce `Supplier.SupplierId`, yoksa ilişkinin
+`LegacySupplierCodes`'u — eski PO / fatura / sözleşmelerdeki kodlar çözülmeye devam eder.
+
+## 2. Göç planı
+
+### 2.1 Birleştirme kuralı
+
+1. **Grup anahtarı:** (TenantId, Country, TaxIdNormalized). `TaxIdNormalized` = boşluk, nokta, tire atılmış, büyük harf
+   (K-2). Vergi no'su boş kayıtlar **birleşmez**: her biri kendi kiracı kaydı + tek ilişki olur; sonradan elle birleştirme
+   ayrı iş.
+2. **Hayatta kalan:** grupta en eski `CreatedAt` (eşitlikte en küçük `Id`). Onun `Id`'si ve `SupplierId` kodu kiracı kaydı
+   olur.
+3. **Çakışan ortak alanlar:**
+   - Ad ve ülke: hayatta kalanınki. Farklılıklar göç raporuna sayı olarak yazılır, veri otomatik değiştirilmez.
+   - İletişimler: (Type, Email) ile tekilleştirilmiş birleşim.
+   - Belgeler: (Type, EvidenceRef) ile birleşim.
+   - Tarama: en yeni değerlendirme, `ScreenedAt` = o kaydın `UpdatedAt`'ı. Şirketlerin farklı sonuçları ilişkiye
+     `ScreeningOverride` olarak geçmez; rapora yazılır.
+4. **İlişki kaydı:** her eski kayıttan bir ilişki üretilir: şirket, `Status`, `OnboardingStatus`, `Approval`,
+   `SourceSystem` / `ExternalRef`, `CreatedAt`. Eski kod hayatta kalanınkinden farklıysa `LegacySupplierCodes`'a girer.
+5. **Kod çakışması:** iki **farklı** firmanın iki şirkette aynı `SUP-` koduna sahip olması mümkün (bugün tekillik şirket
+   bazında). Göç bunu sayar. Çakışan ikinci firmaya yeni kod verilir, eski kodu o şirketin `LegacySupplierCodes`'una girer.
+6. **Eski kayıtlar:** silinmez. Hayatta kalmayanlar `MergedIntoId` + soft delete (`IsDeleted`, `DeletedAt`) alır.
+   Hayatta kalanın `LegalEntityId`'si boşaltılmaz; yeni koleksiyon kullanılır (2.3).
+
+### 2.2 Eski kimliklere başvuran kayıtlar
+
+PO, fatura, teklif / RFx, sözleşme ve karantina kararlarındaki `SupplierId` **yeniden yazılmaz** (K-5).
+- Bu belgeler kendi şirketini zaten taşıyor.
+- Kod (kiracı, şirket, kod) üzerinden ilişkiye çözülür.
+- Geçmiş kayıtlar değişmez; başka modüllere yazılmaz (XMC-001); geri alma kolaylaşır.
+- Göç sonrası doğrulama bir sayımdır: bu beş koleksiyondaki her (kiracı, şirket, kod) üçlüsü bir ilişkiye çözülmeli; çözülemeyen = 0.
+
+### 2.3 Çalıştırma ve geri alma
+
+1. **Yeni koleksiyonlar:** `supplier_masters`, `supplier_company_relationships`. Eski `suppliers` koleksiyonu göç
+   boyunca salt okunur kaynak; içeriği değişmez (2.1-6 hariç, o da yalnız onaydan sonraki son adımda).
+2. **Göç işi idempotent** ve üç kipli:
+   - `dry-run`: yalnız sayılar ve rapor.
+   - `apply`: yeni koleksiyonlara yazar; aynı girdiyle ikinci koşu bir şey değiştirmez.
+   - `verify`: 2.2 sayımı ve kayıt sayıları dengesi.
+3. **Okuma anahtarı:** `Suppliers:Model = PerLegalEntity | TenantShared` (varsayılan PerLegalEntity). Göç + verify geçince
+   kiracı bazında açılır.
+4. **Geri alma:** anahtar `PerLegalEntity`'ye döner, eski koleksiyon dokunulmamış olduğu için anında eski davranış.
+   Yeni koleksiyonlar silinmez, saklanır; soft delete'ler (2.1-6) `MergedIntoId` ile geri açılabilir.
+5. **Yazma dondurma:** `apply` sırasında tedarikçi yazma uçları kısa süre 503 döner (bakım penceresi), ya da `Version`
+   kontrolüyle değişen kayıt yeniden alınır. Sahip seçer; öneri bakım penceresi.
+6. Göç işi bir şema / taşıma değişikliğidir: CT-APR-01'e göre yüksek risk (`module-pack-standard.md:510-517`).
+
+### 2.3a Mevcut veri sayımı (salt okunur; sahibin ortamında koşulur)
+
+```js
+// mongosh — yalnız sayı döner; vergi no, ad, kiracı adı DÖNMEZ.
+db.suppliers.aggregate([
+  { $match: { IsDeleted: false, TaxId: { $type: "string", $ne: "" } } },
+  { $project: { TenantId: 1, LegalEntityId: 1,
+      k: { $concat: [ { $ifNull: ["$Country", ""] }, "|",
+           { $toUpper: { $replaceAll: { input: { $replaceAll: { input: { $replaceAll: { input: "$TaxId", find: " ", replacement: "" } }, find: ".", replacement: "" } }, find: "-", replacement: "" } } } ] } } },
+  { $group: { _id: { t: "$TenantId", k: "$k" }, les: { $addToSet: "$LegalEntityId" }, n: { $sum: 1 } } },
+  { $group: { _id: "$_id.t", firms: { $sum: 1 },
+      firmsInManyLes: { $sum: { $cond: [ { $gt: [ { $size: "$les" }, 1 ] }, 1, 0 ] } },
+      recordsToMerge: { $sum: { $cond: [ { $gt: ["$n", 1] }, { $subtract: ["$n", 1] }, 0 ] } } } },
+  { $group: { _id: null, tenants: { $sum: 1 }, firms: { $sum: "$firms" },
+      firmsInManyLes: { $sum: "$firmsInManyLes" }, recordsToMerge: { $sum: "$recordsToMerge" } } }
+]);
+// Ek sayımlar: vergi no'suz aktif kayıt sayısı; aynı SUP- kodunun birden çok şirkette farklı firmalara ait olduğu durum sayısı.
+```
+
+## 3. Sözleşme ve tüketici etkisi
+
+| sözleşme | değişiklik | tür |
+|---|---|---|
+| `supplier.openapi.yaml` 1.2.0 → **1.3.0** | Açıklama (:12) yeniden yazılır: kimlik kiracıda tek, görünürlük çağıranın şirketiyle ilişki üzerinden. Mevcut işlemler **aynı şekil ve aynı şirket bazlı davranış**ta kalır; `status` = çağıran şirketin ilişki durumu (bugün de öyle). Yeni: ilişki uçları (oku / kur / durum / onay / ödeme koşulu, yalnız kendi şirketi), kiracı genelinde vergi no ile arama (ayrı izin), 409 `DUPLICATE_SUPPLIER` gövdesine mevcut `supplierId` | **eklemeli** (K16 ile uyumlu) — tek davranış farkı aşağıda |
+| `requisition-po`, `contracting`, `sourcing`, `invoice-match` 1.1.0 | şekil değişmez; `supplierId` opak kod olarak kalır | değişmez |
+| `supplier-performance` 1.0.0 (MOD-0147/0148, MVP-6) | şekil değişmez; DC-02 "olumlu Tenant+LE uygunluğu" = aktif ilişki olarak tanımlanır | değişmez (tanım netleşir) |
+| `quarantine` 1.2.0 | `supplierId: uuid` zaten `SUP-` koduyla uyumsuz — bugünkü kusur, bu değişiklikten bağımsız | **yalnız rapor** (Inventory sahibi; XMC-001) |
+
+**Tek davranış farkı (üretici yüzeyi):** şirket B'de, kiracıda zaten var olan bir vergi no ile tedarikçi oluşturmak bugün
+kabul ediliyor; yeni modelde 409 + mevcut `supplierId` döner, ekran "mevcut tedarikçiyi bu şirkete bağla"yı önerir (K-6).
+Bunu çağıran yalnız Diten.Web tedarikçi ekranı; MVP-6 tüketicileri tedarikçi oluşturmuyor. Yıkıcı değil. Canlıda veri
+olmadığı için eski davranışı bir sürüm koruyan anahtar **gerekmiyor** (K-6 kararı).
+
+**Etkilenen tüketiciler** (yalnız rapor, dokunulmadı):
+- MOD-0141 / 0143 / 0144 / 0145: beş doğrulama noktası (`CreatePurchaseOrderHandler.cs:72`, `CaptureInvoiceHandler.cs:78`,
+  `CreateRfxEventHandler.cs:73`, `SubmitBidHandler.cs:81`, `CreateContractHandler.cs:61`). Repository arayüzü aynı kalırsa
+  kodları değişmez; Blocked / OnHold reddi eklenecekse (K-7) davranış değişir → sahiplerinin onayı (XMC-001).
+- MOD-0148 / 0147 (MVP-6): kod yok; DC-02 bu modelle karşılanır. Paketleri ve MVP-6 seam belgeleri ("tenant-scoped")
+  sahiplerince güncellenir.
+- Inventory karantina: değişmez; tip kusuru ayrıca raporlanır.
+
+## 4. Dilimler
+
+| dilim | içerik | testler | sabotaj (üretim kodunda) |
+|---|---|---|---|
+| **S1** model + göç | iki varlık, indeksler, göç işi (dry-run / apply / verify), `Suppliers:Model` anahtarı | gerçek replica set (27017–27021 ve ≥49152 dışında geçici Mongo): birleştirme kuralı, vergi no normalizasyonu, kod çakışması, idempotent ikinci koşu, verify sayımı, geri alma | birleştirme anahtarından Country'yi çıkar → farklı ülke aynı no testi kırmızı; idempotency kontrolünü kaldır → ikinci koşu testi kırmızı |
+| **S2** komutlar / sorgular | repository ikiye ayrılır (Supplier: kiracı; ilişki: kiracı + şirket); liste / detay / validate ilişki üzerinden; oluşturma = bağla-ya-da-oluştur; ortak alan güncelleme (ayrı izin); ilişki komutları (durum, onay, ödeme koşulu); uygunluk sorusu (§1.4) | şirket A, B'nin ilişkisini göremez / değiştiremez (404); ilişkisi olmayan şirkette 404; kiracı genelinde vergi no tekrarı 409 + mevcut kod; eski kod çözülür; izin olmadan kiracı geneli arama 403 | ilişki sorgusundan `LegalEntityId`'yi kaldır → izolasyon testi kırmızı; legacy kod çözümünü kaldır → eski PO kodu testi kırmızı |
+| **S3** ekranlar (7 dil) | liste = şirketin tedarikçileri; "mevcut tedarikçi bulundu → bağla" akışı; ilişki paneli (durum, onay, ödeme koşulu); ortak alanlar yalnız yetkiliye düzenlenebilir; UAS-001 | RESX eşitliği (7 dil), görünüm anahtarları çevrili, ekran tarayıcıda (E3) | bir dilden anahtar sil → RESX testi kırmızı |
+| **S4** tüketiciler | Procurement içindeki beş doğrulama ilişki uygunluğuna bağlanır (gerekirse Blocked / OnHold reddi); MVP-6 DC-02 tanımı; karantina tip kusuru sahibine | her tüketici için: ilişkisi olmayan şirkette 404; Blocked'da red (K-7 kararıyla) | uygunluk kontrolünü atla → tüketici testleri kırmızı |
+
+Her dilim: ayrı commit, ayrı PR; push öncesi `origin/main` merge + ölçüm yeniden (main'e göre yeni kırmızı yok).
+
+## 5. Sahip kararları (A / B; öneri tek)
+
+| # | soru | A | B | öneri |
+|---|---|---|---|---|
+| K-1 | Ortak alanları kim değiştirir? | ilişkisi olan her şirket (`update` izniyle) | ayrı kiracı geneli izin `procurement.suppliers.master.update` | **B** — bir şirketin değişikliği hepsini etkiler; ana veri sahipliği ayrı olmalı (MOD-0290 kalıbı) |
+| K-2 | Vergi no tekillik anahtarı | (Kiracı, TaxId) | (Kiracı, Ülke, normalize TaxId) | **B** — vergi no ulusal; farklı ülkede aynı no farklı firma |
+| K-3 | KYC / yaptırım taraması | firmada tek sonuç | her şirkette ayrı | **A + şirket override'ı** — tarama firmanın olgusu; "Override" şirket kararı |
+| K-4 | Yeni yazma komutlarının denetimi (AUD-001 K4: Procurement'ta yeni yazma komutu BL-501'e kadar engelli; BL-501 MVP'lerden sonra) | BL-501'i bekle (S2 ilişki komutları MVP'lerden sonra) | CT, Procurement için kapsamlı istisna verir (ilişki geçmişi aynı işlemde, ekranda — yol c) | **B** — MVP-6 DC-02 bu komutlara bağlı; karar yalnız CT'nin (kural "kendi günlüğümüz" seçeneğini açıkça yasaklıyor) |
+| K-5 | Birleşen kayıtların eski kodları | PO / fatura vb.'de kodları yeniden yaz | eski kodu ilişkide takma ad olarak tut, geçmişi yazma | **B** — geçmiş değişmez, başka modüle yazılmaz, geri alınabilir |
+| K-6 | Başka şirkette aynı vergi no ile oluşturma | 409 + mevcut kod, kullanıcı bağlar | sessizce otomatik bağla | **A** — bağlamak onay gerektiren bir şirket kararı |
+| K-7 | Tüketiciler Blocked / OnHold'u reddetsin mi? | S4'te evet | şimdilik hayır | **A** — "durum şirket bazında" kararının anlamı bu; bugün hiç bakılmıyor (MEASUREMENT §3.2) |
+| K-8 | Ödeme koşulu | ilişkide `PaymentTermsCode` (kod; ana tablo sonra) | Finance'a bırak (MOD-0140 §20) | **A** — yönetim kararı ödeme koşulunu şirket ilişkisine koyuyor; banka bilgisi Finance'ta kalır |
+| K-9 | Kararın kaydı | yalnız bu öneri | ADR: `docs/records/decisions/2026-10/` | **B** — plan v10.0 repoda yok; onaylı paket değişikliği kayıtlı karar ister |
+| K-10 | Paket onayı | yazan kişi onaylar | CT-APR-01 yüksek risk: `high: evet`, paketi yazmamış onaylayıcı | **B** — kural zorunlu kılıyor (kiracı + şema / taşıma) |
+
+Ayrıca bilinmesi gerekenler:
+- MOD-0140'ta §21 "Audited Events" yok. İlk yazma komutu değişikliğinde zorunlu olur (`module-pack-standard.md:282`).
+- `approvals.tsv`'de MOD-0140 satırı yok.
+
+## 6. Bu P0'da yapılmayanlar
+
+Kod, test, sözleşme ve paket dosyası değişmedi. Bunlar: MOD-0140 paketi, `supplier.openapi.yaml`, DCP-010 ve tüketici
+paketleri. Onaydan sonra S1'den önce yazılacaklar:
+- MOD-0140 paket değişikliği: §4, §8, §12, yeni §21 ve `## Teslim dilimleri`.
+- Sözleşme 1.3.0 taslağı.
+- ADR (K-9).
+
+## 5a. Sahip kararları (2026-10-21)
+
+| # | karar | not |
+|---|---|---|
+| K-1 | **Kabul.** Ortak alanlar `procurement.suppliers.master.update` ile değişir | |
+| K-2 | **Kabul.** Tekillik: kiracı + ülke + normalize vergi no | |
+| K-3 | **Kabul.** Tarama sonucu tedarikçide; şirket istisnası ilişkide | |
+| K-4 | **İstisna gerekmiyor.** Merkezi denetim iletimi (BL-501, `Diten.BuildingBlocks.CentralAudit`) hazır, Inventory'de kullanılıyor; MVP-1 dalıyla main'e gelecek | S1 şimdi ilerleyebilir. Yeni yazma komutları (S2) MVP-1 main'e girince bu iletimle denetlenir; haber sahipten gelecek. Paketin §21 "Audited Events" bölümü ve onay tablosu satırları ilk yazma komutu değişikliğiyle (S2) eklenir |
+| K-5 | **Kabul.** Eski kodlar ilişkide takma ad; geçmiş belgeler yeniden yazılmaz | |
+| K-6 | **Kabul.** Başka şirkette aynı vergi no → 409 + mevcut kod + "bu şirkete bağla" | eski davranışı koruyan anahtar yok |
+| K-7 | **Kabul.** Bloke / beklemedeki tedarikçiye yeni işlem reddedilir | Procurement içindeki beş nokta bu WP'de; MVP-6 ve Inventory sahiplerine entegrasyon aşamasında sahip iletir |
+| K-8 | **Kabul.** İlişkide ödeme koşulu kodu; banka bilgisi Finance'ta | |
+| K-9 | **Kabul.** Karar ADR'ye yazılır; ADR yönetimin karar metnine atıf yapar | 2026-10-23: metin geldi (Natig, 2026-10-21; plan v10.0 C1, PR #177); ADR yazıldı |
+| K-10 | Paketi CT-APR-01'e göre onaylayıcı onaylar | 2026-10-23: onaylayıcı Beste (`bestepullukcu-alt`, K2, `high: evet`); CT-APR-02 incelemesi MVP-1 Control Tower |
+
+**2026-10-23 ek kararlar:** S4'teki beş doğrulama noktası (MOD-0141/0143/0144/0145, XMC-001) onaylandı — kapsam yalnız
+"bloke tedarikçiye yeni işlem yok" kontrolü, başka davranış değişmez. Bloke / beklemedeki tedarikçi şirkette görünür ve
+yönetilebilir kalır; yeni işleme yalnız aktif ilişki girer. `Suppliers:Model` geri alma anahtarı S1'de kalır. BL-501
+main'de; S2'nin önkoşulu sağlandı. MVP-6 (DC-02) uygunluk okuyucusu 1.3.0 sözleşmesi gelince yazılacak.
+
+**Mevcut veri:** tedarikçi modülü canlıda kullanılmadı, gerçek veri yok; sayım sorgusu (§2.3a) koşulmayacak. Göç işi
+(deneme / uygulama / doğrulama, geri alma) yine yazılır ama yalnız geliştirme / test verisi içindir; gerçek veride
+birleştirme ve kod çakışması beklenmez.
+
+**Karantina uuid / kod uyuşmazlığı:** Inventory sahibinin işi; entegrasyonda Procurement ile Karantina bağlanırken
+ölçülüp düzeltilecek. Bu WP'de değişiklik yok.
+
+
+## 5b. Onaylayıcı kararları (2026-10-26) ve Revizyon 3 taslağı (2026-10-28)
+
+Kaynak: Beste (MVP-1 CT), 2026-10-26, sahip üzerinden iletildi. Paket karşılığı: MOD-0140 §19 2026-10-26 kaydı.
+
+| # | Karar |
+|---|---|
+| 1 | `supplier.openapi.yaml` 1.3.0 contract-first, ayrı ilk dilim (DL-1); yalnız ekleme, 1.2.0 FROZEN kalır |
+| 2 | `validate` ve uygunluk okuması çağıranın şirket ilişkisinden: `supplierMasterId`, `relationshipExists`, `status`, `onboardingStatus`, `purchasingEnabled`, `eligibleForTransactions` |
+| 3 | Dar izin `procurement.suppliers.eligibility.read` (PKS-001 uyumu pakette gösterilir) |
+| 4 | Hazine (MOD-0119, MOD-0289): çağıran şirketle aktif ilişkili tedarikçi listesi 1.3.0'da (`GET /api/suppliers/eligible`) |
+| 5 | Onboarding onayı gerçek MOD-0023 iş akışıyla (`GatewayWorkflowClient` kalıbı) |
+| 6 | Başlık LE'sinin MDM ile doğrulanması (C2, geçersizse 404); servis geneli — MOD-0141, MOD-0142, MOD-0143, MOD-0144, MOD-0145 sahiplerine bildirilir |
+| 7 | Yalnız `validate` için servis token'ı ayrı dilim (DL-7), BL-652 Seçenek 2'ye bağlı |
+
+**Bağımsız inceleme (Revizyon 2, `fda06b89…`):** KOŞULLU — `docs/records/reviews/MOD-0140/2026-10-26-fda06b89.md`, PR #249.
+
+**Revizyon 3 taslağı (2026-10-28, yerel dal `feature/mvp2/supplier-tenant-02`):** kararsız düzeltilebilen F-1, F-2, F-4,
+F-5, F-6, F-7 pakete işlendi; F-3 yalnız olgusal olarak düzeltildi (izolasyon iddiası "başlıkta seçilen / JWT'deki LE
+bağlamında") ve S-7 olarak karar listesine alındı. Karar bekleyen: S-1…S-7 (paket §20). Kararlar işlendikten sonra
+Revizyon 3 yeniden bağımsız incelemeye gider; push ve PR, PR #249 merge edildikten sonra.
+
+**Sahip kararları (Natig, 2026-10-28)** — MVP-6 CT üzerinden iletildi. Paket karşılığı: MOD-0140 §19 2026-10-28 kaydı ve
+§20 "Revizyon 3 — sahip kararları"; başlık notu "Revizyon 3 (2026-10-28)".
+
+| # | Karar | Durum |
+|---|---|---|
+| S-1 | `eligibleForTransactions` = ilişki var ∧ silinmemiş ∧ `Active`; ek koşul yok. Onboarding onayı, `purchasingEnabled` ve kiracı düzeyi bloklar tüketici tarafında (MOD-0147 / MOD-0148 bugün uygular, DC-02 D2). `GET /eligible` tam olarak `eligibleForTransactions = true` olan ilişkileri listeler | kapandı |
+| S-2 | Şimdi: çağıran role `mdm.legal-entities.read` (Roller → İzinler, BL-652 ara çözümü); izin yoksa Procurement 403 `LEGAL_ENTITY_LOOKUP_FORBIDDEN` (503 değil), 503 yalnız MDM'e ulaşılamazken. Sonra: Procurement → MDM servis kimliği (BL-652 Seçenek 2, DL-7 ve sonrası) izin gereğini kaldırır. 1.3.0'a eklemeli `403` Ek (Natig, 2026-10-28, Revizyon 4): MDM 401 dönerse Procurement 503 `DEPENDENCY_UNAVAILABLE` döner (yapılandırma/bağımlılık hatası, çağıranın yapabileceği bir şey yok); 1.3.0 `DependencyUnavailable` açıklamasında donar. | kapandı |
+| S-4 | Servis token'ı `GET /eligible`'a kapalı; yalnız `POST /validate` ve tekil `GET /{supplierId}/eligibility`. Hazine bir pack ile yeniden sorabilir | kapandı |
+| S-6 | 1.3.0 yalnız Revizyon 2 uygunluk yüzeyi + 409 `DUPLICATE_SUPPLIER` gövdesinde `supplierId` (+ C2 ve onboarding hata kodları). İlişki uçları ve kiracı geneli vergi no araması 1.4.0'da, DL-3 ile; servis token'ı şeması 1.5.0 (DL-7) | kapandı |
+| S-7 | Kullanıcı → LE yetkisi MOD-0140 içinde çözülmez; başlıktan LE almak bütün servislerin ortak deseni. Bilinen sınır; "Platform / Auth güvenlik incelemesi — LE başlık deseni"ne gider; 1.3.0'ın dondurulmasını engellemez | kapandı (bilinen sınır) |
+| S-3 | MOD-0023 onboarding şablonu ve onaylayıcılar — MOD-0023 sahibi | açık; DL-4'ü bekletir |
+| S-5 | DL-7 audience adı ve `service_name` listesi — Auth sahibi | açık; DL-7'yi bekletir |

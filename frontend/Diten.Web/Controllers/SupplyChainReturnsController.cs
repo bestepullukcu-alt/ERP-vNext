@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Diten.Web.Models.SupplyChain.Returns;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -42,8 +43,9 @@ public sealed class SupplyChainReturnsController : Controller
     private const string ReturnsPath = "/api/shipment-bundle/returns";
     private const string ShipmentsPath = "/api/shipment-bundle/shipments";
 
-    // The 21 published Returns codes (shipment-bundle.openapi.yaml, operations queryReturns/createReturn/
-    // transitionReturn). The adapter never originates or relays a code outside this set.
+    // The published Returns codes (shipment-bundle.openapi.yaml 3.4.0, operations queryReturns/createReturn/
+    // transitionReturn). The adapter never originates a code outside this set; the only one it relays is a
+    // code-shaped 422 refusal (Q504), so a new refusal reaches the page as a refusal, never as a validation text.
     private static readonly HashSet<string> PublishedCodes = new(StringComparer.Ordinal)
     {
         "INVALID_REQUEST", "RETURN_NOT_FOUND", "SHIPMENT_NOT_FOUND", "SHIPMENT_LINE_NOT_FOUND",
@@ -51,7 +53,20 @@ public sealed class SupplyChainReturnsController : Controller
         "RETURN_UOM_MISMATCH", "DUPLICATE_RETURN_LINE", "SHIPMENT_NOT_RETURNABLE", "CORRELATION_ROOT_MISMATCH",
         "IDEMPOTENCY_KEY_REUSED", "RETURN_SOURCE_CHANGED", "RETURN_SHIPMENT_ROOT_INVALID", "DEPENDENCY_RESPONSE_INVALID",
         "RETURN_SHIPMENT_ROOT_UNAVAILABLE", "REFERENCE_STATE_UNAVAILABLE", "DEPENDENCY_UNAVAILABLE",
-        "PERSISTENCE_UNAVAILABLE", "INTERNAL_ERROR"
+        "PERSISTENCE_UNAVAILABLE", "INTERNAL_ERROR", "INVENTORY_REFUSED", "RETURN_SOURCE_MOVEMENT_MISSING",
+        "RETURN_LINE_NOT_UNPOSTABLE", "RETURN_RECEIPT_IN_PROGRESS"
+    };
+
+    // MOD-0186 DL-2 (Q504): the only error details that reach the browser, per code, and only the fields a screen text
+    // needs. details.inventory (lot, recall case) stays server-side; every other code carries no details.
+    private static readonly Regex RefusalCodeShape = new("^[A-Z][A-Z0-9_]{0,63}$", RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
+    private static readonly Dictionary<string, string[]> RelayedDetails = new(StringComparer.Ordinal)
+    {
+        ["INVENTORY_REFUSED"] = ["shipmentLineNumber", "inventoryCode"],
+        ["RETURN_SOURCE_MOVEMENT_MISSING"] = ["shipmentLineNumber"],
+        ["RETURN_LINE_NOT_UNPOSTABLE"] = ["shipmentLineNumber"],
+        ["RETURN_RECEIPT_IN_PROGRESS"] = ["toWarehouseId", "toLocationId", "occurredAt"]
     };
 
     private readonly HttpClient _httpClient;
@@ -336,14 +351,16 @@ public sealed class SupplyChainReturnsController : Controller
     /// Keeps the backend's status and published code; the correlationId (the root on POST) becomes the browser trace.
     /// A response without a published code (for example a Gateway error page) is mapped by status to a published code;
     /// 5xx becomes 503 PERSISTENCE_UNAVAILABLE so an unknown commit is never shown as rolled back. Upstream text is
-    /// never relayed raw.
+    /// never relayed raw. Error details travel only through the <see cref="RelayedDetails"/> allow-list.
     /// </summary>
     private async Task<IActionResult> ReenvelopeFailureAsync(HttpResponseMessage response, Guid trace,
         CancellationToken cancellationToken)
     {
         var status = (int)response.StatusCode;
-        var code = ErrorCodeOf(await response.Content.ReadAsStringAsync(cancellationToken));
-        if (code is null || !PublishedCodes.Contains(code))
+        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+        var code = ErrorCodeOf(text);
+        var unpublishedRefusal = status == StatusCodes.Status422UnprocessableEntity && code is not null && RefusalCodeShape.IsMatch(code);
+        if (!unpublishedRefusal && (code is null || !PublishedCodes.Contains(code)))
         {
             (status, code) = status switch
             {
@@ -355,8 +372,36 @@ public sealed class SupplyChainReturnsController : Controller
             };
         }
 
-        return StatusCode(status,
-            new { error = new { code, message = DefaultMessage(code), correlationId = trace }, contractVersion = "v1" });
+        var details = RelayedDetailsOf(code, text);
+        return details is null
+            ? StatusCode(status, new { error = new { code, message = DefaultMessage(code), correlationId = trace }, contractVersion = "v1" })
+            : StatusCode(status, new { error = new { code, message = DefaultMessage(code), details, correlationId = trace }, contractVersion = "v1" });
+    }
+
+    private static Dictionary<string, string>? RelayedDetailsOf(string code, string text)
+    {
+        if (!RelayedDetails.TryGetValue(code, out var fields)) return null;
+        try
+        {
+            using var document = JsonDocument.Parse(text);
+            if (!document.RootElement.TryGetProperty("error", out var error)
+                || !error.TryGetProperty("details", out var details) || details.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var relayed = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var field in fields)
+            {
+                if (details.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String) relayed[field] = value.GetString()!;
+            }
+
+            return relayed;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     private static string? ErrorCodeOf(string text)

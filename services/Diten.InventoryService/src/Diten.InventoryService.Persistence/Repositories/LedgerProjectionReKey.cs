@@ -28,6 +28,10 @@ public sealed record LedgerReKeyResult(int RowsClosed, int RowsWritten, IReadOnl
 /// <item><c>inventory_sku_positions</c> (CT-D1 (a)): a typed text was never held, so its AVAILABLE stock is in the SKU
 /// position; linked to a Blocked / Expired lot it leaves it (− Σ moved AVAILABLE OnHand per company). A Draft / Released
 /// target changes nothing there.</item>
+/// <item><c>inventory_reservation_positions</c> (MOD-0173-FU03 §8.2 yol 5), per company and warehouse: a Draft / Released target adds the
+/// moved AVAILABLE OnHand to the warehouse + lot position (the warehouse position already held the typed text's stock); a held target
+/// leaves the lot position alone and takes the moved AVAILABLE OnHand out of the warehouse position (the SKU branch's direction). Never
+/// refused — no guard here, like the SKU branch; a free quantity may read negative until a reservation is released.</item>
 /// </list>
 /// <b>No <c>inventory_transactions</c> document is read for writing, updated, replaced or deleted here</b> — the ledger
 /// stays append-only; the link from a transaction to its lot is the migration's <c>trace_movement_lot_links</c>.
@@ -41,6 +45,7 @@ public static class LedgerProjectionReKey
         var balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
         var lotPositions = database.GetCollection<LotPosition>(TraceCollections.LotPositions);
         var skuPositions = database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions);
+        var scopePositions = database.GetCollection<InventoryReservationPosition>(InventoryCollections.ReservationPositions);
         var bf = Builders<InventoryBalance>.Filter;
         var bu = Builders<InventoryBalance>.Update;
 
@@ -136,6 +141,35 @@ public static class LedgerProjectionReKey
                             pu.SetOnInsert(x => x.BaseUomId, company.First().BaseUomId),
                             pu.SetOnInsert(x => x.CreatedAt, now),
                             pu.SetOnInsert(x => x.DeletedAt, null)),
+                        new UpdateOptions { IsUpsert = true }, ct);
+                }
+
+                foreach (var warehouse in company.Where(r => r.StockStatus == StockStatus.Available && r.WarehouseId is not null).GroupBy(r => r.WarehouseId!))
+                {
+                    var moved = warehouse.Sum(r => r.OnHand);
+                    if (moved == 0m)
+                    {
+                        continue;
+                    }
+
+                    var (level, scopeLot, delta) = group.LotHoldsStock
+                        ? (ReservationScopeLevel.Warehouse, Guid.Empty, -moved)
+                        : (ReservationScopeLevel.Lot, group.LotId, moved);
+                    var sf = Builders<InventoryReservationPosition>.Filter;
+                    var su = Builders<InventoryReservationPosition>.Update;
+                    await scopePositions.UpdateOneAsync(session,
+                        sf.Eq(x => x.TenantId, (Guid?)tenantId) & sf.Eq(x => x.LegalEntityId, (Guid?)company.Key) & sf.Eq(x => x.IsDeleted, false)
+                        & sf.Eq(x => x.ItemId, group.ItemId) & sf.Eq(x => x.SkuId, group.SkuId) & sf.Eq(x => x.SkuLevel, group.SkuLevel)
+                        & sf.Eq(x => x.Level, level) & sf.Eq(x => x.WarehouseId, warehouse.Key) & sf.Eq(x => x.LotId, scopeLot),
+                        su.Combine(
+                            su.Inc(x => x.AvailableOnHand, delta),
+                            su.Inc(x => x.Version, 1),
+                            su.Set(x => x.UpdatedAt, now),
+                            su.SetOnInsert(x => x.Id, Guid.NewGuid()),
+                            su.SetOnInsert(x => x.Reserved, 0m),
+                            su.SetOnInsert(x => x.BaseUomId, warehouse.First().BaseUomId),
+                            su.SetOnInsert(x => x.CreatedAt, now),
+                            su.SetOnInsert(x => x.DeletedAt, null)),
                         new UpdateOptions { IsUpsert = true }, ct);
                 }
             }

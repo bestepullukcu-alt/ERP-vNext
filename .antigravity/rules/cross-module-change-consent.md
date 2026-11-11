@@ -44,6 +44,8 @@ gören ajan:
 - **Paylaşılan** bileşenler (paylaşılan liste bileşeni, `ProductIdentityWriteFaults`, ortak test ana makinesi,
   Building.Blocks …). Birden çok modülü etkilediği için her zaman sorulur.
 - Kabul edilmiş ve başka bir dalda paralel değişen dosyalar.
+- Planın (Capability Planning) bir bloğa **"Uses"** satırıyla bağladığı modül: o bloğun kulesi için başka modüldür;
+  sahibi plandaki sahip bloğudur. Plan, kuyruk kaydı ve domain sahipliği farklıysa sorulur (SOP §20.4/6b-e).
 
 ## 3. Sorulmadan yapılabilenler (yine de raporlanır)
 

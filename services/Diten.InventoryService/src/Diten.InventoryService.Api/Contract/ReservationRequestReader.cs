@@ -82,7 +82,10 @@ public static class ReservationRequestReader
                 SourceDocumentId = S("sourceDocumentId"),
                 SourceLineId = S("sourceLineId"),
                 Priority = priority,
-                ExpiresAt = S("expiresAt")
+                ExpiresAt = S("expiresAt"),
+                // INVENTORY 1.6.0 (MOD-0173-FU03): the optional reservation scope.
+                WarehouseId = S("warehouseId"),
+                LotId = S("lotId")
             };
 
             return errors.Count > 0 ? (null, string.Join(" ", errors)) : (command, null);

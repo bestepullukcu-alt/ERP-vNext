@@ -1,0 +1,42 @@
+== pre-check: ports must be free
+port 5011 free
+port 5000 free
+== AC-16: MOD-0230 route entries in gateway/Diten.ApiGateway/ocelot.json
+route /api/pv-case-intake-triage ['GET', 'POST']
+route /api/pv-case-intake-triage/{intakeDraftId} ['GET', 'PUT']
+route /api/pv-case-intake-triage/{intakeDraftId}/triage ['POST']
+route /api/pv-case-intake-triage/{intakeDraftId}/route ['POST']
+route count 4 matches expected
+forbidden routes none
+== build
+    0 Hata
+
+Geçen Süre 00:00:05.43
+    0 Hata
+
+Geçen Süre 00:00:03.05
+== start PVG service on 5011 (Development)
+pvg pid 61788
+== start Gateway on 5000 (Development)
+gateway pid 61789 (exec: the subshell becomes the dotnet process)
+port 5011 listening after 2s
+port 5000 listening after 3s
+== request 1: through the Gateway
+status 401
+body:
+
+== request 2: directly to the service
+status 401
+body:
+
+RESULT: Gateway returned the service's result (same status, byte-identical body)
+== gateway log lines for the route
+{"Timestamp":"2026-10-28T13:21:54.4482140+03:00","Level":"Warning","MessageTemplate":"TenantResolution dev bypass applied in gateway. Path={Path} TenantId={TenantId}","RenderedMessage":"TenantResolution dev bypass applied in gateway. Path=\"/api/pv-case-intake-triage\" TenantId=<id>","TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","SpanId":"e23bb80efea4b6cc","Properties":{"Path":"/api/pv-case-intake-triage","TenantId":"<id>","SourceContext":"Diten.ApiGateway.Middleware.TenantResolutionMiddleware","RequestId":"0HNPKRL508EEP:00000001","RequestPath":"/api/pv-case-intake-triage","ConnectionId":"[REDACTED]","TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"}}
+{"Timestamp":"2026-10-28T13:21:54.6735330+03:00","Level":"Warning","MessageTemplate":"{State:l}","RenderedMessage":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage","TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","SpanId":"e23bb80efea4b6cc","Properties":{"State":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage","SourceContext":"Ocelot.Requester.Middleware.HttpRequesterMiddleware","RequestId":"0HNPKRL508EEP:00000001","RequestPath":"/api/pv-case-intake-triage","ConnectionId":"[REDACTED]","TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","CorrelationId":"<id>","MachineName":"192","ServiceName":"Diten.ApiGateway","Environment":"Development"},"Renderings":{"State":[{"Format":"l","Rendering":"RequestId: <id>, PreviousRequestId: -\n401 Unauthorized status code of request URI: http://localhost:5011/api/v1/pv-case-intake-triage"}]}}
+{"Timestamp":"2026-10-28T13:21:54.6821300+03:00","Level":"Information","MessageTemplate":"HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms","RenderedMessage":"HTTP \"GET\" \"/api/pv-case-intake-triage\" responded 401 in 248.3818 ms","TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","SpanId":"e23bb80efea4b6cc","Properties":{"ServiceName":"Diten.ApiGateway","Environment":"Development","CorrelationId":"<id>","RequestPath":"/api/pv-case-intake-triage","StatusCode":401,"TraceId":"d798134a92acc8bd72e0d0f1fdeae0e6","RequestMethod":"GET","Elapsed":248.381791,"SourceContext":"Serilog.AspNetCore.RequestLoggingMiddleware","RequestId":"0HNPKRL508EEP:00000001","ConnectionId":"[REDACTED]","MachineName":"192"},"Renderings":{"Elapsed":[{"Format":"0.0000","Rendering":"248.3818"}]}}
+stop: kill -TERM 61789 (Wed Oct 28 13:21:51 2026)
+stop: kill -TERM 61788 (Wed Oct 28 13:21:51 2026)
+== post-check: ports must be free
+port 5011 free
+port 5000 free
+== exit 0

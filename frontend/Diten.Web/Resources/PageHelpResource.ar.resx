@@ -1028,7 +1028,7 @@
     <value>افتح سجلًا</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>انقر «اتخاذ القرار» على سجل مفتوح للإفراج عن المخزون أو رفضه أو حظره. لا يتحرك المخزون إلا بعد الموافقة على القرار.</value>
+    <value>انقر «اتخاذ القرار» على سجل مفتوح للإفراج عن المخزون أو رفضه أو حظره. لا يتحرك المخزون إلا بعد الموافقة على القرار. الصف الموسوم «ملغى · تم عكس المصدر» أُغلق لأن حركة المخزون المصدر قد عُكست؛ لا حاجة إلى قرار.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>اتخذ القرار</value>
@@ -1043,7 +1043,7 @@
     <value>حفظ ملاحظة التحليل</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>راجع البيانات في الأعلى وبطاقة «معلومات الجودة» وحركات المخزون التي أنشأها السجل؛ يظهر شريط أصفر عند تجاوز هدف الانتظار.</value>
+    <value>راجع البيانات في الأعلى وبطاقة «معلومات الجودة» وحركات المخزون التي أنشأها السجل؛ يظهر شريط أصفر عند تجاوز هدف الانتظار. لافتة «ملغى»: عُكست حركة المصدر وأُغلق السجل. «تم عكس المصدر · تعارض»: تغيّر المخزون خارج هذا السجل؛ يفحصه ضمان الجودة. السجل الموسوم الذي ما زال مفتوحًا يبقى مفتوحًا ويُحتسب بكامل كميته في الأعداد المفتوحة (مؤشرات الأداء، حالة جودة التشغيلة، الاستدعاء)؛ لا يوجد إجراء إغلاق على السجل — يصحّح ضمان الجودة جانب المخزون. في السجل الملغى تعني العلامة أن سطرًا من قراره رُحّل بعد الإغلاق؛ خرج المخزون من حاوية سجل آخر. علامة تغيير التشغيلة: طُبّق تغيير التشغيلة الخاص بالقرار (الحالة و/أو تاريخ إعادة الفحص) قبل إغلاق السجل؛ لم تُستعد التشغيلة — يفحص ضمان الجودة حالة التشغيلة.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>اقرأ السجل</value>
@@ -1142,7 +1142,7 @@
     <value>«حظر المخزون» ← «حظر»: يصبح المخزون المختار محظورًا فورًا دون سير عمل موافقة</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>اكتب في مربع البحث أو انقر زر التصفية («تصفية»)، واختر سبب حظر أو «بانتظار التصرف فقط» أو «الحالة»، ثم انقر «تطبيق».</value>
+    <value>اكتب في مربع البحث أو انقر زر التصفية («تصفية»)، واختر سبب حظر أو «بانتظار التصرف فقط» أو «الحالة»، ثم انقر «تطبيق». يعرض «ملغى · تم عكس المصدر» في «الحالة» السجلات المغلقة لأن حركة المخزون المصدر قد عُكست. سجل المخزون المحظور المفتوح الموسوم «تم عكس المصدر · تعارض» يبقى مفتوحًا ويُحتسب بكامل كميته في الأعداد المفتوحة؛ لا يوجد إجراء إغلاق على السجل — يصحّح ضمان الجودة جانب المخزون.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>ضيّق القائمة</value>
@@ -1670,7 +1670,7 @@
     <value>احجر المخزون</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>في «العملاء والشحنات»، استخدم «تسجيل كمُبلَّغ» و«إضافة إقرار استهلاك». في «المرتجعات»، يفتح «إدخال مرتجع عميل» نموذج حركة المخزون؛ ثم انقر «ربط المرتجع» على أحد المرشحات.</value>
+    <value>في «العملاء والشحنات»، استخدم «تسجيل كمُبلَّغ» و«إضافة إقرار استهلاك». في «المرتجعات»، يفتح «إدخال مرتجع عميل» نموذج حركة المخزون؛ ثم انقر «ربط المرتجع» على أحد المرشحات. تشير شارة «سجل قديم» أو «بلا هوية CRM» إلى عميل بلا هوية في CRM؛ ولا يُدمج مثل هذا السطر مع عميل CRM أبدًا. عند تعذّر الوصول إلى CRM، أو إذا لم يكن لديك إذن لرؤية أسماء عملاء CRM («الإذن غير متوفر»)، يُغلق الإبلاغ وإقرار الاستهلاك وربط المرتجع لذلك العميل. تُعرض أسماء العملاء في صفحات من 25 عميلًا؛ استخدم أزرار الصفحات للبقية.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>تابع العملاء والمرتجعات</value>
@@ -2032,4 +2032,198 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>اترك عينتك لغيرك</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>انقل المخزون المستلم من موقع الاستلام إلى رفّه وأكّد ذلك؛ ينقل التأكيد المخزون في دفتر المخزون.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>مشغّلو المستودع (التأكيد) ومشرفو المستودع (الإنشاء، التكليف، التسوية).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>اختر المخزون</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>اضغط «مهمة جديدة» واختر سطرًا في «المخزون المراد تخزينه». يعرض السطر المقفل السبب والمستند المانع؛ ولا يمكن اختياره.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>الرف والمكلَّف</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>اكتب رمز الرف أو امسحه في «الرف الهدف»؛ لا يُقبل إلا رمز مطابق تمامًا. اختر المشغّل في «المكلَّف». لا يؤخذ الرف المقترح إلا عبر «تطبيق».</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>أكّد</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>اضغط «تأكيد» وتحقق من الكمية (−/+) والرف الفعلي. يُسمح بكمية جزئية؛ والرف المختلف يتطلب سببًا.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>أعد محاولة تأكيد قيد الانتظار</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>إذا كانت الشارة «بانتظار التأكيد» فإن ردّ المخزون لم يصل؛ افتح المهمة واضغط «إعادة المحاولة». لا يعمل شيء آخر حتى تتم التسوية.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>ينقل التأكيد المخزون فورًا؛ والتراجع عنه قيد عكسي في حركات المخزون.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>لتحديد مواقع الاستلام وشروط التخزين</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>لرؤية المخزون الذي نقلته التأكيدات</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>حدّد المواقع التي تمثّل مناطق استلام أو تجهيز شحن وشروط التخزين التي تقبلها العقدة؛ ترثها العقد الأدنى.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>مشرفو المستودع.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>اختر الموقع</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>اضغط «دور جديد» واختر العقدة في «عقدة الموقع».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>امنح الأدوار والشروط</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>حدّد «الاستلام» أو «تجهيز الشحن» وشروط التخزين المقبولة؛ الشروط وحدها دون دور صالحة.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>تحقّق من مواقع الاستلام</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>لا تبدأ مهام التخزين إلا من مواقع الاستلام؛ تأكد أن لكل مستودع موقع استلام. تحمل المجموعة الموروثة شارة «من العقدة الأعلى».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>لتخزين المخزون المستلم</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>اشحن المخزون خارج المستودع: افتح صادرًا بأسطره، وتابع الانتقاء والتغليف، واجعله جاهزًا للشحن وسجّل الإرسال.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>مخططو الشحن ومشرفو المستودعات.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>المستودع والتجهيز</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>اضغط «صادر جديد» واختر المستودع. اختر موقع التجهيز فقط إذا كان للمستودع عدة مواقع.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>الأسطر والمعاينة</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>أدخل كل سطر (المنتج، SKU، الكمية، سطر الطلب) واضغط «معاينة التخصيص»: تظهر التشغيلات بترتيب FEFO والكمية القابلة للتخصيص.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>تغيير التشغيلة</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>عند الحاجة اختر تشغيلة أخرى في «تغيير التشغيلة»؛ التشغيلة التي ليست الأولى في ترتيب FEFO تتطلب سببًا حسب قاعدة FEFO لشركتك.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>متابعة الانتقاء</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>يؤدي الحفظ إلى تخصيص المخزون وفتح مهام الانتقاء؛ تابعها في صفحة التفاصيل حتى يصبح الصادر منتقى.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>الجاهزية للشحن والإرسال</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>بعد التغليف اضغط «جاهز للشحن»؛ وبعد خروج البضاعة اضغط «التحقق من الشحنة».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>لا يمكن تغيير الصادر الجاهز للشحن أو إلغاؤه.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>لانتقاء المخزون المخصّص</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>لرؤية ما هو عالق ويحتاج إلى متابعة</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>انقل المخزون المخصّص من موقعه إلى موقع التجهيز وأكّد كل نقل.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>مشغلو المستودع (التأكيد) ومشرفو المستودع (الإسناد، المطابقة).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>تولَّ المهمة</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>افتح مهمة غير مسندة من قائمة السطر واضغط «تولّي».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>انقل وأكّد</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>انقل المخزون من الموقع إلى موقع التجهيز، واضغط «تأكيد» وتحقّق من الكمية (−/+). لا يمكن تغيير الموقع ولا الهدف.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>غلّف</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>عند انتقاء الصادر يظهر الرابط «تغليف» في المهمة؛ يفتح صفحة التغليف.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>لتغليف المخزون المنتقى</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>غلّف المخزون المنتقى لصادر في طرود.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>مشغلو المستودع ومشرفوه.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>افتح طردًا</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>اضغط «طرد جديد»؛ يمكن ذلك فقط عندما يكون الصادر منتقى.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>المحتوى والوزن والأبعاد</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>أدخل الكمية من كل تخصيص في الطرد (−/+)، ووزنه بالكيلوغرام وأبعاده بالسنتيمتر (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>أغلق الطرد</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>اضغط «إغلاق الطرد». عند تغليف كل التخصيصات يصبح الصادر «تم التغليف».</value>
+  </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>تفتح هذه الصفحة خطط السعة: أنشئ خطة للشركة المحددة أو افتح خطة موجودة بمعرّفها.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>مخططو السعة والإمداد</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>اختر الشركة</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>اختر الشركة من محدد الشركة في الأعلى؛ تُنشأ الخطة وتُفتح في تلك الشركة.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>أنشئ خطة</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>انقر «Create plan»، وأدخل الاسم والأفق وخطة الطلب التي تستند إليها، ثم انقر «Save». تُفتح الخطة الجديدة في مساحة عملها.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>افتح خطة</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>الصق معرّف الخطة في «Plan ID» وانقر «Open plan». لا يمكن العثور على خطة شركة أخرى.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>هذه الصفحة هي مساحة عمل خطة سعة واحدة: بيانات مصدرها وسيناريوهاتها وتقييماتها.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>مخططو السعة والإمداد</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>تحقّق من المصدر</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>يعرض «Plan provenance» خطة الطلب وإصدارها ووقت التقاطها ومجموع التحقق: يعمل كل سيناريو في هذه الخطة على تلك البيانات.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>أنشئ سيناريو</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>انقر «Create scenario»، وسمِّه، وأضف مراجع القيود وتعديلات السعة، ثم انقر «Create scenario» في اللوحة.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>قيّمه</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>افتح سيناريو وانقر «Evaluate»: اختر الوضع والموارد ثم أرسل. تظهر النتيجة في لوحة التقييم عند اكتمالها.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>تفتح هذه الصفحة خطط S&amp;OP: أنشئ خطة للشركة المحددة أو افتح خطة موجودة بمعرّفها.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>منسقو S&amp;OP وأصحاب الاعتماد</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>اختر الشركة</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>اختر الشركة من محدد الشركة في الأعلى؛ تُنشأ الخطة وتُفتح في تلك الشركة.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>أنشئ خطة</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>انقر «Create plan»، وأدخل الاسم والأفق وخطة الطلب التي تستند إليها، ثم انقر «Save». تُفتح الخطة الجديدة في مساحة عملها بحالة «Draft».</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>افتح خطة</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>الصق معرّف الخطة في «Plan ID» وانقر «Open plan». لا يمكن العثور على خطة شركة أخرى.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>هذه الصفحة هي مساحة عمل خطة S&amp;OP واحدة: لقطاتها والاعتمادات المسجلة عليها.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>منسقو S&amp;OP وأصحاب الاعتماد</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>التقط لقطة</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>انقر «Capture snapshot»، وأدخل خطة الطلب وإصدارها ووقت التقاط المصدر ومجموع التحقق، وأضف مراجع مدخلات الإمداد. أكّد بـ Ctrl+Enter أو بالزر.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>سجّل اعتمادًا</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>انقر «Record sign-off»، واختر اللقطة ودورك والقرار، وأضف تعليقًا عند الحاجة ثم أكّد. تُسجَّل الاعتمادات فقط أثناء مراجعة الخطة.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>اعرف ما هو نهائي</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>الاعتماد المسجَّل نهائي: لا يمكن تغييره أو حذفه، ويُرفض اعتماد ثانٍ لنفس الدور واللقطة.</value></data>
 </root>
