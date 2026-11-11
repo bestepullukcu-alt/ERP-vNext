@@ -12,11 +12,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|mcp__ccd_pr__set_auto_merge",
+        "matcher": "Bash|Monitor|PowerShell|mcp__terminal__run_in_terminal|mcp__ccd_pr__set_auto_merge",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" || python \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\"",
+            "command": "[ -f \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" ] || exit 0; python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" || python \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\"",
             "timeout": 10
           }
         ]

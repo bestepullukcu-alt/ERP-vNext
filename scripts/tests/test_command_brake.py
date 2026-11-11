@@ -93,6 +93,12 @@ class Protocol(unittest.TestCase):
         self.assertEqual(self.decision("Bash", {"command": "gh pr merge 1"}), "deny")
         self.assertEqual(self.decision("Bash", {"command": "git clean -fd"}), "ask")
 
+    def test_every_shell_tool_is_braked(self):
+        for tool in ("Bash", "Monitor", "PowerShell", "mcp__terminal__run_in_terminal"):
+            self.assertEqual(self.decision(tool, {"command": "gh pr merge 1 --merge"}), "deny", tool)
+            self.assertIsNone(self.decision(tool, {"command": "git status"}), tool)
+        self.assertEqual(self.run_hook(json.dumps({"tool_name": "Monitor", "tool_input": "x"})), (0, ""))
+
     def test_auto_merge_tool_is_denied(self):
         self.assertEqual(self.decision("mcp__ccd_pr__set_auto_merge", {}), "deny")
 
@@ -111,12 +117,22 @@ class RepoSettings(unittest.TestCase):
         return [(e.get("matcher", ""), h.get("command", "")) for e in settings.get("hooks", {}).get("PreToolUse", [])
                 for h in e.get("hooks", []) if h.get("type") == "command" and "scripts/hooks/command_brake.py" in h.get("command", "")]
 
-    def test_registered_for_bash_and_auto_merge(self):
+    def test_registered_for_every_braked_tool(self):
         import re
         entries = self.entries()
         self.assertTrue(entries, "command_brake.py is not a PreToolUse hook in .claude/settings.json")
-        for tool in ("Bash", "mcp__ccd_pr__set_auto_merge"):
-            self.assertTrue(any(re.fullmatch(m, tool) for m, _ in entries), f"no brake matcher covers {tool}")
+        covers = lambda m, tool: m in ("", "*") or re.fullmatch(m, tool) is not None   # "" and "*" mean every tool
+        for tool in sorted(cb.SHELL_TOOLS | cb.DENY_MCP):
+            self.assertTrue(any(covers(m, tool) for m, _ in entries), f"no brake matcher covers {tool}")
+
+    def test_checkout_without_the_script_passes(self):
+        import os, tempfile
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "git status"}})
+        with tempfile.TemporaryDirectory() as empty:
+            for _, command in self.entries():
+                p = subprocess.run(["bash", "-c", command], input=payload, capture_output=True, text=True, timeout=20,
+                                   env={**os.environ, "CLAUDE_PROJECT_DIR": empty})
+                self.assertEqual((p.returncode, p.stdout), (0, ""), p.stderr)
 
     def test_registered_command_denies_a_merge(self):
         import os

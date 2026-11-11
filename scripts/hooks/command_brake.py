@@ -16,7 +16,8 @@ Decisions (Claude Code hook protocol: JSON on stdout, exit 0):
 The command is tokenised with shlex, so text inside a commit message or a grep pattern is never mistaken for a
 command. `bash -c "..."`, `env`, `nohup`, `sudo`, `xargs`, `time` wrappers and `git -C <dir>` are followed.
 Input that cannot be parsed passes (fail-open) so that the brake never stops ordinary work.
-Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse; python3, else python).
+Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse for SHELL_TOOLS and DENY_MCP;
+python3, else python; a checkout without this file passes).
 Known limit: a person can switch hooks off locally -- this is a net against agent habit, not against intent.
 """
 from __future__ import annotations
@@ -38,6 +39,10 @@ GH_MUTATIONS = re.compile(r"\b(mergePullRequest|addPullRequestReview|submitPullR
                           r"updateBranchProtectionRule|deleteBranchProtectionRule|createBranchProtectionRule|"
                           r"updateRepository|deleteRepository|archiveRepository)\b")
 DENY_MCP = {"mcp__ccd_pr__set_auto_merge"}
+# Every tool that runs a shell command from tool_input.command: the Bash tool, the desktop app's Terminal panel,
+# the background Monitor and the Windows PowerShell tool. .claude/settings.json registers the hook for each of them
+# (scripts/tests/test_command_brake.py keeps the two in step).
+SHELL_TOOLS = {"Bash", "Monitor", "PowerShell", "mcp__terminal__run_in_terminal"}
 
 
 def current_branch(cwd: str | None) -> str:
@@ -300,8 +305,10 @@ def main() -> int:
     tool = data.get("tool_name")
     if tool in DENY_MCP:
         verdict = ("deny", "Otomatik birleştirmeyi bir insan açar (R1).")
-    elif tool == "Bash":
-        verdict = decide(str((data.get("tool_input") or {}).get("command") or ""), data.get("cwd"))
+    elif tool in SHELL_TOOLS:
+        tool_input = data.get("tool_input")
+        tool_input = tool_input if isinstance(tool_input, dict) else {}
+        verdict = decide(str(tool_input.get("command") or ""), tool_input.get("cwd") or data.get("cwd"))
     else:
         return 0
     if verdict is None:
