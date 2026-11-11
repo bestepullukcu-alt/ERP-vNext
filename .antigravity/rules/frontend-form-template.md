@@ -49,6 +49,15 @@ yeniden yazılan bir alışkanlık değil.
 
 ---
 
+## Kayıt sonrası başarı bildirimi (tam sayfa Create/Edit)
+
+- Başarılı POST'tan sonra controller `TempData["SuccessMessage"]` atar ve Index'e yönlendirir.
+- **Kapsam ve öncelik:** Bu bölüm, bildirimi kabuğa bırakan sayfalar içindir (`_LayoutPlatformAdmin.cshtml` ya da `_LayoutTenantShell.cshtml` kullanan tam sayfa Create/Edit). Kabuk değeri çevirmeden gösterdiği için değer çevrilmiş metindir (örnek: `GoldenReferenceCompactController.cs` → `_sharedLocalizer["RecordCreated"].Value`, `["RecordUpdated"]`); TempData'ya ham anahtar yazılmaz. `dynamic-localization-standard.md` "Server-to-JS Toast Lokalizasyonu" (TempData'da anahtar, Razor'da `SharedLocalizer` ile çeviri) yalnız TempData'yı kendi Razor'unda okuyup toast'ı kendisi basan sayfalar için geçerlidir; kabuğa bırakan sayfada iki yol birlikte kullanılmaz.
+- Bildirimi kabuk gösterir: `_LayoutPlatformAdmin.cshtml` ve `_LayoutTenantShell.cshtml` değeri `window.BackboneShellTempData` ile `backbone-shell.js`'e verir, o da `window.showToast(..., 'success')` çağırır. Sayfa kendi toast kodunu yazmaz.
+- Hata için aynı yol `TempData["ErrorMessage"]` ile çalışır.
+
+---
+
 ## Create/Edit.cshtml Şablonu
 
 ```cshtml

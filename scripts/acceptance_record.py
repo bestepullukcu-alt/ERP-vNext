@@ -330,8 +330,10 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
     is not 'before' it); unknown = under the rule. declared: the künye names a module_pack at all (N-7: a malformed or
     missing one already has its own ENGEL). Under the rule the bound pack commit is an ancestor of the verified code
     commit AND the pack's bytes at the code commit are the bound bytes (N-1), and that version needs (Q3) BOTH a valid
-    approval — the pack at main with these bytes and pack_approval.evaluate(root, main, path) exit 0 (CT-APR-01; a
-    legacy 'unchanged since the start' counts) — AND either a valid review cover on main (review_negatives) or the
+    approval — the pack at the CT's ref (the record's commit, else HEAD, else main; S-115 "dal onayı", owner decision
+    2026-11-01) with these bytes and pack_approval.evaluate(root, that ref, path, deferred=True) exit 0 (CT-APR-01; a
+    legacy 'unchanged since the start' counts; rows still on the branch count with their human step pending) — AND
+    either a valid review cover at that ref (review_negatives, deferred) or the
     start version of this WP (queue + work_package) protected at the start (prompt_gate.dispatch_protected). An
     accepted ENGEL in a review read for this version needs the acceptor's HIGH approval row (Q4). A deleted start record
     and a shallow repository are refusals."""
@@ -372,20 +374,36 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
                 out.append((f"doğrulanan kod commit'inde ({code_commit[:9]}) paket, bağlanan sürüm ({at[:9]}, sha "
                             f"{pa.sha256(pdata)[:8]}) değil — eski bir paket sürümüne bağlanmış", "module_pack'i doğrulanan "
                             "kod commit'indeki paket sürümüne bağla (o sürümün incelemesi okunur)"))
-            stops, cover, _notes, step, accepted = pg.review_negatives(pa, root, main, at_full or main, path, pdata)
+            # S-115 (owner decision 2026-11-01, "dal onayı"): the acceptance reads the CT's ref — the record's commit,
+            # else the worktree's HEAD, else main — so approval and review rows still on the branch count (their human
+            # step pending until the module pull request merges; on main the reading is the strict one)
+            at_rows = rec or pa.commit_of(root, "HEAD") or main
+            # F-10: a record is re-measured later, after main gained other rows — the prefix anchor is the record's
+            # merge-base with main (what main was when the record was made); today's negatives on main still count (K4)
+            mb = pa.git(root, "merge-base", at_rows, main, ok_fail=True)
+            anchor = mb.decode().strip() if mb else main
+            stops, cover, _notes, step, accepted = pg.review_negatives(pa, root, main, at_rows, path, pdata, deferred=True,
+                                                                        anchor=anchor)
+            if anchor != main:
+                today = pg.review_negatives(pa, root, main, main, path, pdata)[0]       # the strict reading of today's main
+                stops += [x for x in today if x not in stops]
             out += [(f"bağlı paket sürümü (sha {pa.sha256(pdata)[:8]}): {x}", f"{step}; yürüyen iş de bu sonuçla kabul "
                      "edilmez") for x in stops]
             sha8 = pa.sha256(pdata)[:8]
             if after and not stops:
-                # Q3: BOTH a valid approval of exactly these bytes on main (pack_approval.evaluate exit 0; a legacy
-                # 'unchanged since the start' counts) AND a valid review cover or proven running-work protection — an
-                # old approval never replaces the review requirement
-                code_a, lines_a = (pa.evaluate(root, main, path) if pa.read(root, main, path) == pdata
-                                   else (1, ["sonuç: bu sürüm main'deki paket sürümü değil"]))
-                if code_a != 0:
-                    why_a = next((l for l in reversed(lines_a) if l.startswith(("sonuç:", "ENGEL:"))), lines_a[-1])
-                    out.append((f"kabul edilen paket sürümü (sha {sha8}) main'de onaylı değil (CT-APR-01: {why_a})",
-                                f"paketin bu sürümünü main'de onaylatın (`python3 scripts/pack_approval.py check {path}` "
+                # Q3: BOTH a valid approval of exactly these bytes at the CT's ref (pack_approval.evaluate deferred exit 0;
+                # a legacy 'unchanged since the start' counts) AND a valid review cover or proven running-work protection
+                # — an old approval never replaces the review requirement
+                code_a, lines_a = (pa.evaluate(root, at_rows, path, deferred=True, anchor=anchor) if pa.read(root, at_rows, path) == pdata
+                                   else (1, ["sonuç: bu sürüm dalın (ya da main'in) paket sürümü değil"]))
+                why_a = next((l for l in reversed(lines_a) if l.startswith(("sonuç:", "ENGEL:"))), lines_a[-1])
+                if code_a == 2:
+                    # F-13: nothing was measured (GitHub quota or an unreadable file) — not "not approved"
+                    out.append((f"kabul edilen paket sürümü (sha {sha8}) onayı ölçülemedi — {why_a}",
+                                "kota sıfırlanınca ya da dosya okunur olunca aynı kaydı yeniden koş; onay dosyaları bozuk sayılmaz"))
+                elif code_a != 0:
+                    out.append((f"kabul edilen paket sürümü (sha {sha8}) dalda ya da main'de onaylı değil (CT-APR-01: {why_a})",
+                                f"paketin bu sürümünü onaylatın (`python3 scripts/pack_approval.py check {path} --deferred` "
                                 "çıkış 0; SOP §20.4)"))
                 if not cover:
                     protected, why = start_protected(pa, pg, root, start, main, queue, wp, path, pdata, record_at,
@@ -396,7 +414,7 @@ def s5_acceptance(root: str, record_at: str | None, module_pack: tuple[str, str]
                                     "paket iş dalında değiştiyse yeni sürümü inceletin (SOP §20.4)"))
             if not stops and accepted:
                 # Q4: an accepted ENGEL needs the acceptor's own HIGH CT-APR-01 approval row for exactly this sha
-                bad = pg.accepted_engel_problem(pa, root, main, path, pa.sha256(pdata), accepted)
+                bad = pg.accepted_engel_problem(pa, root, main, path, pa.sha256(pdata), accepted, at=at_rows, deferred=True)
                 if bad:
                     out.append((bad, pg.ACCEPT_STEP.format(path=path)))
         return start[:9], out
@@ -439,6 +457,39 @@ def s5_line(start: str, reason: str, step: str | None, path: str | None) -> str:
 
 
 # ------------------------------------------------------------------------------------------------ checks
+# UI CT 2026-10-27: a criterion text may hold '|' or '\\|' (grep pipes, regex escapes, "UIC-n | sonuç"). In the §6.2
+# table a backslash is written '\\\\' and a pipe '\\|'; the reader turns them back, keeps any other backslash literal
+# and splits only on a pipe no escape consumed. No §6.2 list was committed before this (measured 2026-10-27).
+def cell_escape(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("|", "\\|")
+
+
+def row_parts(line: str) -> list[str]:
+    """Every piece between unescaped pipes, borders included (a bordered row starts and ends with an empty piece)."""
+    parts, cur, k, s = [], [], 0, line.strip()
+    while k < len(s):
+        c = s[k]
+        if c == "\\" and k + 1 < len(s) and s[k + 1] in "\\|":
+            cur.append(s[k + 1]); k += 2; continue
+        if c == "|":
+            parts.append("".join(cur)); cur = []
+        else:
+            cur.append(c)
+        k += 1
+    parts.append("".join(cur))
+    return parts
+
+
+def table_cells(line: str) -> list[str]:
+    """The cells of one markdown table row, stripped and unescaped; the outer borders are dropped."""
+    parts = row_parts(line)
+    if parts and parts[0].strip() == "" and line.strip().startswith("|"):
+        parts = parts[1:]
+    if parts and parts[-1].strip() == "" and line.strip().endswith("|"):
+        parts = parts[:-1]
+    return [c.strip() for c in parts]
+
+
 def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = None) -> tuple[list[str], list[str], list[dict]]:
     """REP-001 §6.2 acceptance list: rows and problems. A mandatory criterion that failed or was not tried is returned
     in the rows (the caller decides), a malformed row is an ENGEL here. CT-FIX-05 (F3): with the run record's artifacts
@@ -449,7 +500,7 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
     if unfilled:
         eng.append(f"kabul listesi: {len(unfilled)} satırda doldurulmamış alan ({DRAFT_MARK} …) — satır "
                    f"{', '.join(map(str, unfilled[:10]))}{' …' if len(unfilled) > 10 else ''}")
-    head = [i for i, l in enumerate(lines) if [c.strip() for c in l.strip().strip("|").split("|")] == LIST_COLUMNS]
+    head = [i for i, l in enumerate(lines) if table_cells(l) == LIST_COLUMNS]
     if len(head) != 1:
         return [f"kabul listesi: §6.2 başlık satırı {len(head)} kez var, 1 olmalı ({' | '.join(LIST_COLUMNS)})"], info, rows
     h = head[0]
@@ -462,7 +513,7 @@ def check_list(text: str, read, artifacts: dict[str, tuple[str, int]] | None = N
         eng.append(f"kabul listesi: tablo dışında kalan satır var (satır {', '.join(map(str, outside[:5]))}) — hiçbir ölçüt kaybolmamalı")
     seen = set()
     for l in lines[h + 2:end]:
-        cells = [c.strip() for c in l.strip().strip("|").split("|")]
+        cells = table_cells(l)
         if len(cells) != len(LIST_COLUMNS):
             eng.append(f"kabul listesi: satır sütun sayısı {len(cells)}, beklenen {len(LIST_COLUMNS)}: '{l.strip()[:50]}'")
             continue
@@ -930,14 +981,15 @@ def draft_list(criteria: dict[int, tuple[bool, str]]) -> str:
     d = lambda what: f"{DRAFT_MARK}: {what}>>"
     out = ["| " + " | ".join(LIST_COLUMNS) + " |", "|" + "---|" * len(LIST_COLUMNS)]
     for n, (mandatory, text) in sorted(criteria.items()):
-        if "|" in text or text != text.strip():
-            raise Incomplete(f"AC-{n} ölçüt metni tabloya birebir taşınamaz ('|' ya da baş/son boşluk) — elle düzeltilmez")
+        if text != text.strip():
+            raise Incomplete(f"AC-{n} ölçüt metni tabloya birebir taşınamaz (baş/son boşluk) — elle düzeltilmez")
+        text = cell_escape(text)  # table_cells() reads it back exactly
         # a hint never holds '|': it is a table cell (Codex: 'evet | hayır' split the row into 11 cells)
         cells = [f"AC-{n}", text, d("neden"), d("nasıl"), d("beklenen sonuç"), d("evet veya hayır"),
                  "evet" if mandatory else "hayır", d("gerçek sonuç"), "denenmedi", d("yol@commit[:satır]")]
         out.append("| " + " | ".join(cells) + " |")
     for row in out:
-        if row.count("|") != len(LIST_COLUMNS) + 1:
+        if len(row_parts(row)) != len(LIST_COLUMNS) + 2:
             raise Incomplete(f"taslak satırı {len(LIST_COLUMNS)} hücreli değil — üretilmez: '{row[:60]}'")
     return "\n".join(out) + "\n"
 
@@ -1548,9 +1600,25 @@ def self_test() -> int:
     rw.g("checkout", "-q", "main")
     r_w = s5_run(rw, VW, code_w, code_w, code_w)
     cases.append(("sabotage S-5 R3-1: the record binds a pack version edited on the work branch (no review, not on main, "
-                  "not the protected start version) -> refused, self-explaining",
-                  r_w[0] == 1 and any("incelenmemiş" in e and "yeni sürümü inceletin" in e for e in s5e(r_w))
-                  and any("main'de onaylı değil" in e for e in s5e(r_w))))
+                  "not the protected start version) -> refused, self-explaining (S-115: the branch version itself is no "
+                  "longer refused by the pre-POLICY-START legacy approval rule; the missing review still refuses)",
+                  r_w[0] == 1 and any("incelenmemiş" in e and "yeni sürümü inceletin" in e for e in s5e(r_w))))
+    # S-115: the same under CT-APR-01 (POLICY-START on main) — the branch version has no approval row -> 'onaylı değil' too
+    rw2 = S5Repo(os.path.join(s5_tmp.name, "r31b"))
+    rw2.put(rw2.pa.APPROVALS, "\t".join(rw2.pa.APPROVAL_COLUMNS) + "\n")
+    rw2.put(rw2.pa.POLICY, "# start\n")
+    rw2.commit("CT-APR-01 start", rw2.LEAD)
+    rw2.commit_file(PK, V)
+    rw2.start()
+    rw2.g("checkout", "-q", "-b", "worker")
+    rw2.put(PK, VW)
+    code_w2 = rw2.commit_file("src/x.txt", "kod\n")
+    rw2.g("checkout", "-q", "main")
+    r_w2 = s5_run(rw2, VW, code_w2, code_w2, code_w2)
+    cases.append(("sabotage S-5 R3-1 / S-115: the branch-edited version under CT-APR-01 with no approval row -> refused "
+                  "'onaylı değil' (the branch reading invents no approval) and 'incelenmemiş'",
+                  r_w2[0] == 1 and any("dalda ya da main'de onaylı değil" in e and "onay yok" in e for e in s5e(r_w2))
+                  and any("incelenmemiş" in e for e in s5e(r_w2))))
     # Q3 with protection: W7 running at the S-5 start; CT-APR-01 either keeps the pack's legacy approval (the pack is
     # older than POLICY-START, unchanged) or does not (the pack changed after POLICY-START, no approval row)
     cq = gate()._SHARED
@@ -1617,7 +1685,7 @@ def self_test() -> int:
     r_c = wp_run(rc, pc, cc, "W7")
     cases.append(("sabotage S-5 Q3: the WP's protected start version but no valid CT-APR-01 approval (changed after "
                   "POLICY-START, no approval row) -> refused (protection never replaces the approval)",
-                  r_c[0] == 1 and any("main'de onaylı değil" in e and "CT-APR-01" in e for e in s5e(r_c))))
+                  r_c[0] == 1 and any("dalda ya da main'de onaylı değil" in e and "CT-APR-01" in e for e in s5e(r_c))))
     # Q4: an ENGEL accepted ('kabul — onaylayan') in a review of the bound version, no approval row for it
     ra4 = S5Repo(os.path.join(s5_tmp.name, "q4"))
     p4 = ra4.commit_file(PK, V)
@@ -1628,6 +1696,72 @@ def self_test() -> int:
     cases.append(("sabotage S-5 Q4: an accepted ENGEL in the bound version's review and no HIGH CT-APR-01 approval row of the "
                   "acceptor for this sha -> refused, self-explaining",
                   r_q4[0] == 1 and any("kabul edilmiş ENGEL var" in e and "--risk HIGH" in e for e in s5e(r_q4))))
+    # S-115 (owner decision 2026-11-01, "dal onayı"): the approval and review rows only on the CT branch (not merged)
+    # -> accepted (the branch reading, human step pending); merged later by another person -> still accepted (17)
+    r15 = S5Repo(os.path.join(s5_tmp.name, "s115"))
+    r15.put(r15.pa.APPROVALS, "\t".join(r15.pa.APPROVAL_COLUMNS) + "\n")
+    r15.put(r15.pa.POLICY, "# start\n")
+    r15.commit("CT-APR-01 start", r15.LEAD)
+    p15 = r15.commit_file(PK, V)
+    r15.start()
+    r15.g("checkout", "-q", "-b", "ct")
+    d15 = hashlib.sha256(V.encode("utf-8")).hexdigest()
+    rel15 = f"docs/records/reviews/t/s115-{d15[:8]}.md"
+    body15 = f"# İnceleme\n\nhedef: {PK} @ {d15}\n\n" + "".join(l + "\n" for l in REV_OK)
+    r15.put(rel15, body15)
+    r15.put(r15.pa.REVIEWS, r15.get(r15.pa.REVIEWS) + "\t".join([PK, d15, rel15, hashlib.sha256(body15.encode("utf-8")).hexdigest(),
+                                                               "UYGUN", "0", "claude", "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-11-01"]) + "\n")
+    r15.commit("review row on the branch")
+    r15.put(r15.pa.APPROVALS, r15.get(r15.pa.APPROVALS) + r15.pa.make_row(r15.root, "HEAD", PK, "dev", "lead", "HIGH", "test", "2026-11-01") + "\n")
+    c15 = r15.commit("approval row on the branch")
+    r_15 = s5_run(r15, V, p15, c15, c15)
+    cases.append(("S-115 (17): approval and review rows only on the CT branch -> accepted (deferred reading), no S-5 line",
+                  r_15[0] == 0 and not s5e(r_15)))
+    r15.g("checkout", "-q", "-b", "ct-noapproval", p15)
+    r15.put(rel15, body15)
+    r15.put(r15.pa.REVIEWS, r15.get(r15.pa.REVIEWS) + "\t".join([PK, d15, rel15, hashlib.sha256(body15.encode("utf-8")).hexdigest(),
+                                                               "UYGUN", "0", "claude", "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-11-01"]) + "\n")
+    c15n = r15.commit("review only, no approval row")
+    r_15n = s5_run(r15, V, p15, c15n, c15n)
+    cases.append(("sabotage S-115 (17): a branch review without an approval row -> refused 'onaylı değil' (the branch reading "
+                  "invents no approval)", r_15n[0] == 1 and any("dalda ya da main'de onaylı değil" in e for e in s5e(r_15n))))
+    r15.g("checkout", "-q", "main")
+    r15.g("merge", "-q", "--no-ff", "-m", "Merge ct", "ct", who=r15.LEAD)
+    m15 = r15.head()
+    r_15m = s5_run(r15, V, p15, m15, m15)
+    cases.append(("S-115 (17): the same rows after the module PR merged by another person -> still accepted (strict human step)",
+                  r_15m[0] == 0 and not s5e(r_15m)))
+    # F-10 (E10): the record is re-measured after main gained ANOTHER pack's review row -> still accepted (the prefix
+    # anchor is the record's merge-base with main); a revoke of THIS pack on main today -> refused (K4 kept)
+    r10 = S5Repo(os.path.join(s5_tmp.name, "f10"))
+    r10.put(r10.pa.APPROVALS, "\t".join(r10.pa.APPROVAL_COLUMNS) + "\n")
+    r10.put(r10.pa.POLICY, "# start\n")
+    r10.commit("CT-APR-01 start", r10.LEAD)
+    p10 = r10.commit_file(PK, V)
+    PK2 = "execution/domains/x/module-packs/MOD-0152-y.md"
+    r10.commit_file(PK2, V.replace("MOD-0151", "MOD-0152"))
+    r10.start()
+    r10.g("checkout", "-q", "-b", "ct")
+    r10.put(rel15, body15)
+    r10.put(r10.pa.REVIEWS, r10.get(r10.pa.REVIEWS) + "\t".join([PK, d15, rel15, hashlib.sha256(body15.encode("utf-8")).hexdigest(),
+                                                               "UYGUN", "0", "claude", "claude-opus-5-5", "high", "rs-1", "K4", "as-1", "dev", "2026-11-01"]) + "\n")
+    r10.commit("review row on the branch")
+    r10.put(r10.pa.APPROVALS, r10.get(r10.pa.APPROVALS) + r10.pa.make_row(r10.root, "HEAD", PK, "dev", "lead", "HIGH", "test", "2026-11-01") + "\n")
+    c10 = r10.commit("approval row on the branch (the record's commit)")
+    r10.g("checkout", "-q", "main")
+    r10.review(PK2, V.replace("MOD-0151", "MOD-0152"), "UYGUN", REV_OK, 0)        # another pack's row lands on main later
+    r_10 = s5_run(r10, V, p10, c10, c10)
+    cases.append(("S-115 F-10 (E10): main gained another pack's review row after the record -> the record still passes "
+                  "(prefix anchored at its merge-base with main)", r_10[0] == 0 and not s5e(r_10)))
+    r10.g("checkout", "-q", "-b", "revoke-pk", "main")
+    r10.put(r10.pa.APPROVALS, r10.get(r10.pa.APPROVALS) + "\t".join([PK, d15, "revoke", "HIGH", "iptal", "lead", "lead", "2026-11-02",
+                                                                   "-", ""]) + "\n")
+    r10.commit("revoke on main", r10.LEAD)
+    r10.g("checkout", "-q", "main")
+    r10.g("merge", "-q", "--no-ff", "-m", "Merge revoke-pk", "revoke-pk", who=r10.LEAD)
+    r_10r = s5_run(r10, V, p10, c10, c10)
+    cases.append(("sabotage S-115 F-10 / K4: a revoke of THIS pack on today's main -> the old record is refused",
+                  r_10r[0] == 1 and any("dalda ya da main'de onaylı değil" in e for e in s5e(r_10r))))
     # F — F-6: a shallow clone
     shallow = os.path.join(s5_tmp.name, "f")
     subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + rb.root, shallow], check=True, capture_output=True,
@@ -1681,7 +1815,7 @@ def self_test() -> int:
     cases.append(("CT-FIX-03 U3 (Codex): every line of the list draft has exactly the §6.2 column count (no '|' inside a hint)",
                   all(l.count("|") == len(LIST_COLUMNS) + 1 for l in dl_text.split("\n") if l.strip())))
     def filled_row(r, ln):
-        c = [x.strip() for x in r.strip().strip("|").split("|")]
+        c = [cell_escape(x) for x in table_cells(r)]
         c[2:6] = [f"gerekçe {c[0]}", f"yöntem {c[0]}", f"beklenen {c[0]}", "hayır"]
         c[7:10] = ["gözlenen", "geçti", f"`{RUN}/stdout.txt@{C3}:{ln}`"]
         return "| " + " | ".join(c) + " |"
@@ -1702,8 +1836,24 @@ def self_test() -> int:
                   (lambda r: r[0] == 1 and any("doldurulmamış" in l for l in r[1]))(run(rec_d, fs=fs_d))))
     cases.append(("CT-FIX-03 U3 sabotage: a filled record with the list draft as printed -> ENGEL 'doldurulmamış'",
                   any("doldurulmamış" in e for e in eng(run(filled_rec, fs={**fs_d, (C1, "docs/records/audits/2026-10/x/kabul.md"): dl_text})))))
-    cases.append(("CT-FIX-03 U3: a criterion text holding '|' is refused, never altered",
-                  _refuses(lambda: draft_list({1: (True, "a | b")}))))
+    real = "`grep -oE '^\\| UIC-[0-9]+'` çıktısı 26 satır"
+    dl_real = [l for l in draft_list({1: (True, real)}).split("\n") if l.startswith("| AC-")]
+    cases.append(("UI 10-27: a criterion with a regex escape '\\|' (MOD-0286 AC-4 form) round-trips exactly",
+                  table_cells(dl_real[0])[:2] == ["AC-1", real]))
+    cases.append(("UI 10-27: a literal backslash at a cell's end does not eat the border",
+                  table_cells("| a\\\\ | b |") == ["a\\", "b"]))
+    dl_pipe = draft_list({1: (True, "grep a | wc -l"), 2: (True, "yetkisiz kullanıcı 403 alır")})
+    pipe_rows = [l for l in dl_pipe.split("\n") if l.startswith("| AC-")]
+    cases.append(("UI 10-27: '|' in a criterion is drafted as '\\|' and read back as the pack's text",
+                  "grep a \\| wc -l" in pipe_rows[0] and table_cells(pipe_rows[0])[:2] == ["AC-1", "grep a | wc -l"]))
+    pack_pipe = pack("- [ ] AC-1 (zorunlu) — grep a | wc -l\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n")
+    list_pipe = "\n".join(dl_pipe.split("\n")[:2] + [filled_row(r, i) for i, r in enumerate(pipe_rows, start=1)]) + "\n"
+    fs_pipe = {**files, (C1, PK): pack_pipe, (C1, "docs/records/audits/2026-10/x/kabul.md"): list_pipe}
+    cases.append(("UI 10-27: a filled list whose criterion holds an escaped '|' passes the ordinary check (exit 0)",
+                  run(filled_rec, fs=fs_pipe)[0] == 0))
+    list_raw = list_pipe.replace("grep a \\| wc -l", "grep a | wc -l")
+    cases.append(("UI 10-27 sabotage: the same list with an unescaped '|' -> ENGEL (column count), never an acceptance",
+                  any("sütun sayısı" in e for e in eng(run(filled_rec, fs={**fs_pipe, (C1, "docs/records/audits/2026-10/x/kabul.md"): list_raw})))))
 
     def pp(text, module="MOD-0151"):
         try:

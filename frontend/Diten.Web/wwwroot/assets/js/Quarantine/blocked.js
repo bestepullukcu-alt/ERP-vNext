@@ -333,7 +333,7 @@ if (typeof window !== 'undefined') window.QuarantineBlockedRules = QuarantineBlo
                     { targets: 4, className: 'text-end', render: (data, type, full) => `<span dir="ltr">${esc(qty(data))} ${esc(ui.uom(full))}</span>` },
                     { targets: 5, render: (data, type, full) => `<div class="d-flex flex-column"><span class="badge bg-label-danger align-self-start">${esc(data?.name || reasonName(data?.code) || '—')}</span><small class="text-muted">${esc(full.note || '')}</small></div>` },
                     { targets: 6, render: (data) => esc(date(data)) },
-                    { targets: 7, render: (data, type, full) => pendingCell(full) },
+                    { targets: 7, render: (data, type, full) => pendingCell(full) + ui.conflictBadge(full) }, // MOD-0175-FU01 DL-2 (AC-28): any status
                     { targets: -1, title: t('Quarantine.Col.Actions'), searchable: false, orderable: false, className: 'cell-fit all', render: (data, type, full) => renderAction(full) }
                 ]
             }

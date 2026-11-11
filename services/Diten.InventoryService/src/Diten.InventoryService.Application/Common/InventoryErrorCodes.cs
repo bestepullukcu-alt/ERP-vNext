@@ -10,7 +10,8 @@ namespace Diten.InventoryService.Application.Common;
 /// the three PRODUCT-MASTER v1.1 refusals INVENTORY-BUNDLE 1.2.0 declares on <c>postMovement</c> (422, WP-0173-PM1, CT-PM1-1). Plus the three
 /// expiry-hook refusals INVENTORY-BUNDLE 1.3.0 declares on <c>postMovement</c> (422, MOD-0176 WP-0176-F2). Plus the recall exit block
 /// INVENTORY-BUNDLE 1.4.0 declares on <c>postMovement</c> (422 <see cref="LotUnderRecall"/>, MOD-0177 WP-0177-R3).
-/// No other code may be added without a new pack version.
+/// Plus the five reservation refusals INVENTORY-BUNDLE 1.7.0 declares on <c>postMovement</c> (422, MOD-0173-FU03 DL-2 — the authority is that
+/// FU pack, CT-02). No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
 {
@@ -78,6 +79,26 @@ public static class InventoryErrorCodes
     /// <summary>1.4.0 (MOD-0177 KR-C, CT-R4 / CT-R7 / CT-R11): the lot is under an active recall and the movement type leaves the recall's control.</summary>
     public const string LotUnderRecall = "LOT_UNDER_RECALL";
 
+    // 1.7.0 (MOD-0173-FU03 DL-2, CT-02): the refusals of a movement that names a reservation by reservationId (all 422, postMovement).
+
+    /// <summary>The id is no reservation of this tenant + company (another scope's id and non-UUID text alike — nothing leaks).</summary>
+    public const string ReservationNotFound = "RESERVATION_NOT_FOUND";
+
+    /// <summary>The ONE message of <see cref="ReservationNotFound"/> — unknown, another scope's or non-UUID text alike (not a code: not in <see cref="All"/>).</summary>
+    public const string ReservationNotFoundMessage = "The reservation does not exist in this tenant and company.";
+
+    /// <summary>The reservation is RELEASED (released / consumed) or EXPIRED (due ones are expired first in the transaction).</summary>
+    public const string ReservationNotActive = "RESERVATION_NOT_ACTIVE";
+
+    /// <summary>The movement's SKU, source warehouse or lot differs from the reservation's (<c>details.field</c>).</summary>
+    public const string ReservationMismatch = "RESERVATION_MISMATCH";
+
+    /// <summary>The movement type / direction neither consumes nor moves reserved stock (only sales / production issue and LOCATION_TRANSFER out of AVAILABLE do).</summary>
+    public const string ReservationNotApplicable = "RESERVATION_NOT_APPLICABLE";
+
+    /// <summary>The issue's base quantity is more than the reservation's remaining quantity (Q-04: the rest is not taken from free stock).</summary>
+    public const string ReservationQuantityExceeded = "RESERVATION_QUANTITY_EXCEEDED";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
@@ -87,7 +108,8 @@ public static class InventoryErrorCodes
         SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable,
         ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable,
         FefoBypassReasonRequired, FefoOrderViolation, LotBelowMinRemainingShelfLife,
-        LotUnderRecall
+        LotUnderRecall,
+        ReservationNotFound, ReservationNotActive, ReservationMismatch, ReservationNotApplicable, ReservationQuantityExceeded
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

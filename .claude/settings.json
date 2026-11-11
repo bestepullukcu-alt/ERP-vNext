@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .antigravity/scripts/list_screen_touch_hook.py",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.antigravity/scripts/list_screen_touch_hook.py\"",
             "timeout": 30
           }
         ]

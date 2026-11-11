@@ -39,6 +39,12 @@ public sealed class ShipmentBundleDouble : HttpMessageHandler
 
     public ConcurrentQueue<(string Path, string? LegalEntity, string? Authorization)> Seen { get; } = new();
 
+    /// <summary>MOD-0177-FU01: the raw JSON value of SHIPMENT-BUNDLE 3.5.0 <c>customerRef</c> per shipment (absent = the 3.4.0 body).</summary>
+    public ConcurrentDictionary<string, string> CustomerRefJson { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>MOD-0177-FU01: the shipToReference of a shipment instead of <see cref="ShipTo"/> ("" = an empty value).</summary>
+    public ConcurrentDictionary<string, string> ShipToOverride { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     public int Requests => Volatile.Read(ref _requests);
 
     public int MaxInFlight => Volatile.Read(ref _maxInFlight);
@@ -77,8 +83,10 @@ public sealed class ShipmentBundleDouble : HttpMessageHandler
                     return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
                 default:
                     // the SHIPMENT-BUNDLE body: lines carry quantities the recall must never use (pack §8.6)
+                    var shipTo = ShipToOverride.TryGetValue(id, out var overridden) ? overridden : ShipTo(id);
+                    var customer = CustomerRefJson.TryGetValue(id, out var raw) ? $",\"{ShipmentBundleHttpReader.CustomerRefField}\":{raw}" : string.Empty;
                     var body = $$"""
-                        {"shipmentId":"{{id}}","status":"Delivered","actualDeliverAt":"2026-09-20T10:00:00Z","shipToReference":"{{ShipTo(id)}}",
+                        {"shipmentId":"{{id}}","status":"Delivered","actualDeliverAt":"2026-09-20T10:00:00Z","shipToReference":"{{shipTo}}"{{customer}},
                          "lines":[{"lineNo":1,"quantity":999999,"uomId":"EA"}]}
                         """;
                     return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };

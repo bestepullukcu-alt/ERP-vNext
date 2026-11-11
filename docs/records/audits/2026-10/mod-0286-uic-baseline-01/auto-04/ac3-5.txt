@@ -1,0 +1,1 @@
+| 5 | kural ↔ bu şartname (herhangi bir satır) | hayır (şartname kuralın altında, D-2) | kural | yetki sırası `AGENTS.md:40-50`; şartname indeksler, değiştirmez | paket yazarı şartnameyi düzeltir | çözüldü (yapısal) |

@@ -19,7 +19,13 @@ namespace TenantArchitecture.ArchitectureTests;
  * · reference. Any code-side path naming another folder directly under it points at something that was moved
  * or never existed, and it fails the day somebody runs it rather than the day the docs moved.
  * A separately approved exact authority record can distinguish a verified legacy canonical
- * dependency or sealed historical evidence. No prefix/directory exclusion is granted; see ReadAuthority.
+ * dependency or sealed historical evidence; see ReadAuthority.
+ * SIMPLIFIED 2026-11-02 (owner decision, process simplification stage 0): two rules the docs rule already states are
+ * applied directly instead of per-file seals — (1) docs/analysis/contracts/ is the rule's one registered exception
+ * (docs-organization.md K2), so a reference into it is honoured like the five folders; (2) docs/records/ never changes
+ * and is never run, so a file under it is read only when the authority names it (its seals stay consumed).
+ *   Known limit (Codex review 2026-11-02): a NEW unsealed script placed under docs/records is not scanned; a wrong path
+ *   in it breaks only that script when someone runs it. No such file is run by CI today (measured at de66301ed).
  *
  * WHAT IS MATCHED — the two shapes the four breakages actually had:
  *   • a slashed path whose first segment under docs is followed by a separator: docs/‹x›/… or docs\‹x›\…
@@ -70,6 +76,20 @@ public class DocsPathGuardTests
 
     private const string NameChars = "A-Za-z0-9_.-";
 
+    /* The rule's one registered exception (docs-organization.md K2): docs/analysis/contracts/, the frozen API contracts. */
+    private const string RegisteredException = "analysis/contracts";
+    // "contracts" as a whole folder name, and nothing after it that leaves the folder:
+    //   slashed — no name character next (contracts-old/, contracts2/) and no "/.." step back out;
+    //   Path.Combine — the argument closes there ("contracts" + "-old" is not it) and the next one is not "..".
+    private static readonly Regex ContractsTail = new(
+        $@"^\s*(?:@?""contracts""(?!\s*,\s*@?""\.\."")\s*[,)]|contracts(?![{NameChars}])(?![/\\]+\.\.))",
+        RegexOptions.Compiled);
+
+    /* Records never change (docs-organization.md: records/ ARTIK DEĞİŞMEZ) and are not run: a stale path in one can
+       neither be fixed nor break anything. Read only when the authority file names the record. */
+    private const string RecordsPrefix = "docs/records/";
+
+
     /* docs/‹x›/  or  docs\‹x›\  — not preceded by a name character, so "mydocs/x/" is not a docs path. */
     private static readonly Regex Slashed = new(
         $@"(?<![{NameChars}])docs[/\\]+(?<x>[{NameChars}]+)[/\\]",
@@ -83,6 +103,24 @@ public class DocsPathGuardTests
     /* What sits immediately before a match — the parent folder, if the path names one. */
     private static readonly Regex SlashedParent = new($@"(?<p>[{NameChars}]+)[/\\]+$", RegexOptions.Compiled);
     private static readonly Regex CombinedParent = new(@"""(?<p>[^""]+)""\s*,\s*$", RegexOptions.Compiled);
+
+    // The exception's boundary, both path shapes: only the folder named exactly "contracts" under analysis is honoured.
+    // (The negative lines are split "docs/" + "…" so this file's own scan does not read them as paths.)
+    [Theory]
+    [InlineData("var p = \"docs/analysis/contracts/bom.openapi.yaml\";", "analysis/contracts")]
+    [InlineData("/// docs/analysis/contracts (no contract file) is named here", "analysis/contracts")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\", file)", "analysis/contracts")]
+    [InlineData("var p = \"docs/" + "analysis/contracts-old/x.yaml\";", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/contracts2/x.yaml\";", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/workpackages/x.md\";", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"notes\", file)", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\" + \"-old\", \"x.yaml\")", "analysis")]
+    [InlineData("Path.Combine(root, \"docs\", \"analysis\", \"contracts\", \"..\", \"unregistered\", f)", "analysis")]
+    [InlineData("var p = \"docs/" + "analysis/contracts/../unregistered/x.yaml\";", "analysis")]
+    public void Only_the_contracts_folder_under_analysis_is_the_registered_exception(string line, string expected)
+    {
+        Assert.Equal([expected], Hits(line, new HashSet<string>(StringComparer.Ordinal)).ToArray());
+    }
 
     [Fact]
     public void NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
@@ -103,6 +141,7 @@ public class DocsPathGuardTests
         foreach (var file in files)
         {
             var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            if (relative.StartsWith(RecordsPrefix, StringComparison.Ordinal) && !authority.Contains(relative)) continue;
             var lines = File.ReadAllLines(file);
 
             for (var i = 0; i < lines.Length; i++)
@@ -119,6 +158,13 @@ public class DocsPathGuardTests
                     if (authority.Contains(relative))
                     {
                         consumed.Add(relative);
+                        continue;
+                    }
+
+                    // After the authority, so a sealed input that points into the exception still counts as consumed.
+                    if (hit == RegisteredException)
+                    {
+                        honoured++;
                         continue;
                     }
                     offenders.Add($"{relative}:{i + 1} → docs/{hit} — bkz. docs-organization.md §4");
@@ -399,12 +445,16 @@ public class DocsPathGuardTests
                 f.Save(); break;
             case "wrong-source-hash": first["sha256"] = new string('0', 64); f.Approve(); break;
             case "synthetic-production": break;
-            case "unknown-path": f.Write("new.cs", "// " + f.Target + ".unknown"); break;
+            // The registered exception (analysis/contracts) is honoured since 2026-11-02, so the unsealed reference names a
+            // sibling folder the exception does not cover.
+            case "unknown-path": f.Write("new.cs", "// " + f.Target.Replace("analysis/contracts/", "analysis/unregistered/") + ".unknown"); break;
             case "wrong-canonical-hash":
                 f.Record["canonicalTargets"]![0]!["sha256"] = new string('0', 64); f.Approve(); break;
             case "missing-canonical": File.Delete(Path.Combine(f.Root, f.Target)); break;
             case "changed-history": File.AppendAllText(Path.Combine(f.Root, f.History), "\n "); break;
-            case "unregistered-tool": f.Write("unregistered.py", File.ReadAllText(Path.Combine(f.Root, f.Tool))); break;
+            case "unregistered-tool":
+                f.Write("unregistered.py", File.ReadAllText(Path.Combine(f.Root, f.Tool)).Replace("analysis/contracts", "analysis/unregistered")
+                    .Replace("\"analysis\", \"contracts\"", "\"analysis\", \"unregistered\"")); break;
             case "missing-provenance": File.Delete(Path.Combine(f.Root, f.Proof)); break;
             case "wrong-provenance-hash": first["provenanceSha256"] = new string('0', 64); f.Approve(); break;
             case "wrong-provenance-line": first["provenanceLine"] = 1; f.Approve(); break;
@@ -448,15 +498,22 @@ public class DocsPathGuardTests
         {
             var parent = SlashedParent.Match(line[..m.Index]);
             if (parent.Success && nestedDocsParents.Contains(parent.Groups["p"].Value)) continue;
-            yield return m.Groups["x"].Value;
+            yield return Classify(m, line);
         }
 
         foreach (Match m in Combined.Matches(line))
         {
             var parent = CombinedParent.Match(line[..m.Index]);
             if (parent.Success && nestedDocsParents.Contains(parent.Groups["p"].Value)) continue;
-            yield return m.Groups["x"].Value;
+            yield return Classify(m, line);
         }
+    }
+
+    /* "analysis" followed by "contracts" is the registered exception; any other folder under analysis is not. */
+    private static string Classify(Match m, string line)
+    {
+        var x = m.Groups["x"].Value;
+        return x == "analysis" && ContractsTail.IsMatch(line[(m.Index + m.Length)..]) ? RegisteredException : x;
     }
 
     /// <summary>
