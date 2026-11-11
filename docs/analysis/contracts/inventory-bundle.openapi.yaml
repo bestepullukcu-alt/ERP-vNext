@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.2.1
+  version: 1.7.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -17,6 +17,11 @@ info:
     - "1.1.0 — additive (MVP-1 CT, MOD-0290 R-12 and PRODUCT-MASTER 1.1): SkuLevel + Item; getStockPresence (service-to-service, X-Internal-Api-Key + X-Tenant-Id, no quantities). No existing path, parameter, property, type, required list or status code changed."
     - "1.2.0 — additive (WP-0173-PM1, CT-PM1-1; PRODUCT-MASTER 1.1 consumer, MOD-0290 OD-1/3/4/5/10): three error codes on postMovement, all 422 under the existing UnprocessableMovement response — PRODUCT_MASTER_DATA_INCOMPLETE (a lot / serial flag the SKU level needs is unknown in PRODUCT-MASTER), ITEM_NOT_ACTIVE (the item / SKU lifecycle status does not allow the movement type), SKU_LEVEL_NOT_STOCKABLE (a Gsku movement of a product whose serial flag is not explicitly false) — and the postMovement description of the rules. No path, parameter, schema, property, type, enum, required list or status code changed."
     - "1.2.1 — description only (WP-0174-ITEM, O-PM1-3): SKU_LEVEL_NOT_STOCKABLE also covers a SKU that PRODUCT-MASTER publishes stockable: false (every movement except REVERSAL). Nothing else changed."
+    - "1.3.0 — additive (WP-0176-F2, MOD-0176 KF-B / KF-C, CT-F1): postMovement accepts the optional fefoBypassReason (10–1000, the reason of an issue that is not from the first eligible FEFO lot of the same company + warehouse + SKU) and answers the optional expiryChecks (fefo Compliant | Bypassed, minRemaining Ok | NotDefined | Warned | NotApplicable, the ids of the expiry exceptions it opened); three 422 codes under the existing UnprocessableMovement response — FEFO_BYPASS_REASON_REQUIRED, FEFO_ORDER_VIOLATION, LOT_BELOW_MIN_REMAINING_SHELF_LIFE (details.requiredToStockStatus = QUARANTINE when the company quarantines such receipts: the caller resubmits into QUARANTINE; the ledger never changes the requested status — CT-F1); two description-only examples of the existing LOT_EXPIRED and LOT_BLOCKED refusals. A request without fefoBypassReason keeps its idempotency fingerprint. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.4.0 — additive (WP-0177-R3, MOD-0177 KR-C / KR-H, CT-R4 / CT-R7 / CT-R10 / CT-R11; owner step MOD-0173 + MOD-0174): postMovement may answer 422 LOT_UNDER_RECALL (details lotId, lotNumber, recallCaseId, recallCaseNumber, movementType) under the existing UnprocessableMovement response — a lot under an active recall (RECALL-BUNDLE getLotRecallStatus; by lot id in every company of the tenant, CT-R7) refuses GOODS_ISSUE_SALES, GOODS_ISSUE_PROD and WAREHOUSE_TRANSFER (MVP-6 shipment issues included); every other type is exempt; the exemption is decided by movement type only — sourceModule is never read; no reason or signature overrides it. A typed lot text equal to a recalled lot number of the same SKU is refused the same way. Checked after the lot rules and before the expiry hooks (a refused posting writes no FEFO snapshot or exception); re-checked inside the posting transaction. CT-R10 (lot rule, narrow): a CUSTOMER_RETURN of a Blocked / Expired lot is accepted only into QUARANTINE, QUALITY_INSPECTION or BLOCKED (into AVAILABLE it stays 422 LOT_BLOCKED / LOT_EXPIRED). New example lotUnderRecall. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.5.0 — additive, optional (WP-MVP1-NAMES1, owner decision 2026-10-19 on FU-0173-UI-USER-01, option A): TransactionItem (getTransactions) gains the optional member createdBy { userId (uuid, required inside the object), name (optional) } — userId = the user who posted the movement; name = the display name AT THE TIME of the posting, read from the central audit queue (ActorDisplayName) of the posting's correlation id and the same user, the same tenant and company; absent when none was recorded (older movements) and never the live account label. A posting without a user carries no createdBy. No existing path, parameter, property, type, enum, required list or status code changed."
+    - "1.6.0 — additive, optional (MOD-0173-FU03 DL-1, W-5 lot / location reservation; CT-02, CT-03): ReservationRequest gains warehouseId (an Active Warehouse node of the caller's company) and lotId (a registered lot of the SKU; needs warehouseId) — the hold then protects SKU + warehouse or SKU + warehouse + lot as well as the SKU (every level guarded; INSUFFICIENT_AVAILABLE details.level = LOT | WAREHOUSE | SKU, the first level that does not cover it). ReservationResponse gains warehouseId, lotId, remainingQuantity (createReservation); availableAfter keeps its SKU meaning. New GET /reservations/{id} (getReservation, inventory.stock.read) answers the ReservationView with its ETag; unknown or other-scope id → 404 in releaseReservation's shape. createReservation declares 400 (INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED — already answered) and 503 (LOCATION_MASTER_UNAVAILABLE); its 422 codes are named in its description and in components.examples (UNKNOWN_LOT, LOT_SKU_MISMATCH, LOT_BLOCKED, LOT_EXPIRED, LOT_RETEST_DUE, LOT_UNDER_RECALL, UNKNOWN_LOCATION). getAvailability accepts lotId (needs warehouseId and one named SKU; not with locationId) and answers scopeReserved / scopeAvailable for one named SKU with warehouseId (unfloored; a reservation past expiresAt is not counted); reserved / available keep their meaning. postMovement: an AVAILABLE decrease (WAREHOUSE_TRANSFER included) may answer the existing 422 INSUFFICIENT_STOCK with details.level when a reservation scope guard refuses. A request without warehouseId / lotId keeps its 1.5.0 behaviour and idempotency fingerprint. No existing path, parameter, property, type, enum, required list or status code changed."
+    - "1.7.0 — additive, optional (MOD-0173-FU03 DL-2, W-5; CT-02, CT-03, CT-08 with the r3 boundary): MovementRequest gains reservationId (the reservation an issue consumes or a LOCATION_TRANSFER moves) and restoreReservation (boolean, REVERSAL only, default false — on any other type 400 INVALID_REQUEST); MovementResponse gains reservationConsumption { reservationId, consumedQuantity, remainingQuantity, status, closedReason } (only when a reservation was named; a LOCATION_TRANSFER consumes 0); TransactionItem gains reservationId. With reservationId the source-triple match is not used: only GOODS_ISSUE_SALES / GOODS_ISSUE_PROD (consume) and LOCATION_TRANSFER (validates, consumes nothing) out of AVAILABLE may name one. Five 422 codes under the existing UnprocessableMovement response — RESERVATION_NOT_FOUND (unknown, another tenant / company or not a UUID: one answer), RESERVATION_NOT_ACTIVE (details.status, closedReason), RESERVATION_MISMATCH (details.field sku | warehouse | lot), RESERVATION_NOT_APPLICABLE, RESERVATION_QUANTITY_EXCEEDED (details.remaining, requested; the rest is never taken from free stock). A REVERSAL with restoreReservation: true (optional, default false; REVERSAL only) of a movement that consumed a reservation by reservationId restores that reservation in the same transaction (remaining quantity added back; RELEASED/Consumed → ACTIVE; Reserved written back on every scope level); without it (or false) the reservation stays closed. A reservation the holder released, or one that expired, is not restored; a restored reservation already past expiresAt expires in the same transaction; true on a REVERSAL whose original consumed no reservation has no effect. A REVERSAL never carries reservationId. reservationId enters the idempotency fingerprint only when sent and restoreReservation only when true: a request without them keeps its fingerprint. No existing path, parameter, property, type, enum, required list or status code changed."
 servers:
   - url: /api/inventory
 security:
@@ -37,6 +42,20 @@ paths:
         no GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD or OPENING_BALANCE, every other type allowed; Retired (and the v1.0 Archived) —
         only SCRAP and WRITE_OFF; Draft, any other value or no value — nothing; a refusal is 422 ITEM_NOT_ACTIVE. REVERSAL
         copies its original and is accepted in every state. PRODUCT-MASTER unreachable stays 503 PRODUCT_MASTER_UNAVAILABLE.
+        1.4.0 — recall exit block (MOD-0177 KR-C): a lot under an active recall (RECALL-BUNDLE getLotRecallStatus) refuses
+        GOODS_ISSUE_SALES, GOODS_ISSUE_PROD and WAREHOUSE_TRANSFER with 422 LOT_UNDER_RECALL; REVERSAL, SCRAP, WRITE_OFF,
+        STATUS_TRANSFER, LOCATION_TRANSFER, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, CUSTOMER_RETURN and the receipts are exempt —
+        by movement type only, never by sourceModule. CT-R10 — a CUSTOMER_RETURN of a Blocked / Expired lot is accepted into
+        QUARANTINE, QUALITY_INSPECTION or BLOCKED; into AVAILABLE it stays refused (LOT_BLOCKED / LOT_EXPIRED).
+        1.7.0 (MOD-0173-FU03 DL-2) — reservationId names the reservation a GOODS_ISSUE_SALES / GOODS_ISSUE_PROD out of AVAILABLE
+        consumes (in the same transaction; remaining → 0 = RELEASED + closedReason Consumed) or a LOCATION_TRANSFER moves (validated,
+        nothing consumed); any other type is 422 RESERVATION_NOT_APPLICABLE. Refusals: RESERVATION_NOT_FOUND / _NOT_ACTIVE / _MISMATCH /
+        _QUANTITY_EXCEEDED, after the recall and FEFO checks and before the stock and scope guards. A REVERSAL with restoreReservation:
+        true (optional, default false; REVERSAL only) of a movement that consumed a reservation by reservationId restores that
+        reservation in the same transaction (remaining quantity added back; RELEASED/Consumed → ACTIVE; Reserved written back on
+        every scope level); without it (or false) the reservation stays closed. A reservation the holder released, or one that
+        expired, is not restored; a restored reservation already past expiresAt expires in the same transaction; true on a REVERSAL
+        whose original consumed no reservation has no effect. A REVERSAL never carries reservationId.
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/LegalEntityOverride'
@@ -116,6 +135,7 @@ paths:
         - { name: skuLevel, in: query, schema: { $ref: '#/components/schemas/SkuLevel' } }
         - { name: warehouseId, in: query, schema: { type: string } }
         - { name: locationId, in: query, schema: { type: string } }
+        - { name: lotId, in: query, description: 'INVENTORY 1.6.0 (MOD-0173-FU03): the warehouse + lot scope of scopeReserved / scopeAvailable; needs warehouseId and one named SKU (itemId + skuId + skuLevel); not with locationId (reservations are not pinned to a bin) — else 400 INVALID_REQUEST.', schema: { type: string, format: uuid } }
       responses:
         '200':
           description: Availability görünümü
@@ -223,6 +243,35 @@ paths:
               schema: { $ref: '#/components/schemas/ReservationResponse' }
               example: { reservationId: rsv-4001, status: ACTIVE, reservedQuantity: "30.000", availableAfter: "40.000", etag: 'W/"1"', contractVersion: v1 }
         '422': { $ref: '#/components/responses/InsufficientAvailable' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '503': { $ref: '#/components/responses/LocationMasterUnavailable' }
+      description: >
+        1.6.0 (MOD-0173-FU03): with warehouseId the hold is limited to that warehouse, with warehouseId + lotId to that lot in it; it is
+        guarded on every level that contains it (lot, warehouse, SKU) and the first level that does not cover it is named in the 422
+        INSUFFICIENT_AVAILABLE details.level (LOT | WAREHOUSE | SKU). The scope is refused with 422 UNKNOWN_LOCATION (not an Active Warehouse
+        of the caller's company), UNKNOWN_LOT (not a registered lot), LOT_SKU_MISMATCH, LOT_BLOCKED, LOT_EXPIRED, LOT_RETEST_DUE (the lot rule
+        of a sales issue; a Draft lot is accepted) or LOT_UNDER_RECALL — examples in components.examples (reservation*); LOCATION unreadable →
+        503 LOCATION_MASTER_UNAVAILABLE; lotId without warehouseId → 400 INVALID_REQUEST. availableAfter stays the SKU's free quantity — the
+        scope's free quantity is read with getAvailability (scopeAvailable). Every refusal leaves one audit row (Outcome Failed).
+  /reservations/{id}:
+    get:
+      operationId: getReservation
+      summary: Reservation oku (1.6.0, MOD-0173-FU03)
+      x-permission: inventory.stock.read
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: The reservation as it is now; ETag = its current version (the If-Match of releaseReservation).
+          headers:
+            ETag: { schema: { type: string }, description: 'W/"<version>"' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReservationView' }
+              example: { reservationId: 3f2b5a1e-0000-4000-8000-000000000301, status: ACTIVE, itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, warehouseId: 3f2b5a1e-0000-4000-8000-000000000201, lotId: 3f2b5a1e-0000-4000-8000-000000000101, quantity: "30.000", remainingQuantity: "30.000", reservationType: PICK, sourceModule: MOD-0178, sourceDocumentId: OB-2026-0001, sourceLineId: "1", createdAt: "2026-11-03T10:00:00.000Z", etag: 'W/"1"', contractVersion: v1 }
+        '404':
+          description: Unknown id, or a reservation of another tenant / company — the same body as releaseReservation's 404 (no code).
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { message: "Reservation not found.", correlationId: req-11 }, contractVersion: v1 } } }
   /reservations/{id}/release:
     post:
       operationId: releaseReservation
@@ -362,6 +411,9 @@ components:
         sourceSystem: { type: string, nullable: true, description: dış-entegrasyon LE (DEC-INV-19) }
         transactionDate: { type: string, format: date-time }
         postingDate: { type: string, format: date-time }
+        fefoBypassReason: { type: string, nullable: true, minLength: 10, maxLength: 1000, description: "1.3.0 (MOD-0176 KF-B) — the reason of an issue (GOODS_ISSUE_SALES / GOODS_ISSUE_PROD from AVAILABLE) that is not from the first eligible FEFO lot of the same company + warehouse + SKU. Required by the company policy RequireReason (default); ignored on a compliant issue." }
+        reservationId: { type: string, nullable: true, maxLength: 100, description: "1.7.0 (MOD-0173-FU03) — the reservation this issue consumes, or this LOCATION_TRANSFER moves; any other type → 422 RESERVATION_NOT_APPLICABLE. Enters the idempotency fingerprint only when sent." }
+        restoreReservation: { type: boolean, description: "1.7.0 (MOD-0173-FU03, CT-08) — REVERSAL only, default false: true gives the quantity its original consumed back to that reservation. On any other type 400 INVALID_REQUEST. Enters the fingerprint only when true." }
     BalanceView:
       type: object
       properties:
@@ -398,6 +450,8 @@ components:
         baseUomId: { type: string }
         asOf: { type: string, format: date-time }
         contractVersion: { type: string }
+        scopeReserved: { $ref: '#/components/schemas/Decimal', description: '1.6.0 (MOD-0173-FU03): only for one named SKU with warehouseId and no locationId — Σ remaining quantity of the ACTIVE reservations that contain the scope (the warehouse; with lotId that lot) and are not past expiresAt' }
+        scopeAvailable: { $ref: '#/components/schemas/Decimal', description: '1.6.0 (MOD-0173-FU03): with scopeReserved — the scope''s AVAILABLE on-hand (held lots excluded) − scopeReserved; not floored at 0' }
     TransactionItem:
       type: object
       properties:
@@ -422,6 +476,14 @@ components:
         sourceLineId: { type: string, nullable: true }
         transactionDate: { type: string, format: date-time }
         postingDate: { type: string, format: date-time }
+        createdBy:
+          type: object
+          description: "1.5.0 (additive, optional) — who posted the movement: userId = the posting user; name = the name at the time of the posting (central audit queue ActorDisplayName of the posting correlation, same user, tenant and company), absent when not recorded. A client shows a localized \"unknown user\" when name is absent — never the id as a name."
+          required: [userId]
+          properties:
+            userId: { type: string, format: uuid }
+            name: { type: string }
+        reservationId: { type: string, format: uuid, description: "1.7.0 (MOD-0173-FU03) — the reservation the movement named; absent otherwise (a REVERSAL never carries it)." }
     MovementResponse:
       type: object
       properties:
@@ -431,6 +493,26 @@ components:
         idempotentReplay: { type: boolean }
         balanceSnapshot: { $ref: '#/components/schemas/BalanceView' }
         contractVersion: { type: string }
+        expiryChecks: { $ref: '#/components/schemas/ExpiryChecks' }
+        reservationConsumption: { $ref: '#/components/schemas/ReservationConsumption' }
+    ReservationConsumption:
+      type: object
+      description: "1.7.0 (MOD-0173-FU03) — what the movement did to the reservation it named; a LOCATION_TRANSFER consumes 0."
+      required: [reservationId, consumedQuantity, remainingQuantity, status]
+      properties:
+        reservationId: { type: string, format: uuid }
+        consumedQuantity: { $ref: '#/components/schemas/Decimal' }
+        remainingQuantity: { $ref: '#/components/schemas/Decimal' }
+        status: { type: string, enum: [ACTIVE, RELEASED, EXPIRED] }
+        closedReason: { type: string, enum: [Released, Consumed, Expired] }
+    ExpiryChecks:
+      type: object
+      description: "1.3.0 (MOD-0176) — what the expiry hooks decided in the posting transaction; absent when no hook applied (exempt movement type, no registered lot, REVERSAL)."
+      required: [exceptionIds]
+      properties:
+        fefo: { type: string, enum: [Compliant, Bypassed], description: "An issue under the FEFO hook: Bypassed = not from the first eligible lot (a FEFO_BYPASS exception was opened)." }
+        minRemaining: { type: string, enum: [Ok, NotDefined, Warned, NotApplicable], description: "A GOODS_RECEIPT_PO: Warned = posted below the minimum remaining shelf life (a BELOW_MIN_REMAINING exception was opened); NotDefined = the SKU states no minimum; NotApplicable = the lot has no expiry date." }
+        exceptionIds: { type: array, items: { type: string, format: uuid } }
     ReservationRequest:
       type: object
       required: [idempotencyKey, itemId, skuId, skuLevel, quantity, reservationType, sourceModule]
@@ -447,13 +529,42 @@ components:
         sourceLineId: { type: string, nullable: true }
         priority: { type: integer }
         expiresAt: { type: string, format: date-time }
+        warehouseId: { type: string, nullable: true, maxLength: 100, description: '1.6.0 (MOD-0173-FU03): an Active Warehouse node of the caller''s company — the hold is limited to it' }
+        lotId: { type: string, format: uuid, nullable: true, description: '1.6.0 (MOD-0173-FU03): a registered lot of the SKU — the hold is limited to it; needs warehouseId' }
     ReservationResponse:
       type: object
       properties:
         reservationId: { type: string }
         status: { type: string, enum: [ACTIVE, RELEASED, EXPIRED] }
         reservedQuantity: { $ref: '#/components/schemas/Decimal' }
-        availableAfter: { $ref: '#/components/schemas/Decimal' }
+        availableAfter: { $ref: '#/components/schemas/Decimal', description: 'the SKU''s free quantity right after the creation (1.6.0: also for a scoped reservation — the scope''s free quantity is getAvailability scopeAvailable)' }
+        etag: { type: string }
+        contractVersion: { type: string }
+        warehouseId: { type: string, description: '1.6.0 (createReservation): the warehouse scope; absent at SKU level' }
+        lotId: { type: string, format: uuid, description: '1.6.0 (createReservation): the lot scope; absent unless lot level' }
+        remainingQuantity: { $ref: '#/components/schemas/Decimal', description: '1.6.0 (createReservation): the quantity still held — equal to the reserved quantity at creation' }
+    ReservationView:
+      type: object
+      description: '1.6.0 (MOD-0173-FU03) getReservation. closedReason only when not ACTIVE: Released (the holder released the rest) | Consumed (fully issued; status RELEASED) | Expired.'
+      required: [reservationId, status, itemId, skuId, skuLevel, quantity, remainingQuantity, reservationType, sourceModule, createdAt, etag, contractVersion]
+      properties:
+        reservationId: { type: string, format: uuid }
+        status: { type: string, enum: [ACTIVE, RELEASED, EXPIRED] }
+        closedReason: { type: string, enum: [Released, Consumed, Expired] }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        warehouseId: { type: string }
+        lotId: { type: string, format: uuid }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        remainingQuantity: { $ref: '#/components/schemas/Decimal' }
+        reservationType: { type: string }
+        sourceModule: { type: string }
+        sourceDocumentId: { type: string }
+        sourceLineId: { type: string }
+        priority: { type: integer }
+        expiresAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
         etag: { type: string }
         contractVersion: { type: string }
     Error:
@@ -498,6 +609,17 @@ components:
             productMasterDataIncomplete: { value: { error: { code: PRODUCT_MASTER_DATA_INCOMPLETE, message: "PRODUCT-MASTER does not state the lot / serial flag this SKU level needs", details: { skuLevel: Lsku, lotControlled: null, serialControlled: true }, correlationId: req-13 }, contractVersion: v1 } }
             itemNotActive: { value: { error: { code: ITEM_NOT_ACTIVE, message: "The item / SKU lifecycle status does not allow a GOODS_RECEIPT_PO movement", details: { itemLifecycleStatus: Deactivated, skuLifecycleStatus: Deactivated, movementType: GOODS_RECEIPT_PO }, correlationId: req-14 }, contractVersion: v1 } }
             skuLevelNotStockable: { value: { error: { code: SKU_LEVEL_NOT_STOCKABLE, message: "A GSKU-level movement needs a product whose serial flag is explicitly false", details: { skuLevel: Gsku, productSerialControlled: true }, correlationId: req-15 }, contractVersion: v1 } }
+            fefoBypassReasonRequired: { value: { error: { code: FEFO_BYPASS_REASON_REQUIRED, message: "FEFO: lot L-101 (expiry 2027-01-31) expires earlier; issuing another lot needs fefoBypassReason", details: { firstEligibleLotId: 3f2b5a1e-0000-4000-8000-000000000101, firstEligibleLotNumber: L-101, firstEligibleExpiry: "2027-01-31", lotId: 3f2b5a1e-0000-4000-8000-000000000102, warehouseId: 3f2b5a1e-0000-4000-8000-000000000201 }, correlationId: req-12 }, contractVersion: v1 } }
+            fefoOrderViolation: { value: { error: { code: FEFO_ORDER_VIOLATION, message: "FEFO: lot L-101 must be issued first", details: { firstEligibleLotId: 3f2b5a1e-0000-4000-8000-000000000101, firstEligibleLotNumber: L-101, firstEligibleExpiry: "2027-01-31" }, correlationId: req-13 }, contractVersion: v1 } }
+            lotBelowMinRemainingShelfLife: { value: { error: { code: LOT_BELOW_MIN_REMAINING_SHELF_LIFE, message: "The lot has 40 days of shelf life left, below the minimum of 90: receive it into QUARANTINE", details: { remainingDays: 40, requiredDays: 90, requiredToStockStatus: QUARANTINE }, correlationId: req-14 }, contractVersion: v1 } }
+            lotExpired: { value: { error: { code: LOT_EXPIRED, message: "The lot has expired", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000103, lotNumber: L-103 }, correlationId: req-15 }, contractVersion: v1 } }
+            lotBlocked: { value: { error: { code: LOT_BLOCKED, message: "The lot is blocked", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000104, lotNumber: L-104 }, correlationId: req-16 }, contractVersion: v1 } }
+            lotUnderRecall: { value: { error: { code: LOT_UNDER_RECALL, message: "The lot is under recall RC-2026-0004: GOODS_ISSUE_SALES is not allowed", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, lotNumber: L-105, recallCaseId: 7c1d2e3f-0000-4000-8000-000000000001, recallCaseNumber: RC-2026-0004, movementType: GOODS_ISSUE_SALES }, correlationId: req-17 }, contractVersion: v1 } }
+            reservationNotFound: { value: { error: { code: RESERVATION_NOT_FOUND, message: "The reservation does not exist in this tenant and company.", correlationId: req-28 }, contractVersion: v1 } }
+            reservationNotActive: { value: { error: { code: RESERVATION_NOT_ACTIVE, message: "The reservation is no longer active.", details: { status: RELEASED, closedReason: Consumed }, correlationId: req-29 }, contractVersion: v1 } }
+            reservationMismatch: { value: { error: { code: RESERVATION_MISMATCH, message: "The movement's lot is not the reservation's.", details: { field: lot }, correlationId: req-30 }, contractVersion: v1 } }
+            reservationNotApplicable: { value: { error: { code: RESERVATION_NOT_APPLICABLE, message: "WAREHOUSE_TRANSFER neither consumes nor moves reserved stock", details: { movementType: WAREHOUSE_TRANSFER }, correlationId: req-31 }, contractVersion: v1 } }
+            reservationQuantityExceeded: { value: { error: { code: RESERVATION_QUANTITY_EXCEEDED, message: "The issue is more than the reservation still holds", details: { remaining: "10.000", requested: "20.000" }, correlationId: req-32 }, contractVersion: v1 } }
     ProductMasterUnavailable:
       description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PRODUCT_MASTER_UNAVAILABLE, message: "PRODUCT-MASTER erişilemedi", correlationId: req-7 }, contractVersion: v1 } } }
@@ -507,6 +629,21 @@ components:
     InsufficientAvailable:
       description: Reserve > available
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INSUFFICIENT_AVAILABLE, message: "yetersiz available", details: { available: "40.000", requested: "50.000" }, correlationId: req-9 }, contractVersion: v1 } } }
+    LocationMasterUnavailable:
+      description: 1.6.0 (MOD-0173-FU03) — LOCATION could not be read; the reservation was not created (fail-closed)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: LOCATION_MASTER_UNAVAILABLE, message: "LOCATION master could not be read", correlationId: req-18 }, contractVersion: v1 } } }
     ReservationConflict:
       description: ETag uyuşmazlığı (eşzamanlı değişiklik)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: RESERVATION_CONFLICT, message: "reservation eşzamanlı değişti", correlationId: req-10 }, contractVersion: v1 } } }
+  examples:
+    # 1.6.0 (MOD-0173-FU03): the createReservation refusals of a scoped reservation (422; INSUFFICIENT_AVAILABLE keeps its response).
+    # The 422 response carries a single example (and example / examples exclude each other), so they are named here and in the description.
+    reservationInsufficientAtLot: { value: { error: { code: INSUFFICIENT_AVAILABLE, message: "Insufficient unreserved available stock for this reservation scope.", details: { level: LOT, available: "10.000", requested: "11.000" }, correlationId: req-19 }, contractVersion: v1 } }
+    reservationUnknownLot: { value: { error: { code: UNKNOWN_LOT, message: "lotId does not name a registered lot of this tenant.", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000199 }, correlationId: req-20 }, contractVersion: v1 } }
+    reservationLotSkuMismatch: { value: { error: { code: LOT_SKU_MISMATCH, message: "The lot belongs to another SKU than the movement.", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000101, lotNumber: L-101, lotStatus: Released }, correlationId: req-21 }, contractVersion: v1 } }
+    reservationLotBlocked: { value: { error: { code: LOT_BLOCKED, message: "The lot is blocked", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000104, lotNumber: L-104, lotStatus: Blocked }, correlationId: req-22 }, contractVersion: v1 } }
+    reservationLotExpired: { value: { error: { code: LOT_EXPIRED, message: "The lot has expired", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000103, lotNumber: L-103, lotStatus: Released }, correlationId: req-23 }, contractVersion: v1 } }
+    reservationLotRetestDue: { value: { error: { code: LOT_RETEST_DUE, message: "The lot's retest date has passed", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, lotNumber: L-105, lotStatus: Released, retestDate: "2026-10-01" }, correlationId: req-24 }, contractVersion: v1 } }
+    reservationLotUnderRecall: { value: { error: { code: LOT_UNDER_RECALL, message: "The lot L-106 is under recall: its stock cannot be reserved.", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000106, lotNumber: L-106 }, correlationId: req-25 }, contractVersion: v1 } }
+    reservationUnknownLocation: { value: { error: { code: UNKNOWN_LOCATION, message: "warehouseId is not an Active warehouse of this company.", details: { locationId: 3f2b5a1e-0000-4000-8000-000000000299 }, correlationId: req-26 }, contractVersion: v1 } }
+    movementInsufficientStockAtLevel: { value: { error: { code: INSUFFICIENT_STOCK, message: "Insufficient unreserved stock: the quantity is reserved at this scope level.", details: { available: "20.000", requested: "21.000", level: LOT }, correlationId: req-27 }, contractVersion: v1 } }

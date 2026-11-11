@@ -1,16 +1,71 @@
+using System.Text;
+using Diten.BuildingBlocks.Security.Secrets;
 using Diten.PvgService.Application.CaseProcessing;
 using Diten.PvgService.Application.MeddraCoding;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Application.SignalManagement;
 using Diten.PvgService.Infrastructure.RegPvBase;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Diten.PvgService.Api;
 
 public static class PvgServiceApiHost
 {
     public const string NonOperationalMode = "local-dev-ci-build-test";
+
+    private const string RequiredDependencyStartupRefusal =
+        "PVG production-like startup refused; required dependencies are not registered: ";
+
+    // Single source for the PvgIntakeDraftApplicationService dependencies checked at startup and by /health/ready.
+    private static readonly (Type ServiceType, string SafeCode)[] RequiredDependencies =
+    [
+        (typeof(IPvgFieldSecurityPolicy), "PVG_DEPENDENCY_FIELD_SECURITY"),
+        (typeof(IPvgWorkflowTransitionGate), "PVG_DEPENDENCY_WORKFLOW_GATE"),
+        (typeof(IPvgEvidenceLinkPort), "PVG_DEPENDENCY_EVIDENCE_LINK"),
+        (typeof(IPvgPermissionGate), "PVG_DEPENDENCY_PERMISSION_GATE"),
+        (typeof(IPvgIntakeDraftStore), "PVG_DEPENDENCY_INTAKE_STORE")
+    ];
+
+    public static IWebHostBuilder CreatePvgServiceWebHostBuilder(
+        string? environmentName,
+        IConfiguration configuration,
+        string urls,
+        Action<IServiceCollection>? configureServices = null)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentException.ThrowIfNullOrWhiteSpace(urls);
+
+        return new WebHostBuilder()
+            .UseKestrel()
+            .UseContentRoot(AppContext.BaseDirectory)
+            .UseConfiguration(configuration)
+            .UseEnvironment(ResolveEnvironmentName(environmentName))
+            .UseUrls(urls)
+            .ConfigureServices((context, services) =>
+            {
+                services.AddRouting();
+                services.AddPvgServiceApiHost(context.Configuration, context.HostingEnvironment);
+                configureServices?.Invoke(services);
+
+                ThrowIfRequiredDependenciesMissing(
+                    services,
+                    PvgServiceApiRuntimeOptions.From(context.Configuration, context.HostingEnvironment.EnvironmentName));
+            })
+            .Configure(app =>
+            {
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapPvgServiceHealthEndpoints();
+                    endpoints.MapPvgCaseIntakeTriageEndpoints();
+                });
+            });
+    }
 
     public static IServiceCollection AddPvgServiceApiHost(
         this IServiceCollection services,
@@ -41,29 +96,124 @@ public static class PvgServiceApiHost
             services.AddSingleton<IPvgIntakeDraftStore, InMemoryPvgIntakeDraftRepository>();
         }
 
+        AddPvgJwtAuthentication(services, configuration);
+
         return services;
     }
+
+    // AC-5: the service validates the JWT itself, with the same JwtSettings keys and parameters as the other tenant
+    // services. Missing settings are not a startup refusal: the key list stays empty, no token validates, and every
+    // request to a protected endpoint is a 401 (fail-closed). The values are never logged or echoed.
+    private static void AddPvgJwtAuthentication(IServiceCollection services, IConfiguration configuration)
+    {
+        var jwtSecret = configuration["JwtSettings:Secret"];
+        var jwtIssuer = configuration["JwtSettings:Issuer"];
+        var jwtAudience = configuration["JwtSettings:Audience"];
+        var jwtPreviousSecrets = configuration
+            .GetSection("JwtSettings:PreviousSecrets")
+            .GetChildren()
+            .Select(section => section.Value);
+        var jwtSigningKeys = BuildJwtSigningKeys(jwtSecret, jwtPreviousSecrets);
+
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKeys = jwtSigningKeys,
+                    ClockSkew = JwtValidationDefaults.ClockSkew
+                };
+            });
+
+        services.AddAuthorization();
+    }
+
+    private static IReadOnlyList<SecurityKey> BuildJwtSigningKeys(string? currentSecret, IEnumerable<string?> previousSecrets) =>
+        new[] { currentSecret }
+            .Concat(previousSecrets)
+            .Where(secret => !string.IsNullOrWhiteSpace(secret))
+            .Distinct(StringComparer.Ordinal)
+            .Select(secret => new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)))
+            .Cast<SecurityKey>()
+            .ToArray();
 
     public static IEndpointRouteBuilder MapPvgServiceHealthEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/health/live", Ok<PvgServiceHealthStatus> () =>
             TypedResults.Ok(PvgServiceHealthStatus.Live()));
 
-        endpoints.MapGet("/health/ready", Ok<PvgServiceHealthStatus> (IOptions<PvgServiceApiRuntimeOptions> options) =>
-            TypedResults.Ok(PvgServiceHealthStatus.Ready(options.Value)));
+        endpoints.MapGet("/health/ready", Results<Ok<PvgServiceHealthStatus>, JsonHttpResult<PvgServiceNotReadyStatus>> (
+            HttpContext httpContext,
+            IOptions<PvgServiceApiRuntimeOptions> options) =>
+        {
+            var serviceRegistry = httpContext.RequestServices.GetService<IServiceProviderIsService>();
+            var missingCodes = MissingRequiredDependencyCodes(
+                serviceType => serviceRegistry?.IsService(serviceType) == true);
+
+            return missingCodes.Count == 0
+                ? TypedResults.Ok(PvgServiceHealthStatus.Ready(options.Value))
+                : TypedResults.Json(
+                    PvgServiceNotReadyStatus.From(options.Value, missingCodes),
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+        });
 
         return endpoints;
     }
+
+    // Owner decision K3: an unset, empty, or whitespace-only environment name is "not given", which is Production.
+    // A non-blank name is passed through exactly as given (not trimmed).
+    private static string ResolveEnvironmentName(string? environmentName) =>
+        string.IsNullOrWhiteSpace(environmentName) ? Environments.Production : environmentName;
+
+    private static void ThrowIfRequiredDependenciesMissing(
+        IServiceCollection services,
+        PvgServiceApiRuntimeOptions options)
+    {
+        if (!options.IsProductionLike)
+        {
+            return;
+        }
+
+        var missingCodes = MissingRequiredDependencyCodes(serviceType =>
+            services.Any(descriptor => descriptor.ServiceType == serviceType && !descriptor.IsKeyedService));
+
+        if (missingCodes.Count > 0)
+        {
+            throw new InvalidOperationException(
+                RequiredDependencyStartupRefusal + string.Join(", ", missingCodes));
+        }
+    }
+
+    private static IReadOnlyList<string> MissingRequiredDependencyCodes(Func<Type, bool> isRegistered) =>
+        RequiredDependencies
+            .Where(dependency => !isRegistered(dependency.ServiceType))
+            .Select(dependency => dependency.SafeCode)
+            .ToArray();
 }
 
 public sealed record PvgServiceApiRuntimeOptions(
     bool IsProductionLike,
     bool OperationalRuntimeAuthorized,
-    bool UseNonProductionAdapters)
+    bool UseNonProductionAdapters,
+    string? ApprovalReference = null)
 {
+    // RTA-01 (runtime_approval_id): fixed shape, matched whole (\z, not $: no trailing newline), culture-invariant,
+    // case-sensitive. [0-9], not \d.
+    private static readonly System.Text.RegularExpressions.Regex ApprovalReferenceShape = new(
+        "^RTA-MOD0230-[0-9]{3}\\z",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
     public static PvgServiceApiRuntimeOptions From(IConfiguration configuration, string environmentName)
     {
         var isProductionLike =
+            string.IsNullOrWhiteSpace(environmentName) ||
             string.Equals(environmentName, Environments.Production, StringComparison.OrdinalIgnoreCase) ||
             configuration.GetValue("Pvg:Runtime:ProductionLike", false);
 
@@ -75,10 +225,14 @@ public sealed record PvgServiceApiRuntimeOptions(
             "Pvg:Runtime:UseNonProductionAdapters",
             !isProductionLike);
 
+        // Read exactly as configured (no trimming): a padded value is invalid, not repaired.
+        var approvalReference = configuration["Pvg:Runtime:ApprovalReference"];
+
         return new PvgServiceApiRuntimeOptions(
             isProductionLike,
             operationalRuntimeAuthorized,
-            useNonProductionAdapters);
+            useNonProductionAdapters,
+            approvalReference);
     }
 
     public void ThrowIfUnsafe()
@@ -94,7 +248,17 @@ public sealed record PvgServiceApiRuntimeOptions(
             throw new InvalidOperationException(
                 "PVG production-like startup cannot use non-production adapters.");
         }
+
+        // The flag alone is not authority (OD-PVG-6): it must name an approval record. The value is never echoed.
+        if (IsProductionLike && OperationalRuntimeAuthorized && !HasValidApprovalReference())
+        {
+            throw new InvalidOperationException(
+                "PVG production-like startup requires an operational runtime approval reference.");
+        }
     }
+
+    private bool HasValidApprovalReference() =>
+        ApprovalReference is not null && ApprovalReferenceShape.IsMatch(ApprovalReference);
 }
 
 public sealed record PvgServiceHealthStatus(
@@ -112,4 +276,22 @@ public sealed record PvgServiceHealthStatus(
             PvgServiceApiHost.NonOperationalMode,
             options.OperationalRuntimeAuthorized,
             options.UseNonProductionAdapters);
+}
+
+public sealed record PvgServiceNotReadyStatus(
+    string Status,
+    string Mode,
+    bool OperationalRuntimeAuthorized,
+    bool NonProductionAdaptersEnabled,
+    IReadOnlyList<string> MissingDependencyCodes)
+{
+    public static PvgServiceNotReadyStatus From(
+        PvgServiceApiRuntimeOptions options,
+        IReadOnlyList<string> missingDependencyCodes) =>
+        new(
+            "not-ready",
+            PvgServiceApiHost.NonOperationalMode,
+            options.OperationalRuntimeAuthorized,
+            options.UseNonProductionAdapters,
+            missingDependencyCodes);
 }

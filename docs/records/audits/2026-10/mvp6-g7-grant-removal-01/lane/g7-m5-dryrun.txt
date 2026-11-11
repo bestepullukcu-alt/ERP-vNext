@@ -1,0 +1,6 @@
+"g7" retraction DryRun finished: 7 Admin role(s), 16 grant(s) planned, 0 converted to Module, 0 soft-deleted, 0 not applied, 0 tenant(s) unknown, 0 failed.
+tenant …ed0f0514d9df capacity-plans  ConvertToModule  x4
+tenant …ed0f0514d9df sandop-plans    SoftDelete       x4
+tenant …ee0fe3aebf77 capacity-plans  ConvertToModule  x4
+tenant …ee0fe3aebf77 sandop-plans    ConvertToModule  x4
+g7 audit rows=0

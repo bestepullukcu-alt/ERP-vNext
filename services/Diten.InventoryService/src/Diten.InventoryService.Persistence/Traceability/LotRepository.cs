@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Text.RegularExpressions;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Domain.Entities;
@@ -192,7 +193,7 @@ public sealed class LotRepository : ILotRepository
         try
         {
             return await session.WithTransactionAsync(
-                (s, ct) =>
+                async (s, ct) =>
                 {
                     if (++attempt > 1)
                     {
@@ -200,7 +201,9 @@ public sealed class LotRepository : ILotRepository
                         _logger.LogInformation("Lot transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
                     }
 
-                    return work(new Transaction(this, s), ct);
+                    await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
+
+                    return await work(new Transaction(this, s), ct);
                 },
                 new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),
                 cancellationToken);
@@ -225,6 +228,9 @@ public sealed class LotRepository : ILotRepository
             _owner = owner;
             _session = session;
         }
+
+        /// <summary>MOD-0176 F2: the lot transaction's session for the KF-D gate (<c>ILotDateOverrideGate.ApplyAsync</c>).</summary>
+        public object? Session => _session;
 
         public async Task<Lot?> FindAsync(Guid lotId, CancellationToken cancellationToken = default)
             => await _owner._lots.Find(_session, _owner.Scope<Lot>() & Builders<Lot>.Filter.Eq(x => x.Id, lotId)).FirstOrDefaultAsync(cancellationToken);

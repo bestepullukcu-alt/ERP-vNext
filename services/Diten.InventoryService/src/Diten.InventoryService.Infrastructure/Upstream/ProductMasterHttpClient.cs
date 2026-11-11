@@ -73,9 +73,45 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 UpstreamHttp.NullableBool(root, "lotControlled"),
                 UpstreamHttp.NullableBool(root, "serialControlled"),
                 // WP-0174-ITEM (O-PM1-3): an explicit false refuses; missing stays null.
-                UpstreamHttp.NullableBool(root, "stockable")),
+                UpstreamHttp.NullableBool(root, "stockable"),
+                // WP-0176-F1 (v1.1 SkuRef :729-732): the shelf-life days — unknown stays null ("Tanımsız"), never 0.
+                NullableDays(root, "shelfLifeDays"),
+                NullableDays(root, "retestDays"),
+                NullableDays(root, "minRemainingShelfLifeDays"),
+                // WP-MVP1-FIX-LIVE2: the SKU code for display (evidence packs); absent stays null.
+                UpstreamHttp.OptionalString(root, "canonicalCode"),
+                // MOD-0178 DL-1 (pack §5, §8.12): the storage conditions — absent / not a list of codes stays null (unknown), never [].
+                StorageConditions(root)),
             Unavailable,
             cancellationToken);
+
+    /// <summary>
+    /// WP-0176-F1: a PRODUCT-MASTER day count — a JSON integer ≥ 0, else null. Absent, <c>null</c>, a string, a fraction or a negative
+    /// number are "not stated" (PRODUCT-MASTER O-1: "Alan yok = bilinmiyor; false / 0 varsayılmaz") — never 0, so a missing minimum
+    /// remaining shelf life is never read as "no minimum" (KF-C applies the rule only to a stated value).
+    /// </summary>
+    internal static int? NullableDays(JsonElement element, string property)
+        => element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var days) && days >= 0
+            ? days
+            : null;
+
+    /// <summary>
+    /// MOD-0178 DL-1: <c>SkuRef.storageConditions</c> (v1.1 <c>StorageConditionCode[]</c>, open enum) — an array of non-empty strings, else
+    /// null. Absent, <c>null</c>, not an array or an entry that is not a code is "not stated" (PRODUCT-MASTER O-1): MOD-0178 then refuses with
+    /// <c>WMS_STORAGE_CONDITIONS_UNKNOWN</c> instead of reading it as "no conditions" (pack §8.12, fail-closed). An empty array is "no conditions".
+    /// </summary>
+    internal static IReadOnlyList<string>? StorageConditions(JsonElement element)
+    {
+        if (!element.TryGetProperty("storageConditions", out var value) || value.ValueKind != JsonValueKind.Array) return null;
+        var codes = new List<string>();
+        foreach (var entry in value.EnumerateArray())
+        {
+            if (entry.ValueKind != JsonValueKind.String || entry.GetString() is not { Length: > 0 } code) return null;
+            codes.Add(code);
+        }
+
+        return codes;
+    }
 
     /// <summary>
     /// The contract declares no 404 for <c>getSkuUom</c>; a 404 is still read as "no conversion data" (→ 422

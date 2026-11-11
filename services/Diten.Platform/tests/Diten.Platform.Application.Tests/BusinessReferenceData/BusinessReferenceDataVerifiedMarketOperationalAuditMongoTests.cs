@@ -61,6 +61,7 @@ internal sealed class WindowsCompatibleMongodProcessStarter : IMongodProcessStar
 /// earlier; this test keeps the preflight's line from being removed silently.
 /// </summary>
 [Collection(VerifiedMarketReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class VerifiedMarketOperationalPreflightTenantTests
 {
     private readonly VerifiedMarketReplicaSetFixture _fixture;

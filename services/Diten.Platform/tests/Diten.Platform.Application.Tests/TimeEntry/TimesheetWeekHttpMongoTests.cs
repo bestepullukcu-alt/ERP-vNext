@@ -11,6 +11,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// the edit window and reopen, future days, the tenant's local day across a DST change, the day target and concurrency.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetWeekHttpMongoTests : TimeEntryScenario
 {
     public TimesheetWeekHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)

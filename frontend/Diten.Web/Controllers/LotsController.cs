@@ -196,6 +196,7 @@ public sealed class LotsController : Controller
             ["skuLevel"] = level
         };
         AddAttributes(body, form, includeNulls: false);
+        if (DateOverride(form) is { } dateOverride) body["dateOverride"] = dateOverride; // WP-0176-F5 seam: only when sent (KF-D)
 
         var reply = await trace.PostAsync("/api/trace/lots", body, idempotencyKey, null, cancellationToken);
         if (!reply.IsSuccess) return WriteRefusal(reply);
@@ -232,6 +233,7 @@ public sealed class LotsController : Controller
         var body = new Dictionary<string, object?>();
         AddAttributes(body, form, includeNulls: true);
         if (!string.Equals(status, "Draft", StringComparison.Ordinal)) body["reason"] = form.Reason!.Trim();
+        else if (DateOverride(form) is { } dateOverride) body["dateOverride"] = dateOverride; // WP-0176-F5 seam: a Draft updateLot (CT-F7), only when sent
 
         var reply = await trace.PatchAsync($"/api/trace/lots/{id:D}", body, form.IfMatch!, cancellationToken);
         if (!reply.IsSuccess) return WriteRefusal(reply);
@@ -493,6 +495,18 @@ public sealed class LotsController : Controller
         { StatusCode = 400 };
 
     /// <summary>A TRACE refusal of a write, placed on its field where it has one (pack §13), else on the form.</summary>
+    /// <summary>
+    /// WP-0176-F5 seam (CT decision A): TRACE 1.4.0 <c>dateOverride { overrideId, signatureId? }</c> from the form — null (nothing added to the
+    /// body) unless the form sent a canonical override id; a signature id only when sent. The LOT_DATE_OVERRIDE_* refusals keep their code.
+    /// </summary>
+    private static Dictionary<string, object?>? DateOverride(LotFormInput form)
+    {
+        if (form.DateOverride?.OverrideId is not { Length: > 0 } raw || !Guid.TryParse(raw, out var overrideId)) return null;
+        var value = new Dictionary<string, object?> { ["overrideId"] = overrideId.ToString("D") };
+        if (!string.IsNullOrWhiteSpace(form.DateOverride.SignatureId)) value["signatureId"] = form.DateOverride.SignatureId.Trim();
+        return value;
+    }
+
     private IActionResult WriteRefusal(GatewayReply reply)
     {
         var code = reply.Error?.Code;

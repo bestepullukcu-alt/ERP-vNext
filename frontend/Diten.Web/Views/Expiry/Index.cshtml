@@ -1,0 +1,130 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.Dashboard"].Value;
+    ViewData["PageCode"] = "EXPIRYDASHBOARD"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F4 — FEFO Paneli (EXPIRYDASHBOARD, pack §11.1, §8.8). One door /Expiry/data/dashboard → FEFO-BUNDLE getDashboard (+ the
+    company horizons and the last-30-days below-minimum count when the reader may read them). KPI cards, the 12-month chart (AVAILABLE vs
+    held — ASSUMPTION-0176-09, D-11) and the 10 nearest lots. No money values (D-13).
+    UAS-001 — nothing below is drawn without expiry.dashboard.read: no heading, no filter, no card. No redirect.
+*@
+@if (!Perms.Has("expiry.dashboard.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.Dashboard"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYDASHBOARD")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3" id="ex-subtitle"></p>
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+        <select id="ex-filter-warehouse" class="form-select form-select-sm w-auto" aria-label="@Localizer["Expiry.Common.AllWarehouses"]">
+            <option value="">@Localizer["Expiry.Common.AllWarehouses"]</option>
+        </select>
+        <div class="d-flex align-items-center gap-2">
+            <small class="text-muted">@Localizer["Expiry.Dashboard.Period"]</small>
+            <select id="ex-filter-period" class="form-select form-select-sm w-auto" aria-label="@Localizer["Expiry.Dashboard.Period"]">
+                @foreach (var days in new[] { 30, 90, 180, 365 })
+                {
+                    <option value="@days">@string.Format(Localizer["Expiry.Common.Days"].Value, days)</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div id="ex-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Expiry.Common.NamesUnavailable"]</div>
+    <div id="ex-error" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4 mb-4" id="ex-kpis">
+        @foreach (var (kpi, icon, tone) in new[]
+        {
+            ("expired", "bx-calendar-x", "secondary"), ("critical", "bx-alarm-exclamation", "warning"), ("approaching", "bx-calendar-exclamation", "warning"),
+            ("belowMin", "bx-log-in-circle", "info"), ("exceptions", "bx-error-alt", "primary"), ("compliance", "bx-check-shield", "success")
+        })
+        {
+            <div class="col-12 col-sm-6 col-xl-4" data-kpi-card="@kpi">
+                <a class="card h-100 text-reset text-decoration-none" data-kpi-link="@kpi" href="#">
+                    <div class="card-body d-flex align-items-start gap-3 p-3">
+                        <div class="avatar flex-shrink-0"><span class="avatar-initial rounded bg-label-@tone"><i class="bx @icon"></i></span></div>
+                        <div class="min-w-0">
+                            <small class="text-muted d-block" data-kpi-label="@kpi"></small>
+                            <h5 class="mb-0" data-kpi="@kpi">—</h5>
+                            <small class="text-muted d-block" data-kpi-sub="@kpi"></small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">@Localizer["Expiry.Chart.Title"]</h5>
+            <small class="text-muted">@Localizer["Expiry.Chart.Subtitle"]</small>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-3 small mb-2">
+                <span class="d-flex align-items-center gap-1"><span class="d-inline-block rounded bg-primary" style="width:.75rem;height:.75rem"></span>@Localizer["Expiry.Chart.Available"]</span>
+                <span class="d-flex align-items-center gap-1"><span class="d-inline-block rounded bg-info" style="width:.75rem;height:.75rem"></span>@Localizer["Expiry.Chart.Held"]</span>
+            </div>
+            <div class="overflow-auto"><div class="d-flex align-items-end gap-2" id="ex-chart" style="min-width:480px;height:220px"></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h5 class="card-title mb-0">@Localizer["Expiry.TopRisk.Title"]</h5>
+                <small class="text-muted" id="ex-toprisk-sub"></small>
+            </div>
+            <a class="btn btn-sm btn-label-primary" href="/Expiry/Approaching">@Localizer["Expiry.TopRisk.SeeAll"]</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="ex-toprisk">
+                <thead>
+                    <tr>
+                        <th>@Localizer["Expiry.Col.Product"]</th>
+                        <th>@Localizer["Expiry.Col.LotNo"]</th>
+                        <th>@Localizer["Expiry.Col.Warehouse"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.DaysLeft"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.Quantity"]</th>
+                        <th>@Localizer["Expiry.Col.Status"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody><tr><td colspan="7" class="text-muted">@Localizer["Expiry.Common.Loading"]</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<partial name="~/Views/Expiry/_OpenExceptionModal.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/dashboard.js" asp-append-version="true"></script>
+    }
+}

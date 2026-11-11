@@ -11,7 +11,7 @@ Maintains mapping records, coverage status, and reconciliation governance rules 
 - Individual module specifications or schemas (use docs/reference/modules/ or Module Packs).
 
 ## Current status
-Active. The Blueprint↔Repo canonicalization ledger and the unresolved EA reservation ledger (below) are established per **DCP-002 — Module Identity Canonicalization**. Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx`, `Blueprint_Data`; 8.1 until 2026-10-19) is the canonical MOD-ID + name authority. Canonical IDs not yet allocated by the Enterprise Architect remain **unresolved** (no placeholder IDs are assigned).
+Active. The Blueprint↔Repo canonicalization ledger and the unresolved EA reservation ledger (below) are established per **DCP-002 — Module Identity Canonicalization**. Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx`, `Blueprint_Data`; 8.1 and 8.7 before, both 2026-10-19) is the canonical MOD-ID + name authority. Canonical IDs not yet allocated by the Enterprise Architect remain **unresolved** (no placeholder IDs are assigned).
 
 ## Blueprint ↔ Repo Canonicalization Ledger (DCP-002, applied)
 
@@ -58,6 +58,8 @@ Documentation-only canonical alignment already applied to the working tree. Old 
 
 ## Blueprint Internal-Consistency Correction Requests (EA-owned — RAISED, NOT APPLIED)
 
+> **Resolved in master 8.8 (2026-10-19, measured):** EA-BP-001 (Module Pages MOD-0262 now `1) Platform & Shared Services`), EA-BP-002 (`Min Integration Contract Codes` = `DOC-REPO-BUNDLE`), EA-BP-003 (`DOCS-BASE` and `DOC-REPO-BUNDLE` in the Contract Bundle Dictionary; their descriptions read "definition pending owner") and EA-BP-005 (the old MOD-0028 name is gone from both dependency sheets). EA-BP-006 is closed in the repository: `MOD-0030` has its registry row (Master-first rule; the Master holds the module). All six requests are closed.
+>
 > **Re-measured on master 8.7 (2026-10-19):** EA-BP-004 is resolved (`Release_Candidates` Implementation Phase is now `TBD`, equal to `Blueprint_Data`). EA-BP-001, -002, -003 ⛔ and -005 are still open in 8.7, unchanged from 8.1. EA-BP-006 is a repo registry item, not a workbook one.
 >
 > **Nothing in this section has been edited in the workbook.** `docs/System Capability & Implementation Blueprint - master 8.1.xlsx` (raised against 8.1) is EA/SoT-owned; this repo raises requests against it and never modifies it. Each row is a measured contradiction **inside** the workbook, i.e. two Blueprint sheets disagreeing with each other — not a repo↔Blueprint drift.
@@ -124,6 +126,25 @@ invented; their allocation under the canonical parent is open. **Master-first ru
 `CAND-CAP` identity is opened; a missing capability is a Module Change Request in the Master's `Module_Change_Requests`
 sheet. **Divergence kept for a decision:** the Master's `Legacy_ID_Migration_Map` retires `MOD-0043` → `MOD-0013` + `MOD-0014`, `MOD-0044` → split across `MOD-0009` / `MOD-0360` / `MOD-0361`, `MOD-0046` → Platform Administration workspace + `MOD-0286`; this repo still maps them to `MOD-0009-FU01` / `-FU02` / `-FU03` (active follow-ups) — the Enterprise Architect / owner decides (deferred: BL-655). `MOD-0040` → `MOD-0009` + `MOD-0288` is consistent with the registry. Also open: three ready-for-dev working-calendar packs still carry `CAND-CAP-0008-*` file names (now the `MOD-0354` alias; the calendar is `MOD-0362`); `CAND-CAP-0002-FU*`, `-0003-FU*` and `-0007-FU01` are not named in this ledger, so `--candidate` refuses them as before. Open, outside this ledger: residual runtime literals (`Diten.Platform.MOD-0297.*` Hangfire job ids; `CAND-CAP-0008`
 in CRM CycleCapacity code, the working calendar's identity before its renumbering) are the owning teams' migrations.
+
+## Master 8.8 (applied 2026-10-19)
+
+Integrity release on 8.7 (official SHA-256 `7a48092849ff4962ba53d69ff2dee338a49b529b429e36c06561046db9b8fcef`, equal to
+`Master_8.8_Change_Note.docx`; repository copy with the CEO's personal name replaced by the role:
+`edbcb725848f7fe5ee3f143eee3285fd798d9204b4a013c27f704d69fc1a5939`). No module, SoR, wave or capability semantics changed;
+`Blueprint_Data` and `SoR_Map` are identical to 8.7 (measured: 364 modules, 327 SoR rows, no changed cell).
+
+- **Correction requests:** EA-BP-001, -002, -003, -005 resolved by the Master; EA-BP-006 closed here (above).
+- **Workbook-internal consumer check (Master's own):** Sheet6, NAV / Module_Gap / Agent_Modules / HCM / Talent_Ecosystem /
+  MG _Update_Summary and Review_View_Diff_8.2 have no internal consumer; `Dependencies` is still read by `Dep_Calc`.
+  Combined with the repository check (only `verify_module_id.py` reads the workbook: `Blueprint_Data`, `SoR_Map`), none
+  of them is needed by the repository. Nothing was archived in 8.8.
+- **ADR-8.8-001 (open):** `MOD-0009-FU01/FU02/FU03`. Recommended option A — `Legacy_ID_Migration_Map` stays the final
+  target; the FU ids are transitional implementation aliases; each FU's capability coverage is measured before merge /
+  retire. Tracked in BL-655.
+- **Dev_Readiness repository import contract:** columns Z–AD (`Repo Suggested Stage`, `Suggested At`, `Source Commit`,
+  `Suggested Evidence`, `Suggestion Reason`); AE shows `MATCH` or `REVIEW`. The repository writes only Z–AD, never `Stage`
+  (G) or a human-set column. Tracked in BL-656; matches `docs/roadmap/plans/ct-dev-readiness-approval-01/CONTRACT.md` §2.
 
 ## Minimal SoR Reconciliation Records
 

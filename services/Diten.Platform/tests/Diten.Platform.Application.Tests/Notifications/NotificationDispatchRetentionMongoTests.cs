@@ -17,6 +17,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// closes, and that a closed (permanent) row is never selected for a retry again. Both scan every tenant, so the test
 /// gets the harness's fixed-name isolated database (DB-010), emptied before each test.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class NotificationDispatchRetentionMongoTests : IAsyncLifetime
 {
     private MongoIntegrationHarness _harness = null!;

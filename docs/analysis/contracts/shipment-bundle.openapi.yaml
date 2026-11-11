@@ -12,7 +12,7 @@ info:
     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
-  version: 3.2.0
+  version: 3.5.0
   x-status: FROZEN
   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
@@ -43,6 +43,9 @@ paths:
         - { name: sourceDocumentId, in: query, schema: { type: string } }
         - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
         - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: search, in: query, description: "3.5.0 (MOD-0183 r9 §24.7 item 1, additive) — case-insensitive substring match on shipmentNumber and sourceDocumentId only; names are not stored on the shipment, so a customer or warehouse name is not searchable. Absent or empty: no text filter.", schema: { type: string, maxLength: 100 } }
+        - { name: orderBy, in: query, description: "3.5.0 (MOD-0183 r9 §24.7 item 1, additive) — sort column. Absent: today's order (by shipment id) is kept.", schema: { type: string, enum: [shipmentNumber, sourceDocumentId, status, plannedShipAt, plannedDeliverAt] } }
+        - { name: orderDir, in: query, description: "3.5.0 (MOD-0183 r9 §24.7 item 1, additive) — sort direction; read only with orderBy.", schema: { type: string, enum: [asc, desc], default: asc } }
       responses:
         '200':
           description: Shipment listesi
@@ -54,6 +57,9 @@ paths:
                   - shipmentId: 18300000-0000-0000-0000-000000000001
                     shipmentNumber: SHP-2026-000001
                     sourceDocumentId: SO-900
+                    warehouseReferenceId: wh-01
+                    shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
+                    customerRef: 14900000-0000-4000-8000-000000000001
                     status: Dispatched
                     carrierId: 18400000-0000-0000-0000-000000000001
                     loadId: 18500000-0000-0000-0000-000000000001
@@ -63,8 +69,71 @@ paths:
                 page: 1
                 pageSize: 50
                 total: 1
+                filteredTotal: 1
                 contractVersion: v1
         '400': { $ref: '#/components/responses/BadRequest' }
+        '401':
+          description: Shipments 401; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                UNAUTHENTICATED:
+                  value:
+                    error:
+                      code: UNAUTHENTICATED
+                      message: Authentication required.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '403':
+          description: Shipments 403; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                FORBIDDEN:
+                  value:
+                    error:
+                      code: FORBIDDEN
+                      message: The requested operation is not permitted.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          description: Shipments 500; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: An unexpected error occurred.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
         '503': { $ref: '#/components/responses/DependencyUnavailable' }
     post:
       tags: [Shipments]
@@ -84,7 +153,8 @@ paths:
               sourceType: SALES_ORDER
               sourceDocumentId: SO-900
               warehouseReferenceId: wh-01
-              shipToReference: CUST-100/ADDR-2
+              shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
+              customerRef: 14900000-0000-4000-8000-000000000001
               plannedShipAt: '2026-09-20T08:00:00Z'
               plannedDeliverAt: '2026-09-21T16:00:00Z'
               lines:
@@ -138,7 +208,8 @@ paths:
                 sourceType: SALES_ORDER
                 sourceDocumentId: SO-900
                 warehouseReferenceId: wh-01
-                shipToReference: CUST-100/ADDR-2
+                shipToReference: TR, Istanbul, Kadikoy, Ataturk Cad. No 12
+                customerRef: 14900000-0000-4000-8000-000000000001
                 carrierId: 18400000-0000-0000-0000-000000000001
                 loadId: 18500000-0000-0000-0000-000000000001
                 status: Delivered
@@ -184,6 +255,8 @@ paths:
         '409': { $ref: '#/components/responses/Conflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
         '503': { $ref: '#/components/responses/DependencyUnavailable' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { $ref: '#/components/responses/InternalError' }
   /shipments/{shipmentId}/pod:
     post:
       tags: [Shipments]
@@ -1938,6 +2011,168 @@ paths:
         Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
         replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
         publisher.'
+  /returns/{returnId}:
+    get:
+      tags: [Returns]
+      operationId: getReturn
+      summary: Return/RMA detayini getir
+      description: "3.5.0 (MOD-0186 r10 §35.9 item 1, additive) — the first by-ID return read, tenant and company scoped; a foreign or unknown id answers 404 RETURN_NOT_FOUND with one text for both (MOD-0186 35.6). The contract lands with MOD-0183 DL-3; the operation is served from MOD-0186 DL-4, and until then the service and the Gateway have no route and the call answers 404."
+      x-served-from: MOD-0186 DL-4
+      parameters:
+        - name: returnId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/LegalEntityId' }
+        - { name: X-Tenant-Id, in: header, required: true, schema: { type: string, format: uuid }, description: 'Tenant is validated against trusted JWT scope, as on the other Returns operations.' }
+      responses:
+        '200':
+          description: Return detayi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnDetail' }
+              example:
+                returnId: 18600000-0000-0000-0000-000000000001
+                rmaNumber: RMA-2026-000001
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                status: Received
+                customerRef: 14900000-0000-4000-8000-000000000001
+                reasonCode: DAMAGED
+                createdAt: '2026-09-22T09:00:00Z'
+                lines:
+                  - { shipmentLineNumber: '1', quantity: '2.000', uomId: EA, inventoryTransactionReferenceId: 17300000-0000-4000-8000-000000000001, inventoryPosting: Posted, inventoryPostingReason: null }
+                contractVersion: v1
+        '400':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '401':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+            WWW-Authenticate:
+              schema:
+                type: string
+                const: Bearer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '403':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INVALID_REQUEST:
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVALID REQUEST
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '404':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                RETURN_NOT_FOUND:
+                  value:
+                    error:
+                      code: RETURN_NOT_FOUND
+                      message: RETURN NOT FOUND
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '500':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                INTERNAL_ERROR:
+                  value:
+                    error:
+                      code: INTERNAL_ERROR
+                      message: INTERNAL ERROR
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+        '503':
+          description: Returns-specific branch; normative annex defines precedence.
+          headers:
+            X-Correlation-Id:
+              description: Current valid request trace; rejection-only generated trace if invalid/missing. Never a
+                replacement business root.
+              schema:
+                type: string
+                format: uuid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                PERSISTENCE_UNAVAILABLE:
+                  value:
+                    error:
+                      code: PERSISTENCE_UNAVAILABLE
+                      message: PERSISTENCE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
   /returns/{returnId}/transition:
     post:
       tags:
@@ -1945,13 +2180,17 @@ paths:
       operationId: transitionReturn
       summary: Return/RMA lifecycle durumunu ilerlet
       description: 'Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled; InTransit->Received;
-        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY
-        posting bu API''nin disindadir ve frozen INVENTORY contract''ina korele referansla yapilir.
+        Received->Dispositioned; Dispositioned->Closed. Diger gecisler INVALID_RETURN_TRANSITION ile reddedilir. 3.4.0
+        (WP-P1, MOD-0186 §34): InTransit->Received posts one INVENTORY CUSTOMER_RETURN movement per line into QUARANTINE and
+        the service sets each line''s reference (ReturnResponse.lines); the client''s inventoryTransactionReferenceId is
+        refused on Received. A shipment dispatched before the 3.4.0 stock issue is received without stock posting
+        (inventoryPosting NotPosted, reason PRE_WP_P1).
 
 
         Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
-        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
-        publisher.'
+        replay, entitlement, manual receiving and inherited Shipment root. 3.4.0: the only Inventory HTTP call is the
+        CUSTOMER_RETURN posting on Received (MOD-0186 §34); for Received this overrides returns-semantics-v3.0.0.md
+        ("Inventory and Warehouse HTTP calls ZERO"). No Warehouse HTTP, worker or publisher.'
       parameters:
       - name: returnId
         in: path
@@ -2086,6 +2325,15 @@ paths:
                       message: INVALID REQUEST
                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                     contractVersion: v1
+                INVENTORY_FORBIDDEN:
+                  summary: "3.4.0 (WP-P1 r5) — INVENTORY refused the caller on the CUSTOMER_RETURN posting (MOD-0186 §34)"
+                  value:
+                    error:
+                      code: INVALID_REQUEST
+                      message: INVENTORY refused the caller's authorization
+                      details: { inventoryCode: CROSS_LE_FORBIDDEN }
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
         '404':
           description: Returns-specific branch; normative annex defines precedence.
           headers:
@@ -2133,6 +2381,15 @@ paths:
                     error:
                       code: IDEMPOTENCY_KEY_REUSED
                       message: IDEMPOTENCY KEY REUSED
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_RECEIPT_IN_PROGRESS:
+                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
+                  value:
+                    error:
+                      code: RETURN_RECEIPT_IN_PROGRESS
+                      message: "a receipt attempt holds the lease, or the command changes a line that is not Refused"
+                      details: { shipmentLineNumber: "1" }
                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                     contractVersion: v1
         '415':
@@ -2184,6 +2441,33 @@ paths:
                       message: DISPOSITION REQUIRED
                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                     contractVersion: v1
+                INVENTORY_REFUSED:
+                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
+                  value:
+                    error:
+                      code: INVENTORY_REFUSED
+                      message: "INVENTORY refused a line's CUSTOMER_RETURN"
+                      details: { shipmentLineNumber: "2", inventoryCode: UNKNOWN_LOCATION }
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_LINE_NOT_UNPOSTABLE:
+                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
+                  value:
+                    error:
+                      code: RETURN_LINE_NOT_UNPOSTABLE
+                      message: "unpostedLines names a line that is not permanently refused or Blocked"
+                      details: { shipmentLineNumber: "2", lastInventoryCode: UNKNOWN_LOCATION }
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                RETURN_SOURCE_MOVEMENT_MISSING:
+                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
+                  value:
+                    error:
+                      code: RETURN_SOURCE_MOVEMENT_MISSING
+                      message: "the shipment has a stock issue but this line has none"
+                      details: { shipmentLineNumber: "1" }
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
         '500':
           description: Returns-specific branch; normative annex defines precedence.
           headers:
@@ -2224,6 +2508,14 @@ paths:
                     error:
                       code: PERSISTENCE_UNAVAILABLE
                       message: PERSISTENCE UNAVAILABLE
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+                DEPENDENCY_UNAVAILABLE:
+                  summary: "3.4.0 (WP-P1 r6, MOD-0186 §34)"
+                  value:
+                    error:
+                      code: DEPENDENCY_UNAVAILABLE
+                      message: "INVENTORY unreachable on the CUSTOMER_RETURN posting"
                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                     contractVersion: v1
   /claims:
@@ -2323,6 +2615,26 @@ paths:
                     error:
                       code: FORBIDDEN
                       message: The requested operation is not permitted.
+                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                    contractVersion: v1
+          headers:
+            X-Correlation-Id:
+              schema:
+                type: string
+                format: uuid
+              example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+        '404':
+          description: Claims 404; applicability and precedence in normative annex.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                CLAIM_NOT_FOUND:
+                  value:
+                    error:
+                      code: CLAIM_NOT_FOUND
+                      message: The requested claim was not found.
                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
                     contractVersion: v1
           headers:
@@ -3050,6 +3362,11 @@ components:
         quantity: { $ref: '#/components/schemas/Decimal' }
         uomId: { type: string }
         inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
+        skuLevel: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — INVENTORY SkuLevel of the line's SKU; required by the GOODS_ISSUE_SALES posted at Dispatched (MOD-0183 §23). Empty at Dispatched → 422 SHIPMENT_LINE_STOCK_INCOMPLETE, INVENTORY not called (DL-1); resolving it from PRODUCT-MASTER is a later revision." }
+        lotId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the lot issued for a lot-tracked SKU. A tenant without a warehouse module enters it; with one, MVP-5 picking fills it. Read at Dispatched; may be empty before." }
+        fromLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G1, additive) — the issuing location inside warehouseReferenceId. Read at Dispatched." }
+        fefoBypassReason: { type: [string, 'null'], minLength: 10, maxLength: 1000, description: "3.4.0 (WP-P1 G1, additive) — forwarded unchanged to INVENTORY 1.3.0 fefoBypassReason when the lot is not the first eligible FEFO lot." }
+        issueTransactionId: { type: [string, 'null'], readOnly: true, description: "3.4.0 (WP-P1 G8, MOD-0186 review F-5, additive, read-only) — the INVENTORY transactionId of this line's GOODS_ISSUE_SALES in the completed dispatch attempt (MOD-0183 §23.4); null until Dispatched. Ignored on create. MOD-0186 reads it for the CUSTOMER_RETURN." }
     CreateShipmentCommand:
       type: object
       additionalProperties: false
@@ -3059,7 +3376,8 @@ components:
         sourceType: { type: string }
         sourceDocumentId: { type: string }
         warehouseReferenceId: { type: string, description: WAREHOUSE-SHIPMENT-TRIGGER contract'i gelene kadar opaque reference. }
-        shipToReference: { type: string }
+        shipToReference: { type: string, description: "The delivery destination (MOD-0183 r9 §24.1). 3.5.0: it no longer carries customer identity; that is customerRef." }
+        customerRef: { $ref: '#/components/schemas/CustomerRef' }
         plannedShipAt: { type: string, format: date-time }
         plannedDeliverAt: { type: [string, 'null'], format: date-time }
         lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ShipmentLine' } }
@@ -3104,12 +3422,19 @@ components:
         shipmentId: { type: string, format: uuid }
         shipmentNumber: { type: string }
         sourceDocumentId: { type: string }
+        warehouseReferenceId: { type: string, description: "3.5.0 (MOD-0183 r9 §24.7 item 2, additive) — also on the list row, so a list can resolve the warehouse name without a per-row getShipment." }
+        shipToReference: { type: string, description: "3.5.0 (MOD-0183 r9 §24.7 item 2, additive) — also on the list row; the delivery destination, as stored." }
+        customerRef: { $ref: '#/components/schemas/CustomerRef' }
         status: { $ref: '#/components/schemas/ShipmentStatus' }
         carrierId: { type: [string, 'null'], format: uuid }
         loadId: { type: [string, 'null'], format: uuid }
         plannedShipAt: { type: string, format: date-time }
         plannedDeliverAt: { type: [string, 'null'], format: date-time }
         actualDeliverAt: { type: [string, 'null'], format: date-time }
+    CustomerRef:
+      type: [string, 'null']
+      pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      description: "3.5.0 (MOD-0183 r9 §24.1 / §24.7 item 3, additive; MVP-1 CT decision 2026-11-03, accepted by Natig K1) — the customer of the shipment or return: a MOD-0149 CRM Account.Id written as a Guid in \"D\" format, lower case (pattern). Consumers compare it case-insensitively. The service rejects a value that does not match the pattern with 400 INVALID_REQUEST, stores a matching value as given and never calls CRM; the MVC create adapter also checks that the account is readable. Null or absent on records written before 3.5.0, on Warehouse-intake shipments and on calls that do not send it: a consumer then keeps its earlier rule (MOD-0177: shipToReference, then DOC:<sourceDocumentId>) and never matches an old record to an account. Same name and meaning on ShipmentSummary, ShipmentDetail and ReturnSummary. Never shown to a user as a label."
     ShipmentDetail:
       allOf:
         - { $ref: '#/components/schemas/ShipmentSummary' }
@@ -3123,6 +3448,8 @@ components:
             lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
             pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
             lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
+            stockIssued: { type: [boolean, 'null'], description: "3.4.0 (WP-P1 r6, additive, read-only) — true once a dispatch attempt is Completed and every line carries its INVENTORY issue (MOD-0183 §23.4); null when the shipment has no dispatch attempt (never dispatched, or dispatched before the 3.4.0 stock issue — MOD-0186 reads null on a Dispatched-or-later shipment as PRE_WP_P1)" }
+            dispatchState: { type: [string, 'null'], enum: [None, InProgress, CompensationFailed, null], description: "3.4.0 (WP-P1 G4, additive, read-only) — state of the open Inventory dispatch attempt behind Dispatched (MOD-0183 §23.4). None: no open attempt. InProgress: an attempt holds the lease; Cancelled and POD answer 409 DISPATCH_IN_PROGRESS. CompensationFailed: a compensating REVERSAL failed; status stays Planned and every transition except the exit (Dispatched or Cancelled, which first resends the reversals) answers 409 DISPATCH_COMPENSATION_FAILED." }
             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
     ShipmentListResponse:
       type: object
@@ -3132,6 +3459,7 @@ components:
         page: { type: integer }
         pageSize: { type: integer }
         total: { type: integer }
+        filteredTotal: { type: integer, description: "3.5.0 (MOD-0183 r9 §24.7 item 1, additive) — the count after search and the other filters; total keeps its 3.4.0 meaning." }
         contractVersion: { $ref: '#/components/schemas/ContractVersion' }
     PodResponse:
       type: object
@@ -3261,6 +3589,18 @@ components:
         occurredAt: { type: string, format: date-time }
         inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
         dispositionCode: { type: [string, 'null'] }
+        toWarehouseId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — the warehouse a Received return enters; required by the business rule when targetStatus is Received (MOD-0186 §34). Item, SKU, level and lot come from the shipment line's issue movement, never from the client." }
+        toLocationId: { type: [string, 'null'], description: "3.4.0 (WP-P1 G8, additive) — optional receiving location." }
+        unpostedLines:
+          type: [array, 'null']
+          description: "3.4.0 (WP-P1 r6, additive) — lines received without stock posting: after a permanent INVENTORY refusal (reasonCode = that INVENTORY code) or a Blocked line after INVENTORY 400 INVALID_REQUEST (reasonCode INTEGRITY_FAULT); any other line → 422 RETURN_LINE_NOT_UNPOSTABLE (MOD-0186 §34.2)"
+          items:
+            type: object
+            additionalProperties: false
+            required: [shipmentLineNumber, reasonCode]
+            properties:
+              shipmentLineNumber: { type: string }
+              reasonCode: { type: string, enum: [ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE, UNKNOWN_ITEM, INTEGRITY_FAULT] }
     ReturnSummary:
       type: object
       properties:
@@ -3268,6 +3608,10 @@ components:
         rmaNumber: { type: string }
         shipmentId: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/ReturnStatus' }
+        customerRef:
+          allOf: [{ $ref: '#/components/schemas/CustomerRef' }]
+          readOnly: true
+          description: "3.5.0 (MOD-0186 r10 §35.9 item 6, additive, read-only) — copied by the service from the shipment's customerRef when the return is created; never taken from the client. Null on a return created before 3.5.0 or for a shipment without customerRef."
     ReturnResponse:
       allOf:
         - { $ref: '#/components/schemas/ReturnSummary' }
@@ -3275,6 +3619,39 @@ components:
           required: [idempotentReplay, contractVersion]
           properties:
             idempotentReplay: { type: boolean }
+            lines:
+              type: array
+              description: "3.4.0 (WP-P1 r4, additive, read-only) — per-line Inventory result of Received (MOD-0186 §34.2); absent before Received"
+              items:
+                type: object
+                required: [shipmentLineNumber, inventoryPosting]
+                properties:
+                  shipmentLineNumber: { type: string }
+                  inventoryTransactionReferenceId: { type: [string, 'null'], description: "the CUSTOMER_RETURN transactionId; null when NotPosted" }
+                  inventoryPosting: { type: string, enum: [Posted, NotPosted] }
+                  inventoryPostingReason: { type: [string, 'null'], description: "PRE_WP_P1 or the reasonCode of unpostedLines; null when Posted" }
+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ReturnDetail:
+      description: "3.5.0 (MOD-0186 r10 §35.9 item 1, additive) — getReturn answer. No authorization or workflow field: those belong to MOD-0186 DL-5 and a later contract version."
+      allOf:
+        - { $ref: '#/components/schemas/ReturnSummary' }
+        - type: object
+          required: [reasonCode, createdAt, lines, contractVersion]
+          properties:
+            reasonCode: { type: string, description: "the return's stored reason code, as written (MOD-0186 35.5 summary card)" }
+            createdAt: { type: string, format: date-time, description: "when the return was created (MOD-0186 35.5 summary card)" }
+            lines:
+              type: array
+              items:
+                type: object
+                required: [shipmentLineNumber, quantity, uomId]
+                properties:
+                  shipmentLineNumber: { type: string }
+                  quantity: { $ref: '#/components/schemas/Decimal' }
+                  uomId: { type: string }
+                  inventoryTransactionReferenceId: { type: [string, 'null'] }
+                  inventoryPosting: { type: [string, 'null'], enum: [Posted, NotPosted, null], description: "null before Received" }
+                  inventoryPostingReason: { type: [string, 'null'] }
             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
     ReturnListResponse:
       type: object
@@ -3410,6 +3787,18 @@ components:
             correlationId: { type: string, format: uuid }
         contractVersion: { $ref: '#/components/schemas/ContractVersion' }
   responses:
+    Forbidden:
+      description: "3.4.0 (WP-P1 r4, additive) — authorization outcome of a dependency the command writes to (INVENTORY 403); no state change"
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: INVALID_REQUEST, message: "INVENTORY refused the caller's authorization", details: { inventoryCode: CROSS_LE_FORBIDDEN }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
+    InternalError:
+      description: "3.4.0 (WP-P1 r4, additive) — integrity fault (e.g. INVENTORY 400 to a request this service built); logged with the correlation id"
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: INTERNAL_ERROR, message: Integrity fault, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
     BadRequest:
       description: Request semasi veya header gecersiz
       content:
@@ -3435,6 +3824,9 @@ components:
           examples:
             idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
             duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            dispatchCompensationFailed: { value: { error: { code: DISPATCH_COMPENSATION_FAILED, message: "3.4.0 (WP-P1 G4) — a compensating REVERSAL failed; the shipment is blocked until a user retry succeeds", details: { lines: ["1"] }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            dispatchInProgress: { value: { error: { code: DISPATCH_IN_PROGRESS, message: "3.4.0 (MOD-0183 review F-2) — another dispatch attempt holds this shipment; one active attempt per shipment", details: { attempt: 1 }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            returnReceiptInProgress: { value: { error: { code: RETURN_RECEIPT_IN_PROGRESS, message: "3.4.0 (MOD-0186 review F-1) — a receipt attempt is open with other stored values, or another command holds it", details: { toWarehouseId: wh-01, toLocationId: loc-q1, occurredAt: "2026-10-26T08:00:00Z" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
     Unprocessable:
       description: Is kurali veya lifecycle gecisi gecersiz
       content:
@@ -3446,6 +3838,10 @@ components:
             returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
             claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
             inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            inventoryRefused: { value: { error: { code: INVENTORY_REFUSED, message: "3.4.0 (WP-P1 G7) — INVENTORY refused a line's movement; the shipment did not change state", details: { lineNumber: "1", inventoryCode: LOT_UNDER_RECALL, inventory: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, recallCaseNumber: RC-2026-0004 } }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            shipmentLineStockIncomplete: { value: { error: { code: SHIPMENT_LINE_STOCK_INCOMPLETE, message: "3.4.0 (WP-P1 r5) — a line has no skuLevel at Dispatched; INVENTORY was not called", details: { lineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            returnLineNotUnpostable: { value: { error: { code: RETURN_LINE_NOT_UNPOSTABLE, message: "3.4.0 (WP-P1 r6) — unpostedLines names a line that is not permanently refused or Blocked", details: { shipmentLineNumber: "2", lastInventoryCode: UNKNOWN_LOCATION }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            returnSourceMovementMissing: { value: { error: { code: RETURN_SOURCE_MOVEMENT_MISSING, message: "3.4.0 (WP-P1 G8) — the shipment line has no recorded issue movement; no lot is guessed", details: { shipmentLineNumber: "1" }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
     DependencyUnavailable:
       description: Frozen consumed contract mock'u erisilemez
       content:

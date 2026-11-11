@@ -27,6 +27,15 @@ public sealed class TransactionItemDto
     public string? SourceLineId { get; set; }
     public string? TransactionDate { get; set; }
     public string? PostingDate { get; set; }
+    /// <summary>INVENTORY 1.5.0 (WP-MVP1-NAMES1, additive, optional): who posted it — the name at the time of the posting, or no name.</summary>
+    public TransactionCreatedByDto? CreatedBy { get; set; }
+}
+
+/// <summary>INVENTORY 1.5.0 <c>TransactionItem.createdBy</c>: <c>userId</c> always, <c>name</c> only when the posting recorded one.</summary>
+public sealed class TransactionCreatedByDto
+{
+    public string? UserId { get; set; }
+    public string? Name { get; set; }
 }
 
 /// <summary><c>GET /api/inventory/transactions</c> page: <c>{ items, page, pageSize, total, contractVersion }</c>.</summary>
@@ -64,6 +73,10 @@ public sealed class StockMovementRowViewModel
     public string? ToLocationId { get; init; }
     public string? ToLocationLabel { get; init; }
     public string? LotId { get; init; }
+    /// <summary>WP-MVP1-FIX-LIVE3: the TRACE lot number of a registered <see cref="LotId"/> (LotNumberResolver, one read per SKU of the page).</summary>
+    public string? LotNumber { get; init; }
+    /// <summary>A registered lot whose number could not be read — the cell says "unknown lot", the id only as the title.</summary>
+    public bool LotUnresolved { get; init; }
     public string? FromStockStatus { get; init; }
     public string? ToStockStatus { get; init; }
     public string? SourceModule { get; init; }
@@ -71,6 +84,10 @@ public sealed class StockMovementRowViewModel
     public string? SourceLineId { get; init; }
     public string? TransactionDate { get; init; }
     public string? PostingDate { get; init; }
+    /// <summary>"Kaydeden" (BG-05, INVENTORY 1.5.0): the poster's id — shown only as the hover title, never as a name.</summary>
+    public string? CreatedById { get; init; }
+    /// <summary>The poster's name at the time of the posting; null → the screen says "unknown user".</summary>
+    public string? CreatedByName { get; init; }
     /// <summary>
     /// A REVERSAL of this transaction is on the same page. BG-05: the contract cannot say "already reversed", so this
     /// is only what the page in hand proves; the service's 422 ALREADY_REVERSED stays the authority.

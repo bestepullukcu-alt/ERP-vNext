@@ -79,7 +79,7 @@ public static class LotPostingRules
         Lot lot, Guid skuId, SkuLevel skuLevel, MovementType type, DateTimeOffset postingDate,
         StockStatus? fromStatus, StockStatus? toStatus)
     {
-        var classic = EvaluateClassic(lot, skuId, skuLevel, type, postingDate);
+        var classic = EvaluateClassic(lot, skuId, skuLevel, type, postingDate, toStatus);
         if (classic is not null || IsCtD4Exception(type) || !IsRetestDueOn(lot, postingDate))
         {
             return classic;
@@ -91,7 +91,7 @@ public static class LotPostingRules
         return touchesUsable && !outOfUse ? LotPostingViolation.RetestDue : null;
     }
 
-    private static LotPostingViolation? EvaluateClassic(Lot lot, Guid skuId, SkuLevel skuLevel, MovementType type, DateTimeOffset postingDate)
+    private static LotPostingViolation? EvaluateClassic(Lot lot, Guid skuId, SkuLevel skuLevel, MovementType type, DateTimeOffset postingDate, StockStatus? toStatus)
     {
         if (lot.SkuId != skuId || lot.SkuLevel != skuLevel)
         {
@@ -103,6 +103,13 @@ public static class LotPostingRules
             return null;
         }
 
+        // MOD-0177 CT-R10 (narrow): a held (Blocked / Expired) lot's goods may come BACK from a customer, but only into a held status — returned
+        // recalled goods must be held (KR-H). Never into AVAILABLE; a return with no status named stays refused.
+        if (IsHeldReturn(type, toStatus))
+        {
+            return null;
+        }
+
         if (lot.Status == LotStatus.Blocked)
         {
             return LotPostingViolation.Blocked;
@@ -110,6 +117,10 @@ public static class LotPostingRules
 
         return IsExpiredOn(lot, postingDate) ? LotPostingViolation.Expired : null;
     }
+
+    /// <summary>MOD-0177 CT-R10: <c>CUSTOMER_RETURN</c> into QUARANTINE / QUALITY_INSPECTION / BLOCKED — the only movement a held lot accepts besides CT-D4.</summary>
+    public static bool IsHeldReturn(MovementType type, StockStatus? toStatus)
+        => type == MovementType.CustomerReturn && toStatus is StockStatus.Quarantine or StockStatus.QualityInspection or StockStatus.Blocked;
 
     /// <summary>
     /// A ledger <c>lotId</c> names a registered lot only in the canonical lower-case UUID form the TRACE API returns. The

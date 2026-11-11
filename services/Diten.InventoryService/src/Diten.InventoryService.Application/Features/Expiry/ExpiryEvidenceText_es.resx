@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>Salida fuera de FEFO</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>Bajo la vida útil restante mínima</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>Cambio de caducidad / reanálisis</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>Stock caducado en existencia</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>Abierta</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>Corregida</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>Aceptada con justificación</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>Corregida</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>Regla de salida FEFO</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>Recepción bajo la vida útil restante mínima</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>Cambio de caducidad / reanálisis</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>Horizonte «próximo»</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>Umbral «crítico»</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>Umbral «stock caducado en existencia»</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>Advertir</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>Exigir justificación</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>Cuarentena automática</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>Justificación</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>Justificación + firma electrónica</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>Indicadores resumidos</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>Excepciones del periodo y sus resoluciones</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>Cambios de política del periodo</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>Salidas fuera de FEFO</value></data>
+  <data name="ExpiryPdf.Title" xml:space="preserve"><value>FEFO / Caducidad — Paquete de evidencias</value></data>
+  <data name="ExpiryPdf.Company" xml:space="preserve"><value>Empresa</value></data>
+  <data name="ExpiryPdf.Period" xml:space="preserve"><value>Período</value></data>
+  <data name="ExpiryPdf.Generated" xml:space="preserve"><value>Generado</value></data>
+  <data name="ExpiryPdf.Page" xml:space="preserve"><value>Página</value></data>
+  <data name="ExpiryPdf.Warehouses" xml:space="preserve"><value>Almacenes</value></data>
+  <data name="ExpiryPdf.Types" xml:space="preserve"><value>Tipos</value></data>
+  <data name="ExpiryPdf.All" xml:space="preserve"><value>Todos</value></data>
+  <data name="ExpiryPdf.Kpi" xml:space="preserve"><value>Indicador</value></data>
+  <data name="ExpiryPdf.Value" xml:space="preserve"><value>Valor</value></data>
+  <data name="ExpiryPdf.Compliance" xml:space="preserve"><value>Cumplimiento FEFO</value></data>
+  <data name="ExpiryPdf.Issues" xml:space="preserve"><value>Salidas en el ámbito FEFO</value></data>
+  <data name="ExpiryPdf.Bypassed" xml:space="preserve"><value>fuera de FEFO</value></data>
+  <data name="ExpiryPdf.Critical" xml:space="preserve"><value>Crítico (stock disponible)</value></data>
+  <data name="ExpiryPdf.Approaching" xml:space="preserve"><value>Próximo (stock disponible)</value></data>
+  <data name="ExpiryPdf.Expired" xml:space="preserve"><value>Stock caducado disponible</value></data>
+  <data name="ExpiryPdf.Open" xml:space="preserve"><value>Excepciones abiertas</value></data>
+  <data name="ExpiryPdf.Late" xml:space="preserve"><value>fuera de SLA</value></data>
+  <data name="ExpiryPdf.AvgResolution" xml:space="preserve"><value>Tiempo medio de resolución</value></data>
+  <data name="ExpiryPdf.Hours" xml:space="preserve"><value>h</value></data>
+  <data name="ExpiryPdf.Available" xml:space="preserve"><value>Disponible</value></data>
+  <data name="ExpiryPdf.Held" xml:space="preserve"><value>Retenido</value></data>
+  <data name="ExpiryPdf.None" xml:space="preserve"><value>Sin registros.</value></data>
+  <data name="ExpiryPdf.No" xml:space="preserve"><value>N.º</value></data>
+  <data name="ExpiryPdf.Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ExpiryPdf.Item" xml:space="preserve"><value>Artículo</value></data>
+  <data name="ExpiryPdf.Lot" xml:space="preserve"><value>Lote</value></data>
+  <data name="ExpiryPdf.Warehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="ExpiryPdf.Opened" xml:space="preserve"><value>Apertura (UTC)</value></data>
+  <data name="ExpiryPdf.Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="ExpiryPdf.Resolution" xml:space="preserve"><value>Resolución</value></data>
+  <data name="ExpiryPdf.Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ExpiryPdf.Signature" xml:space="preserve"><value>Id. de firma</value></data>
+  <data name="ExpiryPdf.Signer" xml:space="preserve"><value>Firmante</value></data>
+  <data name="ExpiryPdf.Field" xml:space="preserve"><value>Campo</value></data>
+  <data name="ExpiryPdf.Old" xml:space="preserve"><value>Anterior</value></data>
+  <data name="ExpiryPdf.New" xml:space="preserve"><value>Nuevo</value></data>
+  <data name="ExpiryPdf.By" xml:space="preserve"><value>Modificado por</value></data>
+  <data name="ExpiryPdf.When" xml:space="preserve"><value>Hora (UTC)</value></data>
+  <data name="ExpiryPdf.FirstEligible" xml:space="preserve"><value>Primer lote elegible</value></data>
+  <data name="ExpiryPdf.NameUnreadable" xml:space="preserve"><value>{0} (nombre ilegible)</value></data>
+  <data name="ExpiryPdf.Unreadable" xml:space="preserve"><value>{0} (ilegible)</value></data>
+  <data name="ExpiryPdf.EnglishFallback" xml:space="preserve"><value>Este documento se generó en inglés (el idioma seleccionado no es compatible con el PDF)</value></data>
+  <data name="ExpiryPdf.RequestedLanguage" xml:space="preserve"><value>Idioma solicitado: {0}</value></data>
+</root>

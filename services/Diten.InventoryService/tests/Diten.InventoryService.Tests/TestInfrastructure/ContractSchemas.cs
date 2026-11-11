@@ -34,6 +34,9 @@ public static class ContractSchemas
     public const string StockPresence = "StockPresence";
     public const string ReservationResponse = "ReservationResponse";
 
+    /// <summary>INVENTORY-BUNDLE 1.6.0 (MOD-0173-FU03) <c>getReservation</c>.</summary>
+    public const string ReservationView = "ReservationView";
+
     // LOCATION (v1 frozen + v1.1 owner).
     public const string LocationRef = "LocationRef";
     public const string LocationList = "LocationList";
@@ -134,6 +137,22 @@ public static class ContractSchemas
 
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named QUARANTINE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateQuarantine(string schemaName, string body) => Quarantine.Validate(schemaName, body);
+
+    // FEFO-BUNDLE (MOD-0176, frozen 1.0.0 by WP-0176-F1).
+    private static readonly Contract Fefo = new("fefo.openapi.yaml", "fefo", _ => new Dictionary<string, JsonNode>());
+
+    public static string FefoContractPath => RepoPaths.Contract("fefo.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named FEFO-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateFefo(string schemaName, string body) => Fefo.Validate(schemaName, body);
+
+    // RECALL-BUNDLE (MOD-0177, frozen 1.0.0 by WP-0177-R1).
+    private static readonly Contract Recall = new("recall.openapi.yaml", "recall", _ => new Dictionary<string, JsonNode>());
+
+    public static string RecallContractPath => RepoPaths.Contract("recall.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named RECALL-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateRecall(string schemaName, string body) => Recall.Validate(schemaName, body);
 
     private sealed class Contract
     {

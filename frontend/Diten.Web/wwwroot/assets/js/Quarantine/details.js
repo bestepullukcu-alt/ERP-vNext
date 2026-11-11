@@ -29,7 +29,7 @@
         Quarantined: 'warning', ReviewStarted: 'primary', DecisionSubmitted: 'info', Approved: 'success', Applied: 'success',
         Rejected: 'danger', Cancelled: 'secondary', TimedOut: 'secondary', Withdrawn: 'secondary', ApplyFailed: 'danger',
         FourEyesViolation: 'danger', Blocked: 'danger', ReviewCompleted: 'primary', Disposed: 'info', Unblocked: 'success', SampleRetained: 'primary',
-        NoteUpdated: 'secondary'
+        NoteUpdated: 'secondary', SourceReversed: 'dark', SourceReversalConflict: 'danger'
     };
     const signatureChip = (label, id) => id
         ? `<span class="badge bg-label-primary d-inline-flex align-items-center gap-1 mt-1" title="${esc(id)}"><i class="bx bx-pen"></i>${esc(t(label, String(id).slice(0, 8)))}</span>`
@@ -46,7 +46,7 @@
                 <span class="timeline-point timeline-point-${HISTORY_DOT[h.action] || 'secondary'}"></span>
                 <div class="timeline-event pb-3">
                     <div class="timeline-header mb-1"><h6 class="mb-0">${esc(t('Quarantine.History.' + h.action) || h.action)}</h6><small class="text-muted">${esc(dateTime(h.atUtc))}</small></div>
-                    <div class="small text-muted">${esc(ui.person(h.by))}</div>
+                    <div class="small text-muted">${ui.personHtml(h.by)}</div>
                     ${h.reason ? `<div class="small mt-1">“${esc(h.reason)}”</div>` : ''}
                     ${h.noteChange ? `<div class="small mt-1">${esc(t('Quarantine.Details.History.NoteChange', h.noteChange.previousNoteLength, h.noteChange.noteLength, h.noteChange.previousAttachmentCount, h.noteChange.attachmentCount))}</div>` : ''}
                     <div class="d-flex flex-wrap gap-1">${signatureChip('Quarantine.Details.History.Signature', h.signatureId)}${signatureChip('Quarantine.Details.History.ApproverSignature', h.approverSignatureId)}</div>
@@ -66,7 +66,7 @@
             <td class="small">${esc(t('Quarantine.MovementType.' + m.movementType) || m.movementType)}</td>
             <td>${m.fromStockStatus || m.toStockStatus ? `${ui.stockBadge(m.fromStockStatus)} <i class="bx bx-right-arrow-alt text-muted"></i> ${ui.stockBadge(m.toStockStatus)}` : '—'}</td>
             <td class="text-end" dir="ltr">${esc(qty(m.quantity))}</td>
-            <td class="small">${esc(m.byUserName || '')}</td>
+            <td class="small">${esc(m.byUserName || t('Quarantine.Details.Moves.UnknownUser'))}</td>
         </tr>`).join('');
     };
 
@@ -78,6 +78,7 @@
         const withdraw = ui.byId('qr-wf-withdraw');
         const reapply = ui.byId('qr-wf-reapply');
         [refresh, submit, withdraw, reapply].forEach((b) => show(b, false));
+        const live = ui.holdOpen(hold); // MOD-0175-FU01 DL-2 (AC-26): a Voided hold offers no workflow action at all
         if (!decision) {
             stateBox.innerHTML = '';
             const last = (hold.decisions || []).slice(-1)[0];
@@ -89,8 +90,8 @@
         const wf = decision.workflow || {};
         const rows = [
             [t('Quarantine.Workflow.Decision'), `<span class="font-monospace">${esc(decision.decisionNumber)}</span> · ${esc(t('Quarantine.DecisionKind.' + decision.kind))}`],
-            [t('Quarantine.Workflow.Decider'), esc(ui.person(decision.decider))],
-            [t('Quarantine.Workflow.Approver'), esc(ui.person(wf.approver) || '—')],
+            [t('Quarantine.Workflow.Decider'), ui.personHtml(decision.decider)],
+            [t('Quarantine.Workflow.Approver'), wf.approver?.userId ? ui.personHtml(wf.approver) : '—'],
             [t('Quarantine.Workflow.Instance'), wf.instanceId ? `<span class="font-monospace small">${esc(String(wf.instanceId).slice(0, 8))}</span>` : '—']
         ];
         if (decision.deciderSignatureId) rows.push([t('Quarantine.Workflow.DeciderSignature'), signatureChip('Quarantine.Details.History.Signature', decision.deciderSignatureId)]);
@@ -98,10 +99,10 @@
         body.innerHTML = rows.map(([k, v]) => `<div class="d-flex justify-content-between gap-2 mb-1"><span class="text-muted">${esc(k)}</span><span class="text-end">${v}</span></div>`).join('')
             + (decision.error ? `<div class="alert alert-danger py-2 small mt-2 mb-0">${esc(t('Quarantine.Errors.' + decision.error.code) || decision.error.message || decision.error.code)}</div>` : '');
         const mine = me && decision.decider?.userId && me.toLowerCase() === decision.decider.userId.toLowerCase();
-        show(refresh, ui.can('REFRESHWORKFLOW') && ['Submitted', 'PendingApproval', 'Approved'].includes(decision.state));
-        show(withdraw, !!withdraw && ui.can('WITHDRAWDECISION') && mine && decision.state === 'PendingApproval');
-        show(reapply, !!reapply && ui.can('REAPPLYDECISION') && decision.state === 'ApplyFailed');
-        if (submit && ui.can('SUBMITDECISION') && mine && ['Draft', 'StartFailed'].includes(decision.state)) {
+        show(refresh, live && ui.can('REFRESHWORKFLOW') && ['Submitted', 'PendingApproval', 'Approved'].includes(decision.state));
+        show(withdraw, live && !!withdraw && ui.can('WITHDRAWDECISION') && mine && decision.state === 'PendingApproval');
+        show(reapply, live && !!reapply && ui.can('REAPPLYDECISION') && decision.state === 'ApplyFailed');
+        if (live && submit && ui.can('SUBMITDECISION') && mine && ['Draft', 'StartFailed'].includes(decision.state)) {
             submit.href = `/Quarantine/Decisions/${encodeURIComponent(decision.decisionId)}/Submit`;
             show(submit, true);
         }
@@ -122,7 +123,7 @@
             lotButton.href = ui.lotUrl(h.lot.lotId);
             show(lotButton, true);
         }
-        const open = h.status !== 'Decided';
+        const open = ui.holdOpen(h); // MOD-0175-FU01 DL-2 (AC-26): Voided is terminal — no Karar Ver / İncelemeye al / note edit
         show(ui.byId('qr-d-decide'), ui.can('DECIDE') && open && !h.activeDecision);
         show(ui.byId('qr-d-review'), ui.can('STARTREVIEW') && open && h.reviewState === 'Waiting' && !h.activeDecision);
         // QUARANTINE 1.2.0 (FU-0175-ITEM-03): a submitted decision locks the note until it ends — the explanation replaces the button.
@@ -133,6 +134,7 @@
         const late = ui.byId('qr-d-late');
         show(late, !!h.late && open);
         if (h.late) late.querySelector('span').textContent = t('Quarantine.Details.LateAlert', h.waitDays, h.targetDays);
+        renderReversal(h);
 
         const days = ui.daysUntil(h.lot?.expiryDate);
         set('lot', ui.lotLink(h.lot));
@@ -141,7 +143,8 @@
         set('where', `${esc(h.warehouseLabel || '')}<small class="d-block text-muted">${esc(h.locationLabel || '')}</small>`);
         set('wait', `<span class="${h.late ? 'text-warning' : ''}">${esc(t('Quarantine.Common.Days', h.waitDays))}</span><small class="d-block text-muted">${esc(t('Quarantine.Common.Target', h.targetDays))}</small>`);
         set('source', `${esc(t('Quarantine.Source.' + h.source) || h.source)}<small class="d-block text-muted font-monospace">${esc(h.sourceDocument?.number || h.sourceDocument?.text || '')}</small>`);
-        set('createdBy', `${esc(ui.person(h.createdBy))}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
+        window.RecallBands?.holdSource(null, h); // WP-0177-R7c: "Kaynak: Geri çağırma RC-…" (link only with recall.cases.read)
+        set('createdBy', `${ui.personHtml(h.createdBy)}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
         set('coa', esc(h.lot?.coaReference || '—'));
         set('lotStatus', h.lot?.lotStatus ? `<span class="badge bg-label-secondary">${esc(t('Quarantine.LotStatus.' + h.lot.lotStatus) || h.lot.lotStatus)}</span>` : '—');
         set('note', h.analysisNote ? esc(h.analysisNote) : `<span class="text-muted">${esc(t('Quarantine.Details.Quality.NoNote'))}</span>`);
@@ -151,6 +154,28 @@
         renderMoves(h.movements);
         renderHistory(h.history);
         renderWorkflow(h, data.decision, data.me);
+    };
+
+    /**
+     * MOD-0175-FU01 DL-2 (pack §11, AC-26, AC-28): a Voided hold says why it closed — "Bu kayıt geçersiz: kaynak hareket {REVERSAL no} ile
+     * {tarih} tarihinde {kişi} tarafından geri alındı"; a sourceReversalConflict mark (any status, Voided included) shows its badge, its
+     * cause and the same REVERSAL facts. The sentence is the reader's language (escaped); the person goes through the ONE person rule
+     * (QuarantineUi.personHtml, D-KAR-1: the name, else "unknown user" with the id only as the hover title).
+     */
+    const reversalSentence = (key, ref) => esc(t(key, '\u00010\u0001', '\u00011\u0001', '\u00012\u0001'))
+        .replace(/\u0001(\d)\u0001/g, (m, i) => [esc(ref.reversalTransactionNumber || ''), esc(date(ref.atUtc)), ui.personHtml(ref.reversedBy)][i]);
+    const renderReversal = (h) => {
+        const voidedBox = ui.byId('qr-d-voided');
+        const voided = h.status === 'Voided' ? h.voided : null;
+        show(voidedBox, !!voided);
+        if (voided && voidedBox) voidedBox.querySelector('span').innerHTML = reversalSentence('Quarantine.Details.VoidedBanner', voided);
+        const conflictBox = ui.byId('qr-d-conflict');
+        const mark = h.sourceReversalConflict;
+        show(conflictBox, !!mark);
+        if (mark && conflictBox) {
+            conflictBox.querySelector('[data-qr-conflict-badge]').innerHTML = ui.conflictBadge(h);
+            conflictBox.querySelector('[data-qr-conflict-text]').innerHTML = reversalSentence('Quarantine.Details.ConflictBanner', mark);
+        }
     };
 
     const load = async () => {
@@ -206,7 +231,7 @@
             if (!reply.ok) return failed(t('Quarantine.Workflow.Reapply'), reply);
             ui.toast(t('Quarantine.Workflow.Reapplied'), 'success');
             await load();
-        }, { type: 'warning', subtext: esc(t('Quarantine.Workflow.ReapplyText')), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
+        }, { type: 'warning', subtext: t('Quarantine.Workflow.ReapplyText'), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
     });
 
     ui.byId('qr-wf-withdraw')?.addEventListener('click', () => {
@@ -217,7 +242,7 @@
             await load();
         }, {
             type: 'warning',
-            subtext: esc(t('Quarantine.Workflow.WithdrawText')),
+            subtext: t('Quarantine.Workflow.WithdrawText'),
             confirmButtonText: t('Quarantine.Workflow.Withdraw'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
@@ -236,7 +261,7 @@
             await load();
         }, {
             type: 'info',
-            subtext: esc(t('Quarantine.Details.StartReviewText')),
+            subtext: t('Quarantine.Details.StartReviewText'),
             confirmButtonText: t('Quarantine.Details.StartReview'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,

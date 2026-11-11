@@ -21,6 +21,11 @@ public static class QuarantineContract
     public const string SourceTypeHold = "QUARANTINE_HOLD";
     public const string SourceTypeBlock = "QUARANTINE_BLOCK";
 
+    /// <summary>QUARANTINE 1.3.0 (MOD-0177 CT-R3): the source document of a hold a recall case asked for.</summary>
+    public const string RecallOriginModule = "MOD-0177";
+
+    public const string SourceTypeRecallCase = "RECALL_CASE";
+
     // Record numbers (pack §3).
     public const string HoldPrefix = "KRN";
     public const string DecisionPrefix = "QKR";

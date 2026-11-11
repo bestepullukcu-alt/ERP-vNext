@@ -15,6 +15,9 @@ public sealed class CapturePodHandler(IShipmentRepository repository, RequestCon
         {
             if (s is null) return ShipmentChange.Fail("SHIPMENT_NOT_FOUND", 404);
             if (s.CorrelationId != context.CorrelationId) return ShipmentChange.Fail("INVALID_REQUEST", 400);
+            // MOD-0183 §23.4: no POD while a dispatch attempt is open.
+            if (s.DispatchAttempt?.State == DispatchState.InProgress) return ShipmentChange.Fail(ContractErrorCodes.DispatchInProgress, 409);
+            if (s.DispatchAttempt?.State == DispatchState.CompensationFailed) return ShipmentChange.Fail(ContractErrorCodes.DispatchCompensationFailed, 409);
             if (s.Pod is not null) return ShipmentChange.Fail("POD_ALREADY_CAPTURED", 409);
             if (s.Status is not (ShipmentStatus.Dispatched or ShipmentStatus.InTransit) || s.DispatchedAt is null || b.ReceivedAt < s.DispatchedAt)
                 return ShipmentChange.Fail("INVALID_SHIPMENT_TRANSITION", 422);

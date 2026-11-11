@@ -115,13 +115,15 @@ public sealed class ReturnFormContractTests
     {
         Assert.Equal(new[] { "ShipmentNumber", "Status", "Lines" },
             typeof(ReturnShipmentProjection).GetProperties().Select(p => p.Name).ToArray());
-        Assert.Equal(new[] { "LineNumber", "Quantity", "UomId" },
+        // r10 §35.2 (RB-1): the line gains the product / SKU label and the lot number with their states; no id property.
+        Assert.Equal(new[] { "LineNumber", "Quantity", "UomId", "SkuState", "SkuLabel", "LotState", "LotNumber" },
             typeof(ReturnShipmentLineProjection).GetProperties().Select(p => p.Name).ToArray());
         using var document = JsonDocument.Parse("{\"shipmentNumber\":\"S-1\",\"status\":\"Delivered\",\"lines\":[{\"lineNumber\":\"1\",\"itemId\":\"x\",\"quantity\":\"2.000\",\"uomId\":\"EA\"}],\"lifecycleCorrelationId\":\"55555555-5555-4555-8555-555555555555\"}");
         var projection = ReturnShipmentProjection.From(document.RootElement);
         Assert.Equal("S-1", projection.ShipmentNumber);
         Assert.Equal("Delivered", projection.Status);
-        Assert.Equal(new ReturnShipmentLineProjection("1", "2.000", "EA"), Assert.Single(projection.Lines));
+        var line = Assert.Single(projection.Lines);
+        Assert.Equal(("1", "2.000", "EA", "unavailable", "none"), (line.LineNumber, line.Quantity, line.UomId, line.SkuState, line.LotState));
     }
 
     // ── create form (6 schema fields, no client tightening) ─────────────────────────────────────────────────────
@@ -205,7 +207,7 @@ public sealed class ReturnFormContractTests
     }
 
     [Fact]
-    public void Index_uses_explicit_partial_paths_and_has_no_bulk_or_details_page()
+    public void Index_uses_explicit_partial_paths_and_has_no_bulk_page_and_the_details_page_is_gated()
     {
         var index = Read($"{ViewDir}/Index.cshtml");
         foreach (var partial in new[] { "_Filter.cshtml", "_DataTable.cshtml", "_DetailsQuickView.cshtml", "_CreateEditOffcanvas.cshtml", "_IndexL10n.cshtml" })
@@ -214,7 +216,12 @@ public sealed class ReturnFormContractTests
         }
 
         Assert.DoesNotContain("_BulkActionBar", index);
-        Assert.False(File.Exists(Path.Combine(Root(), ViewDir, "Details.cshtml")));
+        // r10 §35.5 (RB-9, DL-4): the details page exists and draws only _AccessDenied without supplychain.returns.read.
+        var details = Read($"{ViewDir}/Details.cshtml");
+        Assert.InRange(details.IndexOf("@if (!Perms.Has(\"supplychain.returns.read\"))", StringComparison.Ordinal), 0, details.IndexOf("id=\"return-details\"", StringComparison.Ordinal));
+        Assert.Contains("<partial name=\"_AccessDenied\"", details);
+        Assert.Contains("Layout = \"_LayoutTenantShell\"", details);
+        foreach (var state in new[] { "returnDetailsSkeleton", "returnDetailsError", "returnDetailsCards" }) Assert.Equal(1, Count(details, $"id=\"{state}\""));
         var table = Read($"{ViewDir}/_DataTable.cshtml");
         Assert.DoesNotContain("dt-checkboxes", table);
         Assert.Equal(1, Count(table, "data-dt-standard=\"v2\""));
@@ -241,7 +248,9 @@ public sealed class ReturnFormContractTests
         }
 
         // Identical-to-English values are allowed only where the word is genuinely the same in that language.
-        var sameWordAllowList = new HashSet<string>(StringComparer.Ordinal) { "fr:ActionsHeader" };
+        var sameWordAllowList = new HashSet<string>(StringComparer.Ordinal) { "fr:ActionsHeader", "fr:ShipmentStatusException", "tr:LotNumber", "fr:LotNumber" };
+        // tr / fr LotNumber = "Lot" (MOD-0186 r10 §35.2): the word for a production lot is the same in Turkish and French.
+        // fr ShipmentStatusException = "Exception" (7211cf3cc A4: converged to the Shipments source; the French word is the same).
         foreach (var (language, rows) in dictionaries.Where(d => d.Key != "en"))
         {
             foreach (var (key, value) in rows)
@@ -257,7 +266,7 @@ public sealed class ReturnFormContractTests
     }
 
     [Fact]
-    public void Mandatory_keys_and_all_twenty_one_error_codes_are_localized()
+    public void Mandatory_keys_and_all_twenty_five_error_codes_are_localized()
     {
         var english = Resx($"{ResxDir}/ReturnsIndex.en.resx");
         foreach (var key in new[] { "ReturnsTitle", "PageDescription", "AddNewReturns", "RmaNumber", "ShipmentId", "ActionsHeader" }.Concat(ErrorKeys))
@@ -265,18 +274,19 @@ public sealed class ReturnFormContractTests
             Assert.True(english.ContainsKey(key), key);
         }
 
-        Assert.Equal(21, english.Keys.Count(key => key.StartsWith("Err", StringComparison.Ordinal)));
+        Assert.Equal(25, english.Keys.Count(key => key.StartsWith("Err", StringComparison.Ordinal)));
         // One identical safe-not-found text for the Return and the Shipment 404 (pack §32.8).
         Assert.Equal(english["ErrReturnNotFound"], english["ErrShipmentNotFound"]);
     }
 
     [Fact]
-    public void Received_wording_is_a_manual_assertion()
+    public void Received_wording_is_the_stock_posting_receipt()
     {
         var english = Resx($"{ResxDir}/ReturnsIndex.en.resx");
-        Assert.Equal("Received (manual assertion)", english["TargetReceivedLabel"]);
-        Assert.Equal("Receive (manual assertion)", english["ActionReceive"]);
-        Assert.Contains("not a warehouse receipt", english["ReceivedManualNote"]);
+        Assert.Equal("Received", english["TargetReceivedLabel"]);
+        Assert.Equal("Receive", english["ActionReceive"]);
+        Assert.Contains("quarantine", english["ReceivedPostsQuarantineNote"]);
+        Assert.False(english.ContainsKey("ReceivedManualNote"));
         Assert.Contains("not the remaining quantity", english["ReturnLinesHelp"]);
     }
 

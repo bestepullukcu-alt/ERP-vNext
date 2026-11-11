@@ -4,8 +4,9 @@ using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Application.Features.Claims;
 using Diten.SupplyChainService.Domain.Features.Claims;
 using Diten.SupplyChainService.Infrastructure.Features.Claims;
+using Microsoft.Extensions.Logging;
 namespace Diten.SupplyChainService.Api.Features.Claims;
-public sealed class ClaimContextMiddleware(RequestDelegate next)
+public sealed class ClaimContextMiddleware(RequestDelegate next, ILogger<ClaimContextMiddleware> logger)
 {
     public static bool IsClaimPath(HttpContext http) => http.Request.Path.StartsWithSegments("/api/shipment-bundle/claims", StringComparison.OrdinalIgnoreCase);
     private static bool Uuid(string? text, out Guid value)
@@ -50,6 +51,11 @@ public sealed class ClaimContextMiddleware(RequestDelegate next)
         http.Response.Headers["X-Correlation-Id"] = context.CorrelationId.ToString();
         async Task Error(int status, string code)
         {
+            // Row 13 of SOP 18.0 asks for a service-side result signal. Q446 measured 0 result lines for
+            // Claims against R-4c because this middleware logged nothing at all, while Carriers and Returns
+            // each had two. These two lines bring Claims to the same shape; replay is already on the
+            // controller's outcome line (ClaimsController.cs:28).
+            logger.LogInformation("Claim request rejected {Status} {Code} {CorrelationId}", status, code, context.CorrelationId);
             http.Response.StatusCode = status;
             if (status == 401) http.Response.Headers.WWWAuthenticate = "Bearer";
             await http.Response.WriteAsJsonAsync(ClaimContractError.Create(code, status, context.CorrelationId));
@@ -101,7 +107,11 @@ public sealed class ClaimContextMiddleware(RequestDelegate next)
         context.Permissions = http.User.FindAll("permission").Select(c => c.Value).ToHashSet(StringComparer.Ordinal);
         loggingContext.Scope = new(tenant, le, actor);
         loggingContext.CorrelationId = context.CorrelationId;
-        try { await next(http); }
+        try
+        {
+            await next(http);
+            logger.LogInformation("Claim request completed {Status} {CorrelationId}", http.Response.StatusCode, context.CorrelationId);
+        }
         catch (OperationCanceledException) when (http.RequestAborted.IsCancellationRequested) { throw; }
         catch (Exception) when (!http.Response.HasStarted) { await Error(500, "INTERNAL_ERROR"); }
     }

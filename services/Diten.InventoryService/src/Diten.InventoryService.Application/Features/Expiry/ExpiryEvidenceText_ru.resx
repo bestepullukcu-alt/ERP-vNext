@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>Отпуск вне FEFO</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>Ниже минимального остаточного срока</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>Изменение срока годности / переконтроля</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>Просроченный запас в наличии</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>Открыто</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>Принято</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>Исправлено</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>Закрыто</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>Принято с обоснованием</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>Исправлено</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>Правило отпуска FEFO</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>Приёмка ниже минимального остаточного срока</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>Изменение срока годности / переконтроля</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>Горизонт «приближается»</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>Порог «критично»</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>Порог «просроченный запас в наличии»</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>Предупредить</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>Требовать обоснование</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>Запретить</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>Автоматически в карантин</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>Обоснование + эл. подпись</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>Сводные показатели</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>Исключения периода и решения по ним</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>Изменения политики за период</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>Отпуски вне FEFO</value></data>
+  <data name="ExpiryPdf.Title" xml:space="preserve"><value>FEFO / Срок годности — пакет доказательств</value></data>
+  <data name="ExpiryPdf.Company" xml:space="preserve"><value>Компания</value></data>
+  <data name="ExpiryPdf.Period" xml:space="preserve"><value>Период</value></data>
+  <data name="ExpiryPdf.Generated" xml:space="preserve"><value>Создан</value></data>
+  <data name="ExpiryPdf.Page" xml:space="preserve"><value>Страница</value></data>
+  <data name="ExpiryPdf.Warehouses" xml:space="preserve"><value>Склады</value></data>
+  <data name="ExpiryPdf.Types" xml:space="preserve"><value>Типы</value></data>
+  <data name="ExpiryPdf.All" xml:space="preserve"><value>Все</value></data>
+  <data name="ExpiryPdf.Kpi" xml:space="preserve"><value>Показатель</value></data>
+  <data name="ExpiryPdf.Value" xml:space="preserve"><value>Значение</value></data>
+  <data name="ExpiryPdf.Compliance" xml:space="preserve"><value>Соблюдение FEFO</value></data>
+  <data name="ExpiryPdf.Issues" xml:space="preserve"><value>Расходы в рамках FEFO</value></data>
+  <data name="ExpiryPdf.Bypassed" xml:space="preserve"><value>в обход FEFO</value></data>
+  <data name="ExpiryPdf.Critical" xml:space="preserve"><value>Критично (доступный запас)</value></data>
+  <data name="ExpiryPdf.Approaching" xml:space="preserve"><value>Приближается (доступный запас)</value></data>
+  <data name="ExpiryPdf.Expired" xml:space="preserve"><value>Просроченный запас в наличии</value></data>
+  <data name="ExpiryPdf.Open" xml:space="preserve"><value>Открытые исключения</value></data>
+  <data name="ExpiryPdf.Late" xml:space="preserve"><value>с превышением SLA</value></data>
+  <data name="ExpiryPdf.AvgResolution" xml:space="preserve"><value>Среднее время решения</value></data>
+  <data name="ExpiryPdf.Hours" xml:space="preserve"><value>ч</value></data>
+  <data name="ExpiryPdf.Available" xml:space="preserve"><value>Доступно</value></data>
+  <data name="ExpiryPdf.Held" xml:space="preserve"><value>Удержано</value></data>
+  <data name="ExpiryPdf.None" xml:space="preserve"><value>Записей нет.</value></data>
+  <data name="ExpiryPdf.No" xml:space="preserve"><value>№</value></data>
+  <data name="ExpiryPdf.Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="ExpiryPdf.Item" xml:space="preserve"><value>Товар</value></data>
+  <data name="ExpiryPdf.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="ExpiryPdf.Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="ExpiryPdf.Opened" xml:space="preserve"><value>Открыто (UTC)</value></data>
+  <data name="ExpiryPdf.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="ExpiryPdf.Resolution" xml:space="preserve"><value>Решение</value></data>
+  <data name="ExpiryPdf.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="ExpiryPdf.Signature" xml:space="preserve"><value>Идентификатор подписи</value></data>
+  <data name="ExpiryPdf.Signer" xml:space="preserve"><value>Подписант</value></data>
+  <data name="ExpiryPdf.Field" xml:space="preserve"><value>Поле</value></data>
+  <data name="ExpiryPdf.Old" xml:space="preserve"><value>Было</value></data>
+  <data name="ExpiryPdf.New" xml:space="preserve"><value>Стало</value></data>
+  <data name="ExpiryPdf.By" xml:space="preserve"><value>Изменил</value></data>
+  <data name="ExpiryPdf.When" xml:space="preserve"><value>Время (UTC)</value></data>
+  <data name="ExpiryPdf.FirstEligible" xml:space="preserve"><value>Первая подходящая партия</value></data>
+  <data name="ExpiryPdf.NameUnreadable" xml:space="preserve"><value>{0} (имя не прочитано)</value></data>
+  <data name="ExpiryPdf.Unreadable" xml:space="preserve"><value>{0} (не прочитано)</value></data>
+  <data name="ExpiryPdf.EnglishFallback" xml:space="preserve"><value>Этот документ создан на английском языке (выбранный язык не поддерживается в PDF)</value></data>
+  <data name="ExpiryPdf.RequestedLanguage" xml:space="preserve"><value>Запрошенный язык: {0}</value></data>
+</root>

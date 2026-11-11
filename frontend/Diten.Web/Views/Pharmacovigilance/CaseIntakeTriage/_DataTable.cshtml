@@ -2,17 +2,17 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
 
+@* DATA MODE: server — the list component pages in the API: the browser sends start and length, the MVC proxy maps them
+   to pageNumber and pageSize (at most 100) and answers { data: { items, total, filteredTotal } }. Declared on the
+   <table> (data-dt-data-mode) per the golden template. No select-all column and no bulk bar on purpose: a case intake
+   is never bulk-deleted (OD-PVG-10). *@
 <div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
+    @* The shared, shaped placeholder (renders id="skeleton-loader" data-table-skeleton). It is visible from the first
+       paint and hides the table beside it until dt-defaults.js REMOVES it on the first draw. *@
+    <partial name="_TableSkeleton" />
 
     <div class="card-datatable table-responsive">
-        <table id="dt-pvg-case-intake-triage" data-dt-standard="v2" class="datatables-pvg-case-intake-triage table border-top">
+        <table id="dt-pvg-case-intake-triage" data-dt-standard="v2" data-dt-data-mode="server" class="datatables-pvg-case-intake-triage table border-top">
             <thead>
                 <tr>
                     <th></th>

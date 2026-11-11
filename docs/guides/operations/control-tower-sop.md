@@ -65,6 +65,30 @@ records in `docs/records/decisions/2026-10/`):
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
   Control Towers that confirmed it.
 
+Revision r7 (2026-11-01, planlama tarafının iki isteği; öneri ve açık kararlar
+`docs/roadmap/plans/ct-plan-alignment-01/PROPOSAL.md`, `DECISIONS.md`): §20.4/6b eklendi — WP dilimi, durum raporu ve
+kuyruk kapsamı modül dilimiyle (`MOD-nnnn DL-n`) adlandırılır; plan satırıyla eşleşme, plan dilim satırı depoya girene
+kadar koşulludur (plan dosyası depoda değildir, §2.2); bir dilim tek kuyrukta; plandaki sahip blok kayıtla anlaşır,
+"Uses" satırı XMC-001'dir. §22.1'e dilim adı. Yeni kayıt satırlarına uygulanır; var olan satırlar değişmez.
+
+Revision r6 (2026-11-01, sahip kararı; kart S-115…S-120; tasarım `docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`):
+dal onayı — onay ve inceleme satırları CT dalında yazılır ve dağıtım kapısı ile kabul kaydı bunları daldan okur; onay için
+PR açılmaz; ikinci insan modül (ya da dalga) sonundaki tek PR'da ve onaylayan olmak zorunda değildir (§20.4/2, /4, /5, /8).
+İnceleme diyalogla, sonra sahibin seçimi (direkt kabul · bağımsız son bakış · Codex; HIGH'da son bakış varsayılan).
+Modül başına tek sahip sözü «onayla». Takip sayfası ortak şablondan, sormadan (§22.2/2a, /5); her iş satırı tür
+kelimesiyle. Kapanış belge paketi modül PR'ına girer (kart §6).
+
+Revision r5 (2026-10-20, PVG Control Tower testi ve yöneticinin isteği; Codex görüşleri): §17.1'e `Model · Effort
+(istenen / kullanılan)` alanları ve kuralları eklendi — karmaşıklık ve risk ayrı eksenler, başlangıç profili,
+başarısızlıkta önce hata sınıfı, istenen ile kullanılanın kaydı; yalnız 2026-10-15'ten sonra açılan Control Tower'lar
+için. §20.4 (CT-APR-02) eklendi — Module Pack ve DCP onaydan önce bağımsız incelenir, dilim dilim uygulanır; §17.1 ve
+§36.1'e `Kapsanan dilim` alanı. §22.2 (CT-TRK-01) eklendi — capability block iş takip sayfası, pilot (Pharmacovigilance),
+2026-10-21 sahip onayı; kaynak depodur, sayfa görünümdür.
+
+Revision r4 (2026-10-19, yöneticinin hız notu; sahip onayı): §20.3 eklendi — test planı ilk build'den önce donar,
+test bütçesinden önce tek ortam ön kontrolü, kademeli test ve geniş takımın gereksiz yeniden koşulmaması, üst sınırlı yedek
+kapsam ya da ilk hatada dur. Başka bir kural değişmedi.
+
 ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
 v2.3 korunmuş; prompt üretiminin **hedef ajanı adreslememesi** boşluğu kapatılmıştır.
@@ -853,6 +877,8 @@ Default:
 - paralel işler ayrı Agent Lane + ayrı worktree + disjoint scope ile,
 - WIP artırımı CT tarafından risk gerekçesiyle yapılır.
 
+İş paketinin PR'ı merge edildikten sonra worktree'si, temizse ve itilmemiş commit'i yoksa `git worktree remove` ile kaldırılır; kaydedilmemiş değişikliği ya da main'de veya uzak dalda olmayan commit'i varsa kaldırılmaz, CT sahibe bildirir ve sorar.
+
 Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli değilse sırf paralellik için iş bölünmez.
 
 ---
@@ -875,6 +901,8 @@ Agent Lane ID:
 Agent Lane Type: DEV | INS | VER | INT
 Target Agent / Entry Point:   # §6 tablosundan; ör. `@orchestrator` + `/add-module`
 Risk Class:
+Model · Effort (istenen):    # r5 — işin karmaşıklık ekseni; ör. claude-sonnet-5-5 · medium (aşağıdaki kural)
+Model · Effort (kullanılan): # r5 — oturum açılınca ölçülen; istenenden farklıysa gerekçe ve geri dönüş
 
 Target Branch:
 Expected Base HEAD:
@@ -895,10 +923,34 @@ Authority Sources:
 
 Allowed Paths:
 Protected Paths:
+Kapsanan dilim:              # r5 (CT-APR-02) — paketin `Teslim dilimleri` DL-n kimlikleri; `tamamı` yalnız onay satırındaki whole_pack=<WP> ile (§20.4); plan satırıyla eşleşme r7 §20.4/6b-a
 
 Golden-Flow Profile:
 A | B | C
 ```
+
+**r5 — model ve effort (CT-START-04, 2026-10-20; Codex görüşü dahil)**
+
+- **İki ayrı eksen.** İşin karmaşıklığı ve belirsizliği model ile effort'u belirler; iş riski ise gereken inceleme ve
+  onayı (CT-APR-01). Riskli ama hesaplaması kolay bir değişiklik güçlü model istemeyebilir; salt okunur bir mimari
+  denetim ise zor olabilir.
+- **Başlangıç profili** (kanıtlanmış en ekonomik seçim değil; sonuçlara göre ayarlanır): açık ve rutin iş → Sonnet 5.5 ·
+  medium; karmaşık uygulama → Sonnet 5.5 · high; mimari iş ve zor bağımsız denetim → Opus 5.5 · high; mekanik iş →
+  Haiku 5.5 · low.
+- **Başarısızlıkta önce hatayı sınıfla.** İki başarısızlıktan sonra kendiliğinden daha güçlü modele geçilmez: eksik
+  yetki, bağımlılık ya da yanlış kapsam daha güçlü modelle çözülmez. Model yalnız hata akıl yürütme ya da karmaşıklık
+  kaynaklıysa yükseltilir.
+- **İstenen ve kullanılan kaydedilir.** Prompt'a yazmak çalışma ayarını değiştirmez: alt ajan aracının model ve effort
+  parametresi ya da açılan oturumun ayarı ölçülür (oturum bilgisi). Seçim gerekçesi ve varsa geri dönüş yazılır;
+  desteklenmeyen bir seçim sessizce başka modelle değiştirilmez. Takma adlar sağlayıcıya göre farklı modele çözülebilir;
+  araç izin veriyorsa tam model kimliği yazılır.
+- **Kapsam.** 2026-10-15'ten sonra açılan Control Tower'lar için zorunlu; eski Control Tower'lara geriye dönük yük
+  getirmez.
+- **Kule oturumunun kendi modeli ve Fable (S-125, S-129; sahip kararı 2026-11-01).** Yukarıdaki tablo işçi ve alt ajan
+  içindir. Kule sohbetinin modelini sahip sohbeti açarken seçer (öneri Opus 5.5). Bağımsız inceleme, son bakış, araç ve kural
+  değişikliği alt ajanları → Opus 5.5 · high. **Fable hiçbir işte kullanılmaz.** Gerekçe: 2026-11-01'de bir günde haftalık Fable
+  sınırının %44'ü tek kulede harcandı; incelemede Opus'tan üstünlüğü ölçülmedi. Alt ajan açarken model açıkça verilir;
+  sohbetin modeli araçla denetlenmez, Fable'da açık kalan oturumu CT sahibe bildirir.
 
 **v2.5 rules for the two new fields**
 
@@ -1308,6 +1360,154 @@ engelleyici-açık: <sayı>
 - **Prompt kaynaklı yeniden iş (madde 9):** `-R<n>` satırının iş metni `neden: prompt|kod|ortam|kapsam` ile başlar.
   Sayımı CT-OPS-04 yapar.
 
+
+## 20.3 Test planı dondurma ve kademeli test (hız notu, r4)
+
+> Kaynak: yöneticinin hız notu (2026-10-19). Çoğu SOP'de zaten vardı: paralel iş ve tek yazıcı §16.3–§16.5, sözleşme
+> donmadan aşağı akış iş başlamaz §16.4, kapsam değişince dur §19.4, git ön kontrolü §20. Bu bölüm yalnız eksik kalanı
+> ekler. Amaç: aynı onay paketiyle yeniden başlatma döngüsünü azaltmak; onay sınırlarını genişletmez.
+
+**1. Test planı ilk build'den önce donar.** Build ya da test yürüten bir WP'nin prompt'u (§17.1) şunları sayar:
+dokunulacak dosya listesi, koşulacak test projeleri ve filtreleri, ortam kurulumu (Mongo, HTTP host, kuyruk, port),
+her kademenin beklenen sonucu ve durma koşulları. Koşu sırasında kapsam ya da test seçimi eklenmez; ihtiyaç doğarsa
+§19.4 uygulanır.
+
+**2. Test bütçesinden önce tek bir ortam ön kontrolü.** İlk test koşusundan önce bir kez: test bağımlılıkları (paketler,
+`scripts/requirements-tools.txt`), yapılandırma, veri tabanı ve bağlantılar ölçülür. Eksik bağımlılık ya da yanlış
+yapılandırma burada durur; onaylı test bütçesi harcanmadan.
+
+**3. Kademeli test.**
+
+| Kademe | Ne | Ne zaman geçilir |
+|---|---|---|
+| 1 | Etkilenen projelerin build'i | hata yoksa |
+| 2 | Odaklı testler (değişen davranışın testleri) | hepsi geçerse |
+| 3 | Onaylı entegrasyon / geniş koşu | yalnız 1 ve 2 geçtiyse |
+
+Bir değişiklik geniş takımı etkilemiyorsa geniş takım yeniden koşulmaz. Her kademenin çıktısı ve kaynak özetleri
+(`scripts/run_record.py`) partiyle saklanır; bir hata, başarılı kademeler yeniden koşulmadan teşhis edilir.
+
+**4. Onay döngüsünü kapsam genişletmeden azaltmak.** İki seçenekten biri prompt'ta yazılı seçilir:
+(a) olası test fikstürü onarımları önceden sayılır ve **üst sınırı yazılı** küçük bir yedek kapsam olarak onaylanır;
+(b) **ilk hatada dur** kuralı geçerlidir; CT, yakalanan hatadan bir sonraki onarım isteğini hazırlar. Yedek kapsam
+yazılı değilse (b) geçerlidir.
+
+**5. Bağımlılık sırası.** Bağımsız belge işleri paralel hazırlanabilir. Bitmemiş bir sözleşmeye bağlı aşağı akış
+geliştirmesi başlamaz (§16.4).
+
+## 20.4 Onaydan önce bağımsız inceleme ve dilimli uygulama (CT-APR-02, r5)
+
+> Kaynak: yöneticinin isteği (2026-10-20) — Module Pack ve DCP, yazıldıktan sonra ve onaya gitmeden önce bağımsız
+> incelenir; tek seferde uygulanmaz. Tasarım ve Codex görüşleri: `docs/roadmap/plans/ct-apr-02-pack-review/DESIGN.md`.
+> Kural kaydı: `execution/approvals/POLICY-REVIEW-START.md`; dağıtım kapısı (madde 8):
+> `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`. Araçlar: `scripts/pack_approval.py`, `scripts/prompt_gate.py`,
+> `scripts/acceptance_record.py`.
+
+**1. Ne zaman.** Kural başlangıcından sonra eklenen her onay satırı, paketin aynı sürümünün incelemesini ister. Tek
+istisna: değişen her satır muaftır (tarih alanı; `owner` / `reviewer` TBD'den dolduruldu; yalnız boşluk) ve hiçbir risk
+HIGH değildir. Satır sayısı ölçüt değildir. Hiç onay almamış eski bir paket kuralın başladığı andaki sürümüyle
+karşılaştırılır; eski paketlere geriye dönük inceleme yoktur.
+
+**2. Kim inceler.** İnceleme, paketi yazan oturumdan ve paket yazarı ajandan ayrıdır: sahip bilgisayar başındayken ayrı bir
+sohbette, uzaktayken CT içinde sohbet geçmişi olmayan bir alt ajanda yapılır (`reviewer_session` = oturum ya da ajan
+kimliği). İnceleyen kuleyle konuşup düzeltme isteyebilir ve imzalayacağı tam sürümü yeniden okur; "temiz" deyince
+inceleme satırı CT dalına yazılır (dal onayı, kart S-115). Sonra sahip seçer: direkt kabul · bağımsız son bakış (geçmişsiz
+ikinci alt ajan, yalnız inceleme ZIP'i, tek tur) · Codex. Araç riski HIGH ölçüyorsa bağımsız son bakış sahibi beklemeden
+kendiliğinden koşar (sahip «atla» diyebilir); LOW'da varsayılan direkt kabuldür. Codex yalnız sahip seçince (sahip kararı
+2026-11-01, kart S-116; S-113'ün yerine). Her inceleyenin satırı sayılır (madde 4, en kısıtlayıcı okuma).
+Model ve effort §17.1 r5 kuralıyla seçilir (zor bir bağımsız denetim için başlangıç profili Opus · high). Derinlik riske
+göredir: kimlik, kapsam, yetki, bağımlılık, kabul kriterlerinin ölçülebilirliği, Blueprint uyumu ve dilim tablosu. İnceleyici yerel depoyu göremeyebilir (Codex kendisine verilenle çalışır); inceleme isteği, inceleyicinin tam sürümü nasıl okuyacağını adlandırır: sabitlenmiş bir commit'teki itilmiş dal (PR yok) ya da dosyaların SHA-256'lı ZIP'i. İstem yerel worktree erişimi varsaymaz. İncelemeden önce paketi CT değil `module-pack-author` ajanı düzenler; CT'nin önceki incelemeye itirazları sonraki inceleme isteğine eklenir.
+
+**3. Kayıt.** Bulgu dosyası `docs/records/reviews/<kimlik>/<dosya>.md` (biçim: POLICY-REVIEW-START) commit edilir; satırı
+`python3 scripts/pack_approval.py review-row <paket> --findings <dosya> …` üretir ve `execution/approvals/reviews.tsv`'ye
+eklenir. Özetler ve açık ENGEL sayısı dosyadan hesaplanır; elle yazılmaz.
+
+**4. Onaya bağlanma.** `pack_approval.py check`: o sürüm için inceleme yoksa (paket sonra değiştiyse inceleme bayattır),
+herhangi bir inceleme `UYGUN DEĞİL` ise, açık bir ENGEL kaldıysa, bulgu dosyası kayıttan sonra değiştiyse ya da inceleme
+satırı main'e başkasının merge'iyle gelmediyse onay geçmez. **Dal onayı (kart S-115, sahip kararı 2026-11-01):** dağıtım
+kapısı ve kabul kaydı onay ve inceleme satırlarını CT dalından okur (`pack_approval.py` `--deferred` okuması): henüz main'de
+olmayan satır için insan adımı "beklemede" notudur, hata değil; diğer her denetim aynen uygulanır. İnsan adımı satır
+main'e modül PR'ıyla girince ölçülür: PR'ı listedeki, `high = evet`, satırı yazanın kişisi olmayan başka biri birleştirmiş
+olmalıdır (onaylayan olması gerekmez; S-41 kalktı). Doğrudan main'e yazılmış satır her iki okumada da geçersizdir. Sonradan eklenen bir `UYGUN` önceki sonucu ezmez. ENGEL'i
+yalnız onaylayan üstlenir (`kabul — onaylayan`); o zaman onay HIGH sayılır ve CT-APR-01'in yetki ve insan adımı denetimi
+uygulanır. Sıra: bir onayı yalnız onay satırının kendi geçmişindeki (aynı commit dahil) incelemeler ve o andaki bulgu
+dosyaları geçerli kılar; sonradan gelen olumlu inceleme yeni bir onay satırı ister. Bugünkü kararda ise main'deki bütün
+incelemelerin olumsuzları ayrıca uygulanır. Aynı commit'teki inceleme ve onay "aynı sürümün birlikte kabulü"dür. CT inceleme sonucunu paket ve kodla karşılaştırır, itirazlarını kaydeder ve sonucu körü körüne kopyalamaz. Sonuç gelir
+gelmez ham metni, onay beklemeden, worktree'de `docs/records/reviews/<kimlik>/` altına commit'siz taslak olarak yazar;
+oturumun geçici klasörü kayıt yeri değildir (S-19: MOD-0230 sonucu oturum kapanırken neredeyse kayboldu). Taslağın
+bulgu dosyası biçimine çevrilmesi, commit'i ve `reviews.tsv` satırı sahibin onayıyla olur.
+
+**5. Bağımsızlığın sınırı.** İnceleyen, model ve oturum kimlikleri beyandır. Kanıt, kaydın CODEOWNERS incelemesiyle
+main'e girmesidir; bu, bir yapay zekâ incelemesinin gerçekten ayrı bir oturumda yapıldığını kanıtlamaz. Dal onayında (kart
+S-115) bu kanıt dağıtım anında değil modül PR'ı birleşince gelir; onaylayan alanı o ana kadar yalnız sahibin kule
+sohbetindeki «onayla» sözüne ve satırın `note` sütunundaki kayda (`onayla · <kule sohbeti> · <tarih saat>`; onay satırında
+`requested_by` alanı yoktur, araç deferred okumada bu notu ister) dayanır; doğrulanmış ikinci insan modül PR'ının
+birleştirenidir ve PR'ı açan satırın yazarıdır (sahibin kabul ettiği bedel, `docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`).
+
+**6. Dilimli uygulama.** İnceleme isteyen bir Module Pack `## Teslim dilimleri` tablosu (`| DL-1 | ad | bölümler |`), bir
+DCP `## 8.1 Delivery slices` tablosu taşır. WP prompt'u `Kapsanan dilim:` satırını yazar (§17.1, §36.1). Prompt kapısı
+paket bu kurala bağlıysa durdurur: alan yoksa, dilim onaylı sürümde yoksa ya da bütün dilimler tek WP'deyse. İstisna
+yalnız onay satırının `note` alanındaki `whole_pack=<WP>`'dir: onaylayan, o sürüm için o WP'nin paketin tamamını
+almasını onaylar. Eski, kurala bağlı olmayan paketlerde eksik alan yalnız uyarıdır.
+
+**6b. Dilim, plan ve kuyruk hizalaması (r7, 2026-11-01).** Kaynak: planlama tarafının isteği; plan dosyası
+(Capability Planning) depoda değildir ve repository authority değildir (§2.2) — aşağıdaki "plan" maddeleri ancak planın
+ilgili satırı depoya girince kapı olur; o zamana kadar CT yalnız ölçer ve raporlar, dağıtımı plan farkı yüzünden
+durdurmaz.
+- (a) **WP dilimi.** `Kapsanan dilim:` paketin onaylı sürümündeki `Teslim dilimleri` kimlikleridir (madde 6). Plan
+  satırı bir paket dilimi adlandırıyorsa WP'nin dilimi onunla aynıdır; farklıysa CT prompt'tan önce farkı yazar ve
+  sahibe sorar. Plan satırında dilim yoksa (2026-11-01 ölçümü: planda dilim sütunu yok) bu madde koşuludur.
+- (b) **Durum dilim bazında.** Durum, kısa haber ve takip sayfası modül + dilim (`MOD-nnnn DL-n`) ile yazılır; çok
+  modüllü raporda kapsam cümlesi dilimi adlandırır (§22.1). Dilim tablosu olmayan pakette "dilim yok" yazılır.
+- (c) **Kuyruk kapsamı.** 2026-11-01'den sonra eklenen her kayıt satırının `scope`'u teslim ettiği dilimleri adlandırır:
+  DCP diliminde `dcp:<DCP yolu>#<Slice>[, …]` (CAP-001 §8.1; `scripts/ct_route.py` okur), tek modülde
+  `MOD-nnnn DL-a…DL-b` ya da `MOD-nnnn DL-a, DL-c` ile başlar (serbest metindir; araç okumaz, CT ölçer). Var olan
+  satırlar değişmez; değiştirmek sahibin kuyruk onayıyla yeni satır sürümüdür.
+- (d) **Bir dilim, bir kuyruk.** Bir modül dilimi en çok bir kayıtlı kuyruktadır (K15). Onaylı paketi olup hiçbir
+  kuyrukta dilimi olmayan modül raporda "kuyruk yok" diye adıyla yazılır; kuyruk açmak sahibin kararıdır.
+- (e) **Sahip blok.** Kule bir modülü kuyruğuna alırken plandaki sahip bloğunu ve satır türünü (sahip / "Uses") yazar.
+  Plan modülü başka bloğa "Uses" diye bağlıyorsa o modülün dosyası bu kule için başka modüldür (XMC-001). Plan, kayıt
+  ve domain sahipliği (kart §8) farklıysa CT hiçbirini kendiliğinden düzeltmez; farkı sahibe sorar.
+
+**6a. Kural değişince oturum.** Kart ya da SOP'ta değişen bir kural, CT dalını main ile birleştirip dosyayı yeniden
+okuyunca geçerli olur; yeni oturum gerekmez. Skill (`.claude/skills/…`, `.agents/skills/…`) oturum başında yüklenir;
+skill'de değişen bir kural ancak yeni oturumda geçerlidir. GitHub hesap adı değişirse önce
+`execution/approvals/approvers.tsv` güncellenir; yoksa o hesabın onayları tanınmaz.
+
+**7. Üst üste PR'da merge sırası (GitHub).** Bir PR başka bir PR'ın dalı üstüne açıldıysa, alttaki merge edilince
+GitHub üstteki PR'ın onaylarını "taban değişti" diye düşürür (eski onay düşürme ayarı). Sıra: önce üstteki dal güncel
+main ile birleştirilir ("Update branch", merge commit), sonra son itişi yapmayan biri onaylar, onaydan hemen sonra
+"merge commit" ile merge edilir; arada dala ya da main'e başka bir şey girmez (2026-10-20, PR #167). Bir PR dalına
+itmeden önce PR'ın hâlâ açık olduğu ölçülür (`gh pr view <n> --json state`); merge edilmiş bir PR'ın dalına itilen commit
+main'e girmez. Ölçüm önce `git fetch origin` ile güncellenir ve itilen sabit SHA'ya bağlanır (PR durumu bir kilit
+değildir; itişten hemen önce yeniden okunur). Merge'den sonra dal başının main'de olduğu ölçülür (`git merge-base
+--is-ancestor <itilen SHA> origin/main`);
+değilse kalan commit'ler yeni bir PR'la gelir (2026-10-21, PR #176 → #182).
+
+**8. Dağıtım kapısı (S-5).** Kural kaydı `execution/approvals/POLICY-DISPATCH-REVIEW-START.md`; başlangıç, dosyanın
+main'e girdiği ilk-üst commit'tir (dosya silinemez). Ürün WP'sinin her yeni dağıtımı — katı ya da eski her kuyrukta —
+Expected HEAD'deki paket sürümünün **dalda ya da main'de** geçerli incelemesini ister (`prompt_gate.py check`; `--prepare`
+yalnız raporlar; dal onayı, kart S-115, sahip kararı 2026-11-01 — önceki metin "main'deki" idi). Olumsuzlar geniş kümeden gelir (bu sürüm, gövdesi aynı ve muaf uzaklıktaki incelenmiş sürümler; önce
+`reviews.tsv`'nin yalnız-ekleme geçmişi); olumlu kapsama yalnız bu sürümden ya da muaf uzaklıktaki bir sürümden gelir.
+Kural başladığında satırının durum sınıfı `active` olan, modülü bu paketi gösteren, paketi ve satırın kapsamı (`item`
+ve `module`) değişmeyen ve
+başlangıçtan bu yana hiç `active` dışına çıkmamış (kuyruk geçmişi dağıtılan commit'ten ve main'den, yan dallar dahil
+okunur; bir kez `REWORK` ya da `BLOCKED` olan korumayı geri kazanmaz) iş yalnız
+"inceleme yok" şartından korunur; olumsuz inceleme onu da durdurur. `module` sütunu olmayan
+kuyruğun (sce-mvp6) satırları hiç korunmaz; dağıtım yalnız `READY` / `REWORK`'ten başladığı için bu gerçek bir dağıtımı
+etkilemez. Başka sürümlerin olumsuzları yalnız bu sürümün, o olumsuzlardan SONRA gelen ve her birini bulgu özetinin ilk 8
+hanesiyle anan geçen bir kendi incelemesi varsa bilgiye düşer (koşullu; sahip onayı 2026-10-21); bozuk ya da sayılmayan
+bir inceleme satırı da kendi başına olumsuzdur ve adıyla anılmalıdır (özeti 64 hane değilse `reviews.tsv satır N`);
+adlar yalnız bulgu dosyasının `değerlendirilen olumsuz incelemeler: a, b` satırından, tam olarak okunur; yoksa hepsi
+durdurur. Kabulde olağan kapanış (`ACCEPTED`, `DONE`) korumayı düşürmez; kapandıktan sonra yeniden çalışmaya dönmek
+yeniden açılmadır. Kuyruk değişiklikleri squash edilmez (ara durumlar geçmişte kalmalı).
+Kabul edilmiş bir ENGEL, kabul edenin HIGH CT-APR-01 onay satırını ister. Bağlı paket sürümünde olumsuz varsa
+`acceptance_record.py check` kabulü reddeder; başlangıçtan kesin önce olmayan ürün kaydı, kod commit'indeki paket
+sürümüne `module_pack` ile bağlanır ve bu sürüm hem CT-APR-01'le onaylı main sürümü hem de incelenmiş ya da korunan
+başlangıç sürümü olmalıdır. Bozuk `reviews.tsv` geçmişi satır geri eklenerek düzelmez; sahip kararı ister.
+Sığ depo reddedilir. CT-APR-01 onayı değişmez. ENGEL satırı kuralı, nedeni ve sonraki adımı söyler; kuraldan önce açılmış bir
+Control Tower oturumu main'i alır ve yeni oturum açar.
+
 ---
 
 # 21. Adım 8 — AGENT LANE DEVELOPMENT EXECUTION
@@ -1385,6 +1585,7 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 §22 tek bir iş paketini anlatır. **Birden çok modülün durumunu** bildiren rapor ayrıdır ve biçimi
 `.antigravity/rules/status-reporting-and-evidence.md` (REP-001) ile sabittir. Özet:
 
+- Kapsam cümlesi, paketin dilim tablosu varsa dilimi adlandırır (`DL-n: …`; r7, §20.4/6b-b); sütunlar değişmez.
 - Tek tablo, sabit sütunlar: modül · kapsam cümlesi · kanıt seviyesi (§23) · kanıtın yeri (`yol@commit`) ·
   karar (`accepted` · `rejected` · `conditional` ya da `karar yok`) · tamamlanma (§29'daki Done seviyesi ya da
   `yok`; karardan türetilmez, §29.5) · sıradaki tek eksik.
@@ -1395,6 +1596,49 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 - Tabloyu `scripts/status_report.py` üretir; betiğin bulamadığı hücre `kayıt yok` yazar ve CT o satırı `E0` sayar.
 
 Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**; biçim istenir.
+
+## 22.2 CT-TRK-01 — Capability block iş takip sayfası (zorunlu)
+
+> Kaynak: başka bir ekibin önerisi; sahip uyarlanmış biçimi 2026-10-21'de onayladı.
+
+1. **Amaç.** Her capability block'un (DCP / MVP block) kalan işleri tek, işaretlenebilir bir sayfada durur; sahip ve CT
+   aynı listeyi görür.
+2. **Zorunlu (sahip kararı 2026-10-22, S-39).** Pharmacovigilance pilotu işe yaradı; her Control Tower kendi block'u
+   için tek bir iş takip sayfası tutar. Açık bir CT'de sayfa yoksa, main'i aldıktan sonraki ilk uygun adımda önerir.
+2a. **Ne zaman açılır (S-31; S-117 ve S-119 ile değişti, sahip kararı 2026-11-01).** CT sayfayı kule açılışında, "Yer"
+   adımından sonraki ilk adımda **sormadan, ortak şablondan** açar (`docs/guides/operations/ct-tracking-page-template.html`,
+   açma adımları ve veri modeli `ct-tracking-page-template.md`); `sayfa-ac` sözü kalktı, "sırada" diye ertelemez. Block başına tek sayfa; varsa yenisi açılmaz. Açınca
+   depodaki bütün kalan işleri ve bitmiş olanları (geçmiş görünsün) yazar, bir okumayla doğrular, bağlantıyı ve kısa
+   "nasıl kullanılır"ı verir, bağlantıyı 8. maddedeki yere yazar.
+3. **Kaynak depodur.** Sayfa bir görünümdür. CT listeyi depodaki kaynaklardan kurar ve günceller: kuyruk dosyası
+   (`CT-QUEUE.tsv` satırları ve durumları), karar kayıtları (`docs/records/decisions/`), block'un açık kararları ve
+   takipleri, başka ekiplere düşen işler (XMC-001). Çelişkide depo kazanır; CT sayfayı düzeltir.
+4. **Sayfa salt okunurdur (S-43, sahip kararı 2026-10-23; geliştirici isteği).** Sayfada işaretleme, silme ya da düzenleme
+   düğmesi olmaz; listeyi yalnız CT günceller. Veri yazma kuralı yalnız sayfa sahibine izin verir
+   (`db` `rules`: `{path: "items", read: "view", write: "owner"}`, `meta` için de aynı); paylaşılan kişiler okur, yazamaz.
+   Sahip bir değişiklik isterse sohbette söyler; CT önce depoya yazar (karar kaydı, kuyruk durumu), sonra sayfayı günceller.
+   Eski sayfada işaretleme düğmesi varsa CT, main'i aldıktan sonraki ilk uygun adımda düğmeleri kaldırır ve yazma
+   kuralını koyar; sayfada kalmış sahip işaretlerini (`markedOnPage`) bir kez okur ve depoya yazmadan önce sahibe sorar.
+5. **Biçim (S-119, sahip kararı 2026-11-01: tek şablon).** claude.ai Artifact, paylaşılan veritabanı (`db`) yeteneğiyle;
+   adı "<Block adı> İş Takibi"; **her kule aynı şablondan ve aynı veri modelinden** açar
+   (`docs/guides/operations/ct-tracking-page-template.html` ve `.md`; Çalışan kaydı kulesinin tasarımı temel alındı), kendi
+   tasarımını yapmaz. Üstte dilim cetveli (parçaların durumu), bölümler: Şimdi ve sırada · Karar bekleyenler · Sonraki
+   fazlar · Bizim takipler · Başka sahiplerin işi (XMC-001) · Ortak bileşenler · Duraklatılanlar. Her satırda sade başlık
+   önde, **tür kelimesi** (S-120: Belge · Arka uç · Ekran · API · Geçit · Test · Kural · Karar), kod (WP / FU / K / BL)
+   başlığın yanında küçük etiket, bir cümle ayrıntı, kanıt, durum (açık · bekliyor · bitti · duraklatıldı), kimi
+   beklediği ve bitiş tarihi. Sayfa sahibin dilindedir. Eski tasarımlı sayfa aynı bağlantıda şablona geçirilir.
+6. **Gizlilik.** Sayfa ÖZEL başlar; yalnız ekip içinde paylaşılır, herkese açık (public) yapılmaz. Karar notları ve iş
+   listesi herkese açık olmamalıdır.
+7. **CT'nin güncellemesi (istenmeden; sahip "bitti" demek zorunda değildir — S-43).** CT kabulü (K13 /
+   `acceptance_record`) → iş bitti + commit. Yeni prompt → "Şimdi ve sırada". Sahip kararı → "Karar bekleyenler"de
+   kapanır, karar kaydının yolu yazılır. Yeni takip → doğru bölüm. Ayrıca her oturumun başında ve her main
+   birleştirmesinden sonra CT sayfadaki açık işleri depoyla karşılaştırır: PR'ı merge olmuş, kuyruk durumu kapanmış ya da
+   kabul / karar kaydı yazılmış işi kendiliğinden "bitti" yapar ve kanıtını (PR, commit ya da kayıt yolu) yazar.
+   Kanıtı olmayan iş bitti yapılmaz; açık kalır. Yazmalar okunan sürüme sabitlenir.
+8. **Kayıt.** Sayfa bağlantısı block'un kuyruk kaydının not alanına ya da block'un karar kaydına yazılır; sonraki
+   oturumlar aynı sayfayı kullanır, yenisini açmaz.
+9. **Araç yoksa** (Artifact olmayan ajan ya da ortam): aynı liste depoda block'un klasöründe bir Markdown dosyasında
+   onay kutularıyla (`- [ ]` / `- [x]`) tutulur; araç gelince sayfaya taşınır.
 
 ---
 
@@ -2140,6 +2384,7 @@ Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yo
 Görev sınıfı: {ürün · Paket: <pack yolu> | yönetişim · Kapsam kaydı: <docs/records/decisions/… yolu>}
 İzinli yollar: {virgülle ayrılmış yollar / desenler}
 Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
+Kapsanan dilim: {DL-n[, DL-m …] | tamamı}   # CT-APR-02 (§20.4); inceleme almış pakette zorunlu, eski pakette yalnız uyarı
 
 Önce oku (sırayla):
 {authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}

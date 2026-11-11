@@ -1,0 +1,5 @@
+## new tenant G registered with the G7 entries removed (no entitlement)
+HTTP 201
+G=b68ad5aa-104a-4ea4-a3d9-ce4c76b40e19
+tenant 9-ce4c76b40e Admin      0/8  
+tenant 9-ce4c76b40e Viewer     2/8  capacity.read(0) sandop.read(0)

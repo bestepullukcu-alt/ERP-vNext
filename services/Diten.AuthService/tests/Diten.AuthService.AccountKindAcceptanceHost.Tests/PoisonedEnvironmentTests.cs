@@ -70,7 +70,11 @@ public sealed class PoisonedEnvironmentTests
         var contentDir = Path.Combine(root, "content");
         var observedEnvPath = Path.Combine(contentDir, "observed-api-env.txt");
         var fakeDotnetPath = Path.Combine(root, "fake-dotnet.sh");
-        File.WriteAllText(fakeDotnetPath, "#!/bin/sh\nenv > ./observed-api-env.txt\nsleep 60\n");
+        // TEST-HIZ-01: `env > file` creates the file empty before env writes it, and the poll below saw that empty
+        // file on slow CI runners ("observed keys:" empty, 2 of 38 runs). The capture is written under another name
+        // and renamed into place, so the polled name only ever appears complete.
+        File.WriteAllText(fakeDotnetPath,
+            "#!/bin/sh\nenv > ./observed-api-env.partial\nmv ./observed-api-env.partial ./observed-api-env.txt\nsleep 60\n");
         File.SetUnixFileMode(fakeDotnetPath,
             UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 

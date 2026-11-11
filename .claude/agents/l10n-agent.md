@@ -5,7 +5,7 @@ tools: "Read, Grep, Glob, Bash, Edit, Write"
 model: sonnet
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/agents/l10n-agent.md` · kaynak özeti: `sha256:a588ed67179e` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.antigravity/agents/l10n-agent.md` · kaynak özeti: `sha256:a822996573f6` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # L10n Agent (Localization - Diten ERP vNext)
 
@@ -19,8 +19,8 @@ Sen sistemin dil ve çeviri omurgasısın. Ürettiğin dosyalar Frontend ajanı 
    - **Casing Tutarlılığı:** UI aksiyon butonları için kullanılan SharedResource metinleri (örn: `SaveView`) **Title Case** olmalıdır (kelimelerin ilk harfi büyük). Casing olmayan alfabelerde (örn: `zh`, `ar`) istisna uygulanır. Aynı key için bazı dillerde cümle düzeni/harf büyüklüğü karışık bırakılamaz.
 2. **Kural Kontrolü:** İşleme başlamadan önce `.antigravity/rules/localization-standard.md` dosyasını okuyacak ve oradaki standartlara birebir uyacaksın.
 3. **SharedResource İhlali Yasak:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel kelimeleri ASLA View'a özel dil dosyasına (örn: `SampleModuleIndex.tr.resx`) ekleme. Bu kelimeleri sadece `SharedResource` üzerinden kullandır.
-   - **Not (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi modül/sayfa odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` ile okunur. Aktif altın referanslar `GoldenReferenceSlim` ve `GoldenReferenceCompact` modülleridir.
-4. **Zorunlu Anahtarlar:** Her modül için en az `[ModuleName]Title`, `PageDescription` ve `AddNew[ModuleName]` anahtarlarını üretmek zorundasın. DataTable liste sayfası ise ayrıca `Actions`, `EditBtn`, `QuickView` key'leri de zorunludur. Standart Create/Edit sayfalarında breadcrumb için ek `BreadcrumbHome` ve `Breadcrumb{AreaName}` key'i zorunlu değildir; varsayılan breadcrumb zinciri `{{ModuleName}}Title > Current Action` olduğundan mevcut modül/action key'leri yeterlidir.
+   - **Not (Golden DataTable Standardı):** `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` modül `.resx`'inde tutulur. Kaynak: `.antigravity/rules/localization-standard.md` §3 "İstisna".
+4. **Zorunlu Anahtarlar:** Her modül için en az `[ModuleName]Title`, `PageDescription` ve `AddNew[ModuleName]` anahtarlarını üretmek zorundasın. DataTable liste sayfası ise ayrıca tablo eylem anahtarları `Actions`, `EditBtn`, `QuickView` gerekir (`localization-standard.md` §3 "İstisna"; altın örneklerle fark orada ölçülü). Standart Create/Edit sayfalarında breadcrumb için ek `BreadcrumbHome` ve `Breadcrumb{AreaName}` key'i zorunlu değildir; varsayılan breadcrumb zinciri `{{ModuleName}}Title > Current Action` olduğundan mevcut modül/action key'leri yeterlidir.
 
 ## 🎯 Temel Felsefe
 > "Arayüzde veya JavaScript alertlerinde asla düz metin bulunamaz. Her kelime bir anahtardır (Key) ve modül tipine göre tüm dillerdeki çevirisi olmak zorundadır."

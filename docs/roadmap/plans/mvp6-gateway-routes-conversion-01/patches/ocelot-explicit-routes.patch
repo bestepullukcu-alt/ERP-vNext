@@ -1,0 +1,404 @@
+diff --git a/gateway/Diten.ApiGateway/ocelot.json b/gateway/Diten.ApiGateway/ocelot.json
+index 2f1e70759..266f20045 100644
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -6058,40 +6058,365 @@
+       ],
+       "UpstreamScheme": "http"
+     },
+-    {
+-      "DownstreamPathTemplate": "/api/shipment-bundle",
+-      "DownstreamScheme": "http",
+-      "DownstreamHostAndPorts": [
+-        {
+-          "Host": "localhost",
+-          "Port": 5066
+-        }
+-      ],
+-      "UpstreamPathTemplate": "/api/shipment-bundle",
+-      "UpstreamHttpMethod": [
+-        "GET",
+-        "POST",
+-        "OPTIONS"
+-      ],
+-      "UpstreamScheme": "http"
+-    },
+-    {
+-      "DownstreamPathTemplate": "/api/shipment-bundle/{everything}",
+-      "DownstreamScheme": "http",
+-      "DownstreamHostAndPorts": [
+-        {
+-          "Host": "localhost",
+-          "Port": 5066
+-        }
+-      ],
+-      "UpstreamPathTemplate": "/api/shipment-bundle/{everything}",
+-      "UpstreamHttpMethod": [
+-        "GET",
+-        "POST",
+-        "OPTIONS"
+-      ],
+-      "UpstreamScheme": "http"
+-    }
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/shipments",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/shipments",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/transition",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/transition",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/pod",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/pod",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/carriers",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/carriers",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/loads",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/loads",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/loads/{loadId}/transition",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/loads/{loadId}/transition",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/returns",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/returns",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/claims",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/claims",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/shipment-bundle/claims/{claimId}/transition",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/claims/{claimId}/transition",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/sandop-plans",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/sandop-plans",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/snapshots",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/snapshots",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/sign-offs",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/sign-offs",
++        "UpstreamHttpMethod": [
++          "GET",
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
++        "UpstreamHttpMethod": [
++          "POST",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
++        "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      }
+   ],
+   "GlobalConfiguration": {
+     "BaseUrl": "http://localhost:5000"

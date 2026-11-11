@@ -15,6 +15,7 @@ namespace Diten.Platform.Application.Tests.TenantOrganization;
 /// MOD-0288-FU02 — typed values: canonical encoding, one active value per unit+definition, tenant isolation,
 /// compare-and-set, clearing, and the seven governance fields expressed WITHOUT seven new properties.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class OrganizationFieldValueTests
 {
     private static readonly Guid TenantId = Guid.Parse("00000000-0000-0000-0000-0000000000a1");

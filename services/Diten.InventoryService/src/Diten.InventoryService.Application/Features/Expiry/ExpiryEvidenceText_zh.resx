@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>非 FEFO 出库</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>低于最短剩余保质期</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>有效期 / 复检日期变更</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>在库过期库存</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>待处理</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>审查中</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>已纠正</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>附理由接受</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>已纠正</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>FEFO 出库规则</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>收货低于最短剩余保质期</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>有效期 / 复检日期变更</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>“临近”期限</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>“临界”阈值</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>“在库过期库存”阈值</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>警告</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>要求理由</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>阻止</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>自动隔离</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>拒收</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>填写理由</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>理由 + 电子签名</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>汇总指标</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>期间内的异常及其处理</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>期间内的政策变更</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>非 FEFO 出库</value></data>
+  <data name="ExpiryPdf.Title" xml:space="preserve"><value>FEFO / 有效期 — 证据包</value></data>
+  <data name="ExpiryPdf.Company" xml:space="preserve"><value>公司</value></data>
+  <data name="ExpiryPdf.Period" xml:space="preserve"><value>期间</value></data>
+  <data name="ExpiryPdf.Generated" xml:space="preserve"><value>生成时间</value></data>
+  <data name="ExpiryPdf.Page" xml:space="preserve"><value>页</value></data>
+  <data name="ExpiryPdf.Warehouses" xml:space="preserve"><value>仓库</value></data>
+  <data name="ExpiryPdf.Types" xml:space="preserve"><value>类型</value></data>
+  <data name="ExpiryPdf.All" xml:space="preserve"><value>全部</value></data>
+  <data name="ExpiryPdf.Kpi" xml:space="preserve"><value>指标</value></data>
+  <data name="ExpiryPdf.Value" xml:space="preserve"><value>值</value></data>
+  <data name="ExpiryPdf.Compliance" xml:space="preserve"><value>FEFO 合规率</value></data>
+  <data name="ExpiryPdf.Issues" xml:space="preserve"><value>FEFO 范围内的出库</value></data>
+  <data name="ExpiryPdf.Bypassed" xml:space="preserve"><value>绕过 FEFO</value></data>
+  <data name="ExpiryPdf.Critical" xml:space="preserve"><value>临界（可用库存）</value></data>
+  <data name="ExpiryPdf.Approaching" xml:space="preserve"><value>临近（可用库存）</value></data>
+  <data name="ExpiryPdf.Expired" xml:space="preserve"><value>在库过期库存</value></data>
+  <data name="ExpiryPdf.Open" xml:space="preserve"><value>未结例外</value></data>
+  <data name="ExpiryPdf.Late" xml:space="preserve"><value>超出 SLA</value></data>
+  <data name="ExpiryPdf.AvgResolution" xml:space="preserve"><value>平均解决时间</value></data>
+  <data name="ExpiryPdf.Hours" xml:space="preserve"><value>小时</value></data>
+  <data name="ExpiryPdf.Available" xml:space="preserve"><value>可用</value></data>
+  <data name="ExpiryPdf.Held" xml:space="preserve"><value>冻结</value></data>
+  <data name="ExpiryPdf.None" xml:space="preserve"><value>无记录。</value></data>
+  <data name="ExpiryPdf.No" xml:space="preserve"><value>编号</value></data>
+  <data name="ExpiryPdf.Type" xml:space="preserve"><value>类型</value></data>
+  <data name="ExpiryPdf.Item" xml:space="preserve"><value>物料</value></data>
+  <data name="ExpiryPdf.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="ExpiryPdf.Warehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="ExpiryPdf.Opened" xml:space="preserve"><value>开立时间（UTC）</value></data>
+  <data name="ExpiryPdf.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="ExpiryPdf.Resolution" xml:space="preserve"><value>处理结果</value></data>
+  <data name="ExpiryPdf.Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="ExpiryPdf.Signature" xml:space="preserve"><value>签名标识</value></data>
+  <data name="ExpiryPdf.Signer" xml:space="preserve"><value>签署人</value></data>
+  <data name="ExpiryPdf.Field" xml:space="preserve"><value>字段</value></data>
+  <data name="ExpiryPdf.Old" xml:space="preserve"><value>原值</value></data>
+  <data name="ExpiryPdf.New" xml:space="preserve"><value>新值</value></data>
+  <data name="ExpiryPdf.By" xml:space="preserve"><value>修改人</value></data>
+  <data name="ExpiryPdf.When" xml:space="preserve"><value>时间（UTC）</value></data>
+  <data name="ExpiryPdf.FirstEligible" xml:space="preserve"><value>首个合格批次</value></data>
+  <data name="ExpiryPdf.NameUnreadable" xml:space="preserve"><value>{0}（姓名无法读取）</value></data>
+  <data name="ExpiryPdf.Unreadable" xml:space="preserve"><value>{0}（无法读取）</value></data>
+  <data name="ExpiryPdf.EnglishFallback" xml:space="preserve"><value>本文件以英文生成（PDF 不支持所选语言）</value></data>
+  <data name="ExpiryPdf.RequestedLanguage" xml:space="preserve"><value>所请求的语言：{0}</value></data>
+</root>

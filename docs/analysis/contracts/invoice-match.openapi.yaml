@@ -9,7 +9,10 @@ info:
     Tenant + Legal-Entity scoped; server-resolved. Parasal alanlar Decimal (string); float YASAK.
     ASSUMPTION-P2P-01: tolerans POLICY-DRIVEN (toleranceProfileId + qty/price/amount toleransı);
     mismatch → exception queue. Sabit sayısal varsayılan GÖMÜLMEZ (EA/Finance-TBD).
-  version: 1.1.0                    # 1.0.0 → 1.1.0: listInvoices + pack §14 delete/bulk-delete folded in (additive; existing ops unchanged)
+    TUTAR ESASI (1.1.1): lineAmount ve totalAmount VERGİ HARİÇ (net) tutardır; bu sözleşme vergi (KDV vb.) TAŞIMAZ —
+    vergi tutarı, oranı ve brüt toplam AP/Finance alanıdır (MOD-0119). lineAmount = quantity × unitPrice;
+    totalAmount = Σ lineAmount.
+  version: 1.1.1                    # 1.1.0 → 1.1.1: tutar esası açıklaması (net, vergi taşınmaz) + KDV'li örnek + 422 LINE_AMOUNT_MISMATCH (yalnız ekleme; şema değişmedi)
   x-status: FROZEN                  # frozen 2026-09-23 (CT A2); shape stable & policy-driven (x-open-decision = runtime tolerance VALUE, not shape)
   x-owner: MOD-0143
   x-authored-by: control-tower
@@ -47,14 +50,26 @@ paths:
         content:
           application/json:
             schema: { $ref: '#/components/schemas/InvoiceUpsert' }
-            example:
-              supplierId: SUP-2001
-              poId: PO-5001
-              invoiceNumber: "INV-2026-771"
-              currency: TRY
-              lines: [{ poLineId: "3", itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000", unitPrice: "12.5000", lineAmount: "1250.0000" }]
+            examples:
+              temel:
+                summary: "Temel fatura (1.1.0 örneği, değişmedi)"
+                value:
+                  supplierId: SUP-2001
+                  poId: PO-5001
+                  invoiceNumber: "INV-2026-771"
+                  currency: TRY
+                  lines: [{ poLineId: "3", itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000", unitPrice: "12.5000", lineAmount: "1250.0000" }]
+              kdvliFatura:
+                summary: "KDV'li tedarikçi faturası (%20) — yalnız net tutarlar girilir"
+                description: "Kâğıt fatura: net 1250.0000 + KDV %20 250.0000 = brüt 1500.0000 TRY. Bu sözleşmeye yalnız net satır girilir; KDV (250.0000) ve brüt (1500.0000) AP/Finance tarafında (MOD-0119) taşınır. Yanıtta totalAmount = 1250.0000."
+                value:
+                  supplierId: SUP-2001
+                  poId: PO-5001
+                  invoiceNumber: "INV-2026-772"
+                  currency: TRY
+                  lines: [{ poLineId: "3", itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000", unitPrice: "12.5000", lineAmount: "1250.0000" }]
       responses:
-        '201': { description: Fatura yakalandı (henüz eşleşmemiş), content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+        '201': { description: "Fatura yakalandı (henüz eşleşmemiş); totalAmount = Σ net lineAmount", content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
         '404': { $ref: '#/components/responses/UnknownReference' }
         '409': { $ref: '#/components/responses/DuplicateInvoice' }
         '422': { $ref: '#/components/responses/Unprocessable' }
@@ -165,7 +180,9 @@ components:
         itemId: { type: string, format: uuid, description: "MOD-0290 consume" }
         quantity: { $ref: '#/components/schemas/Decimal' }
         unitPrice: { $ref: '#/components/schemas/Decimal' }
-        lineAmount: { $ref: '#/components/schemas/Decimal' }
+        lineAmount:
+          allOf: [{ $ref: '#/components/schemas/Decimal' }]
+          description: "Satır tutarı, VERGİ HARİÇ (net) = quantity × unitPrice. Verilmezse sunucu hesaplar; verilirse quantity × unitPrice'a eşit olmalı (ölçek farkı serbest), değilse 422 LINE_AMOUNT_MISMATCH."
     InvoiceUpsert:
       type: object
       required: [supplierId, poId, invoiceNumber, currency, lines]
@@ -187,7 +204,9 @@ components:
         status: { $ref: '#/components/schemas/InvoiceStatus' }
         currency: { type: string }
         lines: { type: array, items: { $ref: '#/components/schemas/InvoiceLine' } }
-        totalAmount: { $ref: '#/components/schemas/Decimal' }
+        totalAmount:
+          allOf: [{ $ref: '#/components/schemas/Decimal' }]
+          description: "Sunucu hesaplar: Σ lineAmount. VERGİ HARİÇ (net) toplam; vergi bu sözleşmede taşınmaz. Uyarı: tolerance-override ile çözülen faturada satır tutarı PO ile toleransın dışında farklı olabilir; net esası her durumda geçerlidir."
         contractVersion: { type: string }
     MatchOutcome:
       type: object
@@ -237,5 +256,5 @@ components:
       description: Geçersiz durum geçişi (ör. zaten Matched faturaya tekrar match; kapalı exception)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATE, message: "geçersiz durum geçişi", correlationId: req-4 }, contractVersion: v1 } } }
     Unprocessable:
-      description: İş kuralı/validation ihlali
+      description: "İş kuralı/validation ihlali. Kodlar: VALIDATION_FAILED, CURRENCY_MISMATCH, LINE_AMOUNT_MISMATCH (1.1.1: verilen lineAmount ≠ quantity × unitPrice, ör. KDV dahil girilmiş satır)"
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "currency PO ile uyumsuz", correlationId: req-5 }, contractVersion: v1 } } }

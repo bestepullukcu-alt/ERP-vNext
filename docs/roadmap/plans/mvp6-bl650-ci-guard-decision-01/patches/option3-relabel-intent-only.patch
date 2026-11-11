@@ -1,0 +1,15 @@
+diff --git a/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs b/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs
+index 67734495e..d8570f1ce 100644
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/CiServiceTestsGuardTests.cs
+@@ -174,7 +174,9 @@ public class CiServiceTestsGuardTests
+         }
+     }
+ 
+-    // Main sync FIX1 (CT decision D): no row starts a job-local mongod and no step hands the tests a Mongo address.
++    // Main sync FIX1 (CT decision D): the workflow TEXT names no job-local mongod and no Mongo address (BL-650:
++    // this is what the rule actually measures — a row may still start one from a scripts/test-env/ script, as
++    // planning-tests does; that is unmeasured here by decision, not by oversight).
+     // Every service test owns its mongod (DITEN_TEST_MONGOD): Platform's PlatformTestMongo, MDM's MdmTestMongo (which
+     // ignores MDM_TEST_MONGO by design), Auth's owned replica set. A returning address variable would point a test at a
+     // server it did not start — the shape BL-595 removed — so any of them is red here. PLATFORM_COMPOSITION_GUARD_MONGO_URI

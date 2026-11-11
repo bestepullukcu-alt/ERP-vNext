@@ -16,6 +16,7 @@ Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-1
 | yayin-izi | c | yazıcı | IInternalPublishedRevisionStore.PublishAsync |
 | gecersiz-kilma-izi | c | yazıcı | IInternalRevisionInvalidator.InvalidateAsync |
 | geri-donus-izi | c | yazıcı | IRollbackDraftStore.CreateAsync |
+| mrp-lead-time-izi | c | yazıcı | ILeadTimeMutationStore.ExecuteAsync |
 
 > `ReviewHistoryImportBatchCommand`: durum ve karar izi tek Mongo belge güncellemesindedir; `HistoryImportMongoIntegrationTests` karar/audit ve hata yollarını sınar. İz görünürlüğü bekliyor (dilim: S1).
 > `AcceptDemandHistoryRowsCommand`: satır ve kabul izi tek Mongo transaction'ındadır; `AcceptedDemandHistoryMongoIntegrationTests` audit yazma hatasında sıfır kabulü sınar. İz görünürlüğü bekliyor (dilim: S1 tarayıcı kanıtı).
@@ -27,6 +28,7 @@ Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-1
 > `PublishDemandRevisionCommand`: `PublishedRevisionMongoIntegrationTests.Publish_AuditFailure_RollsBackStateSnapshotSlotAndOutbox`; iz görünürlüğü bekliyor (dilim: S3).
 > `InvalidateDemandRevisionCommand`: `InvalidationMongoIntegrationTests.Invalidate_AuditCollision_RollsBackStateSlotAndOutbox`; iz görünürlüğü bekliyor (dilim: S3).
 > `RollbackDemandRevisionCommand`: `RollbackDraftMongoIntegrationTests.Rollback_AuditWriteFailure_RollsBackAllNewDocuments`; iz görünürlüğü bekliyor (dilim: S3).
+> MOD-0189 `LeadTimeCommand` (`Create`, `Revise`, `Submit`, `Approve`, `Reject`): `LeadTimeMongoStore.ExecuteAsync` iş kaydı, tekrar isteği alındısı ve append-only yerel audit'i aynı Mongo transaction'ında yazar. `MrpLeadTimeMongoIntegrationTests.AuditFailure_RollsBackEveryCommand_AndItsReceipt` beş komutun her birinde audit hatasıyla sıfır yeni iş etkisini ölçer. Geçici AUD-001 c yolu merkezi audit değildir; iz görünürlüğü bekliyor (dilim: MOD-0189 kullanıcı yüzeyi), BL-501 bekliyor (merkezi ekip, MVP'ler sonrası).
 > Her komut için BL-501 bekliyor (merkezi ekip, MVP'ler sonrası). `CreatePlanningCycleCommand` ve `CreateDemandHistoryImportBatchCommand` henüz işlem-içi audit yazmaz; aşağıda bilinen borçtur.
 
 ## İstisnalar

@@ -20,6 +20,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// still race themselves (an edit in one tab, a withdrawal in another); an unconditional rewrite then brought the
 /// withdrawn text back.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskCommentVersionTests
 {
     private static readonly Guid Mentioned = Guid.Parse("5c000000-0000-4000-8000-000000000001");

@@ -78,6 +78,11 @@ public sealed class LoginOnlyEndpointGuardTests
     {
         "InternalAuditController",
         "InternalBusinessReferenceDataController",
+        // MOD-0022 CT-D12 / WP-MVP1-SEC-ESIGN1 — POST api/internal/esign/actions/register (ESIGN-BUNDLE §4.23). Caller: a consumer
+        // module registering its signable actions at start-up (e.g. InventoryService MOD-0175 quarantine actions), service to service.
+        // Gate: X-Internal-Api-Key compared in fixed time with AuthService:InternalApiKey, fail closed when unset or absent — checked
+        // before the body is read (InternalESignActionsRegisterAuthTests). Not routed by the Gateway: no browser or tenant token reaches it.
+        "InternalESignActionsController",
         "InternalModuleRegistrationController",
         "InternalPlatformAdministratorsController",
         "InternalPpmEntitlementDecisionController",
@@ -120,7 +125,18 @@ public sealed class LoginOnlyEndpointGuardTests
          * credential, no token, both tokens — the strict mediator is never called) and
          * A_body_outside_the_contract_is_400_before_dispatch. Sabotage (executor bypassed) red on the first.
          */
-        "InternalItemUniversalReferenceDataController"
+        "InternalItemUniversalReferenceDataController",
+        /*
+         * MOD-0040-FU02 (RCS-001 shared record-code service) — POST api/internal/record-codes/allocate. Caller: a consumer
+         * service (FinanceTreasury, MDM) on behalf of the user whose token it forwards; not routed by the Gateway. Anonymous to
+         * the framework, gated by TrustedRecordCodeRequestExecutor: body ≤ 4 KB → three credential headers exactly once → the
+         * consumer credential (closed binding list) → no X-Tenant-Id → the forwarded token validated under the JWT bearer
+         * scheme → a tenant_user with one tenant_id and one sub. Proof, each refusal a named test with the handler never
+         * reached: TrustedRecordCodeRequestExecutorRefusalTests (size, missing / duplicated header, unknown identifier, wrong
+         * secret, revoked, wrong audience, wrong consumer, invalid configuration, no / invalid token, X-Tenant-Id, no tenant /
+         * subject, actor type not tenant_user). The later steps' refusals arrive with those steps (pack AC-41).
+         */
+        "InternalRecordCodesController"
     };
 
     /// <summary>
@@ -290,6 +306,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
     private static bool IsKeyGated(MethodInfo action)
         => action.IsDefined(typeof(HasPermissionAttribute), true)
+           || action.IsDefined(typeof(HasAnyPermissionAttribute), true) // WP-MVP1-SEC-ESIGN1: any one of the declared keys
            || action.DeclaringType!.IsDefined(typeof(HasPermissionAttribute), true)
            || action.IsDefined(typeof(RequiresExplicitPermissionAttribute), true);
 

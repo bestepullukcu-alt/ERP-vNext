@@ -17,7 +17,7 @@ public sealed class CreateShipmentHandler(IShipmentRepository repository, Reques
             SourceDocumentId = b.SourceDocumentId.Trim(),
             WarehouseReferenceId = b.WarehouseReferenceId.Trim(),
             ShipToReference = b.ShipToReference.Trim(),
-            Lines = b.Lines.Select(x => x with { LineNumber = x.LineNumber.Trim(), UomId = x.UomId.Trim() }).ToArray()
+            Lines = b.Lines.Select(x => x with { LineNumber = x.LineNumber.Trim(), UomId = x.UomId.Trim(), IssueTransactionId = null }).ToArray()
         };
         var result = await repository.MutateAsync(context.Scope, null, "create", context.IdempotencyKey, RequestFingerprint.For(normalized), context.CorrelationId, _ =>
         {
@@ -36,12 +36,14 @@ public sealed class CreateShipmentHandler(IShipmentRepository repository, Reques
                 SourceDocumentId = normalized.SourceDocumentId,
                 WarehouseReferenceId = normalized.WarehouseReferenceId,
                 ShipToReference = normalized.ShipToReference,
+                CustomerRef = b.CustomerRef,
                 PlannedShipAt = b.PlannedShipAt,
                 PlannedDeliverAt = b.PlannedDeliverAt,
                 Status = ShipmentStatus.Draft,
                 CorrelationId = context.CorrelationId,
                 LifecycleCorrelationId = context.CorrelationId,
-                Lines = normalized.Lines.Select(x => new ShipmentLine(x.LineNumber, x.ItemId, x.SkuId, x.Quantity, x.UomId, x.InventoryReferenceId)).ToArray()
+                Lines = normalized.Lines.Select(x => new ShipmentLine(x.LineNumber, x.ItemId, x.SkuId, x.Quantity, x.UomId, x.InventoryReferenceId)
+                { SkuLevel = x.SkuLevel, LotId = x.LotId, FromLocationId = x.FromLocationId, FefoBypassReason = x.FefoBypassReason }).ToArray()
             };
             return new ShipmentChange(shipment, null, 201, now);
         }, ct);

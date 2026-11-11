@@ -36,6 +36,8 @@ public static class QuarantineServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System); // the applier's in-flight grace clock (tests pass their own)
         services.AddScoped<QuarantineOutcomeApplier>();
         services.AddScoped<QuarantineStockActions>();
+        // MOD-0177 R3 (CT-R2): the recall's in-process port into quarantineStock (mode Manual, origin MOD-0177 / RECALL_CASE)
+        services.AddScoped<Application.Features.Recall.Ports.IRecallQuarantineRequester, Application.Features.Quarantine.Services.QuarantineRecallRequester>();
         services.AddScoped<QuarantineDecisionChecks>();
         services.AddScoped<QuarantineReads>();
         services.AddScoped<QuarantineWorkflowReconciler>();
@@ -56,6 +58,17 @@ public static class QuarantineServiceCollectionExtensions
         services.Configure<QuarantineSweeperOptions>(configuration.GetSection(QuarantineSweeperOptions.SectionName));
         services.AddSingleton<QuarantineIntakeSweeper>();
         services.AddHostedService<QuarantineIntakeSweeperHostedService>();
+
+        // MOD-0175-FU01 §8.2: a reversed source closes / marks its record — the post-commit observer (fast path) + the record-based sweep.
+        services.AddScoped<QuarantineSourceReversal>();
+        services.AddScoped<IPostedMovementObserver, QuarantineSourceReversalObserver>();
+        services.AddScoped<QuarantineSourceReversalFeed>();
+        services.AddScoped<QuarantineReversalReads>();
+        services.AddSingleton<QuarantineSourceReversalSweeper>();
+        services.AddHostedService<QuarantineSourceReversalSweeperHostedService>();
+        // Q-03 = A: the source-reversal commands' central record is filed under the System actor. Registered here, before
+        // AddCentralAudit (Program.cs), so this behavior wraps CentralAuditBehavior and the frame is open when its record begins.
+        services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(QuarantineSystemActorBehavior<,>));
 
         // Q4 (KQ-H, CT-Q16): the retest hold — sweeper (start + periodic, TimeProvider) and the one-lot refresh of a retest release.
         services.AddScoped<RetestHoldSweeper>();

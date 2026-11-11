@@ -912,6 +912,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>İçerik Seti</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Uygunluk</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Ziyaret Sıklığı Politikası</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Vakalar</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Tüketim Beyanları</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Panel</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Tarih Değişiklikleri</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Tatbikatlar</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Etkinlik Kontrolleri</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Kanıtlar</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>İstisnalar</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Lot Durumu</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Bildirimler</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Politikalar</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Karantina İstekleri</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Fiziksel Ayırmalar</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>İzleme</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Lokasyon Rolleri</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Paketler</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Ürünler</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Müşteri Hesabı</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Kampanya</value></data>
@@ -1211,6 +1227,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP İş Akışı ve Onaylar</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP Planları</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Kapasite Planlama</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Kapasite Planları</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>
@@ -1232,6 +1252,58 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-İmza Politikası</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>İmza Anlamları</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>İmza Örneği Onayları</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Son Kullanma / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO Paneli</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO Sırası</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>İstisna Kutusu</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>İstisna Detayı</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Raf Ömrü Kuralları ve Ayarlar</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Geri Çağırma İzleme</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Geri Çağırma Vakaları</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Geri Çağırma Vakası</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Tatbikat Planlayıcı</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Geri Çağırma Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Geri Çağırma Ayarları</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>Malzeme İhtiyaç Planlaması ve İkmal</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Güvenlik Stoğu Optimizasyonu</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Depo Operasyonları</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Yerleştirme Görevleri</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Depo Lokasyon Rolleri</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Outbound Sevkiyatlar</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Toplama Görevleri</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Paketleme</value>
+  </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Kapasite Planı Senaryoları</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP Planı Onayları</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP Planı Anlık Görüntüleri</value>
+  </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Sayım</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Sayımlar</value>
+  </data>
 </root>

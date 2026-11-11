@@ -7,8 +7,11 @@ using Diten.PlanningService.Application.Features.DemandPlanning.Cycles;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 using Diten.PlanningService.Application.Features.DemandPlanning.ForecastRuns;
 using Diten.PlanningService.Application.Features.DemandPlanning.ManualDrafts;
+using Diten.PlanningService.Application.Features.Mrp;
+using Diten.PlanningService.Api.Features.Mrp;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
 using Diten.PlanningService.Persistence.Features.DemandPlanning;
+using Diten.PlanningService.Persistence.Features.Mrp;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -28,7 +31,8 @@ public static class DemandPlanningServiceCollectionExtensions
         "demand.forecast-policies.update", "demand.forecast-runs.create",
         "demand.drafts.create", "demand.drafts.update", "demand.plans.review",
         "demand.plans.publish", "demand.plans.invalidate", "demand.plans.consume",
-        "demand.audit.read"
+        "demand.audit.read", "mrp.lead-times.create", "mrp.lead-times.update",
+        "mrp.lead-times.submit", "mrp.lead-times.review", "mrp.runs.read"
     ];
 
     public static IServiceCollection AddDemandPlanningFeature(
@@ -87,6 +91,16 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
 
         services.AddSingleton<DemandPlanningMongoContext>();
+        services.AddScoped<ILegalEntityScopeReader, MdmLegalEntityScopeReader>();
+        services.AddScoped<ILeadTimeAuthority, MdmLeadTimeAuthority>();
+        services.AddScoped<IMrpInventoryReader, InventoryAvailabilityReader>();
+        services.AddScoped<IMrpApprovedSafetyStockReader, SafetyStockQuantityReader>();
+        services.AddSingleton<IMrpPublishedDemandReader, MrpPublishedDemandReader>();
+        services.AddSingleton<IMrpApprovedLeadTimeReader, MrpApprovedLeadTimeReader>();
+        services.AddScoped<MrpLiveCalculation>();
+        services.AddSingleton<LeadTimeMongoContext>();
+        services.AddSingleton<ILeadTimeAuditAppender, MongoLeadTimeAuditAppender>();
+        services.AddSingleton<ILeadTimeMutationStore, LeadTimeMongoStore>();
         services.AddSingleton<ManualDraftMongoStore>();
         services.AddSingleton<IManualDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());
         services.AddSingleton<IForecastDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());
@@ -119,6 +133,8 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddHttpClient("DemandGateway", client => client.BaseAddress = new Uri(
             configuration["Upstream:GatewayBaseUrl"] ?? "http://127.0.0.1:5000/"));
+        services.AddHttpClient("SafetyStockService", client => client.BaseAddress = new Uri(
+            configuration["Upstream:SafetyStockBaseUrl"] ?? "http://127.0.0.1:5069/"));
         services.AddScoped<LiveHistoryImportReferences>();
         services.AddScoped<IHistoryImportScopeAuthority>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());
         services.AddScoped<IHistoryRowReferenceChecker>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());

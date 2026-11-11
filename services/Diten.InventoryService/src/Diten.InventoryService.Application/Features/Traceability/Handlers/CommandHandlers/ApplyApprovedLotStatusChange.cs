@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Traceability.Services;
 using Diten.InventoryService.Domain.Traceability.Entities;
@@ -5,6 +6,7 @@ using Diten.InventoryService.Domain.Traceability.Enums;
 using Diten.InventoryService.Domain.Traceability.Repositories;
 using Diten.InventoryService.Domain.Traceability.Rules;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Traceability.Handlers.CommandHandlers;
 
@@ -43,7 +45,11 @@ public interface IApprovedLotChanges
 /// status past the gate, and it needs the id of an APPROVED decision of THIS lot. No HTTP route exists; the MOD-0175 apply engine
 /// sends it in-process.
 /// </summary>
-public sealed record ApplyApprovedLotStatusChangeCommand(Guid DecisionId, Guid LotId) : IRequest<Response<LotRefDto>>;
+public sealed record ApplyApprovedLotStatusChangeCommand(Guid DecisionId, Guid LotId) : IRequest<Response<LotRefDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => ForLotSerial("LifecycleTransition", "Lot");
+    public Guid? CentralAuditEntityId(object? response) => LotId;
+}
 
 /// <summary>
 /// Applies an approved lot change in ONE lot transaction: the new retest date (one <c>Updated</c> row, field <c>retestDate</c>) and the

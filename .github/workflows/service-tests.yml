@@ -70,11 +70,15 @@ jobs:
           # WP-CI-SERVICE-TESTS-04 (BL-604 class A): the other services' test projects that are green on a clean tree
           # (measured, scratchpad cf3-measure.log). Only DevEnablement needs a mongod — its own, via
           # DITEN_ITEST_MONGOD_BIN_DIR (EphemeralMongo); the rest need nothing outside the process. Not yet here, each with
-          # its reason: the guard's NotInThisJob (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM).
+          # its reason: the guard's NotInThisJob (HCM, MG Integration / Architecture, PPM).
           - suite: bb-secrets
             project: services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj
           - suite: bb-email
             project: services/Diten.Building.Blocks/tests/Diten.BuildingBlocks.Email.Tests/Diten.BuildingBlocks.Email.Tests.csproj
+          # MVP-1 SYNC3 (BL-501, WP-MVP1-AUDIT1): the shared central-audit forwarder; in-memory outbox + fake Platform, no
+          # mongod (the Mongo store itself runs in inventory-tests over its own replica set).
+          - suite: bb-central-audit
+            project: services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests/Diten.BuildingBlocks.CentralAudit.Tests.csproj
           - suite: devenablement-api
             project: services/Diten.DevEnablementService/tests/Diten.DevEnablementService.Api.Tests/Diten.DevEnablementService.Api.Tests.csproj
           - suite: mg-tests
@@ -97,10 +101,43 @@ jobs:
           # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
           - suite: inventory-tests
             project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
+          # Owner decision 2026-11-02: Enterprise Strategy's two projects, green after the default-permission fix on this
+          # branch (138/138 and 4/4); they need nothing outside the process (no git, no mongod).
+          - suite: es-app
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj
+          - suite: es-e2e
+            project: services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj
+          - suite: crm-app
+            project: services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (HR is the owner's module): MOD-0251's Application tests left NotInThisJob. The
+          # repository test starts its OWN mongod from DITEN_TEST_MONGOD (TestInfrastructure/DisposableHcmMongo.cs) instead
+          # of the shared 27017, and SharedMongoGuardTests keeps that URI out of the project.
+          - suite: hcm-app
+            project: services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (Management Governance is the owner's: MOD-0354 / MOD-0355 / MOD-0357): its
+          # integration tests left NotInThisJob. Their own mongods come from DITEN_TEST_MONGOD
+          # (TestInfrastructure/MongodBinary.cs) instead of a fixed /opt/homebrew path (96/96 locally). The architecture
+          # tests stay out: see NotInThisJob in CiServiceTestsGuardTests.
+          - suite: mg-itest
+            project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests
             project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
+          # WP-LANE-MAIN-SYNC-05 (owner decision 2026-10-16) / MVP-6 plan v9.9: SCE / MVP-6's own suite. It needs a
+          # single-member REPLICA SET with enableTestCommands=1 (ShipmentSchema refuses a standalone; the CapacityPlans /
+          # SandopPlans tests set fail points) and reads eight fail-closed variables (Q131a: no fallback port), all
+          # provided by supplychain-ci-mongo.sh below. Its one skip, the Claims restart child, is allow-listed: its
+          # parent test runs it twice in this job.
+          - suite: supplychain-tests
+            project: services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj
+          # SafetyStock's Mongo tests start and stop their own replica set from DITEN_TEST_MONGOD.
+          - suite: safety-stock-calculation
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Calculation.Tests/Diten.SafetyStockService.Calculation.Tests.csproj
+          - suite: safety-stock-policy-state
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.PolicyState.Tests/Diten.SafetyStockService.PolicyState.Tests.csproj
+          - suite: safety-stock-read
+            project: services/Diten.SafetyStockService/tests/Diten.SafetyStockService.Read.Tests/Diten.SafetyStockService.Read.Tests.csproj
           # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
           - suite: gateway
             project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
@@ -218,6 +255,10 @@ jobs:
         if: matrix.suite == 'planning-tests'
         run: bash scripts/test-env/mod0188-ci-mongo.sh start
 
+      - name: Start owned Mongo (SupplyChain)
+        if: matrix.suite == 'supplychain-tests'
+        run: bash scripts/test-env/supplychain-ci-mongo.sh start
+
       # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
       - name: Test
         run: |
@@ -233,6 +274,10 @@ jobs:
       - name: Stop owned Mongo (Planning)
         if: always() && matrix.suite == 'planning-tests'
         run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+
+      - name: Stop owned Mongo (SupplyChain)
+        if: always() && matrix.suite == 'supplychain-tests'
+        run: bash scripts/test-env/supplychain-ci-mongo.sh stop
 
       - name: Upload test results
         if: always()
@@ -352,3 +397,24 @@ jobs:
           name: test-results-${{ matrix.suite }}
           path: ${{ runner.temp }}/test-results
           if-no-files-found: warn
+
+  # One check name for branch protection (owner decision 2026-11-02): the matrix gives every suite its own check name,
+  # so the required check is this job. It is green only when both suite jobs above ended in success; failure,
+  # cancelled and skipped are all red.
+  service-tests-result:
+    name: service-tests result
+    if: always()
+    needs: [service-tests, service-tests-macos]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Every suite passed
+        env:
+          LINUX: ${{ needs.service-tests.result }}
+          MACOS: ${{ needs.service-tests-macos.result }}
+        run: |
+          echo "linux: $LINUX, macos: $MACOS"
+          case "$LINUX/$MACOS" in
+            success/success) echo "Bütün test takımları geçti." ;;
+            *) echo "En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır."; exit 1 ;;
+          esac

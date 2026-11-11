@@ -165,6 +165,7 @@ public sealed class TaskTypeReviewMeetingRequirementTests
 /// change touches no task document.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TaskTypeReviewMeetingRequirementMongoTests
 {
     private const string Field = nameof(TaskType.ReviewMeetingRequirement);

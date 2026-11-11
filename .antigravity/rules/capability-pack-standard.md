@@ -74,13 +74,18 @@ Her Delivery Capability Pack en az şu bölümleri içerir:
 19. Future follow-ups
 20. Audit and reconciliation notes
 
-**İsteğe bağlı — `## 8.1 Delivery slices` (yalnız yeni Control Tower'ların yönlendirmesi için).** §8'in teslim sırası
+**`## 8.1 Delivery slices` — CT-APR-02'den sonra inceleme isteyen DCP'de zorunlu, diğerlerinde isteğe bağlı.** DCP tek
+seferde uygulanmaz; tek dilimli bir DCP yalnız onay satırında `whole_pack=<WP>` ile geçer (`scripts/pack_approval.py`).
+Ayrıca yeni Control Tower'ların yönlendirmesi için kullanılır. §8'in teslim sırası
 Control Tower'lara bölüştürülecekse §8'in altına bu bölüm eklenir. Başlıktan sonraki ilk dolu satır tablonun başlığıdır;
 her satır bir dilimdir: `Slice` (büyük harf, rakam, `-`) ve `Kapsam` (virgüllü `MOD-nnnn` / `MOD-nnnn-FUn` listesi; WP
 ve kişi yazılmaz). Dilimi bir kuyruk teslim eder: kayıt satırının (`execution/delivery/ct-queue-registry.tsv`) `scope`
 alanı `dcp:<DCP dosya yolu>#<Slice>` ile başlar — DCP kimliği değil yol, çünkü aynı kimlik birden çok dosyada olabilir.
 Okuyan araç `scripts/ct_route.py`'dir. Bölümü olmayan DCP'ler ve önekle başlamayan eski `scope` metinleri değişmez. Bu
-bölüm yeni bir durum eklemez; yetki §5'teki `status`'tan gelir (`approved` ve sonrası).
+bölüm yeni bir durum eklemez; yetki §5'teki `status`'tan gelir (`approved` ve sonrası). 2026-11-01'den sonra yazılan
+tabloda `Not` hücresi dilimin hizmet ettiği plan MVP'sini (ör. `BLK-10-MVP3`) ya da `plan satırı yok` yazar; başlık
+`| Slice | Kapsam | Not |` aynen kalır (araç başlığı birebir okur). Tek modül kuyruğu `scope`'u `MOD-nnnn DL-a…DL-b`
+ile adlandırabilir; bu biçim serbest metindir, araç okumaz (SOP §20.4/6b).
 
 ```markdown
 ## 8.1 Delivery slices
@@ -104,7 +109,9 @@ draft
 ```
 
 - `draft`: yalnızca planlama; production implementation tetiklemez.
-- `under-review`: kullanıcı incelemesinde.
+- `under-review`: bağımsız incelemede ve kullanıcı incelemesinde. CT-APR-02'den (`execution/approvals/POLICY-REVIEW-START.md`)
+  sonra DCP, onaydan önce aynı sürümün bağımsız incelemesini ister (Codex ya da Claude; kayıt
+  `execution/approvals/reviews.tsv`) ve sürüme bağlı onaya (CT-APR-01) girer. Ayrıntı: SOP §20.4.
 - `approved` / `ready-for-execution`: kullanıcı onayı alınmış; üyelerin module pack'leri kendi `approved`/`ready-for-dev` kapılarından geçtikten sonra geliştirme sıraya göre başlatılabilir.
 - `in-progress` / `completed`: teslim fazları yürür/biter.
 - `reconciled`: implementasyon fazları sonrası §20 reconciliation notları doldurulmuş.

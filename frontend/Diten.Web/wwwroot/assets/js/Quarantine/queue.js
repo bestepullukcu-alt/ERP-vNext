@@ -12,6 +12,8 @@
     const { t, esc, qty, date } = ui;
     const tableEl = document.querySelector('.datatables-quarantine-holds');
     let list = null;
+    // WP-MVP1-FU-CLEAN1 (FU-0175-UI-MANUALHOLD-01): "Stoğu karantinaya al" reloads the list after a hold (manual-hold.js)
+    window.QuarantineQueue = { reload: () => list?.dt?.ajax?.reload(null, false) };
 
     const filterFields = [
         { id: 'filterWarehouse', key: 'warehouseId', kind: 'single' },
@@ -63,7 +65,7 @@
 
     const renderAction = (full) => {
         const attrs = (text) => ({ 'data-id': full.holdId, 'data-json': JSON.stringify(full), title: text, 'aria-label': text });
-        const open = full.status !== 'Decided' && !full.activeDecision;
+        const open = ui.holdOpen(full) && !full.activeDecision; // MOD-0175-FU01 DL-2 (AC-25): Voided is terminal — no Karar Ver
         return window.DitenDataTable.renderActions([
             { key: 'DECIDE', visible: ui.can('DECIDE') && open, icon: 'bx bx-check-shield', text: t('Quarantine.Action.Decide'), attrs: attrs(t('Quarantine.Action.Decide')) },
             { key: 'VIEWHOLD', visible: ui.can('VIEWHOLD'), icon: 'bx bx-show', text: t('Quarantine.Action.Detail'), attrs: attrs(t('Quarantine.Action.Detail')) }
@@ -91,7 +93,12 @@
             ajax: { url: '/Quarantine/list/holds', type: 'GET', error: onListError },
             onResponse,
             actions: { onRowAction: rowActionHandlers },
-            toolbar: { addNewText: '', colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9] },
+            // FU-0175-UI-MANUALHOLD-01: the button only with quarantine.holds.create (QUARANTINELOT) AND the modal the view drew for that key
+            toolbar: {
+                addNewText: ui.can('QUARANTINELOT') && ui.byId('qr-manual-modal') ? t('Quarantine.ManualHold.Action') : '',
+                onAddNew: () => window.QuarantineManualHold?.open(),
+                colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9]
+            },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadWarehouses },
             savedView: {
                 moduleKey: 'Quarantine',
@@ -110,7 +117,7 @@
                     try { this.api().buttons('.dt-export-collection-btn').remove(); } catch (error) { /* no export group */ }
                 },
                 createdRow: (row, data) => {
-                    if (data.late && data.status !== 'Decided') row.style.backgroundColor = '#fff9ee';
+                    if (data.late && ui.holdOpen(data)) row.style.backgroundColor = '#fff9ee';
                     if (!ui.can('VIEWHOLD')) return;
                     row.style.cursor = 'pointer';
                     row.addEventListener('click', (event) => {
@@ -143,7 +150,7 @@
                     { targets: 7, render: (data) => esc(date(data)) },
                     { targets: 8, render: (data, type, full) => waitCell(full) },
                     { targets: 9, render: (data, type, full) => sourceCell(full) },
-                    { targets: 10, render: (data, type, full) => ui.holdBadge(full) },
+                    { targets: 10, render: (data, type, full) => ui.holdBadge(full) + ui.conflictBadge(full) }, // FU01 DL-2 (AC-28)
                     { targets: -1, title: t('Quarantine.Col.Actions'), searchable: false, orderable: false, className: 'cell-fit all', render: (data, type, full) => renderAction(full) }
                 ]
             }

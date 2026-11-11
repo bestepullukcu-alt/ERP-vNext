@@ -1,0 +1,10 @@
+# mvp6-stage-r-row1-loads-config-01 — resealed 2026-10-13T09:22:14Z
+# appsettings.Development.json restored and verified: d0b1ca4061fe1b45
+# corrected: plan v9.4 section 3 already recorded row 1 as closed 10-06; the guard is this lane's only new work
+6a81a7f48f4a229d44d36d588e5b14251f0fbac0ac756f6fb45111bc864d9bb7  REPORT.md
+073ee4e0014706e86a6cf74f8184f236afc7bdcf5435a595f212e9ce5a61cb0b  MOVED.tsv
+d2d3393a54f97b2fcbe99e44fac8ffbf4d6b4a33fa9f4d9f1f9b212ecf339a85  evidence/clean-run.log
+e7e53020d845c9dbca292ca3ae5a9025ce838d61b2cbfb8126e4a1bd982e4593  evidence/full-suite.log
+fec73f4d6ad9835c1a53bed1e5d1869095c41898731cf0332412067ba3c65679  evidence/sabotage-1-port-drift.log
+39be308d700ed545a002fb519fbd22e86a2030899e1a015001e0bceb9bd66422  evidence/sabotage-2-q414-missing.log
+d3469df16318e296cfd7fb80186535bc337ca080783a0e3deeffa30ee93e31c7  evidence/sabotage-3-legalentity-self.log

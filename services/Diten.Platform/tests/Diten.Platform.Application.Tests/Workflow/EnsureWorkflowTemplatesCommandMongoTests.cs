@@ -25,6 +25,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// the definitions' own Create / Publish commands) on the test process's own mongod (DITEN_TEST_MONGOD, never 27017), one
 /// fixed-name database per test, emptied first.
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class EnsureWorkflowTemplatesCommandMongoTests
 {
     private const string OperatorEnvironment = "Staging";

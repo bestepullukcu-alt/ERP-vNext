@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
+[Trait("Category", "Mongo")]
 public sealed class BusinessReferenceDataPublishOperationMongoTests : IAsyncLifetime
 {
     private Persistence.MongoIntegrationHarness _harness = null!;

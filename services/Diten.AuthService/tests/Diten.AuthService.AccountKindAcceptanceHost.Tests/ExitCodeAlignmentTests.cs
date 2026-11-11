@@ -45,6 +45,9 @@ public sealed class ExitCodeAlignmentTests
 
             var ready = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
             Assert.NotNull(ready);
+            // TEST-HIZ-01: seen once on CI as "error" instead of "ready", 7 s after the start; not reproduced in 30 local
+            // starts. The host's whole answer goes to the test output so the next red names its code.
+            _output.WriteLine("host answered: " + ready!.Value.GetRawText());
             Assert.Equal("ready", ready!.Value.GetProperty("type").GetString());
             var seedReady = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
             Assert.NotNull(seedReady);
@@ -92,6 +95,9 @@ public sealed class ExitCodeAlignmentTests
 
             var ready = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
             Assert.NotNull(ready);
+            // TEST-HIZ-01: seen once on CI as "error" instead of "ready", 7 s after the start; not reproduced in 30 local
+            // starts. The host's whole answer goes to the test output so the next red names its code.
+            _output.WriteLine("host answered: " + ready!.Value.GetRawText());
             Assert.Equal("ready", ready!.Value.GetProperty("type").GetString());
             var seedReady = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
             Assert.NotNull(seedReady);

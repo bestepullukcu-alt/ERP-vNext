@@ -585,7 +585,7 @@ def self_test() -> int:
                       ("two statuses", approval(_extra="status: approved\n")), ("missing", None)):
         r = safe(check_approval, good_led, path, ledger_text, "docs/records/decisions/2026-10/taban.md", ap, ap)
         cases.append((f"sabotage: approval with {label} -> refused", r != "NOT IMPLEMENTED" and bool(r)))
-    r = safe(check_approval, good_led, path, ledger_text, "docs/notes/taban.md", approval(), approval())
+    r = safe(check_approval, good_led, path, ledger_text, "docs/records/notes/taban.md", approval(), approval())
     cases.append(("sabotage: approval outside docs/records/decisions -> refused", r != "NOT IMPLEMENTED" and bool(r)))
     for label, later in (("withdrawn (status draft) at the selected commit", approval(status="draft")),
                          ("removed at the selected commit", None),

@@ -3,11 +3,16 @@
 const ShipmentDetails = (function () {
     const host = document.getElementById('shipment-details');
     const shipmentId = host?.dataset.shipmentId;
+    // The adapter requires the legal-entity scope on every call (?legalEntityId=, else 400); the controller validated it
+    // from the page URL. Missing = fail closed: no request is sent and the shared 'legal entity required' message shows.
+    const legalEntityId = host?.dataset.legalEntityId || '';
+    const scoped = (path) => `${path}?legalEntityId=${encodeURIComponent(legalEntityId)}`;
     const L = window.L10n || {};
     let permissions = { canDispatch: false, canCancel: false, canCapturePod: false };
     let shipment = null;
     const intents = new Map();
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    // Any canonical UUID, as the adapter and service accept (G8 NL-3: the RFC version/variant check refused valid IDs).
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const transitions = { Draft: ['Planned', 'Cancelled'], Planned: ['Dispatched', 'Cancelled'],
         Dispatched: ['InTransit', 'Delivered', 'Exception'], InTransit: ['Delivered', 'Exception'],
         Exception: ['InTransit', 'Cancelled'], Delivered: ['Closed'], Closed: [], Cancelled: [] };
@@ -47,13 +52,31 @@ const ShipmentDetails = (function () {
         setDetailSurfaceVisible(false);
         showError(message);
     };
+    // MOD-0183 DL-2 (S23-7): the dispatch codes of SHIPMENT-BUNDLE 3.4.0 have their own texts and never fall back to the
+    // validation text. A refusal names the line and INVENTORY's reason (details.inventoryCode); a code outside the closed
+    // list shows itself in the generic reason text. Own-property lookups only, so a code such as "constructor" is unknown.
+    // errorText touches no DOM; it is returned for the Node mapping test.
+    const own = (map, key) => (map && typeof key === 'string' && Object.prototype.hasOwnProperty.call(map, key) ? map[key] : undefined);
+    // The replacer is a function so a value such as "$&" is inserted as written; only a missing or empty value is unknown.
+    const fill = (template, value) => String(template || '').replace('{0}', () => (value === undefined || value === null || value === '' ? L.unknown : String(value)));
+    const errorText = (status, body) => {
+        const code = body?.error?.code || ''; const details = body?.error?.details || {};
+        if (code === 'INVENTORY_REFUSED') return `${fill(L.inventoryRefused, details.lineNumber)} ${own(L.inventoryCodes, details.inventoryCode) || fill(L.inventoryCodeUnknown, details.inventoryCode)}`;
+        if (code === 'SHIPMENT_LINE_STOCK_INCOMPLETE') return fill(L.lineStockIncomplete, details.lineNumber);
+        return own({ SHIPMENT_NOT_FOUND: L.notFound, INVALID_SHIPMENT_TRANSITION: L.invalidTransition,
+            POD_ALREADY_CAPTURED: L.podAlreadyCaptured, IDEMPOTENCY_KEY_REUSED: L.idempotencyKeyReused,
+            PERSISTENCE_UNAVAILABLE: L.persistenceUnavailable, INTERNAL_ERROR: L.internalError,
+            DISPATCH_IN_PROGRESS: L.dispatchInProgress, DISPATCH_COMPENSATION_FAILED: L.dispatchCompensationFailed,
+            DEPENDENCY_UNAVAILABLE: L.dependencyUnavailable }, code)
+            || (status === 404 ? L.notFound : status === 403 ? L.accessDenied : L.validationError);
+    };
+    // 3.4.0 dispatchState: an open attempt is shown beside the status; None / null / an unknown value adds nothing.
+    const statusText = (status, dispatchState) => { const state = own(L.dispatchStates, dispatchState);
+        return state ? `${statusLabel(status)} · ${state}` : statusLabel(status); };
     const error = async (response, alertId) => {
         let body = null; try { body = await response.json(); } catch (_) { }
         const code = body?.error?.code || '';
-        const message = ({ SHIPMENT_NOT_FOUND: L.notFound, INVALID_SHIPMENT_TRANSITION: L.invalidTransition,
-            POD_ALREADY_CAPTURED: L.podAlreadyCaptured, IDEMPOTENCY_KEY_REUSED: L.idempotencyKeyReused,
-            PERSISTENCE_UNAVAILABLE: L.persistenceUnavailable, INTERNAL_ERROR: L.internalError })[code]
-            || (response.status === 404 ? L.notFound : response.status === 403 ? L.accessDenied : L.validationError);
+        const message = errorText(response.status, body);
         const correlation = body?.error?.correlationId || response.headers.get('X-Correlation-Id');
         showError(`${message}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`, alertId);
         return code;
@@ -88,11 +111,45 @@ const ShipmentDetails = (function () {
         showError(L.validationError, alertId); failed[0].focus();
         return true;
     };
+    // The stock fields as the response carries them. issueTransactionId is INVENTORY's id: the response has no INV- number.
+    // MOD-0183 r9 §24.4 (SB-10, SB-12): names the adapter resolved; a failed or denied read says "name unavailable" with the
+    // reference as stored; never a blank. Product / SKU is one name + canonicalCode pair; issueTransactionId is not a column.
+    // VER F-3: an unresolved reference is returned apart, so the page shows it small and LTR after the text (SB-10).
+    const nameCell = (cell) => cell?.state === 'resolved' ? cell.label
+        : (cell?.reference ? { text: L.nameUnavailable, reference: cell.reference } : L.nameUnavailable);
+    const fillCell = (element, value) => {
+        element.replaceChildren();
+        if (value && typeof value === 'object') {
+            const reference = document.createElement('small');
+            reference.className = 'text-muted ms-1'; reference.dir = 'ltr'; reference.textContent = value.reference;
+            element.append(document.createTextNode(value.text), reference);
+        } else element.textContent = value ?? L.unavailable;
+    };
+    const lineCells = (line) => [line.lineNumber, nameCell(line.sku), line.lot ? nameCell(line.lot) : '—',
+        nameCell(line.fromLocation), line.quantity, line.uomId || L.unavailable, line.fefoBypassReason || '—'];
+    // SB-10 / SB-11a / SB-25: the customer cell never shows an id — a name and code, "old record", "not found" or "name unavailable".
+    const customerText = (cell) => {
+        switch (cell?.state) {
+            case 'resolved': return [cell.name, cell.code].filter(Boolean).join(' · ') || L.nameUnavailable;
+            case 'oldRecord': return L.oldRecord;
+            case 'notFound': return L.nameNotFound;
+            default: return L.nameUnavailable;
+        }
+    };
+    const loadCompany = async () => {
+        try {
+            const response = await fetch('/SupplyChain/api/legal-entities', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const payload = response.ok ? await response.json() : null;
+            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
+            const match = rows.find((row) => String(row.legalEntityId ?? row.LegalEntityId ?? '') === legalEntityId);
+            text('detailCompany', match ? String(match.displayName ?? match.DisplayName ?? match.legalName ?? match.LegalName ?? match.code ?? L.nameUnavailable) : L.nameUnavailable);
+        } catch (_) { text('detailCompany', L.nameUnavailable); }
+    };
     const renderLines = (lines) => {
         const body = document.getElementById('detailLines'); body.replaceChildren();
         (lines || []).forEach((line) => { const row = body.insertRow();
-            [line.lineNumber, line.itemId, line.skuId, line.quantity, line.uomId, line.inventoryReferenceId || L.unavailable]
-                .forEach((item) => { const cell = row.insertCell(); cell.textContent = item; }); });
+            lineCells(line)
+                .forEach((item) => fillCell(row.insertCell(), item)); });
     };
     const renderPod = (pod) => {
         document.getElementById('podEmpty').classList.toggle('d-none', !!pod);
@@ -121,14 +178,15 @@ const ShipmentDetails = (function () {
     const render = (data) => {
         hideSkeleton(); setDetailSurfaceVisible(true);
         document.getElementById('detailsAlert')?.classList.add('d-none');
-        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusLabel(data.status));
-        text('detailSource', data.sourceDocumentId); text('detailWarehouse', data.warehouseReferenceId); text('detailShipTo', data.shipToReference);
+        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusText(data.status, data.dispatchState));
+        text('detailSource', data.sourceDocumentId); fillCell(document.getElementById('detailWarehouse'), nameCell(data.warehouse)); text('detailCustomer', customerText(data.customer));
+        text('detailShipTo', data.shipToReference); void loadCompany();
         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();
     };
     const load = async () => {
         const version = ++loadVersion;
-        try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}`, { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
+        try { const response = await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}`), { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
             if (version !== loadVersion) return;
             if (!response.ok) {
                 hideSkeleton();
@@ -151,7 +209,7 @@ const ShipmentDetails = (function () {
         const intent = previous?.body === body && previous?.correlationId === correlationId
             ? previous : { body, key: uuid(), correlationId }; intents.set(kind, intent);
         const execute = async () => {
-            try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`, { method: 'POST', credentials: 'same-origin',
+            try { const response = await fetch(scoped(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`), { method: 'POST', credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token(form), 'Idempotency-Key': intent.key, 'X-Correlation-Id': intent.correlationId }, body: intent.body });
                 if (!response.ok) { const code = await error(response, alertId); if (code === 'IDEMPOTENCY_KEY_REUSED') intents.delete(kind); await load(); return; }
                 const result = await response.json(); window.showToast?.(result.idempotentReplay ? L.replay : L.success, 'success');
@@ -162,6 +220,7 @@ const ShipmentDetails = (function () {
     };
     const init = () => {
         if (!host) return; readPermissions();
+        if (!uuidPattern.test(legalEntityId)) { hideSkeleton(); text('shipmentNumber', L.unavailable); showError(L.legalEntityRequired); return; }
         document.getElementById('formTransition')?.addEventListener('submit', (event) => { event.preventDefault();
             const occurredAt = instant('occurredAt');
             if (rejectInvalid(event.currentTarget, [['targetStatus', !!document.getElementById('targetStatus').value], ['occurredAt', !!occurredAt]], 'transitionAlert')) return;
@@ -185,6 +244,7 @@ const ShipmentDetails = (function () {
         load();
     };
     document.addEventListener('DOMContentLoaded', init);
-    // localInputValue and parseLocalInput touch no DOM; they are returned for the Node date tests (Q382), nothing else uses them.
-    return { init, allowedTargets, localInputValue, parseLocalInput };
+    // localInputValue, parseLocalInput, errorText, statusText and lineCells touch no DOM; they are returned for the Node tests
+    // (Q382, MOD-0183 DL-2), nothing else uses them.
+    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText, lineCells, customerText };
 })();

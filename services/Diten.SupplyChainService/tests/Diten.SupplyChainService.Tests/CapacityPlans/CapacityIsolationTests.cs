@@ -38,7 +38,10 @@ public sealed class CapacityIsolationTests
         Assert.Equal("INVALID_CONSTRAINT_REFERENCE",(await repo.CreateScenarioAsync(scope,plan.Id,"bad","bad",Guid.NewGuid(),invalidScenario,CancellationToken.None)).ErrorCode);
         Assert.Equal(0,await db.GetCollection<CapacityScenario>("capacity_scenarios").CountDocumentsAsync(FilterDefinition<CapacityScenario>.Empty));
         var raw=await db.GetCollection<BsonDocument>("capacity_plans").Find(new BsonDocument()).FirstAsync();
-        Assert.False(raw.Contains("DemandQuantity"));Assert.False(raw.Contains("ForecastSeries"));
+        // Acceptance :195 names three things, not two: quantity, *confidence* and forecast series.
+        // Confidence was never asserted. Sabotage check: persisting any of these reddens this loop.
+        foreach(var forbidden in new[]{"DemandQuantity","ForecastSeries","Confidence","DemandConfidence","Quantity","Series"})
+            Assert.False(raw.Contains(forbidden),forbidden+" is persisted; the plan must reference DEMAND, not compete with it");
         await db.GetCollection<CapacityPlan>("capacity_plans").UpdateOneAsync(x=>x.Id==plan.Id,Builders<CapacityPlan>.Update.Set(x=>x.IsDeleted,true));
         Assert.Null(await repo.GetPlanAsync(scope,plan.Id,CancellationToken.None));
     }

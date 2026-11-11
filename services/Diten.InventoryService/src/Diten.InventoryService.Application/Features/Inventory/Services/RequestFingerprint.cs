@@ -42,6 +42,25 @@ public static class RequestFingerprint
             ["transactionDate"] = movement.TransactionDate.UtcTicks,
             ["postingDate"] = movement.PostingDate.UtcTicks
         };
+        // INVENTORY 1.3.0 (MOD-0176 KF-B): the bypass reason is part of the request ONLY when sent — a request without it keeps the
+        // fingerprint it had before 1.3.0, so the replay of a movement committed earlier still matches.
+        if (movement.FefoBypassReason is { } reason)
+        {
+            canonical["fefoBypassReason"] = reason;
+        }
+
+        // INVENTORY 1.7.0 (MOD-0173-FU03, AC-25): reservationId only when sent, restoreReservation only when true — absent and false are the
+        // same request, and a request without either keeps its 1.5.0 fingerprint byte for byte.
+        if (movement.ReservationId is { } reservationId)
+        {
+            canonical["reservationId"] = reservationId;
+        }
+
+        if (movement.RestoreReservation)
+        {
+            canonical["restoreReservation"] = true;
+        }
+
 
         var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(canonical));
         return Convert.ToHexString(SHA256.HashData(bytes));

@@ -213,6 +213,13 @@ builder.Services.AddScoped<IVerifiedReferenceDataServiceTenantContext, VerifiedR
 builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, TrustedLegalEntityScopeCredentialAuthenticator>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
+// MOD-0040-FU02 — the record-code allocate endpoint's gate (consumer credential + forwarded user token).
+builder.Services.Configure<TrustedRecordCodeCredentialOptions>(
+    builder.Configuration.GetSection(TrustedRecordCodeCredentialOptions.SectionName));
+builder.Services.AddSingleton<ITrustedRecordCodeCredentialAuthenticator, TrustedRecordCodeCredentialAuthenticator>();
+builder.Services.AddScoped<ITrustedRecordCodeJwtContext, TrustedRecordCodeJwtContext>();
+builder.Services.AddScoped<ITrustedRecordCodeRequestExecutor, TrustedRecordCodeRequestExecutor>();
+builder.Services.AddSingleton<RecordCodeAllocateRateLimiter>();
 builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();

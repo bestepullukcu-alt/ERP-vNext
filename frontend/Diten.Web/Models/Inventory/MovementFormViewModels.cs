@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -61,7 +62,12 @@ public sealed class StockMovementFormViewModel
 
     public string PostUrl => Mode == MovementFormMode.Correct ? "/StockMovements/Edit" : "/StockMovements/Create";
 
-    public static StockMovementFormViewModel ForCreate(IQueryCollection query) => Prefilled(MovementFormMode.Create, MovementRules.ManualTypes, query);
+    /// <summary>
+    /// WP-0177-R7c (KR-H): the new-movement form offers <see cref="MovementRules.FormTypes"/> (the 7 manual types + CUSTOMER_RETURN) and may open
+    /// pre-filled with <c>lotId</c> (a registered lot id only) and <c>toStatus</c> (only a status the chosen type may name); anything else in
+    /// the address is ignored. ForEntry / ForCorrection are unchanged.
+    /// </summary>
+    public static StockMovementFormViewModel ForCreate(IQueryCollection query) => Prefilled(MovementFormMode.Create, MovementRules.FormTypes, query, targets: true);
 
     public static StockMovementFormViewModel ForEntry(IQueryCollection query) => Prefilled(MovementFormMode.Entry, MovementRules.EntryTypes, query);
 
@@ -96,14 +102,19 @@ public sealed class StockMovementFormViewModel
         };
     }
 
-    private static StockMovementFormViewModel Prefilled(MovementFormMode mode, IReadOnlyList<string> allowed, IQueryCollection query)
+    private static StockMovementFormViewModel Prefilled(MovementFormMode mode, IReadOnlyList<string> allowed, IQueryCollection query, bool targets = false)
     {
         var type = Text(query, "type");
+        var chosen = type is not null && allowed.Contains(type, StringComparer.Ordinal) ? type : null;
+        var lot = Text(query, "lotId");
+        var status = Text(query, "toStatus");
         return new StockMovementFormViewModel
         {
             Mode = mode,
             AllowedTypes = allowed,
-            MovementType = type is not null && allowed.Contains(type, StringComparer.Ordinal) ? type : null,
+            MovementType = chosen,
+            LotId = targets && MovementRules.IsRegisteredLotId(lot) ? lot : null,
+            ToStockStatus = targets && status is not null && MovementRules.TargetStatusesOf(chosen).Contains(status, StringComparer.Ordinal) ? status : null,
             ItemId = Guid.TryParse(Text(query, "itemId"), out var item) ? item.ToString("D") : null,
             ItemText = Text(query, "itemText"),
             Sku = InventoryListAdapter.TryParseSku(Text(query, "sku") ?? string.Empty, out var level, out var skuId) ? level + ":" + skuId : null,
@@ -197,6 +208,11 @@ public sealed class MovementSubmitViewModel
     /// <summary>Display only (the Model A picker's labels) — for the receipt; never sent to the service.</summary>
     public string? ItemText { get; set; }
     public string? SkuText { get; set; }
+    /// <summary>
+    /// WP-0176-F5 seam (CT decision A, KF-B): the reason of an issue that is not from the first FEFO lot (INVENTORY 1.3.0, 10–1000 — the
+    /// service decides). Blank = not sent: the payload of a form without it is byte-for-byte the old one.
+    /// </summary>
+    public string? FefoBypassReason { get; set; }
 }
 
 /// <summary>Body of <c>POST /StockMovements/Edit</c> — step (1) reverses the original, step (2) posts the movement.</summary>
@@ -243,6 +259,10 @@ public sealed class MovementReceiptViewModel
     public string? ToText { get; set; }
     public string? ToStockStatus { get; set; }
     public string? LotId { get; set; }
+    /// <summary>WP-MVP1-FIX-LIVE2 (finding 9): the lot NUMBER of a registered lot (TRACE, the caller's own trace.lots.read — the FIX-LIVE1
+    /// LotNumberResolver pattern); <see cref="LotUnresolved"/> = a registered lot whose number could not be read (the id is shown with a hint).</summary>
+    public string? LotNumber { get; set; }
+    public bool LotUnresolved { get; set; }
     public int SerialCount { get; set; }
     public string? DocumentNo { get; set; }
     public string? TransactionDate { get; set; }
@@ -250,6 +270,8 @@ public sealed class MovementReceiptViewModel
     /// <summary>The balance row the movement left (MovementResponse.balanceSnapshot).</summary>
     public string? BalanceLocationText { get; set; }
     public string? BalanceLotId { get; set; }
+    public string? BalanceLotNumber { get; set; }
+    public bool BalanceLotUnresolved { get; set; }
     public string? BalanceStatus { get; set; }
     public string? BalanceOnHand { get; set; }
     public string? BalanceAvailable { get; set; }
@@ -260,8 +282,26 @@ public sealed class MovementReceiptViewModel
     public string? CorrectedNumber { get; set; }
     /// <summary>KD-2: the receipt of a stock entry links back to the stock list.</summary>
     public bool FromEntry { get; set; }
+    /// <summary>
+    /// WP-MVP1-NAMES1 ("Kaydeden", BG-05): the poster of THIS movement is the signed-in user who just posted it; the name is the one their token
+    /// carries at the posting — the very name the service records in the central audit queue for the posting (<see cref="PostingName"/>).
+    /// No name → the receipt says "unknown user"; the id is only the hover title.
+    /// </summary>
+    public string? RecordedById { get; set; }
+    public string? RecordedByName { get; set; }
 
     public bool IsEmpty => string.IsNullOrWhiteSpace(TransactionNumber);
+
+    /// <summary>The name the token carries (<c>name</c>, else <c>given_name</c> + <c>family_name</c>, either claim spelling) — the rule of the
+    /// service's central audit scope, so the receipt and the history show the same name for one posting.</summary>
+    public static string? PostingName(ClaimsPrincipal user)
+    {
+        string? Claim(params string[] types) => types.Select(t => user.FindFirst(t)?.Value).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+        var name = Claim("name", ClaimTypes.Name);
+        if (!string.IsNullOrWhiteSpace(name)) return name.Trim();
+        var full = $"{Claim("given_name", ClaimTypes.GivenName)} {Claim("family_name", ClaimTypes.Surname)}".Trim();
+        return full.Length == 0 ? null : full;
+    }
 
     public static MovementReceiptViewModel From(ITempDataDictionary tempData)
     {

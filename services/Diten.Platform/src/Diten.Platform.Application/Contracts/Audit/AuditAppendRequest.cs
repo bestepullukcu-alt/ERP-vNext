@@ -27,4 +27,11 @@ public sealed record AuditAppendRequest
     public bool IsMetaAudit { get; init; }
     public bool IsPlatformGlobal { get; init; }
     public int Sequence { get; init; }
+
+    /// <summary>
+    /// BL-501 — the sender's own id for this event (the shared central-audit forwarder's outbox row id). When present, the
+    /// event is filed ONCE per id: a resend after a lost acknowledgement answers Duplicate, and two different events that
+    /// happen to share correlation / type / entity / operation stay two records. Absent → the composite key, as before.
+    /// </summary>
+    public Guid? EventId { get; init; }
 }

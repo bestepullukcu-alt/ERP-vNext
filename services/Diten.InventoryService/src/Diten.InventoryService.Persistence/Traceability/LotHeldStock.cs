@@ -57,7 +57,12 @@ internal static class LotHeldStock
         var positions = database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions);
         var pf = Builders<InventorySkuPosition>.Filter;
         var u = Builders<InventorySkuPosition>.Update;
-        foreach (var company in rows.GroupBy(r => (r.LegalEntityId, r.ItemId, r.SkuId, r.SkuLevel)))
+        // MOD-0173-FU03 §8.2 yol 3–4 (CT-07, XMC-001 — owner permission Beste 2026-11-02): grouped per warehouse too, so every group
+        // moves the lot's warehouse (W:) and warehouse + lot (L:) scope positions in the same direction as the SKU position.
+        var scopePositions = database.GetCollection<InventoryReservationPosition>(InventoryCollections.ReservationPositions);
+        var sf = Builders<InventoryReservationPosition>.Filter;
+        var su = Builders<InventoryReservationPosition>.Update;
+        foreach (var company in rows.GroupBy(r => (r.LegalEntityId, r.ItemId, r.SkuId, r.SkuLevel, r.WarehouseId)))
         {
             var quantity = company.Sum(r => r.OnHand);
             if (quantity == 0m)
@@ -80,6 +85,31 @@ internal static class LotHeldStock
                     u.SetOnInsert(x => x.DeletedAt, null)),
                 new UpdateOptions { IsUpsert = true },
                 ct);
+
+            if (company.Key.WarehouseId is not { } warehouseId)
+            {
+                continue;
+            }
+
+            foreach (var (level, lotId) in new[] { (ReservationScopeLevel.Warehouse, Guid.Empty), (ReservationScopeLevel.Lot, lot.Id) })
+            {
+                await scopePositions.UpdateOneAsync(
+                    session,
+                    sf.Eq(x => x.TenantId, lot.TenantId) & sf.Eq(x => x.LegalEntityId, company.Key.LegalEntityId) & sf.Eq(x => x.IsDeleted, false)
+                    & sf.Eq(x => x.ItemId, company.Key.ItemId) & sf.Eq(x => x.SkuId, company.Key.SkuId) & sf.Eq(x => x.SkuLevel, company.Key.SkuLevel)
+                    & sf.Eq(x => x.Level, level) & sf.Eq(x => x.WarehouseId, warehouseId) & sf.Eq(x => x.LotId, lotId),
+                    su.Combine(
+                        su.Inc(x => x.AvailableOnHand, isHeld ? -quantity : quantity),
+                        su.Inc(x => x.Version, 1),
+                        su.Set(x => x.UpdatedAt, now),
+                        su.SetOnInsert(x => x.Id, Guid.NewGuid()),
+                        su.SetOnInsert(x => x.Reserved, 0m),
+                        su.SetOnInsert(x => x.BaseUomId, company.First().BaseUomId),
+                        su.SetOnInsert(x => x.CreatedAt, now),
+                        su.SetOnInsert(x => x.DeletedAt, null)),
+                    new UpdateOptions { IsUpsert = true },
+                    ct);
+            }
         }
     }
 }

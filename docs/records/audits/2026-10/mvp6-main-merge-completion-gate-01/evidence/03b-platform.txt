@@ -1,0 +1,58 @@
+# item 3b — Platform targeted regression, on the merged tree (1b3408c2b)
+
+Diten.Platform.Application.Tests: 8645 passed, 3 failed, 2 SKIPPED of 8650 — 35 m 4 s
+
+None of the three is attributable to this merge. Each is classified below with how it was decided.
+
+---
+
+1+2) Authorization/LoginOnlyEndpointGuardTests — two rows, both E-signature
+
+   Every_anonymous_action_is_an_allow_listed_internal_api_key_route
+     "InternalESignActionsController.Register is [AllowAnonymous] but its controller is not on the internal allow-list."
+
+   Every_action_has_a_key_a_platform_policy_an_internal_anonymous_route_LoginOnly_or_a_named_exception
+     "These actions carry no permission key, no platform policy and no [LoginOnly] — gate them, or mark them
+      [LoginOnly(\"why\")] and add them to the reviewed list: ESignatureSamplesController.Image,
+      ESignatureSettingsController.ListMeanings"
+
+   PRE-EXISTING, measured:
+     - the merge (681bb44d3 -> 1b3408c2b) changed neither controller:        0 files
+     - the merge changed neither the guard nor its allow-list:               0 files
+     - InternalESignActionsController.cs present at the pre-merge HEAD:      yes
+     - ESignatureSamplesController.cs   present at the pre-merge HEAD:       yes
+     - both present on origin/main:                                         yes
+   Unchanged inputs plus an unchanged guard means an unchanged verdict, so the guard was already red before the
+   merge. This gate found them; it did not produce them.
+
+   Owner: E-imza / MOD-0022. Recorded as BL-648, risk marked red because the first is an unauthenticated endpoint and
+   CT did NOT measure what it actually returns — only what the guard says. CT did not touch another module's
+   production code (XMC-001).
+
+---
+
+3) Tasks/DecisionMakerSearchHttpMongoTests.A_hanging_name_source_costs_the_search_at_most_the_bound
+
+   In the full-suite run: FAILED, "took 00:00:04.8444922".
+   The assertion (DecisionMakerSearchHttpMongoTests.cs:213) is a wall-clock bound:
+       Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"took {clock.Elapsed}");
+
+   RE-RUN ALONE, same tree, same binaries, quieter machine — 3 of 3 PASSED:
+       run 1: Passed!  1 passed, 0 failed
+       run 2: Passed!  1 passed, 0 failed
+       run 3: Passed!  1 passed, 0 failed
+   (load average was still 10.44 at the start of the re-runs, so this is not a pristine-machine result either.)
+
+   CLASSIFICATION: a load-sensitive wall-clock bound, not a merge regression and not a product defect. It measures a
+   4-second ceiling using elapsed real time while an arbitrary amount of other work may share the machine, so a loaded
+   run can exceed it with the product behaving identically. Recorded as BL-649 for Platform/Tasks.
+
+   What CT did NOT claim: that the product is fast enough under load. The test's own subject — that a hanging name
+   source costs the search at most the bound and then answers 503 — is asserted by the same test and passed in all
+   three isolated runs, including the 503.
+
+---
+
+2 SKIPPED: present in the local run. The repository's CI guard requires "Skipped = 0" for the jobs it covers
+(.github/workflows/service-tests.yml, matrix row platform-app). Not investigated here and not claimed either way —
+named so it is not mistaken for a clean 8650/8650.

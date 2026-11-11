@@ -33,7 +33,17 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
         services.AddScoped<IInventoryLedgerRepository, InventoryLedgerRepository>();
+        // MOD-0176 F2 (CT-F2): the ledger's default expiry hook — no hook; AddExpiry replaces it.
+        services.TryAddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, Application.Features.Expiry.Ports.AllowAllExpiryPostingPolicy>();
+        // MOD-0177 R3 (CT-R11): the ledger's default recall exit block — none; AddRecall replaces it.
+        services.TryAddScoped<Application.Features.Recall.Ports.IRecallPostingGate, Application.Features.Recall.Ports.AllowAllRecallPostingGate>();
+        // MOD-0177 R3 (CT-R12): the default "no lot under recall" for the FEFO candidate read; AddRecall replaces it.
+        services.TryAddScoped<Application.Features.Recall.Ports.IRecallLotStatusReader, Application.Features.Recall.Ports.NoRecallLotStatusReader>();
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
+        // MOD-0173-FU03 §8.2: the lot rule of a scoped reservation, on the in-process lot master.
+        services.AddScoped<Application.Features.Inventory.Ports.IReservationLotRule, ReservationLotRule>();
+        // MOD-0173-FU03 §8.5 (DL-3, Q-01 = A): the reserved quantity per lot — the FEFO hook's free base.
+        services.AddScoped<Application.Features.Inventory.Ports.ILotReservationReader, LotReservationReader>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
         // WP-0173-PM2 (INVENTORY-BUNDLE 1.1.0 getStockPresence): tenant-wide presence read + its access audit.

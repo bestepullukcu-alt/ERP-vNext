@@ -1,0 +1,8 @@
+# gateway validation
+Diten.ApiGateway.Tests: 244 passed, 0 failed, 0 skipped (5 s)
+
+# ocelot hand-check
+42:    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065, 5066, 5067, 5068, 5070 };
+shipment-bundle mentions in ocelot.json : 4
+5066 present / 5068 present            : 2 / 2
+duplicate UpstreamPathTemplate entries : 0

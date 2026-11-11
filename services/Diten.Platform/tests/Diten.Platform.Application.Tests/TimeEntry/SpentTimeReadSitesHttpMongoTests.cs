@@ -23,6 +23,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// site that still reads the entity shows 7 instead of the approved 2.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class SpentTimeReadSitesHttpMongoTests : TimerScenario
 {
     private readonly Guid _task = Guid.NewGuid();

@@ -1,0 +1,5 @@
+Q358 retraction skips tenant 2287464d-77f1-4cb0-9b21-711c08aa273f: its entitlement could not be read; 4 grant(s) left as they are.
+Q358 retraction skips tenant c34f34c2-8a04-416e-9adf-b8d2de805cb0: its entitlement could not be read; 5 grant(s) left as they are.
+Q358 retraction Apply finished: 5 Admin role(s), 9 grant(s) planned, 0 converted to Module, 0 soft-deleted, 0 not applied, 2 tenant(s) unknown, 0 failed.
+authAuditLogs q358 rows=0
+soft-deleted grants=1

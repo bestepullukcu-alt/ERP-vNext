@@ -59,11 +59,59 @@ public sealed class ReturnIndexBehaviorTests
     [Fact]
     public void Omits_unsupported_surfaces()
     {
-        foreach (var token in new[] { "method: 'DELETE'", "method: 'PUT'", "method: 'PATCH'", "/bulk", "/upload", "/import", "/Details/",
-                     "js-edit-item", "delete-record", "/inventory", "/warehouse", "remaining" })
+        // r10 §35.3 / §35.5: the Details link and the receiving pickers are allowed now; the pickers go through this module's
+        // own adapter (endpoint), never to an Inventory or Warehouse service path.
+        foreach (var token in new[] { "method: 'DELETE'", "method: 'PUT'", "method: 'PATCH'", "/bulk", "/upload", "/import",
+                     "js-edit-item", "delete-record", "/inventory", "/api/warehouse", "/api/locations", "remaining" })
         {
             Assert.DoesNotContain(token, _script);
         }
+        Assert.Contains("`${endpoint}/warehouses", _script);
+        Assert.Contains("`${endpoint}/locations?parentId=", _script);
+        Assert.Contains("/SupplyChain/Returns/Details/", _script);
+    }
+
+    // RB-4: no UUID text input remains for the shipment on the form or the list filter (restoring one turns this red).
+    [Fact]
+    public void Rb4_No_uuid_text_input_remains_for_the_shipment()
+    {
+        var form = Read("frontend/Diten.Web/Views/SupplyChain/Returns/_CreateEditOffcanvas.cshtml");
+        var filter = Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml");
+        Assert.Matches("<select id=\"returnShipmentId\"", form);
+        Assert.Matches("<select id=\"filterShipmentId\"", filter);
+        Assert.DoesNotMatch("<input[^>]*id=\"(returnShipmentId|filterShipmentId)\"", form + filter);
+        Assert.DoesNotContain("btnResolveShipment", form + _script);
+    }
+
+    // RB-6: the location stays disabled until a warehouse is chosen and is cleared whenever the warehouse changes.
+    [Fact]
+    public void Rb6_Location_is_cleared_and_disabled_with_the_warehouse()
+    {
+        Assert.Contains("window.jQuery(warehouse).on('change', resetLocation);", _script);
+        Assert.Contains("if (location) { setOption(location, '', ''); location.disabled = !warehouse; }", _script);
+        Assert.Contains("aria-required=\"true\" disabled></select>", Read("frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml"));
+    }
+
+    // VER F-5: the customer column is always declared at one index and saved views store columns by name.
+    [Fact]
+    public void VerF5_Saved_views_store_columns_by_name_and_the_customer_column_never_moves()
+    {
+        Assert.Contains("{ data: 'customer', orderable: false, searchable: false, visible: permissions.canReadCustomers, render: renderCustomer },", _script);
+        Assert.Contains("const VIEW_COLUMNS = ['rmaNumber', 'customer', 'shipmentId', 'status'];", _script);
+        Assert.Contains("layout: 'r10',", _script);
+        Assert.Contains("const named = view.layout === 'r10' && view.columns && typeof view.columns === 'object';", _script);
+        Assert.DoesNotContain("columnVisibility:", _script);
+    }
+
+    // MOD-0186 r10 RB-24: no picker writes an id as option text; ids ride only in the option value. Rendering row.id (or
+    // node.id) as text turns this red.
+    [Fact]
+    public void No_picker_shows_an_id_as_its_text()
+    {
+        var texts = System.Text.RegularExpressions.Regex.Matches(_script, @"\btext:\s*([^,}]+)").Select(m => m.Groups[1].Value.Trim()).ToList();
+        Assert.True(texts.Count >= 4, string.Join(" | ", texts));
+        Assert.All(texts, text => Assert.DoesNotMatch(@"\b(row|node)\.(id|shipmentId)\b|\bid\b(?!:)", text));
+        Assert.Contains("option.textContent = text || t('NameUnavailable');", _script);
     }
 
     [Fact]
@@ -141,7 +189,7 @@ public sealed class ReturnIndexBehaviorTests
         Assert.Contains("if (INVENTORY_REFERENCE_TARGETS.has(target))", build);
         Assert.Contains("if (reference !== '') body.inventoryTransactionReferenceId = reference;", build);
         Assert.DoesNotContain(".trim(", build);
-        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Received', 'Dispositioned']);", _script);
+        Assert.Contains("const INVENTORY_REFERENCE_TARGETS = new Set(['Dispositioned']);", _script);
         Assert.Contains("const DANGEROUS_TARGETS = new Set(['Rejected', 'Cancelled']);", _script);
         Assert.Contains("window.showConfirm?.(", _script);
         Assert.DoesNotContain("Swal.fire", _script);
@@ -259,6 +307,19 @@ public sealed class ReturnIndexBehaviorTests
         var to = text.IndexOf(end, from, StringComparison.Ordinal);
         Assert.True(to > from, end);
         return text[from..to];
+    }
+
+    [Fact]
+    public void UsesTheSharedCompanySelectorAndTheListFollowsACreatedReturn()
+    {
+        var index = Read("frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml");
+        var script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js");
+        Assert.Contains("CompanySelection.ResolveAsync(", index);
+        Assert.Contains("<partial name=\"~/Views/Inventory/Shared/_CompanySelector.cshtml\" model=\"company\" />", index);
+        Assert.InRange(index.IndexOf("if (!company.Ready)", StringComparison.Ordinal), 0, index.IndexOf("_DataTable.cshtml", StringComparison.Ordinal));
+        Assert.DoesNotContain("filterLegalEntity", Read("frontend/Diten.Web/Views/SupplyChain/Returns/_Filter.cshtml"));
+        Assert.DoesNotContain("filterLegalEntity", script);
+        Assert.True(script.IndexOf("adoptCompany(createdScope);", StringComparison.Ordinal) > 0);
     }
 
     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));

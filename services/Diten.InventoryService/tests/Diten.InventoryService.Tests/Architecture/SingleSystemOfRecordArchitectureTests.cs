@@ -19,10 +19,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
     {
         // S2 adds inventory_reservations (holds) and inventory_sku_positions (projection, ASSUMPTION-0173-13).
         // MOD-0173-FU02 adds inventory_locations (place master, no quantity) and inventory_location_history (K-11).
+        // MOD-0173-FU03 adds inventory_reservation_positions (the warehouse / lot levels of the same projection, §4.2).
         Assert.Equal(
             ["inventory_audit", "inventory_balances", "inventory_location_history", "inventory_locations", "inventory_outbox",
-             "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
-            InventoryCollections.All.OrderBy(x => x).ToList());
+             "inventory_reservation_positions", "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
+            InventoryCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
 
         // MOD-0174 (WP-0174-P1) — the lot / serial SoR in the same database, prefix trace_ (pack ASSUMPTION-0174-02).
         // None carries a quantity (asserted below by Only_the_ledger_and_its_projection_carry_quantities).
@@ -40,6 +41,51 @@ public sealed class SingleSystemOfRecordArchitectureTests
             ["quarantine_block_reasons", "quarantine_blocked_stock", "quarantine_decision_events", "quarantine_decisions", "quarantine_event_inbox",
              "quarantine_history", "quarantine_holds", "quarantine_lot_release_claims", "quarantine_sequences", "quarantine_settings"],
             Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0176 (WP-0176-F1) — expiry policy / exception records in the same database, prefix expiry_ (pack §3). None is stock: an
+        // exception Quantity is the quantity the case is about. WP-0176-F5: the evidence export log + the stored file bytes (FEFO-BUNDLE 1.2.0).
+        Assert.Equal(
+            ["expiry_counters", "expiry_date_overrides", "expiry_evidence_exports", "expiry_evidence_files", "expiry_exception_events", "expiry_exceptions", "expiry_fefo_issue_snapshots", "expiry_policies",
+             "expiry_policy_history"],
+            Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All.OrderBy(x => x).ToList());
+
+        // MOD-0177 (WP-0177-R1) — recall records in the same database, prefix recall_ (pack §3). None is stock: a scope item / declaration
+        // Quantity is the quantity the record is about.
+        Assert.Equal(
+            ["recall_case_events", "recall_cases", "recall_consumption_declarations", "recall_counters", "recall_lot_blocks", "recall_notifications",
+             "recall_scope_items", "recall_segregations", "recall_settings", "recall_settings_history"],
+            Diten.InventoryService.Persistence.Recall.RecallCollections.All.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R2) — the insert-only trace snapshots (pack §8.3), declared beside the R1 set
+        Assert.Equal(["recall_trace_snapshots"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R3) — the quarantine requests (KR-B) and the return links (KR-H, insert-only); neither is stock
+        Assert.Equal(["recall_quarantine_requests", "recall_return_links"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R4) — the prepared settings changes (the MOD-0022 subject recall.settings-change); not stock
+        Assert.Equal(["recall_settings_changes"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R5) — the drill plans, runs and their events (KR-G, read-only rehearsal); not stock
+        Assert.Equal(["recall_drill_events", "recall_drill_plans", "recall_drill_runs"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R7b) — the evidence export log and the stored file bytes (pack §4.13, insert-only); not stock
+        Assert.Equal(["recall_evidence_exports", "recall_evidence_files"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b.OrderBy(x => x).ToList());
+        // MOD-0178 (DL-1, XMC-001 decision Beste 2026-10-29) — location roles, their insert-only history and the temporary RCS counter, prefix
+        // wms_ (pack §3). None is stock (no OnHand / Available / Reserved — Only_the_ledger_and_its_projection_carry_quantities).
+        Assert.Equal(["wms_location_role_events", "wms_location_roles", "wms_number_counters"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-2, XMC-001 decision Beste 2026-10-30) — the putaway tasks and their insert-only timeline; quantities there are plan /
+        // confirmed task quantities, never a stock total (the ledger stays the one balance).
+        Assert.Equal(["wms_task_events", "wms_tasks"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-4, XMC-001 decision Beste 2026-11-05) — the S2 outbound shipments and their insert-only timeline (pack §4.5);
+        // quantities there are requested / allocated / planned shipment quantities, never a stock total (the ledger stays the one balance,
+        // the hold is the FU03 reservation).
+        Assert.Equal(["wms_outbound_events", "wms_outbound_shipments"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0178 (DL-5, XMC-001 decision Beste 2026-11-05) — the packages (pack §4.5; a package's content is the picked quantity laid into it, never a stock
+        // total) and the outbound outbox (OutboundShipmentReady, Pending; pack §8.9).
+        Assert.Equal(["wms_handling_units", "wms_outbox"],
+            Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0181 (DL-1, XMC-001 decision Beste 2026-11-06) — the counts, their lines, the insert-only timeline and the open-bin claims, prefix
+        // wms_count_ (pack §3, own CycleCountCollections — Q-22). None is stock: a line's expected quantity is count evidence written once.
+        Assert.Equal(["wms_count_bin_claims", "wms_count_counts", "wms_count_events", "wms_count_lines"],
+            Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -48,11 +94,25 @@ public sealed class SingleSystemOfRecordArchitectureTests
         var persistence = SourceScan.Production("Diten.InventoryService.Persistence");
         var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
             .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections)
-            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All).ToList();
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.All) // MOD-0177 (WP-0177-R1)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2) // MOD-0177 (WP-0177-R2)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3) // MOD-0177 (WP-0177-R3)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4) // MOD-0177 (WP-0177-R4)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5) // MOD-0177 (WP-0177-R5)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b) // MOD-0177 (WP-0177-R7b)
+            .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.All) // MOD-0178 (DL-1)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2) // MOD-0178 (DL-2)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4) // MOD-0178 (DL-4)
+            .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5) // MOD-0178 (DL-5)
+            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All).ToList(); // MOD-0181 (DL-1)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
-                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.Contains("stock"))
+                        || n.StartsWith("recall_", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+                        || n.StartsWith("wms_", StringComparison.Ordinal) // MOD-0178 (DL-1)
+                        || n.StartsWith("quarantine_", StringComparison.Ordinal) || n.StartsWith("expiry_", StringComparison.Ordinal) || n.Contains("stock"))
             .Distinct()
             .ToList();
 
@@ -64,7 +124,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .ToList();
         Assert.All(getCollectionCalls, arg => Assert.True(
             arg.StartsWith("InventoryCollections.", StringComparison.Ordinal) || arg.StartsWith("TraceCollections.", StringComparison.Ordinal)
-            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal),
+            || arg.StartsWith("RecallCollections.", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
+            || arg.StartsWith("WarehouseCollections.", StringComparison.Ordinal) // MOD-0178 (DL-1)
+            || arg.StartsWith("CycleCountCollections.", StringComparison.Ordinal) // MOD-0181 (DL-1, F-2)
+            || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }
 
@@ -81,8 +144,11 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // (pack ASSUMPTION-0173-13, rebuild-proven by the AC-R9 invariant test), not a second stock truth.
         // WP-0174-P2 (MOD-0174 K-A): the per-lot position carries OnHand — a projection of the same ledger transactions,
         // written in the posting transaction and equal to Σ balance OnHand of the lot (property-tested), not a second truth.
+        // MOD-0173-FU03: the reservation position (warehouse / lot levels) is the same projection as the SKU position, one level down
+        // (rebuild-proven by the scoped invariant test, AC-11).
         Assert.Equal(
-            [nameof(InventoryBalance), nameof(InventorySkuPosition), nameof(Diten.InventoryService.Domain.Traceability.Entities.LotPosition)],
+            [nameof(InventoryBalance), nameof(InventoryReservationPosition), nameof(InventorySkuPosition),
+             nameof(Diten.InventoryService.Domain.Traceability.Entities.LotPosition)],
             quantityCarriers.OrderBy(x => x, StringComparer.Ordinal));
     }
 

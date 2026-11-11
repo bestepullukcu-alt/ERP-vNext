@@ -1,0 +1,33 @@
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Details.cshtml states it.
+}
+@* getCapacityEvaluation: mode, status, times and the bottleneck table. Measures are decimal strings shown exactly as
+   returned — never parsed to a number (UI-SCOPE-0192 §4). Refresh is manual; there is no polling (F192-POLL). *@
+<div class="col-12" id="evaluationSection" hidden>
+    <section class="card backbone-preview-section p-4" aria-live="polite">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <h5 class="card-title mb-0">@Localizer["EvaluationPanel"]</h5>
+            <button type="button" id="btnRefreshEvaluation" class="btn btn-label-primary" hidden><i class="bx bx-refresh me-1" aria-hidden="true"></i>@Localizer["RefreshEvaluation"]</button>
+        </div>
+        <div id="evaluationAlert" class="alert alert-danger d-none" role="alert"></div>
+        <dl class="row mb-3">
+            <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["EvaluationId"]</dt><dd id="evaluationId" class="col-sm-8 col-lg-4 mb-3"></dd>
+            <dt class="col-sm-4 col-lg-2 mb-3">@SharedLocalizer["Status"]</dt><dd id="evaluationStatus" class="col-sm-8 col-lg-4 mb-3"></dd>
+            <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["EvaluationMode"]</dt><dd id="evaluationMode" class="col-sm-8 col-lg-4 mb-3"></dd>
+            <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["SubmittedAt"]</dt><dd id="evaluationSubmitted" class="col-sm-8 col-lg-4 mb-3"></dd>
+            <dt class="col-sm-4 col-lg-2 mb-3">@Localizer["CompletedAt"]</dt><dd id="evaluationCompleted" class="col-sm-8 col-lg-4 mb-3"></dd>
+        </dl>
+        <div id="evaluationPending" class="alert alert-info small d-none" role="status">@Localizer["EvaluationPending"]</div>
+        <h6 class="mb-2">@Localizer["BottlenecksHeader"]</h6>
+        @* Pack §23.5: bounded DataTables v2 profile (client-side; "no bottlenecks" via language.emptyTable, only once completed). *@
+        <div class="card-datatable table-responsive d-none" id="bottlenecksHost">
+            <table id="dt-capacity-bottlenecks" data-dt-standard="v2" class="table border-top">
+                <thead><tr><th>@Localizer["BottleneckResource"]</th><th>@Localizer["BottleneckPeriod"]</th><th class="text-end">@Localizer["BottleneckRequired"]</th><th class="text-end">@Localizer["BottleneckAvailable"]</th><th class="text-end">@Localizer["BottleneckShortfall"]</th><th>@Localizer["BottleneckUom"]</th></tr></thead>
+            </table>
+        </div>
+    </section>
+</div>

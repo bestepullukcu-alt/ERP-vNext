@@ -22,6 +22,7 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// only reads it back (the pull finalizer) — and recomputes task totals.
 /// </summary>
 [Collection(TimeEntryMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
 {
     public TimesheetApprovalHttpMongoTests(TimeEntryMongoFixture fixture) : base(fixture)
@@ -62,6 +63,14 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         await using var scope = Host.Services.CreateAsyncScope();
         using (TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), Tenant))
         {
+            // A repeat of a key is the starter's (MOD-0023 AC-W11): the second start runs as the person who made the first.
+            scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>().HttpContext =
+                new Microsoft.AspNetCore.Http.DefaultHttpContext
+                {
+                    User = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(
+                        [new System.Security.Claims.Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, Person.ToString())],
+                        "test"))
+                };
             var again = await scope.ServiceProvider.GetRequiredService<ITimesheetApprovalService>()
                 .StartAsync(week, [Manager], week.SubmissionCount);
 

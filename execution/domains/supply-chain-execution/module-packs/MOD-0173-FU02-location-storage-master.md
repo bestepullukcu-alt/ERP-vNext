@@ -567,6 +567,16 @@ display names in the history (user directory read).
   BLOCKED-ENV carried: DataTable verifier / quality gate (no Python), vitest (no node_modules). Incident note: landing code
   in the main worktree hot-rebuilds the owner's whole `dotnet watch` fleet once (~2.5 min) — expected, recovered.
 
+### FIX-LIVE1 — location pickers (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Live finding.** Expiry and Quarantine lookups read `id` from LOCATION rows; the contract field is `LocationRef.locationId`
+  (location.openapi.yaml:209), so every option value was null. The service matches the contract.
+- **Fix.** One reader, `Models/Inventory/LocationOptions`, also used by `LocationPickerSource.ListAsync`. Path entries (`id`, :92) and
+  typed DTO paths are unchanged.
+- **Tests.** Web.Tests fake Gateway bodies are now validated against the contract (`Contracts/ContractGateway`). A row with `id` is
+  refused. Sabotage s3 (check off) → red.
+- **O-LIVE1-1.** The older Web test FakeGateways are not yet contract-bound.
+
 ## 20. Follow-up Items
 
 - **FU-LOC1-01 (central):** `docs/analysis/contracts/README.md` should list LOCATION as 1.1.0, owner MOD-0173-FU02, served by InventoryService 5066 (v1 frozen, v1.1 additive).

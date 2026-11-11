@@ -1,0 +1,4 @@
+tenant a0c8d5cd0c65 Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant a0c8d5cd0c65 Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)
+tenant b8d2de805cb0 Admin      holds 0/5  
+tenant b8d2de805cb0 Viewer     holds 5/5  read(0) supplychain.carriers.read(0) supplychain.claims.read(0) supplychain.loads.read(0) supplychain.returns.read(0)

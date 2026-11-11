@@ -5,7 +5,7 @@ from the draft pack, current contract metadata, fixture output or this document.
 
 | Gate | Accountable owner / concurrence | Exact artifact still required | Blocks | Current state |
 |---|---|---|---|---|
-| Ownership placement | Enterprise/domain owner; CT/SCE | Hash-bound disposition aligning MOD-0147 with SCE/service and identifying later domain/DCP/registry writers | Pack promotion | OPEN |
+| Ownership placement | Enterprise/domain owner; CT/SCE | Hash-bound disposition aligning MOD-0147 with SCE/service and identifying later domain/DCP/registry writers | Pack promotion | **CONCURRED (DC-01, 2026-10-18; ny@gmgroup.ch)** |
 | Supplier base consumption | MOD-0140; MOD-0147 design consumer | Consent to exact SUPPLIER v1 input plus live producer identity/status behavior | Runtime dependency acceptance | OPEN |
 | Tenant+LE eligibility | MOD-0140 eligibility owner + security scope owner | Exact affirmative eligibility authority, carrier, endpoint/claim choice, errors, correlation and live proof | Evaluation/first publish/risk registration | OPEN |
 | Shared contract successor | CT Supplier seam single writer | Exact diff, version disposition, compatibility inventory and named consumer consents | Any new LE/503/UUID/snapshot wire behavior | OPEN; no candidate from this lane |

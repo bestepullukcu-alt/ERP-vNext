@@ -187,7 +187,7 @@ public sealed class QuarantineStockActions
 
         var taken = new HashSet<string>(StringComparer.Ordinal);
         var holds = await _repository.ListHoldsAsync(new HoldQuery(null, b.WarehouseId, null, null, null, null, b.LotId, null, 1, 500), ct);
-        foreach (var hold in holds.Items.Where(h => h.Status != HoldStatus.Decided && SameBucket(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, b)))
+        foreach (var hold in holds.Items.Where(h => QuarantineRecordStates.IsOpen(h.Status) && SameBucket(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, b)))
         {
             taken.UnionWith(hold.SerialIds ?? []);
         }
@@ -253,6 +253,11 @@ public sealed class QuarantineStockHandler : IRequestHandler<QuarantineStockComm
         }
 
         var retest = request.Mode == "Retest";
+        if (retest && request.Origin is not null)
+        {
+            return QuarantineSupport.Invalid<IReadOnlyList<HoldRefDto>>("An origin (QUARANTINE 1.3.0, in-process) is taken in mode Manual only.");
+        }
+
         List<BucketInput>? buckets;
         Domain.Traceability.Entities.Lot? retestLot = null;
         string fingerprint;
@@ -338,10 +343,12 @@ public sealed class QuarantineStockHandler : IRequestHandler<QuarantineStockComm
                     Quantity = posted.Bucket.Quantity,
                     BaseUomId = posted.BaseUomId,
                     SerialIds = posted.SerialIds,
-                    Source = retest ? HoldSource.Retest : HoldSource.Manual,
+                    Source = request.Origin is not null ? HoldSource.Recall : retest ? HoldSource.Retest : HoldSource.Manual,
                     RetestDateAtIntake = retestLot?.RetestDate,
                     SourceMovementId = posted.TransactionId,
-                    SourceDocument = new HoldSourceDocument { Module = QuarantineContract.ModuleId, Type = QuarantineContract.SourceTypeHold, Number = posted.Number, Text = reason },
+                    SourceDocument = request.Origin is { } origin
+                        ? new HoldSourceDocument { Module = origin.Module, Type = origin.Type, Id = origin.Id, Number = origin.Number, Text = reason }
+                        : new HoldSourceDocument { Module = QuarantineContract.ModuleId, Type = QuarantineContract.SourceTypeHold, Number = posted.Number, Text = reason },
                     EnteredAtUtc = now,
                     CreatedBy = _support.UserId,
                     CreateIdempotencyKey = keys[posted.Index],

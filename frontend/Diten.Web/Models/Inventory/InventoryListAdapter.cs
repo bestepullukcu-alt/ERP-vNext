@@ -143,7 +143,8 @@ public static class InventoryListAdapter
         return new Translation("?" + string.Join("&", parts), paging, null, null);
     }
 
-    public static List<StockLedgerRowViewModel> MapBalanceRows(IEnumerable<BalanceViewDto>? rows, MasterLabels labels) =>
+    /// <param name="lotNumbers">FIX-LIVE1: lotId → TRACE lot number for the page (<see cref="Diten.Web.Models.Traceability.LotNumberResolver"/>); none = every registered lot is unresolved.</param>
+    public static List<StockLedgerRowViewModel> MapBalanceRows(IEnumerable<BalanceViewDto>? rows, MasterLabels labels, IReadOnlyDictionary<string, string>? lotNumbers = null) =>
         (rows ?? []).Select(r => new StockLedgerRowViewModel
         {
             Id = string.Join("|", r.ItemId, r.SkuId, r.SkuLevel, r.WarehouseId, r.LocationId, r.LotId, r.StockStatus),
@@ -157,6 +158,8 @@ public static class InventoryListAdapter
             LocationId = r.LocationId,
             LocationLabel = labels.Location(r.LocationId),
             LotId = r.LotId,
+            LotNumber = r.LotId is not null && lotNumbers is not null && lotNumbers.TryGetValue(r.LotId, out var number) ? number : null,
+            LotUnresolved = Diten.Web.Models.Traceability.LotNumberResolver.Unresolved(r.LotId, lotNumbers ?? new Dictionary<string, string>()),
             StockStatus = r.StockStatus,
             OnHand = r.OnHand ?? "0",
             Reserved = r.Reserved ?? "0",
@@ -167,7 +170,8 @@ public static class InventoryListAdapter
             BaseUomId = r.BaseUomId
         }).ToList();
 
-    public static List<StockMovementRowViewModel> MapTransactions(IEnumerable<TransactionItemDto>? items, MasterLabels labels)
+    /// <param name="lotNumbers">WP-MVP1-FIX-LIVE3: lotId → TRACE lot number for the page (<see cref="Diten.Web.Models.Traceability.LotNumberResolver"/>); none = every registered lot is unresolved.</param>
+    public static List<StockMovementRowViewModel> MapTransactions(IEnumerable<TransactionItemDto>? items, MasterLabels labels, IReadOnlyDictionary<string, string>? lotNumbers = null)
     {
         var list = (items ?? []).ToList();
         // A REVERSAL carries sourceDocumentId = the original transactionId (parent ASSUMPTION-0173-05).
@@ -203,6 +207,8 @@ public static class InventoryListAdapter
                 ToLocationId = t.ToLocationId,
                 ToLocationLabel = labels.Location(t.ToLocationId),
                 LotId = t.LotId,
+                LotNumber = t.LotId is not null && lotNumbers is not null && lotNumbers.TryGetValue(t.LotId, out var number) ? number : null,
+                LotUnresolved = Diten.Web.Models.Traceability.LotNumberResolver.Unresolved(t.LotId, lotNumbers ?? new Dictionary<string, string>()),
                 FromStockStatus = t.FromStockStatus,
                 ToStockStatus = t.ToStockStatus,
                 SourceModule = t.SourceModule,
@@ -210,6 +216,8 @@ public static class InventoryListAdapter
                 SourceLineId = t.SourceLineId,
                 TransactionDate = t.TransactionDate,
                 PostingDate = t.PostingDate,
+                CreatedById = t.CreatedBy?.UserId,
+                CreatedByName = string.IsNullOrWhiteSpace(t.CreatedBy?.Name) ? null : t.CreatedBy!.Name!.Trim(),
                 ReversedOnPage = reversed,
                 CanReverse = IsReversible(t) && !reversed,
                 CanCorrect = IsCorrectable(t) && !reversed

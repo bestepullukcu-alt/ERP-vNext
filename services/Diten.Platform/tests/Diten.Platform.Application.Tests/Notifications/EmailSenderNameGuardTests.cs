@@ -28,7 +28,10 @@ public sealed partial class EmailSenderNameGuardTests
         Assert.True(offenders.Count == 0, "Sender-name setting found in: " + string.Join(", ", offenders));
     }
 
+    // TEST-HIZ-01: a whole-repository source scan, 6–7 s on a developer machine; left out of the local fast run
+    // (scripts/test-env/fast-local-tests.sh), CI runs it on every push.
     [Fact]
+    [Trait("Category", "Slow")]
     public void No_service_reads_a_sender_name_option_or_types_a_product_name_into_a_sender()
     {
         var offenders = new List<string>();

@@ -1,0 +1,9 @@
+process	port	state
+gateway	5000	LISTENING
+web	5001	LISTENING
+auth	5056	LISTENING
+platform	5057	LISTENING
+mdm	5059	LISTENING
+supplychain	5066	LISTENING
+cred-helper	5199	LISTENING
+lane-mongod	34994	LISTENING

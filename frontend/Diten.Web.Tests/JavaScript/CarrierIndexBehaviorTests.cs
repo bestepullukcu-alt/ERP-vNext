@@ -91,7 +91,7 @@ public sealed class CarrierIndexBehaviorTests
         Assert.Contains("document.getElementById('carriersSkeleton')", _script);
         Assert.Contains("const showLoadFailure = (correlation) =>", _script);
         Assert.Contains("if (response.status === 403) { showDenied(); callback({ data: [] }); return; }", _script);
-        Assert.Contains("L.ListUnavailable", _script);
+        Assert.Contains("L.ListErrorState", _script); // 7211cf3cc: ListUnavailable → camp ListErrorState
         Assert.DoesNotContain("window.showToast?.(L.PersistenceUnavailable, 'error');\n            callback({ data: [] });", _script);
     }
 

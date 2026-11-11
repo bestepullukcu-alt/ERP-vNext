@@ -25,6 +25,11 @@ public sealed class ShipmentSchema(IMongoDatabase db) : IHostedService
         await Index("sce_shipment_history", new BsonDocument { { "TenantId", 1 }, { "LegalEntityId", 1 }, { "ShipmentId", 1 }, { "Sequence", 1 } }, "history_sequence", ct);
         await db.GetCollection<BsonDocument>("sce_shipments").Indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(
          new BsonDocument { { "TenantId", 1 }, { "LegalEntityId", 1 }, { "Status", 1 }, { "PlannedDeliverAt", 1 } }), cancellationToken: ct);
+        // BL-501 (WP-A1): the central-audit outbox must exist before the first command enlists into it. The shared dispatcher
+        // creates its indexes in the background after start-up; a command transaction that meanwhile creates the same
+        // collection implicitly fails ("Conflicted registering namespace") and answers 500. Same index specs, so the
+        // dispatcher's later call is a no-op.
+        await new Diten.BuildingBlocks.CentralAudit.MongoCentralAuditOutboxStore(db).CreateIndexesAsync(ct);
         // Verify transactions really execute before accepting any traffic.
         using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
         session.StartTransaction();

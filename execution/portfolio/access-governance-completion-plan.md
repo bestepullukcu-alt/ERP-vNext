@@ -15,7 +15,7 @@ Every decision resolves against **one** of two distinct authority chains. Do not
 
 ### A. Module Identity Authority
 *Layer A scope: MOD-xxxx identifier, canonical name, and parent / FU / child relationship — nothing else.*
-1. **Blueprint** — `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx`, sheet `Blueprint_Data` (8.1 until 2026-10-19).
+1. **Blueprint** — `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx`, sheet `Blueprint_Data` (8.1 and 8.7 before).
 2. `execution/registries/module-id-registry.md`.
 3. `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 4. `verify_module_id.py` fail-closed result.

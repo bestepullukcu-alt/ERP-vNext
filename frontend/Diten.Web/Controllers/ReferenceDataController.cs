@@ -279,9 +279,7 @@ public sealed class ReferenceDataController : Controller
             return BadRequest(new { message = $"'{TenantHeaderName}' or JWT tenant_id claim is required." });
         }
 
-        var targetPath = string.IsNullOrWhiteSpace(relativePath)
-            ? "/api/v1/reference-data"
-            : $"/api/v1/reference-data/{relativePath.TrimStart('/')}";
+        if (!Diten.Web.Services.Proxy.ProxyPath.TryBuild("/api/v1/reference-data", relativePath, out var targetPath, out var refused)) return Diten.Web.Services.Proxy.ProxyPath.Refusal(refused); // WP-MVP1-SEC-PROXY1
         var targetUrl = $"{_gatewayUrl}{targetPath}{Request.QueryString}";
         var correlationId = ResolveCorrelationId();
         var stopwatch = Stopwatch.StartNew();

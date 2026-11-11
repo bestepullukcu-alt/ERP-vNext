@@ -108,74 +108,13 @@ const ceiling = (() => {
  * ceiling of this list is the list itself — MAIN_SYNC_2_PAGE_KEYS pins its exact keys, so a 33rd page is red, and a page
  * whose text is written (or that no longer exists) is red until its row leaves (the list only shrinks).
  */
-const { STOCK, MANUFACTURING, ESIGN, CRM, MAIN_SYNC_2_WHY } = require("./main-sync-owners");
+const { STOCK, MANUFACTURING, ESIGN, CRM, PLANNING, MAIN_SYNC_2_WHY, MAIN_SYNC_4_WHY } = require("./main-sync-owners");
 const MAIN_SYNC_2_PAGES = {
-  BLOCKEDDISPOSITION: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  BLOCKEDSTOCK: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  BOMS: { owner: MANUFACTURING, why: MAIN_SYNC_2_WHY },
-  DECISIONSUBMIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  ESIGNAUDITEXPORT: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNMEANINGS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNMYSIGNATURE: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNPOLICY: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNREQUESTS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNSAMPLEAPPROVALS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  ESIGNVERIFICATION: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
-  LOCATIONS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOCATIONTREE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTEDIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTMIGRATION: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTMOVEMENTS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  LOTTRACE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  QUARANTINEDECIDE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  QUARANTINEDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  QUARANTINEQUEUE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  QUARANTINESETTINGS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  RETESTQUEUE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  SERIALS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKLEDGER: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKLEDGERCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKMOVEMENTCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKMOVEMENTDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKMOVEMENTEDIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
-  STOCKMOVEMENTS: { owner: STOCK, why: MAIN_SYNC_2_WHY }
+  // WP-MVP1-FU-CLEAN2 (UXH-001): the 31 MVP-1 rows (Stok / e-imza) left — their help text is written; only BOMS (Manufacturing) remains
+  BOMS: { owner: MANUFACTURING, why: MAIN_SYNC_2_WHY }
 };
 const MAIN_SYNC_2_PAGE_KEYS = [
-  "BLOCKEDDISPOSITION",
-  "BLOCKEDSTOCK",
-  "BOMS",
-  "DECISIONSUBMIT",
-  "ESIGNAUDITEXPORT",
-  "ESIGNMEANINGS",
-  "ESIGNMYSIGNATURE",
-  "ESIGNPOLICY",
-  "ESIGNREQUESTS",
-  "ESIGNSAMPLEAPPROVALS",
-  "ESIGNVERIFICATION",
-  "LOCATIONS",
-  "LOCATIONTREE",
-  "LOTCREATE",
-  "LOTDETAILS",
-  "LOTEDIT",
-  "LOTMIGRATION",
-  "LOTMOVEMENTS",
-  "LOTS",
-  "LOTTRACE",
-  "QUARANTINEDECIDE",
-  "QUARANTINEDETAILS",
-  "QUARANTINEQUEUE",
-  "QUARANTINESETTINGS",
-  "RETESTQUEUE",
-  "SERIALS",
-  "STOCKLEDGER",
-  "STOCKLEDGERCREATE",
-  "STOCKMOVEMENTCREATE",
-  "STOCKMOVEMENTDETAILS",
-  "STOCKMOVEMENTEDIT",
-  "STOCKMOVEMENTS"
+  "BOMS"
 ];
 
 /*
@@ -190,6 +129,24 @@ const MAIN_SYNC_3_PAGES = {
   VISITWORKSPACE: { owner: CRM, why: MAIN_SYNC_2_WHY }
 };
 const MAIN_SYNC_3_PAGE_KEYS = ["COMPETITORPRODUCTS", "CRMDOCTORINSIGHTTHRESHOLDS", "OBJECTIONRESPONSES", "VISITEVIDENCESETTINGS", "VISITWORKSPACE"];
+
+/*
+ * WP-LANE-MAIN-SYNC-05 (main-sync 2026-10-16, origin/main 3912d568b = PR #146, owner decision in session) — the same rule
+ * for the fourth sync. One page: MOD-0188 Demand Planning. (WP number 05, list number 4: WP-LANE-MAIN-SYNC-04 is
+ * already the 2026-10-14 sync's, the finder on BL-645.)
+ *
+ * It arrived with `Help.DEMANDPLANNING.Purpose` in ZERO of the seven languages — measured, not assumed — and its page code
+ * comes from services/Diten.PlanningService/src/Diten.PlanningService.Api/ModuleRegistration/DemandPlanningManifestProvider.cs
+ * (PageCode "DEMANDPLANNING", RoutePath "/SupplyChain/DemandPlanning").
+ *
+ * Why this list and not a ledger row: the ledger's ceiling ("Tavan (yalnız azalır): kiracı 246 …") says in its own words
+ * that every new row after WP-LANE-UX-GUARDS-01 is red again, so a row there is a Control Tower ceiling decision. Why not
+ * write the text: the page is MOD-0188's and its user-facing wording is its owner's to choose (XMC-001).
+ */
+const MAIN_SYNC_4_PAGES = {
+  DEMANDPLANNING: { owner: PLANNING, why: MAIN_SYNC_4_WHY }
+};
+const MAIN_SYNC_4_PAGE_KEYS = ["DEMANDPLANNING"];
 
 
 describe("page help: text or a ledger row, and the ledger only shrinks", () => {
@@ -206,8 +163,18 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
 
   test("every tenant page — menu or manifest — has its help text in 7 languages or is named in the ledger", () => {
     const missing = tenantCodes.filter((code) => !hasText(code, TENANT_LANGS) && !tenantRows.includes(code)
-      && !MAIN_SYNC_2_PAGES[code] && !MAIN_SYNC_3_PAGES[code]);
+      && !MAIN_SYNC_2_PAGES[code] && !MAIN_SYNC_3_PAGES[code] && !MAIN_SYNC_4_PAGES[code]);
     expect(missing, "pages with no help text and no ledger row").toEqual([]);
+  });
+
+  test("WP-LANE-MAIN-SYNC-05: the fourth sync's page list is exactly its pinned keys, named, and only shrinks", () => {
+    expect(Object.keys(MAIN_SYNC_4_PAGES).sort(), "the list's keys ≠ its pin (adding or removing a row edits the pin too)")
+      .toEqual([...MAIN_SYNC_4_PAGE_KEYS].sort());
+    expect(Object.entries(MAIN_SYNC_4_PAGES).filter(([, row]) => !row || row.owner !== PLANNING || row.why !== MAIN_SYNC_4_WHY)
+      .map(([code]) => code), "a row without MOD-0188 as its owner or the fourth sync's reason").toEqual([]);
+    expect(Object.keys(MAIN_SYNC_4_PAGES).filter((code) => !tenantCodes.includes(code) || hasText(code, TENANT_LANGS)
+      || tenantRows.includes(code) || MAIN_SYNC_2_PAGES[code] || MAIN_SYNC_3_PAGES[code]),
+    "rows whose page has its text now, is in the ledger or an earlier sync's list, or no longer exists — remove them").toEqual([]);
   });
 
   test("WP-LANE-MAIN-SYNC-03: the third sync's page list is exactly its pinned keys, named, and only shrinks", () => {

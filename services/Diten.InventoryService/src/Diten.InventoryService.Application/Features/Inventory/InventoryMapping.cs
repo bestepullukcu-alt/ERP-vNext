@@ -20,7 +20,20 @@ public static class InventoryMapping
             TransactionNumber = transaction.TransactionNumber,
             PostedAt = Utc(transaction.CreatedAt),
             IdempotentReplay = idempotentReplay,
-            BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity)
+            BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity),
+            ExpiryChecks = transaction.ExpiryChecks is { } checks
+                ? new ExpiryChecksDto { Fefo = checks.Fefo, MinRemaining = checks.MinRemaining, ExceptionIds = [.. checks.ExceptionIds] }
+                : null,
+            ReservationConsumption = transaction.ReservationConsumption is { } consumption
+                ? new ReservationConsumptionDto
+                {
+                    ReservationId = consumption.ReservationId.ToString(),
+                    ConsumedQuantity = InventoryQuantity.ToWire(consumption.ConsumedQuantity),
+                    RemainingQuantity = InventoryQuantity.ToWire(consumption.RemainingQuantity),
+                    Status = WireNames.ToWire(consumption.Status),
+                    ClosedReason = consumption.ClosedReason
+                }
+                : null
         };
 
     public static BalanceViewDto ToBalanceView(BalanceSnapshot row, Guid legalEntityId, decimal? baseQuantity = null)
@@ -60,7 +73,35 @@ public static class InventoryMapping
             Status = WireNames.ToWire(ReservationStatus.Active),
             ReservedQuantity = InventoryQuantity.ToWire(reservation.Quantity),
             AvailableAfter = InventoryQuantity.ToWire(reservation.CreatedAvailableAfter),
-            Etag = ETag(1)
+            Etag = ETag(1),
+            // INVENTORY 1.6.0 (MOD-0173-FU03): the scope and the quantity held at creation (replayed verbatim like the rest)
+            WarehouseId = reservation.WarehouseId,
+            LotId = reservation.LotId?.ToString("D"),
+            RemainingQuantity = InventoryQuantity.ToWire(reservation.Quantity)
+        };
+
+    /// <summary>INVENTORY 1.6.0 <c>ReservationView</c> — the reservation as it is now; <c>etag</c> = its current version.</summary>
+    public static ReservationViewDto ToReservationView(InventoryReservation reservation)
+        => new()
+        {
+            ReservationId = reservation.Id.ToString(),
+            Status = WireNames.ToWire(reservation.Status),
+            ClosedReason = reservation.Status == ReservationStatus.Active ? null : reservation.ClosedReason,
+            ItemId = reservation.ItemId.ToString(),
+            SkuId = reservation.SkuId.ToString(),
+            SkuLevel = WireNames.ToWire(reservation.SkuLevel),
+            WarehouseId = reservation.WarehouseId,
+            LotId = reservation.LotId?.ToString("D"),
+            Quantity = InventoryQuantity.ToWire(reservation.Quantity),
+            RemainingQuantity = InventoryQuantity.ToWire(reservation.RemainingQuantity),
+            ReservationType = reservation.ReservationType,
+            SourceModule = reservation.SourceModule,
+            SourceDocumentId = reservation.SourceDocumentId,
+            SourceLineId = reservation.SourceLineId,
+            Priority = reservation.Priority,
+            ExpiresAt = reservation.ExpiresAt.HasValue ? Utc(reservation.ExpiresAt.Value) : null,
+            CreatedAt = Utc(reservation.CreatedAt),
+            Etag = ETag(reservation.Version)
         };
 
     public static ReservationResponseDto ToReleasedReservation(InventoryReservation reservation, decimal availableAfter)
@@ -72,8 +113,32 @@ public static class InventoryMapping
         };
 
     public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction)
+        => ToTransactionItem(transaction, null);
+
+    /// <summary>
+    /// WP-MVP1-FU-CLEAN2 (FU-0173-MOV-ACTORNAME) — the ONE read order of a movement's poster name: the name stored with the movement, else the
+    /// central audit queue's name for (posting correlation, posting user), else none. Every screen that names a poster reads it here.
+    /// </summary>
+    public static string? PostingName(InventoryTransaction transaction, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names)
+        => !string.IsNullOrWhiteSpace(transaction.CreatedByName) ? transaction.CreatedByName
+            : names is not null && names.TryGetValue((transaction.CorrelationId, transaction.CreatedBy), out var name) ? name : null;
+
+    /// <summary>The (correlation, user) pairs the queue is asked for: only rows with a user, a correlation and NO stored name.</summary>
+    public static List<(Guid CorrelationId, Guid ActorId)> QueueKeys(IEnumerable<InventoryTransaction> transactions)
+        => transactions.Where(t => t.CorrelationId != Guid.Empty && t.CreatedBy != Guid.Empty && string.IsNullOrWhiteSpace(t.CreatedByName))
+            .Select(t => (t.CorrelationId, t.CreatedBy)).Distinct().ToList();
+
+    /// <summary>
+    /// INVENTORY 1.5.0 (WP-MVP1-NAMES1): the row with its <c>createdBy</c> — <c>userId</c> = the posting user, <c>name</c> = the name STORED
+    /// at posting time (WP-MVP1-FU-CLEAN2, <c>CreatedByName</c>), else the entry of <paramref name="names"/> for (posting correlation, posting
+    /// user), else omitted. A posting without a user carries no <c>createdBy</c>.
+    /// </summary>
+    public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names)
         => new()
         {
+            CreatedBy = names is null || transaction.CreatedBy == Guid.Empty
+                ? null
+                : new TransactionCreatedByDto(transaction.CreatedBy.ToString("D"), PostingName(transaction, names)),
             TransactionId = transaction.Id.ToString(),
             TransactionNumber = transaction.TransactionNumber,
             MovementType = WireNames.ToWire(transaction.MovementType),
@@ -94,6 +159,7 @@ public static class InventoryMapping
             SourceDocumentId = transaction.SourceDocumentId,
             SourceLineId = transaction.SourceLineId,
             TransactionDate = Utc(transaction.TransactionDate),
-            PostingDate = Utc(transaction.PostingDate)
+            PostingDate = Utc(transaction.PostingDate),
+            ReservationId = transaction.ReservationId?.ToString()
         };
 }

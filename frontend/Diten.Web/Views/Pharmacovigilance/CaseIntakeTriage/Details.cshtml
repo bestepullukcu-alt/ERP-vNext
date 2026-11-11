@@ -53,6 +53,7 @@
                 <h6 class="mb-3">@Localizer["SubjectEventSection"]</h6>
                 <form id="pvg-triage-form" data-pvg-command-form>
                     @Html.AntiForgeryToken()
+                    <input type="hidden" name="ExpectedVersion" id="TriageExpectedVersion" />
                     <div class="mb-3">
                         <label class="form-label" for="TriageOutcome">@Localizer["TriageOutcome"] <span class="text-danger">*</span></label>
                         <select class="form-select" id="TriageOutcome" name="TriageOutcome" required>
@@ -84,6 +85,7 @@
                 <h6 class="mb-3">@Localizer["WorkflowSection"]</h6>
                 <form id="pvg-route-form" data-pvg-command-form>
                     @Html.AntiForgeryToken()
+                    <input type="hidden" name="ExpectedVersion" id="RouteExpectedVersion" />
                     <div class="mb-3">
                         <label class="form-label" for="RouteTargetQueue">@Localizer["RouteTargetQueue"] <span class="text-danger">*</span></label>
                         <select class="form-select" id="RouteTargetQueue" name="RouteTargetQueue" required>

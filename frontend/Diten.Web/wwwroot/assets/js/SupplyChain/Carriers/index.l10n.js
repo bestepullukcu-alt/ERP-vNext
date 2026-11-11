@@ -3,18 +3,18 @@
 (function () {
     const payload = document.getElementById('carriers-l10n');
     const requiredKeys = [
-        'Active', 'Actions', 'AddNewCarrier', 'Apply', 'AreYouSure', 'Cancel',
-        'CarrierCode', 'CarrierCodeConflict', 'CarrierNotFound', 'ChangeStatus',
+        'Active', 'ActionsHeader', 'AddNewCarrier', 'Apply', 'AreYouSure', 'Cancel',
+        'CarrierCode', 'ErrCarrierCodeConflict', 'ErrCarrierNotFound', 'ChangeStatus',
         'ColumnVisibility', 'ConfirmStatusChange', 'CreateReplaySuccess',
-        'CreateSuccess', 'DisplayName', 'EmptyList', 'ErrorOccurred', 'Filter',
-        'IdempotencyKeyReused', 'InternalError', 'InvalidCarrierTransition',
+        'CreateSuccess', 'DisplayName', 'EmptyState', 'ErrorOccurred', 'Filter',
+        'ErrIdempotencyKeyReused', 'ErrInternalError', 'ErrInvalidCarrierTransition',
         'ModeAir', 'ModeParcel', 'ModeRail', 'ModeRoad', 'ModeSea', 'Passive',
-        'PersistenceUnavailable',
-        'ListUnavailable', 'QuickView', 'RecordSaved', 'Reset', 'RetrySameRequest',
+        'ErrPersistenceUnavailable',
+        'ListErrorState', 'QuickView', 'RecordSaved', 'Reset', 'RetrySameRequest',
         'Save', 'SaveView', 'Search', 'ShowAll', 'Status', 'StatusActive',
         'StatusChangeConfirm', 'StatusReplaySuccess', 'StatusRetired',
         'StatusSuccess', 'StatusSuspended', 'SupportReference', 'SupportedModes',
-        'Unknown', 'ValidationError', 'ViewDetails'
+        'Unknown', 'ErrInvalidRequest', 'ViewDetails'
     ];
 
     const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);

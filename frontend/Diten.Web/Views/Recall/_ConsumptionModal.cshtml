@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@*
+    MOD-0177 R7a — "Tüketim beyanı ekle" (RECALL_CONSUMPTION_DECLARE, recall.consumptions.create): the customer declares the goods consumed. The
+    product is one of the customer's shipments (SKU + level from the scope); the unit is the shipment's base unit (the server checks: returned +
+    consumed ≤ shipped, RECALL_QUANTITY_EXCEEDS_SHIPPED).
+*@
+<div class="modal fade" id="rc-consume-modal" tabindex="-1" aria-labelledby="rc-consume-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="rc-consume-form" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="rc-consume-title">@Localizer["Recall.Cons.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-medium mb-3" id="rc-consume-customer"></p>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="rc-consume-sku">@Localizer["Recall.Cons.Product"]</label>
+                        <select class="form-select" id="rc-consume-sku"></select>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="rc-consume-qty">@Localizer["Recall.Cons.Quantity"] <span class="text-muted" id="rc-consume-unit"></span></label>
+                        <input type="number" class="form-control" id="rc-consume-qty" min="0" step="any" required />
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="rc-consume-date">@Localizer["Recall.Cons.Date"]</label>
+                        <input type="date" class="form-control" id="rc-consume-date" required />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rc-consume-evidence">@Localizer["Recall.Cons.Evidence"]</label>
+                        <input type="text" class="form-control" id="rc-consume-evidence" maxlength="1000" required />
+                    </div>
+                </div>
+                <div class="alert alert-danger small d-none mt-3 mb-0" id="rc-consume-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@Localizer["Recall.Sign.Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>

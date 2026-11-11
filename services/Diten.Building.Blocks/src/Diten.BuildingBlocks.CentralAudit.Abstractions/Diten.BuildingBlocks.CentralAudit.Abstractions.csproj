@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    BL-501 — the marker only (ICentralAuditDeclaration + CentralAuditMetadata), with NO dependencies, so a service's
+    Application layer can mark its commands without taking MongoDB / HTTP / hosting with it. Same namespace as the
+    forwarder (Diten.BuildingBlocks.CentralAudit): a command file needs one using whichever project it references.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Diten.BuildingBlocks.CentralAudit</RootNamespace>
+  </PropertyGroup>
+</Project>

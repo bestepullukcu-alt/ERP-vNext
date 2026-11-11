@@ -163,6 +163,18 @@ const LotForm = (function () {
         }
         state.busy = true;
         if (el.submit) el.submit.disabled = true;
+        // WP-0176-F5 (KF-D): a date that differs from the suggestion → the override (+ the MOD-0022 signature when asked) before createLot
+        if (!isEdit && window.ExpiryBands) {
+            const band = await window.ExpiryBands.lot.beforeSave('lot', b.lotNumber);
+            if (!band.ok) {
+                state.busy = false;
+                if (el.submit) el.submit.disabled = false;
+                if (byId('ex-band-lot-error')) byId('ex-band-lot-error').textContent = band.message || '';
+                ui.showAlert(byId('lot-form-alert'), band.message || t('Validation.FixFields'));
+                return;
+            }
+            if (band.dateOverride) b.dateOverride = band.dateOverride;
+        }
         const token = ui.antiforgery(form);
         const reply = await ui.postJson(isEdit ? `/Lots/edit/${encodeURIComponent(lotId)}` : '/Lots/create', b, token);
         if (reply.ok && reply.json?.success) { window.location.assign(reply.json.redirect || '/Lots'); return; }
@@ -171,7 +183,7 @@ const LotForm = (function () {
         if (reply.json?.fields) Object.entries(reply.json.fields).forEach(([f, m]) => fieldError(f, m));
         const error = reply.json?.error;
         if (error?.scope === 'field' && error.field) fieldError(error.field, error.message);
-        ui.showAlert(byId('lot-form-alert'), error?.message || ui.errorText(reply), error?.correlationId);
+        ui.showAlert(byId('lot-form-alert'), window.ExpiryBands?.lot.refusal(reply.json) || error?.message || ui.errorText(reply), error?.correlationId);
     };
 
     const bind = () => {
@@ -184,6 +196,12 @@ const LotForm = (function () {
             $(el.sku).on('change', checkDuplicate);
             el.lotNumber.addEventListener('input', checkDuplicate);
             el.lotNumber.addEventListener('change', () => { el.lotNumber.value = el.lotNumber.value.trim().toUpperCase(); checkDuplicate(); });
+            // WP-0176-F5 (KF-D): the date suggestion / override band of Yeni Lot
+            const band = window.ExpiryBands?.lot.attach('lot', {
+                manufacturing: 'lotManufacturingDate', expiry: 'lotExpiryDate', retest: 'lotRetestDate', band: 'ex-band-lot', use: 'ex-band-lot-use',
+                reasonGroup: 'ex-band-lot-reason-group', reason: 'ex-band-lot-reason', note: 'ex-band-lot-note'
+            }, () => ({ itemId: el.item.value, sku: el.sku.value }));
+            if (band) $(el.sku).on('change', band);
         }
         select2(el.country, { allowClear: true });
         Object.values(controlOf).forEach((c) => c?.addEventListener('input', renderChanges));

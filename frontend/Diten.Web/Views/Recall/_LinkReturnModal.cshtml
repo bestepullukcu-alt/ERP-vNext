@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@*
+    MOD-0177 R7a — "İadeyi bağla" (RECALL_RETURN_LINK, recall.returns.link; KR-H): links a customer return movement that was recorded elsewhere
+    to a customer of the case. 0177 creates NO movement (D-3, D-27).
+    WP-MVP1-FIX-LIVE2 (finding 7): with no customer in the scope the modal explains why and draws no bind button (case-detail.js openLink).
+*@
+<div class="modal fade" id="rc-link-modal" tabindex="-1" aria-labelledby="rc-link-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="rc-link-form" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="rc-link-title">@Localizer["Recall.Ret.Link"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="font-monospace small mb-3" id="rc-link-movement"></p>
+                <p class="small text-muted d-none mb-0" id="rc-link-none">@Localizer["Recall.Link.NoCustomers"]</p>
+                <div class="mb-3" id="rc-link-fields">
+                    <label class="form-label" for="rc-link-customer">@Localizer["Recall.CCol.Customer"]</label>
+                    <select class="form-select" id="rc-link-customer" required></select>
+                </div>
+                <div id="rc-link-reference-box">
+                    <label class="form-label" for="rc-link-reference">@Localizer["Recall.Link.Reference"]</label>
+                    <input type="text" class="form-control" id="rc-link-reference" maxlength="100" />
+                </div>
+                <div class="alert alert-danger small d-none mt-3 mb-0" id="rc-link-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary" id="rc-link-submit">@Localizer["Recall.Ret.Link"]</button>
+            </div>
+        </form>
+    </div>
+</div>

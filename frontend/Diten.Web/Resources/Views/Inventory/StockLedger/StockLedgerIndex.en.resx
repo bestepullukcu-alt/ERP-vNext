@@ -78,4 +78,5 @@
   <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Product master data does not state lot or serial tracking for this SKU, so the movement cannot be saved. Try again once the product master record is complete.</value></data>
   <data name="ErrItemNotActive" xml:space="preserve"><value>The product's status does not allow this movement type (draft, deactivated or retired). Nothing was changed.</value></data>
   <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>This product may be serial-tracked: stock cannot move at global SKU level. Choose the local SKU or finished good level.</value></data>
+  <data name="LotUnresolvedHint" xml:space="preserve"><value>lot number could not be read</value></data>
 </root>

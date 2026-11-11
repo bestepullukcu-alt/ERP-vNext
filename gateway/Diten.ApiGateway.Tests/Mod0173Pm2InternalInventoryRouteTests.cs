@@ -70,7 +70,7 @@ public sealed class Mod0173Pm2InternalInventoryRouteTests
         }
 
         Assert.Equal(1, internalOnes); // getStockPresence
-        Assert.Equal(6, routed); // the six 1.0.x operations
+        Assert.Equal(7, routed); // the six 1.0.x operations + getReservation (GET /reservations/{id}, INVENTORY 1.6.0, MOD-0173-FU03 DL-1, 372082aa0)
     }
 
     private static ((string Default, Dictionary<string, string> PerPath) Servers, List<(string Path, string Method)> Operations) InventoryContract()

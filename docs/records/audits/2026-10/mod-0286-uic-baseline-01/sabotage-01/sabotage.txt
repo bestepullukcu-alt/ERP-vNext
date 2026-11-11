@@ -1,0 +1,19 @@
+
+Golden DataTable Verify Report
+================================
+Passed: 7
+Failed: 2
+
+[PASS] Index.cshtml exists
+[PASS] _Filter.cshtml exists
+[PASS] _DataTable.cshtml exists
+[FAIL] _IndexL10n.cshtml exists
+  - Missing: /private/tmp/claude-501/-Users-alitufanoglu-ERP-vNext/05ce4e4b-9875-47e7-8842-ee9372026895/scratchpad/sab-run-01/frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml
+[PASS] index.js exists
+[FAIL] index.l10n.js exists
+  - Missing: /private/tmp/claude-501/-Users-alitufanoglu-ERP-vNext/05ce4e4b-9875-47e7-8842-ee9372026895/scratchpad/sab-run-01/frontend/Diten.Web/wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js
+[PASS] dt-defaults.js exists
+[PASS] backbone-custom.css exists
+[PASS] Slim reference has _CreateEditOffcanvas.cshtml
+
+Result: FAIL

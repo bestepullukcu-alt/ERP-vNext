@@ -18,6 +18,7 @@ public sealed class AuthPermissionOnboardingMongoCollectionDefinition
 }
 
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
 

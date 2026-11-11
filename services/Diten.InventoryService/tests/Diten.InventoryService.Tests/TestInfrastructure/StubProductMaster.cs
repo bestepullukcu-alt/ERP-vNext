@@ -28,6 +28,10 @@ public sealed class StubProductMaster : IProductMasterClient
     public void SetStockable(Guid skuId, bool? stockable) => _stockable[skuId] = stockable;
     private readonly ConcurrentDictionary<Guid, SkuUomInfo> _uoms = new();
     private readonly ConcurrentDictionary<Guid, bool> _down = new();
+    private readonly ConcurrentDictionary<Guid, (string Code, string? Name)> _display = new();
+
+    /// <summary>WP-MVP1-FIX-LIVE2: the display code (+ name for a product) PRODUCT-MASTER publishes — canonicalCode / name.</summary>
+    public void SetDisplay(Guid id, string code, string? name = null) => _display[id] = (code, name);
 
     public void AddItem(Guid itemId, bool lotControlled = false, bool serialControlled = false, string baseUomId = "EA")
         => _products[itemId] = new ProductReference(itemId.ToString(), "Active", baseUomId, lotControlled, serialControlled);
@@ -78,7 +82,9 @@ public sealed class StubProductMaster : IProductMasterClient
     public Task<ProductReference?> GetProductAsync(Guid itemId, CancellationToken cancellationToken = default)
     {
         ThrowIfDown([itemId]);
-        return Task.FromResult(_products.TryGetValue(itemId, out var p) ? p with { LifecycleStatus = Lifecycle(itemId) } : null);
+        return Task.FromResult(_products.TryGetValue(itemId, out var p)
+            ? p with { LifecycleStatus = Lifecycle(itemId), CanonicalCode = _display.TryGetValue(itemId, out var d) ? d.Code : null, Name = _display.TryGetValue(itemId, out var n) ? n.Name : null }
+            : null);
     }
 
     public Task<SkuReference?> GetSkuAsync(Guid skuId, SkuLevel level, CancellationToken cancellationToken = default)
@@ -93,7 +99,8 @@ public sealed class StubProductMaster : IProductMasterClient
         return Task.FromResult<SkuReference?>(s with
         {
             LifecycleStatus = Lifecycle(skuId), LotControlled = lot, SerialControlled = serial,
-            Stockable = _stockable.TryGetValue(skuId, out var stockable) ? stockable : null
+            Stockable = _stockable.TryGetValue(skuId, out var stockable) ? stockable : null,
+            CanonicalCode = _display.TryGetValue(skuId, out var display) ? display.Code : null
         });
     }
 

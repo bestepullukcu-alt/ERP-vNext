@@ -124,8 +124,10 @@ public sealed class LotSerialTrackingManifestCompletenessTests
             .Concat(typeof(TraceController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true)))
             .Select(a => a.Policy!["Permission:".Length..])
-            .Concat([TracePermissions.LotsUpdate, TracePermissions.LotsUpdateReleased]) // PATCH: the key follows the lot status
+            .Concat(typeof(TraceController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .SelectMany(m => m.GetCustomAttributes<HasAnyPermissionAttribute>(inherit: true)).SelectMany(a => a.Permissions)) // WP-MVP1-FIX-LIVE3: PATCH
             .ToHashSet(StringComparer.Ordinal);
+        Assert.Contains(TracePermissions.LotsUpdateReleased, enforced); // read from the attribute now, not added by hand
         Assert.Contains(TracePermissions.GenealogyLink, enforced); // the API-only key, so the scan is not vacuous
 
         var manifest = Provider.GetManifest();

@@ -1,0 +1,11 @@
+# verify from: repository root
+# NOT FOR VERIFICATION — records the bytes measured on 2026-10-11. Nothing was changed.
+# NOTE: the manifest first-line convention is TP-001's own; the docs-organization clause
+#       that formerly required it was withdrawn unapproved in 63fa9cd59.
+#
+6cc601c91a6340fc2386266149aef34e94620008e85d4da0241c7559bc5228d5  execution/domains/master-data-management/module-packs/MOD-0220-legal-entity-foundation.md
+e821e0a5475281dc791347020705651831b545c515bffb65d00fe65348251cea  execution/registries/module-id-registry.md
+af5e4f5c2f65074de7ef83e5fe03f0dbe1a49031b9e343cbe54f845cc6767479  services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs
+4b06ed84e45d2acd679e75fbcf10ca1f440e06ac381564f8c02de4471bf2d387  services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntityLookupsController.cs
+# --- source artifacts, read-only, measured in /Users/natig/Projects/ERP-vNext ---
+c18d6f98c127b148e6220fcae7ec43140e90aecdb18db06797be34d262c01a0a  contracts/openapi/mod-0220.openapi.yaml

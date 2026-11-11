@@ -77,7 +77,8 @@ public sealed partial class StockMovementsController : Controller
         if (model is null || !Guid.TryParse(model.IdempotencyKey, out var key))
             return Refuse(StatusCodes.Status400BadRequest, InventoryListAdapter.InvalidFilter, null);
 
-        var check = MovementRules.Check(model, model.Entry ? MovementRules.EntryTypes : MovementRules.ManualTypes, MovementKey(key));
+        // WP-0177-R7c (KR-H): the new-movement form posts FormTypes (the 7 manual types + CUSTOMER_RETURN); the correction below keeps ManualTypes
+        var check = MovementRules.Check(model, model.Entry ? MovementRules.EntryTypes : MovementRules.FormTypes, MovementKey(key));
         if (!check.IsValid)
             return FieldErrors(check.Errors);
         if (await RetestRefusalAsync(model, cancellationToken) is { } retest)
@@ -221,12 +222,19 @@ public sealed partial class StockMovementsController : Controller
             items.SelectMany(t => new[] { t.ToWarehouseId, t.ToLocationId }),
             cancellationToken);
 
+        // WP-MVP1-FIX-LIVE3: the LOT column shows the lot number (the S-1 FIX-LIVE1 rule) — one TRACE listLots per SKU of the page (never per
+        // row), only with the caller's own trace.lots.read; a registered lot that cannot be read stays unresolved (the page says "unknown lot").
+        var lotNumbers = await LotNumberResolver.ResolveAsync(
+            _permissions.Has(LotNumberResolver.ReadKey) ? TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User) : null,
+            items.Select(t => new LotNumberResolver.Row(t.LotId, t.SkuId, t.SkuLevel)),
+            cancellationToken);
+
         var total = page.Total ?? items.Count;
         return Json(new
         {
             data = new
             {
-                items = InventoryListAdapter.MapTransactions(items, labels),
+                items = InventoryListAdapter.MapTransactions(items, labels, lotNumbers),
                 total,
                 filteredTotal = total
             },
@@ -500,6 +508,15 @@ public sealed partial class StockMovementsController : Controller
     /// A MOD-0173 refusal of a movement, placed where it belongs (field / form / page / restart — pack §13). With a
     /// <paramref name="reversalNumber"/> it is the partial-correction answer: the reversal stands, this movement did not.
     /// </summary>
+    /// <summary>
+    /// WP-0177-R7c (KR-C): INVENTORY 1.4.0 422 LOT_UNDER_RECALL — the case number travels to the form, whose recall band words the refusal with
+    /// the same sentence (another company's case: its number only, never its id — CT-R7). Nothing else of the details is passed.
+    /// </summary>
+    public static Dictionary<string, object?>? RecallRefusalDetails(string? code, IReadOnlyDictionary<string, object?>? details)
+        => code == "LOT_UNDER_RECALL"
+            ? new Dictionary<string, object?>(StringComparer.Ordinal) { ["recallCaseNumber"] = MovementErrorFields.Detail(details, "recallCaseNumber") }
+            : null;
+
     private IActionResult MovementRefusal(GatewayReply reply, MovementSubmitViewModel model, MovementRules.SourceRow? source, string? reversalNumber)
     {
         var code = reply.Error?.Code;
@@ -518,6 +535,22 @@ public sealed partial class StockMovementsController : Controller
         }
 
         _logger.LogWarning("Movement refused with {Status} {Code} (correlation {CorrelationId}).", reply.StatusCode, code, reply.Error?.CorrelationId ?? reply.CorrelationId);
+        var expiry = ExpiryRefusalDetails(code, details);
+        // WP-0177-R7c: LOT_UNDER_RECALL rides the same seam (its case number only)
+        expiry ??= RecallRefusalDetails(code, details);
+        if (expiry is not null)
+        {
+            // WP-0176-F5 seam (CT decision A): the FEFO / minimum-shelf-life bands need the server's details (CT-F1: requiredToStockStatus)
+            return new JsonResult(new
+            {
+                partial = reversalNumber is not null,
+                reversalNumber,
+                error = new { code, message, scope, field, correlationId = reply.Error?.CorrelationId ?? reply.CorrelationId, details = expiry },
+                contractVersion = InventoryProxy.ContractVersion
+            })
+            { StatusCode = reply.StatusCode == 0 ? StatusCodes.Status503ServiceUnavailable : reply.StatusCode };
+        }
+
         return new JsonResult(new
         {
             partial = reversalNumber is not null,
@@ -528,8 +561,35 @@ public sealed partial class StockMovementsController : Controller
         { StatusCode = reply.StatusCode == 0 ? StatusCodes.Status503ServiceUnavailable : reply.StatusCode };
     }
 
-    /// <summary>The receipt (UI-10): what was posted, the service's number and the balance row it left (balanceSnapshot).</summary>
-    private static async Task<MovementReceiptViewModel> ReceiptAsync(InventoryGatewayClient gateway, MovementSubmitViewModel model,
+    /// <summary>WP-0176-F5 seam: the three MOD-0176 hook codes whose details the bands read (no other code carries details).</summary>
+    public static readonly IReadOnlySet<string> ExpiryRefusalCodes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "FEFO_BYPASS_REASON_REQUIRED", "FEFO_ORDER_VIOLATION", "LOT_BELOW_MIN_REMAINING_SHELF_LIFE"
+    };
+
+    /// <summary>The details keys the bands may see — anything else the service sent is dropped.</summary>
+    public static readonly IReadOnlyList<string> ExpiryDetailKeys =
+        ["firstEligibleLotId", "lotNumber", "expiryDate", "requiredToStockStatus", "remainingDays", "requiredDays"];
+
+    /// <summary>The whitelisted details of an expiry refusal; null for every other code (the pre-F5 answer, unchanged).</summary>
+    public static Dictionary<string, object?>? ExpiryRefusalDetails(string? code, IReadOnlyDictionary<string, object?>? details)
+    {
+        if (code is null || !ExpiryRefusalCodes.Contains(code)) return null;
+        var kept = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var key in ExpiryDetailKeys)
+        {
+            if (details is not null && details.TryGetValue(key, out var value) && value is not null) kept[key] = value;
+        }
+
+        return kept;
+    }
+
+    /// <summary>
+    /// The receipt (UI-10): what was posted, the service's number and the balance row it left (balanceSnapshot). WP-MVP1-FIX-LIVE2 (finding 9):
+    /// the lot is shown by its NUMBER — one TRACE listLots for the movement's SKU, only with the caller's own trace.lots.read (the FIX-LIVE1
+    /// LotNumberResolver pattern); unreadable → the id with a hint. The product / SKU text is the form's (ForCreate reads itemText / skuText).
+    /// </summary>
+    private async Task<MovementReceiptViewModel> ReceiptAsync(InventoryGatewayClient gateway, MovementSubmitViewModel model,
         MovementRules.Checked check, PostedMovementDto posted, CancellationToken cancellationToken)
     {
         var payload = check.Payload!;
@@ -540,6 +600,11 @@ public sealed partial class StockMovementsController : Controller
             cancellationToken);
         string? Place(string? warehouse, string? location) =>
             warehouse is null ? null : $"{labels.Location(warehouse) ?? warehouse} / {labels.Location(location) ?? location}";
+        var lots = await LotNumberResolver.ResolveAsync(
+            _permissions.Has(LotNumberResolver.ReadKey) ? TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User) : null,
+            [new LotNumberResolver.Row(Field("lotId"), Field("skuId"), Field("skuLevel")), new LotNumberResolver.Row(snapshot?.LotId, Field("skuId"), Field("skuLevel"))],
+            cancellationToken);
+        string? Number(string? lotId) => lotId is not null && lots.TryGetValue(lotId, out var number) ? number : null;
 
         return new MovementReceiptViewModel
         {
@@ -556,12 +621,18 @@ public sealed partial class StockMovementsController : Controller
             ToText = Place(Field("toWarehouseId"), Field("toLocationId")),
             ToStockStatus = Field("toStockStatus") ?? Field("fromStockStatus"),
             LotId = Field("lotId"),
+            LotNumber = Number(Field("lotId")),
+            LotUnresolved = LotNumberResolver.Unresolved(Field("lotId"), lots),
             SerialCount = payload.TryGetValue("serialIds", out var serials) && serials is IReadOnlyList<string> list ? list.Count : 0,
             DocumentNo = Field("sourceDocumentId"),
             TransactionDate = Field("transactionDate"),
             PostingDate = Field("postingDate"),
+            RecordedById = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            RecordedByName = MovementReceiptViewModel.PostingName(User),
             BalanceLocationText = Place(snapshot?.WarehouseId, snapshot?.LocationId),
             BalanceLotId = snapshot?.LotId,
+            BalanceLotNumber = Number(snapshot?.LotId),
+            BalanceLotUnresolved = LotNumberResolver.Unresolved(snapshot?.LotId, lots),
             BalanceStatus = snapshot?.StockStatus,
             BalanceOnHand = snapshot?.OnHand,
             BalanceAvailable = snapshot?.Available,

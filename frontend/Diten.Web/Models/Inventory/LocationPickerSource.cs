@@ -121,33 +121,11 @@ public sealed class LocationPickerSource
         var reply = await _gateway.GetAsync("/api/locations" + query, cancellationToken);
         if (!reply.IsSuccess) return PickerResult.Unavailable;
 
-        var options = new List<PickerOption>();
-        try
-        {
-            using var doc = JsonDocument.Parse(reply.Body);
-            if (doc.RootElement.ValueKind == JsonValueKind.Object
-                && doc.RootElement.TryGetProperty("items", out var items)
-                && items.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in items.EnumerateArray())
-                {
-                    var id = Text(item, "locationId");
-                    if (string.IsNullOrWhiteSpace(id)) continue;
-                    var code = Text(item, "code");
-                    var name = Text(item, "name");
-                    var label = string.IsNullOrWhiteSpace(code) ? name
-                        : string.IsNullOrWhiteSpace(name) || string.Equals(name, code, StringComparison.OrdinalIgnoreCase) ? code
-                        : $"{code} · {name}";
-                    options.Add(new PickerOption(id, string.IsNullOrWhiteSpace(label) ? id : label));
-                }
-            }
-        }
-        catch (JsonException)
-        {
-            return PickerResult.Unavailable;
-        }
-
-        return new PickerResult(options, true);
+        // FIX-LIVE1: the one LOCATION row reader (LocationRef.locationId), shared with Expiry and Quarantine.
+        var options = LocationOptions.Parse(reply.Body);
+        return options is null
+            ? PickerResult.Unavailable
+            : new PickerResult(options.Select(o => new PickerOption(o.Value, o.Text)).ToList(), true);
     }
 
     private static string? Text(JsonElement item, string name) =>

@@ -24,6 +24,12 @@ public static class HasPermissionReflector
                 AddAll(keys, attr);
             }
 
+            // WP-MVP1-SEC-ESIGN1 — [HasAnyPermission(a, b, …)]: every accepted key is registered.
+            foreach (var attr in controllerType.GetCustomAttributes<HasAnyPermissionAttribute>(inherit: true))
+            {
+                foreach (var key in attr.Permissions) Add(keys, key);
+            }
+
             // Action-level [HasPermission].
             var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             foreach (var method in methods)
@@ -31,6 +37,11 @@ public static class HasPermissionReflector
                 foreach (var attr in method.GetCustomAttributes<HasPermissionAttribute>(inherit: true))
                 {
                     AddAll(keys, attr);
+                }
+
+                foreach (var attr in method.GetCustomAttributes<HasAnyPermissionAttribute>(inherit: true))
+                {
+                    foreach (var key in attr.Permissions) Add(keys, key);
                 }
             }
         }

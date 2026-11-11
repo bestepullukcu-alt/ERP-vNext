@@ -74,6 +74,14 @@ public sealed class CorrelationOptions
     /// </summary>
     public bool TrustInboundCorrelation { get; set; } = true;
 
+    /// <summary>
+    /// Q151 D2 — when set (only the gateway sets it, at runtime; never committed), the edge mints self-authenticating
+    /// ids (<see cref="SignedCorrelation"/>) and, although <see cref="TrustInboundCorrelation"/> is off, adopts an
+    /// inbound id that carries its OWN valid signature. A client can then present a lifecycle root the gateway issued
+    /// (a shipment's transitions, returns, claims), but still cannot choose any other value. Empty keeps INTX FIX2 exactly.
+    /// </summary>
+    public string? SigningKey { get; set; }
+
     /// <summary>The header that carries the CLIENT's own correlation value, kept apart from the server's.</summary>
     public string ClientHeaderName { get; set; } = "X-Client-Correlation-Id";
 }

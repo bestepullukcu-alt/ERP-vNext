@@ -128,13 +128,15 @@ Pack `ready-for-dev`'e geçmeden önce **Ready-for-dev Checklist** bölümündek
 - [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor; servisin denetim altyapısı var ya da `Dependencies`'te engel olarak yazılı (AUD-001)
 - [ ] Record Codes tablosu kodlu her türü içeriyor; yeni önekler RCS-001 §3 tablosuna eklendi; modül kendi sayacını yazmıyor (RCS-001)
 - [ ] Kapsam dışı bir modülde değişiklik gerekiyorsa kullanıcıya soruldu ve cevap `Dependencies` / `Follow-up Items`'ta yazılı (XMC-001)
+- [ ] `Teslim dilimleri` tablosu var; paketin tamamını tek WP almıyor (CT-APR-02)
+- [ ] Onaydan önce bağımsız inceleme yapıldı (Codex ya da Claude, ayrı oturum); bulgu dosyası ve `execution/approvals/reviews.tsv` satırı hazır, açık ENGEL yok (SOP §20.4)
 
 
 ---
 
 ## Module ID Canonicalization Gate (DCP-002)
 
-The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
+The Blueprint (`docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx` :: `Blueprint_Data`) is the canonical authority for every `MOD-xxxx` ID and canonical name. Master 7 is historical predecessor evidence only. Before creating or reserving any `MOD-xxxx` (new module, FU/child, or reservation):
 
 1. **Blueprint lookup** — the ID + canonical name must exist in `Blueprint_Data`, or the ID must be an FU/child of an existing Blueprint MOD parent.
 2. **Registry collision** — it must not already map to a different capability in `execution/registries/module-id-registry.md`.

@@ -1,0 +1,3318 @@
+---
+id: MOD-0178
+name: Putaway / Picking / Packing
+domain: supply-chain-execution
+service: Diten.InventoryService
+shell: tenant
+golden_reference: slim
+data_mode: server
+screens:
+  - module: PutawayTasks
+    data_mode: server
+  - module: WarehouseLocationRoles
+    data_mode: server
+  - module: OutboundShipments
+    data_mode: server
+  - module: PickTasks
+    data_mode: server
+  - module: WarehouseExceptions
+    data_mode: server
+  - module: WarehouseActivity
+    data_mode: server
+entity_base: EntityBase
+status: ready-for-dev
+approval_status: pending
+revision: "r27 (2026-11-11) — r26 (sha256 96f16ad1…) bağımsız incelemesi (docs/records/reviews/MOD-0178/2026-11-11-96f16ad1.md; KOŞULLU, 0 ENGEL, 2 ORTA, 5 DÜŞÜK) F-1…F-7 tek geçişte kapatıldı (§19.1.26): Item yayın kapısı WAREHOUSE-OUTBOUND 1.1.0 + WMS-BUNDLE 1.2.0 aynı CT adımında (F-1); aynı adlı rol atlanır, anahtar verilmez, denetime atlandı (sahip kararı Beste 2026-11-11, F-2; AC-76 (f) + sabotaj); MOD-0018-FU31 kaynağı (F-3); WAREHOUSE-OUTBOUND 1.1.0 kaynakları paketin kararları (F-4); hat notları (F-5); Q-EA-4 sahip teyidi + FU-0178-EA-NOTE (sahip teyidi Beste 2026-11-11, F-6); §12 öneri / Q-13 etiketi / dependencies (F-7). S1 / S2 / S3 davranışı değişmez; onay satırı yeni sürüme, onaylayıcı Ali. Önceki: r26 (2026-11-11) — r25'ten (sha256 b24ff825…, sahip onaylı 2026-11-02) sonra kapanan kararları işler (§19.1.25): WMS-BUNDLE 1.0.0 FROZEN + 1.1.0 eklemeli (CT 2026-11-10, AC-60, K-1 / K-2 sahip kararları Beste 2026-11-10), FU-0178-PKS-01 ve FU-0178-RCS-02 kapandı + Q-EA-4 karar verildi (WP-MOD0178-ANTIGRAVITY-ROWS, sahip onayı Beste 2026-11-10), §14.3 rol şablonu bütün yetkili kiracılarda beş koşulla (sahip kararı Beste 2026-11-11, Auth WP MOD-0018-FU31 — Ali), dilim durumu (§19.6), `WarehouseErrorCodes.All` düşük bulgusu (FU-0178-ERRCAT-01). S1 / S2 / S3 davranışı değişmez. EES 2.14 altında yeniden onay için yeni sürüm gerekir: r25'in eski inceleme satırları sıra bozan (reorder) bir merge'e bağlanıyor (araç sahibi Ali; PR #402). Onay satırı yeni sürüme yazılır; onaylayıcı Ali. Önceki: r25 (2026-11-02) — bağımsız son bakış 03 (hedef 259442c2, KOŞULLU, 0 ENGEL, 1 ORTA, 6 DÜŞÜK) F-1…F-7 tek geçişte kapatıldı (§19.1.24; S-101); yeniden inceleme ve onay ister. Önceki: r24 (2026-11-02) — bağımsız son bakış 02 (hedef 0d5b72bd, KOŞULLU, 0 ENGEL, 1 ORTA, 9 DÜŞÜK) F-1…F-10 tek geçişte kapatıldı (§19.1.23; S-101); yeniden inceleme ve onay ister. Önceki: r23 (2026-11-02) — bağımsız son bakış 01 (hedef fa84a0b8, KOŞULLU, 5 ORTA, 12 DÜŞÜK) F-1…F-17 ve inceleme 19 tur 3 F-1 kapatıldı (§19.1.22); yeniden inceleme ve onay ister. Önceki: r22 (2026-11-02) — inceleme 19 tur 2 (hedef 63a49c83, KOŞULLU, 1 ORTA, 3 DÜŞÜK) F-1…F-4 kapatıldı (§19.1.21); yeniden inceleme ve onay ister. Önceki: r21 (2026-11-02) — bağımsız inceleme 19 (hedef a0eadfa1, KOŞULLU, 4 ORTA, 7 DÜŞÜK) F-1…F-11 tek geçişte kapatıldı (§19.1.20); yeniden inceleme ve onay ister. Önceki: r20 (2026-11-02) — S2 revizyonu: sahip kararı Beste 2026-11-02 \"S2 revizyonu başlasın\". r19 (sha256 9b4be5e3…1decf) onaylıydı; r20 S2 (DL-4 outbound + tahsis, DL-5 pick / pack / ReadyToShip / Shipped, DL-6 S2 ekranları) ve S3 (DL-7 izleme ekranları) bölümlerini iskeletten bağlayıcıya çevirir (W-5 karşılığı MOD-0173-FU03), DL-3 / DL-8 CT kayıtlarının paket düzeltmelerini işler (AC-22 --api-profile proxy, §11.2 rules.js + warehouse.css, §8.6 / AC-42 raf önerisi notu, §11.3a şirket kodu sahip kararı C, §15 host localhost). S1 davranışı değişmez. Yeni sürüm: yeniden bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ister."
+status_note: "ready-for-dev — r27 (2026-11-11): r26 bağımsız incelemesi (2026-11-11-96f16ad1, KOŞULLU, 2 ORTA, 5 DÜŞÜK) F-1…F-7 kapatıldı (§19.1.26); r27 onay bekliyor (approval_status: pending; onaylayıcı Ali); onay satırı hat PR'ı main'e girdikten sonra ya da onunla birlikte (inceleme F-5). r26 (2026-11-11): r25 sonrası kapanan kararlar işlendi (§19.1.25); r26 onayı yerine r27 — EES 2.14: r25'in eski inceleme satırları sıra bozan merge'e bağlandığı için (PR #402) yeniden onay yeni sürümle. Dilimler: DL-1…DL-6 + DL-8 CT-VERIFIED ve main'de (PR #397), DL-7 CT-VERIFIED MVP-1 hattında (94d40e853); canlıya çıkıştan önce açık: AC-76 (MOD-0018-FU31), canlı E3 ölçümü, FU-0178-MVP6 (§19.6). r25 (2026-11-02): son bakış 03 bulguları işlendi, yeniden inceleme ve onay bekliyor (revision). r24: son bakış 02. r23: son bakış 01 ve inceleme 19 tur 3. r22: inceleme 19 tur 2. r21: inceleme 19 tur 1. r20: S2 / S3 bağlayıcı. Önceki not: ready-for-dev — P0 (MOD-0178 pack + WMS-BUNDLE taslağı), MVP-1 CT (W-10) için 2026-10-21. Sahip kararları W-1 (Build), W-2 (Diten.InventoryService 5067, ayrı bounded context, ikinci bakiye yok), W-3 (MOD-0179 ertelendi), W-4 (GOODS_ISSUE_SALES MOD-0183'ün), W-5 (lot / lokasyon rezervasyonu MVP-1 CT'den), W-10, E-1, E-2, E-6 bağlayıcı (§19.1). Paket soruları Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2 ve mockup incelemesi kararları M-1…M-6 sahip kararıyla kapandı (Beste 2026-10-21, §19.1.1, §19.1.2). Bağımsız inceleme 01 (hedef 0cb3940af, KOŞULLU) bulguları F-1…F-16 işlendi (§19.1.3); inceleme 02 (hedef 5f7833253, KOŞULLU) bulguları F-1…F-10 işlendi (§19.1.4); inceleme 03 (hedef 367e8ff78, KOŞULLU, ENGEL yok) bulguları F-1…F-5 + inceleme 02 F-5 kalanı işlendi (§19.1.5); inceleme 04 (hedef 13d343c9a, KOŞULLU) bulguları F-1…F-4 işlendi (§19.1.6); inceleme 05 ön kontrolü (hedef 1f185d6a4, KOŞULLU, bağımsız değil) bulguları F-1…F-5 + akış tablosu işlendi (§19.1.7); bağımsız inceleme 05 (hedef 0f0cf322c, oturum d2ae856a, KOŞULLU, ENGEL yok) bulguları F-1…F-7 işlendi (§19.1.8); bağımsız inceleme 06 (hedef d86c1123e, oturum 0e2faf59, KOŞULLU, ENGEL yok) bulguları F-1…F-6 işlendi (§19.1.9); bağımsız inceleme 07 (hedef 6b6af2664, oturum 6217bf78, KOŞULLU, ENGEL yok) bulguları F-1…F-5 işlendi (§19.1.10); bağımsız inceleme 08 (hedef 58c2cd6e6, oturum 55a37ec9, KOŞULLU, ENGEL yok) bulguları F-1…F-5 işlendi — F-1 sahip kararıyla: BL-501 olduğu gibi, merkezi denetim yalnız başarılı komutlarda (§19.1.11); bağımsız inceleme 09 (hedef 963f6230a, oturum 88fcdff2, KOŞULLU, ENGEL yok) bulguları F-1…F-5 işlendi (§19.1.12); bağımsız inceleme 10 (hedef b456a9b22, oturum c90bad53, KOŞULLU, ENGEL yok) bulguları F-1…F-3 işlendi — yaratma dışı komutların istek idempotency'si, 0-satır (D) dalı, AC-15 sayımları (§19.1.13); bağımsız inceleme 11 (hedef ed521029f, oturum 708cc355, KOŞULLU, ENGEL ve ORTA yok) bulguları F-1…F-3 sahip kararıyla işlendi — onay cevabında `seq`, anahtar kapsamı (kullanıcı + operasyon), yaratmada her yinelenen kayıt hatasında anahtar araması, (D) tükenmesi (§19.1.14); bağımsız inceleme 12 (hedef 1b4350fe6, oturum 771fbbcf, KOŞULLU) F-1…F-4 ve Codex incelemesi (sahip tarafından, CONDITIONAL PASS) P1 / P2 sahip kararıyla işlendi — `CreatedBy` alanı, seri slot replay'i, `RequestOp` ölçümü, WMS `details.seq` / `ConfirmPutawayTaskResult`, `pack_approval.slices()` uyumlu teslim dilimleri (DL-1…DL-8), commit sonucu bilinmeyen posting → Pending (§19.1.15); bağımsız inceleme 13 (hedef 53afff318, oturum 075041e2, KOŞULLU, ENGEL ve ORTA yok) F-1…F-3 sahip kararıyla işlendi — eşleme notları, iptal, uzun Pending rozeti (bilinçli kabul; deneme sınırı yok) (§19.1.16); bağımsız inceleme 14 (hedef ac2971beb, oturum c4e41a9c, KOŞULLU, ENGEL ve ORTA yok) F-1…F-3 sahip kararıyla işlendi — bayrak öncelik sırası, S3 istisna türü adı, `LongPendingMinutes` açılış çapraz doğrulaması (§19.1.17); bağımsız inceleme 15 (hedef 778bcd5c9, oturum d1dc112d, KOŞULLU, ENGEL ve ORTA yok) F-1 / F-2 işlendi — `PostingRefused` yalnız çözümsüz Refused'dan, S3 türü `PostingIntegrityError` (§19.1.18). Onay yok; açık sorular yalnız diğer ekiplerde + Q-10 (§19.5). golden_reference / form_field_count yalnız S1 ekranları içindir (§9); r20: S2 / S3 ekranları screens listesinde, S2 Outbound ekranı compact (§9, §11.5)."
+owner: supply-chain-execution / mvp-1 control-tower
+branch: feature/sce/mod-0178-putaway-picking-packing
+started: 2026-10-21
+target: 2026-12-31
+form_field_count: 6
+dependencies: [MOD-0173, MOD-0173-FU02, MOD-0173-FU03 (W-5, S2), MOD-0040-FU02 (kayıt kodu servisi; WMS türleri DL-8 — o gelene kadar geçici sayaç), MOD-0174, MOD-0175, MOD-0176, MOD-0177, MOD-0290, MOD-0290-FU04 (Item / Material Master — W-6 Item outbound, S2), INVENTORY-BUNDLE-v1.5.0, LOCATION-v1.1.0, TRACE-v1.4.0, QUARANTINE-v1.3.0, FEFO-BUNDLE-v1.3.0, RECALL-BUNDLE-v1.9.0, WAREHOUSE-OUTBOUND-v1.0.0 (owned), WMS-BUNDLE-v1.1.0 (owned), SHIPMENT-BUNDLE-v3.4.0 (MVP-6, read only), BL-501 (central audit), BL-565 (RCS-001 shared code service — not built), DEV-0000]
+---
+
+# MOD-0178 — Putaway / Picking / Packing
+
+> **Revizyon r27 (2026-11-11).** r26 (sha256 `96f16ad1…`, commit `7c25dace7`) bağımsız incelemesi
+> (`docs/records/reviews/MOD-0178/2026-11-11-96f16ad1.md`; KOŞULLU, 0 ENGEL, 2 ORTA, 5 DÜŞÜK) F-1…F-7 tek geçişte kapatıldı — §19.1.26.
+> (F-1) Item yayın kapısı ancak WAREHOUSE-OUTBOUND 1.1.0 **ve** WMS-BUNDLE 1.2.0 aynı CT adımında yazılınca kalkar (§8.24 kural 4, §19.7);
+> (F-2) sahip kararı Beste 2026-11-11 («evet»): kiracının aynı adlı kendi rolüne dokunulmaz, anahtar verilmez, merkezi denetime "atlandı"
+> (§14.3 koşul 2, AC-76 (f), sabotaj (ep)); (F-3) MOD-0018-FU31 kimliğinin kaynağı; (F-4) WAREHOUSE-OUTBOUND 1.1.0 cümlelerinin kaynağı
+> paketin kendi kararları; (F-5) hat notu; (F-6) Q-EA-4 sahip teyidi Beste 2026-11-11 («evet») + FU-0178-EA-NOTE; (F-7) §12 metni, Q-13
+> etiketi, künye `dependencies`. AC metni tek yerde değişti: AC-76 (f) ve sabotaj listesi. Künye `ready-for-dev`, `approval_status: pending`;
+> onaylayıcı Ali; onay satırı hat PR'ı main'e girdikten sonra ya da onunla birlikte (inceleme F-5).
+>
+> **Revizyon r26 (2026-11-11).** r25'ten (sha256 `b24ff825…`, sahip onaylı 2026-11-02) sonra kapanan kararları kaydeder — §19.1.25;
+> S1 / S2 / S3 davranışı değişmez; AC metni tek yerde değişti: AC-76'ya eklenen (f) ölçümü. §14.3 rol şablonu cümlesi sahip kararıyla değişti.
+> Kapananlar: (1) WMS-BUNDLE dondu — `docs/analysis/contracts/wms-bundle.openapi.yaml` 1.0.0 FROZEN + 1.1.0 eklemeli (CT kaydı
+> `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`, AC-60; K-1 / K-2 sahip kararları Beste 2026-11-10) — §19.7;
+> (2) FU-0178-PKS-01 ve (3) FU-0178-RCS-02 kapandı, Q-EA-4 karar verildi (WP
+> `execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`, sahip onayı Beste 2026-11-10) — §20, §22, §19.5;
+> (4) §14.3 rol şablonu bütün yetkili kiracılarda beş koşulla (sahip kararı Beste 2026-11-11, Auth WP MOD-0018-FU31'e cevap — Ali) — §14.2,
+> §14.3, AC-76; (5) dilim durumu — §19.6; (6) `WarehouseErrorCodes.All` düşük bulgusu — FU-0178-ERRCAT-01. **Neden yeni sürüm:** EES 2.14
+> altında r25'in eski inceleme satırları sıra bozan (reorder) bir merge'e bağlanıyor (araç sahibi Ali; PR #402) — yeniden onay yeni sürümle;
+> onaylayıcı Ali. Künye `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r25 (2026-11-02).** Bağımsız son bakış 03 (`docs/records/reviews/MOD-0178/2026-11-02-259442c2-son-bakis-03.md`; hedef r24
+> `259442c2…`, KOŞULLU, 0 ENGEL, 1 ORTA, 6 DÜŞÜK) F-1…F-7 tek geçişte kapatıldı, CT kararlarıyla (2026-11-02) — §19.1.24: lot düzeyinde ve
+> tek düğüm kapsamlı Staging farkı (eşitlenmemiş `ReadyToShip` varken hesap yok), `IShipmentReader`'a varsayılan arayüz uygulamalı iki üye,
+> `shipmentNumber` dönüş kayıtlarında, öbür 4xx → 503, kısmi tüketimde `RESERVATION_QUANTITY_EXCEEDED`, `exceptionId` tür başına anahtar.
+> Ölçüm: HEAD `ad7518ae4`, S1 kodu `db769471c`, FU03 r3 `d4176fbee`. Künye `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r24 (2026-11-02).** Bağımsız son bakış 02 (`docs/records/reviews/MOD-0178/2026-11-02-0d5b72bd-son-bakis-02.md`; hedef r23
+> `0d5b72bd…`, KOŞULLU, 0 ENGEL, 1 ORTA, 9 DÜŞÜK) F-1…F-10 tek geçişte kapatıldı, CT kararlarıyla (2026-11-02) — §19.1.23. Ölçüm: HEAD
+> `6942e72b1` (MVP-6, Expiry, INVENTORY ayrıştırıcısı), S1 kodu MVP-1 hattı `db769471c` (görev enum'u, `IShipmentReader`,
+> `ShipmentBundleHttpReader`, resx) ve MOD-0173-FU03 r3 `d4176fbee` (`FindByIdempotencyKeysAsync`, `restoreReservation`). Künye
+> `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r23 (2026-11-02).** Bağımsız son bakış 01 (`docs/records/reviews/MOD-0178/2026-11-02-fa84a0b8-son-bakis.md`; hedef r22
+> `fa84a0b8…`, KOŞULLU, 0 ENGEL, 5 ORTA, 12 DÜŞÜK) F-1…F-17 ve inceleme 19 tur 3 (`…/2026-11-02-fa84a0b8.md`) F-1 tek geçişte kapatıldı,
+> CT kararlarıyla — §19.1.22. Ölçüm: HEAD `73d937413` (MVP-6, Expiry) ve S1 kodu MVP-1 hattı `db769471c` (görev deposu, `GatewayOptions`,
+> `IShipmentReader`). Künye `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r22 (2026-11-02).** İnceleme 19 tur 2 (`docs/records/reviews/MOD-0178/2026-11-02-63a49c83.md`; hedef r21 `63a49c83…`, KOŞULLU,
+> 0 ENGEL, 1 ORTA, 3 DÜŞÜK; tur 1'in 11 bulgusu kapandı) F-1…F-4 kapatıldı — §19.1.21. HEAD `af207a63b`; yeni kod ölçümü gerekmedi
+> (bulgular paket içi kural eksikleriydi). Künye `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r21 (2026-11-02).** Bağımsız inceleme 19 (`docs/records/reviews/MOD-0178/2026-11-02-a0eadfa1.md`; hedef r20 `a0eadfa1…`,
+> KOŞULLU, 0 ENGEL, 4 ORTA, 7 DÜŞÜK) F-1…F-11 tek geçişte kapatıldı — kapanış tablosu §19.1.20. Kod ölçümleri: bu worktree HEAD
+> `0d3ec9a16` (MVP-6, AuthService, INVENTORY FEFO / recall) ve S1 kodunun bulunduğu MVP-1 hattı `feature/sce/mod-0173-inventory-ledger-valuation`
+> @ `db769471c` (sayılar, Gateway testi, upstream ayarları; §5). Künye `ready-for-dev`, `approval_status: pending`.
+>
+> **Revizyon r20 (2026-11-02) — S2 revizyonu.** Sahip kararı (Beste, 2026-11-02): "S2 revizyonu başlasın". r19 (sha256
+> `9b4be5e3d28fe84ea74e888e217dd3db585d15deae8514e82f25dc580841decf`) onaylıydı; r20 yeni bağımsız inceleme ve onay ister. Değişen:
+> S2 ve S3 bölümleri iskeletten **bağlayıcı** hâle geldi — §4.5 S2 varlıkları, §4.6 S2 index'leri, §8.10 W-5 karşılığı (MOD-0173-FU03),
+> §8.17–§8.23 (outbound + tahsis, outbound durum makinesi, pick, paketleme, sevke hazır / sevk edildi, iptal, S3 izleme), §11.1 / §11.3 /
+> §11.5 S2 / S3 ekranları, §9 / §10 S2 / S3 satırları, §12 / §13 / §14 / §15 / §17 / §18 / §19.5 / §20 / §21 / §22 S2 satırları, §19.1.19, §16 AC-26…AC-36 (ölçülebilir, her biri adlı sabotajlı) ve AC-71…AC-75,
+> §23 DL-4…DL-7, WMS taslağı §1 / §2.1–§2.3 / §5 / §6.2 / §7 / §9 / §11 / §12 / §13 / §15. **S1 backend davranışı değişmez**; S1'de
+> DL-3 / DL-8 CT kayıtlarının paket düzeltmeleri işlendi — bunlardan **ikisi S1 ekran kuralı düzeltmesidir** ve r19 metninden farklıdır
+> (uygulanmış, sahip onaylı; CT-APR-01 onay kapsamına girer, inceleme 19 F-11): (1) §11.3a şirket kodu geçersizken "Yeni görev" artık
+> **etkin** (r19: pasif) — sahip kararı C; (2) §8.6 / AC-42 raf önerisi yalnız **düzenleme** formunda (r19: oluşturmada da). Öbürleri
+> metin / araç düzeltmesidir (AC-22 `--api-profile proxy`, §11.2 `rules.js` + `warehouse.css`, §15 host `localhost`). **r20 ek geçişi (2026-11-02, aynı revizyon):** FU03 Q-01 = A ve CT-08 hizası, W-6 (Item outbound, yeni §8.24, AC-33),
+> Q-10a (Viewer dışlaması, AC-76) — §19.1.19 son üç satır. r20'de verilen tasarım seçimleri **paket önerisidir** (sahip onayı CT-APR-01 ile); açık kalanlar §19.5'tedir. Kod
+> ölçümü `4288ae40e`; teslimde HEAD `3ff8f33b8` — arada `services/Diten.InventoryService`, `frontend/Diten.Web`, `gateway` ve
+> `docs/analysis/contracts` değişmedi (`git diff --stat` boş); MOD-0173-FU03 paketi aynı ağaçta; ölçülemeyen yerler "çıkarım" diye işaretlidir.
+>
+> **Kimlik (DCP-002) — ölçüldü 2026-10-21, dal `chore/ct/wms-ct-01` @ `47a2c1cb9`:**
+> `python .antigravity/scripts/verify_module_id.py . --check-id MOD-0178 --name "Putaway / Picking / Packing"` → çıkış **0**
+> ("OK MOD-0178: proven against Blueprint/registry"). Kanonik ad boşluklu yazılır: `Putaway/Picking/Packing` (boşluksuz)
+> denemesi fail-closed döner (canonical-name mismatch). Registry satırı
+> `execution/registries/module-id-registry.md:298` (`47a2c1cb9`'da; `d86c1123e`'de aynı satır :304'te) (`MOD-0178 | Putaway / Picking / Packing | putaway-picking-packing | Module |
+> reserved / planned | … | supply-chain-execution | Blueprint W-3 (Warehouse WMS). DCP-002 gate OK 2026-09-11. DCP-009. Posts
+> movements to MOD-0173; no second balance.`). Bu paket registry satırını değiştirmez.
+>
+> **Keşif (`verify_module_id.py --discover "Putaway Picking Packing"`, CT koşusu):** çıkış 3, rapor-sha256
+> `bcffb5e33af7d925f634e58da8c0db0eaff6747e11f6affed64a97e3fd151eba`. Bulgular ve kararlar:
+> 1. **Blueprint 8.8 `Blueprint_Data` satırı = bu modül** (Warehouse (WMS), W-3, bağımlılık "Inventory Ledger & Valuation;
+>    Data Contract Registry", soft pages "WMS Integration Monitor; Activity Trace; Exception Inbox", sözleşme WMS-BUNDLE —
+>    warehouse task schema, scan events, exception model, OTel; SoR warehouse tasks, execution events, pick/pack confirmations).
+> 2. **Registry satırı = bu modül** (yukarıda).
+> 3. **`execution/domains/master-data-management/module-packs/MDM-057-putaway-picking-packing.md`** yalnız eski dallarda var;
+>    eski takma ad, yanlış domain (MDM) → **mükerrer / terk edilmiş, KULLANILMAZ.** Bu paket ondan hiçbir şey almaz.
+>
+> Keşif rapor dosyası henüz commit edilmedi: **keşif raporu CT tarafından kaydedilecek.**
+>
+> **Blueprint sapması (W-1):** Blueprint MOD-0178'i "Buy/Partner" işaretler. **Sahip kararı 2026-10-21: BİZ YAPIYORUZ
+> (Build).** Bu paket Build varsayar; Blueprint düzeltmesi **EA'ya açık iş** (FU-0178-EA-01). Paket Blueprint'i değiştirmez.
+>
+> **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`.
+> Sahip kararları (2026-10-21, `docs/roadmap/plans/integration-phase-and-mvp5-start-plan-2026-10-21.md` §2.1, §4.1) bağlayıcıdır.
+> Eski intake `docs/analysis/workpackages/WP-MVP5-warehouse.md` ("pick→issue/transfer post") **W-4 ile çelişir; bu pakette W-4
+> geçerlidir:** 0178 `GOODS_ISSUE_SALES` yazmaz.
+>
+> **Sözleşme:** sahibi olunan `WAREHOUSE-OUTBOUND` 1.0.0 (`docs/analysis/contracts/warehouse-outbound.openapi.yaml`,
+> `x-status: FROZEN`, `x-owner: MOD-0178`, `x-front-loaded-for: MOD-0183`) **bozulmaz**. WMS-BUNDLE taslağı
+> `docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md` onu aynen kapsar (superset). Tüketilen donmuş sözleşmeler bu
+> paketle değişmez: INVENTORY-BUNDLE 1.5.0, LOCATION 1.1.0, TRACE 1.4.0, QUARANTINE 1.3.0, FEFO-BUNDLE 1.3.0, RECALL-BUNDLE
+> 1.9.0, SHIPMENT-BUNDLE 3.4.0 (MVP-6; `stockIssued` / `lotId` / `fromLocationId` 3.4.0 üyeleri — r23, son bakış F-6).
+> **r26 — WMS-BUNDLE dondu (CT, 2026-11-10; `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`):**
+> `docs/analysis/contracts/wms-bundle.openapi.yaml` 1.0.0 FROZEN (S1 + WAREHOUSE-OUTBOUND 1.0.0 üst kümesi, aynen kopya) ve 1.1.0 eklemeli
+> (S2, S3, taslak §2.3 üyeleri); testler dondurulmuş dosyaya karşı doğrular. Taslak artık tarihsel kaynaktır. WAREHOUSE-OUTBOUND 1.0.0
+> dosyası değişmedi. **r27 (inceleme F-1 / F-4 / F-5):** sözleşme dosyası ve CT kaydı **MVP-1 hattındadır; main'e hat PR'ıyla girer**.
+> WMS-BUNDLE 1.1.0'da outbound `SkuLevel` hâlâ `Gsku` / `Lsku` / `FinishedGood`'dur (`Item` eklenmedi); Item yayın kapısı ancak
+> WAREHOUSE-OUTBOUND 1.1.0 ve WMS-BUNDLE 1.2.0 **aynı** CT adımında yazılınca kalkar (paketin kararları §8.24 kural 4, Q-M6-6; §19.7).
+
+## 1. Module Summary
+
+MOD-0178, ERP-vNext deposunun **yürütme katmanıdır**: mal kabul alanından rafa **yerleştirme (putaway)**, sevkiyat için
+**toplama (picking)** ve **paketleme (packing)** görevlerini, onaylarını ve "sevke hazır" outbound kaydını tutar. Stok gerçeği
+MOD-0173'tedir; 0178 **ikinci bakiye tutmaz**, defter koleksiyonlarına yazmaz. Her fiziksel yer değişikliği INVENTORY'nin olağan
+kayıt yolundan (`InternalMovementPostingService` — `postMovement` ile aynı parser, idempotency, PRODUCT-MASTER / LOCATION / lot /
+recall / FEFO / retest kuralları ve atomik defter yazımı; `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Services/InternalMovementPostingService.cs:18-31`)
+`LOCATION_TRANSFER` olarak geçer.
+
+Hedef kullanıcı: depo operatörü (görevi yapar ve onaylar), depo sorumlusu (görev açar, atar, iptal eder, lokasyon rollerini
+yönetir), sevkiyat planlayıcısı (S2: outbound oluşturur, sevke hazır yapar). Kiracı modülüdür (`_LayoutTenantShell`, 7 dil).
+
+**Mülkiyet sınırı (W-4):** 0178 stoğu düşürmez. Toplama / paketlemede rezervasyon (W-5) + sevk alanına (staging)
+`LOCATION_TRANSFER` yapar ve outbound'u `ReadyToShip` yapıp `OutboundShipmentReady` yayınlar; MVP-6 (MOD-0183) sevkiyat
+`Dispatched` olduğunda `GOODS_ISSUE_SALES`'i **tek yazıcı** olarak yazar; 0178 bu dispatch sinyaliyle outbound'u `Shipped` yapar.
+
+### Slice plan (her dilim kendi WP'si; bir sonrakine CT kabulünden sonra geçilir)
+
+| Dilim | Kapsam | Sözleşme | Bağımlılık | Kabul |
+|---|---|---|---|---|
+| **S1 — Yerleştirme (putaway)** | Lokasyon rolleri (Receiving); yerleştirilecek stok listesi (INVENTORY bakiyesinden okunur, saklanmaz); elle / listeden putaway görevi; atama; kısmi ve tam onay → `LOCATION_TRANSFER`; kısa kapatma; iptal; idempotent onay + Pending kurtarma; görev zaman çizelgesi; manifest + nav; ekranlar `PutawayTasks`, `WarehouseLocationRoles` | WMS-BUNDLE v1.0.0 (S1 operasyonları + WAREHOUSE-OUTBOUND 1.0.0 aynen) | Donmuş sözleşmelerle yapılabilir **bir istisnayla:** saklama koşulu uyumu (M-3) ürün koşullarını PRODUCT-MASTER **v1.1** `storageConditions`'tan okur — v1.1 hâlâ DRAFT (`1.1.0-draft.16`) ve InventoryService bu alanı bugün okumuyor (MOD-0173 seam, §5). S1 kabul ortamı: dev PRODUCT-MASTER köprüsü 4010 (veri setine `storageConditions` eklenerek) ile E3 / E4; **canlı kabul PM-LIVE sonrası** (bağımlılık). Görev numarası geçici RCS sayacından (Q-07 B), önek MDM `Code` (M-2). Seri kontrollü SKU yalnız tam miktar (F-1, §8.16) | §16 AC-1…AC-24, AC-37…AC-70 (AC-25 INT-WMS'te) |
+| **INT-WMS** | Gateway `/api/warehouse` + `/api/warehouse/{everything}` → 5067 + route kapsama testi (integration-agent) | — | S1 controller | §16 AC-25 |
+| **S2 — Toplama / Paketleme / Sevke hazır** (r20 bağlayıcı) | Outbound oluşturma (compact ekran) + tahsis: FEFO sırası (`getFefoOrder` ile aynı kural) ve MOD-0173-FU03 kapsam serbest miktarı, lot düzeyi rezervasyon toplu portla **hepsi ya da hiçbiri** (§8.17); pick görevi bin → Staging `LOCATION_TRANSFER` (`reservationId` ile doğrulanır, tüketilmez; §8.19); `LOT_UNDER_RECALL` ret; FEFO sapma gerekçesi tahsiste lot değişiminde (§8.17); paket / koli (§8.20); `ReadyToShip` + `OutboundShipmentReady` outbox + poll; MVP-6 dispatch → `Shipped` kullanıcı tetikli eşitleme (§8.21); iptal + geri yerleştirme (§8.22) | WMS-BUNDLE v1.1.0 (WMS taslağı §11 bağlayıcı) + WAREHOUSE-OUTBOUND eklemeli üyeler (MVP-6 kullanımı Q-M6-1) + INVENTORY 1.6.0 / 1.7.0 (MOD-0173-FU03) | **MOD-0173-FU03 DL-1 + DL-2 + DL-3 CT kabulü** (W-5 = FU03 CT-04); canlıya çıkış ayrıca MOD-0183'ün `reservationId` gönderen revizyonunu ister (MOD-0183 §23.4, Q-M6-2 / FU03 Q-05); MVP-6 açık soruları §19.5; kayıt kodu servisi MOD-0040-FU02 DL-8 (o gelene kadar geçici sayaç) | §16 AC-26…AC-35, AC-71…AC-78 |
+| **S3 — İzleme ekranları** (r20 bağlayıcı) | İstisna Kutusu, Etkinlik İzi, Entegrasyon İzleme (Blueprint soft pages) — salt okunur, şirket kapsamlı, türetilmiş (saklanan istisna kaydı yok) (§8.23) | WMS-BUNDLE v1.1.0 okuma uçları (WMS taslağı §9) | S1 + S2 | §16 AC-36 |
+| **L10n** | Her dilimin anahtarları 7 dilde (en, tr, fr, es, zh, ar, ru) | — | ilgili dilim | §16 AC-23 |
+
+Sıra: **S1 → INT-WMS → (W-5 kabul) → S2 → S3**. S1, W-5'i beklemez. MOD-0181 Sayım 0178 ile paralel yürüyebilir (yalnız
+0173'e bağlı; plan §4); MOD-0180 Dalga ve MOD-0182 Barkod sonra.
+
+## 2. Ownership and Boundaries
+
+### Owns
+- Depo görevleri (`WarehouseTask`, tür `Putaway` S1, `Pick` S2) ve onayları (`TaskConfirmation`), görev olayları (insert-only).
+- Lokasyon rolleri ve kabul edilen saklama koşulları (`WarehouseLocationRole`: LOCATION düğümü başına tek kayıt — roller Receiving S1,
+  Staging S2 + düğümün kabul ettiği saklama koşulu kodları, alt ağaca kalıtım; §4.4, §8.12). LOCATION'da bin
+  **icat edilmez**; rol yalnız var olan bir LOCATION düğümünü işaret eder (FU02 pack `:78`, `:585`: "putaway rules, capacity,
+  bin types, slotting — MOD-0178+").
+- S2: `OutboundShipment` (WAREHOUSE-OUTBOUND kaynağı) ve gömülü satır / tahsis kayıtları, `OutboundShipmentEvent` (insert-only), `HandlingUnit` /
+  `Package` (koli), pick görevi (`WarehouseTask`, `Kind = Pick`) ve onayları (§4.5, §8.17–§8.22).
+- S3: türetilmiş izleme okumaları (istisna, etkinlik, entegrasyon) — saklanan nesne yok (§8.23).
+- `WMS-BUNDLE` sözleşmesi (r26: 1.0.0 FROZEN + 1.1.0 eklemeli, CT 2026-11-10 — §19.7; r27: MVP-1 hattında, main'e hat PR'ıyla girer) ve donmuş `WAREHOUSE-OUTBOUND` 1.0.0.
+
+### Does not own
+| Şey | Sahibi | 0178 nasıl dokunur |
+|---|---|---|
+| Stok bakiyesi, hareket, rezervasyon | MOD-0173 | bakiyeyi süreç içi okur; hareketi yalnız `InternalMovementPostingService` ile yazar; rezervasyonu (S2) INVENTORY'nin rezervasyon komutuyla yapar — **defter / bakiye / pozisyon koleksiyonuna doğrudan yazmaz** |
+| Lokasyon ağacı (Site→…→Bin) | MOD-0173-FU02 | LOCATION ile okur / doğrular; düğüm yaratmaz, değiştirmez |
+| Lot, seri, soyağacı | MOD-0174 | lot durumunu okur (Draft / Released / Blocked / Expired) |
+| Karantina / bloke kararları | MOD-0175 | karar vermez; tutulan (held) stoğu yerleştirmez (§8.4) |
+| FEFO politikası ve sırası | MOD-0176 | S2'de `getFefoOrder`'ı süreç içi okur; sapmada gerekçe ister |
+| Geri çağırma | MOD-0177 | lotun geri çağırmada olup olmadığını okur (`IRecallLotStatusReader`) |
+| Ürün kimliği, UoM, saklama koşulları, ambalaj hiyerarşisi (P9), GTIN (P6) | MOD-0290 (MDM) | `itemId / skuId / skuLevel` + baz birim + `getSku.storageConditions` (M-3, okuma); P6 / P9'a **bağımlı değildir** |
+| Tüzel kişilik `Code` | MDM (MOD-0220) | görev numarası öneki için okunur (M-2); değiştirilmez |
+| E-imza | MOD-0022 | **kullanılmaz** — putaway onayı e-imza istemez (M-1, §8.14) |
+| Satış çıkışı (`GOODS_ISSUE_SALES`), sevkiyat, POD | MOD-0183 (MVP-6) | yazmaz (W-4); dispatch'i okur (S2) |
+| Barkod / tarama olayları (ScanEvent) | MOD-0182 | görev onayında opak `scanRef` kapısı bırakır; ScanEvent tutmaz |
+| 3PL dış depo | MOD-0179 (ertelendi, W-3) | dış kaynaklı görev / onaya kapı bırakır (`origin: External`, `sourceSystem`, `externalRef`) — kapsam değil |
+| Dalga planlama, sayım | MOD-0180 / MOD-0181 | yok |
+
+### Boundary rules
+1. **İkinci bakiye yok.** 0178'in hiçbir koleksiyonu miktar toplamı tutmaz; "açık miktar" (bakiye − açık görev kalanı) okuma
+   anında hesaplanır, saklanmaz. Mimari test: `wms_*` koleksiyonlarında OnHand / Available / Reserved alanı yok.
+2. **Stok yalnız INVENTORY'nin olağan yolundan değişir.** `IInventoryLedgerRepository` ya da defter koleksiyonu adı 0178 koduna
+   referans olarak girmez (mimari test); tek kapı `WarehouseMovementPoster` → `InternalMovementPostingService`
+   (`QuarantineMovementPoster` deseni, `…/Features/Quarantine/Services/QuarantineMovementPoster.cs:34-39`).
+3. **Aynı doğrulamalar:** recall, FEFO, karantina, retest, lot, idempotency, negatif stok kuralları INVENTORY'nindir; 0178 onları
+   yeniden yazmaz, ret kodunu olduğu gibi iletir. **Tek istisna** (§8.5): `LOCATION_TRANSFER` INVENTORY 1.4.0'da recall
+   engelinden muaftır (`inventory-bundle.openapi.yaml:43-46`), bu yüzden 0178 putaway / pick öncesi lotun recall durumunu kendisi
+   okur ve reddeder.
+4. Her okuma ve yazma kiracı + şirket (`LegalEntityId`, W-0173-02) kapsamındadır.
+5. 0178 `GOODS_ISSUE_SALES`, `STATUS_TRANSFER`, `WAREHOUSE_TRANSFER` yazmaz (S1/S2). `WAREHOUSE_TRANSFER` (depolar arası)
+   kapsam dışıdır (recall engelli tür, `inventory-bundle.openapi.yaml:44`).
+
+## 3. Owned Objects
+
+| Nesne | Dilim | Koleksiyon (öneri, `wms_*`) | Not |
+|---|---|---|---|
+| `WarehouseTask` | S1 (Putaway), S2 (Pick) | `wms_tasks` | Değişebilir baş kayıt, `Version` (If-Match); durum makinesi §8.3 |
+| `TaskConfirmation` (gömülü) | S1 | `wms_tasks.Confirmations[]` | Her onay bir INVENTORY hareketi; Pending → Posted / Refused |
+| `WarehouseTaskEvent` | S1 | `wms_task_events` | Insert-only zaman çizelgesi |
+| `WarehouseLocationRoleEvent` | S1 | `wms_location_role_events` | Insert-only rol geçmişi: rol komutlarının önceki / sonraki değerleri (merkezi kayıt gövde taşımaz; bağımsız inceleme 09 F-1; sahip kararı Beste 2026-10-26: kabul, okuma ekranı sonra) |
+| `WarehouseLocationRole` | S1 (Receiving + saklama koşulları), S2 (Staging) | `wms_location_roles` | LOCATION düğümü başına tek kayıt: roller + kabul edilen saklama koşulları; soft delete |
+| `OutboundShipment` | S2 | `wms_outbound_shipments` | WAREHOUSE-OUTBOUND kaynağı |
+| `HandlingUnit` (Package) | S2 | `wms_handling_units` | Koli; içerik satırları; ağırlık / ölçü elle |
+| `OutboundShipmentEvent` | S2 | `wms_outbound_events` | Insert-only outbound zaman çizelgesi (§4.5) |
+| Pick görevi | S2 | `wms_tasks` (`Kind = Pick`) | S1 görev baş kaydı + S2 alanları (§4.5); onaylar aynı gömülü `TaskConfirmation` |
+| Outbox olayları | S1 (iç), S2 (`OutboundShipmentReady`) | servisin mevcut outbox'ı | Taşıma (bus) bugün kapalı → Pending (§8.9) |
+| ScanEvent | — | — | **MOD-0182'ye bırakılır**; 0178 yalnız opak `scanRef` saklar |
+
+**Komutlar (S1):** `CreatePutawayTaskCommand`, `UpdatePutawayTaskCommand`, `BulkAssignPutawayTaskCommand`,
+`ClaimPutawayTaskCommand`, `ConfirmPutawayTaskCommand`, `RetryPutawayConfirmationCommand`, `ClosePutawayTaskShortCommand`,
+`CancelPutawayTaskCommand`, `MarkPutawayConfirmationReturnedCommand`, `ResolvePutawayIntegrityCommand`,
+`ReconcilePendingConfirmationCommand` (yalnız sweeper), `CreateWarehouseLocationRoleCommand`,
+`UpdateWarehouseLocationRoleCommand`, `DeleteWarehouseLocationRoleCommand`,
+`BulkDeleteWarehouseLocationRoleCommand`.
+
+**Sorgular (S1):** `GetPutawayTaskListQuery`, `GetPutawayTaskByIdQuery`, `GetPutawayCandidateListQuery`,
+`GetPutawayTaskEventListQuery`, `GetWarehouseLocationRoleListQuery`, `GetWarehouseLocationRoleByIdQuery`.
+
+**API (S1, taban `/api/warehouse`, WMS taslağı §4):**
+`GET/POST /putaway-tasks` · `GET/PUT /putaway-tasks/{taskId}` · `POST /putaway-tasks/bulk-assign` · `POST /putaway-tasks/{taskId}/claim` ·
+`POST /putaway-tasks/{taskId}/confirmations` · `POST /putaway-tasks/{taskId}/confirmations/{seq}/retry` ·
+`POST /putaway-tasks/{taskId}/confirmations/{seq}/returned` · `POST /putaway-tasks/{taskId}/confirmations/{seq}/resolve-integrity` ·
+`POST /putaway-tasks/{taskId}/close-short` · `POST /putaway-tasks/{taskId}/cancel` · `GET /putaway-tasks/{taskId}/events` ·
+`GET /putaway-candidates` · `GET/POST /location-roles` · `GET/PUT/DELETE /location-roles/{roleId}` ·
+`POST /location-roles/bulk-delete` · donmuş `GET /outbound-shipments`, `GET /outbound-shipments/{outboundId}` (S1'de boş liste /
+404; S2 doldurur).
+
+**Frontend rotaları (S1):** `/Warehouse/PutawayTasks`, `/Warehouse/LocationRoles`.
+
+**Komutlar (S2, r20):** `CreateOutboundShipmentCommand`, `UpdateOutboundShipmentCommand` (yalnız başlık: sipariş ref., alıcı, not),
+`CancelOutboundShipmentCommand`, `ReleaseOutboundShipmentCommand` (Packed → ReadyToShip), `SyncOutboundDispatchCommand` (MVP-6 dispatch →
+Shipped), `CompleteOutboundAllocationCommand` (yalnız bakım hosted service'i), `ReleaseOutboundReservationsCommand` (yalnız bakım hosted
+service'i), `ClaimPickTaskCommand`, `BulkAssignPickTaskCommand`, `ConfirmPickTaskCommand`, `RetryPickConfirmationCommand`,
+`MarkPickConfirmationReturnedCommand`, `ResolvePickIntegrityCommand`, `ClosePickTaskShortCommand`, `CreateHandlingUnitCommand`,
+`UpdateHandlingUnitCommand`, `CloseHandlingUnitCommand`. S1'in `ReconcilePendingConfirmationCommand`'ı pick onaylarını da uzlaştırır
+(aynı onay makinesi, §8.19).
+
+**Sorgular (S2 / S3, r20):** `GetOutboundShipmentListQuery` (ekran araması), `GetOutboundShipmentViewQuery`, `GetOutboundEventListQuery`,
+`PreviewOutboundAllocationQuery` (salt okunur tahsis önerisi), `GetPickTaskListQuery`, `GetPickTaskByIdQuery`, `GetPickTaskEventListQuery`,
+`GetHandlingUnitListQuery`; S3: `GetWarehouseExceptionListQuery`, `GetWarehouseActivityListQuery`, `GetWarehouseIntegrationStatusQuery`.
+Donmuş `listOutboundShipments` / `getOutboundShipment` S1'deki sorgularıyla kalır, S2'de doldurulur.
+
+**API (S2 / S3, taban `/api/warehouse`, WMS taslağı §11 ve §9):** `POST /outbound-shipments` · `POST /outbound-shipments/allocation-preview` ·
+`GET /outbound-shipments/search` · `GET /outbound-shipments/{outboundId}/view` · `PUT /outbound-shipments/{outboundId}` ·
+`POST /outbound-shipments/{outboundId}/cancel` · `POST /outbound-shipments/{outboundId}/release` · `POST /outbound-shipments/{outboundId}/sync-dispatch` ·
+`GET /outbound-shipments/{outboundId}/events` · `GET /outbound-shipments/{outboundId}/packages` · `POST /outbound-shipments/{outboundId}/packages` ·
+`PUT /packages/{packageId}` · `POST /packages/{packageId}/close` · `GET /pick-tasks` · `GET /pick-tasks/{taskId}` · `POST /pick-tasks/bulk-assign` ·
+`POST /pick-tasks/{taskId}/claim` · `POST /pick-tasks/{taskId}/confirmations` · `POST /pick-tasks/{taskId}/confirmations/{seq}/retry` ·
+`POST /pick-tasks/{taskId}/confirmations/{seq}/returned` · `POST /pick-tasks/{taskId}/confirmations/{seq}/resolve-integrity` ·
+`POST /pick-tasks/{taskId}/close-short` · `GET /pick-tasks/{taskId}/events` · S3: `GET /exceptions` · `GET /activity` · `GET /integration/status`.
+Donmuş `GET /outbound-shipments` ve `GET /outbound-shipments/{outboundId}` yolları **değişmez** (WAREHOUSE-OUTBOUND 1.0.0); ekranın
+arama / görünüm ihtiyacı ayrı yollardadır (`/search`, `/view`), böylece donmuş şemaya üye eklenmeden karşılanır.
+
+**Frontend rotaları (S2 / S3, r20):** `/Warehouse/OutboundShipments` (+ `/Create`, `/Edit/{id}`, `/Details/{id}`), `/Warehouse/PickTasks`,
+`/Warehouse/Packing/{outboundId}`, `/Warehouse/Exceptions`, `/Warehouse/Activity`, `/Warehouse/Integration`.
+
+**İzinler:** §14.
+
+## 4. Entity Fields
+
+Tüm varlıklar InventoryService'in `EntityBase`'inden türer: `Id`, `TenantId`, `LegalEntityId`, `CreatedAt`, `UpdatedAt`, `Version` (int),
+`IsDeleted`, `DeletedAt` (`…/Domain/Entities/EntityBase.cs`; bağımsız inceleme 12 F-1 ile düzeltildi). **Kullanıcı alanı `EntityBase`'de
+yoktur**: gereken varlık kendi alanını taşır (emsal `QuarantineHold.CreatedBy`, `…/Domain/Quarantine/Entities/QuarantineEntities.cs:47`) —
+0178'de `WarehouseTask.CreatedBy` (§4.1) ve `WarehouseLocationRole.CreatedBy` (§4.4).
+Her varlık `LegalEntityId` taşır (W-0173-02). `TenantId` / `LegalEntityId` sunucuda çözülür; gövde / sorguda gelirse 400.
+Miktarlar SKU'nun **baz biriminde** decimal string (float yok, en çok 6 ondalık); farklı SKU / birim toplanmaz. Zamanlar UTC
+(E-6).
+
+### 4.1 `WarehouseTask` (S1 Putaway; S2 Pick aynı baş kayıt)
+| Alan | Tip | Kural |
+|---|---|---|
+| `Number` | string | RCS-001 kodu `{ŞİRKET}-PUT-{000001}`; `{ŞİRKET}` = görev açılırken okunan MDM tüzel kişilik `Code`'u (M-2), numaraya **bir kez** yazılır, sonra değişmez; depo kodu numarada **yok** (listede ayrı sütun); OTOMATİK, değiştirilemez; geçici sayaçtan (Q-07 B); önek kaydı FU-0178-RCS-02 (r26: kapandı, RCS-001 §3 — §22; MVP-1 hattında, main'e hat PR'ıyla girer) |
+| `CompanyCodePrefix` | string `^[A-Z]{2,5}$` | numaraya yazılan önekin kopyası (sayaç anahtarı); sonradan değişmez |
+| `WarehouseCode` | string | LOCATION depo kodunun gösterim kopyası (liste sütunu) |
+| `Kind` | enum `Putaway \| Pick` | S1 yalnız `Putaway` |
+| `Status` | enum `Open \| InProgress \| Completed \| Cancelled` | §8.3 |
+| `Origin` | enum `Manual \| Receipt \| Production \| Cancellation \| External \| Outbound \| ShortDispatch` | S1 kodunda **beş** değer var (`Manual`, `Receipt`, `Production`, `Cancellation`, `External` — ölçüldü `db769471c` `…/Domain/Warehouse/Enums/WarehouseTaskEnums.cs:20-27`); S2 **iki** değer ekler: `Outbound` (yalnız pick görevi, §4.5) ve `ShortDispatch` (putaway, eksik sevk, §8.21) (r24, son bakış 02 F-3). S1: `Manual` (listeden ya da elle); `Cancellation` (S2 iptal, §8.22) ve `ShortDispatch` sistem açar; diğerleri kapı (§8.2, W-3). Görünen adlar `Warehouse.Origin.*`, yedi değer, 7 dil (§11.4) |
+| `SourceRef` | `{ sourceModule, sourceType, sourceDocumentId, sourceLineId, transactionId? }` \| null | ör. GRN'nin INVENTORY hareketi; opak |
+| `SourceSystem`, `ExternalRef` | string ≤ 100 \| null | DEC-INV-19 / W-3 kapısı |
+| `WarehouseId` | string (LOCATION Warehouse) | zorunlu |
+| `ItemId`, `SkuId`, `SkuLevel` | uuid, uuid, enum | INVENTORY bakiye satırından; `Item` seviyesi S1'de kabul (putaway ürün ayrımı yapmaz) |
+| `LotId`, `LotNumber` | string \| null | bakiye satırından; `LotNumber` gösterim kopyası |
+| `SerialControlled` | bool | görev açılırken ledger ile **aynı kural** (`MovementMasterDataValidator.cs:144-149`, OD-10): Lsku / FinishedGood / Item'da `getSku.serialControlled`; **Gsku'da ürünün bayrağı** (`getProduct.serialControlled`) — Gsku'da yalnız ürün bayrağı açıkça `false` ise görev açılır (seri SKU değildir), `true` / bilinmiyorsa 422 `SKU_LEVEL_NOT_STOCKABLE` (ledger'ın kodu; seri stok Lsku / FinishedGood'da tutulur). Lsku / FinishedGood'da bilinmiyorsa görev açılmaz (`PRODUCT_MASTER_DATA_INCOMPLETE`) (inceleme 02 F-3) |
+| `SerialIds` | — | görevde **tutulmaz**; seri kontrollü SKU'da onay anında kaynak kovanın bütün serileri sistemce okunur ve onaya yazılır (§8.16, F-1) |
+| `StockStatus` | enum | kaynak kovanın durumu; S1'de yalnız `AVAILABLE` (§8.4) |
+| `FromLocationId` | string | Receiving rolü altındaki stoklanabilir lokasyon |
+| `ToLocationId` | string \| null | planlanan hedef bin; onayda zorunlu; saklama koşulu uyumu (§8.12) |
+| `SuggestedToLocationId` | string \| null | sunucu önerisi (§8.6), yalnız bilgi; otomatik doldurmaz |
+| `TargetSource` | enum `Manual \| SuggestionApplied` | hedef "Uygula" ile öneriden alındıysa `SuggestionApplied` → zaman çizelgesine `SuggestionApplied` olayı (M-4) |
+| `PlannedQuantity` | decimal string | > 0; yaratmada açık miktarı aşamaz (§12); **seri kontrollü SKU'da = kovadaki bütün miktar** ve değiştirilemez (§8.16) |
+| `BaseUomId` | string | bakiye satırından |
+| `ConfirmedQuantity` | decimal string | Posted onayların toplamı (görev içi türetme, stok bakiyesi değil); `Status` bundan türer (M-4). **Kural:** `ConfirmedQuantity ≤ PlannedQuantity` (işlem 2'nin koşullu artışı). **Tek istisna (inceleme 05 F-1):** "Uzlaştır-a" defter gerçeğini yazar — o zaman `ConfirmedQuantity > PlannedQuantity` olabilir; görev `Completed` olur ve olay `ConfirmationDeviation` (`OverPlanned`) açılır. Defter doğrudur, görev ona uyar |
+| `IntegrationFlag` (türetilmiş, saklanmaz) | enum `None \| PostingPending \| PostingPendingLong \| PostingRefused \| PostingIntegrityError` | durumdan **ayrı** rozet: "Onay bekliyor" (Pending onay var) / "Uzun süredir bekliyor" (Pending onay `ConfirmedAtUtc`'den bu yana `LongPendingMinutes`'tan uzun; `PostingPending` yerine; §8.3 adım 5, bağımsız inceleme 13 F-3) / "Stok reddetti" (görevde çözümsüz Refused onay var — `Status == Refused` ve `Resolution == null`) / "Bütünlük hatası" (onay `IntegrityError`, inceleme 03 F-2) (M-4). **Tek değer, görev düzeyinde öncelik (bağımsız inceleme 14 F-1):** görevin onayları arasında en yüksek öncelikli durum gösterilir — `PostingIntegrityError` > `PostingPendingLong` > `PostingPending` > `PostingRefused` > `None` (ör. aynı görevde Pending ve `IntegrityError` onay varsa "Bütünlük hatası"). `PostingRefused` yalnız **çözümsüz** Refused onaydan türer: görevde `Status == Refused` ve `Resolution == null` olan bir onay varsa; Superseded / `ReturnedToSource` onaylar bayrağa girmez (bağımsız inceleme 15 F-1); böylece yeni onay Posted olunca ya da "Geri taşındı"dan sonra rozet kalkar (§8.3, AC-55) |
+| `Confirmations[]` | §4.2 | |
+| `AssigneeUserId` | uuid \| null | atanan operatör; sorumlu atar (kullanıcı listesi ucu varsa, Q-13) ya da operatör atanmamış görevi **üstlenir** (kendine atar, M-5) |
+| `Priority` | enum `Low \| Normal \| High` | varsayılan `Normal` |
+| `Note` | string ≤ 1000 \| null | |
+| `ShortCloseReason` | string 10–1000 \| null | `ClosePutawayTaskShort` |
+| `CancelReason` | string 10–1000 \| null | |
+| `Version` | int (`EntityBase`) | If-Match `W/"<version>"` |
+| `IdempotencyKey` | string 8–100 | yaratma tekilliği **kullanıcı kapsamında** `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` — `CreatedBy` = isteği yapanın `ActorUserId`'si (0175 / 0176 / 0177 emsali: `QuarantineIndexConfiguration.cs:51` `CreatedBy`, `ExpiryIndexConfiguration.cs:64` `OpenedBy`, `RecallIndexConfiguration.cs:84` `OwnerUserId`); başka kullanıcının aynı anahtarı ayrı anahtardır (bağımsız inceleme 11 F-2) |
+| `CreatedBy` | uuid | isteği yapanın `ActorUserId`'si; **yalnız yaratmada** yazılır, sonra güncellenmez — yaratma anahtarının kapsamı (§4.6; bağımsız inceleme 12 F-1) |
+| `RequestFingerprint` | string | yaratma isteğinin parmak izi (alanları §8.1); aynı anahtar + farklı parmak izi → 400 `IDEMPOTENCY_KEY_REUSED` (bağımsız inceleme 10 F-1). Yaratma dışı komutların anahtarı görevde değil, yazdıkları olayda saklanır (§4.3) |
+| `CorrelationId` | uuid | ilk isteğin |
+
+### 4.2 `TaskConfirmation` (gömülü)
+| Alan | Kural |
+|---|---|
+| `Seq` | 1'den artan |
+| `Quantity` | > 0, ≤ kalan (`Planned − Confirmed − Pending`); seri kontrollü SKU'da = planlanan (kısmi yok, §8.16) |
+| `SerialIds` | seri kontrollü SKU'da işlem 1'de kovadan okunup yazılır (adet = miktar); her denemede aynen gönderilir |
+| `TransactionDate`, `PostingDate` | **işlem 1'de** yazılır (fiziksel hareket zamanı, sunucu UTC — E-6) ve her denemede aynen gönderilir: ledger idempotency izi tarihleri kapsar (`RequestFingerprint.cs:42-43`) (F-2) |
+| `ToLocationId` | zorunlu; §12 hedef kuralları |
+| `DeviationReason` | 10–1000; hedef planlanandan farklıysa zorunlu |
+| `Status` | `Pending \| Posted \| Refused \| IntegrityError` — `IntegrityError`: ledger aynı `PostingKey` ile **farklı** bir hareket işlemiş (`IDEMPOTENCY_KEY_REUSED`); Refused değildir; Superseded / Returned ve görev eylemleri kapalı, istisna olarak listelenir (S3 İstisna Kutusu, tür `PostingIntegrityError` — WMS taslağı §9; inceleme 02 F-1, bağımsız inceleme 15 F-2); tek çıkış sorumlunun **"Uzlaştır"** komutudur (`ResolvePutawayIntegrityCommand`, §8.3, inceleme 03 F-2) |
+| `AttemptId`, `InFlightUntilUtc` | **uçuş kilidi** (inceleme 03 F-1): işlem 1'de ve her yeniden deneme başında atomik alınır (koşul: `Status == Pending` ve `InFlightUntilUtc` boş ya da geçmiş); süre = `Warehouse:Putaway:InFlightLeaseSeconds` (öneri 120 sn). **Dayanak (inceleme 04 F-2):** hareket yazımı (işlem 3) süreç içidir; üst sınırı açık bir **posting süresi** `Warehouse:Putaway:PostingTimeoutSeconds` (öneri 60 sn) — işlem 3 bağlı bir `CancellationTokenSource` ile bu süreyle sınırlanır; içindeki her upstream çağrısı ayrıca 5 sn ile sınırlı (`…/Infrastructure/DependencyInjection.cs:51`, `…/Api/appsettings.json:35` `UpstreamServices:TimeoutSeconds`). Açılışta `InFlightLeaseSeconds ≥ PostingTimeoutSeconds + 30` doğrulanır, değilse host başlamaz (fail-closed ayar). Aynı biçimde `Warehouse:Putaway:LongPendingMinutes > 0` ve `LongPendingMinutes × 60 > InFlightLeaseSeconds` doğrulanır, değilse host başlamaz — rozet ilk denemenin kilidi dolmadan çıkmaz (§8.3 adım 5; bağımsız inceleme 14 F-3). Posting süresi aşılırsa onay **Pending kalır** ve kilit **`InFlightUntilUtc`'ye kadar korunur** — hemen bırakılmaz (inceleme 05 F-3): iptal istemci tarafındadır, sunucuya ulaşmış bir commit (`InventoryLedgerRepository.cs:173` `WithTransactionAsync`) yine uygulanabilir; +30 sn pay bu görünürlük gecikmesini ve Mongo işlem ömrünü kapsamak içindir (sunucu `transactionLifetimeLimitSeconds` varsayılanı 60 sn — dokümantasyon bilgisi, ölçülmedi). Kilit dolduktan sonraki ilk deneme ledger'a bakar. Kilit ve posting süreleri **`TimeProvider`** üzerinden ölçülür (0175 emsali `QuarantineServiceCollectionExtensions.cs:36`); testler sahte saatle süreyi doldurur, gerçek ayarlar ve açılış doğrulaması değişmez (inceleme 05 F-2). İşlem 2 bitince kilit boşaltılır. Kilit geçerliyken yeniden deneme 409 `WMS_CONFIRMATION_IN_FLIGHT`, sweeper kaydı atlar |
+| `IntegrityResolution` | `null \| ResolvedOwnMovement \| ReturnedToRefused` + `ResolvedBy`, `ResolvedAtUtc`, `ResolveReason` (10–1000), `HolderMovement { transactionId, transactionNumber, sourceModule, sourceType, sourceDocumentId, sourceLineId, quantity, uomId, baseQuantity, fromWarehouseId, fromLocationId, toWarehouseId, toLocationId, lotId, serialIds, fromStockStatus, toStockStatus, postingDate, reversedByTransactionId? }` — §5 port alanlarıyla birebir (bağımsız inceleme 05 F-5); "Uzlaştır" sonucu (inceleme 04 F-1) |
+| `PostingKey` | `wms:put:{taskId}:{seq}` — INVENTORY Idempotency-Key; yeniden denemede **aynı** anahtar. İstemcinin istek anahtarından (`Idempotency-Key` başlığı) **ayrıdır**: istek anahtarı onayda değil, komutun yazdığı olayda saklanır (§4.3, §8.1; bağımsız inceleme 10 F-1) |
+| `TransactionId`, `TransactionNumber` | Posted'da INVENTORY'den |
+| `ErrorCode`, `ErrorMessage`, `ErrorDetails`, `ErrorStatus` | Refused'da INVENTORY'nin (ya da yeniden deneme ön kontrolünün) cevabı aynen; HTTP durumu da saklanır |
+| `RefusalSource`, `RefusedOnRetry`, `RefusedAtUtc` | Refused'ın kaynağı **kayıtta** (bağımsız inceleme 06 F-2): `RefusalSource = PreCheck \| Ledger4xx \| Resolve` (Resolve = Uzlaştır-b'nin geri dönüşü), `RefusedOnRetry` (Refused bir yeniden denemede mi yazıldı), `RefusedAtUtc` (sunucu UTC). Savunma dalı yalnız `RefusalSource ∈ {PreCheck, Ledger4xx}` **ve** `RefusedOnRetry = true` **ve** `RefusedAtUtc ≥ şimdi − 30 dk` olanları tarar; hata koduna bakarak çıkarım yapılmaz |
+| `Resolution` | `null \| SupersededByNewConfirmation \| ReturnedToSource` — Refused onayın operatör kapanışı (§8.3, F-4); `ReturnedToSource` gerekçe 10–1000 ister (`ResolutionReason`). Onay geç commit nedeniyle `IntegrityError`'a geçerse `Resolution` **`PriorResolution`**'a taşınır ve boşaltılır (`IntegrityError` + `Resolution` birlikte bulunmaz; bağımsız inceleme 05 F-1) |
+| `Channel` | `Ui \| Api \| External` (W-3 kapısı) |
+| `ScanRef` | string ≤ 200 \| null — MOD-0182 kapısı, opak |
+| `ConfirmedBy`, `ConfirmedAtUtc`, `Attempts`, `LastAttemptAtUtc` | |
+
+### 4.3 `WarehouseTaskEvent` (insert-only)
+`TaskId, Seq, Kind (Created | Updated | Assigned | Claimed | SuggestionApplied | ConfirmationRecorded | ConfirmationPosted |
+ConfirmationRefused | ConfirmationRetried | ConfirmationReconciled | ConfirmationIntegrityError | IntegrityResolved | ConfirmationDeviation |
+ConfirmationSuperseded | ConfirmationReturned | ClosedShort |
+Completed | Cancelled), Actor { userId, name? } | system, AtUtc, Data { … }, CorrelationId, IdempotencyKey?, RequestOp?, RequestFingerprint?`.
+
+**İstek anahtarı — "anahtar olayı" (bağımsız inceleme 10 F-1; 0176 / 0177 emsali, §8.1):** yaratma dışındaki her yazma komutu
+`Idempotency-Key`'ini ve isteğin parmak izini (`RequestFingerprint`, alanları §8.1) **kendi ilk iş yazımının yerel olayına** yazar; o
+olay iş yazımıyla aynı işlemdedir. Olay ayrıca komutun operasyon adını taşır (`RequestOp` = WMS `operationId`'si, ör.
+`updatePutawayTask`, `bulkAssignPutawayTasks`, `deleteLocationRole`, `bulkDeleteLocationRoles`): anahtarın kapsamı kiracı + şirket +
+kullanıcı + `RequestOp` + hedeftir; başka operasyonda aynı anahtar ayrı anahtardır (bağımsız inceleme 11 F-2). Komut → anahtar olayı: düzenle → `Updated`; üstlen → `Claimed`; toplu atama → yazılan **her** görevin
+`Assigned`'ı; onay → işlem 1'in `ConfirmationRecorded`'ı; yeniden dene → kilit alımının `ConfirmationRetried`'ı; "Geri taşındı" →
+`ConfirmationReturned`; Kalanı kapat → `ClosedShort`; İptal → `Cancelled`; Uzlaştır → `IntegrityResolved`. Aynı komutun sonraki
+olayları (ör. `ConfirmationPosted`, `ConfirmationSuperseded`, `Completed`), ön aramanın 409'da yazdığı `ConfirmationIntegrityError` (komutun
+kendi yazımı yoktur, satır 20) ve sistem yazımları (sweeper, savunma dalı) anahtar taşımaz — `IdempotencyKey` / `RequestOp` / `RequestFingerprint` boş
+(üye yok). Hiç yazmadan biten istek (doğrulama / yetki / iş kuralı reddi) anahtar bırakmaz; aynı anahtarla yeniden gönderimi baştan
+değerlendirilir (emsal davranış). Alanlar depoda tutulur, `GET …/events` kablosuna yazılmaz (WMS taslağı §3.4).
+
+**Her `Kind`'ı yazan yazım (bağımsız inceleme 09 F-2 d, tek yer):** olay, yazdığı iş yazımıyla **aynı işlemde** ve yalnız o yazım en az
+bir kayıt etkilediyse yazılır (0 kayıtta olay yok, §8.8). `Data` merkezi kayıtta olmayan değerleri taşır (§21).
+
+| Kind | Yazan yazım | `Data` |
+|---|---|---|
+| `Created` / `Updated` | görev yaratma / düzenleme | After ya da Before / After: Number, kaynak kova, PlannedQuantity, ToLocationId, AssigneeUserId, Priority, Note, Origin |
+| `SuggestionApplied` | aynı yaratma / düzenleme yazımı, `TargetSource` o yazımda `SuggestionApplied` olursa (§8.6) | önerilen ve seçilen bin |
+| `Assigned` | toplu atamanın o göreve yazımı (görev başına bir satır) | Before / After: AssigneeUserId |
+| `Claimed` | üstlenme | Before / After: AssigneeUserId |
+| `ConfirmationRecorded` | işlem 1 | onay `seq`, Quantity, From / To, PostingKey, TransactionDate, SerialIds, DeviationReason, Channel |
+| `ConfirmationRetried` | yeniden denemenin kilit alımı | onay `seq`, `attempt` |
+| `ConfirmationPosted` | işlem 2 / retry (i) / retry (ii) Posted yazımı (CAS yinelemesinde bir kez) | onay `seq`, TransactionId / Number, kapatılan `seq` listesi |
+| `ConfirmationReconciled` | sweeper'ın Posted yazımı (bu yazımda `ConfirmationPosted` yazılmaz) | onay `seq`, TransactionId / Number, kapatılan `seq` listesi |
+| `ConfirmationRefused` | defter 4xx ya da ön kontrol reddi yazımı | onay `seq`, Error\*, Ret\* |
+| `ConfirmationIntegrityError` | `IntegrityError` yazan her yazım (işlem 2, retry, sweeper, savunma dalı, kapatıcı komutun ön araması) | onay `seq`, `reason`, Error\*, `holder` (varsa), `PriorResolution` |
+| `IntegrityResolved` | Uzlaştır | onay `seq`, IntegrityResolution, gerekçe, `holder`, kapatılan `seq` listesi |
+| `ConfirmationDeviation` | Uzlaştır-a yazımı; defter değerleri onaydan farklıysa ya da toplam planlananı aşarsa | farklı alanlar, `OverPlanned` / `PostedAfterCancel` |
+| `ConfirmationSuperseded` | Posted yazan yazım (akış satırı 2 / 3 / 4 / 13 / 23 / 25); kapatılan **her** Refused onay için bir satır | kapatılan ve kapatan `seq` |
+| `ConfirmationReturned` | "Geri taşındı" | onay `seq`, ResolutionReason |
+| `Completed` | görevin türetilmiş durumunu onaylanan miktarla `Completed` yapan Posted yazımı (akış satırı 2 / 3 / 4 / 13 / 25); terminal görevde (satır 23) ve Kalanı kapat'ta **yazılmaz** | Planned, Confirmed |
+| `ClosedShort` / `Cancelled` | Kalanı kapat / İptal | Planned, Confirmed, ShortCloseReason / Before Status, CancelReason |
+
+**`WarehouseLocationRoleEvent`** (insert-only, `wms_location_role_events`; bağımsız inceleme 09 F-1; sahip kararı Beste 2026-10-26): `RoleId, Seq, Kind (Created |
+Updated | Deleted), Actor, AtUtc, Data { Before / After: LocationId, Roles, AcceptedStorageConditions, Note }, CorrelationId,
+IdempotencyKey?, RequestOp?, RequestFingerprint?`. Rol komutunun yazımıyla aynı işlemde yazılır; toplu silmede silinen kayıt başına bir satır.
+**Anahtar olayı (bağımsız inceleme 10 F-1):** düzenle → `Updated`, sil → `Deleted`, toplu sil → silinen **her** kaydın `Deleted`'ı
+istek anahtarını ve parmak izini taşır; rol yaratmanın anahtarı görevdeki gibi kayıttadır (§4.4). Merkezi kayıt rolün değerlerini taşımadığı için
+önceki / sonraki değerlerin tek yeri budur. S1'de okuma ucu ve ekranı yoktur (denetim okuması veritabanından).
+
+### 4.4 `WarehouseLocationRole`
+| Alan | Kural |
+|---|---|
+| `WarehouseId` | LOCATION Warehouse; düğümün yolunda olmalı (`getLocationPath`) |
+| `LocationId` | LOCATION düğümü, tip `StorageLocation \| Zone \| Bin`, `Active`; kayıt düğümün **stoklanabilir alt ağacına** uygulanır |
+| `Roles` | küme, 0..n: `Receiving` (S1), `Staging` (S2); S2'de belki `Packing`. Bir düğüm birden çok role sahip olabilir; **Receiving + Staging birlikte olamaz** (M-5) |
+| `AcceptedStorageConditions` | küme, 0..n, PRODUCT-MASTER v1.1 `StorageConditionCode` kodları (`AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE` — `product-master-bundle.openapi.yaml:601-604`); en çok bir sıcaklık kodu (PRODUCT-MASTER kuralının aynısı, `:681-682`); alt ağaca kalıtım (§8.12) |
+| `Note` | ≤ 500 \| null |
+| `Version` | If-Match |
+| `CreatedBy` | uuid; isteği yapanın `ActorUserId`'si; **yalnız yaratmada** yazılır, sonra güncellenmez — rol yaratma anahtarının kapsamı (§4.6; bağımsız inceleme 12 F-1) |
+| `IdempotencyKey`, `RequestFingerprint` | rol yaratma isteğinin anahtarı (8–100) ve parmak izi — tekil `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` (kullanıcı kapsamında, §4.1 deseni; bağımsız inceleme 11 F-2); aynı anahtar + aynı parmak izi → 200 replay (409 `WMS_LOCATION_ROLE_EXISTS` değil), farklı → 400 `IDEMPOTENCY_KEY_REUSED` (bağımsız inceleme 10 F-1); eşzamanlı iki özdeş yaratmada kaybeden, yinelenen kaydı hangi tekil index'ten (anahtar ya da `LocationId`) alırsa alsın önce anahtarı yeniden arar (§8.1; bağımsız inceleme 11 F-3) |
+| Kural | `Roles` ve `AcceptedStorageConditions`'tan en az biri dolu; açık görevi olan düğümden `Receiving` kaldırılamaz / kayıt silinemez (409 `WMS_LOCATION_HAS_OPEN_TASKS`, M-5) |
+| Rol kalıtımı (F-13) | `Receiving` (S2'de `Staging` de) düğümün **stoklanabilir alt ağacına kalıtılır**: kaynak uygunluğu ve "hedef Receiving / Staging olamaz" kuralı etkin (kalıtılmış dahil) role bakar. **Atalar arası çakışma:** atası `Receiving` olan düğüm `Staging` olamaz, atası `Staging` olan düğüm `Receiving` olamaz (ve tersi: alt ağacında karşı rol taşıyan düğüme rol verilemez) → 409 `WMS_LOCATION_ROLE_INHERITED_CONFLICT` |
+| Tekillik | `(TenantId, LegalEntityId, LocationId)` canlı kayıtlarda tekil — düğüm başına tek kayıt; bu index'ten yinelenen kayıt hatasında önce istek anahtarı yeniden aranır (bulunursa replay), anahtar yoksa 409 `WMS_LOCATION_ROLE_EXISTS` (§8.1; bağımsız inceleme 11 F-3) |
+
+**Tasarım kararı (M-3) — neden ayrı bir koşul nesnesi değil, aynı kayıtta küme:** saklama koşulu düğümün fiziksel özelliğidir, WMS
+rolüne bağlı değildir; raf bölgelerinin çoğunun rolü yoktur (Receiving / Staging değildir) ama koşul taşır. Rol başına kayıt
+tutulsaydı aynı düğümün iki rol kaydı çelişen koşul kümeleri taşıyabilirdi. Düğüm başına tek kayıt (roller + koşullar) bu çelişkiyi
+yapısal olarak engeller, alt ağaç kalıtımını tek okumaya indirir ve ikinci ekran / ikinci izin seti açmaz (ekran, rota ve izinler
+aynı kalır: `WarehouseLocationRoles`, `/Warehouse/LocationRoles`, `warehouse.location-roles.*`).
+
+### 4.5 S2 varlıkları (bağlayıcı — r20)
+
+**`OutboundShipment`** (`wms_outbound_shipments`; WAREHOUSE-OUTBOUND `OutboundShipment`'ın kaynağı):
+
+| Alan | Tip | Kural |
+|---|---|---|
+| `OutboundId` | uuid | sunucu üretir (`Id`); donmuş şemanın `outboundId`'si (ASSUMPTION-0178-06) |
+| `OutboundNumber` | string | RCS `{ŞİRKET}-OUT-{000001}`; geçici sayaç (Q-07 B, §22), önek M-2 kuralıyla; değiştirilemez |
+| `CompanyCodePrefix` | string `^[A-Z]{2,5}$` | numaraya yazılan önek (sayaç anahtarı) |
+| `WarehouseId`, `WarehouseCode` | string | LOCATION `Warehouse`, şirketin; kod gösterim kopyası |
+| `StagingLocationId` | string | deponun **Staging** rolündeki stoklanabilir düğümü (§4.4 kalıtımı dahil); depoda tek Staging düğümü varsa sunucu seçer, birden çoksa istekte zorunlu, hiç yoksa 422 `WMS_STAGING_NOT_CONFIGURED` (§8.17) |
+| `OrderRef` | string ≤ 100 \| null | sipariş referansı (opak; satış siparişi SoR'u yok, Q-EA-3) |
+| `ShipTo` | WAREHOUSE-OUTBOUND `Address` | zorunlu üyeleri donmuş şemadaki gibi; **KVKK:** log / OTel / yerel olay `Data`'sına yazılmaz (yalnız "değişti" işareti, §21) |
+| `Note` | string ≤ 1000 \| null | |
+| `Status` | enum `Allocating \| AllocationFailed \| Allocated \| Picked \| Packed \| ReadyToShip \| Shipped \| Cancelled` | §8.18; **`Allocating` ve `AllocationFailed` iç durumdur** — donmuş uçlarda ve ekranda görünmez (WMS taslağı §2.1 "taslak outbound yoktur") |
+| `Lines[]` | gömülü | aşağıda |
+| `ReadyAtUtc` | date-time \| null | `ReadyToShip` anı |
+| `Shipment` | `{ shipmentId, shipmentNumber, status, observedAtUtc }` \| null | MVP-6 sevkiyatı (§8.21); `observedAtUtc` = eşitlemenin gördüğü an — MVP-6 kablosu sevk zamanı taşımaz (SHIPMENT-BUNDLE `ShipmentSummary` / `ShipmentDetail`'de `dispatchedAt` yok, ölçüldü) |
+| `CancelReason` | string 10–1000 \| null | |
+| `AllocationLeaseUntilUtc` | date-time \| null | yalnız `Allocating`'de; tahsis kurtarma kilidi (§8.17 adım 6) |
+| `AllocationFailure` | `{ kind, atUtc, lines[] }` \| null | (r24, son bakış 02 F-1) yalnız `AllocationFailed`'de; `AllocationFailed`'i yazan yazımda (işlem B yerine) yazılır, sonra değişmez. `kind = BatchRefused` (FU03 toplu ret; `lines[] { lineSeq, code, requested, allocatable }` = FU03 satır sonuçları — 422 replay'in kaynağı) ya da `KeyReused` (FU03 400 `IDEMPOTENCY_KEY_REUSED`; satır sonucu yoktur, `lines[]` boş). `KeyReused`'da aynı yazım her tahsisin `ReservationReleaseState`'ini `Pending` yapar (§8.17 adım 6); S3 `AllocationOrphanSuspected` bu alandan türer (§8.23) |
+| `ShortDispatchUnresolved[]` | `{ skuId, lotId?, expected, issued, reason }` | (r24, son bakış 02 F-1 / F-4) yalnız `Shipped`'de; `Shipped` yazımıyla aynı işlemde, görevle çözülemeyen her SKU için bir satır (§8.21): `expected` = Σ toplanan, `issued` = Σ çıkan (baz birim), `lotId` yalnız SKU'nun bütün satırları tek bir lottaysa, `reason ∈ { LotMissing, NotFromStaging, OverIssued }`; sonradan değişmez — S3 `ShortDispatchUnresolved` bu satırdan türer, çıkış koşulu okuma anındadır (§8.23). r25 (son bakış 03 F-1 / F-2 / F-7): satır outbound içinde `skuId` ile tekildir (`exceptionId` = `ShortDispatchUnresolved:{outboundId}:{skuId}`); çıkış koşulu **lot düzeyinde** ve tam olarak `StagingLocationId` düğümünde ölçülür, `reason` yalnız açıklayıcıdır (listede kalma kuralı işarete bakmaz) |
+| `IdempotencyKey`, `RequestFingerprint`, `CreatedBy` | | yaratma anahtarı kayıtta, kullanıcı kapsamında (§4.1 deseni) |
+| `Version` | int | If-Match |
+
+**`OutboundLine`** (gömülü, `Lines[]`): `LineSeq` (1'den), `OrderLineId` (string ≤ 100, zorunlu — donmuş şemada `orderLineId`), `ItemId`,
+`SkuId`, `SkuLevel` (`Gsku \| Lsku \| FinishedGood \| Item`; Item satırı §8.24 — W-6 sahip kararı, AC-33), `RequestedQuantity` (> 0, baz birim), `BaseUomId` (istekteki
+`uomId` SKU'nun baz birimi olmalı; değilse 422 `WMS_UOM_NOT_BASE` — dönüşüm yok, §4 miktar kuralı), `LotOverride { lotId, fefoBypassReason }`
+\| null (§8.17 adım 3), `Allocations[]`, `ShortQuantity` (kısa toplamadan türetilir, saklanmaz).
+
+**`OutboundAllocation`** (gömülü, `Lines[].Allocations[]`): `AllocSeq` (outbound içinde 1'den), `LotId` \| null (lot izlenmeyen SKU'da
+null — depo düzeyi rezervasyon), `LotNumber`, `Quantity`, `FefoRank` \| null, `FefoBypassReason` \| null (lot değişiminde ya da r22'den beri release'te sonradan oluşan sapma için, 10–1000; yayından sonra değişmez),
+`PlannedBins[] { locationId, quantity }` (işlem A'da kalıcı pick planı — r23), `ReservationId` (MOD-0173-FU03 `reservationId`), `ReservationKey` = `wms:out:{outboundId}:{allocSeq}` (FU03 rezervasyon idempotency
+anahtarı — **deterministik**, kurtarmada aynı anahtar), `PickedQuantity` (pick görevlerinin Posted toplamı; türetilir), `PackedQuantity`
+(kapalı kolilerdeki toplam; türetilir), `ReservationReleaseState` `None \| Pending \| Released` (§8.21, §8.22).
+
+**Pick görevi** = `WarehouseTask` (`Kind = Pick`; §4.1 alanları aynı anlamla) + S2 alanları: `OutboundId`, `LineSeq`, `AllocSeq`,
+`ReservationId` (tahsisten kopya), `FefoRank`, `Number` `{ŞİRKET}-PCK-{000001}`, `FromLocationId` = tahsiste seçilen kaynak bin (§8.17 adım 4),
+`ToLocationId` = outbound'un `StagingLocationId`'si (**sabit**; onayda hedef alınmaz), `Origin = Manual` değil `Outbound` (S2'nin iki yeni
+enum değerinden biri, yalnız pick'te; öbürü putaway'in `ShortDispatch`'i — §4.1, r24 son bakış 02 F-3). Pick görevinde `TargetSource`, `SuggestedToLocationId`, `DeviationReason` yoktur.
+
+**`HandlingUnit`** (`wms_handling_units`): `PackageId` (uuid), `PackageNumber` `{ŞİRKET}-PKG-{000001}` (donmuş şemanın `packageId`'si bu
+numaradır — `string`, WAREHOUSE-OUTBOUND), `OutboundId`, `Contents[] { allocSeq, quantity }` (≥ 1 satır kapanışta), `WeightKg` (decimal string
+> 0, ≤ 3 ondalık, isteğe bağlı), `DimensionsCm` (`^\d{1,4}x\d{1,4}x\d{1,4}$`, isteğe bağlı), `Status (Open \| Closed \| Cancelled)`, `Version`,
+yaratma anahtarı kayıtta (§4.1 deseni).
+
+**`OutboundShipmentEvent`** (insert-only, `wms_outbound_events`): `OutboundId, Seq, Kind (Created | AllocationFailed | Allocated | Updated |
+PickCompleted | PackageCreated | PackageUpdated | PackageClosed | PackageCancelled | Packed | Released | Shipped | ReservationsReleased |
+ReservationReleaseFailed | Cancelled), Actor, AtUtc, Data, CorrelationId, IdempotencyKey?, RequestOp?, RequestFingerprint?`. Anahtar olayı
+kuralı §4.3 ile aynı (yaratma dışındaki komutun ilk yazımının olayı). `Data`'da `ShipTo` değerleri **yoktur** (yalnız `shipToChanged: true`).
+`AllocationFailed`'in `Data`'sı kayıttaki `AllocationFailure`'dır (`kind` + `BatchRefused`'da satır sonuçları; `KeyReused`'da `code
+IDEMPOTENCY_KEY_REUSED`, satır yok); `Shipped`'in `Data`'sı `shortDispatch[]` ve `shortDispatchUnresolved[]`'i taşır (r24, son bakış 02 F-1).
+Pick görevlerinin olayları S1 gibi `wms_task_events`'e yazılır.
+
+İstek idempotency'si S1 kuralıyla (§8.1): yaratmanın anahtarı ve parmak izi kayıtta (outbound, koli), diğer komutlarınki anahtar olayında
+(outbound: `wms_outbound_events`; pick: `wms_task_events`; koli: `wms_outbound_events`, `RequestOp` ile ayrılır).
+
+### 4.6 Indexes (kiracı + şirket önce)
+- `wms_tasks`: tekil **`(TenantId, Number)`** — kiracı genelinde (RCS-001 §6; numara kimliktir, şirketler arası transferde de çakışmaz);
+  tekil kısmi `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` where `IdempotencyKey` string — kullanıcı kapsamında (`QuarantineIndexConfiguration.cs:51` `CreatedBy`, `ExpiryIndexConfiguration.cs:64` `OpenedBy`, `RecallIndexConfiguration.cs:84` `OwnerUserId`; bağımsız
+  inceleme 11 F-2);
+  `(TenantId, LegalEntityId, Kind, Status, WarehouseId)`; `(TenantId, LegalEntityId, FromLocationId, SkuId, LotId, Status)`
+  (açık miktar hesabı); `(TenantId, LegalEntityId, AssigneeUserId, Status)`; `(TenantId, Confirmations.PostingKey)` (kurtarma).
+- `wms_tasks` (seri SKU, inceleme 02 F-6): tekil kısmi `(TenantId, LegalEntityId, WarehouseId, FromLocationId, SkuId, SkuLevel, LotId)`
+  where `OpenSerialSlot = true` — `OpenSerialSlot` seri SKU görevinde `Open` / `InProgress` iken `true`, `Completed` / `Cancelled`'da
+  kaldırılır (kısmi index'te yalnız eşitlik filtresi). **Farklı anahtarlı** eşzamanlı iki seri görev yaratmasından biri bu index'ten
+  yinelenen kayıt alır → 422 `WMS_QUANTITY_EXCEEDS_OPEN`; aynı kullanıcı + aynı anahtar + aynı gövde ise kaybeden önce anahtarı yeniden
+  arar ve 200 replay alır (§8.1; bağımsız inceleme 12 F-2).
+- `wms_tasks` (sweeper taramaları, bağımsız inceleme 07 F-4): normal dal `("Confirmations.Status", "Confirmations.LastAttemptAtUtc",
+  TenantId, _id)`; savunma dalı `("Confirmations.RefusedOnRetry", "Confirmations.RefusedAtUtc", TenantId, _id)` (aynı dizinin alanları —
+  çok anahtarlı bileşik index'e izinli; dokümantasyon bilgisi, geliştirici kurulumda ölçer).
+- `wms_task_events`: `(TenantId, TaskId, Seq)` tekil; **istek anahtarı** (bağımsız inceleme 10 F-1, 11 F-2): tekil kısmi
+  `(TenantId, TaskId, ActorUserId, RequestOp, IdempotencyKey)` where `IdempotencyKey` string (`$type: string`) — 0176 / 0177 emsali
+  (`…/Persistence/Expiry/ExpiryIndexConfiguration.cs:78-80`, `…/Persistence/Recall/RecallIndexConfiguration.cs:94-96`); emsalden tek
+  fark `RequestOp`'tur: 0178'de tekil ve toplu komutlar aynı olay koleksiyonuna yazar, operasyonlar birbirinin anahtarını görmez. Toplu
+  atama araması için tekil olmayan kısmi `(TenantId, LegalEntityId, ActorUserId, RequestOp, IdempotencyKey)` (aynı filtre); arama
+  yalnız `RequestOp = bulkAssignPutawayTasks` olaylarını alır.
+- `wms_location_role_events`: `(TenantId, RoleId, Seq)` tekil (bağımsız inceleme 09 F-1); tekil kısmi `(TenantId, RoleId, ActorUserId,
+  RequestOp, IdempotencyKey)` ve toplu silme araması için tekil olmayan kısmi `(TenantId, LegalEntityId, ActorUserId, RequestOp,
+  IdempotencyKey)` (aynı filtre; arama yalnız `RequestOp = bulkDeleteLocationRoles` olaylarını alır — tekil silmenin `Deleted` olayları
+  sayılmaz; bağımsız inceleme 10 F-1, 11 F-2).
+- `wms_location_roles`: tekil kısmi `(TenantId, LegalEntityId, LocationId)` where `IsDeleted = false`;
+  `(TenantId, LegalEntityId, WarehouseId, Roles)`; tekil kısmi `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` (rol yaratma,
+  kullanıcı kapsamında; bağımsız inceleme 10 F-1, 11 F-2). Rol yaratmada iki tekil index'ten (anahtar, `LocationId`) gelen her
+  yinelenen kayıt hatası §8.1'in yeniden arama kuralına girer (bağımsız inceleme 11 F-3).
+- `wms_number_counters`: tekil `(TenantId, CompanyCodePrefix, TypePrefix)` (geçici RCS sayacı, M-2 / Q-07 B); S2 `TypePrefix` değerleri
+  `PCK`, `OUT`, `PKG` (§22).
+- **S2 (r20):** `wms_outbound_shipments`: tekil `(TenantId, OutboundNumber)`; tekil kısmi `(TenantId, LegalEntityId, CreatedBy,
+  IdempotencyKey)`; `(TenantId, LegalEntityId, Status, WarehouseId)`; `(TenantId, Status, AllocationLeaseUntilUtc)` (tahsis kurtarma
+  taraması); `(TenantId, "Lines.Allocations.ReservationReleaseState")` (bırakma yeniden denemesi). `wms_handling_units`: tekil
+  `(TenantId, PackageNumber)`; `(TenantId, LegalEntityId, OutboundId, Status)`; yaratma anahtarı tekil kısmi index (aynı desen).
+  `wms_outbound_events`: tekil `(TenantId, OutboundId, Seq)`; istek anahtarı tekil kısmi `(TenantId, OutboundId, ActorUserId, RequestOp,
+  IdempotencyKey)`. `wms_tasks` (pick): `(TenantId, LegalEntityId, OutboundId, Kind, Status)`.
+- Test DB adı DB-010 (`_test` / `_tests` / `_itest` parçası); paket testleri kendi replika setini açar (`INVENTORY_TEST_MONGO`,
+  27017 reddedilir — MOD-0173 FU-0173-TEST-01).
+
+## 5. Repo Scope
+
+Yalnız yeni dosyalar (seam'ler aşağıda tek tek):
+- `services/Diten.InventoryService/src/Diten.InventoryService.Domain/Warehouse/**` (varlıklar, enum'lar, saf kurallar:
+  `PutawayTaskRules`, `LocationRoleRules`)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/PutawayTasks/**`,
+  `…/Features/WarehouseLocationRoles/**`, `…/Features/Warehouse/{Ports,Services}/**` (`WarehouseMovementPoster`,
+  `IWarehouseRecordCodeAllocator`, okuma portları) ve `…/Features/Warehouse/WarehouseErrorCodes.cs` (`WMS_*` kodları — WMS-BUNDLE'da tanımlı, Q-06; `InventoryErrorCodes.cs` değişmez),
+  `…/Features/Warehouse/WarehouseCentralAudit.cs` (BL-501 bildirim yardımcısı, §21; `InventoryCentralAudit.cs` değişmez)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Persistence/Warehouse/**` (depolar, index kurucu, Pending kurtarma
+  hosted service)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/Warehouse/**`,
+  `…/Api/Warehouse/**` (DI uzantısı, `PutawayPickingPackingManifestProvider`)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Authorization/WarehousePermissions.cs`
+- `services/Diten.InventoryService/tests/**/Warehouse/**`
+- **S2 / S3 (r20):** `…/Application/Features/{OutboundShipments,PickTasks,HandlingUnits,WarehouseMonitoring}/**`, `…/Features/Warehouse/Ports/`
+  içine `IWarehouseFefoReader` (FEFO sırası, `GetFefoOrderHandler` ile **aynı** kural: `IExpiryReadModel.FefoCandidatesAsync` +
+  `FefoOrderRule` — `…/Domain/Expiry/Rules/FefoRules.cs`; 0176 dosyaları değişmez) (MVP-6 okuması için ayrı port yok — aşağıda, r23); `…/Persistence/Warehouse/**` içine outbound / koli depoları ve `OutboundMaintenanceHostedService`;
+  `…/Api/Controllers/Warehouse/**` içine `OutboundShipmentsController` (S1 donmuş GET'leri + S2 uçları), `PickTasksController`,
+  `PackagesController`, `WarehouseMonitoringController`. **MVP-6 okuması (r23, son bakış F-4, CT kararı; ölçüldü `db769471c`):** yeni
+  ayar sınıfı **yok** — InventoryService'in var olan `GatewayOptions` (bölüm `Gateway`, `BaseUrl` varsayılan `http://localhost:5000`,
+  `TimeoutSeconds` 10; `…/Infrastructure/Workflow/GatewayWorkflowClient.cs`) kullanılır; S1 `WarehouseServiceCollectionExtensions` onu zaten
+  okur. MVP-6 sevkiyat okuması var olan `IShipmentReader` / `ShipmentBundleHttpReader` (MOD-0177; `…/Application/Features/Recall/Ports/
+  IRecallTraceSource.cs`, `…/Infrastructure/Recall/ShipmentBundleHttpReader.cs`; `GET api/shipment-bundle/shipments/{id}`, çağıranın
+  token'ı ve şirketiyle, `RecallServiceCollectionExtensions`'ta `GatewayOptions.BaseUrl` ile kayıtlı) üzerinden yapılır. **Ölçülen fark:**
+  bugünkü port yalnız `ReadAsync(shipmentIds)` → `TraceShipmentInfo(Read, Status, ActualDeliverAt, ShipToReference)` döner; 0178'in
+  ihtiyacı olan `queryShipments?sourceDocumentId`, `sourceModule` / `sourceType`, `stockIssued` ve `lines[]` yoktur. Bu yüzden porta
+  **eklemeli** iki üye (MOD-0177'nin dosyaları — aynı sahip MVP-1 CT / Beste, XMC-001 kaydı §7; mevcut `ReadAsync` davranışı
+  değişmez): `QueryBySourceDocumentAsync(outboundId)` ve `ReadDetailAsync(shipmentId)` (aynı `HttpClient`, aynı başlık iletimi, aynı
+  zaman aşımı). `IWarehouseShipmentReader` ayrı port olarak açılmaz. **Dosyalar ve eşleme (r24, son bakış 02 F-7; ölçüldü `db769471c`):**
+  port `…/Application/Features/Recall/Ports/IRecallTraceSource.cs:86-89` (`IShipmentReader`; yeni dönüş kayıtları aynı dosyada:
+  `ShipmentQueryResult(Read, Shipments[] { ShipmentId, ShipmentNumber })`, `ShipmentDetailResult(Read, ShipmentId, ShipmentNumber,
+  SourceModule, SourceType, Status, StockIssued, Lines[] { SkuId, LotId?, FromLocationId?, Quantity })` — adlar öneri; r25, son bakış 03
+  F-4: `ShipmentNumber` SHIPMENT `ShipmentSummary.shipmentNumber`'dır, `ShipmentDetail` onu `allOf` ile taşır (`shipment-bundle.openapi.yaml`
+  `ShipmentSummary` / `ShipmentDetail`, ölçüldü `ad7518ae4`); kayıttaki `Shipment.shipmentNumber` tek adayın **detayından** yazılır),
+  uygulama `…/Infrastructure/Recall/ShipmentBundleHttpReader.cs`, DI
+  `…/Api/Recall/RecallServiceCollectionExtensions.cs:48-56` (değişmez). **İki üye varsayılan arayüz uygulamasıyla eklenir (r25, son bakış 03
+  F-3, CT kararı):** `IShipmentReader`'ın başka uygulayıcısı vardır — MOD-0177 testlerinin `FakeShipmentReader : IShipmentReader`'ı
+  (ölçüldü `db769471c` `…/tests/Diten.InventoryService.Tests/Recall/RecallTraceEngineTests.cs:118`, yalnız `ReadAsync`'i yazar); gövdesiz
+  üye eklenseydi o sınıf derlenmezdi. Bu yüzden iki üye arayüzde **gövdeli** (C# varsayılan arayüz üyesi; proje `net8.0`, ölçüldü
+  `Diten.InventoryService.Application.csproj`) yazılır ve gövde istisna atmadan `Read = Unavailable` döner (okuyucunun "her sonuç bir
+  cevap" kuralı; 0178'de 503 — fail-closed, hiçbir zaman "sevkiyat yok" değil); `ShipmentBundleHttpReader` ikisini de kendisi uygular
+  (gerçek okuma). Sonuç: MOD-0177 test dosyalarına ve `FakeShipmentReader`'a dokunulmaz. Yeni üyeler mevcut okuyucunun kuralını aynen izler: istisna atmaz,
+  her sonuç `ShipmentReadOutcome` (`…/Domain/Recall/Trace/TraceModel.cs:33-40`) ile döner — 200 → `Ok`; **401 ve 403 → `Forbidden`**; 404 →
+  `NotFound`; 5xx, **öbür 4xx** (400, 409, 429 … — okuyucunun `default:` dalı, ölçüldü `db769471c` `ShipmentBundleHttpReader.cs:76-77`;
+  r25, son bakış 03 F-4), bağlantı hatası, okunamayan gövde ve okuma başına **2 sn** zaman aşımı (`ShipmentBundleHttpReader.PerReadTimeout`) →
+  `Unavailable`; çağıranın kendi iptali yeniden fırlatılır. **0178 eşlemesi (AC-31 kodları):** herhangi bir okuma `Forbidden` → 403
+  `WMS_DISPATCH_READ_FORBIDDEN`; değilse herhangi bir okuma `Unavailable` ya da `NotFound` (sorgunun döndürdüğü adayın detayı 404 dahil)
+  → 503 `WMS_DISPATCH_SOURCE_UNAVAILABLE`; ikisinde de yazım, yerel olay ve merkezi kayıt yok (§8.21).
+- **DL-4 başlama tabanı (r21, inceleme 19 F-5; ölçüldü):** S1 kodu bu CT worktree'sinde (`chore/ct/mod0178-dl1-accept-01`) **yoktur**;
+  MVP-1 hattındadır — `feature/sce/mod-0173-inventory-ledger-valuation` @ `db769471c`: DL-2 `9d7bab02b` + `cf79c85c3`, DL-3 `a98e9c54e` +
+  `bec38513f` / `03aa826dd` / `dc03e189b`, DL-8 `83b01ef62` bu hattın atasıdır (`git branch --contains`). Sayılar o commit'te ölçüldü:
+  `CentralAuditDeclarationTests.cs:38` → 82; `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs:81` → 22 uç; S1 onay makinesi
+  (`ReconcilePendingConfirmationCommand`, `PendingConfirmationReconcilerHostedService`) orada var. DL-4 dalı bu hattan, FU03 DL-1 + DL-2 +
+  DL-3 kabulünden sonra açılır.
+- **S2 / S3 Web (r20):** `frontend/Diten.Web/Controllers/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}Controller.cs`,
+  `frontend/Diten.Web/Views/Warehouse/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}/**`,
+  `frontend/Diten.Web/wwwroot/assets/js/Warehouse/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}/**`,
+  `frontend/Diten.Web/Resources/Views/Warehouse/{…}/**` (7 dil) (§11.5).
+- `frontend/Diten.Web/Controllers/PutawayTasksController.cs`, `frontend/Diten.Web/Controllers/WarehouseLocationRolesController.cs`,
+  `frontend/Diten.Web/Views/Warehouse/{PutawayTasks,WarehouseLocationRoles}/**`,
+  `frontend/Diten.Web/wwwroot/assets/js/Warehouse/{PutawayTasks,WarehouseLocationRoles}/**`,
+  `frontend/Diten.Web/Resources/Views/Warehouse/**` (7 dil)
+- `docs/analysis/contracts/wms-bundle.openapi.yaml` (yalnız CT kabulünden sonra, tek yazıcı adımı; r26: CT 2026-11-10'da yazdı, §19.7; MVP-1 hattında, main'e hat PR'ıyla girer) + `docs/analysis/contracts/README.md` satırı
+- `docs/records/audits/2026-1x/mod-0178-*` (kanıt), bu paketin §19 Implementation Notes bölümü
+
+**Seam'ler (var olan dosyalar, en az değişiklik; satırlar `47a2c1cb9`'da okundu):**
+| Dosya | Satır | Değişiklik | Dilim |
+|---|---|---|---|
+| `services/Diten.InventoryService/src/Diten.InventoryService.Api/Program.cs` | manifest kayıtları `:45-56` | `PutawayPickingPackingManifestProvider` kaydı + `AddWarehouse()` | S1 |
+| `services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Middleware/InventoryScopeResolutionMiddleware.cs` | `ScopedBasePaths` `:57-60` | `WarehouseContract.BasePath` (`/api/warehouse`) — 0176 / 0177 emsali | S1 |
+| `services/Diten.InventoryService/src/Diten.InventoryService.Application/Common/Upstream/SkuReference.cs` | record `:13-24` | eklemeli isteğe bağlı `IReadOnlyList<string>? StorageConditions` (yok = bilinmiyor; boş liste = koşul yok) — **sahibi MOD-0173 (MVP-1 CT, aynı sahip; XMC-001 gerekmez, seam açık listelenir)** (F-5) | S1 (DL-1) |
+| `services/Diten.InventoryService/src/Diten.InventoryService.Infrastructure/Upstream/ProductMasterHttpClient.cs` | `GetSkuAsync` `:62-82` | `storageConditions` dizisini oku (alan yoksa null) — sahibi MOD-0173 (F-5) | S1 (DL-1) |
+| Seri kovası okuması (MOD-0174 / MOD-0175 emsali) | **ölçüldü (inceleme 02 F-8):** emsal `QuarantineLedgerReads.SerialsAtAsync` (`…/Persistence/Quarantine/QuarantineLedgerReads.cs:108-120`, port `…/Features/Quarantine/Ports/QuarantinePorts.cs:50-55`): kiracı + item + SKU + seviye + lot + depo + lokasyon, `Status Active`, alım sırası, **seri numarası** döner; MOD-0175 `StockActionHandlers.SerialsForAsync` (`…/Quarantine/Handlers/StockActionHandlers.cs:175-200`, ASSUMPTION-0175-Q4-02) açık tutma ve açık bloke kayıtlarının serilerini dışlar | 0178 portu `IWarehouseSerialReader` aynı okumayı ve **aynı dışlamayı** yapar (§8.16); yeni repository sorgusu açılmaz — `SerialsAtAsync` okuması tekrar kullanılır ya da aynı filtreyle 0178 Persistence'ta okunur (geliştirici seçer, ikisi de emsal) — sahibi MOD-0174 / 0175 (MVP-1 CT) | S1 (DL-2) |
+| Ledger anahtar araması (MOD-0173) — **yeni port** | `IInventoryLedgerRepository.FindByIdempotencyKeyAsync` (`…/Domain/Repositories/IInventoryLedgerRepository.cs:16`); `InternalMovementPostingService` bunu doğrulamadan **önce** çağırır (`InternalMovementPostingService.cs:93-99`; parmak izi farklıysa `Replay` → 400 `IDEMPOTENCY_KEY_REUSED`, `:216-226`) | MOD-0173 Application'a eklemeli port `IPostingKeyLookup.LookupAsync(storedMovementRequest)` → `NotCommitted \| Committed(holder) \| KeyReusedDifferentPayload(holder)`; **`holder`** = anahtarı tutan hareket: `transactionId`, `transactionNumber`, `sourceModule`, `sourceType`, `sourceDocumentId`, `sourceLineId`, `quantity` + `uomId` / `baseQuantity`, `fromWarehouseId` / `fromLocationId`, `toWarehouseId` / `toLocationId`, **`lotId`, `serialIds`, `fromStockStatus` / `toStockStatus`** (inceleme 05 F-4), `postingDate`, **`reversedByTransactionId?`** (hareket ters kaydedildiyse ters kaydın kimliği; bağımsız inceleme 05 F-2 — bugün yalnız `IsReversedAsync` (bool) var: `IInventoryLedgerRepository.cs:20`, `InventoryLedgerRepository.cs:110-113` `ReversesTransactionId == id`; ters kaydın kimliğini döndürmek için aynı filtreyle eklemeli okuma `FindReversalOfAsync(transactionId)` — MOD-0173'te **dördüncü seam**, aşağıdaki satır) (repository + `RequestFingerprint.Compute`; **upstream çağrısı yok**; inceleme 04 F-1 / F-4). Defter append-only'dir (`IInventoryLedgerRepository.cs:11-12`): bir anahtara bağlanmış hareket REVERSAL ile serbest kalmaz, yani `KeyReusedDifferentPayload` kalıcıdır. 0178 depoya doğrudan bağlanmaz (AC-6 sınırı korunur) — sahibi MOD-0173 (MVP-1 CT, aynı sahip) (inceleme 02 F-1) | S1 (DL-2) |
+| Ters kayıt okuması (MOD-0173) — **dördüncü seam** (bağımsız inceleme 06 F-1) | `…/Domain/Repositories/IInventoryLedgerRepository.cs:20` (`IsReversedAsync`, bool) ve `…/Persistence/Repositories/InventoryLedgerRepository.cs:110-113` (filtre `ReversesTransactionId == id`). **Ölçüldü:** mimari test `…/tests/Diten.InventoryService.Tests/Architecture/LedgerImmutabilityArchitectureTests.cs:28-36` arayüzde `Find` / `Query` / `List` / `Is` önekli üyeleri kabul eder, tek yazıcı `PostAsync`; tekil kısmi index `…/Persistence/InventoryIndexConfiguration.cs:49-55` (`TenantId + LegalEntityId + ReversesTransactionId`, `Unique`, `$type: string`) bir harekete **en çok bir** ters kayıt verir | arayüze ve uygulamaya **yalnız eklemeli okuma üyesi** `Task<InventoryTransaction?> FindReversalOfAsync(Guid transactionId, CancellationToken)` — `IsReversedAsync` deseniyle aynı filtre, `FirstOrDefault`; yazım üyesi eklenmez (mimari test yeşil kalır); `IPostingKeyLookup` bunu `holder.reversedByTransactionId` için çağırır — sahibi MOD-0173 (MVP-1 CT, aynı sahip) | S1 (DL-2) |
+| BL-501 bildirim testi — **S2 sayısı (r20; kural r21)** | aynı dosya `CentralAuditDeclarationTests.cs` (MVP-1 hattında `:38` `Assert.Equal(82, WriteCommands.Length)`, ölçüldü `db769471c`) | **tek kural (r21, inceleme 19 F-5):** sayı = 82 + dilimin eklediği S2 yazma komutları — DL-4 sonunda **85**, DL-5 sonunda **99** (§3'ün 17 S2 yazma komutu; `ReconcilePendingConfirmationCommand` S1'den sayılı); sayı paketin kuralıdır, geliştiricinin ölçümü farklı çıkarsa kod değil paket sorulur (CT'ye bulgu); `:107` S2 `WithTransactionAsync` callback'leri kadar artar; başka değişiklik yok — sahibi MOD-0173 (MVP-1 CT, aynı sahip; §7 XMC-001) | S2 (DL-4, DL-5) |
+| MOD-0177 MVP-6 sevkiyat okuması — **MOD-0177 seam'i** (r24, son bakış 02 F-7; XMC-001 kaydı §7) | `…/Application/Features/Recall/Ports/IRecallTraceSource.cs:86-89` (`IShipmentReader`, tek üye `ReadAsync`) ve `…/Infrastructure/Recall/ShipmentBundleHttpReader.cs` (`PerReadTimeout` 2 sn, `MaxParallel` 8, 401 / 403 → `Forbidden`; ölçüldü `db769471c`) | **yalnız eklemeli** iki üye `QueryBySourceDocumentAsync` / `ReadDetailAsync` — arayüzde **varsayılan uygulamalı** (gövde `Unavailable` döner; r25, son bakış 03 F-3) — ve dönüş kayıtları (yukarıda); `ShipmentBundleHttpReader` ikisini uygular; `ReadAsync` ve recall iz motoru davranışı değişmez; MOD-0177 testleri (`RecallTraceEngineTests.cs:118` `FakeShipmentReader` dahil) **değiştirilmeden derlenir ve yeşil** — bu, varsayılan uygulamanın sonucudur (AC-31, sabotaj (em)); DI kaydı değişmez — sahibi MOD-0177 (MVP-1 CT, aynı sahip Beste) | S2 (DL-5) |
+| Gateway kapsama testi (integration-agent) | `gateway/…/Mod0178WarehouseRouteTests.cs` (DL-8, `83b01ef62`; 22 uca sabit) | S2 / S3 uçları listeye eklenir (AC-74); `ocelot.json` değişmez (aynı `{everything}` rotası) — integration-agent işi | S2 / S3 (DL-4, DL-5, DL-7) |
+| BL-501 bildirim testi (MOD-0173) — **beşinci seam** (bağımsız inceleme 09 F-3) | `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/CentralAudit/CentralAuditDeclarationTests.cs` (`963f6230a`'da okundu): `:22-27` Application derlemesindeki her yazma komutunu tarar; `:35` `Assert.Equal(67, WriteCommands.Length)`; `:42-49` beş manifest sağlayıcısı, `:56` `SourceModule` bu listede aranır; `:54` `CentralAuditPlatformValues.IsKnown`; `:66` dışarıda-işlem listesi; `:107` `Assert.Equal(10, seen)` (Persistence'taki `WithTransactionAsync` callback sayısı, her biri enlist eder) | `:35` **67 → 82** (0178'in 15 S1 yazma komutu, §3; DL-1'in 4 rol komutuyla ara değer 71) ve yanındaki yorum; `:42-49` listesine `PutawayPickingPackingManifestProvider`; `:107` sayısı 0178 Persistence'ının `WithTransactionAsync` callback sayısı kadar artar (sayı geliştiricinin ölçümü; her callback enlist eder, §8.8); `:66` (0178'de `ICentralAuditOutsideTransaction` yok) ve `:76-79` sweeper listesi (uzlaştırıcı hosted service işlem açmaz) **değişmez**; başka mevcut test değişmez — sahibi MOD-0173 (MVP-1 CT, aynı sahip) | S1 (DL-1, DL-2) |
+| Dev PRODUCT-MASTER köprüsü 4010 veri seti | depoda izlenmiyor (`git ls-files` 0) — yeri geliştirici ölçer | örnek SKU'lara `storageConditions` eklenir (kabul ortamı, F-5). **Kural (inceleme 02 F-10):** E3 / E4 kabul kanıtında kullanılan veri setinin **kopyası ve SHA-256'sı kanıt klasörüne** konur (klasör yolu kabul aşamasında yazılır); kopyası olmayan koşu yeniden üretilebilir sayılmaz | S1 |
+
+`execution/registries/module-implementation-status.md` dev dilimince yazılmaz; rapor satırı önerir, CT kabulde yazar.
+
+## 6. Protected Paths
+
+- `.antigravity/**`, `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`.
+- `gateway/Diten.ApiGateway/**` (`ocelot.json` yalnız integration-agent, INT-WMS).
+- Donmuş sözleşmeler: `docs/analysis/contracts/*.openapi.yaml` (WAREHOUSE-OUTBOUND dahil — 1.0.0 değişmez; eklemeli değişiklik
+  yalnız CT kabullü tek yazıcı adımıyla), `shipment-bundle.openapi.yaml` ve MVP-6 semantik dosyaları (asla).
+- MOD-0173…0177 kodu — **istisna (inceleme 03 F-4, bağımsız inceleme 06 F-1, 09 F-3):** §5'teki **beş** MOD-0173 seam'i (`SkuReference`,
+  `ProductMasterHttpClient`, yeni `IPostingKeyLookup` portu, `IInventoryLedgerRepository` / `InventoryLedgerRepository`'ye eklemeli okuma
+  üyesi `FindReversalOfAsync` ve BL-501 bildirim testi `CentralAuditDeclarationTests.cs`'in komut sayısı + manifest listesi), MOD-0174 / 0175 seri okuması ve (r24, son bakış 02 F-7) MOD-0177 `IShipmentReader`'a iki eklemeli üye (`IRecallTraceSource.cs`, `ShipmentBundleHttpReader.cs`; §5 seam tablosu; r25: varsayılan arayüz uygulamalı — MOD-0177 test dosyaları korunan yol olarak kalır, değişmez); sahip aynı (MVP-1 CT), XMC-001 notu §7'de. Bunlar dışında: defter
+  (`InventoryLedgerRepository`, `InternalMovementPostingService` — bu dosyalarda **yalnız eklemeli okuma üyesi**; yazım yolu yalnız
+  çağrılır, değiştirilmez), rezervasyon,
+  LOCATION, TRACE, QUARANTINE karar motoru, FEFO kuralları (`FefoRules.cs`, `ExpiryPostingPolicy.cs`), recall kapısı.
+- `execution/portfolio/**` (DCP-009 notu — açık iş FU-0178-DCP-01), `execution/registries/**`,
+  `execution/domains/supply-chain-execution/domain-config.md` (yalnız öneri).
+- Başka servisler: `services/Diten.SupplyChainService/**` (MVP-6), `services/Diten.ProcurementService/**` (MVP-2),
+  `services/Diten.MdmService/**`, `services/Diten.Platform/**`.
+- Paylaşılan: `Diten.BuildingBlocks` / `Diten.Building.Blocks`, `frontend/Diten.Web/Views/Shared/_Layout*.cshtml`,
+  `dt-defaults.js`, `diten-datatable.js`, `core.css`, `SharedResource`, kabuklar.
+- `execution/domains/master-data-management/module-packs/MDM-057-*` (terk edilmiş; okunmaz, yazılmaz).
+
+## 7. Dependencies
+
+| Bağımlılık | Tür | Durum | Kullanım |
+|---|---|---|---|
+| MOD-0173 defter + `InternalMovementPostingService` | HARD (süreç içi) | canlı, INVENTORY 1.5.0 | `LOCATION_TRANSFER` (§8.3); bakiye okuma (aday listesi) |
+| MOD-0173-FU02 LOCATION | HARD | canlı, LOCATION 1.1.0 | `getLocation`, `getLocationPath`, `searchLocations` (Bin, Active, isStockable) |
+| MOD-0174 TRACE | HARD | canlı, TRACE 1.4.0 | lot durumu / numarası (`LotRef.status`, `trace.openapi.yaml:300`) |
+| MOD-0175 QUARANTINE | okuma | canlı, 1.3.0 | held stoğun putaway dışı tutulması (§8.4) |
+| MOD-0176 FEFO | S2 HARD | canlı, 1.3.0 | FEFO sırası `getFefoOrder` ile aynı kural, süreç içi (`IWarehouseFefoReader` → `IExpiryReadModel.FefoCandidatesAsync` + `FefoOrderRule`; `GetFefoOrderHandler` emsali, `…/Features/Expiry/Handlers/ExpiryReadHandlers.cs`); RECALLED / EXPIRED / BLOCKED lotlar dışlanır. **Serbest taban (FU03 Q-01 = A, Beste 2026-11-02):** INVENTORY'nin FEFO kancası FU03 DL-3'ten sonra ayrılmış lotları saymaz; `getFefoOrder` okuması `onHandAvailable` kalır (FU03 §8.5 bilinen fark) — 0178 her lotu FU03 kapsam serbest miktarıyla sınırlar ve serbest miktarı 0 olan lotu sırada saymaz (§8.17 adım 2). Kancanın MOD-0176 dosyalarındaki değişikliği FU03'ündür (XMC-001 izni orada) |
+| MOD-0177 RECALL | HARD (S1 + S2); S2 **XMC-001 seam** (r24, son bakış 02 F-7) | canlı, 1.9.0 | `IRecallLotStatusReader.UnderRecallAsync` (`…/Features/Recall/Ports/IRecallLotStatusReader.cs:9-11`); S2 sevk eşitlemesi (§8.21) MOD-0177'nin MVP-6 okuyucusu `IShipmentReader` (`…/Features/Recall/Ports/IRecallTraceSource.cs:86-89`) / `ShipmentBundleHttpReader` üzerinden — porta iki eklemeli üye `QueryBySourceDocumentAsync` / `ReadDetailAsync` (§5 seam tablosu; `ReadAsync` değişmez) |
+| **W-5 = MOD-0173-FU03** Inventory Lot & Location Reservation | **S2 HARD** (DL-4 başlama kapısı: FU03 DL-1 + DL-2 + DL-3 CT kabulü; FU03 CT-04 güncel — DL-3 W-5'in parçası, Q-01 = A, FU03 §8.5; r24: hizalanan FU03 sürümü **r3** `d4176fbee`, sha256 `2bba39c1…ced981` — §19.5) | paket `ready-for-dev`, onay bekliyor (`execution/domains/supply-chain-execution/module-packs/MOD-0173-FU03-inventory-lot-location-reservation.md`); INVENTORY 1.6.0 / 1.7.0 | süreç içi `IInventoryReservationPort` (`CreateBatchAsync` hepsi ya da hiçbiri, `ReleaseAsync`, `GetAsync`, `GetScopeFreeAsync` ve r3'ün `FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` — FU03 DL-1, §8.7, AC-39, CT-09; 400 dalı kurtarması, §8.17 adım 6) ve `MovementRequest.reservationId` (`LOCATION_TRANSFER`'da doğrular, tüketmez) — §8.10, §8.17, §8.19. REVERSAL geri getirmesi r3'te yalnız açık `restoreReservation: true` iledir (FU03 §8.3.1; §8.21) |
+| BL-501 merkezi denetim | HARD | InventoryService'te var: `AddCentralAudit<InventoryCentralAuditScope>(…, RequireEnlistment = true)` (`Program.cs:63`); defter izi `inventory-merkezi-iletim` yol b (`tests/architecture/audit-ledger/Diten.InventoryService.md:12`) | §21 |
+| BL-565 RCS-001 ortak kod servisi | geçici yol ile aşıldı (Q-07 B) | yok (`docs/roadmap/backlog/product-backlog.md` BL-565 AÇIK); geçici sayaç + feragat FU-0178-RCS-01 | §22 |
+| MDM tüzel kişilik `Code` | HARD (numara öneki, M-2) | var: `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntity.cs:11` (`public string Code`); InventoryService'in hangi MDM okumasında (`lookup-validation` ya da tüzel kişilik okuması) döndüğü **geliştiricinin ilk ölçümü** | erişilemezse 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE` |
+| PRODUCT-MASTER v1.1 `getSku.storageConditions` | **HARD (S1 saklama koşulu uyumu, M-3)** | sözleşme `1.1.0-draft.16`, **DRAFT** (`product-master-bundle.openapi.yaml:19-20`); filo bugün 4010 köprüsünde; canlı bağ PM-LIVE (G1-D2) | alan yoksa / bilinmiyorsa fail-closed (§8.12) |
+| W-0173-02 şirket seçici | HARD | canlı | `X-Legal-Entity-Id` MDM ile doğrulanır |
+| Gateway `/api/warehouse` | INT-WMS | yok (`ocelot.json`'da `/api/warehouse` 0 eşleşme) | integration-agent |
+| MVP-2 GRN gerçek hareketi | S1 değil | MOCK (plan §1, Dalga 1) | S1 e2e test hareketiyle koşar; GRN tetikleyicisi açık soru Q-M2-1 |
+| MVP-6 dispatch sinyali | S2 | `ShipmentDispatched` olayı donmuş, bütün satır hareketleri yazıldıktan sonra yazılır (MOD-0183 §23.3 "MVP-5 will use it to mark its outbound record `Shipped`"); olay taşıma kapalı (plan §3 Dalga 3) | v1: kullanıcı tetikli eşitleme `queryShipments?sourceDocumentId={outboundId}` (§8.21); otomatik taşıma Q-M6-4 |
+| MOD-0290-FU04 Item / Material Master (MDM; PRODUCT-MASTER 1.1 Item seviyesi) | S2 Item yolu SOFT (W-6) | paket `draft`; kod MdmService'te var (`ProductMasterContract.ItemSkuRef`, `Features/ItemMaster/**`) | `getSku(itemId, Item)` — §8.24; Item stoğu yoksa yol çalışmaz ama S2'nin geri kalanı etkilenmez |
+| AuthService (access-governance) — Viewer dışlaması (Q-10a) + adanmış roller `WarehouseSupervisor` / `ShippingPlanner` / `WarehouseOperator` (r23) | S2 **XMC-001** (DL-4 kabul kapısı, AC-76) | yok | `DefaultRolePermissionTemplate` + `EntitlementPermissionSyncService` değişikliği (§14.2) — başka modülün dosyası, ayrı WP; **WP sahibi Ali (Auth)**, XMC-001 izni o WP'de (Beste 2026-11-02). **r26:** WP = MOD-0018-FU31 (iki dilim: Viewer dışlaması + eşitleme + üç rol; var olan kiracılarda eski Viewer hibesinin kontrollü geri alınması; tahmin ~28 sa); üç rol bütün yetkili kiracılarda beş koşulla (sahip kararı Beste 2026-11-11, §14.3). **r27 (inceleme F-3):** WP kimliği, dilimler ve tahmin Ali'nin Beste'ye mesajından (2026-11-11); WP repoda henüz yok; karar kaydı: `docs/records/decisions/2026-11/mod0178-owner-decisions-2026-11-11.md` (D-3, D-4) |
+| MVP-6 `fefoBypassReason` taşıması (Q-M6-3) | S2 **canlıya çıkış** kapısı — yalnız FEFO kipi `RequireReason` olan şirketlerde lot değişimli outbound için (r21, inceleme 19 F-4) | **sözleşme kabul** (MVP-6 CT cevabı (Natig, 2026-11-02; MVP-6'nın main kod ve paket okuması, test koşmadı; sözleşme kararı, kod teslimi değil)): satırda doluysa `GOODS_ISSUE_SALES`'e taşınır; kapı = MVP-6 intake eşlemesinin bunu outbound satırından okuması (kod teslimi) | taşınmazsa MVP-6 çıkışı kancada 422 `FEFO_BYPASS_REASON_REQUIRED`; `Block` kipinde lot değişimi tahsiste zaten reddedilir (§8.17 adım 3) |
+| MVP-6 intake eşlemesi + eklemeli üyeler (Q-M6-1 / Q-M6-5 / Q-M6-9) | S2 **canlıya çıkış** kapısı | sözleşme kabul (MVP-6 CT cevabı (Natig, 2026-11-02; MVP-6'nın main kod ve paket okuması, test koşmadı; sözleşme kararı, kod teslimi değil)); kod teslimi değil — eşleme bugün `SkuLevel` / `LotId` / `FromLocationId` yazmıyor | eklemeli üyeler 0178'in **ilk** canlı `ReadyToShip` kaydından önce iki tarafta da hazır olmalı (`SOURCE_DRIFT` uyarısı, §8.21) |
+| MVP-6 `reservationId` gönderimi | S2 **canlıya çıkış** kapısı (dev değil) | MOD-0183 v1 `inventoryReferenceId`'yi kullanmaz; r21 MVP-6 cevabı: `reservationId` SHIPMENT 3.5.0'da yeni isteğe bağlı satır alanı, INVENTORY tarafı FU03 sözleşmesini ister, MVP-6 takvimi FU03 main'e girince (MOD-0183 §23.4) | o revizyon olmadan MVP-6 çıkışı ayrılmış stokta `INSUFFICIENT_STOCK` alabilir; Q-M6-2 / FU03 Q-05 (Natig). **r24 (FU03 r3 CT-08 sınırı):** aynı revizyon, Dispatched öncesi çok satırlı sevk telafisinin REVERSAL gövdesine `restoreReservation: true` eklemelidir (FU03 §7 MOD-0183 hiza notu; bugün REVERSAL gövdesi bu alanı taşımaz — ölçüldü `…/Features/Shipments/Dispatch/InventoryMovementMapper.cs` `Reversal`); taşımazsa telafi rezervasyonu geri getirmez ve yeni deneme aynı `reservationId` ile **tüketimin türüne göre** sonuç alır (r25, son bakış 03 F-5; FU03 r3 §8.3 tablosu ve §8.9): **tam tüketilmiş** rezervasyon (`RELEASED` / `Consumed`) → 422 `RESERVATION_NOT_ACTIVE`; **kısmi tüketilmiş** rezervasyon (kısa toplama — AC-72: rezervasyon 30, sevk satırı 20; tüketim sonrası `ACTIVE`, kalan 10) → yeni denemenin miktarı kalanı aşınca 422 `RESERVATION_QUANTITY_EXCEEDED` (`details.remaining`, `details.requested`); iki retle de outbound `ReadyToShip`'te kalır (§8.21). Kalan ≥ yeni denemenin miktarıysa (ör. rezervasyon 30, sevk 10, kalan 20) deneme 201 alır ve geri getirilmemiş tüketimi kalandan bir kez daha düşer (çıkarım, FU03 §8.9 "kısmi → ACTIVE" satırından; sevk sonrası artık bırakma daha az bırakır) — kapı yine `restoreReservation: true`'dur |
+| MOD-0040-FU02 kayıt kodu servisi | S2 bağımlılık değil (geçiş) | `ready-for-dev`; WMS türleri `PUT` / `PCK` / `OUT` / `PKG` ve Inventory kimlik bilgisi onun DL-8'i (FU-RCS-08) | o gelene kadar `PCK` / `OUT` / `PKG` geçici sayaçtan (Q-07 B, §22); geçiş FU-0178-RCS-01 |
+| MDM P6 / P9 | **bağımlılık DEĞİL** | MDM'de yok | barkod MOD-0182'nin; P9 gelene kadar koli elle (karar Q-MDM-1), geçiş FU-0178-P9 |
+| Görev atama kullanıcı listesi | S1 yumuşak | ölçülmedi — geliştiricinin ilk ölçümü (Q-13) | yoksa atama alanı S1'de yok |
+
+**XMC-001 (inceleme 03 F-4, bağımsız inceleme 06 F-1 ve 09 F-3 ile düzeltildi):** Bu paket **MOD-0173'te beş seam** açar — `SkuReference.cs`
+(+ `StorageConditions`), `ProductMasterHttpClient.cs` (`storageConditions` okuması), yeni `IPostingKeyLookup` portu,
+`IInventoryLedgerRepository.cs:20` yanına / `InventoryLedgerRepository.cs:110-113` deseniyle eklemeli okuma `FindReversalOfAsync` ve
+BL-501 bildirim testi `…/tests/Diten.InventoryService.Tests/CentralAudit/CentralAuditDeclarationTests.cs` (komut sayısı 67 → 82, manifest
+listesine 0178 sağlayıcısı) — ve MOD-0174 / 0175 seri okuma
+emsalini kullanır (§5). Sahip aynıdır (MVP-1 CT), bu yüzden ayrı XMC-001 onayı gerekmez; seam'ler §5'te dosya ve satırıyla açık
+listelenir. **MOD-0177 seam'i (r24, son bakış 02 F-7; CT kararı 2026-11-02 — XMC-001 kaydı):** S2 sevk eşitlemesi MOD-0177'nin
+`IShipmentReader` portuna (`…/Application/Features/Recall/Ports/IRecallTraceSource.cs:86-89`) ve `…/Infrastructure/Recall/ShipmentBundleHttpReader.cs`
+uygulamasına **iki eklemeli üye** ekler (`QueryBySourceDocumentAsync`, `ReadDetailAsync`; §5). MOD-0177'nin sahibi de MVP-1 CT'dir (Beste), bu
+yüzden ayrı onay gerekmez; değişiklik yalnız eklemelidir — `ReadAsync`, recall iz motoru ve DI kaydı değişmez. **MOD-0177 testleri
+değiştirilmeden yeşil kalır, çünkü iki üye varsayılan arayüz uygulamasıyla eklenir** (r25, son bakış 03 F-3, CT kararı): MOD-0177
+testlerindeki `FakeShipmentReader : IShipmentReader` (`db769471c` `…/tests/Diten.InventoryService.Tests/Recall/RecallTraceEngineTests.cs:118`)
+yeni üyeleri yazmadan derlenir; varsayılan gövde `Unavailable` döner (0178'de 503). DL-5 kabulünde CT ölçer: DL-5'in kendi commit
+aralığında `git diff --stat {DL-5 tabanı}..{DL-5 ucu} -- services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Recall/` boş ve
+Recall test sınıfları (filtresiz tam koşuda) yeşil (AC-31). Bu seam'ler (MOD-0173'te beş, MOD-0177'de bir) ve §7'deki AuthService WP'si dışında
+başka modül değişikliği yoktur. S2'nin INVENTORY ihtiyaçları (W-5) **MOD-0173-FU03** paketiyle karşılanır (sahibi MVP-1 CT; 0178 yalnız portunu ve 1.6.0 / 1.7.0 alanlarını
+kullanır, FU03 dosyalarına dokunmaz); MVP-6 ihtiyaçları Natig'e sorudur (§19.5). İkisi de bu paketin dev diliminde yapılmaz. **r20 (S2):**
+`CentralAuditDeclarationTests.cs` sayısının S2 komutlarıyla artması aynı beşinci seam'dir (aynı sahip); MOD-0176 FEFO dosyaları okunur,
+değişmez (`IWarehouseFefoReader` 0178'in kendi portudur); Gateway kapsama testinin güncellenmesi integration-agent'ındır (AC-74).
+
+## 8. Runtime Constraints
+
+### 8.1 Servis ve kapsam
+- Servis `Diten.InventoryService`, port **5067** (AGENTS.md §3 satır 80). Depo kodu ayrı bounded context bölümünde
+  (`Domain/Warehouse`, `Features/PutawayTasks`, `Features/WarehouseLocationRoles`, `Features/Warehouse`), MVP-1 modüllerinin
+  koduna yalnız §5 seam'lerinden değer.
+- Taban yol `/api/warehouse` (WAREHOUSE-OUTBOUND `servers.url`).
+- Kiracı token'dan; şirket W-0173-02 (claim varsa claim, yoksa `X-Legal-Entity-Id` + MDM doğrulaması). **403 `CROSS_LE_FORBIDDEN`
+  yalnız başlık ↔ token / üyelik uyuşmazlığıdır** (MOD-0173 pack `:186`, `:395`). Seçili şirketle **başka şirketin kaydına id ile
+  erişim → 404** (kayıt varlığı sızdırılmaz); başka kiracı / bilinmeyen id → **404** (F-11). `tenantId` / `legalEntityId` gövde / sorguda → 400.
+- **Correlation (E-1):** kimliği Gateway üretir; 0178 servis genel `CorrelationIdMiddleware`'i kullanır, kendi ara katmanını
+  yazmaz; her süreç içi ve dış çağrıya iletir; olay yüklerinde UUID taşır. E-1 hedefi geçersize 400'dür; Inventory bugün
+  G1-D3 = A gereği "kabul et ve değiştir" yapıyor ve 400'e dönüş ayrı küçük WP'dir (plan §2.1 E-1) — 0178 o WP neyse onu izler,
+  ayrı davranış yazmaz (Q-10).
+- **Gün sınırı (E-6):** her tarih UTC; "bugün" UTC günü.
+- **Tel biçimi:** InventoryService'in ölçülmüş kablosu — başarı gövdesi sarmalanmamış şema (INVENTORY / FEFO / RECALL R-1
+  emsali), hata INVENTORY `Error` şeması (`error { code, message, details, correlationId }`, `contractVersion: "v1"`).
+  WAREHOUSE-OUTBOUND `Error`'u (`details` yok) bunun alt kümesidir.
+- **Boş isteğe bağlı üye gönderilmez** (null yerine üye yok): MVP-6 okuyucusu OAS 3.1 `nullable`'ı JSON null kabul etmez
+  (`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/FrozenReadSchema.cs:8,26`,
+  GAP-0183-03). Liste sonunda `nextCursor` yazılmaz.
+- **Idempotency:** her yazma `Idempotency-Key` başlığı = gövde `idempotencyKey` (8–100). Aynı anahtar + aynı gövde → **200
+  replay** (kaydın güncel hâli; onayda ayrıca isteğin kendi onayının `confirmationSeq`'i — aşağıda); farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`. **Depolama ve sıra (bağımsız inceleme 10 F-1; 0176 / 0177 emsali):**
+  - **Nerede:** görev ve rol yaratma → kaydın `IdempotencyKey` + `RequestFingerprint`'i, yaratanın (`CreatedBy`) kapsamında (§4.1, §4.4); yaratma dışındaki **bütün** yazma
+    komutları (görev: düzenle, üstlen, toplu atama, onay, yeniden dene, "Geri taşındı", Kalanı kapat, İptal, Uzlaştır; rol: düzenle, sil,
+    toplu sil — DL-1 dahil) → komutun **anahtar olayı** (§4.3), tekil kısmi index `(TenantId, TaskId | RoleId, ActorUserId,
+    RequestOp, IdempotencyKey)` (§4.6). Sweeper iç komutu istemci isteği değildir, anahtar taşımaz.
+  - **Sıra:** kimlik, izin ve istek biçimi (başlık = gövde, 8–100) kontrollerinden sonra, **If-Match'ten ve bütün iş kurallarından önce**
+    (durum, atanan, Pending kilidi, ön kontroller, ön arama) anahtar aranır — kiracı + şirket kapsamında, isteği yapanın `ActorUserId`'siyle ve komutun `RequestOp`'uyla (yaratmada: kaydın `CreatedBy`'ı)
+    (Recall emsali: `…/Features/Recall/Handlers/CaseCommandHandlers.cs:540` replay, `:546` sürüm kontrolü; replay yardımcısı `:191-196`).
+    **Aynı anahtar + aynı parmak izi** → **replay = 200 + kaydın güncel hâli** (`WarehouseTask` / `WarehouseLocationRole`; Recall emsali
+    güncel kaydı döner); ilk cevabın gövdesi ve 422 / 409 / 503 kodu tekrarlanmaz. **Onayda** cevap ayrıca isteğin kendi onayının
+    `confirmationSeq`'ini taşır (değer anahtar olayı `ConfirmationRecorded`'ın `Data.seq`'inden okunur, §4.3); sonuç gövdedeki
+    `confirmations[confirmationSeq].status`'tur (Posted / Refused / Pending / IntegrityError) — görevde sonradan başka onay açılmış olsa da
+    istemci kendi onayını bulur (bağımsız inceleme 11 F-1). **Yazım yok, enlist yok, yerel olay yok** (merkezi kayıt `CentralAuditRecorder.cs:160-168`
+    gereği doğmaz; AC-15 "tekrar = 0 / 0 / 0"). **Aynı anahtar + farklı parmak izi** → 400 `IDEMPOTENCY_KEY_REUSED`, yazım yok. Aynı
+    anahtar başka görevde / rolde, başka kullanıcıda ve başka operasyonda (`RequestOp`) ayrı anahtardır (index'ler bunları içerir, §4.6;
+    bağımsız inceleme 11 F-2).
+  - **Toplu komutlar:** anahtar, yazılan satırların olaylarında, **yalnız aynı `RequestOp`'un** olaylarında aranır (tekil olmayan index,
+    §4.6; ör. toplu rol silme tekil `deleteLocationRole`'ün `Deleted` olaylarını saymaz — bağımsız inceleme 11 F-2). Replay: anahtarı taşıyan satır yazılmış
+    sonucuyla (`Assigned` / silindi) ve güncel `version`'la döner; yazılmamış satırın ilk cevaptaki nedeni saklanmadığı için `Conflict`
+    (bulunamayan `NotFound`) döner, yazılmaz — istemci o satırları yeni anahtarla gönderir. Hiçbir satır yazılmadıysa anahtar yoktur.
+  - **Parmak izi** (Recall `RecallSupport.Fingerprint(("op", …), …)` deseni, `CaseCommandHandlers.cs:539`): eylem adı + hedef + normalleşmiş
+    gövde; `Idempotency-Key` ve `If-Match` girmez. Komut başına: görev yarat = `op`, kaynak kova (`candidateKey` ya da `warehouseId`,
+    `fromLocationId`, `itemId`, `skuId`, `skuLevel`, `lotId`, `stockStatus`), `plannedQuantity` (normal decimal), `toLocationId`,
+    `targetSource`, `assigneeUserId`, `priority`, `note` (trim) · düzenle = `op`, `taskId`, gönderilen gövde alanları (aynı normalleştirme) ·
+    üstlen = `op`, `taskId` · toplu atama = `op`, `assigneeUserId`, sıralı `items[(taskId, version)]` · onay = `op`, `taskId`, `quantity`,
+    `toLocationId`, `deviationReason` (trim), `channel`, `scanRef` · yeniden dene = `op`, `taskId`, `seq` · "Geri taşındı" / Uzlaştır =
+    `op`, `taskId`, `seq`, `reason` (trim) · Kalanı kapat / İptal = `op`, `taskId`, `reason` (trim) · rol yarat = `op`, `locationId`, sıralı
+    `roles`, sıralı `acceptedStorageConditions`, `note` · rol düzenle = `op`, `roleId`, gönderilen gövde alanları · rol sil = `op`, `roleId` ·
+    toplu rol sil = `op`, sıralı `items[(roleId, version)]`.
+  - **Eşzamanlı aynı anahtar:** iki istek de aramayı geçebilir. Kazanan anahtar olayını (ya da yaratılan kaydı) commit eder; kaybeden ya
+    tekil index'ten yinelenen kayıt hatası alır ya da aynı işlemdeki CAS'ı kaybeder (0 kayıt). **Yaratmada her yinelenen kayıt hatası**
+    aynı kurala girer, hangi tekil index olursa olsun: anahtar index'i, rolde canlı `(TenantId, LegalEntityId, LocationId)`, görevde seri
+    slot index'i (`OpenSerialSlot`) (bağımsız inceleme 11 F-3). Her durumda kaybeden, satırın kendi 409 / 422 / 0-satır kuralını
+    uygulamadan **önce anahtarı yeniden arar**: bulunursa aynı parmak izi → 200 replay, farklı → 400; bulunmazsa satırın kendi kuralı
+    (rol `LocationId` → 409 `WMS_LOCATION_ROLE_EXISTS`; seri slot → 422 `WMS_QUANTITY_EXCEEDS_OPEN`) (Inventory emsali `…/Features/Inventory/Services/InternalMovementPostingService.cs:188-194` `IdempotencyKeyTaken → Replay`;
+    Recall'un `SaveAsync`'i yinelenen anahtarda `false`, `WriteCaseAsync` 409 döner, `CaseCommandHandlers.cs:218-221`, `:224-227` — 0178
+    Inventory emsalini izler). Kaybedenin işlemi geri
+    alındığı için olayı ve enlist'i yoktur.
+  - **İstemci:** her kullanıcı eylemi (ör. her "Yeniden dene" tıklaması) yeni anahtar üretir; aynı anahtar yalnız aynı isteğin ağ
+    tekrarıdır.
+- **Eşzamanlılık:** değişebilir kayıtlar (görev, rol) `If-Match: W/"<version>"`; eksik → 400, bayat → 409 `WMS_CONFLICT`. Bayatlık
+  istek anahtarı kontrolünden **sonra** değerlendirilir: ilk isteği işlenmiş bir ağ tekrarı (sürümü ilk istek artırdı) 409 değil 200
+  replay alır (bağımsız inceleme 10 F-1).
+- **Soft delete:** yalnız `WarehouseLocationRole` silinebilir (`IsDeleted`, `DeletedAt`). Görevlerin silme yolu yoktur; iptal
+  edilir (GxP iz). Silme alanları standart gereği vardır, görevlerde hep `false` (MOD-0173 emsali).
+- **Fail-closed:** LOCATION / PRODUCT-MASTER / MDM şirket doğrulaması / RECALL okuması erişilemezse 503, yazma yok.
+
+### 8.2 Görev kaynağı (S1)
+- S1'de görev **elle** açılır: depo sorumlusu "Yerleştirilecek stok" listesinden bir satır seçer (ya da aynı listeyi seçicide
+  arar) → form ön doldurulur. Liste = Receiving rolündeki lokasyonların alt ağacında, şirketin `AVAILABLE` ve `OnHand > 0`
+  INVENTORY bakiye satırları; her satırda **açık miktar** = OnHand − aynı kovadaki açık görevlerin kalanı (okuma anında).
+- **GRN → putaway tetikleyicisi tanımsızdır** (plan §4 "Boşluklar") → açık soru Q-M2-1 (Cihan). Seçenekler: (A) S1 gibi elle;
+  (B) INVENTORY'nin süreç içi `IPostedMovementObserver`'ı (`…/Features/Inventory/Ports/IPostedMovementObserver.cs:6-10`,
+  post-commit, ret edemez) ile Receiving lokasyonuna giren `GOODS_RECEIPT_PO` / `GOODS_RECEIPT_PROD` için otomatik `Origin =
+  Receipt` görev — 0173 DI seam'ine dokunur; (C) MVP-2'nin GRN sonrası WMS API'sini çağırması. **Karar (Q-11, Beste 2026-10-21):**
+  S1 = A (elle / listeden); otomatik tetikleyici (B / C / D) Cihan'ın cevabına kadar açık soru (Q-M2-1).
+
+### 8.3 Durum makinesi ve onay algoritması (S1 Putaway)
+
+```
+Open ──(onay, kalan > 0)──> InProgress ──(onaylanan = planlanan)──> Completed
+Open|InProgress ──(close-short: en az bir Posted onay + gerekçe)──> Completed (ShortCloseReason)
+Open|InProgress ──(cancel: hiç Posted onay yok + Pending yok + gerekçe)──> Cancelled
+
+Onay (Confirmation):
+(yok) ──(işlem 1)──> Pending
+Pending ──(işlem 2: 2xx / ledger Committed)──> Posted
+Pending ──(işlem 2: 4xx / ön kontrol reddi)──> Refused
+Pending ──(IDEMPOTENCY_KEY_REUSED · Confirmed + q > Planned · HolderReversed)──> IntegrityError   (satır 9 / 10 / 12 / 21)
+Refused ──(0-satır (D) · savunma dalı · kapatıcı komutun ön araması: ledger Committed)──> IntegrityError   (satır 11 / 18 / 20)
+IntegrityError ──(Uzlaştır-a: anahtarı tutan hareket bu onayın)──> Posted   (IntegrityResolution = ResolvedOwnMovement)
+IntegrityError ──(Uzlaştır-b: anahtarı tutan hareket yabancı / NotCommitted)──> Refused (çözümsüz; IntegrityResolution = ReturnedToRefused)
+Refused ──(aynı görevde yeni Posted onay)──> Refused (Resolution = SupersededByNewConfirmation)
+Refused ──("Geri taşındı")──> Refused (Resolution = ReturnedToSource)
+```
+Görev durumu Uzlaştır'la **değişmez**, yalnız onaylanan miktar değişirse (Uzlaştır-a) türetilmiş durum ilerler; görevi kapatmak **ayrı ve
+açık bir seçimdir**: İptal (sorumlu, `cancel` izni) ya da Kalanı kapat (atanan operatör ya da sorumlu, `confirm` izni) (inceleme 04 F-1,
+bağımsız inceleme 05 F-6). **Terminal görevde** (Completed / Cancelled) Uzlaştır ve savunma dalı çalışır; yalnız onay kaydını düzeltir,
+görevi **yeniden açmaz** (satır 23–24). Cancelled görevde Uzlaştır-a ile Posted olan onay, "onay yoksa yalnız İptal" kuralının bilinçli
+istisnasıdır: defter gerçeği yazılır, olay `ConfirmationDeviation` (`PostedAfterCancel`) (bağımsız inceleme 05 F-1).
+
+**Akış tablosu — her geçiş (inceleme 05 tutarlılık geçişi; bağımsız inceleme 07 F-5, 08 F-1 / F-2 / F-4 / F-5 ve 09 F-1 / F-2 / F-5, 10 F-1 / F-2 ile
+§4.2 alan listesi, CAS kuralı, §4.3, §21 ve AC-15'e satır satır eşitlendi; boş hücre yok).** Kısaltmalar: **V++** = görev belgesinin `Version`'ı CAS ile
+kontrol edilir ve artırılır (her yazım; okuma-yalnız satırlarda "V değişmez"); **Error\*** = `ErrorCode`, `ErrorMessage`, `ErrorDetails`
+(`ErrorDetails.reason` dahil), `ErrorStatus`; **Ret\*** = `RefusalSource`, `RefusedOnRetry`, `RefusedAtUtc`; **Kilit↓** = `AttemptId` ve
+`InFlightUntilUtc` boşaltılır; **Superseded** = aynı yazımda `arrayFilters` ile `Status == Refused` ve `Resolution == null` olan kardeş
+onaylara `Resolution = SupersededByNewConfirmation` (IntegrityError olan kardeş atlanır); **Slot↓** = türetilmiş görev durumu `Completed`
+olursa seri görevin `OpenSerialSlot`'u aynı yazımda kaldırılır; **anahtar olayı** = isteğin `IdempotencyKey` + `RequestFingerprint`'ini
+taşıyan olay (§4.3, §8.1; bağımsız inceleme 10 F-1). **Olay sütunu:** önce yerel zaman çizelgesi (`wms_task_events`, aynı işlem,
+silinmez), sonra **merkezi denetim (BL-501)** — merkezi kayıt yalnız **başarılı** komutta 1, her başarısız cevapta (Refused / Pending /
+IntegrityError / her 409 / 503) 0 (§8.8, sahip kararı 2026-10-26). Merkezi sütundaki ad komutun **`RequestType`**'ıdır — BL-501 kaydı
+olay adı ve veri taşımaz (§21); "merkezi 0" = iletilen (`Pending` / `Delivered`) satır 0, komutun bir işlemi commit olduysa satır
+`Abandoned` olarak durur (bağımsız inceleme 09 F-1 / F-2). Görev düzeyindeki diğer yazımlar (düzenleme, üstlenme, toplu atama)
+If-Match = `Version` CAS ile yapılır; Pending onay varken 409 `WMS_CONFIRMATION_PENDING` (toplu atamada satır sonucu `PendingConfirmation`).
+| # | Geçiş | Tetikleyici | Yazılan alanlar | Zaman çizelgesi (`Kind`) / merkezi (BL-501 `RequestType`) | AC | Sabotaj |
+|---|---|---|---|---|---|---|
+| 1 | (yok) → Pending | confirm, işlem 1 (önce satır 20'nin ön araması) | onayın kendi değerleri: Seq, Quantity, ToLocationId, DeviationReason, Channel, ScanRef; Status = Pending, PostingKey, TransactionDate / PostingDate, SerialIds, AttemptId, InFlightUntilUtc, Attempts = 1, LastAttemptAtUtc, ConfirmedBy / ConfirmedAtUtc, V++; komutun merkezi olayı bu işleme enlist edilir | ConfirmationRecorded (anahtar olayı) / merkezi: komutun sonucuna bağlı — Posted → 1 `ConfirmPutawayTaskCommand`; başka her sonuç → 0 iletilen (satır `Abandoned`); işlem 1 sonrası çökme → 10 dk sonra 1 `Unconfirmed` (§8.8) | AC-2, AC-5, AC-15 | (a), (x), (v) |
+| 2 | Pending → Posted | işlem 2 (2xx) — ilk onay ya da retry (ii)'nin kendi posting'i | Status = Posted, TransactionId / Number, görev ConfirmedQuantity + türetilmiş durum, Slot↓, Kilit↓, Superseded, V++ | ConfirmationPosted (+ ConfirmationSuperseded; + Completed) / merkezi 1 (confirm: `ConfirmPutawayTaskCommand`; retry: `RetryPutawayConfirmationCommand`) | AC-2, AC-3, AC-4, AC-51 | (a), (w), (bi) |
+| 3 | Pending → Posted | retry (i), ledger `Committed`, holder ters kaydedilmemiş | satır 2 ile aynı | ConfirmationPosted (+ ConfirmationSuperseded; + Completed; kilit alımındaki ConfirmationRetried satır 7'de) / merkezi 1 `RetryPutawayConfirmationCommand` | AC-5, AC-54, AC-51 | (z), (w), (bi) |
+| 4 | Pending → Posted | sweeper (iç komut), ledger `Committed`, holder ters kaydedilmemiş, kilit boş / geçmiş | satır 2 ile aynı (Kilit↓ yok — sweeper kilit tutmaz) | ConfirmationReconciled (+ ConfirmationSuperseded; + Completed) / merkezi 1 `ReconcilePendingConfirmationCommand` | AC-66, AC-15, AC-51 | (as), (ao), (bi) |
+| 5 | Pending → Refused | işlem 2 (ledger **kesin** 4xx; 5xx / istisna Refused yazmaz — satır 7, Codex P2) — ilk onay ya da retry (ii) | Status = Refused, Error\*, Ret\* (`RefusalSource = Ledger4xx`, `RefusedOnRetry` = confirm: false / retry: true, `RefusedAtUtc`), Kilit↓, V++ | ConfirmationRefused / merkezi 0 | AC-5, AC-9, AC-57, AC-66, AC-15 | (x), (ag), (bc), (bh) |
+| 6 | Pending → Refused | retry (ii), ön kontrol reddi | Status = Refused, Error\* (`ErrorStatus` 422), Ret\* (`RefusalSource = PreCheck`, `RefusedOnRetry = true`, `RefusedAtUtc`), Kilit↓, V++ | ConfirmationRefused / merkezi 0 | AC-56, AC-66, AC-15 | (y), (bc), (bh) |
+| 7 | Pending → Pending | retry (0) kilit alımı; ardından commit sonucu bilinmeyen sonuç: her 5xx (500 / 502 / 503 / 504), zaman aşımı, posting süresi aşımı, ağ hatası, iptal (`OperationCanceledException`), beklenmeyen istisna (Codex P2, bağımsız inceleme 13 F-2; ilk onayda aynı sonuç satır 1'den sonra yazımsızdır) | (kilit alımında) AttemptId, InFlightUntilUtc, Attempts++, LastAttemptAtUtc, V++; (sonuçta) yazım yok — kilit `InFlightUntilUtc`'ye kadar korunur | ConfirmationRetried (kilit alımında, `data.attempt`; anahtar olayı) / merkezi 0 (cevap 503); ilk onayda yalnız satır 1'in olayı | AC-5, AC-67 (1), AC-15 | (x), (ap) |
+| 8 | Pending → Pending | sweeper, `NotCommitted` — hosted service iç komutu **göndermez** | hiçbir şey (V değişmez) | yok / merkezi 0 | AC-66 | (an) |
+| 9 | Pending → IntegrityError | `IDEMPOTENCY_KEY_REUSED` (confirm ya da retry) | Status = IntegrityError, Error\* (`reason = KeyReused`), Kilit↓, V++ | ConfirmationIntegrityError / merkezi 0 (409) | AC-63, AC-15 | (aa) |
+| 10 | Pending → IntegrityError | sweeper, `KeyReusedDifferentPayload` | Status = IntegrityError, Error\* (`reason = KeyReused`), V++ | ConfirmationIntegrityError / merkezi 0 (iç komut başarısız zarfla döner) | AC-66 | (aq) |
+| 11 | Refused → IntegrityError | 0-satır kuralının (D) dalı: bu deneme Posted / replay aldı, onayın **kendi** durumu Refused (başka bir denemenin yazımı); filtre V + `Status == Refused`; onay zaten `IntegrityError` ise yazım yok (`PriorResolution` korunur) ve yine 409 (bağımsız inceleme 10 F-2) | Status = IntegrityError, Error\* (`reason = StatusDiverged`), `PriorResolution = Resolution`, `Resolution = null`, V++ (kilit Refused yazımında zaten boşaltıldı) | ConfirmationIntegrityError (zaten IntegrityError ise yok) / merkezi 0 (409) | AC-64, AC-15 | (al), (bo) |
+| 12 | Pending → IntegrityError (`OverPlanned`) | işlem 2 / retry (i) / sweeper yazımında koşullu artış tutmaz — ilk yazımda ya da 0-satır kuralının (A) yeniden okumasında (**maskelenmez**); gerçek akışta tetiklenmez (savunma) | Status = IntegrityError, Error\* (`reason = OverPlanned`), Kilit↓, V++ | ConfirmationIntegrityError / merkezi 0 (409) | AC-67 (5) birim testi, AC-67 (6) yazım yolu | (ap) |
+| 13 | IntegrityError → Posted | Uzlaştır-a (kendi hareketi); filtre V + `Status == IntegrityError` + görevde Pending yok | Status = Posted, TransactionId / Number, miktar, hedef, lot, seriler, stok durumu (defterden), IntegrityResolution = ResolvedOwnMovement, HolderMovement, ResolvedBy / ResolvedAtUtc, ResolveReason, görev ConfirmedQuantity + türetilmiş durum, Slot↓, Superseded, V++ | IntegrityResolved (anahtar olayı; + ConfirmationDeviation; + ConfirmationSuperseded; + Completed) / merkezi 1 `ResolvePutawayIntegrityCommand` | AC-65, AC-67 (3) | (ar) |
+| 14 | IntegrityError → Refused (çözümsüz) | Uzlaştır-b (yabancı / `NotCommitted`) | Status = Refused, Ret\* (`RefusalSource = Resolve`, `RefusedOnRetry = false`, `RefusedAtUtc`), IntegrityResolution = ReturnedToRefused, HolderMovement, ResolvedBy / ResolvedAtUtc, ResolveReason, V++ | IntegrityResolved (anahtar olayı) / merkezi 1 `ResolvePutawayIntegrityCommand` | AC-65 | (am) |
+| 15 | Refused → Refused + Superseded | başka bir onayın Posted yazımının parçası (satır 2 / 3 / 4 / 13 / 23 / 25); hedef `arrayFilters` `Status == Refused` ve `Resolution == null` — **IntegrityError olan kardeş atlanır** | Resolution = SupersededByNewConfirmation (aynı yazım, tek V++) | ConfirmationSuperseded (kapatılan her onay için bir satır) / merkezi: ayrı kayıt yok — Posted komutunun tek kaydı gövde taşımaz; kapatılan `seq` listesi yalnız yerel `Data`'da (§4.3) | AC-55, AC-64 | (at) |
+| 16 | Refused → Refused + Returned | "Geri taşındı": hedef **yalnız bu onay**; ön arama yalnız onun anahtarı; filtre V + hedef `Status == Refused` ve `Resolution == null` | Resolution = ReturnedToSource, ResolutionReason, V++ | ConfirmationReturned (anahtar olayı) / merkezi 1 `MarkPutawayConfirmationReturnedCommand` | AC-55, AC-70 | (af), (bb) |
+| 17 | (ret) kilit geçerli | retry (0) | hiçbir şey (409 `WMS_CONFIRMATION_IN_FLIGHT`; V değişmez) | yok / merkezi 0 | AC-64, AC-67 (1) | (ak) |
+| 18 | Refused (`RefusalSource ∈ {PreCheck, Ledger4xx}`, `RefusedOnRetry = true`, `RefusedAtUtc` son 30 dk; **`Resolution`'dan bağımsız**; görev terminal olsa da) → IntegrityError | sweeper savunma dalı (iç komut; ayrı imleç ve bütçe), ledger `Committed` (geç commit); filtre V + `Status == Refused` | Status = IntegrityError, Error\* (`reason = StatusDiverged`), `PriorResolution = Resolution`, `Resolution = null`, V++ | ConfirmationIntegrityError / merkezi 0 (iç komut başarısız zarfla döner) | AC-66, AC-67 (3), AC-68 (ii), AC-70 | (au), (ax), (bb), (bc), (bf) |
+| 19 | (ret) Uzlaştır, görevde Pending onay | resolve | hiçbir şey (409 `WMS_CONFIRMATION_PENDING`; V değişmez) | yok / merkezi 0 | AC-65, AC-67 (4) | (av) |
+| 20 | Refused → IntegrityError + komut 409 | ön arama `Committed` (ters kaydedilmemiş) — hedef kümeler: yeni onay = çözümsüz Refused'lar; "Geri taşındı" = yalnız bu onay; İptal / Kalanı kapat = görevin **tüm** Refused onayları; filtre V + hedef `Status == Refused` | hedefte: Status = IntegrityError, Error\* (`reason = StatusDiverged`), `PriorResolution = Resolution`, `Resolution = null`, V++; komutun kendi yazımı **yok** | hedefte ConfirmationIntegrityError / merkezi 0 (komut 409; enlist edilmiş satır `Abandoned`) | AC-68 (i), AC-15 | (aw), (bh) |
+| 21 | Pending → IntegrityError (`HolderReversed`) | retry (i) ya da sweeper; ledger `Committed` ama holder ters kaydedilmiş | Status = IntegrityError, Error\* (`reason = HolderReversed`), HolderMovement, Kilit↓ (retry), V++ | ConfirmationIntegrityError / merkezi 0 | AC-69 | (az) |
+| 22 | IntegrityError → Refused (çözümsüz) | Uzlaştır, holder ters kaydedilmiş — (b) yolu | satır 14'ün alanları | IntegrityResolved (anahtar olayı) / merkezi 1 `ResolvePutawayIntegrityCommand` | AC-69 | (az) |
+| 23 | IntegrityError → Posted, **görev terminal** (Completed / Cancelled) | Uzlaştır-a | satır 13'ün alanları (Superseded dahil); görev durumu **değişmez** (yeniden açılmaz); `OpenSerialSlot` yeniden alınmaz; V++ | IntegrityResolved (anahtar olayı) + ConfirmationDeviation (`OverPlanned` / `PostedAfterCancel`) / merkezi 1 `ResolvePutawayIntegrityCommand` | AC-67 (3), AC-68 (iii) | (ay) |
+| 24 | IntegrityError → Refused (çözümsüz), **görev terminal** | Uzlaştır-b | satır 14'ün alanları; görev durumu değişmez; yeni onay yok, yalnız "Geri taşındı" açık; V++ | IntegrityResolved (anahtar olayı) / merkezi 1 `ResolvePutawayIntegrityCommand` | AC-68 (iii) | (ay) |
+| 25 | Pending → Posted (CAS yinelemesi) | işlem 2 / retry (i) / sweeper yazımı 0 kayıt; yeniden okuma: onay **hâlâ Pending**, `AttemptId` bu deneme (sweeper: kilit boş / geçmiş) ve koşullu artış **tutuyor** — yalnız görev `Version`'ı değişmiş | aynı yazım yeni V ile yinelenir (en çok 3 kez; Slot↓ dahil); artış tutmuyorsa satır 12; üçü de kaybederse yazım yok, onay Pending, 503 `WMS_CONFIRMATION_CONFLICT_RETRY`, kilit korunur | satır 2 / 3 / 4'ün olayı bir kez / merkezi 1 (başarıda) ya da 0 (503) | AC-64 | (bd) |
+| 26 | (ret) 0 kayıt, onay Pending ama `AttemptId` başka denemenin — kilit geçerli olsun olmasın (bağımsız inceleme 09 F-5) | işlem 2 / retry (i) / (ii) sonuç yazımı (bu denemenin `AttemptId`'siyle) | hiçbir şey (V değişmez); **(C1)** o kilit geçerli → 409 `WMS_CONFIRMATION_IN_FLIGHT`, kayıt öbür denemeyle ilerler; **(C2)** o kilit dolmuş → 409 `WMS_CONFLICT` + güncel görev, kayıt sweeper'ın uzlaştırmasıyla (kilidi geçmiş kayıt onun filtresine girer) ya da kullanıcının "Yeniden dene"siyle ilerler | yok / merkezi 0 (işlem 1 / kilit alımı satırı `Abandoned`) | AC-64 ((C1) / (C2) vakaları) | (bd), (bj) |
+| 27 | Görev Open / InProgress → Cancelled / Completed | İptal / Kalanı kapat: ön arama görevin **tüm** Refused onayları; filtre V + hedeflerin `Status == Refused` (Resolution koşulu **yok**) | görev Status, CancelReason / ShortCloseReason, `OpenSerialSlot` kaldırılır, V++ | Cancelled / ClosedShort (anahtar olayı; `Completed` yazılmaz) / merkezi 1 `CancelPutawayTaskCommand` / `ClosePutawayTaskShortCommand` | AC-55, AC-68 (i), AC-70 | (aw), (bb) |
+| 28 | (ret / no-op) Pending'den çıkan **diğer** yazımlar 0 kayıt | kilit alımı (satır 7), ön kontrol reddi (satır 6), defter 4xx (satır 5), IntegrityError yazımları (satır 9 / 10 / 21) | (kilit alımında önce istek anahtarı yeniden aranır — satır 29) yeniden okunur: hâlâ Pending ve deneme bu (kilit alımında: kilit boş / geçmiş — başka denemenin **dolmuş** kilidi de buraya girer) → yeni V ile yinelenir (≤ 3; tükenirse 503 `WMS_CONFIRMATION_CONFLICT_RETRY`); kilit başka denemede ve **geçerli** → 409 `WMS_CONFIRMATION_IN_FLIGHT` (C1); sonuç yazımında `AttemptId` başka denemenin ve o kilit **dolmuş** → yazım yok, 409 `WMS_CONFLICT` + güncel görev (C2, satır 26); onay artık Pending değil (bu denemenin sonucu Refused / IntegrityError iken kayıt Posted ya da başka bir sonuçta) → **yazım yok**, 409 `WMS_CONFLICT` + güncel görev (kayıt doğru kabul edilir; kilit alımında 409 `WMS_CONFIRMATION_NOT_RETRYABLE`) | yok / merkezi 0 (komutun önceki işlemi enlist ettiyse satır `Abandoned`; 0 kayıt etkileyen yazım enlist etmez) | AC-64, AC-15 | (bd), (bk) |
+| 29 | (replay / ret) istek anahtarı kontrolü — her yaratma dışı yazma komutu (bağımsız inceleme 10 F-1) | confirm / retry / "Geri taşındı" / Uzlaştır / İptal / Kalanı kapat (ve düzenle / üstlen / toplu atama, rol komutları — akış dışı); If-Match ve iş kurallarından **önce**; ayrıca anahtarlı yazım (işlem 1, kilit alımı, komutun kendi yazımı) yinelenen kayıt hatası (yaratmada hangi tekil index olursa olsun; bağımsız inceleme 11 F-3) ya da CAS kaybıyla 0 kayıt etkilerse satırın kendi 409 / 0-satır kuralından önce yeniden | hiçbir şey (V değişmez); aynı anahtar + aynı parmak izi → 200 + güncel görev, onayda + `confirmationSeq` (isteğin kendi onayının güncel `status`'u gövdede; ilk cevabın kodu tekrarlanmaz); aynı anahtar + farklı parmak izi → 400 `IDEMPOTENCY_KEY_REUSED`; anahtar yoksa satırın kendi akışı | yok / merkezi 0 (enlist yok; `CentralAuditRecorder.cs:160-168`) | AC-4, AC-15 | (bl), (bm), (bn) |
+
+- `Completed` / `Cancelled` terminaldir. İptal edilen görevin Posted hareketleri geri alınmaz (geri alma INVENTORY `REVERSAL`'dır,
+  0178'in değil; stok yeni lokasyonda kalır). **Onay yoksa yalnız İptal, Posted onay varsa yalnız Kalanı kapat** (M-4): Posted onaylı
+  görevin iptali 409 `WMS_INVALID_TRANSITION`. **Eylem başına izin ve atanan kuralı (bağımsız inceleme 05 F-6, tek yer):**
+  onay / "Yeniden dene" / Kalanı kapat / "Geri taşındı" = `warehouse.putaway-tasks.confirm` **ve** (atanan operatör **ya da** sorumlu =
+  `warehouse.putaway-tasks.update` sahibi), aksi 403 `WMS_NOT_ASSIGNEE`; üstlen = `confirm` (yalnız atanmamış görev); İptal =
+  `warehouse.putaway-tasks.cancel` (sorumlu); Uzlaştır = `warehouse.putaway-tasks.resolve` (sorumlu). **Gönderilen onay cevap gelene kadar görevi kilitler** (M-4): Pending onay varken yeni
+  onay, düzenleme, üstlenme, kısa kapatma, iptal **ve görevdeki başka bir onayın "Uzlaştır"ı** 409 `WMS_CONFIRMATION_PENDING`; yalnız
+  `retry` çalışır. Gerekçe (inceleme 05 F-1): Pending onay sürerken defter durumu değişebilir; Uzlaştır-a'nın artışı Pending onayın
+  kalanını tüketebilir — bu yasakla işlem 2'nin `Confirmed + q ≤ Planned` koşulu yalnız **savunma** kontrolü olarak kalır.
+- **Onay (`ConfirmPutawayTaskCommand`):**
+  1. Doğrula: görev `Open|InProgress`, Pending onay yok, If-Match, onaylayan = atanan ya da sorumlu (§8.13), miktar ≤ kalan
+     (planlanandan fazla onay yasak, M-5), hedef kuralları (§12) ve saklama koşulu uyumu (§8.12), lot recall değil (§8.5), lot
+     durumu. Açık görevin stoğu sonradan karantinaya / recall'a girerse **otomatik askı yoktur**; kontrol onay anında yapılır ve ret
+     verilir (M-5).
+  2. İşlem 1 (Mongo transaction, merkezi denetim kaydı listeye alınır — `RequireEnlistment`): `Confirmations[seq] = Pending`,
+     `PostingKey = wms:put:{taskId}:{seq}`, **`TransactionDate = PostingDate = sunucu UTC şimdi` (bir kez, burada)**, seri SKU'da
+     kovadan okunan `SerialIds`, **uçuş kilidi** (`AttemptId` + `InFlightUntilUtc`, §4.2; inceleme 03 F-1), `Version++`, olay
+     `ConfirmationRecorded`.
+  3. **Posting süresiyle sınırlı** (`PostingTimeoutSeconds`, öneri 60 sn; aşımda onay Pending, **kilit `InFlightUntilUtc`'ye kadar korunur**
+     — §4.2, inceleme 04 F-2, inceleme 05 F-3)
+     `WarehouseMovementPoster` → `InternalMovementPostingService`: `LOCATION_TRANSFER`, `fromWarehouseId = toWarehouseId =
+     WarehouseId`, `fromLocationId = FromLocationId`, `toLocationId`, `fromStockStatus = toStockStatus = StockStatus` (tek adım,
+     durum korunur — `MovementDirectionRules.cs:82-94`), `lotId`, `serialIds`, `quantity` + `BaseUomId`, `sourceModule = MOD-0178`,
+     `sourceType = PUTAWAY_TASK`, `sourceDocumentId = taskId`, `sourceLineId = seq`, `documentGroupId = Number`,
+     `idempotencyKey = PostingKey`, `transactionDate` / `postingDate` = **onaya işlem 1'de yazılan değerler** (her denemede aynen —
+     ledger izi tarihleri kapsar, `RequestFingerprint.cs:42-43`; F-2), aktör = onaylayan kullanıcı.
+  4. İşlem 2 — **koşullu güncelleme** (F-3): filtre `Confirmations[seq].Status == Pending` **ve `AttemptId == bu deneme`** ve Posted
+     sonucunda **`ConfirmedQuantity + q ≤ PlannedQuantity`** (koşullu artış; aşarsa onay `IntegrityError`, `details.reason = OverPlanned`;
+     inceleme 04 F-2 — **savunma koşulu**, gerçek akışta tetiklenmez: Pending onay varken başka onay Posted olamaz ve Uzlaştır yasaktır,
+     akış satır 12) ve **`Version == okunan sürüm`** (CAS; yazım `Version++` yapar — bağımsız inceleme 06 F-3); uçuş kilidi
+     boşaltılır. **Etkilenen 0 ise — tek kural (bağımsız inceleme 07 F-1, 08 F-2; Pending'den çıkan **her** yazım için: işlem 2, retry (0) kilit
+     alımı, retry (i) / (ii) sonuç yazımı, sweeper uzlaştırması ve IntegrityError yazımları):** kayıt yeniden okunur. **(A)** Onay **hâlâ
+     Pending** ve deneme bu (`AttemptId` bu denemenin; kilit alımında ve sweeper'da: kilit boş ya da geçmiş) → yalnız görev `Version`'ı
+     değişmiştir (kardeş onaya yazım) → koşullu artış (`ConfirmedQuantity + q ≤ PlannedQuantity`) **taze değerlerle yeniden
+     değerlendirilir**: tutuyorsa aynı yazım yeni `Version` ile yinelenir (en çok 3 kez; üçü de kaybederse yazım yok, onay Pending, 503
+     `WMS_CONFIRMATION_CONFLICT_RETRY`, kilit korunur; satır 25 / 28), tutmuyorsa satır 12 (`OverPlanned`, maskelenmez). **(B)** Onayın kendi
+     durumu bu denemenin sonucuyla **aynı** (Posted, aynı `TransactionId`) → artış ve olay yok, güncel görev döner. **(C)** Onay Pending ama
+     `AttemptId` **başka bir denemenin** — kilit geçerli olsun olmasın bu deneme **yazmaz** (bağımsız inceleme 09 F-5): **(C1)** o kilit
+     geçerli → 409 `WMS_CONFIRMATION_IN_FLIGHT`; **(C2)** o kilit dolmuş → 409 `WMS_CONFLICT` + güncel görev; kayıt sweeper'ın
+     uzlaştırmasıyla (kilidi geçmiş kayıt onun filtresine girer) ya da kullanıcının "Yeniden dene"siyle (yeni kilit, önce ledger araması)
+     ilerler (satır 26). Kilit alımında ve sweeper yazımında başka denemenin dolmuş kilidi (C) değil (A)'dır — onların filtresi zaten
+     "kilit boş ya da geçmiş"tir. **(D)** Bu deneme
+     **Posted / replay** aldı ve onayın **kendi** durumu **Refused** (başka bir denemenin yazımı) → onay `IntegrityError` (`StatusDiverged`)
+     — tek koşullu güncelleme, filtre `Version == okunan sürüm` **ve `Status == Refused`**, aynı yazımda `PriorResolution = Resolution`,
+     `Resolution = null`, `Version++`; cevap 409 `WMS_POSTING_INTEGRITY_ERROR` (satır 11). Onay **zaten `IntegrityError`** ise (savunma dalı
+     ya da bir ön arama önce yazdı) **yazım yok**, `PriorResolution` korunur — ezilmez (AC-70 ilkesi) — ve cevap yine 409
+     `WMS_POSTING_INTEGRITY_ERROR`. (D) yazımı 0 kayıt etkilerse yeniden okunur: `IntegrityError` → yazım yok, 409 (aynı); hâlâ Refused →
+     yeni `Version` ile yinelenir (≤ 3; tükenirse yazım yok, 409 `WMS_CONFLICT` + güncel görev — ayrışmayı savunma dalı ya da kapatıcı
+     komutların ön araması yakalar, satır 18 / 20). "Başka `TransactionId` ile Posted" dalı **yoktur**: aynı `PostingKey` defterde tek
+     harekete bağlanır (`InternalMovementPostingService.cs:93-99` önce anahtarı arar, replay aynı hareketi döner; `:188-194`), bu yüzden
+     Posted bir onayın `TransactionId`'si bu denemeninkinden farklı olamaz (bağımsız inceleme 10 F-2). **(E)** Bu denemenin sonucu
+     **Refused / IntegrityError** iken onay artık Pending değil (ör. sweeper Posted yazdı) → **yazım yok**, 409 `WMS_CONFLICT` + güncel
+     görev (kayıt doğru kabul edilir; kilit alımında 409 `WMS_CONFIRMATION_NOT_RETRYABLE`) (satır 28). Superseded işaretinin hedefleri yazım
+     anında `arrayFilters` ile seçilir (`Status == Refused`, `Resolution == null`); bu arada `IntegrityError` olan kardeş onay **atlanır**,
+     yazımı engellemez; yinelemede kapatılan `seq` listesi yeniden okumadan hesaplanır. Posted → `TransactionId/Number`, `ConfirmedQuantity +=`, durum
+     (InProgress / Completed), olay; ya da Refused → INVENTORY kodu aynen, görev miktarı değişmez, olay. Cevap: Posted 201; Refused
+     422 INVENTORY kodu ve `details` ile. **İşlem 1'den sonraki her cevap onayın `seq`'ini taşır** (bağımsız inceleme 11 F-1): 201 ve
+     replay 200 gövdede `confirmationSeq`; 422 / 503 / 409 `details.seq` (`details.task` yanında); işlem 1'den önceki retlerde onay ve `seq`
+     yoktur.
+     **INVENTORY cevap eşlemesi (F-2, inceleme 02 F-1; Codex incelemesi P2):** 2xx → Posted; **400 `IDEMPOTENCY_KEY_REUSED` →
+     `IntegrityError`** (aynı anahtarla farklı bir hareket işlenmiş — bütünlük hatası, Refused değil; 409 `WMS_POSTING_INTEGRITY_ERROR`,
+     operatör eylemi kapalı, istisna); **kesin 4xx — 422 ve diğer 4xx (400 / 403 / 404 / 409): defter isteği işlemeden reddetti → kalıcı
+     Refused** (hata aynen saklanır, yeniden denenmez); **commit sonucu kesin bilinmeyen her sonuç → Pending:** her 5xx (500 / 502 / 503 /
+     504), zaman aşımı ve posting süresi aşımı, ağ hatası, iptal ve posting çağrısından çıkan **beklenmeyen istisna** (işleyici yakalar).
+     Bu sonuçlarda onay Pending kalır, kilit `InFlightUntilUtc`'ye kadar korunur, cevap 503 (`INVENTORY_UNAVAILABLE` ya da INVENTORY'nin
+     kendi 503 kodu; 500 / 502 / 504 ve istisnada `details.reason = OutcomeUnknown`, `details.seq`); sonraki deneme ve sweeper **önce
+     `PostingKey` aramasıyla** uzlaştırır (commit olduysa Posted, olmadıysa yeniden deneme aynı anahtarla posting yapar). 5xx ya da istisna
+     **Refused yazmaz**: commit olmuş bir hareket Refused sayılırsa defter ile görev ayrışır.
+  5. Commit sonucu bilinmeyen her sonuç (yukarıda) ya da süreç çöküşü → onay `Pending` kalır; cevap 503. **Bilinçli kabul —
+     belirlenimci 5xx / istisna (sahip kararı Beste 2026-10-26, bağımsız inceleme 13 F-3):** her denemede tekrarlanan bir 5xx ya da
+     istisna onayı süresiz Pending'de bırakabilir; güvenli tercih kalır (bilinmeyen sonuç Refused sayılmaz, **deneme sınırı yok** — M-5).
+     Bu sürede görevde yeni onay, düzenleme, üstlenme, iptal ve kısa kapatma **409 `WMS_CONFIRMATION_PENDING`** alır (§8.15 kilidi);
+     "Uzlaştır" yalnız `IntegrityError` içindir, Pending'i çözmez. **Çıkış yolu:** (i) onay `ConfirmedAtUtc`'den bu yana
+     `Warehouse:Putaway:LongPendingMinutes` (öneri 30; açılışta `LongPendingMinutes > 0` ve `LongPendingMinutes × 60 > InFlightLeaseSeconds`
+     doğrulanır, değilse host başlamaz — fail-closed ayar, §4.2; bağımsız inceleme 14 F-3) süresinden uzun Pending kalırsa
+     türetilmiş bayrak `PostingPendingLong` ve ekranda "Uzun süredir bekliyor" rozeti (§4.1, §8.15; süre `TimeProvider` ile ölçülür);
+     (ii) bu kayıtlar S3 İstisna Kutusu'na girer — istisna türü `PostingPendingLong`, bayrakla aynı ad ve aynı `LongPendingMinutes` eşiği
+     (WMS taslağı §9; bağımsız inceleme 14 F-2) (AC-36 kapsamı; S1'de yalnız rozet, liste kodu S3'te); (iii) çözüm stok tarafındaki
+     hatanın giderilmesi (MOD-0173 sahibi) + "Yeniden dene"dir (aynı anahtar, deneme sınırı yok); sweeper `PostingKey` aramasını sürdürür. **Kurtarma (inceleme 02 F-1, F-5):**
+     - **Yeniden deneme sırası** (`RetryPutawayConfirmationCommand`, kullanıcının "Yeniden dene"si): (0) **uçuş kilidi atomik alınır**;
+       kilit başka bir denemedeyse ve süresi dolmadıysa 409 `WMS_CONFIRMATION_IN_FLIGHT`, hiçbir şey yazılmaz (inceleme 03 F-1);
+       (i) **önce** ledger'da `PostingKey` aranır (`IPostingKeyLookup`, §5; upstream çağrısı yok). Sonuç `Committed` ve holder ters
+       kaydedilmemişse onay **Posted** yazılır (işlem 2), **ön kontrol koşmaz**, upstream çağrılmaz. Sonuç `Committed` ama holder ters
+       kaydedilmişse (`reversedByTransactionId` dolu) onay Posted **yazılmaz**, `IntegrityError` (`details.reason = HolderReversed`) olur;
+       aynı kural sweeper için geçerlidir (bağımsız inceleme 05 F-2). Sonuç `KeyReusedDifferentPayload` ise onay `IntegrityError` olur. (ii) Yalnız `NotCommitted` ise 0178 ön kontrolleri koşar
+       (aşağıda) ve tutarsa aynı `PostingKey`, aynı tarihler, aynı serilerle posting yapılır (kullanıcının token'ıyla).
+     - **Sweeper = yalnız uzlaştırıcı** (sahip notu Beste 2026-10-23; inceleme 02 F-5 kalanı): hosted service
+       (`PendingConfirmationReconcilerHostedService`; 2 dakikadan eski Pending'ler 60 sn'de bir; karar Q-09) arka planda **kullanıcı
+       token'ı taşımaz** (`ForwardCallerHeadersHandler.cs:21-35` Authorization'ı yalnız `HttpContext`'ten iletir). Her kayıt için ayrı
+       komut **`ReconcilePendingConfirmationCommand`** çalışır: **yalnız ledger araması** (`IPostingKeyLookup`), upstream çağrısı yok,
+       ön kontrol ve posting yok. **Yazım filtresi (inceleme 04 F-3):** sweeper kilit almaz ve `AttemptId` taşımaz; okuma ve yazma
+       filtresi `Status == Pending` **ve `InFlightUntilUtc` boş ya da geçmiş** (+ `ConfirmedQuantity + q ≤ PlannedQuantity`). Okuma ile
+       yazma arasında bir kullanıcı denemesi kilit aldıysa yazım 0 kayıt etkiler ve sweeper o kaydı **hiçbir şey yazmadan bırakır**
+       (**yalnız bu "0 kayıt etkilendi" durumunda** sweeper `IntegrityError` üretmez; kayıt kullanıcı denemesiyle ilerler — `Committed` /
+       `KeyReusedDifferentPayload` sonuçlarının kendi dalları aşağıdadır). **Savunma dalı (inceleme 05 F-3):** sweeper ayrıca son 30 dk
+       içinde **bir yeniden denemede** Refused olmuş onayları — ret kaynağı ön kontrol **ya da defter 4xx** (`RefusalSource ∈ {PreCheck,
+       Ledger4xx}`, `RefusedOnRetry = true`, `RefusedAtUtc` kayıtta; bağımsız inceleme 06 F-2: kilit dolduktan sonraki denemenin defter 4xx'i
+       de aynı geç commit riskini taşır) — **`Resolution`'dan bağımsız** (Superseded / Returned dahil) ve **görev durumundan
+       bağımsız** (terminal görev dahil; bağımsız inceleme 05 F-1) — ledger'da arar; `Committed` (ters kaydedilmemiş) bulursa (geç commit —
+       hareket defterde, WMS'te Refused) onayı **tek koşullu güncellemeyle** `IntegrityError` (`details.reason = StatusDiverged`) yapar (filtre:
+       `Status == Refused` ve `Version == okunan sürüm`; aynı yazımda `PriorResolution = Resolution`, `Resolution = null`, `Version++`),
+       yerel olay `ConfirmationIntegrityError`, merkezi denetim 0 (iç komut başarısız zarfla döner, §8.8); böylece ayrışma kalıcı olmaz ve "Uzlaştır" ile çözülür. **Kayıt başına hata yalıtımı:** her kayıt kendi
+       try/catch'inde koşar, bir kaydın hatası diğerlerini durdurmaz (`RecallQuarantineSweeper.cs:68-88` deseni). **Seçim (bağımsız
+       inceleme 07 F-4):** kayda yazmadan **ilerleyen imleç** — `(TenantId, _id)` sırası, tur başına en çok 200 kayıt, imleç turlar arasında
+       bellekte tutulur (tur bir sonrakine son görülen `(TenantId, _id)`'den devam eder; uçtan sonra başa döner, host yeniden başlarsa
+       sıfırdan); `NotCommitted` kayıt bir sonraki turda imleç ilerlediği için aynı 200'ü tıkamaz (0177'nin `DeferAsync` yazımı gerekmez,
+       2026-10-23 "NotCommitted'da yazım yok" kararıyla uyumlu). **Normal dal ve savunma dalı ayrı imleç ve ayrı bütçe** (her biri tur başına
+       ≤ 200); iki sorgunun index'leri §4.6. **Kiracılar arası tarama okuması açık istisnadır** (yalnız hosted service; her kayıt sonra kendi kiracı + şirket
+       kapsamında işlenir). Kilit geçerliyse kayıt atlanır. `Committed` → Posted (işlem 2 koşullu, yerel olay `ConfirmationReconciled`,
+       merkezi denetim 1); `KeyReusedDifferentPayload` → `IntegrityError` (yerel olay `ConfirmationIntegrityError`, merkezi denetim 0);
+       **`NotCommitted` → hiçbir şey yazılmaz: `Attempts` artmaz, yerel olay ve merkezi denetim yok — iç komut hiç gönderilmez** — onay Pending kalır, kullanıcı "Yeniden
+       dene" ile ilerletir. **Kapsam (ölçüldü):** `RecallQuarantineSweeper.cs:72-76` deseni — her kayıt için yeni DI kapsamı,
+       `ITenantContext.SetScope(TenantId, LegalEntityId, aktör)`, `IPostingActorName.Use(ad)`, yeni correlation; ledger deposu bu kapsama
+       bağlıdır (`InventoryLedgerRepository.cs:100-103` `TransactionScope()`); aktör = onayın `ConfirmedBy`'ı. Zamanlama 0177 KR-B sweeper'ına benzer ama **aynı değildir**:
+       0177 `MaxDeferredAttempts` ile sınırlıdır (`RecallQuarantineSweeper.cs:19`, varsayılan 10; FU-0177-SWEEP-01); 0178'de deneme sınırı
+       yoktur (M-5) çünkü sweeper upstream çağırmaz ve kullanıcı denemesi çift hareket üretmez. Sınırsız deneme **kullanıcının
+       "Yeniden dene"si** için geçerlidir; sweeper yalnız uzlaştırır (sahip notu Beste 2026-10-23).
+- **Kısmi yerleştirme:** bir görev birden çok onayla (farklı hedef binlere de) tamamlanabilir; her onay ayrı hareket. **Seri kontrollü
+  SKU'da kısmi onay ve kısa kapatma yoktur** (§8.16).
+- **Yeniden denemede ön kontroller (F-4, sıra inceleme 02 F-1):** ön kontroller **yalnız ledger anahtarı işlenmemişse** (`NotCommitted`)
+  koşar: recall (§8.5), kaynak kova hâlâ `AVAILABLE` (§8.4), saklama koşulu uyumu (§8.12), seri kovası değişmedi (§8.16). Tutmazsa onay
+  **Refused** olur (ön kontrol kodu, `ErrorStatus` 422), hareket denenmez — bekleyen onayın lotu bu arada recall'a girerse denetimsiz
+  `LOCATION_TRANSFER` yazılmaz. Anahtar işlenmişse (cevabı kaybolmuş hareket) kaynak kova boşalmış ve seriler hedefe geçmiş olduğundan
+  ön kontrol **koşturulmaz**; onay Posted olur — böylece işlenmiş hareket Refused sayılmaz ve "yeni onay" ikinci hareket yazmaz.
+- **`IntegrityError` (inceleme 02 F-1):** "yeni onay ile kapatma" (Superseded) ve "Geri taşındı" (Returned) **kapalıdır** (409
+  `WMS_CONFIRMATION_NOT_RESOLVABLE`); görev kilitli kalır (yeni onay, düzenleme, iptal, kısa kapatma 409 `WMS_POSTING_INTEGRITY_ERROR`);
+  durum istisna olarak listelenir (S3 İstisna Kutusu, istisna türü `PostingIntegrityError` — bayrakla aynı ad, WMS taslağı §9; bağımsız
+  inceleme 15 F-2; S3'te yalnız liste, kod S3'te; o gelene kadar görev detayında kırmızı rozet "Bütünlük hatası — Control Tower'a
+  bildirin"). Defter düzeltmesi / REVERSAL 0178'in değil MOD-0173 sahibinin işidir.
+- **"Uzlaştır" — `IntegrityError`'dan tek çıkış (inceleme 03 F-2):** `ResolvePutawayIntegrityCommand`, yalnız sorumlu (izin
+  `warehouse.putaway-tasks.resolve`, §14.2), zorunlu gerekçe (10–1000). **Görevde Pending ya da uçuştaki bir onay varken 409
+  `WMS_CONFIRMATION_PENDING`** (inceleme 05 F-1). Önce ledger **yeniden okunur** (`IPostingKeyLookup`, anahtarı
+  tutan hareketi `holder` olarak döndürür, §5). Defter append-only olduğu için "defter sonradan düzeltildi" yolu **yoktur** (inceleme 04
+  F-1); karar anahtarı tutan hareketin **kaynağına** göre verilir:
+  - **(a) Kaynak bu onay** — `holder.sourceModule = MOD-0178`, `sourceType = PUTAWAY_TASK`, `sourceDocumentId = taskId`,
+    `sourceLineId = seq` (`Committed` ya da parmak izi farklı `KeyReusedDifferentPayload`; ör. tarih / seri farkı yaratan bir hata): stok
+    gerçekten taşınmıştır → onay **Posted** (`IntegrityResolution = ResolvedOwnMovement`); onaya **defterdeki gerçek değerler** yazılır
+    (`TransactionId/Number`, miktar, hedef lokasyon, **lot, seriler**, stok durumu — seri SKU'da onayın işlem 1'deki seri listesi
+    defterin serileriyle değiştirilir, fark `ConfirmationDeviation`'da listelenir; inceleme 05 F-4), `ConfirmedQuantity +=` defter miktarı
+    (`ConfirmedQuantity > PlannedQuantity` olabilir — §4.1 istisnası; görev `Completed`). Onayın kendi değerlerinden farkı varsa ya da
+    toplam planlananı aşıyorsa olay **`ConfirmationDeviation`** (`details`: farklı alanlar, `OverPlanned`) açılır; görev türetilmiş
+    durumuyla ilerler (InProgress / Completed). Ledger doğrudur, görev ona uyar.
+  - **(b) Kaynak yabancı** (başka modül / başka görev / başka satır), `NotCommitted` **ya da kendi hareketi ama ters kaydedilmiş**
+    (`holder.reversedByTransactionId` dolu — defterde stok kaynakta; bağımsız inceleme 05 F-2): bu onayın geçerli bir hareketi yoktur → onay
+    **çözümsüz Refused**'a döner (`IntegrityResolution = ReturnedToRefused`, yabancı hareketin `holder` değerleri olay verisine yazılır —
+    MOD-0173 sahibine istisna notu). **Görev AÇIK kalır**; normal Refused akışı kullanılır: neden giderilince **yeni onay** (yeni `seq`,
+    yeni anahtar) ya da **"Geri taşındı"**. Operatör / sorumlu malın fiziksel konumunu doğrulamaya yönlendirilir (ekran metni).
+    **Görevi kapatmak ayrı ve açık bir seçimdir** (İptal: sorumlu; Kalanı kapat: atanan ya da sorumlu); "Uzlaştır" görevi **otomatik
+    kapatmaz**. Terminal görevde (Completed / Cancelled) "Uzlaştır" yalnız onay kaydını düzeltir, görevi yeniden açmaz (akış tablosu satır 23–24).
+    Açık miktar, `OpenSerialSlot` ve rol kilidi görev kapanınca ya da tamamlanınca serbest kalır.
+  - Yerel olay `IntegrityResolved` (+ gerekirse `ConfirmationDeviation`), merkezi denetim 1 (K2; komut başarılı). Ön kontrol ve posting yapmaz; upstream
+    çağırmaz. `NotCommitted` + `IntegrityError` gerçek akışta oluşmaz (bütünlük hatası ancak işlenmiş bir anahtarla doğar); savunma
+    amaçlı (b) gibi ele alınır.
+  - **Not (inceleme 03 F-2):** `PostingKey` (`wms:put:{taskId}:{seq}`) tahmin edilebilir ve INVENTORY idempotency alanı kiracı + şirket
+    içinde bütün çağıranlarla ortaktır; `postMovement` izni olan bir kullanıcı sıradaki anahtarı önceden harcayıp onayı `IntegrityError`'a
+    düşürebilir (0175 anahtar deseniyle aynı risk; hareket denetim izi bırakır). "Uzlaştır" bu durumu kapatır; anahtarın tahmin
+    edilemez yapılması (işlem 1'de bir kez üretilen rastgele bir parça anahtara eklenir, onaya yazılır ve her denemede aynen
+    gönderilir — tarihler ve seriler gibi) FU-0178-KEY-01.
+- **Refused sonrası operatör akışı (F-4):** onay `Refused` iken mal fiziksel olarak hedefte, defter kaynakta kalır. Operatörün iki yolu:
+  (a) neden giderilince **aynı görevde yeni onay** (aynı ya da başka hedef; yeni `seq`, yeni anahtar) → Posted olunca eski Refused
+  onay `Resolution = SupersededByNewConfirmation` ve "Stok reddetti" rozeti kalkar (bayrak yalnız çözümsüz Refused'dan türer, §4.1;
+  bağımsız inceleme 15 F-1); (b) **"Geri taşındı"** — mal fiziksel olarak kaynağa iade edildi:
+  `MarkPutawayConfirmationReturnedCommand` (gerekçe 10–1000), hareket yok, `Resolution = ReturnedToSource`, "Stok reddetti" rozeti
+  kalkar, görev kalan miktarla açık kalır (sonra yeni onay, iptal ya da kısa kapatma). Çözümsüz Refused onaylar ileride S3 İstisna
+  Kutusu'nda listelenir.
+- **Geç commit savunması — kapatmadan önce ledger araması (bağımsız inceleme 05 F-1):** yeni onay (Superseded'a yol açar), "Geri
+  taşındı", İptal ve Kalanı kapat, **komutun kendi yazımından önce** görevin kapatacağı / etkileyeceği Refused onaylarının anahtarlarını
+  ledger'da arar (`IPostingKeyLookup`, upstream'siz). Biri `Committed` (ters kaydedilmemiş) çıkarsa o onay `IntegrityError`
+  (`StatusDiverged`, eski `Resolution` → `PriorResolution`) olur, olay `ConfirmationIntegrityError`, komut **409
+  `WMS_POSTING_INTEGRITY_ERROR`** döner ve kendi değişikliğini yazmaz (sorumlu önce "Uzlaştır"). Commit komuttan **sonra** görünürse
+  savunma dalı (sweeper) onu `Resolution`'dan ve görev durumundan bağımsız yakalar (satır 18).
+- **Sürüm koşulu (CAS) — her yazım (bağımsız inceleme 06 F-3, 07 F-1 / F-2):** görev kaydına yapılan **her** yazım filtreye
+  `Version == okunan sürüm` koyar ve `Version++` yapar. Hedef küme ve filtre **komut başına**:
+  | Yazım | Hedef küme | Filtre (V'ye ek) | 0 kayıt etkilenirse |
+  |---|---|---|---|
+  | İşlem 2 / retry (i) Posted yazımı / sweeper uzlaştırması | bu onay (+ Superseded hedefleri `arrayFilters`) | `Status == Pending`, `AttemptId` (sweeper: kilit boş / geçmiş) | **istisna:** yukarıdaki tek kural (A)–(E): yeniden oku, onay hâlâ Pending ve deneme bunsa koşullu artışı yeniden değerlendir ve yinele (≤ 3; tükenirse 503 `WMS_CONFIRMATION_CONFLICT_RETRY`) — aynı kural kilit alımı, ön kontrol reddi ve IntegrityError yazımları için de |
+  | Yeni onay (işlem 1) | yeni onay; ön arama = görevin çözümsüz Refused onayları | If-Match = V, görevde Pending yok | yeniden oku → hedef `IntegrityError` ise 409 `WMS_POSTING_INTEGRITY_ERROR`, değilse 409 `WMS_CONFLICT` |
+  | "Geri taşındı" | yalnız bu onay (ön arama yalnız onun anahtarı) | `Status == Refused`, `Resolution == null` | aynı |
+  | İptal / Kalanı kapat | görev; ön arama görevin **tüm** Refused onayları (`Resolution`'dan bağımsız — "Geri taşındı"dan sonra da çalışır) | hedeflerin `Status == Refused` (**`Resolution` koşulu yok**) | aynı |
+  | Savunma dalı / ön aramanın `IntegrityError` yazımı | tek onay | `Status == Refused` | yazım yok; sweeper bir sonraki turda yeniden değerlendirir (30 dk penceresi içinde) |
+  | Uzlaştır | tek onay | `Status == IntegrityError`, görevde Pending yok | yeniden oku → 409 `WMS_CONFLICT` |
+  | Commit sonucu bilinmeyen posting (5xx / zaman aşımı / ağ hatası / iptal (`OperationCanceledException`) / beklenmeyen istisna; Codex P2, bağımsız inceleme 13 F-2) | yazım yok | — (sonuç yazımı yapılmaz) | geçerli değil: onay Pending, kilit korunur, 503; sonraki deneme / sweeper `PostingKey` aramasıyla uzlaştırır |
+  | 0-satır (D) yazımı (bu deneme Posted / replay, kayıt Refused; satır 11; bağımsız inceleme 10 F-2) | tek onay | `Status == Refused` | yeniden oku → onay `IntegrityError` ise yazım yok (`PriorResolution` korunur), 409 `WMS_POSTING_INTEGRITY_ERROR`; hâlâ Refused ise yinele (≤ 3), tükenirse yazım yok, 409 `WMS_CONFLICT` + güncel görev |
+  | Her anahtarlı komut yazımı (yaratma: kayıt; diğerleri: anahtar olayı; satır 29; bağımsız inceleme 10 F-1, 11 F-3) | komutun kendi hedefi + anahtar olayı | satırın kendi filtresi + tekil anahtar index'i (§4.6); yaratmada ayrıca rolün canlı `LocationId` / görevin seri slot tekil index'i | **her** yinelenen kayıt hatası (hangi tekil index olursa olsun) ya da 0 kayıt → **önce anahtar yeniden aranır**: aynı parmak izi → 200 replay, farklı → 400 `IDEMPOTENCY_KEY_REUSED`; anahtar yoksa satırın kendi kuralı (rol `LocationId` → 409 `WMS_LOCATION_ROLE_EXISTS`; seri slot → 422 `WMS_QUANTITY_EXCEEDS_OPEN`) |
+
+  Böylece `IntegrityError` ile `Resolution` aynı onayda **asla birlikte bulunmaz** (savunma ve ön arama yazımı `Resolution = null`'u aynı
+  güncellemede yapar; "Geri taşındı" `Status == Refused` ister) ve sistem yazımı kullanıcının If-Match'ini geçersiz kılar (kullanıcı ekranı
+  yeniden yükler; yeniden yüklenen komut bir sonraki denemede geçer — sonsuz 409 yok).
+- **Açık miktar yarışı (CT ek bulgusu; tek yol inceleme 02 F-7):** görev yaratmada açık miktar kontrolü **iyimserdir** (aynı anda açılan
+  iki görev açık miktarı birlikte aşabilir; kilit yok). 0178'in onay ön kontrolü kovanın **durumuna** bakar, **miktar yeterliliğine
+  bakmaz**; yeterlilik yalnız defterin işidir: onay kaydı açılır (işlem 1), ledger 422 `INSUFFICIENT_STOCK` döner → onay **Refused**
+  (merkezi denetim 0, yerel zaman çizelgesi 2: Recorded + Refused — AC-15); stok eksiye düşmez. Seri SKU'da eşzamanlı ikinci görev kısmi tekil index ile engellenir (§4.6), yine de
+  onayda `WMS_SERIAL_BUCKET_CHANGED` güvenlik ağıdır.
+
+### 8.4 Karantinadaki ve tutulan stok (S1 kuralı)
+- MOD-0175 tutmaları (hold) kovaya bağlıdır: `WarehouseId`, `LocationId` (MOD-0175 pack `:173`, karar V7 "current balance of the
+  bucket ≥ decision quantity", `:760`). Tutulan stoğu başka lokasyona taşımak karar uygulamasını `QUARANTINE_STOCK_CHANGED` /
+  `ApplyFailed`'a düşürür.
+- **S1 kuralı (karar Q-02, Beste 2026-10-21):** putaway görevi yalnız `AVAILABLE` kovadan açılır. `QUARANTINE`, `QUALITY_INSPECTION`, `BLOCKED`,
+  `DAMAGED`, `EXPIRED` kovalar adaylarda "yerleştirilemez — kalite kararı bekliyor" olarak görünür, görev açılırsa 422
+  `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE` (`details.stockStatus`) ve 7 dilde yerelleştirilmiş mesaj (`Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE`). E-4 gereği GRN `toStockStatus = QUARANTINE` yazar; MOD-0175 serbest bıraktığında stok aynı
+  lokasyonda `AVAILABLE` olur ve aday listesine girer. Karantina bölgesine fiziksel taşıma ihtiyacı → QUARANTINE eklemeli
+  "tutmanın lokasyonu taşınır" değişikliği (sahibi MOD-0175) ya da S2 sonrası FU-0178-QH-01.
+- **Onay anında aynı kural (tur 2):** görev açıldıktan sonra kaynak kova karantinaya / kalite kontrole / blokeye geçerse onay 422
+  `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE` (`details.stockStatus`) ile reddedilir; ekrandaki "Stok karantinaya girdi" ret durumu **bu koddur**
+  (onay `Refused` değil, istek öncesi ret — hareket denenmez). Otomatik askı yok (M-5).
+- Lot durumu `Blocked` / `Expired` → INVENTORY `LOT_BLOCKED` / `LOT_EXPIRED` (CT-D4: yalnız SCRAP / WRITE_OFF / REVERSAL); 0178
+  adaylarda işaretler, görev açılmasını 422 aynı kodla reddeder (TRACE okuması), onayda defter yine son sözü söyler.
+- Retest süresi geçmiş lot: INVENTORY "transfer"i reddeder (`inventory-bundle.openapi.yaml:16`, MOD-0175 pack `:546`); bunun
+  `LOCATION_TRANSFER`'ı kapsayıp kapsamadığı ölçülmedi → **geliştiricinin ilk ölçümü (Q-12)**. Varsayılan davranış: 0178 kendi retest
+  ya da Draft-lot kuralı yazmaz; defter reddederse kod aynen iletilir, kabul ederse 0178 engellemez (ASSUMPTION-0178-04).
+
+### 8.5 Geri çağırma (recall) — 0178'in tek ek kuralı
+INVENTORY 1.4.0 `LOT_UNDER_RECALL`'u yalnız `GOODS_ISSUE_SALES`, `GOODS_ISSUE_PROD`, `WAREHOUSE_TRANSFER` için uygular;
+`LOCATION_TRANSFER` muaftır (`inventory-bundle.openapi.yaml:43-46`). Bu yüzden:
+- **S1 (karar Q-03, Beste 2026-10-21):** geri çağırmadaki lotun putaway görevi açılmaz / onaylanmaz → 422 `LOT_UNDER_RECALL` (INVENTORY'nin kod
+  adı ve `details` şekli: `lotId, lotNumber, recallCaseId?, recallCaseNumber, movementType: LOCATION_TRANSFER`). Okuma:
+  `IRecallLotStatusReader.UnderRecallAsync` (süreç içi, kiracı geneli CT-R7). Gerekçe: recall'daki stok rafa değil ayrılmış
+  alana gider (MOD-0177 KR-B karantina isteği).
+- **S2 (aynı karar):** pick öncesi aynı okuma; ret `LOT_UNDER_RECALL`. Ek güvence: MVP-6'nın `GOODS_ISSUE_SALES`'i INVENTORY'de yine reddedilir.
+- Okuma erişilemezse 503 (fail-closed), yazma yok.
+
+### 8.6 Hedef bin önerisi (S1)
+Strateji master'ı yok (kapasite, slotting FU-0178-SLOT-01). Öneri = aynı depoda aynı SKU'nun (varsa aynı lotun) en son stoklandığı,
+Receiving / Staging rolü olmayan bin (INVENTORY bakiye okuması); yoksa öneri yok. Kullanıcı hedefi LOCATION aramasından seçer
+(`searchLocations type=Bin, status=Active, isStockable=true, parentId` deponun altı). Kapasite kontrolü **yok** (veri yok) —
+ekranda yazılır, kabul ölçütü değildir. Öneri yalnız saklama koşulu uyumlu binlerden seçilir (§8.12). **Öneri formu otomatik
+doldurmaz**; kullanıcı "Uygula" der, hedef alanı dolar ve kayıtta `TargetSource = SuggestionApplied` + olay `SuggestionApplied`
+zaman çizelgesine yazılır (M-4). **Not (r20; DL-3 CT kaydı F-6, sahip onaylı):** öneri yalnız **düzenleme** formunda gösterilir — aday
+listesi (`PutawayCandidate`, WMS taslağı §3.3) öneri alanı taşımaz; oluşturmada hedef LOCATION aramasından seçilir, öneri görev açıldıktan
+sonra düzenlemede (`SuggestedToLocationId`) görünür. Bu bir davranış değişikliği değil, uygulanan davranışın kaydıdır
+(`docs/records/audits/2026-11/mod-0178-dl3-ct-acceptance-2026-11-02.md`).
+
+### 8.7 Kayıt kodları
+§22. Ortak servis (BL-565) yok → karar Q-07 B: RCS biçiminde geçici sayaç, port arkasında; geçiş + feragat FU-0178-RCS-01; önek
+kaydı FU-0178-RCS-02 (r26: kapandı — RCS-001 §3'te `PUT` / `PCK` / `OUT` / `PKG`, sahip onayı Beste 2026-11-10; §22; MVP-1 hattında, main'e hat PR'ıyla girer). **Şirket öneki (M-2, Q-MDM-2 kapandı):** şimdilik MDM tüzel kişiliğin mevcut `Code` alanı
+(`LegalEntity.cs:11`). Görev açılırken okunur; `^[A-Z]{2,5}$`'e uymuyorsa görev **açılmaz** → 422 `WMS_COMPANY_CODE_INVALID`
+(`details.companyCode`) + 7 dilde "şirket kodunu düzeltin (2–5 büyük harf A–Z)" mesajı; MDM erişilemezse 503. Önek numaraya **bir
+kez** yazılır, sonra değişmez (şirket kodu sonradan değişse de). Sayaç (kiracı, şirket öneki, tür) başına (RCS-001 §5.1). Depo kodu
+numarada yer almaz; listede ayrı sütundur. RCS-001 §5.4 kısa kod alanı gelince geçiş FU-0178-RCS-01'dedir. **Şirket kodu geçersizken
+mevcut görevler görünür ve onaylanabilir** (önekleri numaralarına yazılı); yalnız **yeni görev açılamaz** (tur 2).
+
+### 8.8 Merkezi denetim (E-2 / BL-501) ve yerel GxP izi — sahip kararı (Beste 2026-10-26)
+- **BL-501 olduğu gibi kalır** (`services/Diten.Building.Blocks/**` korunan yol, §6). Ölçülen davranış (`58c2cd6e6`; kayıt biçimi ve
+  satır durumları bağımsız inceleme 09 için `963f6230a`'da yeniden okundu):
+  - **Kayıt biçimi — ad ve gövde yok (09 F-1):** bildirim `CentralAuditMetadata(Category, Operation, EntityType, SourceModule)` ve
+    `CentralAuditEntityId(response)`'tur (`…/Diten.BuildingBlocks.CentralAudit.Abstractions/ICentralAuditDeclaration.cs:13-30`: "the request
+    body is never copied into the record"). Kayda ayrıca aktör, kiracı, şirket, korelasyon, zaman ve `RequestType` (komut sınıfının adı)
+    yazılır (`…/Diten.BuildingBlocks.CentralAudit/CentralAuditRecorder.cs:96-116`, `CentralAuditBehavior.cs:36`); Platform'a giden
+    `Metadata` yalnız eventId / companyId / writtenInCommandTransaction / confirmedByCommand'dır (`PlatformCentralAuditClient.cs:63-89`).
+    `Category` ve `Operation` Platform enum **adlarıdır** (`CentralAuditPlatformValues.cs`; Operation: Create, Update, Delete, …, Assign, …,
+    Execute, LifecycleTransition); enum dışı ad iletimde `Rejected` olur (`PlatformCentralAuditClient.cs:54-60`) ve
+    `CentralAuditDeclarationTests.cs:39-57`'de kırmızıdır. Bildirim komut türünden, işleyici koşmadan okunur (`CentralAuditRecorder.cs:95`):
+    komut başına **sabittir**, sonuca göre seçilemez. Sonuç: merkezi kayıt **kim, hangi komut, hangi nesne, ne zaman, hangi sonuç**
+    sorusunu cevaplar; **ne değişti** (onay `seq`, miktar, TransactionNumber, kapatılan `seq` listesi, `holder`, önceki / sonraki değerler)
+    yalnız yerel zaman çizelgesindedir (§4.3). Komut başına değerler §21'de.
+  - **Satır durumları (09 F-2 a):** komutun işlemi enlist edince satır `AwaitingCommand` olarak işlemle birlikte yazılır
+    (`CentralAuditRecorder.cs:123-140`); aynı komutun sonraki enlist'leri aynı satırı bulur ve no-op'tur (`CentralAuditOutboxStore.cs:81-91`,
+    `CentralAuditRecorder.cs:11-12`). Komut **başarılı** biterse satır `Pending`'e geçer (`ConfirmAsync`, `CentralAuditOutboxStore.cs:111`)
+    ve dağıtıcı iletince `Delivered` olur; istisna ya da başarısız zarf (`Response.IsSuccessful = false`) → `Abandoned` (`:113`;
+    `CentralAuditBehavior.cs:51`, `:59-63`) ve **iletilmez**. Hiçbir işlemi commit olmamış başarısız komut satır bırakmaz.
+  - **Yazmadan başarılı komut (09 F-2 c):** `RequireEnlistment` altında hiç enlist etmeden başarılı biten komut **kayıt bırakmaz**
+    (`CentralAuditRecorder.cs:160-168`, "idempotent replay, no-op"). 0178'de: **her** yazma komutunun tekrarı (aynı anahtar + aynı parmak izi, 200 replay; §8.1, AC-4, §13.1–13.2, §13.24),
+    sweeper iç komutunun (B) dalı ve 0-kayıt bırakması, hiçbir satırı yazılmayan toplu atama / toplu rol silme → merkezi 0 / yerel 0.
+  - **Çökme (09 F-2 b):** komutun bir işlemi commit olduktan sonra, `ConfirmAsync` / `AbandonAsync`'ten önce süreç ölürse satır
+    `AwaitingCommand` kalır; dağıtıcı `OrphanAfter` (10 dk, `CentralAuditOptions.cs:37`) sonunda onu `ConfirmedByCommand = false` ile
+    `Pending`'e alır (`CentralAuditOutboxStore.cs:121-131`, `CentralAuditDispatcher.cs:54`) ve Platform'a **`Unconfirmed`** sonucuyla iletir
+    (`CentralAuditPlatformValues.cs:64-67`). 0178'de en olası yer onayın işlem 1'i ya da yeniden denemenin kilit alımı sonrasıdır →
+    1 `Unconfirmed` `ConfirmPutawayTaskCommand` / `RetryPutawayConfirmationCommand` kaydı. Onay sonradan Refused olsa da bu kayıt kalır;
+    sweeper sonra Posted yazarsa aynı onay için **2** merkezi kayıt olur (`Unconfirmed` + `ReconcilePendingConfirmationCommand`
+    `Succeeded`). Bu BL-501'in tasarımıdır ve kabul edilir; doğru sıra yerel zaman çizelgesidir.
+  - Defterin `PostAsync`'i işlem içinde `CentralAuditTransaction.EnlistAsync` çağırır (`InventoryLedgerRepository.cs:181`): 0178 komutu
+    `InternalMovementPostingService`'i süreç içi çağırdığında (ayrı bir MediatR komutu yok) defterin enlist'i **0178 komutunun satırına**
+    gider ve işlem 1'de zaten yazılmış olduğu için no-op'tur — **ayrı bir "defterin hareket satırı" merkezi kaydı doğmaz**. Hareketin
+    defterdeki kendi işlem içi izi (MOD-0173 `inventory_audit` + outbox) defterin işidir.
+- **Enlist kuralı (0178; bağımsız inceleme 09 F-2):** her 0178 yazımı `WithTransactionAsync` içinde koşar; **iş yazımı en az bir kayıt
+  etkiledikten sonra** aynı callback'te yerel olayı yazar ve `CentralAuditTransaction.EnlistAsync(session, entityId)` çağırır. 0 kayıtta
+  callback ne olay yazar ne enlist eder (satır yok). Toplu komutlar `entityId` vermez (satırın `EntityId`'si boş; tek nesne yok).
+  `CentralAuditDeclarationTests.cs:73-108` her callback'te enlist çağrısını arar (§5 beşinci seam).
+- **Sonuç (bağlayıcı):** merkezi denetim **yalnız başarılı ve yazan komutları** iletir; komut başına **1** kayıt (çökmede `Unconfirmed`).
+  Retler (Refused), Pending (503), IntegrityError, her 409 ve her 503 **iletilen** merkezi kayıt bırakmaz (0; satır varsa `Abandoned`).
+- **Yerel GxP izi:** bu sonuçların ve bütün değerlerin izi depo modülünün **silinmeyen, yalnız ekleme yapılan** zaman çizelgelerinde
+  tutulur — görev için `wms_task_events`, rol için `wms_location_role_events` (her `Kind`'ı yazan yazım §4.3'te) — ve **ilgili yazımla aynı
+  Mongo işleminde** yazılır. Zaman çizelgesi yazılamazsa iş yazımı da geri alınır.
+- **K2'nin anlamı (bu paket için):** K2 = başarılı komutun merkezi kaydı veriyle **aynı işlemde** (`RequireEnlistment = true`; yazılamazsa
+  komut geri alınır — kapalı-başarısız); başarısız sonuçların ve bütün değerlerin izi **yerel** zaman çizelgesindedir (aynı işlem,
+  silinmez). Merkezi kayıt bir rette ve değer düzeyinde "boş" görünür; tam GxP izi zaman çizelgesidir.
+- **Sweeper iç komutu:** hosted service ledger aramasını işaretsiz bir okumayla yapar ve iç komutu (`ReconcilePendingConfirmationCommand`)
+  yalnız yazılacak bir şey varsa gönderir; kapsamı onayın `ConfirmedBy`'ıdır (kayıt o kullanıcıyı `TenantUser` olarak adlandırır, adsız —
+  `…/Api/CentralAudit/InventoryCentralAuditScope.cs:13-15`). Komut Posted yazarsa başarılıdır (merkezi 1); IntegrityError yazarsa
+  (KeyReused / HolderReversed / savunma dalı) **başarısız zarfla** döner (iletilen 0, satır `Abandoned`, yerel iz var); `NotCommitted`'ta
+  komut hiç gönderilmez (0 / 0); (B) dalı ve 0-kayıt bırakması yazmaz (0 / 0).
+
+### 8.9 Olaylar ve taşıma
+- S1: iç olaylar yok (görev olayları koleksiyonda). S2: `OutboundShipmentReady` (WAREHOUSE-OUTBOUND şeması + WMS taslağı §2.3
+  eklemeli üyeler) `ReleaseOutboundShipmentCommand`'ın işleminde servisin outbox'ına yazılır (§8.21); olay taşıma bugün kapalı / kayıtsız
+  (plan §3 Dalga 3) → Pending kalır; MVP-6 için donmuş alternatif **poll**'dur (`GET /outbound-shipments?status=ReadyToShip`). Servisin
+  hangi outbox koleksiyonunu kullandığı (InventoryService'in mevcut outbox'ı) geliştiricinin ilk ölçümüdür (çıkarım); taşıma açılınca
+  değişiklik yok, yalnız teslim başlar.
+- MVP-6 → 0178: `ShipmentDispatched` olayı donmuş (MOD-0183 §23.3); taşıma kapalıyken v1 yolu kullanıcı tetikli eşitlemedir (§8.21).
+- Olay zarfına `legalEntityId` / `tenantId` eklenmesi GAP-0183-02'yi kapatır → WMS taslağı §7, Q-M6-5.
+
+### 8.10 W-5 karşılığı — MOD-0173-FU03 (r20)
+
+r19'un dört gereksinimi MOD-0173-FU03 paketiyle karşılanır (`execution/domains/supply-chain-execution/module-packs/MOD-0173-FU03-inventory-lot-location-reservation.md`,
+`ready-for-dev`, onay bekliyor; sahibi MVP-1 CT). 0178 FU03'ün dosyalarına dokunmaz; yalnız onun portunu ve sözleşme alanlarını kullanır.
+
+| r19 gereksinimi | FU03 karşılığı | 0178'in kullanımı |
+|---|---|---|
+| 1. Lot (+ depo) düzeyinde rezervasyon | FU03 §8.2 kapsamlı rezervasyon (SKU / depo / depo + lot; **bin pini yok**, FU03 Q-02 = hayır); INVENTORY 1.6.0 `ReservationRequest.warehouseId` / `lotId` | tahsis lot düzeyinde (lot izlenmeyen SKU'da depo düzeyinde) rezervasyon açar (§8.17); fiziksel bin pick görevindedir |
+| 2. Rezervasyon kimliğiyle tüketim | FU03 §8.3; INVENTORY 1.7.0 `MovementRequest.reservationId` | 0178 tüketmez (W-4); MVP-6 çıkışı `reservationId` ile tüketir — MOD-0183 revizyonu (Q-M6-2 / FU03 Q-05, açık) |
+| 3. Sahibinin `LOCATION_TRANSFER`'ı rezervasyonu düşürmez | FU03 §8.4 (depo / lot düzeyinde net delta 0; `reservationId` ile doğrular, tüketmez, `Version` değişmez) | pick onayı bin → Staging `LOCATION_TRANSFER`'ı `reservationId` ile gönderir (§8.19) |
+| 4. FEFO ayrılmış lotları nasıl sayar | **Q-01 = A — kapandı** (sahip kararı Beste 2026-11-02; FU03 §8.5, DL-3): FEFO aday kümesi serbest (ayrılmamış) miktarı esas alır; başka outbound'lara ayrılmış lot FEFO sırasında sayılmaz; ayrılmış lotu kendi rezervasyonuyla çıkaran hareket FEFO sapması sayılmaz. **Bilinen fark (FU03 §8.5):** `getFefoOrder` okuması (`ExpiryReadModel.FefoCandidatesAsync`, FEFO-BUNDLE `basis: onHandAvailable`) değişmez — serbest taban yalnız INVENTORY'nin FEFO kancasındadır | 0178 tahsis okumasını FEFO okumasından alır, bu yüzden serbest tabanı kendisi kurar: lotun alınabilir miktarı FU03 `GetScopeFreeAsync` ile sınırlanır, serbest miktarı 0 olan lot sırada sayılmaz ve "ilk uygun lot" serbest tabanla belirlenir (§8.17 adım 2–3) — kancanın kararıyla aynı sonuç |
+| (ek) Toplu, hepsi ya da hiçbiri | FU03 §8.7 `CreateBatchAsync` (en çok 100 satır, tek Mongo işlemi; FU03 Q-06 = evet) | outbound'un bütün tahsisleri tek toplu çağrı; satır sınırı aşılırsa 422 (§8.17) |
+| (ek, r24) Anahtarla okuma | FU03 r3 §8.7 `FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` (DL-1, AC-39, CT-09; kiracı + şirket kapsamlı, 1…100 anahtar, durum süzgeci yok, salt okuma; anahtar başına `(IdempotencyKey, ReservationId, Status, ClosedReason, etag)`) | FU03 400 dalında `ReservationKey`'lerle yaratılmış rezervasyonları bulup `ACTIVE` olanları bırakmak (§8.17 adım 6, §8.22 bırakma kuralı) — FU-0178-RSV-BYKEY karşılandı |
+
+**FU03 Q-07 — bu revizyonun kararı (paket önerisi r20; sahip onayı CT-APR-01 ile):** 0178 rezervasyonları `reservationType =
+WAREHOUSE_OUTBOUND`, `sourceModule = MOD-0178`, `sourceDocumentId = outboundId`, `sourceLineId = "{lineSeq}"` (ondalıksız metin),
+`priority` yok, **`expiresAt` yok** taşır. Gerekçe: (i) outbound'un ömrünü 0178'in durum makinesi yönetir; süre dolunca sessiz bırakma, stok
+staging'e taşınmış ve paketlenmişken başka bir çıkışın o stoğu almasına izin verirdi; bırakma yalnız açık yollardan olur (iptal §8.22, sevk
+sonrası artık §8.21); (ii) emsal: MVP-1 CT cevabı "sevkiyat rezervasyonunda `expiresAt` gönderilmez"
+(`docs/roadmap/plans/mvp6-integration-wp-p1-01/DECISION-DRAFT.md` §3b ek not 2; MOD-0183 §23.4 aynı). Kaynak üçlüsü 0178'in kendi
+hareketleriyle eşleşmez (pick `LOCATION_TRANSFER`'ının `sourceDocumentId`'si pick görevidir, outbound değil; `LOCATION_TRANSFER` zaten
+tüketmez) ve MVP-6 çıkışıyla eşleşmez (`sourceModule MOD-0183`) — tüketim yalnız `reservationId` iledir.
+
+### 8.11 OTel (Blueprint WMS-BUNDLE)
+Servisin OTel kablolaması bu oturumda ölçülmedi. Öneri adlar: `ActivitySource "Diten.Warehouse"`, span'ler
+`wms.putaway.confirm`, `wms.posting`; sayaçlar `wms_task_confirmations_total{result}`, `wms_posting_refused_total{code}`,
+`wms_pending_confirmations` (gauge), `wms_outbound_ready_total`. Exporter yoksa sayaçlar kodda durur, canlı ölçüm iddia edilmez
+(MOD-0183 O-3 emsali). Q-EA-5.
+
+### 8.12 Saklama koşulu uyumu (M-3 — S1 engeli)
+- **Ürün tarafı:** PRODUCT-MASTER v1.1 `getSku.storageConditions` (çoklu, `StorageConditionCode`; boş liste = koşul yok;
+  `product-master-bundle.openapi.yaml:601-604, 703, 750`). Alan **yoksa** (bilinmiyor — taslak kayıt, v1.0 cevabı) "koşul yok"
+  sayılmaz: 422 `WMS_STORAGE_CONDITIONS_UNKNOWN` (bilinmeyen boş okunmaz — MOD-0173 PM1 bayrak kuralının aynısı); PRODUCT-MASTER
+  erişilemezse 503 `PRODUCT_MASTER_UNAVAILABLE`.
+- **Lokasyon tarafı:** hedef binin **etkin kabul kümesi** = `getLocationPath` üzerinde bine en yakın (kendisi dahil) ve
+  `AcceptedStorageConditions`'ı dolu `WarehouseLocationRole` kaydının kümesi (alt ağaç kalıtımı).
+- **Kural:** ürünün her koşul kodu etkin kümede olmalı (ürün kümesi ⊆ etkin küme). Sözleşmenin açık enum'u büyürse ürünün bilinmeyen
+  kodu da kümede aranır; yoksa ret.
+- **Etiketsiz lokasyon (karar, açık soru değil):** etkin kümesi olmayan rafa **yalnız koşulu olmayan ürün ya da yalnız `AMBIENT_15_25`
+  koşullu ürün** konur (ürün kümesi ⊆ `{AMBIENT_15_25}`); diğer her ürün (ör. `COOL_2_8`, `PROTECT_FROM_LIGHT`) reddedilir.
+- **Ret:** görev oluşturma, düzenleme (hedef değişince) ve onay → 422 `WMS_STORAGE_CONDITION_MISMATCH` (`details: productConditions,
+  locationConditions, inheritedFromLocationId?`) + 7 dilde mesaj; ekranda rozet. Etiketler ya da ürün koşulları görev açıkken
+  değişirse kontrol onayda yeniden yapılır (otomatik askı yok).
+- Etiket seçici seçenekleri sözleşmedeki beş koddur (yerelleştirilmiş ad); MOD-0048 `storage-condition` listesi okunabilir hâle
+  gelirse ona geçiş FU-0178-STOR-01 (Q-MDM-3).
+- **Okuma yolu ve kabul ortamı (F-5):** InventoryService bugün `storageConditions` okumuyor (`SkuReference.cs:13-24`,
+  `ProductMasterHttpClient.cs:62-82`; repo grep 0). Okuma §5'teki MOD-0173 seam'iyle eklenir. S1 kabulü dev PRODUCT-MASTER köprüsü
+  4010 (veri setine `storageConditions` eklenmiş) ile E3 / E4; canlı kabul PM-LIVE sonrası. Köprü alanı döndürmezse her oluşturma ve
+  onay 422 `WMS_STORAGE_CONDITIONS_UNKNOWN` alır — bu beklenen fail-closed davranıştır, kabul sayılmaz.
+
+### 8.13 Onay yetkisi ve üstlenme (M-5)
+- Onayı **atanan operatör** ya da **sorumlu** (`warehouse.putaway-tasks.update` sahibi) verir; diğerleri 403 `WMS_NOT_ASSIGNEE`.
+- Operatör **atanmamış** görevi üstlenebilir: `ClaimPutawayTaskCommand` = kendine ata; ayrı izin yok, **`warehouse.putaway-tasks.confirm`
+  yeter** (öneri, sahip yönlendirmesi "önerdiğin gibi"). Atanmış görevi üstlenme 409 `WMS_TASK_ALREADY_ASSIGNED`; yeniden atama
+  sorumlunun işidir. Kullanıcı listesi ucu yoksa (Q-13) atama yalnız üstlenmeyle olur.
+- Üstlenme **seçili depodaki atanmamış görevler** içindir ("Üstlen" listesi depo filtresine bağlı); sorumlu atanmış görevi yeniden
+  atayabilir (`UpdatePutawayTask` / `BulkAssignPutawayTask`, `warehouse.putaway-tasks.update`) (tur 2).
+- **Pending yeniden deneme:** deneme sınırı yok (aynı `PostingKey` çift hareket üretmez); `Attempts` ve son deneme zamanı ekranda
+  görünür; INVENTORY reddederse onay `Refused` olur ve "Stok reddetti" rozeti çıkar (tur 2). Sweeper yalnız ledger anahtarını kontrol eder;
+  işlenmemiş Pending onayı kullanıcının "Yeniden dene"si ilerletir (§8.3 adım 5, inceleme 02 F-5). Asıl onay uçuştayken "Yeniden dene"
+  409 `WMS_CONFIRMATION_IN_FLIGHT` alır; ekran "Onay işleniyor — kilit {süre} sonra kalkar" der ve düğmeyi o süre pasif tutar
+  (inceleme 03 F-1).
+
+### 8.14 E-imza — kapsam dışı (M-1)
+Putaway onayı **e-imza istemez** ve MOD-0022'ye imzalanabilir eylem kaydetmez. Gerekçe: onay imzalı bir kalite kararı değil, bir
+**hareket kaydıdır**; kim, hangi komut, hangi görev, ne zaman merkezi kayıtta (yol b, K2, §21 — gövde yok); ne taşındı (onay `seq`,
+miktar, from / to, TransactionNumber) yerel görev zaman çizelgesinde (§4.3) ve INVENTORY hareketinin kendi kaydında durur (bağımsız
+inceleme 09 F-1).
+Kalite kararları (serbest bırakma, red) MOD-0175'te imzalıdır; 0178 onlara dokunmaz.
+
+### 8.15 Ekran kuralları (M-4 / S1)
+- Gönderilen onay cevap gelene kadar görevi **kilitler** (yeni onay / düzenleme / üstlenme / kapama / iptal kapalı; sunucu 409
+  `WMS_CONFIRMATION_PENDING`).
+- **Stok satırı oluşturulunca değişmez** (`UpdatePutawayTask` kaynak kovayı kabul etmez → 400); yanlış satır = iptal + yeni görev.
+  Planlanan miktar onaylanan + bekleyenin altına inemez (422 `WMS_QUANTITY_BELOW_CONFIRMED`).
+- **Seçilemeyen stok gizlenmez:** adaylarda kilit simgesi + neden + engelleyen belge numarası (karantina tutma no / recall vaka no /
+  bloke kaydı no / lot durumu) gösterilir; numaralar sahibi modülün süreç içi okumasından (MOD-0175 tutma okuması, RECALL
+  `getLotRecallStatus.cases[]`, TRACE lot durumu).
+- **Raf önerisi** "Uygula" ile alınır, otomatik doldurmaz; uygulandıysa zaman çizelgesine yazılır (§8.6).
+- **Menü:** onay yoksa yalnız "İptal", Posted onay varsa yalnız "Kalanı kapat" etkin; pasif menü öğesi nedenini yazar (tooltip /
+  ikincil metin, 7 dil).
+- **Raf alanı** klavye ve barkod okuyucu (klavye öykünmeli) girişini kabul eder: kod yazılır / okutulur → LOCATION `searchLocations`
+  tam kod eşleşmesi → bin seçilir; eşleşme yoksa alan hatası. Okuyucu olay akışı (ScanEvent) MOD-0182'de sonra.
+- **Mobil 375 px:** dokunma alanları ≥ 48 px, miktar alanında −/+ düğmeleri, sabit alt eylem çubuğu (Onayla / Yeniden dene).
+- **Durum ile entegrasyon bayrağı ayrıdır:** durum (Open / InProgress / Completed / Cancelled) onaylanan miktardan türer; ayrı
+  rozetler "Onay bekliyor" (`PostingPending`), "Uzun süredir bekliyor" (`PostingPendingLong` — Pending onay `LongPendingMinutes`'tan eski;
+  §8.3 adım 5, bağımsız inceleme 13 F-3), "Stok reddetti" (`PostingRefused`) ve "Bütünlük hatası" (`PostingIntegrityError`). Görevde tek rozet görünür; öncelik §4.1'deki
+  sıradır: `PostingIntegrityError` > `PostingPendingLong` > `PostingPending` > `PostingRefused` > `None` (bağımsız inceleme 14 F-1).
+  `PostingRefused` yalnız **çözümsüz** Refused onaydan türer: görevde `Status == Refused` ve `Resolution == null` olan bir onay varsa; Superseded / `ReturnedToSource` onaylar bayrağa girmez (bağımsız inceleme 15 F-1).
+- Diller en, tr, fr, es, zh, ar, ru; **RTL yalnız ar**.
+
+### 8.16 Seri kontrollü SKU — yalnız tam miktar (F-1; sahip kararı Beste 2026-10-21)
+- Ledger her harekette ayrı seri sayısı = baz miktar ister (`MovementMasterDataValidator.cs:257-262`, `SERIAL_COUNT_MISMATCH`).
+- S1'de seri kontrollü SKU (Lsku / FinishedGood `getSku.serialControlled = true`; Gsku'da seri stok yoktur — §4.1, inceleme 02 F-3)
+  **yalnız tam miktar** yerleştirilir: görev miktarı = kaynak kovadaki (depo + lokasyon + SKU + lot, `AVAILABLE`) bütün miktar; kova
+  başına tek açık görev (kısmi tekil index, §4.6); planlanan miktar düzenlenemez.
+- **Seri kaydı stok durumunu bilmez** (`SerialNumber.cs:28,30` yalnız depo / lokasyon). Bu yüzden (inceleme 02 F-2):
+  - okuma MOD-0175 emsaliyle yapılır: lokasyondaki Active seriler (`QuarantineLedgerReads.cs:108-120`) eksi aynı kovanın **açık
+    tutma ve açık bloke kayıtlarının** serileri (`StockActionHandlers.cs:175-200`, ASSUMPTION-0175-Q4-02);
+  - ek olarak **aynı lokasyonda aynı lot + SKU'nun `AVAILABLE` dışı stoğu** (QUARANTINE / QUALITY_INSPECTION / BLOCKED / DAMAGED /
+    EXPIRED bakiye satırı) varsa seri SKU görevi S1'de **açılmaz ve onaylanmaz** → 422 `WMS_SERIAL_BUCKET_MIXED_STATUS` (7 dilde
+    "aynı lokasyonda bu lotun kalite bekleyen parçası var; önce kalite kararını tamamlayın"). Böylece yanlış (karantinadaki) seri
+    taşınamaz ve TRACE recall izi bozulmaz.
+- Onayda kovadaki **bütün seriler sistemce otomatik okunur** (`IWarehouseSerialReader`, §5; kullanıcı seri girmez) ve harekete konur;
+  seri sayısı = miktar. **Ölçülmüş tel biçimi (F-8):** `serialIds` = **seri numarası**; ledger / TRACE numarayı
+  `LotIdentityPolicy.NormalizeSerial` ile normalleştirir (`…/Persistence/Traceability/InventoryLotDirectory.cs:161`); okuma da numara
+  döner (`QuarantineLedgerReads.cs:118`). **Ölçülmüş lokasyon güncellemesi (F-8):** TRACE `LOCATION_TRANSFER`'da Active serilerin
+  `WarehouseId` / `LocationId`'sini hedefe günceller (`InventoryLotDirectory.cs:275-300`, `:295`). Okunan seriler işlem 1'de onaya yazılır
+  ve her denemede aynen gönderilir.
+- Kısmi onay ve kısa kapatma seri SKU'da yoktur → 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` (7 dilde mesaj).
+- Onay anında (ve her yeniden denemede) kovadaki seri kümesi / sayısı görev miktarından farklıysa (başka bir hareket kovayı değiştirdi)
+  → 422 `WMS_SERIAL_BUCKET_CHANGED` (`details.expected`, `details.found`); görev iptal edilip yenisi açılır.
+- Seri okuması erişilemezse 503 `INVENTORY_UNAVAILABLE`, yazma yok.
+- Kısmi seri yerleştirme (okutulan serilerle) MOD-0182 barkod ile gelir: FU-0178-SERIAL-01.
+
+### 8.17 S2 outbound oluşturma ve tahsis
+
+`CreateOutboundShipmentCommand` (izin `warehouse.outbound-shipments.create`). Tahsis outbound'la **birlikte** yapılır; tahsis başarısızsa
+görünür outbound yoktur (WMS taslağı §2.1). Adımlar:
+
+1. **Ön kontroller (yazımsız):** istek anahtarı (§8.1); depo (LOCATION `Warehouse`, şirketin); Staging düğümü (`StagingLocationId` §4.5
+   kuralı); şirket öneki (M-2, §8.7 — `WMS_COMPANY_CODE_INVALID` / 503); satır sayısı 1–100; Item satırı §8.24 kuralıyla çözülür ve bir outbound'da Item ile öbür seviyeler karışmaz (AC-33),
+   `uomId` = SKU baz birimi, miktar > 0; `shipTo` donmuş `Address` zorunluları.
+2. **Plan (salt okuma, sunucu):** her satır için FEFO sırası `IWarehouseFefoReader` (deponun, satırın SKU'sunun; `asOf` = bugün UTC) →
+   uygun lotlar FEFO sırasıyla. **Toplanabilir düğüm (tek tanım, r24 son bakış 02 F-2):** deponun Staging ve Receiving rolü (alt ağaç
+   dahil, S1 rol kalıtımı) **dışındaki** stoklanabilir düğümleri — r23, son bakış F-1, CT kararı: yerleştirilmemiş mal kabul stoğu
+   toplanmaz; bu tanım lotlu, lotsuz ve Item (§8.24) yolunda, alınabilir miktarda ve pick planında (adım 4) aynıdır. Her lotun
+   **alınabilir** miktarı = min(FEFO `available`, FU03 `GetScopeFreeAsync(item, sku, level, warehouse, lot)`, toplanabilir düğümlerde o lotun
+   `AVAILABLE` bakiyesi toplamı). Açgözlü dağıtım: satır miktarı
+   lotların sırasıyla doldurulur; her lot bir `OutboundAllocation` olur (`FefoRank` = FEFO sırası). **Lot izlenmeyen SKU** (FEFO adayı
+   yok): tek depo düzeyi tahsis, alınabilir = min(`GetScopeFreeAsync(…, lot: null)`, toplanabilir düğümlerdeki `AVAILABLE` toplamı) — FEFO'nun lotsuz
+   stoğu nasıl döndürdüğü geliştiricinin ilk ölçümü (çıkarım). **Serbest taban (Q-01 = A, FU03 §8.5):** FEFO okuması `onHandAvailable`
+   tabanında kalır (başka rezervasyonları düşmez — FU03 §8.5 "bilinen fark"); 0178 serbest tabanı `GetScopeFreeAsync` ile kurar: alınabilir
+   miktarı 0 olan lot **sırada sayılmaz** (`FefoRank` serbest lotların sırasıdır), böylece 0178'in "ilk uygun lot" kararı INVENTORY FEFO
+   kancasının kararıyla aynıdır (kanca da serbest tabanla karar verir, FU03 DL-3). **Kalan risk (çıkarım):** tahsisten sonra daha erken SKT'li
+   ayrılmamış bir lot gelirse MVP-6'nın çıkışı kancada sapma sayılır (FU03 §8.3 "ayrılmamış erken lot varken geç lotu çıkarmak, kendi
+   rezervasyonuyla da, yine sapmadır") ve şirket politikası gerekçe isteyebilir — 0178 o gerekçeyi taşımaz (gerekçe yalnız tahsisteki lot
+   değişiminden ya da release'te verilen gerekçeden gelir). Release ön kontrolü (§8.21, r22) bunu her kipte `Packed`'te yakalar: `Block` →
+   422, `RequireReason` → tahsis başına gerekçe ister (yayından önce yazılır), `Warn` → geçer (MVP-6 cevabı Q-M6-3: gerekçe satırda doluysa
+   taşınır).
+3. **Lot değişimi (FEFO sapması):** satır `lotOverride { lotId, fefoBypassReason? }` taşıyabilir. Lot FEFO **uygun** listesinde olmalı;
+   dışlanmış lotta FEFO'nun nedeni koduyla ret (`LOT_UNDER_RECALL`, `LOT_EXPIRED`, `LOT_BLOCKED`, `LOT_RETEST_DUE`; uygun listede yoksa 422
+   `WMS_LOT_NOT_ALLOCATABLE`). Seçilen lot, alınabilir miktarı > 0 olan **ilk** uygun lot değilse karar şirketin FEFO çıkış kipine göredir
+   (r21, inceleme 19 F-4; ölçüldü `…/Domain/Expiry/Enums/ExpiryEnums.cs` `FefoOutboundMode { Warn, RequireReason, Block }`, kanca
+   `…/Persistence/Expiry/ExpiryPostingPolicy.cs` `IssueRefusal`; politika `IExpiryRepository.FindPolicyAsync`, kaydı yoksa
+   `ExpiryPolicyRules.Defaults()` = `RequireReason` — `…/Domain/Expiry/Rules/ExpiryRules.cs` içindeki sınıf; r23, son bakış F-12): **`Block`** → 422 `FEFO_ORDER_VIOLATION` (kancanın kodu ve `details`'i:
+   `firstEligibleLotId`, `firstEligibleLotNumber`, `firstEligibleExpiry`), yazım yok; **`RequireReason`** → `fefoBypassReason` 10–1000
+   zorunlu — yoksa (boşluk = yok) ya da 10 karakterden kısaysa **422 `FEFO_BYPASS_REASON_REQUIRED`** (r23, son bakış F-13, CT kararı: release ve INVENTORY
+   kancasıyla tek kod; emsal `ExpiryPostingPolicy.IssueRefusal` — kanca aynı koşulda bu kodu verir) — ve tahsise
+   yazılır; **`Warn`** → gerekçe isteğe bağlıdır, verilirse yazılır. **Üst sınır (r24, son bakış 02 F-5, CT kararı — tek kod):** 1000
+   karakterden uzun gerekçe **her kipte** 400 `INVALID_REQUEST`'tir (istek biçimi kontrolü, §8.1 sırasıyla anahtar aramasından önce; yazım
+   yok). Kanıt (ölçüldü HEAD `6942e72b1`): kanca yalnız alt sınıra bakar (`…/Persistence/Expiry/ExpiryPostingPolicy.cs:252-253` `ValidReason`
+   = `Length >= MinReasonLength`; 1000 üstü kancada geçer); üst sınır INVENTORY ayrıştırıcısındadır ve kancadan önce koşar
+   (`…/Application/Features/Inventory/Services/MovementRequestParser.cs:19` `MaxFefoBypassReasonLength = 1000`, `:129-132` aşım →
+   `Invalid(…)`, `:172` `Invalid` = `InventoryErrorCodes.InvalidRequest`) — MVP-6'nın `GOODS_ISSUE_SALES`'i aynı gerekçeyle INVENTORY'de de
+   400 `INVALID_REQUEST` alır, bu yüzden 0178 aynı kodu verir. Aynı kural release'in `fefoBypassReasons[].reason`'ı için geçerlidir (§8.21). Satırın bütünü o lottan
+   karşılanır (yetmezse satır başarısız). İlk uygun lot seçilirse gerekçe istenmez, yazılmaz. **Canlıya çıkış kapısı (§7):** `RequireReason`
+   kipindeki bir şirkette lot değişimli outbound'un çıkışı MVP-6'nın `fefoBypassReason`'ı taşımasına bağlıdır (Q-M6-3); taşınmazsa MVP-6
+   çıkışı kancada 422 `FEFO_BYPASS_REASON_REQUIRED` alır.
+4. **Pick planı:** her tahsis için kaynak binler = toplanabilir düğümler (adım 2'nin tanımı; Staging ve Receiving alt ağacı dışı, r23), **lokasyon koduna göre artan** sırada; binin
+   **kullanılabilir** miktarı = bin `AVAILABLE` bakiyesi − aynı (bin, SKU, lot) kaynaklı `Open` / `InProgress` görevlerin kalanı — **pick ve
+   putaway ikisi de** (r23, son bakış F-1, CT kararı; S1 `IWarehouseTaskRepository.OpenTasksFromAsync(fromLocationIds)` `Kind` süzmeden
+   ikisini de döner, ölçüldü `db769471c`) −
+   **bu planda daha önce o bine dağıtılan miktar** (aynı isteğin önceki satırları / tahsisleri sırayla düşülür; r22, tur 2 F-3 a). Görevin
+   kalanı **temkinli** sayılır: planlanan − Posted (Pending dahil — Pending hareket henüz commit olmadıysa bin `AVAILABLE`'ı o miktarı hâlâ
+   içerir; r22, tur 2 F-3 b). Bilinçli kabul: Pending aslında commit olmuşsa miktar iki kez düşülür ve plan az dağıtabilir (sonuç en kötü
+   `BinCapacityShort`, fazla dağıtım değil). Rezervasyonun bin pini yok (FU03 §8.4; r21, inceleme 19 F-3); kullanılabilir > 0 binler
+   kullanılır; tahsis miktarı binlere sırayla dağıtılır; bin toplamı tahsise yetmezse satır 422 `WMS_ALLOCATION_FAILED` (`code
+   BinCapacityShort`). **Kalan sınır (çıkarım):** iki tahsis aynı anda planlanırsa ikisi de aynı bin miktarını görebilir (bin pini yok);
+   ikinci onay bin düzeyinde `INSUFFICIENT_STOCK` → Refused, kısa kapatma (FU-0178-REPICK); her (tahsis, bin) bir pick görevi (`PCK` numarası) olur. Seri kontrollü SKU'da
+   §8.16 kuralı: görev miktarı = o kovadaki **bütün** seri miktarı olmalı; tahsis bir kovayı kısmen alırsa satır 422
+   `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` (seri kısmi toplama FU-0178-SERIAL-01).
+5. **Yazım (iki aşama, sıralı):**
+   (a) işlem A: outbound `Allocating` + `AllocationLeaseUntilUtc = şimdi + Warehouse:Outbound:AllocationLeaseSeconds` (öneri 120) +
+   numara (geçici sayaç) + **tahsis planının tamamı kalıcı** (r23, son bakış F-3, CT kararı: her tahsisin `AllocSeq`, lot, miktar, `FefoRank`,
+   `FefoBypassReason`, `ReservationKey` ve pick planının bin dağılımı `PlannedBins[] { locationId, quantity }`) + olay `Created` + merkezi enlist;
+   (b) ve kurtarma bu kalıcı plandan gönderir — plan **yeniden hesaplanmaz**, bu yüzden FU03'e giden gövde byte-eşittir;
+   (b) FU03 `CreateBatchAsync` — her tahsis bir satır: `idempotencyKey = ReservationKey` (`wms:out:{outboundId}:{allocSeq}`), §8.10'daki
+   tür / kaynak değerleri, `warehouseId`, `lotId`, `quantity`; aktör = isteği yapan kullanıcı; **hepsi ya da hiçbiri**;
+   (c) işlem B (yalnız (b) başarılıysa): tahsislere `ReservationId`'ler, outbound `Allocated`, pick görevleri (`Kind = Pick`, `Open`),
+   olay `Allocated` (+ görev başına `Created`) — `Version` koşullu.
+   (b) reddederse (bu arada serbest miktar azaldı): işlem B yerine outbound `AllocationFailed` (iç, görünmez) + `AllocationFailure { kind
+   BatchRefused, atUtc, lines[] }` (§4.5) + olay `AllocationFailed` (`Data`: aynı `AllocationFailure`); cevap 422 `WMS_ALLOCATION_FAILED`
+   (`details.lines[] { lineSeq, code, requested, allocatable }`); rezervasyon yoktur (toplu port atomik). (b) 400 `IDEMPOTENCY_KEY_REUSED`
+   dönerse — istekte ya da bakımda — adım 6'nın **FU03 400 dalı** uygulanır. Adım 2–4'te bir satır karşılanamazsa yazım hiç başlamaz, aynı
+   422 döner (kayıt ve `AllocationFailure` yok).
+   (b) **sonucu bilinmiyorsa** (istisna, iptal, zaman aşımı — commit olmuş olabilir): kayıt `Allocating` kalır, `AllocationFailed`
+   **yazılmaz**, cevap 503 `INVENTORY_UNAVAILABLE` (`details.reason = OutcomeUnknown`); tamamlama yalnız bakım servisinin aynı anahtarlarla
+   yeniden gönderimiyle olur (adım 6) — başarısız cevap "rezervasyon olmadı" kanıtı sayılmaz (S1 §8.3 Codex P2 deseni).
+6. **Kesinti ve tekrar:** (a) commit olduktan sonra süreç ölürse outbound `Allocating` kalır; `OutboundMaintenanceHostedService` kilidi
+   dolmuş kaydı (kayıt başına `SetScope(tenant, LE, CreatedBy)`, S1 sweeper deseni) **aynı** toplu isteği **aynı anahtarlarla** yeniden
+   gönderir (`CompleteOutboundAllocationCommand`): FU03'te satırların hepsi önceden işlenmişse tekrar sonuçları döner → işlem B; hiçbiri
+   işlenmemişse şimdi açılır → işlem B; reddedilirse `AllocationFailed`. Toplu port atomik olduğu için "bir kısmı işlenmiş" durumu oluşmaz
+   **FU03 400 dalı (r23, son bakış F-3):** plan kalıcı olduğu için gövde değişmez ve 400 `IDEMPOTENCY_KEY_REUSED` olağan akışta oluşmaz
+   (anahtar çakışması = programlama hatası). Görülürse (istekte ya da bakımda) tek yazımda: outbound `AllocationFailed` + `AllocationFailure
+   { kind KeyReused, atUtc, lines: [] }` + **her tahsis `ReservationReleaseState = Pending`** (anahtarlardan biriyle rezervasyon açılmış
+   olabilir — FU03 400'ü rezervasyon olmadığının kanıtı değildir) + olay `AllocationFailed` + hata logu; istekteyse cevap 422
+   `WMS_ALLOCATION_FAILED` (`details.reason = ReservationKeyConflict`, `details.lines` boş). S3 `AllocationOrphanSuspected` bu kayıttan türer
+   (§8.23). **Anahtarla bırakma (r24, son bakış 02 F-6, CT kararı — FU03 r3 `d4176fbee`, DL-1, AC-39, CT-09):** bakımın
+   `ReleaseOutboundReservationsCommand`'ı (kayıt başına `SetScope(tenant, LE, CreatedBy)`) `Pending` tahsislerin `ReservationKey`'leriyle
+   **tek** çağrı yapar: `IInventoryReservationPort.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)` — `tenantId` / `legalEntityId`
+   = outbound'un (çözülmüş kapsamla eşit; değilse FU03 fail-closed `InvalidOperationException` → tahsisler `Pending` kalır, olay
+   `ReservationReleaseFailed`), `keys` = 1…100 (§12: tahsis satırı ≤ 100), sorgu durum süzmez. Dönen her satır için §8.22 bırakma kuralı:
+   `ACTIVE` → `ReleaseAsync(reservationId, ifMatch = satırın etag'i, aktör = outbound'un CreatedBy'ı)` → `Released`; `RELEASED` / `EXPIRED`
+   → çağrı yok, `Released`; listede olmayan anahtar (rezervasyon hiç açılmamış; anahtarları yalnız bu outbound'un kendi toplu çağrısı kullanır ve kayıt artık
+   `Allocating` olmadığı için bakım onları yeniden göndermez — geç yaratma yolu yok) → `Released`; bulunan `ReservationId` tahsise yazılır,
+   sonraki turlar §8.22'nin `GetAsync` yolunu izler; 409 `RESERVATION_CONFLICT` ve diğer hata → `Pending` + `ReservationReleaseFailed`,
+   sonraki tur. Bütün tahsisler `Released` olunca istisna listeden düşer (§8.23). **El ile ara yol yoktur:** r23'ün "rezervasyon kimliği
+   INVENTORY rezervasyon listesinden" yolu kaldırıldı — FU03'te liste ucu yok (yalnız `GET /reservations/{id}`; liste FU-03-LIST ertelendi).
+   Kullanıcının aynı `Idempotency-Key` ile
+   yeniden gönderimi: kayıt `Allocating` → 409 `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS` (yazım yok); `Allocated` ve sonrası → 200 replay
+   (güncel kayıt); `AllocationFailed` → 422 `WMS_ALLOCATION_FAILED` replay (kayıttaki `AllocationFailure`'dan: `BatchRefused`'da satır
+   sonuçları, `KeyReused`'da `details.reason = ReservationKeyConflict`). Aynı anahtar + farklı gövde → 400.
+7. **Önizleme:** `PreviewOutboundAllocationQuery` (`POST /outbound-shipments/allocation-preview`, izin `.create`) adım 1–4'ü yazımsız koşar
+   ve satır başına önerilen lotları, FEFO sırasını ve alınabilir miktarı döner; ekran lot değişimini bununla sunar. Önizleme rezervasyon
+   **değildir**; gönderimde adım 2 yeniden hesaplanır.
+
+### 8.18 S2 outbound durum makinesi
+
+| Durum | Giriş | Çıkışlar |
+|---|---|---|
+| `Allocating` (iç) | §8.17 adım 5a | `Allocated` (adım 5c) · `AllocationFailed` (iç; terminal) |
+| `Allocated` | bütün tahsisler rezerve, pick görevleri açık | `Picked` · `Cancelled` |
+| `Picked` | outbound'un **bütün** pick görevleri terminal (`Completed`, kısa kapatma dahil) **ve** toplanan toplam > 0 — son görevin `Completed` yazımıyla aynı işlemde (`PickCompleted`) | `Packed` · `Cancelled` |
+| `Packed` | toplanan her tahsis miktarı `Closed` kolilerde (`PackedQuantity == PickedQuantity`) — son `CloseHandlingUnit` yazımıyla aynı işlemde; **o işlemde içeriksiz kalan `Open` koliler `Cancelled` olur** (olay `PackageCancelled`; r21, inceleme 19 F-9 — içerikli `Open` koli bu anda olamaz: açık + kapalı toplam toplananı aşamaz) | `ReadyToShip` · `Cancelled` |
+| `ReadyToShip` | `ReleaseOutboundShipmentCommand` | `Shipped` · (iptal yok — Q-M6-7) |
+| `Shipped` | §8.21 eşitleme | terminal |
+| `Cancelled` | §8.22 | terminal |
+
+**Durum × komut (r20):** ✔ = çalışır, `T` = 409 `WMS_INVALID_TRANSITION`, `I` = 409 `WMS_OUTBOUND_IMMUTABLE`, `C` = 409
+`WMS_OUTBOUND_CANCEL_NOT_ALLOWED`, `404` = 404 `UNKNOWN_OUTBOUND`, `P` = 409 `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS`. Hepsinde önce istek
+anahtarı (replay 200), sonra If-Match (§8.1).
+
+| Komut ↓ / durum → | `Allocating` | `AllocationFailed` | `Allocated` | `Picked` | `Packed` | `ReadyToShip` | `Shipped` | `Cancelled` |
+|---|---|---|---|---|---|---|---|---|
+| Create (aynı anahtar) | P | 422 replay | 200 replay | 200 replay | 200 replay | 200 replay | 200 replay | 200 replay |
+| Update (başlık) | 404 | 404 | ✔ | ✔ | ✔ | I | I | T |
+| Koli aç | 404 | 404 | T | ✔ | T | I | I | T |
+| Koli düzenle / kapat (`Open` koli) | 404 | 404 | — | ✔ | — (`Packed`'e geçişte boş açık koliler `Cancelled`; açık koli kalmaz) | I | I | T |
+| Pick onayı / yeniden dene / kalanı kapat | — | — | ✔ (görev açık) | — (görevler terminal) | — | — | — | T (görevler `Cancelled`) |
+| Release | 404 | 404 | T | T | ✔ | T | T | T |
+| Sync dispatch | 404 | 404 | T | T | T | ✔ | T | T |
+| Cancel | 404 | 404 | ✔ | ✔ | ✔ | C | C | T |
+| Bakım: tahsisi tamamla | ✔ (kilit dolmuşsa) | — | — | — | — | — | — | — |
+| Bakım: rezervasyon bırak | — | ✔ (`Pending` tahsis — yalnız `AllocationFailure.kind = KeyReused`, anahtarla okuma; r24) | — | — | — | — | ✔ (`Pending` tahsis) | ✔ (`Pending` tahsis) |
+
+Item outbound'unda (§8.24) `Packed`'teki Release 409 `WMS_ITEM_LEVEL_NOT_PUBLISHABLE` döner; bu yüzden Item outbound'u `ReadyToShip` /
+`Shipped` sütunlarına v1'de hiç gelmez.
+
+- Bütün pick görevleri terminal ama toplanan toplam **0** (hepsi sıfırla kısa kapatıldı) → outbound `Allocated` kalır; tek çıkış iptaldir
+  (ekranda "Hiçbir şey toplanmadı — iptal edin"; `ReleaseOutboundShipment` 409 `WMS_INVALID_TRANSITION`).
+- İzinsiz geçiş → 409 `WMS_INVALID_TRANSITION`. Pending pick onayı varken iptal → 409 `WMS_CONFIRMATION_PENDING`.
+- `ReadyToShip`'ten sonra donmuş detayda yalnız `status` değişir (MOD-0183 §8.2 drift kuralı; WMS taslağı §2.1). r21: `shipment` üyesi
+  **donmuş detaya yazılmaz**, yalnız `GET /outbound-shipments/{outboundId}/view`'dadır — MVP-6 mevcut kaynağa eklenen her üyeyi hash
+  değişikliği (`SOURCE_DRIFT`) sayar (Q-M6-1 cevabı);
+  `UpdateOutboundShipment` ve koli komutları 409 `WMS_OUTBOUND_IMMUTABLE`.
+- Donmuş uçlar yalnız altı durumu gösterir; `Allocating` / `AllocationFailed` kayıtları listede yoktur, detayda 404 `UNKNOWN_OUTBOUND`.
+- **Donmuş yol parametresi (r23, son bakış F-14):** WAREHOUSE-OUTBOUND 1.0.0'da `{outboundId}` dizedir (örnek `OUT-9001`); rotaya `:guid`
+  kısıtı **konmaz** (kısıt UUID olmayan değeri yönlendirmede düşürür, gövdesiz genel 404 verir). UUID olmayan değer → donmuş gövdeli 404
+  `UNKNOWN_OUTBOUND`; sabit kesimler (`search`, `allocation-preview`) parametreli yoldan önce eşleşir (sabit kesim önceliği) ve donmuş
+  detaya düşmez.
+
+### 8.19 S2 pick görevi ve onayı
+
+- **Onay makinesi S1'in aynısıdır** (§8.3: işlem 1 → posting → işlem 2, `PostingKey` `wms:pck:{taskId}:{seq}`, Pending / Refused /
+  IntegrityError, uçuş kilidi, sweeper, "Yeniden dene", "Geri taşındı", "Uzlaştır", bayraklar ve öncelikleri); komutlar `Pick` adlı
+  karşılıklarıdır (§3). Kod iki türe tek çekirdekle hizmet eder (`Kind`'a göre yalnız hareket alanları ve kurallar değişir); kurallar S1'de
+  ölçülmüş olduğu için S2 testleri her kuralın pick yolunda **çalıştığını** ölçer (AC-27, AC-73), S1'in bütün varyantlarını tekrarlamaz.
+- **Hareket:** `LOCATION_TRANSFER`, `fromLocationId` = görevin kaynak bini, `toLocationId` = outbound'un Staging düğümü, durum `AVAILABLE`
+  korunur, `sourceType = PICK_TASK`, `sourceDocumentId = taskId`, `sourceLineId = seq`, `documentGroupId = outboundNumber`,
+  **`reservationId` = tahsisin rezervasyonu** (INVENTORY 1.7.0: doğrular, tüketmez; FU03 §8.4). INVENTORY'nin `RESERVATION_*` retleri
+  (`RESERVATION_NOT_ACTIVE`, `RESERVATION_MISMATCH`) onayı **Refused** yapar (S1'in defter 4xx kuralı).
+- **Ön kontroller (onay ve yeniden deneme):** lot recall okuması (§8.5; `LOT_UNDER_RECALL`, `details.movementType LOCATION_TRANSFER`);
+  Staging düğümünün saklama koşulu uyumu (§8.12'nin hedef kuralı Staging'e de uygulanır → 422 `WMS_STORAGE_CONDITION_MISMATCH`); seri
+  kovası (§8.16). Hedef ve kaynak **sabittir**: onay gövdesi hedef almaz; başka bin ya da başka lottan toplama v1'de yoktur
+  (FU-0178-REPICK); gerekirse kısa kapatma + iptal / yeni outbound.
+- **Kısmi onay** (seri olmayan SKU) ve **kısa kapatma** (`ClosePickTaskShortCommand`, gerekçe 10–1000) S1 kuralıyla. Kısa toplama
+  rezervasyonu **küçültmez** (FU03 kısmi bırakma sunmaz): artık miktar sevk sonrası bırakılır (§8.21) ya da iptalde (§8.22). Bilinen sınır:
+  bu arada artık miktar başka çıkışlara kapalı kalır — FU-0178-RSV-PARTIAL.
+- **Atama / üstlenme** S1 kuralıyla (`warehouse.pick-tasks.update` atar, `.confirm` üstlenir ve onaylar). Pick görevi tek başına iptal
+  edilmez; outbound iptali açık pick görevlerini kapatır (§8.22). Pick görevinde düzenleme yoktur (miktar / kaynak tahsisten gelir).
+- Bütün pick görevleri terminal olunca outbound `Picked` (§8.18) — son görevin `Completed` yazımıyla aynı işlemde, outbound `Version`
+  koşulu ile; eşzamanlı iki son onaydan biri outbound'u yazar, öbürü yeniden okur (S1 CAS deseni).
+
+### 8.20 S2 paketleme
+
+- Koli yalnız `Picked` outbound'da açılır (`CreateHandlingUnitCommand`, izin `warehouse.packages.create`); `PackageNumber` `PKG` geçici
+  sayaçtan. İçerik satırı `{ allocSeq, quantity }`; bir tahsisin kolilerdeki toplamı (açık + kapalı) `PickedQuantity`'yi aşamaz → 422
+  `WMS_PACKAGE_EXCEEDS_PICKED`. Ağırlık / ölçü elle (karar Q-MDM-1); ambalaj seviyesi dönüşümü yok (FU-0178-P9).
+- `UpdateHandlingUnitCommand` (If-Match) yalnız `Open` kolide içerik / ağırlık / ölçü değiştirir; `CloseHandlingUnitCommand` en az bir
+  içerik satırı ister. Son kapanış bütün tahsisleri dolduruyorsa outbound aynı işlemde `Packed` olur.
+- **Paketleme stok hareketi yazmaz** (stok staging'de `AVAILABLE`, rezerve kalır); INVENTORY'ye çağrı yoktur.
+- Koli silinmez; outbound iptalinde `Cancelled` olur (§8.22).
+- **r26 — sözleşme kararları (sahip kararı Beste 2026-11-10, WMS-BUNDLE dondurma CT kaydı
+  `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`; kayıt ve sözleşme MVP-1 hattında, main'e hat PR'ıyla
+  girer):** **K-1** — `listPackages`
+  (`GET /outbound-shipments/{outboundId}/packages`) tahsis satırı servisin yazdığı gibi `lotId` + `lotNumber` taşır; taslağın `lot` üyesi
+  kullanılmaz (1.1.0 böyle dondu). **K-2** — koli yollarında bulunamayan koli 404 `WMS_PACKAGE_NOT_FOUND` (`updatePackage`,
+  `closePackage`); 1.1.0 hata kataloğunda.
+
+### 8.21 S2 sevke hazır ve sevk edildi
+
+- **Sevke hazır:** `ReleaseOutboundShipmentCommand` (`warehouse.outbound-shipments.release`, If-Match): `Packed → ReadyToShip`,
+  `ReadyAtUtc`; aynı işlemde outbox'a `OutboundShipmentReady` (donmuş şema + WMS taslağı §2.3 üyeleri). **Ön kontrol (r21, inceleme 19
+  F-2; yazımsız, işlemden önce):** toplanan > 0 her tahsisin lotu için recall okuması (`IRecallLotStatusReader.UnderRecallAsync`, §8.5) ve
+  lot durumu (TRACE `LotRef.status`: Blocked / Expired; retest INVENTORY kuralı) — recall'da → 422 `LOT_UNDER_RECALL`, Blocked → 422
+  `LOT_BLOCKED`, Expired → 422 `LOT_EXPIRED`, retest vadesi geçmiş → 422 `LOT_RETEST_DUE` (`details.allocSeq`, `details.lotId`).
+  **FEFO yeniden değerlendirmesi — her kipte (r22, inceleme 19 tur 2 F-1):** toplanan > 0 her tahsis için serbest tabanda (§8.17 adım 2)
+  tahsis lotundan daha erken SKT'li uygun bir lot şimdi var mı bakılır ("sonradan oluşan sapma"; tahsisin kendi lot değişimi zaten
+  gerekçeliyse yeniden sorulmaz):
+  - `Block` → 422 `FEFO_ORDER_VIOLATION` (`details.allocSeq`, `firstEligibleLotId`); çıkış iptal.
+  - `RequireReason` → release gövdesi tahsis başına gerekçe taşıyabilir: `fefoBypassReasons: [{ allocSeq, reason }]` (10–1000; 1000'den uzun
+    gerekçe **her kipte** 400 `INVALID_REQUEST` — §8.17 adım 3'ün üst sınır kuralı, r24 son bakış 02 F-5); verilen
+    gerekçe yayından **önce aynı işlemde** tahsisin `FefoBypassReason`'ına yazılır ve donmuş satıra girer (ilk yayın bu işlemde olduğu için
+    `SOURCE_DRIFT` yok, Q-M6-1); gerekçe yoksa 422 `FEFO_BYPASS_REASON_REQUIRED` (`details.deviations[] { allocSeq, lotId, firstEligibleLotId,
+    firstEligibleExpiry }`), yazım yok — ekran aynı diyalogda gerekçe ister. MVP-6 gerekçeyi satırdan `GOODS_ISSUE_SALES`'e taşır (Q-M6-3).
+  - `Warn` → ret yok; gerekçe verilirse aynı şekilde yazılır, verilmezse satır gerekçesiz yayınlanır (kanca `Warn`'da reddetmez,
+    `ExpiryPostingPolicy.IssueRefusal`).
+  Gerekçe parmak izine girer (aynı anahtar + farklı gerekçe → 400). **Kalan pencere (çıkarım):** `ReadyToShip` ile MVP-6 `Dispatched`
+  arasında daha erken lot girerse kanca yine sapma görür — `RequireReason`'da satırda gerekçe yoksa MVP-6 çıkışı 422 alır ve outbound
+  `ReadyToShip`'te kalır (Q-M6-7, FU-0178-CANCEL-AFTER-READY); pencere release ile sevk arası kadardır.
+  Okuma hatası 503; hiçbir retten sonra yazım yok, outbound `Packed` kalır. Çıkış yolu iptaldir (§8.22). Donmuş detay satırları: tahsis
+  başına bir satır (aynı `orderLineId` birden çok lotta bölünür — WMS taslağı §2.3), `quantity` = toplanan miktar, `lotNumber`, koliler
+  (`packageId` = `PackageNumber`, yalnız `Closed` koliler). **Toplanan miktarı 0 olan tahsis** (0 ile kısa kapatılmış) donmuş detaya ve
+  `OutboundShipmentReady`'ye **yazılmaz** (r21, inceleme 19 F-8: MVP-6 `ShipmentLineValidator` sıfır satırı kabul eder, sıfır miktarlı çıkış
+  INVENTORY'de reddedilir); rezervasyonu sevk sonrası artık bırakmada bırakılır. Eklemeli üyeler (`outboundNumber`, `legalEntityId`, satırda `lotId`, `fromWarehouseId`, `fromLocationId`
+  (Staging), `stockStatus`, `reservationId`, `fefoBypassReason`) WMS-BUNDLE v1.1.0'da isteğe bağlıdır ve **yazılır** — **tek liste WMS
+  taslağı §2.3'tür** (r23, son bakış F-5): `Package.contents` ve `SkuLevel: Item` o listede "sonraki sözleşme sürümü" diye işaretlidir ve
+  v1'de **yazılmaz** (`SOURCE_DRIFT`: sonradan eklenemez, yeni sürüm yeni kaynak kaydıyla gelir); MVP-6 okuyucusu ek
+  üyeleri tolere eder (`FrozenReadSchema.cs:8-39` ölçümü, §19.2). **MVP-6 cevapları (r21):** `lotId` ve `fromLocationId` kabul (Q-M6-1;
+  MOD-0183 §8.2 alan listesi MVP-6'da; bugün MVP-6 eşlemesi `SkuLevel` / `LotId` / `FromLocationId` yazmıyor — intake bağlanırken eklenecek,
+  sahip MVP-6); `fefoBypassReason` satırda doluysa `GOODS_ISSUE_SALES`'e aynı eşlemeyle taşınır (Q-M6-3; REVERSAL'de yok);
+  `OutboundShipmentReady`'ye `tenantId`, `legalEntityId`, UUID `correlationId` kabul (Q-M6-5); `outboundNumber` bugün okunmuyor, eklenebilir
+  (Q-M6-9). **İlk canlı kayıt kuralı (Q-M6-1 uyarısı):** mevcut bir kaynağa sonradan eklenen üye MVP-6'nın hash'ini değiştirir
+  (`SOURCE_DRIFT`) — bu yüzden bütün eklemeli üyeler DL-5'in **ilk** `ReadyToShip` yayınından itibaren yazılır ve sonraki 0178 sürümleri
+  zaten `ReadyToShip` olmuş bir outbound'un donmuş detayına üye eklemez (canlıya çıkış kapısı, §7).
+- **Sevk edildi (v1 = kullanıcı tetikli eşitleme):** `SyncOutboundDispatchCommand` (`warehouse.outbound-shipments.update`; ekranda
+  "Sevkiyatı kontrol et") yalnız `ReadyToShip`'te. MVP-6 `queryShipments?sourceDocumentId={outboundId}` çağrılır (Gateway üzerinden,
+  çağıranın token'ı ve `X-Legal-Entity-Id`'siyle — Q-M6-4 cevabı: v1 kullanıcı tetikli eşitleme uygun, olay taşıması takvimsiz; kullanıcı MVP-6 anahtarı `supplychain.shipments.read`'i de taşımalıdır — 0178 bu anahtarı
+  bildirmez, §14.1):
+  - **"Sevk edildi" kararı (r21, inceleme 19 F-1; ölçüldü `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycle.cs`
+    `Allows`):** MVP-6 geçişleri `Draft → Planned | Cancelled`, `Planned → Dispatched | Cancelled`, `Dispatched → InTransit | Delivered |
+    Exception`, `InTransit → Delivered | Exception`, `Exception → InTransit | Cancelled`, `Delivered → Closed`. `Exception`'a yalnız
+    `Dispatched` / `InTransit`'ten girilir; `Dispatched`'ta stok çıkışı yazılır (`ShipmentDispatchCoordinator` `DispatchedAt`). Bu yüzden:
+    `status ∈ {Dispatched, InTransit, Delivered, Exception, Closed}` → sevk edildi; `Cancelled` → yalnız sevk izi varsa sevk edildi —
+    sevk izi kabloda `ShipmentDetail.stockIssued == true`'dur (`Shipment.DispatchedAt` kabloda yok; liste `ShipmentSummary` `stockIssued`
+    taşımadığı için `Cancelled`'da 0178 `getShipment` detayını okur); `Draft` / `Planned` ve `stockIssued` false / boş `Cancelled` → değişiklik
+    yok. Sevk edildi → outbound `Shipped`, `Shipment { shipmentId, shipmentNumber, status, observedAtUtc }`, olay `Shipped`; ardından **artık rezervasyonlar bırakılır**: tahsislerin FU03 rezervasyonu hâlâ `ACTIVE` ve kalanı
+    > 0 ise (MVP-6 daha az çıkardı ya da kısa toplama) `ReleaseAsync` → `ReservationReleaseState = Released`; bırakma hatası `Pending` +
+    olay `ReservationReleaseFailed` bırakır ve bakım hosted service'i yeniden dener (`ReleaseOutboundReservationsCommand`).
+    Bırakmadan önce rezervasyon FU03 `GetAsync` ile **yeniden okunur** (son durum; FU03 durum adlarıyla yalnız `ACTIVE` ve kalan > 0
+    bırakılır; `RELEASED` — `ClosedReason Consumed` ya da `Released` — ve `EXPIRED` bırakılmaz). **Sıra (r21,
+    MVP-6 CT cevabı (Natig, 2026-11-02; MVP-6'nın main kod ve paket okuması, test koşmadı; sözleşme kararı, kod teslimi değil), Q-M6-2):** çıkış hareketi `Dispatched` ile aynı işlemde **değildir** — MOD-0183 önce INVENTORY'ye HTTP ile
+    `GOODS_ISSUE_SALES` yazar, sonra `Dispatched`'ı kendi Mongo işleminde yazar; arada kesilirse telafi akışı (yazılan satırın REVERSAL'ı)
+    farkı kapatır. Sonuç: 0178 `Dispatched`'ı gördüğünde tüketim **çoktan yazılmıştır**, artık bırakma tüketimden önce koşamaz; tüketim yazılıp
+    `Dispatched` yazılmadıysa 0178 hiçbir şey bırakmaz (outbound `ReadyToShip`), telafi REVERSAL'ı **`restoreReservation: true` taşırsa**
+    rezervasyonu geri getirir (CT-08, FU03 r3 sınırı) ve yeni deneme onu tüketir; taşımazsa rezervasyon geri gelmez ve yeni deneme
+    (r25, son bakış 03 F-5) tam tüketilmiş rezervasyonda 422 `RESERVATION_NOT_ACTIVE`, kısmi tüketilmişte (kısa toplama: rezervasyon >
+    sevk satırı, tüketim sonrası `ACTIVE`) kalan yetmezse 422 `RESERVATION_QUANTITY_EXCEEDED` alır — ikisinde de outbound `ReadyToShip`'te
+    kalır; kalan yeterse deneme geçer ve kalandan bir kez daha düşer (çıkarım, §7 satırı) (MOD-0183 revizyonu, §7 canlıya çıkış kapısı). Önceki "sıra riski" bu ölçümle kapandı. `reservationId` SHIPMENT 3.5.0'da satırın yeni isteğe bağlı alanıdır
+    (`inventoryReferenceId` değil); INVENTORY tarafı FU03 sözleşmesini ister — MVP-6 takvimi FU03 main'e girince.
+    **REVERSAL hizası (FU03 CT-08, §8.3.1; r24: FU03 r3 `d4176fbee` sınırı):** rezervasyonu tüketen çıkışın REVERSAL'ı rezervasyonu
+    **yalnız istek `restoreReservation: true` taşıyorsa** geri getirir (`RELEASED` + `Consumed` → `ACTIVE`; kısmi tüketilmişte kalan artar);
+    alan isteğe bağlıdır, varsayılan `false` — alansız REVERSAL rezervasyona dokunmaz. 0178'in **bıraktığı** rezervasyonu (`ClosedReason
+    Released`) hiçbir REVERSAL getirmez. 0178 kendisi REVERSAL yazmaz (hareketleri yalnız `LOCATION_TRANSFER`); alana dayanan tek yol
+    MOD-0183'ün Dispatched öncesi telafisidir (aşağıda (i); MOD-0183 bugün alanı göndermiyor — §7 satırı). Sonuç:
+    (i) MOD-0183'ün çok satırlı sevk telafisi (yazılan satırı REVERSAL ile geri al, yeni anahtarlarla yeniden dene) `Dispatched`'tan **önce**
+    olur — 0178 bu sırada outbound'u `ReadyToShip`'te tutar ve hiçbir şey bırakmaz; telafi REVERSAL'ı `restoreReservation: true` taşıyınca
+    geri gelen rezervasyonu yeni deneme tüketir, 0178'in kuralıyla çelişki yok. (ii) Artık bırakma yalnız `Dispatched` görüldükten sonra ve yeniden okunan `ACTIVE` kalan için yapılır (sıra
+    yukarıda, Q-M6-2 cevabı). (iii) **Sevk sonrası REVERSAL (Q-M6-11 cevabı):** MOD-0183'te `Dispatched` sonrası REVERSAL yolu **yoktur**;
+    mal MOD-0186 iadesiyle döner. FU03 CT-08 yalnız `Dispatched` öncesi çok satırlı telafiyi kapsar; `Shipped` sonrası geri gelen
+    rezervasyon MVP-6 tarafında oluşmaz. Başka bir tüketici bir 0178 rezervasyonunu tüketen hareketi `restoreReservation: true` taşıyan bir
+    REVERSAL ile geri alırsa (MVP-6 dışı; alansız REVERSAL rezervasyonu geri getirmez) geri gelen rezervasyonun bırakma sahibi MOD-0173'tür
+    (FU-0178-RSV-RESTORED daraltıldı).
+  - sevkiyat yok ya da `Draft` / `Planned` / izsiz `Cancelled` → 200, değişiklik yok (`dispatchSeen: false`); yazım, yerel olay
+    ve merkezi kayıt yok (yazmadan başarılı komut, §8.8). S3'ün "sevk görülmedi" hesabı `ReadyAtUtc`'den yapılır.
+  - **Çıkmayan toplanmış miktar — geri yerleştirme (r23, son bakış F-2, CT kararı; seçilen yol: görev):** `Shipped` yazımıyla aynı
+    işlemde, eşitlemenin zaten okuduğu `getShipment` detayının satırlarından (SHIPMENT 3.4.0 `lines[] { skuId, lotId, fromLocationId, quantity }`; MVP-6
+    `GOODS_ISSUE_SALES`'i satırın `quantity`'siyle yazar — ölçüldü `…/Features/Shipments/Dispatch/InventoryMovementMapper.cs`) her (SKU, lot)
+    için çıkan miktar toplanır; **artık** = Σ toplanan (o SKU / lot tahsisleri) − Σ çıkan. SKU çözülebilirse (aşağıda) artığı > 0 olan her lot
+    için Staging düğümünden S1 putaway görevi açılır: `Origin = ShortDispatch` (S2'nin `WarehouseTaskOrigin`'e eklediği iki değerden biri — öbürü pick'in `Outbound`'u;
+    `Cancellation` S1'de zaten var, ölçüldü `db769471c` `…/Domain/Warehouse/Enums/WarehouseTaskEnums.cs:20-27`; r24, son bakış 02 F-3),
+    kaynak Staging, lot / SKU tahsisten, planlanan = artık; aynı işlemde görevin `wms_task_events` `Created` olayı (`Origin ShortDispatch`)
+    yazılır; olay `Shipped`'in `Data`'sında `shortDispatch[] { skuId, lotId, quantity, taskId }`. **Gerekçe:** yeni uç, yeni okuma ve yeni
+    çağrı yok (detay zaten okunuyor); S1 görev akışı ve `Cancellation` istisnası aynen kullanılır; değişiklik bir enum değeri ve bir hesap.
+    **Çözülebilirlik (r24, son bakış 02 F-1 / F-4) — birim SKU'dur:** bir SKU'nun artığı yalnız o SKU'nun **bütün** sevkiyat satırları
+    şunları taşıyorsa görevle çözülür: (a) lot izlenen SKU'da `lotId`; (b) `fromLocationId` = outbound'un `StagingLocationId`'si — MVP-6
+    eşleyicisi `fromLocationId`'yi ve `lotId`'yi yalnız satırda varsa INVENTORY'ye yazar (ölçüldü `…/Features/Shipments/Dispatch/InventoryMovementMapper.cs:42-43`)
+    ve intake bugün ikisini de yazmıyor (Q-M6-1); konum yoksa ya da başka binse çıkış Staging'den düşmemiştir, Staging'den "toplanan − çıkan"
+    kadar putaway gerçek Staging bakiyesiyle uyuşmaz; (c) her lotta çıkan ≤ toplanan. Biri tutmazsa o SKU için **görev açılmaz** (SKU'nun
+    çözülebilir görünen lotlarına da — birim SKU'dur; o lotların farkı istisnanın lot düzeyindeki Staging farkında görünür, §8.23, r25) ve outbound'a
+    aynı işlemde **SKU başına tek** bir `ShortDispatchUnresolved` satırı yazılır (outbound içinde `skuId` tekil — istisnanın `exceptionId`'si buna dayanır, §8.23; r25, son bakış 03 F-7) (§4.5; `reason` ilk tutmayan koşul: `LotMissing` → `NotFromStaging` →
+    `OverIssued`; `expected` = SKU'nun Σ toplananı, `issued` = Σ çıkanı) ve `Shipped` olayının `Data`'sına `shortDispatchUnresolved[]` girer; S3
+    `ShortDispatchUnresolved` bu saklanan satırdan türer, çıkış koşulu §8.23'tedir — bilinen sınır, MVP-6 intake eşlemesi canlıya çıkış
+    kapısıyla daralır (§7).
+  - **Outbound başına tek sevkiyat (ölçüldü, r21):** MVP-6 alım anahtarı `WarehouseShipmentMapper.Key(scope, outbound)` = (kiracı, şirket,
+    `MOD-0178`, `WAREHOUSE_OUTBOUND`, outboundId) özeti (`…/Application/Features/SourceIntake/WarehouseShipmentMapper.cs`); `sce_shipment_source_links`
+    ve `sce_shipment_source_intents` bu anahtarda **tekil** index taşır (`…/Persistence/ShipmentSchema.cs` `source_identity`). Birden çok
+    eşleşme alımla oluşmaz. **Q-M6-10 cevabı:** intake outbound başına tek sevkiyat açar; elle `createShipment` aynı `sourceDocumentId`'yi
+    engellemez; v1'de bölünmüş sevkiyat yoktur. Bu yüzden kural (r22, inceleme 19 tur 2 F-2: **tek sonuçta da**): `queryShipments?sourceDocumentId=
+    {outboundId}` kaç sonuç dönerse dönsün 0178 her adayın detayını `getShipment` ile okur (`ShipmentSummary` `sourceModule` taşımaz) ve
+    yalnız `sourceModule = MOD-0178`, `sourceType = WAREHOUSE_OUTBOUND` olanları sayar — yabancı kaynaklı sevkiyat (elle açılmış, başka modül)
+    outbound'u `Shipped` yapmaz ve rezervasyon bırakmaz; tam bir aday → onun durumu (ve `Cancelled`'da aynı detaydaki `stockIssued`)
+    kullanılır; birden çok aday → 409 `WMS_DISPATCH_AMBIGUOUS`, yazım yok, S3 `DispatchNotSeen` (MVP-6 tarafında düzeltilecek
+    anomali; elle açılmış ve bu kaynak bilgisini taşıyan ikinci sevkiyat). Aday yoksa "sevkiyat yok".
+  - **`ReadyToShip`'teyken MVP-6 sevkiyatı iptal edilirse (Q-M6-7 cevabı):** v1'de kaynak iptali yok; MVP-6 sevkiyatı `Cancelled`
+    yapabilir, bağlantı ayrılmış kalır, otomatik eşitleme yok. 0178'de bu izsiz `Cancelled`'dır → değişiklik yok (cevap `dispatchSeen:
+    false`, `shipmentStatus: Cancelled`), outbound `ReadyToShip` kalır, rezervasyon açık kalır, S3 `DispatchNotSeen`. Çözüm sonraki sözleşme
+    sürümüdür (FU-0178-CANCEL-AFTER-READY).
+  - **Okuma hataları (r24, son bakış 02 F-7; okuyucu kuralı §5, ölçüldü `db769471c` `ShipmentBundleHttpReader`):** sorgu ya da herhangi
+    bir aday detayı MVP-6'dan 401 ya da 403 alırsa (okuyucu ikisini `Forbidden`'a çevirir) → 403 `WMS_DISPATCH_READ_FORBIDDEN`; değilse
+    5xx, **öbür 4xx** (400, 409, 429 …; okuyucu `default:` dalında `Unavailable` yapar — r25, son bakış 03 F-4), bağlantı hatası, okunamayan
+    gövde, okuma başına 2 sn zaman aşımı ya da sorgunun döndürdüğü adayın detayında 404 (`Unavailable` / `NotFound`) → 503
+    `WMS_DISPATCH_SOURCE_UNAVAILABLE`; her ikisinde yazım, yerel olay ve merkezi kayıt yok, outbound `ReadyToShip` ve `Version` aynı.
+    `Shipment.shipmentNumber` ve `shipmentId` tek adayın `ShipmentDetailResult`'ından yazılır (§5; r25, son bakış 03 F-4).
+- 0178 hiçbir koşulda `GOODS_ISSUE_SALES` yazmaz (W-4; mimari test, sabotaj (t)). Otomatik taşıma (olay ya da arka plan poll'u) Q-M6-4
+  cevabıyla gelir (FU-0178-DISPATCH-EVT); arka plan poll'u kullanıcı token'ı olmadan MVP-6'yı çağıramaz — servis kimliği gerekir (ortak
+  bulgu "arka plan işinin kimliği"), bu yüzden v1'de yoktur.
+
+### 8.22 S2 iptal ve geri yerleştirme
+
+- `CancelOutboundShipmentCommand` (`warehouse.outbound-shipments.cancel`, gerekçe 10–1000, If-Match) yalnız `Allocated` / `Picked` /
+  `Packed`'te; `ReadyToShip` ve sonrası 409 `WMS_OUTBOUND_CANCEL_NOT_ALLOWED` (Q-M6-7 cevabı: v1'de kaynak iptali yok; FU-0178-CANCEL-AFTER-READY). Görevlerde Pending onay varsa 409
+  `WMS_CONFIRMATION_PENDING` (S1 kapatıcı komut ön araması aynen: Refused onayların anahtarı ledger'da `Committed` ise 409
+  `WMS_POSTING_INTEGRITY_ERROR`).
+- İşlem A (tek işlem): outbound `Cancelled`, açık pick görevleri `Cancelled`, koliler `Cancelled`, her tahsis `ReservationReleaseState =
+  Pending`, **staging'e taşınmış** her tahsis için (Σ Posted pick > 0) bir **putaway görevi** `Origin = Cancellation`, kaynak = Staging
+  düğümü, planlanan = staging'deki o tahsis miktarı, lot / SKU tahsisten (S1 kaynak kuralının istisnası — r23'ten beri `ShortDispatch` ile iki: `Origin = Cancellation` görevi
+  Receiving yerine Staging rolünden açılabilir; §12), olaylar ve enlist.
+- Ardından tahsis başına bırakma (işlemin dışında, sıralı). **Bırakma kuralı — her yolda aynı (iptal, §8.21 sevk sonrası artık, bakımın
+  `ReleaseOutboundReservationsCommand`'ı — r24'ten beri FU03 400 dalının `AllocationFailed` tahsisleri dahil; r21, inceleme 19 F-7; FU03 `ReleaseAsync(id, ifMatch, actorUserId)` §8.7, HTTP bırakma ile aynı):**
+  (1) her bırakmadan önce FU03 `GetAsync` (son durum + sürüm) — tahsiste `ReservationId` yoksa (yalnız FU03 400 dalı, `AllocationFailure.kind =
+  KeyReused`; r24, son bakış 02 F-6) okuma `FindByIdempotencyKeysAsync(tenantId, legalEntityId, ReservationKey'ler)`'dir ve dönen satırın
+  durumu / etag'i aynı yeri tutar (§8.17 adım 6); `RELEASED` (her `ClosedReason`) / `EXPIRED` / bulunamadı → çağrı yapılmaz,
+  tahsis `Released` (FU03 bırakılmış rezervasyonda 409 `RESERVATION_CONFLICT` verir — bu yüzden önce okunur); (2) `ACTIVE` → `ReleaseAsync`
+  `ifMatch` = **o okumanın** sürümü (tahsiste saklı sürüm kullanılmaz), aktör = komutu çalıştıran kullanıcı (iptal eden / eşitleyen),
+  bakımda outbound'un `CreatedBy`'ı (kayıt başına `SetScope`, S1 uzlaştırıcı deseni); (3) 409 `RESERVATION_CONFLICT` (arada sürüm değişti) →
+  tahsis `Pending`, olay `ReservationReleaseFailed` (`reason Conflict`), bakımın sonraki turu (1)'den yeniden okur; diğer hata → `Pending`
+  kalır, olay `ReservationReleaseFailed`, bakım yeniden dener. Cevap
+  200 (iptal tamam; bırakma durumu tahsis başına cevapta).
+- Bu yüzden iptal ile bırakma arasında rezervasyon kısa süre açık kalabilir; stok başka çıkışa kapalı kalır, açılmaz (güvenli yön).
+- İptal yalnız `ReadyToShip`'ten önce olduğu için bu sırada rezervasyon **tüketilmemiştir** (0178'in hareketleri `LOCATION_TRANSFER`, tüketim
+  0); FU03 CT-08'in REVERSAL geri getirme kuralı iptal yoluna dokunmaz. İptalde bırakılan rezervasyon (`ClosedReason Released`) sonradan
+  hiçbir REVERSAL ile geri gelmez (FU03 §8.3.1 tablosu).
+
+### 8.23 S3 izleme ekranları
+
+Hepsi **salt okunur**, şirket kapsamlı, sayfalı; saklanan istisna kaydı yoktur — okuma anında türetilir (WMS taslağı §9).
+
+**`exceptionId` — tür başına kaynak anahtarı (r25, son bakış 03 F-7):** `exceptionId` = `{kind}:{kaynak anahtarı}`, kaynak anahtarı türün
+**satır birimidir** (bir kaynak kimliği birden çok istisna üretiyorsa birimi ayıran alan anahtara girer): `PostingRefused` /
+`PostingPendingLong` / `PostingIntegrityError` → `{taskId}:{seq}` (onay `Seq`, §4.2); `DispatchNotSeen` / `AllocationStuck` /
+`AllocationOrphanSuspected` → `{outboundId}`; `ReservationReleasePending` / `ReservedLotUnderRecall` → `{outboundId}:{allocSeq}`;
+`ShortDispatchUnresolved` → `{outboundId}:{skuId}` (saklanan satır outbound içinde `skuId` ile tekil, §4.5). Aynı okumada iki kaydın aynı
+`exceptionId`'yi taşıması hatadır (AC-36 iki SKU'lu ve iki tahsisli fikstürle ölçer, sabotaj (en)).
+
+- **İstisna Kutusu** (`GET /exceptions`, `warehouse.exceptions.read`): türler (WMS taslağı §9 adlarıyla) `PostingRefused` (çözümsüz Refused
+  onay, iki görev türü), `PostingPendingLong` (`LongPendingMinutes`'tan eski Pending onay), `PostingIntegrityError` (`IntegrityError` onay),
+  `DispatchNotSeen` (`ReadyToShip`'te `ReadyAtUtc`'den bu yana `Warehouse:Outbound:DispatchNotSeenHours`'tan (öneri 24) uzun bekleyen
+  outbound), `ReservationReleasePending` (bırakması bekleyen tahsis — `Cancelled` ya da `Shipped` outbound'da; `AllocationFailed`
+  outbound'un `Pending` tahsisleri bu türde değil `AllocationOrphanSuspected`'tadır, çift satır yok), `ShortDispatchUnresolved` (r23: `Shipped` outbound'un çıkmayan toplanmış miktarı çözülemedi — §8.21; türetme ve çıkış aşağıda), `AllocationOrphanSuspected`
+  (r23: `AllocationFailed` + FU03 400 dalı — §8.17 adım 6; türetme ve çıkış aşağıda), `ReservedLotUnderRecall` (r21; kapsam r22, tur 2 F-4: `Allocated` / `Picked` /
+  `Packed` / `ReadyToShip` outbound'un tahsis lotu recall'da — iptal edilmedikçe rezervasyon recall karantinasını engeller, aşağıda;
+  `Allocating` iç durumdur, görünmez ve iptal edilemez → listede yoktur: bakım servisi tahsisi tamamlayınca `Allocated` olur ve satır
+  görünür, tamamlayamazsa `AllocationFailed` olur — `BatchRefused`'da rezervasyon yoktur, `KeyReused`'da olabilir ve `AllocationOrphanSuspected` görünür (r25, son bakış 03 F-6) —, takılırsa `AllocationStuck` görünür), `AllocationStuck` (`Allocating`'de ve şimdi − `CreatedAtUtc` > 2 × `Warehouse:Outbound:AllocationLeaseSeconds` (bakım servisi en az bir turda tamamlayamadı)).
+  `OutboundDrift` ve `CancelAfterReady` v1'de **üretilmez** (`ReadyToShip` sonrası değişiklik ve iptal kapalı; Q-M6-7). `status` v1'de daima
+  `Open` (çözülen kayıt listeden düşer); "Kabul et / Çözüldü" eylemleri yok (FU-0178-S3-ACT). Satırdan ilgili ekrana bağlantı.
+- **Terminal outbound'dan türeyen iki tür — saklanan alan ve çıkış koşulu (r24, son bakış 02 F-1, CT kararı):** ikisi de terminal bir
+  durumdan türediği için "listeden düşme" outbound durumuna değil, aşağıdaki okuma anı koşuluna bağlıdır:
+  - `AllocationOrphanSuspected` — **kaynak:** outbound `AllocationFailed` ve `AllocationFailure.kind = KeyReused` (§4.5); **listede:**
+    tahsislerinden en az biri `ReservationReleaseState ≠ Released`; **çıkış:** bakımın anahtarla bırakması (§8.17 adım 6) bütün tahsisleri
+    `Released` yapınca düşer. `details`: `reservationKeys[]`, `pending` sayısı, `atUtc`. `kind = BatchRefused` hiç listelenmez (toplu port
+    atomik, rezervasyon yok).
+  - `ShortDispatchUnresolved` — **kaynak:** `Shipped` outbound'un saklanan `ShortDispatchUnresolved[]` satırı (§4.5, §8.21), satır başına
+    bir istisna (`exceptionId` `ShortDispatchUnresolved:{outboundId}:{skuId}`, yukarıda); **listede:** o satırın SKU'su için outbound'un
+    Staging düğümündeki **Staging farkı** kapanmamışken ya da hesaplanamazken; **çıkış:** fark kapanınca düşer. Kural r25'te değişti (son
+    bakış 03 F-1 / F-2, CT kararı): r24'ün SKU neti ve işaret kuralı lot fazlasını gizliyordu (ör. bir lot −5, öbürü +5 → net 0) ve
+    kapsamı iki tarafta farklıydı.
+    - **Kapsam — tek düğüm, iki tarafta aynı (F-2):** hesabın bütün terimleri **tam olarak** outbound'un `StagingLocationId` düğümünde
+      ölçülür; alt ağaç katılmaz. Gerekçe: 0178'in Staging'e dokunan her akışı tam bu düğümü kullanır — pick `ToLocationId` =
+      `StagingLocationId` (sabit, §4.5), `Cancellation` / `ShortDispatch` putaway'in kaynağı aynı düğüm (§8.21, §8.22), çözülebilir MVP-6
+      çıkışı `fromLocationId = StagingLocationId` (§8.21 (b)). Staging rolü alt ağaca kalıtıldığı ve LOCATION'da `StorageLocation` da
+      stoklanabilir olduğu için (`location.openapi.yaml` `isStockable`: "only Bin / StorageLocation may be true") bir outbound'un Staging
+      düğümü başka bir outbound'unkinin atası olabilir; alt ağaç `OnHand`'i ile tek düğüm bağlı miktarı karışırsa alt düğüme giden
+      toplanmış stok üst düğümün farkını şişirir. **Bilinen sınır:** stoğu Staging düğümünden alt düğümüne taşıyan INVENTORY hareketi de
+      (her `LOCATION_TRANSFER` gibi) o düğümün farkından çıkar — düzeltme yolu zaten 0178 dışıdır (aşağıda).
+    - **Birim — lot (F-1 (a)):** fark **(SKU, lot) başına** hesaplanır (lot izlenmeyen SKU'da tek kova, `lotId` null): `fark(lot)` =
+      `StagingLocationId`'de o SKU + lotun `OnHand`'i (bütün stok durumları — sonradan konan tutma farkı kapatmış saymaz) − **bağlı
+      miktar(lot)**; bağlı miktar(lot) = `Shipped` / `Cancelled` / `AllocationFailed` olmayan ve `StagingLocationId`'si **bu düğüm olan**
+      outbound'ların o SKU + lot tahsislerinin `PickedQuantity` toplamı + kaynağı **bu düğüm olan** açık (`Open` / `InProgress`) putaway
+      görevlerinin (`Cancellation` / `ShortDispatch`) o SKU + lot kalanı. Lot kümesi = düğümde `OnHand`'i ya da bağlı miktarı olan
+      lotların birleşimi. **Listede kalma kuralı işarete bakmaz:** SKU'nun herhangi bir lotunda `fark(lot) ≠ 0` iken kayıt listededir;
+      bütün lotların farkı 0 olunca düşer. `reason` (`LotMissing` / `NotFromStaging` / `OverIssued`) yalnız açıklayıcıdır. Örnek (AC-78
+      (iv) (b)): O1 `L1` 10 + `L2` 10 toplanmış, MVP-6 `L1` 15 + `L2` 5 çıkarır, düğümde ayrıca `Packed` O2'nin `L1` 5'i var → SKU neti 0
+      ama `fark(L1) = −5` (O2'nin eksiği), `fark(L2) = +5` (sahipsiz) → kayıt listede.
+    - **Hesaplanmayan durumlar — kayıt listede kalır (temkinli yön; F-1 (b)):** (1) bu düğüme giden ya da buradan çıkan aynı SKU'lu
+      **Pending** onay varken (r24 kuralı); (2) `StagingLocationId`'si bu düğüm olan aynı SKU'lu **`ReadyToShip`** bir outbound varken — MVP-6
+      onu sevk etmiş (stok düğümden düşmüş) ama 0178 henüz eşitlememiş olabilir; o durumda bağlı miktar düşmüş stoğu hâlâ sayar ve farkı
+      kaydırır (kapanmamış farkı 0 gösterebilir ya da kapanmışı yeniden açabilir). 0178 bunu MVP-6 okumadan ayırt edemez; okuma S3 GET'inde
+      yapılmaz (kullanıcı tetikli eşitleme kuralı, §8.21). Bu yüzden böyle bir outbound `Shipped` (eşitleme) olana kadar fark hesaplanmaz.
+      Bilinen sınır: eşitlenmemiş `ReadyToShip` outbound kaydı uzun süre listede tutabilir; aynı outbound `DispatchNotSeen` olarak ayrıca
+      görünür ve "Sevkiyatı kontrol et" çıkış yoludur. Hesaplanmayan kayıtta `details.stagingDifference = null` ve `details.differenceDeferredBy
+      ∈ { PendingConfirmation, UnsyncedReadyToShip }` (ikisi de varsa ilki).
+    - Aynı (Staging düğümü, SKU) için birden çok kayıt aynı lot farklarıyla birlikte düşer. **Düzeltme yolu 0178 dışındadır** (0178'de eylem
+      yok, FU-0178-S3-ACT): INVENTORY'nin olağan hareketi (MOD-0173 izinli kullanıcı; ör. Staging → raf `LOCATION_TRANSFER`) ya da sayım
+      (MOD-0181). `details`: `skuId`, `lotId?`, `expected`, `issued`, `reason`, `stagingDifference[] { lotId?, onHand, bound, difference }`
+      (yalnız `difference ≠ 0` olan lotlar; boş liste = kapandı, kayıt dönmez) \| null, `differenceDeferredBy` \| null.
+- **Etkinlik İzi** (`GET /activity`, `warehouse.activity.read`): `wms_task_events` + `wms_outbound_events` + INVENTORY'de `sourceModule =
+  MOD-0178` hareketleri (süreç içi okuma; INVENTORY'nin işlem okuması — hangi port, geliştiricinin ilk ölçümü, çıkarım); süzgeç tarih
+  aralığı (≤ 31 gün, zorunlu), depo, tür; sıralama zaman azalan.
+- **Entegrasyon İzleme** (`GET /integration/status`, `warehouse.integration-monitor.read`): `OutboundShipmentReady` outbox satırlarının
+  Pending / Delivered sayısı ve en eski Pending yaşı, `ReadyToShip`'te bekleyen outbound sayısı ve en eskisi, son başarılı eşitleme
+  (`Shipped` yazımı) zamanı, Pending onay sayısı (iki tür). **Kartlar — tek tanım (r24, son bakış 02 F-9; AC-36 ve §24 buna bağlanır):**
+  ekranda **dört kart**, cevabın altı değeri bunlara dağılır: (1) **Olay kuyruğu** — outbox Pending sayısı, Delivered sayısı, en eski
+  Pending yaşı; (2) **Sevk bekleyen** — `ReadyToShip` outbound sayısı ve en eskisinin `ReadyAtUtc`'si; (3) **Son eşitleme** — son
+  `Shipped` yazımının zamanı; (4) **Bekleyen onaylar** — Pending onay sayısı (putaway + pick). Kart başlıkları `Warehouse.Integration.Card.*`
+  (dört anahtar, 7 dil; §11.4).
+- Kişisel veri yok (`ShipTo` dönmez).
+- **Recall'daki ayrılmış lot (r21, inceleme 19 F-2; ölçüldü):** FU03 §8.6'ya göre ayrılmış lotun karantinası reddedilir ve recall karantina
+  iletimi isteği `BlockedByReservation` yapar (`…/Features/Recall/Quarantine/RecallQuarantineDispatcher.cs`); süpürücü yalnız `Pending`'i
+  yeniden dener, `BlockedByReservation` yalnız QA'nın "Yeniden dene"siyle (`RetryRecallQuarantineCommand`, MOD-0177) yeniden gönderilir
+  (`…/Persistence/Recall/RecallQuarantineSweeper.cs`). 0178 rezervasyonu `expiresAt` taşımadığı için (§8.10, Q-07) kendiliğinden düşmez.
+  **Çıkış yolu (durum başına, r22):** `Allocating` → bakım servisi tamamlar (sonra aşağıdaki yol) ya da `AllocationFailed` (`BatchRefused`: rezervasyon yok; `KeyReused`: olabilir, bakım anahtarla bırakır — §8.17 adım 6; r25);
+  `Allocated` / `Picked` / `Packed` → `ReservedLotUnderRecall` istisnası (yukarıda) → sorumlu outbound'u iptal eder (
+  §8.22 — rezervasyon bırakılır, staging'deki stok için `Cancellation` putaway görevi açılır) → QA MOD-0177'de "Yeniden dene" → karantina.
+  `ReadyToShip`'teki outbound iptal edilemez (Q-M6-7 cevabı: v1'de kaynak iptali yok): o durumda MVP-6 çıkışı INVENTORY'de
+  `LOT_UNDER_RECALL` alır ve outbound takılır — MVP-6 sevkiyatı `Cancelled` yapabilir (bağlantı ayrılmış kalır, rezervasyon açık);
+  kalıcı çözüm sonraki sözleşme sürümü (FU-0178-CANCEL-AFTER-READY). Release ön kontrolü (§8.21) pencereyi `Packed`'e kadar kapatır.
+
+### 8.24 S2 kalem (Item) düzeyinde outbound (W-6)
+
+**Sahip kararı W-6 (Beste, 2026-11-02):** outbound ürün kalemi (Item) düzeyinde de açılabilir. **Ölçülenler (`ea4bf3d06`):**
+- INVENTORY `SkuLevel.Item` "kendi SKU'su olan malzeme kalemi" — `skuId == itemId`; defterin bütün işlemleri (hareket, bakiye, rezervasyon)
+  dört seviyeyi taşır (`services/Diten.InventoryService/src/Diten.InventoryService.Domain/Enums/SkuLevel.cs`). `InventoryReservation.SkuLevel`
+  aynı enum'dur; FU03'ün kapsamlı rezervasyonunun Item seviyesinde çalıştığı FU03 paketinde ayrıca yazılı değil (çıkarım: aynı enum).
+- MDM `ProductMasterContract.ItemSkuRef(Item)`: `skuId` = `itemId` = kalemin kimliği, `skuLevel Item`, `gtin` **yok** (null),
+  `serialControlled` **daima false**, `lotControlled`, `stockable`, `storageConditions`, `baseUomId` = kalemin `BaseUomCode`'u (UUID değil, kod).
+- `MovementMasterDataValidator` (INVENTORY): kalem satırı + SKU satırı `validateRefs`, `getSku(skuId, Item)`, D-SKU-LINK (`sku.ItemId == itemId`,
+  değilse `SKU_ITEM_MISMATCH`), yaşam döngüsü (`ProductMasterStockRules.Allows`), `stockable: false` → `SKU_LEVEL_NOT_STOCKABLE`.
+- FEFO-BUNDLE `SkuLevel` dört değer (`docs/analysis/contracts/fefo.openapi.yaml` `SkuLevel`); WAREHOUSE-OUTBOUND 1.0.0 `SkuLevel` **üç değer**
+  (`warehouse-outbound.openapi.yaml` `SkuLevel`); MVP-6 okuyucusu `FrozenReadSchema.SkuLevels` üç değer ve `WarehousePage` **her** öğeyi
+  doğrular — sayfada tek bir Item'lı outbound bütün sayfayı reddettirir
+  (`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/FrozenReadSchema.cs`). SHIPMENT-BUNDLE satırının
+  `skuLevel`'i serbest dizedir (enum yok, 3.4.0).
+- MOD-0290-FU04 (Item / Material Master) paketi `status: draft`; Item kodu MdmService'te var (`Domain/Entities/Item.cs`,
+  `Features/ItemMaster/**`, `Features/ProductMaster/**`). FU04 §0.2: "kalemde kalem kimliği = SKU kimliği; SKU → kalem çözümlemesi kalem için
+  kendisini döndürür"; mamul kalem türü değildir (Global Ürün zinciri).
+
+**Kurallar:**
+1. **Çözümleme:** satır `item { itemId, skuId?, skuLevel: Item }`. Kalemin SKU'su kalemin kendisidir: `skuId` yoksa sunucu `itemId` yazar;
+   verilirse `itemId`'ye eşit olmalıdır. Kalem bir GSKU / LSKU / Bitmiş Ürün'e **çözülmez** (FU04 §0.2); Item satırı yalnız Item seviyesinde
+   tutulan stoğu tahsis eder. `getSku(itemId, Item)` ile doğrulanır; çözülemezse 422 `WMS_ITEM_NOT_RESOLVABLE`, `details.reason`:
+   `SkuIdMismatch` (verilen `skuId ≠ itemId`), `UnknownItemSku` (getSku 404), `NotStockable` (`stockable: false`), `LifecycleBlocked`
+   (yaşam döngüsü çıkışa izin vermez — `Draft` / `Retired`; FU04 S5 "kullanım dışı: mevcut stok çıkabilir" — INVENTORY'nin
+   `ProductMasterStockRules.Allows`'u ile aynı karar, `LOCATION_TRANSFER` için). PRODUCT-MASTER erişilemezse 503 `PRODUCT_MASTER_UNAVAILABLE`.
+   Ret yazımsızdır: outbound, rezervasyon, merkezi ve yerel kayıt yok (§13 kural 36 / AC-15 "doğrulama reddi iz bırakmaz").
+2. **Karışım yok (sahip kararı, Beste 2026-11-02):** bir outbound'un satırları ya hepsi Item ya hiçbiri Item'dır; karışık → 422 `WMS_OUTBOUND_LEVEL_MIXED` (kural 4'ün
+   yayın kapısı yüzünden: karışık outbound hiç sevk edilemezdi).
+3. **Tahsis:** §8.17 adım 2–4 aynen, (`itemId`, `skuId = itemId`, `Item`) üçlüsüyle: FEFO okuması, FU03 kapsam serbest miktarı,
+   toplanabilir düğümlerdeki bakiye (§8.17 adım 2'nin tek tanımı: Staging ve Receiving alt ağacı dışı; r24, son bakış 02 F-2). `lotControlled: false` kalem → lot izlenmeyen SKU kuralı (depo düzeyi tahsis). Seri yolu yoktur (`serialControlled` daima false).
+   Birim kalemin `baseUomId` kodudur (`uomId` buna eşit değilse 422 `WMS_UOM_NOT_BASE`). Saklama koşulu kalemin `storageConditions`'ından
+   (§8.12, Staging kontrolü dahil).
+4. **Yayın kapısı (v1; ara durum sahip kararı, Beste 2026-11-02):** WAREHOUSE-OUTBOUND 1.0.0 Item'ı tanımaz ve MVP-6 okuyucusu tek Item'lı outbound yüzünden sayfayı reddeder. Bu
+   yüzden Item outbound'u donmuş uçlarda **görünmez** (listede yok, detay 404 `UNKNOWN_OUTBOUND`) ve `release` 409
+   `WMS_ITEM_LEVEL_NOT_PUBLISHABLE` döner (ekranda "Sevke hazır" pasif, nedeni 7 dilde). Oluşturma, tahsis, pick, paketleme ve iptal
+   çalışır. Kapı şu üçü birlikte gelince yeni paket revizyonuyla kalkar: **(r27, inceleme F-1)** outbound `SkuLevel`'e eklemeli `Item`
+   **iki sözleşmede aynı CT adımında** — WAREHOUSE-OUTBOUND 1.1.0 (outbound `SkuLevel`'e `Item`; 1.0.0 örneğindeki `outboundId` UUID'ye
+   düzeltilir) **ve** WMS-BUNDLE 1.2.0 (outbound `SkuLevel`'e `Item`; WMS-BUNDLE üst küme kalır) —, MOD-0183 okuyucusunun `Item`'ı kabul
+   etmesi (Q-M6-6, Natig; iki dosya bundan sonra yazılır), MOD-0183'ün Item satırı için `GOODS_ISSUE_SALES`
+   yazabilmesi (INVENTORY destekler; SHIPMENT `skuLevel` serbest dize — MOD-0183 doğrulaması ölçülmedi, çıkarım). FU-0178-ITEM-PUB.
+   **r27 (inceleme F-1 / F-4):** WMS-BUNDLE 1.1.0 dondu (CT 2026-11-10; MVP-1 hattında, main'e hat PR'ıyla girer) ve outbound `SkuLevel`'i
+   `Gsku` / `Lsku` / `FinishedGood`'dur — `Item` yalnız görev / istisna `ItemSkuLevel`'indedir; outbound örneğindeki `outboundId` 1.1.0'da
+   zaten UUID'dir. Yalnız WAREHOUSE-OUTBOUND 1.1.0 yazılıp kapı kaldırılırsa WMS-BUNDLE üst küme olmaktan çıkar ve Item'lı outbound
+   cevapları WMS-BUNDLE sözleşme testinde kırmızı olur; bu yüzden tek adım kuralı. Kaynak: bu kural ve Q-M6-6 (§19.5) — paketin kararları;
+   dondurma kaydı yalnız "WAREHOUSE-OUTBOUND 1.1.0 ayrı adım" der. Kapı sürer.
+5. **Pick:** görev Item'ın kaynak bin'i ve tahsis lotuyla açılır; onay gövdesi yalnız miktar (+ opak `scanRef`) alır. Kalemin GTIN'i yoktur;
+   v1'de 0178 okutulan kodu doğrulamaz (opak `scanRef`, WMS taslağı §8); bin / lot etiketi okutması MOD-0182'nin işidir (çıkarım).
+6. **Hareket:** `LOCATION_TRANSFER`, `itemId = skuId = kalem`, `skuLevel Item`, `lotId` = tahsisin lotu (lotsuz kalemde yok), `reservationId`,
+   §8.19'un geri kalanı aynen; INVENTORY'nin kalem doğrulaması (yukarıda) değişmeden çalışır, retleri onayı Refused yapar.
+7. **Ekran:** "Yeni outbound" formunda ürün seçici kalemleri de listeler (PRODUCT-MASTER stoklanabilir kalem araması, FU04 S4; hangi uç —
+   geliştiricinin ilk ölçümü, çıkarım); seviye satırda gösterilir.
+
+## 9. Layout & Shell Contract
+
+- `shell: tenant` → tüm `Views/Warehouse/PutawayTasks/*.cshtml`, `Views/Warehouse/WarehouseLocationRoles/*.cshtml` ve (r20) S2 / S3
+  `Views/Warehouse/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}/*.cshtml` sayfalarında
+  Razor bloğunda **`Layout = "_LayoutTenantShell";` AÇIKÇA** yazılır (`_ViewStart.cshtml` varsayılanına güvenilmez; Golden Slim
+  `Views/DevEnablement/GoldenReferenceSlim/Index.cshtml:8` emsali).
+- **`/Platform/` rotası yok** (rota PermissionScope'u türetir — self-registration §2c); manifest rota testi.
+- **Golden Reference kararı (alan sayımı):**
+  | Ekran | Form | Kullanıcı alanları | Sayı | Karar |
+  |---|---|---|---|---|
+  | `PutawayTasks` — oluştur / düzenle (offcanvas) | kaynak stok satırı (seçici), miktar, hedef bin, atanan, öncelik, not (atanan Q-13 ölçümüne bağlı → 5) | 6 | ≤ 8 | **slim** |
+  | `PutawayTasks` — onay (offcanvas eylemi) | miktar, gerçek hedef bin, sapma gerekçesi | 3 | ≤ 8 | slim içi eylem paneli |
+  | `WarehouseLocationRoles` — oluştur / düzenle | lokasyon, roller (çoklu), kabul edilen saklama koşulları (çoklu), not | 4 | ≤ 8 | **slim** |
+  | S2 `OutboundShipments` — oluştur | depo, Staging düğümü (birden çoksa), sipariş ref., alıcı adı, ülke, şehir, posta kodu, adres 1, adres 2, not + satırlar (ürün, miktar, birim, sipariş satırı, lot değişimi, gerekçe) | ≥ 12 | > 8 | **compact** (r20 bağlayıcı) |
+  | S2 `OutboundShipments` — düzenle | sipariş ref., alıcı alanları, not (tahsis değişmez) | ≤ 9 | — | compact içi `Edit` |
+  | S2 `PickTasks` — onay (offcanvas eylemi) | miktar | 1 | ≤ 8 | **slim** (oluşturma formu yok — görevleri tahsis açar) |
+  | S2 `Packing` — koli | içerik satırları (tahsis, miktar), ağırlık, ölçü | 3 | ≤ 8 | detay + form (DataTable değil) |
+  | S3 `WarehouseExceptions` / `WarehouseActivity` / `WarehouseIntegration` | yalnız süzgeç | 0 | — | **slim liste**, salt okunur (form yok) |
+
+  Sayılmayanlar: Id, TenantId, şirket, denetim alanları, sayfa / onay kolonları; kaynak satırdan gelen salt okunur alanlar
+  (ürün, lot, kaynak lokasyon, durum). Frontmatter `golden_reference: slim` + `form_field_count: 6` S1 ekranlarını anlatır.
+- UAS-001: sayfa anahtarı olmayan kullanıcıya iskelet çizilmez (başlık, kart, boş tablo, buton yok), yönlendirme yok; tek açıklama.
+- 375 px: operatör tablet / telefonla onaylar → onay paneli 375 px'te ölçülür (S1 kabulü).
+
+## 10. Backend File Convention
+
+Golden Reference Slim birebir (`services/Diten.DevEnablementService/src/Diten.DevEnablementService.Application/Features/GoldenReferenceSlim/`):
+
+```text
+Application/Features/PutawayTasks/
+├── Commands/        CreatePutawayTaskCommand.cs · UpdatePutawayTaskCommand.cs · BulkAssignPutawayTaskCommand.cs
+│                    ClaimPutawayTaskCommand.cs · ConfirmPutawayTaskCommand.cs · RetryPutawayConfirmationCommand.cs ·
+│                    ClosePutawayTaskShortCommand.cs · CancelPutawayTaskCommand.cs ·
+│                    MarkPutawayConfirmationReturnedCommand.cs · ResolvePutawayIntegrityCommand.cs ·
+│                    ReconcilePendingConfirmationCommand.cs                        (sealed record)
+├── Queries/         GetPutawayTaskListQuery.cs · GetPutawayTaskByIdQuery.cs · GetPutawayCandidateListQuery.cs
+│                    GetPutawayTaskEventListQuery.cs                               (sealed record)
+├── Handlers/
+│   ├── CommandHandlers/   CreatePutawayTaskHandler.cs · UpdatePutawayTaskHandler.cs · BulkAssignPutawayTaskHandler.cs
+│   │                      ClaimPutawayTaskHandler.cs · ConfirmPutawayTaskHandler.cs · RetryPutawayConfirmationHandler.cs
+│   │                      ClosePutawayTaskShortHandler.cs · CancelPutawayTaskHandler.cs ·
+│   │                      MarkPutawayConfirmationReturnedHandler.cs · ResolvePutawayIntegrityHandler.cs ·
+│   │                      ReconcilePendingConfirmationHandler.cs   (sealed class, suffix YOK)
+│   └── QueryHandlers/     GetPutawayTaskListHandler.cs · GetPutawayTaskByIdHandler.cs · GetPutawayCandidateListHandler.cs
+│                          GetPutawayTaskEventListHandler.cs
+├── Validators/      CreatePutawayTaskValidator.cs · UpdatePutawayTaskValidator.cs · ConfirmPutawayTaskValidator.cs
+│                    ClosePutawayTaskShortValidator.cs · CancelPutawayTaskValidator.cs · GetPutawayTaskListValidator.cs ·
+│                    MarkPutawayConfirmationReturnedValidator.cs · ResolvePutawayIntegrityValidator.cs (gerekçe 10–1000)
+└── PutawayTaskModels.cs                                                            (tek dosyada DTO / ViewModel)
+
+Application/Features/WarehouseLocationRoles/   (aynı iskelet: Create / Update / Delete / BulkDelete + GetList / GetById,
+                                                WarehouseLocationRoleModels.cs)
+Application/Features/Warehouse/Ports/          IWarehouseRecordCodeAllocator.cs · IWarehouseStockReader.cs · IWarehouseLotReader.cs
+Application/Features/Warehouse/Services/       WarehouseMovementPoster.cs (tek stok kapısı → InternalMovementPostingService)
+Domain/Warehouse/{Entities,Enums,Rules}/       WarehouseTask, TaskConfirmation, WarehouseTaskEvent, WarehouseLocationRole,
+                                               PutawayTaskRules (geçişler, kalan), LocationRoleRules
+Persistence/Warehouse/                          WarehouseTaskRepository, WarehouseLocationRoleRepository, WarehouseIndexInitializer,
+                                               PendingConfirmationReconcilerHostedService
+Api/Controllers/Warehouse/                      PutawayTasksController.cs · WarehouseLocationRolesController.cs ·
+                                               OutboundShipmentsController.cs (donmuş GET'ler; S1'de boş)
+Api/Warehouse/                                  WarehouseServiceCollectionExtensions.cs · PutawayPickingPackingManifestProvider.cs
+Infrastructure/Authorization/WarehousePermissions.cs
+```
+
+- Tek dosyada tek public tip; handler / validator adlarında `Command` / `Query` eki yok.
+- **Golden'dan bilinçli sapmalar (onaylı — Q-05, Beste 2026-10-21):** görevlerde `Delete` / `BulkDelete` yoktur (GxP iz; iptal gerekçeli);
+  yerine `Cancel` ve toplu işlem olarak `BulkAssign` (bulk action bar: "Ata"). `WarehouseLocationRoles` Golden'a birebir
+  (Delete + BulkDelete, soft delete).
+- Controller'lar HTTP durumunu handler sonucuna göre açıkça verir (`CustomBaseController`); `[HasPermission]` her eylemde.
+- Domain Mongo / framework bağımsız; generic depo yok (Tenant / LE yüklemi düşmesin — MOD-0173 §10).
+
+**S2 / S3 (r20) — aynı desen (Golden Compact backend'i Slim ile aynı klasör yapısıdır):**
+
+```text
+Application/Features/OutboundShipments/   Commands/ (Create · Update · Cancel · Release · SyncOutboundDispatch · CompleteOutboundAllocation ·
+                                          ReleaseOutboundReservations) · Queries/ (GetOutboundShipmentList · GetOutboundShipmentView ·
+                                          GetOutboundEventList · PreviewOutboundAllocation) · Handlers/{CommandHandlers,QueryHandlers}/ ·
+                                          Validators/ · OutboundShipmentModels.cs
+Application/Features/PickTasks/           Commands/ (Claim · BulkAssign · Confirm · RetryPickConfirmation · MarkPickConfirmationReturned ·
+                                          ResolvePickIntegrity · ClosePickTaskShort) · Queries/ (GetPickTaskList · GetPickTaskById ·
+                                          GetPickTaskEventList) · Handlers/{CommandHandlers,QueryHandlers}/ · Validators/ · PickTaskModels.cs
+Application/Features/HandlingUnits/       Commands/ (CreateHandlingUnit · UpdateHandlingUnit · CloseHandlingUnit) · Queries/ (GetHandlingUnitList) ·
+                                          Handlers/{CommandHandlers,QueryHandlers}/ · Validators/ · HandlingUnitModels.cs
+Application/Features/WarehouseMonitoring/ Queries/ (GetWarehouseExceptionList · GetWarehouseActivityList · GetWarehouseIntegrationStatus) ·
+                                          Handlers/QueryHandlers/ · WarehouseMonitoringModels.cs
+Application/Features/Warehouse/Ports/     + IWarehouseFefoReader.cs   (MVP-6 okuması için 0178 portu yok — aşağıdaki MOD-0177 seam'i)
+Application/Features/Recall/Ports/        ~ IRecallTraceSource.cs: `IShipmentReader`'a (:86-89) eklemeli QueryBySourceDocumentAsync ·
+                                          ReadDetailAsync + dönüş kayıtları (MOD-0177 dosyası, XMC-001 §7; r24, son bakış 02 F-7);
+                                          r25: iki üye varsayılan arayüz uygulamalı (gövde `Unavailable`), son bakış 03 F-3
+Infrastructure/Recall/                    ~ ShipmentBundleHttpReader.cs: iki üyenin uygulaması (aynı HttpClient, başlık iletimi, 2 sn;
+                                          MOD-0177 dosyası); RecallServiceCollectionExtensions DI kaydı değişmez
+Domain/Warehouse/{Entities,Rules}/        + OutboundShipment, OutboundLine, OutboundAllocation, HandlingUnit, OutboundShipmentEvent ·
+                                          OutboundRules, AllocationPlanner, HandlingUnitRules
+Persistence/Warehouse/                    + OutboundShipmentRepository, HandlingUnitRepository, OutboundMaintenanceHostedService
+Api/Controllers/Warehouse/                + PickTasksController.cs · PackagesController.cs · WarehouseMonitoringController.cs;
+                                          OutboundShipmentsController.cs donmuş GET'lere S2 uçlarını ekler
+```
+
+- Pick komutlarının handler'ları S1 onay çekirdeğini paylaşır (`Kind`'a göre yalnız hareket alanları ve kurallar; §8.19) — onay makinesi
+  ikinci kez yazılmaz. Pick görevinde `Delete` / `Update` / tekil `Cancel` yoktur (Q-05 deseni; outbound iptali kapatır).
+- Dosya adları komut / sorgu adlarından türer (`{Verb}{Module}Command.cs`, `{Verb}{Module}Handler.cs`, `{Verb}{Module}Validator.cs`); tam
+  liste geliştiricinin, §3'ün komut / sorgu listesine birebir.
+
+## 11. Frontend File Contract
+
+### 11.1 Ekran → rota → izin (hepsi Scope = Tenant; `_LayoutTenantShell`)
+| Ekran | PageCode | Rota | Tür | Sayfa izni | Nav |
+|---|---|---|---|---|---|
+| Yerleştirme Görevleri | `PUTAWAYTASKS` | `/Warehouse/PutawayTasks` | Slim DataTable (server) + oluştur / düzenle offcanvas + QuickView (onaylar, zaman çizelgesi) + onay paneli | `warehouse.putaway-tasks.read` | evet |
+| Depo Lokasyon Rolleri | `WAREHOUSELOCATIONROLES` | `/Warehouse/LocationRoles` | Slim DataTable (server) + offcanvas | `warehouse.location-roles.read` | evet |
+| Outbound Sevkiyatlar (S2) | `OUTBOUNDSHIPMENTS` | `/Warehouse/OutboundShipments` (+ `/Create`, `/Edit/{id}`, `/Details/{id}`) | Compact DataTable (server; kaynak `GET /outbound-shipments/search`) + Create / Edit / Details | `warehouse.outbound-shipments.read` | evet |
+| Toplama Görevleri (S2) | `PICKTASKS` | `/Warehouse/PickTasks` | Slim DataTable (server) + QuickView (onaylar, zaman çizelgesi) + onay paneli; oluşturma offcanvas'ı yok | `warehouse.pick-tasks.read` | evet |
+| Paketleme (S2) | `PACKINGSTATION` | `/Warehouse/Packing/{outboundId}` | detay + koli formu (DataTable değil); iki giriş: outbound `Details`'ten ve (r21, inceleme 19 F-6) **PickTasks**'tan — görev satırında ve QuickView'da outbound `Picked` iken "Paketle" bağlantısı; sayfa yalnız `GET /outbound-shipments/{outboundId}/packages` okur (kişisel veri yok) | `warehouse.packages.read` (sayfa; `warehouse.outbound-shipments.read` **gerekmez**) · yazım `warehouse.packages.create` / `.update` | hayır (OUTBOUNDSHIPMENTS ve PICKTASKS altı) |
+| İstisna Kutusu (S3) | `WAREHOUSEEXCEPTIONS` | `/Warehouse/Exceptions` | Slim DataTable (server), salt okunur, satır bağlantısı | `warehouse.exceptions.read` | evet |
+| Etkinlik İzi (S3) | `WAREHOUSEACTIVITY` | `/Warehouse/Activity` | Slim DataTable (server), salt okunur | `warehouse.activity.read` | evet |
+| Entegrasyon İzleme (S3) | `WAREHOUSEINTEGRATION` | `/Warehouse/Integration` | yalnız özet kartları, salt okunur — **DataTable değil** (r23, son bakış F-15: `screens` listesinden çıkarıldı, `verify_datatable_page` uygulanmaz; bilinçli sapma) | `warehouse.integration-monitor.read` | evet |
+
+S3 PageCode'ları r20'de `WMS*` yerine `WAREHOUSE*` oldu (manifest ModuleCode ve S1 kodlarıyla aynı aile; `NavNameLocalizer.Normalize` biçimi). Bütün
+S2 / S3 sayfaları `_LayoutTenantShell`, Scope = Tenant, `/Platform/` rotası yok (§9).
+
+### 11.2 Dosyalar (S1, Slim seti birebir)
+```text
+frontend/Diten.Web/Views/Warehouse/PutawayTasks/
+├── Index.cshtml                  (Layout = "_LayoutTenantShell" AÇIKÇA; bölüm sırası Filter → BulkActionBar → DataTable → Offcanvas)
+├── _Filter.cshtml                (durum, depo, atanan, öncelik, lot / ürün arama)
+├── _DataTable.cshtml             (data-dt-standard="v2", data-dt-data-mode="server", skeleton)
+├── _IndexL10n.cshtml
+├── _CreateEditOffcanvas.cshtml   (6 alan; "Yerleştirilecek stok" seçicisi /api/warehouse/putaway-candidates)
+├── _DetailsQuickView.cshtml      (görev başı, onaylar + INVENTORY hareket no, zaman çizelgesi, "Yeniden dene", onay paneli)
+└── PutawayTasksIndex.cs          (marker)
+frontend/Diten.Web/Views/Warehouse/WarehouseLocationRoles/   (aynı Slim seti, WarehouseLocationRolesIndex.cs)
+frontend/Diten.Web/wwwroot/assets/js/Warehouse/{PutawayTasks,WarehouseLocationRoles}/index.js · index.l10n.js
+frontend/Diten.Web/wwwroot/assets/js/Warehouse/PutawayTasks/rules.js   (saf ekran kuralları: menü / rozet / pasif durum; r20, DL-3 CT kaydı F-5)
+frontend/Diten.Web/wwwroot/assets/css/Warehouse/warehouse.css         (modülün tek CSS'i: rozetler, 375 px onay paneli, RTL; r20, DL-3 CT kaydı F-5)
+frontend/Diten.Web/Resources/Views/Warehouse/{PutawayTasks,WarehouseLocationRoles}/{Module}Index.{en,tr,fr,es,zh,ar,ru}.resx
+frontend/Diten.Web/Controllers/PutawayTasksController.cs · WarehouseLocationRolesController.cs   (aynı origin MVC proxy → Gateway 5000)
+```
+- Tarayıcı JS servis portuna (5067) gitmez; same-origin MVC proxy → Gateway.
+- Seçiciler yalnız master'lardan: lokasyon LOCATION `searchLocations`, lot / ürün aday satırından; sabit yedek liste yok.
+- Liste ekranı dokunma protokolü (BL-440): `verify_datatable_page.py . --area Warehouse --module {Module} --format gaps`.
+
+### 11.3 Ekran → düğme → eylem → izin (manifest Actions)
+| Ekran | Düğme | ActionCode | İzin |
+|---|---|---|---|
+| PutawayTasks | "Yeni görev" (Toolbar) | `PUTAWAY_TASK_CREATE` | `warehouse.putaway-tasks.create` |
+| PutawayTasks | "Düzenle" (RowAction; Open/InProgress) | `PUTAWAY_TASK_UPDATE` | `warehouse.putaway-tasks.update` |
+| PutawayTasks | "Ata" (bulk bar; yalnız Q-13 ölçümü kullanıcı listesi bulursa) | `PUTAWAY_TASK_ASSIGN` | `warehouse.putaway-tasks.update` |
+| PutawayTasks | "Onayla" (RowAction + QuickView) | `PUTAWAY_TASK_CONFIRM` | `warehouse.putaway-tasks.confirm` |
+| PutawayTasks | "Yeniden dene" (QuickView, Pending onay) | `PUTAWAY_TASK_RETRY` | `warehouse.putaway-tasks.confirm` |
+| PutawayTasks | "Geri taşındı" (QuickView, çözümsüz Refused onay, gerekçe) | `PUTAWAY_TASK_RETURNED` | `warehouse.putaway-tasks.confirm` |
+| PutawayTasks | "Uzlaştır" (QuickView, `IntegrityError` onay, gerekçe, IsDangerous; yalnız sorumlu) | `PUTAWAY_TASK_RESOLVE_INTEGRITY` | `warehouse.putaway-tasks.resolve` |
+| PutawayTasks | "Kalanı kapat" (RowAction, gerekçe) | `PUTAWAY_TASK_CLOSE_SHORT` | `warehouse.putaway-tasks.confirm` |
+| PutawayTasks | "İptal" (RowAction, gerekçe, IsDangerous; yalnız onay yokken) | `PUTAWAY_TASK_CANCEL` | `warehouse.putaway-tasks.cancel` |
+| PutawayTasks | "Üstlen" (RowAction; atanmamış görev) | `PUTAWAY_TASK_CLAIM` | `warehouse.putaway-tasks.confirm` |
+| PutawayTasks | "Uygula" (raf önerisi, formda) | — (form içi; kayıtta `TargetSource`) | `warehouse.putaway-tasks.create` / `.update` |
+| WarehouseLocationRoles | "Yeni rol" / "Düzenle" / "Sil" / toplu "Sil" | `LOCATION_ROLE_CREATE/UPDATE/DELETE/BULK_DELETE` | `warehouse.location-roles.manage` |
+| OutboundShipments (S2) | "Yeni outbound" (Toolbar) / "Tahsisi önizle" (formda) | `OUTBOUND_CREATE` | `warehouse.outbound-shipments.create` |
+| OutboundShipments (S2) | "Düzenle" (Allocated / Picked / Packed) | `OUTBOUND_UPDATE` | `warehouse.outbound-shipments.update` |
+| OutboundShipments (S2) | "Paketle" (Picked; Paketleme sayfası) | `OUTBOUND_PACK` | `warehouse.packages.create` |
+| OutboundShipments (S2) | "Sevke hazır" (Packed; Item outbound'unda pasif + neden, §8.24; r22: 422 `FEFO_BYPASS_REASON_REQUIRED` gelirse aynı diyalog sapan tahsisleri gösterip gerekçe ister) | `OUTBOUND_RELEASE` | `warehouse.outbound-shipments.release` |
+| OutboundShipments (S2) | "Sevkiyatı kontrol et" (ReadyToShip) | `OUTBOUND_SYNC_DISPATCH` | `warehouse.outbound-shipments.update` |
+| OutboundShipments (S2) | "İptal" (Allocated / Picked / Packed, gerekçe, IsDangerous) | `OUTBOUND_CANCEL` | `warehouse.outbound-shipments.cancel` |
+| PickTasks (S2) | "Onayla" / "Yeniden dene" / "Geri taşındı" / "Kalanı kapat" / "Üstlen" | `PICK_TASK_CONFIRM/RETRY/RETURNED/CLOSE_SHORT/CLAIM` | `warehouse.pick-tasks.confirm` |
+| PickTasks (S2) | "Paketle" (bağlantı; outbound `Picked`, kullanıcıda `warehouse.packages.read`) | — (gezinme, eylem değil) | `warehouse.packages.read` |
+| PickTasks (S2) | "Ata" (bulk bar; yalnız Q-13 kullanıcı listesi varsa) | `PICK_TASK_ASSIGN` | `warehouse.pick-tasks.update` |
+| PickTasks (S2) | "Uzlaştır" (IntegrityError onay, gerekçe, IsDangerous) | `PICK_TASK_RESOLVE_INTEGRITY` | `warehouse.pick-tasks.resolve` |
+| Packing (S2) | "Yeni koli" / "Koliyi düzenle" / "Koliyi kapat" | `PACKAGE_CREATE/UPDATE/CLOSE` | `warehouse.packages.create` / `.update` / `.update` |
+| S3 ekranları | — (salt okunur; satır bağlantısı ilgili ekrana gider) | — | — |
+
+Düğme anahtarı yoksa gizlenir; sunucu yine 403 verir.
+
+### 11.3a Ekran notları (tur 2, Beste 2026-10-21)
+- **"Depolama" rolü yoktur.** `WarehouseLocationRoles` formunda saklama koşulu girmek için rol seçmek gerekmez: rolsüz, yalnız
+  `AcceptedStorageConditions`'lı kayıt geçerlidir (§4.4 kuralı). Üst düğümün etiketi alt düğümlere geçer; listede ve hedef bin
+  seçicisinde kalıtılan küme **"üst düğümden"** rozetiyle (ve kaynak düğüm kodu) gösterilir.
+- **Ürün koşulu bilinmiyorsa** (`WMS_STORAGE_CONDITIONS_UNKNOWN`): aday satırında ve formda "Saklama koşulu bilinmiyor — ürün
+  kartında tamamlanmalı (MDM)" uyarı rozeti; hedef bin seçici pasif, "Kaydet" / "Onayla" kapalı ve nedenini yazar; satır gizlenmez.
+- **"Stok karantinaya girdi"** ret durumu onayda `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE`'dır (§8.4).
+- **Şirket kodu geçersiz:** **sahip kararı C (Beste 2026-11-02; DL-3 CT kaydı F-2(2))** — ekran şirket kodunu önceden okumaz (paket ve
+  taslak ön okuma ucu tanımlamaz); "Yeni görev" etkin kalır, gönderim sonrası 7 dilli 422 `WMS_COMPANY_CODE_INVALID` mesajı ve "şirket kodunu
+  düzeltin" yönlendirmesi yeterlidir; mevcut görevler görünür ve onaylanabilir (§8.7). Aynı kural S2 "Yeni outbound" için geçerlidir.
+- **Pending onay:** QuickView'da deneme sayısı (`Attempts`) ve son deneme zamanı; "Yeniden dene" sınırsız (§8.13).
+
+### 11.4 Resx
+`Warehouse.*` anahtarları (başlıklar, kolonlar, filtreler, düğmeler, durumlar, öncelikler, kökenler, roller, onay durumları, hata
+kodları — INVENTORY'den geçen kodlar dahil), `Nav.Module.PUTAWAYPICKINGPACKING`, `Nav.Page.PUTAWAYTASKS`,
+`Nav.Page.WAREHOUSELOCATIONROLES` — **7 dil** (kiracı modülü). İnceleme 03 ile eklenen anahtarlar (7 dil): `Warehouse.Action.ResolveIntegrity`
+("Uzlaştır"), `Warehouse.Action.ResolveIntegrity.Confirm`, `Warehouse.Action.ResolveIntegrity.Reason`, `Warehouse.Flag.PostingIntegrityError`
+("Bütünlük hatası"), `Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT`, `Warehouse.Status.InFlight` ("Onay işleniyor"),
+`Warehouse.Resolution.ResolvedPosted`, `Warehouse.Resolution.ResolvedRefused`. Bağımsız inceleme 13 F-3 ile (7 dil):
+`Warehouse.Flag.PostingPendingLong` ("Uzun süredir bekliyor"). Nav anahtar biçimi `NavNameLocalizer.Normalize` (büyük harf, yalnız
+harf ve rakam).
+**S2 / S3 (r20, 7 dil):** `Nav.Page.OUTBOUNDSHIPMENTS`, `Nav.Page.PICKTASKS`, `Nav.Page.WAREHOUSEEXCEPTIONS`, `Nav.Page.WAREHOUSEACTIVITY`,
+`Nav.Page.WAREHOUSEINTEGRATION`; `Warehouse.Outbound.*` (başlıklar, durumlar `Allocated` … `Cancelled`, eylemler, tahsis kolonları,
+FEFO sırası, lot değişimi, gerekçe), `Warehouse.Pick.*`, `Warehouse.Package.*`, `Warehouse.Exception.Kind.*` (§8.23'ün dokuz türü),
+`Warehouse.Exception.DeferredBy.{PendingConfirmation,UnsyncedReadyToShip}` (r25, son bakış 03 F-1: `ShortDispatchUnresolved` farkı hesaplanmadığında satır ayrıntısında gösterilen neden; kapalı iki değer, §8.23),
+`Warehouse.Activity.*`, `Warehouse.Integration.*` (r24, son bakış 02 F-9: dört kart başlığı `Warehouse.Integration.Card.{EventQueue,AwaitingDispatch,LastSync,PendingConfirmations}`, §8.23), `Warehouse.Origin.*` (r24, son bakış 02 F-3: `WarehouseTaskOrigin`'in **yedi** değeri — `Manual`, `Receipt`, `Production`, `Cancellation`, `External`, S2'nin `Outbound` ve `ShortDispatch`'i; S1 kodunda hiçbir `Warehouse.Origin.*` anahtarı yok, ölçüldü `db769471c` `frontend/Diten.Web/Resources/Views/Warehouse/PutawayTasks/PutawayTasksIndex.en.resx` — S1 ekranı kökeni göstermiyor; S2'de `Cancellation` / `ShortDispatch` görevleri ayırt edilsin diye PutawayTasks ve PickTasks detayında gösterilir — S1 PutawayTasks detayına DL-6'da tek eklemeli alan; iki ekranın resx'ine 7 dilde, AC-34), S2 hata kodları (`Warehouse.Error.WMS_ALLOCATION_FAILED` ve §12'nin S2 satırlarındaki
+her kod; INVENTORY'den geçen `RESERVATION_*` kodları dahil), `Help.{OUTBOUNDSHIPMENTS,PICKTASKS,PACKINGSTATION,WAREHOUSEEXCEPTIONS,WAREHOUSEACTIVITY,WAREHOUSEINTEGRATION}.*` (§24).
+
+### 11.5 Dosyalar (S2 ve S3 — r20)
+
+```text
+frontend/Diten.Web/Views/Warehouse/OutboundShipments/        (Compact seti birebir — GoldenReferenceCompact)
+├── Index.cshtml · Create.cshtml · Edit.cshtml · Details.cshtml   (Layout = "_LayoutTenantShell" AÇIKÇA)
+├── _Form.cshtml                  (başlık + satırlar; "Tahsisi önizle" → POST /api/warehouse/outbound-shipments/allocation-preview)
+├── _Filter.cshtml · _DataTable.cshtml (data-dt-standard="v2", data-dt-data-mode="server") · _IndexL10n.cshtml
+└── OutboundShipmentsIndex.cs     (marker)
+frontend/Diten.Web/Views/Warehouse/PickTasks/                (Slim seti — _CreateEditOffcanvas.cshtml YOK: görevleri tahsis açar; bilinçli sapma)
+├── Index.cshtml · _Filter.cshtml · _DataTable.cshtml · _IndexL10n.cshtml · _DetailsQuickView.cshtml (onaylar, zaman çizelgesi, onay paneli)
+└── PickTasksIndex.cs
+frontend/Diten.Web/Views/Warehouse/Packing/Index.cshtml      (detay + koli formu; DataTable değil)
+frontend/Diten.Web/Views/Warehouse/{WarehouseExceptions,WarehouseActivity}/
+                                  (Slim liste — Index, _Filter, _DataTable, _IndexL10n, marker; offcanvas yok: salt okunur, bilinçli sapma)
+frontend/Diten.Web/Views/Warehouse/WarehouseIntegration/Index.cshtml · _IndexL10n.cshtml · marker   (yalnız kartlar; DataTable yok — r23)
+frontend/Diten.Web/wwwroot/assets/js/Warehouse/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}/index.js · index.l10n.js
+frontend/Diten.Web/wwwroot/assets/js/Warehouse/PickTasks/rules.js   (PutawayTasks/rules.js deseni)
+frontend/Diten.Web/wwwroot/assets/css/Warehouse/warehouse.css        (S1 dosyası genişler; yeni CSS dosyası yok)
+frontend/Diten.Web/Resources/Views/Warehouse/{…}/{Module}Index.{en,tr,fr,es,zh,ar,ru}.resx
+frontend/Diten.Web/Controllers/{OutboundShipments,PickTasks,Packing,WarehouseExceptions,WarehouseActivity,WarehouseIntegration}Controller.cs
+                                  (aynı origin MVC proxy → Gateway 5000; eylem başına izin, DL-3 F-1 dersi)
+```
+- Golden'dan bilinçli sapmalar (r20 önerisi, sahip onayı CT-APR-01 ile): PickTasks'ta oluşturma offcanvas'ı yok; S3 listelerinde offcanvas /
+  QuickView yok (salt okunur); Packing DataTable değil. OutboundShipments Compact seti birebir.
+
+## 12. Validation Rules
+
+| Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol | Hata |
+|---|---|---|---|---|---|
+| `Idempotency-Key` = `idempotencyKey` | Evet (her yazma) | 8–100, eşit; anahtar If-Match'ten ve iş kurallarından önce aranır; aynı anahtar + aynı parmak izi → 200 replay (yazım yok) (§8.1; bağımsız inceleme 10 F-1) | tekil index: yaratma `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` kayıtta; diğer komutlar `(TenantId, TaskId \| RoleId, ActorUserId, RequestOp, IdempotencyKey)` anahtar olayında (§4.6; bağımsız inceleme 11 F-2) | anahtar araması (eşzamanlı kaybeden yeniden arar) | 400 `INVALID_REQUEST` / `IDEMPOTENCY_KEY_REUSED` (farklı parmak izi) |
+| kaynak stok satırı (`warehouseId, fromLocationId, itemId, skuId, skuLevel, lotId?, stockStatus`) | Evet | şirketin INVENTORY bakiye satırı, OnHand > 0 | — | bakiye okuması | 422 `WMS_SOURCE_STOCK_NOT_FOUND` |
+| kaynak lokasyon | Evet | Receiving rolünün stoklanabilir alt ağacında | — | rol + `getLocationPath` | 422 `WMS_SOURCE_NOT_RECEIVING` |
+| `stockStatus` | Evet | yalnız `AVAILABLE` (§8.4) | — | — | 422 `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE` |
+| lot durumu | lot varsa | `Blocked` / `Expired` değil; `Draft` için 0178 kuralı yok — defter ne derse (Q-12 ölçümü) | — | TRACE | 422 `LOT_BLOCKED` / `LOT_EXPIRED` |
+| lot recall | lot varsa | geri çağırmada değil | — | RECALL okuması | 422 `LOT_UNDER_RECALL` |
+| `plannedQuantity` | Evet | decimal string > 0, ≤ 6 ondalık, ≤ açık miktar | — | açık miktar hesabı (iyimser; nihai koruma defter) | 400 / 422 `WMS_QUANTITY_EXCEEDS_OPEN` |
+| `toLocationId` (plan / onay) | onayda Evet | LOCATION `Bin` ya da stoklanabilir `StorageLocation`, `Active`, `isStockable`, aynı depo yolunda, `≠ fromLocationId`, Receiving / Staging rolü yok | — | `getLocation` + `getLocationPath` | 422 `UNKNOWN_LOCATION` / `WMS_TARGET_NOT_ALLOWED` |
+| `assigneeUserId` | Hayır | kiracının aktif kullanıcısı (alan yalnız Q-13 ölçümü bir kullanıcı listesi ucu bulursa) | — | kullanıcı listesi | 422 `WMS_ASSIGNEE_INVALID` |
+| `priority` | Hayır | `Low \| Normal \| High` | — | — | 400 |
+| `note` | Hayır | trim, ≤ 1000 | — | — | 400 |
+| onay `quantity` | Evet | > 0, ≤ kalan (Pending'ler düşülür) | — | — | 422 `WMS_QUANTITY_EXCEEDS_REMAINING` |
+| seri SKU kısmi onay / kısa kapatma / miktar düzenleme | — | yok (§8.16) | — | — | 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` |
+| seri kovası (onay + yeniden deneme) | seri SKU | kovadaki seri sayısı = görev miktarı | — | `IWarehouseSerialReader` | 422 `WMS_SERIAL_BUCKET_CHANGED` / 503 `INVENTORY_UNAVAILABLE` |
+| seri kovası karışık durum (oluştur + onay) | seri SKU | aynı lokasyonda aynı lot + SKU'nun `AVAILABLE` dışı stoğu yok | — | INVENTORY bakiye okuması | 422 `WMS_SERIAL_BUCKET_MIXED_STATUS` |
+| Gsku seri bayrağı (oluştur) | Gsku | ürün bayrağı (`getProduct.serialControlled`) açıkça `false` | — | PRODUCT-MASTER | 422 `SKU_LEVEL_NOT_STOCKABLE` |
+| ledger bütünlüğü (onay / yeniden deneme / sweeper) | — | aynı `PostingKey` ile farklı hareket yok | — | `IPostingKeyLookup` | 409 `WMS_POSTING_INTEGRITY_ERROR` (onay `IntegrityError`) |
+| uçuş kilidi (yeniden deneme; onay ucunda 0-satır (C) dalı) | — | kilit boş ya da süresi dolmuş; işlem 2'de `AttemptId` bu deneme | atomik koşullu güncelleme | — | 409 `WMS_CONFIRMATION_IN_FLIGHT` (C1, yabancı kilit geçerli); sonuç yazımında yabancı kilit dolmuş → 409 `WMS_CONFLICT` (C2; bağımsız inceleme 09 F-5) |
+| CAS yinelemesi tükendi | — | 0-satır (A) en çok 3 kez | — | — | 503 `WMS_CONFIRMATION_CONFLICT_RETRY` (onay Pending, kilit korunur; hareket defterde olabilir — "Yeniden dene" / sweeper çözer) |
+| "Uzlaştır" | sorumlu | yalnız `IntegrityError` onay, gerekçe 10–1000, görevde Pending / uçuştaki onay yok | — | `IPostingKeyLookup` | 409 `WMS_CONFIRMATION_NOT_RESOLVABLE` / 409 `WMS_CONFIRMATION_PENDING` / 400 `REASON_REQUIRED` / 403 |
+| yeniden deneme | — | yalnız Pending onay; atanan ya da sorumlu | — | — | 409 `WMS_CONFIRMATION_NOT_RETRYABLE` / 403 `WMS_NOT_ASSIGNEE` |
+| "Geri taşındı" | — | yalnız çözümsüz Refused onay, gerekçe 10–1000; atanan ya da sorumlu; görevde Pending onay yok; önce ledger araması (geç commit → 409) | — | `IPostingKeyLookup` | 409 `WMS_CONFIRMATION_NOT_RESOLVABLE` / 409 `WMS_POSTING_INTEGRITY_ERROR` / 409 `WMS_CONFIRMATION_PENDING` / 400 `REASON_REQUIRED` / 403 `WMS_NOT_ASSIGNEE` |
+| toplu atama | — | Pending onaylı görev atanmaz | If-Match = V | — | satır sonucu `PendingConfirmation` (409 `WMS_CONFIRMATION_PENDING`) |
+| Kalanı kapat / İptal (ve yeni onay) | — | hedef kümenin (§8.3 CAS tablosu; İptal / Kalanı kapat'ta görevin **tüm** Refused onayları) anahtarı ledger'da `Committed` değil; Kalanı kapat: atanan ya da sorumlu; İptal: `cancel` izni | — | `IPostingKeyLookup` | 409 `WMS_POSTING_INTEGRITY_ERROR` / 403 `WMS_NOT_ASSIGNEE` |
+| geçici sayaç yazımı | görev oluştur | atomik artış | tekil `(TenantId, CompanyCodePrefix, TypePrefix)` | — | 503 `WMS_RECORD_CODE_UNAVAILABLE` |
+| rol için lokasyon tipi | — | `Site` / `Warehouse` değil | — | LOCATION | 422 `WMS_LOCATION_TYPE_NOT_ALLOWED` |
+| onay `deviationReason` | hedef ≠ plan ise | 10–1000 | — | — | 400 `REASON_REQUIRED` |
+| `shortCloseReason` / `cancelReason` | Evet | 10–1000 | — | — | 400 `REASON_REQUIRED` |
+| durum geçişi | — | §8.3 | — | — | 409 `WMS_INVALID_TRANSITION` |
+| Pending onay varken iptal / kısa kapatma | — | — | — | — | 409 `WMS_CONFIRMATION_PENDING` |
+| `If-Match` | değişiklikte Evet | `W/"<version>"` | `Version` filtresi | — | 400 / 409 `WMS_CONFLICT` |
+| rol `locationId` | Evet | Active, tip `StorageLocation \| Zone \| Bin`, şirketin | tekil `(LocationId)` | LOCATION | 422 `UNKNOWN_LOCATION` / 409 `WMS_LOCATION_ROLE_EXISTS` |
+| rol `acceptedStorageConditions` | rol yoksa Evet | sözleşmenin beş kodundan, tekrarsız, en çok bir sıcaklık kodu | — | — | 400 `WMS_STORAGE_CONDITION_INVALID` |
+| rol kaldırma / kayıt silme | — | düğümün alt ağacında açık görev (`FromLocationId`) yoksa | — | açık görev sorgusu | 409 `WMS_LOCATION_HAS_OPEN_TASKS` |
+| saklama koşulu uyumu (oluştur / düzenle / onay) | hedef varsa | §8.12 | — | PRODUCT-MASTER + rol kalıtımı | 422 `WMS_STORAGE_CONDITION_MISMATCH` / `WMS_STORAGE_CONDITIONS_UNKNOWN` |
+| şirket öneki | görev oluştur | MDM `Code` `^[A-Z]{2,5}$` | — | MDM okuması | 422 `WMS_COMPANY_CODE_INVALID` / 503 |
+| onaylayan | onayda | atanan ya da sorumlu | — | — | 403 `WMS_NOT_ASSIGNEE` |
+| üstlen | — | görev atanmamış, Pending yok | — | — | 409 `WMS_TASK_ALREADY_ASSIGNED` / `WMS_CONFIRMATION_PENDING` |
+| düzenlemede kaynak kova | — | değiştirilemez | — | — | 400 `INVALID_REQUEST` |
+| düzenlemede miktar | — | ≥ onaylanan + bekleyen | — | — | 422 `WMS_QUANTITY_BELOW_CONFIRMED` |
+| rol çakışması | — | aynı düğüm hem Receiving hem Staging değil | — | — | 409 `WMS_LOCATION_ROLE_CONFLICT` |
+| atalar arası rol çakışması (F-13) | — | atası / alt ağacı karşı rolü taşıyan düğüme rol verilemez | — | `getLocationPath` + alt ağaç | 409 `WMS_LOCATION_ROLE_INHERITED_CONFLICT` |
+| sayfa | — | `page ≥ 1`, `pageSize ≤ 200` | — | — | 400 |
+| INVENTORY ret kodları (onayda) | — | aynen iletilir: `INSUFFICIENT_STOCK`, `LOT_BLOCKED`, `LOT_EXPIRED`, `LOT_RETEST_DUE`, `UNKNOWN_LOCATION`, `SERIAL_NOT_AVAILABLE`, `ITEM_NOT_ACTIVE`, … | — | — | 422 (onay `Refused`) |
+
+**S2 satırları (r20):**
+
+| Alan / kural | Zorunlu | Biçim / kural | DB | Ön kontrol | Hata |
+|---|---|---|---|---|---|
+| outbound `warehouseId` | Evet | LOCATION `Warehouse`, Active, şirketin | — | LOCATION | 422 `UNKNOWN_LOCATION` |
+| `stagingLocationId` | depoda birden çok Staging varsa | deponun Staging rolündeki stoklanabilir düğümü | — | rol + `getLocationPath` | 400 `INVALID_REQUEST` (eksik) / 422 `WMS_STAGING_NOT_CONFIGURED` (hiç yok) / 422 `WMS_TARGET_NOT_ALLOWED` (Staging değil) |
+| `shipTo` | Evet | donmuş `Address` zorunluları; KVKK (loglanmaz) | — | — | 400 |
+| `orderRef` / `note` | Hayır | ≤ 100 / ≤ 1000 | — | — | 400 |
+| `lines` | Evet | 1–100; tahsis satırı ≤ 100 | — | — | 400 / 422 `WMS_ALLOCATION_TOO_MANY_LINES` |
+| satır `skuLevel` | Evet | `Gsku \| Lsku \| FinishedGood \| Item`; outbound içinde Item ile öbürleri karışmaz | — | — | 422 `WMS_OUTBOUND_LEVEL_MIXED` |
+| Item satırı çözümlemesi | Item'da | `skuId` yok ya da `= itemId`; `getSku(itemId, Item)` var, stoklanabilir, yaşam döngüsü çıkışa izin verir (§8.24) | — | PRODUCT-MASTER | 422 `WMS_ITEM_NOT_RESOLVABLE` (`details.reason`) / 503 `PRODUCT_MASTER_UNAVAILABLE` |
+| Item outbound'u sevke hazır | — | v1 yayın kapısı (§8.24 kural 4) | — | — | 409 `WMS_ITEM_LEVEL_NOT_PUBLISHABLE` |
+| lot değişimi, FEFO kipi `Block` | — | ilk uygun lot dışı lot reddedilir (§8.17 adım 3) | — | politika okuması | 422 `FEFO_ORDER_VIOLATION` |
+| sevke hazır ön kontrolü | — | toplanan her tahsisin lotu recall'da / Blocked / Expired / retest vadesi geçmiş değil; FEFO sırası her kipte (§8.21, r22) | — | RECALL + TRACE + politika | 422 `LOT_UNDER_RECALL` / `LOT_BLOCKED` / `LOT_EXPIRED` / `LOT_RETEST_DUE` / `FEFO_ORDER_VIOLATION` (`Block`) / `FEFO_BYPASS_REASON_REQUIRED` (`RequireReason`, gerekçe yok); 503 |
+| release `fefoBypassReasons[].reason` | `RequireReason` kipinde sapan tahsis için | 10–1000; `allocSeq` outbound'un ve sapan tahsis | — | — | 422 `FEFO_BYPASS_REASON_REQUIRED` (yok / < 10; r23: tek kod) / 400 `INVALID_REQUEST` (bilinmeyen `allocSeq`; > 1000 her kipte — r24, son bakış 02 F-5, INVENTORY ayrıştırıcısıyla aynı kod) |
+| satır `uomId` | Evet | SKU baz birimi | — | PRODUCT-MASTER | 422 `WMS_UOM_NOT_BASE` |
+| satır `orderLineId` | Evet | ≤ 100, outbound içinde tekil | — | — | 400 |
+| satır miktarı | Evet | decimal > 0, ≤ 6 ondalık | — | tahsis planı | 422 `WMS_ALLOCATION_FAILED` (`details.lines[]`) |
+| `lotOverride.lotId` | Hayır | FEFO uygun listesinde | — | FEFO okuması | 422 FEFO dışlama kodu (`LOT_UNDER_RECALL` / `LOT_EXPIRED` / `LOT_BLOCKED` / `LOT_RETEST_DUE`) ya da `WMS_LOT_NOT_ALLOCATABLE` |
+| `lotOverride.fefoBypassReason` | lot ilk uygun lot değilse (`RequireReason`) | 10–1000 | — | politika | 422 `FEFO_BYPASS_REASON_REQUIRED` (yok / < 10; r23: tek kod) / 400 `INVALID_REQUEST` (> 1000, her kipte, istek biçimi — r24, son bakış 02 F-5; §8.17 adım 3 kanıtı) |
+| seri kontrollü SKU tahsisi | seri SKU | kova bütün olarak alınır | — | seri okuması (§8.16) | 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` |
+| tahsis yarışı | — | FU03 toplu ret | — | FU03 port | 422 `WMS_ALLOCATION_FAILED` (FU03 satır kodlarıyla) |
+| tahsis sürerken tekrar | — | kayıt `Allocating` | — | anahtar araması | 409 `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS` |
+| outbound düzenleme / koli komutu | — | `ReadyToShip` ve sonrası değişmez | `Version` | — | 409 `WMS_OUTBOUND_IMMUTABLE` |
+| outbound geçişi | — | §8.18 | — | — | 409 `WMS_INVALID_TRANSITION` |
+| outbound iptali | — | yalnız Allocated / Picked / Packed; gerekçe 10–1000; Pending onay yok | `Version` | `IPostingKeyLookup` (S1 ön arama) | 409 `WMS_OUTBOUND_CANCEL_NOT_ALLOWED` / `WMS_CONFIRMATION_PENDING` / `WMS_POSTING_INTEGRITY_ERROR` / 400 `REASON_REQUIRED` |
+| pick onayı miktarı | Evet | > 0, ≤ kalan; seri SKU tam | — | — | 422 `WMS_QUANTITY_EXCEEDS_REMAINING` / `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` |
+| pick onayı gövdesi | — | hedef / kaynak alanı yok | — | — | 400 `INVALID_REQUEST` |
+| pick ön kontrolleri | — | recall değil; Staging saklama koşulu uyumlu | — | RECALL + §8.12 | 422 `LOT_UNDER_RECALL` / `WMS_STORAGE_CONDITION_MISMATCH` |
+| koli içeriği | açılışta isteğe bağlı, kapanışta ≥ 1 | `allocSeq` outbound'un; Σ ≤ toplanan | — | — | 422 `WMS_PACKAGE_EXCEEDS_PICKED` / 422 `WMS_PACKAGE_EMPTY` |
+| `weightKg` / `dimensionsCm` | Hayır | > 0, ≤ 3 ondalık / `^\d{1,4}x\d{1,4}x\d{1,4}$` | — | — | 400 |
+| koli komutu outbound durumu | — | outbound `Picked` (açılış), koli `Open` (düzenle / kapat) | `Version` | — | 409 `WMS_INVALID_TRANSITION` |
+| sevk eşitlemesi | — | outbound `ReadyToShip` | — | MVP-6 okuması (`IShipmentReader`, §5) | 403 `WMS_DISPATCH_READ_FORBIDDEN` (MVP-6 401 / 403) / 503 `WMS_DISPATCH_SOURCE_UNAVAILABLE` (5xx, öbür 4xx — r25, 2 sn zaman aşımı, bağlantı, okunamayan gövde, aday detayı 404; r24) / 409 `WMS_DISPATCH_AMBIGUOUS` |
+| iptal / eksik sevk geri yerleştirme görevi | — | `Origin = Cancellation` ya da (r23) `ShortDispatch`: kaynak Staging rolünde olabilir (S1 Receiving kuralının iki istisnası) | — | rol | — |
+| S3 süzgeci | Etkinlikte Evet | tarih aralığı ≤ 31 gün, `page ≥ 1`, `pageSize ≤ 200` | — | — | 400 |
+
+**Yeni kod adları (`WMS_*`) WMS-BUNDLE 1.0.0 / 1.1.0 hata kataloğunda dondu** (r27, inceleme F-7; r25'e kadar "öneri"ydi; tek liste
+sözleşmenin kataloğudur). **r26:** donma CT 2026-11-10 (`docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`;
+katalog `WarehouseErrorCodes` ile eşit, test; kayıt ve sözleşme MVP-1 hattında, main'e hat PR'ıyla girer);
+K-2 (sahip kararı Beste 2026-11-10) ile 1.1.0 kataloğuna iki kod eklendi: 404 `WMS_PACKAGE_NOT_FOUND` (koli yolları, §8.20) ve 503
+`WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` (atanan kullanıcı, kiracının kullanıcı listesinden — AUTH — doğrulanır, liste ucu erişilemezse 503;
+Q-13 kararı ve §12 `assigneeUserId` satırı — `createPutawayTask`, `updatePutawayTask`,
+`bulkAssignPutawayTasks`, `bulkAssignPickTasks`). Düşük bulgu: `WarehouseErrorCodes.All` `AssigneeDirectoryUnavailable`'ı listelemiyor
+(test açıkça ekliyor) — FU-0178-ERRCAT-01. `LOT_UNDER_RECALL`, `LOT_BLOCKED`, `LOT_EXPIRED`,
+`UNKNOWN_LOCATION`, `REASON_REQUIRED`, `IDEMPOTENCY_KEY_REUSED`, `CROSS_LE_FORBIDDEN` mevcut kodlardır (yeniden tanımlanmaz).
+
+## 13. Failure Path to Verify
+
+1. **Duplicate:** aynı kullanıcı aynı anahtarla iki "görev oluştur" → 1 görev, 2. cevap 200 replay (görevin **güncel** hâli; ilk cevabın
+   gövdesi değil — §8.1); farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`; başka kullanıcının aynı anahtarı ayrı istektir (yeni görev)
+   (bağımsız inceleme 11 F-1 / F-2).
+2. **Çift onay / tekrar:** aynı onay isteği (aynı `Idempotency-Key`, aynı gövde, aynı `If-Match`) iki kez → tek hareket
+   (`sourceModule MOD-0178`, `sourceDocumentId = taskId`, `sourceLineId = seq`), ikinci cevap **200 replay** — 409 `WMS_CONFLICT` değil:
+   anahtar If-Match'ten önce aranır (§8.1; bağımsız inceleme 10 F-1); defterde aynı `PostingKey` ile 1 satır, ikinci onay kaydı yok; replay cevabı ilk isteğin onayının `confirmationSeq`'ini taşır
+   (bağımsız inceleme 11 F-1). Aynı
+   anahtar + farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`.
+3. **Çöküş kurtarma (inceleme 03 ile düzeltildi):** işlem 1 sonrası INVENTORY 503 — ya da commit sonucu bilinmeyen başka bir sonuç (500 / 502 / 504, zaman aşımı, ağ hatası,
+   iptal (`OperationCanceledException`), beklenmeyen istisna; Codex P2, bağımsız inceleme 13 F-2) → onay Pending, cevap 503. Hareket yazılmamışsa
+   yalnız kullanıcının "Yeniden dene"si aynı anahtarla posting yapar → Posted; sweeper bu durumda hiçbir şey yazmaz. INVENTORY'nin
+   önceden yazdığı (cevap kaybolan) durumda sweeper (`ReconcilePendingConfirmationCommand`) ya da "Yeniden dene" ledger araması ile
+   Posted yazar → yine tek hareket.
+4. **Missing / invalid:** miktar 0 / negatif / üslü / 7 ondalık, hedef yok, hedef = kaynak, hedef Receiving rolünde, hedef başka
+   depoda, gerekçe < 10 → 400 / 422, yazma yok.
+5. **Fazla miktar:** açık miktarı aşan görev → 422; iki eşzamanlı görev açık miktarı birlikte aşarsa ikisi de açılabilir
+   (iyimser) ama onayda defter `INSUFFICIENT_STOCK` verir → onay Refused, görev miktarı değişmez, stok eksiye düşmez.
+6. **Tutulan stok:** QUARANTINE / QI kovadan görev → 422 `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE`; MOD-0175 kararı sonrası aynı kova
+   `AVAILABLE` → aday.
+7. **Recall:** recall'daki lot → görev / onay 422 `LOT_UNDER_RECALL`; RECALL okuması hata → 503, yazma yok.
+8. **Lot Blocked / Expired:** 422 aynı kod; görev açıkken lot bloke olursa onay defterden Refused `LOT_BLOCKED`.
+9. **Unauthorized:** token yok → 401; anahtar yok → 403 (her uç); ekran anahtarı yok → UAS-001 (iskelet yok, yönlendirme yok);
+   "Onayla" düğmesi `confirm` anahtarı yoksa görünmez, API yine 403.
+10. **Cross-tenant / cross-company:** B kiracısı A'nın görevini okuyamaz → 404; aynı kiracıda seçili şirketle başka şirketin
+    görevine id ile erişim → **404**; `X-Legal-Entity-Id` token / üyelikle uyuşmazsa → 403 `CROSS_LE_FORBIDDEN`; listede başka
+    şirketin satırı yok (F-11).
+11. **Concurrency:** iki kullanıcı aynı görevi aynı sürümle düzenler / onaylar → biri 409 `WMS_CONFLICT`; sessiz üzerine yazma yok.
+12. **Geçersiz geçiş:** Completed görevi onaylama / iptal → 409 `WMS_INVALID_TRANSITION`; Pending varken iptal → 409
+    `WMS_CONFIRMATION_PENDING`.
+13. **İkinci bakiye yok / doğrudan defter yazımı yok:** mimari test (Boundary rules 1–2).
+14. **Fail-closed üst akış:** LOCATION / MDM şirket / RECALL okuması yok → 503; INVENTORY'nin kendi 503'ü (`PRODUCT_MASTER_UNAVAILABLE`)
+    onayı Pending bırakır.
+15. **Eşzamanlı iki yeniden deneme** (kullanıcı + sweeper) aynı Pending onayda → tek hareket, `ConfirmedQuantity` bir kez artar (F-3).
+16. **INVENTORY 400 / 403 / 404 / 409** → onay kalıcı Refused, sweeper denemez (F-2).
+17. **Seri kovası değişti** → 422 `WMS_SERIAL_BUCKET_CHANGED`; seri SKU'da kısmi onay → 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED` (F-1).
+18. **Cevabı kaybolmuş hareket + koşul değişti** (inceleme 02 F-1): ledger yazdı, 0178 Pending; bu arada lot recall'a girdi → "Yeniden dene"
+    önce anahtarı bulur → Posted; ön kontrol koşmaz; ikinci hareket yok.
+19. **Aynı anahtar, farklı hareket** (`IDEMPOTENCY_KEY_REUSED`) → onay `IntegrityError`, Superseded / Returned 409, görev kilitli.
+20. **Sweeper, işlenmemiş anahtar** → onay Pending kalır; PRODUCT-MASTER / LOCATION'a çağrı yok (inceleme 02 F-5).
+21. **Uçuştaki onay + "Yeniden dene"** → 409 `WMS_CONFIRMATION_IN_FLIGHT`; kilit dolunca replay → Posted (inceleme 03 F-1).
+22. **`IntegrityError` → "Uzlaştır"** (sorumlu, gerekçe) → anahtarı tutan hareket bu onayınsa Posted (defter değerleriyle, gerekirse
+    sapma olayı); yabancıysa çözümsüz Refused, görev açık kalır (inceleme 03 F-2, inceleme 04 F-1).
+23. **Posting süresi aşımı** → onay Pending, kilit `InFlightUntilUtc`'ye kadar korunur; sonraki deneme ledger araması ile çözer. Commit
+    kilit süresinden de geç görünürse ve bu arada deneme ön kontrolle Refused yazdıysa, sweeper'ın savunma dalı onayı `IntegrityError`
+    (`StatusDiverged`) yapar; "Uzlaştır-a" defter gerçeğini yazar (gerekirse `OverPlanned` sapması) (inceleme 04 F-2, inceleme 05 F-1 / F-3).
+24. **Yaratma dışı komut tekrarı** (bağımsız inceleme 10 F-1): düzenle, üstlen, toplu atama, yeniden dene, "Geri taşındı", Kalanı kapat,
+    İptal, Uzlaştır ve rol oluştur / düzenle / sil / toplu sil — aynı anahtar + aynı gövde iki kez → tek yazım, ikinci cevap 200 replay
+    (ilk istek `Version`'ı artırmış olsa da 409 değil; rol yaratmada 409 `WMS_LOCATION_ROLE_EXISTS` değil); farklı gövde → 400
+    `IDEMPOTENCY_KEY_REUSED`; iki özdeş istek aynı anda → biri yazar, öbürü 200 replay; tekrar ne yerel olay ne merkezi kayıt bırakır. İki özdeş rol
+    yaratma aynı anda (aynı `locationId`) → biri 201, öbürü 200 replay — kaybeden yinelenen kaydı anahtar ya da `LocationId` index'inden
+    hangisinden alırsa alsın (409 `WMS_LOCATION_ROLE_EXISTS` değil); başka anahtarla aynı `locationId` → 409 `WMS_LOCATION_ROLE_EXISTS`;
+    tekil silmenin anahtarı toplu silmede ayrı anahtardır (bağımsız inceleme 11 F-2 / F-3).
+
+**S2 / S3 (r20):**
+25. **Tahsis başarısız:** bir satır karşılanamaz → 422 `WMS_ALLOCATION_FAILED`, görünür outbound yok, rezervasyon yok, pick görevi yok.
+26. **Tahsis yarışı:** plan ile toplu rezervasyon arasında başka çıkış lotu alır → FU03 toplu ret → outbound `AllocationFailed` (iç), 422;
+    rezervasyon yok (atomik).
+27. **Tahsis kesintisi:** işlem A sonrası ya da toplu rezervasyon sonrası çöküş → bakım servisi aynı anahtarlarla yeniden gönderir → tek
+    rezervasyon kümesi, outbound `Allocated`; kullanıcı tekrarı sürerken 409 `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS`.
+28. **Başka outbound'un rezervasyonu:** FEFO ilk lotu gösterse de FU03 serbest miktarı sınırlar → kalan lot sonraki lottan.
+29. **Recall'daki lot:** tahsiste FEFO dışlar; lot değişimiyle seçilirse 422 `LOT_UNDER_RECALL`; pick onayında 422 aynı kod, hareket yok.
+30. **FEFO sapması gerekçesiz** (`RequireReason`) → 422 `FEFO_BYPASS_REASON_REQUIRED` (r23: tek kod); gerekçeyle → tahsis + satırda `fefoBypassReason`;
+    1000'den uzun gerekçe (tahsis ya da release) her kipte → 400 `INVALID_REQUEST`, yazım yok (r24, son bakış 02 F-5).
+31. **Pick onayı rezervasyon reddi** (`RESERVATION_NOT_ACTIVE` — rezervasyon bu arada bırakılmış) → onay Refused, hareket yok.
+32. **Kısa toplama:** görev kısa kapatılır → outbound `Picked` (toplanan > 0) ya da `Allocated` kalır (toplanan 0, yalnız iptal).
+33. **Koli fazlası** → 422 `WMS_PACKAGE_EXCEEDS_PICKED`; `ReadyToShip` sonrası koli / düzenleme → 409 `WMS_OUTBOUND_IMMUTABLE`.
+34. **İptal:** `ReadyToShip` → 409; Pending pick onayı → 409; bırakma hatası → outbound `Cancelled`, tahsis `Pending`, bakım servisi bırakır;
+    staging'deki stok için `Origin = Cancellation` putaway görevi.
+35. **Sevk eşitleme:** MVP-6 sevkiyatı `Planned` → değişiklik yok; `Dispatched` → `Shipped` + artık rezervasyon bırakılır; MVP-6 401 / 403 → 403,
+    5xx / öbür 4xx (400, 409, 429 …; r25) / 2 sn zaman aşımı / bağlantı / okunamayan gövde / aday detayı 404 → 503 (r24, §5 eşlemesi), yazım yok; iki uygun sevkiyat → 409 `WMS_DISPATCH_AMBIGUOUS`.
+36. **Kiracı / şirket / yetki (S2 / S3):** S1 kuralı her S2 / S3 ucunda (404 / 403 / 401); S3 listelerinde başka şirketin satırı yok.
+37. **Tekrar (S2):** her S2 yazma komutu aynı anahtar + aynı gövde → 200 replay, farklı gövde → 400 (S1 kuralı 24).
+38. **Item outbound (§8.24):** çözülemeyen kalem → 422 `WMS_ITEM_NOT_RESOLVABLE`, yazım yok; karışık seviye → 422 `WMS_OUTBOUND_LEVEL_MIXED`;
+    `release` → 409 `WMS_ITEM_LEVEL_NOT_PUBLISHABLE`; donmuş uçlarda görünmez.
+39. **Kişisel veri okuması (Q-10a):** `warehouse.outbound-shipments.read` olmayan kullanıcı (ör. varsayılan Viewer) outbound arama / görünümünde
+    403; pick ve koli cevapları `shipTo` taşımaz, bu yüzden operatör anahtarsız çalışır.
+40. **Pick sonrası recall / lot durumu (r21):** release ön kontrolü 422 (`LOT_UNDER_RECALL` / `LOT_BLOCKED` / `LOT_EXPIRED` /
+    `LOT_RETEST_DUE` / `FEFO_ORDER_VIOLATION`), yazım yok; `ReservedLotUnderRecall` istisnası; çıkış iptal.
+41. **Bin çakışması (r21):** aynı (bin, lot) üzerinde başka outbound'un açık pick görevi → plan sonraki bine geçer; bin toplamı yetmezse
+    422 `WMS_ALLOCATION_FAILED` (`BinCapacityShort`).
+42. **Bırakma sürüm çakışması (r21):** 409 `RESERVATION_CONFLICT` → tahsis `Pending`, bakım yeniden okur.
+43. **Sonradan oluşan FEFO sapması (r22):** release'te `Block` → 422 `FEFO_ORDER_VIOLATION`; `RequireReason` → gerekçe yoksa 422
+    `FEFO_BYPASS_REASON_REQUIRED`, gerekçeyle 200; `Warn` → 200.
+44. **Yabancı kaynaklı sevkiyat (r22):** tek sonuç bile olsa `sourceModule` / `sourceType` uymazsa değişiklik yok.
+45. **Eksik sevk (r23):** çıkan < toplanan → `ShortDispatch` geri yerleştirme görevi; çözülemezse (r24: SKU'nun bir satırında `lotId` yok,
+    `fromLocationId` yok ya da Staging değil, ya da çıkan > toplanan) görev yok, outbound'a `ShortDispatchUnresolved` satırı, S3 istisnası
+    Staging farkı kapanana kadar listede (§8.23; r25: fark lot başına ve tam `StagingLocationId` düğümünde, herhangi bir lotta ≠ 0 iken
+    listede; aynı düğüm + SKU'da Pending onay ya da eşitlenmemiş `ReadyToShip` outbound varken hesaplanmaz, listede kalır).
+46. **FU03 400 dalı (r24, son bakış 02 F-1 / F-6):** toplu rezervasyon 400 `IDEMPOTENCY_KEY_REUSED` → outbound `AllocationFailed`
+    (`KeyReused`), tahsisler `Pending`, S3 `AllocationOrphanSuspected`; bakım `FindByIdempotencyKeysAsync` ile bulur, `ACTIVE`'i bırakır;
+    bütün tahsisler `Released` olunca istisna düşer; kapsam uyuşmazlığında FU03 fail-closed → `Pending` kalır.
+
+## 14. Authorization Convention
+
+### 14.1 Namespace
+Yeni namespace **`warehouse.*`** (karar Q-08, Beste 2026-10-21; PKS-001 §4 bir namespace = bir sahip) — sahibi MOD-0178, manifest
+`PUTAWAY-PICKING-PACKING`. Seçim gerekçesi: WAREHOUSE-OUTBOUND taban yolu `/api/warehouse`; repo'da `warehouse.` anahtarı yok
+(2026-10-21 grep, 0 eşleşme). **Karar Q-08:** MOD-0180 / 0181 / 0182 aynı namespace'i paylaşamaz (tek sahip); kendi paketlerinde kendi namespace'lerini açarlar (önerilen adlar
+`wave.*`, `cycle-count.*`, `barcode.*`; kesin ad o paketlerde). `warehouse.*` 0178'in kalır. `inventory.*` (MOD-0173), `supplychain.*`
+(MVP-6) kullanılmaz. Manifest yalnız `warehouse.*` anahtarlarını bildirir; dış anahtarlar (`inventory.*`, `expiry.*`,
+`recall.*`, `trace.*`) bildirilmez (FU-0174-CAT-01 dersi, `ManifestNamespaceOwnershipTests` genişletilir).
+**r26:** PKS-001 §4 sahiplik tablosunda artık `warehouse.*` (MOD-0178) ve `inventory.*` (MOD-0173) satırları var — FU-0178-PKS-01 kapandı
+(WP `execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`, sahip onayı Beste 2026-11-10; MVP-1 hattı dalında,
+main'e hat PR'ıyla gelir).
+
+### 14.2 Anahtarlar (öneri — PKS-001'den türetildi)
+| Anahtar | Tier | Dilim | Anlam |
+|---|---|---|---|
+| `warehouse.putaway-tasks.read` | 1 | S1 | liste, detay, olaylar, aday stok listesi |
+| `warehouse.putaway-tasks.create` | 1 | S1 | görev aç |
+| `warehouse.putaway-tasks.update` | 1 | S1 | düzenle, ata (tekil + toplu) |
+| `warehouse.putaway-tasks.confirm` | 3 (bu pakette kayıtlı) | S1 | onayla, yeniden dene, kısa kapat, "Geri taşındı", üstlen — üstlen dışındakiler ayrıca **atanan ya da sorumlu** kuralına bağlı (§8.3; operatör şablonunda var) |
+| `warehouse.putaway-tasks.cancel` | 3 (`cancel`) | S1 | iptal |
+| `warehouse.putaway-tasks.resolve` | 3 (bu pakette kayıtlı; öneri — PKS-001 §1 dilbilgisi ve §5 Tier-3 kuralından türetildi) | S1 | `IntegrityError` onayın "Uzlaştır"ı; yalnız sorumlu rol şablonunda (inceleme 03 F-2) |
+| `warehouse.location-roles.read` | 1 | S1 | rol listesi |
+| `warehouse.location-roles.manage` | 3 (`manage`) | S1 | rol oluştur / düzenle / sil |
+| `warehouse.outbound-shipments.read` | 1 | S1 (donmuş GET'ler) / S2 | MVP-6 okuyucusu da bunu ister (Q-M6-8) |
+| `warehouse.outbound-shipments.create` | 1 | S2 | outbound + tahsis aç, tahsis önizlemesi |
+| `warehouse.outbound-shipments.update` | 1 | S2 | başlık düzenle, sevkiyatı kontrol et (eşitleme) |
+| `warehouse.outbound-shipments.cancel` | 3 (`cancel`) | S2 | outbound iptali (rezervasyon bırakma + geri yerleştirme görevi) |
+| `warehouse.outbound-shipments.release` | 3 (bu pakette kayıtlı) | S2 | ReadyToShip yap |
+| `warehouse.pick-tasks.read` | 1 | S2 | pick listesi, detay, olaylar |
+| `warehouse.pick-tasks.update` | 1 | S2 | ata (tekil + toplu) |
+| `warehouse.pick-tasks.confirm` | 3 (bu pakette kayıtlı) | S2 | onayla, yeniden dene, kısa kapat, "Geri taşındı", üstlen — atanan ya da sorumlu kuralı (§8.13) |
+| `warehouse.pick-tasks.resolve` | 3 (bu pakette kayıtlı; S1 `putaway-tasks.resolve` deseni) | S2 | pick onayında "Uzlaştır" |
+| `warehouse.packages.read` / `.create` / `.update` | 1 | S2 | Paketleme sayfası, koli aç, koli düzenle / kapat |
+| `warehouse.exceptions.read`, `warehouse.activity.read`, `warehouse.integration-monitor.read` | 1 | S3 | salt okunur izleme |
+
+Sevk eşitlemesi kullanıcıdan ayrıca MVP-6 anahtarı `supplychain.shipments.read`'i ister (MVP-6'nın ucu; 0178 manifesti bildirmez — §14.1
+dış anahtar kuralı; yoksa 403 `WMS_DISPATCH_READ_FORBIDDEN`). Rol şablonu bunu Depo sorumlusu için önerir; şablonun MVP-6 anahtarını
+verip veremeyeceği Auth'un kararıdır — MVP-6'nın itirazı yok (Q-M6-10 cevabı, Natig 2026-11-02).
+
+**Kişisel veri okuması — sahip kararı Q-10a (Beste, 2026-11-02):** `warehouse.outbound-shipments.read` (alıcı adı ve adresi, `ShipTo`)
+varsayılan Görüntüleyici (Viewer) rolüne **otomatik gitmez**; Admin ile depo ve sevkiyat rolleri alır (Admin için sahip kararı, Beste
+2026-11-02); yönetici başka bir role elle verebilir.
+**Bugünkü kod (ölçüldü `ea4bf3d06`) — Viewer'a iki yol var, ikisi de kapanmalı:**
+1. Rol şablonu: `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs` `SelectFor` →
+   `ViewerRole` dalı kiracı kapsamlı her `read` eylemini verir; dışarıda bıraktıkları `TenantSelfServicePermissions` ve
+   `EntitlementOnlyViewerPermissions` listeleridir (emsal: `mdm.items.read`, `mdm.product-abbreviations.read`).
+2. Modül etkinleştirme eşitlemesi: `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+   `GrantPermissionsToRolesAsync` → hedef roller Admin + Viewer (`TargetRoleNames`), `SelectForRole` Viewer'a modülün bütün `read`
+   anahtarlarını verir; tek genel dışlama `ExplicitGrantOnlyPermissions` (hiçbir varsayılan role gitmez — SuperAdmin dahil). Modüle özel
+   **hibe profili** olan modüller bu genel döngüye girmez (`ReconcileSpecialProfilesAsync`, ardından `return`); emsal
+   `ProductAbbreviationEntitlementGrantProfile` (`DedicatedRoles`: kendi rolleri ve anahtar kümeleri) — aynı anahtar ayrıca
+   `EntitlementOnlyViewerPermissions`'tadır.
+**Gerekli değişiklik (XMC-001, AuthService — bu paket ve dev dilimleri yazmaz; ayrı WP, sahibi Ali (Auth), XMC-001 o WP'de; §7):** (a) anahtar `EntitlementOnlyViewerPermissions`'a
+eklenir (yol 1 kapanır); (b) `PUTAWAY-PICKING-PACKING` modülü için bir hibe profili (`ProductAbbreviationEntitlementGrantProfile` deseni):
+Admin = modülün bütün anahtarları (**bu anahtar dahil**), Viewer = `read` anahtarları **eksi** `warehouse.outbound-shipments.read`, adanmış roller
+`WarehouseSupervisor` (Depo sorumlusu — bütün `warehouse.*`) ve `ShippingPlanner` (sevkiyat — `outbound-shipments.*`, `packages.read`,
+S3 okumaları) bu anahtarı alır; **`WarehouseOperator`** (r23, son bakış F-16, CT kararı: Auth WP kapsamında — `putaway-tasks.read` /
+`.confirm`, `pick-tasks.read` / `.confirm`, `packages.read` / `.create` / `.update`) bu anahtarı **almaz** (rol adları öneri; r26: üç adlı
+rolün yaratılma kuralı sahip kararıyla §14.3'te — hibe profili onları `PUTAWAY-PICKING-PACKING` hakkı olan **her** kiracıda, var olanlar
+dahil, beş koşulla yaratır; Auth WP MOD-0018-FU31, Ali); (c) elle atama bugünkü rol yönetimiyle yapılır (`RolePermission` kaynağı Manual; eşitleme
+var olan atamayı yeniden yazmaz — `GrantPermissionsToRolesAsync` "already granted by any source" dalı); (d) anahtar S1'den beri
+`WarehousePermissions.S1`'dedir — manifestle bildirildiği kiracılarda Viewer'a Module kaynağıyla zaten gittiyse geri alma gerekir (emsal
+`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/Q358ShipmentGrantRetraction.cs`); main'de bildirilip bildirilmediği bu
+worktree'de ölçülmedi (çıkarım — WP'nin ilk ölçümü). **0178 tarafı:** pick ve koli uçları `shipTo` taşımaz (Packing sayfası
+`GET /outbound-shipments/{outboundId}/packages` cevabındaki tahsis özetini okur, outbound görünümünü değil; girişi PickTasks'tan, §11.1),
+böylece operatör bu anahtar olmadan **ekranda da** uçtan çalışır (pick → Paketle → koli → kapat). AC-34, AC-76.
+**MVP-6'nın okuması (Q-M6-8 cevabı, Natig 2026-11-02):** MVP-6 kullanıcı token'ı (Bearer) + `X-Tenant-Id` + `X-Legal-Entity-Id` +
+`X-Correlation-Id` ile okur, servis kimliği yoktur; `warehouse.outbound-shipments.read` sevkiyat rolüne verilmelidir — `ShippingPlanner`
+bunu alır (tutarlı). 0178'in warehouse uçları kiracıyı token'dan alır; `X-Tenant-Id` yalnız iç servis anahtarlı uçlarda okunur
+(ölçüldü `db769471c`: `InternalServiceKeyAttribute`, `InternalStockPresenceController`) — kullanıcı uçlarında yok sayılır (çıkarım: davranış
+kodda okundu, test edilmedi).
+
+### 14.3 Politika ve aktör
+- `[Authorize]` (tenant shell) + her eylemde `[HasPermission(WarehousePermissions.X)]` (sabitler; `AuthorizationGuardTests`
+  her eylemi ölçer). SuperAdmin atlaması yok (FU-S1-02 emsali).
+- Aktör: `tenant_user`. Süreç içi tüketiciler (MOD-0177 KR-B gibi) bu paketin yazma uçlarını kullanmaz. MVP-6 okuyucusu
+  kullanıcı token'ıyla Gateway'den okur (Q-M6-8 cevabı, Natig 2026-11-02: Bearer + `X-Tenant-Id` + `X-Legal-Entity-Id` + `X-Correlation-Id`,
+  servis kimliği yok).
+- Üstlenme ayrı izin istemez: `warehouse.putaway-tasks.confirm` yeter (M-5, §8.13).
+- `warehouse.putaway-tasks.resolve` yalnız Depo sorumlusu şablonunda; operatöre verilmez.
+- Rol şablonu önerisi (ROLE1; r20 Q-10a ile; r26: "yalnız yeni kiracılar" kalktı — aşağıdaki sahip kararı): Depo operatörü = putaway-tasks.read + confirm, pick-tasks.read + confirm,
+  packages.read / create / update (outbound okuması **yok**); Depo sorumlusu (`WarehouseSupervisor`) = tüm putaway-tasks.* + pick-tasks.* +
+  location-roles.* + outbound-shipments.* + packages.* + S3 okumaları; Sevkiyat (`ShippingPlanner`) = outbound-shipments.* + packages.read +
+  S3 okumaları; Admin = modülün bütün anahtarları (bu anahtar dahil); Yönetim / Viewer = read'ler **eksi** `warehouse.outbound-shipments.read`
+  (S3 dahil). `.resolve` yalnız Depo sorumlusunda.
+- **Rollerin yaratılması — sahip kararı (Beste 2026-11-11; Auth WP MOD-0018-FU31'e cevap, WP sahibi Ali):** `WarehouseSupervisor`,
+  `ShippingPlanner` ve `WarehouseOperator` bir hibe profiliyle `PUTAWAY-PICKING-PACKING` hakkı olan **her** kiracıda yaratılır — var olan
+  kiracılar dahil ("yalnız yeni kiracılar" önerisinin yerine geçer). Beş koşul: (1) yalnız bu modül hakkı olan kiracılar; (2) kiracının aynı
+  adlı kendi rolü (profilin yaratmadığı `WarehouseSupervisor` / `ShippingPlanner` / `WarehouseOperator`) **dokunulmaz ve hiçbir anahtar
+  almaz** — özellikle `warehouse.outbound-shipments.read` verilmez; o kiracıda yaratma merkezi denetime **"atlandı" (skipped)** olarak
+  yazılır; anahtarları kiracı yöneticisi elle verir (r27 — sahip kararı Beste 2026-11-11 «evet», inceleme F-2; o kiracıda AC-76 (b)'nin
+  "alır"ı bu role uygulanmaz); (3) hiçbir kullanıcı role atanmaz; (4) her yaratma merkezi denetime gider; (5) yeniden koşu ikinci kopya
+  yaratmaz. AC-76 kabulü bu beşini de ölçer ((f)). Auth WP MOD-0018-FU31 iki dilim: (i) Viewer dışlaması + eşitleme + üç rol; (ii) var olan
+  kiracılarda eski Viewer hibesinin kontrollü geri alınması; tahmin ~28 sa. **Kaynak (r27, inceleme F-3):** WP kimliği MOD-0018-FU31, iki
+  dilim ve ~28 sa Ali'nin Beste'ye mesajından (2026-11-11) gelir; WP repoda henüz yok (kimlik bu paket dışında doğrulanamaz). Kararın kaynağı
+  bu sahip kararıdır (Beste 2026-11-11; kayıt: `docs/records/decisions/2026-11/mod0178-owner-decisions-2026-11-11.md` (D-3, D-4)). 0178 kodu ve dev dilimleri bunu yazmaz (XMC-001, §7).
+
+### 14.4 Manifest
+| Alan | Değer |
+|---|---|
+| ModuleCode | `PUTAWAY-PICKING-PACKING` (sahip kararı Beste 2026-10-26; InventoryService'teki beş manifestin büyük harf emsali — `RecallReadinessManifestProvider.cs:23` `RECALL-READINESS`; merkezi kaydın `SourceModule`'u aynı sabittir, §21; bağımsız inceleme 09 F-1) |
+| SortOrder | 178 |
+| Pages (S1) | `PUTAWAYTASKS` (nav), `WAREHOUSELOCATIONROLES` (nav) |
+| Pages (S2 / S3, r20) | `OUTBOUNDSHIPMENTS` (nav), `PICKTASKS` (nav), `PACKINGSTATION` (nav değil), `WAREHOUSEEXCEPTIONS`, `WAREHOUSEACTIVITY`, `WAREHOUSEINTEGRATION` (nav) |
+| Actions (S1, S2) | §11.3, her gerçek düğme bir eylem (S3'te eylem yok) |
+| ApiPermissions | `warehouse.outbound-shipments.read` (S1'de UI'sız, MVP-6 okuması için — RSV1 `ApiPermissions` deseni, Scope Tenant) |
+
+## 15. Gateway / API Routing Decision
+
+Karar: **Gateway değişikliği gerekli** (INT-WMS, integration-agent) — **yapıldı** (DL-8, `83b01ef62`, CT VERIFIED:
+`docs/records/audits/2026-11/mod-0178-dl8-ct-acceptance-2026-11-02.md`). Rotalar: `/api/warehouse` + `/api/warehouse/{everything}` →
+**`localhost:5067`** (r20: DL-8 CT kararıyla host `localhost` — dosyadaki bütün rotaların düzeni; port aynı),
+GET / POST / PUT / DELETE / OPTIONS (DELETE yalnız `location-roles` için anlamlı; PATCH yok), route kapsama testi; iletilen başlıklar:
+`Authorization`, `X-Legal-Entity-Id`, `X-Correlation-Id`, `Idempotency-Key`, `If-Match`. Dev dilimi `ocelot.json`'a yazmaz.
+**S2 / S3 (r20):** yeni Gateway rotası **gerekmez** — bütün S2 / S3 uçları `/api/warehouse/{everything}` altındadır; DL-8'in kapsama
+testi (`Mod0178WarehouseRouteTests`, 22 uca sabit) S2 / S3 uçlarıyla güncellenir (AC-74, integration-agent; DL-4 / DL-5 / DL-7
+kabulünde). Sevk eşitlemesinin MVP-6 okuması InventoryService'ten Gateway'e çıkan bir HTTP çağrısıdır (MVP-6'nın mevcut rotası).
+Süreç içi gerekçe: putaway onayının defter yazımı ve recall / lot / FEFO okumaları aynı serviste (W-2); ayrı servis olsaydı
+`LOCATION_TRANSFER` HTTP üzerinden giderdi ve recall ek kuralı (§8.5) için RECALL'a ayrı HTTP okuması gerekirdi.
+
+## 16. Acceptance Criteria
+
+**S1 (bağlayıcı hedef; ready-for-dev için):**
+- [ ] AC-1 (zorunlu) — `Diten.InventoryService` 0 hata / 0 yeni uyarı ile derlenir; mevcut Inventory testlerinin hepsi yeşil kalır (sayı kabulde ölçülür, kırmızı eklenmez). BL-501 bildirim testi `CentralAuditDeclarationTests.cs` §5'in beşinci seam'iyle güncellenir ve yeşildir: komut sayısı DL-1 sonunda 71, DL-2 sonunda **82**; 0178'in her komutu `IsKnown` (Platform enum adı) ve `SourceModule` = 0178 manifest kodu; `seen` 0178'in `WithTransactionAsync` callback'leri kadar artar ve her biri enlist eder (bağımsız inceleme 09 F-3).
+- [ ] AC-2 (zorunlu) — Altın akış: test kurulumu Receiving rolündeki `R-01` bin'ine `AVAILABLE` 100 EA lot L1 koyar → `GET /api/warehouse/putaway-candidates` satırı açık miktar 100 döner → görev 60 açılır (201, numara RCS biçiminde) → aday açık miktarı 40 → 40'lık onay `A-01` → 201, INVENTORY'de `LOCATION_TRANSFER` (sourceModule `MOD-0178`, sourceType `PUTAWAY_TASK`, sourceDocumentId = görev id, sourceLineId `1`), bakiye R-01 60 / A-01 40, görev `InProgress` → 20'lik onay → görev `Completed`; servis yeniden başlatıldıktan sonra görev, onaylar ve bakiye aynı.
+- [ ] AC-3 (zorunlu) — Kısmi yerleştirme farklı hedeflere: aynı görev iki onayla iki ayrı bin'e; her onay ayrı hareket.
+- [ ] AC-4 (zorunlu) — İdempotent onay: aynı onay iki kez → defterde aynı `PostingKey` ile tek satır, 2. cevap 200 replay (§13.2). **Her yazma komutu (bağımsız inceleme 10 F-1, §8.1):** aynı `Idempotency-Key` + aynı gövde + ilk isteğin `If-Match`'i ile ikinci gönderim → **200 replay** (409 `WMS_CONFLICT` değil; rol yaratmada 409 `WMS_LOCATION_ROLE_EXISTS` değil), görev / rol `Version`'ı değişmez, yeni olay yok; aynı anahtar + farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`, yazım yok; aynı anahtar başka görevde ayrı istektir. Ayrı testler: görev yarat, düzenle, üstlen, toplu atama (replay'de yazılan satır `Assigned`, yazılmayan `Conflict` / `NotFound`), onay (ilk sonuç Posted ve ayrıca Refused — replay 200, gövdede onay `Refused`), yeniden dene, "Geri taşındı", Kalanı kapat, İptal, Uzlaştır, rol yarat / düzenle / sil / toplu sil. **Eşzamanlı vaka:** iki özdeş onay (ve iki özdeş yeniden deneme) bir bariyerle aynı anda → tek yazım, öbürü 200 replay (CAS kaybı / yinelenen anahtar sonrası anahtar yeniden aranır; 409 yok). Merkezi / yerel sayımlar AC-15 "tekrar = 0 / 0 / 0". **Onayın `seq`'i (bağımsız inceleme 11 F-1):** 201 cevabı `confirmationSeq`, 422 / 503 cevabı `details.seq` taşır; kurulum: ilk onay (seq 1) Refused → aynı görevde yeni onay (seq 2) Posted → ilk isteğin replay'i 200, `confirmationSeq = 1`, `confirmations[1].status = Refused` (son onayın seq'i değil). **Anahtar kapsamı (11 F-2):** A ve B kullanıcıları aynı anahtarla görev (ve ayrı testte rol) yaratır → iki ayrı kayıt, replay yok; aynı kullanıcı aynı anahtarı önce `deleteLocationRole`'de, sonra `bulkDeleteLocationRoles`'te kullanır → toplu silme replay sayılmaz, satırlarını yazar (200, satır `Deleted`). **Eşzamanlı rol yaratma (11 F-3):** iki özdeş rol yaratma (aynı `locationId`) bariyerle aynı anda → biri 201, öbürü 200 replay, 409 `WMS_LOCATION_ROLE_EXISTS` yok; Mongo'nun önce hangi index'i raporladığı geliştiricinin ölçümüdür, `LocationId` dalı ayrıca depo düzeyinde o index'in adıyla yinelenen kayıt hatası veren bir test kurulumuyla ölçülür; farklı anahtarla aynı `locationId` → 409 `WMS_LOCATION_ROLE_EXISTS`. **Bağımsız inceleme 12:** (F-4) işlem 1'den sonraki 409 cevabı da `details.seq` taşır (ör. AC-64 (C1) kurulumunda X'in 409 `WMS_CONFIRMATION_IN_FLIGHT`'i X'in onayının `seq`'ini); (F-3) **aynı hedef, iki işlem:** aynı kullanıcı aynı anahtarla önce `bulkAssignPutawayTasks` (görev T), sonra `updatePutawayTask` (aynı T) gönderir → düzenleme replay ya da 400 sayılmaz, yazılır (200, `Updated` olayı; anahtarlar `RequestOp` ile ayrı); (F-2) **özdeş eşzamanlı seri görev yaratma:** aynı kullanıcı, aynı anahtar, aynı gövde bariyerle aynı anda → biri 201, öbürü 200 replay (422 `WMS_QUANTITY_EXCEEDS_OPEN` yok); seri slot dalı ayrıca depo düzeyinde o index'in adıyla yinelenen kayıt veren kurulumla ölçülür.
+- [ ] AC-5 (zorunlu) — Pending kurtarma: INVENTORY 503 enjekte → onay Pending + 503; **commit sonucu bilinmeyen sonuçlar (Codex P2), ayrı testler:** INVENTORY 500, 502, 504, posting çağrısının iptali (`OperationCanceledException`, sahte defter iptal fırlatır; bağımsız inceleme 13 F-2) ve posting çağrısından beklenmeyen istisna → her biri onay Pending + 503 (`details.reason = OutcomeUnknown`, `details.seq`), Refused yazılmaz; **commit öncesi 500** (sahte defter yazmadan 500 döner) → "Yeniden dene" anahtarı `NotCommitted` bulur, aynı anahtarla posting yapar → Posted, tek hareket; **commit sonrası 500** (sahte defter hareketi commit eder, sonra 500 / istisna) → sweeper ya da "Yeniden dene" anahtarı `Committed` bulur → Posted, ikinci hareket yok, ön kontrol koşmaz; tarihler (`transactionDate` / `postingDate`) işlem 1'de yazılır ve her denemede byte-eşit gönderilir (yeniden denemede `IDEMPOTENCY_KEY_REUSED` yok); INVENTORY 400 / 403 / 404 / 409 → kalıcı Refused, hata saklanır, yeniden denenmez; **400 `IDEMPOTENCY_KEY_REUSED` → `IntegrityError`** (Refused değil); **cevap kayboldu + koşul değişti** (ledger yazdı, ardından lot recall'a girdi / kova karantinaya geçti) → "Yeniden dene" önce ledger anahtarını bulur ve onayı **Posted** yazar, ön kontrol koşmaz, ikinci hareket yok (inceleme 02 F-1); **sweeper** yalnız ledger anahtar kontrolü yapar — işlenmiş anahtar → Posted, işlenmemiş → Pending kalır, sweeper koşusunda PRODUCT-MASTER / LOCATION'a 0 çağrı (sahte upstream sayacı) (inceleme 02 F-5); "Yeniden dene" aynı anahtarla tek hareket üretir (§13.3); deneme sınırı yok (ör. 5 ardışık 503 sonrası 6. deneme yine aynı anahtarla gider), `Attempts` ve son deneme zamanı API'de ve ekranda; INVENTORY 422 dönerse onay `Refused` + "Stok reddetti" rozeti, görev miktarı değişmez.
+- [ ] AC-6 (zorunlu) — İkinci bakiye yok: mimari test `wms_*` koleksiyonlarında stok toplam alanı ve 0178 kodunda `IInventoryLedgerRepository` / defter koleksiyon adı referansı bulmaz; tek stok kapısı `WarehouseMovementPoster`.
+- [ ] AC-7 (zorunlu) — Tutulan stok: QUARANTINE / QUALITY_INSPECTION / BLOCKED kovadan görev 422 `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE`; adaylarda "yerleştirilemez" işaretli.
+- [ ] AC-8 (zorunlu) — Recall: geri çağırmadaki lot için görev ve onay 422 `LOT_UNDER_RECALL` (`details.movementType = LOCATION_TRANSFER`); okuma hatası 503, yazma yok.
+- [ ] AC-9 (zorunlu) — Defter retleri aynen iletilir: onayda `INSUFFICIENT_STOCK` / `LOT_BLOCKED` / `LOT_EXPIRED` (ve ölçülürse `LOT_RETEST_DUE`) → 422 aynı kod + `details`, onay `Refused`, görev miktarı değişmez.
+- [ ] AC-10 (zorunlu) — Hedef kuralları §12 (bin / aktif / stoklanabilir / aynı depo / ≠ kaynak / Receiving-Staging değil); ihlal → 422, yazma yok.
+- [ ] AC-11 (zorunlu) — Durum makinesi §8.3: izinsiz geçiş 409 `WMS_INVALID_TRANSITION`; Pending varken iptal / kısa kapatma 409 `WMS_CONFIRMATION_PENDING`; Posted onaylı görevin iptali 409 (yalnız "Kalanı kapat"); iptal Posted hareketleri geri almaz.
+- [ ] AC-12 (zorunlu) — Concurrency: bayat If-Match → 409 `WMS_CONFLICT`; eksik → 400.
+- [ ] AC-13 (zorunlu) — Kiracı + şirket (F-11): başka kiracının kaydı 404; seçili şirketle başka şirketin kaydına id ile erişim 404 (her uçta); `X-Legal-Entity-Id` token / üyelikle uyuşmazsa 403 `CROSS_LE_FORBIDDEN`; liste yalnız seçili şirket — iki durum ayrı testlerde ölçülür.
+- [ ] AC-14 (zorunlu) — RBAC: her uçta `[HasPermission]` (guard testi); token yok 401, anahtar yok 403.
+- [ ] AC-15 (zorunlu) — Merkezi denetim ve yerel GxP izi (E-2, BL-501; sahip kararı Beste 2026-10-26; bağımsız inceleme 08 F-1, 09 F-1 / F-2, 10 F-1 / F-2 / F-3). **(a) Merkezi kayıt** platformsuz testte `central_audit_outbox`'tan, komutun `CorrelationId`'siyle ölçülür; satırın `RequestType`'ı komut sınıfının adı, `Category` / `Operation` / `EntityType` / `SourceModule` / `EntityId` §21'deki değerlerdir (gövde alanı yoktur, aranmaz). **Başarılı ve yazan komut:** tam **1** satır, durumu `Pending` (iletimden sonra `Delivered`), `ConfirmedByCommand = true`. **Başarısız komut:** `Pending` + `Delivered` = **0**; komutun bir işlemi commit olduysa tam 1 satır `Abandoned`, olmadıysa satır yok. **Yazmadan başarılı komut** (enlist yok, `CentralAuditRecorder.cs:160-168`): satır yok. **Çökme vakası:** onayın işlem 1'i commit olur ve komut `ConfirmAsync` / `AbandonAsync`'e ulaşmadan kesilir (satırı `AwaitingCommand`'da bırakan kesme; yöntem geliştiricinin) → sahte saat `OrphanAfter`'ı (10 dk) geçer → dağıtıcının `RunOnceAsync`'inden sonra tam 1 satır `Pending`, `ConfirmedByCommand = false` (Platform'a `Unconfirmed`); onay sonra sweeper ile Posted olursa ikinci satır `ReconcilePendingConfirmationCommand` (`ConfirmedByCommand = true`). Senaryo başına **iletilen merkezi (`Pending` / `Delivered`) / `Abandoned` / (b) yerel zaman çizelgesi satırı** — (b) sayımı görevi tamamlamayan ve Refused kapatmayan senaryoda verilir; görevi `Completed` yapan Posted yazımı +1 `Completed`, kapatılan her Refused +1 `ConfirmationSuperseded` (§4.3): ilk onay Posted = **1** / 0 / 2 (Recorded + Posted); ilk onay Refused (422) = **0** / 1 / 2 (Recorded + Refused); ilk onay Pending (503) = **0** / 1 / 1 (Recorded); ilk onay bütünlük hatası (409) = **0** / 1 / 2 (Recorded + IntegrityError); (A) tükenmesi 503 `WMS_CONFIRMATION_CONFLICT_RETRY` — **sonuç yazımında** (işlem 2 / retry (i) / (ii)) = **0** / 1 / ilk yazımın olayı (Recorded ya da Retried), **kilit alımında** (retry (0)'ın kilit yazımı üç kez kaybeder; komut hiçbir şey commit etmez) = **0** / 0 / 0 (bağımsız inceleme 10 F-3); **(B) dalı** — kullanıcı komutunun sonuç yazımı 0 kayıt, onay bu denemenin `TransactionId`'siyle zaten Posted (ör. AC-54'ün ikinci yeniden denemesi; komut 200 / 201 döner) = **1** / 0 / ilk yazımın olayı (Recorded ya da Retried) (bağımsız inceleme 10 F-3; AC-54 ile aynı); (C1) / (C2) / (E) 409 **sonuç yazımında** = **0** / 1 / ilk yazımın olayı, **kilit alımında** ((C1) = kilit reddi; (E) = 409 `WMS_CONFIRMATION_NOT_RETRYABLE`) = **0** / 0 / 0; (D) onay zaten `IntegrityError` (yazım yok, 409) = **0** / 1 / ilk yazımın olayı (bağımsız inceleme 10 F-2); (D) tükenmesi (Refused'a `IntegrityError` yazımı üç kez CAS kaybeder; yazım yok, onay Refused kalır, 409 `WMS_CONFLICT`) = **0** / 1 / ilk yazımın olayı (bağımsız inceleme 11 F-3); **her yazma komutunun tekrarı** (AC-4; aynı anahtar + aynı parmak izi, 200 replay; onayda ilk sonuç Posted, Refused, Pending ya da IntegrityError olsa da) ve aynı anahtar + farklı parmak izi (400) = **0** / 0 / 0 (bağımsız inceleme 10 F-1); yeniden deneme Posted (yeni posting ya da replay) = **1** / 0 / 2 (Retried + Posted); yeniden deneme Refused (ön kontrol ya da defter 4xx) = **0** / 1 / 2; yeniden deneme IntegrityError (KeyReused / HolderReversed / (D)) = **0** / 1 / 2; yeniden deneme 503 = **0** / 1 / 1 (Retried); kilit reddi 409 = **0** / 0 / 0; sweeper `Committed` = **1** / 0 / 1 (Reconciled); sweeper KeyReused / HolderReversed / savunma dalı = **0** / 1 / 1 (IntegrityError); sweeper `NotCommitted`, (B) dalı ve 0-kayıt bırakması = **0** / 0 / 0 (`Attempts` değişmez); "Uzlaştır" = **1** / 0 / 1 (IntegrityResolved; Deviation varsa +1); "Geri taşındı" = **1** / 0 / 1 (Returned); İptal = **1** / 0 / 1 (Cancelled); Kalanı kapat = **1** / 0 / 1 (ClosedShort; `Completed` yazılmaz); kapatıcı komutun ön araması geç commit buldu (409) = **0** / 1 / 1 (hedef onayda IntegrityError); If-Match `WMS_CONFLICT`, `WMS_CONFIRMATION_PENDING` ve diğer ön kontrol 409'ları = **0** / 0 / 0; görev oluştur / düzenle / üstlen = **1** / 0 / 1 (Created / Updated / Claimed; hedef öneriden geldiyse + `SuggestionApplied`); görev oluşturma tekrarı = **0** / 0 / 0; toplu atama, n görev yazıldı = **1** (`EntityId` boş) / 0 / n (Assigned), hiçbiri yazılmadı = **0** / 0 / 0; rol oluştur / düzenle / sil = **1** / 0 / 1 (`wms_location_role_events`); toplu rol silme, n kayıt = **1** / 0 / n, hiçbiri = **0** / 0 / 0. Hareketin defterdeki enlist'i ayrı merkezi kayıt **doğurmaz** (no-op; `CentralAuditRecorder.cs:11-12`, `InventoryLedgerRepository.cs:181`). **Veri yalnız yerelde:** kapatılan `seq` listesi, TransactionNumber, `holder` ve önceki / sonraki değerler zaman çizelgesinin `Data`'sından ölçülür. **Doğrulama / yetki reddi** (400 / 401 / 403 / 404 ve onay kaydı açılmadan verilen ön kontrol 422'leri) ne merkezi ne yerel iz bırakır (satır yok). AuditTrail mimari testinde Inventory yeni-denetimsiz **0**.
+- [ ] AC-16 (zorunlu) — Kayıt kodu RCS-001: görev numarası `IWarehouseRecordCodeAllocator` portundan, RCS biçiminde geçici sayaçla (Q-07 B; ortak servis gelince FU-0178-RCS-01); eşzamanlı iki görev farklı numara; numara API'de değiştirilemez; ASCII; numara **kiracı genelinde tekil** `(TenantId, Number)`; sayaç `999999`'dan sonra 7 haneye uzar (`GMG-PUT-1000000`), sıfıra dönmez (F-12).
+- [ ] AC-17 (zorunlu) — Lokasyon rolleri: oluştur / düzenle / sil (soft delete, `IsDeleted` + `DeletedAt`) / toplu sil; düğüm başına tek kayıt (roller + kabul edilen saklama koşulları); bir düğüm birden çok role sahip olabilir, Receiving + Staging birlikte 409; açık görevi olan düğümden Receiving kaldırma / silme 409 `WMS_LOCATION_HAS_OPEN_TASKS`; **rol kalıtımı** (F-13): Receiving olan Zone'un alt bin'i kaynak olarak uygun, hedef olarak yasak; atası Receiving olan düğüme Staging → 409 `WMS_LOCATION_ROLE_INHERITED_CONFLICT`.
+- [ ] AC-18 (zorunlu) — WAREHOUSE-OUTBOUND 1.0.0 değişmez: dosya byte-eşit; donmuş GET uçları S1'de boş liste / 404 `UNKNOWN_OUTBOUND` döner, gövde MVP-6 `FrozenReadSchema.Warehouse` / `WarehousePage` kurallarını geçer (null üye yok).
+- [ ] AC-19 (zorunlu) — Sözleşme uyumu (inceleme 02 F-4): DL-2, her S1 cevabını **taslaktan türetilmiş şemaya** (`docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md`'den test projesine alınan şema; dev dilimi taslak dosyayı değiştirmez) karşı otomatik doğrular. Dondurulmuş dosyaya karşı yeniden koşu CT dondurma adımının (§19.7) kabul ölçütüdür (AC-60) — iki adım birbirini beklemez.
+- [ ] AC-20 (zorunlu) — Self-registration: manifest `PUTAWAY-PICKING-PACKING` 2 sayfa + §11.3 eylemleri + `ApiPermissions`; rota `/Platform/` değil (Scope Tenant); namespace testi `warehouse.*` dışı anahtar bildirmez.
+- [ ] AC-21 (zorunlu) — Layout: `Views/Warehouse/PutawayTasks/*.cshtml` ve `Views/Warehouse/WarehouseLocationRoles/*.cshtml` Razor bloğunda `Layout = "_LayoutTenantShell"` AÇIKÇA yazılı (test).
+- [ ] AC-22 (zorunlu) — DataTable: her iki ekran `verify_datatable_page.py . --area Warehouse --module {PutawayTasks|WarehouseLocationRoles} --api-profile proxy` PASS (r20, DL-3 CT kaydı F-4: ekranlar aynı origin MVC proxy'sini kullanır; varsayılan `direct-gateway` profili bu düzende FAIL verir), `data-dt-data-mode="server"` pakete eşit; `quality-gate-datatable` PASS; UAS-001 testi (anahtarsız kullanıcıya iskelet yok, yönlendirme yok).
+- [ ] AC-23 (zorunlu) — Yerelleştirme: tüm `Warehouse.*`, nav ve yardım anahtarları 7 dilde (en, tr, fr, es, zh, ar, ru); parite testi; `check_pack_nav_keys.py` PASS.
+- [ ] AC-24 (zorunlu) — Sayfa yardımı (UXH-001): `PUTAWAYTASKS` ve `WAREHOUSELOCATIONROLES` için `Help.{KOD}.Purpose/Audience/Step1..n/Step{n}Title` 7 dilde; tur yok.
+- [ ] AC-25 (zorunlu) — INT-WMS: Gateway `/api/warehouse` + `/{everything}` → 5067, route kapsama testi; Idempotency-Key, If-Match ve X-Correlation-Id Gateway'den geçer; DELETE yalnız location-roles yolunda anlamlı.
+
+**S2 (r20 bağlayıcı — DL-4 / DL-5 / DL-6; DL-4 başlama kapısı MOD-0173-FU03 DL-1 + DL-2 + DL-3 CT kabulü, §7). Ortak fikstür (F-S2):**
+depo `W1` (Staging rolünde tek düğüm `S-01`, raf binleri `A-01`, `A-02`, `A-03`), SKU `X` (lot izlenen, seri değil, koşulsuz), lot `L1`
+(son kullanma 2027-01-31) 30 EA `A-02`'de, lot `L2` (2027-06-30) 50 EA `A-01`'de, ikisi `AVAILABLE`; INVENTORY ve FU03 gerçek (süreç içi,
+kendi replika seti); MVP-6 okuması sahte HTTP istemcisi. Her AC'nin sabotajı §17 listesindedir ve o AC'nin adı geçen vakasını kırmızıya çevirir.
+- [ ] AC-26 (zorunlu) — Tahsis (§8.17, DL-4): F-S2'de 60 EA'lık tek satırlı outbound → 201, durum `Allocated`, numara `{ŞİRKET}-OUT-` biçiminde; tahsisler `L1` 30 (`FefoRank` 1) + `L2` 30 (`FefoRank` 2); FU03 `GetAsync` iki rezervasyon döner: `reservationType WAREHOUSE_OUTBOUND`, `sourceModule MOD-0178`, `sourceDocumentId` = outboundId, `sourceLineId` = `"1"`, `expiresAt` **yok** (Q-07, §8.10), anahtar `wms:out:{outboundId}:{allocSeq}`; iki pick görevi (`PCK` numarası, kaynak `A-02` / `A-01`, hedef `S-01`, `Open`). **Karşılanamayan satır:** 100 EA → 422 `WMS_ALLOCATION_FAILED`, `details.lines[0] { lineSeq 1, requested 100, allocatable 80 }`; `GET /outbound-shipments/search` sonuç yok, FU03'te bu outbound için rezervasyon 0, pick görevi 0. **Kısmi yok:** iki satır (1. karşılanır, 2. karşılanmaz) → aynı 422, rezervasyon 0. **Başka çıkışın rezervasyonu:** test kurulumu FU03 ile `L1`'den 20 ayırır → 60'lık satır `L1` 10 + `L2` 50 alır (FEFO okuması `onHandAvailable` tabanında kalır, serbest tabanı FU03 kapsam serbest miktarı kurar; Q-01 = A). **Tümüyle ayrılmış lot:** kurulum `L1`'in 30'unun hepsini başka outbound'a ayırır → 30'luk satır yalnız `L2`'den, `FefoRank` 1 = `L2` (`L1` sırada sayılmaz). **Staging dışı:** `S-01`'de ayrıca 40 EA `L1` varken `L1` alınabilir miktarı 30 kalır. **Yarış:** plan ile toplu rezervasyon arasına giren test kancası `L1`'i başka bir rezervasyonla tüketir → 422 `WMS_ALLOCATION_FAILED` (satır kodu FU03'ten), rezervasyon 0, görünür outbound yok. **Önizleme:** `POST /outbound-shipments/allocation-preview` aynı lotları ve miktarları döner, FU03'te rezervasyon ve `wms_*`'da yazım 0. **İki outbound / iki bin (r21, inceleme 19 F-3):** lot `L3` 10 EA `A-01`'de + 10 EA `A-02`'de; outbound Y 10 → görev `A-01`'den; ardından outbound Z 10 → görev **`A-02`**'den (`A-01`'in kullanılabilir miktarı 0); Z'nin onayı 201. **Receiving ve açık putaway (r23, son bakış F-1):** lot `L5` 10 EA Receiving rolündeki `R-01`'de (açık putaway görevi 10) + 10 EA `A-01`'de → 15'lik outbound 422 `WMS_ALLOCATION_FAILED` (alınabilir 10), 10'luk outbound görevini `A-01`'den açar; `R-01`'den pick görevi yok. **Lotsuz ve Item yolu (r24, son bakış 02 F-2 — tek tanım):** lot izlenmeyen SKU `N` 10 EA `R-01`'de + 10 EA `A-01`'de → 15'lik outbound 422 `WMS_ALLOCATION_FAILED`, `details.lines[0].allocatable = 10` (satır kodu `BinCapacityShort` **değil** — Receiving alınabilir miktara hiç girmez), 10'luk outbound tek depo düzeyi tahsis ve `A-01` görevi; aynı kurulum Item seviyesinde (`lotControlled: false` kalem) aynı sonucu verir. **Aynı istekte iki satır / aynı bin (r22, tur 2 F-3):** lot `L4` 10 EA `A-01`'de + 10 EA `A-02`'de; tek outbound iki satırla (6 + 6, ayrı `orderLineId`) → satır 1 `A-01`'den 6, satır 2 `A-01`'den 4 + `A-02`'den 2 (toplam görev miktarı `A-01` için 10'u aşmaz). **Pending (tur 2 F-3 b):** `A-01`'de 10 EA, outbound Y'nin 10'luk görevinin 6'lık onayı Pending (sahte defter 503) → outbound Z 10 → `A-01`'den 0, `A-02`'den 10. Sabotajlar (cc), (cd), (ce), (dj), (dr), (dt), (ec).
+- [ ] AC-27 (zorunlu) — Pick onayı (§8.19, DL-5): AC-26 outbound'unun `L1` görevi 30 onay → 201; INVENTORY'de `LOCATION_TRANSFER` `A-02` → `S-01`, `stockStatus AVAILABLE`, `sourceModule MOD-0178`, `sourceType PICK_TASK`, `sourceDocumentId` = görev, `sourceLineId` = `seq`, `documentGroupId` = outboundNumber, `reservationId` = tahsisin `ReservationId`'si; sonrasında FU03 `GetAsync` rezervasyonu `ACTIVE` ve miktarı 30 döner (tüketilmedi, FU03 §8.4); görev `Completed`. **Recall:** `L2` recall'a alınır → `L2` görevinin onayı 422 `LOT_UNDER_RECALL` (`details.movementType LOCATION_TRANSFER`), hareket yok. **Rezervasyon bırakılmış:** test kurulumu `L2` rezervasyonunu FU03'te bırakır → onay INVENTORY'den `RESERVATION_NOT_ACTIVE` alır → onay `Refused`, aynı kod 422, hareket yok. **Gövdede hedef / kaynak alanı** → 400 `INVALID_REQUEST`. **Onay makinesi pick yolunda:** INVENTORY 503 enjekte → onay Pending + 503; "Yeniden dene" aynı `PostingKey` (`wms:pck:{taskId}:{seq}`) ile → Posted, defterde tek hareket. Sabotajlar (cf), (cg).
+- [ ] AC-28 (zorunlu) — FEFO sapması (§8.17 adım 3, DL-4): satır `lotOverride { lotId: L2 }` gerekçesiz (ve 9 karakterlik gerekçeyle) → 422 `FEFO_BYPASS_REASON_REQUIRED` (r23: tek kod), yazım yok; 10 karakterlik gerekçeyle → 201, satırın bütünü `L2`'den, tahsiste `FefoBypassReason` = gerekçe; `ReadyToShip` sonrası detay satırında eklemeli `fefoBypassReason` ve `lotId` var (MVP-6'nın kullanımı Q-M6-3, açık); `lotOverride { lotId: L1 }` (ilk uygun lot) gerekçesiz → 201, gerekçe yazılmaz; recall'daki lot → 422 `LOT_UNDER_RECALL`; FEFO uygun listesinde olmayan lot → 422 `WMS_LOT_NOT_ALLOCATABLE`. **Serbest taban (Q-01 = A):** `L1`'in hepsi başka outbound'a ayrılmışken `lotOverride { lotId: L2 }` gerekçesiz → 201, gerekçe yazılmaz (`L2` serbest tabanda ilk uygun lottur; sapma değil). **Politika kipi (r21, inceleme 19 F-4), ayrı fikstürler:** `Block` → `lotOverride { lotId: L2 }` gerekçeli de gerekçesiz de 422 `FEFO_ORDER_VIOLATION` (`details.firstEligibleLotId = L1`), yazım yok; `RequireReason` → yukarıdaki vakalar (politika kaydı yokken de — varsayılan); `Warn` → gerekçesiz 201, gerekçe yazılmaz, gerekçeli 201 ve yazılır. **Üst sınır (r24, son bakış 02 F-5 — tek kod):** 1001 karakterlik `fefoBypassReason` her kipte (`Block`, `RequireReason`, `Warn` — ayrı fikstürler) 400 `INVALID_REQUEST`, yazım ve rezervasyon yok; 1000 karakter `RequireReason`'da 201. Sabotajlar (ch), (dg), (dk), (ef).
+- [ ] AC-29 (zorunlu) — Paketleme (§8.20, DL-5): bütün görevleri onaylanmış (`Picked`) outbound'da koli aç → 201, `{ŞİRKET}-PKG-` numarası; içerik `{ allocSeq 1, quantity 31 }` (toplanan 30) → 422 `WMS_PACKAGE_EXCEEDS_PICKED`; iki koliye bölme (20 + 10) kabul; `Open` koli düzenlenir (If-Match), `Closed` koli düzenleme → 409 `WMS_INVALID_TRANSITION`; içeriksiz kapanış → 422 `WMS_PACKAGE_EMPTY`; ağırlık / ölçü elle (`12x30x40` kabul, `12x30` → 400), ambalaj seviyesi dönüşümü yok (Q-MDM-1); son kapanış bütün tahsisleri doldurunca outbound aynı işlemde `Packed`; **boş açık koli (r21, inceleme 19 F-9):** 30 toplanan tahsiste koli A (30) ve boş koli B açık; A kapanınca aynı işlemde B `Cancelled` + `PackageCancelled` olayı, outbound `Packed`, release sonrası donmuş `packages` yalnız A'yı taşır; `Allocated` outbound'da koli → 409 `WMS_INVALID_TRANSITION`; bütün paketleme boyunca INVENTORY'ye çağrı 0 (sahte defter sayacı) ve `inventory_transactions`'a yeni satır yok. Sabotajlar (ci), (cj), (dn).
+- [ ] AC-30 (zorunlu) — Sevke hazır (§8.21, DL-5): `Packed` outbound `release` → 200, `ReadyToShip`, `ReadyAtUtc`; donmuş `GET /outbound-shipments/{outboundId}` gövdesi MVP-6 `FrozenReadSchema` kurallarını **üretim şemasından türetilen** doğrulamayla geçer (null üye yok, UUID "D", SkuLevel 3 değer; Çekirdek 10), detay satırları tahsis başına (aynı `orderLineId` iki lotta iki satır), `quantity` = toplanan, `packageId` = `PackageNumber`; aynı işlemde outbox'ta tek `OutboundShipmentReady` satırı; **K2:** outbox yazımına enjekte hata → komut geri alınır, outbound `Packed` kalır, outbox satırı yok; `GET /outbound-shipments?status=ReadyToShip` kaydı döner; iki okuma arasında detay gövdesinin hash'i eşit (MOD-0183 §8.2 drift kuralı); sonrasında `PUT /outbound-shipments/{outboundId}` ve koli komutları 409 `WMS_OUTBOUND_IMMUTABLE`; `Allocating` / `AllocationFailed` kayıtları donmuş listede yok, detayda 404 `UNKNOWN_OUTBOUND`; `docs/analysis/contracts/warehouse-outbound.openapi.yaml` byte-eşit (AC-18). **Donmuş yol (r23, son bakış F-14):** `GET /outbound-shipments/OUT-9001` ve `GET /outbound-shipments/not-a-uuid` → 404 donmuş `UNKNOWN_OUTBOUND` gövdesi (`FrozenReadSchema` hata kuralı); `GET /outbound-shipments/search` → arama cevabı (donmuş 404 değil). Sabotajlar (ck), (cl), (dw).
+- [ ] AC-31 (zorunlu) — Sevk edildi (§8.21, DL-5): `ReadyToShip` outbound'da "Sevkiyatı kontrol et": sahte MVP-6 `Planned` sevkiyat döner → 200 `dispatchSeen: false`, outbound `Version` değişmez, yerel olay 0, merkezi 0; aynı sonuç `Draft` ve `stockIssued: false` olan `Cancelled` için (ayrı fikstürler); `Dispatched`, `InTransit`, `Delivered`, `Exception`, `Closed` ve `stockIssued: true` olan `Cancelled` (her biri ayrı fikstür) → 200, `Shipped`, kayıtta `Shipment { shipmentId, shipmentNumber, status, observedAtUtc }` (r25, son bakış 03 F-4: `shipmentId` ve `shipmentNumber` sahte MVP-6 detayındaki değerlere eşit — fikstürde sorgu özetindeki `shipmentNumber` detaydakinden farklı verilmez, ikisi de `SHP-…` sabit değeri taşır) ve `GET /outbound-shipments/{outboundId}/view`'da `shipment { shipmentId, shipmentNumber, status, observedAt }` (donmuş detayda **yok** — `SOURCE_DRIFT`, Q-M6-1; donmuş detayın hash'i `Shipped` öncesi ve sonrası yalnız `status` farkıyla eşit), olay `Shipped`, merkezi 1; ardından `ACTIVE` kalan rezervasyonlar bırakılır (FU03 `GetAsync` `RELEASED`, tahsis `ReservationReleaseState = Released`); sahte istemci her adayda bir `getShipment` detay çağrısı sayar (r22: tek sonuçta da 1); **yabancı kaynak (r22, inceleme 19 tur 2 F-2):** `queryShipments` tek bir `Dispatched` sevkiyat döner ama detayı `sourceModule = MOD-0183-MANUAL` (ya da `sourceType ≠ WAREHOUSE_OUTBOUND`) → 200 `dispatchSeen: false`, outbound `ReadyToShip`, `Version` aynı, rezervasyon `ACTIVE` kalır (bırakma yok), yazım 0; **okuma hataları (r24, son bakış 02 F-7; §5 eşlemesi), her biri ayrı fikstür:** sorguda MVP-6 401 ve 403 (ikisi ayrı) → 403 `WMS_DISPATCH_READ_FORBIDDEN`; aday detayında 403 → 403 aynı kod; sorguda 500, sorguda 400 ve aday detayında 429 (r25, son bakış 03 F-4: öbür 4xx, iki fikstür), sahte istemcide 2 sn'yi aşan gecikme (okuma başına `PerReadTimeout`), bağlantı hatası ve okunamayan JSON → 503 `WMS_DISPATCH_SOURCE_UNAVAILABLE`; sorgu adayı döner ama detayı 404 → 503 aynı kod; iki uygun sevkiyat → 409 `WMS_DISPATCH_AMBIGUOUS` — hepsinde yazım, yerel olay ve merkezi kayıt yok, outbound `ReadyToShip` ve `Version` aynı; **MOD-0177 değişmezliği (r25, son bakış 03 F-3; §5, §7):** iki yeni üye `IShipmentReader`'da varsayılan uygulamalıdır — yalnız `ReadAsync`'i yazan bir test sınıfı (`FakeShipmentReader` deseni) derlenir ve onun üzerinden arayüzle çağrılan `QueryBySourceDocumentAsync` / `ReadDetailAsync` `Read = Unavailable` döner, 0178 bunu 503 `WMS_DISPATCH_SOURCE_UNAVAILABLE`'a eşler (yazım yok); mevcut `IShipmentReader.ReadAsync` davranışı değişmez; DL-5 commit aralığında `…/tests/Diten.InventoryService.Tests/Recall/` için `git diff --stat` boş ve MOD-0177 Recall testleri filtresiz tam koşuda yeşil (XMC-001, §7); MVP-6 isteği çağıranın `Authorization` ve `X-Legal-Entity-Id` başlıklarını taşır (sahte istemcide ölçülür); `ReadyToShip` dışındaki durumda → 409 `WMS_INVALID_TRANSITION`; 0178 hiçbir koşulda `GOODS_ISSUE_SALES` yazmaz (mimari test). Sabotajlar (cm), (dh), (dq), (t), (ed), (ee), (em), (eo).
+- [ ] AC-32 (zorunlu) — İptal ve geri yerleştirme (§8.22, DL-5): `Allocated` outbound iptali (gerekçe ≥ 10) → 200, outbound / pick görevleri `Cancelled`, FU03 rezervasyonları `RELEASED`, putaway görevi 0; bir görevi Posted (`L1` 30 `S-01`'de) `Picked` outbound iptali → `Origin = Cancellation` putaway görevi (kaynak `S-01`, lot `L1`, planlanan 30) açılır ve `A-03`'e onaylanabilir (S1 akışı); `Origin ≠ Cancellation` görevin kaynağı Staging ise 422 (S1 kuralı değişmez); `ReadyToShip` iptali → 409 `WMS_OUTBOUND_CANCEL_NOT_ALLOWED`; Pending pick onayı varken → 409 `WMS_CONFIRMATION_PENDING`; gerekçe < 10 → 400 `REASON_REQUIRED`. **Bırakma hatası:** FU03 `ReleaseAsync`'e enjekte hata → 200, outbound `Cancelled`, tahsis `ReservationReleaseState = Pending`, olay `ReservationReleaseFailed`; bakım hosted service'inin `RunOnceAsync`'i → `Released`, FU03 `RELEASED`; rezervasyon zaten `RELEASED` ise `ReleaseAsync` çağrılmaz (sahte port sayacı 0), `Released`. **Sürüm (r21, inceleme 19 F-7):** kurulum rezervasyonun `Version`'ını tahsisten sonra artırır (aynı rezervasyonu tüketen bir hareket + onun `restoreReservation: true` taşıyan REVERSAL'ı — FU03 CT-08, r3 sınırı; kalan aynı. r24: alansız REVERSAL rezervasyonu geri getirmez, bu kurulumda kullanılmaz) → iptal güncel sürümle bırakır → `Released`; ayrı fikstürde test kancası `GetAsync` ile `ReleaseAsync` arasında sürümü artırır → 409 → tahsis `Pending` + `ReservationReleaseFailed (Conflict)` → bakım koşusu yeniden okur → `Released`; bakımın `ReleaseAsync` aktörü outbound'u açan kullanıcıdır. Sabotajlar (cn), (co), (dl).
+- [ ] AC-33 (zorunlu) — Kalem (Item) outbound'u (§8.24, W-6 sahip kararı; DL-4 / DL-5 / DL-6): fikstür kalem `K` (`lotControlled: true`, koşulsuz, `stockable: true`, Active, baz birim `KG`), lot `KL1` (2027-01-31) 20 KG `A-01`'de, `KL2` (2027-03-31) 20 KG `A-02`'de, Item seviyesinde. (i) `item { itemId: K, skuLevel: Item }` (skuId'siz) 30 KG → 201, satır `skuId = K`, tahsisler `KL1` 20 + `KL2` 10, FU03 rezervasyonları `skuLevel Item`; (ii) `KL1` onayı → `LOCATION_TRANSFER` `itemId = skuId = K`, `skuLevel Item`, `lotId KL1`, `reservationId`; (iii) **çözümleme retleri**, her biri ayrı: `skuId ≠ itemId` → 422 `WMS_ITEM_NOT_RESOLVABLE` `reason SkuIdMismatch`; bilinmeyen kalem → `UnknownItemSku`; `stockable: false` → `NotStockable`; `Retired` kalem → `LifecycleBlocked`; her retten sonra outbound 0, FU03 rezervasyonu 0, `central_audit_outbox` ve `wms_outbound_events` satırı 0; (iv) Item + Gsku satırı birlikte → 422 `WMS_OUTBOUND_LEVEL_MIXED`; (v) **yayın kapısı:** Item outbound'u `Packed` olunca `release` → 409 `WMS_ITEM_LEVEL_NOT_PUBLISHABLE`, durum `Packed` kalır, outbox satırı yok; donmuş `GET /outbound-shipments` (her durum süzgeciyle) bu outbound'u içermez ve sayfa MVP-6 `WarehousePage` kuralını **üretim şemasından türetilen** doğrulamayla geçer; detay 404 `UNKNOWN_OUTBOUND`; iptal çalışır (rezervasyonlar bırakılır); (vi) ekran: "Sevke hazır" pasif ve nedeni 7 dilde. Sabotajlar (cp), (dd).
+- [ ] AC-34 (zorunlu) — S2 ekranları (§11.1, §11.5, DL-6): `verify_datatable_page.py . --area Warehouse --module OutboundShipments --reference compact --api-profile proxy` ve `--module PickTasks --reference slim --api-profile proxy` PASS (PickTasks'ın `_CreateEditOffcanvas.cshtml` yokluğu §11.5'in bilinçli sapmasıdır; doğrulayıcı bunu sayarsa modülün test kaydına "bilinen sapma" — Dokunma protokolü); `data-dt-data-mode="server"`; S2 görünümlerinin hepsinde `Layout = "_LayoutTenantShell"` AÇIKÇA (AC-21 testi genişler); manifest `OUTBOUNDSHIPMENTS`, `PICKTASKS`, `PACKINGSTATION` + §11.3 S2 eylemleri; Web proxy eylem başına izin testi her S2 controller eylemini kapsar (DL-3 F-1 dersi); UAS-001 (anahtarsız kullanıcıya iskelet ve yönlendirme yok); durum menüsü §8.18'e eşit (ör. `Packed`'te yalnız "Sevke hazır" ve "İptal"); `Help.{OUTBOUNDSHIPMENTS|PICKTASKS|PACKINGSTATION}.*` ve bütün `Warehouse.Outbound.*` / `.Pick.*` / `.Package.*` anahtarları ve `Warehouse.Origin.*`'in yedi değeri (S2'nin `Outbound` / `ShortDispatch`'i dahil; r24, son bakış 02 F-3; PutawayTasks ve PickTasks resx'leri) 7 dilde, parite testi ve `check_pack_nav_keys.py` PASS; `ar` sağdan sola. **Operatör akışı (r21, inceleme 19 F-6; rol r23, son bakış F-16):** Auth WP'sinin `WarehouseOperator` rolüyle (§14.2'nin yedi anahtarı: putaway-tasks.read / confirm, pick-tasks.read / confirm, packages.read / create / update — r24, son bakış 02 F-8; `warehouse.outbound-shipments.read` yok; WP gelmeden önce test aynı yedi anahtarlı rolü kendisi kurar) ile Web'de PickTasks → görevi onayla → "Paketle" → `/Warehouse/Packing/{outboundId}` 200 → koli aç → kapat → outbound `Packed`; aynı kullanıcıya `/Warehouse/OutboundShipments` iskeletsiz 403 (UAS-001). Sabotajlar (cy), (cz), (do), (eh).
+- [ ] AC-35 (zorunlu) — Altın akış S2 (DL-5): test girişi → putaway (S1) → outbound → pick → pack → ReadyToShip → MVP-6 adımı → "Sevkiyatı kontrol et" → `Shipped`. MVP-6 adımı test kurulumunda `GOODS_ISSUE_SALES` hareketi (`sourceModule MOD-0183`, `fromLocationId S-01`, `reservationId` ile — MOD-0183 revizyonu gelene kadar kurulum; gerçek MOD-0183 ile koşu canlıya çıkış kapısıdır, §7) + sahte `queryShipments` `Dispatched`; sonunda `S-01` bakiyesi 0, rezervasyon `RELEASED` (`ClosedReason Consumed` ya da `Released`; `ACTIVE` 0), defterde 0178 hareketleri yalnız `LOCATION_TRANSFER`; servis yeniden başlatıldıktan sonra outbound, görevler, koliler ve bakiye aynı. Sabotaj (t) ve AC-26…AC-32'ninkiler bu akışın da en az bir adımını kırar (ayrı sabotaj yok).
+
+**S1 — mockup incelemesi kararları (M-1…M-5, Beste 2026-10-21):**
+- [ ] AC-37 (zorunlu) — Saklama koşulu uyumu (§8.12): `COOL_2_8` ürünü etiketsiz rafa ya da `AMBIENT_15_25` etiketli rafa → görev oluşturma, düzenleme ve onay 422 `WMS_STORAGE_CONDITION_MISMATCH`; üst düğümde `COOL_2_8` etiketli bölgenin alt bin'ine → kabul (kalıtım); koşulsuz ve yalnız `AMBIENT_15_25` ürün etiketsiz rafa → kabul; `storageConditions` alanı olmayan SKU → 422 `WMS_STORAGE_CONDITIONS_UNKNOWN`; mesajlar 7 dilde.
+- [ ] AC-38 (zorunlu) — Şirket öneki (M-2): MDM `Code` `GMG` → numara `GMG-PUT-000001`; `Code` `gmg1` / tek harf / 6 harf → görev açılmaz, 422 `WMS_COMPANY_CODE_INVALID` + yerelleştirilmiş "şirket kodunu düzeltin"; `Code` sonradan değişince eski numaralar aynı kalır, yeni görev yeni önek + kendi sayacı; depo kodu numarada yok, listede sütun.
+- [ ] AC-39 (zorunlu) — Onay kilidi: Pending onay varken yeni onay / düzenleme / üstlenme / kapama / iptal 409 `WMS_CONFIRMATION_PENDING`; ekranda düğmeler pasif ve nedenli; yalnız "Yeniden dene" çalışır.
+- [ ] AC-40 (zorunlu) — Kaynak kova değişmez: düzenlemede kaynak alanı gönderilirse 400; planlanan miktar onaylanan + bekleyenin altına → 422 `WMS_QUANTITY_BELOW_CONFIRMED`; planlanandan fazla onay → 422 `WMS_QUANTITY_EXCEEDS_REMAINING`.
+- [ ] AC-41 (zorunlu) — Seçilemeyen stok listede kilitli görünür: neden + engelleyen belge numarası (karantina tutma / recall vaka / bloke kaydı / lot durumu); satır gizlenmez, görev açılamaz.
+- [ ] AC-42 (zorunlu) — Raf önerisi formu otomatik doldurmaz; "Uygula" sonrası kayıt `TargetSource = SuggestionApplied` taşır ve zaman çizelgesinde `SuggestionApplied` olayı var; öneri yalnız koşul uyumlu binlerden. **r20 notu (DL-3 CT kaydı F-6, sahip onaylı):** öneri yalnız düzenleme formunda ölçülür — oluşturma formu ve aday listesi öneri göstermez (aday cevabında öneri alanı yok, §8.6); bu, ölçütün kapsamıdır, sapma değildir.
+- [ ] AC-43 (zorunlu) — Menü kuralı: onay yokken yalnız "İptal", Posted onay varken yalnız "Kalanı kapat" etkin; pasif öğe nedenini 7 dilde yazar; sunucu da aynı kuralı uygular (AC-11).
+- [ ] AC-44 (zorunlu) — Raf alanı klavye ve barkod okuyucu (klavye öykünmeli) girişini kabul eder: tam kod → bin seçilir; bilinmeyen kod → alan hatası, gönderim yok.
+- [ ] AC-45 (zorunlu) — Mobil 375 px: onay paneli dokunma alanları ≥ 48 px, miktar −/+, sabit alt eylem çubuğu (ölçüm ekran görüntüsü + DOM boyut testi).
+- [ ] AC-46 (zorunlu) — Durum ile entegrasyon bayrağı ayrı: durum onaylanan miktardan türer; "Onay bekliyor" / "Stok reddetti" / "Bütünlük hatası" rozetleri ayrı; Refused ve IntegrityError onay durumu değiştirmez. **Uzun Pending (bağımsız inceleme 13 F-3):** sahte defter her denemede 500 döner; onay Pending kalır, sahte saat `LongPendingMinutes`'tan önce bayrak `PostingPendingLong` değil `PostingPending`, süre aşılınca `PostingPendingLong` ve ekranda "Uzun süredir bekliyor" rozeti (7 dil); bu sırada yeni onay / iptal / kısa kapatma 409 `WMS_CONFIRMATION_PENDING`; hata giderilince "Yeniden dene" → Posted, rozet kalkar (sabotaj (by)). **Öncelik (bağımsız inceleme 14 F-1):** aynı görevde bir onay Pending (uzun ya da değil) iken savunma dalı başka bir onayı `IntegrityError` yapar → bayrak `PostingIntegrityError`, rozet "Bütünlük hatası"; ayrı testlerde Pending + Refused → `PostingPending`, uzun Pending + Refused → `PostingPendingLong` (sabotaj (bz)). **Açılış doğrulaması (bağımsız inceleme 14 F-3):** `LongPendingMinutes = 0` ve `LongPendingMinutes = 1` (60 sn ≤ `InFlightLeaseSeconds` 120) ile host başlamaz (açılış doğrulama hatası); `LongPendingMinutes = 3` (180 sn > 120) ile başlar (sabotaj (ca)). **Çözülmüş Refused (bağımsız inceleme 15 F-1):** onay 1 Refused, onay 2 Posted ve görevi tamamlar (onay 1 Superseded) → bayrak `None`, "Stok reddetti" rozeti yok; ayrı testte onay 1 "Geri taşındı" (`ReturnedToSource`) → bayrak `None`; görevde bir çözümsüz Refused daha varsa `PostingRefused` (sabotaj (cb)).
+- [ ] AC-47 (zorunlu) — Onay yetkisi ve üstlenme: atanmamış görevi operatör "Üstlen" ile kendine atar (yalnız `warehouse.putaway-tasks.confirm`); atanmış görevi başkası onaylayamaz (403 `WMS_NOT_ASSIGNEE`), sorumlu (`.update`) onaylayabilir; atanmış görevi üstlenme 409 `WMS_TASK_ALREADY_ASSIGNED`.
+- [ ] AC-48 (zorunlu) — E-imza yok: putaway onayı imza istemez; MOD-0022'ye imzalanabilir eylem kaydı yok (manifest / kayıt testi). Başarılı onayın **kim / hangi komut / hangi görev / ne zaman** bilgisi merkezi kayıtta ölçülür (`RequestType` `ConfirmPutawayTaskCommand`, `Operation` `Execute`, `EntityId` = görev, aktör, zaman); **ne onaylandı** (onay `seq`, miktar, from / to, TransactionNumber) ve her sonucun izi yerel görev zaman çizelgesinde ölçülür (§4.3, §8.8; bağımsız inceleme 09 F-1).
+- [ ] AC-49 (zorunlu) — Açık görevin lotu sonradan recall'a ya da stoğu karantinaya girerse görev askıya alınmaz; onay anında 422 (`LOT_UNDER_RECALL` / defter kodu), görev açık kalır.
+- [ ] AC-50 (zorunlu) — RTL: `ar` dilinde iki ekran sağdan sola, diğer altı dil soldan sağa (Razor / CSS testi).
+
+**S1 — bağımsız inceleme 01 düzeltmeleri (F-1…F-4 + CT ek bulgusu):**
+- [ ] AC-51 (zorunlu) — Seri kontrollü SKU tam miktar (F-1): kovada 5 seri → görev miktarı 5 (değiştirilemez); onay kullanıcıdan seri almaz, sistem 5 seriyi okuyup harekete koyar; defterde `SERIAL_COUNT_MISMATCH` yok; serilerin yeni lokasyonu TRACE'te hedef bin; görev **onayla `Completed` olunca `OpenSerialSlot` kaldırılır** — aynı lotun aynı Receiving lokasyonuna **ikinci girişinde** (kısmi teslimat) aynı kova için **yeni görev açılır** (422 `WMS_QUANTITY_EXCEEDS_OPEN` yok; bağımsız inceleme 08 F-4).
+- [ ] AC-52 (zorunlu) — Seri SKU'da kısmi onay (3 / 5), kısa kapatma ve miktar düzenleme → 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED`, 7 dilde mesaj; aynı kovaya ikinci açık görev → 422 `WMS_QUANTITY_EXCEEDS_OPEN` — **sıralı vaka** ve **eşzamanlı vaka** ayrı test: iki görev yaratma (**farklı** `Idempotency-Key`; aynı anahtar AC-4'te replay'dir — bağımsız inceleme 12 F-2) bir bariyerle aynı anda başlar, ikisi de açık miktar kontrolünü geçer, yalnız biri yazılır, öbürü kısmi tekil index'ten yinelenen anahtar alır → 422 (sabotaj (ae) eşzamanlı vakayı hedefler; bağımsız inceleme 06 F-6 d).
+- [ ] AC-53 (zorunlu) — Seri kovası değişti: görev açıldıktan sonra kovadan 1 seri başka harekete gider → onay (ve Pending'in yeniden denemesi) 422 `WMS_SERIAL_BUCKET_CHANGED` (`expected 5`, `found 4`), hareket yok.
+- [ ] AC-54 (zorunlu) — Eşzamanlı iki yeniden deneme (inceleme 04 F-3 ile kurulabilir hâle getirildi): **fikstür 2q ≤ planlanan** (60'lık görevde 20'lik onay; böylece `Confirmed + q ≤ Planned` koşulu ikinci artışı tek başına engelleyemez ve sabotaj (w) ayrıştırıcı olur — bağımsız inceleme 05 F-4); ledger hareketi yazmış, cevap kaybolmuş, onay Pending; **kilidin süresi sahte saatle (`TimeProvider`) doldurulur** — ayarlar gerçek kalır, açılış doğrulaması bozulmaz (inceleme 05 F-2); iki kullanıcı "Yeniden dene"si aynı anda → ikisi de sırayla kilit alır, ikisi de ledger'da `Committed` bulur; yalnız biri yazar (`AttemptId` + `Status == Pending` filtresi), öbürü 0 kayıt etkiler, yeniden okur, aynı `TransactionId` ile Posted görür ve değişiklik yazmaz; tek hareket, `ConfirmedQuantity` bir kez artar, **tek `ConfirmationPosted` yerel olayı** (iki `ConfirmationRetried` kilit alımı olayı); merkezi denetim: iki komut da 200 döndüğü için her biri 1 `RetryPutawayConfirmationCommand` kaydı (`Operation` `Execute`, komut başına sabit; ikinci denemenin kilit alımı yazımı vardır) — bağımsız inceleme 08 F-1. Ayrıca sweeper + kullanıcı: sweeper okuduktan sonra kullanıcı kilit alırsa sweeper'ın yazımı 0 kayıt etkiler, sweeper hiçbir şey yazmaz.
+- [ ] AC-55 (zorunlu) — Refused sonrası akış (F-4): aynı görevde yeni onay (başka hedef) → Posted, eski onay `Resolution = SupersededByNewConfirmation` + zaman çizelgesinde `ConfirmationSuperseded` yerel olayı; merkezi denetimde ayrı kayıt yok — Posted komutunun tek merkezi kaydı (`RequestType` = komutun adı, `EntityId` = görev) gövde taşımaz; kapatılan `seq`'ler zaman çizelgesindeki `ConfirmationSuperseded` satırlarında ve `ConfirmationPosted.Data`'da ölçülür (§4.3, §8.8; bağımsız inceleme 09 F-1); "Geri taşındı" (gerekçe) → hareket yok, `Resolution = ReturnedToSource`, `ConfirmationReturned` olayı, "Stok reddetti" rozeti kalkar, görev kalan miktarla açık; Posted / Pending onayda "Geri taşındı" → 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`. **"Geri taşındı" → İptal** (Posted onay yok) **başarılı** (200, görev Cancelled) ve **"Geri taşındı" → Kalanı kapat** (önceden bir Posted onay var) **başarılı** (200, görev Completed) — İptal / Kalanı kapat'ın filtresinde `Resolution` koşulu yoktur (bağımsız inceleme 07 F-2). **Rozet (bağımsız inceleme 15 F-1):** yeni onay Posted olup eski Refused Superseded olunca ve "Geri taşındı"dan sonra görevin bayrağı `PostingRefused` değildir (başka çözümsüz Refused ya da Pending / `IntegrityError` yoksa `None`; "Stok reddetti" rozeti yok).
+- [ ] AC-56 (zorunlu) — Yeniden deneme ön kontrolleri (F-4): Pending onayın lotu recall'a girer ya da kova karantinaya geçer ya da hedefin saklama koşulu etiketi değişir → yeniden deneme INVENTORY'yi çağırmadan onayı Refused yapar (ön kontrol kodu ile); `LOCATION_TRANSFER` yazılmaz.
+- [ ] AC-57 (zorunlu) — Açık miktar yarışı (CT; tek yol inceleme 02 F-7): 100'lük kovada aynı anda iki 60'lık görev açılabilir (iyimser); ilk onay 60 Posted; ikincinin 60'lık onayı ön kontrolden geçer (durum `AVAILABLE`), onay kaydı açılır, **ledger 422 `INSUFFICIENT_STOCK`** → onay **Refused** (merkezi 0, yerel 2); bakiye eksiye düşmez; ikinci görev 40'lık yeni onayla Posted olur. **Ek (seri olmayan SKU, eşzamansız):** 100'lük kovada 60'lık görev açıkken ikinci 60'lık görev → 422 `WMS_QUANTITY_EXCEEDS_OPEN` (açık miktar kontrolü; §13.5).
+
+**S1 — bağımsız inceleme 02 düzeltmeleri:**
+- [ ] AC-58 (zorunlu) — AC-17'nin görev isteyen parçası (DL-2, inceleme 02 F-4): açık görevi olan düğümden Receiving kaldırma / silme 409 `WMS_LOCATION_HAS_OPEN_TASKS`; Receiving Zone'un alt bin'i kaynak olarak uygun, hedef olarak yasak.
+- [ ] AC-59 (zorunlu) — Saklama koşulu etiketleri görevsiz ölçülür (DL-1, inceleme 02 F-4): etiket oluştur / düzenle / sil, en çok bir sıcaklık kodu (400 `WMS_STORAGE_CONDITION_INVALID`), etkin küme okuması (`effectiveStorageConditions`, alt ağaç kalıtımı, "üst düğümden" kaynağı) doğru düğümü döner.
+- [ ] AC-60 (zorunlu) — CT dondurma adımının (§19.7) kabul ölçütü (inceleme 02 F-4): `docs/analysis/contracts/wms-bundle.openapi.yaml` dondurulduktan sonra DL-2'nin sözleşme testleri **dondurulmuş dosyaya** karşı yeniden koşar ve yeşildir; outbound kısmı WAREHOUSE-OUTBOUND 1.0.0 ile eşit (uyum testi).
+- [ ] AC-61 (zorunlu) — Gsku seri bayrağı (inceleme 02 F-3): Gsku stoğunda görev açılışı ürün bayrağını okur; ürün `serialControlled: false` → görev açılır, seri okunmaz; `true` ya da bilinmiyor → 422 `SKU_LEVEL_NOT_STOCKABLE`; Lsku'da `getSku` bayrağı kullanılır.
+- [ ] AC-62 (zorunlu) — Seri kovası ayrımı (inceleme 02 F-2): aynı lokasyonda aynı lot + SKU'nun 3 serisi QUARANTINE tutmasında, 5'i AVAILABLE → seri görevi açılmaz, 422 `WMS_SERIAL_BUCKET_MIXED_STATUS` (7 dilde); tutma kararı sonrası (hepsi AVAILABLE) görev 8 ile açılır ve onayda 8 seri taşınır; açık tutma / bloke serileri asla harekete girmez.
+- [ ] AC-63 (zorunlu) — Bütünlük hatası (inceleme 02 F-1): ledger aynı `PostingKey` ile farklı hareket işlemişse onay `IntegrityError`, cevap 409 `WMS_POSTING_INTEGRITY_ERROR`; "yeni onay ile kapatma" / "Geri taşındı" 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`; görevde yeni onay / iptal / kısa kapatma 409; istisna listesinde görünür; tek çıkış "Uzlaştır" (AC-65).
+- [ ] AC-64 (zorunlu) — Uçuş kilidi (inceleme 03 F-1): asıl onay INVENTORY'de uçuştayken (sahte gecikme) "Yeniden dene" → 409 `WMS_CONFIRMATION_IN_FLIGHT`, hiçbir şey yazılmaz; sweeper kaydı atlar; kilit süresi **sahte saatle** (`TimeProvider`) doldurulunca "Yeniden dene" → ledger araması → replay → Posted (tek hareket; inceleme 05 F-2). İşlem 2'de etkilenen 0 ve yazılı durum farklı (kilit süresi dolmuş, başka deneme Refused yazmış, bu deneme Posted almış) → onay `IntegrityError` + olay `ConfirmationIntegrityError`; sessiz dönüş yok. **Kardeş vaka (bağımsız inceleme 07 F-1):** N bir yeniden denemede Refused; N+1 onayı uçuştayken savunma dalı N'yi `IntegrityError` yapar (görev `Version++`); N+1'in işlem 2'si CAS'ı kaybeder, yeniden okur, N+1 hâlâ Pending ve `AttemptId` kendisinin → yazımı yeni `Version` ile yineler → **N+1 Posted, N+1'de IntegrityError yok**; N `IntegrityError` olduğu için Superseded hedefinde atlanır. **(C) vakası, kullanıcı yolu (bağımsız inceleme 08 F-3):** X'in kilidi sahte saatle dolar, Y "Yeniden dene" ile kilidi alır; X'in işlem 2'si 0 kayıt etkiler → 409 `WMS_CONFIRMATION_IN_FLIGHT`, Y'nin Pending onayı değişmez, X yeni yerel olay bırakmaz, iletilen merkezi satırı 0 (X'in işlem 1 satırı `Abandoned`). **(C2) vakası (bağımsız inceleme 09 F-5):** X duraklar, Y "Yeniden dene" ile kilidi alır ve kesilir, Y'nin kilidi de sahte saatle dolar; X'in işlem 2'si 0 kayıt etkiler → yazım yok, 409 `WMS_CONFLICT` + güncel görev, onay Pending kalır; ardından sweeper (ledger `Committed`) onayı Posted yazar — tek hareket, IntegrityError yok. **(E) vakası:** retry'ın ön kontrolü Refused bulurken sweeper aynı onayı Posted yazmış → retry yazmaz, 409 `WMS_CONFLICT`, onay Posted kalır. **(A) + aşım:** yeniden okumada koşullu artış tutmazsa onay `OverPlanned` `IntegrityError` olur (yineleme döngüsüne girmez). **(D) vakaları (bağımsız inceleme 10 F-2):** (i) X'in kilidi sahte saatle dolar, Y "Yeniden dene" ile ön kontrolde onayı Refused yazar (`RefusedOnRetry = true`), X'in işlem 2'si defterden Posted almıştır → 0 kayıt → yeniden okuma Refused → onay `IntegrityError` (`StatusDiverged`, `PriorResolution = Resolution`), 409 `WMS_POSTING_INTEGRITY_ERROR`; (ii) aynı kurulumda X'in yeniden okumasından önce savunma dalı onayı `IntegrityError` yapmıştır → X **yazmaz**, onayın alanları (`PriorResolution`, `ErrorDetails` dahil) ve `Version` değişmez (ezilmez), yeni `ConfirmationIntegrityError` olayı yok, cevap 409 `WMS_POSTING_INTEGRITY_ERROR`; (iii) **(D) tükenme vakası (bağımsız inceleme 11 F-3):** (i) kurulumunda X'in (D) yazımı üç denemede de CAS kaybeder (test kancası her yeniden okumadan sonra görevde Refused onayı değiştirmeyen bir yazımla, ör. not düzenlemesiyle, `Version`'ı artırır; yöntem geliştiricinin) → yazım yok, onay Refused kalır, 409 `WMS_CONFLICT` + güncel görev, X yeni yerel olay bırakmaz; savunma dalı sonraki turda onayı `IntegrityError` yapar (satır 18).
+- [ ] AC-65 (zorunlu) — "Uzlaştır" (inceleme 03 F-2, inceleme 04 F-1): yalnız `warehouse.putaway-tasks.resolve` sahibi (operatör 403); gerekçe < 10 → 400; yalnız `IntegrityError` onayda (diğerleri 409 `WMS_CONFIRMATION_NOT_RESOLVABLE`). **Kendi hareketi:** anahtarı tutan hareket `MOD-0178` / bu görev / bu `seq` (fikstür: aynı anahtarla tarihi farklı bir 0178 hareketi) → onay Posted, onaya defterin `TransactionId`, miktarı ve hedefi yazılır, fark varsa `ConfirmationDeviation` olayı, görev ilerler. **Yabancı hareket:** anahtarı başka bir `sourceModule` / görev tutuyor → onay çözümsüz Refused, yabancı hareketin kimliği olay verisinde, **görev açık kalır** (durumu değişmez); ardından "yeni onay" ya da "Geri taşındı" çalışır; görevi kapatmak ayrı İptal / Kalanı kapat ile. Görevde Pending onay varken "Uzlaştır" → 409 `WMS_CONFIRMATION_PENDING`. Seri SKU'da kendi hareketi: onaya defterin serileri yazılır, fark `ConfirmationDeviation`'da. Denetim satırı 1; düğme ve metin 7 dilde.
+- [ ] AC-66 (zorunlu) — Sweeper = uzlaştırıcı (inceleme 02 F-5 kalanı): `ReconcilePendingConfirmationCommand` her kayıt için `SetScope(tenant, LE, ConfirmedBy)` ile koşar; PRODUCT-MASTER / LOCATION'a 0 çağrı; `Committed` → Posted (merkezi 1, yerel 1); **`KeyReusedDifferentPayload` → `IntegrityError` + yerel olay `ConfirmationIntegrityError` (merkezi 0)** (inceleme 05 F-5); **savunma dalı:** son 30 dk'da bir yeniden denemede Refused olmuş onay — **ön kontrol reddi ve defter 4xx reddi ayrı vakalar** (`RefusalSource = PreCheck` / `Ledger4xx`, `RefusedOnRetry = true`) — için ledger `Committed` → `IntegrityError` (`StatusDiverged`) (merkezi 0, yerel 1); ilk onayın defter 4xx'i (`RefusedOnRetry = false`) ve Uzlaştır-b dönüşü (`RefusalSource = Resolve`) taranmaz — **ölçüt (bağımsız inceleme 07 F-3):** sahte `IPostingKeyLookup` çağrı sayacı bu onaylar için 0 (inceleme 05 F-3, bağımsız inceleme 06 F-2); **seçim (bağımsız inceleme 07 F-4):** 200'den fazla `NotCommitted` Pending varken 201. sıradaki `Committed` kayıt bir sonraki turda uzlaştırılır (imleç); normal dalda 200'den fazla kayıt varken savunma dalının adayı aynı turda taranır **ve ters yönde** 200'den fazla savunma adayı varken normal dalın `Committed` kaydı aynı turda uzlaştırılır (ayrı bütçe; hangi dal önce koşarsa koşsun — bağımsız inceleme 08 F-3); **`HolderReversed`:** cevabı kaybolmuş Pending onayın holder'ı ters kaydedilmişse → `IntegrityError` (`HolderReversed`) (merkezi 0, yerel 1); `NotCommitted` → `Attempts` aynı, yerel olay yok, merkezi 0 (iç komut gönderilmez); kilitli kayıt atlanır; **kayıt başına yalıtım:** tur içinde bir kaydın hatası (enjekte istisna) diğer kayıtların işlenmesini durdurmaz, tur en çok 200 kayıt alır (inceleme 04 F-3).
+- [ ] AC-67 (zorunlu) — Posting süresi, aşım ve geç commit (inceleme 04 F-2; gerçek akışa göre yeniden yazıldı, inceleme 05 F-1 / F-3): (1) `PostingTimeoutSeconds` aşılırsa (sahte yavaş ledger, sahte saat) onay Pending kalır, cevap 503, **kilit `InFlightUntilUtc`'ye kadar korunur** (bu sürede "Yeniden dene" 409 `WMS_CONFIRMATION_IN_FLIGHT`); (2) `InFlightLeaseSeconds < PostingTimeoutSeconds + 30` gerçek ayarıyla host başlamaz; (3) **geç commit yolu (bağımsız inceleme 05 F-1 ile kendi senaryosunda geçebilir):** kova ≥ 120 (`AVAILABLE`), 60'lık görev; N onayı (60) posting süresini aşar (sahte gecikmeli commit: hareket sonradan görünür); kilit sahte saatle dolar; lot geçici olarak karantinaya alınır → "Yeniden dene" ledger'da `NotCommitted` görür, ön kontrolde N'yi Refused yazar; lot **serbest bırakılır** (MOD-0175 kararı, `AVAILABLE`) — **fikstür kurulumu (bağımsız inceleme 06 F-6):** karantinaya alma ve serbest bırakma test kurulumunda MOD-0175'in kendi süreç içi hareket kapısı `QuarantineMovementPoster` üzerinden iki `STATUS_TRANSFER` (AVAILABLE → QUARANTINE, sonra QUARANTINE → AVAILABLE) ile yapılır; karar iş akışı (onay / imza) bu testin konusu değildir, geç commit sahte gecikmeli ledger fikstürüyle kurulur; P onayı (60) başlar — kapatacağı N'nin anahtarı hâlâ `NotCommitted` → P Posted, N `Superseded`, görev `Completed`; ardından N'nin hareketi defterde görünür → savunma dalı (**`Resolution`'dan ve terminal görevden bağımsız**) N'yi `IntegrityError` (`StatusDiverged`, `PriorResolution = SupersededByNewConfirmation`) yapar → görevde Pending onay yokken "Uzlaştır" → kendi hareketi → N Posted, `ConfirmedQuantity` = 120 > 60, görev **`Completed` kalır** (yeniden açılmaz), `ConfirmationDeviation` (`OverPlanned`); (4) görevde Pending onay varken "Uzlaştır" → 409 `WMS_CONFIRMATION_PENDING`; (5) işlem 2'nin `Confirmed + q ≤ Planned` savunma koşulu **`PutawayTaskRules` birim testiyle** ölçülür (gerçek akışta tetiklenmez; birim testi koşul tablosunu doğrudan çağırır); (6) **yazım yolu (bağımsız inceleme 08 F-2):** test kancası işlem 2'den önce görevin `ConfirmedQuantity`'sini artırır → ilk yazım ve (A) yeniden okuması aşımı görür → onay `IntegrityError` (`OverPlanned`), yineleme döngüsü ve 503 yok.
+- [ ] AC-68 (zorunlu) — Geç commit savunması ve terminal görev (bağımsız inceleme 05 F-1): (i) Refused N'nin hareketi defterde görünür hâldeyken yeni onay, "Geri taşındı", İptal ve Kalanı kapat (her biri ayrı test) → komut 409 `WMS_POSTING_INTEGRITY_ERROR`, N `IntegrityError` (`StatusDiverged`), komutun kendi yazımı yok; (ii) commit "Geri taşındı" / İptal **sonrasında** görünürse savunma dalı N'yi yakalar (`PriorResolution = ReturnedToSource` ya da görev Cancelled); (iii) terminal görevde "Uzlaştır": (a) → onay Posted, görev durumu değişmez (Cancelled görevde `ConfirmationDeviation` `PostedAfterCancel`), `OpenSerialSlot` yeniden alınmaz; (b) → onay çözümsüz Refused, görev terminal kalır, yalnız "Geri taşındı" açıktır.
+- [ ] AC-69 (zorunlu) — Ters kaydedilmiş kendi hareketi (bağımsız inceleme 05 F-2): cevabı kaybolmuş Pending onayın hareketi MOD-0173 sahibince `REVERSAL` ile ters kaydedilir → "Yeniden dene" ve sweeper onayı Posted **yazmaz**, `IntegrityError` (`HolderReversed`) yapar; ardından "Uzlaştır" → (b) yolu: onay çözümsüz Refused, görev açık kalır, `ConfirmedQuantity` artmaz, seri SKU'da onaya geri alınmış seriler yazılmaz; port `holder.reversedByTransactionId`'yi döndürür.
+- [ ] AC-70 (zorunlu) — Sürüm koşulu yarışı (bağımsız inceleme 06 F-3): Refused N üzerinde "Geri taşındı" (If-Match v) ile savunma dalı bir bariyerle aynı anda çalışır → yalnız biri yazar; son durum ya `Resolution = ReturnedToSource` (ardından savunma dalı bir sonraki turda N'yi `IntegrityError` + `PriorResolution = ReturnedToSource` yapar) ya da `IntegrityError` (komut yeniden okur, 409 `WMS_POSTING_INTEGRITY_ERROR`); **hiçbir anda** aynı onayda `IntegrityError` ile `Resolution` birlikte bulunmaz; aynı yarış İptal ve Kalanı kapat için ayrı testlerde; her sistem yazımı `Version`'ı artırır (eski If-Match'li kullanıcı komutu 409 `WMS_CONFLICT`). **Bariyerli sıra vakası (bağımsız inceleme 07 F-3):** savunma dalı N'yi okur (Refused, `Resolution = null`, V = v) → bariyer → "Geri taşındı" yazar ve **200** döner (V = v+1) → savunma `Version == v` ile yazar → 0 kayıt → bir sonraki turda yeniden değerlendirir → son durum `IntegrityError` ve **`PriorResolution = ReturnedToSource`** (iade kaydı kaybolmaz). **İptal / Kalanı kapat vakası:** "Geri taşındı" sonrasında İptal / Kalanı kapat ön araması iade edilmiş N'yi de tarar; N'nin geç commit'i görünürse 409 + N `IntegrityError`, görünmezse komut başarılı.
+
+**S3 (r20 bağlayıcı — DL-7):**
+- [ ] AC-36 (zorunlu) — İzleme ekranları (§8.23): fikstür dokuz istisna türünün her birinden bir kayıt kurar (çözümsüz Refused onay, `LongPendingMinutes`'tan eski Pending onay, `IntegrityError` onay, `ReadyAtUtc`'si `DispatchNotSeenHours`'tan eski `ReadyToShip` outbound, `ReservationReleaseState = Pending` tahsis, `CreatedAtUtc`'si 2 × `AllocationLeaseSeconds`'tan eski `Allocating` outbound, tahsis lotu recall'da olan `Picked` outbound, saklanan `ShortDispatchUnresolved` satırı olan ve bir lotunda Staging farkı ≠ 0 `Shipped` outbound, `AllocationFailure.kind = KeyReused` ve `Pending` tahsisli `AllocationFailed` outbound) → `GET /exceptions` dokuzunu doğru `kind` ile, `status Open` ile döner; **`exceptionId` tekilliği (r25, son bakış 03 F-7; §8.23 anahtar kuralı):** ayrı fikstürde bir `Shipped` outbound iki SKU (`X`, `Y`) için iki `ShortDispatchUnresolved` satırı taşır ve ikisinin de farkı ≠ 0 → iki kayıt, `exceptionId`'ler `ShortDispatchUnresolved:{outboundId}:X` ve `…:Y` (farklı); bir `Cancelled` outbound'un iki tahsisi `Pending` → iki `ReservationReleasePending` kaydı, `exceptionId`'ler `ReservationReleasePending:{outboundId}:1` ve `…:2`; bir `Picked` outbound'un iki tahsisinin lotu recall'da → iki `ReservedLotUnderRecall`, `{outboundId}:{allocSeq}` farklı; bütün cevapta `exceptionId` tekrarı yok (küme boyu = satır sayısı); **çıkış koşulları (r24, son bakış 02 F-1):** aynı fikstürde bütün tahsisleri `Released` olan `KeyReused` outbound, `kind = BatchRefused` outbound ve bütün lotlarında Staging farkı 0 olan `ShortDispatchUnresolved` kaydı listede **yok** (çıkışın kendisi AC-71 (vii) ve AC-78 (iv)'te ölçülür); `AllocationFailed` outbound'un `Pending` tahsisi `ReservationReleasePending` olarak ayrıca dönmez; aynı türden 1 saatlik `ReadyToShip` outbound listede yok; başka şirketin kaydı yok (seçili şirket), başka kiracının 0; `GET /activity` tarih aralığı zorunlu, 32 gün → 400, sonuçlar zaman azalan ve görev + outbound olaylarını + `sourceModule MOD-0178` hareketlerini içerir; `GET /integration/status` fikstürdeki outbox Pending / Delivered sayılarını ve en eski Pending yaşını döner; hiçbir S3 cevabında `shipTo` üyesi yok (şema testi); `WarehouseExceptions` ve `WarehouseActivity` `--reference slim --api-profile proxy` doğrulayıcı PASS (offcanvas / QuickView yokluğu bilinçli sapma, AC-34 kuralı); `WarehouseIntegration` DataTable değildir (r23, son bakış F-15) — kartların DOM testi: §8.23'ün **dört kartı** (Olay kuyruğu, Sevk bekleyen, Son eşitleme, Bekleyen onaylar; r24, son bakış 02 F-9), her kart fikstürdeki kendi değerlerini gösterir (cevabın altı değerinin hepsi bir kartta), başlıklar `Warehouse.Integration.Card.*` 7 dilde — ve UAS-001; `Layout = "_LayoutTenantShell"`, manifestte S3 sayfalarının eylemi yok, 7 dil + yardım anahtarları. Sabotajlar (da), (db), (dy), (dz), (en).
+
+**S2 / S3 — r20 ek ölçütleri:**
+- [ ] AC-78 (zorunlu) — Eksik sevk geri yerleştirmesi ve çözülemeyen eksik sevk (§4.5, §8.21, §8.23; DL-5 / DL-7; son bakış F-2, CT kararı; r24: son bakış 02 F-1 / F-4 / F-10; r25: son bakış 03 F-1 / F-2 / F-7): `L1` 30 toplanmış (`S-01`), `ReadyToShip` outbound. (i) sahte MVP-6 `Dispatched` detayında satır `{ skuId X, lotId L1, fromLocationId S-01, quantity 25 }` (kurulum INVENTORY'ye `S-01`'den 25 `GOODS_ISSUE_SALES` yazar) → eşitleme 200, `Shipped`, aynı işlemde `Origin = ShortDispatch` putaway görevi (kaynak `S-01`, lot `L1`, planlanan 5) ve onun `wms_task_events` `Created` olayı (`Origin ShortDispatch`), `Shipped` olayının `Data`'sında `shortDispatch[0].quantity = 5` ve boş `shortDispatchUnresolved[]`; `central_audit_outbox`'ta yine **tek** satır (`SyncOutboundDispatchCommand`; görev için ek satır yok); görev S1 akışıyla `A-03`'e onaylanır; (ii) çıkan = toplanan (30) → görev yok; (iii) **çözülemez — ayrı fikstürler, her birinde görev yok, outbound'da tek `ShortDispatchUnresolved` satırı, `Shipped` olayında aynı satır:** satırda `lotId` yok (`reason LotMissing`, `expected 30`, `issued 25`); satırda `fromLocationId` yok ve `fromLocationId = A-01` (iki fikstür; kurulum 25'i `A-01`'den çıkarır, `S-01`'de 30 kalır; `reason NotFromStaging`); çıkan 35 > toplanan 30 (kurulum `S-01`'e ayrıca `Packed` bir outbound O2'nin `L1` 5'ini toplamıştır, 35 `S-01`'den çıkar; `reason OverIssued`); **iki SKU (r25, son bakış 03 F-7):** aynı outbound'da `X` satırı `lotId`'siz, `Y` satırı `fromLocationId = A-01` → outbound'da iki satır (`skuId` X ve Y, `reason` LotMissing ve NotFromStaging), `GET /exceptions` iki kayıt, `exceptionId`'ler farklı; (iv) **çıkış koşulu (§8.23 Staging farkı; r25: lot başına, tam `StagingLocationId` düğümünde, herhangi bir lotta ≠ 0 iken listede):** (a) (iii)'ün her fikstüründe `GET /exceptions` kaydı `ShortDispatchUnresolved` olarak `details.stagingDifference[]` ile döner (LotMissing `[{ L1, +5 }]`, NotFromStaging `[{ L1, +30 }]`, OverIssued `[{ L1, −5 }]`); LotMissing'de kurulum INVENTORY'ye 0178 dışından `S-01 → A-03` 5 EA `LOCATION_TRANSFER` yazınca kayıt listeden düşer; OverIssued'da `A-02 → S-01` 5 EA `L1` yazılınca düşer; `S-01`'e giden X'li Pending pick onayı varken (sahte defter 503) fark hesaplanmaz, kayıt listede kalır, `details.stagingDifference = null`, `details.differenceDeferredBy = PendingConfirmation`; (b) **lot neti gizlemez (F-1 (a)):** O1 `S-01`'e X `L1` 10 + `L2` 10 toplamış, `S-01`'de ayrıca `Packed` O2'nin `L1` 5'i var; sahte MVP-6 detayı `{ X, L1, S-01, 15 }` + `{ X, L2, S-01, 5 }` (kurulum ikisini `S-01`'den yazar) → görev yok (`L2`'ye de yok), satır `reason OverIssued`, `expected 20`, `issued 20`, `lotId` yok; SKU neti 0 iken kayıt **listede**, `stagingDifference` `[{ L1, onHand 0, bound 5, −5 }, { L2, onHand 5, bound 0, +5 }]`; `S-01 → A-03` `L2` 5 yazılınca kayıt yine listede (`[{ L1, −5 }]`), ardından `A-02 → S-01` `L1` 5 yazılınca düşer; (c) **eşitlenmemiş sevk (F-1 (b)):** (iii) LotMissing fikstüründe (`S-01` `L1` 5 sahipsiz) aynı `S-01`'e X `L1` 5 toplamış `ReadyToShip` O3 vardır ve kurulum O3'ün 5'ini MVP-6 gibi `S-01`'den `GOODS_ISSUE_SALES` ile çıkarır, O3 eşitlenmez (lot farkı 0 görünürdü) → kayıt **listede**, `stagingDifference = null`, `differenceDeferredBy = UnsyncedReadyToShip`; O3 eşitlenince (sahte MVP-6 `Dispatched`, satır `{ X, L1, S-01, 5 }`) O3 `Shipped`, kayıt `[{ L1, +5 }]` ile listede; `S-01 → A-03` 5 yazılınca düşer; (d) **kapsam tek düğüm (F-2):** ayrı LOCATION fikstürü — `S-10` (`StorageLocation`, `isStockable`, Staging) ve onun alt bini `S-11` (Staging kalıtılmış); O1 `StagingLocationId = S-10`, LotMissing akışı ve `S-10 → A-03` 5 düzeltmesinden sonra kayıt listede yok; ardından `StagingLocationId = S-11` olan `Packed` O4 `S-11`'e X `L1` 5 toplar → O1'in kaydı yine listede **yok** (`S-11` kapsam dışı); outbound'un saklanan `ShortDispatchUnresolved[]` satırı her düşüşten sonra da aynıdır (değişmez). Sabotajlar (du), (dy), (eb), (ei), (ej), (ek), (el).
+- [ ] AC-77 (zorunlu) — Pick sonrası recall / lot durumu (§8.21 ön kontrol, §8.23; DL-5 / DL-7; inceleme 19 F-2): `L1` toplanmış ve `Packed` outbound'da `L1` recall'a alınır → `release` 422 `LOT_UNDER_RECALL` (`details.allocSeq`), outbound `Packed`, `Version` aynı, outbox 0, merkezi 0; aynı kurulumda lot Blocked → 422 `LOT_BLOCKED`, Expired → 422 `LOT_EXPIRED` (ayrı fikstürler); recall okuması 503 → 503, yazım yok; FEFO kipi `Block` iken `Packed` outbound'un tahsis lotundan (`L2`) daha erken SKT'li serbest bir lot (`L0`) depoya girer → `release` 422 `FEFO_ORDER_VIOLATION` (`details.firstEligibleLotId = L0`), yazım yok (`Warn` kipinde aynı kurulum → 200, satır gerekçesiz yayınlanır); **`RequireReason` (r22, inceleme 19 tur 2 F-1):** aynı kurulum gerekçesiz → 422 `FEFO_BYPASS_REASON_REQUIRED` (`details.deviations[0].allocSeq`, `firstEligibleLotId = L0`), yazım yok; 1001 karakterlik `reason` (her kipte, ayrı fikstürler) → 400 `INVALID_REQUEST`, yazım yok (r24, son bakış 02 F-5); `fefoBypassReasons: [{ allocSeq, reason }]` ile → 200, tahsisin `FefoBypassReason`'ı yazılır ve donmuş satırın `fefoBypassReason`'ı **ilk yayından itibaren** dolu (aynı işlemde; ikinci okuma hash'i eşit); tahsisin kendi gerekçeli lot değişimi varsa gerekçe yeniden sorulmaz; `GET /exceptions` bu tahsis için `ReservedLotUnderRecall` döner; outbound iptal edilir → rezervasyon `RELEASED`, `Cancellation` putaway görevi açılır, istisna listeden düşer; ardından MOD-0177 recall karantina isteğinin `retryQuarantineRequest`'i kurulumda `BlockedByReservation`'dan ilerler (ayrılmış miktar artık engel değil). **Kapsam (r22, tur 2 F-4):** `Allocating` outbound'un tahsis lotu recall'a girerse `ReservedLotUnderRecall` listede yok; bakım tahsisi tamamlayınca (`Allocated`) satır görünür. Sabotajlar (di), (dk), (dp), (ds), (eg).
+- [ ] AC-76 (zorunlu) — Kişisel veri okuması Viewer'a gitmez (Q-10a, sahip kararı Beste 2026-11-02; AuthService XMC-001 WP'si, DL-4 kabulünde CT ölçer — §7, §14.2): (a) `DefaultRolePermissionTemplate.SelectFor("Viewer", katalog)` sonucu `warehouse.outbound-shipments.read` **içermez**, öbür `warehouse.*.read` anahtarlarını içerir; (b) `PUTAWAY-PICKING-PACKING` etkinleştirme eşitlemesinden sonra Viewer bu anahtarı **almaz** (öbür `read` anahtarlarını alır); Admin (modülün bütün anahtarlarıyla), `WarehouseSupervisor` ve `ShippingPlanner` **alır**; `WarehouseOperator` (r23) kendi yedi anahtarını alır, bu anahtarı **almaz**; (c) yönetici anahtarı başka bir role elle atar → yetkili kullanıcı `GET /outbound-shipments/search` 200 alır, ardından eşitleme yeniden koşar → elle atama durur; (d) anahtar daha önce Viewer'a Module kaynağıyla verilmiş fikstürde geri alma koşusu onu kaldırır, elle atamaya dokunmaz; (e) 0178: Viewer token'ıyla `GET /outbound-shipments/search` ve `/view` 403, `GET /pick-tasks` ve `GET /outbound-shipments/{outboundId}/packages` cevaplarında `shipTo` üyesi yok (şema testi); (f) (r26, sahip kararı Beste 2026-11-11, §14.3) üç adlı rol hibe profiliyle modül hakkı olan **her** kiracıda (var olan kiracı fikstürü dahil) yaratılır ve beş koşul ölçülür: hakkı olmayan kiracıda rol yok; kiracının aynı adlı kendi rolü üzerine yazılmaz — r27 (sahip kararı Beste 2026-11-11, inceleme F-2): aynı adlı kendi rolü (`ShippingPlanner` ya da öbür ikisi) olan kiracı fikstüründe o rol değişmez (ad, açıklama, anahtar kümesi aynı), hiçbir anahtar eklenmez (`warehouse.outbound-shipments.read` dahil) ve merkezi denetimde o yaratma için "atlandı" (skipped) satırı var ((b)'nin "alır"ı bu fikstürde o role uygulanmaz); hiçbir kullanıcı atanmaz; her yaratma için merkezi denetim kaydı var; yeniden koşu ikinci kopya yaratmaz (Auth WP MOD-0018-FU31'in kabulünde; WP kimliği Ali'nin mesajından, repoda henüz yok — §14.3). Sabotajlar (de), (df), (dx), (ep).
+- [ ] AC-71 (zorunlu) — Tahsis kesintisi ve tekrar (§8.17 adım 6, DL-4): (i) işlem A commit olduktan sonra komut kesilir (test kancası) → kayıt `Allocating`, FU03'te rezervasyon 0; sahte saat `AllocationLeaseSeconds`'ı geçmeden bakım koşusu kayda **dokunmaz**; geçince `RunOnceAsync` → `Allocated`, rezervasyon sayısı tahsis sayısına eşit; (ii) toplu rezervasyon commit olduktan sonra, işlem B'den önce kesilir → bakım koşusu aynı anahtarlarla gönderir, FU03 tekrar sonuçlarını döner → `Allocated`, rezervasyon sayısı **değişmez** (iki küme yok); (iii) `Allocating` sürerken kullanıcının aynı `Idempotency-Key` + aynı gövdesi → 409 `WMS_OUTBOUND_ALLOCATION_IN_PROGRESS`, yazım yok; `Allocated` sonrası → 200 replay; `AllocationFailed` sonrası → 422 replay (kayıttaki satır sonuçları); farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`; (iv) merkezi: (i)'de `CreateOutboundShipmentCommand` satırı `Unconfirmed` (1), bakımın `CompleteOutboundAllocationCommand`'ı 1 (aktör = outbound'u açan kullanıcı); (vii) **kalıcı plan (r23, son bakış F-3):** (ii) kurulumunda kesinti ile bakım koşusu arasında kurulum FEFO sırasını değiştirir (daha erken SKT'li yeni lot girer) → bakım işlem A'daki planı gönderir, FU03 tekrar sonuçlarını döner, outbound `Allocated` ve tahsis lotları kesinti öncesiyle aynı; **FU03 400 dalı (r24, son bakış 02 F-1 / F-6; FU03 r3 `FindByIdempotencyKeysAsync`):** ayrı fikstürde işlem A ile toplu çağrı arasındaki test kancası outbound'un üç `ReservationKey`'inden ikisiyle FU03'te rezervasyon açar (biri ardından bırakılır: `RELEASED`; öbürü `ACTIVE`), üçüncüsüyle açmaz → toplu çağrı FU03'ten 400 `IDEMPOTENCY_KEY_REUSED` alır (FU03 §8.7: satırların bir kısmı işlenmiş) → outbound `AllocationFailed`, `AllocationFailure { kind KeyReused, lines: [] }`, olay `AllocationFailed` (`Data.kind = KeyReused`), üç tahsis `ReservationReleaseState = Pending`, `GET /exceptions` `AllocationOrphanSuspected` döner (`ReservationReleasePending` değil); bakımın `RunOnceAsync`'i → `FindByIdempotencyKeysAsync` outbound'un kiracı / şirketi ve üç anahtarla **bir kez** çağrılır (sahte port sayacı), `ACTIVE` rezervasyon dönen `etag` ile `ReleaseAsync`'le bırakılır (FU03 `GetAsync` `RELEASED`), `RELEASED` olanda ve bulunmayan anahtarda `ReleaseAsync` çağrılmaz; üç tahsis `Released`, merkezi `ReleaseOutboundReservationsCommand` 1; ardından `GET /exceptions` kaydı döndürmez; kullanıcının aynı `Idempotency-Key` + aynı gövdesi → 422 `WMS_ALLOCATION_FAILED` (`details.reason = ReservationKeyConflict`, `details.lines` boş); bakım kapsamı başka şirkete çevrilmiş fikstürde (`legalEntityId ≠` çözülmüş kapsam) FU03 `InvalidOperationException` → tahsisler `Pending`, olay `ReservationReleaseFailed`, rezervasyon `ACTIVE` kalır; (v) `CreatedAtUtc`'si 2 × `AllocationLeaseSeconds`'tan eski `Allocating` kayıt S3'te `AllocationStuck` (bakım servisi durdurulmuş fikstürle); (vi) **sonucu bilinmeyen toplu rezervasyon:** FU03 çağrısına commit **sonrası** enjekte istisna → cevap 503 `INVENTORY_UNAVAILABLE` (`details.reason = OutcomeUnknown`), kayıt `Allocating`, `AllocationFailed` yazılmaz; bakım koşusu → `Allocated`, rezervasyon kümesi tek. Sabotajlar (cq), (cr), (dc), (dv), (dz), (ea).
+- [ ] AC-72 (zorunlu) — Kısa toplama (§8.18, §8.19, DL-5): 30'luk tahsiste 20 onay + "Kalanı kapat" (gerekçe) → görev `Completed` (kısa), outbound `Picked`, FU03 rezervasyonu 30 ve `ACTIVE` (küçülmez — bilinen sınır FU-0178-RSV-PARTIAL); 20'lik koli → `Packed` → `ReadyToShip` detayında `quantity 20` → `Shipped` → kalan rezervasyon bırakılır (`RELEASED`); outbound'un bütün görevleri 0 ile kısa kapatılırsa outbound `Allocated` kalır, `release` 409 `WMS_INVALID_TRANSITION`, iptal çalışır; **iki tahsisten biri 0 ile kısa kapatılır** (öbürü 30 toplanır) → `ReadyToShip` detayında ve outbox olayında tek satır (`quantity 30`), sıfır satır yok (r21, inceleme 19 F-8); eşzamanlı iki son onay (bariyer) → outbound tek kez `Picked`, tek `PickCompleted` olayı. Sabotajlar (cs), (dm).
+- [ ] AC-73 (zorunlu) — S2 / S3 genel kurallar (DL-4 / DL-5 / DL-7): **kiracı / şirket** — her S2 / S3 ucunda başka kiracının kaydı 404, başka şirketin kaydına id ile 404, `X-Legal-Entity-Id` uyuşmazlığı 403 `CROSS_LE_FORBIDDEN`; **RBAC** — her S2 / S3 eyleminde `[HasPermission]` (`AuthorizationGuardTests`), token yok 401, anahtar yok 403; "Uzlaştır" yalnız `warehouse.pick-tasks.resolve` (operatör 403); atanmış pick görevini başkası onaylayamaz (403 `WMS_NOT_ASSIGNEE`); **tekrar** — her S2 yazma komutu (outbound yarat / düzenle / iptal / sevke hazır / eşitle, pick üstlen / toplu ata / onay / yeniden dene / geri taşındı / uzlaştır / kalanı kapat, koli aç / düzenle / kapat) aynı anahtar + aynı gövde → 200 replay ve yeni olay yok, farklı gövde → 400; bayat If-Match → 409 `WMS_CONFLICT`; **denetim** — §21 S2 satırlarının merkezi / yerel sayımları (başarılı yazan komut 1 / 1+, başarısız 0 iletilen, tekrar 0 / 0 / 0) `central_audit_outbox` ve `wms_outbound_events` / `wms_task_events`'ten ölçülür; `CentralAuditDeclarationTests` komut sayısı DL-4 sonunda **85**, DL-5 sonunda **99** (82 + 17; §5'in tek kuralı — taban `db769471c`) ve her S2 komutu `IsKnown`; **uzlaştırıcı** — S1 sweeper'ı cevabı kaybolmuş pick onayını `Posted` yazar (tek hareket); AuditTrail yeni-denetimsiz 0. Sabotajlar (ct), (cu), (cv).
+- [ ] AC-74 (zorunlu) — Gateway kapsamı (§15, integration-agent; DL-4 / DL-5 / DL-7 kabulünde): `Mod0178WarehouseRouteTests` S1'in 22 ucuna §3'ün 26 S2 / S3 ucunu ekler (48 uç, yöntemleriyle); her uç `/api/warehouse/{everything}` üzerinden `localhost:5067`'ye çözülür; `Idempotency-Key`, `If-Match`, `X-Correlation-Id` ve `X-Legal-Entity-Id` geçer; `ocelot.json` bu iş için **değişmez** (byte-eşit). Sabotaj (cw).
+- [ ] AC-75 (zorunlu) — Staging yapılandırması ve saklama koşulu (§4.5, §8.19, §12; DL-4 / DL-5): Staging rolü olmayan depoda outbound → 422 `WMS_STAGING_NOT_CONFIGURED`; iki Staging düğümlü depoda `stagingLocationId` yok → 400 `INVALID_REQUEST`, Staging olmayan düğüm → 422 `WMS_TARGET_NOT_ALLOWED`; satır `uomId` baz birim değil → 422 `WMS_UOM_NOT_BASE`; `COOL_2_8` SKU'nun pick onayı `COOL_2_8` etiketi olmayan `S-01`'e → 422 `WMS_STORAGE_CONDITION_MISMATCH`, hareket yok; `S-01`'e etiket eklenince aynı onay → 201; seri kontrollü SKU'da kovayı kısmen alan tahsis → 422 `WMS_SERIAL_PARTIAL_NOT_SUPPORTED`. Sabotaj (cx).
+
+## 17. Test Expectations
+
+- **DCP-002:** `verify_module_id.py . --check-id MOD-0178 --name "Putaway / Picking / Packing"` çıkış 0 (2026-10-21 ölçüldü; dev
+  dalında yeniden).
+- **Unit (Domain):** `PutawayTaskRules` (geçiş tablosu, kalan = planlanan − Posted − Pending, kısa kapatma koşulu), hedef kuralları,
+  decimal ayrıştırma (6 ondalık, üs yok), `LocationRoleRules` (çakışma).
+- **Handler / entegrasyon (kendi replika seti, `INVENTORY_TEST_MONGO` ya da paketin geçici replika seti; 27017 YOK):** gerçek
+  `InternalMovementPostingService` + gerçek defter ile onay (Prism / sahte değil), idempotent replay, Pending kurtarma (enjekte 503 +
+  "yazıldı ama cevap kayboldu"), tutulan stok, recall (gerçek `IRecallLotStatusReader` + tohumlanmış vaka), lot Blocked, eşzamanlı iki
+  onay → biri `INSUFFICIENT_STOCK`, kiracı / şirket izolasyonu, izin retleri, merkezi denetim satırları.
+- **API sözleşme testleri:** her durum kodu + hata kodu; cevaplar `wms-bundle.openapi.yaml`'a karşı; WAREHOUSE-OUTBOUND GET'leri
+  MVP-6'nın `FrozenReadSchema` kurallarının (null yok, UUID "D", SkuLevel 3 değer) bir kopyası olmayan, **üretim şemasından türetilen**
+  doğrulamaya karşı (kural kendi kopyasıyla ölçülmez — Çekirdek 10).
+- **Mimari:** ikinci bakiye yok; defter deposuna / koleksiyonlarına referans yok; `GOODS_ISSUE_SALES` yazan 0178 kodu yok; manifest
+  namespace; `/Platform/` rota yok; her HTTP eyleminde izin (`AuthorizationGuardTests`); AuditTrail yeni-denetimsiz 0.
+- **Web:** Razor sayfa testleri (Layout, UAS-001, düğme gizleme), 7 dil parite (`NavManifestL10nGuardTests`), verifier.
+- **Çalışma zamanı kanıtı (E4):** servis 5067 + Gateway + Web: §16 AC-2 akışı ekran + API cevabı + Mongo satırları (`wms_tasks`,
+  `inventory_transactions`, `central_audit_outbox` Delivered) + yeniden başlatma sonrası. **S2 (r20):** AC-35 akışı aynı biçimde
+  (`wms_outbound_shipments`, `wms_outbound_events`, FU03 rezervasyon koleksiyonu, `inventory_transactions`, outbox) — MVP-6 adımı test kurulumuyla.
+- **S2 / S3 testleri (r20):** Domain birim testleri `OutboundRules` (§8.18 geçiş tablosu, `Picked` / `Packed` koşulları), `AllocationPlanner`
+  (FEFO sırası + kapsam serbest sınırı + toplanabilir düğüm — Staging ve Receiving dışı, lotlu / lotsuz / Item aynı tanım (r24) + lokasyon kodu sırası; açgözlü dağıtım), `HandlingUnitRules`; handler /
+  entegrasyon testleri gerçek INVENTORY + gerçek FU03 portu ile (sahte değil); MVP-6 okuması sahte HTTP istemcisi (çağrı başlıkları
+  ölçülür); bakım hosted service'i `RunOnceAsync` + sahte `TimeProvider`; sözleşme testleri WMS taslağı §11 şemasına karşı (AC-19 deseni).
+- **Sabotaj kanıtı (K3) — her biri bir testi kırmızıya çevirmeli, geri alınınca yeşil, diff boş:**
+  (a) onay anahtarını her denemede yeni üret → çift hareket testi kırmızı; (b) recall ön kontrolünü kaldır → AC-8 kırmızı;
+  (c) `stockStatus` filtresini kaldır → AC-7 kırmızı; (d) görev deposundan `LegalEntityId` yüklemini düşür → şirket izolasyon testi
+  kırmızı; (e) If-Match kontrolünü atla → concurrency kırmızı; (f) Pending'i iptale izin ver → AC-11 kırmızı; (g) merkezi denetim
+  işaretini bir komuttan sil → AuditTrail testi kırmızı; (h) WAREHOUSE-OUTBOUND cevabına `nextCursor: null` ekle → AC-18 kırmızı;
+  (i) kalıtımı kaldır (yalnız binin kendi etiketi) → AC-37 alt bin testi kırmızı; (j) etiketsiz rafa her ürünü kabul et → AC-37 kırmızı;
+  (k) bilinmeyen `storageConditions`'ı boş say → AC-37 kırmızı; (l) şirket kodu regex'ini kaldır → AC-38 kırmızı; (m) Pending kilidini
+  kaldır → AC-39 kırmızı; (n) atanan kontrolünü kaldır → AC-47 kırmızı;
+  (o) 0178 koduna bir `IInventoryLedgerRepository` referansı / `wms_*` koleksiyonuna `OnHand` alanı ekle → AC-6 mimari testi kırmızı;
+  (p) görev deposundan `TenantId` yüklemini düşür → kiracılar arası 404 testi kırmızı (AC-13; (d) şirket yüklemi ayrıdır);
+  (q) bir controller eyleminden `[HasPermission]`'ı kaldır → `AuthorizationGuardTests` kırmızı (AC-14);
+  (r) anahtarsız kullanıcıya sayfa iskeletini çiz → UAS-001 testi kırmızı (AC-22);
+  (s) sayaç artışını koşulsuz oku-yaz yap (atomik değil) → eşzamanlı iki görev aynı numara testi kırmızı; `UpdatePutawayTask`'ın
+      `Number`'ı kabul etmesine izin ver → değişmezlik testi kırmızı (AC-16);
+  (t) 0178'e `GOODS_ISSUE_SALES` yazan bir çağrı ekle → mimari test kırmızı (AC-31 / §17);
+  (u) atalar arası rol çakışma kontrolünü kaldır → AC-17 kalıtım testi kırmızı; açık görev kontrolünü kaldır →
+      `WMS_LOCATION_HAS_OPEN_TASKS` testi kırmızı (AC-17);
+  (v) seri okumasını atla (boş `serialIds` gönder) → AC-51 kırmızı; seri kovası karşılaştırmasını kaldır → AC-53 kırmızı;
+  (w) işlem 2'nin `Status == Pending` **ve** `AttemptId` koşullarını birlikte kaldır (aynı sonuçta yeniden okuma kontrolü de) → AC-54
+      "tek artış" testi kırmızı (inceleme 04 F-3: tek koşul kaldırılınca öbürü yakalar; sabotaj ikisine birden hedeflenir);
+  (x) yeniden denemede tarihleri yeniden üret → AC-5 (replay) kırmızı; 4xx'i Pending say → AC-5 (kalıcı Refused) kırmızı;
+  (y) yeniden deneme ön kontrollerini atla → AC-56 kırmızı;
+  (z) yeniden deneme sırasını ters çevir (ön kontroller ledger anahtar aramasından önce) → AC-5 "cevap kayboldu + koşul değişti → Posted"
+      testi kırmızı (inceleme 02 F-1);
+  (aa) `IDEMPOTENCY_KEY_REUSED`'u Refused say → AC-63 kırmızı;
+  (ab) sweeper'a ön kontrol / posting ekle → AC-5 "sweeper 0 upstream çağrısı" testi kırmızı (inceleme 02 F-5);
+  (ac) seri okumasında tutma / bloke dışlamasını kaldır ya da karışık durum kontrolünü kaldır → AC-62 kırmızı (inceleme 02 F-2);
+  (ad) Gsku'da `getSku` bayrağını oku → AC-61 kırmızı (inceleme 02 F-3);
+  (ae) `OpenSerialSlot` kısmi tekil index'ini kaldır → AC-52 "ikinci açık görev" **eşzamanlı** testi kırmızı (yalnız index'e hedefli;
+       bağımsız inceleme 05 F-4) (inceleme 02 F-6, F-9);
+  (ba) açık miktar kontrolünü kaldır → AC-57 "seri olmayan SKU, ikinci görev 422" testi kırmızı (bağımsız inceleme 05 F-4);
+  (af) "Geri taşındı"yı Posted / Pending onayda da kabul et → AC-55 kırmızı (inceleme 02 F-9);
+  (ag) 422 `INSUFFICIENT_STOCK`'u Pending say ya da ikinci onayı defter çağrısı olmadan Posted yaz → AC-57 kırmızı (inceleme 02 F-7, F-9);
+  (ah) `effectiveStorageConditions` okumasından kalıtımı kaldır (yalnız düğümün kendi etiketi) → AC-59 kırmızı (DL-1, inceleme 03 F-5);
+  (ai) iki sıcaklık koduna izin ver → AC-59 kırmızı (DL-1);
+  (aj) `IntegrityError` onaylı görevde iptale izin ver → AC-63 "görev kilitli" kırmızı (inceleme 03 F-5);
+  (ak) uçuş kilidini kaldır → AC-64 "uçuştayken retry → 409" kırmızı (inceleme 03 F-1);
+  (al) işlem 2'de etkilenen 0'da sessiz dön → AC-64 "farklı durum → IntegrityError" kırmızı;
+  (am) "Uzlaştır"da kaynak ayrımını kaldır (her `holder`'ı kendi hareketi say) → AC-65 "yabancı hareket" testi kırmızı; Uzlaştır'a görev
+       kapatma ekle → AC-65 "görev açık kalır" testi kırmızı; izin kontrolünü kaldır →
+       AC-65 operatör 403 testi kırmızı;
+  (an) sweeper `NotCommitted` turunda `Attempts` artır ya da iç komutu gönder / yerel olay yaz → AC-66 kırmızı; sweeper'a upstream çağrısı ekle →
+       AC-66 "0 çağrı" kırmızı;
+  (ao) sweeper yazım filtresinden `InFlightUntilUtc` koşulunu kaldır → AC-54 "sweeper + kullanıcı" testi kırmızı; kayıt başına try/catch'i
+       kaldır → AC-66 yalıtım testi kırmızı (inceleme 04 F-3);
+  (ap) işlem 3'ün posting süresi sınırını kaldır → AC-67 (1) kırmızı; aşımda kilidi hemen bırak → AC-67 (1) "kilit korunur" kırmızı;
+       açılış ayar doğrulamasını kaldır → AC-67 (2) kırmızı; `ConfirmedQuantity + q ≤ PlannedQuantity` koşulunu kaldır →
+       `PutawayTaskRules` birim testi (AC-67 (5)) kırmızı — gerçek akışta tetiklenmeyen savunma koşulu birim testiyle kanıtlanır
+       (inceleme 04 F-2, inceleme 05 F-1); (A) yeniden okumasında koşullu artış değerlendirmesini kaldır → AC-67 (6) kırmızı (bağımsız
+       inceleme 08 F-2);
+  (aq) sweeper'ın `KeyReusedDifferentPayload` dalını kaldır (Pending bırak) → AC-66 KeyReused testi kırmızı (inceleme 05 F-5);
+  (ar) "Uzlaştır"da her holder'ı yabancı say → AC-65 "kendi hareketi" testi kırmızı; seri listesini defterden yazmayı kaldır → AC-65
+       seri testi kırmızı (inceleme 05 F-4, F-5);
+  (as) sweeper'ın `Committed` → Posted yazımını kaldır (Pending bırak) → AC-66 `Committed` testi kırmızı (inceleme 05 F-5);
+  (at) yeni Posted onayda eski Refused onayların `SupersededByNewConfirmation` işaretini / `ConfirmationSuperseded` olayını kaldır →
+       AC-55 Superseded testi kırmızı (inceleme 05 F-5);
+  (au) sweeper savunma dalını kaldır → AC-67 (3) geç commit testi kırmızı (inceleme 05 F-3);
+  (av) "Uzlaştır"daki Pending yasağını kaldır → AC-67 (4) kırmızı (inceleme 05 F-1);
+  (aw) yeni onay / "Geri taşındı" / İptal / Kalanı kapat'taki ön ledger aramasını kaldır → AC-68 (i) kırmızı (bağımsız inceleme 05 F-1);
+  (ax) savunma dalına `Resolution` boş koşulunu geri koy → AC-67 (3) ve AC-68 (ii) kırmızı;
+  (ay) terminal görevde "Uzlaştır"ın görevi yeniden açmasına izin ver → AC-68 (iii) kırmızı;
+  (az) `reversedByTransactionId`'yi yok say (ters kaydı `Committed` gibi Posted yaz) → AC-69 kırmızı (bağımsız inceleme 05 F-2);
+  (bb) savunma dalının yazımından `Version` koşulunu kaldır → AC-70 **bariyerli sıra vakası** ("son `PriorResolution = ReturnedToSource`")
+       kırmızı (ReturnedToSource kaybolur); sistem yazımında `Version++`'ı kaldır → AC-70 "eski If-Match 409" testi kırmızı (bağımsız
+       inceleme 06 F-3, 07 F-3 — ayrıştırıcı olmayan "Resolution == null" yarısı çıkarıldı);
+  (bc) savunma dalı seçimini yalnız `RefusalSource = PreCheck`'e daralt → AC-66 "defter 4xx reddi" vakası kırmızı; `RefusedOnRetry`
+       koşulunu kaldır → AC-66 "sahte `IPostingKeyLookup` çağrı sayacı 0" ölçütü kırmızı (bağımsız inceleme 06 F-2, 07 F-3);
+  (bd) işlem 2'nin 0-satır tek kuralında (A) yinelemesini kaldır (her 0 satırı "farklı → IntegrityError" say) → AC-64 kardeş vaka kırmızı;
+       (C) dalını kaldır → AC-64 **(C) vakası** (Y'nin Pending'i `IntegrityError` olur) kırmızı; (E) dalını kaldır → AC-64 (E) vakası
+       kırmızı (bağımsız inceleme 07 F-1, 08 F-3);
+  (be) sweeper seçiminde imleci kaldır (her tur baştan, `Limit(200)`) → AC-66 ">200 NotCommitted, 201. Committed" vakası kırmızı;
+  (bf) normal dal ile savunma dalını tek bütçede birleştir → AC-66 "ayrı bütçe" vakalarından **en az biri** kırmızı (iki yön de ölçülür;
+       hangi dal önce koşarsa koşsun öbürü aç kalır — bağımsız inceleme 07 F-4, 08 F-3);
+  (bh) Refused / IntegrityError / ön arama 409 yolunda yerel zaman çizelgesi yazımını kaldır → AC-15 "(b) `wms_task_events`" ret izi
+       sayımı kırmızı; başarısız cevapta satırı `Abandoned` yerine onayla (başarısız sonucu başarı zarfıyla dön) → AC-15 (a) "başarısızda `Pending` +
+       `Delivered` = 0, 1 `Abandoned`" kırmızı (satır `Pending` olur; ölçüt `Pending`'i saydığı için ayrıştırıcıdır — bağımsız inceleme 08 F-1,
+       09 F-2 a);
+  (bi) onay yolunda (satır 2 / 3 / 4 / 13 / 25) `OpenSerialSlot` kaldırmayı çıkar → AC-51 "ikinci giriş → yeni görev" kırmızı
+       (bağımsız inceleme 08 F-4);
+  (bg) İptal / Kalanı kapat filtresine `Resolution == null` koy → AC-55 "Geri taşındı → İptal / Kalanı kapat başarılı" kırmızı (bağımsız
+       inceleme 07 F-2);
+  (bj) yeniden okumada `AttemptId` karşılaştırmasını kaldır ((C2)'yi (A) say) → AC-64 "(C2) vakası" kırmızı (X yazımı yineler ve Posted
+       yazar; 409 `WMS_CONFLICT` beklenir) (bağımsız inceleme 09 F-5);
+  (bk) 0 kayıt etkileyen yazımda da enlist et ve yerel olayı yaz → AC-15 "kilit reddi 409 = 0 / 0 / 0" kırmızı (`Abandoned` satır ve
+       olay görünür) (bağımsız inceleme 09 F-2 c);
+  (bl) istek anahtarı kontrolünü kaldır (ya da If-Match'ten sonraya al) → AC-4 "aynı onay, ilk isteğin If-Match'i → 200 replay" testi
+       kırmızı (409 `WMS_CONFLICT` döner) ve yaratma dışı komut replay testleri kırmızı (bağımsız inceleme 10 F-1);
+  (bm) parmak izi karşılaştırmasını kaldır (anahtar bulununca hep replay) → AC-4 "aynı anahtar + farklı gövde → 400" testi kırmızı;
+  (bn) yinelenen anahtar / CAS kaybından sonra anahtarın yeniden aranmasını kaldır → AC-4 **eşzamanlı vaka** kırmızı (kaybeden 409 alır);
+  (bo) (D)'de "zaten `IntegrityError` → yazım yok" kontrolünü **ve** yazım filtresindeki `Status == Refused`'ı birlikte kaldır (biri öbürünü
+       yakalar; (w) deseni) → AC-64 "(D) vaka (ii)" kırmızı (`Version` artar, `PriorResolution` ezilir, ikinci
+       `ConfirmationIntegrityError` olayı görünür) (bağımsız inceleme 10 F-2);
+  (bp) rol yaratmada `LocationId` index'inden gelen yinelenen kayıtta anahtarın yeniden aranmasını kaldır → AC-4 "eşzamanlı rol
+       yaratma" `LocationId` dalı kırmızı (kaybeden 409 `WMS_LOCATION_ROLE_EXISTS` alır) (bağımsız inceleme 11 F-3);
+  (bq) onay replay'inde `confirmationSeq`'i anahtar olayından değil görevin son onayından al → AC-4 "onayın `seq`'i" kırmızı
+       (`confirmationSeq = 2`) (bağımsız inceleme 11 F-1);
+  (br) toplu aramadaki `RequestOp` filtresini kaldır → AC-4 "tekil silme → toplu silme" kırmızı (toplu silme 400
+       `IDEMPOTENCY_KEY_REUSED` alır — parmak izi operasyonu içerir, §8.1; satırlar yazılmaz) (bağımsız inceleme 11 F-2, 12 F-3);
+  (bs) yaratma index'inden ve aramasından `CreatedBy`'ı çıkar → AC-4 "A ve B aynı anahtar" kırmızı (B, A'nın kaydını replay alır ya da
+       400) (bağımsız inceleme 11 F-2);
+  (bt) (D) yinelemesinin üst sınırını kaldır → AC-64 "(D) tükenme vakası" kırmızı (409 `WMS_CONFLICT` gelmez, test zaman aşımı)
+       (bağımsız inceleme 11 F-3);
+  (bu) hedef başı tekil olay index'inden (`wms_task_events`) `RequestOp`'u kaldır → AC-4 "aynı hedef, iki işlem" kırmızı (düzenlemenin
+       anahtar olayı yinelenen kayıt alır, düzenleme yazılmaz) (bağımsız inceleme 12 F-3);
+  (bv) seri slot index'inden gelen yinelenen kayıtta anahtarın yeniden aranmasını kaldır → AC-4 "özdeş eşzamanlı seri görev
+       yaratma" kırmızı (kaybeden 422 alır) (bağımsız inceleme 12 F-2);
+  (bw) commit sonucu bilinmeyen sonucu (5xx / istisna) Refused'a eşle → AC-5 "commit sonrası 500" kırmızı (onay Refused, defterde hareket
+       var) (Codex incelemesi P2);
+  (bx) posting çağrısındaki beklenmeyen istisnayı ya da iptali (`OperationCanceledException`) yakalama → AC-5 "beklenmeyen istisna" ve
+       "iptal" vakaları kırmızı (503 + Pending yerine 500) (Codex incelemesi P2, bağımsız inceleme 13 F-2);
+  (by) `PostingPendingLong` türetmesini kaldır (uzun Pending de `PostingPending` döner) → AC-46 "uzun Pending" vakası kırmızı (rozet
+       "Uzun süredir bekliyor" görünmez) (bağımsız inceleme 13 F-3);
+  (bz) bayrak öncelik sırasını ters çevir (`PostingRefused` > `PostingPending` > `PostingPendingLong` > `PostingIntegrityError`) → AC-46
+       "öncelik" vakası kırmızı (Pending + `IntegrityError` görevde "Bütünlük hatası" yerine "Onay bekliyor") (bağımsız inceleme 14 F-1);
+  (ca) `LongPendingMinutes × 60 > InFlightLeaseSeconds` çapraz kontrolünü kaldır (yalnız > 0 kalsın) → AC-46 "açılış doğrulaması"
+       kırmızı (`LongPendingMinutes = 1` ile host başlar) (bağımsız inceleme 14 F-3);
+  (cb) `PostingRefused` türetmesinden `Resolution == null` filtresini kaldır → AC-46 "çözülmüş Refused" vakası kırmızı (Superseded /
+       Returned onaylı görev "Stok reddetti" gösterir) (bağımsız inceleme 15 F-1);
+  **S2 / S3 (r20):**
+  (cc) tahsis planında FU03 `GetScopeFreeAsync` sınırını kaldır (yalnız FEFO `available`) → AC-26 "başka çıkışın rezervasyonu" vakası
+       kırmızı (FU03 toplu ret → 422; `L1` 10 + `L2` 50 beklenir);
+  (cd) alınabilir miktara Staging düğümlerinin bakiyesini kat → AC-26 "Staging dışı" vakası kırmızı (`L1` 30 yerine 70 görünür);
+  (ce) FU03 isteğine `expiresAt` koy (ör. şimdi + 1 gün) → AC-26 "`expiresAt` yok" ölçütü kırmızı (Q-07);
+  (cf) pick hareketinden `reservationId`'yi çıkar → AC-27 "`reservationId` = tahsisin rezervasyonu" ve "rezervasyon bırakılmış → Refused"
+       vakaları kırmızı (hareket yazılır);
+  (cg) onay gövdesindeki hedef alanını kabul et → AC-27 "gövdede hedef → 400" kırmızı;
+  (ch) lot değişiminde gerekçe kontrolünü kaldır → AC-28 "gerekçesiz → 422 `FEFO_BYPASS_REASON_REQUIRED`" kırmızı;
+  (de) anahtarı `EntitlementOnlyViewerPermissions`'tan çıkar → AC-76 (a) kırmızı (Viewer şablonu anahtarı alır);
+  (dx) `WarehouseOperator` anahtar kümesine `warehouse.outbound-shipments.read`'i ekle → AC-76 (b) kırmızı;
+  (df) hibe profilini kaldır (modül genel Admin + Viewer döngüsüne düşer) → AC-76 (b) kırmızı (Viewer anahtarı alır; adanmış roller
+       `WarehouseSupervisor` / `ShippingPlanner` almaz — Admin'in alması ölçütü bozmaz, ayrıştıran Viewer ve adanmış rollerdir);
+  (ep) (r27, inceleme F-2) kiracının var olan aynı adlı kendi rolüne (ör. `ShippingPlanner`) anahtarı ekle → AC-76 (f) kırmızı (rol
+       değişti, `warehouse.outbound-shipments.read` eklendi, denetim satırı "atlandı" değil);
+  (dt) pick kaynak düğümlerinden Receiving alt ağacını çıkarmayı kaldır → AC-26 "Receiving" vakası kırmızı (`R-01`'den görev açılır);
+  (du) `Shipped` yazımında eksik sevk hesabını kaldır → AC-78 kırmızı (görev açılmaz, Staging'de 5 sahipsiz kalır);
+  (dv) bakımın planı yeniden hesaplamasına izin ver (işlem A'daki planı okuma) → AC-71 (vii) kırmızı (FU03 400 → `AllocationFailed`);
+  (dw) donmuş `{outboundId}` rotasına `:guid` kısıtı koy → AC-30 "donmuş yol" kırmızı (gövdesiz genel 404);
+  **r24 (son bakış 02):**
+  (dy) `ShortDispatchUnresolved` türetmesinden Staging farkı koşulunu kaldır (saklanan satır varsa hep listele) → AC-78 (iv) "düzeltme sonrası
+       listeden düşer" kırmızı (F-1);
+  (dz) `AllocationOrphanSuspected` türetmesinden "en az bir tahsis `Released` değil" koşulunu kaldır → AC-71 (vii) "bırakmadan sonra
+       `GET /exceptions` kaydı döndürmez" ve AC-36 "`Released` `KeyReused` outbound listede yok" kırmızı (F-1);
+  (ea) 400 dalında tahsisleri `Pending` işaretlemeyi kaldır (ya da bakımda `FindByIdempotencyKeysAsync` okumasını atla) → AC-71 (vii)
+       "`ACTIVE` rezervasyon bırakılır" kırmızı (FU03'te `ACTIVE` kalır) (F-6);
+  (eb) eksik sevk çözülebilirliğinden `fromLocationId = StagingLocationId` koşulunu kaldır (yalnız `lotId`'ye bak) → AC-78 (iii)
+       `NotFromStaging` fikstürleri kırmızı (görev açılır) (F-4);
+  (ec) lot izlenmeyen SKU'nun alınabilir miktarında yalnız Staging'i dışla (Receiving'i kat) → AC-26 "lotsuz ve Item yolu" kırmızı
+       (`allocatable 20`, satır kodu `BinCapacityShort`) (F-2);
+  (ed) sevk okumasında `Forbidden` sonucunu "sevkiyat yok"a eşle → AC-31 401 / 403 fikstürleri kırmızı (200 `dispatchSeen: false`) (F-7);
+  (ee) sevk okumasında `Unavailable` / `NotFound` sonucunu "sevkiyat yok"a eşle → AC-31 zaman aşımı ve "aday detayı 404" fikstürleri
+       kırmızı (200 `dispatchSeen: false`) (F-7);
+  (ef) tahsiste gerekçenin üst sınır kontrolünü kaldır (yalnız alt sınır, kanca gibi) → AC-28 "1001 karakter → 400" kırmızı (201) (F-5);
+  (eg) release'te `fefoBypassReasons[].reason` üst sınır kontrolünü kaldır → AC-77 "1001 karakter → 400" kırmızı (200) (F-5);
+  (eh) `zh` resx'inden `Warehouse.Origin.ShortDispatch`'i sil → AC-34 parite testi kırmızı (F-3);
+  (ei) `ShortDispatch` görevinin `wms_task_events` `Created` olayını yazma → AC-78 (i) "görevin `Created` olayı" kırmızı (F-10);
+  **r25 (son bakış 03):**
+  (ej) Staging farkını SKU düzeyinde (lotların neti) hesapla → AC-78 (iv) (b) kırmızı (net 0, kayıt listede yok) (F-1);
+  (ek) eşitlenmemiş `ReadyToShip` outbound varken farkı yine hesapla → AC-78 (iv) (c) kırmızı (lot farkı 0, kayıt listeden düşer) (F-1);
+  (el) `OnHand`'i Staging düğümünün alt ağacından al (bağlı miktar tek düğümde kalsın) → AC-78 (iv) (d) kırmızı (`S-11`'deki O4 stoğu
+       O1'in kaydını +5 ile geri getirir) (F-2);
+  (em) `IShipmentReader`'daki iki yeni üyeden birinin varsayılan gövdesini kaldır (soyut üye yap) → MOD-0177 test projesi derlenmez
+       (`RecallTraceEngineTests.cs` `FakeShipmentReader`), AC-31 "MOD-0177 değişmezliği" kırmızı (F-3);
+  (en) `ShortDispatchUnresolved` `exceptionId`'sinden `skuId`'yi çıkar (yalnız `outboundId`) → AC-36 "iki SKU, iki farklı `exceptionId`"
+       kırmızı (F-7);
+  (eo) sevk okumasında öbür 4xx'i (`default:` dalı) "sevkiyat yok"a eşle → AC-31 "sorguda 400 / detayda 429" fikstürleri kırmızı (200
+       `dispatchSeen: false`) (F-4);
+  (dp) release FEFO yeniden değerlendirmesini yalnız `Block` kipine indir → AC-77 `RequireReason` vakası kırmızı (gerekçesiz 200 döner);
+  (dq) kaynak doğrulamasını yalnız birden çok sonuca uygula (tek sonuçta detay okuma) → AC-31 "yabancı kaynak" vakası kırmızı (outbound
+       `Shipped` olur);
+  (dr) planda aynı isteğin önceki dağıtımlarını düşmeyi kaldır ya da görev kalanını planlanan − Posted − Pending yap → AC-26 "iki satır /
+       aynı bin" (`A-01`'e 12) ya da "Pending" (`A-01`'den 6; beklenen 0 — inceleme 19 tur 3 F-1) vakası kırmızı;
+  (ds) `ReservedLotUnderRecall` süzgecine `Allocating`'i kat → AC-77 "kapsam" vakası kırmızı (iç durumdaki outbound listede görünür);
+  (dh) `Exception` durumunu "sevk görülmedi" say (ya da `Cancelled`'da `stockIssued`'ı okuma) → AC-31 `Exception` ve `stockIssued: true`
+       `Cancelled` fikstürleri kırmızı (outbound `ReadyToShip` kalır);
+  (di) release ön kontrolünden recall okumasını kaldır → AC-77 "release 422 `LOT_UNDER_RECALL`" kırmızı (outbound `ReadyToShip` olur);
+  (dj) pick planında açık pick görevlerinin kalan miktarını düşmeyi kaldır → AC-26 "iki outbound / iki bin" kırmızı (Z'nin görevi `A-01`'den
+       açılır, onay `INSUFFICIENT_STOCK` → Refused);
+  (dk) tahsiste FEFO kipini okuma (her kipte `RequireReason` davran) → AC-28 `Block` vakası kırmızı (gerekçeli 201 döner) ve AC-77
+       `Block` / `FEFO_ORDER_VIOLATION` release vakası — kip okuması ortak;
+  (dl) bırakmada `GetAsync` yerine tahsiste saklı sürümü `ifMatch` yap → AC-32 "sürüm" vakası kırmızı (409 → `Pending`, `Released`
+       beklenir);
+  (dm) toplanan 0 olan tahsisi donmuş detaya yaz → AC-72 "sıfır satır yok" kırmızı;
+  (dn) son kapanışta boş açık kolileri iptal etmeyi kaldır → AC-29 "boş açık koli" kırmızı (B `Open` kalır, donmuş `packages`'ta görünür);
+  (do) Paketleme sayfasının iznini `warehouse.outbound-shipments.read` yap → AC-34 "operatör akışı" kırmızı (operatöre 403);
+  (dg) "ilk uygun lot" kararında serbest miktarı 0 olan lotu say (FEFO okumasının sırasını aynen kullan) → AC-28 "serbest taban" vakası
+       kırmızı (422 `FEFO_BYPASS_REASON_REQUIRED`) ve AC-26 "tümüyle ayrılmış lot" vakası kırmızı (`FefoRank` 1 = `L1`);
+  (ci) koli içeriği toplamının `PickedQuantity` kontrolünü kaldır → AC-29 "31 > 30 → 422" kırmızı;
+  (cj) koli kapanışında INVENTORY'ye bir `LOCATION_TRANSFER` gönder → AC-29 "INVENTORY'ye çağrı 0" kırmızı;
+  (ck) `OutboundShipmentReady` outbox yazımını işlemin dışına al → AC-30 K2 vakası kırmızı (outbound `ReadyToShip` olur, outbox yok);
+  (cl) `ReadyToShip` sonrası düzenlemeye izin ver → AC-30 "409 `WMS_OUTBOUND_IMMUTABLE`" ve drift hash eşitliği kırmızı;
+  (cm) `Planned` sevkiyatı da sevk edilmiş say → AC-31 "`Planned` → değişiklik yok" kırmızı;
+  (cn) iptalde tahsisleri `ReservationReleaseState = Pending` işaretleme → AC-32 "bırakma hatası → bakım bırakır" kırmızı (rezervasyon
+       `ACTIVE` kalır);
+  (co) iptalde `Origin = Cancellation` putaway görevini açma → AC-32 "`Picked` outbound iptali" kırmızı;
+  (cp) Item çözümlemesinden D-SKU-LINK eşitliğini kaldır (verilen `skuId`'yi olduğu gibi kullan) → AC-33 (iii) `SkuIdMismatch` vakası kırmızı
+       (outbound açılır);
+  (dd) donmuş liste süzgecinden "Item satırı yok" koşulunu kaldır → AC-33 (v) "sayfa `WarehousePage` kuralını geçer" kırmızı (`skuLevel Item`
+       üç değerli enum'u bozar);
+  (cq) bakım tekrarında rezervasyon anahtarına deneme numarası ekle → AC-71 (ii) kırmızı (iki rezervasyon kümesi);
+  (cr) bakım seçiminden `AllocationLeaseUntilUtc < şimdi` koşulunu kaldır → AC-71 (i) "kilit dolmadan dokunmaz" kırmızı;
+  (cs) `Picked` koşulundan "toplanan > 0"ı kaldır → AC-72 "hepsi 0 ile kısa kapatıldı → `Allocated` kalır" kırmızı;
+  (ct) outbound deposundan `LegalEntityId` yüklemini düşür → AC-73 "başka şirketin kaydı 404" kırmızı;
+  (cu) bir pick görevi eyleminden `[HasPermission]`'ı kaldır → `AuthorizationGuardTests` kırmızı (AC-73);
+  (cv) bir S2 Web proxy eyleminin izin kontrolünü sil → eylem başına izin testi kırmızı (AC-34 / AC-73; DL-3 F-1 dersi);
+  (cw) `ocelot.json`'da `/api/warehouse/{everything}` rotasının `UpstreamHttpMethod`'undan `PUT`'u çıkar (integration-agent'ın kendi
+       dalında, geri alınır) → AC-74'te `PUT /outbound-shipments/{outboundId}` ve `PUT /packages/{packageId}` satırları kırmızı;
+  (cx) pick ön kontrolünden Staging saklama koşulu uyumunu kaldır → AC-75 `COOL_2_8` vakası kırmızı;
+  (cy) bir S2 görünümünden `Layout = "_LayoutTenantShell"` satırını sil → AC-34 layout testi kırmızı;
+  (cz) `zh` resx'inden bir `Warehouse.Outbound.*` anahtarını sil → AC-34 parite testi kırmızı;
+  (da) istisna sorgusundan `LegalEntityId` süzgecini kaldır → AC-36 "başka şirketin kaydı yok" kırmızı;
+  (db) `DispatchNotSeenHours` eşiğini kaldır → AC-36 "1 saatlik `ReadyToShip` listede yok" kırmızı;
+  (dc) toplu rezervasyon istisnasını `AllocationFailed`'e eşle → AC-71 (vi) kırmızı (kayıt `AllocationFailed` olur, FU03'te rezervasyonlar
+       sahipsiz kalır).
+- Koşulmayan: `AccountKindAcceptanceHost.Tests` (MVP-1 emsali).
+
+## 18. Ready-for-dev Checklist
+
+| # | Madde | Durum |
+|---|---|---|
+| 1 | Golden Reference Slim kodu okundu (backend + frontend) | ✅ |
+| 2 | Frontmatter zorunlu alanlar (service, shell, golden_reference, data_mode, entity_base) | ✅ |
+| 3 | Layout & Shell Contract'ta `Layout = "_LayoutTenantShell"` açık + AC-21 | ✅ |
+| 4 | Backend File Convention Golden ile birebir; sapmalar (Cancel / BulkAssign) | ✅ onaylı (Q-05); S2 aynı desen (r20) |
+| 5 | Frontend File Contract Slim seti tam; S2 Outbound Compact seti tam, PickTasks / S3 bilinçli sapmaları §11.5'te (r20) | ✅ / ⏳ sapmaların sahip onayı (CT-APR-01) |
+| 6 | Validation Rules her alan | ✅ §12 |
+| 7 | Failure Path ≥ 4 | ✅ §13 (46; S2 / S3 25–46, r20–r24) |
+| 8 | Authorization: namespace + anahtarlar + politika + aktör | ✅ (Q-08) |
+| 9 | Gateway kararı + integration-agent işi | ✅ §15 (INT-WMS) |
+| 10 | Acceptance criteria ölçülebilir, kimlikli | ✅ §16 |
+| 11 | Test expectations build / verifier / RESX / smoke / sabotaj | ✅ §17 |
+| 12 | Audited Events her yazma komutu, yol b, K2 | ✅ §21 (r20: S2 komut başına satır) |
+| 13 | Record Codes (RCS-001) | ✅ geçici sayaç (Q-07 B), şirket öneki (M-2); önek kaydı FU-0178-RCS-02 kapandı (r26 — RCS-001 §3, WP-MOD0178-ANTIGRAVITY-ROWS, sahip onayı Beste 2026-11-10; MVP-1 hattında, main'e hat PR'ıyla girer) |
+| 13a | Saklama koşulu uyumu için PRODUCT-MASTER v1.1 `storageConditions` canlı (PM-LIVE) | ⏳ Q-MDM-3 |
+| 14 | Sayfa yardımı (UXH-001) + tur kararı | ✅ §24 (S1 + S2 / S3, r23) |
+| 15 | Teslim dilimleri | ✅ §23 |
+| 15a | **Kabul şartı (Codex incelemesi P1):** `scripts/pack_approval.py` `slices()` bu paket için DL listesi döndürür (None değil) — `PYTHONUTF8=1 python3 -P -c "import sys; sys.path.insert(0,'scripts'); import pack_approval as p; t=open('<paket>',encoding='utf-8').read(); print(p.slices(t))"` | ✅ 2026-10-26 ve r20 (2026-11-02): `['DL-1', 'DL-2', 'DL-3', 'DL-4', 'DL-5', 'DL-6', 'DL-7', 'DL-8']` |
+| 16 | XMC-001: MOD-0173'te **beş seam** (aynı sahip MOD-0173 / MVP-1 CT, §5 / §6 / §7'de açık: `SkuReference`, `ProductMasterHttpClient`, `IPostingKeyLookup`, `FindReversalOfAsync`, `CentralAuditDeclarationTests.cs` sayı 67 → 82 + manifest listesi); r24: MOD-0177'de **bir seam** (`IShipmentReader`'a iki eklemeli üye, aynı sahip Beste; §5 / §6 / §7; r25: üyeler varsayılan arayüz uygulamalı, MOD-0177 testleri değişmeden derlenir — son bakış 03 F-3); AuthService WP'si ayrı (sahibi Ali); başka modül değişikliği yok; S2 ihtiyaçları sahiplere soru | ✅ §7 (inceleme 03 F-4, bağımsız inceleme 06 F-1, 09 F-3) |
+| 17 | WMS-BUNDLE taslağı CT kabulü (S1 kısmı) | ✅ r26 — 1.0.0 FROZEN + 1.1.0 eklemeli, AC-60 VERIFIED (CT 2026-11-10, `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`; §19.7; sözleşme ve kayıt MVP-1 hattında, main'e hat PR'ıyla girer) |
+| 18 | Paket kararları Q-01…Q-09, Q-11…Q-13, Q-MDM-1; r20: W-6, Q-10a, FU03 Q-01 = A / Q-07 | ✅ §19.1.1, §19.1.19 (Q-12 / Q-13 geliştiricinin ilk ölçümü); açık: Q-10 + diğer ekipler §19.5 |
+| 19 | DCP-002 ön kontrol çıkış 0 | ✅ 2026-10-21 |
+| 20 | DCP-009 servis notu güncellemesi (SupplyChainService → InventoryService) | ⏳ FU-0178-DCP-01 (DCP sahibi) |
+| 20a | domain-config `:36`, `:72` W-2 ile hizalanması | ⏳ FU-0178-DC-01 |
+| 20b | İnceleme 01 F-1…F-16, inceleme 02 F-1…F-10, inceleme 03 F-1…F-5 + 02 F-5 kalanı işlendi (§19.1.4, §19.1.5). İnceleme 03 bağımsızdı (yeni oturum, effort high; KOŞULLU, ENGEL yok); sahip kararı (Beste 2026-10-23): onaydan önce hepsi düzeltilsin. İnceleme 04 F-1…F-4 işlendi (§19.1.6); inceleme 04, inceleme 03 ile aynı oturumdandı — CT-APR-02 bağımsızlığını CT değerlendirir. İnceleme 05 ön kontrolü (ebfad1f4, bağımsız değil) F-1…F-5 işlendi (§19.1.7). **Bağımsız inceleme 05** (oturum d2ae856a, effort high, KOŞULLU, ENGEL yok) F-1…F-7 işlendi (§19.1.8). **Bağımsız inceleme 06** (oturum 0e2faf59, effort high, KOŞULLU, ENGEL yok; 05'in F-1…F-7'si kapandı) F-1…F-6 işlendi (§19.1.9). **Bağımsız inceleme 07** (oturum 6217bf78, effort high, KOŞULLU, ENGEL yok; 06'nın F-1 / F-4 / F-5 / F-6'sı kapandı, F-2 / F-3 kısmen) F-1…F-5 işlendi (§19.1.10). **Bağımsız inceleme 08** (oturum 55a37ec9, effort high, KOŞULLU, ENGEL yok; 07'nin F-1…F-5'i kapandı) F-1…F-5 işlendi, F-1 sahip kararıyla (§19.1.11). **Bağımsız inceleme 09** (oturum 88fcdff2, effort high, KOŞULLU, ENGEL yok; 08'in F-2…F-5'i kapandı, F-1 kısmen) F-1…F-5 işlendi (§19.1.12). **Bağımsız inceleme 10** (oturum c90bad53, effort high, KOŞULLU, ENGEL yok; 09'un F-1…F-5'i kapandı) F-1…F-3 işlendi (§19.1.13). **Bağımsız inceleme 11** (oturum 708cc355, effort high, KOŞULLU, ENGEL ve ORTA yok; 10'un F-1…F-3'ü kapandı) F-1…F-3 sahip kararıyla işlendi (§19.1.14). **Bağımsız inceleme 12** (oturum 771fbbcf, effort high, KOŞULLU; 11'in F-1…F-3'ü kapandı) F-1…F-4 ve **Codex incelemesi** (sahip tarafından verildi, 2026-10-26; CONDITIONAL PASS; CT doğruladı) P1 / P2 sahip kararıyla işlendi (§19.1.15). **Bağımsız inceleme 13** (oturum 075041e2, effort high, KOŞULLU, ENGEL ve ORTA yok; 12'nin F-1…F-4'ü ve Codex P1 / P2 kapandı) F-1…F-3 sahip kararıyla işlendi (§19.1.16). **Bağımsız inceleme 14** (oturum c4e41a9c, effort high, KOŞULLU, ENGEL ve ORTA yok; 13'ün F-1…F-3'ü kapandı) F-1…F-3 sahip kararıyla işlendi (§19.1.17). **Bağımsız inceleme 15** (oturum d1dc112d, effort high, KOŞULLU, ENGEL ve ORTA yok; 14'ün F-1…F-3'ü kapandı) F-1 / F-2 sahip kuralıyla işlendi (§19.1.18) | ✅ işlendi / ⏳ düzeltmelerin CT kontrolü + onay satırı |
+| 21 | Bağımsız inceleme (Codex ya da Claude, ayrı oturum) + `reviews.tsv` satırı (CT-APR-02) | ⏳ |
+| 22 | Sürüme bağlı onay satırı `approvals.tsv` (CT-APR-01; ilk onay = yüksek risk, yazmayan onaylayıcı) | ⏳ |
+| 23 | Port 5067 pakette tutarlı | ✅ |
+| 24f | **r27:** r26 bağımsız incelemesi (`docs/records/reviews/MOD-0178/2026-11-11-96f16ad1.md`, KOŞULLU, 2 ORTA, 5 DÜŞÜK) F-1…F-7 işlendi (§19.1.26) | ✅ işlendi / ⏳ yeniden inceleme + sürüme bağlı onay satırı (onaylayıcı Ali; hat PR'ı main'e girdikten sonra ya da onunla birlikte) |
+| 24e | **r26:** r25 sonrası kapanan kararlar işlendi (§19.1.25); EES 2.14 — r25'in eski inceleme satırları sıra bozan merge'e bağlandığı için (PR #402) yeniden onay yeni sürümle | ✅ işlendi / ⏳ sürüme bağlı onay satırı (onaylayıcı Ali) |
+| 24d | **r24:** son bakış 02 F-1…F-10 işlendi (§19.1.23) | ✅ işlendi / ⏳ yeniden inceleme + onay |
+| 24c | **r23:** son bakış 01 F-1…F-17 + tur 3 F-1 işlendi (§19.1.22) | ✅ işlendi / ⏳ son bakış turu + onay |
+| 24b | **r22:** inceleme 19 tur 2 F-1…F-4 işlendi (§19.1.21) | ✅ işlendi / ⏳ yeniden inceleme + onay |
+| 24a | **r21:** inceleme 19 F-1…F-11 işlendi (§19.1.20); DL-4 başlama tabanı MVP-1 hattı `db769471c` (§5) | ✅ işlendi / ⏳ yeniden inceleme + onay |
+| 24 | **r20:** bağımsız inceleme + onay satırı (ready-for-dev / onay önkoşulu). **Ready-for-dev önkoşulu olmayanlar** (yalnız dilim / canlı kapısı, §23 ve §7): MOD-0173-FU03 DL-1 + DL-2 + DL-3 CT kabulü (DL-4 başlama kapısı); MOD-0040-FU02 DL-8 (bağımlılık değil — geçici sayaç sürer); MOD-0183 `reservationId` revizyonu (S2 canlıya çıkış kapısı); AuthService Viewer dışlaması (XMC-001, WP sahibi Ali (Auth); Admin alır, Viewer almaz; DL-4 kabul kapısı, AC-76; r26: WP MOD-0018-FU31, üç rol bütün yetkili kiracılarda — §14.3); Item outbound'unun yayın kapısı (sahip kararı Beste 2026-11-02 — ara durum kabul; MOD-0183 okuyucusu + WAREHOUSE-OUTBOUND 1.1.0 eklemeli `Item`, FU-0178-ITEM-PUB — kapı kalkana kadar Item outbound sevk edilmez) | ⏳ inceleme + onay |
+
+## 19. Implementation Notes
+
+### 19.1 Sahip kararları (2026-10-21) — bağlayıcı
+| # | Karar | Pakette |
+|---|---|---|
+| W-1 | Build (Blueprint "Buy/Partner" sapması; EA düzeltir) | başlık, FU-0178-EA-01 |
+| W-2 | `Diten.InventoryService` 5067; ayrı bölüm; stoğa yalnız INVENTORY'nin olağan yolundan; defter koleksiyonuna doğrudan yazmaz; ikinci bakiye yok; DCP-009 notu güncellenir | §2, §5, §8.1, §8.3, FU-0178-DCP-01 |
+| W-3 | MOD-0179 (3PL) ertelendi; sözleşme dış kaynaklı görev / onaya kapı bırakır | `Origin External`, `Channel External`, `SourceSystem`, `ExternalRef`; WMS §14 |
+| W-4 | `GOODS_ISSUE_SALES`'i 0178 yazmaz, MOD-0183 `Dispatched`'ta yazar; 0178: rezervasyon + staging `LOCATION_TRANSFER` + `ReadyToShip`; dispatch → `Shipped` | §1, §11.1 S2, AC-31 |
+| W-5 | Lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT ayrı WP; S2 buna bağlı | §7, §8.10 |
+| W-10 | MVP-5 Control Tower = MVP-1 CT | `owner` |
+| E-1 | Correlation: Gateway üretir, ilet, geçersiz 400 | §8.1, Q-10 |
+| E-2 | BL-501 merkezi denetim şimdi | §8.8, §21 |
+| E-6 | UTC gün sınırı | §8.1 |
+| — | MDM P6 / P9'a bağımlılık yok; barkod MOD-0182 | §2, §19.1.1 Q-MDM-1 |
+
+#### 19.1.1 Karar verildi — paket soruları (kaynak: sahip kararı 2026-10-21, Beste)
+| # | Soru | Karar | Pakette |
+|---|---|---|---|
+| Q-01 | W-5 rezervasyon tasarımı | W-5 rezervasyon WP'si **MVP-1 CT'nin**, **S2'den önce**; §8.10'daki dört gereksinim pakette S2 bağımlılığı olarak kalır | §7, §8.10, FU-0178-W5 |
+| Q-02 | Tutulan stok putaway'i | **Yalnız `AVAILABLE` stok yerleştirilir**; QUARANTINE / QUALITY_INSPECTION / BLOCKED (ve DAMAGED / EXPIRED) hariç; ret 422 `WMS_STOCK_NOT_PUTAWAY_ELIGIBLE` + 7 dilde yerelleştirilmiş mesaj | §8.4, §12, AC-7 |
+| Q-03 | Recall'daki lotun putaway'i | **Reddedilir** (422 `LOT_UNDER_RECALL`); 0178 recall durumunu kendisi okur; S2 pick için de aynı kural | §8.5, AC-8, AC-27 |
+| Q-04 | Lokasyon rollerinin yeri | **0178'in nesnesi** (`WarehouseLocationRole`); LOCATION sözleşmesi değişmez | §3, §4.4, ASSUMPTION-0178-02 kaldırıldı |
+| Q-05 | Golden sapması | **Onaylı:** görevlerde Delete / BulkDelete yok; gerekçeli Cancel + BulkAssign | §10, §11.3 |
+| Q-06 | Dosya stratejisi + hata kodları | **WMS-BUNDLE ayrı dosya** (`wms-bundle.openapi.yaml`); WAREHOUSE-OUTBOUND 1.0.0 değişmez; `WMS_*` hata kodları WMS-BUNDLE'da tanımlı (kodda 0178'e ait `WarehouseErrorCodes`) | §5, §12, WMS taslağı başlık + §5 |
+| Q-07 | Kayıt kodu (BL-565 yok) | **B:** RCS-001 biçiminde (`{ŞİRKET}-PUT-000001`) geçici sayaç, `IWarehouseRecordCodeAllocator` portunun arkasında; BL-565 ortak servisi gelince ona geçilir; geçiş ve feragat FU olarak yazılı (FU-0178-RCS-01). Önek kaydı (`.antigravity/rules/record-coding-standard.md` §3 tablosu) **ayrı sahip onayı bekleyen açık iş** — bu paket `.antigravity`'ye dokunmaz | §8.7, §22, FU-0178-RCS-01, FU-0178-RCS-02 |
+| Q-08 | İzin namespace'i | `warehouse.*` MOD-0178'in; MOD-0180 / 0181 / 0182 kendi paketlerinde kendi namespace'lerini açar (tek sahip kuralı) | §14.1 |
+| Q-09 | Pending onay sweeper'ı | Kabul: 2 dakikadan eski Pending onaylar 60 sn'de bir, aynı `PostingKey` ile. **Not — Beste 2026-10-23: sweeper yalnız uzlaştırır; sınırsız deneme kullanıcının "Yeniden dene"si için geçerli** | §8.3 |
+| Q-11 | GRN → putaway tetikleyicisi | S1'de görev **elle / listeden**; otomatik tetikleyici (gözlemci dahil) Cihan'ın (MVP-2) cevabına kadar açık soru | §8.2, Q-M2-1 |
+| Q-12 | Retest-due ve Draft lot | **Geliştiricinin ilk ölçümü.** Varsayılan davranış: 0178 retest ya da Draft için kendi kuralı yazmaz; defter `LOCATION_TRANSFER`'ı reddederse kod aynen iletilir, kabul ederse 0178 engellemez. Ölçüm sonucu bu pakete Implementation Notes olarak yazılır | §8.4, §12 |
+| Q-MDM-1 | P9 gelene kadar paketleme | Koli = fiziksel paket; ağırlık / ölçü **elle** girilir; ambalaj seviyesi dönüşümü yok (koli içi standart adet önerisi de yok); P9 geldiğinde geçiş FU-0178-P9 | §4.5, §11.1 S2, AC-29, FU-0178-P9 |
+| Q-MDM-2 | Şirket öneki kaynağı | MDM tüzel kişilik `Code` (M-2 ile kapandı) | §8.7 |
+| Q-13 | Atanan kullanıcı listesi | **Geliştiricinin ilk ölçümü.** Gateway üzerinden kiracı kullanıcı listesi ucu varsa atama alanı kalır (form 6); yoksa S1'de atama alanı ve "Ata" toplu eylemi çıkar (form 5, `BulkAssign` S1'de kurulmaz) ve ölçüm notu yazılır | §4.1, §9, §11.3, §12 |
+
+#### 19.1.2 Karar verildi — mockup incelemesi (kaynak: sahip kararı 2026-10-21, Beste)
+| # | Karar | Pakette |
+|---|---|---|
+| M-1 | E-imza yok: putaway onayı hareket kaydıdır, imzalı kalite kararı değil; kim / ne / ne zaman denetim izinde | §2, §8.14, AC-48 |
+| M-2 | Görev numarası öneki = MDM tüzel kişilik `Code` (`LegalEntity.cs:11`), `^[A-Z]{2,5}$` değilse görev açılmaz (yerelleştirilmiş "şirket kodunu düzeltin"); önek bir kez yazılır, değişmez; sayaç (kiracı, şirket öneki, tür) başına; depo kodu numarada değil, listede sütun; §5.4 kısa kod alanı gelince geçiş FU-0178-RCS-01 | §4.1, §8.7, §12, AC-38, FU-0178-RCS-01 |
+| M-3 | Saklama koşulu uyumu S1 engeli: lokasyon kaydı kabul edilen koşulları (PRODUCT-MASTER `StorageConditionCode`) taşır, alt ağaca kalıtır; uyumsuzsa oluştur / düzenle / onay reddedilir; etiketsiz rafa yalnız koşulsuz ya da yalnız `AMBIENT_15_25` ürün | §4.4 (tasarım gerekçesi), §8.12, §9, §12, AC-37 |
+| M-4 | Ekran kuralları: onay kilidi, kaynak kova değişmez, seçilemeyen stok kilit + neden + belge no ile görünür, öneri "Uygula" ile, menü kuralı, raf alanı klavye / okuyucu, mobil 375 px, durum ≠ entegrasyon bayrağı | §8.15, AC-39…AC-46 |
+| M-5 | Planlanandan fazla onay yasak; onayı atanan ya da sorumlu verir; operatör atanmamış görevi üstlenir (`confirm` izni yeter); Pending sweeper aynı anahtarla; açık görevde otomatik askı yok, onayda kontrol; bir düğüm çok rol alabilir ama Receiving + Staging değil; açık görevi olan düğümden rol kaldırılamaz; diller 7, RTL yalnız ar. **Not — Beste 2026-10-23: sweeper yalnız uzlaştırır; sınırsız deneme kullanıcının "Yeniden dene"si için geçerli** | §4.4, §8.3, §8.13, §8.15, AC-17, AC-40, AC-47, AC-49, AC-50 |
+| M-6 | S2'ye öneriler (kapsam değil) | §20 FU-0178-S2-UX |
+
+#### 19.1.3 Bağımsız inceleme 01 — kararlar ve düzeltmeler (hedef 0cb3940af, KOŞULLU; CT değerlendirmesi + sahip kararı Beste 2026-10-21)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ENGEL) | **Sahip kararı:** seri SKU'da S1 yalnız tam miktar; kovadaki bütün seriler sistemce okunur; kısmi onay / kısa kapatma yok; kova değiştiyse ret; kısmi = MOD-0182 FU | §4.1, §4.2, §5, §8.16, §12, §13, AC-51…AC-53, FU-0178-SERIAL-01 |
+| F-2 | Tarihler işlem 1'de yazılır, her denemede aynen; 422 dışı 4xx kalıcı Refused, yalnız 503 / zaman aşımı / ağ Pending | §4.2, §8.3, AC-5 |
+| F-3 | İşlem 2 koşullu güncelleme (`Status == Pending`) | §8.3, AC-54, sabotaj (w) |
+| F-4 | Refused sonrası yeni onay ya da "Geri taşındı"; her yeniden denemede ön kontroller yeniden | §4.2, §8.3, §11.3, AC-55, AC-56 |
+| F-5 | §1 cümlesi düzeltildi; MOD-0173 `storageConditions` okuma seam'i §5'te; kabul ortamı 4010 köprüsü (E3 / E4), canlı kabul PM-LIVE sonrası | §1, §5, §8.12 |
+| F-6 | DL-1 → DL-1a / DL-1b; WMS-BUNDLE dondurma ayrı CT adımı; sunucu yanlı AC'ler sunucu dilimine; AC-20 tek dilim | §23 |
+| F-7 | AC-15 istisnası + beklenen satır sayıları | AC-15 |
+| F-8 | Eksik guard sabotajları | §17 (o)…(y) |
+| F-9 | §1 kabul aralığı, §21 silme satırları, WMS bölüm sırası | §1, §21, WMS §3 |
+| F-10 | Hata kodları tek liste / operasyon başına eşleme | §12, WMS §4 / §5 |
+| F-11 | Başka şirketin kaydına id ile erişim 404; 403 yalnız başlık ↔ token / üyelik | §8.1, §13.10, AC-13 |
+| F-12 | `Number` kiracı genelinde tekil; önek devri bilgi notu; 7 hane AC | §4.6, §22, AC-16 |
+| F-13 | Rol kalıtımı + atalar arası çakışma | §4.4, §12, AC-17 |
+| F-14 | FU-0178-PKS-01 | §20 |
+| F-15 | FU-0178-DC-01 (domain-config) | §18, §20 |
+| F-16 | W-6 Beste'nin açık S2 kararı; AC-33 ona bağlı | §19.5, AC-33 |
+| CT ek | Açık miktar yarışı: iyimser yaratma, nihai koruma onayda | §8.3, AC-57 |
+
+#### 19.1.4 Bağımsız inceleme 02 — kararlar ve düzeltmeler (hedef 5f7833253, KOŞULLU; CT değerlendirmesi: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ENGEL) | Yeniden deneme önce ledger'da `PostingKey`'i arar (yeni MOD-0173 portu `IPostingKeyLookup`, upstream'siz); işlenmişse Posted, ön kontrol koşmaz; ön kontroller yalnız işlenmemiş anahtarda. `IDEMPOTENCY_KEY_REUSED` = `IntegrityError` (bütünlük hatası, Refused değil, Superseded / Returned kapalı, istisna) | §4.2, §5, §8.3, §12, §13.18-19, AC-5, AC-63, sabotaj (z), (aa) |
+| F-2 | Seri okuma MOD-0175 emsaliyle tutma / bloke serilerini dışlar; aynı lokasyonda aynı lot + SKU'nun AVAILABLE dışı stoğu varsa seri görevi reddedilir (`WMS_SERIAL_BUCKET_MIXED_STATUS`) | §5, §8.16, §12, AC-62, sabotaj (ac) |
+| F-3 | Gsku seri bayrağı ürünün bayrağından (ledger ile aynı kural, OD-10) | §4.1, §8.16, §12, AC-61, sabotaj (ad) |
+| F-4 | AC-17'nin görev parçası AC-58'e (DL-1b); DL-1a görevsiz AC-59; AC-16 / AC-37 / AC-38 DL-1b'ye; AC-19 taslaktan türetilmiş şemaya; CT-FREEZE kendi ölçütü AC-60 | §16, §23 |
+| F-5 | Sweeper token taşımaz: yalnız ledger anahtar kontrolü; işlenmemiş Pending kullanıcı "Yeniden dene"siyle ilerler; 0177 emsal ifadesi düzeltildi; M-5 "sınır yok" korunur | §8.3, §8.13, §13.20, AC-5, sabotaj (ab) |
+| F-6 | Açık seri görevi için kova anahtarlı kısmi tekil index (`OpenSerialSlot`); "yarış yok" iddiası düzeltildi | §4.6, §8.3, §8.16, sabotaj (ae) |
+| F-7 | AC-57 tek yol: ön kontrol yalnız durum; yeterlilik ledger `INSUFFICIENT_STOCK` → Refused | §8.3, AC-57, sabotaj (ag) |
+| F-8 | Seri tel biçimi = numara (normalize), TRACE lokasyon güncellemesi, kova okuma emsali — ölçülmüş gerçek | §5, §8.16, §19.2 |
+| F-9 | AC-15 replay sayımı (defter 0 ek); AC-52 / AC-55 / AC-57 sabotajları | AC-15, sabotaj (ae), (af), (ag) |
+| F-10 | 4010 veri setinin kopyası + SHA-256'sı kanıt klasörüne | §5 |
+
+#### 19.1.5 Bağımsız inceleme 03 — kararlar ve düzeltmeler (hedef 367e8ff78, KOŞULLU, ENGEL yok; sahip kararı Beste 2026-10-23: onaydan önce hepsi; CT değerlendirmesi: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 | Uçuş kilidi (`AttemptId` + `InFlightUntilUtc`, işlem 1'de ve her yeniden deneme başında atomik; kilit geçerliyken 409 `WMS_CONFIRMATION_IN_FLIGHT`, sweeper atlar); işlem 2'de etkilenen 0 ve farklı durum → `IntegrityError` (sessiz dönüş yok) | §4.2, §8.3, §8.13, §12, AC-64, sabotaj (ak), (al) |
+| F-2 | "Uzlaştır" (`ResolvePutawayIntegrityCommand`, izin önerisi `warehouse.putaway-tasks.resolve`, yalnız sorumlu, gerekçe, ledger yeniden okunur: Posted ya da Refused + görev kapanışı; açık miktar / `OpenSerialSlot` / rol kilidi serbest); `IntegrationFlag.PostingIntegrityError`; olaylar `ConfirmationIntegrityError`, `IntegrityResolved`; AC-15 sayımı; tahmin edilebilir anahtar notu + FU-0178-KEY-01 | §4.1–4.3, §8.3, §11.3, §11.4, §12, §14.2, §21, AC-15, AC-63, AC-65, sabotaj (am) |
+| 02 F-5 kalanı | Sweeper = yalnız uzlaştırıcı: `ReconcilePendingConfirmationCommand`, ledger araması, upstream / token yok; `NotCommitted` turunda `Attempts` artmaz, denetim satırı yok; kapsam `RecallQuarantineSweeper.cs:72-76` deseni (ölçüldü); §13.3 ve §21 düzeltildi; Q-09 / M-5 satırlarına sahip notu | §8.3, §13.3, §19.1.1, §19.1.2, §21, AC-15, AC-66, sabotaj (an) |
+| F-3 | WMS-BUNDLE operasyon başına hata listeleri tamamlandı (create, update, claim, confirm, retry, close-short, cancel, resolve) | WMS §4 / §5 |
+| F-4 | §6 / §7 / §18 #16 MOD-0173'teki üç seam'le hizalandı; `Replay` atfı `:216-226`; `ForwardCallerHeadersHandler` atfı `:21-35`; §13 madde sırası | §6, §7, §13, §18, §19.2 |
+| F-5 | AC-59 sabotajları (ah), (ai) (DL-1a); AC-63 "görev kilitli" sabotajı (aj); F-1 / F-2 / 02 F-5 AC'lerinin sabotajları | §17 |
+
+#### 19.1.6 Bağımsız inceleme 04 — kararlar ve düzeltmeler (hedef 13d343c9a, KOŞULLU; CT değerlendirmesi: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | Defter append-only: "defter sonradan düzeltildi" yolu kaldırıldı. `IPostingKeyLookup` anahtarı tutan hareketi (`holder`: kimlik, kaynak üçlüsü, miktar, from / to) döndürür. "Uzlaştır": (a) kaynak bu onay → Posted, defter değerleri yazılır, fark varsa `ConfirmationDeviation`; (b) kaynak yabancı / `NotCommitted` → çözümsüz Refused, **görev açık kalır**, normal Refused akışı; otomatik kapatma kaldırıldı, kapatma sorumlunun ayrı seçimi | §4.2, §4.3, §5, §8.3, §13.22, §21, AC-15, AC-65, sabotaj (am) |
+| F-2 | Kilit dayanağı = süreç içi posting süresi (`PostingTimeoutSeconds` öneri 60 sn, bağlı `CancellationTokenSource`; upstream çağrı başına 5 sn — `DependencyInjection.cs:51`, `appsettings.json:35`, ölçüldü); açılışta `Lease ≥ Posting + 30`; aşımda Pending + kilit bırakılır **(inceleme 05 F-3 ile değişti: kilit `InFlightUntilUtc`'ye kadar korunur)**; işlem 2'de koşullu artış (`Confirmed + q ≤ Planned`), aşarsa `IntegrityError` (`OverPlanned`) | §4.2, §8.3, §13.23, AC-67, sabotaj (ap) |
+| F-3 | Sweeper yazım filtresi (`Status == Pending` + `InFlightUntilUtc` boş / geçmiş; kilit almaz; 0 etkilenen → hiçbir şey yazmaz); kayıt başına hata yalıtımı + tur başına 200 (`RecallQuarantineSweeper.cs:65`, `:68-88`); kiracılar arası tarama okuması açık istisna; AC-54 kurulabilir senaryoya ve AC-15 adlandırmasına çevrildi; sabotaj (w) iki koşula hedeflendi | §8.3, AC-54, AC-66, sabotaj (w), (ao) |
+| F-4 | Onay durum makinesi pakette ve WMS §6.1'de: `Pending → IntegrityError`, `IntegrityError → Posted` (Uzlaştır-a), `IntegrityError → Refused` (Uzlaştır-b); port imzası F-1'deki gibi | §8.3, §5, WMS §6.1 |
+
+#### 19.1.7 İnceleme 05 ön kontrolü — kararlar ve düzeltmeler (hedef 1f185d6a4, KOŞULLU; oturum ebfad1f4 — bağımsız değil, bulgular geçerli; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | Görevde Pending / uçuştaki onay varken "Uzlaştır" 409 `WMS_CONFIRMATION_PENDING`; işlem 2'nin `OverPlanned` koşulu savunmaya indi ve `PutawayTaskRules` birim testiyle sabotajlanır; AC-67 gerçek akışa göre (geç commit → sweeper savunma dalı `StatusDiverged` → Uzlaştır-a → `ConfirmationDeviation` `OverPlanned`); §4.1'e "onaylanan ≤ planlanan" kuralı ve Uzlaştır-a istisnası | §4.1, §8.3, §12, §13.23, AC-65, AC-67, sabotaj (ap), (av) |
+| F-2 | Kilit / posting süreleri `TimeProvider` ile (0175 emsali `QuarantineServiceCollectionExtensions.cs:36`); AC-54 / AC-64 sahte saatle; açılış doğrulaması gerçek ayarla | §4.2, AC-54, AC-64 |
+| F-3 | Posting süresi aşımında kilit `InFlightUntilUtc`'ye kadar korunur (+30 sn pay commit görünürlüğü ve Mongo işlem ömrü için); sweeper savunma dalı (son 30 dk ön kontrol reddi + ledger `Committed` → `IntegrityError` `StatusDiverged`) | §4.2, §8.3, §13.23, AC-66, AC-67, sabotaj (au) |
+| F-4 | `holder` + `lotId`, `serialIds`, `fromStockStatus` / `toStockStatus`; Uzlaştır-a seri SKU'da defterin serilerini yazar, fark `ConfirmationDeviation`'da | §5, §8.3, AC-65, sabotaj (ar) |
+| F-5 | Olay türleri `ConfirmationSuperseded`, `ConfirmationReturned`; §21 superseded alanları; AC-66 KeyReused dalı; "sweeper IntegrityError üretmez" cümlesi yalnız 0-etkilenen durumuna daraltıldı; sabotajlar (aq)…(at) | §4.3, §8.3, §21, AC-55, AC-66, §17 |
+| Tutarlılık | §8.3'e her geçiş için tetikleyici / yazılan alanlar / olay / AC / sabotaj tablosu (19 satır, boş hücre yok) | §8.3 |
+
+#### 19.1.8 Bağımsız inceleme 05 — kararlar ve düzeltmeler (hedef 0f0cf322c, oturum d2ae856a, KOŞULLU, ENGEL yok; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | Yeni onay / "Geri taşındı" / İptal / Kalanı kapat önce kapatacağı Refused onayların anahtarını ledger'da arar; `Committed` → onay `IntegrityError` (`StatusDiverged`, `PriorResolution`), komut 409 `WMS_POSTING_INTEGRITY_ERROR`; savunma dalı `Resolution`'dan ve görev durumundan bağımsız; terminal görevde Uzlaştır yalnız onay kaydını düzeltir, görevi yeniden açmaz (`PostedAfterCancel` sapması); AC-67 (3) kendi senaryosunda geçebilir (kova ≥ 120, serbest bırakma adımı, görev Completed kalır) | §4.2, §8.3 (akış satır 15, 18, 20, 23, 24), §12, AC-15, AC-67, AC-68, sabotaj (aw), (ax), (ay) |
+| F-2 (ORTA) | `holder.reversedByTransactionId?` (bugün `IsReversedAsync` bool — `IInventoryLedgerRepository.cs:20`, `InventoryLedgerRepository.cs:110-113`; kimlik için eklemeli okuma `FindReversalOfAsync` seam'i); retry / sweeper → `IntegrityError` (`HolderReversed`); Uzlaştır → (b) | §4.2, §5, §8.3 (satır 3, 4, 21, 22), AC-69, sabotaj (az) |
+| F-3 (ORTA) | DL-1b'ye AC-13 / AC-14 (görev uçları), AC-67, AC-68, AC-69; §1 S1 aralığı AC-1…AC-24, AC-37…AC-69 | §1, §23 |
+| F-4 | AC-54 fikstürü 2q ≤ planlanan; (ae) yalnız index'e; açık miktar kontrolü seri olmayan SKU'da ayrı (AC-57 eki, sabotaj (ba)) | AC-54, AC-57, §17 |
+| F-5 | §4.2 `HolderMovement` §5 ile birebir (lot, seriler, stok durumları, `reversedByTransactionId`); WMS §3.2 eşitlemesi bağımsız inceleme 06 F-5 ile tamamlandı (r7'de eksik 6 alan vardı) | §4.2 |
+| F-6 | Eylem başına izin + atanan kuralı tek yerde (§8.3); §12, §14.2, WMS close-short / retry satırları hizalandı | §8.3, §12, §14.2, WMS §4 |
+| F-7 | (a) akış satırları 3 / 4 / 13 / 15; (b) AC-15 Superseded / Returned sayımı; (c) "Bütünlük hatası" rozeti §8.15 / AC-46; (d) hosted service adı tek; (e) §10 komut / validator ağacı; (f) §18 #7, #20b, §19.1.6 notu; (g) WMS §3.1 görevden `serialIds` kaldırıldı, §5.1 `WMS_CONFIRMATION_PENDING` Uzlaştır'ı sayar; (h) atıflar `InventoryLedgerRepository.cs:173`, `QuarantineLedgerReads.cs:118` (doğrulandı) | ilgili bölümler |
+
+#### 19.1.9 Bağımsız inceleme 06 — kararlar ve düzeltmeler (hedef d86c1123e, oturum 0e2faf59, KOŞULLU, ENGEL yok; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | `FindReversalOfAsync` MOD-0173'te **dördüncü seam** (`IInventoryLedgerRepository` + `InventoryLedgerRepository`, yalnız eklemeli okuma); §5 ayrı satır, §6 istisnası, §7 XMC-001, §18 #16 "dört seam"; ölçüldü: `LedgerImmutabilityArchitectureTests.cs:28-36` `Find` önekini kabul eder, `InventoryIndexConfiguration.cs:49-55` bir harekete en çok bir ters kayıt verir | §5, §6, §7, §18 |
+| F-2 | Onaya `RefusalSource` (`PreCheck \| Ledger4xx \| Resolve`), `RefusedOnRetry`, `RefusedAtUtc`; savunma dalı yeniden denemenin ön kontrol **ve** defter 4xx reddini son 30 dk tarar | §4.2, §8.3 (satır 5, 18), AC-66, sabotaj (bc) |
+| F-3 | Her yazım `Version` CAS + `Version++`; kapatıcı komutlarda hedef onay durumu filtresi; `IntegrityError` ile `Resolution`'ın birlikte bulunmaması tek koşullu güncellemeyle; kaybeden yeniden okur (409 `WMS_POSTING_INTEGRITY_ERROR` / `WMS_CONFLICT`) | §8.3, akış satırları, AC-70, sabotaj (bb) |
+| F-4 | §21: ön aramanın 409'da yazdığı `confirmation-integrity-error` (Confirm, CloseShort, Cancel, MarkReturned) ve Reconcile `HolderReversed`; AC-15: 409 istisnası + sweeper `HolderReversed` = 1 | §21, AC-15 |
+| F-5 | WMS taslağı r7'ye eşitlendi: `holderMovement` 6 eksik alan, retry `HolderReversed`, resolve ters kayıt + terminal görev, `WMS_POSTING_INTEGRITY_ERROR` anlamı, `refusalSource` / `refusedOnRetry` / `refusedAtUtc` | WMS §3.2, §4, §5 |
+| F-6 | (a) akış satır 2 / 5 confirm–retry olay ayrımı; (b) satır 11 `PriorResolution`; (c) işlem 2'deki eski parantez kaldırıldı; (d) AC-52 eşzamanlı vaka; (e) retry (i) cümlesi yeniden yazıldı; AC-67 (3) fikstür kurulumu (`QuarantineMovementPoster` ile iki `STATUS_TRANSFER`) | §8.3, AC-52, AC-67 |
+
+#### 19.1.10 Bağımsız inceleme 07 — kararlar ve düzeltmeler (hedef 6b6af2664, oturum 6217bf78, KOŞULLU, ENGEL yok; CT: hepsi kabul, inceleyicinin önerdiği düzeltmelerle)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | İşlem 2 / retry (i) / sweeper için **tek 0-satır kuralı** (A) hâlâ Pending + bu deneme → yeni V ile yinele (≤ 3), (B) aynı sonuç → no-op, (C) başka deneme → 409 IN_FLIGHT, (D) yalnız onayın kendi durumu farklıysa IntegrityError; Superseded hedefleri `arrayFilters` ile, IntegrityError kardeş atlanır; CAS tablosunda işlem 2 istisna; §12 + WMS toplu atama / "Geri taşındı" `WMS_CONFIRMATION_PENDING`; AC-64 kardeş vaka; sabotaj (bd) | §8.3 adım 4, CAS tablosu, akış satır 11 / 15 / 25 / 26, §12, AC-64, WMS §4 |
+| F-2 | Komut başına hedef küme + filtre (CAS tablosu); İptal / Kalanı kapat ön araması görevin tüm Refused onayları, filtre V + `Status == Refused` (Resolution koşulu yok); AC-55 / AC-70'e "Geri taşındı → İptal / Kalanı kapat başarılı" | §8.3, §12, akış satır 16 / 20 / 27, AC-55, AC-70, sabotaj (bg) |
+| F-3 | AC-70 bariyerli sıra vakası (komut 200 → son `PriorResolution = ReturnedToSource`), (bb) buna bağlandı ve `Resolution == null` yarısı çıkarıldı; (bc) ölçütü sahte `IPostingKeyLookup` çağrı sayacı | AC-66, AC-70, sabotaj (bb), (bc) |
+| F-4 | Sweeper seçimi kayda yazmadan ilerleyen imleçle (`(TenantId, _id)`, bellekte, tur başına 200); normal / savunma dalı ayrı imleç ve bütçe; iki tarama için §4.6 index; AC-66 ">200 NotCommitted, 201. Committed" | §4.6, §8.3 sweeper, AC-66, sabotaj (be), (bf) |
+| F-5 | (a)–(c) akış tablosu yeniden yazıldı: her satırın yazılan alanları §4.2 ve CAS kuralıyla birebir (satır 6 Ret\* + V++, satır 14 / 22 / 24 `RefusalSource = Resolve` + `RefusedAtUtc`, eksik V++'lar, satır 11 / 20 `Resolution = null`, yeni satır 25–27); (d) AC-15 istisnaları tek tek; (e) WMS §6.1 savunma satırı eşitlendi | §8.3, AC-15, WMS §6.1 |
+| Son tutarlılık geçişi | Akış tablosunun "yazılan alanlar" sütunu §4.2 alan listesiyle (Status, PostingKey, Transaction/PostingDate, SerialIds, AttemptId, InFlightUntilUtc, Attempts, LastAttemptAtUtc, ConfirmedBy / At, TransactionId / Number, Error\*, Ret\*, Resolution, ResolutionReason, PriorResolution, IntegrityResolution, Resolved\*, ResolveReason, HolderMovement) ve CAS kuralıyla tek tek karşılaştırıldı; §4.2'ye `ResolutionReason` adı eklendi — **düzeltme (bağımsız inceleme 08 F-4 / F-5):** "birebir" iddiası tam değildi (satır 1'de onayın kendi değerleri, satır 2 / 3 / 4 / 13 / 25'te `OpenSerialSlot` kaldırma ve satır 15 tetikleyicisinde satır 23 eksikti); §19.1.11'de tamamlandı | §4.2, §8.3 |
+
+#### 19.1.11 Bağımsız inceleme 08 — kararlar ve düzeltmeler (hedef 58c2cd6e6, oturum 55a37ec9, KOŞULLU, ENGEL yok; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Pakette |
+|---|---|---|
+| F-1 (ORTA) | **Sahip kararı (Beste 2026-10-26): BL-501 olduğu gibi kalır.** Merkezi denetim yalnız başarılı komutları kaydeder (komut başına tek, sabit adlı olay; başarısız zarf / istisna → `AbandonAsync`, olay yok — `CentralAuditBehavior.cs:8-9, :59-63`, `CentralAuditRecorder.cs:41-46`); Refused / Pending / IntegrityError / 409 / 503 merkezi denetime gitmez, GxP izi yerel, silinmeyen `wms_task_events` zaman çizelgesinde aynı işlemde; K2 anlamı buna göre; defterin enlist'i (`InventoryLedgerRepository.cs:181`) 0178 komutunun olayına no-op (`CentralAuditRecorder.cs:11-12`); sweeper iç komutu IntegrityError'da başarısız zarf, `NotCommitted`'ta gönderilmez | §8.8, §21, akış olay sütunu, AC-15, sabotaj (bh) |
+| F-2 | 0-satır kuralı Pending'den çıkan **her** yazımı kapsar (kilit alımı, ön kontrol reddi, defter 4xx, IntegrityError yazımları); (A) koşullu artışı taze değerlerle yeniden değerlendirir (aşım → satır 12, maskelenmez); yeni (E) dalı (sonuç Refused / IntegrityError iken kayıt Posted → yazım yok, 409 `WMS_CONFLICT`); AC-67 (6) yazım yolu | §8.3 adım 4, CAS tablosu, akış satır 12 / 25 / 28, AC-67, sabotaj (ap) |
+| F-3 | AC-64'e kullanıcı yolunda (C) ve (E) vakaları, (bd) bunlara bağlandı; AC-66'ya ters yön bütçe vakası, (bf) iki yönü ölçer; satır 25'in AC sütunu yalnız AC-64 | AC-64, AC-66, akış satır 25 / 26, sabotaj (bd), (bf) |
+| F-4 | Onayla `Completed` olan seri görevde `OpenSerialSlot` kaldırılır (satır 2 / 3 / 4 / 13 / 25, "Slot↓"); AC-51'e "aynı lot aynı Receiving lokasyonuna ikinci giriş → yeni görev açılır" + sabotaj (bi) | akış tablosu, AC-51, §17 |
+| F-5 | (a) `WMS_CONFIRMATION_IN_FLIGHT` WMS confirm listesinde ve §12'de (onay ucu); (b) (A) tükenmesi için yeni 503 `WMS_CONFIRMATION_CONFLICT_RETRY` (§12, WMS §5.1, WMS 503 listeleri); (c) WMS §5.1 `WMS_CONFIRMATION_PENDING` anlamı "Geri taşındı" + toplu atama; (d) satır 1 onayın kendi alanları, satır 15 tetikleyicisinde satır 23; §19.1.10 "birebir" ifadesi düzeltildi | §8.3, §12, §19.1.10, WMS §4 / §5 |
+| Son tutarlılık geçişi | Akış tablosu ↔ §4.2 ↔ CAS ↔ §21 ↔ AC-15: her satırın yazılan alanları §4.2'de; her yazım V++; her satırın merkezi sayısı §21 sütunu ve AC-15 (a) ile, yerel olayı §4.3 türleri ve AC-15 (b) ile aynı; olay adları komut başına sabit (§21) | §8.3, §21, AC-15 |
+
+#### 19.1.12 Bağımsız inceleme 09 — kararlar ve düzeltmeler (hedef 963f6230a, oturum 88fcdff2, KOŞULLU, ENGEL yok; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (ORTA) | BL-501 kaydı ad ve gövde taşımaz (`ICentralAuditDeclaration.cs:24-30`; `PlatformCentralAuditClient.cs:54-60`, `:63-89`). §21 komut başına BL-501 meta verisiyle yeniden yazıldı: `Category = MasterData`, Platform enum `Operation` (Create / Update / Delete / Assign / Execute / LifecycleTransition), `EntityType`, `EntityId` kaynağı, `RequestType` = komut adı, `SourceModule` = manifest kodu (`PUTAWAY-PICKING-PACKING`, InventoryService büyük harf emsali). Olay "adları" yalnız yerel `Kind`, değerler yalnız yerel `Data`. Rol komutlarının önceki / sonraki değerleri için insert-only `wms_location_role_events` (öneri) | §3, §4.3, §4.6, §8.3 (olay sütunu, satır 15), §8.8, §8.14, §14.1, §14.4, §21, AC-15, AC-20, AC-48, AC-54, AC-55 |
+| F-2 | (a) AC-15 ölçütü: başarı = 1 satır `Pending` / `Delivered`; başarısızlık = `Pending` + `Delivered` 0, işlem commit olduysa 1 `Abandoned`; (bh)'nin ikinci yarısı artık ayrıştırıcı. (b) Çökme → `OrphanAfter` (10 dk) sonra `Unconfirmed` (§8.8, AC-15 vakası; Refused olan onayda 1 `Unconfirmed` kalır, sweeper Posted yazarsa 2 kayıt — kabul). (c) Enlist'siz başarı → 0: tekrar, sweeper (B) / 0-kayıt, boş toplu atama / silme; enlist yalnız ≥ 1 kayıt etkileyen yazımda (sabotaj (bk)). (d) Her `Kind`'ı yazan yazım §4.3 tablosunda; `Completed` = görevi onaylanan miktarla tamamlayan Posted yazımı (terminal görevde ve Kalanı kapat'ta yok); AC-15 (b) sayımı kurala bağlandı | §4.3, §8.3, §8.8, §21, AC-15, sabotaj (bh), (bk) |
+| F-3 | Beşinci MOD-0173 seam'i `CentralAuditDeclarationTests.cs`: `:35` 67 → 82 (15 S1 komutu; DL-1a sonunda 71), `:42-49` listesine `PutawayPickingPackingManifestProvider`, `:107` `seen` 0178 callback'leri kadar; `:66` ve sweeper listesi değişmez | §5, §6, §7, §18 #16, §23 DL-1a, AC-1 |
+| F-4 | Akış tablosunun satır 28'inden sonra satır sonu ve boş satır; terminal durum maddesi ve M-4 / izin / Pending kilidi maddeleri tablodan ayrıldı | §8.3 |
+| F-5 | (C) kilit geçerliliğinden bağımsız: (C1) yabancı kilit geçerli → 409 `WMS_CONFIRMATION_IN_FLIGHT`; (C2) yabancı kilit dolmuş → yazım yok, 409 `WMS_CONFLICT` + güncel görev, kayıt sweeper ya da "Yeniden dene" ile ilerler; kilit alımında ve sweeper'da dolmuş yabancı kilit (A)'dır | §8.3 (C), satır 26 / 28, §12, AC-64, sabotaj (bj), WMS taslağı §5 / §8 |
+
+#### 19.1.13 Bağımsız inceleme 10 — kararlar ve düzeltmeler (hedef b456a9b22, oturum c90bad53, KOŞULLU, ENGEL yok; CT: hepsi kabul)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (ORTA) | Yaratma dışı yazma komutlarının istek idempotency'si (0176 / 0177 emsali): `WarehouseTaskEvent` ve `WarehouseLocationRoleEvent`'e `IdempotencyKey` + `RequestFingerprint`; komutun **anahtar olayı** (ilk iş yazımının olayı) bunları taşır; tekil kısmi index `(TenantId, TaskId \| RoleId, ActorUserId, IdempotencyKey)` (`ExpiryIndexConfiguration.cs:78-80`, `RecallIndexConfiguration.cs:94-96`) + toplu komutlar için tekil olmayan `(TenantId, LegalEntityId, ActorUserId, IdempotencyKey)`; yaratmada parmak izi eksikti → `WarehouseTask.RequestFingerprint`, rol yaratma için `WarehouseLocationRole.IdempotencyKey` + `RequestFingerprint` + tekil `(TenantId, LegalEntityId, IdempotencyKey)` (rol yaratma tekrarı 409 `WMS_LOCATION_ROLE_EXISTS` yerine 200). Anahtar If-Match'ten ve iş kurallarından **önce** aranır (Recall `CaseCommandHandlers.cs:540` / `:546`); aynı parmak izi → 200 + güncel kayıt, yazım / enlist / yerel olay yok; farklı → 400 `IDEMPOTENCY_KEY_REUSED`; parmak izi alanları komut başına; eşzamanlı kaybeden (yinelenen anahtar ya da CAS kaybı) anahtarı yeniden arar → replay (Inventory `InternalMovementPostingService.cs:188-194`); toplu replay yazılmayan satırı `Conflict` / `NotFound` döner | §4.1–§4.6, §8.1, §8.3 (akış satır 29, anahtar olayı işaretleri, CAS tablosu), §8.8, §12, §13.2, §13.24, §18 #7, §21, AC-4, AC-15, sabotaj (bl), (bm), (bn), WMS §1 kural 5–6, §3.4, §4 |
+| F-2 (DÜŞÜK) | (D) yalnız "onay Refused" dalıdır: filtre `Version` + `Status == Refused`, `PriorResolution = Resolution`, `Resolution = null`; onay zaten `IntegrityError` ise yazım yok, `PriorResolution` korunur, 409 `WMS_POSTING_INTEGRITY_ERROR`; "başka `TransactionId` ile Posted" kaldırıldı (aynı `PostingKey` tek harekete bağlı); satır 11'in kaynağı yalnız Refused; CAS tablosuna (D) satırı; durum diyagramı satırlarla eşitlendi (Refused → IntegrityError satır 11 / 18 / 20; Pending → IntegrityError satır 9 / 10 / 12 / 21) | §8.3 diyagram, adım 4 (D), satır 11, CAS tablosu, AC-15, AC-64, sabotaj (bo), WMS §5.1, §6.1 |
+| F-3 (DÜŞÜK) | AC-15: (B) dalı = 1 / 0 / ilk yazımın olayı (AC-54 ile aynı); (A) tükenmesi sonuç yazımında 0 / 1 / ilk yazımın olayı, kilit alımında 0 / 0 / 0; aynı ayrım (C1) / (E) için (kilit alımında 0 / 0 / 0) | AC-15 |
+| Son tutarlılık geçişi | Yeni alanlar ve kontrol: §4.1–§4.6 alan / index listeleri ↔ §8.1 ↔ akış tablosu (29 satır; anahtar olayları satır 1 / 7 / 13 / 14 / 16 / 22 / 23 / 24 / 27, kontrol satır 29) ↔ CAS tablosu ↔ §12 ↔ §21 (her komutta "tekrar 0" ve anahtar olayı) ↔ AC-4 / AC-15 ↔ WMS taslağı; tablo çizimi betikle | ilgili bölümler |
+
+#### 19.1.14 Bağımsız inceleme 11 — kararlar ve düzeltmeler (hedef ed521029f, oturum 708cc355, KOŞULLU, ENGEL ve ORTA yok; sahip kararı Beste 2026-10-26: üç düşük bulgu da kapatılır)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (DÜŞÜK) | Replay = 200 + kaydın güncel hâli + (onayda) isteğin kendi onayının `confirmationSeq`'i (anahtar olayı `ConfirmationRecorded.Data.seq`); işlem 1'den sonraki her onay cevabı `seq` taşır: 201 / replay 200 `confirmationSeq`, 422 / 503 / 409 `details.seq`; "ilk sonuç" / "aynı gövde" ifadeleri "güncel hâl" ile eşitlendi | §8.1, §8.3 adım 4, akış satır 29, §13.1, §13.2, AC-4, sabotaj (bq), WMS kural 5, onay satırı, onay cevabı notu |
+| F-2 (DÜŞÜK) | (a) Yaratma anahtarı kullanıcı kapsamında: tekil kısmi `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)` (görev ve rol; `QuarantineIndexConfiguration.cs:51`, `ExpiryIndexConfiguration.cs:64`, `RecallIndexConfiguration.cs:84` doğrulandı). (b) Anahtar olaylarına `RequestOp` (WMS `operationId`); olay index'leri ve toplu arama `RequestOp`'u içerir — toplu arama yalnız aynı operasyonun olaylarını alır; başka operasyonda aynı anahtar ayrı anahtardır | §4.1, §4.3, §4.4, §4.6, §8.1, §12, §13.1, §13.24, AC-4, sabotaj (br), (bs), WMS kural 5 |
+| F-3 (DÜŞÜK) | (a) Yaratmada **her** yinelenen kayıt hatası (anahtar index'i, rolün canlı `LocationId` index'i, görevin seri slot index'i) önce anahtarı yeniden arar: bulunursa replay 200 / 400, bulunmazsa 409 `WMS_LOCATION_ROLE_EXISTS` / 422 `WMS_QUANTITY_EXCEEDS_OPEN`; AC-4'e eşzamanlı rol yaratma vakası. (b) AC-15'e "(D) tükenmesi = 0 / 1 / ilk yazımın olayı"; AC-64'e (D) tükenme vakası (iii) | §4.4, §4.6, §8.1, CAS tablosu, akış satır 29, §13.24, AC-4, AC-15, AC-64, sabotaj (bp), (bt), WMS rol yaratma satırı |
+| Son tutarlılık geçişi | Değişen yerler ↔ §4.1 / §4.3 / §4.4 / §4.6 ↔ §8.1 ↔ CAS tablosu ↔ §12 ↔ §13 ↔ AC-4 / AC-15 / AC-64 ↔ WMS taslağı; tablo çizimi betikle | ilgili bölümler |
+
+#### 19.1.15 Bağımsız inceleme 12 + Codex incelemesi — kararlar ve düzeltmeler (hedef 1b4350fe6; bağımsız inceleme 12 oturum 771fbbcf, KOŞULLU; Codex incelemesi sahip tarafından verildi, CONDITIONAL PASS, CT doğruladı; sahip kararı Beste 2026-10-26: hepsi kapatılır)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| 12 F-1 (DÜŞÜK) | `EntityBase`'in gerçek alanları yazıldı (`EntityBase.cs`: `Id`, `TenantId`, `LegalEntityId`, `CreatedAt`, `UpdatedAt`, `Version` int, `IsDeleted`, `DeletedAt`; kullanıcı alanı yok). `WarehouseTask.CreatedBy` ve `WarehouseLocationRole.CreatedBy` (uuid, isteği yapanın `ActorUserId`'si, yalnız yaratmada yazılır, güncellenmez) — emsal `QuarantineEntities.cs:47` doğrulandı; §4.1 `Version` tipi `EntityBase` ile eşitlendi (int) | §4, §4.1, §4.4 |
+| 12 F-2 (DÜŞÜK) | Seri slot: farklı anahtarlı eşzamanlı yaratma → 422; aynı kullanıcı + aynı anahtar + aynı gövde → kaybeden 200 replay (§8.1). AC-52 "farklı anahtar" koşulu; AC-4'e özdeş eşzamanlı seri yaratma vakası | §4.6, AC-4, AC-52, sabotaj (bv) |
+| 12 F-3 (DÜŞÜK) | `RequestOp`'un hedef başı tekil index'teki yeri ölçülür: AC-4 "aynı hedef, iki işlem" (bulkAssign → updatePutawayTask, aynı görev ve anahtar → düzenleme yazılır); (br)'nin beklenen sonucu 400 `IDEMPOTENCY_KEY_REUSED` | AC-4, sabotaj (br), (bu) |
+| 12 F-4 (DÜŞÜK) | WMS: `WMS_CONFLICT` / `WMS_POSTING_INTEGRITY_ERROR` / `WMS_CONFIRMATION_IN_FLIGHT` / `WMS_CONFIRMATION_CONFLICT_RETRY` satırlarına onay ucunda `details.seq`; retry dönüşü `ConfirmPutawayTaskResult`; şema §3.9; §3.4 `RequestOp`'u kabloya yazılmayan alanlara ekledi; AC-4 409'daki `details.seq`'i ölçer | WMS §3.4, §3.9, §4, §5.1; AC-4 |
+| Codex P1 (ÖNEMLİ) | `pack_approval.slices()` None döndürüyordu. §23 aracın kurallarına göre yeniden yazıldı: tek tablo, satır kimliği yalnız `DL-<sayı>` (DL-1 = eski DL-1a, DL-2 = eski DL-1b, DL-3…DL-7 = aynı numara — DL-3'e ayrıca `manifest` (§14.4) başlığı eklendi, eski DL-3 = 8.15, 9, 11, 24 —, DL-8 = eski DL-2 INT-WMS), 3. sütun yalnız paketteki başlık adları (küçük harf, numarasız), AC kapsamı 4. sütunda; virgül içeren dört başlık (§8.8, §8.15, §8.16, §11.1) virgülsüz yazıldı; CT dondurma adımı §23 dışına (§19.7) taşındı; paket genelindeki atıflar güncellendi. §19.1.3–§19.1.14 kayıtları o günkü eski adlarla kalır (eşleme bu satırda). **Dikkat (bağımsız inceleme 13 F-1):** §19.1.3 F-6'daki "DL-1" o günün **bütün S1 backend** dilimidir (yeni DL-1 + DL-2'ye karşılık gelir); yeni DL-1 ile karıştırılmamalıdır. Kanıt: `slices()` → `['DL-1', 'DL-2', 'DL-3', 'DL-4', 'DL-5', 'DL-6', 'DL-7', 'DL-8']`; kabul şartı §18 #15a | §5, §8.1, §8.8 / §8.15 / §8.16 / §11.1 başlıkları, §18, §19.7, §23, AC-1, AC-19, AC-58, AC-59, AC-60, sabotaj (ah), (ai) |
+| Codex P2 | Posting eşlemesi: kesin 4xx → Refused (422 dışı 4xx kuralları korunur); commit sonucu kesin bilinmeyen her sonuç (her 5xx, zaman aşımı, ağ hatası, iptal, beklenmeyen istisna) → onay Pending, 503 (`details.reason = OutcomeUnknown`), sonraki deneme / sweeper önce `PostingKey` aramasıyla uzlaştırır; AC-5'e "commit öncesi 500" ve "commit sonrası 500" + 502 / 504 / istisna vakaları | §8.3 adım 4–5, akış satır 5 / 7, CAS tablosu, §13.3, AC-5, sabotaj (bw), (bx), WMS §3.2, §4, §5.2 |
+| Son tutarlılık geçişi | Değişen yerler ↔ §4 / §4.1 / §4.4 / §4.6 ↔ §8.1 / §8.3 ↔ CAS ↔ §13 ↔ AC-4 / AC-5 / AC-52 ↔ §18 ↔ §23 ↔ WMS taslağı; tablo çizimi betikle; `slices()` çıktısı | ilgili bölümler |
+
+#### 19.1.16 Bağımsız inceleme 13 — kararlar ve düzeltmeler (hedef 53afff318, oturum 075041e2, KOŞULLU, ENGEL ve ORTA yok; sahip kararı Beste 2026-10-26: üçü de kapatılır)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (DÜŞÜK) | §19.1.15 eşleme satırına iki not: §19.1.3 F-6'daki "DL-1" o günün bütün S1 backend dilimidir (yeni DL-1 + DL-2); yeni DL-3'e `manifest` (§14.4) eklendi, eski DL-3 = 8.15, 9, 11, 24. Geçmiş kayıtların metni değişmedi | §19.1.15 |
+| F-2 (DÜŞÜK) | İptal (`OperationCanceledException`) commit sonucu bilinmeyen sonuçlar listesinde her yerde: akış satırı 7, CAS satırı, §13.3, AC-5 (iptal vakası), WMS §3.2; sabotaj (bx) iptali de kapsar | §8.3, §13.3, AC-5, sabotaj (bx), WMS §3.2, WMS §4 (onay ucu 503 listesi), WMS §5.2 |
+| F-3 (DÜŞÜK) | **Sahip kararı:** güvenli tercih kalır (bilinmeyen sonuç → Pending, deneme sınırı yok, M-5). Bilinçli kabul §8.3 adım 5'te: belirlenimci 5xx / istisnada görev kilitli kalır (yeni onay / iptal / kısa kapatma 409 `WMS_CONFIRMATION_PENDING`). Çıkış: `Warehouse:Putaway:LongPendingMinutes` (öneri 30) aşılınca türetilmiş `PostingPendingLong` + "Uzun süredir bekliyor" rozeti; kayıtlar S3 İstisna Kutusu'na (AC-36); çözüm = stok tarafı hatanın giderilmesi + "Yeniden dene" | §4.1, §8.3 adım 5, §8.15, §11.4, AC-46, sabotaj (by), WMS §3.1 |
+| Son tutarlılık geçişi | Değişen yerler ↔ §4.1 ↔ §8.3 ↔ CAS ↔ §8.15 ↔ §11.4 ↔ §13 ↔ AC-5 / AC-46 ↔ WMS; tablo çizimi betikle; `slices()` → DL-1…DL-8 | ilgili bölümler |
+
+#### 19.1.17 Bağımsız inceleme 14 — kararlar ve düzeltmeler (hedef ac2971beb, oturum c4e41a9c, KOŞULLU, ENGEL ve ORTA yok; sahip kararı Beste 2026-10-26: üçü de kapatılır)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (DÜŞÜK) | Tek değerli `IntegrationFlag` için görev düzeyinde öncelik: `PostingIntegrityError` > `PostingPendingLong` > `PostingPending` > `PostingRefused` > `None` (görevin onayları arasında en yüksek öncelikli durum gösterilir). AC-46'ya Pending + `IntegrityError` → "Bütünlük hatası" vakası | §4.1, §8.15, AC-46, sabotaj (bz), WMS §3.1, §3.2 |
+| F-2 (DÜŞÜK) | S3 istisna türü bayrakla aynı ad: `PostingPendingTooLong` → `PostingPendingLong`; tür aynı `LongPendingMinutes` eşiğine bağlı | §8.3 adım 5, WMS §9 |
+| F-3 (DÜŞÜK) | Açılış doğrulaması: `LongPendingMinutes > 0` ve `LongPendingMinutes × 60 > InFlightLeaseSeconds`, sağlanmazsa host başlamaz (§4.2'deki komşu kuralın biçimi); AC-46'da yanlış ayarla host başlamaz | §4.2, §8.3 adım 5, AC-46, sabotaj (ca) |
+| Biçimsel (inceleme 14 notu) | §19.1.16 F-2 satırının "Yer" sütununa WMS §4 (onay ucu 503 listesi) ve WMS §5.2 eklendi | §19.1.16 |
+| Son tutarlılık geçişi | Değişen yerler ↔ §4.1 / §4.2 ↔ §8.3 adım 5 ↔ §8.15 ↔ AC-46 ↔ sabotaj ↔ WMS §3.1 / §3.2 / §9; tablo çizimi betikle; `slices()` → DL-1…DL-8 | ilgili bölümler |
+
+#### 19.1.18 Bağımsız inceleme 15 — kararlar ve düzeltmeler (hedef 778bcd5c9, oturum d1dc112d, KOŞULLU, ENGEL ve ORTA yok; sahip kuralı: bulgu kalmayana kadar — ikisi de kapatılır)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (DÜŞÜK) | `PostingRefused` yalnız çözümsüz Refused onaydan türer (`Status == Refused` ve `Resolution == null`); "son onay Refused" ifadesi kaldırıldı; Superseded / `ReturnedToSource` onaylar bayrağa girmez. AC-46'ya "çözülmüş Refused" vakası, AC-55'e rozet kontrolü | §4.1, §8.3 (Refused sonrası akış), §8.15, AC-46, AC-55, sabotaj (cb), WMS §3.1, §3.2, §9 |
+| F-2 (DÜŞÜK) | S3 istisna türlerine `PostingIntegrityError` (bayrakla aynı ad) eklendi; `PostingRefused` türü yalnız çözümsüz Refused onaylar; S3'te yalnız liste, kod S3'te | §4.2, §8.3 (`IntegrityError` maddesi), WMS §9 |
+| Son tutarlılık geçişi | Değişen yerler ↔ §4.1 / §4.2 ↔ §8.3 ↔ §8.15 ↔ AC-46 / AC-55 ↔ sabotaj ↔ WMS §3.1 / §3.2 / §9; tablo çizimi betikle; `slices()` → DL-1…DL-8 | ilgili bölümler |
+
+#### 19.1.19 r20 — S2 revizyonu (sahip kararı Beste 2026-11-02: "S2 revizyonu başlasın"; yeniden inceleme ve onay ister)
+| Konu | Karar / değişiklik | Yer |
+|---|---|---|
+| S2 / S3 bağlayıcı | S2 varlıkları, durum makineleri, tahsis / pick / paket / sevk / iptal kuralları, S3 izleme okumaları; AC-26…AC-36 ölçülebilir ve adlı sabotajlı, AC-71…AC-75 yeni | §1, §3, §4.5, §4.6, §8.17–§8.23, §16, §17 (cc)…(db) |
+| W-5 karşılığı | MOD-0173-FU03 portu; Q-07 kararı: sevkiyat rezervasyonu `expiresAt` göndermez (gerekçe §8.10) | §7, §8.10 |
+| Paket önerileri (sahip onayı CT-APR-01 ile) | iki aşamalı tahsis yazımı + bakım servisi; kullanıcı tetikli sevk eşitlemesi (arka plan poll'u yok); `ReadyToShip` sonrası iptal yok (Q-M6-7); kısa toplamada rezervasyon küçülmez (FU-0178-RSV-PARTIAL); PickTasks / S3 Golden sapmaları; `CentralAuditDeclarationTests` 82 → 99 | §8.17, §8.21, §8.22, §8.19, §11.5, §5 |
+| DL-3 CT düzeltmeleri | AC-22 `--api-profile proxy` (F-4); §11.2 `rules.js` + `warehouse.css` (F-5); §8.6 / AC-42 öneri yalnız düzenlemede (F-6, sahip onaylı); §11.3a şirket kodu sahip kararı C (F-2(2)) | §8.6, §11.2, §11.3a, AC-22, AC-42 |
+| DL-8 CT düzeltmesi | Gateway host `localhost`; S2 / S3 aynı `{everything}` rotasında, kapsama testi genişler | §15, AC-74 |
+| Ek geçiş 1 — FU03 hizası | FU03 Q-01 = A (sahip kararı Beste 2026-11-02): serbest taban; DL-4 kapısı FU03 DL-1 + DL-2 + DL-3 (CT-04 güncel); FU03 CT-08 REVERSAL geri getirme kuralıyla §8.21 / §8.22 hizası; FU03 durum adları (`RELEASED` + `ClosedReason`) | §1, §7, §8.10, §8.17, §8.21, §8.22, §16 S2 başlığı, AC-26, AC-28, AC-35, §19.5, §23, sabotaj (dg) |
+| Ek geçiş 2 — W-6 | Sahip kararı Beste 2026-11-02: Item outbound açılır; çözümleme (kalem = kendi SKU'su), karışım yok, yayın kapısı (MVP-6 uyumuna kadar sevk yok), pick / hareket Item seviyesinden. **Ara durum sahip kararıyla kabul** (Beste 2026-11-02): yayın kapısı ve karışım yasağı WAREHOUSE-OUTBOUND 1.1.0 + MOD-0183 uyumuna kadar | §4.5, §7, §8.17, yeni §8.24, §11.3, §12, §13 (38), AC-33, sabotaj (cp), (dd), §19.5, §20, §23, WMS §2.1 / §2.3 / §5.1 / §11 / §12 |
+| Ek geçiş 3 — Q-10a | Sahip kararı Beste 2026-11-02: `warehouse.outbound-shipments.read` Viewer'a otomatik gitmez; **Admin alır** (ikinci sahip kararı aynı gün), adanmış roller `WarehouseSupervisor` / `ShippingPlanner` alır; AuthService iki yol ölçüldü, değişiklik XMC-001 WP'si (sahibi Ali, Auth) | §7, §13 (39), §14.2, AC-76, sabotaj (de), (df), §18, §19.5 |
+
+
+#### 19.1.20 Bağımsız inceleme 19 — kararlar ve düzeltmeler (hedef r20 a0eadfa1, KOŞULLU, 0 ENGEL, 4 ORTA, 7 DÜŞÜK; CT: hepsi kabul, inceleyicinin önerileriyle; r21)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (ORTA) | "Sevk edildi" = `Dispatched` / `InTransit` / `Delivered` / `Exception` / `Closed` ve `stockIssued: true` `Cancelled` (`ShipmentLifecycle.Allows` ölçüldü; kabloda `dispatchedAt` yok → `Shipment.observedAtUtc`); outbound başına tek sevkiyat `WarehouseShipmentMapper.Key` + tekil `source_identity` index'iyle ölçüldü | §4.5, §8.21, AC-31, sabotaj (dh), WMS §2.3, §7 |
+| F-2 (ORTA) | Release ön kontrolü (recall + lot durumu + `Block` kipi FEFO, yazımsız); S3 `ReservedLotUnderRecall`; çıkış iptal → bırakma → MOD-0177 "Yeniden dene" (`BlockedByReservation` ölçüldü); `ReadyToShip`'te recall Q-M6-7'ye bağlı | §8.21, §8.23, §12, §13 (40), AC-36, yeni AC-77, sabotaj (di), WMS §5 / §9 / §11 |
+| F-3 (ORTA) | Pick planında bin kullanılabilirliği = bin `AVAILABLE` − aynı (bin, SKU, lot) açık pick görevlerinin kalanı; eşzamanlı planlama kalan sınır | §8.17 adım 4, §13 (41), AC-26, sabotaj (dj) |
+| F-4 (ORTA) | Tahsis FEFO kipini okur (`Block` → 422 `FEFO_ORDER_VIOLATION`, `RequireReason` → gerekçe zorunlu, `Warn` → isteğe bağlı; varsayılan `RequireReason` ölçüldü); Q-M6-3 `RequireReason`'da canlıya çıkış kapısı | §7, §8.17 adım 3, §12, AC-28, sabotaj (dk) |
+| F-5 (DÜŞÜK) | DL-4 başlama tabanı MVP-1 hattı `db769471c` (S1 commit'leri ölçüldü); 82 (`CentralAuditDeclarationTests.cs:38`) ve 22 (`Mod0178WarehouseRouteTests.cs:81`) o commit'te; §5 ile AC-73 tek kural (82 + dilim, 85 / 99) | §5, AC-73 |
+| F-6 (DÜŞÜK) | Paketleme'ye `packages.read` ile PickTasks'tan giriş; sayfa yalnız koli ucunu okur; AC-34 operatör akışı | §11.1, §11.3, §14.2, AC-34, sabotaj (do), WMS §11 |
+| F-7 (DÜŞÜK) | Bırakma kuralı üç yolda: önce `GetAsync`, `ifMatch` = okunan sürüm, aktör = komutun kullanıcısı / bakımda `CreatedBy`, 409 → `Pending` + yeniden okuma | §8.22, AC-32, sabotaj (dl) |
+| F-8 (DÜŞÜK) | Toplanan 0 tahsis donmuş detaya ve olaya yazılmaz | §8.21, AC-72, sabotaj (dm) |
+| F-9 (DÜŞÜK) | `Packed`'e geçişte boş açık koliler `Cancelled` (`PackageCancelled`) | §4.5, §8.18, AC-29, sabotaj (dn) |
+| F-10 (DÜŞÜK) | Upstream bölümü `Inventory:Upstream` ölçüldü (MVP-6 adresi yok); 0178'in kendi `WarehouseShipmentReaderOptions` (`Warehouse:ShipmentReader`) | §5 |
+| MVP-6 CT cevapları Q-M6-1…11 (Natig 2026-11-02) | §19.5'e kaynağıyla işlendi; sıra riski ölçümle kapandı (INVENTORY HTTP önce, `Dispatched` sonra); `shipment` üyesi donmuş detaydan çıktı (`SOURCE_DRIFT`); `WMS_DISPATCH_AMBIGUOUS` kaynak süzgeciyle; izsiz `Cancelled` (Q-M6-7) tutarlı; FU-0178-RSV-RESTORED daraldı, FU-0178-CANCEL-AFTER-READY yeni; ASSUMPTION-0178-06 kapandı | §7, §8.18, §8.21, §14.2, §19.3, §19.5, §20, AC-31, WMS §2 / §2.3 |
+| F-11 (DÜŞÜK) | Başlık notu: S1'de iki ekran kuralı düzeltmesi (§11.3a sahip kararı C, §8.6 / AC-42) açıkça sayıldı — onay kapsamına girer | başlık r20 notu |
+
+#### 19.1.21 İnceleme 19 tur 2 — kararlar ve düzeltmeler (hedef r21 63a49c83, KOŞULLU, 0 ENGEL, 1 ORTA, 3 DÜŞÜK; tur 1'in 11 bulgusu kapandı; CT: hepsi kabul, inceleyicinin önerileriyle; r22)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1 (ORTA) | Release FEFO yeniden değerlendirmesi her kipte: `Block` → 422 `FEFO_ORDER_VIOLATION`; `RequireReason` → release gövdesinde tahsis başına `fefoBypassReasons` (yayından önce aynı işlemde yazılır, `SOURCE_DRIFT` yok) ya da 422 `FEFO_BYPASS_REASON_REQUIRED`; `Warn` → geçer; release–sevk arası pencere kalan sınır | §8.17 adım 2, §8.21, §11.3, §12, §13 (43), AC-77, sabotaj (dp), WMS §11 |
+| F-2 (DÜŞÜK) | Kaynak doğrulaması tek sonuçta da (`getShipment`, `sourceModule = MOD-0178`, `sourceType = WAREHOUSE_OUTBOUND`); yabancı sevkiyat `Shipped` yapmaz | §8.21, §13 (44), AC-31, sabotaj (dq), WMS §11 |
+| F-3 (DÜŞÜK) | Bin planı aynı isteğin önceki dağıtımlarını düşer; görev kalanı temkinli (planlanan − Posted, Pending dahil — bilinçli kabul: en kötü az dağıtım) | §8.17 adım 4, AC-26, sabotaj (dr) |
+| F-4 (DÜŞÜK) | `ReservedLotUnderRecall` kapsamı `Allocated` / `Picked` / `Packed` / `ReadyToShip`; `Allocating` için çıkış bakım servisi (tamamlar → görünür; başarısız → rezervasyon yok; takılırsa `AllocationStuck`) | §8.23, AC-77, sabotaj (ds), WMS §9 |
+
+#### 19.1.22 Bağımsız son bakış 01 + inceleme 19 tur 3 — kararlar ve düzeltmeler (hedef r22 fa84a0b8; son bakış KOŞULLU 5 ORTA 12 DÜŞÜK, tur 3 1 DÜŞÜK; CT 2026-11-02: hepsi kabul, S-101 tek geçiş; r23)
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| SB F-1 (ORTA) | CT kararı: Receiving alt ağacı pick kaynağından ve alınabilir miktardan dışlanır; bin planı aynı bindeki açık putaway kalanını da düşer (`OpenTasksFromAsync` `Kind` süzmez, ölçüldü) | §8.17 adım 2 / 4, AC-26, sabotaj (dt) |
+| SB F-2 (ORTA) | CT kararı, seçilen yol **görev**: `Shipped` yazımında `getShipment` satırlarından (çıkan miktar, ölçüldü `InventoryMovementMapper`) artık hesaplanır, `Origin = ShortDispatch` Staging putaway görevi açılır (enum'a tek değer — r24 düzeltmesi: S2 iki değer ekler, §19.1.23 F-3); çözülemezse S3 `ShortDispatchUnresolved` | §8.21, §8.23, §12, §13 (45), §21, yeni AC-78, sabotaj (du), WMS §9 |
+| SB F-3 (ORTA) | CT kararı: işlem A tahsis planını (`AllocSeq`, lot, miktar, `PlannedBins`) kalıcı yazar, kurtarma yeniden hesaplamaz; 400 dalında anahtarla bırakma — FU03 portunda anahtarla okuma yok (ölçüldü) → FU-0178-RSV-BYKEY + S3 `AllocationOrphanSuspected` (r24: FU03 r3 karşıladı, el ile yol kaldırıldı — §19.1.23 F-6) | §4.5, §8.17 adım 5 / 6, AC-71 (vii), sabotaj (dv), §20 |
+| SB F-4 (ORTA) | CT kararı: `GatewayOptions` (`Gateway:BaseUrl`) ve `IShipmentReader` / `ShipmentBundleHttpReader` kullanılır, yeni ayar sınıfı kaldırıldı; port bugün yalnız `TraceShipmentInfo` döndüğü için iki eklemeli üye (MOD-0177 dosyası, aynı sahip, XMC-001) | §5, §10 |
+| SB F-5 (ORTA) | CT kararı: `Package.contents` sonraki sözleşme sürümü, v1'de yazılmaz; eklemeli üyelerin tek listesi WMS §2.3 | §8.21, WMS §2.3 |
+| SB F-6 | SHIPMENT-BUNDLE bağımlılığı 3.4.0 | künye, başlık, WMS başlığı |
+| SB F-7 | WMS §6.2 `ReadyToShip → Shipped` koşulu `Exception` ve `stockIssued` `Cancelled` ile; kaynak süzgeci | WMS §6.2 |
+| SB F-8 | AC-31 bırakma cümlesi `Shipped` vakalarına taşındı; yabancı kaynakta "bırakma yok" | AC-31 |
+| SB F-9 | §21 sync satırı `observedAtUtc` (+ `shortDispatch[]`) | §21 |
+| SB F-10 | §24 S2 / S3 yardım anahtarları ve içerik; §18 #7 / #14 | §24, §18 |
+| SB F-11 | §1 S2 kabul listesi AC-71…AC-78; §17 koleksiyon adı `wms_outbound_shipments` | §1, §17 |
+| SB F-12 | `ExpiryPolicyRules.Defaults()` (ölçüldü) | §8.17 adım 3 |
+| SB F-13 | CT kararı: tek kod — tahsiste de 422 `FEFO_BYPASS_REASON_REQUIRED` (emsal ve gerekçe: kanca aynı koşulda bu kodu verir) | §8.17, §12, §13 (30), AC-28, sabotaj (ch) / (dg) metni |
+| SB F-14 | Donmuş `{outboundId}` dize; `:guid` kısıtı yok; UUID olmayan → donmuş 404; `search` sabit kesim önceliği | §8.18, AC-30, sabotaj (dw) |
+| SB F-15 | `WarehouseIntegration` DataTable değil (kartlar); `screens`'ten çıkarıldı, doğrulayıcı uygulanmaz | künye, §11.1, §11.5, AC-36 |
+| SB F-16 | CT kararı: `WarehouseOperator` Auth WP kapsamında (outbound okuması yok) | §7, §14.2, AC-34, AC-76, sabotaj (dx) |
+| SB F-17 | CT kararı: S2 retleri S1 sahip kararına bağlandı (BL-501, Beste 2026-10-26) — §21'de açık | §21 |
+| Tur 3 F-1 | Sabotaj (dr) beklenen değer: sabote kural `A-01`'den 6 aldırır (beklenen 0) | §17 (dr) |
+
+#### 19.1.23 Bağımsız son bakış 02 — kararlar ve düzeltmeler (hedef r23 0d5b72bd; KOŞULLU, 0 ENGEL, 1 ORTA, 9 DÜŞÜK; CT 2026-11-02: hepsi kabul, S-101 tek geçiş; r24)
+Bulgu dosyası `docs/records/reviews/MOD-0178/2026-11-02-0d5b72bd-son-bakis-02.md`. Ölçüm: HEAD `6942e72b1`, S1 kodu `db769471c`, FU03 r3 `d4176fbee`.
+
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1@0d5b72bd (ORTA) | CT kararı: iki terminal tür saklanan alandan türer ve okuma anı çıkış koşulu taşır — `AllocationFailure { kind BatchRefused \| KeyReused, atUtc, lines[] }` (`KeyReused`'da tahsisler aynı yazımda `Pending`; `AllocationOrphanSuspected` bütün tahsisler `Released` olunca düşer) ve `ShortDispatchUnresolved[] { skuId, lotId?, expected, issued, reason }` (`Shipped` yazımında; istisna Staging farkı — Staging `OnHand` − bağlı miktar — kapanınca düşer, düzeltme 0178 dışı); `AllocationFailed` / `Shipped` olay `Data`'sı tanımlandı; `ReservationReleasePending` ile çift satır yok | §4.5, §8.17 adım 5 / 6, §8.18 bakım satırı, §8.21, §8.23, §13 (45, 46), §21, AC-36, AC-71 (vii), AC-78, sabotaj (dy), (dz) |
+| F-2@0d5b72bd | "Toplanabilir düğüm" tek tanımı (Staging ve Receiving alt ağacı dışı); lotlu, lotsuz, Item ve pick planı aynı tanıma bağlandı; WMS alanı ve test planı aynı | §8.17 adım 2 / 4, §8.24 kural 3, §17, AC-26 lotsuz / Item vakası, sabotaj (ec), WMS §12 |
+| F-3@0d5b72bd | `WarehouseTaskOrigin`: S1 kodunda beş değer (ölçüldü `WarehouseTaskEnums.cs:20-27`), S2 iki değer ekler (`Outbound` pick, `ShortDispatch` putaway); tablo ve "tek yeni değer" cümlesi düzeltildi; `Warehouse.Origin.*` yedi değer 7 dilde (S1'de origin anahtarı yok — ölçüldü) | §4.1, §4.5, §8.21, §11.4, AC-34, sabotaj (eh), WMS §3.1 |
+| F-4@0d5b72bd | Çözülebilirlik birimi SKU; satırda `fromLocationId = StagingLocationId` de koşul (MVP-6 eşleyicisi alanı yalnız satırda varsa yazar — ölçüldü `InventoryMovementMapper.cs:42-43`), değilse `ShortDispatchUnresolved` (`NotFromStaging`) | §8.21, §4.5, §13 (45), AC-78 (iii), sabotaj (eb), WMS §9 |
+| F-5@0d5b72bd | CT kararı, tek kod: 1000 üstü gerekçe her kipte 400 `INVALID_REQUEST` — kanca yalnız alt sınıra bakar (`ExpiryPostingPolicy.cs:252-253`), üst sınır INVENTORY ayrıştırıcısında (`MovementRequestParser.cs:19`, `:129-132`, `:172`; ölçüldü); WMS create / release hata listelerinden `REASON_REQUIRED` kaldırıldı (iptalde kalır), release'e `INVALID_REQUEST` eklendi | §8.17 adım 3, §8.21, §12, §13 (30), AC-28, AC-77, sabotaj (ef), (eg), WMS §11 |
+| F-6@0d5b72bd | CT kararı: 400 dalı FU03 r3 `IInventoryReservationPort.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)`'e bağlandı (FU03 DL-1, AC-39, CT-09; çözülmüş kapsam, 1…100 anahtar, durum süzgeci yok); "INVENTORY rezervasyon listesi" el ile ara yolu kaldırıldı (liste ucu yok, FU-03-LIST); FU-0178-RSV-BYKEY karşılandı. FU03 r3 `restoreReservation` (varsayılan `false`) hizası: 0178 REVERSAL yazmaz; MOD-0183 telafisi ve AC-32 kurulumu alanı taşır | §7 (W-5, MVP-6 satırları), §8.10, §8.17 adım 5 / 6, §8.21, §8.22, §19.5, §20, AC-32, AC-71 (vii), sabotaj (ea), WMS §9 / §13 |
+| F-7@0d5b72bd | CT kararı: MOD-0177 `IShipmentReader` genişletmesi XMC-001 kaydıyla §7 paragrafına ve MOD-0177 satırına yazıldı (aynı sahip Beste); dosya yolu `Features/Recall/Ports/IRecallTraceSource.cs:86-89` (+ `ShipmentBundleHttpReader.cs`); eşleme 401 / 403 → `Forbidden` → 403, 5xx / 2 sn zaman aşımı / bağlantı / gövde / aday 404 → 503 (ölçüldü `db769471c`) | §5 (metin + seam tablosu), §6, §7, §8.21, §10, §12, §13 (35), §18 #16, AC-31, sabotaj (ed), (ee) |
+| F-8@0d5b72bd | AC-34 parantezi §14.2'nin yedi anahtarıyla eşit | AC-34 |
+| F-9@0d5b72bd | Entegrasyon kartları §8.23'te tek tanım: dört kart (Olay kuyruğu, Sevk bekleyen, Son eşitleme, Bekleyen onaylar), cevabın altı değeri dağıtıldı; AC-36 ve §24 buna bağlandı | §8.23, §11.4, §24, AC-36, WMS §9 |
+| F-10@0d5b72bd | §21 sync ve iptal satırları aynı biçimde: açılan putaway görevinin `wms_task_events` `Created` olayı aynı işlemde, ek merkezi satır yok | §21, §8.21, AC-78 (i), sabotaj (ei) |
+
+#### 19.1.24 Bağımsız son bakış 03 — kararlar ve düzeltmeler (hedef r24 259442c2; KOŞULLU, 0 ENGEL, 1 ORTA, 6 DÜŞÜK; CT 2026-11-02: hepsi kabul, S-101 tek geçiş; r25)
+Bulgu dosyası `docs/records/reviews/MOD-0178/2026-11-02-259442c2-son-bakis-03.md`. Ölçüm: HEAD `ad7518ae4` (SHIPMENT `ShipmentSummary` /
+`ShipmentDetail`, LOCATION `isStockable`), S1 kodu `db769471c` (`IShipmentReader`, `ShipmentBundleHttpReader`, `RecallTraceEngineTests.cs`
+`FakeShipmentReader`, `Application.csproj` `net8.0`), FU03 r3 `d4176fbee` (sha256 `2bba39c1…ced981`; §8.3 tablosu, §8.9).
+
+| Bulgu | Karar / düzeltme | Yer |
+|---|---|---|
+| F-1@259442c2 (ORTA) | CT kararı: `ShortDispatchUnresolved` çıkış koşulu **lot düzeyinde** — fark (SKU, lot) başına, herhangi bir lotta ≠ 0 iken listede (işaret kuralı kalktı, `reason` açıklayıcı; SKU neti lot fazlasını gizlemez); aynı düğüm + SKU'da eşitlenmemiş **`ReadyToShip`** outbound varken (MVP-6 sevk etmiş olabilir) fark hesaplanmaz, kayıt listede kalır (`differenceDeferredBy = UnsyncedReadyToShip`; Pending kuralı gibi); çözülebilirlik birimi SKU kalır (çözülebilir görünen lota da görev yok, farkı istisnada görünür); `details.stagingDifference[]` lot listesi; `Warehouse.Exception.DeferredBy.*` iki anahtar 7 dilde | §4.5, §8.21, §8.23, §11.4, §13 (45), AC-36, AC-78 (iv) (a)–(c), sabotaj (ej), (ek), WMS §9 |
+| F-2@259442c2 | Kapsam iki tarafta aynı: **tek düğüm** (`StagingLocationId`), alt ağaç yok — `OnHand`, bağlı outbound'lar (`StagingLocationId` eşit), putaway kaynağı, Pending ve `ReadyToShip` koşulları aynı düğümde; gerekçe: 0178'in Staging akışlarının hepsi tam bu düğümü kullanır, LOCATION'da `StorageLocation` da stoklanabilir (ölçüldü `location.openapi.yaml` `isStockable`); alt düğüme taşıma bilinen sınır | §8.23, AC-78 (iv) (d), sabotaj (el), WMS §9 |
+| F-3@259442c2 | CT kararı: iki üye `IShipmentReader`'da **varsayılan arayüz uygulamalı** (gövde istisnasız `Unavailable` → 0178'de 503); `ShipmentBundleHttpReader` ikisini uygular; `FakeShipmentReader` (`RecallTraceEngineTests.cs:118`, ölçüldü `db769471c`) değişmeden derlenir; "MOD-0177 testleri değişmeden yeşil" iddiası buna bağlandı ve DL-5 commit aralığında Recall test klasörü `git diff --stat` boş + tam koşu yeşil ile ölçülür | §5 (metin + seam tablosu), §6, §7, §10, §18 #16, AC-31, sabotaj (em) |
+| F-4@259442c2 | `ShipmentQueryResult(Read, Shipments[] { ShipmentId, ShipmentNumber })`, `ShipmentDetailResult(Read, ShipmentId, ShipmentNumber, …)` (SHIPMENT `ShipmentSummary.shipmentNumber`, `ShipmentDetail` `allOf`; ölçüldü); kaydın `shipmentNumber`'ı tek adayın detayından; eşlemeye "öbür 4xx (400, 409, 429 …) → `Unavailable` → 503" (okuyucunun `default:` dalı, ölçüldü `ShipmentBundleHttpReader.cs:76-77`) | §5, §8.21, §12, §13 (35), AC-31, sabotaj (eo), WMS §5 |
+| F-5@259442c2 | MOD-0183 `restoreReservation` kapısının sonucu tüketim türüne göre: tam tüketilmiş → 422 `RESERVATION_NOT_ACTIVE`; kısmi tüketilmiş (kısa toplama, AC-72) ve kalan yetmez → 422 `RESERVATION_QUANTITY_EXCEEDED` (FU03 r3 §8.3, §8.9); kalan yeterse deneme geçer (çıkarım) | §7 (MVP-6 `reservationId` satırı), §8.21 |
+| F-6@259442c2 | WMS `WMS_ALLOCATION_FAILED` satırı ikiye ayrıldı: plan reddi / `BatchRefused` → görünür outbound ve rezervasyon yok; `ReservationKeyConflict` → görünür outbound yok, rezervasyon **olabilir** (FU03 400 kanıt değildir), tahsisler `Pending`, bakım bırakır; aynı tür iki cümle pakette de düzeltildi (`ReservedLotUnderRecall` kapsamı ve recall çıkış yolu: "`AllocationFailed` → rezervasyon yok" yalnız `BatchRefused` için) | WMS §5, §8.23 |
+| F-7@259442c2 | `exceptionId` = `{kind}:{kaynak anahtarı}`, tür başına satır birimi: onay türleri `{taskId}:{seq}`, outbound türleri `{outboundId}`, `ReservationReleasePending` / `ReservedLotUnderRecall` `{outboundId}:{allocSeq}`, `ShortDispatchUnresolved` `{outboundId}:{skuId}` (saklanan satır SKU başına tekil); AC-36 iki SKU / iki tahsis fikstürü, AC-78 iki SKU'lu outbound | §4.5, §8.21, §8.23, AC-36, AC-78 (iii), sabotaj (en), WMS §9 |
+
+#### 19.1.25 r26 — r25 sonrası kapanan kararlar (yeniden onay için yeni sürüm; EES 2.14)
+r25 (sha256 `b24ff825…`) sahip onaylıydı (2026-11-02). r26 yalnız sonradan kapanan kararları ve ölçülen durumu kaydeder; S1 / S2 / S3
+davranışı değişmez. **Neden yeni sürüm:** EES 2.14 altında r25'in eski inceleme satırları sıra bozan (reorder) bir merge'e bağlanıyor
+(araç sahibi Ali; PR #402) — onay yeni sürüme yazılır, onaylayıcı Ali.
+
+| # | Karar / ölçüm | Kaynak | Pakette |
+|---|---|---|---|
+| R26-1 | WMS-BUNDLE dondu: `docs/analysis/contracts/wms-bundle.openapi.yaml` 1.0.0 FROZEN (S1 + WAREHOUSE-OUTBOUND 1.0.0 üst kümesi, aynen kopya) ve 1.1.0 eklemeli (S2, S3, taslak §2.3 üyeleri); testler dondurulmuş dosyaya karşı; AC-60 VERIFIED. `OutboundShipmentReadyEvent.occurredAt` kodda yazılmıyor → dondurulmadı. WAREHOUSE-OUTBOUND 1.0.0 dosyası değişmedi; 1.1.0 ayrı CT adımı (Q-M6-6 kapısı; r27: WMS-BUNDLE 1.2.0 ile aynı adım — R27-1) | CT 2026-11-10, `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md` | başlık, §2, §5, §8.24, §12, §18 (17), §19.3, §19.7, §20 FU-0178-MVP6 |
+| R26-2 | **K-1:** `listPackages` tahsis satırı servisin yazdığı gibi `lotId` + `lotNumber` (taslağın `lot` üyesi kullanılmaz) | sahip kararı Beste 2026-11-10, aynı CT kaydı | §8.20, §19.7 |
+| R26-3 | **K-2:** 1.1.0 kataloğuna 404 `WMS_PACKAGE_NOT_FOUND` (koli yolları) ve 503 `WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` (atanan kullanıcı denetimi — Q-13: kiracının kullanıcı listesinden (AUTH) doğrulanır, erişilemezse 503; r27 F-7 etiket düzeltmesi) | sahip kararı Beste 2026-11-10, aynı CT kaydı | §8.20, §12, §19.7 |
+| R26-4 | FU-0178-PKS-01 kapandı: PKS-001 §4'te `inventory.*` (MOD-0173) ve `warehouse.*` (MOD-0178) satırları (MVP-1 hattı dalında; main'e hat PR'ıyla) | WP `execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`, sahip onayı Beste 2026-11-10 | §14.1, §20 |
+| R26-5 | FU-0178-RCS-02 kapandı: RCS-001 §3'te OTOMATİK `PUT`, `PCK`, `OUT`, `PKG`; Platform katalog testi dört türü MOD-0040-FU02 DL-8'e kadar "katalogdan önde" (`RuleAheadOfCatalogue`) listeler. **Q-EA-4 karar verildi:** önek seçimi için sahip onayı yeter, EA'ya bilgi notu | aynı WP, sahip onayı / kararı Beste 2026-11-10 | §4.1, §8.7, §18 (13), §19.5, §20, §22 |
+| R26-6 | §14.3 rol şablonu: `WarehouseSupervisor`, `ShippingPlanner`, `WarehouseOperator` hibe profiliyle modül hakkı olan **her** kiracıda (var olanlar dahil; "yalnız yeni kiracılar"ın yerine) beş koşulla; AC-76 bunları da ölçer ((f)). Auth WP MOD-0018-FU31: iki dilim, ~28 sa | sahip kararı Beste 2026-11-11 (Auth WP MOD-0018-FU31'e cevap, Ali) | §7, §14.2, §14.3, AC-76, §18 (24), §19.5 |
+| R26-7 | Dilim durumu (bilgi): DL-1…DL-6 ve DL-8 CT-VERIFIED ve main'de (PR #397); DL-7 CT-VERIFIED (`94d40e853`) MVP-1 hattında. Canlıya çıkıştan önce açık: AC-76 (MOD-0018-FU31), canlı E3 ölçümü, FU-0178-MVP6 | CT kabul kayıtları §19.6 | §19.6 |
+| R26-8 | Düşük bulgu (sonraki kod dilimi; AC değişmez): `WarehouseErrorCodes.All` `AssigneeDirectoryUnavailable`'ı listelemiyor; dondurma testi onu açıkça ekliyor | aynı CT kaydı ("Ek: K-2") | §12, §20 FU-0178-ERRCAT-01 |
+
+#### 19.1.26 r26 bağımsız incelemesi — kararlar ve düzeltmeler (hedef r26 96f16ad1, KOŞULLU, 0 ENGEL, 2 ORTA, 5 DÜŞÜK; r27)
+Bulgu dosyası `docs/records/reviews/MOD-0178/2026-11-11-96f16ad1.md` (r26 commit `7c25dace7`). Sahip kararları: F-2 ve F-6 Beste
+2026-11-11 («evet»); öbürleri inceleyicinin önerdiği düzeltmeler. S1 / S2 / S3 davranışı değişmez; AC metninde yalnız AC-76 (f) ve sabotaj
+listesi (ep) değişti.
+
+| # | Bulgu | Karar / düzeltme | Kaynak | Pakette |
+|---|---|---|---|---|
+| R27-1 | F-1 (ORTA) | Item yayın kapısı ancak WAREHOUSE-OUTBOUND 1.1.0 (outbound `SkuLevel`'e eklemeli `Item`; 1.0.0 örneğindeki `outboundId` → UUID) **ve** WMS-BUNDLE 1.2.0 (outbound `SkuLevel`'e eklemeli `Item`; WMS-BUNDLE üst küme kalır) **aynı** CT adımında, MOD-0183 okuyucusu `Item`'ı kabul ettikten sonra yazılınca kalkar. WMS-BUNDLE 1.1.0'da outbound örneğinin `outboundId`'si zaten UUID (hat etiketindeki `wms-bundle.openapi.yaml:130`) | inceleme F-1; Q-M6-6 | başlık, §8.24 kural 4, §19.3, §19.5 W-6 / Q-M6-6, §19.7, §20 FU-0178-ITEM-PUB / FU-0178-MVP6, R26-1 |
+| R27-2 | F-2 (ORTA) | Kiracının aynı adlı kendi rolü (`WarehouseSupervisor` / `ShippingPlanner` / `WarehouseOperator`) dokunulmaz, hiçbir anahtar almaz (`warehouse.outbound-shipments.read` dahil), yaratma merkezi denetime "atlandı" (skipped) yazılır, anahtarları kiracı yöneticisi elle verir; AC-76 (f) bunu fikstürle ölçer; sabotaj (ep) | sahip kararı Beste 2026-11-11 («evet») | §14.3 koşul 2, AC-76 (f), §17 sabotaj (ep), §19.5 Q-10a |
+| R27-3 | F-3 (DÜŞÜK) | Auth WP kimliği MOD-0018-FU31, iki dilim ve ~28 sa Ali'nin Beste'ye mesajından (2026-11-11); WP repoda henüz yok. Kararın kaynağı sahip kararı Beste 2026-11-11 (kayıt: `docs/records/decisions/2026-11/mod0178-owner-decisions-2026-11-11.md` (D-3, D-4)) | inceleme F-3 | §7, §14.3, AC-76, §19.5 Q-10a |
+| R27-4 | F-4 (DÜŞÜK) | WAREHOUSE-OUTBOUND 1.1.0 / `Item` / `SOURCE_DRIFT` cümlelerinin kaynağı paketin kararları (§8.24 kural 4, Q-M6-6, Q-M6-1 cevabı); dondurma kaydı yalnız "WAREHOUSE-OUTBOUND 1.1.0 ayrı adım" der | inceleme F-4 | §8.24, §19.3, §19.5 Q-M6-6, §19.7, §20 FU-0178-MVP6 |
+| R27-5 | F-5 (DÜŞÜK) | Yalnız hatta olan olgulara aynı not: "MVP-1 hattında; main'e hat PR'ıyla girer" (sözleşme, dondurma kaydı, WP, RCS / PKS satırları, DL-7 kaydı). Onay satırı hat PR'ı main'e girdikten sonra ya da onunla birlikte | inceleme F-5 | başlık, §2, §4.1, §5, §8.7, §8.20, §8.24, §12, §18 (13, 17), §19.5 Q-EA-4, §19.7, §20 FU-0178-ERRCAT-01, künye `status_note` |
+| R27-6 | F-6 (DÜŞÜK) | Q-EA-4: önek seçimi için sahip onayı yeter, EA'ya bilgi notu — açık sahip teyidi; bilgi notu için FU-0178-EA-NOTE (sahip MVP-5 CT, kapı değil) | sahip teyidi Beste 2026-11-11 («evet») | §19.5 Q-EA-4, §20 |
+| R27-7 | F-7 (DÜŞÜK) | §12: dondurulmuş `WMS_*` kodları artık "öneri" değil; tanımsız "Q-13 A" etiketi yerine paketin Q-13 sözü (atanan kullanıcı kiracının kullanıcı listesinden — AUTH — doğrulanır, erişilemezse 503); künye `dependencies`'e `WMS-BUNDLE-v1.1.0 (owned)` (alanı okuyan araç yok: `pack_approval` / `ct_queue` künye okuyucuları `dependencies`'i okumaz, ölçüldü) | inceleme F-7 | §12, §19.1.25 R26-3, §19.7, künye |
+
+### 19.2 Ölçülen gerçekler (`47a2c1cb9`, salt okuma)
+- `InternalMovementPostingService.cs:18-31` — `postMovement` ile aynı yol; post-commit `IPostedMovementObserver` bildirimi.
+- `QuarantineMovementPoster.cs:34-39` — tek stok kapısı + belgeden türeyen idempotency anahtarı deseni.
+- `MovementDirectionRules.cs:82-94` — `LOCATION_TRANSFER` aynı depo, farklı lokasyon, durum korunur (tek adım).
+- `inventory-bundle.openapi.yaml:43-46` — recall engeli `LOCATION_TRANSFER`'ı kapsamaz.
+- `IRecallLotStatusReader.cs:9-11` — `UnderRecallAsync(lotIds)` süreç içi okuma.
+- `IExpiryReadModel.cs:32` — `FefoCandidatesAsync(warehouseId, itemId, skuId, skuLevel)` (S2 FEFO okuması).
+- `InventoryScopeResolutionMiddleware.cs:57-60` — `ScopedBasePaths` (0176 / 0177 ekleme emsali).
+- `Program.cs:45-56` manifestler, `:63` `AddCentralAudit(…RequireEnlistment = true)`.
+- `tests/architecture/audit-ledger/Diten.InventoryService.md:12` — iz `inventory-merkezi-iletim` yol b.
+- MVP-6 okuyucusu: `ReadOnlySourceClients.cs:12,18` (`/api/warehouse/outbound-shipments[/{id}]`), `FrozenReadSchema.cs:8-39`
+  (JSON null reddi, UUID "D", SkuLevel yalnız Gsku / Lsku / FinishedGood, Statuses 6 değer, ek üyelere tolerans).
+- MOD-0183 pack §8.2: outbound anlık görüntü hash'i ile drift tespiti → `ReadyToShip` sonrası detay değişmemeli.
+- `ocelot.json`: `/api/warehouse` yok. Repo: `warehouse.` izin anahtarı yok. RCS-001 ortak servis yok (BL-565 AÇIK).
+- **İnceleme 02 için ölçülenler (`5f7833253`, servis kodu `47a2c1cb9`'dan beri değişmemiş):**
+  - `InternalMovementPostingService.cs:87-99` — parse, parmak izi, **sonra** `FindByIdempotencyKeyAsync`; işlenmişse `Replay` (`:216-226`:
+    parmak izi farklı → 400 `IDEMPOTENCY_KEY_REUSED`) — PRODUCT-MASTER / LOCATION doğrulamasından **önce**.
+  - `IInventoryLedgerRepository.cs:16` — `FindByIdempotencyKeyAsync`.
+  - `QuarantineLedgerReads.cs:108-120` — lokasyondaki Active seriler, seri **numarası**, alım sırası; `QuarantinePorts.cs:50-55` port.
+  - `StockActionHandlers.cs:175-200` — açık tutma / açık bloke serilerinin dışlanması (ASSUMPTION-0175-Q4-02).
+  - `InventoryLotDirectory.cs:161` — `LotIdentityPolicy.NormalizeSerial`; `:275-300` (`:295`) — `LOCATION_TRANSFER`'da seri depo / lokasyonu hedefe.
+  - `MovementMasterDataValidator.cs:144-149` — Gsku'da seri bayrağı `getProduct`'tan (OD-10).
+  - `ForwardCallerHeadersHandler.cs:21-35` — Authorization yalnız `HttpContext`'ten.
+  - `RecallQuarantineSweeper.cs:19` — `MaxDeferredAttempts = 10` (0177 sınırlı sweeper).
+  - **İnceleme 03 için ölçülenler (`367e8ff78`):** `RecallQuarantineSweeper.cs:72-76` — her kayıt için `CreateScope()`,
+    `ITenantContext.SetScope(TenantId, LegalEntityId, RequestedBy)`, `IPostingActorName.Use(...)`, `ICorrelationContext.Set(Guid.NewGuid())`;
+    `InventoryLedgerRepository.cs:100-103` — `FindByIdempotencyKeyAsync` `TransactionScope()` (kiracı + şirket) ile süzer;
+    `InternalMovementPostingService.cs:216-226` — `Replay` (parmak izi farklı → 400 `IDEMPOTENCY_KEY_REUSED`).
+  - **İnceleme 04 için ölçülenler (`13d343c9a`):** `…/Infrastructure/DependencyInjection.cs:51` — upstream zaman aşımı
+    `UpstreamServices:TimeoutSeconds` (yoksa 5 sn), `…/Api/appsettings.json:35` `"TimeoutSeconds": 5`; `IInventoryLedgerRepository.cs:11-12` —
+    append-only (yalnız `PostAsync` yazar); `RecallQuarantineSweeper.cs:65` — `Limit(200)`, `:82` kayıt başına `catch`.
+  - **İnceleme 05 için ölçülenler (`1f185d6a4`):** `InventoryLedgerRepository.cs:173` — `session.WithTransactionAsync` (commit sunucu
+    tarafında); `QuarantineServiceCollectionExtensions.cs:36` — `TimeProvider.System` (0175'in uçuş payı saati, testler kendi saatini verir).
+  - **Bağımsız inceleme 05 için ölçülenler (`890d21c92`, servis kodu değişmemiş):** `IInventoryLedgerRepository.cs:20` — `IsReversedAsync`
+    (bool); `InventoryLedgerRepository.cs:110-113` — `ReversesTransactionId == id` filtresi; `InventoryTransaction.cs:71` —
+    `ReversesTransactionId` (ters bağ okuma anında türetilir, `:9`); `InventoryLedgerRepository.cs:173` — `WithTransactionAsync` çağrısı;
+    `QuarantineLedgerReads.cs:118` — seri numarası dönüşü. **Ölçülmedi:** sürücünün `WithTransactionAsync` yeniden deneme penceresinin
+    (dokümantasyonda varsayılan 120 sn) iptal belirteciyle sınırlanıp sınırlanmadığı — geliştiricinin ilk ölçümü; sınırlanmıyorsa
+    `InFlightLeaseSeconds` bu pencere + 30 sn'den küçük olamaz.
+  - **Bağımsız inceleme 06 için ölçülenler (`d86c1123e`):** `LedgerImmutabilityArchitectureTests.cs:28-36` — `IInventoryLedgerRepository`'de
+    `Find` / `Query` / `List` / `Is` dışındaki tek üye `PostAsync`; `InventoryIndexConfiguration.cs:49-55` — `ReversesTransactionId` üzerinde
+    tekil kısmi index; registry satırı `module-id-registry.md:304` (`47a2c1cb9`'daki :298 ile aynı içerik).
+  - **Bağımsız inceleme 08 için ölçülenler (`58c2cd6e6`):** `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditBehavior.cs:8-9`
+    (başarılı işaretli komut tam bir olay, başarısız / istisna hiç), `:36` (`Begin` işleyiciden önce, ad komut türünden), `:59-63` (`!Succeeded` →
+    `AbandonAsync`); `CentralAuditRecorder.cs:11-12` (aynı komutun sonraki işlemindeki enlist no-op), `:41-46` (commit olmuş başarısız
+    komutun satırı `Abandoned`, iletilmez), `:95` (meta veri `declaration.CentralAudit`); `InventoryLedgerRepository.cs:181`
+    (`CentralAuditTransaction.EnlistAsync`); `Response.cs:15,27` (`IsSuccessful`).
+
+### 19.3 Varsayımlar (yalnız yeni paket sürümüyle değişir)
+- **ASSUMPTION-0178-01:** S1 görev kaynağı elle (Q-M2-1 cevabına kadar).
+- ~~ASSUMPTION-0178-02~~ → karar Q-04: lokasyon rolleri 0178'in nesnesidir, LOCATION sözleşmesi değişmez.
+- **ASSUMPTION-0178-03:** Açık miktar iyimser ön kontroldür; nihai koruma defterin negatif stok kuralıdır.
+- **ASSUMPTION-0178-04:** Retest için 0178 kuralı yok; defterin cevabı geçerli.
+- **ASSUMPTION-0178-05:** Görev ve onay olayları ürün içi zaman çizelgesidir; merkezi denetimin yerine geçmez.
+- ~~ASSUMPTION-0178-06~~ → **MVP-6 cevabıyla kapandı (Q-M6-9):** `outboundId` sunucu UUID'sidir, `sourceDocumentId = outboundId` uygun;
+  görünen kod `outboundNumber` (eklemeli; MVP-6 bugün okumuyor, eklenebilir). **Bilinen fark:** WAREHOUSE-OUTBOUND 1.0.0 dosyasının
+  örneğinde `outboundId: OUT-9001` yazar — 1.0.0 donmuş dosyaya dokunulmaz; örnek düzeltmesi 1.1.0 taslağındadır (WMS taslağı §2).
+  **r26 / r27 (inceleme F-1 / F-4):** WMS-BUNDLE 1.1.0'da outbound örneğinin `outboundId`'si zaten UUID'dir (CT 2026-11-10; MVP-1 hattında, main'e hat PR'ıyla girer).
+  WAREHOUSE-OUTBOUND 1.0.0 dosyası değişmedi; örneğin UUID'ye düzeltilmesi WAREHOUSE-OUTBOUND 1.1.0'dadır ve o dosya, WMS-BUNDLE 1.2.0 ile
+  **aynı** CT adımında, yalnız MOD-0183 okuyucusu `Item`'ı kabul edince yazılır (kaynak: paketin kararları §8.24 kural 4 ve Q-M6-6; §19.7).
+- **ASSUMPTION-0178-07:** `target: 2026-12-31` şema gereği planlama varsayılanıdır, taahhüt değildir.
+
+### 19.4 Altın akış (e2e) özeti
+S1: (GRN ya da test girişi, Receiving bin, `AVAILABLE`) → aday listesi → putaway görevi → kısmi / tam onay → `LOCATION_TRANSFER`
+→ raf bininde stok → görev `Completed`. S2: outbound (Allocated, FEFO + rezervasyon) → pick (bin → Staging) → Picked → paket →
+Packed → ReadyToShip (+ olay / poll) → MVP-6 Shipment → Dispatched (MVP-6 `GOODS_ISSUE_SALES`) → 0178 `Shipped`.
+
+### 19.5 Açık sorular (yalnız diğer ekipler + Q-10)
+
+MVP-1 CT / sahip soruları Q-01…Q-09, Q-11…Q-13, Q-MDM-1, Q-MDM-2 ve mockup kararları M-1…M-6 **karar verildi** (§19.1.1, §19.1.2). Açık kalan:
+
+**Beste (sahip) — S2 kararı:**
+- ~~W-6~~ → **karar verildi** (Beste 2026-11-02): outbound Item düzeyinde de açılabilir (§8.24, AC-33). Sevki MVP-6 uyumuna bağlı
+  (Q-M6-6); o gelene kadar Item outbound'u sevke hazır yapılamaz — **ara durum sahip kararıdır** (Beste 2026-11-02): yayın kapısı (409
+  `WMS_ITEM_LEVEL_NOT_PUBLISHABLE`) ve karışık outbound yasağı WAREHOUSE-OUTBOUND 1.1.0 + MOD-0183 uyumu gelene kadar geçerli. **r27 (inceleme F-1):** "WAREHOUSE-OUTBOUND
+  1.1.0" burada WAREHOUSE-OUTBOUND 1.1.0 **ve** WMS-BUNDLE 1.2.0'ın aynı CT adımında yazılması demektir (§8.24 kural 4, §19.7).
+
+**MVP-1 CT / MOD-0173-FU03 (r20):** **Q-01 kapandı** (= A, sahip kararı Beste 2026-11-02; FU03 §8.5): FEFO serbest miktarla karar verir;
+0178 tahsisi aynı tabanı `GetScopeFreeAsync` ile kurar (§8.10 satır 4, §8.17 adım 2); DL-4 kapısı FU03 DL-1 + DL-2 + DL-3 CT kabulüdür
+(CT-04 güncel). **CT-08** (REVERSAL rezervasyonu geri getirir, FU03 §8.3.1) §8.21'de hizalandı — r24: FU03 r3 sınırıyla, yalnız REVERSAL
+`restoreReservation: true` taşırsa (varsayılan `false`); MOD-0183'ün telafi gövdesi alanı göndermelidir (Natig, §7). **CT-09** (r24): FU03
+`FindByIdempotencyKeysAsync` FU-0178-RSV-BYKEY'i karşılar (§8.17 adım 6). **Q-05** (Natig): Q-M6-2 ile aynı;
+**Q-07**: bu revizyonda kapandı (§8.10, `expiresAt` yok). Hizalanan FU03 sürümü (r24): **r3**, commit `d4176fbee`, sha256
+`2bba39c170a7165230e01c556d9b8a61313a60f1b34309235973e70a63ced981` (commit içeriği, CRLF'siz; onaysız — FU03'ün kendi inceleme ve onayı ayrı).
+Önceki hiza: r2 `a3c0a9ae5`, sha256 `689bfaa3…6ded`.
+
+**Beste / MVP-1 CT:**
+- ~~Q-10a~~ → **karar verildi** (Beste 2026-11-02): Viewer'a otomatik gitmez; Admin, `WarehouseSupervisor` ve `ShippingPlanner` alır;
+  elle verilebilir (§14.2, AC-76). AuthService WP'sinin sahibi Ali (Auth), XMC-001 o WP'de — açık nokta kalmadı.
+  **r26:** WP = MOD-0018-FU31 (r27: kimlik Ali'nin mesajından, repoda henüz yok — §14.3); Auth'un rol yaratma sorusuna cevap **karar verildi** (Beste 2026-11-11): üç adlı rol modül hakkı olan her
+  kiracıda, var olanlar dahil, beş koşulla (§14.3, AC-76 (f)). **r27:** aynı adlı kendi rolü olan kiracıda o role dokunulmaz, anahtar
+  verilmez, denetime "atlandı" (sahip kararı Beste 2026-11-11 «evet», inceleme F-2; §14.3 koşul 2).
+- **Q-10:** E-1'in Inventory 400 WP'si ne zaman? 0178 o zamana kadar servis davranışını (kabul et, değiştir) izler, kendi
+  correlation ara katmanını yazmaz.
+
+**Cihan / MVP-2:**
+- **Q-M2-1:** GRN → putaway tetikleyicisi: (A) elle (S1), (B) 0178 süreç içi gözlemci, (C) GRN sonrası WMS API çağrısı, (D) GoodsReceived
+  olayı (bus kapalı). GRN'nin `locationId`'si Receiving rolündeki bir lokasyon olacak mı?
+- **Q-M2-2:** Gerçek `IInventoryPostingClient` (Dalga 1) ne zaman? S1 e2e'si o zamana kadar test girişiyle koşar.
+- **Q-M2-3 (bilgi notu):** mal kabul alanının saklama koşulu uyumu 0178 S1'in kontrolü **değildir** — malı Receiving lokasyonuna
+  GRN (MVP-2) koyar. 0178 yalnız putaway hedefini denetler (§8.12). Soğuk zincir ürününün uygun kabul alanına alınması MVP-2'nin
+  GRN kuralıdır; MVP-2 isterse 0178'in `WarehouseLocationRole.AcceptedStorageConditions` okumasını (WMS-BUNDLE `GET /location-roles`)
+  kullanabilir.
+
+**Natig / MVP-6** (r21: MVP-6 CT cevabı (Natig, 2026-11-02; MVP-6'nın main kod ve paket okuması, test koşmadı; sözleşme kararı, kod teslimi değil); her madde kaynağıyla):
+- ~~Q-M6-1~~ → **kabul:** outbound satırına isteğe bağlı `lotId` ve `fromLocationId`; MOD-0183 §8.2 alan listesi MVP-6'da. Uyarı: mevcut
+  kaynağa eklenen üye hash'i değiştirir (`SOURCE_DRIFT`) — eklemeli üyeler ilk canlı kayıttan önce (§7 canlıya çıkış kapısı, §8.21). MVP-6
+  eşlemesi bugün `SkuLevel` / `LotId` / `FromLocationId` yazmıyor; intake bağlanırken eklenecek (sahip MVP-6).
+- ~~Q-M6-2~~ → **daraldı:** `reservationId` SHIPMENT 3.5.0'da yeni isteğe bağlı alan; INVENTORY `MovementRequest`'te önce FU03 sözleşmesi;
+  MVP-6 takvimi FU03 main'e girince. Çıkış hareketi `Dispatched` ile aynı işlemde değil (INVENTORY HTTP önce, `Dispatched` sonra; telafi farkı
+  kapatır) — §8.21 sıra bu ölçümle yazıldı. Açık kalan yalnız takvim.
+- ~~Q-M6-3~~ → **kabul:** `fefoBypassReason` satırda doluysa `GOODS_ISSUE_SALES`'e taşınır (REVERSAL'de yok); outbound satırına eklemeli üye
+  (WMS taslağı §2.3). `RequireReason` kapısı = MVP-6 intake eşlemesinin teslimi (§7).
+- ~~Q-M6-4~~ → **kapandı:** olay taşıması takvimsiz; v1 kullanıcı tetikli eşitleme (`queryShipments`, `sourceDocumentId`,
+  `supplychain.shipments.read`) uygun. FU-0178-DISPATCH-EVT takvimsiz kalır.
+- ~~Q-M6-5~~ → **kabul:** `OutboundShipmentReady`'ye `tenantId`, `legalEntityId`, UUID `correlationId`.
+- ~~Q-M6-6~~ → **daraldı:** okuyucuya `Item` eklenecek (WAREHOUSE-OUTBOUND enum'uyla birlikte); tek bozuk öğede sayfa reddi sürer; INVENTORY
+  cevabı ölçülecek. Item yayın kapısı (§8.24 kural 4) geçerli; açık kalan MVP-6'nın teslimi. **r26 / r27 (inceleme F-1 / F-4):**
+  okuyucu `Item`'ı kabul edince CT, WAREHOUSE-OUTBOUND 1.1.0 (outbound `SkuLevel`'e `Item` + 1.0.0 örneğindeki `outboundId` UUID'ye) ve
+  WMS-BUNDLE 1.2.0'ı (outbound `SkuLevel`'e `Item`) **aynı** adımda yazar (§8.24 kural 4, §19.7). `SOURCE_DRIFT`: mevcut kaynağa eklenen üye
+  hash'i değiştirir (Q-M6-1 cevabı) — yani yalnız daha önce okunmuş bir kayda üye eklenince doğar; kaynak bu paketin Q-M6-1 / Q-M6-6
+  cevaplarıdır, dondurma kaydı değil.
+- ~~Q-M6-7~~ → **kapandı (v1):** `ReadyToShip` sonrası kaynak iptali yok; gerekirse sevkiyat MVP-6'da `Cancelled`, bağlantı ayrılmış kalır,
+  otomatik eşitleme yok; sözleşme sonraki sürümde (FU-0178-CANCEL-AFTER-READY). 0178'de izsiz `Cancelled` = değişiklik yok (§8.21);
+  `ReadyToShip`'teki recall'lı outbound için çözüm de bu sonraki sürümdür (§8.23).
+- ~~Q-M6-8~~ → **kapandı:** kullanıcı token'ı (Bearer) + `X-Tenant-Id` + `X-Legal-Entity-Id` + `X-Correlation-Id`, servis kimliği yok;
+  `warehouse.outbound-shipments.read` sevkiyat rolüne (Q-10a `ShippingPlanner` ile tutarlı, §14.2).
+- ~~Q-M6-9~~ → **kapandı:** `sourceDocumentId = outboundId` uygun; `outboundNumber` bugün okunmuyor, eklenebilir; 1.0.0 örneğindeki
+  `OUT-9001` farkı §19.3 ASSUMPTION-0178-06 ve WMS taslağı §2'de.
+- ~~Q-M6-10~~ → **kapandı:** rol şablonu kararı Auth'ta, itiraz yok; intake outbound başına tek sevkiyat açar (tekil anahtar), elle
+  `createShipment` engellemez, v1'de bölünmüş sevkiyat yok — `WMS_DISPATCH_AMBIGUOUS` kuralı buna göre (§8.21).
+- ~~Q-M6-11~~ → **kapandı:** MOD-0183'te `Dispatched` sonrası REVERSAL yolu yok; mal MOD-0186 iadesiyle döner; `Shipped` sonrası geri gelen
+  rezervasyon MVP-6 tarafında oluşmaz (§8.21 (iii), FU-0178-RSV-RESTORED daraltıldı).
+
+**Ali / MDM:**
+- **P9 takvimi (bilgi):** P9 (ambalaj hiyerarşisi) ne zaman geliyor? Yalnız planlama bilgisi; 0178 buna bağlı değil (Q-MDM-1 karara
+  bağlandı, §19.1.1). P6 (GTIN) 0178'e gerekmez (MOD-0182).
+- **Kısa kod alanı takvimi (bilgi):** RCS-001 §5.4 Tüzel Kişilik kısa kod alanı ne zaman geliyor? (Q-MDM-2 kapandı — şimdilik `Code`,
+  M-2; geçiş FU-0178-RCS-01.)
+- **Q-MDM-3:** MOD-0048 `storage-condition` listesi okunabilir bir uçla açılacak mı? O zamana kadar 0178 sözleşmedeki beş kodu
+  (`StorageConditionCode`) kullanır (FU-0178-STOR-01). Ayrıca PRODUCT-MASTER v1.1'in (`storageConditions`) donma / PM-LIVE takvimi —
+  S1 saklama koşulu uyumu buna bağlı.
+
+**EA:**
+- **Q-EA-1:** Blueprint 8.8 MOD-0178 "Buy/Partner" → "Build" düzeltmesi (W-1).
+- **Q-EA-2:** DCP-009 `:45` servis notu (`Diten.SupplyChainService` 5066 "warehouse") W-2 ile güncellenmeli (DCP sahibi).
+- **Q-EA-3:** S2 outbound talebinin kaynağı: satış siparişi SoR'u yok (MOD-0172 ATP commercial "SoR EA-TBD") — outbound'u kim / hangi
+  modül açar?
+- ~~Q-EA-4~~ → **karar verildi** (r26; sahip kararı Beste 2026-11-10, WP
+  `execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`): RCS-001 tür önekleri (PUT / PCK / OUT / PKG) —
+  önek seçimi için sahip onayı yeter, EA'ya bilgi notu gider (önceki metin: "öneklerin seçimi EA ile"); önekler RCS-001 §3'e yazıldı,
+  FU-0178-RCS-02 kapandı (§22). **r27 (inceleme F-6):** WP bunu "Öneri" olarak taşıyordu; **sahip teyidi** Beste 2026-11-11 («evet»):
+  önek seçimi için sahip onayı yeter, EA'ya bilgi notu — FU-0178-EA-NOTE (§20). Önekler ve RCS-001 satırları MVP-1 hattında, main'e hat
+  PR'ıyla girer.
+- **Q-EA-5:** Blueprint WMS-BUNDLE "OTel" beklentisi: yalnız ad sözleşmesi mi, exporter mı?
+
+### 19.6 CT kabul kayıtları
+**r26 (bilgi, 2026-11-11):** DL-1…DL-6 ve DL-8 CT-VERIFIED ve main'de (PR #397); DL-7 CT-VERIFIED (`94d40e853`) MVP-1 hattında.
+
+| Adım | CT kaydı |
+|---|---|
+| DL-1 | `docs/records/audits/2026-10/mod-0178-dl1-ct-acceptance-2026-10-30.md` |
+| DL-2 | `docs/records/audits/2026-11/mod-0178-dl2-ct-acceptance-2026-11-01.md` |
+| DL-3 | `docs/records/audits/2026-11/mod-0178-dl3-ct-acceptance-2026-11-02.md` |
+| DL-4 | `docs/records/audits/2026-11/mod-0178-dl4-ct-acceptance-2026-11-05.md` (VERIFIED; ACCEPTED AC-76 (a)–(d) Auth kapısına ve E3'e bağlı) |
+| DL-5 | `docs/records/audits/2026-11/mod-0178-dl5-ct-acceptance-2026-11-06.md` |
+| DL-6 | `docs/records/audits/2026-11/mod-0178-dl6-ct-acceptance-2026-11-06.md` |
+| DL-7 | `docs/records/audits/2026-11/mod-0178-dl7-ct-acceptance-2026-11-10.md` (MVP-1 hattında) |
+| DL-8 | `docs/records/audits/2026-11/mod-0178-dl8-ct-acceptance-2026-11-02.md` |
+| CT dondurma (§19.7) | `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md` (MVP-1 hattında; AC-60 VERIFIED) |
+
+**Canlıya çıkıştan önce açık:** AC-76 (Auth WP MOD-0018-FU31, Ali; §14.3), canlı E3 ölçümü, FU-0178-MVP6 (MVP-6 intake kodu,
+SHIPMENT 3.5.0 `reservationId`, Q-M6-6 `Item`).
+
+### 19.7 CT dondurma adımı — WMS-BUNDLE S1 (dev dilimi değil; Codex incelemesi P1)
+Teslim dilimleri tablosu (§23) yalnız dev dilimlerini (`DL-n`) taşır; CT'nin tek yazıcı adımı burada ayrı tutulur (eski adı `CT-FREEZE`).
+
+| Adım | Ne | Ne zaman | Kabul |
+|---|---|---|---|
+| CT dondurma | `docs/analysis/contracts/wms-bundle.openapi.yaml` + `docs/analysis/contracts/README.md` satırı — CT'nin tek yazıcı adımı | DL-2 kabulünden sonra | AC-60 (DL-2 testlerinin dondurulmuş dosyaya karşı yeniden koşusu) — döngü yok |
+| Item sözleşmeleri (r26; r27 inceleme F-1) | **Tek CT adımında iki dosya:** `docs/analysis/contracts/warehouse-outbound.openapi.yaml` 1.1.0 (outbound `SkuLevel`'e eklemeli `Item` + 1.0.0 örneğindeki `outboundId`'nin UUID'ye düzeltilmesi) **ve** `docs/analysis/contracts/wms-bundle.openapi.yaml` 1.2.0 (outbound `SkuLevel`'e eklemeli `Item`; WMS-BUNDLE üst küme kalır) — CT'nin tek yazıcı adımı | yalnız MOD-0183 okuyucusu `Item`'ı kabul edince (Q-M6-6) | iki dosya birlikte; WMS-BUNDLE sözleşme testi Item'lı outbound cevabını 1.2.0'a karşı geçer; Item yayın kapısı ancak bundan sonra yeni paket revizyonuyla kalkar (§8.24 kural 4); FU-0178-ITEM-PUB / FU-0178-MVP6 |
+
+**r26 — dondurma yapıldı (CT 2026-11-10, `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`, VERIFIED; kayıt ve
+sözleşme MVP-1 hattında, main'e hat PR'ıyla girer):**
+`docs/analysis/contracts/wms-bundle.openapi.yaml` **1.0.0 FROZEN** (S1 + WAREHOUSE-OUTBOUND 1.0.0 üst kümesi, aynen kopya) ve **1.1.0
+eklemeli** (S2, S3, taslak §2.3 üyeleri); testler dondurulmuş dosyaya karşı doğrular — AC-60 kapandı. Dondurmadaki sahip kararları (Beste
+2026-11-10): **K-1** `listPackages` tahsis satırı servisin yazdığı gibi `lotId` + `lotNumber` (taslağın `lot` üyesi kullanılmaz, §8.20);
+**K-2** `WMS_PACKAGE_NOT_FOUND` (404, koli yolları) ve `WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE` (503, atanan kullanıcı denetimi — Q-13: kiracının kullanıcı listesinden (AUTH) doğrulanır, erişilemezse 503) 1.1.0
+kataloğuna eklendi (§12). `OutboundShipmentReadyEvent.occurredAt` (taslak §7) kodda yazılmıyor → **dondurulmadı**. WAREHOUSE-OUTBOUND
+1.0.0 dosyası değişmedi; dondurma kaydı yalnız "WAREHOUSE-OUTBOUND 1.1.0 (MVP-6 ile) ayrı adım" der. **r27 (inceleme F-1 / F-4):**
+WMS-BUNDLE 1.1.0'da outbound `SkuLevel` `Gsku` / `Lsku` / `FinishedGood`'dur (`Item` eklenmedi) ve outbound örneğinin `outboundId`'si zaten
+UUID'dir; Item adımı yukarıdaki tabloda iki dosyalıdır. `SOURCE_DRIFT` kuralının kaynağı paketin Q-M6-1 cevabıdır (§19.5).
+
+## 20. Follow-up Items
+
+- **FU-0178-EA-01 (EA):** Blueprint "Buy/Partner" → Build (W-1).
+- **FU-0178-DCP-01 (DCP-009 sahibi):** servis notu `Diten.InventoryService` 5067 (W-2).
+- **FU-0178-RCS-01 (BL-565 — geçiş + feragat, sahip kararı Q-07 B, Beste 2026-10-21):** S1 görev numarası (S2'de outbound / koli)
+  `IWarehouseRecordCodeAllocator` portunun arkasındaki **geçici yerel sayaçtan** gelir: RCS-001 biçimi `{ŞİRKET}-PUT-000001`, sayaç
+  (kiracı, şirket öneki, tür) başına atomik (`findOneAndUpdate` + `$inc`), sıfırlanmaz, ASCII, harcanan numara geri verilmez.
+  **Feragat:** RCS-001 §5.12 / §6 "modül kendi sayacını yazmaz" kuralından geçici sapma — sahip: Beste · gerekçe: ortak servis (BL-565)
+  yok, S1 beklemesin · telafi: biçim RCS-001'e birebir, sayaç tek port arkasında, kod değiştirilemez · bitiş: BL-565 ortak servisi
+  teslim edilince. **Geçiş:** port ortak servise bağlanır; sayaç ortak servise o türün en büyük numarasının üstünden devam edecek
+  şekilde devredilir (RCS-001 §5.11 deseni); verilmiş kodlar değişmez (§2 "mevcut kodlar değiştirilmez").
+  **Önek kaynağı (M-2):** şimdilik MDM tüzel kişilik `Code` (`^[A-Z]{2,5}$`); RCS-001 §5.4 kısa kod alanı gelince önek ondan okunur —
+  yeni önek yeni sayaç başlatır, verilmiş numaralar değişmez.
+- ~~**FU-0178-RCS-02**~~ (sahip onayı bekleyen açık iş): önekler (`PUT`, `PCK`, `OUT`, `PKG`) `.antigravity/rules/record-coding-standard.md`
+  §3 tablosuna yazılır — korunan yol, ayrı sahip onayıyla; bu paket ve dev dilimi `.antigravity`'ye dokunmaz. → **kapandı (r26):** RCS-001
+  §3'te OTOMATİK `PUT`, `PCK`, `OUT`, `PKG` satırları (WP `execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`,
+  sahip onayı Beste 2026-11-10; MVP-1 hattı dalında, main'e hat PR'ıyla). Platform katalog testi dört türü MOD-0040-FU02 DL-8'e kadar
+  "katalogdan önde" (`RuleAheadOfCatalogue`) listeler. Q-EA-4 karar verildi (§19.5).
+- **FU-0178-P9 (MDM P9 gelince, karar Q-MDM-1):** paketlemede ambalaj seviyesi (P9) kullanımına geçiş — koli içi standart adet önerisi,
+  ambalaj seviyesi dönüşümü; o zamana kadar ağırlık / ölçü elle ve dönüşüm yok. Geçiş ayrı WP + paket revizyonu.
+- **FU-0178-KEY-01:** `PostingKey`'in tahmin edilemez yapılması (işlem 1'de bir kez üretilen rastgele parça, onaya yazılır, her denemede
+  aynen) — başka bir `postMovement` çağıranının anahtarı önceden harcayıp onayı `IntegrityError`'a düşürmesini engeller (inceleme 03 F-2).
+- **FU-0178-SERIAL-01 (MOD-0182 ile):** seri kontrollü SKU'da kısmi yerleştirme — okutulan seriler onay gövdesine girer, kaynak kovanın
+  serileriyle doğrulanır (F-1).
+- ~~**FU-0178-PKS-01**~~ (sahip onaylı `.antigravity` adımı): `warehouse.*` namespace'inin PKS-001 §4 sahiplik tablosuna (MOD-0178) yazılması (F-14).
+  → **kapandı (r26):** PKS-001 §4'te `inventory.*` (MOD-0173) ve `warehouse.*` (MOD-0178) satırları (WP-MOD0178-ANTIGRAVITY-ROWS, sahip
+  onayı Beste 2026-11-10; MVP-1 hattı dalında, main'e hat PR'ıyla) — §14.1.
+- **FU-0178-DC-01 (domain-config sahibi):** `execution/domains/supply-chain-execution/domain-config.md` `:36` ve `:72` W-2 ile hizalanır —
+  0178 `Diten.InventoryService` içinde ayrı bölümde, stoğa süreç içi `InternalMovementPostingService` ile yazar (HTTP değil); sınır
+  (ikinci bakiye yok, defter koleksiyonuna doğrudan yazmaz) aynı (F-15).
+- **FU-0178-STOR-01 (MDM):** saklama koşulu etiket seçicisinin MOD-0048 `storage-condition` listesinden okunması (Q-MDM-3).
+- **FU-0178-S2-UX (S2'ye öneri, kapsam değil — M-6):** özet kartları (açık / bekleyen / reddedilen / bugün tamamlanan); gerekçeli 3 raf
+  adayı (koşul uyumu, aynı SKU / lot yakınlığı, boş bin); "Benim görevlerim" yürüyüş sırası (lokasyon koduna göre rota); toplu
+  öncelik değiştirme + klavye kısayolları (UXH-001 kısayol katmanı); hata kurtarma kuyruğu (Refused / uzun Pending onaylar — S3
+  İstisna Kutusu ile birleşebilir).
+- **FU-0178-GRN-01:** GRN → putaway otomatik tetikleyici (Q-M2-1 / Q-11).
+- **FU-0178-QH-01 (MOD-0175 sahibi):** tutulan stoğun karantina bölgesine taşınması (QUARANTINE eklemeli).
+- **FU-0178-SLOT-01:** putaway stratejisi, bin kapasitesi, slotting (veri yok).
+- **FU-0178-WHSCOPE-01 (SEC-002):** kullanıcının depo bazlı veri kapsamı (yalnız atandığı depolar) — S1'de şirket kapsamı.
+- **FU-0178-SEARCH-01:** görev numarasıyla Ctrl+K kaydı (`platform-global-search-registry`).
+- **FU-0178-W5 (MVP-1 CT):** W-5 WP'si (§8.10).
+- **FU-0178-MVP6:** Q-M6-1…11 cevaplandı (r21, Natig 2026-11-02, sözleşme kararı) — kalan iş MVP-6'nın kod teslimi (intake eşlemesi `SkuLevel` /
+  `LotId` / `FromLocationId` / `fefoBypassReason`, SHIPMENT 3.5.0 `reservationId`, okuyucuda `Item`) ve CT dondurma adımında WMS-BUNDLE /
+  WAREHOUSE-OUTBOUND 1.1.0 eklemeli üyeleri; ilk canlı kayıttan önce (`SOURCE_DRIFT`). **r26:** WMS-BUNDLE 1.0.0 / 1.1.0 dondu (CT
+  2026-11-10, §19.7); bu FU'da kalan: MVP-6 intake kodu, SHIPMENT 3.5.0 `reservationId`, Q-M6-6 `Item` ve ona bağlı WAREHOUSE-OUTBOUND 1.1.0
+  CT adımı (r27: WAREHOUSE-OUTBOUND 1.1.0 + WMS-BUNDLE 1.2.0 tek adımda, §19.7). `SOURCE_DRIFT` yalnız daha önce okunmuş bir kayda üye
+  eklenince doğar (Q-M6-1 cevabı). Canlıya çıkıştan önce açık (§19.6).
+- **FU-0178-OTEL:** exporter / canlı ölçüm.
+- **FU-0178-REPICK (r20):** pick onayında başka bin / başka lottan toplama (v1'de kaynak ve hedef sabit, §8.19).
+- **FU-0178-RSV-PARTIAL (r20, MOD-0173 sahibi ile):** kısa toplamada rezervasyonun kısmi bırakılması — FU03 kısmi bırakma sunmadığı için v1'de
+  artık miktar sevk ya da iptale kadar ayrılmış kalır (§8.19).
+- **FU-0178-DISPATCH-EVT (r20, Q-M6-4):** `ShipmentDispatched` olay taşıması ya da servis kimliğiyle arka plan okuması — o gelene kadar
+  kullanıcı tetikli eşitleme (§8.21).
+- **FU-0178-ITEM-PUB (r20, W-6):** Item outbound'unun yayın kapısının kaldırılması — WAREHOUSE-OUTBOUND / WMS-BUNDLE 1.1.0 `SkuLevel` eklemeli
+  `Item` + MOD-0183 okuyucusu (Q-M6-6) + paket revizyonu (§8.24 kural 4). **r27 (inceleme F-1):** WMS-BUNDLE 1.1.0 `Item`'sız dondu; sözleşme
+  koşulu artık WAREHOUSE-OUTBOUND 1.1.0 **ve** WMS-BUNDLE 1.2.0'ın (ikisinde de outbound `SkuLevel`'e eklemeli `Item`) **aynı** CT adımında
+  yazılmasıdır (§19.7).
+- **FU-0178-RSV-RESTORED (r20, FU03 CT-08; r21 daraltıldı; r24 FU03 r3 sınırı):** MVP-6'da `Dispatched` sonrası REVERSAL yolu yok (MVP-6 cevabı, Q-M6-11);
+  başka bir tüketici bir 0178 rezervasyonunu tüketen hareketi `restoreReservation: true` taşıyan REVERSAL ile geri alırsa geri gelen
+  rezervasyonun bırakma sahibi MOD-0173; alansız REVERSAL rezervasyonu geri getirmez.
+- ~~**FU-0178-RSV-BYKEY**~~ (r23, son bakış F-3) → **karşılandı (r24, son bakış 02 F-6):** MOD-0173-FU03 r3 (`d4176fbee`) CT-09 —
+  `IInventoryReservationPort.FindByIdempotencyKeysAsync(tenantId, legalEntityId, keys)`, FU03 DL-1, AC-39 (DL-4 kapısının içinde). Bakım 400
+  dalında bununla bırakır (§8.17 adım 6); el ile ara yol kaldırıldı (FU03'te liste ucu yok, FU-03-LIST ertelendi).
+- **FU-0178-CANCEL-AFTER-READY (r21, Q-M6-7):** `ReadyToShip` sonrası kaynak iptali sözleşmesi (MVP-6 sonraki sürüm); o zamana kadar
+  MVP-6'da iptal edilen sevkiyatın outbound'u `ReadyToShip` ve rezervasyonu açık kalır (S3 `DispatchNotSeen`).
+- **FU-0178-ERRCAT-01 (r26, DÜŞÜK, sonraki 0178 kod dilimi; AC değişikliği değil):** `WarehouseErrorCodes.All` servisin yazdığı
+  `AssigneeDirectoryUnavailable`'ı (`WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE`) listelemiyor; WMS-BUNDLE dondurma testi onu karşılaştırmaya açıkça
+  ekliyor. Kümeye eklenince testteki ek kaldırılır (CT kaydı `docs/records/audits/2026-11/mod-0178-wms-bundle-freeze-ct-2026-11-10.md`,
+  "Ek: K-2"; MVP-1 hattında, main'e hat PR'ıyla girer).
+- **FU-0178-EA-NOTE (r27, inceleme F-6; sahip MVP-5 CT; kapı değil):** EA'ya bilgi notu — RCS-001 §3 tür önekleri `PUT` / `PCK` / `OUT` /
+  `PKG` (MOD-0178) sahip onayıyla seçildi ve yazıldı (Q-EA-4; sahip teyidi Beste 2026-11-11 «evet»). Hiçbir dilimi, onayı ya da canlıya
+  çıkışı beklemez.
+- **FU-0178-S3-ACT (r20):** İstisna Kutusunda "Kabul et / Çözüldü" eylemleri ve saklanan istisna durumu (v1 türetilmiş, salt okunur; §8.23).
+- MOD-0180 dalga, MOD-0181 sayım (`COUNT_GAIN` / `COUNT_LOSS` — 0181'in işi), MOD-0182 barkod (ScanEvent, `scanRef` kapısını doldurur),
+  MOD-0179 3PL (W-3).
+
+## 21. Audited Events
+
+Servisin denetim altyapısı **bugün var:** `tests/architecture/audit-ledger/Diten.InventoryService.md` `## İzler` →
+`inventory-merkezi-iletim | b | işaret | ICentralAuditDeclaration`; `RequireEnlistment = true`. **Kayıt biçimi ve sahip kararı (§8.8;
+bağımsız inceleme 09 F-1):** BL-501 kaydı **ad ve gövde taşımaz** — komut başına sabit `Category` / `Operation` (Platform enum adları) /
+`EntityType` / `SourceModule`, `EntityId` (`CentralAuditEntityId`), `RequestType` (= komut sınıfının adı) ve aktör / kiracı / şirket /
+korelasyon / zaman. Bu yüzden tablodaki **"olay adı" = `RequestType` + `Operation`**'dır; önceki / sonraki ya da değişen alanlar **yalnız
+yerel zaman çizelgesinin `Data`'sındadır** (görev: `wms_task_events`, rol: `wms_location_role_events`; §4.3), aynı işlemde yazılır, silinmez.
+Merkezi kayıt yalnız **başarılı ve yazan** komutta iletilir (1; çökmede `Unconfirmed`); başarısız cevapta iletilen 0 (satır varsa
+`Abandoned`), yazmadan başarılı komutta (tekrar / no-op) 0 (§8.8). **Tekrar (bağımsız inceleme 10 F-1):** her komutta aynı anahtar + aynı
+parmak izi → 200 replay, aynı anahtar + farklı parmak izi → 400; ikisi de yazmaz, enlist etmez, yerel olay bırakmaz (0 / 0 / 0) — anahtar
+If-Match'ten önce aranır (§8.1); anahtar yaratmada kayıtta, diğer komutlarda aşağıdaki "anahtar olayı"nda (§4.3). K2 = başarılı komutun merkezi kaydı veriyle aynı işlemde (test: denetim
+yazımı enjekte hata → komut geri alınır, görev değişmez).
+
+**Ortak değerler (sahip kararı Beste 2026-10-26 — Category, ModuleCode ve aşağıdaki `Operation` eşlemesi kabul):** `Category = MasterData` — Platform `AuditCategory`'de envanter / depo değeri yok, InventoryService'in bütün
+modülleri bunu kullanır (`…/Application/Common/InventoryCentralAudit.cs:12-22`); ayrı kategori Platform enum değişikliğidir, 0178 açmaz.
+`SourceModule` = §14.4 manifest `ModuleCode` (`PUTAWAY-PICKING-PACKING`). Bildirim yardımcısı 0178'in kendi dosyasıdır
+(`…/Features/Warehouse/WarehouseCentralAudit.cs`, `InventoryCentralAudit.For*` deseni). `Operation` InventoryService emsaline göre:
+yaratma `Create`, düzenleme `Update`, silme `Delete`, atama / üstlenme `Assign`, stok hareketini yürüten ya da sonuçlandıran komut
+`Execute` (emsal `ManualLotMigration`, `QuarantineDecision`), durum kapatan komut `LifecycleTransition` (emsal `RecallCase`,
+`QuarantineHold`). Her değer `CentralAuditPlatformValues.IsKnown` ile ölçülür (§5 beşinci seam).
+
+| Komut (= `RequestType`) | `Operation` | `EntityType` | `EntityId` kaynağı | Yol | Merkezi kayıt (iletilen) | Yerel zaman çizelgesi: `Kind` → `Data` (önceki / sonraki ya da değişen alanlar) | İstisna sınıfı + gerekçe |
+|---|---|---|---|---|---|---|---|
+| `CreatePutawayTaskCommand` | `Create` | `WarehouseTask` | cevaptaki `taskId` | b (K2) | 1; aynı `IdempotencyKey` tekrarı 0 | `Created` (+ `SuggestionApplied`) → After: Number, kaynak kova, PlannedQuantity, ToLocationId, Assignee, Priority, Origin | — |
+| `UpdatePutawayTaskCommand` | `Update` | `WarehouseTask` | komuttaki `taskId` | b | 1; tekrar 0 | `Updated` (anahtar olayı; + `SuggestionApplied`) → Before / After: ToLocationId, PlannedQuantity, Assignee, Priority, Note | — |
+| `BulkAssignPutawayTaskCommand` | `Assign` | `WarehouseTask` | yok — toplu, `null` (`QuarantineCommands.cs:116` emsali) | b | 1 (en az bir görev yazıldıysa); hiçbiri yazılmadıysa 0; tekrar 0 | yazılan her görevde `Assigned` (anahtar olayı) → Before / After: AssigneeUserId; satır sonuçları yalnız cevapta | — |
+| `ClaimPutawayTaskCommand` | `Assign` | `WarehouseTask` | komuttaki `taskId` | b | 1; tekrar 0 | `Claimed` (anahtar olayı) → Before / After: AssigneeUserId (null → kendisi) | — |
+| `ConfirmPutawayTaskCommand` | `Execute` | `WarehouseTask` | komuttaki `taskId` | b (K2) | 1 yalnız Posted (201); Refused / Pending / IntegrityError / 409 / 503 → 0 (işlem 1 ya da ön arama yazımı commit olduysa satır `Abandoned`, olmadıysa satır yok); tekrar (AC-4) 0; işlem 1 sonrası çökme → 1 `Unconfirmed` | `ConfirmationRecorded` (anahtar olayı) + `ConfirmationPosted` / `ConfirmationRefused` / `ConfirmationIntegrityError` (+ `ConfirmationSuperseded`, + `Completed`) → onay `seq`, Quantity, From / To, PostingKey, TransactionNumber, kapatılan `seq` listesi, Error\* | — (hareketin defterdeki kendi izi defterin işi; defterin enlist'i bu komutun satırına no-op) |
+| `RetryPutawayConfirmationCommand` | `Execute` | `WarehouseTask` | komuttaki `taskId` | b (K2) | 1 yalnız Posted (yeni posting ya da replay); diğer sonuçlar 0 (kilit alımı commit olduysa `Abandoned`); kilit reddi 409 satır yok; tekrar 0; kilit alımı sonrası çökme → 1 `Unconfirmed` | `ConfirmationRetried` (anahtar olayı) + `ConfirmationPosted` / `ConfirmationRefused` / `ConfirmationIntegrityError` (+ `ConfirmationSuperseded`, + `Completed`) → onay `seq`, Attempts, TransactionNumber, kapatılan `seq` listesi, Error\* | — |
+| `ReconcilePendingConfirmationCommand` (iç) | `Execute` | `WarehouseTask` | komuttaki `taskId` | b (K2) | 1 yalnız Posted (aktör = onayın `ConfirmedBy`'ı); KeyReused / HolderReversed / savunma dalı → 0 (`Abandoned`); (B) / 0-kayıt → 0 (satır yok); `NotCommitted` → komut gönderilmez | `ConfirmationReconciled` (+ `ConfirmationSuperseded`, + `Completed`) ya da `ConfirmationIntegrityError` → onay `seq`, TransactionNumber, kapatılan `seq` listesi, `reason`, `holder` | — |
+| `ResolvePutawayIntegrityCommand` | `LifecycleTransition` | `WarehouseTask` | komuttaki `taskId` | b (K2) | 1; 409 retler 0 (satır yok); tekrar 0 | `IntegrityResolved` (anahtar olayı; + `ConfirmationDeviation`, + `ConfirmationSuperseded`, + `Completed`) → onay `seq`, IntegrityResolution, gerekçe, `holder`, sapma alanları, kapatılan `seq` listesi; görev kapanışı yok | — |
+| `ClosePutawayTaskShortCommand` | `LifecycleTransition` | `WarehouseTask` | komuttaki `taskId` | b (K2) | 1; ön arama geç commit (409) → 0 (`Abandoned`); tekrar 0 | `ClosedShort` (anahtar olayı) → Planned, Confirmed, ShortCloseReason; 409'da hedef onayda `ConfirmationIntegrityError` | — |
+| `CancelPutawayTaskCommand` | `LifecycleTransition` | `WarehouseTask` | komuttaki `taskId` | b (K2) | aynı | `Cancelled` (anahtar olayı) → Before Status, CancelReason; 409'da aynı | — |
+| `MarkPutawayConfirmationReturnedCommand` | `LifecycleTransition` | `WarehouseTask` | komuttaki `taskId` | b (K2) | aynı | `ConfirmationReturned` (anahtar olayı) → onay `seq`, Resolution `ReturnedToSource`, ResolutionReason; 409'da aynı | — |
+| `CreateWarehouseLocationRoleCommand` | `Create` | `WarehouseLocationRole` | cevaptaki `roleId` | b | 1; tekrar 0 (anahtar kayıtta, §4.4) | `wms_location_role_events` `Created` → After: LocationId, Roles, AcceptedStorageConditions, Note | — |
+| `UpdateWarehouseLocationRoleCommand` | `Update` | `WarehouseLocationRole` | komuttaki `roleId` | b | 1; tekrar 0 | `Updated` (anahtar olayı) → Before / After: Roles, AcceptedStorageConditions, Note | — |
+| `DeleteWarehouseLocationRoleCommand` | `Delete` | `WarehouseLocationRole` | komuttaki `roleId` | b | 1; tekrar 0 | `Deleted` (anahtar olayı) → Before: LocationId, Roles, AcceptedStorageConditions | — |
+| `BulkDeleteWarehouseLocationRoleCommand` | `Delete` | `WarehouseLocationRole` | yok — toplu, `null` | b | 1 (en az bir kayıt silindiyse); hiçbiri silinmediyse 0; tekrar 0 | silinen her kayıtta `Deleted` (anahtar olayı) → Before: LocationId, Roles, AcceptedStorageConditions | — |
+| Pending uzlaştırıcı hosted service (`PendingConfirmationReconcilerHostedService`) | — | — | — | — | — | — | İ2 — kendisi kayıt değiştirmez ve işlem açmaz; yalnız yazılacak bir şey varsa gönderdiği `ReconcilePendingConfirmationCommand` yukarıdaki kurala göre denetlenir |
+| S2 `CreateOutboundShipmentCommand` | `Create` | `OutboundShipment` | cevaptaki `outboundId` | b (K2) | 1 yalnız `Allocated` (201); `WMS_ALLOCATION_FAILED` ve sonucu bilinmeyen 503 → 0 (işlem A commit olduysa `Abandoned`; 503'te tamamlayan bakım komutu 1 yazar); işlem A sonrası çökme → 1 `Unconfirmed`; tekrar 0 | `wms_outbound_events` `Created` (anahtar olayı) + `Allocated` ya da `AllocationFailed`; görev başına `wms_task_events` `Created` → numara, depo, Staging, satırlar, tahsisler (lot, miktar, `FefoRank`, `FefoBypassReason`, `ReservationKey`); `ShipTo` yalnız "girildi" işareti | — |
+| S2 `CompleteOutboundAllocationCommand` (iç) | `Execute` | `OutboundShipment` | komuttaki `outboundId` | b (K2) | 1 yalnız `Allocated` yazımında (aktör = outbound'u açan kullanıcı); `AllocationFailed` → 0 (`Abandoned`) | `Allocated` ya da `AllocationFailed` (+ görev başına `Created`) → FU03 satır sonuçları; `AllocationFailed`'de kayıttaki `AllocationFailure` (`kind`; `KeyReused`'da satır yok, tahsisler `Pending` — r24) | — |
+| S2 `UpdateOutboundShipmentCommand` | `Update` | `OutboundShipment` | komuttaki `outboundId` | b | 1; tekrar 0; `ReadyToShip` sonrası 409 → 0 | `Updated` (anahtar olayı) → Before / After: OrderRef, Note; `ShipTo` yalnız "değişti" işareti | — |
+| S2 `CancelOutboundShipmentCommand` | `LifecycleTransition` | `OutboundShipment` | komuttaki `outboundId` | b (K2) | 1 (bırakma hatası olsa da — iptal yazılmıştır) — aynı işlemde açılan `Cancellation` putaway görevleri için **ek merkezi satır yok** (aynı komutun satırı); 409 / 400 → 0; tekrar 0 | `Cancelled` (anahtar olayı) → Before Status, CancelReason, kapatılan görevler, `Cancellation` putaway görevleri; tahsis başına `ReservationsReleased` / `ReservationReleaseFailed`; açılan putaway görevlerinde aynı işlemde `wms_task_events` `Created` (`Origin Cancellation`) | — |
+| S2 `ReleaseOutboundShipmentCommand` | `LifecycleTransition` | `OutboundShipment` | komuttaki `outboundId` | b (K2) | 1; 409 → 0; tekrar 0 | `Released` (anahtar olayı) → ReadyAtUtc, outbox satır kimliği, release'te yazılan gerekçeler (`allocSeq`, reason; r22) | — (outbox satırı aynı işlemde, K2) |
+| S2 `SyncOutboundDispatchCommand` | `LifecycleTransition` | `OutboundShipment` | komuttaki `outboundId` | b (K2) | 1 yalnız `Shipped` yazımında — aynı işlemde açılan `ShortDispatch` putaway görevleri için **ek merkezi satır yok** (aynı komutun satırı; r24, son bakış 02 F-10); "değişiklik yok" / 403 / 409 / 503 → 0 (satır yok); tekrar 0 | `Shipped` (anahtar olayı) → shipmentId, shipmentNumber, status, observedAtUtc, `shortDispatch[]` (r23), `shortDispatchUnresolved[]` (r24); açılan putaway görevlerinde aynı işlemde `wms_task_events` `Created` (`Origin ShortDispatch`; r24); ardından `ReservationsReleased` / `ReservationReleaseFailed` | — |
+| S2 `ReleaseOutboundReservationsCommand` (iç) | `Execute` | `OutboundShipment` | komuttaki `outboundId` | b | 1 (en az bir tahsis `Released` yazıldıysa); hiçbiri → 0; r24: FU03 400 dalının `AllocationFailed` outbound'u dahil (aktör = outbound'u açan kullanıcı) | `ReservationsReleased` / `ReservationReleaseFailed` → allocSeq, reservationId (400 dalında `FindByIdempotencyKeysAsync`'in bulduğu; bulunmayan anahtarda yok), `reason` | — |
+| S2 `ClaimPickTaskCommand` / `BulkAssignPickTaskCommand` | `Assign` | `WarehouseTask` | `taskId` / toplu `null` | b | S1 karşılıklarıyla aynı | `Claimed` / `Assigned` | — |
+| S2 `ConfirmPickTaskCommand` / `RetryPickConfirmationCommand` | `Execute` | `WarehouseTask` | komuttaki `taskId` | b (K2) | S1 karşılıklarıyla aynı (1 yalnız Posted); son görev outbound'u `Picked` yaparsa ek merkezi kayıt yok (aynı komutun satırı) | S1 onay olayları + outbound'da `PickCompleted` | — |
+| S2 `MarkPickConfirmationReturnedCommand` / `ResolvePickIntegrityCommand` / `ClosePickTaskShortCommand` | `LifecycleTransition` | `WarehouseTask` | komuttaki `taskId` | b (K2) | S1 karşılıklarıyla aynı | `ConfirmationReturned` / `IntegrityResolved` / `ClosedShort` (+ `PickCompleted`) | — |
+| S2 `CreateHandlingUnitCommand` | `Create` | `HandlingUnit` | cevaptaki `packageId` | b | 1; tekrar 0 | `wms_outbound_events` `PackageCreated` (anahtar olayı) → PackageNumber, içerik, ağırlık, ölçü | — |
+| S2 `UpdateHandlingUnitCommand` | `Update` | `HandlingUnit` | komuttaki `packageId` | b | 1; tekrar 0 | `PackageUpdated` (anahtar olayı) → Before / After: içerik, ağırlık, ölçü | — |
+| S2 `CloseHandlingUnitCommand` | `LifecycleTransition` | `HandlingUnit` | komuttaki `packageId` | b | 1; tekrar 0 | `PackageClosed` (anahtar olayı; + outbound `Packed`) | — |
+| S2 bakım hosted service'i (`OutboundMaintenanceHostedService`) | — | — | — | — | — | — | İ2 — kendisi kayıt değiştirmez; gönderdiği `CompleteOutboundAllocationCommand` / `ReleaseOutboundReservationsCommand` yukarıdaki kurala göre denetlenir (kayıt başına `SetScope`, S1 uzlaştırıcı deseni) |
+| S2 `PreviewOutboundAllocationQuery` ve S3 sorguları | — | — | — | — | — | — | İ1 — salt okuma; yazım yok |
+
+**S2 retleri (r23, son bakış F-17):** S1 sahip kararı (Beste 2026-10-26, §8.8) S2 / S3'e **aynen** uygulanır — merkezi kayıt (BL-501)
+yalnız **başarılı ve yazan** komutta iletilir; doğrulama / yetki / ön kontrol retleri (400 / 401 / 403 / 404 / 409 / 422 / 503) merkezi
+ve yerel iz bırakmaz; ret bir işlem commit ettikten sonra olursa (tahsiste işlem A, `AllocationFailed`) satır `Abandoned` kalır, yerel olay
+(`AllocationFailed`) yazılır. Tablodaki S2 satırlarının "→ 0" hücreleri bu kuralın uygulanışıdır.
+
+Kayda yazılmayan alanlar: `ShipTo` adres / alıcı adı (S2, KVKK — yalnız outbound id ve alan adı "değişti" işareti), token, gizli
+anahtarlar. Merkezi kayıt zaten gövde taşımaz; bu kural yerel `Data` için de geçerlidir.
+
+## 22. Record Codes
+
+| Kayıt türü | Sınıf | TÜR öneki (RCS-001 §3 — r26; r25: öneri) | Üretici | Gerekçe |
+|---|---|---|---|---|
+| Putaway / Pick görevi (`WarehouseTask.Number`) | OTOMATİK | `PUT` (putaway), `PCK` (pick, S2) | geçici sayaç (Q-07 B, FU-0178-RCS-01) → BL-565 ortak servisi | yüksek hacimli, kullanıcı değiştirmez |
+| Outbound sevkiyat (`OutboundNumber`, S2) | OTOMATİK | `OUT` | geçici sayaç → ortak servis | yüksek hacim |
+| Koli (`PackageId`, S2) | OTOMATİK | `PKG` | geçici sayaç → ortak servis | yüksek hacim; WAREHOUSE-OUTBOUND `packageId` string |
+| Lokasyon rolü | — | kod yok | — | kullanıcıya görünen kodu yok (LOCATION kodu gösterilir) |
+
+**r20:** `PCK`, `OUT` ve `PKG` S1'in geçici sayaç portundan (`IWarehouseRecordCodeAllocator`, tür başına ayrı sayaç) üretilir; ortak servis
+MOD-0040-FU02 (DL-8, kiracı tüketicilerinin bağlanması) teslim edilince FU-0178-RCS-01 geçişiyle porta bağlanır — o gelene kadar S2
+beklemez (§7 bağımlılık satırı).
+
+Biçim `{ŞİRKET}-{TÜR}-{000001}`, sayaç (kiracı, şirket öneki, tür) başına, sıfırlanmaz, ASCII. **r26:** önekler RCS-001 §3 tablosuna
+OTOMATİK satırlar olarak yazıldı — `PUT`, `PCK`, `OUT`, `PKG` (`.antigravity/rules/record-coding-standard.md`; WP
+`execution/domains/supply-chain-execution/work-packs/WP-MOD0178-ANTIGRAVITY-ROWS.md`, sahip onayı Beste 2026-11-10; MVP-1 hattı dalında,
+main'e hat PR'ıyla); FU-0178-RCS-02 kapandı, Q-EA-4 karar verildi (önek seçimi için sahip onayı yeter, EA'ya bilgi notu). Platform katalog
+testi dört türü MOD-0040-FU02 DL-8'e kadar "katalogdan önde" (`RuleAheadOfCatalogue`) listeler; DL-8 türleri kataloğa ekleyince o satırlar
+silinir. Sahip kararı
+Q-07 B (Beste 2026-10-21): ortak servis gelene kadar RCS biçiminde geçici sayaç (tek port; feragat ve geçiş FU-0178-RCS-01).
+`{ŞİRKET}` öneki şimdilik MDM tüzel kişilik `Code`'u (M-2; `^[A-Z]{2,5}$` değilse görev açılmaz, 422 `WMS_COMPANY_CODE_INVALID`),
+numaraya bir kez yazılır; RCS-001 §5.4 kısa kod alanı gelince geçiş FU-0178-RCS-01. Depo kodu numarada yok (liste sütunu).
+Numara **kiracı genelinde tekil** `(TenantId, Number)` (RCS-001 §6). **Önek devri (bilgi notu, F-12):** bir tüzel kişilik `Code`'unu
+değiştirir ve eski kodu sonra başka bir tüzel kişilik alırsa, sayaç anahtarı `(kiracı, önek, tür)` olduğu için yeni sahip aynı
+sayaçtan devam eder — numaralar çakışmaz, ama önek tek başına bugünkü şirketi söylemez; sahip şirket görevin `LegalEntityId`'sidir
+(RCS-001 §5.2: kod kimliktir, şu anki sahibi söylemez). RCS-001 §5.4'teki "kısa kod kullanıldıktan sonra değiştirilemez" kuralı ortak
+servisle gelir.
+
+## 23. Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler | kabul ölçütleri ve kapsam notu |
+|---|---|---|---|
+| DL-1 | S1 temel: lokasyon rolleri + saklama koşulu (kalıtım, MOD-0173 `storageConditions` seam'i) + geçici numara sayacı (backend) | `warehouselocationrole`, `warehousetaskevent` (insert-only), indexes (kiracı + şirket önce), repo scope, servis ve kapsam, kayıt kodları, saklama koşulu uyumu (m-3 — s1 engeli), validation rules, audited events, record codes | §4.3'ün yalnız rol geçmişi (`WarehouseLocationRoleEvent`); §5 seam'leri (beşinci seam'de sayı 67 → 71); §12'nin rol / koşul / sayaç satırları; §21'in rol satırları. AC-1, AC-13 (rol uçları), AC-14 (rol uçları), AC-17 (görevsiz kısım: CRUD, tekillik, Receiving + Staging, atalar arası çakışma), AC-59 — görev isteyen hiçbir AC yok (inceleme 02 F-4) |
+| DL-2 | S1 görev + onay + sweeper + seri tam miktar (backend; sunucu yanlı ekran kuralları dahil) | owned objects, `warehousetask` (s1 putaway; s2 pick aynı baş kayıt), `taskconfirmation` (gömülü), `warehousetaskevent` (insert-only), görev kaynağı (s1), durum makinesi ve onay algoritması (s1 putaway), karantinadaki ve tutulan stok (s1 kuralı), geri çağırma (recall) — 0178'in tek ek kuralı, hedef bin önerisi (s1), merkezi denetim (e-2 / bl-501) ve yerel gxp izi — sahip kararı (beste 2026-10-26), onay yetkisi ve üstlenme (m-5), e-imza — kapsam dışı (m-1), seri kontrollü sku — yalnız tam miktar (f-1; sahip kararı beste 2026-10-21), backend file convention, validation rules, failure path to verify, authorization convention, audited events | AC-2…AC-12, AC-15, AC-18, AC-19 (taslaktan türetilmiş şemaya karşı), AC-39 (sunucu 409 kilidi), AC-40, AC-41 (aday API'de belge no), AC-43 (sunucu geçiş kuralı), AC-46 (türetilmiş durum / bayrak), AC-13 / AC-14 (görev uçları), AC-47…AC-49, AC-51…AC-58, AC-61…AC-70, AC-16 (numara görev yaratmada üretilir), AC-37, AC-38 (inceleme 02 F-4) |
+| DL-3 | S1 ekranlar + manifest + yardım (yalnız ekran yanı) | ekran kuralları (m-4 / s1), layout & shell contract, frontend file contract, manifest, page help (uxh-001) | AC-20, AC-21…AC-24, AC-39 / AC-41 / AC-43 / AC-46 (ekran yanı), AC-42, AC-44, AC-45, AC-50 |
+| DL-4 | S2a outbound + tahsis + bakım servisi (backend; Item satırı dahil; başlama kapısı MOD-0173-FU03 DL-1 + DL-2 + DL-3 CT kabulü; kabul kapısı AuthService Viewer dışlaması) | s2 varlıkları (bağlayıcı — r20), indexes (kiracı + şirket önce), repo scope, dependencies, w-5 karşılığı — mod-0173-fu03 (r20), s2 outbound oluşturma ve tahsis, s2 outbound durum makinesi, s2 kalem (item) düzeyinde outbound (w-6), validation rules, failure path to verify, authorization convention, audited events, record codes | §4.5'in outbound / satır / tahsis alanları; §12 ve §13'ün tahsis satırları; §21'in outbound yaratma / düzenleme / bakım satırları; AC-26, AC-28, AC-33 (i), (iii), (iv), AC-71 ((vii)'nin bırakma kısmı DL-5'te, `GET /exceptions` kısmı DL-7'de — r24), AC-73 (outbound uçları), AC-75 (yapılandırma kısmı), AC-74 (DL-4 uçları), AC-76; `CentralAuditDeclarationTests` sayısı DL-4 sonunda **85** (82 + Create / Update / CompleteOutboundAllocation) |
+| DL-5 | S2b pick / pack / ReadyToShip / Shipped / iptal (backend) | s2 pick görevi ve onayı, s2 paketleme, s2 sevke hazır ve sevk edildi, s2 iptal ve geri yerleştirme, s2 kalem (item) düzeyinde outbound (w-6), olaylar ve taşıma, validation rules, failure path to verify, audited events, record codes | AC-27, AC-29…AC-32, AC-33 (ii), (v), AC-35, AC-71 (vii) (400 dalının `FindByIdempotencyKeysAsync` bırakması — r24), AC-72, AC-77 (release kısmı), AC-78 (i)–(iii), AC-73 (pick / koli uçları), AC-75 (saklama koşulu kısmı), AC-74 (DL-5 uçları); sayım DL-5 sonunda **99** |
+| DL-6 | S2 ekranları (compact Outbound, slim PickTasks, Paketleme) + manifest + yardım | layout & shell contract, ekran → rota → izin (hepsi scope = tenant; `_layouttenantshell`), ekran → düğme → eylem → izin (manifest actions), resx, dosyalar (s2 ve s3 — r20), manifest, page help (uxh-001) | §11.1 / §11.3'ün S2 satırları; AC-33 (vi), AC-34 |
+| DL-7 | S3 izleme okumaları + ekranları | s3 izleme ekranları, ekran → rota → izin (hepsi scope = tenant; `_layouttenantshell`), dosyalar (s2 ve s3 — r20), manifest, page help (uxh-001) | §11.1'in S3 satırları; AC-36, AC-71 (vii) ve AC-78 (iv) (S3 türleri ve çıkış koşulları — r24), AC-77 (S3 türü), AC-73 (S3 uçları), AC-74 (S3 uçları) |
+| DL-8 | INT-WMS Gateway (integration-agent; sıra olarak DL-2'den sonra) | gateway / api routing decision | AC-25 |
+
+## 24. Page Help (UXH-001)
+
+- `PUTAWAYTASKS` → `Help.PUTAWAYTASKS.Purpose`, `.Audience`, `.Step1Title`/`.Step1` … `.Step4` (1: yerleştirilecek stoğu seç,
+  2: hedef bin ve atanan, 3: onayla (kısmi olabilir), 4: Pending onayda "Yeniden dene"); `.Immediate` ("Onay stoğu hemen taşır;
+  geri alma Stok Hareketleri'nde ters kayıttır"); ilgili sayfalar `Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES`, stok defteri.
+- `WAREHOUSELOCATIONROLES` → `Purpose`, `Audience`, `Step1..3` (lokasyon seç, rol ver, mal kabul lokasyonlarını doğrula);
+  ilgili `Related.PUTAWAYTASKS`.
+- **S2 / S3 (r23, son bakış F-10):** `OUTBOUNDSHIPMENTS` → `Purpose`, `Audience`, `Step1..5` (1: depo ve Staging seç, 2: satırları gir
+  ve "Tahsisi önizle", 3: gerekirse lot değiştir ve gerekçe yaz, 4: toplama görevlerini izle, 5: paketlenince "Sevke hazır" ve sevkten
+  sonra "Sevkiyatı kontrol et"); `.Immediate` ("Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez"); `Related.PICKTASKS`,
+  `Related.WAREHOUSEEXCEPTIONS`. `PICKTASKS` → `Purpose`, `Audience`, `Step1..3` (görevi üstlen, bin'den Staging'e taşı ve onayla,
+  outbound toplanınca "Paketle"); `Related.PACKINGSTATION`. `PACKINGSTATION` → `Purpose`, `Audience`, `Step1..3` (koli aç, içerik /
+  ağırlık / ölçü gir, koliyi kapat — hepsi kapanınca outbound "Paketlendi"). `WAREHOUSEEXCEPTIONS` → `Purpose`, `Audience`, `Step1..2`
+  (türe göre süz, satırdan ilgili ekrana git). `WAREHOUSEACTIVITY` → `Purpose`, `Audience`, `Step1..2` (tarih aralığı seç — en çok 31
+  gün, kayda git). `WAREHOUSEINTEGRATION` → `Purpose`, `Audience`, `Step1` (§8.23'ün dört kartını oku: olay kuyruğu, sevk bekleyen, son eşitleme, bekleyen
+  onaylar — r24, son bakış 02 F-9).
+- Kiracı modülü → 7 dil. **Tur yok** (beş akıştan biri değil).

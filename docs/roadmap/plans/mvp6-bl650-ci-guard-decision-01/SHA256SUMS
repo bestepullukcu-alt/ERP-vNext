@@ -1,0 +1,3 @@
+cdc5403dcdff1da4fb47fca62e011bc2c81f03baac97998f04405ddb29b4bfb6  DECISION.md
+ae4de645800e50bc69004465f1cd0c12c81d71ca25d23bd8100de6fc7352a2be  patches/option1-guard-follows-scripts.patch
+ed0aa8e8b621458727d4041702808770bfbdc80ad23cdd253ed1a37fc1444edb  patches/option3-relabel-intent-only.patch

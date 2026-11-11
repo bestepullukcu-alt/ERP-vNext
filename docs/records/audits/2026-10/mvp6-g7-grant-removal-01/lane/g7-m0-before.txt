@@ -1,0 +1,18 @@
+platform collections w/ module: platform_module_services, platform_module_catalog, platform_module_page_descriptors, platform_module_domains, tenant_module_entitlements, platform_module_page_action_descriptors
+auth G7 keys: 0
+[
+  {
+    ModuleCode: 'WORKFLOW',
+    IsTenantAssignable: true
+  },
+  {
+    ModuleCode: 'ESIGN',
+    IsTenantAssignable: true
+  },
+  {
+    ModuleCode: 'ORGANIZATION',
+    IsTenantAssignable: true
+  }
+]
+catalog count=24
+G7 in catalog=0

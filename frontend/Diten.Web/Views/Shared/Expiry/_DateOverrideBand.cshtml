@@ -1,0 +1,18 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@*
+    MOD-0176 F5 — the lot-date band of Yeni Lot and the quick lot (pack §8.3.3, KF-D; mockup "ex" 1). MODEL: the id prefix ("lot" | "quick").
+    The suggestion "üretim tarihi + raf ömrü N gün"; a different date asks for a reason (≥ 10); on save ExpiryBands.lot.beforeSave prepares
+    the override (createDateOverride) and, when the company asks, signs it in the MOD-0022 dialog; createLot then carries dateOverride.
+*@
+<div class="col-12">
+    <div id="ex-band-@Model" class="d-none" role="status" aria-live="polite"></div>
+    <button type="button" class="btn btn-sm btn-link px-0 mb-2 d-none" id="ex-band-@Model-use">@Localizer["Expiry.Band.UseSuggestion"]</button>
+    <div id="ex-band-@Model-reason-group" class="d-none">
+        <label class="form-label fw-medium" for="ex-band-@Model-reason">@Localizer["Expiry.Band.DiffersReason"] *</label>
+        <textarea class="form-control" id="ex-band-@Model-reason" rows="2" maxlength="1000" placeholder="@Localizer["Expiry.Band.DiffersPlaceholder"]"></textarea>
+        <div class="form-text" id="ex-band-@Model-note"></div>
+        <div class="invalid-feedback d-block" id="ex-band-@Model-error"></div>
+    </div>
+</div>

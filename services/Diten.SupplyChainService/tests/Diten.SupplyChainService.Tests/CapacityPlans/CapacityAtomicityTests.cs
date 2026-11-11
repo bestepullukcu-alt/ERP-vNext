@@ -219,7 +219,7 @@ public sealed class CapacityFaultTests
         Assert.True(await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None));
         var before=(await Fail(app,"find",4)).GetValue("count",0).ToInt32();
         try {await Assert.ThrowsAsync<InvalidOperationException>(()=>Reconcile(store,id));}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X07 reconciliation read failure hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X07 reconciliation read failure hits={hits}");Assert.Equal(1,hits);}
     }
 
     [Theory]
@@ -261,7 +261,7 @@ public sealed class CapacityFaultTests
         var before=(await Fail(app,"commitTransaction",2,unknown:true)).GetValue("count",0).ToInt32();
         CapacityMutation<CapacityEvaluation> result;
         try {result=await repo.EvaluateAsync(Scope,planId,scenarioId,"x01-unknown-key","x01-unknown-fp",evaluation.CorrelationId,evaluation,CancellationToken.None);}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X01 uncertain commit hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X01 uncertain commit hits={hits}");Assert.Equal(1,hits);}
         Assert.Equal(503,result.StatusCode);Assert.Equal("COMMIT_RESULT_UNRESOLVED",result.ErrorCode);
         Assert.Equal(0,await Count(db,"capacity_evaluations"));Assert.Equal(0,await Count(db,"capacity_active_slots"));
         Assert.Equal(0,await Count(db,"capacity_receipts"));Assert.Equal(0,await Count(db,"capacity_audit"));Assert.Equal(0,await Count(db,"capacity_outbox"));
@@ -275,7 +275,7 @@ public sealed class CapacityFaultTests
         var before=(await Fail(app,"commitTransaction",1)).GetValue("count",0).ToInt32();
         CapacityMutation<CapacityEvaluation> result;
         try {result=await repo.EvaluateAsync(Scope,planId,scenarioId,"x01-key","x01-fp",evaluation.CorrelationId,evaluation,CancellationToken.None);}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X01 definite commit cut hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X01 definite commit cut hits={hits}");Assert.Equal(1,hits);}
         Assert.Equal(503,result.StatusCode);
         Assert.Equal("DEPENDENCY_UNAVAILABLE",result.ErrorCode);
         Assert.Equal(0,await Count(db,"capacity_evaluations"));Assert.Equal(0,await Count(db,"capacity_active_slots"));
@@ -298,7 +298,7 @@ public sealed class CapacityFaultTests
         var before=(await Fail(app,"commitTransaction",1,true)).GetValue("count",0).ToInt32();
         CapacityMutation<CapacityEvaluation> result;
         try {result=await repo.EvaluateAsync(Scope,planId,scenarioId,"x01-after-key","x01-after-fp",evaluation.CorrelationId,evaluation,CancellationToken.None);}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X01 commit acknowledgment loss hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X01 commit acknowledgment loss hits={hits}");Assert.Equal(1,hits);}
         Assert.Equal(202,result.StatusCode);Assert.Equal(evaluation.Id,result.Value!.Id);
         Assert.Equal(1,await Count(db,"capacity_evaluations"));Assert.Equal(1,await Count(db,"capacity_active_slots"));
         Assert.Equal(1,await Count(db,"capacity_receipts"));Assert.Equal(1,await Count(db,"capacity_audit"));
@@ -316,7 +316,7 @@ public sealed class CapacityFaultTests
         var (store,lease,id)=await TerminalSetup(db);
         var before=(await Fail(app,"insert",1)).GetValue("count",0).ToInt32();
         try {await Assert.ThrowsAnyAsync<MongoException>(()=>store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None));}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X06 definite audit-insert cut hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X06 definite audit-insert cut hits={hits}");Assert.Equal(1,hits);}
         var after=await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>x.Id==id).SingleAsync();
         Assert.Equal("Running",after.Status);Assert.Equal(lease.Version,after.Version);Assert.Null(after.CompletedAt);
         Assert.Equal(1,await Count(db,"capacity_active_slots"));
@@ -337,7 +337,7 @@ public sealed class CapacityFaultTests
         var before=(await Fail(app,"commitTransaction",2,unknown:true)).GetValue("count",0).ToInt32();
         bool result;
         try {result=await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None);}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X07 uncommitted unknown result hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X07 uncommitted unknown result hits={hits}");Assert.Equal(1,hits);}
         Assert.False(result);
         var after=await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>x.Id==id).SingleAsync();
         Assert.Equal("Running",after.Status);Assert.Equal(1,await Count(db,"capacity_active_slots"));
@@ -354,7 +354,7 @@ public sealed class CapacityFaultTests
         var before=(await Fail(app,"commitTransaction",1,true)).GetValue("count",0).ToInt32();
         bool result;
         try {result=await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None);}
-        finally {var hits=await StopFail()-before;output.WriteLine($"X07 committed acknowledgment loss hits={hits}");Assert.True(hits>=1);}
+        finally {var hits=await StopFail()-before;output.WriteLine($"X07 committed acknowledgment loss hits={hits}");Assert.Equal(1,hits);}
         Assert.True(result);
         var terminal=await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>x.Id==id && x.TenantId==Scope.TenantId && x.LegalEntityId==Scope.LegalEntityId).SingleAsync();
         Assert.Equal("Completed",terminal.Status);Assert.Equal(0,await Count(db,"capacity_active_slots"));

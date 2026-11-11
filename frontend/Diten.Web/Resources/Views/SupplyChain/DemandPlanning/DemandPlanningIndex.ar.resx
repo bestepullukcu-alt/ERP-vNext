@@ -54,7 +54,7 @@
   <data name="HistorySelectCompany" xml:space="preserve"><value>لا توجد شركة نشطة متاحة.</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>لا توجد سجلات مقبولة لهذه الشركة.</value></data>
   <data name="HistoryUnavailable" xml:space="preserve"><value>سجل الطلب المقبول غير متاح.</value></data>
-  <data name="HistorySku" xml:space="preserve"><value>رمز المنتج</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
   <data name="HistoryWarehouse" xml:space="preserve"><value>المستودع</value></data>
   <data name="HistoryDate" xml:space="preserve"><value>تاريخ الحدوث</value></data>
   <data name="HistoryUnit" xml:space="preserve"><value>الوحدة المقبولة</value></data>
@@ -66,7 +66,7 @@
   <data name="HistoryAt" xml:space="preserve"><value>وقت القرار</value></data>
   <data name="HistoryPrevious" xml:space="preserve"><value>السابق</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>التالي</value></data>
-  <data name="HistoryLoading" xml:space="preserve"><value>جار تحميل السجل المقبول...</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>جارٍ تحميل السجل المقبول...</value></data>
   <data name="ForecastIntro" xml:space="preserve"><value>قيّم السجل المقبول لصنف × مستودع واحد واختر الطريقة صراحةً.</value></data>
   <data name="ForecastAuthorityPending" xml:space="preserve"><value>الشركات هي شركات المستأجر النشطة في MDM. تفويض المستخدم للشركة والتحقق الفعلي من السلسلة قيد الانتظار؛ تعذّر التحقق يمنع العملية.</value></data>
   <data name="ForecastLoading" xml:space="preserve"><value>جارٍ تحميل البيانات المتحققة…</value></data>
@@ -74,7 +74,7 @@
   <data name="ForecastScopeHelp" xml:space="preserve"><value>أدخل معرّفات الدورة والصنف والمستودع الموجودة. يعيد الخادم التحقق منها ولا تمنح حق الوصول.</value></data>
   <data name="ForecastEvaluate" xml:space="preserve"><value>تقييم الطرق</value></data>
   <data name="ForecastCandidates" xml:space="preserve"><value>مقارنة الطرق</value></data>
-  <data name="ForecastComparisonHelp" xml:space="preserve"><value>لا اختيار فائز أو ترتيب تلقائي. يكون WAPE غير معرّف إذا كان مقام الطلب الفعلي صفراً، ولا يُستبدل بمقياس آخر. الانحياز الموجب يعني توقعاً أقل من الواقع. كل نقطة بداية × أسبوع اختبار عينة مستقلة؛ وقد تُحسب الأسابيع المتداخلة أكثر من مرة.</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>لا اختيار فائز أو ترتيب تلقائي. يكون WAPE غير معرّف إذا كان مقام الطلب الفعلي صفرًا، ولا يُستبدل بمقياس آخر. الانحياز الموجب يعني توقعًا أقل من الواقع. كل نقطة بداية × أسبوع اختبار عينة مستقلة؛ وقد تُحسب الأسابيع المتداخلة أكثر من مرة.</value></data>
   <data name="ForecastPolicy" xml:space="preserve"><value>إصدار السياسة</value></data>
   <data name="ForecastMethod" xml:space="preserve"><value>اختيار الطريقة صراحةً</value></data>
   <data name="ForecastChooseMethod" xml:space="preserve"><value>اختر طريقة مؤهلة</value></data>
@@ -82,11 +82,11 @@
   <data name="ForecastOpenDraft" xml:space="preserve"><value>فتح المسودة المنشأة</value></data>
   <data name="ForecastCreated" xml:space="preserve"><value>حُفظ تشغيل التوقع والمسودة مع سجلات التدقيق الإلزامية.</value></data>
   <data name="ForecastSelectExplicitly" xml:space="preserve"><value>حدد سلسلة واحدة وقيّمها واختر طريقة مؤهلة صراحةً.</value></data>
-  <data name="ForecastInvalidScope" xml:space="preserve"><value>أدخل قيماً صالحة للشركة والدورة والصنف والمستودع وإصدار الدورة.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>أدخل قيمًا صالحة للشركة والدورة والصنف والمستودع وإصدار الدورة.</value></data>
   <data name="ForecastUnavailable" xml:space="preserve"><value>التحقق غير متاح. لم يُؤكد نجاح العملية. أعد المحاولة عند توفر المصدر.</value></data>
-  <data name="ForecastSessionExpired" xml:space="preserve"><value>انتهت الجلسة. سجّل الدخول مجدداً وأعد تحميل الصفحة.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>انتهت الجلسة. سجّل الدخول مجددًا وأعد تحميل الصفحة.</value></data>
   <data name="ForecastPermissionLost" xml:space="preserve"><value>هذا الإجراء غير متاح لحسابك. اطلب الصلاحية من المسؤول وأعد تحميل الصفحة.</value></data>
-  <data name="ForecastScopeLost" xml:space="preserve"><value>السجل أو السلسلة المختارة غير متاحة ضمن نطاقك. اخترها مجدداً بعد التحقق من الوصول.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>السجل أو السلسلة المختارة غير متاحة ضمن نطاقك. اخترها مجددًا بعد التحقق من الوصول.</value></data>
   <data name="ForecastConflict" xml:space="preserve"><value>تغيّرت الدورة أو الطلب. تحقق من الإصدار الأحدث وأعد التقييم.</value></data>
   <data name="ForecastSelectionRejected" xml:space="preserve"><value>لم تعد الطريقة أو المدخلات مؤهلة. أعد التقييم وأدخل السبب.</value></data>
   <data name="ForecastUndefined" xml:space="preserve"><value>غير معرّف</value></data>
@@ -96,7 +96,7 @@
   <data name="ForecastInsufficientEvents" xml:space="preserve"><value>أحداث الطلب الفعلي أو الأسابيع الإيجابية المختلفة غير كافية لطريقة كروستون.</value></data>
   <data name="ForecastMixedUnit" xml:space="preserve"><value>وحدات السجل مختلطة أو مفقودة؛ التحويل غير متحقق.</value></data>
   <data name="ForecastUntrustedHistory" xml:space="preserve"><value>تعذّر التحقق من موثوقية السجل أو اتساق وحداته.</value></data>
-  <data name="ForecastInvalidOutput" xml:space="preserve"><value>أنتجت الطريقة توقعاً غير صالح ولا يمكن اختيارها.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>أنتجت الطريقة توقعًا غير صالح ولا يمكن اختيارها.</value></data>
   <data name="ForecastReliableWeeks" xml:space="preserve"><value>الأسابيع الموثوقة</value></data>
   <data name="ForecastRealEvents" xml:space="preserve"><value>أحداث الطلب الفعلي</value></data>
   <data name="ForecastWape" xml:space="preserve"><value>نسبة WAPE</value></data>

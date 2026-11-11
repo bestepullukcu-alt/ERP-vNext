@@ -133,9 +133,11 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
             Builders<Role>.Filter.Eq(r => r.TenantId, tenantId)
         );
 
+        var now = DateTimeOffset.UtcNow;
         var update = Builders<Role>.Update
             .Set(r => r.IsDeleted, true)
-            .Set(r => r.UpdatedAt, DateTimeOffset.UtcNow)
+            .Set(r => r.DeletedAt, now)
+            .Set(r => r.UpdatedAt, now)
             .Set(r => r.UpdatedBy, deletedBy);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);

@@ -32,7 +32,7 @@ public sealed class LoadIndexBehaviorTests
         Assert.Contains("ajax: (data, callback) => { void loadRows(data, callback); },", _script);
         Assert.Contains("document.getElementById('loadsSkeleton')", _script);
         Assert.Contains("if (response.status === 403) { showDenied(); callback({ data: [] }); return; }", _script);
-        Assert.Contains("withReference(L.ListUnavailable, reference)", _script);
+        Assert.Contains("withReference(L.ListErrorState, reference)", _script); // 7211cf3cc: ListUnavailable → camp ListErrorState
         Assert.DoesNotContain("window.showToast?.(L.ErrPersistenceUnavailable", _script);
     }
 

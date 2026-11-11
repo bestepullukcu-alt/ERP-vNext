@@ -18,6 +18,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// withdrawn, and the signing port — a signature shows only the signer's own Active sample.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureSampleHttpMongoTests : IClassFixture<ESignatureTestHost>
 {
     private const string Samples = "api/v1/esign/samples";

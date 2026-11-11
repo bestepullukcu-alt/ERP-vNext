@@ -18,6 +18,13 @@ public sealed class ReturnReferenceTests
  public void Root_Unusable_ExactFailure(string value,int status,string code){var n=Good();if(value=="missing")n.Remove("lifecycleCorrelationId");else n["lifecycleCorrelationId"]=value=="null"?null:value;var ex=Assert.Throws<ReturnFailureException>(()=>Read(n));Assert.Equal(status,ex.Status);Assert.Equal(code,ex.Code);}
  [Theory][InlineData("sourceModule",502)][InlineData("shipmentId",503)][InlineData("status",503)]
  public void Reference_Omission_RequiredVersusOptionalDecisionField(string key,int status){var n=Good();n.Remove(key);Assert.Equal(status,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
+ // MOD-0183 DL-1 (SHIPMENT-BUNDLE 3.4.0): a shipment detail whose lines carry the new stock fields is still a valid
+ // return source; an unknown line property and a non-text value of a new field stay 502.
+ [Fact] public void Reference_ShipmentBundle340LineFields_AreAccepted()
+ {var n=Good();var line=n["lines"]![0]!.AsObject();line["skuLevel"]="Lsku";line["lotId"]="lot-1";line["fromLocationId"]=null;line["fefoBypassReason"]=null;line["issueTransactionId"]="9b7c0d1e-0000-4000-8000-000000000001";n["stockIssued"]=true;n["dispatchState"]="None";
+  Assert.Single(Read(n).Lines);
+  n=Good();n["lines"]![0]!["unknownField"]="x";Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);
+  n=Good();n["lines"]![0]!["skuLevel"]=5;Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
  [Fact] public void Reference_DuplicateOrNonpositiveLines_RejectsMalformed()
  {var n=Good();n["lines"]!.AsArray().Add(n["lines"]![0]!.DeepClone());Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);n=Good();n["lines"]![0]!["quantity"]="0";Assert.Equal(502,Assert.Throws<ReturnFailureException>(()=>Read(n)).Status);}
  [Fact] public async Task Reference_MockedTransport_OnlyShipmentGetAndTrustedScope()
@@ -98,4 +105,9 @@ public sealed class ReturnReferenceTests
  {var f=await ReturnTestFixture.New();var result=await f.Create(quantity);Assert.Equal(422,result.StatusCode);Assert.Equal("INVALID_RETURN_QUANTITY",result.ErrorCode);Assert.Equal(0,f.Observations);Assert.Equal(new long[5],await f.Counts());}
  [Fact]public async Task LocalDuplicateLines_RejectsBeforeReferenceLookup()
  {var f=await ReturnTestFixture.New();var result=await f.Create(lines:[new("1","1","EA"),new("1","1","EA")]);Assert.Equal(422,result.StatusCode);Assert.Equal("DUPLICATE_RETURN_LINE",result.ErrorCode);Assert.Equal(0,f.Observations);Assert.Equal(new long[5],await f.Counts());}
+ // MOD-0186 r10 §35.6 (RB-27): the 3.5.0 shipment's customerRef is read as given; null or absent gives null; a non-string is refused.
+ [Fact] public void CustomerRef_IsReadAsGiven_NullOrAbsentIsNull_NonStringRefused()
+ {var n=Good();n["customerRef"]="14900000-0000-4000-8000-000000000001";Assert.Equal("14900000-0000-4000-8000-000000000001",Read(n).CustomerRef);
+  n["customerRef"]=null;Assert.Null(Read(n).CustomerRef);n.Remove("customerRef");Assert.Null(Read(n).CustomerRef);
+  n["customerRef"]=7;Assert.Throws<ReturnFailureException>(()=>Read(n));}
 }

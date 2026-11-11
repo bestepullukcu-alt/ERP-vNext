@@ -21,6 +21,7 @@ namespace Diten.Platform.Application.Tests.Persistence;
 /// a real server is that the QUERY still has to survive, and any future move back to a server-side sort fails
 /// here rather than in front of a user.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class TaskCommentOrderMongoTests : IAsyncLifetime
 {
     private static readonly Guid TaskId = Guid.Parse("2c3896fc-1848-4539-8a99-774e72651b8a");

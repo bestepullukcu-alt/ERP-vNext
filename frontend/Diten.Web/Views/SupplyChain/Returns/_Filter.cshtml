@@ -14,12 +14,6 @@
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
 
                     @* Filter Chip: Status (single select; ShowAll omits the parameter — RU-SCR-05 keeps multi-select out) *@
-                    @* R-2 (SHIPMENT-BUNDLE 3.2.0): a REQUIRED scope, not an optional filter. The service takes
-                       exactly one X-Legal-Entity-Id per call, so there is no "show all" to offer. *@
-                    <div class="filter-chip filter-legal-entity">
-                        <select id="filterLegalEntity" class="form-select form-select-sm select2"
-                                data-placeholder="@SharedLocalizer["LegalEntity"]" required></select>
-                    </div>
                     <div class="filter-chip filter-status">
                         <label for="filterStatus" class="visually-hidden">@SharedLocalizer["Status"]</label>
                         <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
@@ -35,12 +29,10 @@
                         </select>
                     </div>
 
-                    @* Filter Chip: Shipment ID (UUID text, not a lookup) *@
+                    @* Filter Chip: Shipment (r10 §35.3 picker; sends the frozen shipmentId parameter) *@
                     <div class="filter-chip filter-shipment-id">
                         <label for="filterShipmentId" class="visually-hidden">@Localizer["ShipmentId"]</label>
-                        <input type="text" id="filterShipmentId" class="form-control form-control-sm" dir="ltr" autocomplete="off" spellcheck="false"
-                               placeholder="@Localizer["ShipmentId"]" aria-describedby="filterShipmentIdHelp" />
-                        <span id="filterShipmentIdHelp" class="visually-hidden">@Localizer["ShipmentIdHelp"]</span>
+                        <select id="filterShipmentId" class="form-select form-select-sm" data-placeholder="@Localizer["ShipmentSelect"]"></select>
                     </div>
 
                     <div class="ms-auto d-flex gap-3">

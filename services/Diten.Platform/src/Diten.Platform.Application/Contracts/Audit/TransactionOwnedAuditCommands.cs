@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Features.ModuleCatalog.Commands;
 using Diten.Platform.Application.Features.ModuleRegistration;
+using Diten.Platform.Application.Features.RecordCodes.Commands;
 using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions.Commands;
@@ -50,6 +51,8 @@ public static class TransactionOwnedAuditCommands
         typeof(DeactivateModuleCatalogItemCommand),
         typeof(DeleteModuleCatalogItemCommand),
         typeof(BulkDeleteModuleCatalogItemsCommand),
-        typeof(RegisterModuleManifestCommand)
+        typeof(RegisterModuleManifestCommand),
+        // record codes — MOD-0040-FU02, CT kararı 2026-11-02, AUD-001 §4.4
+        typeof(AlignRecordCodeGroupPrefixCommand)
     };
 }

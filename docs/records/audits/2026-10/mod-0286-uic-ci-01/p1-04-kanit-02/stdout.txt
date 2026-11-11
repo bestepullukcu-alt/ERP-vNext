@@ -1,0 +1,164 @@
+BASE=0a69c97120c2659781d6891a482b090491ec0953 IS=a37ae998891e454343d2df1e04f4f2663d8d019a HEAD=9f3f100baff7bd4026458cfd025cbfd48f2fad79 CI=40678833945
+CT-2
+  paket sha256 = 87f46dcf035555c7c9c1b02a5b45579c66385a082fd7eeb36a2e49cd3e98dfe3 (beklenen 87f46dcf035555c7c9c1b02a5b45579c66385a082fd7eeb36a2e49cd3e98dfe3)
+CT-2 sonuç=geçti (zorunlu)
+CT-3
+  BASE <= IS <= HEAD
+scripts/uic_changed_pages.py
+tests/ui-compliance-baseline.tsv
+  izinli dışında değişen dosya = 0 (beklenen 0)
+  işten sonra değişen seçici = 0 (beklenen 0)
+  kanıt betiği BASE ile aynı
+CT-3 sonuç=geçti (zorunlu)
+AC-11
+  yok: frontend/Diten.Web/Views/Platform/UiGovernance
+  yok: services/Diten.Platform/src/Diten.Platform.Application/Features/UiGovernance
+AC-11 sonuç=geçti (zorunlu)
+AC-19
+taban tests/ui-compliance-baseline.tsv geçerli
+CI-1 satır=0 eşleşme=0
+CI-2 satır=17 eşleşme=42
+CI-3 satır=1182 eşleşme=0
+CI-4 satır=76 eşleşme=77
+CI-5 satır=16 eşleşme=16
+CI-6 satır=94 eşleşme=249
+CI-7 satır=8 eşleşme=13
+CI-8 satır=0 eşleşme=0
+CI-9 satır=125 eşleşme=2
+CI-10 satır=107 eşleşme=343
+CI-11 satır=0 eşleşme=0
+CI-12 satır=22 eşleşme=0
+CI-13 satır=0 eşleşme=0
+CI-14 satır=376 eşleşme=0
+CI-15 satır=0 eşleşme=0
+bilgi satır=2 eşleşme=0
+toplam satır=2025 eşleşme=742
+  --check-baseline çıkış = 0 (beklenen 0)
+  başlık = page	check	instance	count	reason	fu	owner (beklenen page	check	instance	count	reason	fu	owner)
+  --draft-baseline çıkış = 0 (beklenen 0)
+  taslaktaki bilgi: satırı = 2 (beklenen 2)
+  tabanda CI-2 satırı var = evet (beklenen evet)
+  tabanda CI-3 satırı var = evet (beklenen evet)
+  tabanda CI-4 satırı var = evet (beklenen evet)
+  tabanda CI-5 satırı var = evet (beklenen evet)
+  tabanda CI-6 satırı var = evet (beklenen evet)
+  tabanda CI-7 satırı var = evet (beklenen evet)
+  tabanda CI-9 satırı var = evet (beklenen evet)
+  tabanda CI-10 satırı var = evet (beklenen evet)
+  tabanda CI-12 satırı var = evet (beklenen evet)
+  tabanda CI-14 satırı var = evet (beklenen evet)
+  check sütununda CI-6v/CI-6j/CI-9p yok (desen anahtarı check değildir, satır 610) = 0 (beklenen 0)
+  taban (page, check, instance, count) bugünkü taslakla aynı: 2023 satır
+  bilgi: satırı = 2 (beklenen 2)
+  CI başına satır ve eşleşme toplamı:
+    CI-10 satır=107 eşleşme=343
+    CI-12 satır=22 eşleşme=0
+    CI-14 satır=376 eşleşme=0
+    CI-2 satır=17 eşleşme=42
+    CI-3 satır=1182 eşleşme=0
+    CI-4 satır=76 eşleşme=77
+    CI-5 satır=16 eşleşme=16
+    CI-6 satır=94 eşleşme=249
+    CI-7 satır=8 eşleşme=13
+    CI-9 satır=125 eşleşme=2
+    bilgi: RC-6 AddNewGoldenReferenceSlim satır=1 eşleşme=0
+    bilgi: reference not ready (DEV-0001 status: in-progress) satır=1 eşleşme=0
+  sahip kararı yazmayan satır = 0 (beklenen 0)
+AC-19 sonuç=geçti (zorunlu)
+klon çıkış 0 (9f3f100ba)
+AC-17a
+PASS modes: ['--self-test', '--check-baseline'] -> exit 2
+PASS modes: ['--base'] -> exit 2
+PASS modes: ['--all'] -> exit 2
+PASS no write: every throw-away repository is clean after the runs (no file, no __pycache__)
+self-test: 67/67 passed
+  --self-test çıkış = 0 (beklenen 0)
+  koşu ac17a-ara --base 9f3f100ba: çıkış 1
+  çıkış 0|1
+AC-17a sonuç=geçti (zorunlu)
+AC-18a
+  koşu ac18a-sabotaj --base 431b71774: çıkış 1
+    a sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18a-geri --base f7cada9f1: çıkış 0
+    a geri alma çıkış = 0 (beklenen 0)
+AC-18a sonuç=geçti (zorunlu)
+AC-18b1
+  Meetings/Report CI-5 satırı (count 1) = 1 (beklenen 1)
+  koşu ac18b1-sabotaj --base 2e3a75903: çıkış 1
+    b1 sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18b1-geri --base 744779164: çıkış 0
+    b1 geri alma çıkış = 0 (beklenen 0)
+AC-18b1 sonuç=geçti (zorunlu)
+AC-18b2
+  koşu ac18b2-hazirlik --base 3fc842561: çıkış 0
+  b2 hazırlık çıkış = 0 (beklenen 0)
+  koşu ac18b2-sabotaj --base 2cf3aabe6: çıkış 1
+    b2 sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18b2-geri --base 10b3b1f8f: çıkış 0
+    b2 geri alma çıkış = 0 (beklenen 0)
+AC-18b2 sonuç=geçti (zorunlu)
+AC-18c
+  koşu ac18c-sabotaj --base 774b6a262: çıkış 1
+    c sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18c-geri --base cf10311ee: çıkış 0
+    c geri alma çıkış = 0 (beklenen 0)
+AC-18c sonuç=geçti (zorunlu)
+AC-18d
+  koşu ac18d-sabotaj --base 0326f0f73: çıkış 1
+    d sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18d-geri --base 4ba16d17f: çıkış 0
+    d geri alma çıkış = 0 (beklenen 0)
+AC-18d sonuç=geçti (zorunlu)
+AC-18e
+  koşu ac18e-sabotaj --base d42b71646: çıkış 1
+    e sabotaj çıkış = 1 (beklenen 1)
+  koşu ac18e-geri --base 218189792: çıkış 0
+    e geri alma çıkış = 0 (beklenen 0)
+AC-18e sonuç=geçti (zorunlu)
+AC-20
+16:      - 'scripts/uic_changed_pages.py'
+39:          python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt
+  FARK workflow'daki seçici çağrısı = 2 (beklenen 1)
+AC-20 sonuç=kaldı (zorunlu)
+AC-17b
+Unknown JSON field: "path"
+Available fields:
+  attempt
+  conclusion
+  createdAt
+  databaseId
+  displayTitle
+  event
+  headBranch
+  headSha
+  jobs
+  name
+  number
+  startedAt
+  status
+  updatedAt
+  url
+  workflowDatabaseId
+  workflowName
+  FARK CI head sha =  (beklenen 9f3f100baff7bd4026458cfd025cbfd48f2fad79)
+  FARK CI sonuç =  (beklenen success)
+  EKSİK: '.github/workflows/ui-compliance.yml'
+  artefakt docs/records/audits/2026-10/mod-0286-uic-ci-01/p1-04-kanit-02/ac17b-artefakt/uic-selector-stdout/uic-selector-stdout.txt sha256 c1aff2f3c5ebd1ae6ce2def6d186fd04fed3ba15a3e25a41a37eaf4bcd91eacb
+AC-17b sonuç=kaldı (zorunlu)
+ÖZET
+CT-2 zorunlu geçti
+CT-3 zorunlu geçti
+AC-11 zorunlu geçti
+AC-19 zorunlu geçti
+AC-17a zorunlu geçti
+AC-18a zorunlu geçti
+AC-18b1 zorunlu geçti
+AC-18b2 zorunlu geçti
+AC-18c zorunlu geçti
+AC-18d zorunlu geçti
+AC-18e zorunlu geçti
+AC-20 zorunlu kaldı
+AC-17b zorunlu kaldı
+  zorunlu AC-17b geçmedi
+  zorunlu AC-20 geçmedi
+zorunlu geçti 11 / 13

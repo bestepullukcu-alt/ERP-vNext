@@ -67,14 +67,13 @@ public sealed class TraceController : CustomBaseController
     }
 
     [HttpPatch("lots/{lotId}")]
+    [HasAnyPermission(TracePermissions.LotsUpdate, TracePermissions.LotsUpdateReleased)]
     public async Task<IActionResult> UpdateLot(string lotId, CancellationToken cancellationToken)
     {
+        // WP-MVP1-FIX-LIVE3: either key opens the action (the attribute); WHICH one the change needs follows the lot's status — read with the
+        // lot by the request reader, a named exception (AuthorizationGuardTests.BodyKeyedActions).
         var canDraft = Holds(TracePermissions.LotsUpdate);
         var canReleased = Holds(TracePermissions.LotsUpdateReleased);
-        if (!canDraft && !canReleased)
-        {
-            return ContractFailure(StatusCodes.Status403Forbidden, null, "The caller lacks the permission required for this operation.");
-        }
 
         var read = await TraceRequestReader.ReadUpdateAsync(
             Request.Body, lotId, Request.Headers[InventoryContract.IfMatchHeader].ToString(), canDraft, canReleased, cancellationToken);

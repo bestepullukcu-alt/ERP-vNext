@@ -8,9 +8,12 @@ public static class PvgIntakeDraftValidator
     private const int ReporterContactSummaryMaxLength = 256;
     private const int PatientSubjectCodeMaxLength = 64;
     private const int AdverseEventNarrativeMaxLength = 8000;
-    private const int SuspectProductTextMaxLength = 512;
+    private const int ProductNameAsReportedMaxLength = 512;
+    private const int LotNumberMaxLength = 64;
+    private const int ReporterTextMaxLength = 128;
     private const int TriageReasonMaxLength = 1000;
     private const int EvidenceLinkReferencesMaxCount = 20;
+    private const int ProductLinesMaxCount = 20;
     private static readonly DateTimeOffset EarliestSupportedReceivedAtUtc = new(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly EarliestSupportedEventOnsetDate = new(1900, 1, 1);
 
@@ -41,8 +44,19 @@ public static class PvgIntakeDraftValidator
             request.PatientSubjectCode,
             request.EventOnsetDate,
             request.AdverseEventNarrative,
-            request.SuspectProductText,
             request.EvidenceLinkReferences);
+        AddIntakeFieldRuleFailures(
+            failures,
+            request.ReceivedAtUtc,
+            request.AwarenessAtUtc,
+            request.CompanyRecipientPersonId,
+            request.EventCountry,
+            request.ReportType,
+            request.ReporterNameOrInitials,
+            request.ReporterProfession,
+            request.ReporterCountry);
+        AddProductLineFailures(failures, request.ProductLines);
+        AddReporterSelectionFailures(failures, request.ReporterSelectionDirectory, request.ReporterSelectionId);
 
         return ToResult(failures);
     }
@@ -67,8 +81,27 @@ public static class PvgIntakeDraftValidator
             request.PatientSubjectCode,
             request.EventOnsetDate,
             request.AdverseEventNarrative,
-            request.SuspectProductText,
             request.EvidenceLinkReferences);
+        AddIntakeFieldRuleFailures(
+            failures,
+            request.ReceivedAtUtc,
+            request.AwarenessAtUtc,
+            request.CompanyRecipientPersonId,
+            request.EventCountry,
+            request.ReportType,
+            request.ReporterNameOrInitials,
+            request.ReporterProfession,
+            request.ReporterCountry);
+        AddProductLineFailures(failures, request.ProductLines);
+        AddReporterSelectionFailures(failures, request.ReporterSelectionDirectory, request.ReporterSelectionId);
+
+        if (request.RemoveReporterLink == true &&
+            (!IsBlank(request.ReporterSelectionDirectory) || !IsBlank(request.ReporterSelectionId)))
+        {
+            failures.Add(new PvgValidationFailure(
+                PvgIntakeField.RemoveReporterLink,
+                PvgValidationReasonCodes.ReporterLinkRemovalWithSelection));
+        }
 
         return ToResult(failures);
     }
@@ -180,7 +213,6 @@ public static class PvgIntakeDraftValidator
         string? patientSubjectCode,
         DateOnly? eventOnsetDate,
         string? adverseEventNarrative,
-        string? suspectProductText,
         IReadOnlyList<string>? evidenceLinkReferences)
     {
         if (TrimmedLengthExceeds(sourceReference, SourceReferenceMaxLength))
@@ -213,16 +245,184 @@ public static class PvgIntakeDraftValidator
             failures.Add(Invalid(PvgIntakeField.AdverseEventNarrative));
         }
 
-        if (TrimmedLengthExceeds(suspectProductText, SuspectProductTextMaxLength))
-        {
-            failures.Add(Invalid(PvgIntakeField.SuspectProductText));
-        }
-
         if (evidenceLinkReferences is { Count: > EvidenceLinkReferencesMaxCount })
         {
             failures.Add(Invalid(PvgIntakeField.EvidenceLinkReferences));
         }
     }
+
+    private static void AddIntakeFieldRuleFailures(
+        ICollection<PvgValidationFailure> failures,
+        DateTimeOffset? receivedAtUtc,
+        DateTimeOffset? awarenessAtUtc,
+        string? companyRecipientPersonId,
+        string? eventCountry,
+        string? reportType,
+        string? reporterNameOrInitials,
+        string? reporterProfession,
+        string? reporterCountry)
+    {
+        if (awarenessAtUtc is null)
+        {
+            failures.Add(Missing(PvgIntakeField.AwarenessAtUtc));
+        }
+        else if (!IsSupportedReceivedAt(awarenessAtUtc.Value))
+        {
+            failures.Add(Invalid(PvgIntakeField.AwarenessAtUtc));
+        }
+        else if (receivedAtUtc is { } receivedAt && awarenessAtUtc.Value > receivedAt)
+        {
+            failures.Add(new PvgValidationFailure(
+                PvgIntakeField.AwarenessAtUtc,
+                PvgValidationReasonCodes.AwarenessAfterReceived));
+        }
+
+        // Fail closed while the MOD-0288 read contract is absent: an id that cannot be verified is not stored.
+        if (!IsBlank(companyRecipientPersonId))
+        {
+            failures.Add(ContractUnavailable(PvgIntakeField.CompanyRecipientPersonId));
+        }
+
+        // While the country source is unsettled (EK-1) only the PVG "unknown" value passes.
+        if (IsBlank(eventCountry))
+        {
+            failures.Add(Missing(PvgIntakeField.EventCountry));
+        }
+        else if (!IsUnknownCountry(eventCountry))
+        {
+            failures.Add(CountrySourceUnsettled(PvgIntakeField.EventCountry));
+        }
+
+        if (!IsBlank(reporterCountry) && !IsUnknownCountry(reporterCountry))
+        {
+            failures.Add(CountrySourceUnsettled(PvgIntakeField.ReporterCountry));
+        }
+
+        if (IsBlank(reportType))
+        {
+            failures.Add(Missing(PvgIntakeField.ReportType));
+        }
+        else if (!PvgIntakeOptionSets.ReportTypes.Contains(reportType!.Trim()))
+        {
+            failures.Add(Invalid(PvgIntakeField.ReportType));
+        }
+
+        if (TrimmedLengthExceeds(reporterNameOrInitials, ReporterTextMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.ReporterNameOrInitials));
+        }
+
+        if (TrimmedLengthExceeds(reporterProfession, ReporterTextMaxLength))
+        {
+            failures.Add(Invalid(PvgIntakeField.ReporterProfession));
+        }
+    }
+
+    private static void AddProductLineFailures(
+        List<PvgValidationFailure> failures,
+        IReadOnlyList<PvgIntakeProductLineRequest?>? productLines)
+    {
+        if (productLines is null)
+        {
+            return;
+        }
+
+        if (productLines.Count > ProductLinesMaxCount)
+        {
+            failures.Add(Invalid(PvgIntakeField.ProductLines));
+        }
+
+        var lineFailures = new List<PvgValidationFailure>();
+        foreach (var line in productLines)
+        {
+            if (line is null)
+            {
+                lineFailures.Add(Invalid(PvgIntakeField.ProductLines));
+                continue;
+            }
+
+            if (IsBlank(line.ProductRole))
+            {
+                lineFailures.Add(Missing(PvgIntakeField.ProductRole));
+            }
+            else if (!PvgIntakeOptionSets.ProductRoles.Contains(line.ProductRole!.Trim()))
+            {
+                lineFailures.Add(Invalid(PvgIntakeField.ProductRole));
+            }
+
+            if (IsBlank(line.ProductNameAsReported))
+            {
+                lineFailures.Add(Missing(PvgIntakeField.ProductNameAsReported));
+            }
+            else if (TrimmedLengthExceeds(line.ProductNameAsReported, ProductNameAsReportedMaxLength))
+            {
+                lineFailures.Add(Invalid(PvgIntakeField.ProductNameAsReported));
+            }
+
+            if (TrimmedLengthExceeds(line.LotNumber, LotNumberMaxLength))
+            {
+                lineFailures.Add(Invalid(PvgIntakeField.LotNumber));
+            }
+
+            // Fail closed while the MOD-0290 read contract is absent.
+            if (!IsBlank(line.GlobalProductId))
+            {
+                lineFailures.Add(ContractUnavailable(PvgIntakeField.GlobalProductId));
+            }
+
+            if (!IsBlank(line.PresentationGskuId))
+            {
+                lineFailures.Add(IsBlank(line.GlobalProductId)
+                    ? new PvgValidationFailure(
+                        PvgIntakeField.PresentationGskuId,
+                        PvgValidationReasonCodes.ProductGskuRequiresGlobalProduct)
+                    : ContractUnavailable(PvgIntakeField.PresentationGskuId));
+            }
+        }
+
+        foreach (var failure in lineFailures.Distinct())
+        {
+            if (!failures.Contains(failure))
+            {
+                failures.Add(failure);
+            }
+        }
+    }
+
+    private static void AddReporterSelectionFailures(
+        ICollection<PvgValidationFailure> failures,
+        string? reporterSelectionDirectory,
+        string? reporterSelectionId)
+    {
+        var hasDirectory = !IsBlank(reporterSelectionDirectory);
+        var hasId = !IsBlank(reporterSelectionId);
+        if (hasDirectory != hasId)
+        {
+            failures.Add(new PvgValidationFailure(
+                hasDirectory ? PvgIntakeField.ReporterSelectionId : PvgIntakeField.ReporterSelectionDirectory,
+                PvgValidationReasonCodes.ReporterSelectionIncomplete));
+            return;
+        }
+
+        if (!hasDirectory)
+        {
+            return;
+        }
+
+        // Fail closed while the MOD-0150 (Crm) and MOD-0288 (PersonDirectory) read contracts are absent.
+        failures.Add(PvgIntakeOptionSets.ReporterSelectionDirectories.Contains(reporterSelectionDirectory!.Trim())
+            ? ContractUnavailable(PvgIntakeField.ReporterSelectionDirectory)
+            : Invalid(PvgIntakeField.ReporterSelectionDirectory));
+    }
+
+    private static bool IsUnknownCountry(string? value) =>
+        string.Equals(value?.Trim(), PvgIntakeOptionSets.UnknownCountry, StringComparison.Ordinal);
+
+    private static PvgValidationFailure ContractUnavailable(PvgIntakeField field) =>
+        new(field, PvgValidationReasonCodes.OwnerReadContractUnavailable);
+
+    private static PvgValidationFailure CountrySourceUnsettled(PvgIntakeField field) =>
+        new(field, PvgValidationReasonCodes.CountrySourceUnsettled);
 
     private static PvgValidationFailure Missing(PvgIntakeField field) =>
         new(field, PvgValidationReasonCodes.RequiredFieldMissing);

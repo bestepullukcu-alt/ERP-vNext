@@ -75,6 +75,7 @@ public sealed class ESignReauthWindowRepository : RepositoryBase<ESignReauthWind
             .Set(x => x.RevokedAtUtc, null)
             .Set(x => x.RevokedReason, null)
             .Set(x => x.IsDeleted, false)
+            .Set(x => x.DeletedAt, null)
             .Set(x => x.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
 
         await Collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, ct);

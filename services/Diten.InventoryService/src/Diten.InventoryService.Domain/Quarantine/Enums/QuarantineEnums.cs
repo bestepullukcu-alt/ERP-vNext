@@ -12,7 +12,10 @@ public enum HoldSource
     Manual,
     Retest,
     Rework,
-    OtherInbound
+    OtherInbound,
+
+    /// <summary>QUARANTINE 1.3.0 (MOD-0177 CT-R3): taken out of use for a recall case (sourceDocument MOD-0177 / RECALL_CASE).</summary>
+    Recall
 }
 
 /// <summary>"Bekliyor" / "İncelemede".</summary>
@@ -27,7 +30,10 @@ public enum HoldStatus
 {
     Open,
     DecisionPending,
-    Decided
+    Decided,
+
+    /// <summary>QUARANTINE 1.4.0 (MOD-0175-FU01): the source movement was reversed — closed without a decision (a record state, not a stock status).</summary>
+    Voided
 }
 
 public enum DecisionKind
@@ -69,7 +75,10 @@ public enum DecisionState
     Withdrawn,
     StartFailed,
     ApplyFailed,
-    FourEyesViolation
+    FourEyesViolation,
+
+    /// <summary>QUARANTINE 1.4.0 (MOD-0175-FU01): closed with its record when the source movement was reversed; absorbing (pack FU01 §8.6).</summary>
+    Voided
 }
 
 /// <summary>The insert-only events of a decision (pack §3 <c>QuarantineDecisionEvent</c>).</summary>
@@ -85,7 +94,10 @@ public enum DecisionEventKind
     Applied,
     ApplyFailed,
     FourEyesViolation,
-    Withdrawn
+    Withdrawn,
+
+    /// <summary>MOD-0175-FU01: the record closed on a source reversal; once-only, and once present the state stays <see cref="DecisionState.Voided"/>.</summary>
+    Voided
 }
 
 /// <summary>Outcome the approval port reports for a decision (Q1: the internal test port; Q2: the Workflow instance).</summary>
@@ -110,7 +122,26 @@ public enum BlockedStatus
 {
     Open,
     Closed,
-    SampleRetained
+    SampleRetained,
+
+    /// <summary>QUARANTINE 1.4.0 (MOD-0175-FU01, Q-01 = A): the source movement was reversed; <see cref="Closed"/> is not reused.</summary>
+    Voided
+}
+
+/// <summary>MOD-0175-FU01: why a record was voided — only a source reversal (Q-05 = A: no manual void).</summary>
+public enum VoidReason
+{
+    SourceReversed
+}
+
+/// <summary>MOD-0175-FU01 (pack §8.3): why a source reversal could not close the record — "Kaynak geri alındı · uyuşmazlık".</summary>
+public enum SourceReversalCause
+{
+    Decided,
+    LinesPosted,
+    QuantityChanged,
+    OwnMovementReversed,
+    LotChanged
 }
 
 public enum HistorySubject
@@ -139,5 +170,11 @@ public enum HistoryAction
     SampleRetained,
 
     /// <summary>QUARANTINE 1.2.0 (FU-0175-ITEM-01): <c>updateHold</c> changed the analysis note / attachment references.</summary>
-    NoteUpdated
+    NoteUpdated,
+
+    /// <summary>QUARANTINE 1.4.0 (MOD-0175-FU01): the record was voided because its source movement was reversed.</summary>
+    SourceReversed,
+
+    /// <summary>QUARANTINE 1.4.0 (MOD-0175-FU01): the source movement was reversed but the record could not close — marked.</summary>
+    SourceReversalConflict
 }

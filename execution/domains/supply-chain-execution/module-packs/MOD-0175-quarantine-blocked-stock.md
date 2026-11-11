@@ -1575,6 +1575,68 @@ actor binding (ours), tolerant `StartedByUserId` map, `SchemaProfile.ESignature 
 now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU-SYNC1-ENV** (main's tests need `DITEN_PLATFORM_TEST_MONGO_URI`,
 `AUTH_COMPOSITION_GUARD_MONGO_URI`, `DevSeeds:MockUsers` for seeded users — every future prompt states them).
 
+### FIX-LIVE1 — Karantina Ayarları sample location / lot picker (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Fix.**
+  - The sample warehouse / location options had value null (they read `id`) and now use `LocationOptions` (`locationId`).
+  - Found while measuring: the lot picker read `id`, but TRACE `LotRef.lotId` (trace.openapi.yaml:291) → fixed to `lotId`.
+- **Tests and sabotage.** (b) ×3; sabotage s2 → red.
+- **FU-0175-UI-MANUALHOLD-01 (not done).** There is no UI button that quarantines arbitrary stock; `quarantineStock` exists only in
+  the retest queue (Retest.cshtml:14, retest.js:4).
+
+### SEC-PROXY1 — `/Quarantine/api/{**everything}` path boundary (WP-MVP1-SEC-PROXY1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-sec-proxy1` from `9362c0402`, commits `717092d0b` (fix) + `655103dca` (tests), local only. Evidence `docs/records/audits/2026-10/mvp1-sec-proxy1-evidence-2026-10-14.md`.
+
+- **Finding.** Same pattern as MOD-0176: `/Quarantine/api/..%5Clocations` reached `/api/locations`. `QuarantineController.ProxyAsync` now builds
+  the path with `ProxyPath.TryBuild` (1 line). All 20 contract paths of `quarantine.openapi.yaml` + `lots/{lotId}/quality-status` still forwarded.
+- **Helper.** `frontend/Diten.Web/Services/Proxy/ProxyPath.cs` `TryBuild(prefix, everything, out path)`: bounded repeated percent-decode (5),
+  refuses `.`/`..` segments, `\`, `%2F`/`%5C`/`%2E`, control chars, `//`/scheme/`@`, anything outside `A-Z a-z 0-9 - _ ~ . /`, and a final
+  `Uri` prefix check → 400 `INVALID_PROXY_PATH` (`details.reason`), nothing sent to the gateway. Query string forwarded unchanged.
+- **Tests.** `Diten.Web.Tests/Security/**`: 528 attack rows (6 proxies, CT handoff 19 + 29) → 400 and no gateway call; 154 legitimate rows read
+  from the contracts / Platform routes → forwarded under the prefix; helper units; architecture guard over every `{**x}` action. Web 1468 → **2199 / 2199**,
+  architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
+- **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
+  `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+
+### FIX-QUI1 — Bloke Stok Web düzeltmeleri (WP-MVP1-FIX-QUI1, 2026-10-14, agent result, pending CT) — dal `fix/mvp1-qui1` (`1f904aa83`), commit'ler `6ff3c638b` (fix) + `4a08ad452` (test), yalnız yerel. Kanıt `docs/records/audits/2026-10/mvp1-fix-qui1-evidence-2026-10-14.md`.
+
+- **(1) Blokeyi kaldır penceresi.** Gövde `subtext` yerine pencerenin işaretleme kapısı `subtextHtml` ile veriliyor (sabit şablon, konu `textContent` ile); ham `<div class=…>` görünmüyor. Aynı ailede 6 çift kaçış (`subtext: esc(…)`: İncelemeyi tamamla, Yeniden uygula, Geri çek, İncelemeye al, Yeniden test, Şablon) düzeltildi. Quarantine dışı aynı hata: `Traceability/Lots/status.js:86` → FU-QUI1-LOTSTATUS.
+- **(2) Stoğu bloke et.** Satır seçimi yazılan miktarı değiştirmiyor (boşsa satır miktarı öneri); "Kullanılabilir: 200 EA" ipucu; satır miktarını aşan miktar alan hatasıyla engelleniyor, istek gitmiyor.
+- **(3) Liste.** `list/blocked` varsayılan `status=Open`; Durum filtresi Açık / Kapandı / Numune saklandı / Tümü; Open dışı kayıtta durum etiketi, işlem yok; sekme rozeti yalnız açık kayıtlar. 6 yeni anahtar 7 dilde.
+- **Sonuç.** Web 2272 → **2280 / 2280**; build 0 hata, 0 yeni uyarı. Sabotaj s1–s4 kırmızı, özgün baytlar geri yazıldı, yeşil. Önizleme kendi portunda (5011 + sahte gateway 5112) HTTP ile doğrulandı; ekran görüntüsü alınamadı (kanıt §7).
+- **FIX-QUI1 CT-ACCEPTED (2026-10-14).** Read: unblock body via `subtextHtml` from the constant template with `textContent` values (no XSS path); the global confirm escapes `subtext` itself (`_GlobalConfirmation.cshtml:260`), so dropping the six `esc(...)` wrappers is correct, not a hole. CT trial merge on the MVP-1 tip `9729409e0`: Web **2280/2280**. **CT sabotage:** `retest.js:44` back to `subtext: esc(…` (and, by accident, an unbalanced parenthesis) → all 40 Quarantine Web tests stay GREEN — the six double-escape fixes are untested and `retest.js` is loaded by no test (a syntax error passes) → **FU-QUI1-ESC-TEST** (a guard: no `subtext: esc(` in Quarantine JS + every Quarantine page script parses). The three requested fixes are each pinned (agent s1–s4). D-1 (one line in the shared vitest list) accepted; D-3 accepted; FU-QUI1-LOTSTATUS (`Traceability/Lots/status.js:86` same outerHTML bug). Merged `--no-ff` into MVP-1; live after the owner Web restart (approval).
+
+**WP-MVP1-FU-CLEAN1 — agent result, pending CT (2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-fu-clean1-evidence-2026-10-19.md`.
+- **`3edb89a65` FU-QUI1-ESC-TEST + FU-QUI1-LOTSTATUS bekçisi (kapandı):** `web-scripts-guard.test.mjs` (köprü `WebScriptsGuardNodeTests`) — her sayfa script'i ayrışır (742 klasik + 5 modül, paket yok), MVP-1 modüllerinde onay METİN seçenekleri kaçışsız ve işaretlemesiz, gövdeler `subtextHtml`.
+- **`9be3f5767` FU-0175-UI-THEME-01 (kapandı):** pasif sekme `var(--bs-paper-bg)` (koyu temada #2b2c40, beyaz değil — önizlemede ölçüldü); liste filtrelerinde `data-placeholder`.
+- **`2e11996bc` + `909918b79` FU-0175-UI-MANUALHOLD-01 (kapandı):** kuyrukta "Stoğu karantinaya al" yalnız `quarantine.holds.create` ile (UAS-001); quarantineStock mode Manual tek kova; miktar ≤ eldeki; onay gövdesi `subtextHtml`, gerekçe ≥ 10 zorunlu; UXH-001 yardımı 7 dilde; 375 px taşma yok. Önizleme bulgusu: kuyruk sayfasında antiforgery belirteci yoktu (POST 400) → modal partial'ında; önizlemede KRN-2026-0004 açıldı.
+- **`fff2bfe0f` FU-WEB-CONTRACT-FAKES:** `QuarantinePeopleTests` sahtesi bağlandı — tutma ayrıntısı `QH-…` numarası ve eksik 18 üye, ayarlar `{}` sözleşmeye aykırıydı → tam HoldDetail (`KRN-2026-0001`) ve tam Settings.
+- **Paylaşılan kişi seçici:** `QuarantinePeople.SearchPath / Options` (MOD-0177 plan sorumlusu için eklendi; AuthService lookup, kiracı token'dan).
+
+**WP-MVP1-NAMES1 — hareket izinde kaydeden (agent result, pending CT, 2026-10-19).** Kanıt `docs/records/audits/2026-10/mvp1-names1-evidence-2026-10-19.md`.
+- **`72a36e273`:** tutma ve bloke ayrıntısının hareket izi `MovementLink.byUserName` (var olan isteğe bağlı QUARANTINE alanı; bugüne dek hiç dolmuyordu) = kayıt anındaki ad (merkezi denetim kuyruğu, aynı correlation + kişi + şirket), iz başına tek okuma. QUARANTINE sözleşmesi değişmedi.
+- **`f1f2d990a` Web:** ad yoksa hücre 7 dilde "Bilinmeyen kullanıcı" (`Quarantine.Details.Moves.UnknownUser`). O-ITEM-3 / FU-0173-UI-USER-01 kapandı (MOD-0173-FU01 notu).
+
+**WP-MVP1-FU-CLEAN2 — kişi kuralı ve yardım paneli (agent result, pending CT, 2026-10-19).** Dal `feature/sce/wp-mvp1-fu-clean2` (MVP-1 ucu `60f5d2b2f`, SYNC3), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fu-clean2-evidence-2026-10-19.md`.
+- **Sahip kararı D-KAR-1 (2026-10-19) → A:** Karantina'da bilinmeyen kişi 7 dilde "Bilinmeyen kullanıcı"; kimlik yalnız `title`'da; kısa kimlik gösterimi (FU-0175-Q5-02) kaldırıldı; tüm ekranlarda tek kural — `QuarantineUi.person / personHtml`, ortak `StockMovementPeople` kuralının (people.js) üstünde, kopya yok.
+- Hareket izi `MovementLink.byUserName` artık saklı adı önce okur (FU-0173-MOV-ACTORNAME); karantina giriş süpürücüsünün kaydettiği hareket girişin kaydedeninin adını taşır.
+- Yardım paneli: 8 sayfanın metni (7 dil), her görünüm kendi kodunu söyler. "Stoğu karantinaya al" modal yardımı (CLEAN1 g) modalda kaldı.
+- **Sayılar:** Web 3780 / 3782 → 3929 / 3931 (yalnız 2 SafetyStock kırmızısı, main'den), Inventory 1302 + 4 → 1310 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 7 / 7 sabotaj.
+**DCP-002 (CT, 2026-10-20).** The verifier ran with Python 3.12.10 + openpyxl 3.1.5: `verify_module_id.py . --check-id MOD-0175 --name "Quarantine & Blocked Stock"` → OK (proven against Blueprint/registry) → **W-0175-01 closed**.
+
+
+**WP-MVP1-FIX-LIVE3 — liste ve sekme metinleri (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (MVP-1 ucu `03c697e1a`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md`.
+- Kuyruk, Bloke, Yeniden test ve Ayarlar listeleri ortak liste sözcüklerini 7 dilde alır (arama ipucu artık "Search..." değil); `_Header` sekmeleri `text-none`. Karantina gün hesabı (yeniden test / imha tarihi) UTC — MOD-0176 ASSUMPTION-0176-05 ile aynı çizgi, değişmedi.
+- **Sayılar:** Web 3929 / 3931 → 3962 / 3964 (yalnız 2 SafetyStock kırmızısı), Inventory 1310 + 4 → 1311 + 4, mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 6 / 6 sabotaj.
+
+**WP-MVP1-FIX-LIVE3 (ek) — karar uçlarının anahtarı öznitelikte (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live3` (ek maddeler e / f), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live3-evidence-2026-10-20.md` (§7).
+- `createDecision` ve `submitDecision` `[HasAnyPermission(decisions.create, blocked.dispose, blocked.unblock)]` taşır; gövdedeki "üçünden biri" kontrolü kalktı. `createDecision`'da hangi anahtarın gerektiği kararın türüne bağlı (§4.6) — adıyla istisna (`AuthorizationGuardTests.BodyKeyedActions`). Davranış aynı: her anahtar geçer, anahtarsız 403 (aynı gövde), anonim 401.
+
+**WP-MVP1-FIX-LIVE4 — FU-0175-BLOCK-QTY kapandı, FU-0175-HELP-CHIPS ölçüldü (agent result, pending CT, 2026-10-20).** Dal `feature/sce/wp-mvp1-fix-live4` (MVP-1 ucu `c654429ca`), yerel, push yok. Kanıt `docs/records/audits/2026-10/mvp1-fix-live4-evidence-2026-10-20.md`.
+- "Stoğu bloke et": satır seçimi miktarı yazmaz (alan boş kalır, "Kullanılabilir: …" altında); "Tümü" (7 dil) tam miktarı yalnız tıklanınca yazar. "Stoğu karantinaya al" doldurmuyordu; karar penceresinin kalan hesabı satır ön doldurması değil.
+- Yardım etiketleri: sunucu çizimi tırnaklı adları gerçek metin düğümü olarak yazıyor, CSS gizlemiyor; erişilebilirlik ağacında düşen metin aracın rolsüz `span` okuması. Ortak bileşen — DUR-SOR (A: değişmez / B: `PageHelpCatalog.Labelled`'de anlamlı öğe).
+- **Sayılar:** Web 3962 / 3964 → 3967 / 3969 (yalnız 2 SafetyStock kırmızısı), Inventory 1335 + 4 (servis değişmedi), mimari aynı 7, gateway 298 / 298, yeni-denetimsiz 0; 4 / 4 sabotaj.
+
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

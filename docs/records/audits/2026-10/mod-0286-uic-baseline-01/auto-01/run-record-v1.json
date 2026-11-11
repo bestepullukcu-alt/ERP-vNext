@@ -1,0 +1,436 @@
+{
+ "argv": [
+  "sh",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/uic-auto.sh",
+  "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-equal-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/closed-missing-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-ar.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 715,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-es.txt",
+   "sha256": "d6962c13fba8ade0fb0f305432cc68adc7c030d52f19ee7b19c1ee3d0912de67"
+  },
+  {
+   "bytes": 885,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-fr.txt",
+   "sha256": "6aae2b9c07429b498cca12c3955a6bc69a7eb0394eb043d63d5528b21f1f61d5"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-ru.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 139,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-tr.txt",
+   "sha256": "b7716a8795c93d53fbc589c619c135d9357937f1d7e12d5d80fcb6ea512e8ee5"
+  },
+  {
+   "bytes": 670,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/equal-zh.txt",
+   "sha256": "ce0ed80f8c378bf2c3186a4fad7965df48c19ebcd4e8bda9c50a67cad249ed1a"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-ar.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13895,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-en.txt",
+   "sha256": "2d8dbfb040febf2ae6751008ef2a88264bdd8b474e87051fc2a679515d02c3fd"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-es.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-fr.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-ru.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 13895,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-tr.txt",
+   "sha256": "2d8dbfb040febf2ae6751008ef2a88264bdd8b474e87051fc2a679515d02c3fd"
+  },
+  {
+   "bytes": 13158,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/keys-zh.txt",
+   "sha256": "ccc236073574cd0a983fc8aedd194b820c88ad1cea3ea7527971653c81a0ebc6"
+  },
+  {
+   "bytes": 34295,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-ar.txt",
+   "sha256": "484185fc3322ebe955a72e701cd87fa17cbeb6d7475d9f1ddd281f6f938505f7"
+  },
+  {
+   "bytes": 27922,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-en.txt",
+   "sha256": "06b10b6dc82659c07f4a4a11f96d1cd892454e0d84f97d9de81ad780af945d37"
+  },
+  {
+   "bytes": 28963,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-es.txt",
+   "sha256": "13b577730052797d5b80adcda9ad8198f3891902ffad649fa36e2cbe9bf788de"
+  },
+  {
+   "bytes": 29398,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-fr.txt",
+   "sha256": "1f6348b4bb8b78db5de224167223c004b615fc08be55bfc4bf92fab6a103e8f8"
+  },
+  {
+   "bytes": 37894,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-ru.txt",
+   "sha256": "1f02c3dcb92c6aec294443b9d53d7e57c2f78299e0fced41833705eddd8bd618"
+  },
+  {
+   "bytes": 29165,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-tr.txt",
+   "sha256": "d717c0e70056400c1976597c2786f907af9cdc01c7cd8e2a711aca20b8fc6576"
+  },
+  {
+   "bytes": 24104,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/kv-zh.txt",
+   "sha256": "82bce21897fd4b8dc0c0a06f0a690d91c4c25699d55a4dca75ceb1cc713e9b8c"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-ar.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-es.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-fr.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-ru.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 737,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/missing-zh.txt",
+   "sha256": "2d72bd9d6a6929b3e2681a09efbd571ebd0c807d26dbea68a8cb44f94bc0f07a"
+  },
+  {
+   "bytes": 463,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/navkeys.out",
+   "sha256": "96112be05399932562a5291f838912993dddf187cf850a95bc543af2640d2183"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-equal-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/new-missing-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 195,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/resx-platform.out",
+   "sha256": "ea064691254a232d1cb2c05df09166fc0becc07e1b4d55adc6a7a1be179c52fb"
+  },
+  {
+   "bytes": 6294,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/resx-tenant.out",
+   "sha256": "0a069c95525883d1b7cbcfbe02efc0d9114b3fabba820ba026ab667139b03c0a"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-en.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/seqdiff-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 10444,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/stdout.txt",
+   "sha256": "21b073077cf41dab3c22479381b2ffa114bb08a68005ee853dedb1750d43b3c5"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-ar.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-en.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-es.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-fr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-ru.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-tr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/steps-zh.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-ar.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-en.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-es.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-fr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-ru.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-tr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titlediff-zh.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-ar.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-en.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-es.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-fr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-ru.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-tr.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  },
+  {
+   "bytes": 10,
+   "path": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01/titles-zh.txt",
+   "sha256": "f6b49467f595b1a44e442c198b3df4d221e88efcaabc26254f8e0ad4f79b6242"
+  }
+ ],
+ "commit": "a0a4050b0212ebca8eabb4530a07d17b85d96de4",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-10-23T08:15:53Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-10/mod-0286-uic-baseline-01/auto-01",
+ "started_utc": "2026-10-23T08:15:52Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "7fc8da8833e6afba44d1dbe7a620815e1c4aac99"
+}

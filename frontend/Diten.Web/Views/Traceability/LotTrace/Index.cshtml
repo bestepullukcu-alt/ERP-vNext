@@ -7,6 +7,7 @@
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["Page.Title"].Value;
+    ViewData["PageCode"] = "LOTTRACE"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
 }
 @*
@@ -29,9 +30,13 @@
     company.UnavailableText = Localizer["Company.Unavailable"].Value;
 }
 
-<div class="mb-3">
-    <h5 class="mb-0">@Localizer["Page.Title"]</h5>
-    <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+<div class="mb-3 d-flex flex-wrap justify-content-between align-items-start gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+    </div>
+    @* WP-0177-R7c (owner step MOD-0174, CT-R15): "Tam izleme (geri çağırma)" → /Recall/Trace for a holder of recall.trace.run *@
+    <partial name="~/Views/Shared/Recall/_LotTraceRecallLink.cshtml" model="@Model.LotId" />
 </div>
 
 <partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />

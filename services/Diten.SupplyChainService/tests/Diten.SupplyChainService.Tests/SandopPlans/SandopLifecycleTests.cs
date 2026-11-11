@@ -22,4 +22,21 @@ public sealed class SandopLifecycleTests
  Assert.Contains(outs,x=>System.Text.Json.JsonDocument.Parse(x["Envelope"].AsString).RootElement.GetProperty("eventType").GetString()=="sandop.sign-off.recorded.v1");
  }
 
+
+ [Fact]public async Task Capture_persists_exact_fixture_provenance_and_stores_no_demand_series()
+ {var(h,db,s,f)=await SandopTestHost.Open();var created=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,Guid.NewGuid().ToString(),SandopTestHost.Create());Assert.Equal(201,created.Status);var id=SandopTestHost.Id(created,"sandopPlanId");
+ var captured=await SandopTestHost.Mutate(h,s,f,SandopAction.Capture,id,Guid.NewGuid().ToString(),SandopTestHost.Capture());Assert.Equal(201,captured.Status);
+ var raw=await db.GetCollection<MongoDB.Bson.BsonDocument>("sandop_snapshots").Find(new MongoDB.Bson.BsonDocument("TenantId",s.TenantId.ToString())).FirstAsync();
+ // Provenance is persisted as a JSON string, not a nested document, and its members are camelCase.
+ using var provenanceJson=JsonDocument.Parse(raw["Provenance"].AsString);var provenance=provenanceJson.RootElement;
+ Assert.Equal("dp-2027",provenance.GetProperty("demandPlanId").GetString());Assert.Equal("3",provenance.GetProperty("demandPlanVersion").GetString());
+ Assert.Equal("sha256:abc",provenance.GetProperty("sourceChecksum").GetString());Assert.True(provenance.TryGetProperty("sourceCapturedAt",out _));
+ // Acceptance :196 also asks for the negative, and nothing asserted it: a snapshot carries provenance,
+ // never a second copy of DEMAND. The whole stored document is scanned, not just its field names, because
+ // Provenance and SupplyInputRefs are strings — a series smuggled inside one of them would hide otherwise.
+ var stored=MongoDB.Bson.BsonExtensionMethods.ToJson(raw);
+ foreach(var forbidden in new[]{"quantity","series","confidence","forecast"})
+  Assert.False(stored.Contains(forbidden,StringComparison.OrdinalIgnoreCase),forbidden+" appears in the stored snapshot; it must reference DEMAND, not copy it");
+ }
+
 }

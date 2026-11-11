@@ -12,6 +12,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // connection samples in one Auth App run). Now on the OWNED disposable mongod (DITEN_TEST_MONGOD, the
 // AuthReconciliationMongoCollection fixture) — skipped BY NAME without one (OwnedMongoFact), red under DITEN_REQUIRE_OWNED_MONGO=1.
 [Collection(AuthReconciliationMongoCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class IntegrationEventInboxRepositoryMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
     private const string DatabaseName = "diten_auth_permission_onboarding_itest";

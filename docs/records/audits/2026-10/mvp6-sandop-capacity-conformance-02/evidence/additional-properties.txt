@@ -1,0 +1,10 @@
+CapacityAdjustment: additionalProperties: false
+CaptureSandopSnapshotRequest: additionalProperties: false
+ConstraintReference: additionalProperties: false
+CreateCapacityPlanRequest: additionalProperties: false
+CreateCapacityScenarioRequest: additionalProperties: false
+CreateSandopPlanRequest: additionalProperties: false
+Error: additionalProperties: true
+EvaluateCapacityScenarioRequest: additionalProperties: false
+ExternalInputReference: additionalProperties: false
+RecordSignOffRequest: additionalProperties: false

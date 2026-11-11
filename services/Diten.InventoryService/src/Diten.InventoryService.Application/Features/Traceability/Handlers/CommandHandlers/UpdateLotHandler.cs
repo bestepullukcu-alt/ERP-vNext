@@ -1,6 +1,7 @@
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Locations;
 using Diten.InventoryService.Application.Features.Traceability.Commands;
+using Diten.InventoryService.Application.Features.Traceability.Ports;
 using Diten.InventoryService.Application.Features.Traceability.Services;
 using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Domain.Traceability.Enums;
@@ -31,11 +32,15 @@ public sealed class UpdateLotHandler : IRequestHandler<UpdateLotCommand, Respons
 {
     private readonly ILotRepository _lots;
     private readonly TraceWriteSupport _support;
+    private readonly ILotDateOverrideGate _dateGate;
+    private readonly ITraceSkuDirectory _skus;
 
-    public UpdateLotHandler(ILotRepository lots, TraceWriteSupport support)
+    public UpdateLotHandler(ILotRepository lots, TraceWriteSupport support, ILotDateOverrideGate dateGate, ITraceSkuDirectory skus)
     {
         _lots = lots;
         _support = support;
+        _dateGate = dateGate;
+        _skus = skus;
     }
 
     public async Task<Response<LotRefDto>> Handle(UpdateLotCommand request, CancellationToken cancellationToken)
@@ -61,7 +66,39 @@ public sealed class UpdateLotHandler : IRequestHandler<UpdateLotCommand, Respons
         var expectedVersion = TraceWriteSupport.ExpectedVersion(request.IfMatch);
         var reason = TraceWriteSupport.Trimmed(request.Reason);
 
-        return await _lots.InTransactionAsync(async (tx, ct) =>
+        // MOD-0176 F2 (KF-D, CT-F7): a DRAFT lot whose dates change follows the same suggestion / override rule as createLot (otherwise
+        // create-then-update would bypass KF-D). Decided before the transaction on the lot the If-Match names; the transaction re-checks the
+        // version, so the decision is about exactly that lot state. Non-Draft lots: CT-Q17 below, unchanged.
+        var dateGate = LotDateGateDecision.Free;
+        if (request.ManufacturingDate.IsPresent || request.ExpiryDate.IsPresent || request.RetestDate.IsPresent)
+        {
+            var current = await _lots.FindAsync(lotId, cancellationToken);
+            if (current is { Status: LotStatus.Draft } && current.Version == expectedVersion)
+            {
+                TraceSku? sku;
+                try
+                {
+                    sku = await _skus.GetSkuAsync(current.SkuId, current.SkuLevel, cancellationToken);
+                }
+                catch (Common.Upstream.ProductMasterUnavailableException)
+                {
+                    return TraceWriteSupport.Fail<LotRefDto>(TraceErrorCodes.ProductMasterUnavailable,
+                        "PRODUCT-MASTER could not confirm the SKU's shelf-life days; nothing was saved.", 503);
+                }
+
+                dateGate = await _dateGate.CheckAsync(new LotDateGateRequest(current.ItemId, current.SkuId, current.SkuLevel, current.LotNumber,
+                    request.ManufacturingDate.IsPresent ? manufacturing : TraceMapping.Day(current.ManufacturingDate),
+                    request.ExpiryDate.IsPresent ? expiry : TraceMapping.Day(current.ExpiryDate),
+                    request.RetestDate.IsPresent ? retest : TraceMapping.Day(current.RetestDate),
+                    sku?.ShelfLifeDays, sku?.RetestDays, request.DateOverride), cancellationToken);
+                if (dateGate.Refusal is { } dateRefusal)
+                    return Response<LotRefDto>.Fail(dateRefusal.Code, dateRefusal.Message, dateRefusal.Status, dateRefusal.Details);
+            }
+        }
+
+        try
+        {
+            return await _lots.InTransactionAsync(async (tx, ct) =>
         {
             var lot = await tx.FindAsync(lotId, ct);
             if (lot is null) return TraceWriteSupport.UnknownLot<LotRefDto>();
@@ -101,14 +138,42 @@ public sealed class UpdateLotHandler : IRequestHandler<UpdateLotCommand, Respons
 
             lot.UpdatedAt = now;
             lot.UpdatedBy = _support.UserId;
+            if (lot.Status == LotStatus.Draft && (dateGate.SuggestedExpiry is not null || dateGate.SuggestedRetest is not null))
+            {
+                lot.SuggestedExpiryDate = dateGate.SuggestedExpiry is { } se ? TraceMapping.Midnight(se) : null;
+                lot.SuggestedRetestDate = dateGate.SuggestedRetest is { } sr ? TraceMapping.Midnight(sr) : null;
+            }
+
+            if (dateGate.OverrideId is { } overrideId)
+            {
+                lot.ExpiryOverride = new LotExpiryOverride
+                {
+                    OverrideId = overrideId, Reason = dateGate.Reason!, SignatureId = dateGate.SignatureId,
+                    SuggestedExpiry = lot.SuggestedExpiryDate, SuggestedRetest = lot.SuggestedRetestDate, By = _support.UserId, AtUtc = now
+                };
+            }
+
             if (!await tx.ReplaceAsync(lot, expectedVersion, ct)) return TraceWriteSupport.Conflict<LotRefDto>();
 
             var entries = changes
                 .Select(c => _support.History(lot.Id, LotChangeAction.Updated, c.Field, c.Old, c.New, reason, now))
                 .ToList();
             await tx.AppendHistoryAsync(entries, ct);
+            if (dateGate.OverrideId is not null)
+            {
+                // KF-D (CT-F7): consume the override + open EXPIRY_DATE_OVERRIDE in THIS transaction.
+                await _dateGate.ApplyAsync(tx, lot, dateGate, ct);
+                await tx.AppendHistoryAsync([_support.History(lot.Id, LotChangeAction.ExpiryOverridden, "expiryDate",
+                    TraceMapping.Wire(lot.SuggestedExpiryDate), TraceMapping.Wire(lot.ExpiryDate), dateGate.Reason, now)], ct);
+            }
+
             return Response<LotRefDto>.Success(TraceMapping.ToRef(lot, today, withETag: true), 200);
         }, cancellationToken);
+        }
+        catch (LotDateOverrideConflictException conflict)
+        {
+            return TraceWriteSupport.Fail<LotRefDto>(conflict.Code, conflict.Message, 409);
+        }
     }
 
     private static string? Value(Patch<string> patch) => patch.IsPresent ? patch.Value : null;

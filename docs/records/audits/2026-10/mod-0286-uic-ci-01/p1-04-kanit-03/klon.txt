@@ -1,0 +1,27 @@
+[detached HEAD cb71c0862] Revert "uic ara kayit"
+ Date: Wed Oct 28 14:26:18 2026 +0300
+ 6 files changed, 98 insertions(+), 156 deletions(-)
+ rename frontend/Diten.Web/Views/DevEnablement/{UicAra => GoldenReferenceCompact}/_IndexL10n.cshtml (100%)
+ create mode 100644 frontend/Diten.Web/Views/Meetings/Report/_Filter.cshtml
+[detached HEAD b50b168a2] Revert "uic sabotaj a"
+ Date: Wed Oct 28 14:26:19 2026 +0300
+ 1 file changed, 2 deletions(-)
+[detached HEAD 65d2c65c1] Revert "uic sabotaj b1"
+ Date: Wed Oct 28 14:26:20 2026 +0300
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[detached HEAD 0d43278bb] Revert "uic sabotaj b2"
+ Date: Wed Oct 28 14:26:21 2026 +0300
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+[detached HEAD 6ff672e8c] Revert "uic sabotaj b2 hazirlik"
+ Date: Wed Oct 28 14:26:21 2026 +0300
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+[detached HEAD 197ecb521] Revert "uic sabotaj c"
+ Date: Wed Oct 28 14:26:21 2026 +0300
+ 1 file changed, 55 insertions(+)
+ create mode 100644 frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml
+[detached HEAD cb362e8d3] Revert "uic sabotaj d"
+ Date: Wed Oct 28 14:26:22 2026 +0300
+ 1 file changed, 34 insertions(+), 133 deletions(-)
+[detached HEAD 6a9df66b3] Revert "uic sabotaj e"
+ Date: Wed Oct 28 14:26:23 2026 +0300
+ 1 file changed, 28 insertions(+), 139 deletions(-)

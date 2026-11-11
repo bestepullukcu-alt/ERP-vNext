@@ -84,12 +84,20 @@ public sealed class QuarantinePeopleTests
     public async Task The_hold_page_data_carries_names_and_an_unresolved_person_stays_an_id()
     {
         var gateway = People();
+        // FU-WEB-CONTRACT-FAKES: a whole HoldDetail and a whole Settings of quarantine.openapi.yaml (the number is KRN-YYYY-NNNN)
         gateway.On($"/api/quarantine/holds/{HoldId}", 200, $$"""
-            { "holdId": "{{HoldId}}", "holdNumber": "QH-2026-0001", "createdBy": { "userId": "{{Named}}" },
+            { "holdId": "{{HoldId}}", "holdNumber": "KRN-2026-0001", "legalEntityId": "eeeeeeee-5555-4555-8555-000000000005",
+              "item": { "itemId": "eeeeeeee-6666-4666-8666-000000000006", "skuId": "eeeeeeee-7777-4777-8777-000000000007", "skuLevel": "Lsku" },
+              "warehouse": { "id": "eeeeeeee-8888-4888-8888-000000000008" }, "location": { "id": "eeeeeeee-9999-4999-8999-000000000009" },
+              "stockStatus": "QUARANTINE", "quantity": 5, "baseUom": { "id": "EA" }, "source": "Manual", "enteredAtUtc": "2026-10-09T10:00:00Z",
+              "createdBy": { "userId": "{{Named}}" }, "reviewState": "InReview", "status": "Open", "waitDays": 1, "targetDays": 7, "late": false, "version": 2,
+              "attachments": [], "movements": [], "decisions": [],
               "history": [ { "atUtc": "2026-10-09T10:00:00Z", "action": "Quarantined", "by": { "userId": "{{Named}}" } },
                            { "atUtc": "2026-10-09T11:00:00Z", "action": "ReviewStarted", "by": { "userId": "{{Missing}}" } } ] }
             """);
-        gateway.On("/api/quarantine/settings", 200, "{}");
+        gateway.On("/api/quarantine/settings", 200, """
+            { "waitTargetDays": 7, "fourEyes": false, "approverCandidates": [], "sampleLocations": {}, "lotReleaseRequiresApproval": false, "reconcileAfterSeconds": 300, "version": 1 }
+            """);
 
         var result = await Controller(gateway).HoldData(HoldId, CancellationToken.None);
         var hold = Body(result).GetProperty("hold");
@@ -110,22 +118,52 @@ public sealed class QuarantinePeopleTests
         Assert.Equal(JsonValueKind.Null, items[1].GetProperty("name").ValueKind);
     }
 
+    /// <summary>
+    /// D-KAR-1 (owner decision A, 2026-10-19 — WP-MVP1-FU-CLEAN2) CHANGES FU-0175-Q5-02's expectation: an unnamed person was "short id · unknown
+    /// user"; now it is "Bilinmeyen kullanıcı" with the id ONLY as the hover title, through the shared MVP-1 rule (people.js) — measured by Node
+    /// against the shipped scripts (quarantine-people.test.mjs), the call sites included.
+    /// </summary>
     [Fact]
-    public void The_pages_render_people_through_QuarantineUi_person_with_the_unknown_user_fallback()
+    public async Task The_pages_render_people_through_the_one_MVP1_rule_with_the_id_only_as_the_title()
     {
         var js = Path.Combine(TraceViewRenderer.WebRoot, "wwwroot", "assets", "js", "Quarantine");
         var ui = File.ReadAllText(Path.Combine(js, "quarantine-ui.js"));
-        Assert.Contains("const person = (ref) =>", ui);
+        Assert.Contains("const personHtml = (ref) =>", ui);
         Assert.Contains("t('Quarantine.Common.UnknownUser')", ui);
+        Assert.DoesNotContain("unknownPerson", ui);                       // the short-id helper of Q5-02 is gone
+        // the label now stands ALONE (no id before it): in every language it is the same sentence as the movement trail's unknown user
+        foreach (var lang in new[] { "en", "tr", "fr", "es", "zh", "ar", "ru" })
+        {
+            var resx = System.Xml.Linq.XDocument.Load(Path.Combine(TraceViewRenderer.WebRoot, "Resources", "Views", "Quarantine", $"Quarantine.{lang}.resx")).Root!.Elements("data")
+                .ToDictionary(d => (string)d.Attribute("name")!, d => (string?)d.Element("value") ?? string.Empty);
+            Assert.Equal(resx["Quarantine.Details.Moves.UnknownUser"], resx["Quarantine.Common.UnknownUser"]);
+        }
 
         var details = File.ReadAllText(Path.Combine(js, "details.js"));
-        foreach (var call in new[] { "ui.person(h.by)", "ui.person(decision.decider)", "ui.person(wf.approver)", "ui.person(h.createdBy)" })
+        foreach (var call in new[] { "ui.personHtml(h.by)", "ui.personHtml(decision.decider)", "ui.personHtml(wf.approver)", "ui.personHtml(h.createdBy)" })
             Assert.Contains(call, details);
         Assert.DoesNotMatch(@"\?\.userId\s*\|\|", details); // no raw-id fallback left
 
         var settings = File.ReadAllText(Path.Combine(js, "settings.js"));
-        Assert.Contains("labels.users[id] || ui.unknownPerson(id)", settings);
+        Assert.Contains("ui.personHtml({ userId: id, name: labels.users[id] })", settings);
         Assert.Contains("/Quarantine/lookups/users?ids=", settings);
+
+        // the shared rule loads before the Quarantine helpers on every Quarantine page (one partial)
+        var l10n = File.ReadAllText(Path.Combine(TraceViewRenderer.WebRoot, "Views", "Quarantine", "_QuarantineL10n.cshtml"));
+        var people = l10n.IndexOf("/assets/js/Inventory/StockMovements/people.js", StringComparison.Ordinal);
+        Assert.True(people > 0 && people < l10n.IndexOf("/assets/js/Quarantine/quarantine-ui.js", StringComparison.Ordinal), "people.js must load before quarantine-ui.js");
+
+        var start = new System.Diagnostics.ProcessStartInfo("node") { WorkingDirectory = TraceViewRenderer.RepoRoot(), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        start.ArgumentList.Add("--test");
+        start.ArgumentList.Add("--test-reporter=tap");
+        start.ArgumentList.Add(Path.Combine("frontend", "Diten.Web.Tests", "JavaScript", "Node", "quarantine-people.test.mjs"));
+        using var node = System.Diagnostics.Process.Start(start)!;
+        var error = node.StandardError.ReadToEndAsync();
+        var output = await node.StandardOutput.ReadToEndAsync();
+        await node.WaitForExitAsync();
+        Assert.True(node.ExitCode == 0, $"{output}\n{await error}");
+        Assert.Matches(new System.Text.RegularExpressions.Regex(@"^# pass 3$", System.Text.RegularExpressions.RegexOptions.Multiline), output);
+        Assert.Matches(new System.Text.RegularExpressions.Regex(@"^# fail 0$", System.Text.RegularExpressions.RegexOptions.Multiline), output);
     }
 
     /// <summary>FU-0175-Q5-01 on the page: "Notu düzenle" exists only for quarantine.holds.review (UAS-001) and saves with the page ETag.</summary>
@@ -204,7 +242,7 @@ public sealed class QuarantinePeopleTests
 
         public List<(string Path, string? Authorization)> Requests { get; } = [];
 
-        public void On(string path, int status, string body) => _routes.Add((path, status, body));
+        public void On(string path, int status, string body) { Contracts.ContractRoutes.Require(path, status, body); _routes.Add((path, status, body)); } // FU-WEB-CONTRACT-FAKES
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

@@ -22,6 +22,7 @@ public static class InventoryIndexConfiguration
     public const string StockPresenceIndex = "ix_tenant_sku_level";
     public const string ReservationIdempotencyIndex = "ux_tenant_le_reservation_idempotencykey";
     public const string SkuPositionIndex = "ux_sku_position";
+    public const string ReservationPositionIndex = "ux_reservation_position";
     public const string LocationCodeIndex = "ux_location_code";
     public const string LocationCreateKeyIndex = "ux_location_create_key";
 
@@ -38,6 +39,9 @@ public static class InventoryIndexConfiguration
                 new CreateIndexOptions { Name = "ix_tenant_le_item_postingdate" }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LotId),
                 new CreateIndexOptions { Name = "ix_tenant_le_lot" }),
+            // MOD-0177 R2 (pack §8.9): the movements of one source document — production inputs of the recall trace, return candidates (R3).
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SourceModule).Ascending(x => x.SourceDocumentId),
+                new CreateIndexOptions { Name = "ix_tenant_le_source_document" }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ToLocationId),
                 new CreateIndexOptions { Name = "ix_tenant_le_tolocation" }),
             // Additive to pack §4: GET /transactions?locationId matches either side, so the source side is indexed too.
@@ -114,6 +118,10 @@ public static class InventoryIndexConfiguration
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SourceModule)
                     .Ascending(x => x.SourceDocumentId).Ascending(x => x.SourceLineId).Ascending(x => x.Status),
                 new CreateIndexOptions { Name = "ix_tenant_le_source_status" }),
+            // MOD-0173-FU03 §4.5: the scope reads (scopeReserved, the lot reader of DL-3).
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SkuId).Ascending(x => x.SkuLevel)
+                    .Ascending(x => x.WarehouseId).Ascending(x => x.LotId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_tenant_le_sku_scope_status" }),
             // System index for the cross-tenant expiry sweeper (it only DISCOVERS due groups here; every write is then
             // scoped to one Tenant + LE). Deliberately not tenant-first — a tenant-first index cannot serve that scan.
             new(b.Ascending(x => x.Status).Ascending(x => x.ExpiresAt),
@@ -129,6 +137,18 @@ public static class InventoryIndexConfiguration
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ItemId).Ascending(x => x.SkuId)
                     .Ascending(x => x.SkuLevel),
                 new CreateIndexOptions { Name = SkuPositionIndex, Unique = true })
+        ];
+    }
+
+    /// <summary>MOD-0173-FU03 §4.5: one position per Tenant + LE + SKU + level + warehouse + lot (every member stored and compared on its own).</summary>
+    public static IReadOnlyList<CreateIndexModel<InventoryReservationPosition>> BuildReservationPositions()
+    {
+        var b = Builders<InventoryReservationPosition>.IndexKeys;
+        return
+        [
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ItemId).Ascending(x => x.SkuId)
+                    .Ascending(x => x.SkuLevel).Ascending(x => x.Level).Ascending(x => x.WarehouseId).Ascending(x => x.LotId),
+                new CreateIndexOptions { Name = ReservationPositionIndex, Unique = true })
         ];
     }
 
@@ -178,6 +198,7 @@ public static class InventoryIndexConfiguration
     {
         await database.GetCollection<InventoryReservation>(InventoryCollections.Reservations).Indexes.CreateManyAsync(BuildReservations(), ct);
         await database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions).Indexes.CreateManyAsync(BuildSkuPositions(), ct);
+        await database.GetCollection<InventoryReservationPosition>(InventoryCollections.ReservationPositions).Indexes.CreateManyAsync(BuildReservationPositions(), ct);
         await database.GetCollection<InventoryReservationAuditRecord>(InventoryCollections.Audit).Indexes.CreateOneAsync(
             new CreateIndexModel<InventoryReservationAuditRecord>(
                 Builders<InventoryReservationAuditRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ReservationId),

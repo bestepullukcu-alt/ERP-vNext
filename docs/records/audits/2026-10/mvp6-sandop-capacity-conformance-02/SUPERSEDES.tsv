@@ -1,0 +1,5 @@
+supersedes_lane	supersedes_row	was	now	evidence
+mvp6-sandop-capacity-conformance-01	MOD-0190 :201 — Required/null fields match the published schemas	UNDETERMINED	MET	evidence/field-diff.txt — SandopPlan 10/10, SandopSnapshot 6/6, SignOff 9/9, InputSnapshotProvenance 6/6; no missing, no extra
+mvp6-sandop-capacity-conformance-01	MOD-0190 :201 — Three event payloads match the annex	UNDETERMINED	MET	evidence/field-diff.txt — SandopPlanEventPayload 3/3, SandopSnapshotEventPayload 3/3, SandopSignOffEventPayload 5/5, LifecycleEventEnvelope 7/7
+mvp6-sandop-capacity-conformance-01	MOD-0192 :201 — Required/null fields match the published schemas	UNDETERMINED	MET	evidence/field-diff.txt — CapacityPlan 8/8, CapacityScenario 8/8, CapacityEvaluation 9/9; request side in REPORT.md section 3
+mvp6-sandop-capacity-conformance-01	MOD-0192 :201 — Header matrix (strict reading)	UNDETERMINED	UNCHANGED	Still not observable at the boundary: Capacity has no reachable HTTP path (pack :199)

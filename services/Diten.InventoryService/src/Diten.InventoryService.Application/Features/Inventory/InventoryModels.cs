@@ -20,6 +20,34 @@ public sealed class MovementResponseDto
     public bool IdempotentReplay { get; init; }
     public BalanceViewDto? BalanceSnapshot { get; init; }
     public string ContractVersion { get; init; } = InventoryContract.Version;
+
+    /// <summary>INVENTORY 1.3.0 (MOD-0176): what the expiry hooks decided; absent when no hook applied.</summary>
+    public ExpiryChecksDto? ExpiryChecks { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (MOD-0173-FU03 §8.3): only when the movement named a reservation by <c>reservationId</c>.</summary>
+    public ReservationConsumptionDto? ReservationConsumption { get; init; }
+}
+
+/// <summary>INVENTORY 1.7.0 <c>ReservationConsumption</c>: a LOCATION_TRANSFER validates and consumes nothing (<c>consumedQuantity "0.000"</c>).</summary>
+public sealed class ReservationConsumptionDto
+{
+    public string ReservationId { get; init; } = string.Empty;
+    public string ConsumedQuantity { get; init; } = string.Empty;
+    public string RemainingQuantity { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
+    public string? ClosedReason { get; init; }
+}
+
+/// <summary>INVENTORY 1.3.0 <c>ExpiryChecks</c> (MOD-0176 F2).</summary>
+public sealed class ExpiryChecksDto
+{
+    /// <summary>Compliant | Bypassed — present on an issue under the FEFO hook.</summary>
+    public string? Fefo { get; init; }
+
+    /// <summary>Ok | NotDefined | Warned | NotApplicable — present on a goods receipt under the minimum-remaining hook.</summary>
+    public string? MinRemaining { get; init; }
+
+    public IReadOnlyList<string> ExceptionIds { get; init; } = [];
 }
 
 /// <summary>Contract <c>BalanceView</c>.</summary>
@@ -63,6 +91,15 @@ public sealed class AvailabilityViewDto
     public string? BaseUomId { get; init; }
     public string AsOf { get; init; } = string.Empty;
     public string ContractVersion { get; init; } = InventoryContract.Version;
+
+    /// <summary>
+    /// INVENTORY 1.6.0 (MOD-0173-FU03 §8.8): Σ remaining of the ACTIVE, not-yet-due reservations that contain the scope (the warehouse;
+    /// with <c>lotId</c> that lot) — only when one SKU is named and <c>warehouseId</c> is given without <c>locationId</c>; else absent.
+    /// </summary>
+    public string? ScopeReserved { get; init; }
+
+    /// <summary>INVENTORY 1.6.0: the scope position's <c>AvailableOnHand</c> − <see cref="ScopeReserved"/>; unfloored (may be negative).</summary>
+    public string? ScopeAvailable { get; init; }
 }
 
 /// <summary>Contract <c>getBalance</c> 200 body.</summary>
@@ -97,7 +134,19 @@ public sealed class TransactionItemDto
     public string? SourceLineId { get; init; }
     public string TransactionDate { get; init; } = string.Empty;
     public string PostingDate { get; init; } = string.Empty;
+
+    /// <summary>INVENTORY 1.5.0 (WP-MVP1-NAMES1, additive, optional) — who posted it; absent for a posting without a user.</summary>
+    public TransactionCreatedByDto? CreatedBy { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (MOD-0173-FU03 §4.3): the reservation the movement named; absent otherwise.</summary>
+    public string? ReservationId { get; init; }
 }
+
+/// <summary>
+/// INVENTORY 1.5.0 <c>TransactionItem.createdBy</c>: the posting user and the name AT THE TIME of the posting (the central audit queue's
+/// display name of the posting correlation, same company) — <c>Name</c> is null (omitted) when none was recorded; never the live label.
+/// </summary>
+public sealed record TransactionCreatedByDto(string UserId, string? Name = null);
 
 /// <summary>
 /// Contract <c>ReservationResponse</c>. createReservation fills every member; releaseReservation answers the contract
@@ -111,7 +160,72 @@ public sealed class ReservationResponseDto
     public string AvailableAfter { get; init; } = string.Empty;
     public string? Etag { get; init; }
     public string ContractVersion { get; init; } = InventoryContract.Version;
+
+    /// <summary>INVENTORY 1.6.0 (createReservation only): the warehouse scope; absent at SKU level.</summary>
+    public string? WarehouseId { get; init; }
+
+    /// <summary>INVENTORY 1.6.0 (createReservation only): the lot scope; absent unless lot level.</summary>
+    public string? LotId { get; init; }
+
+    /// <summary>INVENTORY 1.6.0 (createReservation only): the quantity still held — equal to the reserved quantity at creation.</summary>
+    public string? RemainingQuantity { get; init; }
 }
+
+/// <summary>
+/// INVENTORY 1.6.0 <c>ReservationView</c> (<c>getReservation</c>, MOD-0173-FU03 §8.8) — and the port's <c>GetAsync</c>. Null members are
+/// omitted (closedReason while ACTIVE, the scope at SKU level, the optional request members).
+/// </summary>
+public sealed class ReservationViewDto
+{
+    public string ReservationId { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
+    public string? ClosedReason { get; init; }
+    public string ItemId { get; init; } = string.Empty;
+    public string SkuId { get; init; } = string.Empty;
+    public string SkuLevel { get; init; } = string.Empty;
+    public string? WarehouseId { get; init; }
+    public string? LotId { get; init; }
+    public string Quantity { get; init; } = string.Empty;
+    public string RemainingQuantity { get; init; } = string.Empty;
+    public string ReservationType { get; init; } = string.Empty;
+    public string SourceModule { get; init; } = string.Empty;
+    public string? SourceDocumentId { get; init; }
+    public string? SourceLineId { get; init; }
+    public int? Priority { get; init; }
+    public string? ExpiresAt { get; init; }
+    public string CreatedAt { get; init; } = string.Empty;
+    public string Etag { get; init; } = string.Empty;
+    public string ContractVersion { get; init; } = InventoryContract.Version;
+}
+
+/// <summary>
+/// MOD-0173-FU03 §8.7 <c>CreateBatchAsync</c> — the answer for the whole batch (in-process only, not a wire schema): 201 every line
+/// created, 200 every line an idempotent replay, 422 a line refused (nothing written), 400 a malformed batch / a mixed replay / a key
+/// reused, 503 LOCATION unreadable. <see cref="Lines"/> follows the request order.
+/// </summary>
+public sealed record ReservationBatchResponse(int StatusCode, string? ErrorCode, IReadOnlyList<ReservationBatchLine> Lines)
+{
+    public bool IsSuccessful => StatusCode is 200 or 201;
+}
+
+/// <summary>
+/// One line of <see cref="ReservationBatchResponse"/>: <see cref="Reservation"/> when written (or replayed); otherwise the refusal of THIS
+/// line (<see cref="ErrorCode"/>, <see cref="Level"/>, <see cref="Available"/> = the refusing level's free quantity, <see cref="Requested"/>);
+/// a line that was valid but not written because another line was refused carries neither (<see cref="Written"/> false, no code).
+/// </summary>
+public sealed record ReservationBatchLine(
+    int Index,
+    string? IdempotencyKey,
+    bool Written,
+    ReservationResponseDto? Reservation = null,
+    string? ErrorCode = null,
+    string? Message = null,
+    string? Level = null,
+    string? Available = null,
+    string? Requested = null);
+
+/// <summary>MOD-0173-FU03 §8.7 <c>FindByIdempotencyKeysAsync</c>: one row per created reservation of a named key (any status).</summary>
+public sealed record ReservationKeyMatch(string IdempotencyKey, Guid ReservationId, string Status, string? ClosedReason, string Etag);
 
 /// <summary>Contract <c>getTransactions</c> 200 body.</summary>
 public sealed class TransactionPageDto

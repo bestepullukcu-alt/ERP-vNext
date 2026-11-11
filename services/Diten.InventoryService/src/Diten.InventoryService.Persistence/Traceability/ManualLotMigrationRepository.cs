@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
@@ -114,6 +115,7 @@ public sealed class ManualLotMigrationRepository : IManualLotMigrationRepository
                         _logger.LogInformation("Typed-lot migration commit re-run after a transient conflict (attempt {Attempt}).", attempt);
                     }
 
+                    await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
                     return await CommitInTransactionAsync(s, commit, ct);
                 },
                 new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),

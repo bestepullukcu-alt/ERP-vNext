@@ -10,7 +10,7 @@
 > **Kapsam:** yalnız Control Tower araçları ve `.antigravity` kuralları. Ürün kodu, başka ekiplerin modülleri ve
 > MVP-6 yok.
 > **Ölçüm tabanı:** main `01f1080fd` (2026-10-19).
-> **Dayanaklar:** Blueprint master 8.7 `Dev_Readiness` sayfası (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
+> **Dayanaklar:** Blueprint master 8.7 / 8.8 `Dev_Readiness` sayfası (8.8'de depo içe aktarma sütunları Z–AD) (CEO kuralı, 2026-10-16); REP-001 v2 kabul kaydı
 > (`scripts/acceptance_record.py`); paket onay okuyucusu (`scripts/ct_queue.py` `pack_approval_limit`); sahip ve Codex
 > görüşü (2026-10-19, bu belgenin §4'ünde).
 
@@ -81,11 +81,22 @@ kayıtlar "Kaynak kayıtlar" sütununda listelenir. `verifier` bir beyandır, ki
 
 AC kimliği olmayan eski biçimli paket "ölçülemez" diye hata listesine girer, aşama önerilmez.
 
-### 2.5 Çıktı
+### 2.5 Çıktı (Master 8.8'in içe aktarma sözleşmesine göre)
 
-TSV sütunları: `Module ID`, `Önerilen aşama`, `Gerekçe`, `Eksik kanıt`, `Excel'de doldurulmalı`, `Code link`, `PR link (türetilmiş)`,
-`Test evidence`, `Verification evidence`, `Verified By`, `Verified Date`, `Kaynak kayıtlar (yol@commit)`.
-Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve üretim zamanı yazar.
+Master 8.8, `Dev_Readiness` sayfasına depo için beş giriş sütunu ekledi; AE sütunu insanın seçtiği `Stage` ile öneriyi
+karşılaştırır (`MATCH` ya da `REVIEW: repo suggests …`). Araç yalnız bu beş sütunu, `Module ID` anahtarıyla üretir:
+
+| Excel | Sütun | Araçtaki karşılığı |
+|---|---|---|
+| A | `Module ID` | anahtar (yapıştırma için; Excel'de zaten var) |
+| Z | `Repo Suggested Stage` | §2.4'teki önerilen aşama (Excel'in aşama listesindeki yazımla) |
+| AA | `Suggested At` | üretim tarihi |
+| AB | `Source Commit` | çıktının üretildiği main commit'i (40 hane) |
+| AC | `Suggested Evidence` | kanıt bağlantıları: modül kaydı, test kanıtı (yol@commit), commit; PR bağlantısı "türetildi" etiketiyle |
+| AD | `Suggestion Reason` | gerekçe ve eksik kanıt; Excel'de doldurulması gerekenler (Owner, Last Updated, Change Note) |
+
+`Stage` (G) ve insanın doldurduğu hiçbir sütun üretilmez. Hata listesi ayrı bir dosyadır. Çıktının başında main commit'i ve
+üretim zamanı yazar.
 
 ### 2.6 Koruyucular (sabotajla gösterilecek)
 
@@ -214,7 +225,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
   - onaylayıcı listesi ve betiklerin de korunması;
   - PR bağlantısının "türetildi" etiketi;
   - Tested için yayın kapsamının bütün gerekli testleri.
-- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra. MVP-6 kapsam dışı.
+- **Sahip:** onay sistemi ilk sürümde GitHub hesabı olmadan; CODEOWNERS sonra (PR #153 ile eklendi). MVP-6 kapsam dışı.
 
 ## 5. Sahibin kararları
 
@@ -225,7 +236,7 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 | D3 | Yayın kapsamı | yeni tablo yok: modülün yayını Blueprint 8.7'den okunur; kapsam = modülün ve takip paketlerinin main'deki onaylı paket sürümleri (çok paketli kapsam desteklenir) |
 | D4 | Doğrulama tarihi | REP-001 v2'ye isteğe bağlı `verified_at` alanı; okuyucu tanımsız alanı reddettiği için (`scripts/acceptance_record.py@01f1080fd:181–185`) okuyucu ve öz-test birlikte güncellenir; eski kayıtlar geriye doldurulmaz |
 | D5 | Yürürlük | `execution/approvals/POLICY-START.md`'nin main'e girdiği commit; eski onaylar bozulmaz |
-| D6 | GitHub hesapları ve ayarları | sonra (CODEOWNERS) |
+| D6 | GitHub hesapları ve ayarları | **yapıldı (dosya):** `.github/CODEOWNERS` PR #153 ile main'de (2026-10-19); GitHub `codeowners/errors` boş. **Açık (depo ayarı, ölçüldü 2026-10-19):** squash ve rebase merge hâlâ açık; "Require review from Code Owners" ayarı yönetici yetkisi olmadan okunamadı |
 | D7 | İlk sürümün güven sınırı | beyan tutarlılığı + türetilmiş insan adımı (merge eden ≠ yazan); kimlik doğrulaması GitHub katmanıyla gelir |
 | D8 | Tested–Verified ayrımı | §2.4'teki tanım |
 
@@ -239,3 +250,44 @@ Aşağıdakilerin her birinde adı belli bir test kırmızı olmalı:
 
 Tahmin; kesin değil. Ölçülmeyen: Excel'e yapıştırmanın kapılarla gerçek davranışı (Excel açılmadı) ve sahibin
 listeleri.
+
+## 7. Ek — dal onayı (S-115, sahip kararı 2026-11-01)
+
+Yukarıdaki metin değişmedi; bu bölüm §3.1, §3.3 ve §3.5'in **dağıtım ve kabul anındaki** okumasını değiştirir (tasarım:
+`docs/roadmap/plans/ct-branch-approval-01/DESIGN.md`; yürürlük: kural PR'ı `origin/main`'e girince).
+
+1. **İki okuma.** `pack_approval.py check <paket> --deferred` (dağıtım kapısı `prompt_gate.py` ve kabul kaydı
+   `acceptance_record.py` bu okumayı kullanır): onay ve inceleme satırları CT dalında, henüz main'de değilken de
+   sayılır; insan adımı "beklemede" notuyla geçer. `--deferred` olmadan (sıkı okuma, CI) §3.5 aynen geçerlidir: satır
+   main'e PR merge'üyle gelmiş olmalıdır.
+2. **Dalda da ölçülen:** paket ve kart özetleri; onaylayan **main'deki** listede ve `high = evet`; onaylayan kişisi ≠
+   yazan kişisi; ENGEL kabulü onaylayana ait; inceleme onaydan önce; UYGUN DEĞİL ya da açık ENGEL yok; inceleyen oturumu
+   ≠ yazan oturumu; yalnız ekleme; main'in satırları dalın öneki (geride kalan dal reddedilir, kısmi okunmaz). Doğrudan
+   main'e yazılmış satır iki okumada da geçersizdir.
+3. **Modül PR'ında ikinci insan (§3.5 değişikliği):** satırı main'e getiren PR'ı birleştiren, listede `high = evet` olan,
+   PR'ı açan olmayan ve satırı yazanın kişisi olmayan **herhangi bir** kişidir; onaylayanın kendisi olmak zorunda
+   değildir (S-41 geri alındı). S-91 istisna satırları "onaylayanı birleştirir" kuralını korur.
+4. **Kabul edilen bedel (bağımsız inceleme F-4 ile düzeltildi):** onay satırında `requested_by` ya da oturum alanı
+   yoktur; satır main'e girene kadar onaylayan alanı GitHub'da doğrulanmaz. Sahibin "onayla" sözünün izi kule
+   sohbeti ve — `POLICY-BRANCH-START.md`'nin commit'inden itibaren — satırın `note` hücresidir: dalda bekleyen HIGH
+   satırda `onayla · <kule sohbeti> · <tarih saat>` yoksa dal onayı geçmez (`row --deferred --note …` üretir). Kod yine
+   ikinci kişi olmadan main'e giremez (dal koruması).
+5. **GitHub kotası (Yönetici bulgusu 2026-11-01):** `gh api` kota hatası (`API rate limit exceeded`) `GitHubQuota`
+   istisnasıdır: `pack_approval.py check` çıkış 2 "ölçülemedi: GitHub sorgu kotası doldu — <sıfırlanma saati> sonra
+   yeniden dene"; dağıtım kapısı S-5 ENGEL "ölçülemedi — kota" ile, kabul kaydı "onayı ölçülemedi — kota" satırıyla
+   durur; hiçbiri onay ya da inceleme dosyasını "güvenilmez" ilan etmez; onay yine GEÇMEZ (fail-closed). Kota dışı bir
+   GitHub cevapsızlığı bugünkü gibi "sorulamadı" → insan adımı yok / güvenilmez (çıkış 1) kalır.
+6. **PR'ı açan = satırı yazan (F-5; `POLICY-BRANCH-START.md`'den itibaren):** sıkı okumada HIGH onay satırı ve inceleme
+   satırı için PR'ı açan hesabın kişisi, satırın `author` kişisi olmalıdır ("PR'ı açan satırın yazarı değil" ENGEL);
+   böylece birleştirenin "yazan olmadığı" beyana değil GitHub'a dayanır. Ek GitHub çağrısı yoktur (açan zaten okunur).
+7. **Üretim ve yeniden ölçüm (F-3, F-10, F-11, F-12):** `row --deferred` ve `card --deferred` kartı dal onayı okumasının
+   tabanıyla (dalda bekleyen satır) hesaplar; `check --deferred` aynı kartı bulur, main'e girince sıkı okuma da aynı
+   tabanı bulur (taban düşerse satır da düşer). Kabul kaydının önek denetimi kaydın commit'i ile main'in merge-base'ine
+   göre yapılır; bugünkü main'in aynı paketteki iptal ve olumsuz inceleme satırları yine durdurur. Yalnız sırayı
+   değiştiren, satır kaybetmeyen `git merge origin/main` GitHub'a sorulmaz. Bekleyen HIGH taban üstündeki LOW satırın
+   sonucu "insan adımı: beklemede (taban <sürüm>)" notunu taşır.
+8. **Ana dalda ölçüm ve not sözcüğü (tur 2 G-2, G-7; 2026-11-01):** `pack_approval.py ci-main <önce> [sonra]` push:main
+   CI adımında, push'un eklediği **onay** satırlarının paketlerini `sonra`'da sıkı okur; yalnız insan adımı sınıfı ENGEL
+   (insan adımı, açan, merge eden, birleştiren, onaylayan listede değil / onaylayamaz) kırmızıdır; iptal satırı, onaydan
+   sonra değişen paket ve inceleme yokluğu uyarıdır; kota ve okunamadı uyarıdır, main bozuk sayılmaz. Not sütunundaki
+   `onayla` sözcüğü büyük/küçük harfe duyarsız, sözcük sınırıyla eşleşir ("onaylandı" sayılmaz).

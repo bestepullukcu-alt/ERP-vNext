@@ -1,0 +1,31 @@
+# lane DB diten_supplychain_stage_r after the five flows — measured 2026-10-17
+# every collection with rows:
+  carrier_audit                     1
+  carrier_idempotency               1
+  carriers                          1
+  claims                            1
+  claims_audit                      1
+  claims_outbox                     1
+  claims_receipts                   1
+  load_assignments                  1
+  loads                             1
+  loads_audit                       1
+  loads_outbox                      1
+  loads_receipts                    1
+  return_entitlements               1
+  returns                           1
+  returns_audit                     1
+  returns_outbox                    1
+  returns_receipts                  1
+  sce_shipment_audit                6
+  sce_shipment_history              6
+  sce_shipment_outbox               6
+  sce_shipment_receipts             6
+  sce_shipments                     3
+
+# per module: aggregate -> receipt/idempotency, audit, outbox
+  shipments 3 aggregates, 6 mutations (3 create + 3 transition) -> 6 receipts, 6 history, 6 audit, 6 outbox
+  carriers  1 -> 1 carrier_idempotency, 1 carrier_audit
+  loads     1 -> 1 loads_receipts, 1 loads_audit, 1 loads_outbox, 1 load_assignments
+  returns   1 -> 1 returns_receipts, 1 returns_audit, 1 returns_outbox, 1 return_entitlements
+  claims    1 -> 1 claims_receipts, 1 claims_audit, 1 claims_outbox

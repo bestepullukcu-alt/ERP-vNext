@@ -94,31 +94,66 @@ public sealed record ReturnPagePermissions(bool CanCreate, bool CanAuthorize, bo
     public bool CanTransitionAny => CanAuthorize || CanTransit || CanCancel || CanReceive || CanDisposition || CanClose;
 }
 
-/// <summary>One Shipment line as the browser receives it: exact wire text, no conversion (pack §32.4/§32.6).</summary>
-public sealed record ReturnShipmentLineProjection(string? LineNumber, string? Quantity, string? UomId);
+/// <summary>One Shipment line as the browser receives it: exact wire text, plus (MOD-0186 r10 §35.2) the product / SKU name and
+/// code and the lot number read at display time. itemId, skuId, skuLevel and lotId stay server-side: no GUID reaches a label.</summary>
+public sealed record ReturnShipmentLineProjection(string? LineNumber, string? Quantity, string? UomId)
+{
+    /// <summary>"resolved" with <see cref="SkuLabel"/>, or "unavailable" (the row is kept; the page says "name unavailable").</summary>
+    public string SkuState { get; init; } = "unavailable";
+    public string? SkuLabel { get; init; }
+    /// <summary>The lot number; null when the line has no lot. <see cref="LotState"/> is "none", "resolved" or "unavailable".</summary>
+    public string LotState { get; init; } = "none";
+    public string? LotNumber { get; init; }
+}
 
-/// <summary>The only Shipment fields the browser receives from the resolve adapter (pack §32.4): number, status and
-/// lines (lineNumber, quantity, uomId). The lifecycle root and every other Shipment field stay server-side.</summary>
+/// <summary>The ids a shipment line carries, kept server-side to resolve names and match quarantine holds.</summary>
+public sealed record ReturnSourceLineIds(string? SkuId, string? LotId);
+
+/// <summary>The only Shipment fields the browser receives from the resolve adapter (pack §32.4, r10 §35.2): number, status and
+/// lines. The lifecycle root, the customer and every id stay server-side.</summary>
 public sealed record ReturnShipmentProjection(string? ShipmentNumber, string? Status,
     IReadOnlyList<ReturnShipmentLineProjection> Lines)
 {
-    public static ReturnShipmentProjection From(JsonElement shipmentDetail)
+    public static ReturnShipmentProjection From(JsonElement shipmentDetail) =>
+        From(shipmentDetail, new Dictionary<string, string>(), new Dictionary<string, System.Text.Json.Nodes.JsonObject>());
+
+    public static ReturnShipmentProjection From(JsonElement shipmentDetail, IReadOnlyDictionary<string, string> skuLabels,
+        IReadOnlyDictionary<string, System.Text.Json.Nodes.JsonObject> lots)
     {
         var lines = new List<ReturnShipmentLineProjection>();
-        if (shipmentDetail.ValueKind == JsonValueKind.Object
-            && shipmentDetail.TryGetProperty("lines", out var array)
-            && array.ValueKind == JsonValueKind.Array)
+        foreach (var line in SourceLines(shipmentDetail))
         {
-            foreach (var line in array.EnumerateArray())
+            var sku = ReadString(line, "skuId");
+            var lot = ReadString(line, "lotId");
+            var skuLabel = sku is not null && skuLabels.TryGetValue(sku, out var label) ? label : null;
+            var lotNode = lot is not null && lots.TryGetValue(lot, out var node) ? node : null;
+            var lotNumber = lotNode?["state"]?.GetValue<string>() == "resolved" ? lotNode["label"]?.GetValue<string>() : null;
+            lines.Add(new ReturnShipmentLineProjection(ReadString(line, "lineNumber"), ReadString(line, "quantity"), ReadString(line, "uomId"))
             {
-                lines.Add(new ReturnShipmentLineProjection(
-                    ReadString(line, "lineNumber"), ReadString(line, "quantity"), ReadString(line, "uomId")));
-            }
+                SkuState = skuLabel is null ? "unavailable" : "resolved", SkuLabel = skuLabel,
+                LotState = string.IsNullOrWhiteSpace(lot) ? "none" : lotNumber is null ? "unavailable" : "resolved", LotNumber = lotNumber
+            });
         }
-
-        return new ReturnShipmentProjection(ReadString(shipmentDetail, "shipmentNumber"),
-            ReadString(shipmentDetail, "status"), lines);
+        return new ReturnShipmentProjection(ReadString(shipmentDetail, "shipmentNumber"), ReadString(shipmentDetail, "status"), lines);
     }
+
+    public static IReadOnlyList<string> SkuIds(JsonElement shipmentDetail) =>
+        SourceLines(shipmentDetail).Select(l => ReadString(l, "skuId")).Where(x => Guid.TryParse(x, out _)).Select(x => x!).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+    public static IReadOnlyList<string> LotIds(JsonElement shipmentDetail) =>
+        SourceLines(shipmentDetail).Select(l => ReadString(l, "lotId")).Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x!).Distinct(StringComparer.Ordinal).ToList();
+
+    public static IReadOnlyDictionary<string, ReturnSourceLineIds> LinesByNumber(JsonElement shipmentDetail)
+    {
+        var map = new Dictionary<string, ReturnSourceLineIds>(StringComparer.Ordinal);
+        foreach (var line in SourceLines(shipmentDetail))
+            if (ReadString(line, "lineNumber") is { } number) map.TryAdd(number, new ReturnSourceLineIds(ReadString(line, "skuId"), ReadString(line, "lotId")));
+        return map;
+    }
+
+    private static IEnumerable<JsonElement> SourceLines(JsonElement shipmentDetail) =>
+        shipmentDetail.ValueKind == JsonValueKind.Object && shipmentDetail.TryGetProperty("lines", out var array) && array.ValueKind == JsonValueKind.Array
+            ? array.EnumerateArray().Where(l => l.ValueKind == JsonValueKind.Object).ToArray() : [];
 
     private static string? ReadString(JsonElement element, string name) =>
         element.ValueKind == JsonValueKind.Object

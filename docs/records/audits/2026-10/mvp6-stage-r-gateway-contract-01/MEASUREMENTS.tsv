@@ -1,0 +1,6 @@
+path	direct_5066	gateway_5000	declared_get_responses
+/api/shipment-bundle/returns	403	403	200,400,401,403,404,500,503
+/api/shipment-bundle/claims	403	403	200,400,401,403,500,503
+/api/shipment-bundle/carriers	403	403	200,400,401,403,404,500,503
+/api/shipment-bundle/loads	403	403	200,400,401,403,404,500,503
+/api/shipment-bundle/shipments	404	404	200,400,503

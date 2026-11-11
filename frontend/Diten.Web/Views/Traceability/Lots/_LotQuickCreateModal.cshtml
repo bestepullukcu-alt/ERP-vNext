@@ -49,6 +49,8 @@
                         <input id="quickLotRetestDate" type="date" class="form-control" />
                         <div class="invalid-feedback d-block" data-quick-error="retestDate"></div>
                     </div>
+                    @* WP-0176-F5: the date suggestion / override band (KF-D) — the same rule as Yeni Lot *@
+                    <partial name="~/Views/Shared/Expiry/_DateOverrideBand.cshtml" model="@("quick")" />
                     <div class="col-6">
                         <label for="quickLotCountry" class="form-label">@Localizer["Form.Country"]</label>
                         <select id="quickLotCountry" class="form-select">

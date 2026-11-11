@@ -2,7 +2,7 @@
 """verify_module_id.py — Module ID Canonicalization Gate (DCP-002).
 
 The Blueprint workbook
-    docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx :: Blueprint_Data
+    docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx :: Blueprint_Data
 is the canonical authority for MOD IDs and canonical capability names.
 
 Modes
@@ -26,7 +26,7 @@ import re
 import sys
 import unicodedata
 
-BLUEPRINT = "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.7.xlsx"
+BLUEPRINT = "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx"
 REGISTRY = "execution/registries/module-id-registry.md"
 PACK_GLOB = "execution/domains/*/module-packs/*.md"
 
@@ -759,10 +759,20 @@ def report_summary(info, findings, matched, meta, alias_ids, failure, blueprint=
     return out
 
 
+# CT-START-04 (6): a discovery report is committed as evidence in a public repository; the pack künye values it quotes
+# (owner …) may hold a personal e-mail address. Every address is masked before the report is hashed.
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
+EMAIL_MASK = "<e-posta gizlendi>"
+
+
+def mask_personal(line):
+    return EMAIL.sub(EMAIL_MASK, line)
+
+
 def discover(root, name, resource=None, sor=None):
     """Return (report lines without the hash line, exit code). CT-FIX-06: the 'ÖZET' lines stand under the header."""
     lines, code = _discover(root, name, resource, sor)
-    lines = [_one_line(l) for l in lines]                   # CT-FIX-09: one logical line = one physical line
+    lines = [mask_personal(_one_line(l)) for l in lines]    # CT-FIX-09: one logical line = one physical line
     total = len(lines) + 1                                  # with the hash line
     lines = [l.replace("{n}", str(total)) if l.startswith("ÖZET sınır: ") else l for l in lines]
     return lines, code

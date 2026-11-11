@@ -5,6 +5,8 @@
   <PackageReference Include="xunit" Version="2.9.2" />
   <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+  <!-- Contract fidelity: read the frozen shipment-bundle OpenAPI (YAML) in tests; no copy of it is checked in. -->
+  <PackageReference Include="YamlDotNet" Version="8.1.0" />
   <ProjectReference Include="../../src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj" />
  </ItemGroup>
 </Project>

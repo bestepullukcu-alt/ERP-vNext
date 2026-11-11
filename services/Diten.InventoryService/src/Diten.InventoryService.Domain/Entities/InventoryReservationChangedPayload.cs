@@ -10,7 +10,7 @@ public sealed class InventoryReservationChangedPayload
 {
     public Guid ReservationId { get; set; }
 
-    /// <summary>Created · Released · Expired · Consumed · PartiallyConsumed.</summary>
+    /// <summary>Created · Released · Expired · Consumed · PartiallyConsumed · Restored (MOD-0173-FU03 §8.3.1; internal payload, not contract).</summary>
     public string Change { get; set; } = string.Empty;
 
     public Guid ItemId { get; set; }
@@ -18,6 +18,15 @@ public sealed class InventoryReservationChangedPayload
     public Guid SkuId { get; set; }
 
     public SkuLevel SkuLevel { get; set; }
+
+    /// <summary>MOD-0173-FU03: the reservation's warehouse scope (null at SKU level).</summary>
+    public string? WarehouseId { get; set; }
+
+    /// <summary>MOD-0173-FU03: the reservation's lot scope (null unless lot level).</summary>
+    public Guid? LotId { get; set; }
+
+    /// <summary>MOD-0173-FU03: <see cref="Enums.ReservationClosedReasons"/> once closed.</summary>
+    public string? ClosedReason { get; set; }
 
     /// <summary>The quantity this change added to (Created) or removed from (others) the reserved total.</summary>
     public decimal ChangedQuantity { get; set; }

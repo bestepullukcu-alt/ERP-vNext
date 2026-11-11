@@ -38,6 +38,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 /// <para>Shared-database pattern (<see cref="MongoIntegrationHarness.CreateAsync"/>): one test database, isolation
 /// by a fresh TenantId per test, rows of that tenant deleted on dispose.</para>
 /// </summary>
+[Trait("Category", "Mongo")]
 public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
 {
     private const string InviteEvent = "platform.meetings.invite";

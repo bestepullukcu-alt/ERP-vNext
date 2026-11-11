@@ -43,16 +43,98 @@ public sealed class QuarantineContractTests
         => Yaml.Value["components"]!["schemas"]![schema]!["enum"]!.AsArray().Select(v => v!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
 
     [Fact]
-    public void The_contract_is_frozen_1_2_0_owned_by_MOD_0175()
+    public void The_contract_is_frozen_1_4_0_owned_by_MOD_0175()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.2.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.4.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0175", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/quarantine", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
         var changelog = string.Join(" ", info["x-changelog"]!.AsArray().Select(v => v!.GetValue<string>()));
-        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4", "1.1.0", "WP-0174-ITEM", "Item", "1.2.0", "WP-MVP1-FUB2", "NoteUpdated", "QUARANTINE_DECISION_ALREADY_PENDING" },
+        Assert.All(new[] { "R-1", "R-2", "R-3", "R-4", "1.1.0", "WP-0174-ITEM", "Item", "1.2.0", "WP-MVP1-FUB2", "NoteUpdated", "QUARANTINE_DECISION_ALREADY_PENDING", "1.3.0", "WP-0177-R3", "RECALL_CASE",
+                "1.4.0", "MOD-0175-FU01", "Voided", "sourceReversalConflict" },
             r => Assert.Contains(r, changelog, StringComparison.Ordinal));
+    }
+
+    /// <summary>MOD-0175-FU01: the 1.3.0 file as frozen by WP-0177-R3 (git blob at 96c744c57), kept byte for byte — the 1.4.0 comparison base.</summary>
+    private const string FrozenV13Sha256 = "f049f98a2db3e7eaf90b6b6464e99bf728e2a192ad76bd391131dee9e3aed583";
+
+    private static string FixtureV13Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.3.0.openapi.yaml");
+
+    [Fact]
+    public void The_v1_3_fixture_is_the_1_3_0_file_byte_for_byte()
+        => Assert.Equal(FrozenV13Sha256, Sha256(FixtureV13Path));
+
+    /// <summary>
+    /// MOD-0175-FU01 AC-23: 1.4.0 = 1.3.0 + <c>Voided</c> appended to HoldStatus / BlockedStatus / DecisionState, <c>SourceReversed</c> and
+    /// <c>SourceReversalConflict</c> appended to HistoryAction, the optional <c>HistoryEntry.reversalTransactionId</c>, the new schemas
+    /// <c>RecordVoid</c> and <c>SourceReversalMark</c> (cause: five values), the optional <c>voided</c> / <c>sourceReversalConflict</c> on the four
+    /// record bodies, a <c>MovementLink</c> description, one changelog line and the version. Every path, parameter, other property, type,
+    /// required list, status code and existing enum value is byte-equal as data.
+    /// </summary>
+    [Fact]
+    public void The_1_4_0_change_is_the_source_reversal_members_and_nothing_else()
+    {
+        var before = LoadJson(FixtureV13Path);
+        var after = LoadJson(ContractSchemas.QuarantineContractPath);
+        string[] Values(JsonNode? array) => array!.AsArray().Select(v => v!.GetValue<string>()).ToArray();
+        JsonNode Schemas(JsonObject file) => file["components"]!["schemas"]!;
+        Assert.Equal("1.4.0", after["info"]!["version"]!.GetValue<string>());
+
+        foreach (var (schema, added) in new (string, string[])[]
+                 {
+                     ("HoldStatus", ["Voided"]), ("BlockedStatus", ["Voided"]), ("DecisionState", ["Voided"]),
+                     ("HistoryAction", ["SourceReversed", "SourceReversalConflict"])
+                 })
+        {
+            Assert.Equal([.. Values(Schemas(before)[schema]!["enum"]), .. added], Values(Schemas(after)[schema]!["enum"]));
+        }
+
+        // the domain enums carry exactly the wire values (order included)
+        Assert.Equal(Values(Schemas(after)["HoldStatus"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.HoldStatus>());
+        Assert.Equal(Values(Schemas(after)["BlockedStatus"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.BlockedStatus>());
+        Assert.Equal(Values(Schemas(after)["DecisionState"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.DecisionState>());
+        Assert.Equal(Values(Schemas(after)["HistoryAction"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.HistoryAction>());
+        Assert.Equal(Values(Schemas(after)["SourceReversalMark"]!["properties"]!["cause"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.SourceReversalCause>());
+        Assert.Equal(["Decided", "LinesPosted", "QuantityChanged", "OwnMovementReversed", "LotChanged"], Values(Schemas(after)["SourceReversalMark"]!["properties"]!["cause"]!["enum"]));
+        Assert.Equal(Values(Schemas(after)["RecordVoid"]!["properties"]!["reason"]!["enum"]), Enum<Diten.InventoryService.Domain.Quarantine.Enums.VoidReason>());
+        Assert.Null(Schemas(before)["RecordVoid"]);
+        Assert.Null(Schemas(before)["SourceReversalMark"]);
+
+        foreach (var record in new[] { "HoldRef", "HoldDetail", "BlockedStockRef", "BlockedStockDetail" })
+        {
+            Assert.Equal("#/components/schemas/RecordVoid", Schemas(after)[record]!["properties"]!["voided"]!["$ref"]!.GetValue<string>());
+            Assert.Equal("#/components/schemas/SourceReversalMark", Schemas(after)[record]!["properties"]!["sourceReversalConflict"]!["$ref"]!.GetValue<string>());
+        }
+
+        Assert.Contains("REVERSAL", Schemas(after)["MovementLink"]!["description"]!.GetValue<string>(), StringComparison.Ordinal);
+        var oldLog = Values(before["info"]!["x-changelog"]);
+        var newLog = Values(after["info"]!["x-changelog"]);
+        Assert.Equal(oldLog, newLog.Take(oldLog.Length));
+        Assert.StartsWith("1.4.0 — additive (MOD-0175-FU01", Assert.Single(newLog.Skip(oldLog.Length)));
+        Assert.Contains("No existing path, parameter, property, type, required list, status code or enum value changed", newLog[^1], StringComparison.Ordinal);
+
+        foreach (var file in new[] { before, after })
+        {
+            file["info"]!.AsObject().Remove("version");
+            file["info"]!.AsObject().Remove("x-changelog");
+            foreach (var schema in new[] { "HoldStatus", "BlockedStatus", "DecisionState", "HistoryAction" })
+            {
+                Schemas(file)[schema]!.AsObject().Remove("enum");
+            }
+
+            Schemas(file).AsObject().Remove("RecordVoid");
+            Schemas(file).AsObject().Remove("SourceReversalMark");
+            Schemas(file)["HistoryEntry"]!["properties"]!.AsObject().Remove("reversalTransactionId");
+            Schemas(file)["MovementLink"]!.AsObject().Remove("description");
+            foreach (var record in new[] { "HoldRef", "HoldDetail", "BlockedStockRef", "BlockedStockDetail" })
+            {
+                Schemas(file)[record]!["properties"]!.AsObject().Remove("voided");
+                Schemas(file)[record]!["properties"]!.AsObject().Remove("sourceReversalConflict");
+            }
+        }
+
+        Assert.Equal(before.ToJsonString(), after.ToJsonString());
     }
 
     private const string FrozenV10Sha256 = "c8f31720cd7f8b5d379160465c8c60d9f1dbc08c9f2548ad0775e1ebf60946a9";
@@ -63,6 +145,54 @@ public sealed class QuarantineContractTests
     private static string FixtureV10Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.0.0.openapi.yaml");
 
     private static string FixtureV11Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.1.0.openapi.yaml");
+
+    /// <summary>WP-0177-R3: the 1.2.0 file as frozen by WP-MVP1-FUB2 (git blob at f35197c5a), kept byte for byte.</summary>
+    private const string FrozenV12Sha256 = "b3fce0814a1c0cfa491ae9695991b66772bd3cd35b12f3acdece4bf48f6dff1d";
+
+    private static string FixtureV12Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "quarantine-v1.2.0.openapi.yaml");
+
+    [Fact]
+    public void The_v1_2_fixture_is_the_1_2_0_file_byte_for_byte()
+        => Assert.Equal(FrozenV12Sha256, Sha256(FixtureV12Path));
+
+    /// <summary>
+    /// WP-0177-R3 (MOD-0177 CT-R3, owner step MOD-0175): 1.3.0 = 1.2.0 + <c>Recall</c> appended to <c>HoldSource</c> + a description on
+    /// <c>SourceDocument</c> and on <c>listHoldsBySource</c> (both new keys) + one changelog line + the version. Everything else is byte-equal as data.
+    /// </summary>
+    [Fact]
+    public void The_1_3_0_change_is_Recall_on_HoldSource_and_two_descriptions_and_nothing_else()
+    {
+        var before = LoadJson(FixtureV12Path);
+        var after = LoadJson(FixtureV13Path); // MOD-0175-FU01: the 1.3.0 file is now the fixture; 1.4.0 is measured against it
+        string[] Values(JsonNode? array) => array!.AsArray().Select(v => v!.GetValue<string>()).ToArray();
+        Assert.Equal("1.3.0", after["info"]!["version"]!.GetValue<string>());
+        Assert.Equal([.. Values(before["components"]!["schemas"]!["HoldSource"]!["enum"]), "Recall"], Values(after["components"]!["schemas"]!["HoldSource"]!["enum"]));
+        Assert.Null(before["components"]!["schemas"]!["SourceDocument"]!["description"]);
+        Assert.Contains("RECALL_CASE", after["components"]!["schemas"]!["SourceDocument"]!["description"]!.GetValue<string>(), StringComparison.Ordinal);
+        Assert.Null(before["paths"]!["/holds/by-source"]?["get"]?["description"]);
+        var oldLog = Values(before["info"]!["x-changelog"]);
+        var newLog = Values(after["info"]!["x-changelog"]);
+        Assert.Equal(oldLog, newLog.Take(oldLog.Length));
+        Assert.StartsWith("1.3.0 — additive (WP-0177-R3", Assert.Single(newLog.Skip(oldLog.Length)));
+        Assert.Equal(Values(before["components"]!["schemas"]!["HoldSource"]!["enum"]).Length + 1,
+            Enum<Diten.InventoryService.Domain.Quarantine.Enums.HoldSource>().Length); // the domain enum has exactly the wire values
+
+        foreach (var file in new[] { before, after })
+        {
+            file["info"]!.AsObject().Remove("version");
+            file["info"]!.AsObject().Remove("x-changelog");
+            file["components"]!["schemas"]!["HoldSource"]!.AsObject().Remove("enum");
+            file["components"]!["schemas"]!["SourceDocument"]!.AsObject().Remove("description");
+            foreach (var path in file["paths"]!.AsObject().Where(x => x.Value?["get"]?["operationId"]?.GetValue<string>() == "listHoldsBySource").ToList())
+            {
+                path.Value!["get"]!.AsObject().Remove("description");
+            }
+        }
+
+        Assert.Equal(before.ToJsonString(), after.ToJsonString());
+    }
+
+    private static string[] Enum<T>() where T : struct, System.Enum => System.Enum.GetNames<T>();
 
     private static string Sha256(string path)
         => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(File.ReadAllText(path).Replace("\r\n", "\n")))).ToLowerInvariant();
@@ -80,7 +210,7 @@ public sealed class QuarantineContractTests
     public void The_1_2_0_change_is_the_note_history_row_and_the_note_lock_code_and_nothing_else()
     {
         var before = LoadJson(FixtureV11Path);
-        var after = LoadJson(ContractSchemas.QuarantineContractPath);
+        var after = LoadJson(FixtureV12Path); // WP-0177-R3: the 1.2.0 file is now the fixture; 1.3.0 is measured against it
         string[] Values(JsonNode? array) => array!.AsArray().Select(v => v!.GetValue<string>()).ToArray();
         var actions = Values(before["components"]!["schemas"]!["HistoryAction"]!["enum"]);
         Assert.Equal([.. actions, "NoteUpdated"], Values(after["components"]!["schemas"]!["HistoryAction"]!["enum"]));
@@ -190,11 +320,13 @@ public sealed class QuarantineContractTests
 
         var states = Regex.Match(Section("### 2.6", "### 2.7"), @"""state"": ""([^""]+)""").Groups[1].Value.Split('|').Select(s => s.Trim()).ToHashSet();
         Assert.Equal(12, states.Count);
+        states.Add("Voided"); // QUARANTINE 1.4.0 (MOD-0175-FU01), after the proposal; measured by The_1_4_0_change_is_…
         Assert.Equal(states.OrderBy(x => x), Enum("DecisionState").OrderBy(x => x));
         Assert.Equal(states.OrderBy(x => x), System.Enum.GetNames<DecisionState>().OrderBy(x => x));
 
         var actions = Regex.Match(Section("### 2.3", "### 2.4"), @"""action"": ""([^""]+)""").Groups[1].Value.Split('|').Select(s => s.Trim()).ToHashSet();
         actions.Add("NoteUpdated"); // QUARANTINE 1.2.0 (WP-MVP1-FUB2), after the proposal; measured by The_1_2_0_change_is_…
+        actions.UnionWith(["SourceReversed", "SourceReversalConflict"]); // QUARANTINE 1.4.0 (MOD-0175-FU01); measured by The_1_4_0_change_is_…
         Assert.Equal(actions.OrderBy(x => x), Enum("HistoryAction").OrderBy(x => x));
         Assert.Equal(actions.OrderBy(x => x), System.Enum.GetNames<HistoryAction>().OrderBy(x => x));
     }

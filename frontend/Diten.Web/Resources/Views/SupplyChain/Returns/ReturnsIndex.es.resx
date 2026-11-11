@@ -6,7 +6,7 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="ReturnsTitle" xml:space="preserve"><value>Devoluciones</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Solicite, autorice y controle las devoluciones de mercancías enviadas.</value></data>
-  <data name="AddNewReturns" xml:space="preserve"><value>Agregar devolución</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>Añadir devolución</value></data>
   <data name="ActionsHeader" xml:space="preserve"><value>Acciones</value></data>
   <data name="RmaNumber" xml:space="preserve"><value>Número RMA</value></data>
   <data name="ReturnId" xml:space="preserve"><value>ID de la devolución</value></data>
@@ -35,7 +35,7 @@
   <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Despachado</value></data>
   <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
   <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Entregado</value></data>
-  <data name="ShipmentStatusException" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Excepción</value></data>
   <data name="ShipmentStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
   <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Nueva devolución</value></data>
@@ -69,11 +69,10 @@
   <data name="ActionReject" xml:space="preserve"><value>Rechazar</value></data>
   <data name="ActionMarkInTransit" xml:space="preserve"><value>Marcar en tránsito</value></data>
   <data name="ActionCancelReturn" xml:space="preserve"><value>Cancelar devolución</value></data>
-  <data name="ActionReceive" xml:space="preserve"><value>Recibir (declaración manual)</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Recibir</value></data>
   <data name="ActionDisposition" xml:space="preserve"><value>Asignar disposición</value></data>
   <data name="ActionClose" xml:space="preserve"><value>Cerrar</value></data>
-  <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida (declaración manual)</value></data>
-  <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de stock.</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida</value></data>
   <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
   <data name="OccurredAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
   <data name="OccurredAtInvalid" xml:space="preserve">
@@ -109,7 +108,51 @@
   <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Los datos del envío devueltos por el sistema de origen no son válidos. Póngase en contacto con soporte.</value></data>
   <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Los datos de referencia del envío están incompletos. Vuelva a intentar la misma solicitud más tarde.</value></data>
   <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>El estado del envío no está disponible temporalmente. Vuelva a intentar la misma solicitud.</value></data>
-  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Un servicio necesario no está disponible en este momento. Vuelva a intentar la misma solicitud en breve.</value></data>
   <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Las devoluciones no están disponibles temporalmente. El resultado no está confirmado; vuelva a intentar la misma solicitud.</value></data>
   <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado. Puede reintentar la misma acción.</value></data>
+  <data name="InventoryRefusedFefoBypassReasonRequired" xml:space="preserve"><value>Se requiere un motivo para omitir el lote de caducidad más próxima.</value></data>
+  <data name="InventoryRefusedFefoOrderViolation" xml:space="preserve"><value>Este lote incumple el orden de primero en caducar, primero en salir.</value></data>
+  <data name="InventoryRefusedInsufficientAvailable" xml:space="preserve"><value>No hay suficiente stock disponible para esta línea.</value></data>
+  <data name="InventoryRefusedInsufficientStock" xml:space="preserve"><value>No hay suficiente stock para esta línea.</value></data>
+  <data name="InventoryRefusedItemNotActive" xml:space="preserve"><value>El artículo no está activo.</value></data>
+  <data name="InventoryRefusedLotBelowMinRemainingShelfLife" xml:space="preserve"><value>La vida útil restante del lote está por debajo del mínimo.</value></data>
+  <data name="InventoryRefusedLotBlocked" xml:space="preserve"><value>El lote está bloqueado.</value></data>
+  <data name="InventoryRefusedLotExpired" xml:space="preserve"><value>El lote ha caducado.</value></data>
+  <data name="InventoryRefusedLotNotAllowed" xml:space="preserve"><value>No se puede indicar un lote para este artículo.</value></data>
+  <data name="InventoryRefusedLotRequired" xml:space="preserve"><value>Se requiere un lote para este artículo.</value></data>
+  <data name="InventoryRefusedLotRetestDue" xml:space="preserve"><value>El lote debe volver a analizarse.</value></data>
+  <data name="InventoryRefusedLotSkuMismatch" xml:space="preserve"><value>El lote no pertenece a este SKU.</value></data>
+  <data name="InventoryRefusedLotUnderRecall" xml:space="preserve"><value>El lote está retirado del mercado.</value></data>
+  <data name="InventoryRefusedProductMasterDataIncomplete" xml:space="preserve"><value>Los datos maestros del producto están incompletos.</value></data>
+  <data name="InventoryRefusedReservationConflict" xml:space="preserve"><value>El stock está reservado para otro documento.</value></data>
+  <data name="InventoryRefusedSerialAlreadyExists" xml:space="preserve"><value>Este número de serie ya existe.</value></data>
+  <data name="InventoryRefusedSerialCountMismatch" xml:space="preserve"><value>Los artículos con seguimiento por número de serie no se pueden devolver en esta versión.</value></data>
+  <data name="InventoryRefusedSerialLotMismatch" xml:space="preserve"><value>El número de serie no pertenece a este lote.</value></data>
+  <data name="InventoryRefusedSerialNotAvailable" xml:space="preserve"><value>El número de serie no está disponible.</value></data>
+  <data name="InventoryRefusedSkuItemMismatch" xml:space="preserve"><value>El SKU no pertenece a este artículo.</value></data>
+  <data name="InventoryRefusedSkuLevelNotStockable" xml:space="preserve"><value>No se puede mantener stock en este nivel de SKU.</value></data>
+  <data name="InventoryRefusedUnknownItem" xml:space="preserve"><value>El artículo es desconocido.</value></data>
+  <data name="InventoryRefusedUnknownLocation" xml:space="preserve"><value>La ubicación es desconocida.</value></data>
+  <data name="InventoryRefusedUnknownLot" xml:space="preserve"><value>El lote es desconocido.</value></data>
+  <data name="InventoryRefusedUomConversionMissing" xml:space="preserve"><value>No hay conversión de unidades definida para esta línea.</value></data>
+  <data name="InventoryRefusedUnknown" xml:space="preserve"><value>Motivo no reconocido (código: {0}).</value></data>
+  <data name="ErrInventoryRefused" xml:space="preserve"><value>El módulo de Inventario rechazó la recepción de la línea {0}.</value></data>
+  <data name="ErrReturnSourceMovementMissing" xml:space="preserve"><value>La línea {0} del envío no tiene salida de stock registrada, por lo que la devolución no se puede recibir. No se contabilizó nada.</value></data>
+  <data name="ErrReturnReceiptInProgress" xml:space="preserve"><value>Ya hay una recepción en curso para esta devolución o se inició con otros valores. Envíe de nuevo con los valores guardados que se muestran o inténtelo de nuevo en breve.</value></data>
+  <data name="ReceiptStoredValues" xml:space="preserve"><value>Valores guardados: almacén {0}, ubicación {1}, fecha {2}.</value></data>
+  <data name="ErrReturnLineNotUnpostable" xml:space="preserve"><value>La línea {0} no se puede recibir sin contabilización de stock.</value></data>
+  <data name="ReceiptPartialRetryHint" xml:space="preserve"><value>Las líneas ya contabilizadas permanecen contabilizadas. Corrija la línea rechazada y envíe de nuevo.</value></data>
+  <data name="ReceiptLinePosted" xml:space="preserve"><value>Contabilizada</value></data>
+  <data name="ReceiptLineNotPosted" xml:space="preserve"><value>No contabilizada</value></data>
+  <data name="ReceiptPostingHeader" xml:space="preserve"><value>Contabilización de stock</value></data>
+  <data name="ReceiptReasonHeader" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ReceiptReasonPreWpP1" xml:space="preserve"><value>Recibido sin contabilización de stock: enviado antes de la integración de stock</value></data>
+  <data name="ReceiptReasonIntegrityFault" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="ReceivedPostsQuarantineNote" xml:space="preserve"><value>La recepción contabiliza cada línea en la cuarentena de Inventario; las líneas ya contabilizadas no se vuelven a contabilizar. Un envío despachado antes de la integración de stock se recibe sin contabilización de stock.</value></data>
+  <data name="ToWarehouseId" xml:space="preserve"><value>Almacén de recepción</value></data>
+  <data name="ToLocationId" xml:space="preserve"><value>Ubicación de recepción</value></data>
+  <data name="ActionReceiveWithoutPosting" xml:space="preserve"><value>Recibir sin contabilización de stock</value></data>
+  <data name="ConfirmReceiveWithoutPosting" xml:space="preserve"><value>¿Recibir la línea {0} sin contabilización de stock? Inventario la rechazó por un motivo que ningún reintento puede cambiar; después el stock deberá corregirse en Inventario.</value></data>
+<data name="ShipmentSelect" xml:space="preserve"><value>Buscar envío por número</value></data><data name="ShipmentPickerHelp" xml:space="preserve"><value>Solo se pueden devolver envíos entregados o cerrados.</value></data><data name="ShipmentChosen" xml:space="preserve"><value>Envío elegido</value></data><data name="ProductSku" xml:space="preserve"><value>Producto / SKU</value></data><data name="LotNumber" xml:space="preserve"><value>Lote</value></data><data name="ReasonSelect" xml:space="preserve"><value>Seleccione un motivo</value></data><data name="Reason_DAMAGED" xml:space="preserve"><value>Dañado</value></data><data name="Reason_WRONG_ITEM" xml:space="preserve"><value>Artículo equivocado</value></data><data name="Reason_WRONG_QUANTITY" xml:space="preserve"><value>Cantidad equivocada</value></data><data name="Reason_EXPIRED" xml:space="preserve"><value>Caducado</value></data><data name="Reason_QUALITY_COMPLAINT" xml:space="preserve"><value>Reclamación de calidad</value></data><data name="Reason_CUSTOMER_REFUSED" xml:space="preserve"><value>Rechazado por el cliente</value></data><data name="Reason_OTHER" xml:space="preserve"><value>Otro</value></data><data name="WarehouseSelect" xml:space="preserve"><value>Buscar almacén por nombre o código</value></data><data name="LocationSelect" xml:space="preserve"><value>Abra el almacén y elija una ubicación</value></data><data name="WarehouseFirst" xml:space="preserve"><value>Elija primero un almacén.</value></data><data name="LocationBack" xml:space="preserve"><value>Atrás</value></data><data name="PickerSearching" xml:space="preserve"><value>Buscando…</value></data><data name="PickerNoResults" xml:space="preserve"><value>Sin resultados</value></data><data name="PickerUnavailable" xml:space="preserve"><value>No se pudo cargar la lista. Inténtelo más tarde.</value></data><data name="NameUnavailable" xml:space="preserve"><value>Nombre no disponible</value></data><data name="NameNotFound" xml:space="preserve"><value>No encontrado</value></data><data name="OldRecord" xml:space="preserve"><value>Registro antiguo</value></data><data name="ReturnCustomer" xml:space="preserve"><value>Cliente</value></data><data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data><data name="ReturnDetails" xml:space="preserve"><value>Detalle de la devolución</value></data><data name="CreatedAt" xml:space="preserve"><value>Creado</value></data><data name="BackToList" xml:space="preserve"><value>Volver a la lista</value></data><data name="Loading" xml:space="preserve"><value>Cargando…</value></data><data name="DetailsErrorState" xml:space="preserve"><value>No se pudo cargar la devolución. Inténtelo más tarde.</value></data><data name="InventoryPosting" xml:space="preserve"><value>Registro de stock</value></data><data name="NotPostedYet" xml:space="preserve"><value>Aún no recibido</value></data><data name="QuarantineRecords" xml:space="preserve"><value>Registros de cuarentena</value></data><data name="NoHold" xml:space="preserve"><value>Sin registro de cuarentena</value></data><data name="OtherHolds" xml:space="preserve"><value>Otros registros de cuarentena de esta devolución</value></data><data name="HoldsUnavailable" xml:space="preserve"><value>No se pudieron cargar los registros de cuarentena.</value></data><data name="HoldStatus_Open" xml:space="preserve"><value>Abierto</value></data><data name="HoldStatus_DecisionPending" xml:space="preserve"><value>Decisión pendiente</value></data><data name="HoldStatus_Decided" xml:space="preserve"><value>Decidido</value></data>
 </root>

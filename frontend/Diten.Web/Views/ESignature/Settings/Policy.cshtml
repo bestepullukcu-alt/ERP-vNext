@@ -3,6 +3,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ESign.Policy.Title"].Value;
+    ViewData["PageCode"] = "ESIGNPOLICY"; // WP-MVP1-FU-CLEAN2 (UXH-001): the "?" panel shows THIS page's help (a child route never borrows its parent's)
     Layout = "_LayoutTenantShell";
     var canManage = Perms.Has("esign.policy.manage");
 }
@@ -24,6 +25,7 @@
     <h5 class="mb-0">@Localizer["ESign.Policy.Title"]</h5>
     <p class="mb-0 text-muted">@Localizer["ESign.Policy.Sub"]</p>
 </div>
+
 
 <div class="card mb-4" id="esignPolicyRoot" data-can-manage="@(canManage ? "true" : "false")">
     <div class="card-body d-flex flex-wrap align-items-center gap-3">

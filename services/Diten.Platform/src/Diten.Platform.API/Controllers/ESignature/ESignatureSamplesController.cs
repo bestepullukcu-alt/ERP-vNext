@@ -41,20 +41,16 @@ public sealed class ESignatureSamplesController : CustomBaseController
 
     /// <summary>
     /// §4.17 related — image/png for the owner, an approver, or anyone allowed to read a signature that shows it; else 404.
-    /// Three keys qualify, so the action evaluates them itself with the same evaluator [HasPermission] uses.
+    /// Any one of the three keys opens the endpoint ([HasAnyPermission], WP-MVP1-SEC-ESIGN1 — visible to A1 and the guards);
+    /// which of them the caller holds is still passed to the handler, which decides WHICH samples that caller may see.
     /// </summary>
     [HttpGet("{id:guid}/image")]
-    [Authorize]
+    [HasAnyPermission(ESignPermissions.MySamplesManage, ESignPermissions.SamplesApprove, ESignPermissions.SignaturesRead)]
     public async Task<IActionResult> Image(Guid id, CancellationToken ct)
     {
         bool Has(string key) => PermissionClaimEvaluator.Evaluate(User.Claims, key).IsSatisfied;
-        var canOwn = Has(ESignPermissions.MySamplesManage);
         var canApprove = Has(ESignPermissions.SamplesApprove);
         var canRead = Has(ESignPermissions.SignaturesRead);
-        if (!canOwn && !canApprove && !canRead)
-        {
-            return CreateActionResultInstance(Response<object>.Fail("Permission denied.", 403, "PERMISSION_DENIED"));
-        }
 
         var result = await _mediator.Send(new GetSampleImageQuery(id, canApprove, canRead), ct);
         if (!result.IsSuccessful || result.Data is null)

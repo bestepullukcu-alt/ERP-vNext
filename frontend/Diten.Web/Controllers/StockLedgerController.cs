@@ -1,4 +1,5 @@
 using Diten.Web.Models.Inventory;
+using Diten.Web.Models.Traceability;
 using Diten.Web.Services;
 using Diten.Web.Views.Inventory.StockLedger;
 using Microsoft.AspNetCore.Authorization;
@@ -82,6 +83,12 @@ public sealed class StockLedgerController : Controller
             rows.SelectMany(r => new[] { r.WarehouseId, r.LocationId }),
             cancellationToken);
 
+        // FIX-LIVE1: the LOT column shows the lot number — one TRACE listLots per SKU on the page, only with the caller's own trace.lots.read.
+        var lotNumbers = await LotNumberResolver.ResolveAsync(
+            _permissions.Has(LotNumberResolver.ReadKey) ? TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User) : null,
+            rows.Select(r => new LotNumberResolver.Row(r.LotId, r.SkuId, r.SkuLevel)),
+            cancellationToken);
+
         StockLedgerSummaryViewModel? summary = null;
         string? summaryMessage = null;
         var availabilityQuery = InventoryListAdapter.AvailabilityQuery(Request.Query);
@@ -100,7 +107,7 @@ public sealed class StockLedgerController : Controller
         {
             data = new
             {
-                items = InventoryListAdapter.MapBalanceRows(rows, labels),
+                items = InventoryListAdapter.MapBalanceRows(rows, labels, lotNumbers),
                 total,
                 filteredTotal = total
             },

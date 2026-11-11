@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>صرف خارج FEFO</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>أقل من الحد الأدنى لمدة الصلاحية المتبقية</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>تغيير تاريخ الانتهاء / إعادة الفحص</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>مخزون منتهي الصلاحية في اليد</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>مقبول</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>تم التصحيح</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>قبول مع مبرر</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>تم التصحيح</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>قاعدة صرف FEFO</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>استلام أقل من الحد الأدنى لمدة الصلاحية المتبقية</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>تغيير تاريخ الانتهاء / إعادة الفحص</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>أفق «اقتراب»</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>عتبة «حرج»</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>عتبة «مخزون منتهي الصلاحية في اليد»</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>تنبيه</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>طلب مبرر</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>منع</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>حجر تلقائي</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>مبرر</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>مبرر + توقيع إلكتروني</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>المؤشرات الموجزة</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>استثناءات الفترة وحلولها</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>تغييرات السياسة خلال الفترة</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>عمليات صرف خارج FEFO</value></data>
+  <data name="ExpiryPdf.Title" xml:space="preserve"><value>FEFO / انتهاء الصلاحية — حزمة الأدلة</value></data>
+  <data name="ExpiryPdf.Company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="ExpiryPdf.Period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ExpiryPdf.Generated" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="ExpiryPdf.Page" xml:space="preserve"><value>صفحة</value></data>
+  <data name="ExpiryPdf.Warehouses" xml:space="preserve"><value>المستودعات</value></data>
+  <data name="ExpiryPdf.Types" xml:space="preserve"><value>الأنواع</value></data>
+  <data name="ExpiryPdf.All" xml:space="preserve"><value>الكل</value></data>
+  <data name="ExpiryPdf.Kpi" xml:space="preserve"><value>المؤشر</value></data>
+  <data name="ExpiryPdf.Value" xml:space="preserve"><value>القيمة</value></data>
+  <data name="ExpiryPdf.Compliance" xml:space="preserve"><value>الامتثال لـ FEFO</value></data>
+  <data name="ExpiryPdf.Issues" xml:space="preserve"><value>الصرف ضمن نطاق FEFO</value></data>
+  <data name="ExpiryPdf.Bypassed" xml:space="preserve"><value>خارج FEFO</value></data>
+  <data name="ExpiryPdf.Critical" xml:space="preserve"><value>حرج (المخزون المتاح)</value></data>
+  <data name="ExpiryPdf.Approaching" xml:space="preserve"><value>قريب (المخزون المتاح)</value></data>
+  <data name="ExpiryPdf.Expired" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="ExpiryPdf.Open" xml:space="preserve"><value>الاستثناءات المفتوحة</value></data>
+  <data name="ExpiryPdf.Late" xml:space="preserve"><value>تجاوزت SLA</value></data>
+  <data name="ExpiryPdf.AvgResolution" xml:space="preserve"><value>متوسط وقت الحل</value></data>
+  <data name="ExpiryPdf.Hours" xml:space="preserve"><value>س</value></data>
+  <data name="ExpiryPdf.Available" xml:space="preserve"><value>متاح</value></data>
+  <data name="ExpiryPdf.Held" xml:space="preserve"><value>محجوز</value></data>
+  <data name="ExpiryPdf.None" xml:space="preserve"><value>لا توجد سجلات.</value></data>
+  <data name="ExpiryPdf.No" xml:space="preserve"><value>الرقم</value></data>
+  <data name="ExpiryPdf.Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="ExpiryPdf.Item" xml:space="preserve"><value>الصنف</value></data>
+  <data name="ExpiryPdf.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="ExpiryPdf.Warehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="ExpiryPdf.Opened" xml:space="preserve"><value>الفتح (UTC)</value></data>
+  <data name="ExpiryPdf.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ExpiryPdf.Resolution" xml:space="preserve"><value>الحل</value></data>
+  <data name="ExpiryPdf.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ExpiryPdf.Signature" xml:space="preserve"><value>معرّف التوقيع</value></data>
+  <data name="ExpiryPdf.Signer" xml:space="preserve"><value>الموقّع</value></data>
+  <data name="ExpiryPdf.Field" xml:space="preserve"><value>الحقل</value></data>
+  <data name="ExpiryPdf.Old" xml:space="preserve"><value>القديم</value></data>
+  <data name="ExpiryPdf.New" xml:space="preserve"><value>الجديد</value></data>
+  <data name="ExpiryPdf.By" xml:space="preserve"><value>عدّله</value></data>
+  <data name="ExpiryPdf.When" xml:space="preserve"><value>الوقت (UTC)</value></data>
+  <data name="ExpiryPdf.FirstEligible" xml:space="preserve"><value>أول تشغيلة مؤهلة</value></data>
+  <data name="ExpiryPdf.NameUnreadable" xml:space="preserve"><value>{0} (تعذّرت قراءة الاسم)</value></data>
+  <data name="ExpiryPdf.Unreadable" xml:space="preserve"><value>{0} (تعذّرت القراءة)</value></data>
+  <data name="ExpiryPdf.EnglishFallback" xml:space="preserve"><value>أُنشئت هذه الوثيقة باللغة الإنجليزية (اللغة المختارة غير مدعومة في ملف PDF)</value></data>
+  <data name="ExpiryPdf.RequestedLanguage" xml:space="preserve"><value>اللغة المطلوبة: {0}</value></data>
+</root>

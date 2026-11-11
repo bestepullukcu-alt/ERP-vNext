@@ -912,6 +912,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Content Set</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Eligibility</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Visit Frequency Policy</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Cases</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Consumption Declarations</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Date Overrides</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Drills</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Effectiveness Checks</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Evidence</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Exceptions</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Lot Status</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Policies</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Quarantine Requests</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Segregations</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Trace</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Location Roles</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Packages</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaign</value></data>
@@ -1211,6 +1227,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Loads</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Claims Management</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Shipment Claims</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>S&amp;OP Workflow &amp; Sign-offs</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>S&amp;OP Plans</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>Capacity Planning</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>Capacity Plans</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventory</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stock Ledger</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Locations</value></data>
@@ -1232,6 +1252,58 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-Signature Policy</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Signature Meanings</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Sample Approvals</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Expiry / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Recall Readiness</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO dashboard</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Approaching expiry</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Expired stock</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO order</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Exception inbox</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Exception detail</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Shelf-life rules and settings</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Evidence pack</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Recall readiness</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Recall trace</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Recall cases</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Recall case</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Recall drill planner</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Recall evidence pack</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Recall settings</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>MRP and Replenishment</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Safety Stock Optimization</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Warehouse Operations</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Putaway Tasks</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Warehouse Location Roles</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Outbound Shipments</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Pick Tasks</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Packing</value>
+  </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Capacity Plan Scenarios</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP Plan Sign-offs</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP Plan Snapshots</value>
+  </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Cycle Counting</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Counts</value>
+  </data>
 </root>

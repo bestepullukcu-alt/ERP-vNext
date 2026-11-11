@@ -1,0 +1,192 @@
+[
+ {
+  "path": "/sandop-plans",
+  "method": "POST",
+  "operationId": "createSandopPlan",
+  "codes": [
+   "201",
+   "400",
+   "401",
+   "403",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/sandop-plans/{sandopPlanId}",
+  "method": "GET",
+  "operationId": "getSandopPlan",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/sandop-plans/{sandopPlanId}/snapshots",
+  "method": "POST",
+  "operationId": "captureSandopSnapshot",
+  "codes": [
+   "201",
+   "400",
+   "401",
+   "403",
+   "404",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/sandop-plans/{sandopPlanId}/snapshots",
+  "method": "GET",
+  "operationId": "listSandopSnapshots",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+  "method": "POST",
+  "operationId": "recordSandopSignOff",
+  "codes": [
+   "201",
+   "400",
+   "401",
+   "403",
+   "404",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+  "method": "GET",
+  "operationId": "listSandopSignOffs",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans",
+  "method": "POST",
+  "operationId": "createCapacityPlan",
+  "codes": [
+   "201",
+   "400",
+   "401",
+   "403",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans/{capacityPlanId}",
+  "method": "GET",
+  "operationId": "getCapacityPlan",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans/{capacityPlanId}/scenarios",
+  "method": "POST",
+  "operationId": "createCapacityScenario",
+  "codes": [
+   "201",
+   "400",
+   "401",
+   "403",
+   "404",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
+  "method": "GET",
+  "operationId": "getCapacityScenario",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
+  "method": "POST",
+  "operationId": "evaluateCapacityScenario",
+  "codes": [
+   "202",
+   "400",
+   "401",
+   "403",
+   "404",
+   "409",
+   "422",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ },
+ {
+  "path": "/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
+  "method": "GET",
+  "operationId": "getCapacityEvaluation",
+  "codes": [
+   "200",
+   "400",
+   "401",
+   "403",
+   "404",
+   "503"
+  ],
+  "errors": [],
+  "headers": []
+ }
+]

@@ -155,10 +155,11 @@
         ui.byId('qr-p-sub').textContent = [hold.lot?.lotNumber, [hold.warehouseLabel, hold.locationLabel].filter(Boolean).join(' · '), `${qty(hold.quantity)} ${unit}`].filter(Boolean).join(' · ');
         form.querySelectorAll('[data-uom]').forEach((el) => { el.textContent = unit; });
         ui.byId('qr-coa-ref').textContent = hold.lot?.coaReference ? `· ${hold.lot.coaReference}` : '';
+        window.RecallBands?.decisionFor(hold.lot?.lotId); // WP-0177-R7c (CT-R9): the release warning reads the lot's recall status
         const fourEyes = ui.byId('qr-foureyes');
         fourEyes.querySelector('span').textContent = data.settings?.fourEyes === false ? t('Quarantine.Decide.FourEyes.Off') : t('Quarantine.Decide.FourEyes.On');
         show(fourEyes, true);
-        if (hold.status === 'Decided' || hold.activeDecision) {
+        if (!ui.holdOpen(hold) || hold.activeDecision) { // MOD-0175-FU01 DL-2: Decided and Voided say "closed", with the state's name
             ui.showError(ui.byId('qr-page-error'), t('Quarantine.Decide.Closed', t('Quarantine.HoldState.' + ui.holdState(hold))));
             form.querySelectorAll('input, select, textarea, button[type="submit"]').forEach((el) => { el.disabled = true; });
         }

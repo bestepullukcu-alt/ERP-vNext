@@ -248,3 +248,28 @@ class DiscoverySummary(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PersonalDataMasking(unittest.TestCase):
+    """CT-START-04 (6): a committed discovery report never carries a personal e-mail address."""
+
+    def test_an_owner_e_mail_is_masked_and_the_rest_kept(self):
+        self.assertEqual(vmi.mask_personal("owner NY (ny@example.org) · status ready-for-dev"),
+                         "owner NY (<e-posta gizlendi>) · status ready-for-dev")
+
+    def test_discover_masks_every_line_before_the_hash(self):
+        real = vmi._discover
+        try:
+            vmi._discover = lambda root, name, resource=None, sor=None: (
+                ["VERIFY-MODULE-ID DISCOVER v2", "ÖZET paket künyesi: x.md — owner A (a.b@example.co.uk)", "çıkış: 3"], 3)
+            lines, code = vmi.discover(".", "x")
+        finally:
+            vmi._discover = real
+        self.assertEqual(code, 3)
+        self.assertFalse(any("@" in l for l in lines), lines)
+        self.assertIn("<e-posta gizlendi>", lines[1])
+
+    def test_text_without_an_address_is_unchanged(self):
+        line = "BULGU gateway: pv-case-intake-triage → 5011 (MOD-0230)"
+        self.assertEqual(vmi.mask_personal(line), line)
+

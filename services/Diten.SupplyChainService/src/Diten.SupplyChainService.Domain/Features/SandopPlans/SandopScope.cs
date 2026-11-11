@@ -3,4 +3,6 @@ public readonly record struct SandopScope(Guid TenantId,Guid LegalEntityId,Guid 
 { public void EnsureTrusted() { if(TenantId==Guid.Empty||LegalEntityId==Guid.Empty||ActorId==Guid.Empty) throw new InvalidOperationException("Untrusted S&OP scope"); } }
 public enum SandopAction { Create, Get, Capture, ListSnapshots, SignOff, ListSignOffs }
 public sealed record SandopResult(int Status,string? Code,string? Body)
-{ public static SandopResult Error(int status,string code)=>new(status,code,null); }
+{ public static SandopResult Error(int status,string code)=>new(status,code,null);
+  // BL-501: the central record is filed only for a 2xx result (see Response<T>.IsSuccessful).
+  public bool IsSuccessful=>Status is >= 200 and < 300; }

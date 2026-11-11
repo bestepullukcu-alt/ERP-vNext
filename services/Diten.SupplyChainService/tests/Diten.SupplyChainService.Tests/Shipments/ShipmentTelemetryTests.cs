@@ -331,10 +331,9 @@ public sealed class ShipmentTelemetryTests(ITestOutputHelper output)
 
     private sealed class Factory(Probe probe, string connection, CommitCounter? commits = null) : WebApplicationFactory<Program>
     {
-        private Dictionary<string, string?> Settings() => new()
+        private Dictionary<string, string?> Settings() => new(AuthServiceToken.JwtSettings(Secret))
         {
-            ["Mongo:ConnectionString"] = connection, ["Mongo:DatabaseName"] = Database,
-            ["JwtSettings:Secret"] = Secret, ["JwtSettings:Issuer"] = "mod0183-tests", ["JwtSettings:Audience"] = "mod0183-tests"
+            ["Mongo:ConnectionString"] = connection, ["Mongo:DatabaseName"] = Database
         };
         protected override IHost CreateHost(IHostBuilder builder)
         {
@@ -421,12 +420,9 @@ public sealed class ShipmentTelemetryTests(ITestOutputHelper output)
      """)!.AsObject();
     private static JsonObject Transition(string status) => new() { ["targetStatus"] = status, ["occurredAt"] = "2026-09-20T08:15:00Z" };
 
+    // AuthService's real token shape; the legal entity is the X-Legal-Entity-Id header.
     private string Token() =>
-        new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken("mod0183-tests", "mod0183-tests",
-            new[] { new Claim("sub", _actor.ToString()), new Claim("tenant_id", _tenant.ToString()), new Claim("legal_entity_id", _le.ToString()), new Claim("actor_type", "tenant_user") }
-                .Concat(AllPermissions.Select(p => new Claim("permission", "supplychain.shipments." + p))),
-            expires: DateTime.UtcNow.AddMinutes(10),
-            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
+        AuthServiceToken.Mint(Secret, _tenant, _actor, AllPermissions.Select(p => "supplychain.shipments." + p));
 
     private async Task<(int Status, JsonObject Body)> SendAsync(HttpClient client, string method, string path, JsonObject? body = null,
         string? key = null, Guid? headerTenant = null)

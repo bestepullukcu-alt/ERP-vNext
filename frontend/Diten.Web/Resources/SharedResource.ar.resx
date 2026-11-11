@@ -846,6 +846,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>الحالات</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>إقرارات الاستهلاك</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>لوحة المعلومات</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>تعديلات التاريخ</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>التدريبات</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>فحوصات الفعالية</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>الاستثناءات</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>حالة الدفعات</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>السياسات</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>طلبات الحجر الصحي</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>عمليات الفصل</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>التتبع</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>أدوار المواقع</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>الطرود</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>
@@ -1149,6 +1165,10 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>الحمولات</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>إدارة المطالبات</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>مطالبات الشحن</value></data>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>سير عمل S&amp;OP والاعتمادات</value></data>
+  <data name="Nav.Page.SANDOPPLANS" xml:space="preserve"><value>خطط S&amp;OP</value></data>
+  <data name="Nav.Module.CAPACITYPLANNING" xml:space="preserve"><value>تخطيط القدرات</value></data>
+  <data name="Nav.Page.CAPACITYPLANS" xml:space="preserve"><value>خطط القدرات</value></data>
   <data name="Activate" xml:space="preserve"><value>تفعيل</value></data>
   <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>البريد الإلكتروني أو اسم المستخدم</value></data>
@@ -1173,6 +1193,58 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>سياسة التوقيع</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>معاني التوقيع</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>موافقات نماذج التوقيع</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>انتهاء الصلاحية / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>الاستعداد للاستدعاء</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>لوحة FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>قرب انتهاء الصلاحية</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>ترتيب FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>صندوق الاستثناءات</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>تفاصيل الاستثناء</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>قواعد مدة الصلاحية والإعدادات</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>حزمة الأدلة</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>جاهزية الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>تتبّع الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>حالات الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>حالة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>مخطط تمارين الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>إعدادات الاستدعاء</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>تخطيط احتياجات المواد وإعادة التزويد</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>تحسين مخزون الأمان</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>عمليات المستودع</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>مهام التخزين</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>أدوار مواقع المستودع</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>شحنات الصادر</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>مهام الانتقاء</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>التغليف</value>
+  </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>سيناريوهات خطة السعة</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>اعتمادات خطة S&amp;OP</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>لقطات خطة S&amp;OP</value>
+  </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>الجرد الدوري</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>عمليات الجرد</value>
+  </data>
 </root>

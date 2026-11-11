@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@*
+    MOD-0177 R7a — "Bilgilendirildi olarak kaydet" (RECALL_CUSTOMER_NOTIFY, recall.notifications.create; KR-F): a RECORD of a notification made
+    outside the system — no e-mail is sent (FU-0177-NOTIF-01). Drawn only for a user holding the key.
+*@
+<div class="modal fade" id="rc-notify-modal" tabindex="-1" aria-labelledby="rc-notify-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="rc-notify-form" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="rc-notify-title">@Localizer["Recall.Notif.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-medium mb-3" id="rc-notify-customer"></p>
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="rc-notify-date">@Localizer["Recall.Notif.Date"]</label>
+                        <input type="date" class="form-control" id="rc-notify-date" required />
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="rc-notify-channel">@Localizer["Recall.Notif.Channel"]</label>
+                        <select class="form-select" id="rc-notify-channel">
+                            @foreach (var channel in new[] { "Phone", "ExternalEmail", "Fax", "InPerson", "Other" })
+                            {
+                                <option value="@channel">@Localizer["Recall.Channel." + channel]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="rc-notify-note">@Localizer["Recall.Seg.Note"]</label>
+                        <textarea class="form-control" id="rc-notify-note" rows="2" maxlength="1000"></textarea>
+                    </div>
+                </div>
+                <div class="alert alert-danger small d-none mt-3 mb-0" id="rc-notify-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@Localizer["Recall.Sign.Save"]</button>
+            </div>
+        </form>
+    </div>
+</div>

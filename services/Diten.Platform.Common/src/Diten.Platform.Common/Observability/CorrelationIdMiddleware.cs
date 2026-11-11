@@ -59,7 +59,19 @@ public sealed class CorrelationIdMiddleware
             }
         }
 
-        return Guid.NewGuid().ToString("N");
+        // Q151 D2 — the edge adopts an inbound id only when it carries the edge's OWN signature, so a client can present
+        // a lifecycle root the gateway issued; any value the caller chose is still never adopted (INTX FIX2).
+        var key = SignedCorrelation.KeyOf(_options);
+        if (key is not null && !_options.TrustInboundCorrelation
+            && context.Request.Headers.TryGetValue(_options.HeaderName, out var edgeValues)
+            && edgeValues.Count == 1 && SignedCorrelation.IsSignedBy(edgeValues[0], key))
+        {
+            return edgeValues[0]!.ToLowerInvariant();
+        }
+
+        // Q151 D1 — canonical lowercase hyphenated UUID: the SupplyChain contracts require it ("N" was rejected by the
+        // strict Carrier/Load/Return/Claim parsers).
+        return key is not null ? SignedCorrelation.Mint(key) : Guid.NewGuid().ToString("D");
     }
 
     /// <summary>

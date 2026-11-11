@@ -56,15 +56,31 @@ public static class QuarantineMapping
             Status = hold.Status.ToString(),
             WaitDays = wait,
             TargetDays = targetDays,
-            Late = hold.Status != HoldStatus.Decided && wait > targetDays,
+            Late = QuarantineRecordStates.IsOpen(hold.Status) && wait > targetDays,
             ActiveDecision = active,
-            Version = hold.Version
+            Version = hold.Version,
+            Voided = Void(hold.Voided),
+            SourceReversalConflict = Mark(hold.SourceReversalConflict)
         };
     }
 
+    /// <summary>QUARANTINE 1.4.0 <c>RecordVoid</c> (MOD-0175-FU01).</summary>
+    public static RecordVoidDto? Void(RecordVoid? v)
+        => v is null
+            ? null
+            : new RecordVoidDto(QuarantineSupport.Wire(v.AtUtc), v.Reason.ToString(), v.ReversalTransactionId, v.ReversalTransactionNumber,
+                new UserRefDto(Id(v.ReversedByUserId)), v.DecisionId is { } d ? Id(d) : null);
+
+    /// <summary>QUARANTINE 1.4.0 <c>SourceReversalMark</c> (MOD-0175-FU01).</summary>
+    public static SourceReversalMarkDto? Mark(SourceReversalMark? m)
+        => m is null
+            ? null
+            : new SourceReversalMarkDto(QuarantineSupport.Wire(m.AtUtc), m.ReversalTransactionId, m.ReversalTransactionNumber,
+                new UserRefDto(Id(m.ReversedByUserId)), m.Cause.ToString());
+
     public static HoldDetailDto HoldDetail(
         HoldRefDto head, QuarantineHold hold, IReadOnlyList<QuarantineHistoryEntry> history, IReadOnlyList<InventoryTransaction> movements,
-        IReadOnlyList<DecisionRefDto> decisions) => new()
+        IReadOnlyList<DecisionRefDto> decisions, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names = null) => new()
     {
         HoldId = head.HoldId,
         HoldNumber = head.HoldNumber,
@@ -87,25 +103,30 @@ public static class QuarantineMapping
         Late = head.Late,
         ActiveDecision = head.ActiveDecision,
         Version = head.Version,
+        Voided = head.Voided,
+        SourceReversalConflict = head.SourceReversalConflict,
         AnalysisNote = hold.AnalysisNote,
         Attachments = hold.Attachments.Select(a => new AttachmentDto(a.Name, a.DmsRef)).ToList(),
         ReviewStartedAtUtc = QuarantineSupport.Wire(hold.ReviewStartedAtUtc),
         ReviewStartedBy = hold.ReviewStartedBy is { } by ? new UserRefDto(Id(by)) : null,
         DecidedAtUtc = QuarantineSupport.Wire(hold.DecidedAtUtc),
         History = history.Select(History).ToList(),
-        Movements = movements.Select(Movement).ToList(),
+        Movements = movements.Select(t => Movement(t, names)).ToList(),
         Decisions = decisions
     };
 
     public static HistoryEntryDto History(QuarantineHistoryEntry entry)
         => new(QuarantineSupport.Wire(entry.AtUtc), new UserRefDto(Id(entry.ByUserId)), entry.Action.ToString(), entry.Reason,
             entry.DecisionId is { } d ? Id(d) : null, entry.SignatureId, entry.ApproverSignatureId,
-            entry.NoteChange is { } n ? new NoteChangeDto(n.PreviousNoteLength, n.NoteLength, n.PreviousAttachmentCount, n.AttachmentCount) : null);
+            entry.NoteChange is { } n ? new NoteChangeDto(n.PreviousNoteLength, n.NoteLength, n.PreviousAttachmentCount, n.AttachmentCount) : null,
+            entry.ReversalTransactionId);
 
-    public static MovementLinkDto Movement(InventoryTransaction t)
+    /// <summary>A movement of the trail; <c>byUserName</c> (WP-MVP1-NAMES1) = the posting name of <paramref name="names"/> for (posting correlation, posting user), else absent.</summary>
+    public static MovementLinkDto Movement(InventoryTransaction t, IReadOnlyDictionary<(Guid CorrelationId, Guid ActorId), string>? names = null)
         => new(Id(t.Id), t.TransactionNumber, WireNames.ToWire(t.MovementType), QuarantineSupport.Wire(t.PostingDate),
             t.FromStockStatus is { } f ? WireNames.ToWire(f) : null, t.ToStockStatus is { } s ? WireNames.ToWire(s) : null,
-            t.FromLocationId, t.ToLocationId, t.BaseQuantity);
+            t.FromLocationId, t.ToLocationId, t.BaseQuantity,
+            Inventory.InventoryMapping.PostingName(t, names)); // WP-MVP1-FU-CLEAN2: stored name → queue name → none
 
     public static DecisionDto Decision(QuarantineDecision decision, IReadOnlyList<QuarantineDecisionEvent> events)
     {
@@ -229,7 +250,9 @@ public static class QuarantineMapping
             Status = blocked.Status.ToString(),
             AllowedActions = AllowedActions(blocked, lotHeld),
             ActiveDecision = active,
-            Version = blocked.Version
+            Version = blocked.Version,
+            Voided = Void(blocked.Voided),
+            SourceReversalConflict = Mark(blocked.SourceReversalConflict)
         };
     }
 

@@ -8,7 +8,18 @@ public interface ILegalEntityMasterClient
 {
     /// <exception cref="LegalEntityMasterUnavailableException">MDM unreachable, 5xx, timeout or an answer outside its shape.</exception>
     Task<LegalEntityMembership> ValidateAsync(Guid legalEntityId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// WP-MVP1-FIX-LIVE2: the code and name of one legal entity for DISPLAY (evidence packs) — MDM
+    /// <c>GET /api/legal-entities/{id}</c> (<c>mdm.legal-entities.read</c>) with the caller's own token, through the same
+    /// Gateway path. Read-only and never throws for an MDM answer: unknown, refused, unreachable, timeout or a body outside its
+    /// shape → null, and the caller shows the id with "(okunamadı)". A name is never invented.
+    /// </summary>
+    Task<LegalEntityName?> GetLegalEntityNameAsync(Guid legalEntityId, CancellationToken cancellationToken = default);
 }
+
+/// <summary>A legal entity's code and display name (MDM <c>displayName</c>, else <c>legalName</c>).</summary>
+public sealed record LegalEntityName(Guid LegalEntityId, string Code, string Name);
 
 /// <summary>What MDM said about one legal entity for the caller.</summary>
 public enum LegalEntityMembership

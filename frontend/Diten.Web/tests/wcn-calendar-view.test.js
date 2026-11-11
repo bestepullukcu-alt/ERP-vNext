@@ -597,10 +597,16 @@ describe("the calendar assets load only where a calendar is drawn", () => {
     expect(loaders, "a page loads FullCalendar outside the partial").toEqual([]);
   });
 
-  it("only the two pages that draw a calendar include the partial: the Task Center and the Meetings list (2c)", () => {
+  it("only the pages that draw a calendar include the partial: the Task Center, the Meetings list (2c) and the CRM Visit Workspace", () => {
+    /*
+     * The CRM Visit Workspace (WP-VW-W2, the rep's week as ONE calendar; PR #141/#143, 2026-10-13/14) loads
+     * FullCalendar through this same partial — the reuse the partial exists for. It joined the list 2026-11-06, the
+     * first time these tests ran in CI (JS-CI-01). Any other page that includes the partial is still red.
+     */
     const including = views().filter((file) => fs.readFileSync(file, "utf8").includes("_CalendarAssets"))
       .map((file) => path.relative(web("Views"), file)).sort();
-    expect(including).toEqual([path.join("Meetings", "Index.cshtml"), path.join("WorkCenterNext", "Index.cshtml")]);
+    expect(including).toEqual([path.join("CRM", "VisitWorkspace", "Index.cshtml"), path.join("Meetings", "Index.cshtml"),
+      path.join("WorkCenterNext", "Index.cshtml")]);
   });
 
   it("the chrome strings exist in SharedResource in all seven languages and reach the payload", () => {

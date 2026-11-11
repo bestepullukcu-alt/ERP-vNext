@@ -25,6 +25,7 @@ namespace Diten.Platform.Application.Tests.ESignature;
 /// codes.
 /// </summary>
 [Collection(DisposableMongoReplicaSetCollection.Name)]
+[Trait("Category", "Mongo")]
 public sealed class ESignatureHttpMongoTests : IClassFixture<ESignatureTestHost>
 {
     private const string Signatures = "api/v1/esign/signatures";
@@ -256,6 +257,54 @@ public sealed class ESignatureHttpMongoTests : IClassFixture<ESignatureTestHost>
         // Verification never wrote anything back.
         var after = await Records().Find(r => r.Id == id).SingleAsync();
         Assert.Equal(record.ToBsonDocument(), after.ToBsonDocument());
+    }
+
+    [Fact]
+    public async Task Every_verification_is_one_attempt_and_one_result_record_and_the_result_carries_status_and_both_integrity_flags()
+    {
+        var t = NewTenant();
+        var subjectId = _host.Subjects.Add(t.Tenant);
+        var (_, signed) = await SignAsync(t, subjectId, "APPROVE", drawnPng: TestPng.Create(200, 80));
+        var id = signed.GetProperty("id").GetGuid();
+
+        // An intact signature: the result record says so.
+        Assert.Equal("valid", (await VerifyAsync(t, id)).GetProperty("status").GetString());
+        var intact = Assert.Single(await VerificationAuditAsync(ESignAuditEvents.Verified, id));
+        var intactMetadata = Metadata(intact);
+        Assert.Equal("valid", intactMetadata["status"].AsString);
+        Assert.True(intactMetadata["imageIntact"].AsBoolean);
+        Assert.True(intactMetadata["digestIntact"].AsBoolean);
+        Assert.Single(await VerificationAuditAsync(nameof(VerifyESignatureCommand), id));
+
+        // The stored digest no longer matches the record: tampering, and the result record says digestIntact = false.
+        var record = await Records().Find(r => r.Id == id).SingleAsync();
+        await Records().UpdateOneAsync(r => r.Id == id, Builders<ESignatureRecord>.Update.Set(r => r.SignatureDigest, new string('0', 64)));
+        var tampered = await VerifyAsync(t, id);
+        Assert.Equal("tampered", tampered.GetProperty("status").GetString());
+        Assert.False(tampered.GetProperty("digestIntact").GetBoolean());
+
+        var results = await VerificationAuditAsync(ESignAuditEvents.Verified, id);
+        Assert.Equal(2, results.Count);
+        var broken = Metadata(Assert.Single(results, r => !Metadata(r)["digestIntact"].AsBoolean));
+        Assert.Equal("tampered", broken["status"].AsString);
+        Assert.True(broken["imageIntact"].AsBoolean);
+        // Booleans and the status only: neither the stored nor the recomputed digest, nor the image hash, reaches the log.
+        Assert.All(results, r =>
+        {
+            Assert.DoesNotContain(record.SignatureDigest, r.ToJson(), StringComparison.Ordinal);
+            Assert.DoesNotContain(new string('0', 64), r.ToJson(), StringComparison.Ordinal);
+            Assert.DoesNotContain(record.AppearanceImageHash!, r.ToJson(), StringComparison.Ordinal);
+        });
+        Assert.Equal(2, (await VerificationAuditAsync(nameof(VerifyESignatureCommand), id)).Count);
+
+        // A refused verification (another tenant: 404) is an attempt record with no result record.
+        var other = NewTenant();
+        using var theirs = _host.Client(other.Token);
+        Assert.Equal(HttpStatusCode.NotFound, (await theirs.PostAsync($"{Signatures}/{id}/verify", null)).StatusCode);
+        var attempts = await VerificationAuditAsync(nameof(VerifyESignatureCommand), id);
+        Assert.Equal(3, attempts.Count);
+        Assert.Single(attempts, a => a["Payload"]["Outcome"].AsString == "Failed");
+        Assert.Equal(2, (await VerificationAuditAsync(ESignAuditEvents.Verified, id)).Count);
     }
 
     [Fact]
@@ -710,6 +759,18 @@ public sealed class ESignatureHttpMongoTests : IClassFixture<ESignatureTestHost>
         var path = legalEntity is null ? "api/v1/esign/policy/tenant" : $"api/v1/esign/policy/legal-entities/{legalEntity}";
         var response = await client.PutAsJsonAsync(path, new { rows, reauthEvery, reauthWindowMinutes = windowMinutes, reason, expectedVersion });
         return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+    }
+
+    private async Task<List<BsonDocument>> VerificationAuditAsync(string requestType, Guid signatureId) =>
+        await Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox).Find(
+            Builders<BsonDocument>.Filter.Eq("RequestType", requestType)
+            & Builders<BsonDocument>.Filter.Eq("EntityId", new BsonBinaryData(signatureId, GuidRepresentation.Standard))).ToListAsync();
+
+    // The outbox stores the metadata dictionary with the driver's type wrapper: { "_t": "…Dictionary…", "_v": { … } }.
+    private static BsonDocument Metadata(BsonDocument outboxRow)
+    {
+        var metadata = outboxRow["Payload"]["Metadata"].AsBsonDocument;
+        return metadata.TryGetValue("_v", out var wrapped) ? wrapped.AsBsonDocument : metadata;
     }
 
     private async Task<long> Outbox(Guid tenant, params string[] events) =>

@@ -1,0 +1,2 @@
+YENİ KIRMIZI DevEnablement/GoldenReferenceSlim CI-3 _IndexL10n.cshtml exists
+ölçülmedi DevEnablement/GoldenReferenceSlim CI-3 personalizationClient sends tenant header only for tenant users - doğrulayıcı eksik dosyada durdu
