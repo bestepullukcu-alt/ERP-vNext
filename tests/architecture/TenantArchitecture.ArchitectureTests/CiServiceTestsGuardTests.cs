@@ -471,7 +471,8 @@ public class CiServiceTestsGuardTests
         Assert.Contains("      - name: Run Phase 1 Gates\n        env:\n          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n"
                         + "        run: ./scripts/run_phase1_gates.sh\n", Code(WorkflowText("phase1-gates.yml")), StringComparison.Ordinal);
         var gates = GatesText();
-        Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \] && \[ -z ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
+        // Blind pre-check 5: on merge_group the parent is the base whatever GITHUB_BASE_REF holds (no `-z` condition).
+        Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \]; then$"));
         Assert.Single(Regex.Matches(gates, @"(?m)^  GITHUB_BASE_REF=""\$merge_group_base""$"));
         // Blind review B3: no other assignment of GITHUB_BASE_REF anywhere in the script (an empty one would make the
         // base steps skip green on a merge_group run).
@@ -1230,29 +1231,57 @@ public class CiServiceTestsGuardTests
         var gates = GatesText();
         var code = string.Join('\n', gates.Split('\n').Where(line => !line.TrimStart().StartsWith('#')));
 
-        // One fetch call outside the helper itself, inside one bounded retry loop, resolved with rev-parse --verify.
+        // One fetch call outside the helper itself, inside one bounded retry loop, resolved with rev-parse --verify; its
+        // stderr is kept for the FAILED message (blind pre-check 4).
         Assert.Single(Regex.Matches(code, @"\bfetch_base_tip\b(?!\(\))"));
         Assert.Single(Regex.Matches(code,
-            @"(?m)^    if fetch_base_tip ""\$GITHUB_BASE_REF"" >/dev/null 2>&1 && base_fetched=""\$\(git rev-parse --verify --quiet 'FETCH_HEAD\^\{commit\}'\)""; then$"));
+            @"(?m)^    if base_fetch_err=""\$\(fetch_base_tip ""\$GITHUB_BASE_REF"" 2>&1 >/dev/null\)"" && base_fetched=""\$\(git rev-parse --verify --quiet 'FETCH_HEAD\^\{commit\}'\)""; then$"));
         Assert.Single(Regex.Matches(code, @"(?m)^  for base_try in 1 2 3; do$"));
         Assert.Single(Regex.Matches(code, @"(?m)^      sleep 5$"));
         Assert.Single(Regex.Matches(code, @"(?m)^if \[ -n ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
-        // A result that is not a commit SHA, or (merge_group) not the group's parent, is red — exit 1, never a skip.
-        Assert.Contains("  if ! [[ \"$base_fetched\" =~ ^[0-9a-f]{40}$ ]]; then\n"
-                        + "    echo \"[phase1] base: *** FAILED *** — base '$GITHUB_BASE_REF' could not be fetched and resolved to a commit (3 tries, 5 s apart).\"\n"
-                        + "    echo \"[phase1]   The audit ledger, page-help ceiling and acceptance criteria tag checks would compare nothing.\"\n"
-                        + "    exit 1\n  fi\n", code, StringComparison.Ordinal);
-        Assert.Contains("  if [ \"${GITHUB_EVENT_NAME:-}\" = \"merge_group\" ] && [ \"$base_fetched\" != \"${MERGE_GROUP_BASE_SHA:-}\" ]; then\n"
-                        + "    echo \"[phase1] base: *** FAILED *** — fetched '$base_fetched', not the merge group's parent '${MERGE_GROUP_BASE_SHA:-}'.\"\n"
-                        + "    exit 1\n  fi\n", code, StringComparison.Ordinal);
 
-        // The base is set once, read-only, from the verified value; nothing unsets, re-declares or evaluates anything.
+        // Each red path is "*** FAILED ***" + exit 1 as the block's last line — the wording is free, the structure is not
+        // (blind pre-check 6): no else / elif, no return, no exit 0 inside.
+        void RedBlock(string ifLine, string indent)
+        {
+            Assert.Single(Regex.Matches(code, "(?m)^" + Regex.Escape(ifLine) + "$"));
+            var at = code.IndexOf(ifLine + "\n", StringComparison.Ordinal);
+            var close = code.IndexOf("\n" + indent + "fi\n", at, StringComparison.Ordinal);
+            Assert.True(at >= 0 && close > at, $"no block for '{ifLine}'");
+            var block = code[at..close];
+            Assert.Contains("*** FAILED ***", block, StringComparison.Ordinal);
+            Assert.EndsWith("\n" + indent + "  exit 1", block, StringComparison.Ordinal);
+            Assert.True(!Regex.IsMatch(block, @"\b(?:else|elif|return)\b|\bexit\s+0\b"), $"'{ifLine}' has another way out: {block}");
+        }
+
+        // A result that is not a commit SHA, or (merge_group) not the group's parent, is red — never a skip.
+        RedBlock("  if ! [[ \"$base_fetched\" =~ ^[0-9a-f]{40}$ ]]; then", "  ");
+        Assert.Contains("    printf '%s\\n' \"$base_fetch_err\" | sed 's/^/[phase1]   last try, git: /'\n    exit 1\n  fi\n", code,
+            StringComparison.Ordinal);
+        RedBlock("  if [ \"${GITHUB_EVENT_NAME:-}\" = \"merge_group\" ] && [ \"$base_fetched\" != \"${MERGE_GROUP_BASE_SHA:-}\" ]; then", "  ");
+        // Blind pre-check 3: in GitHub Actions a set override (which would replace the verified base) is red, before the fetch.
+        Assert.Contains("if [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n"
+                        + "  for base_override in AUDIT_LEDGER_BASE PAGE_HELP_LEDGER_BASE AC_TAG_BASE; do\n"
+                        + "    if [ -n \"${!base_override:-}\" ]; then\n", code, StringComparison.Ordinal);
+        RedBlock("    if [ -n \"${!base_override:-}\" ]; then", "    ");
+        Assert.True(code.IndexOf("for base_override in", StringComparison.Ordinal)
+                    < code.IndexOf("for base_try in", StringComparison.Ordinal), "the override check runs after the fetch");
+        // Blind pre-check 2: with the verified base the audit step's "cannot compare" paths are red, without it they skip.
+        Assert.Contains("  local unable=\"SKIPPED\" unable_status=0\n  if [ -n \"$PHASE1_BASE_SHA\" ]; then\n"
+                        + "    unable=\"FAILED\"\n    unable_status=1\n  fi\n", code, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(code, @"(?m)^ +return ""\$unable_status""$").Count);
+        Assert.Equal(3, Regex.Matches(code, @"audit ledger growth: \*\*\* \$unable \*\*\*").Count);
+        Assert.Equal(2, Regex.Matches(code, @"\bunable_status=").Count);
+
+        // The base is set once, read-only, from the verified value. Nothing unsets, re-declares, exports away or evaluates
+        // the base, GITHUB_BASE_REF or an override (blind pre-check 6: aimed at those names, not at the whole script).
         Assert.Single(Regex.Matches(code, @"(?m)^.*\bPHASE1_BASE_SHA="));
         Assert.Single(Regex.Matches(code, @"(?m)^readonly PHASE1_BASE_SHA=""\$phase1_base""$"));
         Assert.Equal(2, Regex.Matches(code, @"(?m)^.*\bphase1_base=").Count);
         Assert.Single(Regex.Matches(code, @"(?m)^phase1_base=""""$"));
         Assert.Single(Regex.Matches(code, @"(?m)^  phase1_base=""\$base_fetched""$"));
-        Assert.DoesNotMatch(@"(?m)(?:^|[;&|(]\s*)\s*(?:unset|eval|declare|typeset|source|export\s+-n)\b", code);
+        Assert.DoesNotMatch(@"(?m)(?:^|[;&|(]\s*)\s*(?:unset|eval|declare|typeset|source|export\s+-n)\b[^\n]*"
+                            + @"\b(?:PHASE1_BASE_SHA|phase1_base|GITHUB_BASE_REF|AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)\b", code);
         Assert.DoesNotMatch(@"(?m)^\s*(?:export\s+|local\s+|readonly\s+)?(?:AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)=", code);
 
         // Each step reads that one variable (its local override first) and fetches nothing itself.
@@ -1278,7 +1307,7 @@ public class CiServiceTestsGuardTests
         // Order: the merge_group parent → the one fetch → the read-only base → the first step's definition.
         var order = new[]
         {
-            "  GITHUB_BASE_REF=\"$merge_group_base\"\n", "    if fetch_base_tip \"$GITHUB_BASE_REF\"", "readonly PHASE1_BASE_SHA=",
+            "  GITHUB_BASE_REF=\"$merge_group_base\"\n", "    if base_fetch_err=\"$(fetch_base_tip \"$GITHUB_BASE_REF\"", "readonly PHASE1_BASE_SHA=",
             "\ncheck_audit_ledger_growth() {\n"
         }.Select(anchor => code.IndexOf(anchor, StringComparison.Ordinal)).ToArray();
         Assert.True(order.All(at => at >= 0) && order.Zip(order.Skip(1)).All(pair => pair.First < pair.Second),

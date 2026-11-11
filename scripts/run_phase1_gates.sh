@@ -23,8 +23,9 @@ fetch_base_tip() {
 # "Variables" reference); on a merge_group run it is empty and the three base steps below would skip or compare with HEAD.
 # There the base is the merge group's parent commit (merge_group.base_sha, phase1-gates.yml passes it as
 # MERGE_GROUP_BASE_SHA): it is fetched by its SHA through fetch_base_tip like a branch tip. A merge_group run without
-# a 40-hex parent is red — a queue check that compared nothing must not pass.
-if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ] && [ -z "${GITHUB_BASE_REF:-}" ]; then
+# a 40-hex parent is red — a queue check that compared nothing must not pass. On merge_group the parent is the base
+# whatever GITHUB_BASE_REF holds (should GitHub one day fill it there, the queue must not turn red forever).
+if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ]; then
   merge_group_base="${MERGE_GROUP_BASE_SHA:-}"
   if ! [[ "$merge_group_base" =~ ^[0-9a-f]{40}$ ]]; then
     echo "[phase1] merge_group: *** FAILED *** — MERGE_GROUP_BASE_SHA is not a commit SHA ('$merge_group_base')."
@@ -43,12 +44,23 @@ fi
 # read only PHASE1_BASE_SHA (read-only from here on) and never fetch. On every run with a base (GITHUB_BASE_REF set:
 # pull_request, and merge_group through the block above) a base that cannot be fetched is RED, not skipped. A run
 # without one (push to main, local) keeps its "no base" paths and the AUDIT_LEDGER_BASE / PAGE_HELP_LEDGER_BASE /
-# AC_TAG_BASE overrides, which still win over this base.
+# AC_TAG_BASE overrides, which still win over this base locally. In GitHub Actions an override would replace the
+# verified base, so there a set override is red. (A local `--audit-ledger-only` run with GITHUB_BASE_REF set fetches
+# here too, before its one step.) When all three tries fail, the last try's git error text is printed with the FAILED.
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  for base_override in AUDIT_LEDGER_BASE PAGE_HELP_LEDGER_BASE AC_TAG_BASE; do
+    if [ -n "${!base_override:-}" ]; then
+      echo "[phase1] base: *** FAILED *** — $base_override is set in GitHub Actions; it would replace the verified base. Remove it."
+      exit 1
+    fi
+  done
+fi
 phase1_base=""
 if [ -n "${GITHUB_BASE_REF:-}" ]; then
   for base_try in 1 2 3; do
     base_fetched=""
-    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1 && base_fetched="$(git rev-parse --verify --quiet 'FETCH_HEAD^{commit}')"; then
+    base_fetch_err=""
+    if base_fetch_err="$(fetch_base_tip "$GITHUB_BASE_REF" 2>&1 >/dev/null)" && base_fetched="$(git rev-parse --verify --quiet 'FETCH_HEAD^{commit}')"; then
       break
     fi
     if [ "$base_try" -lt 3 ]; then
@@ -58,6 +70,7 @@ if [ -n "${GITHUB_BASE_REF:-}" ]; then
   if ! [[ "$base_fetched" =~ ^[0-9a-f]{40}$ ]]; then
     echo "[phase1] base: *** FAILED *** — base '$GITHUB_BASE_REF' could not be fetched and resolved to a commit (3 tries, 5 s apart)."
     echo "[phase1]   The audit ledger, page-help ceiling and acceptance criteria tag checks would compare nothing."
+    printf '%s\n' "$base_fetch_err" | sed 's/^/[phase1]   last try, git: /'
     exit 1
   fi
   if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ] && [ "$base_fetched" != "${MERGE_GROUP_BASE_SHA:-}" ]; then
@@ -81,7 +94,8 @@ readonly PHASE1_BASE_SHA="$phase1_base"
 # history, the workflow file is not touched. Locally:
 #   AUDIT_LEDGER_BASE=<ref> [AUDIT_LEDGER_HEAD=WORKTREE] ./scripts/run_phase1_gates.sh --audit-ledger-only
 # When no base is known or the diff cannot be produced, the step says SKIPPED in capitals (a base that cannot be fetched
-# is red above). It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file
+# is red above); with the verified base (PHASE1_BASE_SHA set) a base that is not a commit or a diff that cannot be
+# produced is FAILED (red) instead. It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file
 # is not growth.
 check_audit_ledger_growth() {
   local ledger_dir="tests/architecture/audit-ledger"
@@ -89,6 +103,12 @@ check_audit_ledger_growth() {
   # AUDIT_LEDGER_HEAD=WORKTREE compares the base with the files on disk (before committing); default is HEAD.
   local head="${AUDIT_LEDGER_HEAD:-HEAD}"
   [ "$head" = "WORKTREE" ] && head=""
+  # With the verified base a step that cannot compare is red; without one (local) it says SKIPPED as before.
+  local unable="SKIPPED" unable_status=0
+  if [ -n "$PHASE1_BASE_SHA" ]; then
+    unable="FAILED"
+    unable_status=1
+  fi
 
   if [ -z "$base" ]; then
     echo "[phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set)."
@@ -97,9 +117,9 @@ check_audit_ledger_growth() {
   fi
 
   if ! git rev-parse --verify --quiet "$base^{commit}" >/dev/null; then
-    echo "[phase1] audit ledger growth: *** SKIPPED *** — base '$base' is not a commit in this checkout."
+    echo "[phase1] audit ledger growth: *** $unable *** — base '$base' is not a commit in this checkout."
     echo "[phase1]   NOTHING WAS CHECKED."
-    return 0
+    return "$unable_status"
   fi
 
   if ! git cat-file -e "$base:$ledger_dir" 2>/dev/null; then
@@ -115,16 +135,16 @@ check_audit_ledger_growth() {
   # Only the service ledgers (Diten.*.md) carry lists. The README's own bullets are prose, not ledger lines.
   # A diff that cannot be produced is reported, never read as "nothing added".
   if ! changed="$(git diff --name-only "$base" ${head:+"$head"} -- "$ledger_dir/Diten.*.md")"; then
-    echo "[phase1] audit ledger growth: *** SKIPPED *** — the ledger diff against '$base' could not be produced."
+    echo "[phase1] audit ledger growth: *** $unable *** — the ledger diff against '$base' could not be produced."
     echo "[phase1]   NOTHING WAS CHECKED."
-    return 0
+    return "$unable_status"
   fi
 
   while IFS= read -r file; do
     [ -z "$file" ] && continue
     if ! file_diff="$(git diff --unified=0 "$base" ${head:+"$head"} -- "$file")"; then
-      echo "[phase1] audit ledger growth: *** SKIPPED *** — the diff of $file could not be produced. NOTHING WAS CHECKED."
-      return 0
+      echo "[phase1] audit ledger growth: *** $unable *** — the diff of $file could not be produced. NOTHING WAS CHECKED."
+      return "$unable_status"
     fi
     # A line that left one place of the file and entered another (a sort, a move between sections) is not growth:
     # the same name is removed and added in the same file. The pinned counts still watch each section's size.
