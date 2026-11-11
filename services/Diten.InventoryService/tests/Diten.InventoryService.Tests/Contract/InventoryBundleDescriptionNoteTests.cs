@@ -91,7 +91,9 @@ public sealed class InventoryBundleDescriptionNoteTests
         // 1.6.0 (MOD-0173-FU03 DL-1)
         .. V160Additions,
         // 1.7.0 (MOD-0173-FU03 DL-2)
-        .. V170Additions
+        .. V170Additions,
+        // 1.8.0 (MOD-0175-FU01 DL-3)
+        UnprocessableExamples + "reversalQualityRecordLocked."
     ];
 
     /// <summary>The 1.5.0 addition (WP-MVP1-NAMES1): the optional <c>TransactionItem.createdBy</c> subtree only.</summary>
@@ -120,7 +122,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.7.0", current["info.version"]); // MOD-0173-FU03 DL-2: 1.6.0 → 1.7.0 (the reservation consumption subtrees are in AdditivePrefixes)
+        Assert.Equal("1.8.0", current["info.version"]); // MOD-0175-FU01 DL-3: 1.7.0 → 1.8.0 (the quality-record lock example is in AdditivePrefixes)
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -259,7 +261,7 @@ public sealed class InventoryBundleDescriptionNoteTests
     public void The_1_7_0_change_is_additive_reservation_consumption()
     {
         var frozen = Flatten(Load(FixtureV160Path));
-        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var current = Flatten(Load(FixtureV170Path)); // MOD-0175-FU01 DL-3: the 1.7.0 file as frozen (the live file is 1.8.0)
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
         Assert.Equal(["info.version", PostMovementDescription], changed);
@@ -274,6 +276,46 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.DoesNotContain(added, k => k.StartsWith("components.schemas.MovementRequest.required", StringComparison.Ordinal));
         Assert.Equal("boolean", current["components.schemas.MovementRequest.properties.restoreReservation.type"]);
         Assert.Equal("#/components/schemas/ReservationConsumption", current["components.schemas.MovementResponse.properties.reservationConsumption.$ref"]);
+    }
+
+    /// <summary>MOD-0175-FU01 DL-3 (AC-36, Q-07): the 1.7.0 file as frozen by MOD-0173-FU03 DL-2, kept byte for byte (LF-normalised; git blob at 123c4e803).</summary>
+    private const string FrozenV170Sha256 = "afe13b3c252735dbd4085d6a4773b4205fb4fb8080a9ff3dba5ed9dcc9e28eae";
+
+    private static string FixtureV170Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.7.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_7_0_fixture_is_the_frozen_1_7_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV170Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV170Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// MOD-0175-FU01 DL-3 (AC-36, pack §8.8; Q-06 = A, Q-07) — 1.7.0 → 1.8.0 is ADDITIVE: nothing of 1.7.0 changes but the version and the
+    /// postMovement description (its 1.7.0 text kept as the prefix, the quality-record lock paragraph appended); the additions are one changelog
+    /// line and the one new example of the existing 422 (<c>reversalQualityRecordLocked</c>); no code, status, schema or required list changes.
+    /// Sabotage: rename an existing error code in the live file → the changed list holds that example, red.
+    /// </summary>
+    [Fact]
+    public void The_1_8_0_change_is_additive_the_quality_record_lock_on_REVERSAL()
+    {
+        var frozen = Flatten(Load(FixtureV170Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version", PostMovementDescription], changed);
+        Assert.Equal(("1.7.0", "1.8.0"), (frozen["info.version"], current["info.version"]));
+        Assert.StartsWith(frozen[PostMovementDescription], current[PostMovementDescription], StringComparison.Ordinal);
+        Assert.All(new[] { "REVERSAL_QUALITY_RECORD_LOCKED", "OwnMovementReversed, Decided, LinesPosted, QuantityChanged, DecisionInProgress, Unmatched",
+                "QuarantineHold | BlockedStock", "503 INVENTORY_UNAVAILABLE" },
+            t => Assert.Contains(t, current[PostMovementDescription], StringComparison.Ordinal));
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.8.0 — additive (MOD-0175-FU01 DL-3", current[Assert.Single(lines)]);
+        const string example = "components.responses.UnprocessableMovement.content.application/json.examples.reversalQualityRecordLocked.";
+        Assert.All(added.Except(lines), k => Assert.StartsWith(example, k, StringComparison.Ordinal));
+        Assert.Equal("REVERSAL_QUALITY_RECORD_LOCKED", current[example + "value.error.code"]);
+        Assert.Equal(["cause", "recordNumber", "recordType"],
+            added.Where(k => k.StartsWith(example + "value.error.details.", StringComparison.Ordinal)).Select(k => k.Split('.')[^1]).OrderBy(x => x, StringComparer.Ordinal));
     }
 
     /// <summary>MOD-0173-FU03 DL-1 (AC-19): the 1.5.0 file as frozen by WP-MVP1-NAMES1, kept byte for byte (LF-normalised; git blob at 84d1fbc05).</summary>

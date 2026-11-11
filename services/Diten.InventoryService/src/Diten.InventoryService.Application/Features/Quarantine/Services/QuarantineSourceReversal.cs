@@ -86,7 +86,7 @@ public sealed class QuarantineSourceReversal
                 return Result(SourceReversalVerdict.NoChange, SourceReversalNoChange.NoRecord, "V3", null);
             }
 
-            var (facts, active) = await FactsAsync(target, reversal, original, ct);
+            var (facts, active) = await FactsAsync(target, reversal.Id.ToString("D"), original, ct);
             var outcome = SourceReversalRules.Evaluate(facts);
             if (outcome.Verdict == SourceReversalVerdict.NoChange)
             {
@@ -124,8 +124,26 @@ public sealed class QuarantineSourceReversal
             "The record kept changing while the source reversal was applied; the sweep retries it.", 409);
     }
 
+    /// <summary>
+    /// MOD-0175-FU01 DL-3 (pack §8.8 rule 2): what the §8.3 table WOULD answer if <paramref name="original"/> were reversed now — the same
+    /// facts and the same <see cref="SourceReversalRules.Evaluate"/> as <see cref="ApplyAsync"/>, read in the caller's tenant + company,
+    /// nothing written. Null when the movement is no hold's and no blocked record's source. The hold is asked first, then the blocked record.
+    /// </summary>
+    public async Task<SourceReversalPreview?> PreviewAsync(InventoryTransaction original, CancellationToken ct)
+    {
+        var (hold, blocked) = await _repository.FindSourceRecordAsync(original.Id.ToString("D"), ct);
+        var target = hold is not null ? new Target(hold, null) : blocked is not null ? new Target(null, blocked) : null;
+        if (target is null)
+        {
+            return null;
+        }
+
+        var (facts, _) = await FactsAsync(target, string.Empty, original, ct); // no REVERSAL yet: it matches no recorded one (R0 / R0a / R12)
+        return new SourceReversalPreview(SourceReversalRules.Evaluate(facts), target.Subject, target.Id, target.Number);
+    }
+
     private async Task<(SourceReversalFacts Facts, QuarantineDecision? Active)> FactsAsync(
-        Target target, InventoryTransaction reversal, InventoryTransaction? original, CancellationToken ct)
+        Target target, string reversalKey, InventoryTransaction? original, CancellationToken ct)
     {
         bool? originalIsQuarantine = original is null ? null : string.Equals(original.SourceModule, QuarantineContract.ModuleId, StringComparison.Ordinal);
         var (origin, mismatch) = target.Hold is { } hold
@@ -143,7 +161,6 @@ public sealed class QuarantineSourceReversal
         var lotStepApplied = changesLot && Guid.TryParse(active!.LotId, out var lotId)
                              && await _lots.FindStatusChangeByKeyAsync(lotId, ApplyApprovedLotStatusChangeHandler.Key(active.Id), ct) is not null;
 
-        var reversalKey = reversal.Id.ToString("D");
         var voidedPosted = 0;
         if (target.Voided is { DecisionId: { } voidedDecisionId } voided && target.Conflict is null
             && string.Equals(voided.ReversalTransactionId, reversalKey, StringComparison.Ordinal)
@@ -279,3 +296,6 @@ public sealed class QuarantineSourceReversal
     private static Response<SourceReversalResultDto> Result(SourceReversalVerdict verdict, SourceReversalNoChange? noChange, string rule, Target? target)
         => Response<SourceReversalResultDto>.Success(new SourceReversalResultDto(verdict, noChange, rule, target?.Id, target?.Number));
 }
+
+/// <summary>MOD-0175-FU01 DL-3: the §8.3 answer for a REVERSAL not yet posted, and the record it would meet.</summary>
+public sealed record SourceReversalPreview(SourceReversalOutcome Outcome, HistorySubject Subject, Guid RecordId, string RecordNumber);

@@ -49,6 +49,7 @@
   <data name="SkuLevelItem" xml:space="preserve"><value>Malzeme kalemi</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>Bu hareket için kaynakta yeterli stok yok. Hiçbir değişiklik yapılmadı; kullanılabilir miktarı kontrol edip tekrar deneyin.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>Bu hareketin ters kaydı zaten yapılmış. Hiçbir değişiklik yapılmadı; ters kaydı görmek için listeyi yenileyin.</value></data>
+  <data name="ErrReversalQualityRecordLocked" xml:space="preserve"><value>Bu hareket geri alınamaz: kaynağı olduğu karantina / bloke kaydı kalite kararına bağlı. Düzeltmeyi Karantina ekranından yeni kararla yapın.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ürün veya lokasyon verisi şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Bağlantı geri geldiğinde tekrar deneyin.</value></data>
   <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Bu kayıt başka bir şirkete ait. O şirkete geçin veya yöneticinizden erişim isteyin.</value></data>
   <data name="ErrKeyReused" xml:space="preserve"><value>Bu işlem başka değerlerle zaten gönderilmiş. Pencereyi kapatıp yeniden başlayın.</value></data>

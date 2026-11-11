@@ -58,6 +58,15 @@ public interface IQuarantineRepository
 
     Task<BlockedStock?> FindBlockedBySourceMovementAsync(string transactionId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// MOD-0175-FU01 DL-3: the ledger guard's ONE read of the record a movement is the source of — the hold and the blocked record with that
+    /// <c>SourceMovementId</c> in this tenant + company (either may be null). The guard's own read, apart from the close path's lookups.
+    /// </summary>
+    Task<(QuarantineHold? Hold, BlockedStock? Blocked)> FindSourceRecordAsync(string transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>MOD-0175-FU01 DL-3: the REVERSAL precondition's refusal row (<c>inventory_audit</c>, insert only, no transaction).</summary>
+    Task InsertReversalRefusalAuditAsync(QuarantineReversalRefusalAuditRecord record, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<BlockedStock>> FindBlockedByCreateKeysAsync(Guid createdBy, IReadOnlyCollection<string> createKeys, CancellationToken cancellationToken = default);
 
     Task<BlockedPage> ListBlockedAsync(BlockedQuery query, CancellationToken cancellationToken = default);

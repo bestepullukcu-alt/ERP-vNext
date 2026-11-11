@@ -83,7 +83,8 @@ public sealed class InventoryResxParityTests
             "INSUFFICIENT_STOCK", "ALREADY_REVERSED", "PRODUCT_MASTER_UNAVAILABLE", "LOCATION_MASTER_UNAVAILABLE",
             "CROSS_LE_FORBIDDEN", "IDEMPOTENCY_KEY_REUSED", "INVALID_REQUEST", "INVALID_MOVEMENT_TYPE", "UNKNOWN_ITEM",
             "SKU_ITEM_MISMATCH", "UNKNOWN_LOCATION", "UOM_CONVERSION_MISSING", "LOT_REQUIRED", "SERIAL_COUNT_MISMATCH",
-            "RESERVATION_CONFLICT", "POSTING_PERIOD_CLOSED"
+            "RESERVATION_CONFLICT", "POSTING_PERIOD_CLOSED",
+            "REVERSAL_QUALITY_RECORD_LOCKED" // MOD-0175-FU01 DL-3 (INVENTORY 1.8.0, AC-38)
         ];
         Assert.All(codes, code => Assert.NotEqual(InventoryErrorMessages.Generic, InventoryErrorMessages.KeyFor(code, 422)));
         Assert.Equal(InventoryErrorMessages.NoPermission, InventoryErrorMessages.KeyFor(null, 403));

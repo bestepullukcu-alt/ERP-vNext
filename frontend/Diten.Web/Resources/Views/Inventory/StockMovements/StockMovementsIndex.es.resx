@@ -66,6 +66,7 @@
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>No hay existencias suficientes en el origen para este movimiento. No se ha cambiado nada; compruebe la cantidad disponible e inténtelo de nuevo.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>Este movimiento ya se ha revertido. No se ha cambiado nada; recargue la lista para ver la reversión.</value></data>
+  <data name="ErrReversalQualityRecordLocked" xml:space="preserve"><value>Este movimiento no se puede revertir: el registro de cuarentena / stock bloqueado del que es origen depende de una decisión de calidad. Haga la corrección con una nueva decisión en la pantalla Cuarentena.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ahora no se pueden comprobar los datos de producto o ubicación, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo cuando vuelva la conexión.</value></data>
   <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Este registro pertenece a otra empresa. Cambie a esa empresa o solicite acceso a su administrador.</value></data>
   <data name="ErrKeyReused" xml:space="preserve"><value>Esta acción ya se envió con otros valores. Cierre el cuadro de diálogo y empiece de nuevo.</value></data>
