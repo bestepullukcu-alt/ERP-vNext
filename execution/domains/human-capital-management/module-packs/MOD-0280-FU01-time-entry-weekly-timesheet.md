@@ -18,7 +18,7 @@ screens:
 entity_base: TenantScopedEntity   # Platform's live tenant-owned base (TaskItem, Meeting); module-pack-standard's "BaseEntity" is the older name
 status: ready-for-dev
 status_changed: "draft -> ready-for-dev on 2026-09-29 (Control Tower resolved every §25 question and §26 conflict; none left blocking — see §26)"
-decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's answers 2026-11-11 (§21.4, TT-1…TT-5; TT-6 open)"
+decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's answers 2026-11-11 (§21.4, TT-1…TT-5); TT-6 decided by EES on the owner's delegation 2026-11-11"
 owner: ali.tufanoglu
 branch: feature/hr/mod-0280-fu01-time-entry-weekly-timesheet   # 'hr' short code: MOD-0251 precedent; not yet in AGENTS.md §9
 started: 2026-09-29
@@ -40,7 +40,7 @@ form_field_count: 5
 > Every repo-rule conflict found while writing the pack is listed in §26 with the CT resolution next to it.
 >
 > **2026-11-11 addition — T4a team totals (DL-6, §5.4).** Written after the owner approved a one-page business
-> process and answered five questions (§21.4, TT-1…TT-5; TT-6 is open). DL-6 is a new slice of an approved pack: its code waits for this
+> process and answered five questions (§21.4, TT-1…TT-5); TT-6 was decided by EES on the owner's delegation. DL-6 is a new slice of an approved pack: its code waits for this
 > version's independent review and its own approval row (CT-APR-01/02). DL-1…DL-5 are unchanged.
 
 > **Identity gate (DCP-002) — passed 2026-09-29, re-run after the registry rows were written:**
@@ -393,9 +393,9 @@ MOD-0357 precedent: a module of another domain inside `Diten.Platform`, authoris
 
 ### 5.4 T4a — team totals
 
-A manager who was deliberately given `time-entry.team-totals.read` (through a role — §5.4 rule 1, TT-6) sees the **approved** minutes of their whole team
+A manager who was deliberately given `time-entry.team-totals.read` (through the dedicated team-totals viewer role — §5.4 rule 1, TT-6) sees the **approved** minutes of their whole team
 for one ISO week or a run of weeks, totalled by task type and by work category. No person row, no ratio, ranking or
-score. Source: the owner-approved one-page business process and the owner's answers of 2026-11-11 (§21.4, TT-1…TT-5; TT-6 open). The
+score. Source: the owner-approved one-page business process and the owner's answers of 2026-11-11 (§21.4, TT-1…TT-5) and TT-6 (EES, owner's delegation). The
 per-person report is T4b (DL-7) and is **not** in this slice.
 
 **Rules (the handler applies them in this order; rules 1–3 refuse before the pull, so a 403, 400 or 409 writes
@@ -412,7 +412,10 @@ nothing).**
    manual grant is audited (`services/Diten.AuthService/src/Diten.AuthService.Application/Features/Roles/Handlers/CommandHandlers/AssignPermissionCommandHandler.cs:94`
    `RoleAuditEvents.PermissionGranted`). The data scope limits the effect: every holder sees only **their own**
    primary-seat subtree (rule 3), so a role member without reports sees a team of one, which the floor hides (rule 6).
-   How tenants should hand the key out is TT-6, an open owner decision (§21.4).
+   **How the key is handed out (TT-6, decided 2026-11-11):** only through one dedicated tenant role, "Ekip toplamı
+   görüntüleyici" / team-totals viewer, which carries this key; tenant admins add the managers who should see team
+   totals to that role. No AuthService change. Every member still sees only their own subtree, and the grant is
+   audited. A per-user grant in AuthService remains a possible future alternative (§20).
 2. **Range — validated first.** `fromWeek` required, `toWeek` optional (= `fromWeek`); ISO week keys; `toWeek >= fromWeek`;
    at most 13 weeks; `toWeek` not after the current tenant-local ISO week (R3). A refused range answers 400 before the
    team is resolved and before the pull in rule 4, so a 400 writes nothing (§17 T-34).
@@ -523,7 +526,7 @@ Error codes and statuses: §12 and §13. The route carries no record id; tenant 
 
 **Preconditions (before DL-6 code).** (1) `time-entry.team-totals.read` in `ExplicitGrantOnlyPermissions` — **done**
 (§7). (2) The §15 gateway pair live — **done** for T2. (3) This pack version reviewed and its DL-6 approval row in main
-(CT-APR-01/02). (4) The owner's answer to TT-6 (§21.4, §25). (5) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
+(CT-APR-01/02). (4) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
 the owner enters shared dev data.
 
 **Done condition.** Every §16 "T4a — team totals" criterion green through its §17 test (T-28…T-38), each guard's sabotage
@@ -793,7 +796,8 @@ Decisions:  MOD-0023's own platform.workflow.tasks.approve / .reject (unchanged)
   `time-entry.person-reports.read` in T4b (DL-7). Their enrolment in `ExplicitGrantOnlyPermissions.cs` was a **CT
   prerequisite listed in T1** (§23) and is done (§7), so no manifest can publish them into the entitlement sync first
   (the BL-392 lesson).
-- T4a (§5.4): actor = a tenant user whose role carries the key, given by a deliberate, audited role grant — never by a
+- T4a (§5.4): actor = a member of the dedicated tenant role "Ekip toplamı görüntüleyici" (TT-6), which carries the key
+  through a deliberate, audited role grant — never by a
   default template, the entitlement sync or the full-catalog path (AuthService has no per-user grant; §5.4 rule 1,
   TT-6); scope = the caller's own primary-seat
   subtree, resolved server-side — the request names no person, position or unit, so the caller cannot widen it. The
@@ -1130,6 +1134,7 @@ Deferred, each needs its own FU / pack / backlog line:
 - Whether corrections of approved weeks should also be bound by the edit window (v1: not bound).
 - **T4b — per-person weekly report** under `time-entry.person-reports.read` (DL-7): not scheduled; waits for counsel
   on §22 items 2 and 5. Team totals moved into scope as T4a (§5.4, DL-6) on 2026-11-11.
+- A per-user permission grant in AuthService (TT-6 future alternative; AuthService owner's lane, own pack).
 - T4a extensions, each a new decision: export, charts, comparison between periods or teams, notifications, a
   tenant-configurable floor (v1 constant 3), membership by historical assignment instead of today's (§5.4 rule 3).
 
@@ -1319,7 +1324,7 @@ the job (`docs/guides/operations/dev-environment.md`, job table).
 ### 21.4 T4a decisions — team totals (owner 2026-11-11)
 
 The owner approved the one-page business process "Zaman girişi T4a: ekip toplamları" and answered its four questions
-with "ok" on 2026-11-11 (TT-1…TT-4). TT-6 is open (EES proposal, owner decision pending). TT-5 was raised by the pack author while writing the slice and answered by the
+with "ok" on 2026-11-11 (TT-1…TT-4). TT-6 was decided by EES under the owner's delegation the same day and may be revisited when the module goes live. TT-5 was raised by the pack author while writing the slice and answered by the
 owner the same day: "Hayır, yalnız ana görev".
 
 | # | Subject | Decision | Where |
@@ -1329,7 +1334,7 @@ owner the same day: "Hayır, yalnız ana görev".
 | TT-3 | Small-group floor | A group with fewer than 3 people is not shown (KVKK proportionality: no total may point to one person); applied per (group, ISO week) cell so a range choice cannot isolate a hidden cell; added to the acceptance criteria | §5.4 rule 6, §8 item 11, §17 T-31 |
 | TT-4 | Slice table | The CT-APR-02 table from the hcm-time Control Tower branch is measured against current main and taken into this pack (§27) | §23, §27 |
 | TT-5 | Membership basis — primary seat only | Owner decision 2026-11-11 ("Hayır, yalnız ana görev"): only an active primary assignment places a person in a team; a person attached to the team only by a secondary (or acting / delegated) seat is not counted, so nobody is counted under two unrelated managers. Pack v1 rule alongside it: membership is read from today's assignments; historical membership is a follow-up (§20) | §5.4 rule 3, §17 T-29 |
-| TT-6 | How the key is handed out — **EES önerisi — sahip kararı bekliyor** | Measured 2026-11-11: AuthService has no per-user permission grant; a key reaches people only through a role, and a manual role grant reaches every member of the role (audited). Proposal: tenants create one dedicated role that carries only `time-entry.team-totals.read` and put in it only managers meant to see team totals; the rule is written in the tenant admin guidance; the data scope (own subtree only, floor) limits what any extra member can see. Alternative: a per-user grant in AuthService, a new capability in the AuthService owner's lane (its own pack and approval), after which this key would be refused on role assignment | §5.4 rule 1, §14, §17 T-28 |
+| TT-6 | How the key is handed out — decided by EES under the owner's delegation, 2026-11-11 (may be revisited when the module goes live) | Measured first: AuthService has no per-user permission grant; a key reaches people only through a role, and a manual role grant reaches every member (audited). Decision: the key is granted only through one dedicated tenant role, "Ekip toplamı görüntüleyici" / team-totals viewer; tenant admins add the managers who should see team totals; every member still sees only their own subtree (rule 3) and the floor applies (rule 6); the grant is audited; no AuthService change. Future alternative, not scheduled: a per-user grant in AuthService (AuthService owner's lane, its own pack and approval), after which this key could be refused on role assignment (§20) | §5.4 rule 1, §14, §17 T-28 |
 
 Kept unchanged by these answers: D11 (approved only, explicit grant), §8 item 7 (no ratios, rankings or scores), A7
 and §22 (the per-person report, T4b, waits for counsel on items 2 and 5). *SAP/Oracle/Workday:* SAP CATS analyses,
@@ -1396,9 +1401,11 @@ All answered on 2026-09-29 — see §21.1 (A1–A10). Remaining non-blocking fol
 
 TT-5 (team membership, raised 2026-11-11 while writing T4a) was answered by the owner the same day — §21.4.
 
-**Open (2026-11-11), owner decision, gates DL-6 code:** TT-6 (§21.4) — how `time-entry.team-totals.read` is handed out
-when AuthService can only grant through roles: dedicated role (EES proposal) or a per-user grant built in AuthService
-first.
+TT-6 (how `time-entry.team-totals.read` is handed out) was decided on 2026-11-11 by EES under the owner's delegation —
+one dedicated tenant role, "Ekip toplamı görüntüleyici" (§21.4). Nothing is open for DL-6.
+
+**Plan row (2026-11-11):** the upstream business process for T4a was written as a one-page pilot process on
+2026-11-11; no MVP plan row exists for this module yet, so §27 says `plan satırı yok` (§19.4).
 
 ---
 
@@ -1435,5 +1442,5 @@ pack status.
 | DL-3 | T2a — My Timesheet page, top-bar timer chip, error-code bridge, nav entry (Web; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü 0deba3fd1 |
 | DL-4 | T2b — Task Center timer actions, approvals page, categories, settings, correction diff field, platform-links table (Web + Platform T2 side; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü f49788f9e |
 | DL-5 | T3 — reminders and notifications (§21.3) | T3 | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü b1c970b10 (1. tur) ve 3d4c986ca (2. tur) |
-| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme, DL-6 onay satırı ve TT-6 sahip kararı bekliyor |
+| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme ve DL-6 onay satırı bekliyor |
 | DL-7 | T4b — per-person weekly report (`time-entry.person-reports.read`, access-logged; DL-1'e dayanır) | Follow-up Items / Out of Scope, Delivery Slices (each its own WP), Legal — must confirm before go-live (not a start blocker) | E4 | plan kimliği yok | plan satırı yok | planlanmadı — §22 madde 2 ve 5 hukuk cevabını bekler |
