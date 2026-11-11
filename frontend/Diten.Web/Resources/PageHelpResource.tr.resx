@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>“Record sign-off”a tıklayın; anlık görüntüyü, rolünüzü ve kararı seçin, gerekirse yorum ekleyip onaylayın. Onaylar yalnız plan incelemedeyken kaydedilir.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Neyin kesin olduğunu bilin</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Kaydedilmiş bir onay kesindir: değiştirilemez ya da silinemez; aynı rol ve anlık görüntü için ikinci onay reddedilir.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Dönemsel ve tam sayımları planlayın, başlatın ve farklarına karar verilene kadar izleyin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Depo sorumluları (planlama, başlatma, iptal) ve sayım yapanlar (sayım formunu açma).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Depoyu ve kapsamı seçin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>“Yeni Sayım”a basın; depoyu, sayım türünü ve konumları seçin; tüm ürünleri saymak için ürünleri boş bırakın.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Sayımı başlatın</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Sayımı açın ve “Başlat”a basın: stok anlık görüntüsü alınır ve satırlar raf gözü bazında oluşur.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Miktarları girin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>“Sayım Formunu Aç”a basın ve her raf gözünde bulunanı girin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Gönderin ve farkları izleyin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>“Sayımı Gönder”den sonra farklar Sayım Farkları ekranında görünür; kartlar açık işi gösterir.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>Başlatılan sayımın kapsamı değişmez; iptal gerekçe ister.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Gönderilen sayımların farklarına karar vermek için</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Başlatılan bir sayımı raf gözü raf gözü sayın ve bulduğunuzu girin.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Sayım yapanlar; telefon ya da el terminalinde.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Raf gözü raf gözü sayın</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Miktarı yazın ya da −/+ kullanın ve her satırda “Onayla ve Kaydet”e basın. Kör sayımda beklenen miktar, sayım gönderilene kadar gösterilmez.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Bulunan stoğu ekleyin</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Satırı olmayan stok için “Bulunan Stok Ekle”ye basın; raf gözünü, ürünü ve SKU'sunu, gerekirse lotu ve miktarı seçin.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Gönderin</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Tüm satırlar sayılınca “Sayımı Gönder”e basın; sonrasında miktarlar değiştirilemez.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>Kör sayımda beklenen miktar gönderimden önce gösterilmez.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Her sayım farkını defter hareketine kadar izleyin ve onay bekleyen satırlara karar verin.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Sayım düzeltmelerini onaylayan stok kontrolörleri ve depo yöneticileri.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Farkı inceleyin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Depo, ürün, lot ya da tarihe göre süzün ve bir satırı açın. “Elle” satırlar Stok Hareketleri'nden girilmiş sayım düzeltmeleridir; salt okunurdur, onay ve dört göz dışındadır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Onaylayın, reddedin ya da yeniden saydırın</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>“Karar Ver”e basın ve “Onayla”, “Reddet” ya da “Yeniden Say”ı seçin; ret ve yeniden sayım gerekçe ister. Sayan ya da gönderen kişi onaylayamaz.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Reddedilen düzeltmeyi yeniden deneyin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Bir rezervasyon eksiği engellediyse düzeltme “Reddedildi” görünür; stoğu serbest bırakın ve “Kaydı Yeniden Dene”yi seçin.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Defter hareketine gidin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Stok Hareketleri'nde açmak için “Defter düzeltmesi”ndeki hareket numarasına tıklayın.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>Onay stoğu hemen düzeltir; geri alma Stok Hareketleri'nde ters kayıttır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>“Elle” satırlar Stok Hareketleri'nden girilmiş sayım düzeltmeleridir; onay ve dört göz dışındadır. Sayım farkı için asıl yol bu ekrandır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Sayımları planlamak ve başlatmak için</value>
+  </data>
 </root>

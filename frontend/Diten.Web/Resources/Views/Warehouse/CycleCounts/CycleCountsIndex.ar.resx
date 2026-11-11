@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="AddNewCycleCount" xml:space="preserve"><value>جرد جديد</value></data>
+  <data name="AssigneePlaceholder" xml:space="preserve"><value>ابحث عن الأشخاص</value></data>
+  <data name="BlindBadge" xml:space="preserve"><value>أعمى</value></data>
+  <data name="BlindHint" xml:space="preserve"><value>لا يرى القائم بالجرد الكمية المتوقعة حتى إرسال الجرد.</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>تم حذف {0} من أصل {1} من مسودات الجرد.</value></data>
+  <data name="BulkDeleteTitle" xml:space="preserve"><value>حذف {0} من مسودات الجرد</value></data>
+  <data name="CancelReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
+  <data name="CancelTitle" xml:space="preserve"><value>إلغاء الجرد {0}</value></data>
+  <data name="ColAssignee" xml:space="preserve"><value>القائم بالجرد</value></data>
+  <data name="ColCreated" xml:space="preserve"><value>الإنشاء</value></data>
+  <data name="ColLines" xml:space="preserve"><value>الأسطر</value></data>
+  <data name="ColNumber" xml:space="preserve"><value>رقم الجرد</value></data>
+  <data name="ColPlannedDate" xml:space="preserve"><value>التاريخ المخطط</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColType" xml:space="preserve"><value>النوع</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>الشركة</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>اختر شركة</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>اختر الشركة التي تجرد مخزونها.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>لا يمكن تحميل الشركات حاليًا.</value></data>
+  <data name="CycleCount.Action.BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="CycleCount.Action.Cancel" xml:space="preserve"><value>إلغاء الجرد</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="CycleCount.Action.Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="CycleCount.Action.OpenSheet" xml:space="preserve"><value>فتح ورقة الجرد</value></data>
+  <data name="CycleCount.Action.Release" xml:space="preserve"><value>إطلاق</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر شركة أولًا.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>مفتاح التصحيح مستخدم في حركة أخرى. قم بحل مشكلة السلامة.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>دليل المستخدمين غير متاح حاليًا. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>لا يمكن تعيين الشخص المحدد.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>لا يمكن استخدام رمز الشركة لرقم الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>قام شخص آخر بتغيير هذا السجل. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>هذا الإجراء غير مسموح به في الحالة الحالية للجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>سجل المخزون غير متاح حاليًا. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>لم يتم جرد بعض الأسطر بعد.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>يوجد سطر بالفعل لهذا الموقع والمنتج والدفعة.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على سطر الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>الموقع أو المنتج خارج نطاق الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>هذا المنتج خاضع لتتبع الدفعات. أدخل الدفعة.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>هذه الدفعة غير معروفة لهذا المنتج.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>أدخل كمية صالحة (صفر أو أكثر).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>أدخل سببًا.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>خدمة الترقيم غير متاحة. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>وصل أحد الأسطر المحددة إلى حد إعادة الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>لا يحتوي النطاق على مواقع للجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>أحد المواقع المحددة ليس في هذا المستودع أو غير نشط.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>يغطي جرد مفتوح آخر بعض هذه المواقع بالفعل.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>النطاق كبير جدًا لجرد واحد. قم بتضييقه أو تقسيمه.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>لا يمكنك اعتماد فرق قمت بجرده أو إرساله.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>لا يمكن تصحيح المخزون المتتبع بالأرقام التسلسلية من الجرد.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>تغيّر المخزون أثناء أخذ اللقطة. حاول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>تغيّر السجل في الأثناء. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>حدث خطأ ما. حاول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>تم إرسال هذا الطلب بالفعل ببيانات مختلفة. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>لا يوجد مخزون كافٍ لترحيل هذا النقص.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>الطلب غير صالح.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>تعذّر قبول الطلب. تحقق من الحقول.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>بيانات الشركة غير متاحة حاليًا. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>الدفعة محظورة.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>انتهت صلاحية الدفعة.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>هذا المنتج غير خاضع لتتبع الدفعات. اترك الدفعة فارغة.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>ليس لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>لم يتم العثور على السجل.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>بيانات المنتج غير مكتملة (مثل الوحدة الأساسية).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>بيانات المنتج غير متاحة حاليًا. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>عدد الأرقام التسلسلية لا يطابق الكمية.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>رمز SKU لا ينتمي إلى المنتج المحدد.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>مستوى SKU هذا لا يُحتفظ به في المخزون.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>الخدمة غير متاحة حاليًا. حاول لاحقًا.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>المنتج غير معروف.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>الموقع غير معروف.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>بعض الحقول مفقودة أو غير صالحة.</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>خطأ في سلامة التصحيح</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>التصحيح معلّق</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>تم ترحيل التصحيح</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>تم رفض التصحيح</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>تم اعتماد الفرق</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>تم الإلغاء</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>تم الإغلاق</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>تم حل السلامة</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>تمت إضافة مخزون موجود</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>تم جرد سطر</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>تم طلب إعادة الجرد</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>تم رفض الفرق</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>تم الإطلاق</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>تم حساب الفرق</value></data>
+  <data name="CycleCount.Saved.Cancelled" xml:space="preserve"><value>تم إلغاء الجرد.</value></data>
+  <data name="CycleCount.Saved.Counted" xml:space="preserve"><value>تم حفظ الكمية.</value></data>
+  <data name="CycleCount.Saved.Created" xml:space="preserve"><value>تم إنشاء الجرد.</value></data>
+  <data name="CycleCount.Saved.Released" xml:space="preserve"><value>تم إطلاق الجرد وأخذ لقطته.</value></data>
+  <data name="CycleCount.Saved.Submitted" xml:space="preserve"><value>تم إرسال الجرد.</value></data>
+  <data name="CycleCount.Saved.Updated" xml:space="preserve"><value>تم تحديث الجرد.</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>قيد الجرد</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>مُطلق</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>مُرسل</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>جرد دوري</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>جرد كامل</value></data>
+  <data name="CycleCountsTitle" xml:space="preserve"><value>عمليات الجرد</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>القائم بالجرد</value></data>
+  <data name="FieldBlind" xml:space="preserve"><value>جرد أعمى</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="FieldPlannedDate" xml:space="preserve"><value>التاريخ المخطط</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="FieldScope" xml:space="preserve"><value>المواقع</value></data>
+  <data name="FieldSkus" xml:space="preserve"><value>المنتجات (اختياري)</value></data>
+  <data name="FieldType" xml:space="preserve"><value>نوع الجرد</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>جرد جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الجرد</value></data>
+  <data name="Kpi.Accuracy" xml:space="preserve"><value>دقة الجرد</value></data>
+  <data name="Kpi.AccuracyHint" xml:space="preserve"><value>أسطر بلا فرق خلال آخر 31 يومًا</value></data>
+  <data name="Kpi.AwaitingApproval" xml:space="preserve"><value>أسطر بانتظار الاعتماد</value></data>
+  <data name="Kpi.ManualCount" xml:space="preserve"><value>حركات جرد يدوية</value></data>
+  <data name="Kpi.ManualCountHint" xml:space="preserve"><value>حركات جرد في السجل لم تنتج عن جرد، آخر 31 يومًا</value></data>
+  <data name="Kpi.OpenCounts" xml:space="preserve"><value>عمليات جرد مفتوحة</value></data>
+  <data name="Kpi.PercentValue" xml:space="preserve"><value>{0}٪</value></data>
+  <data name="Kpi.Refused" xml:space="preserve"><value>تصحيحات مرفوضة</value></data>
+  <data name="Kpi.SelectWarehouse" xml:space="preserve"><value>اختر مستودعًا</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>لا توجد نتائج</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>خطّط للجرد الدوري والكامل وأطلقه وتابعه؛ تحسب الخدمة البطاقات عند فتح الصفحة.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>هذا الجرد ملغى. يمكن عرضه فقط.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>هذا الجرد مغلق. يمكن عرضه فقط.</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>حتى 500 حرف؛ يُحفظ في سجل الجرد.</value></data>
+  <data name="RecountOf" xml:space="preserve"><value>إعادة جرد</value></data>
+  <data name="RecountOfYes" xml:space="preserve"><value>نعم — إعادة جرد لجرد سابق</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>إطلاق الجرد؟ ستُؤخذ لقطة المخزون الآن ولن يمكن تغيير النطاق.</value></data>
+  <data name="ScopeFull" xml:space="preserve"><value>المستودع بالكامل</value></data>
+  <data name="ScopeHint" xml:space="preserve"><value>مناطق أو ممرات أو مواقع؛ تُجرد المواقع التابعة لها.</value></data>
+  <data name="ScopePlaceholder" xml:space="preserve"><value>ابحث عن المواقع</value></data>
+  <data name="Searching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="SkusHint" xml:space="preserve"><value>اتركه فارغًا لجرد كل المنتجات في النطاق.</value></data>
+  <data name="SkusPlaceholder" xml:space="preserve"><value>ابحث عن المنتجات</value></data>
+  <data name="SnapshotAt" xml:space="preserve"><value>وقت اللقطة</value></data>
+  <data name="Timeline" xml:space="preserve"><value>السجل</value></data>
+  <data name="TimelineUnavailable" xml:space="preserve"><value>لا يمكن تحميل السجل حاليًا.</value></data>
+  <data name="ValidationPlannedDate" xml:space="preserve"><value>أدخل التاريخ المخطط.</value></data>
+  <data name="ValidationScope" xml:space="preserve"><value>اختر موقعًا واحدًا على الأقل للجرد الدوري.</value></data>
+  <data name="ValidationWarehouse" xml:space="preserve"><value>اختر مستودعًا.</value></data>
+  <data name="WarehousePlaceholder" xml:space="preserve"><value>اختر مستودعًا</value></data>
+</root>

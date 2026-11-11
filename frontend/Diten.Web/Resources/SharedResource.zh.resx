@@ -1261,4 +1261,13 @@
   <data name="Perm.Entity.VARIANCES" xml:space="preserve">
     <value>盘点差异</value>
   </data>
+  <data name="Nav.Page.CYCLECOUNTS" xml:space="preserve">
+    <value>盘点</value>
+  </data>
+  <data name="Nav.Page.COUNTSHEET" xml:space="preserve">
+    <value>盘点单</value>
+  </data>
+  <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
+    <value>盘点差异</value>
+  </data>
 </root>

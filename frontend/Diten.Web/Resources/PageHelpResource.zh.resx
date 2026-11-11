@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>点击“Record sign-off”，选择快照、您的角色和决定，必要时添加备注并确认。只有在计划处于审核中时才能记录签核。</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>了解哪些内容不可更改</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>已记录的签核为最终结果：不能更改或删除，同一角色和快照的第二次签核会被拒绝。</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>计划循环盘点和全面盘点，下达并跟踪，直到其差异得到处理。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>仓库主管（计划、下达、取消）和盘点人员（打开盘点单）。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>选择仓库和范围</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>点击“新建盘点”，选择仓库、盘点类型和位置；产品留空则盘点全部产品。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>下达盘点</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>打开盘点并点击“下达”：将生成库存快照，并按库位创建行。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>录入数量</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>点击“打开盘点单”，录入每个库位的实盘数量。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>提交并跟踪差异</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>点击“提交盘点”后，差异会出现在盘点差异中；卡片显示未完成的工作。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>已下达盘点的范围不可更改；取消需要填写原因。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>对已提交盘点的差异作出决定</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>按库位逐个盘点已下达的盘点并录入实盘数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>盘点人员，使用手机或手持终端。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>逐个库位盘点</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>输入数量或使用 −/+，并在每行点击“确认”。盲盘时，提交前不显示预期数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>添加发现的库存</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>对没有行的库存：点击“添加发现的库存”，选择库位、产品及其 SKU，如需要再填写批次和数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>提交</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>所有行盘点完成后点击“提交盘点”；之后数量不可更改。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>盲盘时，提交前不显示预期数量。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>将每个盘点差异追溯到台账移动，并对待审批行作出决定。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>审批盘点更正的库存控制员和仓库经理。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>查看差异</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>按仓库、产品、批次或日期筛选并打开一行。“手工”行是在库存移动中录入的盘点更正；只读，不经过审批和四眼原则。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>审批、驳回或复盘</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>点击“决定”，选择“审批”“驳回”或“复盘”；驳回和复盘需要原因。盘点人或提交人不能审批。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>重试被拒绝的更正</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>如果预留阻止了盘亏，更正显示“被拒绝”；释放库存后选择“重试过账”。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>转到台账移动</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>点击“台账更正”中的移动编号，在库存移动中打开。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>审批会立即更正库存；撤销需在库存移动中做冲销。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>“手工”行是在库存移动中录入的盘点更正，不经过审批和四眼原则。此页面是更正盘点差异的主要途径。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>计划和下达盘点</value>
+  </data>
 </root>

@@ -1262,4 +1262,13 @@
   <data name="Perm.Entity.VARIANCES" xml:space="preserve">
     <value>Écarts d'inventaire</value>
   </data>
+  <data name="Nav.Page.CYCLECOUNTS" xml:space="preserve">
+    <value>Comptages</value>
+  </data>
+  <data name="Nav.Page.COUNTSHEET" xml:space="preserve">
+    <value>Feuille de comptage</value>
+  </data>
+  <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
+    <value>Écarts d'inventaire</value>
+  </data>
 </root>

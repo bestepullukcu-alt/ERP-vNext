@@ -1,0 +1,131 @@
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountSheet> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["CountSheetTitle"].Value;
+    ViewData["PageCode"] = "COUNTSHEET"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+    var countId = ViewData["CountId"] as string ?? string.Empty;
+}
+
+@*
+    MOD-0181 DL-4 — Sayım Formu / count sheet (COUNTSHEET, not in the menu — pack §8.13, §11; AC-39 375 px first). Not a DataTable: the lines come bin by bin
+    from the service (server pages of 200). A blind count's expected quantity is ABSENT from the service's answer before submit (pack §8.2 rule 5) — the
+    sheet has no place for it then; hiding on screen is never the rule. No barcode in v1 (MOD-0182): the optional scan reference is an opaque text.
+
+    UAS-001 — nothing below is drawn without cycle-count.counts.read. No redirect. Entry, found stock and submit only for cycle-count.counts.record.
+*@
+@if (!Perms.Has(CycleCountPermissionKeys.CountsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["CountSheetTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canRecord = Perms.Has(CycleCountPermissionKeys.CountsRecord);
+}
+
+<div class="mb-3 cc-sheet" id="cc-sheet" data-count-id="@countId">
+    <a href="/Warehouse/CycleCounts" class="small d-inline-block mb-2"><i class="bx bx-chevron-left"></i>@Localizer["BackToList"]</a>
+    <h5 class="mb-0" id="cc-sheet-title">@Localizer["CountSheetTitle"]</h5>
+    <p class="mb-0 text-muted" id="cc-sheet-subtitle">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="cc-sheet-error" class="alert alert-danger d-none" role="alert"></div>
+    <div id="cc-sheet-readonly" class="alert alert-secondary d-none" role="status"></div>
+    <div id="cc-sheet-blind" class="alert alert-info d-none" role="status">@Localizer["BlindNotice"]</div>
+    <div id="cc-sheet-loading" class="text-muted py-4" role="status">@Localizer["Loading"]</div>
+
+    @* bin by bin; countsheet.js draws one card per bin and one row per line (48 × 48 px touch targets) *@
+    <div id="cc-sheet-bins" class="d-flex flex-column gap-3 pb-5"></div>
+
+    @if (canRecord)
+    {
+        <form id="formCountSheet" class="d-none" novalidate>@Html.AntiForgeryToken()</form>
+
+        @* "Bulunan stok ekle": a bin of the scope, a product's SKU (a SKU filter's SKU only), the lot when lot-controlled, the counted quantity. *@
+        <div class="offcanvas offcanvas-bottom cc-found" tabindex="-1" id="offcanvasFound" aria-labelledby="offcanvasFoundLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasFoundLabel">@Localizer["CycleCount.Action.AddFound"]</h5>
+                <button type="button" class="btn-close wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div id="foundAlert" class="alert alert-danger d-none" role="alert"></div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="foundBin" class="form-label fw-medium">@Localizer["FieldBin"] <span class="text-danger">*</span></label>
+                        <select id="foundBin" class="form-select form-select-lg"><option value=""></option></select>
+                    </div>
+                    <div class="col-12">
+                        <label for="foundProduct" class="form-label fw-medium">@Localizer["FieldProduct"] <span class="text-danger">*</span></label>
+                        <select id="foundProduct" class="form-select" data-placeholder="@Localizer["ProductPlaceholder"]"><option value=""></option></select>
+                    </div>
+                    <div class="col-12">
+                        <label for="foundSku" class="form-label fw-medium">@Localizer["FieldSku"] <span class="text-danger">*</span></label>
+                        <select id="foundSku" class="form-select" data-placeholder="@Localizer["SkuPlaceholder"]"><option value=""></option></select>
+                    </div>
+                    <div class="col-12">
+                        <label for="foundLot" class="form-label fw-medium">@Localizer["FieldLot"]</label>
+                        <input type="text" id="foundLot" class="form-control form-control-lg" maxlength="100" autocomplete="off" />
+                        <small class="text-muted d-block mt-1">@Localizer["LotHint"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label for="foundQuantity" class="form-label fw-medium">@Localizer["FieldCounted"] <span class="text-danger">*</span></label>
+                        <input type="text" inputmode="decimal" id="foundQuantity" class="form-control form-control-lg cc-qty" autocomplete="off" />
+                    </div>
+                    <div class="col-12">
+                        <label for="foundScanRef" class="form-label fw-medium">@Localizer["FieldScanRef"]</label>
+                        <input type="text" id="foundScanRef" class="form-control" maxlength="200" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+            <div class="offcanvas-footer border-top p-3 d-flex justify-content-between gap-2">
+                <button type="button" class="btn btn-label-secondary cc-touch" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary cc-touch" id="btnSaveFound">@SharedLocalizer["Save"]</button>
+            </div>
+        </div>
+
+        @* the fixed bottom bar: found stock + submit, always reachable on a phone (375 px) *@
+        <div class="cc-sheet-bar border-top bg-body p-2 d-flex align-items-center gap-2" id="cc-sheet-bar">
+            <small class="text-muted flex-grow-1 text-truncate" id="cc-uncounted" aria-live="polite"></small>
+            <button type="button" class="btn btn-label-primary cc-touch" id="btnAddFound"><i class="bx bx-plus me-1"></i><span class="cc-bar-text">@Localizer["CycleCount.Action.AddFound"]</span></button>
+            <button type="button" class="btn btn-primary cc-touch" id="btnSubmitCount"><i class="bx bx-send me-1"></i><span class="cc-bar-text">@Localizer["CycleCount.Action.Submit"]</span></button>
+        </div>
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/assets/css/Warehouse/countsheet.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @{
+        var words = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in Localizer.GetAllStrings(true))
+        {
+            words[entry.Name] = entry.Value;
+        }
+    }
+    <script id="countsheet-l10n" type="application/json">@Json.Serialize(new { Words = words, Cancel = SharedLocalizer["Cancel"].Value, Save = SharedLocalizer["Save"].Value })</script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/CycleCounts/countsheet.js" asp-append-version="true"></script>
+    }
+}

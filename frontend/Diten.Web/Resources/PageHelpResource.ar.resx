@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>انقر «Record sign-off»، واختر اللقطة ودورك والقرار، وأضف تعليقًا عند الحاجة ثم أكّد. تُسجَّل الاعتمادات فقط أثناء مراجعة الخطة.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>اعرف ما هو نهائي</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>الاعتماد المسجَّل نهائي: لا يمكن تغييره أو حذفه، ويُرفض اعتماد ثانٍ لنفس الدور واللقطة.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>خطّط للجرد الدوري والكامل، وأطلقه وتابعه حتى يُتخذ القرار بشأن فروقه.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>مشرفو المستودع (التخطيط والإطلاق والإلغاء) والقائمون بالجرد (فتح ورقة الجرد).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>اختر المستودع والنطاق</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>اضغط « جرد جديد »، واختر المستودع ونوع الجرد والمواقع؛ اترك المنتجات فارغة لجرد كل المنتجات.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>أطلق الجرد</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>افتح الجرد واضغط « إطلاق »: تُؤخذ لقطة المخزون وتُنشأ الأسطر لكل موقع.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>أدخل الكميات</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>اضغط « فتح ورقة الجرد » وأدخل ما يوجد في كل موقع.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>أرسل وتابع الفروق</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>بعد « إرسال الجرد » تظهر الفروق في فروقات الجرد؛ وتعرض البطاقات العمل المفتوح.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>لا يتغير نطاق الجرد بعد إطلاقه؛ ويتطلب الإلغاء سببًا.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>لاتخاذ القرار بشأن فروق عمليات الجرد المُرسلة</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>اجرد جردًا مُطلقًا موقعًا تلو الآخر وأدخل ما تجده.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>القائمون بالجرد، على هاتف أو جهاز طرفي.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>اجرد موقعًا تلو الآخر</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>اكتب الكمية أو استخدم −/+ واضغط « تأكيد » في كل سطر. في الجرد الأعمى لا تظهر الكمية المتوقعة حتى الإرسال.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>أضف المخزون الموجود</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>للمخزون الذي لا سطر له: اضغط « إضافة مخزون موجود » واختر الموقع والمنتج ورمز SKU والدفعة عند الحاجة والكمية.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>أرسل</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>عندما تُجرد كل الأسطر اضغط « إرسال الجرد »؛ لا يمكن تغيير الكميات بعد ذلك.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>في الجرد الأعمى لا تُعرض الكمية المتوقعة قبل الإرسال.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>تتبّع كل فرق جرد حتى حركته في السجل واتخذ القرار بشأن الأسطر بانتظار الاعتماد.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>مراقبو المخزون ومديرو المستودعات الذين يعتمدون تصحيحات الجرد.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>راجع الفرق</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>صفِّ حسب المستودع أو المنتج أو الدفعة أو التاريخ وافتح سطرًا. أسطر « يدوي » تصحيحات جرد أُدخلت من حركات المخزون؛ وهي للقراءة فقط وخارج الاعتماد ومبدأ الأعين الأربع.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>اعتمد أو ارفض أو أعد الجرد</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>اضغط « اتخاذ قرار » واختر « اعتماد » أو « رفض » أو « إعادة الجرد »؛ يتطلب الرفض وإعادة الجرد سببًا. لا يمكن لمن جرد أو أرسل أن يعتمد.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>أعد محاولة تصحيح مرفوض</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>إذا منع حجزٌ النقص يظهر التصحيح « مرفوض »؛ حرّر المخزون واختر « إعادة محاولة الترحيل ».</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>انتقل إلى حركة السجل</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>انقر رقم الحركة في « تصحيح السجل » لفتحها في حركات المخزون.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>يصحح الاعتماد المخزون فورًا؛ والتراجع عنه قيد عكسي في حركات المخزون.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>أسطر « يدوي » تصحيحات جرد أُدخلت من حركات المخزون، وهي خارج الاعتماد ومبدأ الأعين الأربع. هذه الشاشة هي الطريق الأساسي لتصحيح فرق الجرد.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>لتخطيط عمليات الجرد وإطلاقها</value>
+  </data>
 </root>

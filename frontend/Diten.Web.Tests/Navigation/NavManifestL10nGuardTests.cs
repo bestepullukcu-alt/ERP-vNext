@@ -190,9 +190,8 @@ public sealed class NavManifestL10nGuardTests
     {
         // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
         ["mrp-replenishment"] = "MOD-0189 MRP Monitor / Exception Queue / Evidence Pack ekran işi (pack §11) bekleniyor",
-        ["safety-stock-optimization"] = "MOD-0191 Safety Stock Optimization tenant çalışma alanı ekran işi (AC-S09) bekleniyor",
-        // MOD-0181 — sayfalar DL-4'te gelince bu girdi çıkar (XMC-001, Beste 2026-11-09)
-        ["CYCLE-COUNTING"] = "MOD-0181 Cycle Counting DL-4 ekranları (pack §8.13) bekleniyor"
+        ["safety-stock-optimization"] = "MOD-0191 Safety Stock Optimization tenant çalışma alanı ekran işi (AC-S09) bekleniyor"
+        // MOD-0181 DL-4: CYCLE-COUNTING declares its pages (CYCLECOUNTS, COUNTSHEET, COUNTVARIANCES) — its entry was deleted
     };
 
     [Fact]

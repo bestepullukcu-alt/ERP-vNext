@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AllCounted" xml:space="preserve"><value>Все строки подсчитаны.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>К списку инвентаризаций</value></data>
+  <data name="BinProgress" xml:space="preserve"><value>Подсчитано {0} / {1}</value></data>
+  <data name="BlindNotice" xml:space="preserve"><value>Подсчёт вслепую: считайте то, что видите; ожидаемое количество покажется после отправки.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию, остатки которой считаете.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Сейчас не удаётся загрузить компании.</value></data>
+  <data name="CountSheetTitle" xml:space="preserve"><value>Лист подсчёта</value></data>
+  <data name="CycleCount.Action.AddFound" xml:space="preserve"><value>Добавить Найденный Остаток</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Подтвердить</value></data>
+  <data name="CycleCount.Action.Submit" xml:space="preserve"><value>Отправить Инвентаризацию</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>Ключ корректировки занят другим движением. Устраните нарушение целостности.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Каталог пользователей сейчас недоступен. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>Выбранного сотрудника нельзя назначить.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>Код компании нельзя использовать для номера инвентаризации.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Эту запись изменил другой пользователь. Обновите страницу и повторите попытку.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Это действие недоступно в текущем состоянии инвентаризации.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Складской журнал сейчас недоступен. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Некоторые строки ещё не подсчитаны.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Для этой ячейки, товара и партии строка уже есть.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>Строка инвентаризации не найдена.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>Ячейка или товар вне области инвентаризации.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Товар учитывается по партиям. Укажите партию.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Эта партия не известна для данного товара.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>Инвентаризация не найдена.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Введите корректное количество (ноль или больше).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Укажите причину.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Служба нумерации недоступна. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Выбранная строка достигла лимита повторных подсчётов.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>В области нет ячеек для подсчёта.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Выбранное место не относится к этому складу или неактивно.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Часть этих ячеек уже входит в другую открытую инвентаризацию.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>Область слишком велика для одной инвентаризации. Сузьте или разделите её.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Нельзя утвердить расхождение, которое вы подсчитали или отправили.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Остатки с серийным учётом нельзя исправить по инвентаризации.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Остатки изменились во время снимка. Повторите попытку.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>Запись изменилась. Обновите страницу и повторите попытку.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже отправлен с другими данными. Обновите страницу и повторите попытку.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Недостаточно остатка для проведения недостачи.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>Недопустимый запрос.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>Запрос не принят. Проверьте поля.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Данные компании сейчас недоступны. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>Партия заблокирована.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>Срок годности партии истёк.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Товар не учитывается по партиям. Оставьте партию пустой.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>Запись не найдена.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Данные товара неполные (например, базовая единица).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Данные о товаре сейчас недоступны. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>Количество серийных номеров не совпадает с количеством.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>SKU не относится к выбранному товару.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Этот уровень SKU не хранится на складе.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>Сервис сейчас недоступен. Повторите попытку позже.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>Товар не найден.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Место хранения не найдено.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Некоторые поля не заполнены или заполнены неверно.</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Подсчитано</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Без расхождения</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Не подсчитано</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Отправлено на пересчёт</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Идёт подсчёт</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Запущена</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="Decrease" xml:space="preserve"><value>Уменьшить</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Ожидается: {0}</value></data>
+  <data name="FieldBin" xml:space="preserve"><value>Ячейка</value></data>
+  <data name="FieldCounted" xml:space="preserve"><value>Подсчитанное количество</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Партия</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Товар</value></data>
+  <data name="FieldScanRef" xml:space="preserve"><value>Ссылка сканирования (необязательно)</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Артикул (SKU)</value></data>
+  <data name="FoundBadge" xml:space="preserve"><value>Найдено</value></data>
+  <data name="Increase" xml:space="preserve"><value>Увеличить</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="LotHint" xml:space="preserve"><value>Только для товаров с партионным учётом.</value></data>
+  <data name="NoLines" xml:space="preserve"><value>В инвентаризации нет строк.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Считайте ячейку за ячейкой и вводите найденное; отправьте, когда все строки подсчитаны.</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Поиск товаров</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>Инвентаризация отменена. Доступен только просмотр.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>Инвентаризация закрыта. Доступен только просмотр.</value></data>
+  <data name="ReadonlyDraft" xml:space="preserve"><value>Инвентаризация ещё не запущена. Подсчёт невозможен.</value></data>
+  <data name="ReadonlySubmitted" xml:space="preserve"><value>Инвентаризация отправлена. Количества больше нельзя изменить.</value></data>
+  <data name="SkuPlaceholder" xml:space="preserve"><value>Выберите артикул</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Отправить инвентаризацию? После этого количества изменить нельзя.</value></data>
+  <data name="SubmitConfirmUncounted" xml:space="preserve"><value>Не подсчитано строк: {0}. Отправить можно только после подсчёта всех строк.</value></data>
+  <data name="UncountedLines" xml:space="preserve"><value>Не подсчитано строк: {0}</value></data>
+  <data name="ValidationFound" xml:space="preserve"><value>Выберите ячейку, товар и его артикул.</value></data>
+</root>

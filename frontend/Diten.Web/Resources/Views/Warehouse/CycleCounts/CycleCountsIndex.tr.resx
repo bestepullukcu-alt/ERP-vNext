@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="AddNewCycleCount" xml:space="preserve"><value>Yeni Sayım</value></data>
+  <data name="AssigneePlaceholder" xml:space="preserve"><value>Kişi ara</value></data>
+  <data name="BlindBadge" xml:space="preserve"><value>Kör</value></data>
+  <data name="BlindHint" xml:space="preserve"><value>Sayan kişi, sayım gönderilene kadar beklenen miktarı görmez.</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>{1} taslak sayımdan {0} tanesi silindi.</value></data>
+  <data name="BulkDeleteTitle" xml:space="preserve"><value>{0} taslak sayımı sil</value></data>
+  <data name="CancelReason" xml:space="preserve"><value>İptal gerekçesi</value></data>
+  <data name="CancelTitle" xml:space="preserve"><value>{0} sayımını iptal et</value></data>
+  <data name="ColAssignee" xml:space="preserve"><value>Sayan kişi</value></data>
+  <data name="ColCreated" xml:space="preserve"><value>Oluşturma</value></data>
+  <data name="ColLines" xml:space="preserve"><value>Satır</value></data>
+  <data name="ColNumber" xml:space="preserve"><value>Sayım no.</value></data>
+  <data name="ColPlannedDate" xml:space="preserve"><value>Planlanan tarih</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Stoğunu saydığınız şirketi seçin.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirketler şu anda yüklenemiyor.</value></data>
+  <data name="CycleCount.Action.BulkDelete" xml:space="preserve"><value>Toplu Sil</value></data>
+  <data name="CycleCount.Action.Cancel" xml:space="preserve"><value>Sayımı İptal Et</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Onayla ve Kaydet</value></data>
+  <data name="CycleCount.Action.Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="CycleCount.Action.OpenSheet" xml:space="preserve"><value>Sayım Formunu Aç</value></data>
+  <data name="CycleCount.Action.Release" xml:space="preserve"><value>Başlat</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>Düzeltmenin anahtarı başka bir harekette. Bütünlük sorununu çözün.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>Seçilen kişi atanamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>Şirket kodu sayım numarası için kullanılamıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Bu kaydı başka biri değiştirdi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Bu işlem sayımın mevcut durumunda yapılamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Stok defterine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Bazı satırlar henüz sayılmadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Bu raf gözü, ürün ve lot için zaten bir satır var.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>Sayım satırı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>Raf gözü ya da ürün sayımın kapsamı dışında.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Bu ürün lot takipli. Lotu girin.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Bu lot ürün için tanımlı değil.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>Sayım bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Geçerli bir miktar girin (sıfır ya da daha fazla).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Bir gerekçe girin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Sayım numarası servisine ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Seçilen bir satır yeniden sayım sınırına ulaştı.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>Kapsamda sayılacak raf gözü yok.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Seçilen bir konum bu depoda değil ya da etkin değil.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Bu raf gözlerinin bir kısmını açık başka bir sayım zaten kapsıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>Kapsam tek bir sayım için çok büyük. Daraltın ya da bölün.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Saydığınız ya da gönderdiğiniz bir farkı onaylayamazsınız.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Seri takipli stok sayımdan düzeltilemez.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Anlık görüntü alınırken stok değişti. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>Kayıt bu arada değişti. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı verilerle zaten gönderildi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Bu eksiği işlemek için yeterli stok yok.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>İstek geçerli değil.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>İstek kabul edilemedi. Alanları kontrol edin.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Şirket verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>Lot bloke.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>Lotun son kullanma tarihi geçti.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Bu ürün lot takipli değil. Lotu boş bırakın.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>Bu işlem için erişiminiz yok.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Ürünün verisi eksik (örneğin temel birimi).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>Seri numarası adedi miktarla uyuşmuyor.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>SKU seçilen ürüne ait değil.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Bu SKU seviyesi stokta tutulmuyor.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>Servise şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapın.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>Ürün tanımlı değil.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Konum tanımlı değil.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Bazı alanlar eksik ya da geçersiz.</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>Düzeltme bütünlük hatası</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>Düzeltme bekliyor</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>Düzeltme işlendi</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>Düzeltme reddedildi</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>Fark onaylandı</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>Bütünlük çözüldü</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>Bulunan stok eklendi</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>Satır sayıldı</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>Yeniden sayım istendi</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>Fark reddedildi</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>Fark hesaplandı</value></data>
+  <data name="CycleCount.Saved.Cancelled" xml:space="preserve"><value>Sayım iptal edildi.</value></data>
+  <data name="CycleCount.Saved.Counted" xml:space="preserve"><value>Miktar kaydedildi.</value></data>
+  <data name="CycleCount.Saved.Created" xml:space="preserve"><value>Sayım oluşturuldu.</value></data>
+  <data name="CycleCount.Saved.Released" xml:space="preserve"><value>Sayım başlatıldı ve anlık görüntüsü alındı.</value></data>
+  <data name="CycleCount.Saved.Submitted" xml:space="preserve"><value>Sayım gönderildi.</value></data>
+  <data name="CycleCount.Saved.Updated" xml:space="preserve"><value>Sayım güncellendi.</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Sayılıyor</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>Dönemsel sayım</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>Tam sayım</value></data>
+  <data name="CycleCountsTitle" xml:space="preserve"><value>Sayımlar</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Sayacak kişi</value></data>
+  <data name="FieldBlind" xml:space="preserve"><value>Kör sayım</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>Not</value></data>
+  <data name="FieldPlannedDate" xml:space="preserve"><value>Planlanan tarih</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="FieldScope" xml:space="preserve"><value>Konumlar</value></data>
+  <data name="FieldSkus" xml:space="preserve"><value>Ürünler (isteğe bağlı)</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Sayım türü</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni sayım</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Sayımı düzenle</value></data>
+  <data name="Kpi.Accuracy" xml:space="preserve"><value>Sayım doğruluğu</value></data>
+  <data name="Kpi.AccuracyHint" xml:space="preserve"><value>Son 31 günde farksız sayılan satırlar</value></data>
+  <data name="Kpi.AwaitingApproval" xml:space="preserve"><value>Onay bekleyen satırlar</value></data>
+  <data name="Kpi.ManualCount" xml:space="preserve"><value>Elle sayım hareketleri</value></data>
+  <data name="Kpi.ManualCountHint" xml:space="preserve"><value>Son 31 günde sayımdan gelmeyen defter sayım hareketleri</value></data>
+  <data name="Kpi.OpenCounts" xml:space="preserve"><value>Açık sayımlar</value></data>
+  <data name="Kpi.PercentValue" xml:space="preserve"><value>%{0}</value></data>
+  <data name="Kpi.Refused" xml:space="preserve"><value>Reddedilen düzeltmeler</value></data>
+  <data name="Kpi.SelectWarehouse" xml:space="preserve"><value>Depo seçin</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sonuç yok</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Dönemsel ve tam sayımları planlayın, başlatın ve izleyin; kartlar sayfa açılırken servis tarafından sayılır.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>Bu sayım iptal edildi. Yalnız görüntülenebilir.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>Bu sayım kapandı. Yalnız görüntülenebilir.</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>En fazla 500 karakter; sayımın geçmişinde saklanır.</value></data>
+  <data name="RecountOf" xml:space="preserve"><value>Yeniden sayım</value></data>
+  <data name="RecountOfYes" xml:space="preserve"><value>Evet — önceki bir sayımın yeniden sayımı</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Sayım başlatılsın mı? Stok anlık görüntüsü şimdi alınır ve kapsam artık değişemez.</value></data>
+  <data name="ScopeFull" xml:space="preserve"><value>Tüm depo</value></data>
+  <data name="ScopeHint" xml:space="preserve"><value>Bölge, koridor ya da raf gözleri; altlarındaki raf gözleri sayılır.</value></data>
+  <data name="ScopePlaceholder" xml:space="preserve"><value>Konum ara</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="SkusHint" xml:space="preserve"><value>Kapsamdaki tüm ürünleri saymak için boş bırakın.</value></data>
+  <data name="SkusPlaceholder" xml:space="preserve"><value>Ürün ara</value></data>
+  <data name="SnapshotAt" xml:space="preserve"><value>Anlık görüntü</value></data>
+  <data name="Timeline" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="TimelineUnavailable" xml:space="preserve"><value>Geçmiş şu anda yüklenemiyor.</value></data>
+  <data name="ValidationPlannedDate" xml:space="preserve"><value>Planlanan tarihi girin.</value></data>
+  <data name="ValidationScope" xml:space="preserve"><value>Dönemsel sayım için en az bir konum seçin.</value></data>
+  <data name="ValidationWarehouse" xml:space="preserve"><value>Bir depo seçin.</value></data>
+  <data name="WarehousePlaceholder" xml:space="preserve"><value>Depo seçin</value></data>
+</root>

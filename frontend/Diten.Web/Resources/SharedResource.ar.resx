@@ -1261,4 +1261,13 @@
   <data name="Perm.Entity.VARIANCES" xml:space="preserve">
     <value>فروقات الجرد</value>
   </data>
+  <data name="Nav.Page.CYCLECOUNTS" xml:space="preserve">
+    <value>عمليات الجرد</value>
+  </data>
+  <data name="Nav.Page.COUNTSHEET" xml:space="preserve">
+    <value>ورقة الجرد</value>
+  </data>
+  <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
+    <value>فروقات الجرد</value>
+  </data>
 </root>

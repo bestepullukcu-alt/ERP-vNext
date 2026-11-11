@@ -1,0 +1,64 @@
+@using Diten.Web.Views.Warehouse.CountVariances
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountVariancesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filters = the listCountVariances parameters (pack §2.4, §12): source (Sayım — default | Elle | hepsi; Elle and hepsi need a warehouse and a window of at
+    most 31 days — the service refuses otherwise), warehouse, from / to, line status (multi), lot. The window rule is explained under the chips.
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-source">
+                        <select id="filterSource" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterSource"]">
+                            <option value="count">@Localizer["CycleCount.Source.Count"]</option>
+                            <option value="manual">@Localizer["CycleCount.Source.Manual"]</option>
+                            <option value="all">@Localizer["CycleCount.Source.All"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouse" class="form-select form-select-sm" data-placeholder="@Localizer["FilterWarehouse"]" aria-label="@Localizer["FilterWarehouse"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-from">
+                        <input type="date" id="filterFrom" class="form-control form-control-sm" aria-label="@Localizer["FilterFrom"]" title="@Localizer["FilterFrom"]" />
+                    </div>
+
+                    <div class="filter-chip filter-to">
+                        <input type="date" id="filterTo" class="form-control form-control-sm" aria-label="@Localizer["FilterTo"]" title="@Localizer["FilterTo"]" />
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            @foreach (var status in Diten.Web.Controllers.CountVariancesController.LineStatuses)
+                            {
+                                <option value="@status">@Localizer["CycleCount.LineStatus." + status]</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-lot">
+                        <input type="text" id="filterLot" class="form-control form-control-sm" maxlength="100" placeholder="@Localizer["FilterLot"]" aria-label="@Localizer["FilterLot"]" />
+                    </div>
+
+                    <small class="text-muted w-100" id="cv-window-hint">@Localizer["WindowHint"]</small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

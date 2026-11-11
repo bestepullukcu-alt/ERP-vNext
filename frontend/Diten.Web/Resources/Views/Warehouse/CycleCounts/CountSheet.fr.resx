@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AllCounted" xml:space="preserve"><value>Toutes les lignes sont comptées.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour aux comptages</value></data>
+  <data name="BinProgress" xml:space="preserve"><value>{0} / {1} comptées</value></data>
+  <data name="BlindNotice" xml:space="preserve"><value>Comptage à l'aveugle : comptez ce que vous voyez ; la quantité attendue s'affiche après la soumission.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Société</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Sélectionnez la société dont vous comptez le stock.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Les sociétés ne peuvent pas être chargées pour le moment.</value></data>
+  <data name="CountSheetTitle" xml:space="preserve"><value>Feuille de comptage</value></data>
+  <data name="CycleCount.Action.AddFound" xml:space="preserve"><value>Ajouter un Stock Trouvé</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Confirmer</value></data>
+  <data name="CycleCount.Action.Submit" xml:space="preserve"><value>Soumettre le Comptage</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Sélectionnez d'abord une société.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>La clé de la correction est détenue par un autre mouvement. Résolvez le problème d'intégrité.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>L'annuaire des utilisateurs est inaccessible pour le moment. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>La personne sélectionnée ne peut pas être affectée.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>Le code de la société ne peut pas servir au numéro de comptage.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Quelqu'un d'autre a modifié cet enregistrement. Rechargez et réessayez.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Cette action n'est pas autorisée dans l'état actuel du comptage.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Le registre des stocks est inaccessible pour le moment. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Certaines lignes ne sont pas encore comptées.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Cet emplacement, ce produit et ce lot ont déjà une ligne.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>La ligne de comptage est introuvable.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>L'emplacement ou le produit est hors du périmètre du comptage.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Ce produit est géré par lot. Saisissez le lot.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Ce lot n'est pas connu pour ce produit.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>Le comptage est introuvable.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Saisissez une quantité valide (zéro ou plus).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Saisissez un motif.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Le service de numérotation est inaccessible. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Une ligne sélectionnée a atteint la limite de recomptage.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>Le périmètre ne contient aucun emplacement à compter.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Un emplacement sélectionné n'appartient pas à cet entrepôt ou n'est pas actif.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Un autre comptage ouvert couvre déjà certains de ces emplacements.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>Le périmètre est trop grand pour un seul comptage. Réduisez-le ou divisez-le.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Vous ne pouvez pas approuver un écart que vous avez compté ou soumis.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Le stock suivi par numéro de série ne peut pas être corrigé par un comptage.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Le stock a changé pendant la prise de l'instantané. Réessayez.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>L'enregistrement a changé entre-temps. Rechargez et réessayez.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Une erreur s'est produite. Réessayez.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Cette requête a déjà été envoyée avec d'autres données. Rechargez et réessayez.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Le stock est insuffisant pour comptabiliser cette perte.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>La requête n'est pas valide.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>La requête n'a pas pu être acceptée. Vérifiez les champs.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Les données de la société sont inaccessibles pour le moment. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>Le lot est bloqué.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>Le lot est périmé.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Ce produit n'est pas géré par lot. Laissez le lot vide.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>Vous n'avez pas accès à cette action.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>L'enregistrement est introuvable.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Les données du produit sont incomplètes (par exemple son unité de base).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Les données produit sont inaccessibles pour le moment. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>Le nombre de numéros de série ne correspond pas à la quantité.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>Le SKU n'appartient pas au produit sélectionné.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Ce niveau de SKU n'est pas stockable.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>Le service est inaccessible pour le moment. Réessayez plus tard.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>Le produit est inconnu.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>L'emplacement est inconnu.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Certains champs sont manquants ou invalides.</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>En attente d'approbation</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Compté</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Aucun écart</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Non compté</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Envoyé en recomptage</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Clôturé</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>En cours de comptage</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Lancé</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Soumis</value></data>
+  <data name="Decrease" xml:space="preserve"><value>Diminuer</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Attendu : {0}</value></data>
+  <data name="FieldBin" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="FieldCounted" xml:space="preserve"><value>Quantité comptée</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FieldScanRef" xml:space="preserve"><value>Référence de scan (facultatif)</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Référence (SKU)</value></data>
+  <data name="FoundBadge" xml:space="preserve"><value>Trouvé</value></data>
+  <data name="Increase" xml:space="preserve"><value>Augmenter</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="LotHint" xml:space="preserve"><value>Uniquement pour les produits gérés par lot.</value></data>
+  <data name="NoLines" xml:space="preserve"><value>Ce comptage n'a aucune ligne.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Comptez emplacement par emplacement et saisissez ce que vous trouvez ; soumettez quand toutes les lignes sont comptées.</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Rechercher des produits</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>Ce comptage est annulé. Il est en lecture seule.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>Ce comptage est clôturé. Il est en lecture seule.</value></data>
+  <data name="ReadonlyDraft" xml:space="preserve"><value>Ce comptage n'est pas encore lancé. Il ne peut pas être compté.</value></data>
+  <data name="ReadonlySubmitted" xml:space="preserve"><value>Ce comptage est soumis. Les quantités ne peuvent plus être modifiées.</value></data>
+  <data name="SkuPlaceholder" xml:space="preserve"><value>Choisissez la référence</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Soumettre le comptage ? Les quantités ne pourront plus être modifiées.</value></data>
+  <data name="SubmitConfirmUncounted" xml:space="preserve"><value>{0} ligne(s) non comptée(s). Le comptage ne peut être soumis que lorsque toutes les lignes sont comptées.</value></data>
+  <data name="UncountedLines" xml:space="preserve"><value>{0} ligne(s) non comptée(s)</value></data>
+  <data name="ValidationFound" xml:space="preserve"><value>Sélectionnez l'emplacement, le produit et sa référence.</value></data>
+</root>

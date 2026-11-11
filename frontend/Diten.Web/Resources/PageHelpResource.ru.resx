@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Нажмите «Record sign-off», выберите снимок, свою роль и решение, при необходимости добавьте комментарий и подтвердите. Согласования записываются только пока план на рассмотрении.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Знайте, что окончательно</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Записанное согласование окончательно: его нельзя изменить или удалить, повторное согласование для той же роли и снимка отклоняется.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Планируйте циклические и полные инвентаризации, запускайте их и отслеживайте до решения по расхождениям.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Руководители склада (планирование, запуск, отмена) и счётчики (открывают лист подсчёта).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Выберите склад и область</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>Нажмите « Новая Инвентаризация », выберите склад, тип и места; оставьте товары пустыми, чтобы считать всё.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Запустите инвентаризацию</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Откройте инвентаризацию и нажмите « Запустить »: делается снимок остатков и создаются строки по ячейкам.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Введите количества</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>Нажмите « Открыть Лист Подсчёта » и введите, что лежит в каждой ячейке.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Отправьте и следите за расхождениями</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>После « Отправить Инвентаризацию » расхождения появятся в разделе расхождений; карточки показывают открытую работу.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>Область запущенной инвентаризации не меняется; для отмены нужна причина.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Чтобы решить по расхождениям отправленных инвентаризаций</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Считайте запущенную инвентаризацию ячейка за ячейкой и вводите найденное.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Счётчики — на телефоне или терминале.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Считайте по ячейкам</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Введите количество или используйте −/+ и нажмите « Подтвердить » в каждой строке. При подсчёте вслепую ожидаемое количество не показывается до отправки.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Добавьте найденный остаток</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Для остатка без строки нажмите « Добавить Найденный Остаток », выберите ячейку, товар и артикул, при необходимости партию и количество.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Отправьте</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Когда все строки подсчитаны, нажмите « Отправить Инвентаризацию »; потом количества изменить нельзя.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>При подсчёте вслепую ожидаемое количество до отправки не показывается.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Прослеживайте каждое расхождение до движения в журнале и решайте по строкам на утверждении.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Контролёры запасов и руководители склада, утверждающие корректировки.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Изучите расхождение</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Отфильтруйте по складу, товару, партии или дате и откройте строку. Строки « Вручную » — корректировки из движений запасов; они только для чтения и вне утверждения и принципа четырёх глаз.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Утвердите, отклоните или пересчитайте</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>Нажмите « Решить » и выберите « Утвердить », « Отклонить » или « Пересчитать »; для отклонения и пересчёта нужна причина. Кто считал или отправлял, утвердить не может.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Повторите отклонённую корректировку</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Если резерв заблокировал недостачу, корректировка показывает « Отклонено »; освободите остаток и выберите « Повторить Проведение ».</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Перейдите к движению в журнале</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Щёлкните номер движения в « Корректировка журнала », чтобы открыть его в движениях запасов.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>Утверждение сразу корректирует остатки; отмена — это сторно в движениях запасов.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>Строки « Вручную » — корректировки из движений запасов; они вне утверждения и принципа четырёх глаз. Основной путь исправить расхождение — этот экран.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Чтобы планировать и запускать инвентаризации</value>
+  </data>
 </root>

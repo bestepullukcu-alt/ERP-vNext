@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Click “Record sign-off”, choose the snapshot, your role and the decision, add a comment if needed and confirm. Sign-offs are recorded only while the plan is in review.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Know what is final</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>A recorded sign-off is final: it cannot be changed or deleted, and a second sign-off for the same role and snapshot is refused.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Plan cycle counts and full counts, release them and follow them until their variances are decided.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Warehouse supervisors (plan, release, cancel) and counters (open the count sheet).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Choose the warehouse and the scope</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>Press “New Count”, choose the warehouse, the count type and the locations; leave the products empty to count every product.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Release the count</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Open the count and press “Release”: the stock snapshot is taken and the lines are created bin by bin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Enter the quantities</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>Press “Open Count Sheet” and enter what is in each bin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Submit and follow the variances</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>After “Submit Count” the variances appear in Count Variances; the cards show the open work.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>A released count's scope does not change; cancelling needs a reason.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>To decide on the variances of submitted counts</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Count a released count bin by bin and enter what you find.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Counters, on a phone or a terminal.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Count bin by bin</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Type the quantity or use −/+ and press “Confirm” on each line. In a blind count the expected quantity is not shown until the count is submitted.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Add found stock</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Stock that has no line: press “Add Found Stock”, choose the bin, the product and its SKU, the lot if needed, and the quantity.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>When every line is counted press “Submit Count”; quantities cannot be changed afterwards.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>In a blind count the expected quantity is not shown before submission.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Trace each count variance to its ledger movement and decide on the lines that wait for approval.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Inventory controllers and warehouse managers who approve count corrections.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Review the variance</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Filter by warehouse, product, lot or date and open a row. “Manual” rows are count corrections entered in Stock Movements; they are read-only and outside approval and four eyes.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Approve, reject or recount</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>Press “Decide” and choose “Approve”, “Reject” or “Recount”; rejecting and recounting need a reason. The person who counted or submitted cannot approve.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Retry a refused correction</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>If a reservation blocked the loss, the correction shows “Refused”; free the stock and choose “Retry Posting”.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Go to the ledger movement</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Click the movement number in “Ledger correction” to open it in Stock Movements.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>Approval corrects the stock at once; undoing it is a reversal in Stock Movements.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>“Manual” rows are count corrections entered in Stock Movements; they are outside approval and four eyes. This screen is the main way to correct a count variance.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>To plan and release counts</value>
+  </data>
 </root>

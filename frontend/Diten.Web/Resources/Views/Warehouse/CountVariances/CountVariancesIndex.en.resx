@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Band.FourEyes" xml:space="preserve"><value>Four eyes: the person who counted or submitted cannot approve.</value></data>
+  <data name="Band.Immediate" xml:space="preserve"><value>Approving a variance corrects the stock at once with a count gain or loss movement.</value></data>
+  <data name="Band.Tolerance" xml:space="preserve"><value>Variances within the company's tolerance are approved automatically.</value></data>
+  <data name="ColAdjustment" xml:space="preserve"><value>Ledger correction</value></data>
+  <data name="ColBin" xml:space="preserve"><value>Bin</value></data>
+  <data name="ColCount" xml:space="preserve"><value>Count / movement</value></data>
+  <data name="ColCounted" xml:space="preserve"><value>Counted</value></data>
+  <data name="ColExpectedAtCount" xml:space="preserve"><value>Expected</value></data>
+  <data name="ColFlags" xml:space="preserve"><value>Flags</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lot</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="ColVariance" xml:space="preserve"><value>Variance</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Select the company whose stock you count.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Companies cannot be loaded right now.</value></data>
+  <data name="CountVariancesTitle" xml:space="preserve"><value>Count Variances</value></data>
+  <data name="CountedAt" xml:space="preserve"><value>Counted at</value></data>
+  <data name="CycleCount.Action.AcceptHolder" xml:space="preserve"><value>Accept Existing Movement</value></data>
+  <data name="CycleCount.Action.Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="CycleCount.Action.Decide" xml:space="preserve"><value>Decide</value></data>
+  <data name="CycleCount.Action.Recount" xml:space="preserve"><value>Recount</value></data>
+  <data name="CycleCount.Action.Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="CycleCount.Action.RejectHolder" xml:space="preserve"><value>Reject Correction</value></data>
+  <data name="CycleCount.Action.Retry" xml:space="preserve"><value>Retry Posting</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>Integrity error</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>Posted</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>Refused</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>Recount</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>within tolerance</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>by a user</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>The correction's key is held by another movement. Resolve the integrity issue.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>The user directory is not reachable right now. Try again later.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>The selected person cannot be assigned.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>The company's code cannot be used for the count number.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Someone else changed this record. Reload and try again.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>This action is not allowed in the count's current state.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>The stock ledger is not reachable right now. Try again later.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Some lines are not counted yet.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>This bin, product and lot already have a line.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>The count line was not found.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>The bin or product is outside the count's scope.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>This product is lot-controlled. Enter the lot.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>This lot is not known for the product.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>The count was not found.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Enter a valid quantity (zero or more).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Enter a reason.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>The count number service is not reachable. Try again later.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>A selected line has reached the recount limit.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>The scope has no bins to count.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>A selected location is not in this warehouse or is not active.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Another open count already covers some of these bins.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>The scope is too large for one count. Narrow it or split it.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>You cannot approve a variance you counted or submitted.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Serial-tracked stock cannot be corrected from a count.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Stock changed while the snapshot was taken. Try again.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>The record changed in the meantime. Reload and try again.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Something went wrong. Try again.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with different data. Reload and try again.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>There is not enough stock to post this loss.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>The request is not valid.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>The request could not be accepted. Check the fields.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Company data is not reachable right now. Try again later.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>The lot is blocked.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>The lot has expired.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>This product is not lot-controlled. Leave the lot empty.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>You do not have access to this action.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>The record was not found.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>The product's data is incomplete (for example its base unit).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Product data is not reachable right now. Try again later.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>The number of serials does not match the quantity.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>The SKU does not belong to the selected product.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>This SKU level is not kept in stock.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>The service is not reachable right now. Try again later.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Your session has ended. Sign in again.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>The product is not known.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>The location is not known.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Some fields are missing or not valid.</value></data>
+  <data name="CycleCount.Integrity.AcceptHolder" xml:space="preserve"><value>Holder accepted</value></data>
+  <data name="CycleCount.Integrity.Reject" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Counted</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>No variance</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Not counted</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Sent to recount</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CycleCount.Saved.Approved" xml:space="preserve"><value>The variance was approved; the stock correction is posted.</value></data>
+  <data name="CycleCount.Saved.Recounted" xml:space="preserve"><value>A recount was created.</value></data>
+  <data name="CycleCount.Saved.Rejected" xml:space="preserve"><value>The variance was rejected; the stock is not changed.</value></data>
+  <data name="CycleCount.Saved.Resolved" xml:space="preserve"><value>The integrity issue was resolved.</value></data>
+  <data name="CycleCount.Saved.Retried" xml:space="preserve"><value>The posting was tried again.</value></data>
+  <data name="CycleCount.Source.All" xml:space="preserve"><value>All</value></data>
+  <data name="CycleCount.Source.Count" xml:space="preserve"><value>Count</value></data>
+  <data name="CycleCount.Source.Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Decided at</value></data>
+  <data name="DecisionSummary" xml:space="preserve"><value>{0} · {1} · {2} · variance {3}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Variance decision</value></data>
+  <data name="FieldDecision" xml:space="preserve"><value>Decision</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>From</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Lot</value></data>
+  <data name="FilterSource" xml:space="preserve"><value>Source</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>To</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="Flag.Found" xml:space="preserve"><value>Found stock</value></data>
+  <data name="Flag.MovementDuringCount" xml:space="preserve"><value>Moved during count</value></data>
+  <data name="Flag.Recount" xml:space="preserve"><value>Recount</value></data>
+  <data name="Flag.SnapshotDrift" xml:space="preserve"><value>Snapshot drift</value></data>
+  <data name="Flag.SourceMismatch" xml:space="preserve"><value>Source declaration mismatch</value></data>
+  <data name="Flag.SourceMismatchNote" xml:space="preserve"><value>This movement declares a count as its source, but no count made it.</value></data>
+  <data name="IntegrityResolution" xml:space="preserve"><value>Integrity resolution</value></data>
+  <data name="ManualReadOnlyNote" xml:space="preserve"><value>Manual movements are shown for tracing only; decisions are made on count rows.</value></data>
+  <data name="MovementType" xml:space="preserve"><value>Movement type</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>Count gain</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>Count loss</value></data>
+  <data name="NoResults" xml:space="preserve"><value>No results</value></data>
+  <data name="OpenLedger" xml:space="preserve"><value>Open in stock movements</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Trace every count variance to its ledger movement and decide on lines awaiting approval.</value></data>
+  <data name="PostedAt" xml:space="preserve"><value>Posted at</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="ReadOnlyManual" xml:space="preserve"><value>Read-only</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>Up to 500 characters; it is kept in the count's history.</value></data>
+  <data name="RecountCreated" xml:space="preserve"><value>New count: {0}.</value></data>
+  <data name="RefusalCode" xml:space="preserve"><value>Refusal code</value></data>
+  <data name="Searching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="SelfApprovalNote" xml:space="preserve"><value>You counted or submitted this line, so another person must approve it.</value></data>
+  <data name="SourceDeclared" xml:space="preserve"><value>Declared source</value></data>
+  <data name="ValidationDecision" xml:space="preserve"><value>Choose a decision.</value></data>
+  <data name="WindowHint" xml:space="preserve"><value>Manual and All need a warehouse and at most 31 days.</value></data>
+</root>

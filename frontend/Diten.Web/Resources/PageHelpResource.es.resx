@@ -2274,4 +2274,106 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Haga clic en «Record sign-off», elija la instantánea, su rol y la decisión, añada un comentario si hace falta y confirme. Las aprobaciones solo se registran mientras el plan está en revisión.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Sepa qué es definitivo</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Una aprobación registrada es definitiva: no se puede cambiar ni eliminar, y se rechaza una segunda aprobación para el mismo rol e instantánea.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Planifique recuentos cíclicos y completos, libérelos y sígalos hasta decidir sus diferencias.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Supervisores de almacén (planificar, liberar, cancelar) y contadores (abrir la hoja de recuento).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Elegir el almacén y el alcance</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>Pulse « Nuevo Recuento », elija el almacén, el tipo y las ubicaciones; deje los productos vacíos para contar todo.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Liberar el recuento</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Abra el recuento y pulse « Liberar »: se toma la instantánea del stock y se crean las líneas por ubicación.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Introducir las cantidades</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>Pulse « Abrir Hoja de Recuento » e introduzca lo que hay en cada ubicación.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Enviar y seguir las diferencias</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>Tras « Enviar Recuento », las diferencias aparecen en Diferencias de recuento; las tarjetas muestran el trabajo pendiente.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>El alcance de un recuento liberado no cambia; cancelar exige un motivo.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Para decidir sobre las diferencias de los recuentos enviados</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Cuente un recuento liberado ubicación por ubicación e introduzca lo que encuentre.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Los contadores, en un teléfono o terminal.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Contar ubicación por ubicación</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Escriba la cantidad o use −/+ y pulse « Confirmar » en cada línea. En un recuento a ciegas la cantidad esperada no se muestra hasta enviarlo.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Añadir el stock encontrado</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Para stock sin línea: pulse « Añadir Stock Encontrado », elija la ubicación, el producto y su referencia, el lote si hace falta y la cantidad.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Enviar</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Cuando todas las líneas estén contadas pulse « Enviar Recuento »; después no se pueden cambiar las cantidades.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>En un recuento a ciegas la cantidad esperada no se muestra antes del envío.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Rastree cada diferencia hasta su movimiento en el libro y decida sobre las líneas pendientes de aprobación.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Controladores de inventario y jefes de almacén que aprueban las correcciones.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Revisar la diferencia</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Filtre por almacén, producto, lote o fecha y abra una fila. Las filas « Movimiento manual » son correcciones introducidas en movimientos de stock; son de solo lectura y quedan fuera de la aprobación y del doble control.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Aprobar, rechazar o recontar</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>Pulse « Decidir » y elija « Aprobar », « Rechazar » o « Recontar »; rechazar y recontar exigen un motivo. Quien contó o envió no puede aprobar.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Reintentar una corrección rechazada</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Si una reserva bloqueó el faltante, la corrección muestra « Rechazado »; libere el stock y elija « Reintentar Registro ».</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Ir al movimiento del libro</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Haga clic en el número de movimiento en « Corrección del libro » para abrirlo en movimientos de stock.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>La aprobación corrige el stock al instante; deshacerla es una reversión en movimientos de stock.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>Las filas « Movimiento manual » son correcciones introducidas en movimientos de stock; quedan fuera de la aprobación y del doble control. Esta pantalla es la vía principal para corregir una diferencia.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Para planificar y liberar recuentos</value>
+  </data>
 </root>

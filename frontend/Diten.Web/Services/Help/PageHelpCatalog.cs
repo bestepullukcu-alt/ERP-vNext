@@ -28,6 +28,9 @@ public static class PageHelpCatalog
             // DL-7; PACKINGSTATION is not a menu page, it opens from a pick task or an outbound)
             ["OUTBOUNDSHIPMENTS"] = [new("PICKTASKS", "bx-cart-download"), new("WAREHOUSEEXCEPTIONS", "bx-error-alt")],
             ["PICKTASKS"] = [new("PACKINGSTATION", "bx-package")],
+            // MOD-0181 DL-4 (pack §25): the dashboard and the variance trace point at each other (the count sheet opens from a count, not the menu)
+            ["CYCLECOUNTS"] = [new("COUNTVARIANCES", "bx-git-compare")],
+            ["COUNTVARIANCES"] = [new("CYCLECOUNTS", "bx-list-check")],
         };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> StepIcons =
@@ -96,6 +99,10 @@ public static class PageHelpCatalog
             ["WAREHOUSEEXCEPTIONS"] = ["bx-filter-alt", "bx-link-external"],
             ["WAREHOUSEACTIVITY"] = ["bx-calendar", "bx-link-external"],
             ["WAREHOUSEINTEGRATION"] = ["bx-grid-alt"],
+            // MOD-0181 DL-4 (pack §25, UXH-001): no tour — cycle counting
+            ["CYCLECOUNTS"] = ["bx-map-pin", "bx-camera", "bx-list-check", "bx-send"],
+            ["COUNTSHEET"] = ["bx-grid-alt", "bx-plus-circle", "bx-send"],
+            ["COUNTVARIANCES"] = ["bx-search-alt", "bx-check-shield", "bx-refresh", "bx-book-content"],
         };
 
     /// <summary>The icon of step <paramref name="step"/> (1-based) of a page, or <see cref="DefaultStepIcon"/>.</summary>

@@ -1318,6 +1318,15 @@
     <value>Sayımlar</value>
   </data>
   <data name="Perm.Entity.VARIANCES" xml:space="preserve">
-    <value>Sayım farkları</value>
+    <value>Sayım Farkları</value>
+  </data>
+  <data name="Nav.Page.CYCLECOUNTS" xml:space="preserve">
+    <value>Sayımlar</value>
+  </data>
+  <data name="Nav.Page.COUNTSHEET" xml:space="preserve">
+    <value>Sayım Formu</value>
+  </data>
+  <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
+    <value>Sayım Farkları</value>
   </data>
 </root>

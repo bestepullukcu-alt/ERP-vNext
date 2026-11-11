@@ -1,0 +1,89 @@
+@model Diten.Web.Models.Warehouse.CycleCountWriteRequest
+@using Diten.Web.Views.Warehouse.CountVariances
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountVariancesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    The DECISION form only (pack §11: no create here) — approve / reject / recount with its reason, and the correction's recovery: retry (Pending or a
+    reservation block) and resolve-integrity (AcceptHolder | Reject, with a reason). index.js offers only the choices the row's state and the reader's keys
+    allow; the service decides (four eyes 403, drift 409, serial 422, recount limit 409 — each said in the reader's language).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["DecisionTitle"]</h5>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formDecisionAlert" class="alert alert-danger d-none" role="alert"></div>
+        <div class="mb-3 small text-muted" id="decisionSummary"></div>
+
+        <form id="formDecision" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldDecision"]</span>
+                    <div class="d-flex flex-column gap-2" id="decisionChoices">
+                        @if (Perms.Has(CycleCountPermissionKeys.VariancesApprove))
+                        {
+                            <div class="form-check" data-decision="approve">
+                                <input class="form-check-input" type="radio" name="decision" id="decApprove" value="approve" />
+                                <label class="form-check-label" for="decApprove">@Localizer["CycleCount.Action.Approve"]</label>
+                                <small class="text-muted d-block" data-reason-off></small>
+                            </div>
+                        }
+                        @if (Perms.Has(CycleCountPermissionKeys.VariancesReject))
+                        {
+                            <div class="form-check" data-decision="reject">
+                                <input class="form-check-input" type="radio" name="decision" id="decReject" value="reject" />
+                                <label class="form-check-label" for="decReject">@Localizer["CycleCount.Action.Reject"]</label>
+                            </div>
+                        }
+                        @if (Perms.Has(CycleCountPermissionKeys.VariancesRecount))
+                        {
+                            <div class="form-check" data-decision="recount">
+                                <input class="form-check-input" type="radio" name="decision" id="decRecount" value="recount" />
+                                <label class="form-check-label" for="decRecount">@Localizer["CycleCount.Action.Recount"]</label>
+                            </div>
+                        }
+                        @if (Perms.Has(CycleCountPermissionKeys.VariancesPost))
+                        {
+                            <div class="form-check" data-decision="retry">
+                                <input class="form-check-input" type="radio" name="decision" id="decRetry" value="retry" />
+                                <label class="form-check-label" for="decRetry">@Localizer["CycleCount.Action.Retry"]</label>
+                            </div>
+                        }
+                        @if (Perms.Has(CycleCountPermissionKeys.VariancesResolve))
+                        {
+                            <div class="form-check" data-decision="accept-holder">
+                                <input class="form-check-input" type="radio" name="decision" id="decAcceptHolder" value="accept-holder" />
+                                <label class="form-check-label" for="decAcceptHolder">@Localizer["CycleCount.Action.AcceptHolder"]</label>
+                            </div>
+                            <div class="form-check" data-decision="reject-holder">
+                                <input class="form-check-input" type="radio" name="decision" id="decRejectHolder" value="reject-holder" />
+                                <label class="form-check-label" for="decRejectHolder">@Localizer["CycleCount.Action.RejectHolder"]</label>
+                            </div>
+                        }
+                    </div>
+                    <small class="text-muted d-block mt-2" id="decisionNone"></small>
+                </div>
+
+                <div class="col-12" id="decisionReasonBlock">
+                    <label for="decisionReason" class="form-label fw-medium">@Localizer["FieldReason"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-comment-detail diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="decisionReason" class="form-control" rows="3" maxlength="500"></textarea>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["ReasonHint"]</small>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button data-dt-primary="enter" type="button" id="btnSaveDecision" class="btn btn-primary">@Localizer["CycleCount.Action.Confirm"]</button>
+    </div>
+</div>
