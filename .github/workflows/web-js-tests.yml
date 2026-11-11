@@ -4,7 +4,7 @@ name: web-js-tests
 # 317 files) ran in no workflow at all — a broken one was seen by nobody. This job runs them on every pull request and on
 # main. Measured before it existed (2026-11-05, ad1d06222, local): 301 of 317 files green, 32 of 5 415 tests red in 16
 # files, each owned by a module team. So it starts as a NOT required check: it shows the reds, it stops no merge; the
-# owner adds it to the required checks once main is green. Same rule as every workflow here — read-only token, no
+# owner adds it to the required checks once main is green (it is a required check on main since EES 2.1/2.2, 2026-11). Same rule as every workflow here — read-only token, no
 # secret, actions pinned to a COMMIT SHA, nothing that turns a red test green. The JUnit report is kept as an artifact
 # (scripts/ac_coverage.py report reads it). EES MQ-01: merge_group too, so it can be required under the merge queue.
 on:

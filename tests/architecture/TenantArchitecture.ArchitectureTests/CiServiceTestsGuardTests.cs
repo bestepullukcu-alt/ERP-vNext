@@ -473,6 +473,9 @@ public class CiServiceTestsGuardTests
         var gates = GatesText();
         Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \] && \[ -z ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
         Assert.Single(Regex.Matches(gates, @"(?m)^  GITHUB_BASE_REF=""\$merge_group_base""$"));
+        // Blind review B3: no other assignment of GITHUB_BASE_REF anywhere in the script (an empty one would make the
+        // base steps skip green on a merge_group run).
+        Assert.Single(Regex.Matches(gates, @"(?m)^\s*(?:export\s+)?GITHUB_BASE_REF="));
         Assert.True(gates.IndexOf("GITHUB_BASE_REF=\"$merge_group_base\"", StringComparison.Ordinal)
                     < gates.IndexOf("\ncheck_audit_ledger_growth\n", StringComparison.Ordinal), "the merge_group base is set after the first base step");
 
@@ -491,7 +494,10 @@ public class CiServiceTestsGuardTests
             + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$GROUP_BASE_SHA\"\n"
             + "          elif [ \"$GITHUB_EVENT_NAME\" = \"push\" ]; then\n"
             + "            python3 scripts/pack_approval.py ci-main \"$BEFORE_SHA\" HEAD\n"
-            + "          else\n", approvals, StringComparison.Ordinal);
+            + "          else\n"
+            + "            echo \"beklenmeyen olay: $GITHUB_EVENT_NAME\"\n"
+            + "            exit 1\n"
+            + "          fi\n", approvals, StringComparison.Ordinal);
     }
 
     [Fact]
