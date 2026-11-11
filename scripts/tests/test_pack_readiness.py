@@ -405,6 +405,9 @@ BAD_LINES = {
     "open and decided ids": "K-1 açık K-2 KARAR " * (SIZE // 19),
     "unclosed doc paths": "`docs/a." * (SIZE // 8),
     "many ports": "MDM Service (5059) " * (SIZE // 19),
+    "blank run after a service": "MDM Service" + " " * SIZE,       # blind pre-check of 9b19f5bcf: ~n² in PORT_AFTER
+    "blank run after a Service name": "FooService" + " " * SIZE,
+    "blank run after an alias": "MDM" + " " * SIZE + "x",
     "long acceptance id": "AC-" + "a-" * (SIZE // 2),
     "many backticks and refs": "`a.cs:1` " * (SIZE // 9),
 }
@@ -498,21 +501,60 @@ class CodexRound1(Fixture):
         self.assertEqual(pr.state_of("karar bekliyor"), (True, False))
 
         def old(cell):                                    # sabotage: "karar bekliyor" counted as decided too
-            return bool(pr.OPEN.fullmatch(cell) or pr.OPEN_STATE.fullmatch(cell)), bool(pr.DECIDED_STATE.match(cell))
+            return (bool(pr.OPEN.fullmatch(cell) or re.fullmatch(r"(?i)açık|open|bekliyor|karar bekliyor", cell)),
+                    bool(re.match(r"(?i)(karar|kapandı|kapalı|closed|decided|locked)\b", cell)))
         with mock.patch.object(pr, "state_of", old), self.assertRaises(AssertionError):
             self.assert_fires("R2", TABLE_OPEN)
 
     def test_k4_any_port_next_to_a_known_service(self):
-        for written in ("MDM Service (6060)", "MDM Service (port 6060)", "MDM Service port 6060"):
+        for written in ("MDM Service (6060)", "MDM Service (port 6060)", "MDM Service port 6060", "MDM  localhost:6060",
+                        "MDM: port 6060", "MDM = port 6060", "MDM Service (port 2026)"):
             with self.subTest(written=written):
                 got = self.assert_fires("R5", variant("MDM Service (5059)", written))
-                self.assertIn("6060", got[0].message)
+                self.assertIn(written[-5:-1] if written.endswith(")") else written[-4:], got[0].message)
                 self.assertIn("5059", got[0].message)
-        noise = variant("MDM Service (5059);", "MDM Service (5059); the MDM 2026 review and MDM: 2026-11-01 notes;")
-        self.assertNotIn("R5", {i.code for i in self.items(noise)})
-        old = (r"(?:\(\s*|:\s*|=\s*|\s)(?:port\s*)?(?:localhost:|127\.0\.0\.1:|:)?(50\d\d|27017)(?![\d])()()")
+        for said in ("the MDM 2026 review and MDM: 2026-11-01 notes", "MDM (2026)", "Inventory (2025; draft)",
+                     "the MDM (2026, Q4) plan", "Inventory Service (1999)"):
+            with self.subTest(no_alarm=said):
+                noise = variant("MDM Service (5059);", f"MDM Service (5059); {said};")
+                self.assertNotIn("R5", {i.code for i in self.items(noise)})
+        with mock.patch.object(pr, "PORT_AFTER", pr.PORT_AFTER.replace(r"(?!(?:19|20)\d\d(?!\d))", "")):
+            with self.assertRaises(AssertionError):           # sabotage: a bare year in parentheses is a port again
+                self.assertNotIn("R5", {i.code for i in self.items(variant("MDM Service (5059);",
+                                                                           "MDM Service (5059); MDM (2026);"))})
+        old = (r"(?:\(\s*|:\s*|=\s*|\s)(?:port\s*)?(?:localhost:|127\.0\.0\.1:|:)?(50\d\d|27017)(?![\d])()()()")
         with mock.patch.object(pr, "PORT_AFTER", old), self.assertRaises(AssertionError):
             self.assert_fires("R5", variant("MDM Service (5059)", "MDM Service (6060)"))   # sabotage: 50xx only
+
+    def test_k3b_negated_decision_is_not_decided(self):
+        for cell in ("karar alınmadı", "karar yok", "Karar: açık", "karar bekliyor"):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (True, False))
+                text = TABLE_OPEN.replace("| karar bekliyor |", f"| {cell} |")
+                self.assert_fires("R2", text)                  # open in the register, decided in the bullet
+        for cell in ("karar verildi", "Karar: D7", "kapandı"):
+            with self.subTest(decided=cell):
+                self.assertEqual(pr.state_of(cell), (False, True))
+        with mock.patch.object(pr, "DECIDED_STATE", re.compile(r"(?i)(karar|kapandı|kapalı|closed|decided|locked)\b")), \
+                mock.patch.object(pr, "OPEN_STATE", re.compile(r"(?i)açık|open|bekliyor|karar bekliyor")):
+            with self.assertRaises(AssertionError):            # sabotage: the 10-12 reading counts them decided
+                self.assertEqual(pr.state_of("karar yok"), (True, False))
+
+    def test_k6_gate_failure_is_unmeasured_not_engel(self):
+        boom = mock.Mock(slice_ids=mock.Mock(side_effect=RuntimeError("ct_queue yüklenemedi")))
+        for text in (CLEAN, FAILING["R1"], variant("## Teslim dilimleri\n", "## Slices (old)\n")):
+            with mock.patch.object(pr, "gate_module", lambda: boom):
+                got = [i for i in self.items(text) if i.code == "R1"]
+                self.assertFalse([i for i in got if i.severity == pr.ENGEL])
+                self.assertTrue(any("ölçülemedi — onay aracı okuyamadı: RuntimeError: ct_queue yüklenemedi" in i.message
+                                    for i in got))
+        with mock.patch.object(pr, "gate_module", lambda: None):
+            got = [i for i in self.items(FAILING["R1"]) if i.code == "R1"]
+            self.assertTrue(got and all(i.severity == pr.ONEMLI for i in got))
+        with mock.patch.object(pr, "gate_module", lambda: boom), \
+                mock.patch.object(pr, "_unmeasured", lambda pack, why: [pr.Item("R1", 1, pr.ENGEL, why)]):
+            with self.assertRaises(AssertionError):            # sabotage: a gate failure is ENGEL again
+                self.assertFalse([i for i in self.items(CLEAN) if i.severity == pr.ENGEL])
 
     def test_k5_absent_pinned_commit_is_said(self):
         for form, line in PIN_FORMS.items():

@@ -20,10 +20,12 @@ Default rules (each one function, so a test can switch one off and show its own 
               diagnosis — `## Teslim dilimleri` (DCP: `## 8.1 Delivery slices`) present once; one table; every row has
               the header's cells filled; DL ids unique; every section named in `kapsadığı bölümler` is a heading, read
               the gate's way (module-pack-standard §6 row 22, §16 CT-APR-02). Empty cells are read with the gate's
-              NOT_GIVEN; a DCP's `Not` column may be empty. A failing diagnosis never stops the run.
+              NOT_GIVEN; a DCP's `Not` column may be empty. A failing diagnosis never stops the run. The approval
+              tool failing (an exception, or not loadable) is ÖNEMLİ "ölçülemedi", never ENGEL.
   R2 (ÖNEMLİ) a decision id (D30, D45/2, D-3, K-2, KR-1, OD-4, O-11) is written as open in one clause and as decided in
               another clause of the pack — stale decision text. Both lines are reported. An id in inline code (`K-1`)
-              is read; a register state cell that waits (`karar bekliyor`) is open, never also decided.
+              is read; a register state cell that waits or negates (`karar bekliyor`, `karar yok`, `karar alınmadı`,
+              `Karar: açık`) is open, never also decided.
   R3          `path:N` / `path:N-M` references: a full repo path exists at --base (ENGEL); the file has at least M
               lines (ÖNEMLİ); a backtick quote right after the reference shares a word with lines N-3..M+3 (ÖNEMLİ).
               A bare file name is read only if it resolves to exactly one path (planned code is not an alarm).
@@ -34,16 +36,17 @@ Default rules (each one function, so a test can switch one off and show its own 
               path (docs/, execution/, .antigravity/) without a line must exist (ÖNEMLİ), unless described as to-write.
   R5 (ÖNEMLİ) a port written right next to a service name (`MDM (5059)`, `MDM (6060)`, `MDM port 6060`, `5059 (MDM)`,
               `MdmService 5059`) equals that service's port in AGENTS.md §3 on --base; a `<Name>Service <port>` absent
-              from the table is reported. Any 4-5 digit port in parentheses or after `port` / `localhost:`; after a
-              plain blank, colon or `=` only 50xx / 27017 (a date such as "MDM 2026" is not a port).
+              from the table is reported. Any 4-5 digit port in parentheses (not a bare year 1900-2099) or after
+              `port` / `localhost:`; after a plain blank, colon or `=` only 50xx / 27017 ("MDM 2026" is a date).
 Only with --all (measured noisy: R4 394 items on the 9 packs first reviewed UYGUN; R6 152 items on current packs):
   R4 (ÖNEMLİ) every acceptance criterion id defined under an Acceptance Criteria heading is referenced under a test
               heading, and is mentioned together with a sabotage / negative test somewhere in the pack.
   R6 (ÖNEMLİ) a pack whose künye status is approved / ready-for-dev carries no unresolved marker (TBD, "karar
               verilmedi", "?" placeholder) outside history.
 
-Input: a pack longer than MAX_PACK_CHARS is not read (one ÖNEMLİ "ölçülemedi" item, never ENGEL); every rule is
-linear in the line length (a 200 KB line stays under a second — the test pins the budget).
+Input: a pack longer than MAX_PACK_CHARS is not read (one ÖNEMLİ "ölçülemedi" item, never ENGEL). Measured, not
+proven: each of the test's bad 200 KB lines (BAD_LINES: long words, blank runs after a service name, many references,
+ids, ports) runs under a second; a pattern change must keep that test green.
 
 History is not read by R2, R4, R5, R6: fenced code, block-quote lines, strikethrough, and sections whose heading names a
 revision / history / changelog / reconciliation.
@@ -305,14 +308,12 @@ def r1_slices(pack: Pack, repo: Repo | None) -> list[Item]:
     why. Only when the gate cannot be loaded does this tool's own diagnosis stand alone (plus an ÖNEMLİ note)."""
     gate = gate_module()
     if gate is None:
-        return _r1_diagnose_safe(pack) + [Item("R1", 1, ONEMLI, "scripts/pack_approval.py yüklenemedi; kapının dilim "
-                                                               "okuması ölçülmedi", ["Teslim dilimleri"])]
+        return _unmeasured(pack, "scripts/pack_approval.py yüklenemedi")
     try:
         found = gate.slice_ids(pack.path, pack.text)
-    except Exception as e:     # noqa: BLE001 — pack_approval.Unreadable or any reader failure
-        found, why = None, f" ({type(e).__name__})"
-    else:
-        why = ""
+    except Exception as e:     # noqa: BLE001 — pack_approval.Unreadable, a ct_route / ct_queue load, any failure
+        msg = " ".join(str(e).split())
+        return _unmeasured(pack, f"{type(e).__name__}" + (f": {msg[:160]}" if msg else ""))
     if found is not None:
         return []
     out = _r1_diagnose_safe(pack)
@@ -322,9 +323,17 @@ def r1_slices(pack: Pack, repo: Repo | None) -> list[Item]:
     hints = _r1_hints(pack)
     detail = ("; olası neden: " + "; ".join(hints)) if hints else ""
     out.append(Item("R1", heads[0] if heads else 1, ENGEL,
-                    f"pack_approval.slice_ids dilim tablosunu okuyamıyor{why} — onay kapısı bu paketi dilimsiz "
+                    f"pack_approval.slice_ids dilim tablosunu okuyamıyor — onay kapısı bu paketi dilimsiz "
                     f"sayar{detail}", ["Teslim dilimleri", "slices"]))
     return out
+
+
+def _unmeasured(pack: Pack, why: str) -> list[Item]:
+    """The approval tool could not answer: this tool is not a gate, so it says so (ÖNEMLİ "ölçülemedi") and its own
+    diagnosis, shown as ÖNEMLİ, never stands in for the gate's ENGEL."""
+    diag = [Item(i.code, i.line, ONEMLI, i.message + " (kapı ölçülemedi; yalnız bu aracın tanısı)", i.subjects)
+            for i in _r1_diagnose_safe(pack)]
+    return diag + [Item("R1", 1, ONEMLI, f"ölçülemedi — onay aracı okuyamadı: {why}", ["Teslim dilimleri"])]
 
 
 def _r1_diagnose_safe(pack: Pack) -> list[Item]:
@@ -415,8 +424,11 @@ DECIDED = re.compile(r"((?<![\w-])(KARAR|LOCKED|DECIDED)(?![\w-])|"
                      r"(?i:karar verildi|kararlaştırıldı|kabul edildi|kapandı|kapatıldı))")
 NEAR = 25          # a marker speaks about the decision ids within this many characters of it, in its clause
 ID_MAX = 12        # longest decision id DECISION_ID can match (`D123/45`, `KR-123`), for the window of _near
-OPEN_STATE = re.compile(r"(?i)açık|open|bekliyor|karar bekliyor")
-DECIDED_STATE = re.compile(r"(?i)(karar|kapandı|kapalı|closed|decided|locked)\b")
+UNDECIDED = r"(?:alınmadı|alınmamış|verilmedi|verilmemiş|yok\w*|bekl\w*|açık|open|tbd|\?)"
+OPEN_STATE = re.compile(r"(?i)açık|open|bekliyor|karar\s*[:=—–-]?\s*" + UNDECIDED + r"(?:\s.*)?")
+# `karar` followed by a negation or a wait (`karar alınmadı`, `karar yok`, `Karar: açık`) is not a decision
+DECIDED_STATE = re.compile(r"(?i)(?:karar\b(?!\s*[:=—–-]?\s*" + UNDECIDED + r"(?!\w))|kapandı|kapalı|closed|decided|"
+                           r"locked)\b")
 
 
 def r2_text(s: str) -> str:
@@ -801,15 +813,20 @@ def agents_ports(repo: Repo) -> dict[str, set[int]]:
 # The number next to a service name (Codex 4: any port, not only 50xx). A bare number is a port only in a form that
 # says so — `(6060)`, `(port 6060)`, `port 6060`, `localhost:6060`; written after a plain blank / colon / `=`, only the
 # repo's own ranges (50xx, 27017) count, as before (measured: "MDM 2026" and "MDM: 2026-11" are dates, not ports).
+# A bare year in parentheses (1900-2099: `MDM (2026)`, `Auth (2025;`) is not a port; `(port 2026)` still is.
+# No alternative starts with a blank run of its own: PORT_AFTER follows a `\s*`, and a second `\s*` there made the
+# scan of a long blank run ~n² (blind pre-check of 9b19f5bcf: "MDM" + 8000 blanks took 8.3 s).
 HOST = r"(?:localhost:|127\.0\.0\.1:)"
-PORT_AFTER = (r"(?:\(\s*(?:port\s*:?\s*)?(?:" + HOST + r"|:)?(\d{4,5})\s*[),;]"
+PORT_AFTER = (r"(?:\(\s*(?:port\s*:?\s*|" + HOST + r"|:)(\d{4,5})\s*[),;]"
+              r"|\(\s*(?!(?:19|20)\d\d(?!\d))(\d{4,5})\s*[),;]"
               r"|(?:\(\s*|:\s*|=\s*|\s)(?:port\s*:?\s*)?(?:" + HOST + r"|:)?(50\d\d|27017)(?![\d])"
-              r"|(?:\s*|:\s*|=\s*)(?:port\s*:?\s*|" + HOST + r")(\d{4,5})(?![\d]))")
+              r"|(?::\s*|=\s*)?(?:port\s*:?\s*|" + HOST + r")(\d{4,5})(?![\d]))")
+PORT_GROUPS = 4            # the port groups of PORT_AFTER, in order
 PORT_BEFORE = r"(?:(?<![\w.:/-])(50\d\d|27017)|(?<![\w.-])(?:port\s*|" + HOST + r")(\d{4,5}))(?![\d])"
 UNLISTED = re.compile(r"(?<![\w.])(?:Diten\.)?([A-Z][A-Za-z]+Service)(?:\.Api)?\s*" + PORT_AFTER)
 
 
-def _port(m, first: int, count: int = 3) -> int | None:
+def _port(m, first: int, count: int = PORT_GROUPS) -> int | None:
     """The first of the `count` port groups from group `first` on that matched; None outside 1-65535."""
     p = next((int(g) for g in m.groups()[first - 1:first - 1 + count] if g), None)
     return p if p and 0 < p <= 65535 else None
