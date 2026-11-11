@@ -34,7 +34,10 @@ const fields = {};
 const elementStub = (id) => (id in fields ? { value: fields[id] } : null);
 const context = vm.createContext({
     document: { getElementById: elementStub, querySelector: () => null, addEventListener: () => {} },
-    window: { L10n }, Intl, crypto, console
+    window: { L10n }, Intl, crypto, console,
+    // r10 §35.3 (RB-7): the stored place is read by name through api/places/{id}.
+    fetch: async (url) => ({ ok: true, status: 200, headers: { get: () => null },
+        json: async () => ({ state: 'resolved', label: `name-of-${decodeURIComponent(String(url).split('/places/')[1].split('?')[0])}` }) })
 });
 const { failureText, readFailure, permanentRefusal, receiptLineCells, buildTransitionBody } = vm.runInContext(`${source}\n;ReturnsList`, context);
 const answer = async (status, code, details) => readFailure({
@@ -72,9 +75,9 @@ test('the module codes have their own text and never the validation text', async
     assert.equal(await text(422, 'RETURN_SOURCE_MOVEMENT_MISSING', { shipmentLineNumber: '3' }), 'ErrReturnSourceMovementMissing[3]');
     assert.equal(await text(422, 'RETURN_LINE_NOT_UNPOSTABLE', { shipmentLineNumber: '4', lastInventoryCode: 'UNKNOWN_LOCATION' }), 'ErrReturnLineNotUnpostable[4]');
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS', { toWarehouseId: 'wh-01', toLocationId: 'loc-q1', occurredAt: '2026-10-26T08:00:00Z' }),
-        `ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|loc-q1|${localStored}]`);
+        `ErrReturnReceiptInProgress ReceiptStoredValues[name-of-wh-01|name-of-loc-q1|${localStored}]`);
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS', { toWarehouseId: 'wh-01', toLocationId: null, occurredAt: '2026-10-26T08:00:00Z' }),
-        `ErrReturnReceiptInProgress ReceiptStoredValues[wh-01|NotProvided|${localStored}]`);
+        `ErrReturnReceiptInProgress ReceiptStoredValues[name-of-wh-01|NotProvided|${localStored}]`);
     assert.equal(await text(409, 'RETURN_RECEIPT_IN_PROGRESS'), 'ErrReturnReceiptInProgress');
 });
 
