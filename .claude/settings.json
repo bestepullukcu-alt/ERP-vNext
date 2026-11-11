@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -f \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" ] || exit 0; for p in python3 python; do \"$p\" -c \"\" </dev/null >/dev/null 2>&1 && exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\"; done; exit 0",
+            "command": "[ -f \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" ] || exit 0; for p in python3 python; do \"$p\" -c 'import sys; sys.exit(sys.version_info < (3, 7))' </dev/null >/dev/null 2>&1 && exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\"; done; echo 'EES command brake: no Python 3.7+ found, the brake is off' >&2; exit 0",
             "timeout": 10
           }
         ]

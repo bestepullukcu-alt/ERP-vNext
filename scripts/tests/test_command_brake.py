@@ -128,7 +128,11 @@ class RepoSettings(unittest.TestCase):
         env = {**os.environ, "CLAUDE_PROJECT_DIR": str(ROOT), **(env_extra or {})}
         if path is not None:
             env["PATH"] = path
-        return [subprocess.run(["/bin/bash", "-c", h["command"]], input=payload.encode("utf-8"), capture_output=True,
+        import shutil
+        bash = shutil.which("bash")
+        if not bash:
+            self.skipTest("no bash on this machine (Claude Code runs hooks with bash; CI has it)")
+        return [subprocess.run([bash, "-c", h["command"]], input=payload.encode("utf-8"), capture_output=True,
                                timeout=h["timeout"], env=env) for _, h in hooks]
 
     def decision_of(self, p):
@@ -145,19 +149,58 @@ class RepoSettings(unittest.TestCase):
     def test_decision_survives_a_non_utf8_console(self):
         # Codex R1-1: under cp1252 the Turkish reason raised UnicodeEncodeError and the decision was lost
         payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}}, ensure_ascii=False)
-        for p in self.run_registered(payload, {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0", "LC_ALL": "C"}):
+        cp1252 = {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0", "LC_ALL": "C"}
+        for p in self.run_registered(payload, cp1252):
             self.assertEqual(self.decision_of(p), "deny")
             p.stdout.decode("ascii")   # the decision itself is plain ASCII
+        # input side: UTF-8 bytes that cp1252 cannot decode (Á = C3 81) must not make the brake pass a push to main
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "echo Á 中文 && git push origin main"}},
+                             ensure_ascii=False)
+        for p in self.run_registered(payload, cp1252):
+            self.assertEqual(self.decision_of(p), "deny")
+
+    def test_a_failing_brake_runs_once_and_stays_failed(self):
+        # exec: when the script itself fails, the next interpreter must not re-run it on an empty stdin and hide it
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            fake = pathlib.Path(d, "scripts", "hooks", "command_brake.py")
+            fake.parent.mkdir(parents=True)
+            fake.write_text("import pathlib, sys\nwith open(pathlib.Path(__file__).with_name('runs'), 'a') as f:\n"
+                            "    f.write('x')\nsys.exit(1)\n")
+            for p in self.run_registered("{}", {"CLAUDE_PROJECT_DIR": d}):
+                self.assertNotEqual(p.returncode, 0)
+            self.assertEqual(fake.with_name("runs").read_text(), "x" * len(self.hooks()))
+
+    def test_no_usable_python_passes_with_a_warning(self):
+        import os, tempfile
+        with tempfile.TemporaryDirectory() as d:
+            for name in ("python3", "python"):
+                stub = pathlib.Path(d, name)
+                stub.write_text("#!/bin/sh\nexit 1\n")
+                stub.chmod(0o755)
+            for p in self.run_registered("{}", path=d + os.pathsep + os.environ.get("PATH", "")):
+                self.assertEqual((p.returncode, p.stdout), (0, b""))
+                self.assertIn(b"brake is off", p.stderr)
 
     def test_broken_python3_falls_back_before_reading_input(self):
-        # a python3 that exists but does not run (the Windows Store alias) must not eat stdin or end the brake
+        # a python3 that exists but does not run (the Windows Store alias), or runs but is older than 3.7, must not eat
+        # stdin or end the brake: the next interpreter answers
+        for body in ("cat >/dev/null\nexit 49\n",
+                     'case "$*" in *version_info*) exit 1;; esac\ncat >/dev/null\nexit 0\n'):
+            with self.subTest(stub=body.splitlines()[0]):
+                self.fallback_case(body)
+
+    def fallback_case(self, body):
         import os, tempfile
         payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}})
         with tempfile.TemporaryDirectory() as d:
             stub = pathlib.Path(d, "python3")
-            stub.write_text("#!/bin/sh\ncat >/dev/null\nexit 49\n")
+            stub.write_text("#!/bin/sh\n" + body)
             stub.chmod(0o755)
-            os.symlink(sys.executable, pathlib.Path(d, "python"))
+            try:
+                os.symlink(sys.executable, pathlib.Path(d, "python"))
+            except (OSError, NotImplementedError):
+                self.skipTest("no symlinks on this machine")
             for p in self.run_registered(payload, path=d + os.pathsep + os.environ.get("PATH", "")):
                 self.assertEqual(self.decision_of(p), "deny")
 

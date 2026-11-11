@@ -17,7 +17,7 @@ The command is tokenised with shlex, so text inside a commit message or a grep p
 command. `bash -c "..."`, `env`, `nohup`, `sudo`, `xargs`, `time` wrappers and `git -C <dir>` are followed.
 Input that cannot be parsed passes (fail-open) so that the brake never stops ordinary work.
 Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse for SHELL_TOOLS and DENY_MCP;
-the first working python3/python is chosen before it runs; a checkout without this file passes; output is ASCII).
+the first python3/python that is 3.7+ is chosen before it runs, never re-run; a checkout without this file passes; output is ASCII).
 Known limit: a person can switch hooks off locally -- this is a net against agent habit, not against intent.
 """
 from __future__ import annotations
