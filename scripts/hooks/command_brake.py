@@ -17,7 +17,7 @@ The command is tokenised with shlex, so text inside a commit message or a grep p
 command. `bash -c "..."`, `env`, `nohup`, `sudo`, `xargs`, `time` wrappers and `git -C <dir>` are followed.
 Input that cannot be parsed passes (fail-open) so that the brake never stops ordinary work.
 Enabled for everyone who opens the repository by .claude/settings.json (PreToolUse for SHELL_TOOLS and DENY_MCP;
-python3, else python; a checkout without this file passes).
+the first working python3/python is chosen before it runs; a checkout without this file passes; output is ASCII).
 Known limit: a person can switch hooks off locally -- this is a net against agent habit, not against intent.
 """
 from __future__ import annotations
@@ -296,8 +296,8 @@ def decide(command: str, cwd: str | None = None, branch: str | None = None):
 
 
 def main() -> int:
-    try:
-        data = json.load(sys.stdin)
+    try:   # bytes in, decoded as UTF-8: a Windows ANSI code page (cp1252) must not change what is read
+        data = json.loads(sys.stdin.buffer.read().decode("utf-8", "replace"))
     except Exception:
         return 0
     if not isinstance(data, dict):
@@ -318,7 +318,7 @@ def main() -> int:
         "hookEventName": "PreToolUse",
         "permissionDecision": decision,
         "permissionDecisionReason": "EES komut freni: " + reason,
-    }}, ensure_ascii=False))
+    }}, ensure_ascii=True))   # ASCII only: the decision survives any stdout encoding (Codex R1-1, cp1252)
     return 0
 
 

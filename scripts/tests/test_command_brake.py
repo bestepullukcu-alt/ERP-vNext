@@ -112,10 +112,54 @@ class RepoSettings(unittest.TestCase):
     """The brake is on for everyone who opens the repository: .claude/settings.json registers it as a PreToolUse hook
     for Bash and the auto-merge tool, and the registered command, run the way Claude Code runs it, denies a merge."""
 
-    def entries(self):
+    def hooks(self):
         settings = json.loads((ROOT / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        return [(e.get("matcher", ""), h.get("command", "")) for e in settings.get("hooks", {}).get("PreToolUse", [])
+        return [(e.get("matcher", ""), h) for e in settings.get("hooks", {}).get("PreToolUse", [])
                 for h in e.get("hooks", []) if h.get("type") == "command" and "scripts/hooks/command_brake.py" in h.get("command", "")]
+
+    def entries(self):
+        return [(m, h["command"]) for m, h in self.hooks()]
+
+    def run_registered(self, payload, env_extra=None, path=None):
+        """Every registered command, run the way Claude Code runs it: bash -c, the hook's own timeout."""
+        import os
+        hooks = self.hooks()
+        self.assertTrue(hooks, "command_brake.py is not a PreToolUse hook in .claude/settings.json")
+        env = {**os.environ, "CLAUDE_PROJECT_DIR": str(ROOT), **(env_extra or {})}
+        if path is not None:
+            env["PATH"] = path
+        return [subprocess.run(["/bin/bash", "-c", h["command"]], input=payload.encode("utf-8"), capture_output=True,
+                               timeout=h["timeout"], env=env) for _, h in hooks]
+
+    def decision_of(self, p):
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertTrue(p.stdout, "the brake printed nothing")
+        return json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"]
+
+    def test_hook_is_synchronous_with_a_real_timeout(self):
+        # an async hook's decision blocks nothing; a tiny timeout kills the brake before it answers (Codex R1-2)
+        for _, h in self.hooks():
+            self.assertFalse(h.get("async"), "the brake must not be async")
+            self.assertTrue(isinstance(h.get("timeout"), (int, float)) and 5 <= h["timeout"] <= 30, h.get("timeout"))
+
+    def test_decision_survives_a_non_utf8_console(self):
+        # Codex R1-1: under cp1252 the Turkish reason raised UnicodeEncodeError and the decision was lost
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}}, ensure_ascii=False)
+        for p in self.run_registered(payload, {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0", "LC_ALL": "C"}):
+            self.assertEqual(self.decision_of(p), "deny")
+            p.stdout.decode("ascii")   # the decision itself is plain ASCII
+
+    def test_broken_python3_falls_back_before_reading_input(self):
+        # a python3 that exists but does not run (the Windows Store alias) must not eat stdin or end the brake
+        import os, tempfile
+        payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}})
+        with tempfile.TemporaryDirectory() as d:
+            stub = pathlib.Path(d, "python3")
+            stub.write_text("#!/bin/sh\ncat >/dev/null\nexit 49\n")
+            stub.chmod(0o755)
+            os.symlink(sys.executable, pathlib.Path(d, "python"))
+            for p in self.run_registered(payload, path=d + os.pathsep + os.environ.get("PATH", "")):
+                self.assertEqual(self.decision_of(p), "deny")
 
     def test_registered_for_every_braked_tool(self):
         import re
@@ -126,24 +170,16 @@ class RepoSettings(unittest.TestCase):
             self.assertTrue(any(covers(m, tool) for m, _ in entries), f"no brake matcher covers {tool}")
 
     def test_checkout_without_the_script_passes(self):
-        import os, tempfile
+        import tempfile
         payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "git status"}})
         with tempfile.TemporaryDirectory() as empty:
-            for _, command in self.entries():
-                p = subprocess.run(["bash", "-c", command], input=payload, capture_output=True, text=True, timeout=20,
-                                   env={**os.environ, "CLAUDE_PROJECT_DIR": empty})
-                self.assertEqual((p.returncode, p.stdout), (0, ""), p.stderr)
+            for p in self.run_registered(payload, {"CLAUDE_PROJECT_DIR": empty}):
+                self.assertEqual((p.returncode, p.stdout), (0, b""), p.stderr)
 
     def test_registered_command_denies_a_merge(self):
-        import os
         payload = json.dumps({"tool_name": "Bash", "tool_input": {"command": "gh pr merge 1 --merge"}})
-        entries = self.entries()
-        self.assertTrue(entries, "command_brake.py is not a PreToolUse hook in .claude/settings.json")
-        for _, command in entries:
-            p = subprocess.run(["bash", "-c", command], input=payload, capture_output=True, text=True, timeout=20,
-                               env={**os.environ, "CLAUDE_PROJECT_DIR": str(ROOT)})
-            self.assertEqual(p.returncode, 0, p.stderr)
-            self.assertEqual(json.loads(p.stdout)["hookSpecificOutput"]["permissionDecision"], "deny")
+        for p in self.run_registered(payload):
+            self.assertEqual(self.decision_of(p), "deny")
 
 
 if __name__ == "__main__":
