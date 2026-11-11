@@ -119,6 +119,48 @@ public sealed class CycleCountRecountTests(CycleCountApiFactory factory) : IClas
         Assert.Equal(3, s.Stored(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Counts).Count); // no third recount was opened
     }
 
+    /// <summary>
+    /// DL-3 CT DÜŞÜK-2: ONE request with a line at the limit and a line below it is refused whole (409 <c>COUNT_RECOUNT_LIMIT</c>) — no new count, both
+    /// lines keep their state. The below-limit line is a found line (depth 0) of a depth-2 recount; it is sent FIRST.
+    /// </summary>
+    [Fact]
+    public async Task AC32_DUSUK2_a_request_mixing_a_line_at_the_limit_and_one_below_it_is_refused_whole()
+    {
+        var s = new CycleCountScenario(factory, lotControlled: true);
+        var lot1 = s.RegisterLot(s.Inventory.Item, s.Inventory.Sku);
+        var lot3 = s.RegisterLot(s.Inventory.Item, s.Inventory.Sku);
+        var (countId, line) = await s.SubmittedLineAsync(10, 9, lot: lot1);
+        var current = (CountId: countId, Line: line);
+        JsonElement? deepest = null;
+        for (var depth = 1; depth <= 2; depth++)
+        {
+            var recount = await Expect(s.RecountAsync(current.CountId, ETag(await s.CurrentAsync(current.CountId)), [LineId(current.Line)]), 201);
+            var recountLine = Assert.Single(await s.LinesAsync(Id(recount)));
+            if (depth == 2)
+            {
+                await s.ReceiveAsync(1, s.BinA, lot: lot3); // a key born after the snapshot: a found line is allowed (depth 0)
+                await Expect(s.AddLineAsync(Id(recount), s.FoundLine(s.BinA, lot: lot3, quantity: 1)), 201);
+                deepest = recount;
+            }
+
+            await s.CountedAsync(Id(recount), recountLine, 8);
+            await s.SubmittedAsync(Id(recount));
+            current = (Id(recount), await s.LineAsync(Id(recount), LineId(recountLine)));
+        }
+
+        var lines = await s.LinesAsync(Id(deepest!.Value), s.ApproverToken);
+        var found = lines.Single(l => l.GetProperty("origin").GetString() == "Found");
+        var deep = lines.Single(l => l.GetProperty("origin").GetString() == "Recount");
+        Assert.Equal(2, deep.GetProperty("recountDepth").GetInt32());
+        Assert.Equal("AwaitingApproval", Status(found));
+        var counts = s.Stored(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Counts).Count;
+
+        var refused = await Expect(s.RecountAsync(current.CountId, ETag(await s.CurrentAsync(current.CountId)), [LineId(found), LineId(deep)]), 409);
+        Assert.Equal("COUNT_RECOUNT_LIMIT", refused.GetProperty("error").GetProperty("code").GetString());
+        Assert.Equal(counts, s.Stored(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Counts).Count);
+        Assert.All(await s.LinesAsync(current.CountId, s.ApproverToken), l => Assert.Equal("AwaitingApproval", Status(l)));
+    }
+
     [Fact]
     public async Task AC32_r6_an_unselected_lot_of_the_same_bin_and_SKU_is_out_of_scope_in_the_recount_and_a_later_lot_is_not()
     {

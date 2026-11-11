@@ -83,6 +83,12 @@ public sealed record CountVarianceLineQuery(Guid? WarehouseId, IReadOnlyCollecti
 
 public sealed record CycleCountLineSet(IReadOnlyList<CycleCountLine> Items, long Total);
 
+/// <summary>
+/// DL-4 dashboard (pack §8.13, AC-40) — counted at read time, never stored: open counts (Released / Counting / Submitted), lines awaiting a decision,
+/// refused corrections, and the period's counted lines and exact lines (variance 0) for the accuracy.
+/// </summary>
+public sealed record CycleCountDashboardCounts(long OpenCounts, long AwaitingApprovalLines, long RefusedAdjustments, long CountedLines, long ExactLines);
+
 /// <summary>A ledger movement as MOD-0181 reads it (pack §2.4: its source envelope as the caller declared it, its key, who and when) — a Find, never a write.</summary>
 public sealed record CycleCountLedgerMovementRow(Guid TransactionId, string TransactionNumber, MovementType MovementType, Guid ItemId, Guid SkuId, SkuLevel SkuLevel,
     string? FromWarehouseId, string? FromLocationId, string? ToWarehouseId, string? ToLocationId, string? LotId, StockStatus? FromStockStatus,
@@ -129,6 +135,9 @@ public interface ICycleCountRepository
 
     /// <summary>Pack §8.13 Variance Trace (source <c>count</c>): the submitted lines (a variance is written) — newest entry first.</summary>
     Task<CycleCountLineSet> VarianceLinesAsync(CountVarianceLineQuery query, CancellationToken cancellationToken = default);
+
+    /// <summary>DL-4 (AC-40): the dashboard's counts of the caller's company (one warehouse when given); the period starts at <paramref name="periodStart"/>.</summary>
+    Task<CycleCountDashboardCounts> DashboardCountsAsync(Guid? warehouseId, DateTimeOffset periodStart, CancellationToken cancellationToken = default);
 
     /// <summary>Pack §4.4: the company's settings record, or null (the defaults hold).</summary>
     Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default);

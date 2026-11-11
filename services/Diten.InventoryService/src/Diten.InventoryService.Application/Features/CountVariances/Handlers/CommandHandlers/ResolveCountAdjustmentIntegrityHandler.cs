@@ -101,13 +101,16 @@ public sealed class ResolveCountAdjustmentIntegrityHandler : CountVarianceLineHa
     }
 
     /// <summary>
-    /// F-12 "aynı": the holder is THIS line's correction — the same movement type, base quantity, bin (into it for a gain, out of it for a loss, the
-    /// other side empty), lot, stock status and <c>SourceLineId</c> — and no reversal names it.
+    /// F-12 "aynı": the holder is THIS line's correction — the same movement type, SKU and item (DL-3 CT ORTA-2, owner decision Beste 2026-11-10:
+    /// read from the holder's ledger row), base quantity, bin (into it for a gain, out of it for a loss, the other side empty), lot, stock status and
+    /// <c>SourceLineId</c> — and no reversal names it.
     /// </summary>
     private static bool IsThisCorrection(CycleCountLine line, PostingKeyHolder holder, CycleCountLedgerMovementRow movement)
     {
         var a = line.Adjustment!;
         if (holder.ReversedByTransactionId is not null || movement.MovementType != a.MovementType) return false;
+        if (movement.SkuId != line.SkuId) return false;
+        if (movement.ItemId != line.ItemId) return false;
         var bin = line.LocationId.ToString("D");
         var status = WireNames.ToWire(line.StockStatus);
         var gain = a.MovementType == MovementType.CountGain;

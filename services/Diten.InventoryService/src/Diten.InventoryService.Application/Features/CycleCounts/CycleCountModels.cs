@@ -97,6 +97,25 @@ public sealed record CycleCountLinePageDto(IReadOnlyList<CycleCountLineDto> Item
 public sealed record CycleCountEventPageDto(IReadOnlyList<CycleCountEventDto> Items, long Total, int Page, int PageSize,
     string ContractVersion = CycleCountContract.ContractVersion);
 
+/// <summary>
+/// Draft §3.10 <c>CycleCountDashboard</c> (DL-4, pack §8.13, AC-40): counted at read time, never stored. <c>accuracyPercent</c> = exact lines / counted
+/// lines × 100 of the period (absent when nothing was counted); <c>manualCountMovements</c> only for one warehouse (pack §2.4 rule).
+/// </summary>
+public sealed record CycleCountDashboardDto
+{
+    public string? WarehouseId { get; init; }
+    public required int PeriodDays { get; init; }
+    public required string PeriodStart { get; init; }
+    public required long OpenCounts { get; init; }
+    public required long AwaitingApprovalLines { get; init; }
+    public required long RefusedAdjustments { get; init; }
+    public required long CountedLines { get; init; }
+    public required long ExactLines { get; init; }
+    public string? AccuracyPercent { get; init; }
+    public int? ManualCountMovements { get; init; }
+    public string ContractVersion { get; init; } = CycleCountContract.ContractVersion;
+}
+
 /// <summary>Draft §3.5 — one row of <c>bulkDeleteCycleCounts</c>.</summary>
 public sealed record CycleCountBulkRowDto(string CountId, string Outcome, int? Version = null);
 

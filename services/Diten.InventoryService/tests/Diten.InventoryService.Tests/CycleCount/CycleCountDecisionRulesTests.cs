@@ -20,6 +20,8 @@ public sealed class CycleCountDecisionRulesTests
 
     [Theory]
     [InlineData(10, -1, "2", "15", true)]   // 1 ≤ 2 and 10 % ≤ 15 %
+    [InlineData(10, -2, "2", "50", true)]   // DL-3 CT DÜŞÜK-1: |v| exactly the absolute — inside
+    [InlineData(10, -2, "5", "20", true)]   // DL-3 CT DÜŞÜK-1: v % exactly the percent — inside
     [InlineData(10, -3, "2", "50", false)]  // above the absolute
     [InlineData(10, -2, "2", "15", false)]  // 20 % above the percent
     [InlineData(0, 1, "5", "100", false)]   // expected 0: the percent is never met

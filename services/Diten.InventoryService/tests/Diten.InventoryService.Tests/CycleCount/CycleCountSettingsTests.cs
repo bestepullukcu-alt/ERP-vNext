@@ -66,12 +66,12 @@ public sealed class CycleCountSettingsTests(CycleCountApiFactory factory) : ICla
     }
 
     [Fact]
-    public void AC49_the_manifest_declares_the_settings_keys_as_screenless_API_permissions()
+    public void AC49_the_manifest_API_permissions_are_exactly_the_screenless_settings_pair()
     {
-        var declared = (new CycleCountingManifestProvider().GetManifest().ApiPermissions ?? []).Select(p => p.PermissionKey).ToList();
-        Assert.Contains("cycle-count.settings.read", declared);
-        Assert.Contains("cycle-count.settings.configure", declared);
-        Assert.Equal(["cycle-count.settings.configure", "cycle-count.settings.read"], CycleCountPermissions.ScreenlessApi.Order(StringComparer.Ordinal));
+        // DL-3 CT ORTA-1 (owner «Tamam», 2026-11-10): measured on the MANIFEST itself, equality — never Contains, never the test's own constant
+        // (WarehouseRegistrationTests.cs:98-100 pattern); a page / action key that stays an API permission turns it red
+        var declared = (new CycleCountingManifestProvider().GetManifest().ApiPermissions ?? []).Select(p => p.PermissionKey).Order(StringComparer.Ordinal).ToList();
+        Assert.Equal(["cycle-count.settings.configure", "cycle-count.settings.read"], declared);
     }
 
     /// <summary>AC-5 / AC-7 for the DL-3 endpoints: another tenant or company → 404 on every line / count endpoint; each needs its own key.</summary>

@@ -154,6 +154,29 @@ public sealed class CycleCountRepository : ICycleCountRepository
         return new CycleCountLineSet(await sorted.Skip((query.Page - 1) * query.PageSize).Limit(query.PageSize).ToListAsync(cancellationToken), total);
     }
 
+    public async Task<CycleCountDashboardCounts> DashboardCountsAsync(Guid? warehouseId, DateTimeOffset periodStart, CancellationToken cancellationToken = default)
+    {
+        var cf = Builders<CycleCount>.Filter;
+        var counts = Company<CycleCount>() & Live()
+                     & cf.In(x => x.Status, [CycleCountStatus.Released, CycleCountStatus.Counting, CycleCountStatus.Submitted]);
+        var lf = Builders<CycleCountLine>.Filter;
+        var lines = Company<CycleCountLine>();
+        if (warehouseId is { } warehouse)
+        {
+            counts &= cf.Eq(x => x.WarehouseId, warehouse);
+            lines &= lf.Eq(x => x.WarehouseId, warehouse);
+        }
+
+        var period = lines & lf.Ne(x => x.VarianceQuantity, null) & lf.Gte(x => x.CountedAt, periodStart);
+        return new CycleCountDashboardCounts(
+            await _counts.CountDocumentsAsync(counts, cancellationToken: cancellationToken),
+            await _lines.CountDocumentsAsync(lines & lf.Eq(x => x.Status, CycleCountLineStatus.AwaitingApproval), cancellationToken: cancellationToken),
+            await _lines.CountDocumentsAsync(lines & lf.Eq(x => x.Status, CycleCountLineStatus.Approved)
+                                             & lf.Eq(x => x.Adjustment!.Status, CycleCountAdjustmentStatus.Refused), cancellationToken: cancellationToken),
+            await _lines.CountDocumentsAsync(period, cancellationToken: cancellationToken),
+            await _lines.CountDocumentsAsync(period & lf.Eq(x => x.VarianceQuantity, 0m), cancellationToken: cancellationToken));
+    }
+
     public async Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default)
         => await _settings.Find(Company<CycleCountSettings>()).FirstOrDefaultAsync(cancellationToken);
 

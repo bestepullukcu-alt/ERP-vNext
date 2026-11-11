@@ -28,6 +28,7 @@ public static class CycleCountDraftContract
     public const string Variance = "CountVariance";
     public const string VariancePage = "CountVariancePage";
     public const string Settings = "CycleCountSettings";
+    public const string Dashboard = "CycleCountDashboard";
 
     private const string Defs = """
     {
@@ -161,6 +162,17 @@ public static class CycleCountDraftContract
           { "properties": { "source": { "const": "Manual" } }, "required": ["movement"], "not": { "required": ["line"] } }
         ]
       },
+      "CycleCountDashboard": {
+        "type": "object", "additionalProperties": false,
+        "required": ["periodDays", "periodStart", "openCounts", "awaitingApprovalLines", "refusedAdjustments", "countedLines", "exactLines", "contractVersion"],
+        "properties": {
+          "warehouseId": { "$ref": "#/$defs/Uuid" }, "periodDays": { "const": 31 }, "periodStart": { "$ref": "#/$defs/DateTime" },
+          "openCounts": { "type": "integer", "minimum": 0 }, "awaitingApprovalLines": { "type": "integer", "minimum": 0 },
+          "refusedAdjustments": { "type": "integer", "minimum": 0 }, "countedLines": { "type": "integer", "minimum": 0 },
+          "exactLines": { "type": "integer", "minimum": 0 }, "accuracyPercent": { "type": "string", "pattern": "^\\d{1,3}\\.\\d$" },
+          "manualCountMovements": { "type": "integer", "minimum": 0 }, "contractVersion": { "$ref": "#/$defs/ContractVersion" }
+        }
+      },
       "CycleCountSettings": {
         "type": "object", "additionalProperties": false,
         "required": ["toleranceAbsolute", "tolerancePercent", "maxRecounts", "maxLinesPerCount", "isDefault", "version", "contractVersion"],
@@ -276,6 +288,7 @@ public static class CycleCountDraftContract
         Op("GET", "cycle-counts", CountPage),
         Op("POST", "cycle-counts", Count),
         Op("POST", "cycle-counts/bulk-delete", BulkDeleteResult),
+        Op("GET", "cycle-counts/dashboard", Dashboard),
         Op("GET", "cycle-counts/{id}", Count),
         Op("POST", "cycle-counts/{id}/update", Count),
         Op("POST", "cycle-counts/{id}/release", Count),

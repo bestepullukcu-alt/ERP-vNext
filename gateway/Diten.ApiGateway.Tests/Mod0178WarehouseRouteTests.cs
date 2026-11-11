@@ -91,8 +91,9 @@ public sealed class Mod0178WarehouseRouteTests
         // Mod0181CycleCountRouteTests. MOD-0178 DL-7 (pack AC-74, WMS draft §9): + 3 S3 reads — GET /exceptions, GET /activity,
         // GET /integration/status (60). MOD-0181 DL-3 (XMC-001, owner's OK Beste 2026-11-10 "69 yap"): + 9 — GET /count-variances,
         // GET /count-variances/{lineId}, POST /count-variances/{lineId}/approve | /reject | /retry | /resolve-integrity,
-        // POST /cycle-counts/{countId}/recount, GET + PUT /count-settings (69).
-        Assert.Equal(69, endpoints.Count);
+        // POST /cycle-counts/{countId}/recount, GET + PUT /count-settings (69). MOD-0181 DL-4 (XMC-001, owner's OK Beste 2026-11-11 "70 yap"):
+        // + 1 — GET /cycle-counts/dashboard (70).
+        Assert.Equal(70, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));

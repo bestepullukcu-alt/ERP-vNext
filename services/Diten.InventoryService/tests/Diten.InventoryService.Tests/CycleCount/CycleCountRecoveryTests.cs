@@ -112,9 +112,16 @@ public sealed class CycleCountRecoveryTests(CycleCountApiFactory factory) : ICla
     // ── AC-26 / AC-47 (e) ────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>A movement posted through MOD-0173's own endpoint under the line's key BEFORE 0181 posts (a caller's declaration — pack §2.4).</summary>
-    private static async Task<JsonElement> SquatKeyAsync(CycleCountScenario s, string countId, JsonElement line, decimal quantity, string transactionDate)
+    private static async Task<JsonElement> SquatKeyAsync(CycleCountScenario s, string countId, JsonElement line, decimal quantity, string transactionDate,
+        (Guid Item, Guid Sku)? sku = null)
     {
         var body = s.Inventory.Movement("COUNT_GAIN", Q(quantity));
+        if (sku is { } other)
+        {
+            body["itemId"] = other.Item.ToString("D");
+            body["skuId"] = other.Sku.ToString("D");
+        }
+
         body["idempotencyKey"] = "cycle-count:" + LineId(line);
         body["toWarehouseId"] = s.Inventory.Warehouse;
         body["toLocationId"] = s.BinA.ToString("D");
@@ -172,6 +179,46 @@ public sealed class CycleCountRecoveryTests(CycleCountApiFactory factory) : ICla
         Assert.Single(s.CountLedgerMovements());
         Assert.Equal("Closed", (await s.CurrentAsync(countId)).GetProperty("status").GetString());
         Assert.Single(s.CentralRows("ResolveCountAdjustmentIntegrityCommand"));
+    }
+
+    /// <summary>
+    /// DL-3 CT ORTA-2 (owner decision Beste 2026-11-10 «Ekle»): a holder with the line's key, source line, bin and quantity but ANOTHER SKU is not the
+    /// line's correction — AcceptHolder is 409 and the line stays IntegrityError (the counted SKU's stock would never be corrected).
+    /// </summary>
+    [Fact]
+    public async Task AC26_ORTA2_a_holder_of_another_SKU_is_not_accepted()
+    {
+        var s = new CycleCountScenario(factory);
+        var (countId, line) = await s.SubmittedLineAsync(10, 12); // +2
+        await SquatKeyAsync(s, countId, line, 2, "2026-10-01T10:00:00Z", s.AddSku());
+        Assert.Equal(409, (int)(await s.ApproveAsync(line)).StatusCode);
+
+        var integrity = await s.LineAsync(countId, LineId(line));
+        Assert.Equal("IntegrityError", AdjustmentStatus(integrity));
+        Assert.Equal("COUNT_ADJUSTMENT_INTEGRITY", await ErrorCode(s.ResolveAsync(integrity, "AcceptHolder"), 409));
+        var after = await s.LineAsync(countId, LineId(line));
+        Assert.Equal("IntegrityError", AdjustmentStatus(after));
+        Assert.False(Adjustment(after).TryGetProperty("transactionId", out _));
+        Assert.Equal(10m, await s.OnHandAsync(s.BinA)); // the counted SKU was not corrected by the holder
+    }
+
+    /// <summary>
+    /// ORTA-2, the item half: a holder of the same SKU whose ledger row names ANOTHER item (staged on the ledger row — the ledger API refuses such a pair,
+    /// the read under test is production) is not the line's correction either.
+    /// </summary>
+    [Fact]
+    public async Task AC26_ORTA2_a_holder_of_another_item_is_not_accepted()
+    {
+        var s = new CycleCountScenario(factory);
+        var (countId, line) = await s.SubmittedLineAsync(10, 12); // +2
+        var squat = await SquatKeyAsync(s, countId, line, 2, "2026-10-01T10:00:00Z");
+        Assert.Equal(409, (int)(await s.ApproveAsync(line)).StatusCode);
+        factory.Collection("inventory_transactions").UpdateOne(new MongoDB.Bson.BsonDocument("_id", squat.GetProperty("transactionId").GetString()),
+            new MongoDB.Bson.BsonDocument("$set", new MongoDB.Bson.BsonDocument("ItemId", Guid.NewGuid().ToString("D"))));
+
+        var integrity = await s.LineAsync(countId, LineId(line));
+        Assert.Equal("COUNT_ADJUSTMENT_INTEGRITY", await ErrorCode(s.ResolveAsync(integrity, "AcceptHolder"), 409));
+        Assert.Equal("IntegrityError", AdjustmentStatus(await s.LineAsync(countId, LineId(line))));
     }
 
     [Fact]

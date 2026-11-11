@@ -69,9 +69,24 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal("CYCLE-COUNTING", manifest.ModuleCode);
         Assert.Equal(CycleCountCentralAudit.Module, manifest.ModuleCode);
         Assert.Equal(181, manifest.SortOrder);
-        Assert.Empty(manifest.Pages); // DL-1: no page yet (the screens come with DL-4 / DL-5)
+        // DL-4 (pack §8.13, §14; AC-41): the three screens and their actions; DL-5 adds COUNTEVIDENCE
+        Assert.Equal(["COUNTSHEET", "COUNTVARIANCES", "CYCLECOUNTS"], manifest.Pages.Select(p => p.PageCode).Order(StringComparer.Ordinal));
+        var actions = manifest.Pages.SelectMany(p => p.Actions ?? []).ToDictionary(a => a.ActionCode, a => a.PermissionKey);
+        Assert.Equal(new Dictionary<string, string>
+        {
+            ["CYCLE_COUNT_CREATE"] = CycleCountPermissions.CountsCreate, ["CYCLE_COUNT_UPDATE"] = CycleCountPermissions.CountsUpdate,
+            ["CYCLE_COUNT_RELEASE"] = CycleCountPermissions.CountsUpdate, ["CYCLE_COUNT_CANCEL"] = CycleCountPermissions.CountsCancel,
+            ["CYCLE_COUNT_BULK_DELETE"] = CycleCountPermissions.CountsBulkDelete, ["COUNT_LINE_RECORD"] = CycleCountPermissions.CountsRecord,
+            ["COUNT_LINE_ADD"] = CycleCountPermissions.CountsRecord, ["CYCLE_COUNT_SUBMIT"] = CycleCountPermissions.CountsRecord,
+            ["COUNT_VARIANCE_APPROVE"] = CycleCountPermissions.VariancesApprove, ["COUNT_VARIANCE_REJECT"] = CycleCountPermissions.VariancesReject,
+            ["COUNT_VARIANCE_RECOUNT"] = CycleCountPermissions.VariancesRecount, ["COUNT_ADJUSTMENT_RETRY"] = CycleCountPermissions.VariancesPost,
+            ["COUNT_ADJUSTMENT_RESOLVE_INTEGRITY"] = CycleCountPermissions.VariancesResolve
+        }, actions);
+        Assert.DoesNotContain(actions.Keys, k => k.EndsWith("_DELETE", StringComparison.Ordinal) && k != "CYCLE_COUNT_BULK_DELETE"); // G-0181-01: "İptal", no "Sil"
 
-        var declared = (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).ToList();
+        var declared = (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey)
+            .Concat(manifest.Pages.Select(p => p.RequiredPermission)).Concat(manifest.Pages.SelectMany(p => p.Actions ?? []).Select(a => a.PermissionKey))
+            .Distinct().ToList();
         Assert.All(manifest.ApiPermissions ?? [], p => Assert.Equal("Tenant", p.Scope));
         Assert.All(declared, k => Assert.StartsWith("cycle-count.", k, StringComparison.Ordinal));
         Assert.Equal(CycleCountPermissions.Implemented.Order(StringComparer.Ordinal), declared.Order(StringComparer.Ordinal));
@@ -106,7 +121,7 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal(
             [
                 "GET count-settings", "GET count-variances", "GET count-variances/{lineId}",
-                "GET cycle-counts", "GET cycle-counts/{countId}", "GET cycle-counts/{countId}/events", "GET cycle-counts/{countId}/lines",
+                "GET cycle-counts", "GET cycle-counts/dashboard", "GET cycle-counts/{countId}", "GET cycle-counts/{countId}/events", "GET cycle-counts/{countId}/lines",
                 "POST count-variances/{lineId}/approve", "POST count-variances/{lineId}/reject", "POST count-variances/{lineId}/resolve-integrity",
                 "POST count-variances/{lineId}/retry",
                 "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/lines",

@@ -210,6 +210,9 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
 
     public Task<CycleCountSettings?> FindSettingsAsync(CancellationToken cancellationToken = default) => inner.FindSettingsAsync(cancellationToken);
 
+    public Task<CycleCountDashboardCounts> DashboardCountsAsync(Guid? warehouseId, DateTimeOffset periodStart, CancellationToken cancellationToken = default)
+        => inner.DashboardCountsAsync(warehouseId, periodStart, cancellationToken);
+
     public Task<IReadOnlyList<Guid>> WarehouseNodesAsync(Guid warehouseId, CancellationToken cancellationToken = default)
         => inner.WarehouseNodesAsync(warehouseId, cancellationToken);
 

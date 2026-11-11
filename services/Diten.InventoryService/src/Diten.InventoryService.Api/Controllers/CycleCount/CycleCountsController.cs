@@ -35,6 +35,12 @@ public sealed class CycleCountsController : CustomBaseController
         [FromQuery] string? pageSize, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new GetCycleCountListQuery(status ?? [], warehouseId, q, page, pageSize), ct));
 
+    /// <summary>DL-4 (pack §8.13, AC-40): the dashboard's KPI cards, counted at read time.</summary>
+    [HttpGet("cycle-counts/dashboard")]
+    [HasPermission(CycleCountPermissions.CountsRead)]
+    public async Task<IActionResult> Dashboard([FromQuery] string? warehouseId, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetCycleCountDashboardQuery(warehouseId), ct));
+
     [HttpGet("cycle-counts/{countId}")]
     [HasPermission(CycleCountPermissions.CountsRead)]
     public async Task<IActionResult> Get(string countId, CancellationToken ct)
