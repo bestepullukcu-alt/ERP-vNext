@@ -118,7 +118,7 @@ public sealed class MongoPersistenceTests
             =>await StartAsync(true);
         private static async Task<Replica> StartAsync(bool replicaSet)
         {
-            var binary="/opt/homebrew/bin/mongod"; if(!File.Exists(binary)) throw new InvalidOperationException("mongod_required");
+            var binary=MongodBinary.Location; if(!File.Exists(binary)) throw new InvalidOperationException("mongod_required");
             int port; using(var listener=new TcpListener(IPAddress.Loopback,0)){listener.Start();port=((IPEndPoint)listener.LocalEndpoint).Port;} if(port<27022) return await StartAsync();
             var dir=Path.Combine(Path.GetTempPath(),"mod0355-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(dir);
             var info=new ProcessStartInfo(binary,$"--dbpath {dir} --port {port} --bind_ip 127.0.0.1 {(replicaSet?"--replSet mod0355rs":string.Empty)} --quiet") { RedirectStandardError=true,RedirectStandardOutput=true,UseShellExecute=false };

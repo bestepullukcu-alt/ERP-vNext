@@ -1,0 +1,897 @@
+{
+"rows": [
+[
+"Meetings/Series",
+"CI-4",
+"wwwroot/assets/js/Meetings/series/index.js",
+1
+],
+[
+"Meetings/MeetingTypes",
+"CI-4",
+"wwwroot/assets/js/Meetings/types/index.js",
+1
+],
+[
+"DecompositionTreeBuilder",
+"CI-7",
+"wwwroot/assets/js/pages/decomposition/decompositionPage.js",
+1
+],
+[
+"DeliveryExecutionManagement",
+"CI-6",
+"wwwroot/assets/js/pages/delivery-execution/initiatives.js",
+1
+],
+[
+"DemandIdeas",
+"CI-7",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js",
+2
+],
+[
+"DemandIdeas",
+"CI-7",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaRowActions.js",
+1
+],
+[
+"DemandIdeas",
+"CI-7",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeasList.js",
+2
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/goal-create-stepper.js",
+9
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-5",
+"wwwroot/assets/js/pages/enterprise-strategy/goals.js",
+1
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/goals.js",
+11
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/initiatives.js",
+1
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js",
+3
+],
+[
+"EnterpriseStrategyBusinessPerformance/Components",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js",
+3
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-5",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycle-detail.js",
+1
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycle-detail.js",
+7
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-5",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js",
+1
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js",
+13
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-5",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js",
+1
+],
+[
+"EnterpriseStrategyBusinessPerformance",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js",
+8
+],
+[
+"EnterpriseStrategyBusinessPerformance/Components",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/table-controls.js",
+6
+],
+[
+"EnterpriseStrategyBusinessPerformance/Components",
+"CI-6",
+"wwwroot/assets/js/pages/enterprise-strategy/ui-states.js",
+15
+],
+[
+"ManagementGovernance/ProcessModeling",
+"CI-10",
+"wwwroot/assets/js/pages/management-governance/process-modeling/index.js",
+3
+]
+],
+"cls": {
+"wwwroot/assets/js/CRM/RegulatoryTexts/details.js": "several",
+"wwwroot/assets/js/CRM/RegulatoryTexts/form.js": "several",
+"wwwroot/assets/js/CRM/cycle-dates.js": "several",
+"wwwroot/assets/js/Meetings/series/form.js": "one",
+"wwwroot/assets/js/Meetings/series/index.js": "one",
+"wwwroot/assets/js/Meetings/series/index.l10n.js": "one",
+"wwwroot/assets/js/Meetings/types/form.js": "one",
+"wwwroot/assets/js/Meetings/types/index.js": "one",
+"wwwroot/assets/js/Meetings/types/index.l10n.js": "one",
+"wwwroot/assets/js/Organization/organization-unit-custom-fields.js": "one",
+"wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js": "one",
+"wwwroot/assets/js/SupplyChain/demand-planning-forecast.js": "one",
+"wwwroot/assets/js/SupplyChain/demand-planning-forecast.l10n.js": "one",
+"wwwroot/assets/js/SupplyChain/demand-planning-history.js": "one",
+"wwwroot/assets/js/SupplyChain/demand-planning-preview.js": "one",
+"wwwroot/assets/js/Traceability/trace-ui.js": "several",
+"wwwroot/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/edge-case-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/gecmis-showcase-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/havuz-showcase-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/islerim-showcase-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/migration-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/provider-examples/documentation-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/provider-examples/enterprise-strategy-fixtures.js": "one",
+"wwwroot/assets/js/WorkCenterNext/fixtures/trigger-only-fixtures.js": "one",
+"wwwroot/assets/js/pages/decomposition/decompositionPage.js": "one",
+"wwwroot/assets/js/pages/delivery-execution/initiative-detail.js": "one",
+"wwwroot/assets/js/pages/delivery-execution/initiative-workspace.js": "one",
+"wwwroot/assets/js/pages/delivery-execution/initiatives.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaFilters.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaRowActions.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaStatusBadges.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaTable.js": "one",
+"wwwroot/assets/js/pages/demand-ideas/demandIdeasList.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/cascade-builder.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/connections-gap.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/connections-graph.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/connections-lineage.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/connections.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/consolidation-view.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/decisions-actions.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/esbp-horizon-dates.js": "shared-only",
+"wwwroot/assets/js/pages/enterprise-strategy/filter-drawer.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/goal-create-stepper.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/goal-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/goal-hierarchy.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/goals.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/index.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/initiative-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/initiative-workspace.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/initiatives.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-catalog.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-editor.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-governance.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-library-catalog.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-ownership.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard-pack-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard-packs.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-template-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-threshold-models.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js": "several",
+"wwwroot/assets/js/pages/enterprise-strategy/objective-alignment.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/objective-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/objectives.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/overview.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/permissions.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycle-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/planning.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/project-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/project-ppm-form-init.js": "none",
+"wwwroot/assets/js/pages/enterprise-strategy/project-workspace.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/projects.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/review-calendar.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/review-history.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/review-pack.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js": "several",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js": "several",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-blueprint-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-catalog.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-governance.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-import.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-instantiate.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-projects.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-usage.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-period-detail.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/table-controls.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/table-page-utils.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/target-allocation.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/ui-states.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/variance-analysis.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/workbook-io.js": "one",
+"wwwroot/assets/js/pages/enterprise-strategy/workbook-option-sources.js": "one",
+"wwwroot/assets/js/pages/governance/permissions.js": "shared-only",
+"wwwroot/assets/js/pages/management-governance/mg-data-adapter.js": "one",
+"wwwroot/assets/js/pages/management-governance/mg-page.js": "one",
+"wwwroot/assets/js/pages/management-governance/process-modeling/editor.js": "one",
+"wwwroot/assets/js/pages/management-governance/process-modeling/editor.l10n.js": "one",
+"wwwroot/assets/js/pages/management-governance/process-modeling/index.js": "one",
+"wwwroot/assets/js/pages/management-governance/process-modeling/index.l10n.js": "one",
+"wwwroot/assets/js/pages/systemStatus.js": "none"
+},
+"refs": {
+"wwwroot/assets/js/CRM/cycle-dates.js": {
+"CRM/CycleCapacities": [
+"frontend/Diten.Web/Views/CRM/CycleCapacities/Create.cshtml",
+"frontend/Diten.Web/Views/CRM/CycleCapacities/Details.cshtml",
+"frontend/Diten.Web/Views/CRM/CycleCapacities/Edit.cshtml",
+"frontend/Diten.Web/Views/CRM/CycleCapacities/Index.cshtml"
+],
+"CRM/CyclePeriods": [
+"frontend/Diten.Web/Views/CRM/CyclePeriods/Details.cshtml",
+"frontend/Diten.Web/Views/CRM/CyclePeriods/Index.cshtml"
+]
+},
+"wwwroot/assets/js/CRM/RegulatoryTexts/form.js": {
+"CRM/LegalProfiles": [
+"frontend/Diten.Web/Views/CRM/LegalProfiles/Create.cshtml",
+"frontend/Diten.Web/Views/CRM/LegalProfiles/Edit.cshtml"
+],
+"CRM/SafetyTexts": [
+"frontend/Diten.Web/Views/CRM/SafetyTexts/Create.cshtml",
+"frontend/Diten.Web/Views/CRM/SafetyTexts/Edit.cshtml"
+]
+},
+"wwwroot/assets/js/CRM/RegulatoryTexts/details.js": {
+"CRM/LegalProfiles": [
+"frontend/Diten.Web/Views/CRM/LegalProfiles/Details.cshtml"
+],
+"CRM/SafetyTexts": [
+"frontend/Diten.Web/Views/CRM/SafetyTexts/Details.cshtml"
+]
+},
+"wwwroot/assets/js/pages/decomposition/decompositionPage.js": {
+"DecompositionTreeBuilder": [
+"frontend/Diten.Web/Views/DecompositionTreeBuilder/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-apis.js": {
+"DeliveryExecutionManagement": [
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/InitiativeCreate.cshtml",
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/InitiativeDetail.cshtml",
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/Initiatives.cshtml",
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/ProjectCreate.cshtml"
+],
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/CascadeBuilder.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Connections.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsGap.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsGraph.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsLineage.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConsolidationView.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/DecisionsActions.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalCreateStepper.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalHierarchy.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Goals.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/InitiativeCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/InitiativeDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Initiatives.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiCatalog.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiEditor.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiGovernance.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiLibraryCatalog.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiOwnership.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecard.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPackDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPacks.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiTemplateDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiThresholdModels.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveAlignment.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Objectives.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Overview.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Planning.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycleCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycleDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycles.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ProjectDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Projects.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewCalendar.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewHistory.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewPack.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryProjects.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodDetail.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriods.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/TargetAllocation.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/VarianceAnalysis.cshtml"
+],
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_Scripts.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/delivery-execution/initiative-workspace.js": {
+"DeliveryExecutionManagement": [
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/InitiativeCreate.cshtml"
+]
+},
+"wwwroot/assets/js/pages/delivery-execution/initiative-detail.js": {
+"DeliveryExecutionManagement": [
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/InitiativeDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/delivery-execution/initiatives.js": {
+"DeliveryExecutionManagement": [
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/Initiatives.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/project-workspace.js": {
+"DeliveryExecutionManagement": [
+"frontend/Diten.Web/Views/DeliveryExecutionManagement/ProjectCreate.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaCapture.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Capture.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaStatusBadges.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaFilters.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaRowActions.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeaTable.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/demand-ideas/demandIdeasList.js": {
+"DemandIdeas": [
+"frontend/Diten.Web/Views/DemandIdeas/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/cascade-builder.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/CascadeBuilder.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/index.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_Scripts.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/ui-states.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/permissions.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/workbook-io.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/workbook-option-sources.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/table-controls.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/table-page-utils.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/filter-drawer.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+],
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/DecisionsActions.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/row-actions-menu.js": {
+"EnterpriseStrategyBusinessPerformance/Components": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Components/_SubdomainShell.cshtml"
+],
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsGap.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConsolidationView.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/DecisionsActions.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiOwnership.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewCalendar.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/VarianceAnalysis.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/connections.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Connections.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/connections-gap.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsGap.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/connections-graph.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsGraph.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/connections-lineage.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConnectionsLineage.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/consolidation-view.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ConsolidationView.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/decisions-actions.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/DecisionsActions.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/goals.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Goals.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/goal-create-stepper.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalCreateStepper.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/goal-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/goal-hierarchy.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/GoalHierarchy.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/initiative-workspace.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/InitiativeCreate.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/initiative-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/InitiativeDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/initiatives.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Initiatives.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-catalog.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiCatalog.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-editor.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiEditor.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-governance.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiGovernance.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-library-catalog.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiLibraryCatalog.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-ownership.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiOwnership.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecard.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard-pack-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPackDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-scorecard-packs.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiScorecardPacks.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-template-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiTemplateDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/kpi-threshold-models.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/KpiThresholdModels.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/objective-alignment.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveAlignment.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/objectives.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Objectives.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/objective-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ObjectiveDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/overview.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Overview.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/planning.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Planning.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycles.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycleCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycles.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/planning-cycle-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/PlanningCycleDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/project-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ProjectDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/projects.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/Projects.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/review-calendar.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewCalendar.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/review-history.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewHistory.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/review-pack.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/ReviewPack.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-blueprint-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryBlueprintDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-catalog.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryCatalog.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-governance.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryGovernance.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-import.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryImportWorkbench.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-instantiate.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryInstantiateWizard.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-projects.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryProjects.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-library-usage.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyLibraryUsage.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-periods.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodCreate.cshtml",
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriods.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/strategy-period-detail.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/StrategyPeriodDetail.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/target-allocation.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/TargetAllocation.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/variance-analysis.js": {
+"EnterpriseStrategyBusinessPerformance": [
+"frontend/Diten.Web/Views/EnterpriseStrategyBusinessPerformance/VarianceAnalysis.cshtml"
+]
+},
+"wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js": {
+"HCM/Employees": [
+"frontend/Diten.Web/Views/HCM/Employees/Create.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/mg-data-adapter.js": {
+"ManagementGovernance": [
+"frontend/Diten.Web/Views/ManagementGovernance/Cadence.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/ExecutiveCockpit.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Index.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Search.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Subdomain.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Subdomains.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/WorkQueue.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/mg-page.js": {
+"ManagementGovernance": [
+"frontend/Diten.Web/Views/ManagementGovernance/Cadence.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/ExecutiveCockpit.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Index.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/ModulePlaceholder.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Search.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Subdomain.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/Subdomains.cshtml",
+"frontend/Diten.Web/Views/ManagementGovernance/WorkQueue.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/process-modeling/editor.l10n.js": {
+"ManagementGovernance/ProcessModeling": [
+"frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/Editor.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/process-modeling/editor.js": {
+"ManagementGovernance/ProcessModeling": [
+"frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/Editor.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/process-modeling/index.l10n.js": {
+"ManagementGovernance/ProcessModeling": [
+"frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/Index.cshtml"
+]
+},
+"wwwroot/assets/js/pages/management-governance/process-modeling/index.js": {
+"ManagementGovernance/ProcessModeling": [
+"frontend/Diten.Web/Views/ManagementGovernance/ProcessModeling/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/types/index.l10n.js": {
+"Meetings/MeetingTypes": [
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Create.cshtml",
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Edit.cshtml",
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/types/form.js": {
+"Meetings/MeetingTypes": [
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Create.cshtml",
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Edit.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/types/index.js": {
+"Meetings/MeetingTypes": [
+"frontend/Diten.Web/Views/Meetings/MeetingTypes/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/series/index.l10n.js": {
+"Meetings/Series": [
+"frontend/Diten.Web/Views/Meetings/Series/Create.cshtml",
+"frontend/Diten.Web/Views/Meetings/Series/Edit.cshtml",
+"frontend/Diten.Web/Views/Meetings/Series/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/series/form.js": {
+"Meetings/Series": [
+"frontend/Diten.Web/Views/Meetings/Series/Create.cshtml",
+"frontend/Diten.Web/Views/Meetings/Series/Edit.cshtml"
+]
+},
+"wwwroot/assets/js/Meetings/series/index.js": {
+"Meetings/Series": [
+"frontend/Diten.Web/Views/Meetings/Series/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Organization/organization-unit-custom-fields.js": {
+"Organization/OrganizationUnits": [
+"frontend/Diten.Web/Views/Organization/OrganizationUnits/Details.cshtml",
+"frontend/Diten.Web/Views/Organization/OrganizationUnits/Form.cshtml"
+]
+},
+"wwwroot/assets/js/pages/enterprise-strategy/esbp-horizon-dates.js": {
+"Shared": [
+"frontend/Diten.Web/Views/Shared/_Layout.cshtml"
+]
+},
+"wwwroot/assets/js/pages/governance/permissions.js": {
+"Shared": [
+"frontend/Diten.Web/Views/Shared/_PermissionBootstrap.cshtml"
+]
+},
+"wwwroot/assets/js/SupplyChain/demand-planning-history.js": {
+"SupplyChain/DemandPlanning": [
+"frontend/Diten.Web/Views/SupplyChain/DemandPlanning/History.cshtml"
+]
+},
+"wwwroot/assets/js/SupplyChain/demand-planning-forecast.l10n.js": {
+"SupplyChain/DemandPlanning": [
+"frontend/Diten.Web/Views/SupplyChain/DemandPlanning/Index.cshtml"
+]
+},
+"wwwroot/assets/js/SupplyChain/demand-planning-forecast.js": {
+"SupplyChain/DemandPlanning": [
+"frontend/Diten.Web/Views/SupplyChain/DemandPlanning/Index.cshtml"
+]
+},
+"wwwroot/assets/js/SupplyChain/demand-planning-preview.js": {
+"SupplyChain/DemandPlanning": [
+"frontend/Diten.Web/Views/SupplyChain/DemandPlanning/Index.cshtml"
+]
+},
+"wwwroot/assets/js/Traceability/trace-ui.js": {
+"Traceability/LotMigration": [
+"frontend/Diten.Web/Views/Traceability/LotMigration/Index.cshtml"
+],
+"Traceability/LotMovements": [
+"frontend/Diten.Web/Views/Traceability/LotMovements/Index.cshtml"
+],
+"Traceability/LotTrace": [
+"frontend/Diten.Web/Views/Traceability/LotTrace/Index.cshtml"
+],
+"Traceability/Lots": [
+"frontend/Diten.Web/Views/Traceability/Lots/Create.cshtml",
+"frontend/Diten.Web/Views/Traceability/Lots/Details.cshtml",
+"frontend/Diten.Web/Views/Traceability/Lots/Edit.cshtml",
+"frontend/Diten.Web/Views/Traceability/Lots/Index.cshtml"
+],
+"Traceability/Serials": [
+"frontend/Diten.Web/Views/Traceability/Serials/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/islerim-showcase-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/havuz-showcase-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/gecmis-showcase-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/inbox-showcase-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/edge-case-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/provider-examples/enterprise-strategy-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/provider-examples/documentation-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/trigger-only-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+},
+"wwwroot/assets/js/WorkCenterNext/fixtures/migration-fixtures.js": {
+"WorkCenterNext": [
+"frontend/Diten.Web/Views/WorkCenterNext/Details.cshtml",
+"frontend/Diten.Web/Views/WorkCenterNext/Index.cshtml"
+]
+}
+}
+}

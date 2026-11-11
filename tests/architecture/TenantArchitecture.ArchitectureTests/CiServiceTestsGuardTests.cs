@@ -47,7 +47,7 @@ namespace TenantArchitecture.ArchitectureTests;
  *
  * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
- * the "not yet" list (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
@@ -67,21 +67,17 @@ public class CiServiceTestsGuardTests
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
-        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
-            "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
-            "B (Enterprise Strategy): 6 red, RBAC assertions among them",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj"] =
-            "B (Enterprise Strategy): 2 red",
-        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
-            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
-        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
-            "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests. HCM's Application.Tests left
+        // it 2026-11-06, owner 'Evet, düzelt': its repository test starts its own mongod, row hcm-app. Management
+        // Governance's IntegrationTests left it the same day: DITEN_TEST_MONGOD, row mg-itest.)
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
-            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
+            "B + C (MG, measured 2026-11-06 with the sibling builds in place): 2 of 103 red. (1) FrontendLocalTestClosure "
+            + "expects the 09-01 provider-unavailable stub, which the 09-02 catalog replaced; (2) DWS isolation: AddDwsApplication "
+            + "registers ProcessModeling's MediatR handlers. And C: four test files git-show commits 204ed1aa3 / 2d354a97b, "
+            + "which are on no branch of main — CI's checkout cannot have them",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
-            "green, but waits for the PPM team's approval (owner relays it)",
+            "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
+            + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
         ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
             "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
     };
@@ -229,11 +225,39 @@ public class CiServiceTestsGuardTests
     }
 
     // BL-590 item 4: Auth rows carry the owned-Mongo flag (BL-570 FIX3 makes it bite; today it is harmless).
+    // Owner decision 2026-11-02: branch protection requires one name, so one job turns both suite jobs into it. Exact,
+    // because one word ("skipped" accepted, a missing need, no if: always()) would let a red or unrun suite pass.
+    [Fact]
+    public void One_result_job_is_green_only_when_both_suite_jobs_succeeded()
+    {
+        var jobs = Jobs(Code(Workflow()));
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Select(job => job.Name));
+        Assert.Equal(
+            "  service-tests-result:\n"
+            + "    name: service-tests result\n"
+            + "    if: always()\n"
+            + "    needs: [service-tests, service-tests-macos]\n"
+            + "    runs-on: ubuntu-22.04\n"
+            + "    timeout-minutes: 5\n"
+            + "    steps:\n"
+            + "      - name: Every suite passed\n"
+            + "        env:\n"
+            + "          LINUX: ${{ needs.service-tests.result }}\n"
+            + "          MACOS: ${{ needs.service-tests-macos.result }}\n"
+            + "        run: |\n"
+            + "          echo \"linux: $LINUX, macos: $MACOS\"\n"
+            + "          case \"$LINUX/$MACOS\" in\n"
+            + "            success/success) echo \"Bütün test takımları geçti.\" ;;\n"
+            + "            *) echo \"En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır.\"; exit 1 ;;\n"
+            + "          esac\n",
+            jobs.Single(job => job.Name == ResultJob).Body);
+    }
+
     [Fact]
     public void Auth_rows_require_an_owned_mongo()
     {
         // CT-CI-MACOS-01: in EVERY job (both run an auth- row), not only the first one Step() would find.
-        foreach (var (_, body) in Jobs(Code(Workflow())))
+        foreach (var (_, body) in SuiteJobs(Code(Workflow())))
         {
             var step = Step(body, "Owned Mongo is required (Auth)");
             Assert.Contains("if: startsWith(matrix.suite, 'auth-')", step, StringComparison.Ordinal);
@@ -262,8 +286,8 @@ public class CiServiceTestsGuardTests
         });
         // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
         // Hardening: the whole step, exact — ` | cat` (no pipefail in the default bash -e) would turn its red green.
-        // CT-CI-MACOS-01: in EVERY job, exact.
-        foreach (var (_, body) in jobs)
+        // CT-CI-MACOS-01: in EVERY suite job, exact.
+        foreach (var (_, body) in SuiteJobs(workflow))
             Assert.Equal(
                 "- name: Skipped = 0\n        if: always()\n"
                 + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
@@ -324,10 +348,10 @@ public class CiServiceTestsGuardTests
         Assert.Equal(reference, Regex.IsMatch(line, SecretReference));
     }
 
-    private static void AssertReadOnlyAndPinned(string workflow)
+    private static void AssertReadOnlyAndPinned(string workflow, string? name = null)
     {
-        var code = Code(workflow);
-        AssertOneReadOnlyToken(code);
+        var code = WithoutTokenGrant(Code(workflow), name);
+        AssertOneReadOnlyToken(code, name);
         Assert.DoesNotMatch(SecretReference, code);
 
         var uses = Uses(workflow);
@@ -351,12 +375,20 @@ public class CiServiceTestsGuardTests
     {
         ["actions/checkout"] = "11d5960a326750d5838078e36cf38b85af677262",       // v4.4.0
         ["actions/setup-dotnet"] = "67a3573c9a986a3f9c594539f4ab511d57bb3ce9",   // v4.3.1
-        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02" // v4.6.2
+        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02", // v4.6.2
+        // JS-CI-01 (owner 2026-11-05): web-js-tests.yml's Node — measured `git ls-remote …/actions/setup-node refs/tags/v4.4.0`.
+        ["actions/setup-node"] = "49933ea5288caeca8642d1e84afbd3f7d6820020"       // v4.4.0
     };
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
     // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
-    private static readonly string[] NamedWorkflows = ["agent-adapters.yml", "phase1-gates.yml", "service-tests.yml"];
+    // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
+    // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
+    // JS-CI-01 (owner 'Evet, başla' 2026-11-05): web-js-tests.yml runs the front end's Vitest tests (not required at first).
+    // EES 2.13 (owner 'Evet, başla' 2026-11-09): ci-selection-shadow.yml records which service-test suites a changed-paths rule would select (shadow mode, not required).
+    private static readonly string[] NamedWorkflows =
+        ["agent-adapters.yml", "approvals-append-only.yml", "ci-selection-shadow.yml", "phase1-gates.yml", "service-tests.yml",
+         "ui-compliance.yml", "web-js-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -380,7 +412,7 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(KeyCount(code, "permissions") == 1, $"{name}: {KeyCount(code, "permissions")} permissions keys (block or flow, any case)");
-            AssertOneReadOnlyToken(code);
+            AssertOneReadOnlyToken(code, name);
         }
     }
 
@@ -392,7 +424,7 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\b(pull_request_target|workflow_run|issue_comment)\b"), $"{name}: privileged trigger");
-            Assert.True(!Regex.IsMatch(code, SecretReference), $"{name}: reads a secret");
+            Assert.True(!Regex.IsMatch(WithoutTokenGrant(code, name), SecretReference), $"{name}: reads a secret");
             Assert.True(KeyCount(code, "on") == 1, $"{name}: {KeyCount(code, "on")} on: keys");
         }
     }
@@ -406,7 +438,7 @@ public class CiServiceTestsGuardTests
     [Fact]
     public void Every_action_in_every_workflow_is_at_its_one_recorded_commit()
     {
-        foreach (var name in NamedWorkflows) AssertReadOnlyAndPinned(WorkflowText(name));
+        foreach (var name in NamedWorkflows) AssertReadOnlyAndPinned(WorkflowText(name), name);
         Assert.Equal(ActionPins.Keys.Order(StringComparer.Ordinal),
             NamedWorkflows.SelectMany(name => Uses(WorkflowText(name))).Select(action => action[..action.IndexOf('@')])
                 .Distinct().Order(StringComparer.Ordinal));
@@ -419,7 +451,13 @@ public class CiServiceTestsGuardTests
     private static readonly Dictionary<string, string[]> ExpectedIfs = new(StringComparer.Ordinal)
     {
         ["agent-adapters.yml"] = [],
+        ["approvals-append-only.yml"] = [],
+        // EES 2.13: none — the selection and its upload run unconditionally.
+        ["ci-selection-shadow.yml"] = [],
         ["phase1-gates.yml"] = [],
+        ["ui-compliance.yml"] = ["always()"],
+        // JS-CI-01: the report upload only — the test step has none.
+        ["web-js-tests.yml"] = ["always()"],
         ["service-tests.yml"] =
         [
             "matrix.suite == 'mdm-app'",
@@ -438,6 +476,8 @@ public class CiServiceTestsGuardTests
             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
             "startsWith(matrix.suite, 'auth-')",
             "always()",
+            "always()",
+            // Owner decision 2026-11-02: the result job (job level, the only one).
             "always()"
         ]
     };
@@ -446,7 +486,11 @@ public class CiServiceTestsGuardTests
     private static readonly Dictionary<string, int> ExpectedGithubEnvWrites = new(StringComparer.Ordinal)
     {
         ["agent-adapters.yml"] = 0,
+        ["approvals-append-only.yml"] = 0,
+        ["ci-selection-shadow.yml"] = 0,
         ["phase1-gates.yml"] = 0,
+        ["ui-compliance.yml"] = 0,
+        ["web-js-tests.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its
@@ -462,7 +506,12 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\bcontinue-on-error\b"), $"{name}: continue-on-error");
-            Assert.True(!Regex.IsMatch(code, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
+            // The one exception: the result job runs always(), or a red suite would skip it and a skipped check counts
+            // as passed. Its exact text is pinned by One_result_job_is_green_only_when_both_suite_jobs_succeeded.
+            var jobLevel = name == "service-tests.yml"
+                ? string.Concat(Jobs(code).Where(job => job.Name != ResultJob).Select(job => job.Body))
+                : code;
+            Assert.True(!Regex.IsMatch(jobLevel, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
             Assert.Equal(ExpectedIfs[name], KeyValues(code, "if"));
             Assert.True(KeyCount(code, "exclude") == 0, $"{name}: a matrix exclude:");
             Assert.True(!Regex.IsMatch(code, @"(?i)--filter\b"), $"{name}: dotnet test --filter");
@@ -499,7 +548,7 @@ public class CiServiceTestsGuardTests
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
 
         // CT-CI-MACOS-01: the Test step is exact in EVERY job (two jobs, one Test step each).
-        var serviceJobs = Jobs(Code(WorkflowText("service-tests.yml")));
+        var serviceJobs = SuiteJobs(Code(WorkflowText("service-tests.yml")));
         Assert.Equal(2, serviceJobs.Count);
         foreach (var (_, body) in serviceJobs)
         {
@@ -511,7 +560,7 @@ public class CiServiceTestsGuardTests
                 Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
-        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[""\*\*""\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
         // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
         // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
@@ -743,7 +792,7 @@ public class CiServiceTestsGuardTests
 
     /// <summary>The single top-level token: `permissions:` at column 0 whose block is exactly `  contents: read`, blank lines
     /// included in the block (a key after a blank line still belongs to it).</summary>
-    private static void AssertOneReadOnlyToken(string code)
+    private static void AssertOneReadOnlyToken(string code, string? name = null)
     {
         Assert.True(!Regex.IsMatch(code, @"(?i)\b(?:write-all|read-all)\b"), "write-all / read-all");
         var lines = code.Split('\n');
@@ -751,7 +800,27 @@ public class CiServiceTestsGuardTests
         Assert.True(at >= 0, "no top-level `permissions:` block");
         var block = lines.Skip(at + 1).TakeWhile(line => line.Length == 0 || char.IsWhiteSpace(line[0]))
             .Where(line => line.Trim().Length > 0).ToArray();
-        Assert.Equal(["  contents: read"], block);
+        Assert.Equal(name is not null && TokenGrants.TryGetValue(name, out var grant)
+            ? ["  contents: read", grant.Permission] : ["  contents: read"], block);
+    }
+
+    /// <summary>
+    /// S-91 (owner-approved 2026-10-29, item 20 of the speed review): the ONE workflow that may read the job's own
+    /// GitHub token, read-only, to ask GitHub who merged an approval-exception row (pack_approval.py `history`).
+    /// Exactly one extra permission line and exactly one token line, both written here; no other secret, no write.
+    /// </summary>
+    private static readonly Dictionary<string, (string Permission, string TokenLine)> TokenGrants = new(StringComparer.Ordinal)
+    {
+        ["approvals-append-only.yml"] = ("  pull-requests: read", "          GH_TOKEN: ${{ github.token }}")
+    };
+
+    /// <summary>The code with its granted token line removed — the line must be there exactly once, verbatim.</summary>
+    private static string WithoutTokenGrant(string code, string? name)
+    {
+        if (name is null || !TokenGrants.TryGetValue(name, out var grant)) return code;
+        var lines = code.Split('\n');
+        Assert.True(lines.Count(line => line == grant.TokenLine) == 1, $"{name}: the granted token line must appear exactly once, verbatim");
+        return string.Join('\n', lines.Where(line => line != grant.TokenLine));
     }
 
     /// <summary>The trigger names under the top-level `on:` (to the next column-0 key; full-line comments already gone).</summary>
@@ -958,14 +1027,14 @@ public class CiServiceTestsGuardTests
         const string project = "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj";
         var code = Code(Workflow());
         var jobs = Jobs(code).ToDictionary(job => job.Name, job => job.Body, StringComparer.Ordinal);
-        Assert.Equal(["service-tests", "service-tests-macos"], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
         var mac = jobs["service-tests-macos"];
         Assert.Equal([project], MatrixProjects(mac).ToArray());
         Assert.DoesNotContain(project, MatrixProjects(jobs["service-tests"]));
         Assert.Single(Regex.Matches(mac, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(code, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(jobs["service-tests"], @"(?m)^    runs-on: ubuntu-22\.04$"));
-        Assert.Equal(2, KeyCount(code, "runs-on"));
+        Assert.Equal(3, KeyCount(code, "runs-on"));   // two suite jobs + the result job
 
         var version = Regex.Match(code, @"(?m)^  MONGODB_VERSION: ""(7\.0\.\d+)""$").Groups[1].Value;
         Assert.NotEmpty(version);
@@ -1113,6 +1182,13 @@ public class CiServiceTestsGuardTests
     private static HashSet<string> MatrixProjects(string workflow) =>
         Regex.Matches(workflow, @"(?m)^ +project: *(\S+)\s*$").Select(match => match.Groups[1].Value)
             .ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>The one job that runs no suite: it turns the suite jobs' results into one required check.</summary>
+    private const string ResultJob = "service-tests-result";
+
+    /// <summary>The jobs that run a suite — every job except <see cref="ResultJob"/>.</summary>
+    private static List<(string Name, string Body)> SuiteJobs(string workflow) =>
+        Jobs(workflow).Where(job => job.Name != ResultJob).ToList();
 
     /// <summary>Each job under `jobs:` (two-space key) with its body, up to the next job or the end.</summary>
     private static List<(string Name, string Body)> Jobs(string workflow)

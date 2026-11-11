@@ -1,10 +1,42 @@
 # CT-APR-01 (D6): the version-bound approval system and the checks that enforce it change only with a
-# code-owner review. Owners: CEO and senior developers (owner decision 2026-10-19). Keep this list short.
-/.github/CODEOWNERS             @gmg-10 @Bestepul @bestepullukcu-alt
-/.github/workflows/             @gmg-10 @Bestepul @bestepullukcu-alt
-/execution/approvals/           @gmg-10 @Bestepul @bestepullukcu-alt
-/scripts/pack_approval.py       @gmg-10 @Bestepul @bestepullukcu-alt
-/scripts/prompt_gate.py         @gmg-10 @Bestepul @bestepullukcu-alt
-/scripts/ct_queue.py            @gmg-10 @Bestepul @bestepullukcu-alt
-/scripts/acceptance_record.py   @gmg-10 @Bestepul @bestepullukcu-alt
-/scripts/run_phase1_gates.sh    @gmg-10 @Bestepul @bestepullukcu-alt
+# code-owner review. Owners: CEO and senior developers (owner decision 2026-10-19), plus GMG-ERP (K3) so that a
+# senior developer's PR does not wait for the CEO alone (decision CT-CODEOWNERS-K3-01, 2026-10-27). Keep this list short.
+/.github/CODEOWNERS             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.github/workflows/             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/execution/approvals/           @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/pack_approval.py       @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/prompt_gate.py         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/ct_queue.py            @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/acceptance_record.py   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/run_phase1_gates.sh    @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+# AGENTS.md §4 protected paths (2026-11-02, owner decision): agent rules and the gateway route table change only with a
+# code-owner review, so the rule is enforced by GitHub rather than written text alone.
+/.antigravity/                         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/gateway/Diten.ApiGateway/ocelot.json  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+# EES stage 2, item 2.3 (2026-11-09, EES owner decision; GOAL red line R4): the agents' own instructions, settings,
+# generated adapters and the remaining CT tools change only with a code-owner review, so an agent cannot change the
+# rules it runs under without a person. Same owner list as above; no new owner is added here.
+/AGENTS.md                                               @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/CLAUDE.md                                               @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.claude/settings.json                                   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.claude/rules/                                          @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.claude/skills/                                         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.claude/agents/                                         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.agents/                                                @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.codex/                                                 @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/docs/guides/operations/control-tower-operating-card.md  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/docs/guides/operations/control-tower-sop.md             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/execution/delivery/ct-queue-registry.tsv                @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/execution/delivery/ct-queue-states.tsv                  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/ac_coverage.py                                  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/ct_route.py                                     @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/known_failures.py                               @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/merge_append_only.py                            @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/review_zip.py                                   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/run_record.py                                   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/status_report.py                                @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/status_report_v2.py                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/hooks/                                          @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/tests/                                          @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/.github/ci/                                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+/scripts/ci_select_suites.py                             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP

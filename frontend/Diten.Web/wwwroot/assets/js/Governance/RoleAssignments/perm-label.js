@@ -48,11 +48,11 @@
      */
     const ACTION_FAMILIES = [
         { tone: 'info',      icon: 'bx-show',         words: ['read', 'view', 'list', 'search', 'preview', 'compare', 'audit', 'review', 'verify', 'validate', 'lookup', 'investigate'] },
-        { tone: 'primary',   icon: 'bx-plus',         words: ['create', 'instantiate', 'register', 'append', 'record', 'request', 'upload', 'attach', 'issue', 'capture', 'generate', 'propose'] },
+        { tone: 'primary',   icon: 'bx-plus',         words: ['create', 'instantiate', 'register', 'append', 'record', 'request', 'upload', 'attach', 'issue', 'capture', 'generate', 'propose', 'comment'] },
         { tone: 'warning',   icon: 'bx-edit',         words: ['update', 'edit', 'manage', 'configure', 'move', 'correct', 'rebase', 'change', 'reconcile', 'apply', 'link', 'write', 'amend', 'replace', 'transition', 'migrate'] },
         { tone: 'danger',    icon: 'bx-trash',        words: ['delete', 'redact', 'invalidate', 'purge', 'dispose'] },
         { tone: 'success',   icon: 'bx-check-circle', words: ['approve', 'publish', 'activate', 'reactivate', 'release', 'complete', 'confirm', 'sign', 'submit', 'start', 'renew', 'resolve', 'commit', 'decide', 'settle', 'dispatch', 'unblock'] },
-        { tone: 'secondary', icon: 'bx-undo',         words: ['cancel', 'reject', 'suspend', 'deprecate', 'retire', 'expire', 'archive', 'revoke', 'deactivate', 'withdraw', 'rollback', 'reopen', 'block', 'end'] },
+        { tone: 'secondary', icon: 'bx-undo',         words: ['cancel', 'reject', 'suspend', 'deprecate', 'retire', 'expire', 'archive', 'revoke', 'deactivate', 'withdraw', 'rollback', 'reopen', 'block', 'end', 'close'] },
         { tone: 'dark',      icon: 'bx-user-check',   words: ['assign', 'claim', 'delegate', 'allocate', 'reserve', 'share'] },
         { tone: 'primary',   icon: 'bx-play-circle',  words: ['run', 'execute', 'retry', 'initialize', 'evaluate', 'queue', 'recover'] }
     ];
@@ -73,6 +73,9 @@
      * carries its own glyph, the same split export/import already uses: the tone says how consequential, the icon
      * says which verb.
      *
+     * web-js-reds-01 added 'comment' (adds a note, like record) and 'close' (ends a case or exception, like end): the
+     * recall and expiry keys reach them (recall.cases.close, expiry.exceptions.close / .comment).
+     *
      * The last additions (lookup, attach, issue, apply, link, write, renew, resolve, commit, deactivate, queue) are
      * WORDS, not verbs: each was reached through one live key, but every one of them generalises -- a future
      * attach-*, lookup-*, *-write or *-issue lands in the same family without a further edit. That is the line this
@@ -80,6 +83,8 @@
      * by the same line: investigate reads; capture / generate / propose bring something new; amend / replace /
      * transition / migrate change; dispose destroys; decide / settle / dispatch / unblock advance; withdraw /
      * rollback / reopen / block / end step back; recover sets something going again.
+     * MVP-1 ortak arayüz kuralları (recall.cases.close, expiry.exceptions.close / .comment) added two by the same line:
+     * close finishes a record (it advances, like complete); comment adds something new to it.
      * `publishoverride` is deliberately NOT here: it reaches us as one word only because it was seeded
      * as PascalCase (BL-344), and adding it would bless the misspelling instead of fixing it. It keeps the cog
      * until the seed is normalised, and then it is `publish` and needs nothing.

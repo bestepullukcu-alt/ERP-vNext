@@ -40,6 +40,7 @@
                 return;
             }
             document.getElementById('pvgDetailStatus').textContent = item.status || item.Status || '';
+            setVersion(item.version ?? item.Version ?? body?.draft?.version ?? body?.Draft?.Version);
             setDetailStatus('');
             setCommandDisabled(false);
         } catch (error) {
@@ -61,11 +62,13 @@
             }
 
             try {
+                // Read BEFORE the controls are disabled: a disabled control is not part of a FormData.
+                const formData = new FormData(form);
                 setCommandDisabled(true);
                 setDetailStatus(t('Loading'));
                 const response = await fetch(url, {
                     method: 'POST',
-                    body: new FormData(form),
+                    body: formData,
                     headers: { ...ajaxHeaders(), ...antiForgeryHeader(form) },
                     credentials: 'same-origin'
                 });
@@ -75,6 +78,7 @@
                     return;
                 }
                 document.getElementById('pvgDetailStatus').textContent = successText;
+                setVersion(body?.version ?? body?.Version);
                 setDetailStatus(successText);
                 hideAlert();
             } catch (error) {
@@ -82,6 +86,15 @@
             } finally {
                 setCommandDisabled(false);
             }
+        });
+    }
+
+    // The record version read now (and the one a command answers with) travels back with the next command.
+    function setVersion(value) {
+        if (value === null || value === undefined || value === '' || !Number.isInteger(Number(value))) return;
+        commandForms.forEach(form => {
+            const field = form.querySelector('input[name="ExpectedVersion"]');
+            if (field) field.value = String(Number(value));
         });
     }
 
@@ -119,6 +132,9 @@
         const codes = Array.isArray(validation) && validation.length
             ? validation.map(safeCode).filter(Boolean).join(', ')
             : reason;
+        if (status === 409 && [reason, ...(Array.isArray(validation) ? validation.map(safeCode) : [])].includes('PVG_INTAKE_DRAFT_VERSION_CONFLICT')) {
+            return t('VersionConflict');
+        }
         if (status === 409) {
             return `${t('ControlledBlock')}: ${codes || reason || t('ReasonCode')}`;
         }

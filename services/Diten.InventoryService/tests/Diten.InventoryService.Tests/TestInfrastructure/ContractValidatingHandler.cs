@@ -38,8 +38,12 @@ public sealed class ContractValidatingHandler : DelegatingHandler
         Inv("GET", "/api/inventory/transactions", [200, 400, 401, 403], ContractSchemas.TransactionPage),
         // S2. Contract declares 201 + 422 (create) and 200 + 409 (release); 200 replay, 400 (malformed / missing If-Match),
         // 401 / 403 and 404 (unknown / other-scope id) come from pack §8 / ASSUMPTION-0173-17 on every endpoint.
-        Inv("POST", "/api/inventory/reservations", [200, 201, 400, 401, 403, 422], ContractSchemas.ReservationResponse),
+        // 1.6.0 (MOD-0173-FU03): createReservation declares 400 and 503 (LOCATION unreadable for a warehouse scope).
+        Inv("POST", "/api/inventory/reservations", [200, 201, 400, 401, 403, 422, 503], ContractSchemas.ReservationResponse),
         Inv("POST", "/api/inventory/reservations/{id}/release", [200, 400, 401, 403, 404, 409], ContractSchemas.ReservationResponse),
+        // 1.6.0 getReservation: 200 ReservationView + ETag W/"n"; 404 = releaseReservation's 404 shape.
+        new("GET", "/api/inventory/reservations/{id}", Route("/api/inventory/reservations/{id}"), Inventory, [200, 400, 401, 403, 404],
+            _ => ContractSchemas.ReservationView, ETagOnSuccess: true),
         // 1.1.0 (WP-0173-PM2) getStockPresence — service-to-service, outside the scope middleware: EXACTLY the contract's
         // statuses (no 403 — a key that does not open it is the same 401).
         Inv("GET", "/api/internal/inventory/stock-presence", [200, 400, 401, 503], ContractSchemas.StockPresence),

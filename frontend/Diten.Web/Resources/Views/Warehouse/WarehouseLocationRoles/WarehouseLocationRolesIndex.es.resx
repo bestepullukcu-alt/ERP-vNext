@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista Rápida</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Elija la empresa del almacén en el que trabaja. No se muestra nada hasta elegir una empresa.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La lista de empresas no se puede leer ahora; inténtelo de nuevo en breve.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>Modificado mientras tanto: actualice</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>No encontrado</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder al directorio de usuarios; no se verificó el asignado y no se guardó nada. Inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Elija como asignado a un usuario activo de su empresa.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>El código de empresa no es válido para los números de tarea; corrija primero el código de empresa.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>El stock cambió mientras se registraba la confirmación; la confirmación está pendiente: use «Reintentar».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Esta confirmación se está procesando ahora; espere un momento y actualice.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Solo se puede conciliar una confirmación con error de integridad.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Solo se puede reintentar una confirmación pendiente.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Una confirmación de esta tarea espera la respuesta del stock; solo «Reintentar» funciona hasta que se resuelva.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Otra persona modificó este registro mientras tanto; actualice e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Esta acción no es posible en el estado actual de la tarea.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>La ubicación tiene tareas de ubicación abiertas; ciérrelas o cancélelas primero.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Una ubicación no puede ser a la vez Recepción y Preparación de envío.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>Esta ubicación ya tiene un registro de rol; edite ese.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Un nodo superior o inferior ya tiene el rol opuesto; Recepción y Preparación de envío no pueden coincidir en la misma ruta.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>No se encontró el registro de rol; actualice la lista.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Solo se puede asignar un rol a un almacén, lugar de almacenamiento, zona o hueco.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Solo el operario asignado o un supervisor puede hacerlo.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>El libro de stock ya contiene otro movimiento con la clave de esta confirmación; un supervisor debe conciliarlo.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>La cantidad prevista no puede ser inferior a la ya confirmada o pendiente.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>La cantidad supera el stock aún abierto en esta fila.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>La cantidad supera lo que queda por ubicar.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>No se pudo emitir un número de tarea; inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Los números de serie en el origen cambiaron; cancele esta tarea y cree una nueva.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Parte de este lote en la misma ubicación está pendiente de calidad; complete primero la decisión de calidad.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Un producto con control de serie solo se ubica completo; no es posible la confirmación parcial ni cerrar el resto.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>La ubicación de origen no es una ubicación de recepción.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>No se encontró stock en la fila seleccionada; actualice la lista.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>El stock entró en cuarentena o está retenido; no se puede ubicar.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Condición de almacenamiento desconocida: complétela en la ficha del producto (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Las condiciones de almacenamiento no son válidas: elija como máximo una condición de temperatura.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>El hueco de destino no acepta la condición de almacenamiento de este producto.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>El destino debe ser un hueco activo y almacenable del mismo almacén que no sea de recepción ni de preparación de envío.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>La tarea ya tiene un asignado.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>No se encontró la tarea; actualice la lista.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otro contenido; cierre el cuadro y empiece de nuevo.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Escriba un motivo de al menos 10 caracteres.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>No hay stock suficiente en el origen para esta cantidad.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>El lote está en retirada; no se puede ubicar.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder al servicio de stock; no se guardó nada. Inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Algunos valores no son válidos; revise el formulario.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Su sesión ha finalizado; inicie sesión de nuevo.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>No se puede acceder al servicio de almacén ahora; inténtelo de nuevo en breve.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>No se encontró el registro; actualice la lista.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>El registro cambió mientras tanto; actualice e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>La solicitud no fue aceptada; revise los valores e inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Algo salió mal; inténtelo de nuevo.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Demasiadas filas para exportar; restrinja los filtros.</value></data>
+  <data name="WarehouseLocationRolesTitle" xml:space="preserve"><value>Roles de Ubicaciones de Almacén</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Marque las ubicaciones de recepción y preparación y las condiciones de almacenamiento que acepta un nodo; los nodos inferiores las heredan.</value></data>
+  <data name="AddNewWarehouseLocationRole" xml:space="preserve"><value>Nuevo Rol</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="ColLocationType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="ColRoles" xml:space="preserve"><value>Funciones</value></data>
+  <data name="ColConditions" xml:space="preserve"><value>Condiciones de almacenamiento vigentes</value></data>
+  <data name="ColNote" xml:space="preserve"><value>Nota</value></data>
+  <data name="FilterRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Nodo de ubicación</value></data>
+  <data name="FieldRoles" xml:space="preserve"><value>Funciones (opcional)</value></data>
+  <data name="FieldConditions" xml:space="preserve"><value>Condiciones de almacenamiento aceptadas</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Buscar por código o nombre</value></data>
+  <data name="RolesHint" xml:space="preserve"><value>No se necesita ningún rol para indicar solo condiciones de almacenamiento.</value></data>
+  <data name="ConditionsHint" xml:space="preserve"><value>Los nodos inferiores las heredan salvo que tengan las suyas; como máximo una condición de temperatura.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo rol de ubicación</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar rol de ubicación</value></data>
+  <data name="ValidationLocation" xml:space="preserve"><value>Elija una ubicación.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>¿Eliminar este rol de ubicación?</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar {0} roles de ubicación?</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>{0} de {1} eliminados</value></data>
+  <data name="InheritedBadge" xml:space="preserve"><value>del nodo superior</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Heredado de {0}</value></data>
+  <data name="NoConditions" xml:space="preserve"><value>Sin condición de almacenamiento</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>Sin rol</value></data>
+  <data name="Warehouse.Role.Receiving" xml:space="preserve"><value>Recepción</value></data>
+  <data name="Warehouse.Role.Staging" xml:space="preserve"><value>Preparación de envío</value></data>
+  <data name="Warehouse.StorageCondition.AMBIENT_15_25" xml:space="preserve"><value>Ambiente 15–25 °C</value></data>
+  <data name="Warehouse.StorageCondition.COOL_2_8" xml:space="preserve"><value>Refrigerado 2–8 °C</value></data>
+  <data name="Warehouse.StorageCondition.FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Congelado por debajo de −20 °C</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_LIGHT" xml:space="preserve"><value>Proteger de la luz</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Proteger de la humedad</value></data>
+  <data name="Warehouse.LocationType.Warehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="Warehouse.LocationType.StorageLocation" xml:space="preserve"><value>Lugar de almacenamiento</value></data>
+  <data name="Warehouse.LocationType.Zone" xml:space="preserve"><value>Zona</value></data>
+  <data name="Warehouse.LocationType.Bin" xml:space="preserve"><value>Hueco</value></data>
+  <data name="Warehouse.Action.EditRole" xml:space="preserve"><value>Editar</value></data>
+  <data name="Warehouse.Action.DeleteRole" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="Warehouse.Action.BulkDelete" xml:space="preserve"><value>Eliminar Seleccionados</value></data>
+  <data name="Warehouse.Saved.RoleCreated" xml:space="preserve"><value>Rol de ubicación creado.</value></data>
+  <data name="Warehouse.Saved.RoleUpdated" xml:space="preserve"><value>Rol de ubicación guardado.</value></data>
+  <data name="Warehouse.Saved.RoleDeleted" xml:space="preserve"><value>Rol de ubicación eliminado.</value></data>
+  <data name="Warehouse.BulkOutcome.Deleted" xml:space="preserve"><value>Eliminado</value></data>
+</root>

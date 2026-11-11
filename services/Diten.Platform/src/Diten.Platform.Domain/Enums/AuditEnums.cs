@@ -23,7 +23,15 @@ public enum AuditCategory
     Tasks = 16,
 
     /// <summary>MOD-0022 e-Signature Service — signatures, invalidations, requests, policy, meanings, exports. Additive.</summary>
-    ESignature = 17
+    ESignature = 17,
+
+    /// <summary>Finance &amp; Treasury (DCP-011: MOD-0119, MOD-0120, MOD-0124, MOD-0126) — owner decision. Additive.</summary>
+    Finance = 18,
+    /// <summary>
+    /// WP-VW-W6 F8-a (AUD-001 K4) — the commercial-suite service (Diten.CrmService: CRM modules and the commercial.*
+    /// modules it hosts) forwarding through the shared Building.Blocks forwarder. Additive. 19, not 18: main-sync 2026-10-30 — Finance took 18 on main first.
+    /// </summary>
+    Crm = 19
 }
 
 public enum AuditOperation

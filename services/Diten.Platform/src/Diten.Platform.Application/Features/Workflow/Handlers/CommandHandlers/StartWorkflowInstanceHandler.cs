@@ -375,6 +375,14 @@ public sealed class StartWorkflowInstanceHandler
         CancellationToken ct)
     {
         var correlationId = request.CorrelationId;
+
+        // DL-2 (§17.7/5, AC-W11) — EVERY REPEAT OF A KEY is held to what the key was first asked with, whatever has become of
+        // the instance since (AC-W9): other facts or another starter get 409, the same ones fall through to today's answers.
+        if (!await SameStartFactsAsync(existing, request, ct))
+        {
+            return StartConflict("The idempotency key is already bound to different workflow start facts.", correlationId);
+        }
+
         var task = await _taskRepository.GetFirstByInstanceIdAsync(existing.Id, ct);
         var snapshot = task?.AssignmentSnapshotId is { } snapshotId
             ? await _assignmentSnapshotRepository.GetByIdAsync(snapshotId, ct)
@@ -386,7 +394,7 @@ public sealed class StartWorkflowInstanceHandler
         {
             // The start is whole: the replay answers it, whatever has become of the instance since (unchanged).
             return Response<StartWorkflowInstanceResponse>.Success(
-                ToStartResponse(existing, task, snapshot.Id, correlationId),
+                ToStartResponse(existing, task, snapshot.Id, correlationId, idempotentReplay: true),
                 correlationId: correlationId);
         }
 
@@ -416,27 +424,9 @@ public sealed class StartWorkflowInstanceHandler
         CancellationToken ct)
     {
         var correlationId = request.CorrelationId;
-        var objectType = request.Request.ObjectType.Trim();
-        var objectId = request.Request.ObjectId.Trim();
-        var objectRef = string.IsNullOrWhiteSpace(request.Request.ObjectRef)
-            ? $"{objectType}|{objectId}"
-            : request.Request.ObjectRef.Trim();
-        var template = await ResolveTemplateAsync(request.Request, ct);
         var templateId = existing.TemplateId == Guid.Empty ? existing.WorkflowTemplateId : existing.TemplateId;
-        if (template is null || template.Id != templateId
-            || !string.Equals(existing.ObjectType, objectType, StringComparison.Ordinal)
-            || !string.Equals(existing.ObjectId, objectId, StringComparison.Ordinal)
-            || !string.Equals(existing.ObjectRef, objectRef, StringComparison.Ordinal)
-            // A start written since BL-549 also carries the fingerprint of every fact it was asked with; an older one is
-            // held to its identity (definition and object), the only facts it stored.
-            // FIX1 K1 — the start is the starter's: somebody else replaying the same key and facts does not complete it under
-            // the original starter's name. Held on the stored starter, so a start written before BL-549 is held too.
-            || !SameStarter(existing)
-            || (existing.StartRequestFingerprint is { } stored
-                && !string.Equals(stored, Fingerprint(templateId, objectType, objectId, objectRef, request.Request), StringComparison.Ordinal)))
-        {
-            return StartConflict("The idempotency key is already bound to different workflow start facts.", correlationId);
-        }
+
+        // The facts were compared by ExistingStartResponseAsync (SameStartFactsAsync) before this is reached.
 
         var version = existing.TemplateVersionId is { } versionId
             ? await _versionRepository.GetByIdForTemplateAsync(templateId, versionId, ct)
@@ -587,8 +577,35 @@ public sealed class StartWorkflowInstanceHandler
 
         instance = await _instanceRepository.GetByIdAsync(instance.Id, ct) ?? instance;
         return Response<StartWorkflowInstanceResponse>.Success(
-            ToStartResponse(instance, completedTask, completedSnapshotId, correlationId),
+            ToStartResponse(instance, completedTask, completedSnapshotId, correlationId, idempotentReplay: true),
             correlationId: correlationId);
+    }
+
+    /// <summary>
+    /// DL-2 — IS THIS REPEAT THE SAME START: same definition and object, the same starter, and — for a start written since
+    /// BL-549 — the same fingerprint of every fact it was asked with (candidates the caller named, due date, reason, the two
+    /// requirement flags). An older start carries no fingerprint and is held to its identity (definition, object) and its
+    /// starter, the only facts it stored. A TRUSTED start's fingerprint has another shape, so it never matches here.
+    /// </summary>
+    private async Task<bool> SameStartFactsAsync(
+        WorkflowInstance existing, StartWorkflowInstanceCommand request, CancellationToken ct)
+    {
+        var objectType = request.Request.ObjectType.Trim();
+        var objectId = request.Request.ObjectId.Trim();
+        var objectRef = string.IsNullOrWhiteSpace(request.Request.ObjectRef)
+            ? $"{objectType}|{objectId}"
+            : request.Request.ObjectRef.Trim();
+        var template = await ResolveTemplateAsync(request.Request, ct);
+        var templateId = existing.TemplateId == Guid.Empty ? existing.WorkflowTemplateId : existing.TemplateId;
+        return template is not null && template.Id == templateId
+            && string.Equals(existing.ObjectType, objectType, StringComparison.Ordinal)
+            && string.Equals(existing.ObjectId, objectId, StringComparison.Ordinal)
+            && string.Equals(existing.ObjectRef, objectRef, StringComparison.Ordinal)
+            // FIX1 K1 — the start is the starter's: somebody else replaying the same key and facts does not complete it under
+            // the original starter's name. Held on the stored starter, so a start written before BL-549 is held too.
+            && SameStarter(existing)
+            && (existing.StartRequestFingerprint is not { } stored
+                || string.Equals(stored, Fingerprint(templateId, objectType, objectId, objectRef, request.Request), StringComparison.Ordinal));
     }
 
     private bool SameStarter(WorkflowInstance existing)
@@ -725,7 +742,7 @@ public sealed class StartWorkflowInstanceHandler
             && await StartLogAsync(instance.Id, ct) is not null)
         {
             return Response<StartWorkflowInstanceResponse>.Success(
-                ToStartResponse(instance, task, snapshotId, correlationId),
+                ToStartResponse(instance, task, snapshotId, correlationId, idempotentReplay: true),
                 correlationId: correlationId);
         }
 
@@ -775,7 +792,8 @@ public sealed class StartWorkflowInstanceHandler
         WorkflowInstance instance,
         ApprovalTask task,
         Guid assignmentSnapshotId,
-        string correlationId) => new(
+        string correlationId,
+        bool idempotentReplay = false) => new(
         instance.Id,
         instance.TemplateId == Guid.Empty ? instance.WorkflowTemplateId : instance.TemplateId,
         instance.TemplateVersionId!.Value,
@@ -787,6 +805,7 @@ public sealed class StartWorkflowInstanceHandler
         instance.CurrentStep,
         instance.StartedAt,
         instance.DueAt,
-        correlationId);
+        correlationId,
+        idempotentReplay);
 
 }

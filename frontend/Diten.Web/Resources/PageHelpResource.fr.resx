@@ -1028,7 +1028,7 @@
     <value>Ouvrez un enregistrement</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Cliquez sur «Décider» sur un enregistrement ouvert pour libérer, rejeter ou bloquer le stock. Le stock ne bouge qu’après l’approbation de la décision.</value>
+    <value>Cliquez sur «Décider» sur un enregistrement ouvert pour libérer, rejeter ou bloquer le stock. Le stock ne bouge qu’après l’approbation de la décision. Une ligne « Annulé · Mouvement source extourné » est close car son mouvement de stock source a été extourné : aucune décision n’est nécessaire.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Décidez</value>
@@ -1043,7 +1043,7 @@
     <value>Enregistrement de la note d’analyse</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Vérifiez les informations du haut, la carte «Informations qualité» et les mouvements de stock créés par l’enregistrement ; un bandeau jaune signale un objectif d’attente dépassé.</value>
+    <value>Vérifiez les informations du haut, la carte «Informations qualité» et les mouvements de stock créés par l’enregistrement ; un bandeau jaune signale un objectif d’attente dépassé. Bandeau « Annulé » : le mouvement source a été extourné et l’enregistrement est clos. « Source extournée · écart » : le stock a changé hors de cet enregistrement ; la QA contrôle. Un enregistrement signalé encore ouvert reste ouvert et compte avec sa quantité entière dans les décomptes ouverts (KPI, statut qualité du lot, rappel) ; aucune action de clôture n’existe sur l’enregistrement — la QA corrige côté stock. Sur un enregistrement annulé, le signal indique qu’une ligne de sa décision a été comptabilisée après la clôture ; le stock est sorti du compartiment d’un autre enregistrement. Signal de changement de lot : la modification de lot de la décision (statut et / ou date de recontrôle) avait été appliquée avant la clôture ; le lot n’a pas été rétabli — la QA contrôle le statut du lot.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Lisez l’enregistrement</value>
@@ -1142,7 +1142,7 @@
     <value>«Bloquer le stock» → «Bloquer» : le stock choisi devient Bloqué immédiatement, sans flux d’approbation</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un motif de blocage, «En attente de disposition uniquement» ou un «Statut», puis cliquez sur «Appliquer».</value>
+    <value>Saisissez dans la zone de recherche ou cliquez sur le bouton de filtre («Filtrer»), choisissez un motif de blocage, «En attente de disposition uniquement» ou un «Statut», puis cliquez sur «Appliquer». « Annulé · Mouvement source extourné » dans « Statut » affiche les enregistrements clos parce que leur mouvement de stock source a été extourné. Un enregistrement bloqué ouvert signalé « Source extournée · écart » reste ouvert et compte avec sa quantité entière dans les décomptes ouverts ; aucune action de clôture n’existe sur l’enregistrement — la QA corrige côté stock.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Réduisez la liste</value>
@@ -1670,7 +1670,7 @@
     <value>Mettez le stock en quarantaine</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>Dans «Clients et expéditions», utilisez «Marquer comme informé» et «Ajouter une déclaration de consommation». Dans «Retours», «Saisir un retour client» ouvre le formulaire de mouvement de stock ; cliquez ensuite sur «Lier le retour» sur un candidat.</value>
+    <value>Dans «Clients et expéditions», utilisez «Marquer comme informé» et «Ajouter une déclaration de consommation». Dans «Retours», «Saisir un retour client» ouvre le formulaire de mouvement de stock ; cliquez ensuite sur «Lier le retour» sur un candidat. Un badge «Ancien enregistrement» ou «Sans identité CRM» signale un client sans identité CRM ; il n’est jamais fusionné avec un client CRM. Tant que le CRM est inaccessible, ou si vous n’êtes pas autorisé à voir les noms des clients CRM («Autorisation manquante»), la notification, la déclaration de consommation et la liaison de retour sont fermées pour ce client. Les noms des clients s’affichent par pages de 25 ; utilisez les boutons de page pour les autres.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Suivez clients et retours</value>
@@ -2032,4 +2032,198 @@
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Laissez votre propre spécimen</value>
   </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Déplacez le stock reçu de la zone de réception vers son casier et confirmez-le ; la confirmation déplace le stock dans le registre des stocks.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Opérateurs d’entrepôt (confirmation) et responsables d’entrepôt (création, attribution, rapprochement).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Choisir le stock</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>Cliquez sur « Nouvelle Tâche » et choisissez une ligne dans « Stock à ranger ». Une ligne verrouillée indique pourquoi et quel document la bloque ; elle ne peut pas être choisie.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Casier et attributaire</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>Saisissez ou scannez le code du casier dans « Casier cible » ; seul un code exact est accepté. Choisissez l’opérateur dans « Attributaire ». Un casier suggéré n’est pris qu’avec « Appliquer ».</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Confirmer</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>Cliquez sur « Confirmer », vérifiez la quantité (−/+) et le casier réel. Une quantité partielle est permise ; un autre casier demande un motif.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Réessayer une confirmation en attente</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>Si le badge indique « Confirmation en attente », la réponse du stock n’est pas arrivée ; ouvrez la tâche et cliquez sur « Réessayer ». Rien d’autre ne fonctionne avant son règlement.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>Une confirmation déplace le stock immédiatement ; l’annuler se fait par une contre-passation dans les mouvements de stock.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Pour marquer les zones de réception et les conditions de stockage</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>Pour voir le stock déplacé par les confirmations</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Indiquez quels emplacements sont des zones de réception ou de préparation et quelles conditions de stockage un nœud accepte ; les nœuds inférieurs en héritent.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Responsables d’entrepôt.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Choisir l’emplacement</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>Cliquez sur « Nouveau Rôle » et choisissez le nœud dans « Nœud d’emplacement ».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Attribuer rôles et conditions</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>Cochez « Réception » ou « Préparation à l’expédition » et les conditions de stockage acceptées ; des conditions seules, sans rôle, sont valides.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Vérifier les zones de réception</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Les tâches de rangement partent uniquement des zones de réception ; vérifiez que chaque entrepôt en a une. Un ensemble hérité porte le badge « du nœud supérieur ».</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>Pour ranger le stock reçu</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Expédiez du stock hors de l'entrepôt : créez une sortie avec ses lignes, suivez le prélèvement et l'emballage, rendez-la prête à expédier et enregistrez le départ.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Planificateurs d'expédition et responsables d'entrepôt.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Entrepôt et préparation</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>Appuyez sur « Nouvelle Sortie » et choisissez l'entrepôt. Choisissez une zone de préparation seulement si l'entrepôt en a plusieurs.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Lignes et aperçu</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Saisissez chaque ligne (produit, SKU, quantité, ligne de commande) et appuyez sur « Aperçu de l'Allocation » : les lots dans l'ordre FEFO et la quantité allouable s'affichent.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Changement de lot</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>Si besoin, choisissez un autre lot dans « Changement de lot » ; un lot qui n'est pas le premier dans l'ordre FEFO demande un motif selon la règle FEFO de votre société.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Suivre le prélèvement</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>L'enregistrement alloue le stock et ouvre les tâches de prélèvement ; suivez-les sur la page Détails jusqu'à ce que la sortie soit Prélevée.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Prête à expédier et départ</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Une fois emballée, appuyez sur « Prête à Expédier » ; après le départ des marchandises, appuyez sur « Vérifier l'Expédition ».</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Une sortie prête à expédier ne peut plus être modifiée ni annulée.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Pour prélever le stock alloué</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Pour voir ce qui est bloqué et demande une action</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Déplacez le stock alloué de son emplacement vers la zone de préparation et confirmez chaque mouvement.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Opérateurs d'entrepôt (confirmation) et responsables d'entrepôt (affectation, rapprochement).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Prendre la tâche</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Ouvrez une tâche non affectée depuis le menu de la ligne et appuyez sur « Prendre en Charge ».</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Déplacer et confirmer</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Apportez le stock de l'emplacement à la zone de préparation, appuyez sur « Confirmer » et vérifiez la quantité (−/+). L'emplacement et la cible ne peuvent pas être modifiés.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Emballer</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Quand la sortie est prélevée, le lien « Emballer » apparaît sur la tâche ; il ouvre la page Emballage.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Pour emballer le stock prélevé</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Emballez en colis le stock prélevé d'une sortie.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Opérateurs et responsables d'entrepôt.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Ouvrir un colis</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>Appuyez sur « Nouveau Colis » ; ce n'est possible que lorsque la sortie est prélevée.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>Contenu, poids, dimensions</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Saisissez la quantité de chaque allocation mise dans le colis (−/+), son poids en kg et ses dimensions en cm (40x30x20).</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Fermer le colis</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>Appuyez sur « Fermer le Colis ». Quand toutes les allocations sont emballées, la sortie passe à « Emballée ».</value>
+  </data>
+  <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Cette page ouvre les plans de capacité : créez un plan pour la société sélectionnée ou ouvrez un plan existant par son ID.</value></data>
+  <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Planificateurs de capacité et d’approvisionnement</value></data>
+  <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Choisir la société</value></data>
+  <data name="Help.CAPACITYPLANS.Step1" xml:space="preserve"><value>Choisissez la société dans le sélecteur en haut ; le plan est créé et ouvert dans cette société.</value></data>
+  <data name="Help.CAPACITYPLANS.Step2Title" xml:space="preserve"><value>Créer un plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step2" xml:space="preserve"><value>Cliquez sur « Create plan », renseignez le nom, l’horizon et le plan de demande de référence, puis cliquez sur « Save ». Le nouveau plan s’ouvre dans son espace de travail.</value></data>
+  <data name="Help.CAPACITYPLANS.Step3Title" xml:space="preserve"><value>Ouvrir un plan</value></data>
+  <data name="Help.CAPACITYPLANS.Step3" xml:space="preserve"><value>Collez l’ID du plan dans « Plan ID » et cliquez sur « Open plan ». Le plan d’une autre société est introuvable.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Purpose" xml:space="preserve"><value>Cette page est l’espace de travail d’un plan de capacité : ses données sources, ses scénarios et leurs évaluations.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Audience" xml:space="preserve"><value>Planificateurs de capacité et d’approvisionnement</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1Title" xml:space="preserve"><value>Vérifier la source</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step1" xml:space="preserve"><value>« Plan provenance » indique le plan de demande, sa version, sa date de capture et sa somme de contrôle : chaque scénario du plan travaille sur ces données.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2Title" xml:space="preserve"><value>Créer un scénario</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step2" xml:space="preserve"><value>Cliquez sur « Create scenario », donnez-lui un nom, ajoutez ses références de contrainte et ses ajustements de capacité, puis cliquez sur « Create scenario » dans le panneau.</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3Title" xml:space="preserve"><value>L’évaluer</value></data>
+  <data name="Help.CAPACITYPLANDETAILS.Step3" xml:space="preserve"><value>Ouvrez un scénario et cliquez sur « Evaluate » : choisissez le mode et les ressources, puis envoyez. Le résultat apparaît dans le panneau d’évaluation une fois terminé.</value></data>
+  <data name="Help.SANDOPPLANS.Purpose" xml:space="preserve"><value>Cette page ouvre les plans S&amp;OP : créez un plan pour la société sélectionnée ou ouvrez un plan existant par son ID.</value></data>
+  <data name="Help.SANDOPPLANS.Audience" xml:space="preserve"><value>Coordinateurs S&amp;OP et responsables des validations</value></data>
+  <data name="Help.SANDOPPLANS.Step1Title" xml:space="preserve"><value>Choisir la société</value></data>
+  <data name="Help.SANDOPPLANS.Step1" xml:space="preserve"><value>Choisissez la société dans le sélecteur en haut ; le plan est créé et ouvert dans cette société.</value></data>
+  <data name="Help.SANDOPPLANS.Step2Title" xml:space="preserve"><value>Créer un plan</value></data>
+  <data name="Help.SANDOPPLANS.Step2" xml:space="preserve"><value>Cliquez sur « Create plan », renseignez le nom, l’horizon et le plan de demande de référence, puis cliquez sur « Save ». Le nouveau plan s’ouvre dans son espace de travail à l’état « Draft ».</value></data>
+  <data name="Help.SANDOPPLANS.Step3Title" xml:space="preserve"><value>Ouvrir un plan</value></data>
+  <data name="Help.SANDOPPLANS.Step3" xml:space="preserve"><value>Collez l’ID du plan dans « Plan ID » et cliquez sur « Open plan ». Le plan d’une autre société est introuvable.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Purpose" xml:space="preserve"><value>Cette page est l’espace de travail d’un plan S&amp;OP : ses instantanés et les validations enregistrées sur eux.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Audience" xml:space="preserve"><value>Coordinateurs S&amp;OP et responsables des validations</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1Title" xml:space="preserve"><value>Capturer un instantané</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step1" xml:space="preserve"><value>Cliquez sur « Capture snapshot », renseignez le plan de demande, sa version, la date de capture de la source et sa somme de contrôle, puis ajoutez les références d’approvisionnement. Confirmez avec Ctrl+Entrée ou le bouton.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2Title" xml:space="preserve"><value>Enregistrer une validation</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Cliquez sur « Record sign-off », choisissez l’instantané, votre rôle et la décision, ajoutez un commentaire si besoin et confirmez. Les validations ne sont enregistrées que pendant la revue du plan.</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Savoir ce qui est définitif</value></data>
+  <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Une validation enregistrée est définitive : elle ne peut être ni modifiée ni supprimée, et une deuxième validation pour le même rôle et le même instantané est refusée.</value></data>
 </root>

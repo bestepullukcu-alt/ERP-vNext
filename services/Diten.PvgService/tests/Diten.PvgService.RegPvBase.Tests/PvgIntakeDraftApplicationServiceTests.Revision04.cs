@@ -919,10 +919,10 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         // DL-4 (slice 1 fields and one Suspect line, no revision 04 field); Triage / Route lack their required value.
         var permissionKey = operation switch
         {
-            PvgIntakeOperation.Create => "pvg.mod0230.intake.create",
-            PvgIntakeOperation.Update => "pvg.mod0230.intake.update",
-            PvgIntakeOperation.Triage => "pvg.mod0230.intake.triage",
-            _ => "pvg.mod0230.intake.route"
+            PvgIntakeOperation.Create => "pvg.case-intake-triage.create",
+            PvgIntakeOperation.Update => "pvg.case-intake-triage.update",
+            PvgIntakeOperation.Triage => "pvg.case-intake-triage.triage",
+            _ => "pvg.case-intake-triage.route"
         };
 
         async ValueTask<PvgIntakeDraftMutationResult> InvokeAsync(PvgIntakeDraftApplicationService service) => operation switch

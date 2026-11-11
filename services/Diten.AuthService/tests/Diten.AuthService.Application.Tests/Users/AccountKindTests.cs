@@ -55,8 +55,9 @@ public sealed class AccountKindTests
     // as the fifth and sixth; this test was left at four until the T3 stop report's full Auth run (2026-09-30).
     // WP-VP-2 (B-1, 2026-10-06) added crm.planned-visit.read-all and crm.visit-plan.read-all as the seventh and eighth.
     // WP-VW-W4 (BE-c, owner decision 2026-10-13) added crm.doctor-insights.read-all — with the lane's task-request key, the tenth.
+    // MOD-0280-FU02 DL-0 (owner decision 2026-10-31) added the three HR leave read keys as the eleventh to thirteenth.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_ten_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_thirteen_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
@@ -69,9 +70,12 @@ public sealed class AccountKindTests
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.planned-visit.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.visit-plan.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.doctor-insights.read-all"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("leave.admin-requests.read"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("leave.entitlements.read"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("leave.sync-runs.read"));
         // Main sync (2026-10-11): the CT line's task-request key and main's two CRM read-all keys (VP-2). Main sync
         // 2026-10-14 (WP-LANE-MAIN-SYNC-03): main's crm.doctor-insights.read-all (cf3eab450) joins them — 10, each by name.
-        Assert.Equal(10, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.Equal(13, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 

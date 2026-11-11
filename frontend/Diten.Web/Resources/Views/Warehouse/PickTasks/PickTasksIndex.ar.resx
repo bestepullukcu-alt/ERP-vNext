@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="Searching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>لا توجد نتائج</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>الشركة</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>اختر شركة</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>اختر الشركة التي يتبع لها المستودع الذي تعمل فيه. لا يُعرض شيء حتى تختار شركة.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>تعذّرت قراءة قائمة الشركات الآن؛ حاول مرة أخرى بعد قليل.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>تغيّر في الأثناء — حدّث</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>غير موجود</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>تعذّر الوصول إلى دليل المستخدمين؛ لم يتم التحقق من المكلَّف ولم يُحفظ أي شيء. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>اختر مستخدمًا نشطًا من شركتك كمكلَّف.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>رمز الشركة غير صالح لأرقام المهام؛ صحّح رمز الشركة أولًا.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>تغيّر المخزون أثناء ترحيل التأكيد؛ التأكيد قيد الانتظار — استخدم «إعادة المحاولة».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>يجري معالجة هذا التأكيد الآن؛ انتظر لحظة ثم حدّث الصفحة.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>لا يمكن تسوية إلا تأكيد به خطأ سلامة.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>لا يمكن إعادة محاولة إلا تأكيد قيد الانتظار.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>هناك تأكيد لهذه المهمة بانتظار ردّ المخزون؛ لا يعمل إلا «إعادة المحاولة» حتى تتم تسويته.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>قام شخص آخر بتعديل هذا السجل في هذه الأثناء؛ حدّث الصفحة وحاول مرة أخرى.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>لا يمكن تنفيذ هذا الإجراء في الحالة الحالية للمهمة.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>يوجد في الموقع مهام تخزين مفتوحة؛ أغلقها أو ألغها أولًا.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>لا يمكن أن يكون الموقع للاستلام وتجهيز الشحن في الوقت نفسه.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>لهذا الموقع سجل دور بالفعل؛ عدّل ذلك السجل.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>تحمل عقدة أعلى أو أدنى الدور المعاكس بالفعل؛ لا يمكن أن يجتمع الاستلام وتجهيز الشحن في مسار واحد.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على سجل الدور؛ حدّث القائمة.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>لا يمكن منح الدور إلا لمستودع أو موقع تخزين أو منطقة أو رف.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>لا يستطيع القيام بذلك إلا المشغّل المكلَّف أو مشرف.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>يحتوي دفتر المخزون بالفعل على حركة مختلفة بمفتاح هذا التأكيد؛ يجب أن يقوم مشرف بتسويتها.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>لا يمكن أن تقل الكمية المخططة عن الكمية المؤكدة أو قيد الانتظار.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>الكمية أكبر من المخزون المتبقي المفتوح في هذا السطر.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>الكمية أكبر من المتبقي للانتقاء.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>تعذّر إصدار رقم للمهمة؛ حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>تغيّرت الأرقام التسلسلية في المصدر؛ ألغِ هذه المهمة وافتح مهمة جديدة.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>يوجد جزء من هذه التشغيلة في الموقع نفسه بانتظار الجودة؛ أكمل قرار الجودة أولًا.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>يُنتقى المنتج الخاضع للرقم التسلسلي بالكامل فقط؛ لا يمكن التأكيد الجزئي.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>موقع المصدر ليس موقع استلام.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على مخزون في السطر المحدد؛ حدّث القائمة.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>دخل المخزون الحجر أو تم حجزه؛ لا يمكن تخزينه.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>شرط التخزين غير معروف — يجب إكماله في بطاقة المنتج (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>شروط التخزين غير صالحة: اختر شرط حرارة واحدًا على الأكثر.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>موقع التجهيز لا يقبل شرط تخزين هذا المنتج.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>يجب أن يكون الهدف رفًا نشطًا قابلًا للتخزين في المستودع نفسه وليس موقع استلام أو تجهيز شحن.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>للمهمة مكلَّف بالفعل.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على المهمة؛ حدّث القائمة.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>سبق إرسال هذا الطلب بمحتوى مختلف؛ أغلق النافذة وابدأ من جديد.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>اكتب سببًا لا يقل عن 10 أحرف.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>لا يوجد مخزون كافٍ في المصدر لهذه الكمية.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>التشغيلة قيد الاستدعاء؛ لا يمكن انتقاؤها.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>تعذّر الوصول إلى خدمة المخزون؛ لم يُحفظ أي شيء. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>بعض القيم غير صالحة؛ راجع النموذج.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر شركة أولًا.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>ليس لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>انتهت جلستك؛ سجّل الدخول مرة أخرى.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>تعذّر الوصول إلى خدمة المستودع الآن؛ حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>لم يُعثر على السجل؛ حدّث القائمة.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>تغيّر السجل في هذه الأثناء؛ حدّث الصفحة وحاول مرة أخرى.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>لم يُقبل الطلب؛ راجع القيم وحاول مرة أخرى.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>حدث خطأ ما؛ حاول مرة أخرى.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>عدد الصفوف كبير جدًا للتصدير؛ ضيّق عوامل التصفية.</value></data>
+  <data name="ColNumber" xml:space="preserve"><value>الرقم</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColFlag" xml:space="preserve"><value>التكامل</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ColLot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="ColFrom" xml:space="preserve"><value>المصدر</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>المؤكد / المخطط</value></data>
+  <data name="ColAssignee" xml:space="preserve"><value>المكلَّف</value></data>
+  <data name="FilterAssignee" xml:space="preserve"><value>المكلَّف</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="FieldPlanned" xml:space="preserve"><value>الكمية المخططة</value></data>
+  <data name="FieldConfirmed" xml:space="preserve"><value>المؤكد</value></data>
+  <data name="FieldPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="FieldRemaining" xml:space="preserve"><value>المتبقي</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="SectionConfirmations" xml:space="preserve"><value>التأكيدات</value></data>
+  <data name="SectionTimeline" xml:space="preserve"><value>المخطط الزمني</value></data>
+  <data name="NoConfirmations" xml:space="preserve"><value>لا توجد تأكيدات بعد.</value></data>
+  <data name="TimelineUnavailable" xml:space="preserve"><value>تعذّرت قراءة المخطط الزمني الآن.</value></data>
+  <data name="QuantityDecrease" xml:space="preserve"><value>إنقاص الكمية</value></data>
+  <data name="QuantityIncrease" xml:space="preserve"><value>زيادة الكمية</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>10 أحرف على الأقل؛ يُسجَّل في سجل المهمة.</value></data>
+  <data name="AssigneePlaceholder" xml:space="preserve"><value>ابحث عن مستخدم</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>تعذّرت قراءة بعض أسماء المنتجات أو المواقع؛ تُعرض المعرّفات بدلًا منها.</value></data>
+  <data name="ValidationQuantity" xml:space="preserve"><value>أدخل كمية أكبر من صفر بستة منازل عشرية على الأكثر.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>اكتب سببًا لا يقل عن 10 أحرف.</value></data>
+  <data name="AssigneeRequired" xml:space="preserve"><value>اختر مستخدمًا.</value></data>
+  <data name="ConfirmationSeq" xml:space="preserve"><value>التأكيد {0}</value></data>
+  <data name="ConfirmationAttempts" xml:space="preserve"><value>المحاولات: {0}</value></data>
+  <data name="ConfirmationLastAttempt" xml:space="preserve"><value>آخر محاولة: {0}</value></data>
+  <data name="ConfirmationMovement" xml:space="preserve"><value>رقم حركة المخزون: {0}</value></data>
+  <data name="ConfirmationBy" xml:space="preserve"><value>بواسطة {0} في {1}</value></data>
+  <data name="RemainingHint" xml:space="preserve"><value>المتبقي: {0} {1}</value></data>
+  <data name="SystemActor" xml:space="preserve"><value>النظام</value></data>
+  <data name="AssignResults" xml:space="preserve"><value>تم تكليف {0} من {1} مهام</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="Warehouse.Status.Open" xml:space="preserve"><value>مفتوحة</value></data>
+  <data name="Warehouse.Status.InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Warehouse.Status.Completed" xml:space="preserve"><value>مكتملة</value></data>
+  <data name="Warehouse.Status.Cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="Warehouse.Status.InFlight" xml:space="preserve"><value>قيد المعالجة</value></data>
+  <data name="Warehouse.Flag.PostingPending" xml:space="preserve"><value>بانتظار التأكيد</value></data>
+  <data name="Warehouse.Flag.PostingPendingLong" xml:space="preserve"><value>بانتظار منذ مدة طويلة</value></data>
+  <data name="Warehouse.Flag.PostingRefused" xml:space="preserve"><value>رفضه المخزون</value></data>
+  <data name="Warehouse.Flag.PostingIntegrityError" xml:space="preserve"><value>خطأ سلامة</value></data>
+  <data name="Warehouse.ConfirmationStatus.Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="Warehouse.ConfirmationStatus.Posted" xml:space="preserve"><value>مُرحَّل</value></data>
+  <data name="Warehouse.ConfirmationStatus.Refused" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Warehouse.ConfirmationStatus.IntegrityError" xml:space="preserve"><value>خطأ سلامة</value></data>
+  <data name="Warehouse.Resolution.SupersededByNewConfirmation" xml:space="preserve"><value>استُبدل بتأكيد جديد</value></data>
+  <data name="Warehouse.Resolution.ReturnedToSource" xml:space="preserve"><value>أُعيد إلى المصدر</value></data>
+  <data name="Warehouse.Resolution.ResolvedPosted" xml:space="preserve"><value>تمت التسوية — مُرحَّل</value></data>
+  <data name="Warehouse.Resolution.ResolvedRefused" xml:space="preserve"><value>تمت التسوية — مرفوض</value></data>
+  <data name="Warehouse.Action.Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="Warehouse.Action.Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="Warehouse.Action.Returned" xml:space="preserve"><value>أُعيد</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity" xml:space="preserve"><value>تسوية</value></data>
+  <data name="Warehouse.Action.CloseShort" xml:space="preserve"><value>إغلاق المتبقي</value></data>
+  <data name="Warehouse.Action.Claim" xml:space="preserve"><value>تولّي</value></data>
+  <data name="Warehouse.Action.Assign" xml:space="preserve"><value>تكليف</value></data>
+  <data name="Warehouse.Action.Returned.Confirm" xml:space="preserve"><value>أكّد أن الكمية المرفوضة أُعيدت إلى المصدر.</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity.Confirm" xml:space="preserve"><value>يُعاد قراءة الدفتر؛ إذا كانت الحركة خاصة بهذا التأكيد يُرحَّل، وإلا يُرفض.</value></data>
+  <data name="Warehouse.Action.ResolveIntegrity.Reason" xml:space="preserve"><value>سبب التسوية</value></data>
+  <data name="Warehouse.Disabled.TaskTerminal" xml:space="preserve"><value>المهمة مغلقة</value></data>
+  <data name="Warehouse.Disabled.ConfirmationPending" xml:space="preserve"><value>يوجد تأكيد قيد الانتظار — تعمل إعادة المحاولة فقط</value></data>
+  <data name="Warehouse.Disabled.IntegrityError" xml:space="preserve"><value>يجب تسوية خطأ السلامة أولًا</value></data>
+  <data name="Warehouse.Disabled.AlreadyAssigned" xml:space="preserve"><value>للمهمة مكلَّف بالفعل</value></data>
+  <data name="Warehouse.Disabled.NoPendingConfirmation" xml:space="preserve"><value>لا يوجد تأكيد قيد الانتظار</value></data>
+  <data name="Warehouse.Disabled.NoRefusedConfirmation" xml:space="preserve"><value>لا يوجد تأكيد مرفوض</value></data>
+  <data name="Warehouse.Disabled.NoIntegrityError" xml:space="preserve"><value>لا يوجد خطأ سلامة</value></data>
+  <data name="Warehouse.Event.Created" xml:space="preserve"><value>أُنشئت</value></data>
+  <data name="Warehouse.Event.Updated" xml:space="preserve"><value>حُدّثت</value></data>
+  <data name="Warehouse.Event.Assigned" xml:space="preserve"><value>كُلّفت</value></data>
+  <data name="Warehouse.Event.Claimed" xml:space="preserve"><value>تم تولّيها</value></data>
+  <data name="Warehouse.Event.SuggestionApplied" xml:space="preserve"><value>طُبّق الاقتراح</value></data>
+  <data name="Warehouse.Event.ConfirmationRecorded" xml:space="preserve"><value>سُجّل التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationPosted" xml:space="preserve"><value>رُحّل التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationRefused" xml:space="preserve"><value>رُفض التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationRetried" xml:space="preserve"><value>أُعيدت محاولة التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationReconciled" xml:space="preserve"><value>تمت مطابقة التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationIntegrityError" xml:space="preserve"><value>خطأ سلامة</value></data>
+  <data name="Warehouse.Event.IntegrityResolved" xml:space="preserve"><value>تمت تسوية خطأ السلامة</value></data>
+  <data name="Warehouse.Event.ConfirmationDeviation" xml:space="preserve"><value>انحراف الرف</value></data>
+  <data name="Warehouse.Event.ConfirmationSuperseded" xml:space="preserve"><value>استُبدل التأكيد</value></data>
+  <data name="Warehouse.Event.ConfirmationReturned" xml:space="preserve"><value>أُعيد إلى المصدر</value></data>
+  <data name="Warehouse.Event.ClosedShort" xml:space="preserve"><value>أُغلق المتبقي</value></data>
+  <data name="Warehouse.Event.Completed" xml:space="preserve"><value>اكتملت</value></data>
+  <data name="Warehouse.Event.Cancelled" xml:space="preserve"><value>أُلغيت</value></data>
+  <data name="Warehouse.BulkOutcome.Assigned" xml:space="preserve"><value>كُلّفت</value></data>
+  <data name="Warehouse.BulkOutcome.InvalidTransition" xml:space="preserve"><value>غير ممكن في هذه الحالة</value></data>
+  <data name="Warehouse.BulkOutcome.PendingConfirmation" xml:space="preserve"><value>يوجد تأكيد قيد الانتظار</value></data>
+  <data name="Warehouse.Saved.Confirmed" xml:space="preserve"><value>أُرسل التأكيد؛ يتحرك المخزون عند ردّ الدفتر.</value></data>
+  <data name="Warehouse.Saved.Retried" xml:space="preserve"><value>أُعيدت محاولة التأكيد.</value></data>
+  <data name="Warehouse.Saved.Claimed" xml:space="preserve"><value>تم تولّي المهمة.</value></data>
+  <data name="Warehouse.Saved.Returned" xml:space="preserve"><value>سُجّل كمُعاد.</value></data>
+  <data name="Warehouse.Saved.Resolved" xml:space="preserve"><value>تمت تسوية خطأ السلامة.</value></data>
+  <data name="Warehouse.Saved.ClosedShort" xml:space="preserve"><value>أُغلق المتبقي.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>لم يتم العثور على شحنة الصادر؛ حدّث القائمة.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>تعذّر تخصيص المخزون لكل سطر؛ لم يُحفظ شيء.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>يمكن أن تحتوي شحنة الصادر على 100 سطر كحد أقصى.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>أكثر من شحنة تشير إلى هذا الصادر؛ اطلب من فريق الشحن التحقق.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>لا يحق لك قراءة الشحنات؛ اطلب صلاحية قراءة الشحنات.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>تعذّر الوصول إلى خدمة الشحن؛ لم يتغير شيء. حاول مجددًا بعد قليل.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>لا يمكن جعل صادر على مستوى الصنف جاهزًا للشحن حتى يدعمه جانب الشحن.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>تعذّر ربط سطر الصنف بوحدة SKU قابلة للتخزين؛ تحقّق من المنتج.</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>لا يمكن تخصيص التشغيلة المختارة؛ اختر تشغيلة من المعاينة.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>لا يزال تخصيص هذا الصادر قيد الإكمال؛ حدّث بعد لحظة.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>لا يمكن إلغاء صادر جاهز للشحن أو تم شحنه.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>الصادر جاهز للشحن ولم يعد من الممكن تغييره.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>لا يمكن خلط أسطر الأصناف وأسطر SKU في صادر واحد.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>أضف سطر محتوى واحدًا على الأقل إلى الطرد قبل إغلاقه.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>ستحتوي الطرود على أكثر مما تم انتقاؤه لتخصيص ما.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على الطرد؛ حدّث الصفحة.</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>لا يحتوي المستودع على موقع تجهيز؛ امنح أحد مواقعه دور التجهيز أولًا.</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>يجب أن تكون وحدة السطر هي الوحدة الأساسية لـ SKU.</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>إحدى التشغيلات ليست أول تشغيلة وفق FEFO؛ اكتب سببًا (10 أحرف على الأقل).</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>تصرف شركتك التشغيلات بترتيب FEFO فقط؛ اختر أول تشغيلة مؤهلة.</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>انتهت صلاحية التشغيلة؛ لا يمكن صرفها.</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>التشغيلة محظورة؛ لا يمكن صرفها.</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>التشغيلة مستحقة لإعادة الفحص؛ لا يمكن صرفها قبل ذلك.</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>لم يعد حجز هذا المخزون نشطًا؛ تم رفض التأكيد.</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>المخزون لا يطابق حجزه؛ تم رفض التأكيد.</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>تغيّر الحجز في هذه الأثناء؛ حدّث وأعد المحاولة.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>المستودع أو الموقع غير موجود في الشركة المختارة أو غير نشط.</value></data>
+  <data name="Warehouse.Outbound.Status.Allocated" xml:space="preserve"><value>مخصّص</value></data>
+  <data name="Warehouse.Outbound.Status.Picked" xml:space="preserve"><value>تم الانتقاء</value></data>
+  <data name="Warehouse.Outbound.Status.Packed" xml:space="preserve"><value>تم التغليف</value></data>
+  <data name="Warehouse.Outbound.Status.ReadyToShip" xml:space="preserve"><value>جاهز للشحن</value></data>
+  <data name="Warehouse.Outbound.Status.Shipped" xml:space="preserve"><value>تم الشحن</value></data>
+  <data name="Warehouse.Outbound.Status.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="FieldOrigin" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Warehouse.Origin.Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="Warehouse.Origin.Receipt" xml:space="preserve"><value>استلام البضائع</value></data>
+  <data name="Warehouse.Origin.Production" xml:space="preserve"><value>الإنتاج</value></data>
+  <data name="Warehouse.Origin.Cancellation" xml:space="preserve"><value>إرجاع بسبب الإلغاء</value></data>
+  <data name="Warehouse.Origin.External" xml:space="preserve"><value>نظام خارجي</value></data>
+  <data name="Warehouse.Origin.Outbound" xml:space="preserve"><value>انتقاء الصادر</value></data>
+  <data name="Warehouse.Origin.ShortDispatch" xml:space="preserve"><value>إرجاع بسبب شحن ناقص</value></data>
+  <data name="PickTasksTitle" xml:space="preserve"><value>مهام الانتقاء</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>انقل المخزون المخصّص من موقعه إلى موقع التجهيز وأكّده؛ التأكيد ينقل المخزون في سجل المخزون.</value></data>
+  <data name="ColOutbound" xml:space="preserve"><value>الصادر</value></data>
+  <data name="FieldOutbound" xml:space="preserve"><value>الصادر</value></data>
+  <data name="FieldStaging" xml:space="preserve"><value>موقع التجهيز</value></data>
+  <data name="Warehouse.Pick.PackLink" xml:space="preserve"><value>تغليف</value></data>
+  <data name="Warehouse.Pick.ConfirmHint" xml:space="preserve"><value>ينتقل المخزون من موقع المهمة إلى موقع تجهيز الصادر؛ لا يمكن تغيير أيٍّ منهما هنا.</value></data>
+  <data name="Warehouse.Disabled.SerialControlled" xml:space="preserve"><value>تُنتقى المنتجات الخاضعة للرقم التسلسلي بالكامل</value></data>
+  <data name="Warehouse.Action.CloseShort.Confirm" xml:space="preserve"><value>يُغلق المتبقي؛ تكتمل المهمة بالكمية المنتقاة. يُحرَّر الحجز بعد الشحن أو الإلغاء.</value></data>
+</root>

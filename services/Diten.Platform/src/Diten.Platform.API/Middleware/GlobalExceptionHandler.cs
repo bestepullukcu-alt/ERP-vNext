@@ -52,6 +52,8 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Diten.Platform.Application.Features.Audit.TransactionOwnedAuditRefusedException => CreateAuditUnavailableProblemDetails(),
             // BL-521 FIX2 item 3 — the administrator record could not be read: no answer, "try again", never "denied".
             PlatformAdministratorRecordUnavailableException => CreateAdministratorRecordUnavailableProblemDetails(),
+            // MOD-0048-FU01 §21 — no published currency list: "not possible right now", with its own code.
+            Diten.Platform.Application.Features.Lookups.Services.CurrencySetUnavailableException => CreateCurrencySetUnavailableProblemDetails(),
             InvalidOperationException invalidOperationException => CreateProblemDetails(
                 invalidOperationException.Message, 
                 "Application Error", 
@@ -109,6 +111,18 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             Detail = "The administrator record could not be read right now. Please try again later."
         };
         problemDetails.Extensions["reason_code"] = PlatformAdministratorRecordUnavailableException.ReasonCode;
+        return problemDetails;
+    }
+
+    private static ProblemDetails CreateCurrencySetUnavailableProblemDetails()
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Service Unavailable",
+            Status = (int)HttpStatusCode.ServiceUnavailable,
+            Detail = "The currency list is not available right now. Please try again later."
+        };
+        problemDetails.Extensions["reason_code"] = Diten.Platform.Application.Features.Lookups.Services.CurrencySetUnavailableException.ReasonCode;
         return problemDetails;
     }
 

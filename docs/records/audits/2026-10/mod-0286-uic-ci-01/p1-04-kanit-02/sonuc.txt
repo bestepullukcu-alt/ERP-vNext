@@ -1,0 +1,13 @@
+CT-2 zorunlu geçti
+CT-3 zorunlu geçti
+AC-11 zorunlu geçti
+AC-19 zorunlu geçti
+AC-17a zorunlu geçti
+AC-18a zorunlu geçti
+AC-18b1 zorunlu geçti
+AC-18b2 zorunlu geçti
+AC-18c zorunlu geçti
+AC-18d zorunlu geçti
+AC-18e zorunlu geçti
+AC-20 zorunlu kaldı
+AC-17b zorunlu kaldı

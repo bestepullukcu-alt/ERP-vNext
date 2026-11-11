@@ -1,0 +1,133 @@
+paylaşılan dosya, sayfa kontrolü yok frontend/Diten.Web/wwwroot/assets/js/diten-datatable.js
+PASS CRM/VisitReport CI-1 Views/CRM/VisitReport/Index.cshtml
+PASS CRM/VisitReport CI-2 Views/CRM/VisitReport/Index.cshtml 0
+PASS CRM/VisitReport CI-4 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-4 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-5 Views/CRM/VisitReport/Index.cshtml 0
+PASS CRM/VisitReport CI-5 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-5 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-6 Views/CRM/VisitReport/Index.cshtml 0
+PASS CRM/VisitReport CI-6 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-6 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-7 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-7 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-8 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-8 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-9 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-9 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS CRM/VisitReport CI-10 wwwroot/assets/js/CRM/VisitReport/report-core.js 0
+PASS CRM/VisitReport CI-10 wwwroot/assets/js/CRM/VisitReport/visit-report.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-1 Views/DevEnablement/GoldenReferenceCompact/Create.cshtml
+PASS DevEnablement/GoldenReferenceCompact CI-1 Views/DevEnablement/GoldenReferenceCompact/Details.cshtml
+PASS DevEnablement/GoldenReferenceCompact CI-1 Views/DevEnablement/GoldenReferenceCompact/Edit.cshtml
+PASS DevEnablement/GoldenReferenceCompact CI-1 Views/DevEnablement/GoldenReferenceCompact/Index.cshtml
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/Create.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/Details.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/Edit.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-2 Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml 0
+YENİ KIRMIZI DevEnablement/GoldenReferenceCompact CI-3 _IndexL10n.cshtml exists
+ölçülmedi DevEnablement/GoldenReferenceCompact CI-3 personalizationClient sends tenant header only for tenant users - doğrulayıcı eksik dosyada durdu
+PASS DevEnablement/GoldenReferenceCompact CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/Create.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/Details.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/Edit.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/Create.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/Details.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/Edit.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 Views/DevEnablement/GoldenReferenceCompact/_Form.cshtml 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js
+PASS DevEnablement/GoldenReferenceCompact CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/form.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.js 0
+PASS DevEnablement/GoldenReferenceCompact CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/index.l10n.js 0
+bilgi: reference not ready (DEV-0001 status: in-progress) DevEnablement/GoldenReferenceCompact FU-15 developer-enablement
+PASS DevEnablement/GoldenReferenceSlim CI-1 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-2 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+TABAN FU-4 DevEnablement/GoldenReferenceSlim CI-3 personalizationClient sends tenant header only for tenant users
+PASS DevEnablement/GoldenReferenceSlim CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-4 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-5 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/Index.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_DataTable.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_DetailsQuickView.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_Filter.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 Views/DevEnablement/GoldenReferenceSlim/_IndexL10n.cshtml 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-6 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-7 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-8 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-9 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.js 0
+PASS DevEnablement/GoldenReferenceSlim CI-10 wwwroot/assets/js/DevEnablement/GoldenReferenceSlim/index.l10n.js 0
+bilgi: RC-6 AddNewGoldenReferenceSlim DevEnablement/GoldenReferenceSlim FU-12 developer-enablement
+PASS DevEnablement/UicAra CI-2 Views/DevEnablement/UicAra/_IndexL10n.cshtml 0
+PASS DevEnablement/UicAra CI-5 Views/DevEnablement/UicAra/_IndexL10n.cshtml 0
+PASS DevEnablement/UicAra CI-6 Views/DevEnablement/UicAra/_IndexL10n.cshtml 0
+YENİ KIRMIZI DevEnablement/UicAra CI-11 Views/DevEnablement/UicAra/_IndexL10n.cshtml:yok:GetAllStrings
+PASS Meetings/Report CI-1 Views/Meetings/Report/Index.cshtml
+PASS Meetings/Report CI-2 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-2 Views/Meetings/Report/_IndexL10n.cshtml 0
+PASS Meetings/Report CI-4 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-4 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-5 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-5 Views/Meetings/Report/_IndexL10n.cshtml 0
+TABAN FU-14 Meetings/Report CI-5 wwwroot/assets/js/Meetings/Report/index.js 1
+PASS Meetings/Report CI-5 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-6 Views/Meetings/Report/Index.cshtml 0
+PASS Meetings/Report CI-6 Views/Meetings/Report/_IndexL10n.cshtml 0
+PASS Meetings/Report CI-6 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-6 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-7 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-7 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-8 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-8 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-9 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-9 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Meetings/Report CI-10 wwwroot/assets/js/Meetings/Report/index.js 0
+PASS Meetings/Report CI-10 wwwroot/assets/js/Meetings/Report/index.l10n.js 0
+PASS Platform/Tenants CI-12 platform-search.en.json
+PASS Platform/Tenants CI-12 platform-search.tr.json
+süre: 0.4 s

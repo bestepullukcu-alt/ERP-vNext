@@ -15,8 +15,8 @@ namespace Diten.PvgService.Api.Tests;
 // methods are called statically over a DefaultHttpContext and their IResult is executed to read status and body.
 public sealed class PvgCaseIntakeApiContractTests
 {
-    private const string TenantA = "tenant-a-fake";
-    private const string TenantB = "tenant-b-fake";
+    private const string TenantA = PvgTestIdentity.TenantA;
+    private const string TenantB = PvgTestIdentity.TenantB;
     private const string LinkedCrmId = "crm-contact-secret-1";
     private const string LinkedPersonId = "person-secret-1";
     private const string PermissionDenied = "PVG_PERMISSION_DENIED";
@@ -896,11 +896,10 @@ public sealed class PvgCaseIntakeApiContractTests
         private static DefaultHttpContext Context(string tenant, bool actor = true)
         {
             var context = new DefaultHttpContext();
-            context.Request.Headers[PvgCaseIntakeRequestContext.TenantContextHeader] = tenant;
+            PvgTestIdentity.SetTenant(context, tenant);
             if (actor)
             {
-                context.Request.Headers[PvgCaseIntakeRequestContext.ActorIdHeader] = "actor-fake-1";
-                context.Request.Headers[PvgCaseIntakeRequestContext.ActorKindHeader] = "HumanUser";
+                PvgTestIdentity.SetActor(context, "actor-fake-1", "HumanUser");
             }
 
             context.Request.Headers[PvgCaseIntakeRequestContext.CorrelationIdHeader] = "corr-fake-1";

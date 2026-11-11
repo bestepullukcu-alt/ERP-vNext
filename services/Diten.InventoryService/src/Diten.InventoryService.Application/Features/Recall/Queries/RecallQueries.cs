@@ -28,7 +28,7 @@ public sealed record ListRecallCasesQuery(
 public sealed record GetRecallCaseQuery(string CaseId) : IRequest<Response<RecallCaseDetailDto>>;
 
 /// <summary>§4.6 getCaseScope (R1: the hand-entered items; R2 adds the trace).</summary>
-public sealed record GetRecallCaseScopeQuery(string CaseId) : IRequest<Response<RecallScopeViewDto>>;
+public sealed record GetRecallCaseScopeQuery(string CaseId, string? CustomerPage = null) : IRequest<Response<RecallScopeViewDto>>;
 
 /// <summary>§4.12 getCaseTimeline.</summary>
 public sealed record GetRecallCaseTimelineQuery(string CaseId, string? Page, string? PageSize) : IRequest<Response<RecallTimelinePageDto>>;
@@ -42,15 +42,15 @@ public sealed record GetLotRecallStatusQuery(string LotId) : IRequest<Response<R
 public sealed record GetRecallCaseStockQuery(string CaseId) : IRequest<Response<IReadOnlyList<RecallStockLineDto>>>;
 
 /// <summary>§4.42a getCaseReturns — linked returns + candidates (KR-H).</summary>
-public sealed record GetRecallCaseReturnsQuery(string CaseId) : IRequest<Response<RecallReturnsDto>>;
+public sealed record GetRecallCaseReturnsQuery(string CaseId, string? CustomerPage = null) : IRequest<Response<RecallReturnsDto>>;
 
 // ── R7a ──
 
 /// <summary>getCaseCustomers — the customers of the case's scope with shipments (ledger + live MVP-6 read), notifications and consumptions.</summary>
-public sealed record GetRecallCaseCustomersQuery(string CaseId) : IRequest<Response<IReadOnlyList<RecallCustomerRowDto>>>;
+public sealed record GetRecallCaseCustomersQuery(string CaseId, string? CustomerPage = null) : IRequest<Response<IReadOnlyList<RecallCustomerRowDto>>>;
 
 /// <summary>getCaseEffectiveness — live until completed, then the stored result (pack §8.6).</summary>
-public sealed record GetRecallCaseEffectivenessQuery(string CaseId) : IRequest<Response<RecallEffectivenessDto>>;
+public sealed record GetRecallCaseEffectivenessQuery(string CaseId, string? CustomerPage = null) : IRequest<Response<RecallEffectivenessDto>>;
 
 // ── R7b: the Kanıt Paketi reads ──
 

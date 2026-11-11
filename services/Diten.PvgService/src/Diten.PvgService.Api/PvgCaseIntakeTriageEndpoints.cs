@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Domain.RegPvBase;
@@ -16,17 +17,19 @@ public static class PvgCaseIntakeTriageEndpoints
         "void",
         "bulk",
         "bulk-delete",
-        "delete"
+        "delete",
+        "options"
     };
 
     public static IEndpointRouteBuilder MapPvgCaseIntakeTriageEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost(RoutePrefix, CreateDraftAsync).WithName("PvgCaseIntakeTriageCreateDraft");
-        endpoints.MapPut($"{RoutePrefix}/{{intakeDraftId}}", UpdateDraftAsync).WithName("PvgCaseIntakeTriageUpdateDraft");
-        endpoints.MapGet(RoutePrefix, ListDraftsAsync).WithName("PvgCaseIntakeTriageListDrafts");
-        endpoints.MapGet($"{RoutePrefix}/{{intakeDraftId}}", GetDraftByIdAsync).WithName("PvgCaseIntakeTriageGetDraftById");
-        endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/triage", TriageDraftAsync).WithName("PvgCaseIntakeTriageTriageDraft");
-        endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/route", RouteDraftAsync).WithName("PvgCaseIntakeTriageRouteDraft");
+        endpoints.MapPost(RoutePrefix, CreateDraftAsync).WithName("PvgCaseIntakeTriageCreateDraft").RequireAuthorization();
+        endpoints.MapPut($"{RoutePrefix}/{{intakeDraftId}}", UpdateDraftAsync).WithName("PvgCaseIntakeTriageUpdateDraft").RequireAuthorization();
+        endpoints.MapGet(RoutePrefix, ListDraftsAsync).WithName("PvgCaseIntakeTriageListDrafts").RequireAuthorization();
+        endpoints.MapGet($"{RoutePrefix}/options", GetOptions).WithName("PvgCaseIntakeTriageGetOptions").RequireAuthorization();
+        endpoints.MapGet($"{RoutePrefix}/{{intakeDraftId}}", GetDraftByIdAsync).WithName("PvgCaseIntakeTriageGetDraftById").RequireAuthorization();
+        endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/triage", TriageDraftAsync).WithName("PvgCaseIntakeTriageTriageDraft").RequireAuthorization();
+        endpoints.MapPost($"{RoutePrefix}/{{intakeDraftId}}/route", RouteDraftAsync).WithName("PvgCaseIntakeTriageRouteDraft").RequireAuthorization();
 
         return endpoints;
     }
@@ -140,6 +143,23 @@ public static class PvgCaseIntakeTriageEndpoints
             cancellationToken);
 
         return ToHttpResult(PvgCaseIntakeApiResponse.From(result));
+    }
+
+    // AC-34: the option sets come only from PvgIntakeOptionSets. The endpoint returns no tenant data and no record, so it
+    // checks the tenant context like the list endpoint but needs no actor or correlation, and reads no store, port, or
+    // permission gate.
+    public static IResult GetOptions(HttpContext httpContext)
+    {
+        var context = PvgCaseIntakeRequestContext.From(httpContext, requireActor: false, requireCorrelation: false);
+        if (!context.IsValid)
+        {
+            return ToHttpResult(PvgCaseIntakeApiResponse.Blocked(context.ReasonCode));
+        }
+
+        return Results.Ok(new PvgCaseIntakeOptionsResponse(
+            PvgIntakeOptionSets.ReportTypes.OrderBy(code => code, StringComparer.Ordinal).ToArray(),
+            PvgIntakeOptionSets.ProductRoles.OrderBy(code => code, StringComparer.Ordinal).ToArray(),
+            PvgIntakeOptionSets.UnknownCountry));
     }
 
     public static async ValueTask<IResult> TriageDraftAsync(
@@ -491,6 +511,11 @@ public sealed record PvgCaseIntakeApiResponse(
                 : null);
 }
 
+public sealed record PvgCaseIntakeOptionsResponse(
+    IReadOnlyList<string> ReportTypes,
+    IReadOnlyList<string> ProductRoles,
+    string UnknownCountry);
+
 public sealed record PvgCaseIntakeRequestContext(
     bool IsValid,
     string ReasonCode,
@@ -498,27 +523,37 @@ public sealed record PvgCaseIntakeRequestContext(
     PvgActorContext? ActorContext,
     PvgCorrelationContext? CorrelationContext)
 {
-    public const string TenantContextHeader = "X-Diten-Tenant-Context";
-    public const string ActorIdHeader = "X-Diten-Actor-Id";
-    public const string ActorKindHeader = "X-Diten-Actor-Kind";
+    public const string TenantHeader = "X-Tenant-Id";
+    public const string TenantClaimType = "tenant_id";
+    public const string ActorKindClaimType = "actor_type";
+    public const string SubjectClaimType = "sub";
+    public const string TenantContextMismatch = "PVG_TENANT_CONTEXT_MISMATCH";
     public const string CorrelationIdHeader = "X-Correlation-Id";
 
+    // AC-5: the tenant is the Gateway-written X-Tenant-Id, accepted only when it is the same Guid as the validated
+    // token's tenant_id claim; the actor is the token subject and actor_type. The retired Diten tenant and actor headers are not read.
     public static PvgCaseIntakeRequestContext From(
         HttpContext httpContext,
         bool requireActor = true,
         bool requireCorrelation = true)
     {
-        var tenantReference = Header(httpContext, TenantContextHeader);
-        if (string.IsNullOrWhiteSpace(tenantReference))
+        var tenantReference = Header(httpContext, TenantHeader);
+        if (string.IsNullOrWhiteSpace(tenantReference) || !Guid.TryParse(tenantReference, out var headerTenant))
         {
             return Blocked(PvgValidationReasonCodes.TenantContextRequired);
+        }
+
+        var claimTenant = httpContext.User.FindFirst(TenantClaimType)?.Value;
+        if (!Guid.TryParse(claimTenant, out var tokenTenant) || tokenTenant != headerTenant)
+        {
+            return Blocked(TenantContextMismatch);
         }
 
         PvgActorContext? actorContext = null;
         if (requireActor)
         {
-            var actorId = Header(httpContext, ActorIdHeader);
-            var actorKind = Header(httpContext, ActorKindHeader);
+            var actorId = (httpContext.User.FindFirst(ClaimTypes.NameIdentifier) ?? httpContext.User.FindFirst(SubjectClaimType))?.Value;
+            var actorKind = httpContext.User.FindFirst(ActorKindClaimType)?.Value;
             if (string.IsNullOrWhiteSpace(actorId) || string.IsNullOrWhiteSpace(actorKind))
             {
                 return Blocked(PvgPermissionReasonCodes.ActorContextRequired);
@@ -547,7 +582,7 @@ public sealed record PvgCaseIntakeRequestContext(
         return new PvgCaseIntakeRequestContext(
             true,
             string.Empty,
-            new PvgServerTenantContext(tenantReference),
+            new PvgServerTenantContext(headerTenant.ToString("D")),
             actorContext,
             correlationContext);
     }
