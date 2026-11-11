@@ -40,7 +40,8 @@ form_field_count: 5
 > Every repo-rule conflict found while writing the pack is listed in §26 with the CT resolution next to it.
 >
 > **2026-11-11 addition — T4a team totals (DL-6, §5.4).** Written after the owner approved a one-page business
-> process and answered five questions (§21.4, TT-1…TT-5); TT-6 was decided by EES on the owner's delegation. DL-6 is a new slice of an approved pack: its code waits for this
+> process and answered its four questions (§21.4, TT-1…TT-4); TT-5 was answered by the owner later the same day and
+> TT-6 decided by EES on the owner's delegation. DL-6 is a new slice of an approved pack: its code waits for this
 > version's independent review and its own approval row (CT-APR-01/02). DL-1…DL-5 are unchanged.
 
 > **Identity gate (DCP-002) — passed 2026-09-29, re-run after the registry rows were written:**
@@ -412,10 +413,14 @@ nothing).**
    manual grant is audited (`services/Diten.AuthService/src/Diten.AuthService.Application/Features/Roles/Handlers/CommandHandlers/AssignPermissionCommandHandler.cs:94`
    `RoleAuditEvents.PermissionGranted`). The data scope limits the effect: every holder sees only **their own**
    primary-seat subtree (rule 3), so a role member without reports sees a team of one, which the floor hides (rule 6).
-   **How the key is handed out (TT-6, decided 2026-11-11):** only through one dedicated tenant role, "Ekip toplamı
-   görüntüleyici" / team-totals viewer, which carries this key; tenant admins add the managers who should see team
-   totals to that role. No AuthService change. Every member still sees only their own subtree, and the grant is
-   audited. A per-user grant in AuthService remains a possible future alternative (§20).
+   **How the key is handed out (TT-6, decided 2026-11-11) — an operating convention, not a system guarantee:** tenants
+   grant the key through one dedicated tenant role, "Ekip toplamı görüntüleyici" / team-totals viewer, and add to it the
+   managers who should see team totals. Nothing in the system stops an admin from granting the key to another role;
+   the convention relies on the audit trail of role grants. **Setup step:** the tenant admin creates that role through
+   the existing role screens, assigns it `time-entry.team-totals.read`, and adds the chosen managers — no seed, no
+   AuthService change. The guarantees that do hold: the key reaches nobody automatically (no default template,
+   entitlement sync or full-catalog path), every holder sees only their own subtree, and every role grant is audited.
+   A per-user grant in AuthService remains a possible future alternative (§20).
 2. **Range — validated first.** `fromWeek` required, `toWeek` optional (= `fromWeek`); ISO week keys; `toWeek >= fromWeek`;
    at most 13 weeks; `toWeek` not after the current tenant-local ISO week (R3). A refused range answers 400 before the
    team is resolved and before the pull in rule 4, so a 400 writes nothing (§17 T-34).
@@ -531,7 +536,9 @@ the owner enters shared dev data.
 
 **Done condition.** Every §16 "T4a — team totals" criterion green through its §17 test (T-28…T-38), each guard's sabotage
 run recorded red then green in the WP report; Platform and Web build PASS; RESX parity ×7; `NavManifestL10nGuardTests`
-green; live check with a second real user (granted manager sees totals; the same user without the grant sees the
+green; the TT-6 setup step done on the dev tenant (a tenant admin creates "Ekip toplamı görüntüleyici" through the role
+screens, gives it the key and adds the test manager; the role grant appears in the audit log); live check with a second
+real user (granted manager sees totals; the same user without the grant sees the
 UAS-001 panel and the API answers 403; a tenant admin whose roles do not carry the key also gets 403); §19.3 rows 3, 4,
 7 and 10 re-measured and their T4a values appended (one more visible page, `time-entry.team-totals.read` minted, nav key
 `Nav.Page.TIMETEAMTOTALS`, manifest test green with 5 visible pages); Control Tower acceptance commit recorded in the
@@ -796,8 +803,8 @@ Decisions:  MOD-0023's own platform.workflow.tasks.approve / .reject (unchanged)
   `time-entry.person-reports.read` in T4b (DL-7). Their enrolment in `ExplicitGrantOnlyPermissions.cs` was a **CT
   prerequisite listed in T1** (§23) and is done (§7), so no manifest can publish them into the entitlement sync first
   (the BL-392 lesson).
-- T4a (§5.4): actor = a member of the dedicated tenant role "Ekip toplamı görüntüleyici" (TT-6), which carries the key
-  through a deliberate, audited role grant — never by a
+- T4a (§5.4): actor = a user whose role carries the key, by convention the dedicated tenant role "Ekip toplamı
+  görüntüleyici" (TT-6, not enforced), through a deliberate, audited role grant — never by a
   default template, the entitlement sync or the full-catalog path (AuthService has no per-user grant; §5.4 rule 1,
   TT-6); scope = the caller's own primary-seat
   subtree, resolved server-side — the request names no person, position or unit, so the caller cannot widen it. The
@@ -1007,7 +1014,7 @@ every guard gets a sabotage run (remove the rule, see red, restore, see green) r
 | T-25 | A9 | Week 5 back → 409 outside window; time-admin reopen with reason → editable until submitted; reopen without reason → 400 | skip the window check → red |
 | T-26 | R5 | Reject a timesheet approval with an empty comment → refused by MOD-0023; a task approval (option off) still rejects without a comment | enforce globally → task test red; skip enforcement → timesheet test red |
 | T-27 | A2 | Segments 3 + 4 min same task/day → no row, "too short"; 7 + 8 min → 15; 22.5 min → 30 | truncate instead of round → red |
-| T-28 | T4a | (a) Platform HTTP: caller without the key → 403; with the key → 200. (b) Explicit-grant path (AuthService, existing guards, no AuthService change): `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:67` asserts the key is in `ExplicitGrantOnlyPermissions.Keys`, and `DefaultRolePermissionTemplateTests` proves the mechanism on sibling keys (a key in that list reaches no default role, SuperAdmin included); the time-entry key rides the same list. The DL-6 WP re-runs both. (c) Live (E3, done condition): a tenant admin with the module entitlement but no explicit assignment → 403. (d) Web: page without the key renders the UAS-001 panel only. (e) Multi-member role: role R carries the key and holds manager M (team of 4 with approved weeks) and member P (no reports) → M gets M's subtree totals; P gets 200 with empty lists (team of one, floor); neither sees the other's team | (a) drop `[HasPermission]` from the action → red; (b) remove `TimeEntryTeamTotalsRead` from `ExplicitGrantOnlyPermissions.Keys` → `AccountKindTests` red (sabotage run in the DL-6 WP's own worktree, reverted); (d) render the skeleton for a caller without the key → red; (e) resolve the team from the role's members instead of the caller's own seat → P sees M's team → red |
+| T-28 | T4a | (a) Platform HTTP: caller without the key → 403; with the key → 200. (b) Explicit-grant path (AuthService, existing guards, no AuthService change): `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:67` asserts the key is in `ExplicitGrantOnlyPermissions.Keys`, and `DefaultRolePermissionTemplateTests` proves the mechanism on sibling keys (a key in that list reaches no default role, SuperAdmin included); the time-entry key rides the same list. The DL-6 WP re-runs both. (c) Live (E3, done condition): a tenant admin with the module entitlement whose roles do not carry the key → 403. (d) Web: page without the key renders the UAS-001 panel only. (e) Multi-member role: role R carries the key and holds manager M (team of 4 with approved weeks) and member P (no reports) → M gets M's subtree totals; P gets 200 with empty lists (team of one, floor); neither sees the other's team | (a) drop `[HasPermission]` from the action → red; (b) remove `TimeEntryTeamTotalsRead` from `ExplicitGrantOnlyPermissions.Keys` → `AccountKindTests` red (sabotage run in the DL-6 WP's own worktree, reverted); (d) render the skeleton for a caller without the key → red; (e) resolve the team from the role's members instead of the caller's own seat → P sees M's team → red |
 | T-29 | T4a / TT-1, TT-2, TT-5 | Org fixture: caller M → A, B; A → A1 (three levels); sibling S outside; X holds a secondary seat under M with primary seat elsewhere; Y's primary assignment has ended and Y holds only a secondary seat under M. Members = {M, A, B, A1}. Cycle case: M's own position is written straight to the repository with `ReportsToPositionId = A1` (M → A → A1 → M, reachable from M by the downward walk; MOD-0288 refuses this on its own write path — `PositionReferenceGuard` — so the case stands for legacy or imported data) → same members, 200 within the test timeout | walk direct reports only → A1 missing → red; drop the caller → red; count secondary seats → X present → red; use the D6 `seats[0]` fallback → Y present → red; remove the visited set → the cycle case does not finish within its timeout → red |
 | T-30 | T4a / D11, D7 | Fixture built only through production commands (save → submit → MOD-0023 approve → finalizer; then a correction approved the same way, so revision 1 becomes `Superseded` / `InForce == false`; plus one Draft week, one Submitted-undecided week, one open correction draft and timer segments) → only the in-force Approved minutes count; a Submitted week approved in MOD-0023 with jobs off → counted after the request | read every revision of the week (no `Status`/`InForce` filter) → the Superseded revision 1 and the drafts add minutes → red; filter `Status != Draft` → Superseded and Submitted counted → red; skip the pull → red |
 | T-31 | T4a / TT-3 | Group with 2 people in W40 → not listed, `hiddenGroupCount == 1`, not in `shownTotalMinutes`; 3 people → listed; group with 3 people in W40 and 1 in W41: total for W40–W41 equals the total for W40; a team of 2 people with approved minutes → empty lists, `hiddenGroupCount` = their group count; a team with no approved minutes → empty lists, `hiddenGroupCount == 0` | apply the floor to the range sum instead of per week → the W40–W41 assertion red; floor `< 2` → red; show a group whose only cells were dropped → the 2-person-team assertion red |
@@ -1324,8 +1331,9 @@ the job (`docs/guides/operations/dev-environment.md`, job table).
 ### 21.4 T4a decisions — team totals (owner 2026-11-11)
 
 The owner approved the one-page business process "Zaman girişi T4a: ekip toplamları" and answered its four questions
-with "ok" on 2026-11-11 (TT-1…TT-4). TT-6 was decided by EES under the owner's delegation the same day and may be revisited when the module goes live. TT-5 was raised by the pack author while writing the slice and answered by the
-owner the same day: "Hayır, yalnız ana görev".
+with "ok" on 2026-11-11 (TT-1…TT-4). TT-5 was raised by the pack author while writing the slice and answered by the
+owner the same day: "Hayır, yalnız ana görev". TT-6 was then decided by EES under the owner's delegation the same day
+and may be revisited when the module goes live.
 
 | # | Subject | Decision | Where |
 |---|---|---|---|
@@ -1334,7 +1342,7 @@ owner the same day: "Hayır, yalnız ana görev".
 | TT-3 | Small-group floor | A group with fewer than 3 people is not shown (KVKK proportionality: no total may point to one person); applied per (group, ISO week) cell so a range choice cannot isolate a hidden cell; added to the acceptance criteria | §5.4 rule 6, §8 item 11, §17 T-31 |
 | TT-4 | Slice table | The CT-APR-02 table from the hcm-time Control Tower branch is measured against current main and taken into this pack (§27) | §23, §27 |
 | TT-5 | Membership basis — primary seat only | Owner decision 2026-11-11 ("Hayır, yalnız ana görev"): only an active primary assignment places a person in a team; a person attached to the team only by a secondary (or acting / delegated) seat is not counted, so nobody is counted under two unrelated managers. Pack v1 rule alongside it: membership is read from today's assignments; historical membership is a follow-up (§20) | §5.4 rule 3, §17 T-29 |
-| TT-6 | How the key is handed out — decided by EES under the owner's delegation, 2026-11-11 (may be revisited when the module goes live) | Measured first: AuthService has no per-user permission grant; a key reaches people only through a role, and a manual role grant reaches every member (audited). Decision: the key is granted only through one dedicated tenant role, "Ekip toplamı görüntüleyici" / team-totals viewer; tenant admins add the managers who should see team totals; every member still sees only their own subtree (rule 3) and the floor applies (rule 6); the grant is audited; no AuthService change. Future alternative, not scheduled: a per-user grant in AuthService (AuthService owner's lane, its own pack and approval), after which this key could be refused on role assignment (§20) | §5.4 rule 1, §14, §17 T-28 |
+| TT-6 | How the key is handed out — decided by EES under the owner's delegation, 2026-11-11 (may be revisited when the module goes live) | Measured first: AuthService has no per-user permission grant; a key reaches people only through a role, and a manual role grant reaches every member (audited). Decision (operating convention, not enforced by the system): the key is granted through one dedicated tenant role, "Ekip toplamı görüntüleyici" / team-totals viewer, which the tenant admin creates through the existing role screens (no seed); tenant admins add the managers who should see team totals; every member still sees only their own subtree (rule 3) and the floor applies (rule 6); the grant is audited; no AuthService change. Future alternative, not scheduled: a per-user grant in AuthService (AuthService owner's lane, its own pack and approval), after which this key could be refused on role assignment (§20) | §5.4 rule 1, §14, §17 T-28 |
 
 Kept unchanged by these answers: D11 (approved only, explicit grant), §8 item 7 (no ratios, rankings or scores), A7
 and §22 (the per-person report, T4b, waits for counsel on items 2 and 5). *SAP/Oracle/Workday:* SAP CATS analyses,
