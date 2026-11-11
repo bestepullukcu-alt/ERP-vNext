@@ -9,7 +9,8 @@ name: approvals-append-only
 # checked (GitHub quota); gh runs with the workflow token.
 # Every pull request runs it (no paths filter): append-only is a REQUIRED check, and a required check whose workflow a
 # paths filter skips never reports — "Expected — Waiting for status to be reported" blocks every unrelated PR (EES
-# 2026-11-11). A pull request that touches none of the ledger paths passes in seconds (the shell step below).
+# 2026-11-11). The history check runs on every pull request (~30-60 s) with no shortcut: a tree diff would miss a row
+# deleted in one commit and restored in the next, which history (commit by commit) catches (blind review, 2026-11-11).
 on:
   pull_request:
   push:
@@ -45,11 +46,7 @@ jobs:
         # unmeasurable reading (quota) are ::warning:: lines (G-2, G-12); an empty / zero BEFORE_SHA falls back to HEAD^1
         run: |
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            if git diff --quiet "$BASE_SHA" HEAD -- execution/approvals scripts/pack_approval.py .github/workflows/approvals-append-only.yml; then
-              echo "append-only: this pull request touches no ledger path; nothing to check"
-            else
-              python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
-            fi
+            python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
           else
             python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD
           fi
