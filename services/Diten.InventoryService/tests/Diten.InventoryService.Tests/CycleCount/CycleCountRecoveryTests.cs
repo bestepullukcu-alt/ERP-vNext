@@ -182,11 +182,33 @@ public sealed class CycleCountRecoveryTests(CycleCountApiFactory factory) : ICla
     }
 
     /// <summary>
-    /// DL-3 CT ORTA-2 (owner decision Beste 2026-11-10 «Ekle»): a holder with the line's key, source line, bin and quantity but ANOTHER SKU is not the
-    /// line's correction — AcceptHolder is 409 and the line stays IntegrityError (the counted SKU's stock would never be corrected).
+    /// DL-3 CT ORTA-2 (owner decision Beste 2026-11-10 «Ekle»), the SKU half: a holder of the SAME item whose ledger row names ANOTHER SKU (staged on the
+    /// ledger row — only the SKU differs, so the item comparison cannot catch it; the read under test is production) is not the line's correction.
     /// </summary>
     [Fact]
     public async Task AC26_ORTA2_a_holder_of_another_SKU_is_not_accepted()
+    {
+        var s = new CycleCountScenario(factory);
+        var (countId, line) = await s.SubmittedLineAsync(10, 12); // +2
+        var squat = await SquatKeyAsync(s, countId, line, 2, "2026-10-01T10:00:00Z");
+        Assert.Equal(409, (int)(await s.ApproveAsync(line)).StatusCode);
+        factory.Collection("inventory_transactions").UpdateOne(new MongoDB.Bson.BsonDocument("_id", squat.GetProperty("transactionId").GetString()),
+            new MongoDB.Bson.BsonDocument("$set", new MongoDB.Bson.BsonDocument("SkuId", Guid.NewGuid().ToString("D"))));
+
+        var integrity = await s.LineAsync(countId, LineId(line));
+        Assert.Equal("IntegrityError", AdjustmentStatus(integrity));
+        Assert.Equal("COUNT_ADJUSTMENT_INTEGRITY", await ErrorCode(s.ResolveAsync(integrity, "AcceptHolder"), 409));
+        var after = await s.LineAsync(countId, LineId(line));
+        Assert.Equal("IntegrityError", AdjustmentStatus(after));
+        Assert.False(Adjustment(after).TryGetProperty("transactionId", out _));
+    }
+
+    /// <summary>
+    /// ORTA-2 through the real ledger API: a holder with the line's key, source line, bin and quantity but ANOTHER product (item + SKU) is not the line's
+    /// correction — AcceptHolder is 409, the line stays IntegrityError and the counted SKU's stock is not corrected by the holder.
+    /// </summary>
+    [Fact]
+    public async Task AC26_ORTA2_a_holder_of_another_product_is_not_accepted()
     {
         var s = new CycleCountScenario(factory);
         var (countId, line) = await s.SubmittedLineAsync(10, 12); // +2
