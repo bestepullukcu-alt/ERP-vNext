@@ -18,7 +18,7 @@ screens:
 entity_base: TenantScopedEntity   # Platform's live tenant-owned base (TaskItem, Meeting); module-pack-standard's "BaseEntity" is the older name
 status: ready-for-dev
 status_changed: "draft -> ready-for-dev on 2026-09-29 (Control Tower resolved every §25 question and §26 conflict; none left blocking — see §26)"
-decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's answers 2026-11-11 (§21.4, TT-1…TT-5)"
+decided_by: "Control Tower on the owner's delegation, 2026-09-29 (D1–D13 + resolutions R1–R11 + answers A1–A10); Time Entry SoR = MOD-0280 confirmed by the owner 2026-09-17 (DEC-002); T4a team totals: the owner's answers 2026-11-11 (§21.4, TT-1…TT-5; TT-6 open)"
 owner: ali.tufanoglu
 branch: feature/hr/mod-0280-fu01-time-entry-weekly-timesheet   # 'hr' short code: MOD-0251 precedent; not yet in AGENTS.md §9
 started: 2026-09-29
@@ -40,7 +40,7 @@ form_field_count: 5
 > Every repo-rule conflict found while writing the pack is listed in §26 with the CT resolution next to it.
 >
 > **2026-11-11 addition — T4a team totals (DL-6, §5.4).** Written after the owner approved a one-page business
-> process and answered four questions (§21.4). DL-6 is a new slice of an approved pack: its code waits for this
+> process and answered five questions (§21.4, TT-1…TT-5; TT-6 is open). DL-6 is a new slice of an approved pack: its code waits for this
 > version's independent review and its own approval row (CT-APR-01/02). DL-1…DL-5 are unchanged.
 
 > **Identity gate (DCP-002) — passed 2026-09-29, re-run after the registry rows were written:**
@@ -393,16 +393,26 @@ MOD-0357 precedent: a module of another domain inside `Diten.Platform`, authoris
 
 ### 5.4 T4a — team totals
 
-A manager who was **explicitly** given `time-entry.team-totals.read` sees the **approved** minutes of their whole team
+A manager who was deliberately given `time-entry.team-totals.read` (through a role — §5.4 rule 1, TT-6) sees the **approved** minutes of their whole team
 for one ISO week or a run of weeks, totalled by task type and by work category. No person row, no ratio, ranking or
-score. Source: the owner-approved one-page business process and the owner's four answers of 2026-11-11 (§21.4). The
+score. Source: the owner-approved one-page business process and the owner's answers of 2026-11-11 (§21.4, TT-1…TT-5; TT-6 open). The
 per-person report is T4b (DL-7) and is **not** in this slice.
 
-**Rules (the handler applies them in this order; rules 1–3 refuse before anything is read or written).**
+**Rules (the handler applies them in this order; rules 1–3 refuse before the pull, so a 403, 400 or 409 writes
+nothing).**
 
-1. **Caller.** Holds `time-entry.team-totals.read`. The key is in `ExplicitGrantOnlyPermissions` (enrolled in T1, §7),
-   so neither a role, the module-entitlement sync nor the SuperAdmin full-catalog path gives it; a tenant admin assigns
-   it to one person at a time.
+1. **Caller.** Holds `time-entry.team-totals.read`. What "explicit grant" means today (measured 2026-11-11, TT-6):
+   AuthService has **no per-user permission grant** — a user's permissions come only from their roles
+   (`RolePermission` = `RoleId` + `PermissionId`, `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/RolePermission.cs:29`).
+   Because the key is in `ExplicitGrantOnlyPermissions` (enrolled in T1, §7), no **automatic** path gives it: not the
+   default role templates (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs:182`),
+   not the module-entitlement sync (`services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs:294`),
+   not the SuperAdmin full-catalog path (`services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/FullCatalogPermissionGrantService.cs:39`).
+   A tenant admin can still **deliberately** assign it to a role; then **every member of that role** holds it. That
+   manual grant is audited (`services/Diten.AuthService/src/Diten.AuthService.Application/Features/Roles/Handlers/CommandHandlers/AssignPermissionCommandHandler.cs:94`
+   `RoleAuditEvents.PermissionGranted`). The data scope limits the effect: every holder sees only **their own**
+   primary-seat subtree (rule 3), so a role member without reports sees a team of one, which the floor hides (rule 6).
+   How tenants should hand the key out is TT-6, an open owner decision (§21.4).
 2. **Range — validated first.** `fromWeek` required, `toWeek` optional (= `fromWeek`); ISO week keys; `toWeek >= fromWeek`;
    at most 13 weeks; `toWeek` not after the current tenant-local ISO week (R3). A refused range answers 400 before the
    team is resolved and before the pull in rule 4, so a 400 writes nothing (§17 T-34).
@@ -416,13 +426,30 @@ per-person report is T4b (DL-7) and is **not** in this slice.
    ends it), passes through vacant and archived positions, and reads today's assignments (historical membership is a
    §20 follow-up). Caller without an active primary assignment → 409 `TEAM_TOTALS_NO_PRIMARY_SEAT`, before the pull.
 4. **Counted data (D11).** Only `TimesheetWeek` rows with `Status == Approved` **and** `InForce == true` whose `WeekKey`
-   is in the range, and their `TimeEntry` rows. Draft, Submitted, Superseded and correction-draft revisions, timer
-   segments and suggestions are never read. Before reading, the existing pull finalizer
-   (`ITimesheetDecisionPuller.PullAsync`) runs for the members' `Submitted` weeks in the range, so a week MOD-0023
-   already approved counts even with the sweep job off (D7, §8 item 4). That pull is the only write on this path and it
-   is the existing, audited D7 write; T4a adds no command. Two concurrent requests may pull the same week twice; the
-   finalizer is idempotent per (workflow instance, outcome) (§8 item 5), so the totals and the audit trail are the
-   same either way.
+   is in the range, and their `TimeEntry` rows, join the totals. Draft, Superseded and correction-draft revisions,
+   timer segments and suggestions are not read; `Submitted` weeks are read only as input to the pull below and never
+   join the totals. **Pull first:** the existing pull finalizer (`ITimesheetDecisionPuller.PullAsync`) runs for the
+   members' `Submitted` weeks in the range, so a week MOD-0023 already decided is applied even with the sweep job off
+   (D7, §8 item 4). That pull is the only write on this path and it is the existing, audited D7 write; T4a adds no
+   command.
+   - **Pull failure — no partial totals.** The puller never throws; it reports `Failed` for a week whose outcome could
+     not be read or whose finalization was refused or threw (`TimesheetDecisionPuller`, F14 / BL-483). When
+     `Failed > 0`, the handler re-reads the members' weeks in the range and asks once more whether any of them still
+     has a waiting outcome (`ITimesheetFinalizer.PendingOutcomeWeekIdsAsync`, a read). If none is waiting (for
+     example a concurrent request applied it), the totals are complete and the answer is 200. If one is still waiting,
+     or that check itself fails, the answer is **503 `TEAM_TOTALS_DECISIONS_PENDING`** with no totals in the body —
+     a decided-but-unapplied week would otherwise be silently missing from a figure shown as complete.
+   - **Retry rule.** No automatic retry loop, neither in the handler nor in the page. The page clears any earlier
+     table, shows the bridged sentence for the code (7 languages) and a "Try again" button that repeats the same
+     request; every retry runs the pull again, and the sweep job (where enabled) applies the week in the background.
+     A week that keeps failing is in the log with the puller's reason code (`OUTCOME_READ_FAILED` / `FINALIZE_THREW`
+     / the refusal code), the same trail the approvals page leaves.
+   - **Concurrent requests.** Two requests may both send `FinalizeTimesheetDecisionCommand` for the same week. The week
+     state and `TaskTimeTotal` end the same (the finalizer re-reads before writing and recomputes, idempotent per
+     (workflow instance, outcome), §8 item 5), and the totals both requests return are equal. The audit trail is
+     **not** identical: every command sent is audited by `AuditBehavior`, including a successful no-op, so the week can
+     carry between 1 and N `finalize` entries for N concurrent requests. This is today's behaviour of the week read and
+     the approvals page as well; T4a does not change it (no change outside §5.4's scope), and §17 T-37 pins it.
 5. **Groups.** A task row counts under its task's type (`TaskItem.TaskTypeId`, read through
    `ITimeEntryTaskGateway.TaskTypesAsync` — type id, code and name only, never the task title); a task with no type or
    no longer in the tenant counts under one "no task type" group (`taskTypeId: null`). A category row counts under its
@@ -459,7 +486,7 @@ Error codes and statuses: §12 and §13. The route carries no record id; tenant 
 - Platform: `Application/Features/TimeEntry/Queries/GetTeamTotalsQuery.cs`;
   `Handlers/QueryHandlers/GetTeamTotalsHandler.cs`; `Validators/GetTeamTotalsValidator.cs`;
   `Services/TeamTotalsCalculator.cs` (pure: grouping and floor, no I/O); additive in `TimeEntryModels.cs`
-  (`TimeEntryPermissions.TeamTotalsRead`, the four `TimeEntryReasonCodes` constants of §12, `TeamTotalsDto`,
+  (`TimeEntryPermissions.TeamTotalsRead`, the five `TimeEntryReasonCodes` constants of §12, `TeamTotalsDto`,
   `TeamTotalsTaskTypeDto`, `TeamTotalsCategoryDto`); additive
   in `TimeEntryPorts.cs` (`TeamMembersAsync`, `TaskTypesAsync`, record `TimeEntryTaskType`);
   `Adapters/OrgGatewayAdapter.cs` and `Adapters/TaskGatewayAdapter.cs` (the two methods);
@@ -481,7 +508,7 @@ Error codes and statuses: §12 and §13. The route carries no record id; tenant 
 - Web: `Controllers/TimeEntryController.cs` — `GET /TimeEntry/TeamTotals` (page) and `GET /TimeEntry/TeamTotals/api`
   (GET-only proxy → `{GatewayUrl}/api/v1/time-entry/team-totals`); `Views/TimeEntry/TeamTotals/Index.cshtml`,
   `_IndexL10n.cshtml`, `TeamTotalsIndex.cs`; `wwwroot/assets/js/TimeEntry/TeamTotals/index.js`;
-  `Resources/Views/TimeEntry/TeamTotals/TeamTotalsIndex.{en,tr,fr,es,zh,ar,ru}.resx`; the four new `Err*` keys in
+  `Resources/Views/TimeEntry/TeamTotals/TeamTotalsIndex.{en,tr,fr,es,zh,ar,ru}.resx`; the five new `Err*` keys in
   `Resources/Views/TimeEntry/TimeEntryIndex.{7}.resx` and their codes in `wwwroot/assets/js/TimeEntry/core.js`
   `REASON_CODE_MESSAGE_KEYS` (the one error bridge, `_ErrorL10n.cshtml`); `Nav.Page.TIMETEAMTOTALS` in
   `Resources/SharedResource.{7}.resx`; `.time-entry-team-totals-*` classes in `wwwroot/assets/css/backbone-custom.css`.
@@ -489,20 +516,20 @@ Error codes and statuses: §12 and §13. The route carries no record id; tenant 
   without the key, GET-only proxy target, view scan for `Layout` and `style=`), additions to
   `frontend/Diten.Web.Tests/Controllers/TimeEntryProxyTests.cs` if the proxy helper is shared;
   `frontend/Diten.Web/tests/time-entry-team-totals.test.js` (new: renders lists, the floor line, no person field
-  read) and the four new codes in `frontend/Diten.Web/tests/time-entry-reason-code-bridge.test.js`.
+  read, the 503 sentence and "Try again" with no table) and the five new codes in `frontend/Diten.Web/tests/time-entry-reason-code-bridge.test.js`.
 - **Not touched:** AuthService (enrolment already done), `ocelot.json` (the §15 pair already carries
   `/api/v1/time-entry/{everything}`), `Features/Tasks/**`, `Features/TenantOrganization/**`, `Features/Meetings/**`,
   `Features/Workflow/**`. No command, job, notification, export or chart.
 
 **Preconditions (before DL-6 code).** (1) `time-entry.team-totals.read` in `ExplicitGrantOnlyPermissions` — **done**
 (§7). (2) The §15 gateway pair live — **done** for T2. (3) This pack version reviewed and its DL-6 approval row in main
-(CT-APR-01/02). (4) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
+(CT-APR-01/02). (4) The owner's answer to TT-6 (§21.4, §25). (5) For the live check, a dev tenant with a three-level subtree of at least 3 people and approved weeks;
 the owner enters shared dev data.
 
-**Done condition.** Every §16 "T4a — team totals" criterion green through its §17 test (T-28…T-36), each guard's sabotage
+**Done condition.** Every §16 "T4a — team totals" criterion green through its §17 test (T-28…T-38), each guard's sabotage
 run recorded red then green in the WP report; Platform and Web build PASS; RESX parity ×7; `NavManifestL10nGuardTests`
 green; live check with a second real user (granted manager sees totals; the same user without the grant sees the
-UAS-001 panel and the API answers 403; a tenant admin without an explicit assignment also gets 403); §19.3 rows 3, 4,
+UAS-001 panel and the API answers 403; a tenant admin whose roles do not carry the key also gets 403); §19.3 rows 3, 4,
 7 and 10 re-measured and their T4a values appended (one more visible page, `time-entry.team-totals.read` minted, nav key
 `Nav.Page.TIMETEAMTOTALS`, manifest test green with 5 visible pages); Control Tower acceptance commit recorded in the
 §27 row.
@@ -679,6 +706,7 @@ tenant, audit, event or job infrastructure.
 | team totals range (T4a) | `toWeek >= fromWeek`; 1…13 weeks | validator → 400 | `TEAM_TOTALS_RANGE_INVALID` |
 | team totals `toWeek` (T4a) | not after the current tenant-local ISO week (R3) | handler (provider date) → 400 | `TEAM_TOTALS_FUTURE_WEEK` |
 | team totals caller (T4a) | caller has a primary seat (the team root) | handler via `ITimeEntryOrgGateway` → 409 | `TEAM_TOTALS_NO_PRIMARY_SEAT` |
+| team totals completeness (T4a) | after the pull, no member week in the range still has a waiting MOD-0023 outcome | handler via `ITimesheetFinalizer` → 503 | `TEAM_TOTALS_DECISIONS_PENDING` |
 
 Timer → draft: segments are summed per task-or-category per local day; the sum is rounded to the nearest 15 minutes
 (ties up); a sum under 8 minutes writes no row and the grid shows "too short to count" (A2).
@@ -718,8 +746,9 @@ Timer → draft: segments are summed per task-or-category per local day; the sum
 - **Concurrency** (two saves of one week) → 409, "the record changed meanwhile; reload and retry".
 - **Unauthorized** — missing key → 403; approver opens a week not routed to them → 404; another tenant → 404, no
   metadata; approver reads a draft → 404 (D11).
-- **Team totals (T4a)** — each case writes nothing:
-  - no `time-entry.team-totals.read` (including a tenant admin or SuperAdmin without an explicit assignment) → 403 from
+- **Team totals (T4a)** — the refusals (403, 400, 409) write nothing because they come before the pull; the other
+  cases may let the pull finalize a decided week, which is the existing D7 write:
+  - no `time-entry.team-totals.read` (including a tenant admin or SuperAdmin whose roles do not carry it) → 403 from
     the API, UAS-001 panel on `/TimeEntry/TeamTotals`, no skeleton, no redirect;
   - `fromWeek=2026-40` or missing → 400 `TEAM_TOTALS_WEEK_INVALID`; `toWeek` before `fromWeek` or 14 weeks → 400
     `TEAM_TOTALS_RANGE_INVALID`; `toWeek` after the current week → 400 `TEAM_TOTALS_FUTURE_WEEK`;
@@ -731,7 +760,13 @@ Timer → draft: segments are summed per task-or-category per local day; the sum
   - a reporting cycle in the position data → the walk ends (visited set), 200, no timeout;
   - a member's week approved in MOD-0023 but not yet finalized, jobs off → finalized by the pull, then counted; a week
     still undecided → not counted;
-  - tenant B holds the same org shape and the same user ids → none of tenant B's minutes enter tenant A's totals.
+  - the pull reports `Failed > 0` and a decided week is still waiting afterwards (MOD-0023 read fails, the finalizer
+    refuses or throws) → 503 `TEAM_TOTALS_DECISIONS_PENDING`, no totals, page shows the sentence and "Try again"; if
+    nothing is waiting any more after the re-read → 200 with complete totals;
+  - a role carrying the key has several members → each member sees only their own subtree; a member without reports
+    gets empty lists (team of one, floor);
+  - tenant B holds the same user ids and week keys (its own position and document ids) → none of tenant B's positions,
+    assignments or minutes enter tenant A's totals.
 
 ---
 
@@ -758,7 +793,9 @@ Decisions:  MOD-0023's own platform.workflow.tasks.approve / .reject (unchanged)
   `time-entry.person-reports.read` in T4b (DL-7). Their enrolment in `ExplicitGrantOnlyPermissions.cs` was a **CT
   prerequisite listed in T1** (§23) and is done (§7), so no manifest can publish them into the entitlement sync first
   (the BL-392 lesson).
-- T4a (§5.4): actor = a tenant user holding the key by explicit assignment; scope = the caller's own primary-seat
+- T4a (§5.4): actor = a tenant user whose role carries the key, given by a deliberate, audited role grant — never by a
+  default template, the entitlement sync or the full-catalog path (AuthService has no per-user grant; §5.4 rule 1,
+  TT-6); scope = the caller's own primary-seat
   subtree, resolved server-side — the request names no person, position or unit, so the caller cannot widen it. The
   route has no record id, so the "another tenant → 404" form does not arise; tenant isolation is the data rule that
   only the caller's tenant's positions, seats and weeks are read (`TenantRepository<T>`), proven by §17 T-33.
@@ -891,8 +928,9 @@ One prefix on purpose: on extraction the pair is re-pointed to the new service a
 
 ### T4a — team totals (§5.4, DL-6)
 - [ ] Without `time-entry.team-totals.read` `GET /api/v1/time-entry/team-totals` answers 403 and
-      `/TimeEntry/TeamTotals` draws the UAS-001 panel (no skeleton, no redirect); a tenant admin without an explicit
-      assignment of the key also gets 403 — explicit-grant enrolment guarded by `AccountKindTests` (T-28).
+      `/TimeEntry/TeamTotals` draws the UAS-001 panel (no skeleton, no redirect); no default template, entitlement sync
+      or full-catalog path gives the key (enrolment guarded by `AccountKindTests`); when a role carries it, each member
+      sees only their own subtree (T-28).
 - [ ] The team is the caller plus every user whose active primary assignment is on the caller's primary seat or any
       position below it, at any depth; a sibling unit, a holder attached only by a secondary seat, a person whose
       primary assignment ended (only a secondary seat left) and a member of another subtree are not counted; a
@@ -907,10 +945,16 @@ One prefix on purpose: on extraction the pair is re-pointed to the new service a
 - [ ] No response field carries a user, person, position or unit id or name, a headcount, a percentage, a rank or a
       score; the serialized response contains none of the seeded user ids or display names; groups come in fixed
       order (task type code, category `SortOrder`), not by minutes (T-32, with T-22).
-- [ ] Tenant B with the same org shape and the same user ids adds nothing to tenant A's totals (T-33).
+- [ ] Tenant B with the same user ids and week keys (own position and document ids) adds no position, assignment or
+      minute to tenant A's totals (T-33).
+- [ ] If a member week in the range is decided in MOD-0023 but still not applied after the pull and its re-read, the
+      answer is 503 `TEAM_TOTALS_DECISIONS_PENDING` with no totals and the page offers "Try again"; partial totals are
+      never shown as complete (T-38).
+- [ ] Concurrent requests return equal totals and leave one week state and one `TaskTimeTotal` value; an approved
+      correction replaces the original in the totals; the `finalize` audit count stays within 1…N (T-37).
 - [ ] Bad week key, reversed range, 14 weeks and a future `toWeek` → 400 with `TEAM_TOTALS_WEEK_INVALID` /
       `TEAM_TOTALS_RANGE_INVALID` / `TEAM_TOTALS_FUTURE_WEEK`; caller without a primary seat → 409
-      `TEAM_TOTALS_NO_PRIMARY_SEAT`; nothing is written in any of these cases (T-34).
+      `TEAM_TOTALS_NO_PRIMARY_SEAT`; none of these refusals (nor a 403) runs the pull or writes anything (T-34).
 - [ ] The manifest declares `time-entry.team-totals.read` and the nav-visible page `TIME_TEAM_TOTALS` behind it; it
       still does not declare `time-entry.person-reports.read`; the controller gains exactly one `team-totals` route,
       `GET`, and no `export` route (T-35).
@@ -959,15 +1003,17 @@ every guard gets a sabotage run (remove the rule, see red, restore, see green) r
 | T-25 | A9 | Week 5 back → 409 outside window; time-admin reopen with reason → editable until submitted; reopen without reason → 400 | skip the window check → red |
 | T-26 | R5 | Reject a timesheet approval with an empty comment → refused by MOD-0023; a task approval (option off) still rejects without a comment | enforce globally → task test red; skip enforcement → timesheet test red |
 | T-27 | A2 | Segments 3 + 4 min same task/day → no row, "too short"; 7 + 8 min → 15; 22.5 min → 30 | truncate instead of round → red |
-| T-28 | T4a | (a) Platform HTTP: caller without the key → 403; with the key → 200. (b) Explicit-grant path (AuthService, existing guards, no AuthService change): `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:67` asserts the key is in `ExplicitGrantOnlyPermissions.Keys`, and `DefaultRolePermissionTemplateTests` proves the mechanism on sibling keys (a key in that list reaches no default role, SuperAdmin included); the time-entry key rides the same list. The DL-6 WP re-runs both. (c) Live (E3, done condition): a tenant admin with the module entitlement but no explicit assignment → 403. (d) Web: page without the key renders the UAS-001 panel only | (a) drop `[HasPermission]` from the action → red; (b) remove `TimeEntryTeamTotalsRead` from `ExplicitGrantOnlyPermissions.Keys` → `AccountKindTests` red (sabotage run in the DL-6 WP's own worktree, reverted); (d) render the skeleton for a caller without the key → red |
+| T-28 | T4a | (a) Platform HTTP: caller without the key → 403; with the key → 200. (b) Explicit-grant path (AuthService, existing guards, no AuthService change): `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:67` asserts the key is in `ExplicitGrantOnlyPermissions.Keys`, and `DefaultRolePermissionTemplateTests` proves the mechanism on sibling keys (a key in that list reaches no default role, SuperAdmin included); the time-entry key rides the same list. The DL-6 WP re-runs both. (c) Live (E3, done condition): a tenant admin with the module entitlement but no explicit assignment → 403. (d) Web: page without the key renders the UAS-001 panel only. (e) Multi-member role: role R carries the key and holds manager M (team of 4 with approved weeks) and member P (no reports) → M gets M's subtree totals; P gets 200 with empty lists (team of one, floor); neither sees the other's team | (a) drop `[HasPermission]` from the action → red; (b) remove `TimeEntryTeamTotalsRead` from `ExplicitGrantOnlyPermissions.Keys` → `AccountKindTests` red (sabotage run in the DL-6 WP's own worktree, reverted); (d) render the skeleton for a caller without the key → red; (e) resolve the team from the role's members instead of the caller's own seat → P sees M's team → red |
 | T-29 | T4a / TT-1, TT-2, TT-5 | Org fixture: caller M → A, B; A → A1 (three levels); sibling S outside; X holds a secondary seat under M with primary seat elsewhere; Y's primary assignment has ended and Y holds only a secondary seat under M. Members = {M, A, B, A1}. Cycle case: M's own position is written straight to the repository with `ReportsToPositionId = A1` (M → A → A1 → M, reachable from M by the downward walk; MOD-0288 refuses this on its own write path — `PositionReferenceGuard` — so the case stands for legacy or imported data) → same members, 200 within the test timeout | walk direct reports only → A1 missing → red; drop the caller → red; count secondary seats → X present → red; use the D6 `seats[0]` fallback → Y present → red; remove the visited set → the cycle case does not finish within its timeout → red |
 | T-30 | T4a / D11, D7 | Fixture built only through production commands (save → submit → MOD-0023 approve → finalizer; then a correction approved the same way, so revision 1 becomes `Superseded` / `InForce == false`; plus one Draft week, one Submitted-undecided week, one open correction draft and timer segments) → only the in-force Approved minutes count; a Submitted week approved in MOD-0023 with jobs off → counted after the request | read every revision of the week (no `Status`/`InForce` filter) → the Superseded revision 1 and the drafts add minutes → red; filter `Status != Draft` → Superseded and Submitted counted → red; skip the pull → red |
 | T-31 | T4a / TT-3 | Group with 2 people in W40 → not listed, `hiddenGroupCount == 1`, not in `shownTotalMinutes`; 3 people → listed; group with 3 people in W40 and 1 in W41: total for W40–W41 equals the total for W40; a team of 2 people with approved minutes → empty lists, `hiddenGroupCount` = their group count; a team with no approved minutes → empty lists, `hiddenGroupCount == 0` | apply the floor to the range sum instead of per week → the W40–W41 assertion red; floor `< 2` → red; show a group whose only cells were dropped → the 2-person-team assertion red |
 | T-32 | T4a / §8 item 7 | Reflection scan of the `TeamTotalsDto` tree: no property whose name contains `UserId`, `Person`, `Position`, `Unit`, `Email`, `DisplayName`, `Count` (except `weekCount`, `hiddenGroupCount`, `countsAsWork`), `Percent`, `Ratio`, `Rank`, `Score`, `Share`; serialized response contains no seeded user id or display name; group order is code / `SortOrder` | add a `PersonCount` property → red; sort by minutes → red |
-| T-33 | T4a / tenant | Tenant A and tenant B seeded with the same position ids, user ids and approved weeks (different minutes) → A's totals equal A's seed exactly | read weeks through a non-tenant-filtered query → red |
-| T-34 | T4a | `fromWeek=2026-40` → 400 `TEAM_TOTALS_WEEK_INVALID`; reversed range and 14 weeks → 400 `TEAM_TOTALS_RANGE_INVALID`; next week → 400 `TEAM_TOTALS_FUTURE_WEEK`; no primary seat → 409 `TEAM_TOTALS_NO_PRIMARY_SEAT`; Mongo document counts unchanged after each | remove each check → its case red |
+| T-33 | T4a / tenant | Tenant A and tenant B share the same user ids and week keys but have **their own** position, assignment and week document ids (a shared collection refuses a duplicate `_id`). Fixture: one tenant-B position with `ReportsToPositionId` = A's root position id and a tenant-B user primary on it; one tenant-B assignment putting user Z on A's position A1; tenant-B approved weeks for A's user ids with different minutes → A's totals equal A's seed exactly, members = A's members only | three separate sabotages, each red on its own: read positions without the tenant filter → the tenant-B child position's user counted; read assignments without the tenant filter → Z counted; read weeks without the tenant filter → minutes differ |
+| T-34 | T4a | Setup: a member's `Submitted` week whose MOD-0023 decision is **approved and waiting** for finalization; a spy around `ITimesheetDecisionPuller` counts calls. Requests: `fromWeek=2026-40` → 400 `TEAM_TOTALS_WEEK_INVALID`; reversed range and 14 weeks → 400 `TEAM_TOTALS_RANGE_INVALID`; next week → 400 `TEAM_TOTALS_FUTURE_WEEK`; caller without a primary seat → 409 `TEAM_TOTALS_NO_PRIMARY_SEAT`; caller without the key → 403. After each: pull calls = 0; the waiting week still `Submitted` with its `Version` unchanged; no `TaskTimeTotal` written; no new `finalize` audit entry. A valid request afterwards → pull calls = 1 and the week is `Approved` | move the pull before the range check → pull call count and week status red; remove each check → its case red |
 | T-35 | T4a | `TimeEntryManifestProviderTests` (the three assertions listed in §5.4): key and page `TIME_TEAM_TOTALS` (nav visible, `RequiredPermission` = the key) declared; `time-entry.person-reports.read` not declared. New reflection test in `TeamTotalsHttpMongoTests` (the pattern of `TimerHttpMongoTests` "Every_timer_route_is_the_callers_own…"): controller routes whose template starts with `team-totals` = exactly one, `GET`, with no parameter named like user, person, position or unit; no route template on the controller contains `export` | declare the person-reports key → red; add a `team-totals/export` route → red |
 | T-36 | T4a / l10n | RESX parity ×7 for `TeamTotalsIndex` and the new `Err*` keys; `NavManifestL10nGuardTests` (`Nav.Page.TIMETEAMTOTALS`); view scan: `Layout = "_LayoutTenantShell"` present, no `style=` | delete the `ar` copy of one key → parity red |
+| T-37 | T4a / D7 concurrency | (a) Five parallel `GET team-totals` while one member's week is approved in MOD-0023 and waiting → every 200 body is equal; the week ends `Approved` / `InForce`; `TaskTimeTotal.ApprovedMinutes` = the sum; `ApprovedAtUtc` / `ApprovedByUserId` equal MOD-0023's decision and the week's `Version` equals that of the same fixture finalized once, sequentially; `finalize` audit entries for the week: at least 1, at most 5 (today's behaviour, §5.4 rule 4). (b) Correction: revision 2 (correction) approved in MOD-0023 and waiting → after the GET revision 1 is `Superseded`, revision 2 `Approved` / `InForce`, the totals carry revision 2's minutes only, not both | (a) increment `TaskTimeTotal` instead of recomputing → red under the parallel run; (b) count revision 1 as well (drop the `InForce` filter) → red after the correction |
+| T-38 | T4a / pull failure | A fake MOD-0023 decision reader and, separately, a finalizer that throws on write: one member week decided but unapplied → 503 `TEAM_TOTALS_DECISIONS_PENDING`, body without totals; puller log carries `OUTCOME_READ_FAILED` / `FINALIZE_THREW`; when the fault clears, the next request → 200 with that week counted; `Failed > 0` but the week applied by a concurrent request (nothing waiting at the re-read) → 200. Web: the 503 shows the bridged sentence and "Try again", no table | return 200 with the totals read so far when `Failed > 0` → red; treat every `Failed > 0` as 503 without the re-read → the concurrent-applied case red |
 
 Plus: build PASS (Platform, Web, gateway once routed); `verify_datatable_page.py --area TimeEntry --module Categories
 --reference slim` and `--module Approvals` (the grid page and the T4a Team totals page are expected to be skipped by
@@ -1273,7 +1319,7 @@ the job (`docs/guides/operations/dev-environment.md`, job table).
 ### 21.4 T4a decisions — team totals (owner 2026-11-11)
 
 The owner approved the one-page business process "Zaman girişi T4a: ekip toplamları" and answered its four questions
-with "ok" on 2026-11-11 (TT-1…TT-4). TT-5 was raised by the pack author while writing the slice and answered by the
+with "ok" on 2026-11-11 (TT-1…TT-4). TT-6 is open (EES proposal, owner decision pending). TT-5 was raised by the pack author while writing the slice and answered by the
 owner the same day: "Hayır, yalnız ana görev".
 
 | # | Subject | Decision | Where |
@@ -1283,6 +1329,7 @@ owner the same day: "Hayır, yalnız ana görev".
 | TT-3 | Small-group floor | A group with fewer than 3 people is not shown (KVKK proportionality: no total may point to one person); applied per (group, ISO week) cell so a range choice cannot isolate a hidden cell; added to the acceptance criteria | §5.4 rule 6, §8 item 11, §17 T-31 |
 | TT-4 | Slice table | The CT-APR-02 table from the hcm-time Control Tower branch is measured against current main and taken into this pack (§27) | §23, §27 |
 | TT-5 | Membership basis — primary seat only | Owner decision 2026-11-11 ("Hayır, yalnız ana görev"): only an active primary assignment places a person in a team; a person attached to the team only by a secondary (or acting / delegated) seat is not counted, so nobody is counted under two unrelated managers. Pack v1 rule alongside it: membership is read from today's assignments; historical membership is a follow-up (§20) | §5.4 rule 3, §17 T-29 |
+| TT-6 | How the key is handed out — **EES önerisi — sahip kararı bekliyor** | Measured 2026-11-11: AuthService has no per-user permission grant; a key reaches people only through a role, and a manual role grant reaches every member of the role (audited). Proposal: tenants create one dedicated role that carries only `time-entry.team-totals.read` and put in it only managers meant to see team totals; the rule is written in the tenant admin guidance; the data scope (own subtree only, floor) limits what any extra member can see. Alternative: a per-user grant in AuthService, a new capability in the AuthService owner's lane (its own pack and approval), after which this key would be refused on role assignment | §5.4 rule 1, §14, §17 T-28 |
 
 Kept unchanged by these answers: D11 (approved only, explicit grant), §8 item 7 (no ratios, rankings or scores), A7
 and §22 (the per-person report, T4b, waits for counsel on items 2 and 5). *SAP/Oracle/Workday:* SAP CATS analyses,
@@ -1349,6 +1396,10 @@ All answered on 2026-09-29 — see §21.1 (A1–A10). Remaining non-blocking fol
 
 TT-5 (team membership, raised 2026-11-11 while writing T4a) was answered by the owner the same day — §21.4.
 
+**Open (2026-11-11), owner decision, gates DL-6 code:** TT-6 (§21.4) — how `time-entry.team-totals.read` is handed out
+when AuthService can only grant through roles: dedicated role (EES proposal) or a per-user grant built in AuthService
+first.
+
 ---
 
 ## 26. Recorded Deviations and Rule Conflicts — with CT resolutions
@@ -1384,5 +1435,5 @@ pack status.
 | DL-3 | T2a — My Timesheet page, top-bar timer chip, error-code bridge, nav entry (Web; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü 0deba3fd1 |
 | DL-4 | T2b — Task Center timer actions, approvals page, categories, settings, correction diff field, platform-links table (Web + Platform T2 side; §21.2) | T2 — frontend (Diten.Web) and Task Center actions | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü f49788f9e |
 | DL-5 | T3 — reminders and notifications (§21.3) | T3 | kural öncesi teslim, tanımlanmadı (§19.4) | plan kimliği yok | plan satırı yok | teslim edildi, CT kabulü b1c970b10 (1. tur) ve 3d4c986ca (2. tur) |
-| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme ve DL-6 onay satırı bekliyor |
+| DL-6 | T4a — team totals: approved minutes of the caller's whole subtree by task type and category, 3-person floor, no person rows (Platform + Web; DL-1'e dayanır; sahip olunan yollar, ön koşullar ve bitti tanımı §5.4) | T4a — team totals, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Acceptance Criteria (per decision; each maps to a test in §17), Test Expectations, T4a decisions — team totals (owner 2026-11-11) | E4 | plan kimliği yok | plan satırı yok | yazıldı 2026-11-11; inceleme, DL-6 onay satırı ve TT-6 sahip kararı bekliyor |
 | DL-7 | T4b — per-person weekly report (`time-entry.person-reports.read`, access-logged; DL-1'e dayanır) | Follow-up Items / Out of Scope, Delivery Slices (each its own WP), Legal — must confirm before go-live (not a start blocker) | E4 | plan kimliği yok | plan satırı yok | planlanmadı — §22 madde 2 ve 5 hukuk cevabını bekler |
