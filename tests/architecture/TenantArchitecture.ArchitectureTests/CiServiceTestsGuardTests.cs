@@ -1219,6 +1219,77 @@ public class CiServiceTestsGuardTests
         Assert.True(File.Exists(Path.Combine(RepoRoot(), "scripts", "tests", "test_check_page_help_ledger_ceiling.py")));
     }
 
+    // EES MQ-01, Codex round 1 (ENGEL): the three base steps (audit ledger growth, page-help ceiling, acceptance criteria
+    // tags) share ONE base, fetched once with bounded retries and resolved to a verified commit SHA; a base that cannot
+    // be fetched stops the run red (exit 1) instead of letting two steps say SKIPPED while a later one passes. The shape
+    // is locked here; that the base REACHES the steps is measured by running the whole script with stubs
+    // (scripts/tests/test_phase1_base_fetch.py, OneVerifiedBaseReachesEveryStepTests + SabotageTests).
+    [Fact]
+    public void The_three_base_steps_share_one_verified_base_and_a_failed_fetch_is_red()
+    {
+        var gates = GatesText();
+        var code = string.Join('\n', gates.Split('\n').Where(line => !line.TrimStart().StartsWith('#')));
+
+        // One fetch call outside the helper itself, inside one bounded retry loop, resolved with rev-parse --verify.
+        Assert.Single(Regex.Matches(code, @"\bfetch_base_tip\b(?!\(\))"));
+        Assert.Single(Regex.Matches(code,
+            @"(?m)^    if fetch_base_tip ""\$GITHUB_BASE_REF"" >/dev/null 2>&1 && base_fetched=""\$\(git rev-parse --verify --quiet 'FETCH_HEAD\^\{commit\}'\)""; then$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  for base_try in 1 2 3; do$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^      sleep 5$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^if \[ -n ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
+        // A result that is not a commit SHA, or (merge_group) not the group's parent, is red — exit 1, never a skip.
+        Assert.Contains("  if ! [[ \"$base_fetched\" =~ ^[0-9a-f]{40}$ ]]; then\n"
+                        + "    echo \"[phase1] base: *** FAILED *** — base '$GITHUB_BASE_REF' could not be fetched and resolved to a commit (3 tries, 5 s apart).\"\n"
+                        + "    echo \"[phase1]   The audit ledger, page-help ceiling and acceptance criteria tag checks would compare nothing.\"\n"
+                        + "    exit 1\n  fi\n", code, StringComparison.Ordinal);
+        Assert.Contains("  if [ \"${GITHUB_EVENT_NAME:-}\" = \"merge_group\" ] && [ \"$base_fetched\" != \"${MERGE_GROUP_BASE_SHA:-}\" ]; then\n"
+                        + "    echo \"[phase1] base: *** FAILED *** — fetched '$base_fetched', not the merge group's parent '${MERGE_GROUP_BASE_SHA:-}'.\"\n"
+                        + "    exit 1\n  fi\n", code, StringComparison.Ordinal);
+
+        // The base is set once, read-only, from the verified value; nothing unsets, re-declares or evaluates anything.
+        Assert.Single(Regex.Matches(code, @"(?m)^.*\bPHASE1_BASE_SHA="));
+        Assert.Single(Regex.Matches(code, @"(?m)^readonly PHASE1_BASE_SHA=""\$phase1_base""$"));
+        Assert.Equal(2, Regex.Matches(code, @"(?m)^.*\bphase1_base=").Count);
+        Assert.Single(Regex.Matches(code, @"(?m)^phase1_base=""""$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  phase1_base=""\$base_fetched""$"));
+        Assert.DoesNotMatch(@"(?m)(?:^|[;&|(]\s*)\s*(?:unset|eval|declare|typeset|source|export\s+-n)\b", code);
+        Assert.DoesNotMatch(@"(?m)^\s*(?:export\s+|local\s+|readonly\s+)?(?:AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)=", code);
+
+        // Each step reads that one variable (its local override first) and fetches nothing itself.
+        foreach (var (step, overrideName) in new[]
+                 {
+                     ("check_audit_ledger_growth", "AUDIT_LEDGER_BASE"), ("check_page_help_ledger_ceiling", "PAGE_HELP_LEDGER_BASE"),
+                     ("check_ac_tags", "AC_TAG_BASE")
+                 })
+        {
+            var start = code.IndexOf("\n" + step + "() {\n", StringComparison.Ordinal);
+            Assert.True(start >= 0, $"{step}() is gone");
+            var end = code.IndexOf("\n}\n", start, StringComparison.Ordinal);
+            var body = code[start..end];
+            Assert.Single(Regex.Matches(body, $@"(?m)^  local base=""\$\{{{overrideName}:-\$PHASE1_BASE_SHA\}}""$"));
+            Assert.Single(Regex.Matches(body, @"\bbase="));
+            Assert.True(!Regex.IsMatch(body, @"GITHUB_BASE_REF|FETCH_HEAD|\bfetch\b"), $"{step} reads or fetches a base of its own");
+            // Called once (as a main-flow line), after the base is fixed.
+            Assert.Single(Regex.Matches(code, $@"(?m)^{step}$"));
+            Assert.True(code.IndexOf("\n" + step + "\n", StringComparison.Ordinal)
+                        > code.IndexOf("readonly PHASE1_BASE_SHA=", StringComparison.Ordinal), $"{step} runs before the base is fixed");
+        }
+
+        // Order: the merge_group parent → the one fetch → the read-only base → the first step's definition.
+        var order = new[]
+        {
+            "  GITHUB_BASE_REF=\"$merge_group_base\"\n", "    if fetch_base_tip \"$GITHUB_BASE_REF\"", "readonly PHASE1_BASE_SHA=",
+            "\ncheck_audit_ledger_growth() {\n"
+        }.Select(anchor => code.IndexOf(anchor, StringComparison.Ordinal)).ToArray();
+        Assert.True(order.All(at => at >= 0) && order.Zip(order.Skip(1)).All(pair => pair.First < pair.Second),
+            "the base block is out of order: " + string.Join(", ", order));
+
+        // Non-vacuity: the behaviour tests that run the whole script are there (phase1 runs scripts/tests — asserted above).
+        var behaviour = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "tests", "test_phase1_base_fetch.py"));
+        Assert.Contains("class OneVerifiedBaseReachesEveryStepTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
+        Assert.Contains("class SabotageTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
+    }
+
     // ------------------------------------------------------------------------------------------------- reading
 
     private static string Workflow() => Text(WorkflowPath);

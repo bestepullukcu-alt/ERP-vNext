@@ -36,6 +36,39 @@ if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ] && [ -z "${GITHUB_BASE_REF:-}" ]
   GITHUB_BASE_REF="$merge_group_base"
 fi
 
+# EES MQ-01 (Codex round 1, ENGEL) — ONE base for the three base steps (audit ledger growth, page-help ceiling,
+# acceptance criteria tags). Before, each step fetched on its own: the first two said SKIPPED and passed when their fetch
+# failed, and a later step whose fetch worked could not undo that — phase1 went green with two checks missing. Now the
+# base is fetched ONCE, here, with bounded retries (3 tries, 5 s apart), and resolved to a verified commit SHA; the steps
+# read only PHASE1_BASE_SHA (read-only from here on) and never fetch. On every run with a base (GITHUB_BASE_REF set:
+# pull_request, and merge_group through the block above) a base that cannot be fetched is RED, not skipped. A run
+# without one (push to main, local) keeps its "no base" paths and the AUDIT_LEDGER_BASE / PAGE_HELP_LEDGER_BASE /
+# AC_TAG_BASE overrides, which still win over this base.
+phase1_base=""
+if [ -n "${GITHUB_BASE_REF:-}" ]; then
+  for base_try in 1 2 3; do
+    base_fetched=""
+    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1 && base_fetched="$(git rev-parse --verify --quiet 'FETCH_HEAD^{commit}')"; then
+      break
+    fi
+    if [ "$base_try" -lt 3 ]; then
+      sleep 5
+    fi
+  done
+  if ! [[ "$base_fetched" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "[phase1] base: *** FAILED *** — base '$GITHUB_BASE_REF' could not be fetched and resolved to a commit (3 tries, 5 s apart)."
+    echo "[phase1]   The audit ledger, page-help ceiling and acceptance criteria tag checks would compare nothing."
+    exit 1
+  fi
+  if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ] && [ "$base_fetched" != "${MERGE_GROUP_BASE_SHA:-}" ]; then
+    echo "[phase1] base: *** FAILED *** — fetched '$base_fetched', not the merge group's parent '${MERGE_GROUP_BASE_SHA:-}'."
+    exit 1
+  fi
+  phase1_base="$base_fetched"
+  echo "[phase1] base: $GITHUB_BASE_REF = $phase1_base"
+fi
+readonly PHASE1_BASE_SHA="$phase1_base"
+
 # AUD-001 — "the audit debt ledger only shrinks", the CI half.
 #
 # The architecture test pins the ledger's COUNTS; this step looks at the DIFF: a pull request that ADDS a list line
@@ -43,28 +76,19 @@ fi
 # writing query is a Control Tower decision, not a line in a PR.
 #
 # It needs the base branch. On a pull request that is GITHUB_BASE_REF; the checkout is shallow (actions/checkout
-# default depth 1 — measured 2026-10-02, phase1-gates.yml sets no fetch-depth), so the base TIP is fetched here
-# (fetch_base_tip: depth 1 in that shallow checkout) and compared tree-to-tree — no merge base, no history, the workflow
-# file is not touched. Locally:
+# default depth 1 — measured 2026-10-02, phase1-gates.yml sets no fetch-depth), so the base TIP is fetched once above
+# (fetch_base_tip: depth 1 in that shallow checkout; PHASE1_BASE_SHA) and compared tree-to-tree — no merge base, no
+# history, the workflow file is not touched. Locally:
 #   AUDIT_LEDGER_BASE=<ref> [AUDIT_LEDGER_HEAD=WORKTREE] ./scripts/run_phase1_gates.sh --audit-ledger-only
-# When no base is known, it cannot be fetched, or the diff cannot be produced, the step says SKIPPED in capitals.
-# It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file is not growth.
+# When no base is known or the diff cannot be produced, the step says SKIPPED in capitals (a base that cannot be fetched
+# is red above). It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file
+# is not growth.
 check_audit_ledger_growth() {
   local ledger_dir="tests/architecture/audit-ledger"
-  local base="${AUDIT_LEDGER_BASE:-}"
+  local base="${AUDIT_LEDGER_BASE:-$PHASE1_BASE_SHA}"
   # AUDIT_LEDGER_HEAD=WORKTREE compares the base with the files on disk (before committing); default is HEAD.
   local head="${AUDIT_LEDGER_HEAD:-HEAD}"
   [ "$head" = "WORKTREE" ] && head=""
-
-  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
-      base="FETCH_HEAD"
-    else
-      echo "[phase1] audit ledger growth: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched."
-      echo "[phase1]   NOTHING WAS CHECKED. The pinned counts in AuditTrailStandardTests are the only guard in this run."
-      return 0
-    fi
-  fi
 
   if [ -z "$base" ]; then
     echo "[phase1] audit ledger growth: *** SKIPPED *** — no base branch (not a pull request, AUDIT_LEDGER_BASE not set)."
@@ -141,18 +165,11 @@ check_audit_ledger_growth
 
 # BL-609 (WP-CI-SERVICE-TESTS-04) — the page-help ledger's ceilings only go down, against the BASE branch: the web test
 # measures rows under the ceiling but cannot see the ceiling raised in the same PR. Same base as the audit step (the
-# PR base tip, fetch_base_tip; locally PAGE_HELP_LEDGER_BASE=<ref>). No base, no ledger here or on the base →
-# the script SKIPS by name. A deliberate raise is a reasoned CT line in the ledger (scripts/check_page_help_ledger_ceiling.py).
+# PR base tip fetched once above, PHASE1_BASE_SHA; locally PAGE_HELP_LEDGER_BASE=<ref>). No base, no ledger here or on
+# the base → the script SKIPS by name. A deliberate raise is a reasoned CT line in the ledger
+# (scripts/check_page_help_ledger_ceiling.py).
 check_page_help_ledger_ceiling() {
-  local base="${PAGE_HELP_LEDGER_BASE:-}"
-  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
-      base="FETCH_HEAD"
-    else
-      echo "[phase1] page-help ceiling: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched. NOTHING WAS CHECKED."
-      return 0
-    fi
-  fi
+  local base="${PAGE_HELP_LEDGER_BASE:-$PHASE1_BASE_SHA}"
   if [ -z "$base" ]; then
     python3 scripts/check_page_help_ledger_ceiling.py
   else
@@ -191,23 +208,10 @@ python3 -B scripts/check_pack_nav_keys.py
 # AC-TEST-01 step 1 (owner 2026-11-05, design v0.2 after Codex): a test name's [MOD-nnnn(-FUnn):AC-n] tag names a
 # criterion of a readable pack AT THE PR's BASE (a new criterion reaches main first, then a test carries it). Reports
 # only; no acceptance record, queue or coverage changes. Not a pull request (AC_TAG_BASE unset) = HEAD is the base.
-# A pull request whose base cannot be fetched is red (Codex KOŞULLU→review: a skip here would pass unchecked tags).
+# A pull request whose base cannot be fetched is red (Codex KOŞULLU→review: a skip here would pass unchecked tags) —
+# since EES MQ-01 for all three base steps, in the one base fetch above (PHASE1_BASE_SHA).
 check_ac_tags() {
-  local base="${AC_TAG_BASE:-}"
-  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
-    local try
-    for try in 1 2 3; do
-      if fetch_base_tip "$GITHUB_BASE_REF" >/dev/null 2>&1; then
-        base="$(git rev-parse FETCH_HEAD)"
-        break
-      fi
-      sleep 5
-    done
-    if [ -z "$base" ]; then
-      echo "[phase1] acceptance criteria tags: *** FAILED *** — base branch '$GITHUB_BASE_REF' could not be fetched (3 tries)."
-      return 1
-    fi
-  fi
+  local base="${AC_TAG_BASE:-$PHASE1_BASE_SHA}"
   if [ -z "$base" ]; then
     python3 -B scripts/ac_coverage.py check-tags
   else
