@@ -924,7 +924,7 @@ Today's form asks the user for internal references. After this revision the form
 - `verify_datatable_page.py --reference compact` fails today on checkbox, bulk bar, bulk endpoint, bulk delete, reload-with-toast, clear-selection and `window.API` rows. The contract has no delete or bulk operation, so those rows are **declared exceptions**, run and recorded only. The rest must pass.
 - Status names are localized here, closing open item 4 of section "Frontend File Contract". The note length mismatch (open item 3) is closed in the same slice: UI 1000, as the server.
 
-### 24.4 Names instead of GUIDs, and the line sub-table
+### 24.4 Names instead of GUIDs and the line sub-table
 
 - **Read-time resolution.** Names are not stored on the shipment; 3.5.0 adds only the `customerRef` key. The MVC adapters resolve names for the page: warehouse and location from `/api/locations/{id}`, customer name and code from `GET /api/crm/accounts/{id:guid}` with `customerRef` (projected to name and code; no CRM call for a row without `customerRef`), SKU through `POST /api/product-master/skus/bulk-read` (`name`, `canonicalCode`), lot through `/api/trace/lots/{lotId}`.
 - **Cost.** `pageSize` default 50 and `AccountController` has no bulk read: per-request de-duplication, bounded concurrency, no cross-request cache across tenants. Latency is measured in the slice's evidence.
@@ -1315,8 +1315,8 @@ No YAML block and no contract file was edited.
 |---|---|---|---|---|---|
 | DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
 | DL-2 | ret ve durum metinleri | Refusals and events, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
-| DL-3 | gönderen, alıcı ve Compact form (K1) | Screen slice B: Sender and recipient, Golden Compact form, Contract changes needed | E3 | plan kimliği yok | plan satırı yok |
-| DL-4 | Compact liste, ad gösterimi, satır alt tablosu | Golden Compact list, Names instead of GUIDs and the line sub-table, Contract changes needed | E3 | plan kimliği yok | plan satırı yok |
+| DL-3 | gönderen, alıcı ve Compact form (K1) | Sender and recipient (K1), Golden Compact form, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here) | E3 | plan kimliği yok | plan satırı yok |
+| DL-4 | Compact liste, ad gösterimi, satır alt tablosu | Golden Compact list, Names instead of GUIDs and the line sub-table, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here) | E3 | plan kimliği yok | plan satırı yok |
 | DL-5 | depo intake'i: eşleme, beyaz liste, kullanıcı tetikli alım | Warehouse provenance snapshot — obligations, Intake fields and mapping, Snapshot whitelist — §8.2 obligation 3 lands, User-triggered intake, Code gates (R10-4), Acceptance | E3 | plan kimliği yok | plan satırı yok |
 | DL-6 | reservationId ve K3 restoreReservation | Reservations attempts and compensation, `reservationId` — internal line field sent to INVENTORY 1.7.0, K3 — `restoreReservation`, Code gates (R10-4), Acceptance | E3 | plan kimliği yok | plan satırı yok |
 | DL-7 | Item düzeyi (kapılı) | Item level, Code gates (R10-4), Acceptance | E3 | plan kimliği yok | plan satırı yok |
