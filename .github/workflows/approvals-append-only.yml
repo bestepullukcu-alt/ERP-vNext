@@ -11,8 +11,11 @@ name: approvals-append-only
 # paths filter skips never reports — "Expected — Waiting for status to be reported" blocks every unrelated PR (EES
 # 2026-11-11). The history check runs on every pull request (~30-60 s) with no shortcut: a tree diff would miss a row
 # deleted in one commit and restored in the next, which history (commit by commit) catches (blind review, 2026-11-11).
+# EES MQ-01: merge_group runs the pull request's check on the queue's merge group, against the group's parent commit.
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches:
       - main
@@ -40,13 +43,21 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
           BEFORE_SHA: ${{ github.event.before }}
         # pull_request: new append-only breaks only. push to main: pack_approval.py ci-main reads the packs of the APPROVE
         # rows the push added, strictly at HEAD; exit 1 only for a human-step class refusal; state refusals and an
-        # unmeasurable reading (quota) are ::warning:: lines (G-2, G-12); an empty / zero BEFORE_SHA falls back to HEAD^1
+        # unmeasurable reading (quota) are ::warning:: lines (G-2, G-12); an empty / zero BEFORE_SHA falls back to HEAD^1.
+        # merge_group (EES MQ-01): the pull request's history check, its base the group's parent commit (merge_group.base_sha;
+        # an empty one is unresolvable: exit 2, red). Any other event is red — never a silent ci-main.
         run: |
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
             python3 scripts/pack_approval.py history --ref HEAD --base "$BASE_SHA"
-          else
+          elif [ "$GITHUB_EVENT_NAME" = "merge_group" ]; then
+            python3 scripts/pack_approval.py history --ref HEAD --base "$GROUP_BASE_SHA"
+          elif [ "$GITHUB_EVENT_NAME" = "push" ]; then
             python3 scripts/pack_approval.py ci-main "$BEFORE_SHA" HEAD
+          else
+            echo "beklenmeyen olay: $GITHUB_EVENT_NAME"
+            exit 1
           fi

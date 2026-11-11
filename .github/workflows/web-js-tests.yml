@@ -6,9 +6,11 @@ name: web-js-tests
 # files, each owned by a module team. So it starts as a NOT required check: it shows the reds, it stops no merge; the
 # owner adds it to the required checks once main is green. Same rule as every workflow here — read-only token, no
 # secret, actions pinned to a COMMIT SHA, nothing that turns a red test green. The JUnit report is kept as an artifact
-# (scripts/ac_coverage.py report reads it).
+# (scripts/ac_coverage.py report reads it). EES MQ-01: merge_group too, so it can be required under the merge queue.
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
 

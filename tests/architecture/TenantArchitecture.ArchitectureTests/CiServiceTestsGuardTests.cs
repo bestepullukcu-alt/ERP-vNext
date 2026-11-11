@@ -25,8 +25,9 @@ namespace TenantArchitecture.ArchitectureTests;
  *   • BL-590: the job-local mongod for MDM and Eventing is a one-node replica set (--replSet, the bounded initiator,
  *     directConnection=true); RabbitMQ is pinned by tag AND digest, with a bounded readiness wait; Auth rows carry the
  *     owned-Mongo flag (takes effect with BL-570 FIX3);
- *   • triggers are pull_request + push to main + workflow_dispatch (Control Tower decision), permissions are
- *     contents: read, no secret is read, and every action is one of the three allowed, pinned to a commit SHA.
+ *   • triggers are pull_request + merge_group + push to main + workflow_dispatch (Control Tower decision; merge_group
+ *     EES MQ-01), permissions are contents: read, no secret is read, and every action is one of the three allowed,
+ *     pinned to a commit SHA.
  * And scripts/check_trx_no_skipped.py is run on fixture TRX files: 0 skipped → 0; a skipped test → 1 and its name;
  * no file → 1; malformed XML → 1; a file without results → 1.
  *
@@ -49,6 +50,10 @@ namespace TenantArchitecture.ArchitectureTests;
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
  * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
+ *
+ * EES MQ-01 (merge queue): every workflow that reports a required check listens to merge_group (types:
+ * [checks_requested], no branch filter) — GitHub reports no check on a merge group otherwise and the queue cannot merge —
+ * and each one that compares with a base takes the merge group's parent commit (merge_group.base_sha) on that event.
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
@@ -311,8 +316,8 @@ public class CiServiceTestsGuardTests
     public void Triggers_permissions_and_actions_are_the_decided_ones()
     {
         var workflow = Workflow();
-        Assert.Equal(["pull_request", "push", "workflow_dispatch"], Triggers(Code(workflow)));
-        Assert.Matches(@"(?m)^on:\n  pull_request:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
+        Assert.Equal(["pull_request", "merge_group", "push", "workflow_dispatch"], Triggers(Code(workflow)));
+        Assert.Matches(@"(?m)^on:\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
         AssertReadOnlyAndPinned(workflow);
     }
 
@@ -430,9 +435,63 @@ public class CiServiceTestsGuardTests
     }
 
     [Fact]
-    public void Phase1_triggers_are_push_and_pull_request()
+    public void Phase1_triggers_are_push_pull_request_and_merge_group()
     {
-        Assert.Equal(["push", "pull_request"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+        Assert.Equal(["push", "pull_request", "merge_group"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+    }
+
+    /// <summary>
+    /// EES MQ-01 (merge queue): the workflows whose checks branch protection requires (web-js-tests: may require) and their
+    /// exact triggers. A required check whose workflow does not listen to merge_group is never reported on the merge
+    /// group, and the queue waits until its timeout removes the pull request (GitHub, "Managing a merge queue").
+    /// </summary>
+    private static readonly Dictionary<string, string[]> MergeQueueWorkflows = new(StringComparer.Ordinal)
+    {
+        ["phase1-gates.yml"] = ["push", "pull_request", "merge_group"],
+        ["service-tests.yml"] = ["pull_request", "merge_group", "push", "workflow_dispatch"],
+        ["ui-compliance.yml"] = ["pull_request", "merge_group"],
+        ["web-js-tests.yml"] = ["pull_request", "merge_group", "push"],
+        ["approvals-append-only.yml"] = ["pull_request", "merge_group", "push"]
+    };
+
+    [Fact]
+    public void Every_required_check_runs_on_the_merge_queue_and_compares_with_the_group_parent()
+    {
+        foreach (var (name, triggers) in MergeQueueWorkflows)
+        {
+            var code = Code(WorkflowText(name));
+            Assert.Equal(triggers, Triggers(code));
+            // One merge_group key whose block is exactly its one activity type: a branches / paths filter could leave a
+            // group without the run, and its required check would never report.
+            Assert.True(KeyCount(code, "merge_group") == 1, $"{name}: {KeyCount(code, "merge_group")} merge_group keys, expected 1");
+            Assert.Single(Regex.Matches(code, @"(?m)^  merge_group:\n    types: \[checks_requested\]\n(?!    )"));
+        }
+
+        // The base of a merge_group run is the group's parent commit — the pull_request payload is empty there.
+        Assert.Contains("      - name: Run Phase 1 Gates\n        env:\n          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n"
+                        + "        run: ./scripts/run_phase1_gates.sh\n", Code(WorkflowText("phase1-gates.yml")), StringComparison.Ordinal);
+        var gates = GatesText();
+        Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \] && \[ -z ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^  GITHUB_BASE_REF=""\$merge_group_base""$"));
+        Assert.True(gates.IndexOf("GITHUB_BASE_REF=\"$merge_group_base\"", StringComparison.Ordinal)
+                    < gates.IndexOf("\ncheck_audit_ledger_growth\n", StringComparison.Ordinal), "the merge_group base is set after the first base step");
+
+        var ui = Code(WorkflowText("ui-compliance.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", ui, StringComparison.Ordinal);
+        Assert.Contains("          if [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then base=\"$GROUP_BASE_SHA\"; fi\n"
+                        + "          if python3 scripts/uic_changed_pages.py --base \"$base\" > uic-selector-stdout.txt; then code=0; else code=$?; fi\n",
+            ui, StringComparison.Ordinal);
+
+        var approvals = Code(WorkflowText("approvals-append-only.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", approvals, StringComparison.Ordinal);
+        Assert.Contains(
+            "          if [ \"$GITHUB_EVENT_NAME\" = \"pull_request\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$GROUP_BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"push\" ]; then\n"
+            + "            python3 scripts/pack_approval.py ci-main \"$BEFORE_SHA\" HEAD\n"
+            + "          else\n", approvals, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -560,7 +619,7 @@ public class CiServiceTestsGuardTests
                 Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
-        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n", Code(WorkflowText("phase1-gates.yml")));
         // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
         // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),

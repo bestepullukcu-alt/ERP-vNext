@@ -27,6 +27,8 @@ import unittest
 
 SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "run_phase1_gates.sh")
 HELPER = re.compile(r"^fetch_base_tip\(\) \{\n.*?^\}\n", re.S | re.M)
+# EES MQ-01: the merge_group block that fills GITHUB_BASE_REF with the group's parent commit (cut out like the helper).
+MERGE_GROUP = re.compile(r'^if \[ "\$\{GITHUB_EVENT_NAME:-\}" = "merge_group" \].*?^fi\n', re.S | re.M)
 # A fetch however it is written (`git -c x=y fetch`, `git pull`), or any depth option, outside the helper.
 FETCHING = re.compile(r"\bgit\b.*\b(?:fetch|pull)\b|--depth\b|--deepen\b|--shallow-|--unshallow\b")
 ENV = dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_") and k != "GITHUB_ACTIONS"},
@@ -110,6 +112,16 @@ class FetchBaseTipTests(unittest.TestCase):
         self.assertEqual(git(clone, "rev-list", "--count", "FETCH_HEAD"), "1",
                          "CI's shallow checkout fetched history — the base tip alone is enough (tree-to-tree)")
 
+    def test_the_github_actions_checkout_fetches_a_merge_group_parent_by_its_sha(self):
+        # EES MQ-01: on a merge_group run the base is the group's parent COMMIT (a SHA, not a branch name)
+        clone = self.clone("ci-sha", "--depth=1")
+        tip = self.commit("group-parent")
+        env = dict(ENV, GITHUB_ACTIONS="true")
+        subprocess.run(["bash", "-c", f"set -euo pipefail\n{self.helper}fetch_base_tip {tip}"],
+                       cwd=clone, env=env, check=True, capture_output=True, text=True)
+        self.assertEqual(git(clone, "rev-parse", "FETCH_HEAD"), tip)
+        self.assertEqual(git(clone, "rev-parse", "--is-shallow-repository"), "true")
+
 
 class EveryBaseFetchGoesThroughTheHelperTests(unittest.TestCase):
     def test_no_git_fetch_outside_fetch_base_tip(self):
@@ -120,6 +132,45 @@ class EveryBaseFetchGoesThroughTheHelperTests(unittest.TestCase):
                    if FETCHING.search(line) and not line.lstrip().startswith("#")]
         self.assertEqual(outside, [], "a step fetches by itself — use fetch_base_tip so a full clone stays full")
         self.assertGreaterEqual(len(re.findall(r"\bfetch_base_tip \"\$GITHUB_BASE_REF\"", text)), 1)
+
+
+@unittest.skipUnless(shutil.which("bash"), "needs bash")
+class MergeGroupBaseTests(unittest.TestCase):
+    """EES MQ-01: on a merge_group run GITHUB_BASE_REF is empty (GitHub sets it only for pull_request events); the
+    script takes the group's parent commit (MERGE_GROUP_BASE_SHA) instead, and a run without a real SHA is red."""
+
+    SHA = "0123456789abcdef0123456789abcdef01234567"
+
+    def run_block(self, **env: str) -> subprocess.CompletedProcess:
+        match = MERGE_GROUP.search(script_text())
+        self.assertIsNotNone(match, "the merge_group base block is gone from run_phase1_gates.sh")
+        clean = {k: v for k, v in ENV.items() if k not in ("GITHUB_EVENT_NAME", "GITHUB_BASE_REF", "MERGE_GROUP_BASE_SHA")}
+        script = f"set -euo pipefail\n{match.group(0)}printf '%s' \"${{GITHUB_BASE_REF:-}}\""
+        return subprocess.run(["bash", "-c", script], env=dict(clean, **env), capture_output=True, text=True)
+
+    def test_a_merge_group_run_compares_with_the_group_parent(self):
+        done = self.run_block(GITHUB_EVENT_NAME="merge_group", MERGE_GROUP_BASE_SHA=self.SHA)
+        self.assertEqual((done.returncode, done.stdout), (0, self.SHA), done.stderr)
+
+    def test_a_merge_group_run_without_a_real_parent_is_red(self):
+        for value in ("", "main", "0" * 40, self.SHA[:39], self.SHA.upper(), self.SHA + "\nx"):
+            done = self.run_block(GITHUB_EVENT_NAME="merge_group", MERGE_GROUP_BASE_SHA=value)
+            self.assertEqual(done.returncode, 1, f"{value!r}: {done.stdout}{done.stderr}")
+            self.assertIn("*** FAILED ***", done.stdout)
+        done = self.run_block(GITHUB_EVENT_NAME="merge_group")
+        self.assertEqual(done.returncode, 1, "MERGE_GROUP_BASE_SHA unset")
+
+    def test_a_pull_request_or_push_run_is_unchanged(self):
+        done = self.run_block(GITHUB_EVENT_NAME="pull_request", GITHUB_BASE_REF="main", MERGE_GROUP_BASE_SHA=self.SHA)
+        self.assertEqual((done.returncode, done.stdout), (0, "main"))
+        done = self.run_block(GITHUB_EVENT_NAME="push", MERGE_GROUP_BASE_SHA=self.SHA)
+        self.assertEqual((done.returncode, done.stdout), (0, ""))
+
+    def test_the_block_runs_before_the_first_base_step(self):
+        text = script_text()
+        match = MERGE_GROUP.search(text)
+        self.assertIsNotNone(match)
+        self.assertLess(match.end(), text.index("\ncheck_audit_ledger_growth\n"))
 
 
 if __name__ == "__main__":

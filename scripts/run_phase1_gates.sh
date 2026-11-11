@@ -19,6 +19,23 @@ fetch_base_tip() {
   fi
 }
 
+# EES MQ-01 — the merge queue. GitHub sets GITHUB_BASE_REF only for pull_request / pull_request_target events (Actions
+# "Variables" reference); on a merge_group run it is empty and the three base steps below would skip or compare with HEAD.
+# There the base is the merge group's parent commit (merge_group.base_sha, phase1-gates.yml passes it as
+# MERGE_GROUP_BASE_SHA): it is fetched by its SHA through fetch_base_tip like a branch tip. A merge_group run without
+# a 40-hex parent is red — a queue check that compared nothing must not pass.
+if [ "${GITHUB_EVENT_NAME:-}" = "merge_group" ] && [ -z "${GITHUB_BASE_REF:-}" ]; then
+  merge_group_base="${MERGE_GROUP_BASE_SHA:-}"
+  if ! [[ "$merge_group_base" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "[phase1] merge_group: *** FAILED *** — MERGE_GROUP_BASE_SHA is not a commit SHA ('$merge_group_base')."
+    exit 1
+  elif [[ "$merge_group_base" =~ ^0{40}$ ]]; then
+    echo "[phase1] merge_group: *** FAILED *** — MERGE_GROUP_BASE_SHA is the zero SHA (no parent commit)."
+    exit 1
+  fi
+  GITHUB_BASE_REF="$merge_group_base"
+fi
+
 # AUD-001 — "the audit debt ledger only shrinks", the CI half.
 #
 # The architecture test pins the ledger's COUNTS; this step looks at the DIFF: a pull request that ADDS a list line
