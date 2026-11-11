@@ -565,6 +565,18 @@ class Run:
                 results.append(r)
         return results
 
+    def uses_proxy_endpoint(self, area: str, module: str) -> bool:
+        """True when the page's index.js at HEAD calls its same-origin MVC proxy — `const endpoint = '/{Area}/{Module}/api'`,
+        the verifier's own proxy-profile pattern (verify_datatable_page.py, `index.js uses same-origin frontend proxy endpoint`).
+
+        Such a page is a proxy-profile page whatever its area (e.g. MOD-0178 AC-22 / AC-34: the Warehouse screens), so the
+        verifier gets `--api-profile proxy`. Any other page gets no flag and keeps the verifier's area default (Platform ->
+        proxy, elsewhere -> direct-gateway). Owner decision UIC-01 (Beste, XMC-001, 2026-11-09)."""
+        data = self.head.read(f"{WEB}wwwroot/assets/js/{area}/{module}/index.js")
+        if data is None:
+            return False
+        return re.search(rf"const\s+endpoint\s*=\s*['\"]{re.escape(f'/{area}/{module}/api')}['\"]", text_of(data)) is not None
+
     def ci3(self, area: str, module: str, vdir: str) -> tuple:
         reference = None
         if self.either_has(vdir + "_CreateEditOffcanvas.cshtml"):
@@ -575,7 +587,9 @@ class Run:
         if not verifier.is_file():
             raise ToolError(f"doğrulayıcı yok: {VERIFIER}")
         argv = ([sys.executable, "-B", str(verifier), ".", "--area", area, "--module", module]
-                + (["--reference", reference] if reference else []) + ["--format", "gaps", "--ok-line"])
+                + (["--reference", reference] if reference else [])
+                + (["--api-profile", "proxy"] if self.uses_proxy_endpoint(area, module) else [])
+                + ["--format", "gaps", "--ok-line"])
         try:
             done = subprocess.run(argv, cwd=self.root, capture_output=True, timeout=VERIFIER_TIMEOUT)
         except subprocess.TimeoutExpired:
@@ -1005,6 +1019,9 @@ def self_test() -> int:
         "    for i, n in enumerate(miss, 1): print(f'{i}) {n} exists — Missing: {d / n}')\n"
         "    sys.exit(1)\n"
         "t = (d / 'Index.cshtml').read_text(encoding='utf-8')\n"
+        "if 'PROFILE-ECHO' in t:\n"
+        "    p = sys.argv[sys.argv.index('--api-profile') + 1] if '--api-profile' in sys.argv else 'area-default'\n"
+        "    print(f'1) profile={p} — ayrıntı'); sys.exit(1)\n"
         "if 'GARBAGE' in t: print('beklenmeyen bir satır'); sys.exit(0)\n"
         "g = [x for k, x in (('GAP-OLD', 'Old gap — ayrıntı'), ('GAP-NEW', 'New gap — ayrıntı')) if k in t]\n"
         "for i, x in enumerate(g, 1): print(f'{i}) {x}')\n"
@@ -1527,6 +1544,33 @@ def self_test() -> int:
         cases.append(("draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged",
                       dcode == 0 and "\t".join(("Account", "CI-1", "Views/Account/Login.cshtml:yok:Layout", "-", SINGLE_REASON, "FU-16", UNKNOWN_OWNER)) in dout
                       and any(l.startswith("Ar/ListA\tCI-5\t") and f"\t{REASON}\tFU-14\t" in l for l in dout)))
+        # --- CI-3 API profile per page (owner decision UIC-01, 2026-11-09): a page whose index.js calls its own same-origin
+        # proxy '/{Area}/{Module}/api' is verified with --api-profile proxy; every other page keeps the verifier's area default
+        def profile_page(page, js_body):
+            return {W + f"Views/{page}/Index.cshtml": layout + "@* PROFILE-ECHO *@\n",
+                    W + f"Views/{page}/_DataTable.cshtml": "<table></table>\n",
+                    W + f"Views/{page}/_Filter.cshtml": "<div></div>\n",
+                    W + f"Views/{page}/_IndexL10n.cshtml": "<script></script>\n",
+                    W + f"wwwroot/assets/js/{page}/index.js": "var cfg = { savedView: true };\n" + js_body}
+        profile_pages = {"Ar/Prox": "const endpoint = '/Ar/Prox/api';\n",
+                         "Ar/Direct": "const base = window.API.ar;\n",
+                         "Ar/Borrowed": "const endpoint = '/Ar/Prox/api';\n",
+                         "Platform/Prox": "const endpoint = '/Platform/Prox/api';\n",
+                         "Platform/Plain": "const base = '/somewhere';\n"}
+        r, b0 = repo({k: v for page, body in profile_pages.items() for k, v in profile_page(page, body).items()})
+        for page in profile_pages:
+            edit(r, W + f"wwwroot/assets/js/{page}/index.js", lambda t: t + "z = 1;\n")
+        commit(r)
+        code, out, _ = ci(r, b0)
+        cases.append(("CI-3 profile: a non-Platform page with its own '/{Area}/{Module}/api' endpoint -> --api-profile proxy",
+                      code == 1 and has(out, "YENİ KIRMIZI Ar/Prox CI-3 profile=proxy")))
+        cases.append(("CI-3 profile: a non-Platform page on window.API -> no flag, the verifier's area default (direct-gateway)",
+                      has(out, "YENİ KIRMIZI Ar/Direct CI-3 profile=area-default")))
+        cases.append(("CI-3 profile: an endpoint of ANOTHER page ('/Ar/Prox/api' in Ar/Borrowed) is not the page's proxy -> no flag",
+                      has(out, "YENİ KIRMIZI Ar/Borrowed CI-3 profile=area-default")))
+        cases.append(("CI-3 profile: Platform pages — own endpoint -> proxy; none -> no flag (the verifier's own default is proxy)",
+                      has(out, "YENİ KIRMIZI Platform/Prox CI-3 profile=proxy")
+                      and has(out, "YENİ KIRMIZI Platform/Plain CI-3 profile=area-default")))
         # --- the selector writes nothing in the repository it measures
         clean = all(not git(Path(tmp.name) / f"r{i}", "status", "--porcelain", "--untracked-files=all").strip()
                     and not list((Path(tmp.name) / f"r{i}").rglob("__pycache__")) for i in range(1, counter[0] + 1))

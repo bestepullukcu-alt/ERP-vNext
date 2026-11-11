@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Diten.InventoryService.Application.Features.Recall.Ports;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Recall.Enums;
+using Diten.InventoryService.Domain.Recall.Rules;
 using Diten.InventoryService.Domain.Recall.Trace;
 
 namespace Diten.InventoryService.Application.Features.Recall.Trace;
@@ -328,7 +329,8 @@ public sealed class RecallTraceEngine
                         SkuLevel = lot.SkuLevel, Quantity = quantity, BaseUomId = first.BaseUomId, Movement = Ref(first),
                         Serials = group.SelectMany(t => t.SerialIds).Distinct(StringComparer.Ordinal).ToList(),
                         Shipment = new TraceShipmentInfo(ShipmentReadOutcome.NotApplicable, null, null, null),
-                        CustomerRef = document is null ? null : "DOC:" + document
+                        CustomerRef = document is null ? null : "DOC:" + document,
+                        CustomerRefSource = document is null ? null : RecallCustomerRefSource.Document
                     };
                     run.Add(node);
                     if (document is null)
@@ -372,7 +374,17 @@ public sealed class RecallTraceEngine
         {
             var read = reads.TryGetValue(node.Movement!.SourceDocumentId!, out var r) ? r : new TraceShipmentInfo(ShipmentReadOutcome.Unavailable, null, null, null);
             node.Shipment = read;
-            if (read is { Read: ShipmentReadOutcome.Ok, ShipToReference: { Length: > 0 } shipTo }) node.CustomerRef = shipTo;
+            // MOD-0177-FU01 (pack §8.2): customerRef (CRM account) → shipToReference (never a "D" GUID: it could equal a CRM key) → DOC (as built)
+            if (read is { Read: ShipmentReadOutcome.Ok, CustomerAccountId: { } account })
+            {
+                node.CustomerRef = account.ToString("D");
+                node.CustomerRefSource = RecallCustomerRefSource.Crm;
+            }
+            else if (read is { Read: ShipmentReadOutcome.Ok, ShipToReference: { Length: > 0 } shipTo } && !RecallCustomerKeyRules.IsDShaped(shipTo))
+            {
+                node.CustomerRef = shipTo;
+                node.CustomerRefSource = RecallCustomerRefSource.ShipTo;
+            }
         }
     }
 

@@ -69,6 +69,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import types
 
 APPROVALS = "execution/approvals/approvals.tsv"
 APPROVERS = "execution/approvals/approvers.tsv"
@@ -128,8 +129,33 @@ class Unreadable(Exception):
     pass
 
 
+def _process_memory() -> dict:
+    """KOTA-02 (owner 'a' 2026-11-04, Codex independent audit A): ONE GitHub memory for every copy of this file loaded
+    in this process. A dispatch gate loads it seven times (ct_queue → acceptance_record per ACCEPTED row, prompt_gate for
+    the target pack); each copy asked GitHub the same ~94 questions again (650 asks, 94 distinct). Only GitHub's answers
+    and the quota stop are shared — never the git memory (_CACHE): a cached result such as review_problems carries a
+    GitHub decision (Codex KOTA-02 F-1). Bound to the code that RUNS: when this file's bytes do not compile to the
+    executing module (a stale .pyc, the file changed while loading — Codex KOTA-02 F-3) the copy keeps a memory of its
+    own. Lives in the process only and ends with it — nothing is written to disk (S-132: a disk cache would let a local
+    writer forge a human step)."""
+    private = {"github": {}, "quota_stop": None}
+    try:
+        with open(__file__, "rb") as f:
+            source = f.read()
+        if compile(source, __file__, "exec", dont_inherit=True) != sys._getframe(1).f_code:
+            return private
+    except (OSError, NameError, SyntaxError, ValueError):
+        return private
+    holder = sys.modules.setdefault("_pack_approval_process_memory", types.ModuleType("_pack_approval_process_memory"))
+    states = holder.__dict__.setdefault("states", {})
+    return states.setdefault(hashlib.sha256(source).hexdigest(), {"github": {}, "quota_stop": None})
+
+
+_MEMORY = _process_memory()
+
+
 # A commit id never changes what it names: results read at a full 40-hex id (or its ^n parent) are cached for the
-# process. A symbolic ref (HEAD, main) is never cached — it moves.
+# process — by this copy only (KOTA-02 F-1). A symbolic ref (HEAD, main) is never cached — it moves.
 _CACHE: dict = {}
 IMMUTABLE = re.compile(r"^[0-9a-f]{40}(\^\d+)?$")
 
@@ -152,7 +178,9 @@ def cached(*rev_positions: int):
 def git(root: str, *args: str, ok_fail: bool = False) -> bytes | None:
     # Codex K3: `git replace` objects would make a full commit id name different history — they are ignored; a shallow
     # repository is refused (see Ctx), so a cached history answer cannot change when the history deepens
-    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1")
+    # EES 2.14 (Codex): a local .git/info/grafts file would rewrite ancestry too (HISTORY_BASELINE is an ancestry
+    # test) — the graft file is ignored like replace objects
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0", GIT_NO_REPLACE_OBJECTS="1", GIT_GRAFT_FILE=os.devnull)
     done = subprocess.run(["git", "-C", root, *args], capture_output=True, env=env)
     if done.returncode != 0:
         if ok_fail:
@@ -527,6 +555,30 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 
 
 # ------------------------------------------------------------------------------------------------ history checks
+# EES 2.14 (owner decision 2026-11-10): the append-only history is checked from this commit on. It is PR #397's merge
+# into main: seven merges inside it (2026-11-02…06) only REORDERED rows of approvals.tsv / reviews.tsv — no row lost,
+# none added (measured) — and every reading has refused every approval since. A commit that is this commit or one of
+# its ancestors is not checked again; ancestry is fixed by the hashes, so no later commit can ever fall under it, and
+# every break after it is still a break. A repository without this commit (a self-test) checks its whole history.
+HISTORY_BASELINE = "7e8aa77d87ff1f7fc30cc6a8fc35a11b6f057fcc"
+# The seven reorder merges under it. git blame credits a row such a merge MOVED to the merge itself, but the merge added
+# no row; so a row credited to one of them has no measurable human step (main_merge refuses it) — never the human step
+# of the pull request that carried the merge (review: 36 reviews.tsv rows are credited to 7bd1d0bae on main; their real
+# commits came in through a nested merge, which fails the human step).
+BASELINE_REORDERS = frozenset({
+    "2f02161a34163810f6311fdb8b29a132c53acfb3", "81546c373ed93f7f3837f511d690388184e7a4fc",
+    "7bd1d0bae30853df5fa3f06310f02e637a09311c", "25e06fe0851490d55f02fe45998f1ec8340e9675",
+    "48d217a22b0b20568a0729748fb34cca68708cea", "1936c9ba34fb19dae15cb9be292778a19710ff3c",
+    "8f9027ad87763927fb7377e9450986142a9bf3eb"})
+
+
+@cached(1)
+def _before_baseline(root: str, c: str) -> bool:
+    if not HISTORY_BASELINE or commit_of(root, HISTORY_BASELINE) != HISTORY_BASELINE:
+        return False
+    return git(root, "merge-base", "--is-ancestor", c, HISTORY_BASELINE, ok_fail=True) is not None
+
+
 def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: str | None = None) -> list[str]:
     """No row ever disappears. Every commit in the full history that changed the file is compared with EVERY parent:
     the BASE parent's rows are the new version's prefix; every other parent's rows appear in it in the same order. The
@@ -544,6 +596,8 @@ def append_only_problems(root: str, commit: str, path: str = APPROVALS, main: st
     problems = []
     main = main or main_line(root)
     for c, why in _append_only(root, commit, path, main):
+        if _before_baseline(root, c):
+            continue                                # EES 2.14: history before HISTORY_BASELINE is not checked again
         excepted, ewhy = exception_why(root, main, c, path)
         if excepted:
             continue
@@ -666,10 +720,11 @@ def no_pr_proven(root: str, merge: str) -> bool:
     (merged or not) is False; a malformed answer raises — "no PR found in a broken answer" is never a proof."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge) is None
-    key = ("no_pr", merge)      # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
-    if key not in _PR_CACHE:
-        _PR_CACHE[key] = _no_pr_answer(root, merge)
-    return _PR_CACHE[key]
+    key = ("no_pr",) + _pr_key(merge)   # S-132: one answer per merge for THIS process only (a walk repeats them); a raise is not kept
+    memory = _github_memory()
+    if key not in memory:
+        memory[key] = _no_pr_answer(root, merge)
+    return memory[key]
 
 
 def _no_pr_answer(root: str, merge: str) -> bool:
@@ -806,10 +861,15 @@ def other_merger(root: str, added: str, merge: str) -> tuple[bool, str]:
 FULL_COMMIT = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 TRUSTED_REPO = "bestepullukcu-alt/ERP-vNext"     # Codex F-8: the one repository whose pull requests count (code-owned)
 _PR_SOURCE = None                                # self-tests only: set in-process to _test_pr; never from the CLI (F-7)
-_PR_CACHE: dict = {}
+_PR_CACHE: dict = {}                             # this copy's own GitHub memory (a stand-in or a replaced reader)
 
 
 GITHUB_HOST = "github.com"                       # Codex F-15: never the host GH_HOST or gh's config points at
+
+
+def _pr_key(merge: str) -> tuple[str, str, str]:
+    """KOTA-02: a GitHub answer is kept only under the host, the repository and the full commit it was asked for."""
+    return GITHUB_HOST, TRUSTED_REPO.lower(), merge
 
 
 def _gh_cmd(path: str, paginate: bool = False) -> list[str]:
@@ -837,21 +897,46 @@ def _quota_reset_local() -> str:
     return "sıfırlanma saati ölçülemedi"
 
 
-_QUOTA_STOP: str | None = None       # S-132: once GitHub said the quota is gone, this process asks nothing more
+# S-132: once GitHub said the quota is gone, this process asks nothing more — KOTA-02: every copy that asks the real
+# GitHub sees it (_quota_state); a copy with a replaced reader keeps its own stop
+_LOCAL_QUOTA: dict = {"quota_stop": None}
 
 
 def _gh_json(path: str, paginate: bool = False):
-    global _QUOTA_STOP
-    if _QUOTA_STOP is not None:
-        raise GitHubQuota(_QUOTA_STOP)
+    state = _quota_state()
+    if state["quota_stop"] is not None:
+        raise GitHubQuota(state["quota_stop"])
     done = subprocess.run(_gh_cmd(path, paginate), capture_output=True, timeout=120)
     if done.returncode != 0:
         err = done.stderr.decode(errors="replace").strip()
         if QUOTA_TEXT.search(err) and ("403" in err or "exceeded" in err.lower()):
-            _QUOTA_STOP = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
-            raise GitHubQuota(_QUOTA_STOP)
+            state["quota_stop"] = f"GitHub sorgu kotası doldu — {_quota_reset_local()} sonra yeniden dene (gh api rate_limit)"
+            raise GitHubQuota(state["quota_stop"])
         raise Unreadable(f"gh api {path}: {err[:160]} (çıkış {done.returncode})")
     return json.loads(done.stdout.decode())
+
+
+_REAL_GH_JSON, _REAL_GH_CMD = _gh_json, _gh_cmd
+
+
+def _real_reader() -> bool:
+    """KOTA-02: this copy asks the real GitHub through its own _gh_json and _gh_cmd (no self-test double)."""
+    return _gh_json is _REAL_GH_JSON and _gh_cmd is _REAL_GH_CMD
+
+
+def _quota_state() -> dict:
+    """KOTA-02 (Codex second review): the same choice as _github_memory — copies that ask the real GitHub share the
+    quota stop; a copy with a replaced reader keeps its own, so a double's quota answer never stops a real reading, nor
+    the other way round."""
+    return _MEMORY if _real_reader() else _LOCAL_QUOTA
+
+
+def _github_memory() -> dict:
+    """KOTA-02: the process-wide GitHub memory — only for a copy that asks the real GitHub through its own _gh_json and
+    _gh_cmd. A copy with a replaced reader (a self-test double) keeps its own (_PR_CACHE), so a double's answer never
+    reaches a real reading, nor the other way round (Codex KOTA-02 F-1). A stand-in copy (_PR_SOURCE) never gets here:
+    pr_of_merge and no_pr_proven answer from the stand-in before any memory is read or written."""
+    return _MEMORY["github"] if _real_reader() else _PR_CACHE
 
 
 def _login(x) -> str | None:
@@ -898,8 +983,9 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
     is cached (Codex F-12)."""
     if _PR_SOURCE is not None:
         return _PR_SOURCE(root, merge)
-    if merge in _PR_CACHE:
-        return _PR_CACHE[merge]
+    memory = _github_memory()
+    if _pr_key(merge) in memory:
+        return memory[_pr_key(merge)]
     pages = _gh_json(f"repos/{TRUSTED_REPO}/commits/{merge}/pulls", paginate=True)
     if not isinstance(pages, list):
         raise Unreadable("GitHub cevabı bir liste değil")
@@ -920,7 +1006,8 @@ def pr_of_merge(root: str, merge: str) -> dict | None:
     info = {"number": pr.get("number"), "opener": _login(pr.get("user")), "merger": _login(pr.get("merged_by")),
             "base": base.get("ref") if isinstance(base.get("ref"), str) else None,
             "base_repo": repo.get("full_name") if isinstance(repo.get("full_name"), str) else None}
-    _PR_CACHE[merge] = info
+    if isinstance(info["number"], int) and all(info[k] for k in ("opener", "merger", "base", "base_repo")):
+        memory[_pr_key(merge)] = info       # Codex KOTA-02 F-2: an incomplete answer is never kept — asked again
     return info
 
 
@@ -1000,6 +1087,9 @@ def prefix_problem(root: str, ref: str, main: str, target: str) -> str | None:
 @cached(1, 2)
 def main_merge(root: str, main: str, added: str) -> tuple[str | None, str]:
     """The first-parent merge of the main line that brought `added` in, or (None, why)."""
+    if added in BASELINE_REORDERS:
+        return None, (f"satırı git'e göre {added[:12]} ekledi — o, başlangıç noktası öncesi yalnız sıra değiştiren bir "
+                      "merge; satırı eklemedi, gerçek geliş yolu ölçülemez (EES 2.14)")
     if git(root, "merge-base", "--is-ancestor", added, main, ok_fail=True) is None:
         return None, NOT_ON_MAIN
     line = git(root, "rev-list", "--first-parent", main).decode().split()
@@ -1585,6 +1675,37 @@ def make_review_row(root: str, ref: str, path: str, findings: str, verdict: str,
 
 
 # ------------------------------------------------------------------------------------------------ self-test
+def _load_twin(extra: bytes = b"", stale: bool = False):
+    """KOTA-02 self-test: another copy of this file in this process, as ct_queue → acceptance_record loads it; with
+    `extra` the copy has other bytes (another code version); with `stale` it runs other code than this file's bytes, as
+    a stale .pyc would (Codex KOTA-02 F-3)."""
+    if stale:
+        from importlib.machinery import SourceFileLoader
+
+        class Stale(SourceFileLoader):
+            def get_code(self, fullname):
+                with open(self.path, "rb") as f:
+                    return compile(f.read() + b"\n_KOTA02_STALE = 1\n", self.path, "exec", dont_inherit=True)
+        spec = importlib.util.spec_from_file_location("pack_approval_stale", __file__,
+                                                      loader=Stale("pack_approval_stale", __file__))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+    if not extra:
+        spec = importlib.util.spec_from_file_location("pack_approval_twin", __file__)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+    with tempfile.TemporaryDirectory() as td:
+        path = os.path.join(td, "pack_approval.py")
+        with open(__file__, "rb") as src, open(path, "wb") as dst:
+            dst.write(src.read() + extra)
+        spec = importlib.util.spec_from_file_location("pack_approval_other", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+
 def self_test() -> int:
     globals()["_PR_SOURCE"] = _test_pr          # in-process stand-in for GitHub; never reachable from the CLI
     cases = []
@@ -1949,7 +2070,8 @@ def self_test() -> int:
     answers.clear()
     answers[f"repos/{TRUSTED_REPO}/commits/{pr_merge_sha}/pulls"] = [[]]
     pr_person_check(root, pr_merge_sha, approver="lead")
-    cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached", pr_merge_sha not in _PR_CACHE))
+    cases.append(("S-40 GitHub (Codex F-12): a 'no PR' answer is not cached",
+                  _pr_key(pr_merge_sha) not in _PR_CACHE and not any(pr_merge_sha in k for k in _PR_CACHE if k[0] != "no_pr")))
     # S-42 / Codex F-1: "no PR" is a proof only from a well-formed answer
     def proven(pages):
         _PR_CACHE.clear()       # S-132: each case is a fresh process; the same merge gets another answer
@@ -2103,6 +2225,7 @@ def self_test() -> int:
     tmp.cleanup()
     self_test_review(cases)
     self_test_exception(cases)
+    self_test_baseline(cases)
     self_test_deferred(cases)
     self_test_slice_deferred(cases)
     for label, ok in cases:
@@ -2110,6 +2233,88 @@ def self_test() -> int:
     passed = sum(1 for _, ok in cases if ok)
     print(f"self-test: {passed}/{len(cases)} passed")
     return 0 if passed == len(cases) else 1
+
+
+def self_test_baseline(cases: list) -> None:
+    """EES 2.14: breaks at or before HISTORY_BASELINE are not checked again; a break after it still is."""
+    tmp = tempfile.TemporaryDirectory()
+    root = tmp.name
+    WHO = ("dev", "dev@x.invalid")
+
+    def g(*args):
+        env = dict(os.environ, GIT_AUTHOR_NAME=WHO[0], GIT_AUTHOR_EMAIL=WHO[1], GIT_COMMITTER_NAME=WHO[0],
+                   GIT_COMMITTER_EMAIL=WHO[1], GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null")
+        return subprocess.run(["git", "-C", root, *args], capture_output=True, env=env, check=True).stdout.decode()
+
+    def put(rows, msg):
+        full = os.path.join(root, APPROVALS)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8", newline="") as f:
+            f.write("\n".join(["\t".join(APPROVAL_COLUMNS)] + rows) + "\n")
+        g("add", "-A")
+        g("commit", "-q", "-m", msg)
+        return g("rev-parse", "HEAD").strip()
+
+    def ar(name):
+        return "\t".join([f"execution/domains/x/module-packs/{name}.md", "0" * 64, "approve", "HIGH", "r", "dev", "lead",
+                          "2026-11-10", "0" * 64, "n"])
+
+    def problems():
+        globals()["_CACHE"].clear()
+        return append_only_problems(root, "main", APPROVALS, g("rev-parse", "main").strip())
+    A, B, C, D = ar("A"), ar("B"), ar("C"), ar("D")
+    g("init", "-q", "-b", "main")
+    put([A, B], "start")
+    old_break = put([B, A], "an old reorder")
+    put([B, A, C], "append after it")
+    saved = globals()["HISTORY_BASELINE"]
+    try:
+        globals()["HISTORY_BASELINE"] = ""
+        cases.append(("EES 2.14 baseline: with no baseline the old reorder is a break", any(old_break[:12] in p
+                                                                                            for p in problems())))
+        globals()["HISTORY_BASELINE"] = "0" * 40
+        cases.append(("EES 2.14 baseline: a baseline commit this repository does not have -> the whole history is "
+                      "checked", any(old_break[:12] in p for p in problems())))
+        globals()["HISTORY_BASELINE"] = g("rev-parse", "main").strip()
+        cases.append(("EES 2.14 baseline: the old reorder at or before the baseline -> not checked again (green)",
+                      problems() == []))
+        saved_r = globals()["BASELINE_REORDERS"]
+        globals()["BASELINE_REORDERS"] = frozenset({old_break})
+        try:
+            refused = main_merge(root, g("rev-parse", "main").strip(), old_break)
+        finally:
+            globals()["BASELINE_REORDERS"] = saved_r
+        cases.append(("EES 2.14 baseline: a row git credits to a listed reorder merge has no human step (main_merge "
+                      "refuses for that reason)", refused[0] is None and "başlangıç noktası öncesi" in refused[1]))
+        # Codex: a local graft that makes the new commit's parent look like the baseline is ignored
+        with open(os.path.join(root, ".git", "info", "grafts"), "w", encoding="utf-8") as f:
+            f.write(f"{g('rev-parse', 'main').strip()}\n")       # graft: main tip has no parents
+        globals()["_CACHE"].clear()
+        parents = git(root, "rev-list", "--parents", "-n", "1", "main").decode().split()[1:]
+        os.remove(os.path.join(root, ".git", "info", "grafts"))
+        cases.append(("sabotage EES 2.14 (Codex): a local .git/info/grafts file does not change ancestry for the tool",
+                      len(parents) == 1))
+        new_break = put([B, C, A], "a new reorder after the baseline")
+        found = problems()
+        cases.append(("sabotage EES 2.14 baseline: a reorder AFTER the baseline is still a break, and only it",
+                      len(found) == 1 and new_break[:12] in found[0] and old_break[:12] not in found[0]))
+        # Codex: history on a shallow clone is unreadable, never "clean"
+        stmp = tempfile.TemporaryDirectory()
+        shallow = os.path.join(stmp.name, "s")
+        subprocess.run(["git", "clone", "-q", "--depth", "1", f"file://{root}", shallow], capture_output=True,
+                       check=True, env=dict(os.environ, GIT_CONFIG_GLOBAL="/dev/null", GIT_CONFIG_SYSTEM="/dev/null"))
+        try:
+            history(shallow, "HEAD")
+            shallow_ok = False
+        except Unreadable as e:
+            shallow_ok = "sığ" in str(e)
+        finally:
+            stmp.cleanup()
+        cases.append(("sabotage EES 2.14 (Codex): history on a shallow clone -> unreadable", shallow_ok))
+    finally:
+        globals()["HISTORY_BASELINE"] = saved
+        globals()["_CACHE"].clear()
+    tmp.cleanup()
 
 
 def self_test_exception(cases: list) -> None:
@@ -3107,6 +3312,27 @@ def self_test_review(cases: list) -> None:
     cases.append(("sabotage S-40/Codex F-6 (review path): a review row straight on main carried by another person's "
                   "pull-merge and a fast-forward -> not a pull request's merge, the row does not count",
                   any("PR'ın merge commit'i değil" in f for f in fails)))
+    # Codex KOTA-02 F-1 (its reproduction): the decision this copy just cached with the stand-in (review_problems is
+    # @cached) must not reach a real copy in the same process — that copy asks GitHub itself; unreachable = no pass
+    gh_seen: list = []
+    real_run = subprocess.run
+
+    def unreachable_run(cmd, *a, **k):
+        if isinstance(cmd, list) and cmd[:2] == ["gh", "api"]:
+            gh_seen.append(cmd[-1])
+            return subprocess.CompletedProcess(cmd, 1, b"", "ağ yok (test)".encode())
+        return real_run(cmd, *a, **k)
+    real_copy = _load_twin()
+    subprocess.run = unreachable_run
+    try:
+        real_fails = real_copy.review_problems(root, head, PACK2, get(PACK2).encode("utf-8"), head)[0]
+    except Exception as e:              # noqa: BLE001 — a raise is this case's (red) answer, never a stopped self-test
+        real_fails = [f"raised {type(e).__name__}"]
+    finally:
+        subprocess.run = real_run
+    cases.append(("sabotage KOTA-02 F-1 (Codex reproduction): a review decision cached with the stand-in does not reach "
+                  "a real copy — it asks GitHub and, unreachable, does not pass",
+                  bool(gh_seen) and any("GitHub'a sorulamadı" in f for f in real_fails)))
     tmp.cleanup()
 
 
@@ -3832,7 +4058,7 @@ def self_test_deferred(cases: list) -> None:
         count = os.path.join(td, "calls")
         globals()["_gh_cmd"] = lambda path, paginate=False: ["sh", "-c", f"echo x >> '{count}'; echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
         globals()["_quota_reset_local"] = lambda: "04:12"
-        globals()["_QUOTA_STOP"] = None
+        _LOCAL_QUOTA["quota_stop"] = None   # a replaced _gh_cmd: this copy's own stop (KOTA-02)
         raised = 0
         for _ in range(3):
             try:
@@ -3843,7 +4069,7 @@ def self_test_deferred(cases: list) -> None:
             calls = len(f.readlines())
         cases.append(("S-132: quota exhausted -> three readings raise GitHubQuota, only ONE gh command ran", raised == 3 and calls == 1))
     globals()["_gh_cmd"], globals()["_quota_reset_local"] = saved_cmd, saved_reset
-    globals()["_QUOTA_STOP"] = None
+    _LOCAL_QUOTA["quota_stop"] = None
     asked = []
     answers2 = [ValueError("bozuk"), [[]]]
 
@@ -3864,6 +4090,119 @@ def self_test_deferred(cases: list) -> None:
     second, third = no_pr_proven(root, plain), no_pr_proven(root, plain)
     cases.append(("S-132: a raised answer is not kept; a good answer is asked once per process (2 asks for 3 readings)",
                   first_raised and second is True and third is True and len(asked) == 2))
+    # KOTA-02: copies of this file that ask the REAL GitHub (no stand-in, their own _gh_json/_gh_cmd) share GitHub's
+    # answers; nothing else. GitHub is replaced one level lower here (subprocess.run for `gh api` only), so the code
+    # under test is the production path of both copies.
+    gh_queue: dict = {}
+    gh_asked: list = []
+    real_run = subprocess.run
+
+    def fake_run(cmd, *a, **k):
+        if not (isinstance(cmd, list) and cmd[:2] == ["gh", "api"]):
+            return real_run(cmd, *a, **k)
+        gh_asked.append(cmd[-1])
+        answer = (gh_queue.get(cmd[-1]) or [("fail", "ağ yok (test)")]).pop(0)
+        if isinstance(answer, tuple) and answer[0] == "fail":
+            return subprocess.CompletedProcess(cmd, 1, b"", answer[1].encode())
+        return subprocess.CompletedProcess(cmd, 0, json.dumps(answer).encode(), b"")
+
+    def detail(**over):
+        d = {"number": 7, "merged_at": "2026-11-04T10:00:00Z", "merge_commit_sha": plain, "user": {"login": "dev"},
+             "merged_by": {"login": "lead"}, "base": {"ref": "main", "repo": {"full_name": TRUSTED_REPO}}}
+        d.update(over)
+        return d
+    pulls, one = f"repos/{TRUSTED_REPO}/commits/{plain}/pulls", f"repos/{TRUSTED_REPO}/pulls/7"
+    hit = [[{"number": 7, "merge_commit_sha": plain, "merged_at": "2026-11-04T10:00:00Z"}]]
+
+    def fresh(**queue):
+        _MEMORY["github"].clear()
+        _MEMORY["quota_stop"] = None
+        _LOCAL_QUOTA["quota_stop"] = None
+        gh_queue.clear()
+        gh_queue.update({pulls: queue.get("pulls", []), one: queue.get("one", [])})
+        del gh_asked[:]
+    def attempt(fn, *args):
+        """A raise is a result here, so a broken sharing turns its own case red instead of stopping the self-test."""
+        try:
+            return fn(*args)
+        except Exception as e:          # noqa: BLE001 — every raise is the case's answer
+            return e
+    globals()["_PR_SOURCE"], globals()["_gh_json"], globals()["_gh_cmd"] = None, _REAL_GH_JSON, _REAL_GH_CMD
+    subprocess.run = fake_run
+    try:
+        twin = _load_twin()
+        fresh(pulls=[[[]]])
+        a1, a2 = attempt(no_pr_proven, root, plain), attempt(twin.no_pr_proven, root, plain)
+        cases.append((f"KOTA-02 (Python {sys.version.split()[0]}): a second loaded copy reuses the first copy's GitHub "
+                      "answer — one ask for two readings",
+                      a1 is True and a2 is True and len(gh_asked) == 1 and twin._MEMORY is _MEMORY))
+        # the quota stop (Codex second review): shared between real readers only, never from or to a replaced reader
+        saved_reset_q = globals()["_quota_reset_local"]
+        globals()["_quota_reset_local"] = twin._quota_reset_local = lambda: "04:12"
+        fresh(pulls=[("fail", "HTTP 403: API rate limit exceeded"), [[]]])
+        q1, q2 = attempt(no_pr_proven, root, plain), attempt(twin.no_pr_proven, root, plain)
+        cases.append(("KOTA-02: a real copy's quota answer stops a second real copy too — it runs no gh command",
+                      isinstance(q1, GitHubQuota) and isinstance(q2, twin.GitHubQuota) and len(gh_asked) == 1))
+        fresh(pulls=[[[]]])
+        twin_cmd = twin._gh_cmd
+        twin._gh_cmd = lambda path, paginate=False: ["sh", "-c", "echo 'HTTP 403: API rate limit exceeded' >&2; exit 1"]
+        t1 = attempt(twin._gh_json, "x")
+        twin._gh_cmd = twin_cmd
+        r1 = attempt(no_pr_proven, root, plain)
+        cases.append(("sabotage KOTA-02 (Codex second review): a replaced reader's quota answer never stops a real copy",
+                      isinstance(t1, twin.GitHubQuota) and r1 is True and len(gh_asked) == 1 and _MEMORY["quota_stop"] is None))
+        fresh(pulls=[("fail", "HTTP 403: API rate limit exceeded")])
+        twin._LOCAL_QUOTA["quota_stop"] = None      # the stop the case above left in the twin's own state
+        r2 = attempt(no_pr_proven, root, plain)
+        twin._gh_cmd = lambda path, paginate=False: ["sh", "-c", "echo '[[]]'"]
+        t2 = attempt(twin._gh_json, "x")
+        twin._gh_cmd = twin_cmd
+        cases.append(("sabotage KOTA-02 (Codex second review): a real copy's quota answer never stops a replaced reader",
+                      isinstance(r2, GitHubQuota) and t2 == [[]] and twin._LOCAL_QUOTA["quota_stop"] is None))
+        globals()["_quota_reset_local"] = saved_reset_q
+        twin._quota_reset_local = saved_reset_q
+        cases.append(("KOTA-02 F-1 (Codex): the git memory is never shared between copies", twin._CACHE is not _CACHE))
+        fresh(pulls=[{"message": "not a list"}, [[]]])
+        first = attempt(no_pr_proven, root, plain)
+        cases.append(("sabotage KOTA-02: a malformed answer raised in one copy is not kept — the second copy asks again",
+                      isinstance(first, Unreadable) and attempt(twin.no_pr_proven, root, plain) is True
+                      and len(gh_asked) == 2))
+        for field, bad in (("number", detail(number=None)), ("opener", detail(user=None)),
+                           ("merger", detail(merged_by=None)),
+                           ("base", detail(base={"ref": None, "repo": {"full_name": TRUSTED_REPO}})),
+                           ("base_repo", detail(base={"ref": "main", "repo": {}}))):
+            fresh(pulls=[hit, hit], one=[bad, detail()])
+            i1, i2 = attempt(pr_of_merge, root, plain), attempt(twin.pr_of_merge, root, plain)
+            cases.append((f"sabotage KOTA-02 F-2 (Codex): a PR answer without {field} is not kept — the second copy asks "
+                          "again and reads it", isinstance(i1, dict) and not i1[field] and isinstance(i2, dict)
+                          and i2["merger"] == "lead" and i2[field] and len(gh_asked) == 4))
+        fresh(pulls=[hit], one=[detail()])
+        globals()["_PR_SOURCE"] = lambda r, m: {"number": 7, "opener": "dev", "merger": "lead", "base": "main",
+                                                "base_repo": TRUSTED_REPO}
+        stand = attempt(pr_of_merge, root, plain)
+        globals()["_PR_SOURCE"] = None
+        gh_queue[pulls] = [("fail", "ağ yok (test)")]
+        real = attempt(twin.pr_of_merge, root, plain)
+        cases.append(("sabotage KOTA-02 F-1 (Codex): a stand-in's answer never reaches a real copy — it asks GitHub and, "
+                      "unreachable, raises", isinstance(stand, dict) and stand["merger"] == "lead"
+                      and isinstance(real, twin.Unreadable) and len(gh_asked) == 1 and not _MEMORY["github"]))
+        fresh(pulls=[hit], one=[detail()])
+        real = attempt(twin.pr_of_merge, root, plain)
+        globals()["_PR_SOURCE"] = lambda r, m: None
+        cases.append(("sabotage KOTA-02 F-1 (Codex): a real copy's kept answer never reaches a stand-in copy",
+                      isinstance(real, dict) and real["merger"] == "lead" and _pr_key(plain) in _MEMORY["github"]
+                      and attempt(pr_of_merge, root, plain) is None))
+        globals()["_PR_SOURCE"] = None
+        other = _load_twin(extra=b"\n# another version\n")
+        cases.append(("KOTA-02: a copy with other bytes (another code version) never shares this memory",
+                      other._MEMORY is not _MEMORY and other._MEMORY["github"] is not _MEMORY["github"]))
+        stale = _load_twin(stale=True)
+        cases.append(("sabotage KOTA-02 F-3 (Codex): a copy whose running code is not this file's bytes (a stale .pyc) "
+                      "keeps a memory of its own", getattr(stale, "_KOTA02_STALE", None) == 1 and stale._MEMORY is not _MEMORY))
+    finally:
+        subprocess.run = real_run
+        _MEMORY["github"].clear()
+        _MEMORY["quota_stop"] = None
     globals()["_gh_json"], globals()["_PR_SOURCE"] = saved_gh, saved_src
     _PR_CACHE.clear()
     # (8) a row written straight onto main — invalid in both readings
@@ -3972,6 +4311,8 @@ def ci_main(root: str, before: str, after: str) -> tuple[int, list[str]]:
 def history(root: str, ref: str, base: str | None = None) -> tuple[int, list[str]]:
     """S-91: append-only problems of APPROVALS and REVIEWS at `ref`; with `base`, only those whose commit is not
     already a problem at `base` (a pull request is red only for a break it brings)."""
+    if git(root, "rev-parse", "--is-shallow-repository").decode().strip() == "true":
+        raise Unreadable("sığ (shallow) depo — onay geçmişi tam değil; tam klonda koşun")   # EES 2.14 (Codex)
     main = main_line(root)
     c = commit_of(root, ref)
     if c is None:

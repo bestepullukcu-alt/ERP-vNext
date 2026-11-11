@@ -1,0 +1,59 @@
+@using Diten.Web.Views.Warehouse.PutawayTasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PutawayTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filters = the listPutawayTasks parameters (pack §11.2): status (multi chip — the contract's task status enum), warehouse (LOCATION master),
+    assignee (AuthService lookup), priority (single — the contract enum). The lot / number search lives in the toolbar search box (q).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Open">@Localizer["Warehouse.Status.Open"]</option>
+                            <option value="InProgress">@Localizer["Warehouse.Status.InProgress"]</option>
+                            <option value="Completed">@Localizer["Warehouse.Status.Completed"]</option>
+                            <option value="Cancelled">@Localizer["Warehouse.Status.Cancelled"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouse" class="form-select form-select-sm" data-placeholder="@Localizer["FilterWarehouse"]" aria-label="@Localizer["FilterWarehouse"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-assignee">
+                        <select id="filterAssignee" class="form-select form-select-sm" data-placeholder="@Localizer["FilterAssignee"]" aria-label="@Localizer["FilterAssignee"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-priority">
+                        <select id="filterPriority" class="form-select form-select-sm select2" data-placeholder="@Localizer["ColPriority"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="High">@Localizer["Warehouse.Priority.High"]</option>
+                            <option value="Normal">@Localizer["Warehouse.Priority.Normal"]</option>
+                            <option value="Low">@Localizer["Warehouse.Priority.Low"]</option>
+                        </select>
+                    </div>
+
+                    <small id="putaway-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -912,6 +912,22 @@
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Content Set</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Eligibility</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Visit Frequency Policy</value></data>
+  <data name="Perm.Entity.CASES" xml:space="preserve"><value>Cases</value></data>
+  <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Consumption Declarations</value></data>
+  <data name="Perm.Entity.DASHBOARD" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="Perm.Entity.DATEOVERRIDES" xml:space="preserve"><value>Date Overrides</value></data>
+  <data name="Perm.Entity.DRILLS" xml:space="preserve"><value>Drills</value></data>
+  <data name="Perm.Entity.EFFECTIVENESS" xml:space="preserve"><value>Effectiveness Checks</value></data>
+  <data name="Perm.Entity.EVIDENCE" xml:space="preserve"><value>Evidence</value></data>
+  <data name="Perm.Entity.EXCEPTIONS" xml:space="preserve"><value>Exceptions</value></data>
+  <data name="Perm.Entity.LOTSSTATUS" xml:space="preserve"><value>Lot Status</value></data>
+  <data name="Perm.Entity.NOTIFICATIONS" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Perm.Entity.POLICIES" xml:space="preserve"><value>Policies</value></data>
+  <data name="Perm.Entity.QUARANTINEREQUESTS" xml:space="preserve"><value>Quarantine Requests</value></data>
+  <data name="Perm.Entity.SEGREGATIONS" xml:space="preserve"><value>Segregations</value></data>
+  <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Trace</value></data>
+  <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Location Roles</value></data>
+  <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Packages</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Products</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Account</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campaign</value></data>
@@ -1253,6 +1269,41 @@
   <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Recall drill planner</value></data>
   <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Recall evidence pack</value></data>
   <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Recall settings</value></data>
+  <data name="Nav.Module.MRPREPLENISHMENT" xml:space="preserve"><value>MRP and Replenishment</value></data>
+  <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Safety Stock Optimization</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Demand Planning</value></data>
+  <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
+    <value>Warehouse Operations</value>
+  </data>
+  <data name="Nav.Page.PUTAWAYTASKS" xml:space="preserve">
+    <value>Putaway Tasks</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Warehouse Location Roles</value>
+  </data>
+  <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
+    <value>Outbound Shipments</value>
+  </data>
+  <data name="Nav.Page.PICKTASKS" xml:space="preserve">
+    <value>Pick Tasks</value>
+  </data>
+  <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
+    <value>Packing</value>
+  </data>
+  <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
+    <value>Capacity Plan Scenarios</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSIGNOFF" xml:space="preserve">
+    <value>S&amp;OP Plan Sign-offs</value>
+  </data>
+  <data name="Perm.Entity.SANDOPPLANSSNAPSHOT" xml:space="preserve">
+    <value>S&amp;OP Plan Snapshots</value>
+  </data>
+  <data name="Nav.Module.CYCLECOUNTING" xml:space="preserve">
+    <value>Cycle Counting</value>
+  </data>
+  <data name="Perm.Entity.COUNTS" xml:space="preserve">
+    <value>Counts</value>
+  </data>
 </root>

@@ -20,18 +20,20 @@ public sealed class RecordRecallNotificationHandler : IRequestHandler<RecordReca
 {
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public RecordRecallNotificationHandler(IRecallRepository repository, RecallSupport support)
+    public RecordRecallNotificationHandler(IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallNotificationDto>> Handle(RecordRecallNotificationCommand request, CancellationToken ct)
     {
         var customer = RecallSupport.Trimmed(request.CustomerRef);
         var note = RecallSupport.Trimmed(request.Note);
-        var fingerprint = RecallSupport.Fingerprint(("case", request.CaseId.ToString("D")), ("customerRef", customer),
+        var fingerprint = RecallSupport.Fingerprint(("case", request.CaseId.ToString("D")), ("customerRef", RecallCustomerKeyRules.FingerprintForm(customer)),
             ("notifiedOn", request.NotifiedOn.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)), ("channel", request.Channel.ToString()),
             ("note", note), ("supersedesId", request.SupersedesId?.ToString("D")));
         if (await _repository.FindNotificationByKeyAsync(_support.UserId, request.IdempotencyKey, ct) is { } earlier)
@@ -55,13 +57,17 @@ public sealed class RecordRecallNotificationHandler : IRequestHandler<RecordReca
         if (request.NotifiedOn > DateOnly.FromDateTime(now.UtcDateTime)) return RecallSupport.Invalid<RecallNotificationDto>("notifiedOn cannot be in the future.");
 
         var items = await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct);
-        if (!RecallReads.Shipments(items).Any(s => s.CustomerRef == customer)) return UnknownCustomer<RecallNotificationDto>(customer);
+        if (RecallCustomerMatch.Of(RecallReads.Shipments(items), request.CustomerRef!) is not { } match) return UnknownCustomer<RecallNotificationDto>(customer);
+        customer = match.Key;
 
         if (request.SupersedesId is { } superseded
             && !(await _repository.NotificationsAsync(c.Id, ct)).Any(n => n.Id == superseded && n.CustomerRef == customer))
         {
             return RecallSupport.Invalid<RecallNotificationDto>("supersedesId must name a notification of this case and customer.");
         }
+
+        // MOD-0177-FU01 (§8.4): the last check before the write — a CRM customer must resolve now
+        if (match.IsCrm && RecallCustomerMatch.Refusal<RecallNotificationDto>(await _customers.OneAsync(customer, ct)) is { } refused) return refused;
 
         var record = new RecallCustomerNotification
         {
@@ -113,18 +119,21 @@ public sealed class DeclareRecallConsumptionHandler : IRequestHandler<DeclareRec
 {
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public DeclareRecallConsumptionHandler(IRecallRepository repository, RecallSupport support)
+    public DeclareRecallConsumptionHandler(IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallConsumptionDto>> Handle(DeclareRecallConsumptionCommand request, CancellationToken ct)
     {
         var customer = RecallSupport.Trimmed(request.CustomerRef);
         var evidence = RecallSupport.Trimmed(request.Evidence);
-        var fingerprint = RecallSupport.Fingerprint(("case", request.CaseId.ToString("D")), ("customerRef", customer), ("skuId", request.SkuId.ToString("D")),
+        var fingerprint = RecallSupport.Fingerprint(("case", request.CaseId.ToString("D")), ("customerRef", RecallCustomerKeyRules.FingerprintForm(customer)),
+            ("skuId", request.SkuId.ToString("D")),
             ("skuLevel", request.SkuLevel.ToString()), ("quantity", RecallSupport.D(request.Quantity)),
             ("declaredOn", request.DeclaredOn.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)), ("evidence", evidence),
             ("supersedesId", request.SupersedesId?.ToString("D")));
@@ -152,8 +161,10 @@ public sealed class DeclareRecallConsumptionHandler : IRequestHandler<DeclareRec
         var now = _support.Now();
         if (request.DeclaredOn > DateOnly.FromDateTime(now.UtcDateTime)) return RecallSupport.Invalid<RecallConsumptionDto>("declaredOn cannot be in the future.");
 
-        var shipments = RecallReads.Shipments(await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct)).Where(s => s.CustomerRef == customer).ToList();
-        if (shipments.Count == 0) return RecordRecallNotificationHandler.UnknownCustomer<RecallConsumptionDto>(customer);
+        var scoped = RecallReads.Shipments(await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct));
+        if (RecallCustomerMatch.Of(scoped, request.CustomerRef!) is not { } match) return RecordRecallNotificationHandler.UnknownCustomer<RecallConsumptionDto>(customer);
+        customer = match.Key;
+        var shipments = scoped.Where(s => s.CustomerRef == customer).ToList();
 
         var ofSku = shipments.Where(s => s.SkuId == request.SkuId && s.SkuLevel == request.SkuLevel).ToList();
         var units = ofSku.Select(s => s.BaseUomId!).Distinct(StringComparer.Ordinal).ToList();
@@ -177,6 +188,9 @@ public sealed class DeclareRecallConsumptionHandler : IRequestHandler<DeclareRec
                     ["shipped"] = shipped, ["returned"] = returned, ["consumed"] = consumed, ["requested"] = request.Quantity
                 });
         }
+
+        // MOD-0177-FU01 (§8.4): the last check before the write — a CRM customer must resolve now
+        if (match.IsCrm && RecallCustomerMatch.Refusal<RecallConsumptionDto>(await _customers.OneAsync(customer, ct)) is { } refused) return refused;
 
         var record = new RecallConsumptionDeclaration
         {

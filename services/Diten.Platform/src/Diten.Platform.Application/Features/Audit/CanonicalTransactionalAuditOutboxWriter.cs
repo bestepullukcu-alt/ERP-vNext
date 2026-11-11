@@ -33,8 +33,12 @@ public sealed class TransactionOwnedAuditIntentInvalidException(string message) 
 /// REFUSED: a person's action with nobody to name.</item>
 /// </list>
 /// <para>A refusal throws inside the handler's transaction, so the business data is not written either.</para>
+/// <para>MOD-0040-FU02 (K-9, K-10) — two additive extensions, defaults unchanged: an intent may name its source service
+/// from the closed <see cref="TransactionOwnedAuditSourceServices"/> set (empty = <see cref="SourceService"/>), and the
+/// same door writes a REFUSED request's record (<see cref="ITransactionalAuditRefusalWriter"/>) — same checks, same actor,
+/// same builder, only the outcome differs.</para>
 /// </summary>
-public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAuditOutboxWriter
+public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAuditOutboxWriter, ITransactionalAuditRefusalWriter
 {
     public const string SourceService = "Diten.Platform";
     public const string SystemActorMetadataKey = "SystemActor";
@@ -78,6 +82,32 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
             return _store.TryInsertAsync(session, request, ct);
         }
 
+        return EnqueueAsync(session, request, AuditOutcome.Succeeded, ct);
+    }
+
+    public Task<bool> TryEnqueueRefusalAsync(
+        IPlatformTransactionSession session,
+        AuditOutboxWriteRequest request,
+        AuditOutcome outcome,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(session);
+        ArgumentNullException.ThrowIfNull(request);
+        if (outcome is not (AuditOutcome.Denied or AuditOutcome.Failed))
+        {
+            throw new TransactionOwnedAuditIntentInvalidException(
+                $"A refusal record for {request.RequestType} must be Denied or Failed, not {outcome}.");
+        }
+
+        return EnqueueAsync(session, request, outcome, ct);
+    }
+
+    private Task<bool> EnqueueAsync(
+        IPlatformTransactionSession session,
+        AuditOutboxWriteRequest request,
+        AuditOutcome outcome,
+        CancellationToken ct)
+    {
         var intent = request.Intent
             ?? throw new TransactionOwnedAuditIntentInvalidException(
                 $"In-transaction audit for {request.RequestType} carries no intent; a hand-written payload is not accepted on this door.");
@@ -89,6 +119,13 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         if (intent.TargetTenantId == Guid.Empty)
         {
             throw new TransactionOwnedAuditIntentInvalidException($"In-transaction audit for {request.RequestType} names an empty target tenant.");
+        }
+
+        var sourceService = string.IsNullOrWhiteSpace(intent.SourceService) ? SourceService : intent.SourceService;
+        if (!TransactionOwnedAuditSourceServices.Contains(sourceService))
+        {
+            throw new TransactionOwnedAuditIntentInvalidException(
+                $"In-transaction audit for {request.RequestType} names a source service outside the closed set.");
         }
 
         var actor = ResolveActor(request.RequestType, intent);
@@ -127,15 +164,16 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
             EntityType: request.EntityType,
             EntityId: request.EntityId,
             Operation: request.Operation,
-            // The row commits with the business change or not at all: what it records has succeeded by construction.
-            Outcome: AuditOutcome.Succeeded,
+            // The row commits with the business change or not at all: what it records has succeeded by construction —
+            // except a refusal's own record (K-10), which says Denied or Failed.
+            Outcome: outcome,
             BeforeState: intent.BeforeState,
             AfterState: intent.AfterState,
             Metadata: metadata,
             IpAddress: null,
             UserAgent: null,
             OccurredAtUtc: DateTimeOffset.UtcNow,
-            SourceService: SourceService,
+            SourceService: sourceService,
             SourceModule: intent.SourceModule,
             IsMetaAudit: false), _redactor);
 

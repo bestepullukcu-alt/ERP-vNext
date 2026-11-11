@@ -19,11 +19,14 @@
             <div class="row g-4">
                 <div class="col-12">
                     <label for="evaluationModeInput" class="form-label fw-medium">@Localizer["EvaluationMode"] <span class="text-danger">*</span></label>
-                    <select id="evaluationModeInput" class="form-select">
-                        <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
-                        <option value="Finite">@Localizer["ModeFinite"]</option>
-                        <option value="Infinite">@Localizer["ModeInfinite"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-slider-alt diten-field-icon" aria-hidden="true"></i>
+                        <select id="evaluationModeInput" class="form-select">
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            <option value="Finite">@Localizer["ModeFinite"]</option>
+                            <option value="Infinite">@Localizer["ModeInfinite"]</option>
+                        </select>
+                    </div>
                     <div class="invalid-feedback" data-for="evaluationModeInput"></div>
                 </div>
                 <div class="col-12">
@@ -44,6 +47,6 @@
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="btnSubmitEvaluate" class="btn btn-primary">@Localizer["EvaluateScenario"]</button>
+        <button type="button" id="btnSubmitEvaluate" class="btn btn-primary" data-dt-primary="enter">@Localizer["EvaluateScenario"]</button>
     </div>
 </div>

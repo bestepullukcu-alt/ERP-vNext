@@ -67,13 +67,14 @@ public class CiServiceTestsGuardTests
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
-        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
-            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
-        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
-            "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests. HCM's Application.Tests left
+        // it 2026-11-06, owner 'Evet, düzelt': its repository test starts its own mongod, row hcm-app. Management
+        // Governance's IntegrationTests left it the same day: DITEN_TEST_MONGOD, row mg-itest.)
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
-            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
+            "B + C (MG, measured 2026-11-06 with the sibling builds in place): 2 of 103 red. (1) FrontendLocalTestClosure "
+            + "expects the 09-01 provider-unavailable stub, which the 09-02 catalog replaced; (2) DWS isolation: AddDwsApplication "
+            + "registers ProcessModeling's MediatR handlers. And C: four test files git-show commits 204ed1aa3 / 2d354a97b, "
+            + "which are on no branch of main — CI's checkout cannot have them",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
             "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
             + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
@@ -374,15 +375,20 @@ public class CiServiceTestsGuardTests
     {
         ["actions/checkout"] = "11d5960a326750d5838078e36cf38b85af677262",       // v4.4.0
         ["actions/setup-dotnet"] = "67a3573c9a986a3f9c594539f4ab511d57bb3ce9",   // v4.3.1
-        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02" // v4.6.2
+        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02", // v4.6.2
+        // JS-CI-01 (owner 2026-11-05): web-js-tests.yml's Node — measured `git ls-remote …/actions/setup-node refs/tags/v4.4.0`.
+        ["actions/setup-node"] = "49933ea5288caeca8642d1e84afbd3f7d6820020"       // v4.4.0
     };
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
     // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
     // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
     // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
+    // JS-CI-01 (owner 'Evet, başla' 2026-11-05): web-js-tests.yml runs the front end's Vitest tests (not required at first).
+    // EES 2.13 (owner 'Evet, başla' 2026-11-09): ci-selection-shadow.yml records which service-test suites a changed-paths rule would select (shadow mode, not required).
     private static readonly string[] NamedWorkflows =
-        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml"];
+        ["agent-adapters.yml", "approvals-append-only.yml", "ci-selection-shadow.yml", "phase1-gates.yml", "service-tests.yml",
+         "ui-compliance.yml", "web-js-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -446,8 +452,12 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = [],
         ["approvals-append-only.yml"] = [],
+        // EES 2.13: none — the selection and its upload run unconditionally.
+        ["ci-selection-shadow.yml"] = [],
         ["phase1-gates.yml"] = [],
         ["ui-compliance.yml"] = ["always()"],
+        // JS-CI-01: the report upload only — the test step has none.
+        ["web-js-tests.yml"] = ["always()"],
         ["service-tests.yml"] =
         [
             "matrix.suite == 'mdm-app'",
@@ -477,8 +487,10 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = 0,
         ["approvals-append-only.yml"] = 0,
+        ["ci-selection-shadow.yml"] = 0,
         ["phase1-gates.yml"] = 0,
         ["ui-compliance.yml"] = 0,
+        ["web-js-tests.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its

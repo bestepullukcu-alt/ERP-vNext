@@ -109,6 +109,17 @@ jobs:
             project: services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj
           - suite: crm-app
             project: services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (HR is the owner's module): MOD-0251's Application tests left NotInThisJob. The
+          # repository test starts its OWN mongod from DITEN_TEST_MONGOD (TestInfrastructure/DisposableHcmMongo.cs) instead
+          # of the shared 27017, and SharedMongoGuardTests keeps that URI out of the project.
+          - suite: hcm-app
+            project: services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj
+          # Owner 'Evet, düzelt' 2026-11-06 (Management Governance is the owner's: MOD-0354 / MOD-0355 / MOD-0357): its
+          # integration tests left NotInThisJob. Their own mongods come from DITEN_TEST_MONGOD
+          # (TestInfrastructure/MongodBinary.cs) instead of a fixed /opt/homebrew path (96/96 locally). The architecture
+          # tests stay out: see NotInThisJob in CiServiceTestsGuardTests.
+          - suite: mg-itest
+            project: services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           - suite: planning-tests

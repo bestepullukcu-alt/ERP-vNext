@@ -74,6 +74,20 @@ public static class MovementRequestReader
                 }
             }
 
+            // INVENTORY 1.7.0 (MOD-0173-FU03 §8.3.1): restoreReservation is a JSON boolean; anything else is a 400.
+            bool? restoreReservation = null;
+            if (root.TryGetProperty("restoreReservation", out var restore) && restore.ValueKind != JsonValueKind.Null)
+            {
+                if (restore.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                {
+                    restoreReservation = restore.GetBoolean();
+                }
+                else
+                {
+                    errors.Add("restoreReservation must be a boolean.");
+                }
+            }
+
             var command = new PostMovementCommand
             {
                 HeaderIdempotencyKey = headerIdempotencyKey,
@@ -101,7 +115,9 @@ public static class MovementRequestReader
                 SourceSystem = S("sourceSystem"),
                 TransactionDate = S("transactionDate"),
                 PostingDate = S("postingDate"),
-                FefoBypassReason = S("fefoBypassReason")
+                FefoBypassReason = S("fefoBypassReason"),
+                ReservationId = S("reservationId"),
+                RestoreReservation = restoreReservation
             };
 
             return errors.Count > 0 ? (null, string.Join(" ", errors)) : (command, null);

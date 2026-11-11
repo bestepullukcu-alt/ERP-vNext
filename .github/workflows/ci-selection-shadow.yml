@@ -1,0 +1,37 @@
+name: ci-selection-shadow
+
+# EES 2.13 (owner 'Evet, başla' 2026-11-09): SHADOW MODE. Records which service-test suites a changed-paths rule WOULD
+# select for this pull request (scripts/ci_select_suites.py over .github/ci/service-suites.tsv) and keeps the answer as
+# an artifact and in the job summary. It changes nothing: service-tests.yml still runs every suite on every pull
+# request. Not a required check; the script exits 0 whatever it selects, so only an infrastructure error (checkout, a
+# bug in the script) can turn this job red. Same rules as every workflow here (CiServiceTestsGuardTests): read-only
+# token, no secret, actions pinned to a COMMIT SHA, nothing that turns a red step green.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci-selection-shadow:
+    name: ci-selection-shadow
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select suites (shadow)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: python3 scripts/ci_select_suites.py --base "origin/$BASE_REF" --head HEAD --json selection.json --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload selection
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ci-selection-shadow
+          path: selection.json
+          retention-days: 30

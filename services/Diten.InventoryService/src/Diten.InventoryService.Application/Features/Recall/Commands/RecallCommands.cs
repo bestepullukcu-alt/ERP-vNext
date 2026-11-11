@@ -166,21 +166,23 @@ public sealed record CloseRecallCaseCommand(Guid CaseId, string? Summary, string
 // ── R2 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /// <summary>§4.2 runTrace — a command although it is a GET: every trace writes the audit row recall.trace.run (pack §8.12).</summary>
-public sealed record RunRecallTraceCommand(string? RootLotId, string? Direction, string? AsOfUtc) : IRequest<Response<RecallTraceDto>>, ICentralAuditDeclaration
+public sealed record RunRecallTraceCommand(string? RootLotId, string? Direction, string? AsOfUtc, string? CustomerPage = null)
+    : IRequest<Response<RecallTraceDto>>, ICentralAuditDeclaration
 {
     public CentralAuditMetadata CentralAudit => ForRecall("Execute", "Lot");
     public Guid? CentralAuditEntityId(object? response) => Id(RootLotId);
 }
 
 /// <summary>§4.3 exportTrace — the trace CSV (audited like a trace run; not an evidence export).</summary>
-public sealed record ExportRecallTraceCommand(string? RootLotId, string? Direction, string? Format) : IRequest<Response<RecallTraceCsvDto>>, ICentralAuditDeclaration
+public sealed record ExportRecallTraceCommand(string? RootLotId, string? Direction, string? Format, string Language = "en")
+    : IRequest<Response<RecallTraceCsvDto>>, ICentralAuditDeclaration
 {
     public CentralAuditMetadata CentralAudit => ForRecall("Export", "Lot");
     public Guid? CentralAuditEntityId(object? response) => Id(RootLotId);
 }
 
 /// <summary>§4.7 getCaseScopeDiff — the live re-trace against the approved snapshot; new nodes are recorded as OutOfScopeFinding events.</summary>
-public sealed record DiffRecallScopeCommand(string CaseId) : IRequest<Response<RecallScopeDiffDto>>, ICentralAuditDeclaration
+public sealed record DiffRecallScopeCommand(string CaseId, string? CustomerPage = null) : IRequest<Response<RecallScopeDiffDto>>, ICentralAuditDeclaration
 {
     public CentralAuditMetadata CentralAudit => ForRecall("Execute", "RecallCase");
     public Guid? CentralAuditEntityId(object? response) => Id(CaseId);
