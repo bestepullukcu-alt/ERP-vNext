@@ -11,8 +11,8 @@
 > Beste 2026-11-06). Bu dosya yalnız kablo şeklidir; paketle çelişirse paket kazanır ve bu dosya düzeltilir. Sahip kararları Q-1…Q-24
 > (paket §19.4) ve F-1 = A (PUT / DELETE yok, komut uçları; tek istisna `PUT /count-settings`).
 >
-> **Dilim durumu:** §4.1 (DL-1), §4.2 (DL-2) ve §4.3 (DL-3) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract`
-> (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve `/count-settings` cevabını bu şemalara karşı doğrular. §4.4 (DL-4 / DL-5)
+> **Dilim durumu:** §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3) ve §4.4'ün DL-4 satırı (`getCycleCountDashboard`, §3.10) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract`
+> (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve `/count-settings` cevabını bu şemalara karşı doğrular. §4.4'ün DL-5 satırları
 > paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır**; her dilim kendi satırlarını bağlayıcı yapar.
 
 ## 1. Rules
@@ -182,6 +182,16 @@ Tolerans onayında `source = Tolerance`, `by` yok; etiket saklanan metin değil 
 ```
 Kayıt yokken varsayılanlar döner (`isDefault`, `version = 0`, ETag `W/"0"`).
 
+### 3.10 `CycleCountDashboard` (DL-4, AC-40)
+```json
+{ "warehouseId": "uuid?", "periodDays": 31, "periodStart": "date-time", "openCounts": 3, "awaitingApprovalLines": 1, "refusedAdjustments": 1,
+  "countedLines": 3, "exactLines": 1, "accuracyPercent": "33.3", "manualCountMovements": 1, "contractVersion": "v1" }
+```
+Okuma anında sayılır, saklanan toplam yoktur. `openCounts` = `Released` \| `Counting` \| `Submitted` sayımlar; `awaitingApprovalLines` = `AwaitingApproval`
+satırlar; `refusedAdjustments` = `Approved` + düzeltme `Refused`; dönem = son `periodDays` (31) gün: `countedLines` = farkı hesaplanmış ve `countedAt ≥ periodStart`
+satırlar, `exactLines` = bunlardan fark 0 olanlar, `accuracyPercent` = `exactLines / countedLines × 100` tek ondalık (sayılmış satır yoksa `null`);
+`manualCountMovements` = seçili depoda dönemin elle `COUNT_*` hareketleri (§3.8 sınıflandırması) — **yalnız `warehouseId` verilince**, aksi `null`.
+
 ## 4. Operations
 
 ### 4.1 DL-1 — bağlayıcı
@@ -253,11 +263,11 @@ submit 200 döner (sonucu bilinmeyen düzeltme `Pending` kalır, retry / sweeper
 **Sweeper:** `PendingCountAdjustmentReconcilerHostedService` yalnız `ReconcilePendingCountAdjustmentCommand` gönderir (uç değil); son denemesi yaşlanan
 `Pending` düzeltmeleri anahtar-önce kuralıyla toparlar.
 
-### 4.4 DL-4 / DL-5 — ön taslak (paket §3; her dilimde bağlayıcı olur)
+### 4.4 DL-4 (bağlayıcı) / DL-5 (ön taslak; paket §3)
 
 | Yöntem + yol | operationId | x-permission | Dilim |
 |---|---|---|---|
-| `GET /cycle-counts/dashboard` | `getCycleCountDashboard` | `cycle-count.counts.read` | DL-4 (KPI'lar, AC-40) |
+| `GET /cycle-counts/dashboard` | `getCycleCountDashboard` | `cycle-count.counts.read` | **DL-4 — bağlayıcı:** `warehouseId?` (geçersiz → 400 INVALID_REQUEST); 200 `CycleCountDashboard` (§3.10); başka şirketin sayımları sayılmaz. Rota `{countId}`'den önce eşlenir |
 | `POST /cycle-counts/{countId}/evidence-exports` | `createCountEvidenceExport` | `cycle-count.evidence.export` | DL-5 |
 | `GET /count-evidence-exports` | `listCountEvidenceExports` | `cycle-count.evidence.read` | DL-5 |
 | `GET /count-evidence-exports/{exportId}/file` | `getCountEvidenceExportFile` | `cycle-count.evidence.read` | DL-5 |
