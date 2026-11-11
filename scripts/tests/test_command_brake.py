@@ -144,6 +144,7 @@ class RepoSettings(unittest.TestCase):
         # an async hook's decision blocks nothing; a tiny timeout kills the brake before it answers (Codex R1-2)
         for _, h in self.hooks():
             self.assertFalse(h.get("async"), "the brake must not be async")
+            self.assertFalse(h.get("asyncRewake"), "the brake must not run in the background (Codex R2-2)")
             self.assertTrue(isinstance(h.get("timeout"), (int, float)) and 5 <= h["timeout"] <= 30, h.get("timeout"))
 
     def test_decision_survives_a_non_utf8_console(self):
@@ -179,8 +180,22 @@ class RepoSettings(unittest.TestCase):
                 stub.write_text("#!/bin/sh\nexit 1\n")
                 stub.chmod(0o755)
             for p in self.run_registered("{}", path=d + os.pathsep + os.environ.get("PATH", "")):
-                self.assertEqual((p.returncode, p.stdout), (0, b""))
-                self.assertIn(b"brake is off", p.stderr)
+                # exit 0 stderr is not shown in the normal flow; systemMessage is (Codex R2-1). No decision: it passes.
+                self.assertEqual(p.returncode, 0, p.stderr)
+                out = json.loads(p.stdout)
+                self.assertIn("brake is off", out.get("systemMessage", ""))
+                self.assertNotIn("hookSpecificOutput", out)
+
+    def test_probe_requires_python_3_7(self):
+        # the real probe expression from the registered command, run with a controlled sys.version_info (Codex R2-3)
+        import re
+        for _, command in self.entries():
+            m = re.search(r"-c '([^']*version_info[^']*)'", command)
+            self.assertIsNotNone(m, "no version probe in the registered command")
+            for version, ok in (((3, 6, 15), False), ((3, 7, 0), True), ((3, 12, 1), True), ((2, 7, 18), False)):
+                code = f"import sys; sys.version_info = {version!r}; exec({m.group(1)!r})"
+                rc = subprocess.run([sys.executable, "-c", code], capture_output=True, timeout=20).returncode
+                self.assertEqual(rc == 0, ok, f"probe on {version}: exit {rc}")
 
     def test_broken_python3_falls_back_before_reading_input(self):
         # a python3 that exists but does not run (the Windows Store alias), or runs but is older than 3.7, must not eat
