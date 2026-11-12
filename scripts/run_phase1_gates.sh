@@ -142,7 +142,9 @@ check_audit_ledger_growth() {
 
   while IFS= read -r file; do
     [ -z "$file" ] && continue
-    if ! file_diff="$(git diff --unified=0 "$base" ${head:+"$head"} -- "$file")"; then
+    # --text --no-textconv --no-ext-diff: the change's own .gitattributes (`*.md -diff`, `binary`, a diff driver) must
+    # not turn the ledger into "Binary files differ" and hide an added line (blind pre-check of d01b736b8).
+    if ! file_diff="$(git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- "$file")"; then
       echo "[phase1] audit ledger growth: *** $unable *** — the diff of $file could not be produced. NOTHING WAS CHECKED."
       return "$unable_status"
     fi

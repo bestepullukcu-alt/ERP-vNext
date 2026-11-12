@@ -23,6 +23,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import atexit
 import unittest
 from unittest import mock
 
@@ -36,13 +37,20 @@ FETCHING = re.compile(r"\bgit\b.*\b(?:fetch|pull)\b|--depth\b|--deepen\b|--shall
 # GIT_DIR again after the GIT_* clean-up, and an exported function (BASH_FUNC_git%%) replaces the git command itself.
 BASH_STARTUP = ("BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "CDPATH")
 FUNC_PREFIX = "BASH_FUNC_"
+# `bash -c` reads ~/.bashrc when SSH_CLIENT is set and SHLVL is unset or 0; git reads attributes and ignore files under
+# HOME / XDG_CONFIG_HOME and /etc/gitattributes (blind pre-check of d01b736b8). Both get an empty home of their own.
+SSH_MARKERS = ("SSH_CLIENT", "SSH2_CLIENT", "SSH_CONNECTION")
+EMPTY_HOME = tempfile.mkdtemp(prefix="phase1-home-")
+atexit.register(shutil.rmtree, EMPTY_HOME, True)
 
 
 def isolated_env(source) -> dict:
-    """SOURCE without anything that could point git or bash at another repository, plus a fixed identity. Git config
-    outside the throwaway repositories is not read: GIT_CONFIG_GLOBAL needs git 2.32 (GIT_232)."""
+    """SOURCE without anything that could point git or bash at another repository, plus a fixed identity and an empty
+    home. Git config, attributes and ignore files outside the throwaway repositories are not read: GIT_CONFIG_GLOBAL
+    needs git 2.32 (GIT_232)."""
     return dict({k: v for k, v in source.items() if not k.startswith(("GIT_", FUNC_PREFIX)) and k != "GITHUB_ACTIONS"
-                 and k not in BASH_STARTUP},
+                 and k not in BASH_STARTUP and k not in SSH_MARKERS},
+                HOME=EMPTY_HOME, XDG_CONFIG_HOME=EMPTY_HOME, GIT_ATTR_NOSYSTEM="1",
                 GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0",
                 GIT_AUTHOR_NAME="phase1-test", GIT_AUTHOR_EMAIL="phase1-test@example.invalid",
                 GIT_COMMITTER_NAME="phase1-test", GIT_COMMITTER_EMAIL="phase1-test@example.invalid")
@@ -494,7 +502,7 @@ def mutant(text: str, *edits: tuple[str, str]) -> str:
 
 
 def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledger: str | None = None,
-                       merge_group: bool = False, dirty: str | None = None) -> dict:
+                       merge_group: bool = False, dirty: str | None = None, attributes: str | None = None) -> dict:
     """Runs the script TEXT end to end with REAL git (Codex round 2 on b1b7a495e). A bare origin's main holds
     `base_ledger`; the clone's HEAD holds `head_ledger`. Only python3, dotnet, sleep and the sibling .sh scripts are
     stubs: the base is fetched from origin, resolved and compared by git itself.
@@ -529,6 +537,9 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
         git(repo, "checkout", "-q", "-b", "pr", start)
         pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
         pathlib.Path(repo, "other.txt").write_text("x\n", encoding="utf-8")
+        if attributes is not None:                       # the change's own .gitattributes
+            pathlib.Path(repo, ".gitattributes").write_text(attributes, encoding="utf-8")
+            git(repo, "add", ".gitattributes")
         git(repo, "add", ledger, "other.txt")
         git(repo, *commit, "-m", "head")
         for folder in (os.path.join(repo, "scripts"), stubs, os.path.join(venv, "bin")):
@@ -551,6 +562,11 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
                 evil = os.path.join(tmp, "evil.sh")
                 pathlib.Path(evil).write_text(f"export GIT_DIR='{other}/.git'\n", encoding="utf-8")
                 polluted = dict(os.environ, BASH_ENV=evil)
+            elif dirty == "xdg_attributes":            # the developer's own git attributes hide the ledger diff
+                xdg = os.path.join(tmp, "xdg")
+                os.makedirs(os.path.join(xdg, "git"))
+                pathlib.Path(xdg, "git", "attributes").write_text("*.md -diff\n", encoding="utf-8")
+                polluted = dict(os.environ, XDG_CONFIG_HOME=xdg)
             else:
                 polluted = dict(os.environ, **{"BASH_FUNC_git%%": f'() {{  : > "{marker}"; command git "$@"\n}}'})
             start_env = isolated_env(polluted)
@@ -573,11 +589,18 @@ DEBT_RUNS = {"pull request, base = HEAD's parent": dict(),
              "merge group, parent off main": dict(older=True, merge_group=True)}
 
 
-def run_debt(text: str, older: bool = False, merge_group: bool = False, dirty: str | None = None) -> dict:
+def run_debt(text: str, older: bool = False, merge_group: bool = False, dirty: str | None = None,
+             attributes: str | None = None) -> dict:
     if older:
         base, head, earlier = BASE_MOVED_ON
-        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group, dirty=dirty)
-    return run_gates_real_git(text, *DEBT, dirty=dirty)
+        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group, dirty=dirty,
+                                  attributes=attributes)
+    return run_gates_real_git(text, *DEBT, dirty=dirty, attributes=attributes)
+
+
+HIDING_ATTRIBUTES = ("*.md -diff\n", "tests/architecture/audit-ledger/** binary\n")
+# the ledger diff without the flags that ignore attributes: isolation alone must keep the developer's attributes out
+WITHOUT_TEXT = ("git diff --text --no-textconv --no-ext-diff --unified=0", "git diff --unified=0")
 
 
 def red_on_new_debt(run: dict) -> list[str]:
@@ -613,6 +636,28 @@ class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
             with self.subTest(sabotage=dirty), mock.patch.dict(globals(), dict([sabotage])):
                 self.assertTrue(run_debt(script_text(), older=True, dirty=dirty)["leaked"],
                                 f"without the {sabotage[0]} clean-up the probe saw nothing")
+
+    def test_the_changes_own_gitattributes_cannot_hide_a_line(self):
+        # blind pre-check of d01b736b8: `*.md -diff` in the PR turned the ledger diff into "Binary files differ"
+        for attributes in HIDING_ATTRIBUTES:
+            with self.subTest(attributes=attributes.strip()):
+                run = run_debt(script_text(), older=True, attributes=attributes)
+                self.assertEqual(red_on_new_debt(run), [], run["out"])
+
+    def test_the_developers_git_attributes_and_bashrc_are_not_read(self):
+        run = run_debt(mutant(script_text(), WITHOUT_TEXT), older=True, dirty="xdg_attributes")
+        self.assertEqual(red_on_new_debt(run), [], run["out"])
+        with tempfile.TemporaryDirectory() as home:
+            pathlib.Path(home, ".bashrc").write_text("export GIT_DIR=/hijacked\n", encoding="utf-8")
+            polluted = {k: v for k, v in os.environ.items() if k != "SHLVL"}
+            polluted.update(HOME=home, SSH_CLIENT="10.0.0.1 22 22")
+            probe = ["bash", "-c", 'printf %s "${GIT_DIR:-}"']
+            leaked = subprocess.run(probe, env={k: v for k, v in polluted.items() if not k.startswith("GIT_")},
+                                    capture_output=True, text=True).stdout
+            got = subprocess.run(probe, env=isolated_env(polluted), capture_output=True, text=True).stdout
+        self.assertEqual(got, "", "isolated_env let ~/.bashrc in")
+        if leaked != "/hijacked":
+            self.skipTest("this bash does not read ~/.bashrc for `bash -c` over SSH; nothing to sabotage")
 
     def test_the_same_lines_in_another_order_pass(self):
         run = run_gates_real_git(script_text(), *MOVED)
@@ -687,16 +732,41 @@ class SabotageTests(unittest.TestCase):
     def test_a_ledger_file_diff_that_leaves_the_base_is_seen(self):
         # Codex round 2 on b1b7a495e + blind pre-check of 5612aab8b: the per-file diff reads something other than the
         # fetched base. FETCH_HEAD is left out: in CI it is the base itself (an equivalent mutant).
-        line = 'git diff --unified=0 "$base" ${head:+"$head"} -- "$file"'
+        line = 'git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- "$file"'
         for name, written in (("HEAD", line.replace('"$base"', "HEAD")),
                               ("HEAD's parent", line.replace('"$base"', "HEAD~1")),
-                              ("the merge base (three dots)", 'git diff --unified=0 "$base"...${head:-HEAD} -- "$file"'),
+                              ("the merge base (three dots)", line.replace('"$base" ${head:+"$head"}',
+                                                                           '"$base"...${head:-HEAD}')),
                               ("origin/main", line.replace('"$base"', "origin/main")),
                               ("the base branch name", line.replace('"$base"', '"$GITHUB_BASE_REF"'))):
             with self.subTest(name):
                 mutated = mutant(script_text(), (line, written))
                 seen = [run for how in DEBT_RUNS.values() if red_on_new_debt(run := run_debt(mutated, **how))]
                 self.assertNotEqual(seen, [], f"sabotage '{name}' went unseen")
+
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
+    def test_a_ledger_diff_that_obeys_the_changes_gitattributes_is_seen(self):
+        # blind pre-check of d01b736b8: without --text the PR's `*.md -diff` hides the added line
+        mutated = mutant(script_text(), WITHOUT_TEXT)
+        for attributes in HIDING_ATTRIBUTES:
+            with self.subTest(attributes=attributes.strip()):
+                run = run_debt(mutated, older=True, attributes=attributes)
+                self.assertEqual(run["code"], 0, run["out"])                 # the mutant really goes green ...
+                self.assertNotEqual(red_on_new_debt(run), [], run["out"])   # ... and the check sees it
+
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
+    def test_an_isolation_that_keeps_the_developers_attributes_is_seen(self):
+        real = isolated_env
+
+        def leaky(source):
+            env = real(source)
+            env.pop("GIT_ATTR_NOSYSTEM")
+            env["XDG_CONFIG_HOME"] = source.get("XDG_CONFIG_HOME", env["XDG_CONFIG_HOME"])
+            return env
+
+        with mock.patch.dict(globals(), isolated_env=leaky):
+            run = run_debt(mutant(script_text(), WITHOUT_TEXT), older=True, dirty="xdg_attributes")
+        self.assertNotEqual(red_on_new_debt(run), [], "the developer's attributes did not reach git: the probe is blind")
 
     def test_an_override_accepted_in_github_actions_is_seen(self):
         run = run_gates(mutant(script_text(), ('    if [ -n "${!base_override:-}" ]; then', "    if false; then")),
