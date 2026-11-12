@@ -1,0 +1,720 @@
+"""EES pack-readiness-01 - scripts/pack_readiness.py, the pre-review readiness check of a Module Pack.
+
+Run by scripts/run_phase1_gates.sh:
+
+    python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
+Each rule R1..R6 has one failing synthetic pack; a clean pack raises nothing. The default run reads R1, R2, R3, R5;
+R4 and R6 only with --all. --checklist prints the readiness-reader prompt with its six items. The sabotage proof lives here: for every
+rule, SabotageProof switches that rule's function off (mock.patch on the module attribute `check` looks up at call time)
+and shows that the rule's own failing-case assertion then fails - so no rule test is green by accident.
+The repository the rules read (files for R3, AGENTS.md §3 for R5) is a real throw-away git repository, read through
+the production Repo class at ref HEAD.
+CodexRound1 holds the PR #404 round-1 findings K1-K5 (K6 is in the checklist test), each with its own sabotage; the
+sabotages that need the code itself changed (restoring the old patterns) are recorded in the commit message.
+"""
+
+from __future__ import annotations
+
+import io
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from unittest import mock
+
+SCRIPTS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, SCRIPTS)
+import pack_readiness as pr  # noqa: E402
+
+AGENTS_MD = """# AGENTS
+
+## 3. Port Şeması
+
+| Servis | Port | Proje Yolu |
+|--------|------|------------|
+| Gateway (Ocelot) | 5000 | `gateway/Diten.ApiGateway` |
+| MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
+| Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
+
+## 4. Protected Paths
+"""
+
+SOURCE = "\n".join([
+    "namespace Diten.MdmService;",
+    "",
+    "public sealed class LegalEntityGuard",
+    "{",
+    "    public bool CanArchive(LegalEntity entity) => entity.Status == Status.Draft;",
+    "}",
+]) + "\n"
+
+PACK_PATH = "execution/domains/master-data-management/module-packs/MOD-9999-readiness-fixture.md"
+
+CLEAN = """---
+id: MOD-9999
+status: ready-for-dev
+---
+
+# MOD-9999 — readiness fixture
+
+## Module Summary
+
+The service is MDM Service (5059); the browser goes through the gateway only.
+
+## Revision notes
+
+> Revizyon 2: K-1 was açık karar here before; kept as history.
+
+## Implementation Notes
+
+- Decision register: K-1 — KARAR D7: archive only from Draft.
+- Guard source: `services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:5` `CanArchive`.
+
+## Acceptance Criteria
+
+- [ ] AC-1 (zorunlu) — archiving a Draft legal entity returns 204.
+- [ ] AC-2 (zorunlu) — archiving an Active legal entity returns 409.
+
+## Test Expectations
+
+- Integration: AC-1 and AC-2 over HTTP.
+- Sabotaj: removing the Draft check in `CanArchive` turns AC-2 red; AC-1 negative case: unknown id returns 404.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler |
+|---|---|---|
+| DL-1 | archive guard | Module Summary, Acceptance Criteria, Test Expectations |
+"""
+
+
+def variant(old: str, new: str) -> str:
+    assert old in CLEAN, old
+    return CLEAN.replace(old, new, 1)
+
+
+# one failing pack per rule
+FAILING = {
+    "R1": variant("| DL-1 | archive guard | Module Summary, Acceptance Criteria, Test Expectations |",
+                  "| DL-1 | archive guard | Module Summary, Screens |\n| DL-2 | | Test Expectations |"),
+    "R2": variant("## Acceptance Criteria", "Open item: K-1 açık kalır until the owner answers.\n\n## Acceptance Criteria"),
+    "R3": variant("LegalEntityGuard.cs:5` `CanArchive`", "LegalEntityGuard.cs:5` `CanDelete`.\n- Old seam: "
+                  "`services/Diten.MdmService/src/Diten.MdmService.Domain/Removed.cs:12`, "
+                  "`services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:40-44`.\n"
+                  "- Source of the rule: `docs/records/audits/no-such-note.md`"),
+    "R4": variant("- [ ] AC-2 (zorunlu) — archiving an Active legal entity returns 409.",
+                  "- [ ] AC-2 (zorunlu) — archiving an Active legal entity returns 409.\n"
+                  "- [ ] AC-3 (zorunlu) — an archived legal entity is hidden from the list."),
+    "R5": variant("MDM Service (5059)", "MDM Service (5058)"),
+    "R6": variant("- [ ] AC-1 (zorunlu)", "- Owner of the export format: TBD.\n- [ ] AC-1 (zorunlu)"),
+}
+RULE_FUNC = dict(pr.RULES)
+OLD_SEAM = "services/Diten.MdmService/src/Diten.MdmService.Domain/OldSeam.cs"
+
+SLICE_ROW = "| DL-1 | archive guard | Module Summary, Acceptance Criteria, Test Expectations |"
+SLICE_HEAD = "## Teslim dilimleri\n\n| dilim | ad | kapsadığı bölümler |\n|---|---|---|\n"
+# finding 1: tables the tool's own reading accepted but pack_approval.slice_ids refuses
+GATE_ONLY = {
+    "### heading": variant("## Teslim dilimleri\n", "### Teslim dilimleri\n"),
+    "## 8.1 heading": variant("## Teslim dilimleri\n", "## 8.1 Teslim dilimleri\n"),
+    "no separator row": variant("|---|---|---|\n" + SLICE_ROW, SLICE_ROW),
+    "prose before table": variant(SLICE_HEAD, "## Teslim dilimleri\n\nOne slice.\n\n| dilim | ad | kapsadığı bölümler |\n"
+                                              "|---|---|---|\n"),
+    "HTML comment": variant(SLICE_ROW, SLICE_ROW + "\n\n<!-- DL-2 later -->"),
+    "escaped pipe": variant("| DL-1 | archive guard |", "| DL-1 | archive \\| guard |"),
+    "unclosed fence": CLEAN + "\n```text\nan example that never closes\n",
+}
+# finding 4: each history mechanism alone
+BLOCKQUOTE_ONLY = variant("- Decision register:", "> K-1 açık karar in the first draft.\n\n- Decision register:")
+HEADING_ONLY = variant("## Implementation Notes", "## Revizyon geçmişi\n\n- K-1 açık karar in revision 1.\n\n"
+                                                  "## Implementation Notes")
+# finding 2: a pin named elsewhere in the paragraph
+PIN_IN_PARAGRAPH = "- Source read at `R@{old}` (branch, read only).\n- Read: `" + OLD_SEAM + ":3` `LegalEntityGuard`."
+PIN_ABSENT = ("- Source `R@0123456789abcdef0123456789abcdef01234567` (not in this clone).\n"
+              "- Read: `services/Diten.MdmService/src/Diten.MdmService.Domain/Gone.cs:3`.")
+DCP_PATH = "execution/portfolio/delivery-capability-packs/DCP-999-readiness-fixture.md"
+DCP = """---
+id: DCP-999
+status: draft
+---
+
+# DCP-999
+
+## 8.1 Delivery slices
+
+| Slice | Kapsam | Not |
+|---|---|---|
+| S-1 | MOD-9999 |  |
+"""
+
+
+class Fixture(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.root = tempfile.mkdtemp(prefix="pack-readiness-")
+        cls.addClassCleanup(shutil.rmtree, cls.root, ignore_errors=True)
+        cls.put("AGENTS.md", AGENTS_MD)
+        cls.put("services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs", SOURCE)
+        cls.put(PACK_PATH, CLEAN)
+        cls.put(OLD_SEAM, SOURCE)                                # exists only in the first commit
+        cls.git("init", "-q")
+        cls.git("add", "AGENTS.md", "services", "execution")
+        cls.git("commit", "-q", "-m", "fixture: first")
+        cls.old = cls.git("rev-parse", "HEAD").strip()
+        cls.git("rm", "-q", OLD_SEAM)
+        cls.git("commit", "-q", "-m", "fixture: seam removed")
+        cls.repo = pr.Repo(cls.root, "HEAD")
+
+    @classmethod
+    def git(cls, *args: str) -> str:
+        env = dict(os.environ, GIT_AUTHOR_NAME="fixture", GIT_AUTHOR_EMAIL="fixture@example.invalid",
+                   GIT_COMMITTER_NAME="fixture", GIT_COMMITTER_EMAIL="fixture@example.invalid")
+        return subprocess.run(["git", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", "-C", cls.root,
+                               *args], check=True, capture_output=True, text=True, env=env).stdout
+
+    @classmethod
+    def put(cls, rel: str, text: str):
+        path = os.path.join(cls.root, rel)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    def items(self, text: str, all_rules: bool = True):
+        return pr.check(PACK_PATH, text, self.repo, all_rules=all_rules)
+
+    def assert_fires(self, code: str, text: str, all_rules: bool = True):
+        got = [i for i in self.items(text, all_rules) if i.code == code]
+        self.assertTrue(got, f"{code} raised nothing")
+        return got
+
+
+class CleanPack(Fixture):
+    def test_clean_pack_raises_nothing(self):
+        self.assertEqual([i.render() for i in self.items(CLEAN)], [])               # --all
+        self.assertEqual([i.render() for i in self.items(CLEAN, all_rules=False)], [])
+
+    def test_history_is_not_read_as_an_open_decision(self):
+        # the clean pack has "K-1 was açık karar" inside a revision block quote and "K-1 — KARAR D7" in the body
+        self.assertNotIn("R2", {i.code for i in self.items(CLEAN)})
+
+    def test_exit_codes(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 0)
+        self.addCleanup(self.put, PACK_PATH, CLEAN)
+        self.put(PACK_PATH, FAILING["R1"])                       # R1 is ENGEL: exit 1
+        with redirect_stdout(out):
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 1)
+        self.assertIn("HAZIRLIK R1 satır", out.getvalue())
+        self.put(PACK_PATH, FAILING["R6"])                       # R6 is ÖNEMLİ and only under --all: exit 0
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 0)
+            self.assertNotIn("HAZIRLIK R6", out.getvalue())
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD", "--all"]), 0)
+        self.assertIn("HAZIRLIK R6 satır", out.getvalue())
+        with redirect_stdout(out), redirect_stderr(io.StringIO()):
+            self.assertEqual(pr.main([os.path.join(self.root, "missing.md"), "--base", "HEAD"]), 2)
+            self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "no-such-ref"]), 2)
+
+
+class Rules(Fixture):
+    def test_r1_slice_table(self):
+        got = self.assert_fires("R1", FAILING["R1"])
+        text = " ".join(i.message for i in got)
+        self.assertIn("`Screens`", text)                       # a covered section that is not a heading
+        self.assertIn("DL-2: `ad` hücresi boş", text)           # an empty cell
+        self.assertTrue(all(i.severity == pr.ENGEL for i in got))
+        missing = variant("## Teslim dilimleri\n", "## Slices (old)\n")
+        self.assertIn("tablosu yok", self.assert_fires("R1", missing)[0].message)
+
+    def test_r2_decision_open_and_decided(self):
+        got = self.assert_fires("R2", FAILING["R2"])
+        self.assertEqual(got[0].severity, pr.ONEMLI)
+        self.assertIn("`K-1`", got[0].message)
+        decided_line = next(n for n, l in enumerate(FAILING["R2"].split("\n"), 1) if "KARAR D7" in l)
+        self.assertIn(f"satır {decided_line}", got[0].message)  # both lines are reported
+
+    def test_r3_references(self):
+        got = self.assert_fires("R3", FAILING["R3"])
+        msgs = {i.severity: [] for i in got}
+        for i in got:
+            msgs[i.severity].append(i.message)
+        self.assertTrue(any("Removed.cs" in m for m in msgs.get(pr.ENGEL, [])))       # missing file
+        self.assertTrue(any("6 satır" in m for m in msgs.get(pr.ONEMLI, [])))         # 40-44 beyond 6 lines
+        self.assertTrue(any("CanDelete" in m for m in msgs.get(pr.ONEMLI, [])))       # quote not within ±3 lines
+        self.assertTrue(any("no-such-note.md" in m for m in msgs.get(pr.ONEMLI, [])))  # cited document missing
+
+    def test_r4_acceptance_tied_to_tests_and_sabotage(self):
+        got = self.assert_fires("R4", FAILING["R4"])
+        self.assertEqual({tuple(i.subjects[:1]) for i in got}, {("AC-3",)})
+        self.assertEqual(len(got), 2)                            # not in tests, and no sabotage
+        self.assertTrue(all(i.severity == pr.ONEMLI for i in got))
+
+    def test_r5_port_matches_agents_table(self):
+        got = self.assert_fires("R5", FAILING["R5"])
+        self.assertIn("5058", got[0].message)
+        self.assertIn("5059", got[0].message)
+
+    def test_r6_unresolved_marker_in_ready_pack(self):
+        got = self.assert_fires("R6", FAILING["R6"])
+        self.assertEqual(got[0].severity, pr.ONEMLI)
+        draft = FAILING["R6"].replace("status: ready-for-dev", "status: draft")
+        self.assertNotIn("R6", {i.code for i in self.items(draft)})   # a draft may still carry TBD
+
+
+class RuleSets(Fixture):
+    def test_default_set_is_r1_r2_r3_r5(self):
+        self.assertEqual(pr.DEFAULT_RULES, ("R1", "R2", "R3", "R5"))
+        for code in ("R1", "R2", "R3", "R5"):
+            with self.subTest(rule=code):
+                self.assert_fires(code, FAILING[code], all_rules=False)
+        for code in ("R4", "R6"):
+            with self.subTest(rule=code):
+                self.assertNotIn(code, {i.code for i in self.items(FAILING[code], all_rules=False)})
+                self.assert_fires(code, FAILING[code], all_rules=True)
+
+    def test_only_r1_and_missing_files_are_engel(self):
+        sev = {(i.code, i.severity) for code in FAILING for i in self.items(FAILING[code])}
+        self.assertEqual({c for c, s_ in sev if s_ == pr.ENGEL}, {"R1", "R3"})
+
+    def test_checklist_needs_no_pack_and_has_the_six_items(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(pr.main(["--checklist"]), 0)
+        text = out.getvalue()
+        self.assertEqual(len(pr.CHECKLIST_ITEMS), 6)
+        for n, item in enumerate(pr.CHECKLIST_ITEMS, 1):
+            self.assertIn(f"({n}) {item}", text)
+        for rule in ("satır numarasını", "üslup ya da tasarım görüşü", "pakette zaten belirtilmiş",
+                     "ENGEL, ÖNEMLİ ya da KÜÇÜK", "numaralı liste", "inceleme DEĞİLDİR",
+                     "ayrı bir oturum ve ayrı bir model", "inceleme kayıtlarını"):
+            self.assertIn(rule, text)
+        # Codex round 1 finding 6: the author's own "known issue" list never makes the reader skip a finding
+        self.assertNotRegex(text, r"(?i)konuları atla|bilinen[^\n]*\batla\b")
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            pr.main([])                                          # neither a pack nor --checklist
+
+
+class ReviewFindings(Fixture):
+    """Blind review KOŞULLU findings 1-4, each with its own sabotage."""
+
+    def with_pin(self, template):
+        return variant("## Acceptance Criteria", template.format(old=self.old) + "\n\n## Acceptance Criteria")
+
+    def test_f1_gate_reader_refusal_is_engel(self):
+        for name, text in GATE_ONLY.items():
+            with self.subTest(case=name):
+                got = [i for i in self.assert_fires("R1", text) if "slice_ids" in i.message]
+                self.assertTrue(got and got[0].severity == pr.ENGEL, name)
+
+    def test_f1_sabotage_gate_reader_off(self):
+        stub = mock.Mock(slice_ids=lambda path, text: ["DL-1"])
+        with mock.patch.object(pr, "gate_module", lambda: stub):
+            for name, text in GATE_ONLY.items():                 # the gate accepting decides: no R1 at all
+                with self.subTest(case=name), self.assertRaises(AssertionError):
+                    self.assert_fires("R1", text)
+
+    def test_f2_pin_named_in_the_paragraph(self):
+        self.assertNotIn("R3", {i.code for i in self.items(self.with_pin(PIN_IN_PARAGRAPH))})
+        got = self.assert_fires("R3", self.with_pin(PIN_ABSENT))
+        self.assertEqual([i.severity for i in got], [pr.ONEMLI])  # named commit absent: downgraded, not ENGEL
+        self.assertIn("bu klonda yok", got[0].message)
+
+    def test_f2_sabotage_paragraph_pin_off(self):
+        with mock.patch.object(pr, "_blocks", lambda pack: {}):
+            got = self.assert_fires("R3", self.with_pin(PIN_IN_PARAGRAPH))
+            self.assertEqual(got[0].severity, pr.ENGEL)
+            self.assertEqual(self.assert_fires("R3", self.with_pin(PIN_ABSENT))[0].severity, pr.ENGEL)
+
+    def test_f3_empty_cells_read_like_the_gate(self):
+        gate = pr.gate_module()
+        self.assertEqual(pr.NOT_GIVEN.pattern, gate.NOT_GIVEN.pattern)
+        for cell in ("–", "?"):
+            with self.subTest(cell=cell):
+                text = variant("| DL-1 | archive guard |", f"| DL-1 | {cell} |")
+                self.assertNotIn("R1", {i.code for i in self.items(text)})
+        self.assertEqual(gate.slice_ids(DCP_PATH, DCP), ["S-1"])
+        self.assertEqual(pr.check(DCP_PATH, DCP, self.repo), [])  # the DCP `Not` column may be empty
+
+    def test_f3_sabotage_dcp_note_column_checked(self):
+        # the gate decides acceptance; DCP_FREE_COLUMNS shapes the diagnosis shown when the gate refuses
+        refusing = mock.Mock(slice_ids=lambda path, text: None)
+        with mock.patch.object(pr, "gate_module", lambda: refusing):
+            diagnosis = [i.message for i in pr.check(DCP_PATH, DCP, self.repo) if i.code == "R1"]
+            self.assertFalse(any("`Not`" in m for m in diagnosis))
+            with mock.patch.object(pr, "DCP_FREE_COLUMNS", 3):
+                diagnosis = [i.message for i in pr.check(DCP_PATH, DCP, self.repo) if i.code == "R1"]
+                self.assertTrue(any("`Not`" in m for m in diagnosis))
+
+    def test_f4_history_block_quote_only(self):
+        self.assertNotIn("R2", {i.code for i in self.items(BLOCKQUOTE_ONLY)})
+        with mock.patch.object(pr, "BLOCKQUOTE_IS_HISTORY", False):
+            self.assert_fires("R2", BLOCKQUOTE_ONLY)
+
+    def test_f4_history_heading_only(self):
+        self.assertNotIn("R2", {i.code for i in self.items(HEADING_ONLY)})
+        with mock.patch.object(pr, "HISTORY_HEADING", re.compile(r"(?!)")):
+            self.assert_fires("R2", HEADING_ONLY)
+
+
+# ----------------------------------------------------------------------------------- Codex round 1 (PR #404) findings
+# finding 1: inputs pack_approval.slice_ids accepts; the readiness tool must neither crash nor raise ENGEL on them
+CLOSING_HASHES = variant("## Test Expectations\n", "## Test Expectations ##\n").replace(
+    "Acceptance Criteria, Test Expectations |", "Acceptance Criteria, Test Expectations ## |")
+GATE_ACCEPTS = {
+    **{f"{n} blank(s) before the slice heading": variant("## Teslim dilimleri\n", " " * n + "## Teslim dilimleri\n")
+       for n in (1, 2, 3)},
+    "covered section with a closing ##": CLOSING_HASHES,
+}
+# the gate refuses: heading `## Test Expectations ##` while the cell says `Test Expectations` (the gate keeps the ##)
+CLOSING_HEADING_ONLY = variant("## Test Expectations\n", "## Test Expectations ##\n")
+# finding 3
+BACKTICK_OPEN = variant("## Acceptance Criteria", "Open item: `K-1` açık kalır until the owner answers.\n\n"
+                                                  "## Acceptance Criteria")
+TABLE_OPEN = variant("- Decision register: K-1 — KARAR D7: archive only from Draft.\n",
+                     "| karar | konu | durum |\n|---|---|---|\n| K-1 | archive rule | karar bekliyor |\n\n"
+                     "- K-1 karar verildi: archive only from Draft.\n")
+# finding 5
+PIN_FORMS = {"path:N@sha": "- Read: `services/NoSuch.cs:1@0123456789abcdef`.",
+             "sha:path:N": "- Read: `0123456789abcdef:services/NoSuch.cs:1`."}
+# finding 2: the earlier single reference pattern, kept here only to pin that the linear reader finds the same refs
+OLD_REF = re.compile(r"(?<![\w./@-])((?:[\w.-]+/)*[\w.-]*[A-Za-z_][\w-]*\.[A-Za-z][A-Za-z0-9]{0,9}):(\d{1,5})"
+                     r"(?:\s?[-–]\s?(\d{1,5}))?(?![\d:])")
+REF_SAMPLES = (
+    "see `services/a/B.cs:12-14` and x.cs:3", "a..cs:1", "1.2.cs:3", "_.md:4", "foo/bar.json:10–20",
+    "http://x.y/a.cs:5", "R@abc/x.cs:3", "a//b.cs:1", "/abs/x.cs:2", "x.c_s:1", "x.toolongextension:1", "v1.2:3",
+    "abc1234:docs/x.md:7", "x.cs:123456", "x.cs:1:2", "dir.v2/file.name.ts:9 - 11", "a-b/c-d.e-f.py:8",
+    "(scripts/pack_readiness.py:310, :275)", "ünï/çode.md:4", "x.cs:12-", "x.cs:12-x", "a.b.c:9",
+)
+BUDGET_SECONDS = 1.0
+SIZE = 200_000
+BAD_LINES = {
+    "one long word": "a" * SIZE,
+    "one long dotted word": "a." * (SIZE // 2),
+    "many bare refs": "a.py:1 " * (SIZE // 7),
+    "many distinct refs": " ".join(f"d{k}/f{k}.cs:1" for k in range(SIZE // 14)),
+    "heading with a blank run": "## a" + " " * SIZE + "b",
+    "many open decisions": "K-1 açık " * (SIZE // 9),
+    "open and decided ids": "K-1 açık K-2 KARAR " * (SIZE // 19),
+    "unclosed doc paths": "`docs/a." * (SIZE // 8),
+    "many ports": "MDM Service (5059) " * (SIZE // 19),
+    "blank run after a service": "MDM Service" + " " * SIZE,       # blind pre-check of 9b19f5bcf: ~n² in PORT_AFTER
+    "blank run after a Service name": "FooService" + " " * SIZE,
+    "blank run after an alias": "MDM" + " " * SIZE + "x",
+    "long acceptance id": "AC-" + "a-" * (SIZE // 2),
+    "many backticks and refs": "`a.cs:1` " * (SIZE // 9),
+    # Codex round 2 on a54554143
+    "blank run after port": "MDM port" + " " * SIZE + "TBD",              # `port\s*:?\s*` split the run ~n ways
+    "blank run after (port": "MDM Service (port" + " " * SIZE + "x",
+    "blank run after a Service port": "FooService port" + " " * SIZE + "TBD",
+    # a reference to a file that exists: the text after it is read for a quote only through REST_WINDOW
+    "blank run after an existing file": "services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:1"
+                                        + " " * SIZE + "x",
+    "blank run after an existing file in code": "`services/Diten.MdmService/src/Diten.MdmService.Domain/"
+                                                "LegalEntityGuard.cs:1`" + " " * SIZE + "x",
+}
+# Codex round 2 on a54554143: the port pattern of a54554143, kept only to pin that the current one is faster
+OLD_PORT_AFTER = r"(?:\(\s*|:\s*|=\s*|\s)?(?:port\s*:?\s*)(\d{4,5})(?![\d])"
+OLD_QUOTE_AFTER = r"^\s*(?:[:=→]|—|–)?\s*`([^`]{4,200})`"        # the same shape in the quote reader of a54554143
+
+
+class CodexRound1(Fixture):
+    """Codex round-1 findings on PR #404, each with a test and its own sabotage."""
+
+    def r1_engel(self, text):
+        return [i for i in self.items(text) if i.code == "R1" and i.severity == pr.ENGEL]
+
+    def test_k1_r1_agrees_with_the_gate(self):
+        gate = pr.gate_module()
+        cases = {**GATE_ACCEPTS, **GATE_ONLY, "clean": CLEAN, "failing": FAILING["R1"],
+                 "closing ## on the heading only": CLOSING_HEADING_ONLY}
+        for name, text in cases.items():
+            with self.subTest(case=name):
+                accepted = gate.slice_ids(PACK_PATH, text) is not None
+                self.assertEqual(not accepted, bool(self.r1_engel(text)), name)   # and no exception
+        for name, text in GATE_ACCEPTS.items():
+            with self.subTest(case=name):
+                self.assertEqual(gate.slice_ids(PACK_PATH, text), ["DL-1"])
+        why = " ".join(i.message for i in self.r1_engel(CLOSING_HEADING_ONLY))
+        self.assertIn("`Test Expectations`", why)               # the diagnosis reads titles the gate's way
+
+    def test_k1_diagnosis_never_crashes(self):
+        refusing = mock.Mock(slice_ids=lambda path, text: None)
+        with mock.patch.object(pr, "gate_module", lambda: refusing):
+            for name, text in GATE_ACCEPTS.items():
+                with self.subTest(case=name):
+                    pr._r1_diagnose(pr.Pack(PACK_PATH, text))   # raises nothing
+                    self.assertTrue(self.r1_engel(text))       # the refusing gate still decides
+            with mock.patch.object(pr, "_r1_diagnose", mock.Mock(side_effect=AttributeError)):
+                self.assertTrue(self.r1_engel(CLEAN))          # a broken diagnosis leaves the gate's answer
+
+    def test_k1_sabotage_titles_read_by_this_tool(self):
+        # sabotage: covered sections checked against this tool's own titles (closing ## dropped) -> the diagnosis no
+        # longer says why the gate refuses CLOSING_HEADING_ONLY
+        with mock.patch.object(pr, "gate_titles", lambda pack: pack.headings()), self.assertRaises(AssertionError):
+            self.assertIn("`Test Expectations`", " ".join(i.message for i in self.r1_engel(CLOSING_HEADING_ONLY)))
+
+    def test_k2_same_references_as_the_old_pattern(self):
+        for sample in REF_SAMPLES:
+            with self.subTest(sample=sample):
+                want = [(m.start(), m.groups()) for m in OLD_REF.finditer(sample)]
+                self.assertEqual([(m.start(), m.groups()) for m in pr.refs(sample)], want)
+
+    def test_k2_bad_lines_within_budget(self):
+        head = CLEAN.split("## Module Summary")[0] + "## Module Summary\n\n"
+        for name, line in BAD_LINES.items():
+            with self.subTest(case=name):
+                spent = []
+                for _ in range(2):                       # the faster of two runs: a busy machine is not the subject
+                    start = time.perf_counter()
+                    self.items(head + line + "\n")
+                    spent.append(time.perf_counter() - start)
+                self.assertLess(min(spent), BUDGET_SECONDS, name)
+
+    def test_k2_sabotage_old_pattern_is_slow(self):
+        line = "a" * 20_000                     # a tenth of the budget input: the old pattern alone runs past budget
+        start = time.perf_counter()
+        list(OLD_REF.finditer(line))
+        old = time.perf_counter() - start
+        start = time.perf_counter()
+        list(pr.refs(line * 10))
+        self.assertLess(time.perf_counter() - start, old)
+
+    def test_k2_size_limit_is_not_engel(self):
+        with mock.patch.object(pr, "MAX_PACK_CHARS", len(CLEAN) - 1):
+            got = self.items(FAILING["R1"])
+            self.assertEqual([(i.code, i.severity) for i in got], [("BOYUT", pr.ONEMLI)])
+            self.assertIn("ölçülemedi", got[0].message)
+            self.addCleanup(self.put, PACK_PATH, CLEAN)
+            self.put(PACK_PATH, FAILING["R1"])
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(pr.main([os.path.join(self.root, PACK_PATH), "--base", "HEAD"]), 0)
+        self.assertEqual(pr.MAX_PACK_CHARS, 2_000_000)
+        with mock.patch.object(pr, "MAX_PACK_CHARS", 10 ** 9), self.assertRaises(AssertionError):
+            self.assertEqual([i.code for i in self.items(FAILING["R1"]) if i.code == "BOYUT"], ["BOYUT"])
+
+    def test_k3_inline_code_decision_id(self):
+        got = self.assert_fires("R2", BACKTICK_OPEN)
+        self.assertIn("`K-1`", got[0].message)
+        with mock.patch.object(pr, "r2_text", pr.strip_quoted), self.assertRaises(AssertionError):
+            self.assert_fires("R2", BACKTICK_OPEN)          # sabotage: inline code dropped again
+
+    def test_k3_waiting_state_is_open_not_decided(self):
+        got = self.assert_fires("R2", TABLE_OPEN)
+        decided = next(n for n, l in enumerate(TABLE_OPEN.split("\n"), 1) if "K-1 karar verildi" in l)
+        self.assertIn(f"satır {decided}", got[0].message)
+        self.assertEqual(pr.state_of("karar bekliyor"), (True, False))
+
+        def old(cell):                                    # sabotage: "karar bekliyor" counted as decided too
+            return (bool(pr.OPEN.fullmatch(cell) or re.fullmatch(r"(?i)açık|open|bekliyor|karar bekliyor", cell)),
+                    bool(re.match(r"(?i)(karar|kapandı|kapalı|closed|decided|locked)\b", cell)))
+        with mock.patch.object(pr, "state_of", old), self.assertRaises(AssertionError):
+            self.assert_fires("R2", TABLE_OPEN)
+
+    def test_k4_any_port_next_to_a_known_service(self):
+        for written in ("MDM Service (6060)", "MDM Service (port 6060)", "MDM Service port 6060", "MDM  localhost:6060",
+                        "MDM: port 6060", "MDM = port 6060", "MDM Service (port 2026)"):
+            with self.subTest(written=written):
+                got = self.assert_fires("R5", variant("MDM Service (5059)", written))
+                self.assertIn(written[-5:-1] if written.endswith(")") else written[-4:], got[0].message)
+                self.assertIn("5059", got[0].message)
+        for said in ("the MDM 2026 review and MDM: 2026-11-01 notes", "MDM (2026)", "Inventory (2025; draft)",
+                     "the MDM (2026, Q4) plan", "Inventory Service (1999)"):
+            with self.subTest(no_alarm=said):
+                noise = variant("MDM Service (5059);", f"MDM Service (5059); {said};")
+                self.assertNotIn("R5", {i.code for i in self.items(noise)})
+        with mock.patch.object(pr, "PORT_AFTER", pr.PORT_AFTER.replace(r"(?!(?:19|20)\d\d(?!\d))", "")):
+            with self.assertRaises(AssertionError):           # sabotage: a bare year in parentheses is a port again
+                self.assertNotIn("R5", {i.code for i in self.items(variant("MDM Service (5059);",
+                                                                           "MDM Service (5059); MDM (2026);"))})
+        old = (r"(?:\(\s*|:\s*|=\s*|\s)(?:port\s*)?(?:localhost:|127\.0\.0\.1:|:)?(50\d\d|27017)(?![\d])()()()")
+        with mock.patch.object(pr, "PORT_AFTER", old), self.assertRaises(AssertionError):
+            self.assert_fires("R5", variant("MDM Service (5059)", "MDM Service (6060)"))   # sabotage: 50xx only
+
+    def test_k3b_negated_decision_is_not_decided(self):
+        for cell in ("karar alınmadı", "karar yok", "Karar: açık", "karar bekliyor"):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (True, False))
+                text = TABLE_OPEN.replace("| karar bekliyor |", f"| {cell} |")
+                self.assert_fires("R2", text)                  # open in the register, decided in the bullet
+        for cell in ("karar verildi", "Karar: D7", "kapandı"):
+            with self.subTest(decided=cell):
+                self.assertEqual(pr.state_of(cell), (False, True))
+        with mock.patch.object(pr, "DECIDED_STATE", re.compile(r"(?i)(karar|kapandı|kapalı|closed|decided|locked)\b")), \
+                mock.patch.object(pr, "OPEN_STATE", re.compile(r"(?i)açık|open|bekliyor|karar bekliyor")):
+            with self.assertRaises(AssertionError):            # sabotage: the 10-12 reading counts them decided
+                self.assertEqual(pr.state_of("karar yok"), (True, False))
+
+    def test_k6_gate_failure_is_unmeasured_not_engel(self):
+        boom = mock.Mock(slice_ids=mock.Mock(side_effect=RuntimeError("ct_queue yüklenemedi")))
+        for text in (CLEAN, FAILING["R1"], variant("## Teslim dilimleri\n", "## Slices (old)\n")):
+            with mock.patch.object(pr, "gate_module", lambda: boom):
+                got = [i for i in self.items(text) if i.code == "R1"]
+                self.assertFalse([i for i in got if i.severity == pr.ENGEL])
+                self.assertTrue(any("ölçülemedi — onay aracı okuyamadı: RuntimeError: ct_queue yüklenemedi" in i.message
+                                    for i in got))
+        with mock.patch.object(pr, "gate_module", lambda: None):
+            got = [i for i in self.items(FAILING["R1"]) if i.code == "R1"]
+            self.assertTrue(got and all(i.severity == pr.ONEMLI for i in got))
+        with mock.patch.object(pr, "gate_module", lambda: boom), \
+                mock.patch.object(pr, "_unmeasured", lambda pack, why: [pr.Item("R1", 1, pr.ENGEL, why)]):
+            with self.assertRaises(AssertionError):            # sabotage: a gate failure is ENGEL again
+                self.assertFalse([i for i in self.items(CLEAN) if i.severity == pr.ENGEL])
+
+    def test_k5_absent_pinned_commit_is_said(self):
+        for form, line in PIN_FORMS.items():
+            with self.subTest(form=form):
+                got = self.assert_fires("R3", variant("## Acceptance Criteria", line + "\n\n## Acceptance Criteria"))
+                self.assertEqual([i.severity for i in got], [pr.ONEMLI])
+                self.assertIn("ölçülemedi", got[0].message)
+                self.assertIn("0123456789ab", got[0].message)
+        both = variant("## Acceptance Criteria", "\n\n".join(PIN_FORMS.values()) + "\n\n## Acceptance Criteria")
+        got = self.assert_fires("R3", both)                     # once per absent commit, not once per reference
+        self.assertEqual(len(got), 1)
+        self.assertIn("1 atıf daha", got[0].message)
+
+
+class GitEnvironment(Fixture):
+    def test_f5_fixture_commits_skip_hooks_and_signing(self):
+        hook = os.path.join(self.root, ".git", "hooks", "pre-commit")
+        os.makedirs(os.path.dirname(hook), exist_ok=True)
+        with open(hook, "w") as f:
+            f.write("#!/bin/sh\nexit 1\n")
+        os.chmod(hook, 0o755)
+        self.addCleanup(os.remove, hook)
+        self.git("commit", "-q", "--allow-empty", "-m", "fixture: hook must not run")   # check=True: a hook would fail
+        self.git("reset", "-q", "--soft", "HEAD~1")
+
+    def test_f6_git_never_lazy_fetches(self):
+        seen = []
+        real = subprocess.run
+
+        def spy(cmd, *a, **k):
+            seen.append(k.get("env") or {})
+            return real(cmd, *a, **k)
+
+        with mock.patch.object(pr.subprocess, "run", spy):
+            pr.Repo(self.root, "HEAD").lines("AGENTS.md")
+            pr.repo_root(self.root)
+        self.assertTrue(seen)
+        self.assertTrue(all(e.get("GIT_NO_LAZY_FETCH") == "1" for e in seen))
+
+
+class CodexRound2(Fixture):
+    """Codex round-2 findings on PR #404 (a54554143), each with a test; the sabotage of each is in the PR body."""
+
+    def test_r2_1_old_port_pattern_is_slow(self):
+        line = "MDM port" + " " * 4_000 + "TBD"     # a fiftieth of the budget input: the old pattern alone is slower
+        start = time.perf_counter()
+        list(re.finditer(r"MDM\s*" + OLD_PORT_AFTER, line))
+        old = time.perf_counter() - start
+        start = time.perf_counter()
+        list(re.finditer(r"MDM\s*" + pr.PORT_AFTER, "MDM port" + " " * 40_000 + "TBD"))
+        self.assertLess(time.perf_counter() - start, old)
+
+    def test_r2_1_old_quote_pattern_is_slow(self):
+        start = time.perf_counter()
+        re.match(OLD_QUOTE_AFTER, " " * 4_000 + "x")
+        old = time.perf_counter() - start
+        start = time.perf_counter()
+        pr.QUOTE_AFTER.match(" " * 40_000 + "x")
+        self.assertLess(time.perf_counter() - start, old)
+
+    def test_r2_3_quote_reader_sees_at_most_rest_window(self):
+        seen, real = [], pr.QUOTE_AFTER
+
+        class Spy:
+            def match(self, rest):
+                seen.append(len(rest))
+                return real.match(rest)
+
+        ref = "services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:1"
+        with mock.patch.object(pr, "QUOTE_AFTER", Spy()):
+            for line in (ref + " " * 5_000 + "x", f"`{ref}`" + " " * 5_000 + "x"):
+                self.items(CLEAN.split("## Module Summary")[0] + "## Module Summary\n\n" + line + "\n")
+        self.assertTrue(seen, "the quote reader was not reached")
+        self.assertLessEqual(max(seen), pr.REST_WINDOW)
+        self.assertLess(max(seen), 5_000)                 # never the whole tail, whatever REST_WINDOW is set to
+
+    def test_r2_1_port_after_blank_run_still_read(self):
+        for written in ("MDM port 6060", "MDM port: 6060", "MDM (port 6060)", "MDM (port : 6060)", "MDM: port 6060"):
+            with self.subTest(written=written):
+                self.assert_fires("R5", variant("MDM Service (5059)", written))
+
+    def test_r2_2_punctuated_waiting_state_is_open(self):
+        for cell in ("karar bekliyor.", "karar alınmadı.", "karar yok.", "karar bekliyor!", "Karar: açık.",
+                     "açık.", "karar bekliyor…", "karar bekliyor**.", "_karar yok_."):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (True, False))
+                self.assert_fires("R2", TABLE_OPEN.replace("| karar bekliyor |", f"| {cell} |"))
+        for cell in ("karar verildi.", "kapandı.", "Karar: D7."):
+            with self.subTest(decided=cell):
+                self.assertEqual(pr.state_of(cell), (False, True))
+
+    def test_r3_1_one_sided_emphasis_is_not_taken_off(self):
+        # Codex round 3 on b4517cc64: `_karar alınmadı_ (EA)` lost its leading `_` and read as decided
+        for cell in ("_karar alınmadı_ (EA)", "_karar yok_ x", "__karar bekliyor__ (EA)"):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (False, False))     # unread, as in a54554143
+        text = TABLE_OPEN.replace("| karar bekliyor |", "| _karar alınmadı_ (EA) |").replace(
+            "- K-1 karar verildi: archive only from Draft.", "- K-1 açık kalır until the owner answers.")
+        self.assertNotIn("R2", {i.code for i in self.items(text)})
+        for cell in ("karar alınmadı_", "Karar: açık_", "_karar alınmadı_._", "**_karar bekliyor_**", "_karar yok_."):
+            with self.subTest(stray_or_nested=cell):                    # blind pre-check of 0032fb0ed
+                self.assertFalse(pr.state_of(cell)[1])
+        self.assertEqual(pr.state_of("**_karar bekliyor_**"), (True, False))   # nested pairs: the loop runs again
+        self.assertEqual(pr.state_of("_karar yok_."), (True, False))
+        self.assertEqual(pr.state_of("_karar bekliyor._"), (True, False))       # punctuation inside the pair
+        for cell in ("karar?", "karar ?"):                               # unchanged: never read as a decision
+            with self.subTest(question=cell):
+                self.assertFalse(pr.state_of(cell)[1])
+
+    def test_r2_3_cli_reads_at_most_the_limit(self):
+        import builtins
+        real, reads, pack = builtins.open, [], os.path.join(self.root, PACK_PATH)
+
+        class Bounded:
+            def __init__(self, path, *args, **kwargs):
+                self.f = real(path, *args, **kwargs)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                self.f.close()
+
+            def read(self, n=-1):
+                reads.append(n)
+                if n is None or n < 0 or n > pr.MAX_PACK_CHARS + 1:
+                    raise AssertionError(f"unbounded read: {n!r}")
+                return self.f.read(n)
+
+        with mock.patch.object(pr, "open", Bounded, create=True), redirect_stdout(io.StringIO()):
+            self.assertEqual(pr.main([pack, "--base", "HEAD"]), 0)
+        self.assertEqual(reads, [pr.MAX_PACK_CHARS + 1])
+
+
+class SabotageProof(Fixture):
+    """Switch each rule off; its own failing-case assertion must then fail."""
+
+    def test_each_rule_is_load_bearing(self):
+        for code, fn in pr.RULES:
+            with self.subTest(rule=code):
+                self.assert_fires(code, FAILING[code])            # baseline: the rule catches its case
+                with mock.patch.object(pr, fn, lambda pack, repo: []):
+                    with self.assertRaises(AssertionError):
+                        self.assert_fires(code, FAILING[code])
+
+    def test_every_rule_has_a_failing_case(self):
+        self.assertEqual(set(FAILING), {code for code, _ in pr.RULES})
+
+
+if __name__ == "__main__":
+    unittest.main()

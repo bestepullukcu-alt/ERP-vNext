@@ -8,11 +8,25 @@ using Xunit;
 namespace Diten.InventoryService.Tests.Api;
 
 /// <summary>
-/// AC-R7 (pack ASSUMPTION-0173-16): an expired reservation no longer counts as reserved — measured separately for the
-/// in-transaction path (a decrease / create on the SKU) and for the sweeper. These are the only tests that create
-/// short-lived reservations; they live in one class so xUnit runs them sequentially and the sweeper test cannot
-/// expire the in-transaction test's reservation first. The hosted sweeper is disabled in tests (TestSettings).
+/// The test classes that drive the reservation expiry sweeper, which reads EVERY tenant of the shared test database: they run
+/// alone, after every parallel collection has finished (<c>DisableParallelization</c>). Other classes create short-lived
+/// reservations too (e.g. <c>InventoryReservationPortTests.Scope_free_excludes_due_reservation</c> waits past one and expects
+/// it still Active, since no expiry ran); a sweep beside them would expire it.
 /// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class ReservationExpiryCollection
+{
+    public const string Name = "MOD-0173 reservation expiry (sweeper reads every tenant)";
+}
+
+/// <summary>
+/// AC-R7 (pack ASSUMPTION-0173-16): an expired reservation no longer counts as reserved — measured separately for the
+/// in-transaction path (a decrease / create on the SKU) and for the sweeper. They live in one class so xUnit runs them
+/// sequentially and the sweeper test cannot expire the in-transaction test's reservation first; the class is in
+/// <see cref="ReservationExpiryCollection"/> so the sweeper cannot expire another class's reservation either. The hosted
+/// sweeper is disabled in tests (TestSettings).
+/// </summary>
+[Collection(ReservationExpiryCollection.Name)]
 public sealed class ReservationExpiryTests : IClassFixture<InventoryApiFactory>
 {
     private readonly InventoryApiFactory _factory;
