@@ -1,0 +1,47 @@
+diff -ruN a/gateway/Diten.ApiGateway/ocelot.json b/gateway/Diten.ApiGateway/ocelot.json
+--- a/gateway/Diten.ApiGateway/ocelot.json	2026-11-06 09:45:52
++++ b/gateway/Diten.ApiGateway/ocelot.json	2026-11-06 09:45:53
+@@ -6279,6 +6279,22 @@
+         "UpstreamScheme": "http"
+       },
+       {
++        "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
++        "DownstreamScheme": "http",
++        "DownstreamHostAndPorts": [
++          {
++            "Host": "localhost",
++            "Port": 5066
++          }
++        ],
++        "UpstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
++        "UpstreamHttpMethod": [
++          "GET",
++          "OPTIONS"
++        ],
++        "UpstreamScheme": "http"
++      },
++      {
+         "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
+         "DownstreamScheme": "http",
+         "DownstreamHostAndPorts": [
+diff -ruN a/gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs b/gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs
+--- a/gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs	2026-11-06 09:45:52
++++ b/gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs	2026-11-06 09:45:53
+@@ -26,6 +26,8 @@
+         ("/api/shipment-bundle/loads", new[] { "GET", "POST", "OPTIONS" }),
+         ("/api/shipment-bundle/loads/{loadId}/transition", new[] { "POST", "OPTIONS" }),
+         ("/api/shipment-bundle/returns", new[] { "GET", "POST", "OPTIONS" }),
++        // SHIPMENT-BUNDLE 3.5.0 getReturn (MOD-0186 r10 §35.9 item 1, served from DL-4; integration lane 2026-11-06).
++        ("/api/shipment-bundle/returns/{returnId}", new[] { "GET", "OPTIONS" }),
+         ("/api/shipment-bundle/returns/{returnId}/transition", new[] { "POST", "OPTIONS" }),
+         ("/api/shipment-bundle/claims", new[] { "GET", "POST", "OPTIONS" }),
+         ("/api/shipment-bundle/claims/{claimId}/transition", new[] { "POST", "OPTIONS" }),
+@@ -47,7 +49,7 @@
+     };
+ 
+     [Fact]
+-    public void ShipmentBundle_has_exactly_the_twelve_explicit_routes_and_no_catch_all()
++    public void ShipmentBundle_has_exactly_the_thirteen_explicit_routes_and_no_catch_all()
+     {
+         var routes = LoadConfiguration().Routes;
+ 
