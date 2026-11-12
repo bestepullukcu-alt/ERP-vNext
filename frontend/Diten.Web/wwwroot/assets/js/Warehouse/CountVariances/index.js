@@ -55,9 +55,13 @@ const CountVariancesList = (function () {
     const cell = {
         count: (row) => (isCount(row) ? `<span class="fw-medium font-monospace">${esc(row.countNumber)}</span>` : ledgerLink(row.movement?.transactionNumber)),
         source: (row) => `<span class="badge bg-label-${isCount(row) ? 'primary' : 'secondary'}">${esc(W(isCount(row) ? 'CycleCount.Source.Count' : 'CycleCount.Source.Manual'))}</span>`,
-        bin: (row) => esc((isCount(row) ? row.line.location : row.movement?.location) || '-'),
-        product: (row) => esc((isCount(row) ? row.line.sku : row.movement?.sku) || '-'),
-        lot: (row) => esc((isCount(row) ? row.line.lotId : row.movement?.lotId) || '-'),
+        // DL-4 FIX-02: names and lot NUMBERS, never ids — what the proxy could not name is said in words
+        bin: (row) => esc((isCount(row) ? row.line.location : row.movement?.location) || W('NameUnknown')),
+        product: (row) => esc((isCount(row) ? row.line.sku : row.movement?.sku) || W('NameUnknown')),
+        lot: (row) => {
+            const source = isCount(row) ? row.line : row.movement;
+            return source?.lotId ? esc(source.lotNumber || W('LotUnknown')) : '-';
+        },
         expected: (row) => esc(isCount(row) ? (row.line.expectedAtCount ?? '–') : '–'),
         counted: (row) => esc(isCount(row) ? (row.line.countedQuantity ?? '–') : '–'),
         variance: (row) => {
@@ -162,7 +166,8 @@ const CountVariancesList = (function () {
         current = row;
         decisionKey = newKey();
         showAlert('formDecisionAlert', '');
-        byId('decisionSummary').textContent = format(W('DecisionSummary'), row.countNumber, row.line.location, row.line.sku, row.line.varianceQuantity ?? '');
+        byId('decisionSummary').textContent = format(W('DecisionSummary'), row.countNumber, row.line.location || W('NameUnknown'), row.line.sku || W('NameUnknown'),
+            row.line.varianceQuantity ?? '');
         document.querySelectorAll('#decisionChoices [data-decision]').forEach((el) => {
             const allowed = choices.includes(el.getAttribute('data-decision'));
             el.classList.toggle('d-none', !allowed);

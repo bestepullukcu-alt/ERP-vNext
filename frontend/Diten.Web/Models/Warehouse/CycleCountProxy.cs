@@ -4,6 +4,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Diten.Web.Models.Inventory;
+using Diten.Web.Models.Traceability;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -128,6 +130,65 @@ public sealed class CycleCountGatewayClient
 }
 
 /// <summary>What the two cycle-count controllers share: the Gateway door (with the page language), the body reads and the contract-shaped refusal.</summary>
+/// <summary>
+/// DL-4 FIX-01 / FIX-02 — the names the cycle-count screens show instead of ids (CT live measurement, owner Beste 2026-11-12): a lot's NUMBER read in
+/// batch from the lot register (MOD-0174 <c>GET /api/trace/lots?skuId&amp;skuLevel</c>, <c>trace.lots.read</c>) — one call per distinct SKU, never one
+/// per row; and a SKU's code when only its id is known (the count's SKU filter — PRODUCT-MASTER answers a SKU by id + level, so the levels are tried
+/// in turn). What cannot be read is simply absent: a screen says so in words and never falls back to the id.
+/// </summary>
+public static class CycleCountNames
+{
+    public static readonly IReadOnlyList<string> SkuLevels = ["Lsku", "Gsku", "FinishedGood", "Item"];
+
+    public static async Task<IReadOnlyDictionary<string, string>> LotNumbersAsync(HttpClient http, string gatewayUrl, HttpRequest request, ClaimsPrincipal user,
+        IPermissionSnapshot permissions, IEnumerable<(string? LotId, string? SkuId, string? Level)> lots, CancellationToken ct)
+    {
+        var rows = lots.Where(l => !string.IsNullOrWhiteSpace(l.LotId)).ToList();
+        var wanted = rows.Select(l => l.LotId!).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (wanted.Count == 0 || !permissions.Has(TracePermissionKeys.LotsRead)) return new Dictionary<string, string>();
+        var trace = TraceGatewayClient.For(http, gatewayUrl, request, user);
+        if (trace is null) return new Dictionary<string, string>();
+        var skus = rows.Select(l => (Sku: l.SkuId, l.Level)).Where(s => WarehouseProxy.TryId(s.Sku, out _) && !string.IsNullOrWhiteSpace(s.Level)).Distinct().ToList();
+        var replies = await Task.WhenAll(skus.Select(s =>
+            trace.GetAsync($"/api/trace/lots?skuId={Uri.EscapeDataString(s.Sku!)}&skuLevel={Uri.EscapeDataString(s.Level!)}&page=1&pageSize=200", ct)));
+        var numbers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var reply in replies.Where(r => r.IsSuccess))
+        foreach (var lot in reply.Read<LotListDto>()?.Items ?? [])
+            if (lot.LotId is { } id && wanted.Contains(id) && !string.IsNullOrWhiteSpace(lot.LotNumber)) numbers[id] = lot.LotNumber!;
+        return numbers;
+    }
+
+    public static async Task<IReadOnlyDictionary<string, string>> SkuCodesAsync(InventoryGatewayClient? inventory, IEnumerable<string?> skuIds, CancellationToken ct)
+    {
+        var ids = skuIds.Where(id => WarehouseProxy.TryId(id, out _)).Select(id => id!).Distinct(StringComparer.OrdinalIgnoreCase).Take(50).ToList();
+        var codes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (inventory is null || ids.Count == 0) return codes;
+        var found = await Task.WhenAll(ids.Select(async id =>
+        {
+            foreach (var level in SkuLevels)
+            {
+                var reply = await inventory.GetAsync($"/api/product-master/skus/{Uri.EscapeDataString(id)}?level={level}", ct);
+                if (!reply.IsSuccess) continue;
+                try
+                {
+                    using var doc = JsonDocument.Parse(reply.Body);
+                    if (doc.RootElement.TryGetProperty("canonicalCode", out var code) && code.ValueKind == JsonValueKind.String && code.GetString() is { Length: > 0 } text)
+                        return (Id: id, Code: (string?)text);
+                }
+                catch (JsonException)
+                {
+                    // an unreadable answer is no name
+                }
+            }
+
+            return (Id: id, Code: (string?)null);
+        }));
+        foreach (var (id, code) in found)
+            if (code is not null) codes[id] = code;
+        return codes;
+    }
+}
+
 /// <summary>DL-5: one binary answer — the bytes with their media type, name and declared SHA-256, or the refusal.</summary>
 public sealed record GatewayFile(byte[]? Content, string? ContentType, string? FileName, string? Sha256, GatewayReply? Refusal);
 

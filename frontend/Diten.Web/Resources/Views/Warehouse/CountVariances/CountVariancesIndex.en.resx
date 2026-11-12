@@ -144,4 +144,6 @@
   <data name="WindowHint" xml:space="preserve"><value>Manual and All need a warehouse and at most 31 days.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>The evidence export was not found.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>The stored evidence file does not match its recorded hash; it is not served.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Name could not be read</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Lot number could not be read</value></data>
 </root>

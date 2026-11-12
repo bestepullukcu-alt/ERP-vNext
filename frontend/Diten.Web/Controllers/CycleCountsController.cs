@@ -106,8 +106,9 @@ public sealed class CycleCountsController : Controller
         var header = new[] { "ColNumber", "ColStatus", "ColWarehouse", "ColType", "ColPlannedDate", "ColAssignee", "ColLines", "ColCreated" }.Select(W);
         var lines = rows.Select(r => new[]
         {
-            CycleCountProxy.Text(r, "number"), W("CycleCount.Status." + CycleCountProxy.Text(r, "status")), CycleCountProxy.Text(r, "warehouse"),
-            W("CycleCount.Type." + CycleCountProxy.Text(r, "countType")), CycleCountProxy.Text(r, "plannedDate"), CycleCountProxy.Text(r, "assignedToName"),
+            CycleCountProxy.Text(r, "number"), W("CycleCount.Status." + CycleCountProxy.Text(r, "status")), CycleCountProxy.Text(r, "warehouse") ?? W("NameUnknown"),
+            W("CycleCount.Type." + CycleCountProxy.Text(r, "countType")), CycleCountProxy.Text(r, "plannedDate"),
+            CycleCountProxy.Text(r, "assignedTo") is null ? null : CycleCountProxy.Text(r, "assignedToName") ?? W("NameUnknown"),
             r["lineCount"]?.ToString(), CycleCountProxy.Text(r, "createdAt")
         });
         return File(WarehouseCsv.Write(header, lines), "text/csv; charset=utf-8", $"cycle-counts-{DateTime.UtcNow:yyyyMMdd}.csv");
@@ -172,7 +173,13 @@ public sealed class CycleCountsController : Controller
         var people = await PeopleAsync(gateway, new[] { "assignedTo", "createdBy", "submittedBy", "cancelledBy" }.Select(n => CycleCountProxy.Text(count, n))
             .Concat((timeline ?? []).OfType<JsonObject>().Select(e => CycleCountProxy.Text(e, "actorUserId"))), ct);
         Decorate(count, labels, people);
-        count["scope"] = new JsonArray((count["scopeLocationIds"] as JsonArray ?? []).Select(n => (JsonNode?)JsonValue.Create(labels.Location(n?.GetValue<string>()) ?? n?.GetValue<string>())).ToArray());
+        // DL-4 FIX-02: the scope by name (a name the master cannot say is null — the screen says so in words, never the id)
+        count["scope"] = new JsonArray((count["scopeLocationIds"] as JsonArray ?? []).Select(n => (JsonNode?)JsonValue.Create(labels.Location(n?.GetValue<string>()))).ToArray());
+        // DL-4 FIX-02: the SKU filter by code for the edit form's chips (value stays the id)
+        var skuCodes = await CycleCountNames.SkuCodesAsync(InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User),
+            (count["scopeSkuIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>()), ct);
+        count["scopeSkus"] = new JsonArray((count["scopeSkuIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>()).OfType<string>()
+            .Select(id => (JsonNode?)(skuCodes.TryGetValue(id, out var code) ? new JsonObject { ["id"] = id, ["code"] = code } : new JsonObject { ["id"] = id })).ToArray());
         // DL-4 FIX-01: the scope bins by name for the count sheet's found-stock panel (a name the master cannot say is left out — never the id)
         count["scopeBins"] = new JsonArray((count["scopeBinIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>()).OfType<string>()
             .Select(id => (JsonNode?)(labels.Location(id) is { } name ? new JsonObject { ["id"] = id, ["name"] = name } : new JsonObject { ["id"] = id })).ToArray());
@@ -217,20 +224,8 @@ public sealed class CycleCountsController : Controller
     /// </summary>
     private async Task<IReadOnlyDictionary<string, string>> LotNumbersAsync(IReadOnlyList<JsonObject> lines, CancellationToken ct)
     {
-        var wanted = lines.Select(l => CycleCountProxy.Text(l, "lotId")).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (wanted.Count == 0 || !_permissions.Has(TracePermissionKeys.LotsRead)) return new Dictionary<string, string>();
-        var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
-        if (trace is null) return new Dictionary<string, string>();
-        var skus = lines.Where(l => CycleCountProxy.Text(l, "lotId") is not null)
-            .Select(l => (Sku: l["item"]?["skuId"]?.GetValue<string>(), Level: l["item"]?["skuLevel"]?.GetValue<string>()))
-            .Where(s => WarehouseProxy.TryId(s.Sku, out _) && !string.IsNullOrWhiteSpace(s.Level)).Distinct().ToList();
-        var replies = await Task.WhenAll(skus.Select(s =>
-            trace.GetAsync($"/api/trace/lots?skuId={Uri.EscapeDataString(s.Sku!)}&skuLevel={Uri.EscapeDataString(s.Level!)}&page=1&pageSize=200", ct)));
-        var numbers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var reply in replies.Where(r => r.IsSuccess))
-        foreach (var lot in reply.Read<LotListDto>()?.Items ?? [])
-            if (lot.LotId is { } id && wanted.Contains(id) && !string.IsNullOrWhiteSpace(lot.LotNumber)) numbers[id] = lot.LotNumber!;
-        return numbers;
+        return await CycleCountNames.LotNumbersAsync(_httpClient, _gatewayUrl, Request, User, _permissions,
+            lines.Select(l => (CycleCountProxy.Text(l, "lotId"), l["item"]?["skuId"]?.GetValue<string>(), l["item"]?["skuLevel"]?.GetValue<string>())), ct);
     }
 
     // DL-4 FIX-01 — the found-stock panel's lot field: the chosen SKU's registered lots by NUMBER (value = the lot id the service needs).
@@ -492,10 +487,10 @@ public sealed class CycleCountsController : Controller
 
     private void Decorate(JsonObject row, MasterLabels labels, IReadOnlyDictionary<string, string> people)
     {
-        var warehouse = CycleCountProxy.Text(row, "warehouseId");
-        row["warehouse"] = labels.Location(warehouse) ?? warehouse;
+        // DL-4 FIX-02 (owner Beste 2026-11-12): a name the master / directory cannot say is LEFT OUT — never the id in its place
+        if (labels.Location(CycleCountProxy.Text(row, "warehouseId")) is { } warehouse) row["warehouse"] = warehouse;
         foreach (var name in new[] { "assignedTo", "createdBy", "submittedBy", "cancelledBy" })
-            if (CycleCountProxy.Text(row, name) is { } user) row[name + "Name"] = people.GetValueOrDefault(user) ?? user;
+            if (CycleCountProxy.Text(row, name) is { } user && people.GetValueOrDefault(user) is { } person) row[name + "Name"] = person;
         row["etag"] = $"W/\"{row["version"]}\"";
     }
 

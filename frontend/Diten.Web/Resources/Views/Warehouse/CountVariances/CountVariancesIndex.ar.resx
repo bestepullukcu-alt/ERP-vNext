@@ -144,4 +144,6 @@
   <data name="WindowHint" xml:space="preserve"><value>يتطلب «يدوي» و«الكل» مستودعًا ومدة لا تتجاوز 31 يومًا.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على تصدير الأدلة.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>ملف الأدلة المخزَّن لا يطابق البصمة المسجلة؛ لن يتم تقديمه.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>تعذّرت قراءة الاسم</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>تعذّرت قراءة رقم الدفعة</value></data>
 </root>

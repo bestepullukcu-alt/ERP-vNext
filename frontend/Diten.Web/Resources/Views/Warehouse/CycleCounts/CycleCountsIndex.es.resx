@@ -157,4 +157,5 @@
   <data name="WarehousePlaceholder" xml:space="preserve"><value>Elija un almacén</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>No se pudo leer el nombre</value></data>
 </root>

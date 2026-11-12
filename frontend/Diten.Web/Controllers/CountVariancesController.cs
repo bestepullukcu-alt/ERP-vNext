@@ -90,6 +90,9 @@ public sealed class CountVariancesController : Controller
         await DecorateAsync(gateway, rows, ct);
         string W(string key) => _localizer[key].Value;
         var header = new[] { "ColCount", "ColSource", "ColBin", "ColProduct", "ColLot", "ColExpectedAtCount", "ColCounted", "ColVariance", "ColStatus", "ColAdjustment" }.Select(W);
+        // DL-4 FIX-02: names, never ids — an unread name / lot number is said in words
+        string? Lot(JsonObject? o) => CycleCountProxy.Text(o, "lotId") is null ? null : CycleCountProxy.Text(o, "lotNumber") ?? W("LotUnknown");
+        string Name(JsonObject? o, string member) => CycleCountProxy.Text(o, member) ?? W("NameUnknown");
         var lines = rows.Select(r =>
         {
             if (r["line"] is JsonObject line)
@@ -97,8 +100,8 @@ public sealed class CountVariancesController : Controller
                 var adjustment = line["adjustment"] as JsonObject;
                 return new[]
                 {
-                    CycleCountProxy.Text(r, "countNumber"), W("CycleCount.Source.Count"), CycleCountProxy.Text(line, "location"), CycleCountProxy.Text(line, "sku"),
-                    CycleCountProxy.Text(line, "lotId"), CycleCountProxy.Text(line, "expectedAtCount"), CycleCountProxy.Text(line, "countedQuantity"),
+                    CycleCountProxy.Text(r, "countNumber"), W("CycleCount.Source.Count"), Name(line, "location"), Name(line, "sku"),
+                    Lot(line), CycleCountProxy.Text(line, "expectedAtCount"), CycleCountProxy.Text(line, "countedQuantity"),
                     CycleCountProxy.Text(line, "varianceQuantity"), W("CycleCount.LineStatus." + CycleCountProxy.Text(line, "status")),
                     adjustment is null ? null : $"{W("CycleCount.Adjustment." + CycleCountProxy.Text(adjustment, "status"))} {CycleCountProxy.Text(adjustment, "transactionNumber")}".Trim()
                 };
@@ -107,8 +110,8 @@ public sealed class CountVariancesController : Controller
             var movement = r["movement"] as JsonObject;
             return new[]
             {
-                CycleCountProxy.Text(movement, "transactionNumber"), W("CycleCount.Source.Manual"), CycleCountProxy.Text(movement, "location"),
-                CycleCountProxy.Text(movement, "sku"), CycleCountProxy.Text(movement, "lotId"), null, null,
+                CycleCountProxy.Text(movement, "transactionNumber"), W("CycleCount.Source.Manual"), Name(movement, "location"),
+                Name(movement, "sku"), Lot(movement), null, null,
                 $"{(CycleCountProxy.Text(movement, "movementType") == "COUNT_LOSS" ? "-" : "+")}{CycleCountProxy.Text(movement, "quantity")}",
                 W("ReadOnlyManual"), CycleCountProxy.Text(movement, "transactionNumber")
             };
@@ -276,14 +279,19 @@ public sealed class CountVariancesController : Controller
             lines.SelectMany(l => new[] { CycleCountProxy.Text(l, "locationId"), CycleCountProxy.Text(l, "warehouseId") })
                 .Concat(movements.SelectMany(m => new[] { CycleCountProxy.Text(m, "locationId"), CycleCountProxy.Text(m, "warehouseId") })), ct);
 
+        // DL-4 FIX-02: the lot NUMBERS of every line and manual movement, one lot-register read per distinct SKU (never per row)
+        var lots = await CycleCountNames.LotNumbersAsync(_httpClient, _gatewayUrl, Request, User, _permissions,
+            lines.Select(l => (CycleCountProxy.Text(l, "lotId"), l["item"]?["skuId"]?.GetValue<string>(), l["item"]?["skuLevel"]?.GetValue<string>()))
+                .Concat(movements.Select(m => (CycleCountProxy.Text(m, "lotId"), m["item"]?["skuId"]?.GetValue<string>(), m["item"]?["skuLevel"]?.GetValue<string>()))), ct);
         foreach (var row in rows)
         {
             if (row["line"] is JsonObject line)
             {
-                line["location"] = labels.Location(CycleCountProxy.Text(line, "locationId")) ?? CycleCountProxy.Text(line, "locationId");
-                line["warehouse"] = labels.Location(CycleCountProxy.Text(line, "warehouseId")) ?? CycleCountProxy.Text(line, "warehouseId");
-                line["sku"] = labels.Sku(line["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(line["item"]?["itemId"]?.GetValue<string>())
-                              ?? line["item"]?["skuId"]?.GetValue<string>();
+                // DL-4 FIX-02 (owner Beste 2026-11-12): a name the master cannot say is LEFT OUT — never the id in its place
+                if (labels.Location(CycleCountProxy.Text(line, "locationId")) is { } location) line["location"] = location;
+                if (labels.Location(CycleCountProxy.Text(line, "warehouseId")) is { } warehouse) line["warehouse"] = warehouse;
+                if ((labels.Sku(line["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(line["item"]?["itemId"]?.GetValue<string>())) is { } sku) line["sku"] = sku;
+                if (CycleCountProxy.Text(line, "lotId") is { } lotId && lots.TryGetValue(lotId, out var lotNumber)) line["lotNumber"] = lotNumber;
                 line["etag"] = $"W/\"{line["version"]}\"";
                 var countedBy = CycleCountProxy.Text(line, "countedBy");
                 var count = counts.GetValueOrDefault(CycleCountProxy.Text(line, "countId") ?? string.Empty);
@@ -295,9 +303,9 @@ public sealed class CountVariancesController : Controller
 
             if (row["movement"] is JsonObject movement)
             {
-                movement["location"] = labels.Location(CycleCountProxy.Text(movement, "locationId")) ?? CycleCountProxy.Text(movement, "locationId");
-                movement["sku"] = labels.Sku(movement["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(movement["item"]?["itemId"]?.GetValue<string>())
-                                  ?? movement["item"]?["skuId"]?.GetValue<string>();
+                if (labels.Location(CycleCountProxy.Text(movement, "locationId")) is { } location) movement["location"] = location;
+                if ((labels.Sku(movement["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(movement["item"]?["itemId"]?.GetValue<string>())) is { } sku) movement["sku"] = sku;
+                if (CycleCountProxy.Text(movement, "lotId") is { } lotId && lots.TryGetValue(lotId, out var lotNumber)) movement["lotNumber"] = lotNumber;
             }
         }
     }

@@ -139,6 +139,71 @@ public sealed class CycleCountProxyControllerTests
         Assert.Empty(plain.TraceCalls);
     }
 
+    // ── DL-4 FIX-02: the dashboard and the variance trace show names and lot numbers, never an id ─────────────
+
+    /// <summary>
+    /// FIX-02 (owner Beste 2026-11-12): the masters / the user directory answer nothing here (no route = 404), so every name is unknown — the proxy
+    /// LEAVES THE MEMBER OUT instead of writing the id in it (warehouse, assignee, creator; the scope by name; the SKU filter by code).
+    /// </summary>
+    [Fact]
+    public async Task DL4_FIX02_the_dashboard_proxy_writes_no_id_where_a_name_belongs()
+    {
+        var scopeNode = "a6666666-0000-0000-0000-000000000006";
+        var skuKnown = "f7777777-0000-0000-0000-000000000007";
+        var skuUnknown = "f8888888-0000-0000-0000-000000000008";
+        var count = Count(Other).Replace("\"scopeLocationIds\":[]", $"\"scopeLocationIds\":[\"{scopeNode}\"]", StringComparison.Ordinal)
+            .Replace("\"scopeSkuIds\":[]", $"\"scopeSkuIds\":[\"{skuKnown}\",\"{skuUnknown}\"],\"assignedTo\":\"{Me}\"", StringComparison.Ordinal);
+        var gateway = new FakeGateway();
+        gateway.On("/api/warehouse/cycle-counts?", 200, $$"""{"items":[{{count}}],"total":1,"page":1,"pageSize":25,"contractVersion":"v1"}""");
+        gateway.On($"/api/warehouse/cycle-counts/{CountId}", 200, count, etag: "W/\"7\"");
+        gateway.On($"/api/warehouse/cycle-counts/{CountId}/events", 200, """{"items":[],"total":0,"page":1,"pageSize":200,"contractVersion":"v1"}""");
+        // PRODUCT-MASTER answers the one SKU only at its own level (Gsku): the code is found by trying the levels in turn
+        gateway.On($"/api/product-master/skus/{skuKnown}?level=Gsku", 200, """{"canonicalCode":"SKU-GSKU-9"}""");
+
+        var list = Body(await Counts(gateway, [CycleCountPermissionKeys.CountsRead], ("start", "0"), ("length", "25")).List(CancellationToken.None));
+        var row = list.GetProperty("data").GetProperty("items")[0];
+        foreach (var member in new[] { "warehouse", "assignedToName", "createdByName", "submittedByName" })
+            Assert.False(row.TryGetProperty(member, out _), $"the list writes {member} although no name was read");
+
+        var detail = Body(await Counts(gateway, [CycleCountPermissionKeys.CountsRead]).Detail(CountId, CancellationToken.None)).GetProperty("count");
+        Assert.False(detail.TryGetProperty("warehouse", out _));
+        Assert.False(detail.TryGetProperty("assignedToName", out _));
+        Assert.Equal(JsonValueKind.Null, detail.GetProperty("scope")[0].ValueKind); // the scope node by name, unread → null, never the id
+        var skus = detail.GetProperty("scopeSkus").EnumerateArray().ToDictionary(s => s.GetProperty("id").GetString()!, s => s);
+        Assert.Equal("SKU-GSKU-9", skus[skuKnown].GetProperty("code").GetString());
+        Assert.False(skus[skuUnknown].TryGetProperty("code", out _));
+    }
+
+    /// <summary>FIX-02: the variance rows carry the lot NUMBER (one lot-register read per SKU, lines and manual movements together) and no id in a name.</summary>
+    [Fact]
+    public async Task DL4_FIX02_the_variance_rows_carry_lot_numbers_and_no_id_where_a_name_belongs()
+    {
+        const string sku1 = "f1111111-0000-0000-0000-000000000001";
+        const string lotA = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56d", lotM = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56a", lotX = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56b";
+        var line = Line(Other).Replace("\"item\":{\"itemId\":\"e1\",\"skuId\":\"f1\",\"skuLevel\":\"Lsku\"}",
+            $"\"item\":{{\"itemId\":\"e1\",\"skuId\":\"{sku1}\",\"skuLevel\":\"Lsku\"}},\"lotId\":\"{lotA}\"", StringComparison.Ordinal);
+        var movement = $$"""{"transactionId":"{{LineId}}","transactionNumber":"MG-TRX-000009","movementType":"COUNT_GAIN","warehouseId":"{{WarehouseId}}","locationId":"{{Bin}}","item":{"itemId":"e1","skuId":"{{sku1}}","skuLevel":"Lsku"},"lotId":"{{lotM}}","quantity":"1","uomId":"EA","sourceModule":"MOD-0173","sourceType":"MANUAL_MOVEMENT","createdBy":"{{Other}}","createdAt":"2026-11-12T08:00:00.000Z","transactionDate":"2026-11-12T08:00:00.000Z","postingDate":"2026-11-12T08:00:00.000Z","sourceMismatch":false}""";
+        var unknownLot = movement.Replace(lotM, lotX, StringComparison.Ordinal).Replace("MG-TRX-000009", "MG-TRX-000010", StringComparison.Ordinal);
+        var gateway = new FakeGateway();
+        gateway.On("/api/warehouse/count-variances", 200,
+            $$"""{"items":[{"source":"Count","countNumber":"MG-CNT-000001","line":{{line}}},{"source":"Manual","movement":{{movement}}},{"source":"Manual","movement":{{unknownLot}}}],"total":3,"page":1,"pageSize":25,"contractVersion":"v1"}""");
+        gateway.On($"/api/warehouse/cycle-counts/{CountId}", 200, Count(Other), etag: "W/\"7\"");
+        gateway.On($"/api/trace/lots?skuId={sku1}", 200, $$"""{"items":[{"lotId":"{{lotA}}","lotNumber":"AMX-2604"},{"lotId":"{{lotM}}","lotNumber":"G1-20261020"}],"total":2}""");
+
+        var json = Body(await Variances(gateway, [CycleCountPermissionKeys.VariancesRead, "trace.lots.read"], ("start", "0"), ("length", "25"), ("source", "all"))
+            .List(CancellationToken.None));
+
+        var rows = json.GetProperty("data").GetProperty("items").EnumerateArray().ToList();
+        var countLine = rows[0].GetProperty("line");
+        Assert.Equal("AMX-2604", countLine.GetProperty("lotNumber").GetString());
+        foreach (var member in new[] { "location", "warehouse", "sku" }) Assert.False(countLine.TryGetProperty(member, out _), $"the line writes {member} as an id");
+        var manual = rows[1].GetProperty("movement");
+        Assert.Equal("G1-20261020", manual.GetProperty("lotNumber").GetString());
+        foreach (var member in new[] { "location", "sku" }) Assert.False(manual.TryGetProperty(member, out _), $"the manual row writes {member} as an id");
+        Assert.False(rows[2].GetProperty("movement").TryGetProperty("lotNumber", out _)); // not in the register: no number, never the id
+        Assert.Single(gateway.TraceCalls); // the line and both movements share one SKU → one lot-register read
+    }
+
     // ── DL-5 Evidence Pack (AC-43, AC-44) ───────────────────────────────────────────────────────────────
 
     [Fact]

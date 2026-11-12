@@ -144,4 +144,6 @@
   <data name="WindowHint" xml:space="preserve"><value>“手工”和“全部”需选择仓库且时间范围不超过 31 天。</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>未找到该证据导出。</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>存储的证据文件与记录的哈希不一致，不予提供。</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>无法读取名称</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>无法读取批次号</value></data>
 </root>

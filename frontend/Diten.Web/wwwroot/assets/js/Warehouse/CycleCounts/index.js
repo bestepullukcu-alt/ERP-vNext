@@ -125,11 +125,12 @@ const CycleCountsList = (function () {
         if (!answer.ok) { byId('oc-timeline').innerHTML = `<li class="text-danger">${esc(failure(answer))}</li>`; return; }
         const c = answer.json.count;
         current = { count: c, etag: answer.json.etag };
-        byId('oc-warehouse').textContent = c.warehouse || '-';
+        // DL-4 FIX-02: names, never ids — what the proxy could not name is said in words
+        byId('oc-warehouse').textContent = c.warehouse || W('NameUnknown');
         byId('oc-type').innerHTML = typeText(c);
-        byId('oc-scope').textContent = c.countType === 'Full' ? W('ScopeFull') : (c.scope || []).join(', ') || '-';
+        byId('oc-scope').textContent = c.countType === 'Full' ? W('ScopeFull') : (c.scope || []).map((name) => name || W('NameUnknown')).join(', ') || '-';
         byId('oc-planned').textContent = c.plannedDate || '-';
-        byId('oc-assignee').textContent = c.assignedToName || '-';
+        byId('oc-assignee').textContent = c.assignedTo ? (c.assignedToName || W('NameUnknown')) : '-';
         byId('oc-snapshot').textContent = c.snapshotAt ? dateText(c.snapshotAt) : '-';
         byId('oc-lines').textContent = String(c.lineCount ?? 0);
         byId('oc-recountof').textContent = c.recountOfId ? W('RecountOfYes') : '-';
@@ -262,10 +263,12 @@ const CycleCountsList = (function () {
         offcanvas('offcanvasCreateEdit')?.show();
         window.setTimeout(() => {
             initFormPickers();
-            setSelect('ccWarehouse', [{ value: c.warehouseId, text: c.warehouse }]);
-            setSelect('ccScope', (c.scopeLocationIds || []).map((value, i) => ({ value, text: (c.scope || [])[i] || value })));
-            setSelect('ccSkus', (c.scopeSkuIds || []).map((value) => ({ value, text: value })));
-            setSelect('ccAssignee', c.assignedTo ? [{ value: c.assignedTo, text: c.assignedToName || c.assignedTo }] : []);
+            // DL-4 FIX-02: the chips show names / codes; the value stays the id the service needs
+            setSelect('ccWarehouse', [{ value: c.warehouseId, text: c.warehouse || W('NameUnknown') }]);
+            setSelect('ccScope', (c.scopeLocationIds || []).map((value, i) => ({ value, text: (c.scope || [])[i] || W('NameUnknown') })));
+            const skuCodes = new Map((c.scopeSkus || []).map((s) => [s.id, s.code]));
+            setSelect('ccSkus', (c.scopeSkuIds || []).map((value) => ({ value, text: skuCodes.get(value) || W('NameUnknown') })));
+            setSelect('ccAssignee', c.assignedTo ? [{ value: c.assignedTo, text: c.assignedToName || W('NameUnknown') }] : []);
             byId(c.countType === 'Full' ? 'ccTypeFull' : 'ccTypeCycle').checked = true;
             byId('ccBlind').checked = !!c.blind;
             byId('ccPlannedDate').value = c.plannedDate || '';
@@ -363,12 +366,12 @@ const CycleCountsList = (function () {
                       render: (data, type, full) => (full.status === 'Draft' ? `<input type="checkbox" class="dt-checkboxes form-check-input" value="${esc(data)}">` : '') },
                     { targets: 2, render: (data) => `<span class="fw-medium text-heading font-monospace">${esc(data)}</span>` },
                     { targets: 3, render: (data) => statusBadge(data) },
-                    { targets: 4, render: (data) => esc(data) },
+                    { targets: 4, render: (data) => esc(data || W('NameUnknown')) },
                     { targets: 5, render: (data, type, full) => typeText(full) },
                     { targets: 6, render: (data) => esc(data) },
-                    { targets: 7, render: (data) => esc(data || '-') },
+                    { targets: 7, render: (data, type, full) => esc(full.assignedTo ? (data || W('NameUnknown')) : '-') },
                     { targets: 8, render: (data) => esc(data ?? 0) },
-                    { targets: 9, render: (data, type, full) => `<small class="text-muted">${esc(dateText(data))}${full.createdByName ? ` · ${esc(full.createdByName)}` : ''}</small>` },
+                    { targets: 9, render: (data, type, full) => `<small class="text-muted">${esc(dateText(data))}${full.createdBy ? ` · ${esc(full.createdByName || W('NameUnknown'))}` : ''}</small>` },
                     { targets: -1, title: L().Actions, searchable: false, orderable: false, className: 'cell-fit all', render: (data, type, full) => renderAction(full) }
                 ]
             }

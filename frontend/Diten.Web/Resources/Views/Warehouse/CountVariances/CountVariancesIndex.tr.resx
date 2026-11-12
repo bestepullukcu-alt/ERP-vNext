@@ -144,4 +144,6 @@
   <data name="WindowHint" xml:space="preserve"><value>Elle ve Tümü için depo ve en fazla 31 gün gerekir.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Kanıt dışa aktarımı bulunamadı.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Saklanan kanıt dosyası kayıtlı özetiyle uyuşmuyor; dosya verilmez.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Ad okunamadı</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Lot numarası okunamadı</value></data>
 </root>
