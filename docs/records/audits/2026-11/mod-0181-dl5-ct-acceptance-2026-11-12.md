@@ -70,3 +70,25 @@ Taban `/api/warehouse`, `CountEvidenceExportsController`:
   `requestedLanguage` 7 dil; `requestedAt`; `fileName`; `sha256` 64 hex; `sizeBytes` ≥ 1; `status` Ready | Failed; `contractVersion` v1).
 
 KOŞULLU
+
+## FIX-01 sonrası (9f2fb3491): VERIFIED
+- Ölçüm: CT'nin alt ajanı, izole worktree, detached `9f2fb3491` (FIX-01 `ebdc3af2b` + lot testi `9f2fb3491`); `INVENTORY_TEST_MONGO` yok, 27017 yok.
+- ORTA-1 (ham kimlik) kapandı: dosya SKU kodu / ürün adı, kişi adı, şirket ve yer adı yazar; okunamayan ad / SKU / lot lokalize "okunamadı"
+  sözcüğüdür, kimlik değil. ORTA-2 (bütünlük reddi testsiz) kapandı: saklanan baytı değiştirip 500 `COUNT_EVIDENCE_INTEGRITY` bekleyen test var.
+  DÜŞÜK-3: 1.1.0 dondurmasında taslak lafzı koda hizalandı. BİLGİ-5: 1.1.0'da 500 yalnız `COUNT_EVIDENCE_INTEGRITY` için kabul edilir.
+
+| # | Sabotaj (süzgeç `~CycleCountEvidence`, her biri bayt-eşit geri) | Sonuç |
+|---|---|---|
+| a | zaman çizelgesi kişisi: kayıtlı ad yoksa kullanıcı id'si yazdırıldı | kırmızı — 2 (`FIX01_an_unreadable_name_is_the_localized_word_and_never_the_id`, `FIX01_a_lot_is_its_number…`) |
+| b | `Lot()` içindeki iki "okunamadı" dalı `lotId` yazdırır | kırmızı — 1 (`FIX01_a_lot_is_its_number_and_an_unreadable_lot_is_the_word_never_the_id`); `ebdc3af2b`'de YEŞİLdi |
+| c | indirmede özet karşılaştırması etkisiz (`hash is null`) | kırmızı — 1 (`FIX01_a_stored_file_whose_bytes_changed_is_refused_with_500_integrity_and_no_bytes`) |
+
+| Takım (süzgeçsiz; 1.1.0 dondurmasıyla aynı ağaç) | Sonuç |
+|---|---|
+| Inventory | **2130 / 0 / 5 atlandı** (toplam 2135) |
+| TenantArchitecture.ArchitectureTests | 224 / 5 — yalnız `DocsPathGuardTests` ×5 (main tabanı) |
+
+AC-43 MET (ORTA-1, ORTA-2 kapandı); AC-44, AC-50, AC-35 MET. WMS-COUNT-BUNDLE 1.1.0 FROZEN —
+`docs/records/audits/2026-11/mod-0181-wms-count-bundle-1.1.0-freeze-2026-11-12.md`.
+
+VERIFIED
