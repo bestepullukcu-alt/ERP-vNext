@@ -103,4 +103,7 @@
   <data name="ValidationFound" xml:space="preserve"><value>请选择库位、产品及其 SKU。</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>未找到该证据导出。</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>存储的证据文件与记录的哈希不一致，不予提供。</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>无法读取批次号</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>无法读取名称</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>搜索批次号</value></data>
 </root>

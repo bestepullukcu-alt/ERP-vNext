@@ -103,4 +103,7 @@
   <data name="ValidationFound" xml:space="preserve"><value>Выберите ячейку, товар и его артикул.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Экспорт доказательств не найден.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Сохранённый файл доказательств не совпадает с записанным хешем; он не выдаётся.</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Не удалось прочитать номер партии</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Не удалось прочитать название</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>Найдите номер партии</value></data>
 </root>

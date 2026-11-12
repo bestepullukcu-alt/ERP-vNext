@@ -103,4 +103,7 @@
   <data name="ValidationFound" xml:space="preserve"><value>Raf gözünü, ürünü ve SKU'sunu seçin.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Kanıt dışa aktarımı bulunamadı.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Saklanan kanıt dosyası kayıtlı özetiyle uyuşmuyor; dosya verilmez.</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Lot numarası okunamadı</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Ad okunamadı</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>Lot numarası arayın</value></data>
 </root>

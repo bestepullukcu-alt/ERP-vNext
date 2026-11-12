@@ -103,4 +103,7 @@
   <data name="ValidationFound" xml:space="preserve"><value>Select the bin, the product and its SKU.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>The evidence export was not found.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>The stored evidence file does not match its recorded hash; it is not served.</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Lot number could not be read</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Name could not be read</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>Search the lot number</value></data>
 </root>

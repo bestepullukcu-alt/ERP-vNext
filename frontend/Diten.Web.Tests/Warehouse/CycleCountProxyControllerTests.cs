@@ -103,6 +103,42 @@ public sealed class CycleCountProxyControllerTests
         Assert.Empty(gateway.Requests);
     }
 
+    // ── DL-4 FIX-01: the count sheet shows lot NUMBERS and names, never an id ──────────────────────────────
+
+    [Fact]
+    public async Task DL4_FIX01_the_sheet_lines_carry_the_lot_number_read_once_per_SKU_and_never_an_id_in_its_place()
+    {
+        const string sku1 = "f1111111-0000-0000-0000-000000000001", sku2 = "f2222222-0000-0000-0000-000000000002";
+        const string lotA = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56d", lotB = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56e", lotC = "da7bfb2a-66c4-4c2b-b5ce-9660ab28f56f";
+        string L(string lineId, string sku, string? lot) =>
+            $$"""{"lineId":"{{lineId}}","countId":"{{CountId}}","warehouseId":"{{WarehouseId}}","locationId":"{{Bin}}","item":{"itemId":"e1","skuId":"{{sku}}","skuLevel":"Lsku"},{{(lot is null ? "" : $"\"lotId\":\"{lot}\",")}}"stockStatus":"Available","baseUomId":"EA","origin":"Snapshot","serialControlled":false,"status":"Open","version":1}""";
+        var gateway = new FakeGateway();
+        gateway.On($"/api/warehouse/cycle-counts/{CountId}/lines", 200,
+            $$"""{"items":[{{L(LineId, sku1, lotA)}},{{L("b3333333-0000-0000-0000-000000000003", sku1, lotB)}},{{L("b4444444-0000-0000-0000-000000000004", sku2, lotC)}},{{L("b5555555-0000-0000-0000-000000000005", sku2, null)}}],"total":4,"page":1,"pageSize":200,"contractVersion":"v1"}""");
+        gateway.On($"/api/trace/lots?skuId={sku1}", 200, $$"""{"items":[{"lotId":"{{lotA}}","lotNumber":"AMX-2604"},{"lotId":"{{lotB}}","lotNumber":"AMX-2605"}],"total":2}""");
+        gateway.On($"/api/trace/lots?skuId={sku2}", 200, """{"items":[],"total":0}""");
+
+        var json = Body(await Counts(gateway, [CycleCountPermissionKeys.CountsRead, "trace.lots.read"]).Lines(CountId, 1, CancellationToken.None));
+
+        var lines = json.GetProperty("items").EnumerateArray().ToList();
+        Assert.Equal("AMX-2604", lines[0].GetProperty("lotNumber").GetString());
+        Assert.Equal("AMX-2605", lines[1].GetProperty("lotNumber").GetString());
+        Assert.False(lines[2].TryGetProperty("lotNumber", out _));   // the register does not know it: no number, and never the id instead
+        Assert.False(lines[3].TryGetProperty("lotNumber", out _));   // no lot
+        Assert.Equal(2, gateway.TraceCalls.Count);                  // one read per distinct SKU, not one per line
+        Assert.All(gateway.TraceCalls, c => Assert.Contains("&skuLevel=Lsku&page=1&pageSize=200", c, StringComparison.Ordinal));
+        // the master names the proxy cannot read are LEFT OUT — the id is never put in a display member
+        Assert.All(lines, l => Assert.False(l.TryGetProperty("location", out _)));
+        Assert.All(lines, l => Assert.False(l.TryGetProperty("sku", out _)));
+
+        // a reader without trace.lots.read gets no number and the register is not asked
+        var plain = new FakeGateway();
+        plain.On($"/api/warehouse/cycle-counts/{CountId}/lines", 200, $$"""{"items":[{{L(LineId, sku1, lotA)}}],"total":1,"page":1,"pageSize":200,"contractVersion":"v1"}""");
+        var without = Body(await Counts(plain, [CycleCountPermissionKeys.CountsRead]).Lines(CountId, 1, CancellationToken.None));
+        Assert.False(without.GetProperty("items")[0].TryGetProperty("lotNumber", out _));
+        Assert.Empty(plain.TraceCalls);
+    }
+
     // ── DL-5 Evidence Pack (AC-43, AC-44) ───────────────────────────────────────────────────────────────
 
     [Fact]
@@ -373,6 +409,9 @@ public sealed class CycleCountProxyControllerTests
 
         public void On(string prefix, int status, string body, string? etag = null) => Routes.Add((prefix, status, body, etag));
 
+        /// <summary>DL-4 FIX-01: the lot-register reads (MOD-0174 /api/trace/lots) the sheet's lines proxy makes.</summary>
+        public List<string> TraceCalls { get; } = [];
+
         private List<(string Prefix, byte[] Bytes, string ContentType, string FileName, string Sha256)> Files { get; } = [];
 
         /// <summary>DL-5: a binary answer (the Evidence Pack file) with its media type, download name and X-Content-SHA256.</summary>
@@ -383,6 +422,7 @@ public sealed class CycleCountProxyControllerTests
             var pathAndQuery = request.RequestUri!.PathAndQuery;
             var body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
             // the master-name reads (product-master, locations, users) are not the subject here: no route = 404, names fall back to ids
+            if (pathAndQuery.StartsWith("/api/trace", StringComparison.Ordinal)) lock (TraceCalls) TraceCalls.Add(pathAndQuery);
             if (pathAndQuery.StartsWith("/api/warehouse", StringComparison.Ordinal))
             {
                 lock (Requests)

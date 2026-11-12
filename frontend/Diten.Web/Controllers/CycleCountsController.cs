@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Diten.Web.Models.Inventory;
 using Diten.Web.Models.Quarantine;
+using Diten.Web.Models.Traceability;
 using Diten.Web.Models.Warehouse;
 using Diten.Web.Services;
 using Diten.Web.Views.Warehouse.CycleCounts;
@@ -166,11 +167,15 @@ public sealed class CycleCountsController : Controller
         if (CycleCountProxy.Node(reply) is not JsonObject count) return Refuse(503, null, reply.CorrelationId);
         var events = await gateway.GetAsync($"{Base}/{countId}/events?page=1&pageSize=200", ct);
         var timeline = events.IsSuccess ? CycleCountProxy.Node(events)?["items"] as JsonArray : null;
-        var labels = await LabelsAsync([CycleCountProxy.Text(count, "warehouseId"), .. (count["scopeLocationIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>())], [], ct);
+        var labels = await LabelsAsync([CycleCountProxy.Text(count, "warehouseId"), .. (count["scopeLocationIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>()),
+            .. (count["scopeBinIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>())], [], ct);
         var people = await PeopleAsync(gateway, new[] { "assignedTo", "createdBy", "submittedBy", "cancelledBy" }.Select(n => CycleCountProxy.Text(count, n))
             .Concat((timeline ?? []).OfType<JsonObject>().Select(e => CycleCountProxy.Text(e, "actorUserId"))), ct);
         Decorate(count, labels, people);
         count["scope"] = new JsonArray((count["scopeLocationIds"] as JsonArray ?? []).Select(n => (JsonNode?)JsonValue.Create(labels.Location(n?.GetValue<string>()) ?? n?.GetValue<string>())).ToArray());
+        // DL-4 FIX-01: the scope bins by name for the count sheet's found-stock panel (a name the master cannot say is left out — never the id)
+        count["scopeBins"] = new JsonArray((count["scopeBinIds"] as JsonArray ?? []).Select(n => n?.GetValue<string>()).OfType<string>()
+            .Select(id => (JsonNode?)(labels.Location(id) is { } name ? new JsonObject { ["id"] = id, ["name"] = name } : new JsonObject { ["id"] = id })).ToArray());
         foreach (var e in (timeline ?? []).OfType<JsonObject>())
             if (CycleCountProxy.Text(e, "actorUserId") is { } actor) e["actorName"] = people.GetValueOrDefault(actor);
         return Json(new { count, etag = reply.ETag ?? $"W/\"{count["version"]}\"", timeline, timelineAvailable = timeline is not null, contractVersion = "v1" });
@@ -191,15 +196,56 @@ public sealed class CycleCountsController : Controller
         var lines = (body["items"] as JsonArray ?? []).OfType<JsonObject>().ToList();
         var labels = await LabelsAsync(lines.Select(l => CycleCountProxy.Text(l, "locationId")),
             lines.Select(l => (l["item"]?["itemId"]?.GetValue<string>(), l["item"]?["skuId"]?.GetValue<string>(), l["item"]?["skuLevel"]?.GetValue<string>())), ct);
+        var lots = await LotNumbersAsync(lines, ct);
         foreach (var line in lines)
         {
-            line["location"] = labels.Location(CycleCountProxy.Text(line, "locationId")) ?? CycleCountProxy.Text(line, "locationId");
-            line["sku"] = labels.Sku(line["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(line["item"]?["itemId"]?.GetValue<string>())
-                          ?? line["item"]?["skuId"]?.GetValue<string>();
+            // DL-4 FIX-01 (CT live, owner Beste 2026-11-12): the sheet shows names, never an id — a name the master cannot say is left out and the
+            // script writes the localized "could not be read" word
+            if (labels.Location(CycleCountProxy.Text(line, "locationId")) is { } location) line["location"] = location;
+            if ((labels.Sku(line["item"]?["skuId"]?.GetValue<string>()) ?? labels.Product(line["item"]?["itemId"]?.GetValue<string>())) is { } sku) line["sku"] = sku;
+            if (CycleCountProxy.Text(line, "lotId") is { } lotId && lots.TryGetValue(lotId, out var lotNumber)) line["lotNumber"] = lotNumber;
             line["etag"] = $"W/\"{line["version"]}\"";
         }
 
         return Json(new { items = lines, total = body["total"]?.GetValue<long>() ?? lines.Count, namesAvailable = labels.Available });
+    }
+
+    /// <summary>
+    /// DL-4 FIX-01: the lot NUMBER of every lot id on the page, read in batch from the lot register (MOD-0174 <c>GET /api/trace/lots?skuId&amp;skuLevel</c>,
+    /// <c>trace.lots.read</c>) — ONE call per distinct SKU of the page (there is no by-ids read), never one per line. A reader without the key, or a lot
+    /// the register does not answer, gets no number (the sheet then says so in words, never the id).
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, string>> LotNumbersAsync(IReadOnlyList<JsonObject> lines, CancellationToken ct)
+    {
+        var wanted = lines.Select(l => CycleCountProxy.Text(l, "lotId")).OfType<string>().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (wanted.Count == 0 || !_permissions.Has(TracePermissionKeys.LotsRead)) return new Dictionary<string, string>();
+        var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
+        if (trace is null) return new Dictionary<string, string>();
+        var skus = lines.Where(l => CycleCountProxy.Text(l, "lotId") is not null)
+            .Select(l => (Sku: l["item"]?["skuId"]?.GetValue<string>(), Level: l["item"]?["skuLevel"]?.GetValue<string>()))
+            .Where(s => WarehouseProxy.TryId(s.Sku, out _) && !string.IsNullOrWhiteSpace(s.Level)).Distinct().ToList();
+        var replies = await Task.WhenAll(skus.Select(s =>
+            trace.GetAsync($"/api/trace/lots?skuId={Uri.EscapeDataString(s.Sku!)}&skuLevel={Uri.EscapeDataString(s.Level!)}&page=1&pageSize=200", ct)));
+        var numbers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var reply in replies.Where(r => r.IsSuccess))
+        foreach (var lot in reply.Read<LotListDto>()?.Items ?? [])
+            if (lot.LotId is { } id && wanted.Contains(id) && !string.IsNullOrWhiteSpace(lot.LotNumber)) numbers[id] = lot.LotNumber!;
+        return numbers;
+    }
+
+    // DL-4 FIX-01 — the found-stock panel's lot field: the chosen SKU's registered lots by NUMBER (value = the lot id the service needs).
+    [HttpGet("lots")]
+    public async Task<IActionResult> Lots([FromQuery] string? skuId, [FromQuery] string? skuLevel, [FromQuery] string? q, CancellationToken ct)
+    {
+        if (!_permissions.Has(CycleCountPermissionKeys.CountsRecord)) return Refuse(403, null, null);
+        if (!WarehouseProxy.TryId(skuId, out var sku) || string.IsNullOrWhiteSpace(skuLevel) || skuLevel.Length > 20) return Refuse(400, "VALIDATION_ERROR", null);
+        if (!_permissions.Has(TracePermissionKeys.LotsRead)) return Json(new { items = Array.Empty<object>(), available = false });
+        var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
+        if (trace is null) return Refuse(401, null, null);
+        var search = string.IsNullOrWhiteSpace(q) ? string.Empty : "&q=" + Uri.EscapeDataString(q.Trim().Length > 100 ? q.Trim()[..100] : q.Trim());
+        var reply = await trace.GetAsync($"/api/trace/lots?skuId={sku}&skuLevel={Uri.EscapeDataString(skuLevel.Trim())}&page=1&pageSize=50&sort=lotNumber{search}", ct);
+        var lots = reply.IsSuccess ? reply.Read<LotListDto>()?.Items ?? [] : [];
+        return Json(new { items = lots.Where(l => !string.IsNullOrWhiteSpace(l.LotNumber)).Select(l => new { value = l.LotId, text = l.LotNumber }), available = reply.IsSuccess });
     }
 
     // Warehouse filter / form field 1: the company's active warehouses (LOCATION master; never a hardcoded list).

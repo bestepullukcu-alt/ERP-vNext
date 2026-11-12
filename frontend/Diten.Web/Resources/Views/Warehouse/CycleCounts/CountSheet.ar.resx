@@ -103,4 +103,7 @@
   <data name="ValidationFound" xml:space="preserve"><value>اختر الموقع والمنتج ورمز SKU الخاص به.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على تصدير الأدلة.</value></data>
   <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>ملف الأدلة المخزَّن لا يطابق البصمة المسجلة؛ لن يتم تقديمه.</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>تعذّرت قراءة رقم الدفعة</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>تعذّرت قراءة الاسم</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>ابحث عن رقم الدفعة</value></data>
 </root>

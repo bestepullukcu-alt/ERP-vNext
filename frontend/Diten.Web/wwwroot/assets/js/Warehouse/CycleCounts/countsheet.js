@@ -59,7 +59,8 @@ const CountSheet = (function () {
     const lineHtml = (line) => {
         const expected = line.expectedQuantity !== null && line.expectedQuantity !== undefined
             ? `<small class="text-muted d-block">${esc(format(W('ExpectedValue'), line.expectedQuantity))}</small>` : '';
-        const lot = line.lotId ? `<small class="text-muted d-block">${esc(W('FieldLot'))}: ${esc(line.lotId)}</small>` : '';
+        // DL-4 FIX-01: the lot NUMBER (the proxy reads it from the lot register); never the lot id — an unread number is said in words
+        const lot = line.lotId ? `<small class="text-muted d-block">${esc(W('FieldLot'))}: ${esc(line.lotNumber || W('LotUnknown'))}</small>` : '';
         const found = line.origin === 'Found' ? ` <span class="badge bg-label-info">${esc(W('FoundBadge'))}</span>` : '';
         const status = `<span class="badge bg-label-${isCounted(line) ? 'success' : 'secondary'}" data-line-status>${esc(W(`CycleCount.LineStatus.${line.status}`))}</span>`;
         const entry = editable() && lineOpen(line)
@@ -74,7 +75,7 @@ const CountSheet = (function () {
             : `<div class="mt-1 fs-5">${isCounted(line) ? esc(line.countedQuantity) : '<span class="text-muted">–</span>'}</div>`;
         return `<div class="cc-sheet-line" data-line-id="${esc(line.lineId)}">
                     <div class="d-flex justify-content-between gap-2">
-                        <div class="min-w-0"><span class="fw-medium">${esc(line.sku || line.item?.skuId)}</span>${found}${lot}${expected}</div>
+                        <div class="min-w-0"><span class="fw-medium">${esc(line.sku || W('NameUnknown'))}</span>${found}${lot}${expected}</div>
                         <div>${status}</div>
                     </div>
                     ${entry}
@@ -84,7 +85,7 @@ const CountSheet = (function () {
     const draw = () => {
         const bins = new Map();
         lines.forEach((line) => {
-            if (!bins.has(line.locationId)) bins.set(line.locationId, { name: line.location || line.locationId, lines: [] });
+            if (!bins.has(line.locationId)) bins.set(line.locationId, { name: line.location || W('NameUnknown'), lines: [] });
             bins.get(line.locationId).lines.push(line);
         });
         const container = byId('cc-sheet-bins');
@@ -151,7 +152,7 @@ const CountSheet = (function () {
             return;
         }
         pending.delete(lineId);
-        Object.assign(line, answer.json.line, { location: line.location, sku: line.sku });
+        Object.assign(line, answer.json.line, { location: line.location, sku: line.sku, lotNumber: line.lotNumber });
         if (count.status === 'Released') count.status = 'Counting';
         window.showToast?.(answer.json.message || '', 'success');
         draw();
@@ -173,14 +174,21 @@ const CountSheet = (function () {
         foundKey = newKey();
         showAlert('foundAlert', '');
         const scope = new Set(count.scopeBinIds || []);
-        const names = new Map(lines.map((l) => [l.locationId, l.location]));
+        const names = new Map([...lines.map((l) => [l.locationId, l.location]), ...(count.scopeBins || []).map((b) => [b.id, b.name])].filter(([, n]) => n));
         const bin = byId('foundBin');
-        bin.innerHTML = '<option value=""></option>' + [...scope].map((id) => `<option value="${esc(id)}">${esc(names.get(id) || id)}</option>`).join('');
+        bin.innerHTML = '<option value=""></option>' + [...scope].map((id) => `<option value="${esc(id)}">${esc(names.get(id) || W('NameUnknown'))}</option>`).join('');
         select2(byId('foundProduct'), `${root}/products`, null, (items) => items.map((i) => ({ id: i.value, text: i.sub ? `${i.text} · ${i.sub}` : i.text })), '#offcanvasFound');
         select2(byId('foundSku'), `${root}/product-skus`, () => ({ itemId: byId('foundProduct').value }), (items) => items.map((i) => ({ id: i.value, text: i.text })), '#offcanvasFound');
+        // DL-4 FIX-01: the lot is CHOSEN by its number among the SKU's registered lots (value = the lot id the service needs)
+        select2(byId('foundLot'), `${root}/lots`, () => {
+            const sku = byId('foundSku').value || '';
+            const split = sku.indexOf(':');
+            return split > 0 ? { skuLevel: sku.slice(0, split), skuId: sku.slice(split + 1) } : {};
+        }, (items) => items.map((i) => ({ id: i.value, text: i.text })), '#offcanvasFound');
         window.jQuery?.('#foundProduct').val(null).trigger('change');
         window.jQuery?.('#foundSku').val(null).trigger('change');
-        ['foundLot', 'foundQuantity', 'foundScanRef'].forEach((id) => { byId(id).value = ''; });
+        window.jQuery?.('#foundLot').val(null).trigger('change');
+        ['foundQuantity', 'foundScanRef'].forEach((id) => { byId(id).value = ''; });
         window.bootstrap?.Offcanvas.getOrCreateInstance(byId('offcanvasFound')).show();
     };
 
@@ -193,7 +201,7 @@ const CountSheet = (function () {
         if (!/^\d+([.,]\d+)?$/.test(quantity)) { showAlert('foundAlert', W('CycleCount.Error.COUNT_QUANTITY_INVALID')); return; }
         const answer = await post(`${root}/add-line/${encodeURIComponent(countId)}`, {
             idempotencyKey: foundKey, locationId: byId('foundBin').value, itemId: byId('foundProduct').value,
-            skuLevel: sku.slice(0, split), skuId: sku.slice(split + 1), lotId: byId('foundLot').value.trim() || null,
+            skuLevel: sku.slice(0, split), skuId: sku.slice(split + 1), lotId: byId('foundLot').value || null,
             countedQuantity: quantity, scanRef: byId('foundScanRef').value.trim() || null
         });
         if (!answer.ok) { showAlert('foundAlert', failure(answer)); if (answer.status === 409) foundKey = newKey(); return; }
@@ -228,6 +236,7 @@ const CountSheet = (function () {
             if (event.key === 'Enter' && event.target.matches('[data-qty]')) { event.preventDefault(); save(event.target.closest('.cc-sheet-line')); }
         });
         window.jQuery?.('#foundProduct').on('change', () => window.jQuery('#foundSku').val(null).trigger('change'));
+        window.jQuery?.('#foundSku').on('change', () => window.jQuery('#foundLot').val(null).trigger('change'));
         byId('btnAddFound')?.addEventListener('click', openFound);
         byId('btnSaveFound')?.addEventListener('click', saveFound);
         byId('btnSubmitCount')?.addEventListener('click', submit);
