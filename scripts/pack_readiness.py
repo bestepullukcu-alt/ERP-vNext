@@ -441,7 +441,9 @@ def r2_text(s: str) -> str:
 
 def state_of(cell: str) -> tuple[bool, bool]:
     """(open, decided) of a register state cell. An open state is never also decided: `karar bekliyor` starts with
-    `karar` but waits for one (Codex 3)."""
+    `karar` but waits for one (Codex 3). Closing punctuation is not part of the state: `karar bekliyor.` is still
+    open (Codex round 2 on a54554143)."""
+    cell = cell.strip().rstrip(".!;,…").rstrip()
     o = bool(OPEN.fullmatch(cell) or OPEN_STATE.fullmatch(cell))
     return o, (not o) and bool(DECIDED_STATE.match(cell))
 
@@ -511,7 +513,7 @@ FULL_ROOTS = ("services/", "frontend/", "gateway/", "docs/", "execution/", "scri
               ".github/", "shared/", "src/", "infra/", "tools/")
 SHA = re.compile(r"(?<![0-9a-f])([0-9a-f]{7,40})(?![0-9a-f])")
 AT_SHA = re.compile(r"^@([0-9a-f]{7,40})(?![0-9a-f])")
-QUOTE_AFTER = re.compile(r"^\s*(?:[:=→]|—|–)?\s*`([^`]{4,200})`")
+QUOTE_AFTER = re.compile(r"^\s*(?:(?:[:=→]|—|–)\s*)?`([^`]{4,200})`")   # one blank run per gap (Codex round 2)
 
 
 def ref_name(name: str) -> bool:
@@ -815,12 +817,14 @@ def agents_ports(repo: Repo) -> dict[str, set[int]]:
 # repo's own ranges (50xx, 27017) count, as before (measured: "MDM 2026" and "MDM: 2026-11" are dates, not ports).
 # A bare year in parentheses (1900-2099: `MDM (2026)`, `Auth (2025;`) is not a port; `(port 2026)` still is.
 # No alternative starts with a blank run of its own: PORT_AFTER follows a `\s*`, and a second `\s*` there made the
-# scan of a long blank run ~n² (blind pre-check of 9b19f5bcf: "MDM" + 8000 blanks took 8.3 s).
+# scan of a long blank run ~n² (blind pre-check of 9b19f5bcf: "MDM" + 8000 blanks took 8.3 s). For the same reason
+# `port` is followed by `\s*(?::\s*)?`, never `\s*:?\s*`: two blank runs around an optional colon split one blank run
+# ~n ways (Codex round 2 on a54554143: "MDM port" + 8000 blanks + "TBD" took 3.5 s).
 HOST = r"(?:localhost:|127\.0\.0\.1:)"
-PORT_AFTER = (r"(?:\(\s*(?:port\s*:?\s*|" + HOST + r"|:)(\d{4,5})\s*[),;]"
+PORT_AFTER = (r"(?:\(\s*(?:port\s*(?::\s*)?|" + HOST + r"|:)(\d{4,5})\s*[),;]"
               r"|\(\s*(?!(?:19|20)\d\d(?!\d))(\d{4,5})\s*[),;]"
-              r"|(?:\(\s*|:\s*|=\s*|\s)(?:port\s*:?\s*)?(?:" + HOST + r"|:)?(50\d\d|27017)(?![\d])"
-              r"|(?::\s*|=\s*)?(?:port\s*:?\s*|" + HOST + r")(\d{4,5})(?![\d]))")
+              r"|(?:\(\s*|:\s*|=\s*|\s)(?:port\s*(?::\s*)?)?(?:" + HOST + r"|:)?(50\d\d|27017)(?![\d])"
+              r"|(?::\s*|=\s*)?(?:port\s*(?::\s*)?|" + HOST + r")(\d{4,5})(?![\d]))")
 PORT_GROUPS = 4            # the port groups of PORT_AFTER, in order
 PORT_BEFORE = r"(?:(?<![\w.:/-])(50\d\d|27017)|(?<![\w.-])(?:port\s*|" + HOST + r")(\d{4,5}))(?![\d])"
 UNLISTED = re.compile(r"(?<![\w.])(?:Diten\.)?([A-Z][A-Za-z]+Service)(?:\.Api)?\s*" + PORT_AFTER)

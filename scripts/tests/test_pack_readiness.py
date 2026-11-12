@@ -410,7 +410,18 @@ BAD_LINES = {
     "blank run after an alias": "MDM" + " " * SIZE + "x",
     "long acceptance id": "AC-" + "a-" * (SIZE // 2),
     "many backticks and refs": "`a.cs:1` " * (SIZE // 9),
+    # Codex round 2 on a54554143
+    "blank run after port": "MDM port" + " " * SIZE + "TBD",              # `port\s*:?\s*` split the run ~n ways
+    "blank run after (port": "MDM Service (port" + " " * SIZE + "x",
+    "blank run after a Service port": "FooService port" + " " * SIZE + "TBD",
+    # a reference to a file that exists: the text after it is read for a quote only through REST_WINDOW
+    "blank run after an existing file": "services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:1"
+                                        + " " * SIZE + "x",
+    "blank run after an existing file in code": "`services/Diten.MdmService/src/Diten.MdmService.Domain/"
+                                                "LegalEntityGuard.cs:1`" + " " * SIZE + "x",
 }
+# Codex round 2 on a54554143: the port pattern of a54554143, kept only to pin that the current one is faster
+OLD_PORT_AFTER = r"(?:\(\s*|:\s*|=\s*|\s)?(?:port\s*:?\s*)(\d{4,5})(?![\d])"
 
 
 class CodexRound1(Fixture):
@@ -593,6 +604,58 @@ class GitEnvironment(Fixture):
             pr.repo_root(self.root)
         self.assertTrue(seen)
         self.assertTrue(all(e.get("GIT_NO_LAZY_FETCH") == "1" for e in seen))
+
+
+class CodexRound2(Fixture):
+    """Codex round-2 findings on PR #404 (a54554143), each with a test; the sabotage of each is in the PR body."""
+
+    def test_r2_1_old_port_pattern_is_slow(self):
+        line = "MDM port" + " " * 4_000 + "TBD"     # a fiftieth of the budget input: the old pattern alone is slower
+        start = time.perf_counter()
+        list(re.finditer(r"MDM\s*" + OLD_PORT_AFTER, line))
+        old = time.perf_counter() - start
+        start = time.perf_counter()
+        list(re.finditer(r"MDM\s*" + pr.PORT_AFTER, "MDM port" + " " * 40_000 + "TBD"))
+        self.assertLess(time.perf_counter() - start, old)
+
+    def test_r2_1_port_after_blank_run_still_read(self):
+        for written in ("MDM port 6060", "MDM port: 6060", "MDM (port 6060)", "MDM (port : 6060)", "MDM: port 6060"):
+            with self.subTest(written=written):
+                self.assert_fires("R5", variant("MDM Service (5059)", written))
+
+    def test_r2_2_punctuated_waiting_state_is_open(self):
+        for cell in ("karar bekliyor.", "karar alınmadı.", "karar yok.", "karar bekliyor!", "Karar: açık.",
+                     "açık.", "karar bekliyor…"):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (True, False))
+                self.assert_fires("R2", TABLE_OPEN.replace("| karar bekliyor |", f"| {cell} |"))
+        for cell in ("karar verildi.", "kapandı.", "Karar: D7."):
+            with self.subTest(decided=cell):
+                self.assertEqual(pr.state_of(cell), (False, True))
+
+    def test_r2_3_cli_reads_at_most_the_limit(self):
+        import builtins
+        real, reads, pack = builtins.open, [], os.path.join(self.root, PACK_PATH)
+
+        class Bounded:
+            def __init__(self, path, *args, **kwargs):
+                self.f = real(path, *args, **kwargs)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                self.f.close()
+
+            def read(self, n=-1):
+                reads.append(n)
+                if n is None or n < 0 or n > pr.MAX_PACK_CHARS + 1:
+                    raise AssertionError(f"unbounded read: {n!r}")
+                return self.f.read(n)
+
+        with mock.patch.object(pr, "open", Bounded, create=True), redirect_stdout(io.StringIO()):
+            self.assertEqual(pr.main([pack, "--base", "HEAD"]), 0)
+        self.assertEqual(reads, [pr.MAX_PACK_CHARS + 1])
 
 
 class SabotageProof(Fixture):
