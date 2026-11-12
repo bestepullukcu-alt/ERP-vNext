@@ -32,7 +32,8 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
         if (receipt["Fingerprint"].AsString != fingerprint) return ReturnMutationResult.Error(409, "IDEMPOTENCY_KEY_REUSED");
         return new(Guid.Parse(receipt["ReturnId"].AsString), receipt["RmaNumber"].AsString,
             Guid.Parse(receipt["ShipmentId"].AsString), receipt["ResultingStatus"].AsString, true, receipt["StatusCode"].AsInt32,
-            Lines: receipt.TryGetValue("Lines", out var lines) && lines.IsBsonArray ? lines.AsBsonArray.Select(x => ReceiptLine(x.AsBsonDocument)).ToArray() : null);
+            Lines: receipt.TryGetValue("Lines", out var lines) && lines.IsBsonArray ? lines.AsBsonArray.Select(x => ReceiptLine(x.AsBsonDocument)).ToArray() : null,
+            CustomerRef: receipt.TryGetValue("CustomerRef", out var customer) && customer.IsString ? customer.AsString : null);
     }
     // MOD-0186 §34.2: the per-line result a Received receipt stores, so its replay answers the same ReturnResponse.lines[].
     private static BsonDocument LineDocument(ReturnLine line) => new()
@@ -97,6 +98,8 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                         order.TenantId = scope.TenantId; order.LegalEntityId = scope.LegalEntityId; order.CreatedBy = scope.ActorId;
                         order.CreatedAt = DateTimeOffset.UtcNow; order.Status = ReturnStatus.Requested; order.Version = 1;
                         order.CorrelationRoot = observation!.Root;
+                        // MOD-0186 r10 §35.6 (RB-27): the customer comes from the shipment read, never from the request body.
+                        order.CustomerRef = observation.CustomerRef;
                         await Debit(session, scope, order, observation, ct);
                     }
                     else
@@ -126,6 +129,7 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                     saved.Add("ReturnId", order.Id.ToString()); saved.Add("RmaNumber", order.RmaNumber); saved.Add("ShipmentId", order.ShipmentId.ToString());
                     saved.Add("ResultingStatus", order.Status.ToString()); saved.Add("StatusCode", id is null ? 201 : 200); saved.Add("ActorId", scope.ActorId.ToString());
                     if (completion is not null) saved.Add("Lines", new BsonArray(order.Lines.Select(LineDocument)));
+                    if (order.CustomerRef is not null) saved.Add("CustomerRef", order.CustomerRef);
                     await Receipts.InsertOneAsync(session, saved, cancellationToken: ct); await probe.AtAsync("receipt", ct);
                     var audit = Scope(scope); audit.Add("_id", Guid.NewGuid().ToString()); audit.Add("ReturnId", order.Id.ToString());
                     audit.Add("ActorId", scope.ActorId.ToString()); audit.Add("Version", order.Version); audit.Add("CorrelationRoot", root.ToString());
@@ -162,7 +166,8 @@ public sealed class ReturnRepository(IMongoDatabase database, IReturnCommitProbe
                         catch (MongoException ex) when (ex.HasErrorLabel("UnknownTransactionCommitResult") && commit < 2) { }
                     }
                     await probe.AtAsync("afterCommit", ct);
-                    return new(order.Id, order.RmaNumber, order.ShipmentId, order.Status.ToString(), false, id is null ? 201 : 200, Lines: completion is null ? null : order.Lines);
+                    return new(order.Id, order.RmaNumber, order.ShipmentId, order.Status.ToString(), false, id is null ? 201 : 200, Lines: completion is null ? null : order.Lines,
+                        CustomerRef: order.CustomerRef);
                 }
                 catch
                 {

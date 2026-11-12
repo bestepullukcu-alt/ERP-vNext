@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>استخدام لوحة المفاتيح</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>تعرض هذه الصفحة مرتجعًا واحدًا: ملخصه، وبنوده مع المنتج والدفعة، وسجلات الحجر التي أنشأها استلامه.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>موظفو المرتجعات والمستودع</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>اقرأ الملخص</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>يعرض الملخص الحالة والشحنة (رابط إلى صفحتها) والعميل والسبب ووقت إنشاء المرتجع. يُعلَّم المرتجع الذي أُنشئ قبل تسجيل العميل على المرتجعات بـ «Old record».</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>تحقّق من البنود</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>يعرض كل بند المنتج / SKU والدفعة والكمية والوحدة وكيفية ترحيل مخزونه عند الاستلام. يعرض البند غير المرحَّل السبب.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>افتح سجل الحجر</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>عند امتلاك صلاحية سجلات الحجر، يعرض كل بند مستلَم رقم KRN الخاص به؛ انقره لفتح سجل الحجر. بدون هذه الصلاحية لا يظهر العمود.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>اطّلع على كمية كل منتج لديك حسب المستودع والموقع والتشغيلة وحالة المخزون. القائمة للقراءة فقط: لا يتغير المخزون إلا من خلال الحركات.</value>

@@ -105,4 +105,9 @@ public sealed class ReturnReferenceTests
  {var f=await ReturnTestFixture.New();var result=await f.Create(quantity);Assert.Equal(422,result.StatusCode);Assert.Equal("INVALID_RETURN_QUANTITY",result.ErrorCode);Assert.Equal(0,f.Observations);Assert.Equal(new long[5],await f.Counts());}
  [Fact]public async Task LocalDuplicateLines_RejectsBeforeReferenceLookup()
  {var f=await ReturnTestFixture.New();var result=await f.Create(lines:[new("1","1","EA"),new("1","1","EA")]);Assert.Equal(422,result.StatusCode);Assert.Equal("DUPLICATE_RETURN_LINE",result.ErrorCode);Assert.Equal(0,f.Observations);Assert.Equal(new long[5],await f.Counts());}
+ // MOD-0186 r10 §35.6 (RB-27): the 3.5.0 shipment's customerRef is read as given; null or absent gives null; a non-string is refused.
+ [Fact] public void CustomerRef_IsReadAsGiven_NullOrAbsentIsNull_NonStringRefused()
+ {var n=Good();n["customerRef"]="14900000-0000-4000-8000-000000000001";Assert.Equal("14900000-0000-4000-8000-000000000001",Read(n).CustomerRef);
+  n["customerRef"]=null;Assert.Null(Read(n).CustomerRef);n.Remove("customerRef");Assert.Null(Read(n).CustomerRef);
+  n["customerRef"]=7;Assert.Throws<ReturnFailureException>(()=>Read(n));}
 }

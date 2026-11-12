@@ -17,5 +17,6 @@ public sealed class ReturnEntitlement
 public sealed record ReturnSourceLine(string LineNumber, string Quantity, string UomId, Guid? ItemId, Guid? SkuId, string? SkuLevel = null, string? LotId = null,
     string? IssueTransactionId = null);
 /// <param name="StockIssued">SHIPMENT-BUNDLE 3.4.0 <c>ShipmentDetail.stockIssued</c>: null on a shipment without a dispatch attempt (PRE_WP_P1).</param>
+/// <param name="CustomerRef">SHIPMENT-BUNDLE 3.5.0 <c>ShipmentDetail.customerRef</c> (MOD-0186 r10 §35.6): copied onto the return at create, as given.</param>
 public sealed record ReturnReferenceSnapshot(Guid ShipmentId, string Status, Guid Root, DateTimeOffset ObservedAt, IReadOnlyList<ReturnSourceLine> Lines,
-    bool? StockIssued = null);
+    bool? StockIssued = null, string? CustomerRef = null);
