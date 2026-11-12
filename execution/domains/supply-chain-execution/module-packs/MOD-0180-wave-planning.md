@@ -14,28 +14,38 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-revision: "r1 (2026-11-12) — ilk taslak (PA-MOD0180-01). Girdiler: ekran taslağı özeti BRIEF-MOD-0180, sahip kararları 01 (D-1…D-5) ve 02 (D-4, D-6…D-14, D-16; D-15 kural), mockup v2. Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ayrı adımdır; yazan ≠ onaylayan. Bu sürümde onay satırı yoktur."
-status_note: "draft r1 — kod izni yok. Açık noktalar §19.4'te Q-1…Q-22 (TBD yok). İzlenen kapılar: .antigravity/** satırları (PKS-001 §4 warehouse.waves.* oyması, RCS-001 §3 WAV) — sahip onayıyla ayrı adım; WMS-WAVE-BUNDLE taslağı DL-1'in ilk adımı, dondurma ayrı CT adımı; kararlar 02 dosyası bu checkout'ta yok (Q-15)."
+revision: "r2 (2026-11-12) — bağımsız inceleme r1 (`docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.md`, KOŞULLU, F-1…F-16) ve sahip kararları 03 (Y-1…Y-4, Q-6 = B, diğer Q'lar öneri gibi, Q-17 sahipten, Q-20 Ali) işlendi; F-1…F-16 kapandı (kapanış tablosu §19.5). Başlıca değişiklikler: depoda ertelenmiş sipariş varken dalga yönetimini kapatma 409 (Y-1, AC-15); Excluded / OrderCancelled → PartiallyCompleted (D-9 karar 03 Y-2 ile genişledi); ayrı ayar izni warehouse.waves.settings.configure (Tier-3, Q-6 = B); WMS-BUNDLE eklemeli sürümü (OutboundEventKind dahil) DL-2 başlamadan önce CT adımı (X-8); Governance Rol İzinleri köprüsü X-15; .antigravity satırları paket onayından önce (Y-4); atıflar dc010b911'e sabitlendi. r1: ilk taslak (PA-MOD0180-01; girdiler BRIEF-MOD-0180, kararlar 01 / 02, mockup v2). Onaylayan Ali (GMG-ERP) — D-17, karar 02; yazan ≠ onaylayan. Bu sürümde onay satırı yoktur."
+status_note: "draft r2 — kod izni yok. Q-1…Q-16, Q-18, Q-19, Q-21, Q-22 karar 03 ile kapandı (Q-15 r1'de kapanmıştı: kararlar 02 dosyası depoda); açık: Q-17 hedef tarih (sahip), Q-20 rol şablonu (Ali). r2 yeni bağımsız inceleme (CT-APR-02) ve Ali (D-17) onayı bekler. Onaydan önce kapanacak kapı: .antigravity/** satırları (PKS-001 §4 warehouse.waves.*, RCS-001 §3 WAV + X-12) — sahip onayıyla, paket onayından ÖNCE (Y-4, §6). DL-2 öncesi CT adımı: WMS-BUNDLE eklemeli sürümü (X-8). WMS-WAVE-BUNDLE taslağı DL-1'in ilk adımı, dondurma ayrı CT adımı."
 owner: supply-chain-execution / merkez (Beste) — MVP-5
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-12
-target: "Q-17 — sahip tarihi (plan satırı tarih vermez)"
+target: "TBD (sahip) — Q-17; plan satırı tarih vermez"
 form_field_count: 8
-dependencies: [MOD-0178 (S2 outbound + tahsis + pick görevi; XMC-001 seam'leri §5), MOD-0173 (defter yalnız dolaylı — 0180 stok okumaz / yazmaz), MOD-0173-FU02 (LOCATION yolu ve bin kodu), MOD-0040-FU02 (RCS-001 kayıt kodu servisi; DL-8 gelene kadar ara üretici Q-4), MOD-0018 (RBAC), BL-501 (merkezi denetim), WMS-BUNDLE (MOD-0178 sözleşmesi; eklemeli üye), WAREHOUSE-OUTBOUND 1.0.0 (okuma), LOCATION v1.1 (okuma), WMS-WAVE-BUNDLE (taslak yok — bu paketin sözleşmesi), DEV-0000]
+dependencies: [MOD-0178 (S2 outbound + tahsis + pick görevi; XMC-001 seam'leri §5), MOD-0173 (defter yalnız dolaylı — 0180 stok okumaz / yazmaz), MOD-0173-FU02 (LOCATION yolu ve bin kodu), MOD-0040-FU02 (RCS-001 kayıt kodu servisi; DL-8 gelene kadar ara üretici Q-4), MOD-0018 (RBAC; Governance Rol İzinleri köprüsü X-15), BL-501 (merkezi denetim), WMS-BUNDLE (MOD-0178 sözleşmesi; eklemeli üye + OutboundEventKind değerleri — X-8, DL-2 öncesi CT adımı), WAREHOUSE-OUTBOUND 1.0.0 (okuma), LOCATION v1.1 (okuma), WMS-WAVE-BUNDLE (taslak yok — bu paketin sözleşmesi), DEV-0000]
 ---
 
 # MOD-0180 — Wave Planning (Dalga Planlama)
 
-> **draft (r1, 2026-11-12).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
-> `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01) ile yazılır (AGENTS.md Çekirdek madde 7).
-> Bu sürüm kod, commit, push, PR ya da onay izni değildir.
+> **draft (r2, 2026-11-12).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
+> `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**,
+> D-17) ile yazılır (AGENTS.md Çekirdek madde 7). Bu sürüm kod, commit, push, PR ya da onay izni değildir.
+>
+> **r2 revizyon notu (2026-11-12).** Girdiler: bağımsız inceleme r1 `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.md` (KOŞULLU; 6 orta,
+> 10 düşük bulgu) ve sahip kararları 03 `docs/records/decisions/2026-11/mod0180-wave-planning-owner-decisions-03.md` (Y-1…Y-4; Q-6 = B;
+> Q-1…Q-5, Q-7…Q-16, Q-18, Q-19, Q-21, Q-22 öneri gibi; Q-17 sahipten; Q-20 Ali). F-1…F-16'nın hepsi bu sürümde kapandı; her bulgu ve
+> kararın değişikliği ve bölümü §19.5 "r1 → r2 kapanış tablosu"ndadır. Davranış değişiklikleri: Y-1 (dalga yönetimini kapatma 409 —
+> §4.5, §8.6, AC-15), Y-2 (D-9 genişlemesi — §8.3, §8.9, AC-30), Q-6 = B (ayar izni — §14, AC-15, AC-48), X-8 sırası (DL-2 öncesi), X-15
+> (rol köprüsü — AC-56). Form alanı sayısı (8) ve `golden_reference: slim` **değişmedi** (Q-1 = A, karar 03).
 >
 > **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`.
 >
 > **Atıf kısaltmaları.** `INV/` = `services/Diten.InventoryService/src/Diten.InventoryService.`; `INVT/` =
-> `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/`. Kod atıfları **`a3f329ece`** (MVP-1 kod hattı ucu,
-> `feature/sce/mod-0173-inventory-ledger-valuation`; MOD-0178 S2 ve MOD-0181 kodu bu hatta) üzerinde ölçüldü ve `a3f329ece:INV/...:satır`
-> biçiminde yazıldı. **Çıkarım** ve **öneri** olarak işaretlenmeyen her cümle bir kaynağa dayanır; kaynaksız değer yazılmadı (bilinmeyen = Q-n).
+> `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/`. Kod atıfları r2'de **`dc010b911`** üzerinde yeniden ölçüldü ve
+> `dc010b911:INV/...:satır` biçiminde sabitlendi (`dc010b911`, r1'in ölçtüğü MVP-1 kod hattı ucu `a3f329ece`'nin torunudur; aradaki fark yalnız
+> MOD-0181 DL-5 kodu — 0180'in atıf yaptığı 0178 dosyaları değişmedi, `SingleSystemOfRecordArchitectureTests` ve `CentralAuditDeclarationTests`
+> satırları kaydı, yeni satırlar yazıldı). **Öneksiz depo belgesi atıfları** (MOD-0178 **r28**, MOD-0181 **r8**, sözleşmeler, kurallar) de
+> `dc010b911` ağacındaki konumlardır. **Çıkarım** ve **öneri** olarak işaretlenmeyen her cümle bir kaynağa dayanır; kaynaksız değer yazılmadı
+> (bilinmeyen = Q-n ya da TBD).
 >
 > **Mockup bağı.** Ekran düzeni (pano, ayrıntı sekmeleri, planlayıcı, istisna kuyruğu, performans, durum örnekleri) **mockup v2'ye göre**dir
 > (`C:\Users\Ali\Downloads\Dalga Planlama (standalone) v2.html`, depo dışı). Paket mockup'ı kopyalamaz; kuralı paket koyar, mockup ile paket
@@ -43,12 +53,15 @@ dependencies: [MOD-0178 (S2 outbound + tahsis + pick görevi; XMC-001 seam'leri 
 
 ## 0. Kimlik ön kontrolü ve keşif
 
-**DCP-002 ön kontrolü (fail-closed) — bu oturumda koşuldu (HEAD `a3f329ece`, araç sha256 `ae87a566…`):**
+**DCP-002 ön kontrolü (fail-closed) — r1'de koşuldu (HEAD `a3f329ece`, araç sha256 `ae87a566…`); r2'de `dc010b911`'de yeniden koşuldu
+(araç aynı, `ae87a56615f5…`):**
 
 | Komut | Sonuç |
 |---|---|
-| `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "Wave Planning"` | çıkış 3 ("inceleme gerekli"); `ÖZET bulgular: blueprint 1 · sor 0 · registry 1 · paket 1 · gateway 0 · görev 1`; rapor sha256 `467aa3da2ec477e5f83b0637e761f434b9364a039c8d0c12f0fd67638bf79d14`; 562 ref incelendi |
-| `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "Dalga Planlama"` | çıkış 3; `ÖZET bulgular: blueprint 0 · sor 0 · registry 0 · paket 0 · gateway 0 · görev 1` (yalnız aynı CT kuyruğu satırı) |
+| r2: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --check-id MOD-0180 --name "Wave Planning"` | çıkış 0 — `OK  MOD-0180: proven against Blueprint/registry.` |
+| r2: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "Wave Planning"` | çıkış 3; `ÖZET bulgular: blueprint 1 · sor 0 · registry 1 · paket 2 · gateway 0 · görev 1`; rapor sha256 `ba84a0e299438c92c9c7af18d849970346ccc22e1138282d6ec016b93e45e208`, 605 satır. Paket 2 = r1'deki `MDM-059` + bu paketin kendisi (`MOD-0180-wave-planning.md`, r1 commit'i) — yeni aday yok |
+| r1: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "Wave Planning"` | çıkış 3 ("inceleme gerekli"); `ÖZET bulgular: blueprint 1 · sor 0 · registry 1 · paket 1 · gateway 0 · görev 1`; rapor sha256 `467aa3da2ec477e5f83b0637e761f434b9364a039c8d0c12f0fd67638bf79d14`; 562 ref incelendi |
+| r1: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "Dalga Planlama"` | çıkış 3; `ÖZET bulgular: blueprint 0 · sor 0 · registry 0 · paket 0 · gateway 0 · görev 1` (yalnız aynı CT kuyruğu satırı) |
 
 **Keşif bulgularının her birine karar:**
 
@@ -56,7 +69,7 @@ dependencies: [MOD-0178 (S2 outbound + tahsis + pick görevi; XMC-001 seam'leri 
 |---|---|
 | Blueprint 1 — `MOD-0180 'Wave Planning'`, veri nesnesi `waves` | **Bu paketin kaynağı.** Blueprint 8.8 `Blueprint_Data` satır 181 (aşağıda) |
 | Registry 1 — `MOD-0180` reserved / planned | **Bu paketin kaynağı.** `execution/registries/module-id-registry.md:318` |
-| Paket 1 — `execution/domains/master-data-management/module-packs/MDM-059-wave-planning.md` (8 eski dal: `origin/feature/module-catalog`, `origin/feature/dev-enablement`, …) | **Mükerrer değil — eski toplu taslak, yanlış domain, onaysız; devralınmadı.** İçeriği okundu (`git show refs/remotes/origin/feature/module-catalog:…`): `id: MDM-059`, `domain: master-data-management`, `status: draft`, `owner: ai-agent`, tek commit `8c3498bef` ("Initial commit", 2026-04-24), gövde yalnız şablon maddeleri. Aynı durum MOD-0178'de (`MDM-057`, `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:111`) ve MOD-0181'de (`MDM-060`, `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:181`) aynı kararla kapandı. Okunmaz, yazılmaz |
+| Paket 1 — `execution/domains/master-data-management/module-packs/MDM-059-wave-planning.md` (8 eski dal: `origin/feature/module-catalog`, `origin/feature/dev-enablement`, …) | **Mükerrer değil — eski toplu taslak, yanlış domain, onaysız; devralınmadı.** İçeriği okundu (`git show refs/remotes/origin/feature/module-catalog:…`): `id: MDM-059`, `domain: master-data-management`, `status: draft`, `owner: ai-agent`, tek commit `8c3498bef` ("Initial commit", 2026-04-24), gövde yalnız şablon maddeleri. Aynı durum MOD-0178'de (`MDM-057`, `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:119`) ve MOD-0181'de (`MDM-060`, `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:219`) aynı kararla kapandı. Okunmaz, yazılmaz |
 | Görev 1 — `execution/domains/supply-chain-execution/work-packs/mvp5-wms/CT-QUEUE.tsv` `WMS-MVP5-MOD0180` [INSPECTION_REQUIRED] "pack yok" | **Bu paketin iş satırı** (CT kuyruğu); çakışma değil |
 | Gateway 0 | Karar §15 — mevcut `/api/warehouse/{everything}` ailesi |
 
@@ -70,13 +83,13 @@ params, KPI bindings)` · SoR `waves, wave assignments, wave outcomes` · SoR Pr
 AI Tier `Assist` · AI Use Cases `Summarize; Extract; Recommend; Route` · AI Gate `Prompt Registry; HITL; Model Registry; Eval/Drift; Logging` ·
 AI Risk `Medium`.
 
-**Blueprint sapması (W-0180-01) — Build/Buy:** Blueprint `Buy/Partner` der. **Öneri: Build** (Q-13). Gerekçe: dalga, MOD-0178'in tahsis planına
+**Blueprint sapması (W-0180-01) — Build/Buy:** Blueprint `Buy/Partner` der. **Karar: Build** (Q-13 = A, karar 03). Gerekçe: dalga, MOD-0178'in tahsis planına
 ve görev üretimine süreç içi bağlıdır (§8.6); dış bir ürün bu seam'le konuşamaz. Emsal: MOD-0178 ve MOD-0181 Blueprint'te `Buy/Partner`'dır,
-sahip kararı Build'dir (`execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:197-201`).
+sahip kararı Build'dir (`execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:235-239`).
 
 **Diğer kimlik kaynakları:** `execution/domains/supply-chain-execution/domain-config.md:27` (WMS listesi `MOD-0180 Wave Planning`); plan
 `docs/roadmap/plans/integration-phase-and-mvp5-start-plan-2026-10-21.md:78` ("MOD-0180 Dalga Planlama (W-4)") ve `:124` ("… MOD-0181 sayım (0178 ile
-paralel) → MOD-0180 dalga → MOD-0182 barkod"); MOD-0178 paketi `:162-163` ("MOD-0180 Dalga ve MOD-0182 Barkod sonra") ve `:193` ("Dalga planlama,
+paralel) → MOD-0180 dalga → MOD-0182 barkod"); MOD-0178 paketi (r28) `:171-172` ("MOD-0180 Dalga ve MOD-0182 Barkod sonra") ve `:202` ("Dalga planlama,
 sayım | MOD-0180 / MOD-0181 | yok").
 
 ## 1. Module Summary
@@ -113,7 +126,7 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 ### 2.2 Kapsam dışı
 | Şey | Sahibi | 0180 nasıl dokunur |
 |---|---|---|
-| Stok bakiyesi, hareket, rezervasyon, tahsis | MOD-0173 / MOD-0173-FU03 / MOD-0178 | **dokunmaz**; tahsisi 0178 outbound'la birlikte yapar (`execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:1226-1227`) |
+| Stok bakiyesi, hareket, rezervasyon, tahsis | MOD-0173 / MOD-0173-FU03 / MOD-0178 | **dokunmaz**; tahsisi 0178 outbound'la birlikte yapar (`execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:1235-1236`) |
 | Outbound kaydı, pick görevi, onay, koli, sevke hazır | MOD-0178 | outbound / görev / olay koleksiyonlarını süreç içi **yalnız `Find`** ile okur; görev üretimi ve geri çekme **0178'in portuyla** (§8.6) |
 | Lokasyon ağacı, bin kodu | MOD-0173-FU02 | okur (yol + kod); düğüm yaratmaz |
 | Sevkiyat, taşıyıcı, POD | MOD-0183 / MOD-0184 (MVP-6) | yok; taşıyıcı süzgeci v1'de yok (Q-1) |
@@ -128,7 +141,7 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
    toplamı tutmaz; ilerleme okuma anında 0178 verisinden hesaplanır, saklanmaz (D-5).
 2. **0178 verisine yazılmaz.** 0180 üretim kodu `IOutboundShipmentRepository`, `IWarehouseTaskRepository` ya da `WarehouseCollections.*` üzerinde
    `Insert*` / `Update*` / `Replace*` / `Delete*` / `BulkWrite` çağırmaz; okumalar 0180 Persistence'ta `WarehouseCollections.*` sabitleriyle
-   **yalnız `Find`**'dır (0181 emsali: `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:261-264`). Görev üretimi
+   **yalnız `Find`**'dır (0181 emsali: `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:299-302`). Görev üretimi
    ve geri çekme 0178'in **kendi kodundadır** (port `IWavePickIssuance`, §8.6); 0180 onu çağırır (AC-16).
 3. **Sipariş bölünmez (D-8).** Bir outbound aynı anda en çok **bir** etkin dalgadadır ve bütün satırları / tahsisleri / görevleriyle birlikte
    dalgadadır.
@@ -147,7 +160,7 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 | `WaveEvent` | DL-1 | `wms_wave_events` | Insert-only zaman çizelgesi (olay geçmişi sekmesi); yerel GxP izi |
 | `WaveException` | DL-3 | `wms_wave_exceptions` | İstisna kuyruğu kaydı (Açık / Çözüldü / Yok sayıldı); tespit anahtarıyla tekil |
 | `WaveWarehouseSettings` | DL-1 | `wms_wave_settings` | Depo başına tek kayıt: `WaveManaged`, `TimeZoneId`, D-6 / D-11 eşikleri |
-| Koleksiyon sabitleri | DL-1 | `WaveCollections` (0180 Persistence, `Persistence/WavePlanning/`) | MOD-0178'in `WarehouseCollections`'ıyla paylaşılmaz (0181 `CycleCountCollections` emsali, `a3f329ece:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs:89`) |
+| Koleksiyon sabitleri | DL-1 | `WaveCollections` (0180 Persistence, `Persistence/WavePlanning/`) | MOD-0178'in `WarehouseCollections`'ıyla paylaşılmaz (0181 `CycleCountCollections` emsali, `dc010b911:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs:88-89`) |
 
 Koleksiyon öneki `wms_wave_*` önerisidir (Blueprint Placement "Domain App (WMS)"); kesin ad DL-1'in ilk ölçümüyle sabitlenir.
 
@@ -172,7 +185,7 @@ kısıtlıdır (yeni, donmuş olmayan yollar — MOD-0178 §8.18'deki donmuş yo
 şablonları tam yol parçasıdır (`[HttpPost("waves/{waveId:guid}/release")]` …); dosyalar **`INV/Api/Controllers/WavePlanning/`** altında ve
 namespace `Diten.InventoryService.Api.Controllers.WavePlanning`'dir. **Neden ayrı namespace:** 0178'in kayıt testi
 `Controllers.Warehouse` namespace'indeki bütün controller'ların zorladığı anahtarları 0178 manifestiyle eşit sayar
-(`a3f329ece:INVT/Warehouse/WarehouseRegistrationTests.cs:49-56`); 0180 controller'ı oraya konursa o test kırmızı olur (AC-5 sabotajı).
+(`dc010b911:INVT/Warehouse/WarehouseRegistrationTests.cs:49-56`); 0180 controller'ı oraya konursa o test kırmızı olur (AC-5 sabotajı).
 
 **Frontend rotaları:** `/Warehouse/Waves` (pano), `/Warehouse/Waves/Details/{waveId}` (ayrıntı, nav değil), `/Warehouse/WavePlanner`
 (planlayıcı), `/Warehouse/WaveExceptions` (istisna kuyruğu), `/Warehouse/WaveKpis` (performans) — BRIEF `:22`, `:53`, `:59`, `:66`.
@@ -182,7 +195,7 @@ namespace `Diten.InventoryService.Api.Controllers.WavePlanning`'dir. **Neden ayr
 ## 4. Entity Fields
 
 Tüm varlıklar InventoryService `EntityBase`'inden türer: `Id`, `TenantId`, `LegalEntityId`, `CreatedAt`, `UpdatedAt`, `Version` (int),
-`IsDeleted`, `DeletedAt` (MOD-0178 §4 ölçümü, `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:277-280`).
+`IsDeleted`, `DeletedAt` (MOD-0178 §4 ölçümü, `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md:286-289`).
 `IsDeleted` 0180'de hiç `true` olmaz (silme yok, §2.3 kural 6). `TenantId` / `LegalEntityId` sunucuda çözülür; gövde ya da sorguda gelirse 400.
 Kullanıcı alanı `EntityBase`'de yoktur; gereken varlık kendi alanını taşır (`CreatedBy`). Zamanlar UTC saklanır; kesim saati ayrıca yerel
 değer + saat dilimi ile saklanır (§8.4).
@@ -213,11 +226,11 @@ değer + saat dilimi ile saklanır (§8.4).
 | `Version` | int | If-Match `W/"<version>"` (D-14) |
 
 **form_field_count = 8** (yukarıdaki kalın sekiz alan) → `golden_reference: slim` (≤ 8; `.antigravity/rules/module-pack-standard.md` §2).
-**Slim / Compact kararı (Q-1'e bağlı):** mockup v2 yaratma panelinde **dokuz** alan gösterir: yukarıdaki sekizine ek **"Taşıyıcı / sevk
+**Slim / Compact kararı (Q-1 = A, karar 03 — kesin; r2'de değişmedi):** mockup v2 yaratma panelinde **dokuz** alan gösterir: yukarıdaki sekizine ek **"Taşıyıcı / sevk
 yöntemi"**. Bu alanın v1'de **veri kaynağı yoktur**: WAREHOUSE-OUTBOUND outbound'u taşıyıcı alanı taşımaz (`Address`
-`docs/analysis/contracts/warehouse-outbound.openapi.yaml:76-85`; outbound alanları MOD-0178 §4.5 `:413-434` — taşıyıcı yok); taşıyıcı MVP-6'da
-sevkiyata `ReadyToShip`'ten sonra bağlanır. Öneri (Q-1 = A): alan v1 formunda yoktur → 8 alan → **slim** (mockup'ın yan paneli korunur).
-Q-1 = B (alan kalır) → 9 alan → **compact** (yan panel yerine Create / Edit sayfaları) ve paket revizyonu.
+`docs/analysis/contracts/warehouse-outbound.openapi.yaml:76-85`; outbound alanları MOD-0178 §4.5 `:422-443` — taşıyıcı yok); taşıyıcı MVP-6'da
+sevkiyata `ReadyToShip`'ten sonra bağlanır. Karar (Q-1 = A): alan v1 formunda yoktur → 8 alan → **slim** (mockup'ın yan paneli korunur);
+taşıyıcı süzgeci FU-0180-CARRIER. (Reddedilen B: 9 alan → compact.)
 
 ### 4.2 WaveOrder
 | Alan | Tip | Kural |
@@ -259,6 +272,16 @@ Q-2), `TimeZoneId` (IANA, ör. `Europe/Istanbul`; `WaveManaged = true` için zor
 D-6), `RiskProgressPercent` (varsayılan 70 — D-6), `PendingTaskMinutes` (varsayılan 30 — D-11), `Version`. Kayıt yoksa: `WaveManaged = false`,
 eşikler varsayılan, saat dilimi yok (dalga yaratılamaz — 422 `WAVE_SETTINGS_REQUIRED`).
 
+**Dalga yönetimini kapatma (Y-1, karar 03):** `WaveManaged` `true` → `false` değişikliği, depoda (aynı kiracı + şirket + `WarehouseId`)
+`PickIssuance.State = Deferred` olan **ya da** `Allocating` durumundaki (tahsisi bitince `Deferred` olacak) bir MOD-0178 outbound'u varsa
+**409 `WAVE_SETTINGS_DEFERRED_ORDERS`** ile reddedilir (`details.deferredCount`, `details.allocatingCount`, ilk 50 outbound numarası); yazım yok.
+Kullanıcı önce bekleyen siparişleri bir dalgaya alıp serbest bırakır ya da 0178'de iptal eder (rezervasyonlar 0178'in iptal yoluyla geri bırakılır —
+karar 03 "geri bırakılır"ın okunuşu, çıkarım). Sayım 0178 koleksiyonlarında **yalnız `Find`**'dır (§2.3 kural 2). Diğer ayar alanlarının
+değişikliği ve `false` → `true` her zaman serbesttir. **Kalan yarış (çıkarım):** 0178 politika okumasını (X-3) ayar yazımından önce yapıp
+outbound'u ayar yazımından sonra `Deferred` yazan bir tahsis, kapalı depoda bir ertelenmiş outbound bırakabilir; bu durumda `GET /waves/settings/
+{warehouseId}` cevabı `deferredOrderCount > 0` gösterir ve çıkış yolu ayarı yeniden `true` yapıp siparişi dalgaya almaktır (açma her zaman serbest).
+Pano KPI'ı "dalgaya girmemiş sipariş" aynı sayıyı gösterir.
+
 ### 4.6 Indexes
 Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 - `wms_wave_waves`: tekil `(TenantId, Number)`; tekil kısmi `(TenantId, LegalEntityId, CreatedBy, IdempotencyKey)`;
@@ -266,7 +289,7 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 - `wms_wave_orders`: **tekil kısmi** `(TenantId, LegalEntityId, OutboundId)` `PartialFilterExpression { Active: true }` (D-8);
   `(TenantId, LegalEntityId, WaveId, State)`.
 - `wms_wave_events`: tekil `(TenantId, WaveId, Seq)`; istek anahtarı tekil kısmi `(TenantId, WaveId, ActorUserId, RequestOp, IdempotencyKey)`
-  (MOD-0178 `wms_task_events` deseni, `:482-487`).
+  (MOD-0178 `wms_task_events` deseni, `:491-496`).
 - `wms_wave_exceptions`: tekil `(TenantId, LegalEntityId, SubjectKey)`; `(TenantId, LegalEntityId, WarehouseId, Status, DetectedAt)`.
 - `wms_wave_settings`: tekil `(TenantId, LegalEntityId, WarehouseId)`.
 - MOD-0178 koleksiyonlarına 0180 **index eklemez** (okumalar mevcut index'lerle — §8.8; gerekirse XMC-001 ile sorulur).
@@ -287,28 +310,30 @@ Kiracı + şirket önce (MOD-0178 §4.6 deseni):
 | `INV/Infrastructure/Authorization/WavePermissions.cs` | izin sabitleri | DL-1 |
 | `INVT/WavePlanning/` | birim, entegrasyon, mimari testler (0180'in kendi test ağacı; 0178 davranış testleri **burada**) | her dilim |
 | `frontend/Diten.Web/Views/Warehouse/{Waves,WavePlanner,WaveExceptions,WaveKpis}/`, `frontend/Diten.Web/Controllers/`, `frontend/Diten.Web/wwwroot/assets/js/Warehouse/…`, `frontend/Diten.Web/Resources/Views/Warehouse/…` | ekranlar, proxy controller'lar, JS, resx (7 dil) | DL-4, DL-5 |
-| `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`, `frontend/Diten.Web/Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` | ortak Web kaynakları — **yalnız eklemeli anahtar** (nav + yardım §25); mevcut anahtar değişmez | DL-4, DL-5 |
-| `frontend/Diten.Web.Tests/Warehouse/WavePlanningL10nAndHelpTests.cs` (yeni) | 0180'in kendi L10n / yardım testi (0181 emsali); 0178 testi değişmez | DL-4 |
-| `gateway/Diten.ApiGateway.Tests/Mod0180WaveRouteTests.cs` (yeni, integration-agent) | uç kapsama testi; `ocelot.json` değişmez | DL-6 |
+| `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`, `frontend/Diten.Web/Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` | ortak Web kaynakları — **yalnız eklemeli anahtar**: nav (`Nav.Module.*`, `Nav.Page.*`), sayfa yardımı (`Help.*`, §25) ve Rol İzinleri satır adları (`Perm.Entity.*` — `SharedResource`'ta; 0181 `Perm.Entity.COUNTS` / `.VARIANCES` emsali, `SharedResource.en.resx:1317`, `:1320`; ekranın fiil köprüsü ayrı Governance dosyalarıdır — X-15); mevcut anahtar değişmez | `Perm.Entity.*` DL-1, DL-3, DL-5 (manifestin anahtar bildirdiği dilim); nav + yardım DL-4, DL-5 |
+| `frontend/Diten.Web.Tests/Warehouse/WavePlanningL10nAndHelpTests.cs` (yeni) | 0180'in kendi L10n / Layout / yardım testi (0181 `CycleCountL10nAndHelpTests.cs:235` emsali — Layout satırı); 0178 testi değişmez | DL-4 |
+| `gateway/Diten.ApiGateway.Tests/Mod0180WaveRouteTests.cs` (yeni, integration-agent) | uç kapsama testi — üretim `ocelot.json`'u (test projesine bağlı kopya) ve üretim controller kaynağını okur (§15); `ocelot.json` değişmez | DL-6 |
 
 ### 5.1 XMC-001 — başka modülün dosyalarına dokunuşlar (her biri dokunmadan önce sahibine sorulur; tek tek)
 
-| # | Dosya (ölçüm `a3f329ece`) | Bugün | Gereken değişiklik (yalnız eklemeli) | Sahip | Dilim |
+| # | Dosya (ölçüm `dc010b911`) | Bugün | Gereken değişiklik (yalnız eklemeli) | Sahip | Dilim |
 |---|---|---|---|---|---|
 | X-1 | `INV/Domain/Warehouse/Entities/OutboundShipmentEntities.cs` | outbound'da görev üretim kipi yok | nullable `PickIssuance { State: Deferred \| Issued, WaveId?, WaveNumber?, IssuedAtUtc? }`; `null` = bugünkü davranış (görev tahsiste açılır) | MOD-0178 (MVP-1 CT, Beste) | DL-2 |
 | X-2 | `INV/Domain/Warehouse/Entities/` altındaki `WarehouseTask` varlığı | dalga bağı yok | nullable `WaveRef { WaveId, WaveNumber, Sequence }` (yalnız `Kind = Pick`) | MOD-0178 | DL-2 |
-| X-3 | `a3f329ece:INV/Application/Features/OutboundShipments/Services/OutboundAllocationService.cs:172-185`, `:200-213`, `:228-234` | işlem B pick görevi numaralarını alır (`:172-185`), görevleri kurar (`:200-213`, `PickTask` `:248`) ve outbound + görevleri tek işlemde yazar (`:228-234`) | **erteleme dalı:** `IPickIssuancePolicy.ForWarehouse(...)` `Deferred` derse numara alınmaz, görev kurulmaz, outbound `Allocated` + `PickIssuance.State = Deferred` yazılır, `Allocated` olayının `pickTasks` verisi boş + `pickIssuance = Deferred`; `Immediate` (varsayılan) dalında kod yolu **değişmez** | MOD-0178 | DL-2 |
-| X-4 | yeni 0178 dosyaları: `INV/Application/Features/Warehouse/Ports/IPickIssuancePolicy.cs` (+ varsayılan `ImmediatePickIssuancePolicy`), `INV/Application/Features/Warehouse/Ports/IWavePickIssuance.cs`, `INV/Application/Features/OutboundShipments/Services/WavePickIssuanceService.cs` | yok | port + 0178 içi uygulama (§8.6): görev açma ve geri çekme **0178 kodunda**; 0180 yalnız `IWavePickIssuancePolicy` uygulamasını kaydeder (DI) ve `IWavePickIssuance`'ı çağırır | MOD-0178 | DL-2 |
-| X-5 | `a3f329ece:INV/Domain/Warehouse/Enums/OutboundShipmentEnums.cs:22-39` | `OutboundEventKind` 15 değer | eklemeli `PickTasksIssued`, `PickTasksWithdrawn` | MOD-0178 | DL-2 |
-| X-6 | `a3f329ece:INV/Domain/Warehouse/Rules/WarehouseRecordCodeRules.cs:14-33` | `TypePrefixes` = PUT / PCK / OUT / PKG / CNT (`:28`); bilinmeyen önek reddedilir | **Q-4 = A ise:** `Wave = "WAV"` sabiti + listeye `WAV` (MOD-0181 `CNT` emsali, `:26`) | MOD-0178 | DL-1 |
-| X-7 | MOD-0178 Toplama Görevleri listesi: `GetPickTaskListQuery` (`INV/Application/Features/PickTasks/Queries/PickTaskQueries.cs`), `INV/Api/Controllers/Warehouse/PickTasksController.cs`, Web `Views/Warehouse/PickTasks/` + `index.js` + resx (7 dil) | dalga yok | **Q-12 = A ise:** isteğe bağlı `waveId` süzgeci, `sort=waveSequence`, liste sütunu "Dalga" (`WaveNumber` + sıra); varsayılan sıralama değişmez | MOD-0178 | DL-4 |
-| X-8 | `docs/analysis/contracts/wms-bundle.openapi.yaml` (MOD-0178'in sözleşmesi, 1.1.0) | dalga üyesi yok | eklemeli üyeler: pick görevi `wave`, outbound görünümü `pickIssuance`, X-7 süzgeç / sıralama — **sürüm artışı MOD-0178'in CT dondurma adımıdır** (0180 dev dilimi yazmaz) | MOD-0178 + CT | DL-2 / DL-4 öncesi CT adımı |
-| X-9 | `a3f329ece:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs:89`, `:96-109` | 0181 `CycleCountCollections` bildirimi `:89`; `declared` listesi `:96-109` | `WaveCollections.All` için `Assert.Equal` + `declared`'a `.Concat(WaveCollections.All)`; varsa `GetCollection` önek listesine `WaveCollections.` | MOD-0173 (MVP-1 CT, Beste) | DL-1 |
-| X-10 | `a3f329ece:INVT/CentralAudit/CentralAuditDeclarationTests.cs:51`, `:128` | `Assert.Equal(116, WriteCommands.Length)` (`:51`); `Assert.Equal(14, seen)` (`:128`); sağlayıcı listesi | sayı 116 + dilimin 0180 yazma komutları (toplam 11); listeye `WavePlanningManifestProvider`; `seen` 0180 depolarının `WithTransactionAsync` geri çağrıları kadar | MOD-0173 (MVP-1 CT, Beste) | DL-1…DL-3 |
+| X-3 | `dc010b911:INV/Application/Features/OutboundShipments/Services/OutboundAllocationService.cs:172-185`, `:200-213`, `:227-233`, `:248`, `:288` | işlem B pick görevi numaralarını işlem dışında alır (`:172-185`), görevleri kurar (`:200-213`), outbound + olay + görevleri tek `InTransactionAsync`'te yazar (`:227-233`); görev kurucusu `PickTask` `private static` (`:248`), `Created` olay kurucusu `TaskCreated` `private` örnek yöntemi (`:288`) | (a) **kurucuların taşınması (F-16):** `PickTask` ve `TaskCreated` **davranış değişmeden** 0178 içinde ortak bir yardımcıya taşınır (öneri `INV/Application/Features/OutboundShipments/Services/OutboundPickTaskFactory.cs`, X-4 dosyaları arasında); `OutboundAllocationService` ve `WavePickIssuanceService` aynı yardımcıyı çağırır (AC-19'un "0178 `PickTask` kuruluşuyla aynı" şartı bu yüzden tek kaynaktan karşılanır); taşımanın davranış değiştirmediğinin kanıtı 0178'in mevcut S2 testlerinin değişmeden yeşil kalmasıdır (AC-18). (b) **erteleme dalı:** `IPickIssuancePolicy.ForWarehouse(...)` `Deferred` derse numara alınmaz, görev kurulmaz, outbound `Allocated` + `PickIssuance.State = Deferred` yazılır, `Allocated` olayının `pickTasks` verisi boş + `pickIssuance = Deferred`; `Immediate` (varsayılan) dalında kod yolu **değişmez** | MOD-0178 | DL-2 |
+| X-4 | yeni 0178 dosyaları: `INV/Application/Features/Warehouse/Ports/IPickIssuancePolicy.cs` (+ varsayılan `ImmediatePickIssuancePolicy`), `INV/Application/Features/Warehouse/Ports/IWavePickIssuance.cs`, `INV/Application/Features/OutboundShipments/Services/WavePickIssuanceService.cs`, `INV/Application/Features/OutboundShipments/Services/OutboundPickTaskFactory.cs` (X-3 a) | yok | port + 0178 içi uygulama (§8.6): görev açma ve geri çekme **0178 kodunda**; **adlar (F-12, tek ad):** port `IPickIssuancePolicy` (0178), 0180'in uygulaması `WavePickIssuancePolicy` (0180 `Features/WavePlanning/Ports/` altında, depo ayarını okur); 0180 yalnız `WavePickIssuancePolicy`'yi `IPickIssuancePolicy` olarak kaydeder (DI, X-11) ve `IWavePickIssuance`'ı çağırır | MOD-0178 | DL-2 |
+| X-5 | `dc010b911:INV/Domain/Warehouse/Enums/OutboundShipmentEnums.cs:22-39` | `OutboundEventKind` 15 değer | eklemeli `PickTasksIssued`, `PickTasksWithdrawn` | MOD-0178 | DL-2 |
+| X-6 | `dc010b911:INV/Domain/Warehouse/Rules/WarehouseRecordCodeRules.cs:14-33` | `TypePrefixes` = PUT / PCK / OUT / PKG / CNT (`:28`); bilinmeyen önek reddedilir | **Q-4 = A (karar 03):** `Wave = "WAV"` sabiti + listeye `WAV` (MOD-0181 `CNT` emsali, `:26`) | MOD-0178 | DL-1 |
+| X-7 | MOD-0178 Toplama Görevleri listesi: `GetPickTaskListQuery` (`INV/Application/Features/PickTasks/Queries/PickTaskQueries.cs`), `INV/Api/Controllers/Warehouse/PickTasksController.cs`, Web `Views/Warehouse/PickTasks/` + `index.js` + resx (7 dil) | dalga yok | **Q-12 = A (karar 03):** isteğe bağlı `waveId` süzgeci, `sort=waveSequence`, liste sütunu "Dalga" (`WaveNumber` + sıra); varsayılan sıralama değişmez | MOD-0178 | DL-4 |
+| X-8 | `docs/analysis/contracts/wms-bundle.openapi.yaml` (MOD-0178'in sözleşmesi, `version: 1.1.0` `:64`) | dalga üyesi yok; `OutboundEventKind` kapalı enum, 15 değer (`:1812-1814`); servis sözleşme testleri şemayı **kapalı** okur — `additionalProperties` yazmayan her nesne `false` sayılır (`dc010b911:INVT/TestInfrastructure/ContractSchemas.cs:19-21`, `:404-407`) | eklemeli: (1) `OutboundEventKind` enum'una `PickTasksIssued`, `PickTasksWithdrawn` (X-5'in tel karşılığı); (2) pick görevi (`WarehouseTask` `:1352`, `OutboundPickTask` `:1694`) `wave` üyesi; (3) outbound görünümü (`OutboundShipmentView` `:1757`) `pickIssuance` üyesi; (4) X-7 süzgeç / sıralama (`waveId`, `sort=waveSequence`). **Sıra (F-3):** şemalar kapalı olduğu için DTO'ya `pickIssuance` / `wave` eklendiği an değişmeyen 0178 sözleşme testleri kırmızı olur → eklemeli sürüm **DL-2 başlamadan önce** yazılır ve dondurulur (CT adımı; 0180 dev dilimi yazmaz). **Sürüm numarası sabitlenmez:** MOD-0178 r28 WMS-BUNDLE 1.2.0'ı Item adımına ayırdı (MOD-0178 paketi `:25`); 0180 üyeleri "0178 CT ile eşgüdümlenen bir sonraki eklemeli sürüm (1.2.0 ya da 1.3.0)"e girer — **hangisi olacağı CT kararıdır** (§19.4 CT-1). (4) aynı sürüme girer (Q-12 = A); CT ayrı sürüm seçerse (4) DL-4 başlamadan önce | MOD-0178 + CT | DL-2 başlamadan önce CT adımı ((4) en geç DL-4 öncesi) |
+| X-9 | `dc010b911:INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs:88-89`, `:92-93`, `:100-115`, `:120` | 0181 bildirimleri `CycleCountCollections.All` (`:88-89`) ve `.Evidence` (`:92-93`); `declared` listesi `:100-115`; ad öneki süzgecinde `wms_` zaten var (`:120`, MOD-0178 DL-1) | `WaveCollections.All` için `Assert.Equal` (0181 satırlarının yanında) + `declared`'a `.Concat(WaveCollections.All)`; önek süzgeci **değişmez** (`wms_wave_*` `wms_` ile yakalanır) | MOD-0173 (MVP-1 CT, Beste) | DL-1 (DL-3'te `wms_wave_exceptions` aynı listeye eklenir) |
+| X-10 | `dc010b911:INVT/CentralAudit/CentralAuditDeclarationTests.cs:53`, `:60-69`, `:130` | `Assert.Equal(117, WriteCommands.Length)` (`:53`; 116 → 117 MOD-0181 DL-5, `c76c02944`); sağlayıcı listesi (`:60-69`); `Assert.Equal(14, seen)` (`:130`) | sayı = **dilim başındaki ölçülen sayı + dilimin 0180 yazma komutları** (0181 emsali, `:44-52` yorumları; 0180 toplamı 11) — paket sabit bir taban sayı yazmaz, dilim kaydı tabanı o dilimin başlangıç commit'inde ölçer; listeye `WavePlanningManifestProvider`; `seen` 0180 depolarının `WithTransactionAsync` geri çağrıları kadar artar (yalnız yeni işlem açan depo) | MOD-0173 (MVP-1 CT, Beste) | DL-1…DL-3 |
 | X-11 | `INV/Api/Program.cs` | manifest kayıtları | `WavePlanningManifestProvider` + `AddWavePlanning()` (politika uygulamasının DI kaydı dahil; kompozisyon kökü) | MOD-0173 (MVP-1 CT, Beste) | DL-1, DL-2 |
 | X-12 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs` (commit `2f7b6145e` `RuleAheadOfCatalogue`) | `CNT` → "MOD-0040-FU02 DL-8" satırı; RCS-001 §3'teki her OTOMATİK satır ya katalogda ya bu sözlükte olmalı | RCS-001 §3'e `WAV` satırı yazıldığı **aynı adımda** sözlüğe `["WAV"] = "MOD-0040-FU02 DL-8"` (yoksa test kırmızı) | MOD-0040-FU02 (Beste, K2) | `.antigravity` kapısı adımı (§6) |
 | X-13 | `services/Diten.AuthService/**` rol şablonu | — | planlayıcı / vardiya sorumlusu / performans izleyici rol önerisi (§14) | AuthService — Ali (Auth) | ayrı WP |
-| X-14 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` | 0178 uç listesi | **değişmez** — 0180 ayrı dosya açar (X-yok; bilgi) | integration-agent | — |
+| X-14 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` | 0178 uç kapsama testi; üretim `ocelot.json`'u okur (`:23`; test projesine bağlı kopya `gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj:26`) ve **bütün** InventoryService controller'larını özyineli tarar — sınıf `[Route]`'u `api/warehouse` ile başlayan her controller (`:219-236`) | **değişmez.** Ölçülen sonuç: 0180 controller'ları (`[Route("api/warehouse")]`, `Controllers/WavePlanning/`) bu testin taramasına **kendiliğinden girer**; her 0180 ucu `/api/warehouse/{everything}` ile tam bir rotaya eşleşir, PATCH yoktur (§3) → test değişmeden yeşil kalmalıdır (AC-55). 0180 ayrı dosya açar (X-yok; bilgi) | integration-agent | — |
+| X-15 | Governance Rol İzinleri köprüsü: `frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml` (`ActionVerbs` köprüsü; `configure` `:239`, `release` `:269`, `resolve` `:276`, `read` / `create` / `update` / `export` / `cancel` `:165-196` var; **`recall` yok**), `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (`ActionVerb_*`), `frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js` (`ACTION_FAMILIES` `:52-54`; `configure` `:52`, `release` / `resolve` `:54` var; **`recall` fiil olarak yok**) | ölçen bekçi `frontend/Diten.Web/tests/role-assignments-label-ledger.test.js` üretim manifestlerini okur; defter `docs/roadmap/backlog/role-permission-label-ledger.md` "Tavan: fiil 0 · satır 96" — fiil defteri **boş kalmak zorunda**, yeni fiil deftere yazılamaz | eklemeli: (1) yeni fiil **`recall`** (`warehouse.waves.recall`, DL-3): köprüye `["recall"] = Localizer["ActionVerb_Recall"].Value`, 7 resx'e `ActionVerb_Recall` (en dışı değerler en'den farklı), `perm-label.js` `ACTION_FAMILIES`'te bir aileye `recall` (öneri: `danger` / geri alma ailesi — kesin aile sahibin); (2) **`settings.configure`** (Q-6 = B, DL-1): fiil `configure` köprüde **var** (`:239`, aile `:52`) — fiil eklemesi gerekmez, yalnız satır adı; (3) satır adları `SharedResource.{7}.resx` `Perm.Entity.*` (§5 tablosu; beklenen kodlar `WAVES`, `WAVESSETTINGS`, `WAVESEXCEPTIONS`, `WAVESKPIS` — **çıkarım**, kesin kodu üretim `PermLabel.split` verir, DL-1'de vitest ile ölçülür). **Sahip (depoda ölçüldü):** bu dosyaları sahiplenen bir module pack ya da domain-config satırı **yok** (`git grep` `execution/`: 0); ekranı Ali kurdu (`af9602775`, `d593edf4a`, `8bcd75314`; BL-508 / WP-WEB-ROLE-PERMISSION-LABELS-01), son eklemeli değişiklik MOD-0181 DL-3 (`65b968b64`, Beste "Köprüye eklemeli yaz"), 0181 r8 bu dokunuşun sahip teyidini hâlâ açık yazar (MOD-0181 paketi `:1395`). **XMC-001 durumu:** açık — dokunmadan önce sorulur; soru Ali'ye (RBAC / MOD-0018, ekranın kurucusu) ve Beste'ye (merkez) | Governance Rol İzinleri — **sahip TBD** (öneri Ali, MOD-0018) | DL-1 (satır adları), DL-3 (`recall` + satır), DL-5 (satır) |
+| X-16 | `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` §14.1 (`:2117-2120`) | "`warehouse.*` MOD-0178'in; MOD-0180 / 0181 / 0182 kendi namespace'lerini açar" (Q-08) | Q-7 = A (karar 03): §14.1'e not — "`warehouse.waves.*` alt ad alanı MOD-0180'indir (D-4, 2026-11-12; PKS-001 §4 satırı)"; 0178 paket revizyonu (yalnız not, davranış yok) | MOD-0178 (MVP-1 CT, Beste) | `.antigravity` kapısı adımıyla (§6) |
 
 **MOD-0178 bekçi testleri değişmez (bağlayıcı):** `INVT/Warehouse/**`, `INVT/PickTasks/**` (varsa) ve 0178 adını taşıyan mimari testler
 **hiçbir satırı değişmeden** yeşil kalır; 0178'e eklenen davranış (X-1…X-5) 0180'in test ağacında (`INVT/WavePlanning/`) ölçülür. Paylaşılan servis
@@ -316,14 +341,25 @@ geneli bekçiler (X-9, X-10) MOD-0173'ündür ve yalnız eklemeli değişir (MOD
 `git diff --stat <dilim-başı>..<dilim-sonu> -- services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Warehouse` boş (AC-18).
 
 ## 6. Protected Paths
-- `.antigravity/**` — kullanıcı onayı ister (Çekirdek md. 6). **İzlenen kapı — sahip onayıyla ayrı adım (MOD-0181 `CNT` emsali,
-  `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md:535-538`):** iki satır —
-  (1) **PKS-001 §4**: bugün `warehouse.*` satırı MOD-0178'indir (`.antigravity/rules/permission-key-standard.md:105`); D-4 `warehouse.waves.*`'ı
-  seçti → satıra "`warehouse.waves.*` → MOD-0180 Wave Planning (D-4, 2026-11-12)" oyması (Q-7); (2) **RCS-001 §3**: `WAV` satırı
-  (`.antigravity/rules/record-coding-standard.md:45-75` tablosunda yok, ölçüldü) + aynı adımda X-12. **Onaylayan:** Beste. **Yazan:** ayrı WP;
-  bu paket ve geliştirme dilimleri `.antigravity/**`'a yazmaz. **Kapanış:** modül PR'ı açılmadan önce; paket onayını ve dilim başlangıcını
-  engellemez. İzleme: §18'deki işaretsiz madde.
-- `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız integration-agent; bu paket değişiklik **istemez** (§15).
+- `.antigravity/**` — kullanıcı onayı ister (Çekirdek md. 6). **Kapı — paket onayından ÖNCE, sahip onayıyla (Y-4, karar 03; D-4 "paket
+  hazırlanırken yazılır"):** iki satır + aynı adımda X-12 ve X-16. **Hazırlayan:** CT (satırları hazırlar); **onaylayan:** Beste (sahip —
+  `.antigravity/**` değişikliği kullanıcı onayıyla); bu paket ve geliştirme dilimleri `.antigravity/**`'a **yazmaz**. **Kapanış:** paketin
+  onay satırı (CT-APR-01) yazılmadan önce; kapı kapanmadan paket `approved` / `ready-for-dev` olmaz (§18, §24). r1'in "modül PR'ı açılmadan
+  önce; paket onayını engellemez" zamanlaması (MOD-0181 emsali, MOD-0181 paketi `:573-576`) karar 03 ile **değişti**. Önerilen satır metinleri
+  (son metin kapı adımında sahip onayıyla; paket bu metni yalnız önerir):
+  (1) **PKS-001 §4** (`.antigravity/rules/permission-key-standard.md:105`; bugün `warehouse.*` satırı bütünüyle MOD-0178'in, Q-08 "one
+  namespace per WMS module"), Q-7 = A — `warehouse.*` satırının sonuna "(`warehouse.waves.*` hariç — MOD-0180)" ve hemen altına yeni satır:
+  `` | `warehouse.waves.*` | `Diten.InventoryService` — MOD-0180 Wave Planning (dalgalar, dalga istisnaları, dalga KPI'ları, depo dalga
+  ayarı; owner decision D-4 2026-11-12 — `warehouse.*` altında MOD-0180'e ayrılmış alt ad alanı, Q-08 "one namespace per WMS module"
+  kuralına adlı istisna; MOD-0180 pack §14; base path `/api/warehouse/waves`) | MOD-0180 (Wave Planning) | ``
+  (2) **RCS-001 §3** (`.antigravity/rules/record-coding-standard.md:45-75` tablosunda `WAV` yok, ölçüldü; satır `:71` `CNT` emsali):
+  `` | Dalga (MOD-0180) | OTOMATİK | `WAV` | yok — **yeni** (sahip kararı D-4, 2026-11-12; kod yok); Inventory servisinde MOD-0178'in geçici
+  sayacından üretilecek (`IWarehouseRecordCodeAllocator`, MOD-0180 Q-4 = A); ortak servise (MOD-0040-FU02) geçişte DL-8'e `WAV` eklenir
+  (FU-0180-RCS) | ``
+  (3) aynı adımda **X-12** (Platform `RecordCodeTypeCatalogTests` `RuleAheadOfCatalogue` sözlüğüne `["WAV"] = "MOD-0040-FU02 DL-8"` — yoksa
+  RCS-001 satırı bu testi kırmızı yapar) ve **X-16** (MOD-0178 §14.1 notu). İzleme: §18'deki işaretsiz madde.
+- `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız integration-agent; bu paket değişiklik **istemez** (§15). AC-55'in S-55a sabotajı dosyayı
+  integration-agent eliyle geçici bozar ve geri alır; kalıcı fark bırakmaz.
 - `services/Diten.Building.Blocks/**` (BL-501 olduğu gibi).
 - MOD-0178 kodu ve testleri — yalnız §5.1 satırları; başka 0178 dosyası yok. MOD-0173 / 0174 / 0175 / 0176 / 0177 / 0181 dosyası yok.
 - Donmuş sözleşmeler: `docs/analysis/contracts/warehouse-outbound.openapi.yaml` (1.0.0 — 0180 değiştirmez), `wms-bundle.openapi.yaml` (yalnız X-8,
@@ -334,18 +370,19 @@ geneli bekçiler (X-9, X-10) MOD-0173'ündür ve yalnız eklemeli değişir (MOD
 
 | Bağımlılık | Tür | Durum (ölçüm) | Kullanım | Değişiklik | Sahip |
 |---|---|---|---|---|---|
-| MOD-0178 S2 outbound + tahsis | HARD | kod var — `a3f329ece:INV/Application/Features/OutboundShipments/Services/OutboundAllocationService.cs`; kalıcı pick planı `PlannedBins[]` (MOD-0178 §4.5 `:443`) | uygun sipariş listesi, satır / tahsis / plan okuması | X-1, X-3 | MVP-1 CT (Beste) |
-| MOD-0178 pick görevi + onay | HARD | görev outbound'la birlikte açılır (`OutboundAllocationService.cs:200-213`); tek başına iptal edilmez, outbound iptali kapatır (`MOD-0178…md:1388-1389`; kod `a3f329ece:INV/Application/Features/OutboundShipments/Handlers/CommandHandlers/OutboundFlowHandlers.cs:161`); bütün görevler terminal → outbound `Picked` (`a3f329ece:INV/Application/Features/PickTasks/Services/PickTaskCompletion.cs:39`) | görev üretimi (port), ilerleme, istisna | X-2, X-4, X-5 | MVP-1 CT (Beste) |
-| MOD-0178 paketleme / sevk durumu | okuma | outbound durumları `Packed` / `ReadyToShip` / `Shipped` (MOD-0178 §8.18 `:1326-1336`) | D-5 ilerleme | yok | MVP-1 CT (Beste) |
-| MOD-0173-FU02 LOCATION | HARD (okuma) | yol `Site→Warehouse→StorageLocation→Zone→Bin` (`docs/analysis/contracts/location.openapi.yaml:6`); v1.1 toplu bin kodu `{AISLE}-{RACK:00}-{LEVEL:00}-{POS:00}` (`:148`, `:280-287`); **koridor / raf alanı yok** — yalnız kod (ölçüldü `:205-252`); **saat dilimi alanı yok** (`git grep -i timezone` LOCATION sözleşmesi + InventoryService: 0) | rota girdisi (§8.7), depo doğrulaması | yok (Q-3 B seçilirse XMC) | MVP-1 CT (Beste) |
+| MOD-0178 S2 outbound + tahsis | HARD | kod var — `dc010b911:INV/Application/Features/OutboundShipments/Services/OutboundAllocationService.cs`; kalıcı pick planı `PlannedBins[]` (MOD-0178 §4.5 `:452`) | uygun sipariş listesi, satır / tahsis / plan okuması | X-1, X-3 | MVP-1 CT (Beste) |
+| MOD-0178 pick görevi + onay | HARD | görev outbound'la birlikte açılır (`OutboundAllocationService.cs:200-213`); tek başına iptal edilmez, outbound iptali kapatır (`MOD-0178…md:1397-1398`; kod `dc010b911:INV/Application/Features/OutboundShipments/Handlers/CommandHandlers/OutboundFlowHandlers.cs:161`); bütün görevler terminal → outbound `Picked` (`dc010b911:INV/Application/Features/PickTasks/Services/PickTaskCompletion.cs:39`) | görev üretimi (port), ilerleme, istisna | X-2, X-4, X-5 | MVP-1 CT (Beste) |
+| MOD-0178 paketleme / sevk durumu | okuma | outbound durumları `Packed` / `ReadyToShip` / `Shipped` (MOD-0178 §8.18 `:1335-1345`) | D-5 ilerleme | yok | MVP-1 CT (Beste) |
+| MOD-0173-FU02 LOCATION | HARD (okuma) | yol `Site→Warehouse→StorageLocation→Zone→Bin` (`docs/analysis/contracts/location.openapi.yaml:6`); v1.1 toplu bin kodu `{AISLE}-{RACK:00}-{LEVEL:00}-{POS:00}` (`:148`, `:280-287`); **koridor / raf alanı yok** — yalnız kod (ölçüldü `:205-252`); **saat dilimi alanı yok** (`git grep -i timezone` LOCATION sözleşmesi + InventoryService: 0) | rota girdisi (§8.7), depo doğrulaması | yok (Q-3 = A, karar 03) | MVP-1 CT (Beste) |
 | MOD-0040-FU02 RCS-001 | SOFT (hedef üretici) | `status: ready-for-dev`, `approval_status: pending`; Inventory bağlantısı ve WMS türleri **DL-8**'de (`execution/domains/platform-shared-services/module-packs/MOD-0040-FU02-record-code-service.md:2604`); DL-8 bugün yok | `WAV` kodu | ara üretici Q-4 | Beste (K2) |
 | MOD-0018 RBAC + AuthService rol şablonu | HARD | `[HasPermission]` + manifest | izinler, roller | rol şablonu ayrı WP (X-13) | Ali (Auth) |
 | BL-501 merkezi denetim | HARD | InventoryService'te var — `tests/architecture/audit-ledger/Diten.InventoryService.md:12` (`inventory-merkezi-iletim`, yol b) | §21 | yok | Building.Blocks korunan yol |
 | Kullanıcı dizini | SOFT | 0178 `IWarehouseAssigneeDirectory` (`INV/Application/Features/Warehouse/Ports/IWarehouseAssigneeDirectory.cs`) | sorumlu seçimi, toplayıcı adları | yok (0180 kendi portunu açar) | MVP-1 CT |
 | MDM tüzel kişilik `Code` | HARD | MOD-0178 M-2 yolu | `{ŞİRKET}` | yok | MDM |
 | WMS-WAVE-BUNDLE | HARD (contract-first) | yok (taslak dizininde yok, ölçüldü) | sözleşme taslağı | bu paket (DL-1) | supply-chain-execution (Beste) |
-| WMS-BUNDLE (0178) | SOFT | 1.1.0 (`docs/analysis/contracts/wms-bundle.openapi.yaml:64`) | X-8 eklemeli üyeler | 0178 CT adımı | MOD-0178 + CT |
-| Gateway | — | `/api/warehouse/{everything}` → 5067 (`a3f329ece:gateway/Diten.ApiGateway/ocelot.json:1153-1161`) | §15 | `ocelot.json` değişmez | integration-agent |
+| WMS-BUNDLE (0178) | HARD (DL-2 kapısı) | 1.1.0 (`docs/analysis/contracts/wms-bundle.openapi.yaml:64`); kapalı şema okuması (`dc010b911:INVT/TestInfrastructure/ContractSchemas.cs:19-21`) | X-8 eklemeli üyeler + `OutboundEventKind` değerleri | 0178 CT adımı, **DL-2 başlamadan önce**; sürüm numarası CT kararı (CT-1) | MOD-0178 + CT |
+| Governance Rol İzinleri köprüsü | HARD (DL-1 / DL-3 / DL-5 kabulü) | `role-assignments-label-ledger.test.js` üretim manifestlerini okur; `recall` fiili köprüde yok (X-15) | yeni fiil + satır adları 7 dilde | X-15 (eklemeli) | sahip TBD (öneri Ali) |
+| Gateway | — | `/api/warehouse/{everything}` → 5067 (`dc010b911:gateway/Diten.ApiGateway/ocelot.json:1153-1161`) | §15 | `ocelot.json` değişmez | integration-agent |
 | MVP-6 taşıyıcı / sevkiyat | bağımlılık DEĞİL (v1) | taşıyıcı outbound'da yok | Q-1 | — | MVP-6 |
 
 ## 8. Runtime Constraints
@@ -356,7 +393,7 @@ geneli bekçiler (X-9, X-10) MOD-0173'ündür ve yalnız eklemeli değişir (MOD
 - Kiracı + şirket: `TenantId` token'dan, `LegalEntityId` `X-Legal-Entity-Id`'den sunucuda çözülür (scope middleware; `/api/warehouse` zaten
   kapsanır — MOD-0181 §15 ölçümü). Başka kiracının / şirketin kaydı **404**.
 - Depo kapsamı: her sorgu `warehouseId` ister (pano ve kuyrukta zorunlu süzgeç — BRIEF `:31`); dalga başka depodaki outbound'u içeremez.
-- Silme yok; DELETE / PUT ucu yok (§3). `LedgerImmutabilityArchitectureTests` PUT / DELETE listesi (`a3f329ece:INVT/Architecture/LedgerImmutabilityArchitectureTests.cs:131-160`) **değişmez** (AC-8).
+- Silme yok; DELETE / PUT ucu yok (§3). `LedgerImmutabilityArchitectureTests` PUT / DELETE listesi (`dc010b911:INVT/Architecture/LedgerImmutabilityArchitectureTests.cs:131-160`) **değişmez** (AC-8).
 
 ### 8.2 Dalga kurma ve uygunluk
 Kararlar: D-1, D-8.
@@ -373,7 +410,7 @@ Kararlar: D-1, D-8.
 5. **Öner** (`GetWaveSuggestionListQuery`, D-1): uygun siparişlerden dalganın `ShipToFilter`'ına uyanlar, outbound `CreatedAt` artan (en eski
    önce), dalganın kalan `MaxOrders` / `MaxLines` kapasitesi kadar (sınır yoksa en çok 200). **Yazmaz**; kullanıcı seçip "Ekle" der
    (`AddedVia = Suggestion`). Periyodik otomatik kurma yok.
-6. **Sipariş başına kesim saati yok:** outbound kesim / sevk tarihi taşımaz (MOD-0178 §4.5 `:413-434`); planlayıcı sütunu "—" gösterir,
+6. **Sipariş başına kesim saati yok:** outbound kesim / sevk tarihi taşımaz (MOD-0178 §4.5 `:422-443`); planlayıcı sütunu "—" gösterir,
    dalganın kesimi dalganındır (Q-22).
 
 ### 8.3 Durum makinesi
@@ -384,7 +421,7 @@ Kararlar: D-1, D-8.
 | `Releasing` (iç) | → `Released` · → `Draft` (`ReleaseAborted`, hiç görev açılmadıysa) | bakım / istek | §8.6 |
 | `Released` | → `Picking` | `ReconcileWaveCommand` | dalga görevlerinden biri `InProgress` / `Completed` ya da onay aldı |
 | `Released` \| `Picking` | → `Completed` | `ReconcileWaveCommand` | `Issued` her siparişin dalga görevleri terminal **ve** hiç `Withdrawn` / `Excluded` / `OrderCancelled` üyelik yok |
-| `Released` \| `Picking` | → `PartiallyCompleted` | `ReconcileWaveCommand` | `Issued` siparişlerin görevleri terminal **ve** en az bir üyelik `Withdrawn` ya da `Excluded` ya da `OrderCancelled` (D-9) |
+| `Released` \| `Picking` | → `PartiallyCompleted` | `ReconcileWaveCommand` | `Issued` siparişlerin görevleri terminal **ve** en az bir üyelik `Withdrawn` (D-9) ya da `Excluded` ya da `OrderCancelled` (karar 03 Y-2 — D-9'un genişlemesi) |
 | `Released` \| `Picking` | (durum değişmez) | `RecallWaveRemainingCommand` | §8.9; sonraki uzlaştırma `PartiallyCompleted`'a götürebilir |
 
 - İptal **yalnız `Draft`**'tadır; serbest bırakılmış dalga için tek yol "kalan görevleri geri çek"tir (D-9; BRIEF `:19`). `Released` ve sonrası
@@ -398,7 +435,7 @@ Kararlar: D-1, D-8.
 ### 8.4 Kesim saati ve saat dilimi
 Karar: D-3.
 - Kesim saati **deponun yerel saat diliminde** girilir ve gösterilir (D-3). Saat dilimi kaynağı: `WaveWarehouseSettings.TimeZoneId` (IANA) —
-  LOCATION'da alan yoktur (ölçüldü, §7); kalıcı yer kararı Q-3.
+  LOCATION'da alan yoktur (ölçüldü, §7); kalıcı yer kararı Q-3 = A (karar 03; FU-0180-TZ-LOCATION).
 - `CutoffAtUtc = ToUtc(CutoffLocal, TimeZoneId)`; **yaz saati boşluğundaki** yerel saat (var olmayan an) → 400 `WAVE_CUTOFF_INVALID`; **çakışan**
   (iki kez yaşanan) yerel saat → erken ofset seçilir ve cevapta `cutoffAmbiguousResolved = true`. Yaratma / düzenlemede `CutoffAtUtc` şimdiden en
   çok 1 saat geride olabilir (geç girişe pay), daha eskiyse 400 `WAVE_CUTOFF_INVALID`.
@@ -413,7 +450,7 @@ Kararlar: D-7, D-12.
   `confirmLimitOverride = true` taşımalıdır, aksi 409 `WAVE_LIMIT_CONFIRMATION_REQUIRED` (cevapta aşımlar); ekran bunu onay modalıyla sorar.
 - **Ağırlık / hacim (D-12):** outbound satırı ağırlık / hacim taşımaz (WAREHOUSE-OUTBOUND `OutboundLine` `:86-97`); değer yoksa "—" gösterilir,
   v1'de sınır değildir; toplam hesaplanmaz.
-- **Teknik üst sınır (iş sınırından ayrı, engelleyici — öneri, Q-8):** dalga başına en çok **500 sipariş** ve **2.000 planlı toplama görevi**
+- **Teknik üst sınır (iş sınırından ayrı, engelleyici — Q-8 = A, karar 03):** dalga başına en çok **500 sipariş** ve **2.000 planlı toplama görevi**
   (`Σ PlannedTaskCount`); aşımda ekleme 422 `WAVE_TOO_LARGE`. Gerekçe: rota bütçesi (§8.7) ve tek dalga belgesinin boyutu.
 - Uyarı türleri (kart ve ayrıntı): sınır aşımı, kesime < `RiskMinutesBeforeCutoff` kaldı (yalnız Taslak'ta "zaman dar"), farklı saklama koşullu
   Staging yok (bilgi değil — kapsam dışı). Taşıyıcı uyarısı ("n sipariş farklı taşıyıcıda") v1'de **yok** (veri yok, Q-1).
@@ -421,17 +458,20 @@ Kararlar: D-7, D-12.
 ### 8.6 Serbest bırakma ve MOD-0178 seam'i
 **Ön koşul — görevlerin ertelenmesi (X-1, X-3, X-4; Q-2):** dalga yönetimli depoda (`WaveManaged = true`) MOD-0178 tahsis bittiğinde pick
 görevi **açmaz**: outbound `Allocated` + `PickIssuance.State = Deferred` olur; kalıcı plan (`PlannedBins[]`) zaten işlem A'da yazılıdır
-(MOD-0178 §8.17 adım 5 `:1281-1289`). Karar 0178'in portundadır: `IPickIssuancePolicy` (varsayılan uygulama `Immediate` — bugünkü davranış);
-0180 `WavePickIssuancePolicy`'yi kaydeder (depo ayarını okur). `WaveManaged = false` ya da ayar yok → `Immediate` → 0178 kod yolu ve çıktısı
-bugünküyle aynı (AC-18). Ayar `true` → `false` döndürülürse ertelenmiş outbound'lar `Deferred` kalır ve yalnız dalgayla serbest bırakılır
-(öneri; açıkta kalan outbound için istisna yok — pano KPI'ında "dalgaya girmemiş sipariş" sayısı).
+(MOD-0178 §8.17 adım 5 `:1290-1298`). Karar 0178'in portundadır: port **`IPickIssuancePolicy`** (0178; varsayılan uygulama
+`ImmediatePickIssuancePolicy` — bugünkü davranış); 0180 kendi uygulaması **`WavePickIssuancePolicy`**'yi `IPickIssuancePolicy` olarak kaydeder
+(depo ayarını okur; X-4, X-11 — tek ad, F-12). `WaveManaged = false` ya da ayar yok → `Immediate` → 0178 kod yolu ve çıktısı bugünküyle aynı
+(AC-18). **Ayar `true` → `false` (Y-1, karar 03):** depoda `Deferred` ya da `Allocating` outbound varken **reddedilir** (409
+`WAVE_SETTINGS_DEFERRED_ORDERS`, §4.5); böylece ertelenmiş sipariş dalga yaratılamayan (422 `WAVE_SETTINGS_REQUIRED`) bir depoda takılı
+kalmaz. Kalan yarış ve çıkış yolu §4.5'tedir.
 
 **Port (0178'in, X-4) — `IWavePickIssuance`:**
 - `IssueAsync(WaveIssueRequest)`: `{ WaveId, WaveNumber, ActorUserId, OutboundId, Items[] { AllocSeq, LocationId, Sequence } }` — **sipariş
   başına bir çağrı**. 0178 kendi işleminde: outbound `Allocated` ve `PickIssuance.State = Deferred` (ya da aynı `WaveId` ile `Issued` → **replay**,
   yazım yok, mevcut görev kimlikleri döner); `Items` kümesi outbound'un `(AllocSeq, LocationId)` plan kümesine **eşit** olmalı (aksi
   `PlanMismatch`); görev numaraları sayaçtan işlem dışında (0178 deseni `OutboundAllocationService.cs:172-185`); görevler 0178'in `PickTask`
-  kuruluşuyla (`:248`) + `WaveRef { WaveId, WaveNumber, Sequence }`; outbound `PickIssuance = Issued(WaveId)`, `Version` koşullu; olaylar
+  (`:248`) ve `TaskCreated` (`:288`) kuruluşuyla — X-3 (a) ile ortak yardımcıya taşınmış **aynı** kurucular — + `WaveRef { WaveId, WaveNumber,
+  Sequence }`; outbound `PickIssuance = Issued(WaveId)`, `Version` koşullu; olaylar
   `PickTasksIssued` (outbound) + görev başına `Created` — **tek 0178 işleminde, hepsi ya da hiçbiri (sipariş düzeyinde)**. Sonuç:
   `Issued { TaskIds, TaskNumbers }` \| `Ineligible { Code: OutboundCancelled | NotDeferred | IssuedToOtherWave | PlanMismatch | NotAllocated }`.
   Teknik hata / zaman aşımı istisna olarak yükselir (sonuç bilinmiyor).
@@ -467,7 +507,8 @@ bugünküyle aynı (AC-18). Ayar `true` → `false` döndürülürse ertelenmiş
 Karar: D-2.
 **Yöntem — S-biçimli (serpantin) koridor geçişi, belirlenimci, v1 (`Algorithm = "S-SHAPE-v1"`):** WMS'lerde yaygın sezgisel yöntem (çıkarım:
 en kısa yolun kesin çözümü — gezgin satıcı — dalga boyunda pratik değildir; S-biçimi her koridoru bir kez gezer). Bu, "raf yerleşimine göre
-en kısa yol" kararının (D-2) v1 yaklaşımıdır; kesin optimum iddia edilmez.
+en kısa yol" kararının (D-2) v1 yaklaşımıdır; kesin optimum iddia edilmez. **Sahip teyidi: karar 03 Y-3** — v1'de S-biçimli belirlenimci
+yaklaşık yöntem kabul; kabul ölçüsü AC-25'in 39 / 66 karşılaştırmasıdır.
 
 **Girdiler (bölge → koridor → raf):**
 - Her plan öğesinin kaynak bin'i (`LocationId`) için LOCATION yolu (`getLocationPath`): **bölge anahtarı** `ZoneKey` = yoldaki `Zone` kodu; `Zone`
@@ -504,12 +545,12 @@ depoda **≤ 1 s**. CI gürültüsüne karşı test eşiği bütçenin 3 katıd�
 Karar: D-5.
 - **Okuma, yazma yok:** ilerleme okuma anında `wms_tasks` (dalga görevleri, `WaveRef.WaveId`), `wms_task_events` ve `wms_outbound_shipments`
   üzerinde **yalnız `Find`** ile hesaplanır; 0180 bu koleksiyonlara yazmaz (§2.3 kural 2).
-- **Tanımlar (sayılar, miktar toplanmaz — farklı SKU / birim toplanmaz, MOD-0178 §4 `:282`):**
+- **Tanımlar (sayılar, miktar toplanmaz — farklı SKU / birim toplanmaz, MOD-0178 §4 `:291`):**
   - Toplama % = dalganın terminal (`Completed` \| `Cancelled`) görevleri / dalganın açtığı görevler (geri çekilen siparişlerin görevleri hariç);
     tamamlanan / toplam görev sayısı listede ayrıca (BRIEF `:29`).
   - Paketleme % = outbound'u `Packed` \| `ReadyToShip` \| `Shipped` olan `Issued` siparişler / `Issued` siparişler.
   - Sevk % = outbound'u `Shipped` olan `Issued` siparişler / `Issued` siparişler; `ReadyToShip` ayrıca "sevke hazır" sayısı.
-- **Durum uzlaştırması:** `WaveMaintenanceHostedService` her **60 sn** (öneri, Q-11; `Warehouse:Wave:ReconcileSeconds`) açık dalgalar
+- **Durum uzlaştırması:** `WaveMaintenanceHostedService` her **60 sn** (Q-11 = A, karar 03; `Warehouse:Wave:ReconcileSeconds`) açık dalgalar
   (`Released` \| `Picking`) için `ReconcileWaveCommand` gönderir (kayıt başına `SetScope`). Komut yalnız **yazacak şey varsa** yazar: durum
   geçişi (§8.3), `OrderCancelled` üyelik (outbound 0178'de `Cancelled`), istisna aç / kapat (§8.10). `CompletedAt` = dalga görevlerinin terminal
   olaylarının (`Completed` / `ClosedShort` / `Cancelled`, `wms_task_events.AtUtc`) en büyüğü — uzlaştırma zamanı değil.
@@ -523,8 +564,9 @@ Karar: D-9.
   Taslak dalgaya eklenebilir, D-13); `Started` → sipariş dalgada kalır (sipariş bölünmez, D-8). Sonuç dalganın `Recalls[]`'ına ve olay
   `RemainingRecalled`'a yazılır. **Kısmi hata:** teknik hata alınan sipariş `Issued` kalır, cevap 207 benzeri satır sonuçlu 200 + `details.failed[]`
   (sözleşme taslağında kesinleşir); komut aynı anahtarla tekrar edilebilir (port idempotent).
-- Geri çekmeden sonra kalan `Issued` siparişlerin görevleri terminal olunca uzlaştırma dalgayı `PartiallyCompleted` yapar (D-9: "Kısmen
-  tamamlandı" yalnız kalan görevler geri çekilince ya da sipariş dışarıda kalınca).
+- Geri çekmeden sonra kalan `Issued` siparişlerin görevleri terminal olunca uzlaştırma dalgayı `PartiallyCompleted` yapar (D-9, karar 02:
+  "Kısmen tamamlandı" yalnız kalan görevler geri çekilince). **Genişleme — karar 03 Y-2:** serbest bırakmada `Excluded` olan ya da 0178'de
+  iptal edilip `OrderCancelled` olan üyelik de dalgayı `PartiallyCompleted` yapar (§8.3). Kısa toplama bu kurala girmez (Q-10 = A).
 - Hiç sipariş kalmazsa (hepsi çekildi) dalga bir sonraki turda `PartiallyCompleted` olur (tamamlanan 0 sipariş).
 
 ### 8.10 İstisnalar
@@ -567,7 +609,7 @@ Uzlaştırma (sistem) yazımı da `Version` koşulludur; kullanıcı yazımıyla
 ### 8.13 Merkezi denetim ve yerel iz
 - BL-501 InventoryService'te kurulu (`tests/architecture/audit-ledger/Diten.InventoryService.md:12`, `RequireEnlistment` açık); her 0180 yazma
   komutu `ICentralAuditDeclaration` taşır; `SourceModule` = manifest kodu `WAVE-PLANNING` (0178 `PUTAWAY-PICKING-PACKING` emsali,
-  `a3f329ece:INV/Application/Features/Warehouse/WarehouseCentralAudit.cs:15`).
+  `dc010b911:INV/Application/Features/Warehouse/WarehouseCentralAudit.cs:15`).
 - Merkezi kayıt ad ve gövde taşımaz; değerlerin ve **gerekçelerin** tek yeri `wms_wave_events.Data`'dır (aynı işlem, silinmez). Başarılı ve
   yazan komut 1 kayıt; replay ve 0-kayıt 0; başarısız komut iletilmez.
 - 0178 portunun yazımları çağıran 0180 komutunun kaydına enlist olur (§8.6).
@@ -576,8 +618,8 @@ Uzlaştırma (sistem) yazımı da `Version` koşulludur; kullanıcı yazımıyla
 
 ### 8.14 Kayıt kodu üretimi
 `Wave.Number` = `{ŞİRKET}-WAV-{000001}` (RCS-001 biçimi; D-4). `WAV` öneki RCS-001 §3 tablosunda yok (ölçüldü) ve servis kodunda yok
-(`WarehouseRecordCodeRules.TypePrefixes` `a3f329ece:…:28`). **Hedef üretici:** MOD-0040-FU02 ortak servisi (D-4). **Bugün:** FU02'nin Inventory
-bağlantısı ve WMS türleri DL-8'dedir ve DL-8 yoktur (§7). **Ara üretici (Q-4, öneri A):** MOD-0178 geçici sayacı (`IWarehouseRecordCodeAllocator`)
+(`WarehouseRecordCodeRules.TypePrefixes` `dc010b911:…:28`). **Hedef üretici:** MOD-0040-FU02 ortak servisi (D-4). **Bugün:** FU02'nin Inventory
+bağlantısı ve WMS türleri DL-8'dedir ve DL-8 yoktur (§7). **Ara üretici (Q-4 = A, karar 03):** MOD-0178 geçici sayacı (`IWarehouseRecordCodeAllocator`)
 — `TypePrefixes`'e `WAV` (X-6), MOD-0181 `CNT` emsali (RCS-001 §3 `:71`); FU02 DL-8'de `WAV` kataloğa girer ve geçiş FU-0180-RCS ile yapılır.
 0180 kendi sayacını **yazmaz** (RCS-001 §6). Şirket öneki MDM tüzel kişilik `Code`'u (`^[A-Z]{2,5}$`, aksi 422 `WAVE_COMPANY_CODE_INVALID`);
 sayaç yazılamazsa 503 `WAVE_RECORD_CODE_UNAVAILABLE`, dalga yaratılmaz.
@@ -590,7 +632,7 @@ sayaç yazılamazsa 503 `WAVE_RECORD_CODE_UNAVAILABLE`, dalga yaratılmaz.
 | Wave Planner View | `/Warehouse/WavePlanner` — sol: uygun siparişler (süzgeçli; ağırlık / hacim "—"; Allocating gri); sağ: Taslak dalga kartları (doluluk, kesim, uyarılar); sürükle-bırak **ve** "Ekle" düğmesi / klavye (§11) | `WAVEPLANNER` (nav) | DataTable değil (pano; Q-19) |
 | Exception Queue | `/Warehouse/WaveExceptions` — DataTable (server): dalga kodu, sipariş, satır, tür, oluşma, durum, çözen; eylem yan paneli (§8.10) | `WAVEEXCEPTIONS` (nav) | — |
 | Performance KPIs | `/Warehouse/WaveKpis` — menüde **ayrı sayfa** (D-16); zaman serileri + CSV (§8.16) | `WAVEKPIS` (nav) | — |
-| (depo dalga ayarı) | ekran **yok** (v1) — yalnız API (`GET /waves/settings/{warehouseId}`, `POST …/update`); manifest `ApiPermissions` | — | Q-6 |
+| (depo dalga ayarı) | ekran **yok** (v1) — yalnız API (`GET /waves/settings/{warehouseId}` `read`; `POST …/update` `warehouse.waves.settings.configure`); manifest `ApiPermissions` | — | Q-6 = B (karar 03); Y-1 kapatma kuralı §4.5 |
 
 Her ekranda durumlar: **yükleniyor, hata ("Stok servisine ulaşılamadı."), boş, çakışma ("Kayıt değişti, yenileyin."), yetkisiz (UAS-001)**
 (BRIEF `:70-76`; mockup v2 durum örnekleri). Masaüstü öncelikli; **375 px**'te pano ve istisna kuyruğu yatay sayfa kaydırmasız okunur (BRIEF `:80`);
@@ -617,6 +659,7 @@ Karar: D-16.
 | `WAVE_CONFLICT` | 409 | If-Match uyuşmaz (D-14) |
 | `WAVE_INVALID_STATE` | 409 | durumda izinli olmayan komut |
 | `WAVE_SETTINGS_REQUIRED` | 422 | depo dalga yönetimli değil ya da saat dilimi yok |
+| `WAVE_SETTINGS_DEFERRED_ORDERS` | 409 | depoda `Deferred` / `Allocating` outbound varken `WaveManaged` kapatma (Y-1, §4.5) |
 | `WAVE_CUTOFF_INVALID` | 400 | yaz saati boşluğu, geçmiş kesim |
 | `WAVE_WAREHOUSE_IMMUTABLE` | 400 | düzenlemede depo değişimi |
 | `WAVE_ORDER_NOT_ELIGIBLE` | 422 | eklenen outbound uygun değil (§8.2) |
@@ -638,7 +681,7 @@ Karar: D-16.
 | `IDEMPOTENCY_KEY_REUSED` | 400 | aynı anahtar, farklı gövde |
 
 ### 8.18 AI Assist
-Blueprint AI Tier `Assist` (Summarize / Extract / Recommend / Route), risk Medium. **Öneri (Q-14):** v1 kapsamı dışında; hiçbir AI ucu ya da
+Blueprint AI Tier `Assist` (Summarize / Extract / Recommend / Route), risk Medium. **Karar (Q-14 = A, karar 03):** v1 kapsamı dışında; hiçbir AI ucu ya da
 çağrısı yok; FU-0180-AI. "Route" kullanım durumu §8.7'nin belirlenimci algoritmasıyla karşılanır, AI değildir.
 
 ## 9. Layout & Shell Contract
@@ -722,6 +765,7 @@ form değildir — MOD-0181 `CountSheet.cshtml` emsali). Liste ekranına dokunan
 | Taşıma hedefi | Hayır | uuid; aynı depo, `Draft`; yoksa varsayılan (D-13) | — | dalga okuması |
 | TimeZoneId (ayar) | `WaveManaged = true` ise evet | IANA kimliği, çalışma zamanının saat dilimi veritabanında çözülür | — | — |
 | RiskMinutesBeforeCutoff / RiskProgressPercent / PendingTaskMinutes (ayar) | Hayır | 1..1440 / 1..100 / 1..1440 | tekil depo kaydı | — |
+| WaveManaged `true` → `false` (ayar) | — | depoda `Deferred` / `Allocating` outbound yok (Y-1); aksi 409 `WAVE_SETTINGS_DEFERRED_ORDERS` | — | 0178 outbound `Find` sayımı (§4.5) |
 | KPI aralığı | Evet | `from ≤ to`, ≤ 92 gün, depo zorunlu | — | — |
 | Idempotency-Key | Evet (her yazma) | 8–100 karakter (MOD-0178 emsali) | tekil kısmi index | anahtar araması |
 | If-Match | Evet (yaratma dışı her yazma) | `W/"<version>"` | — | — |
@@ -745,25 +789,35 @@ form değildir — MOD-0181 `CountSheet.cshtml` emsali). Liste ekranına dokunan
 - **Lot geri çağırmada** — Expected: `LotUnderRecall` istisnası; sipariş dalgadan **otomatik çıkmaz** (D-10).
 - **0178 / LOCATION erişilemez** — Expected: 503 `WAVE_INVENTORY_UNAVAILABLE`; yazım yok.
 - **Dalga yönetimi kapalı depo** — Expected: 0178 outbound'u bugünkü gibi görevleriyle doğar; planlayıcıda görünmez.
+- **Ertelenmiş sipariş varken dalga yönetimini kapatma (Y-1)** — Expected: 409 `WAVE_SETTINGS_DEFERRED_ORDERS`, ayar değişmez, merkezi kayıt 0;
+  siparişler dalgaya alınıp serbest bırakıldıktan ya da 0178'de iptal edildikten sonra aynı istek 200.
+- **Ayar izni olmayan planlayıcı** — Expected: `warehouse.waves.update` taşıyan ama `warehouse.waves.settings.configure` taşımayan kullanıcıya ayar
+  yazımı 403 (Q-6 = B).
 - **Fazladan PUT / DELETE ucu** — Expected: `LedgerImmutabilityArchitectureTests` kırmızı.
 
 ## 14. Authorization Convention
 
 **Namespace (D-4, sahip kararı Beste 2026-11-12):** `warehouse.waves.*` — PKS-001 `warehouse.*` ad alanı altında; mockup'taki `wave.*` adları
 buna çevrilir. **Not:** PKS-001 §4 bugün `warehouse.*`'ı bütünüyle MOD-0178'e yazar ve "one namespace per WMS module" (Q-08) der
-(`.antigravity/rules/permission-key-standard.md:105`); D-4 bunun MOD-0180 için istisnasıdır → §4'e oyma satırı izlenen kapıdır (§6, Q-7).
+(`.antigravity/rules/permission-key-standard.md:105`); D-4 bunun MOD-0180 için istisnasıdır → §4'e alt ad alanı satırı (Q-7 = A, karar 03) **paket onayından önce** yazılır (§6, Y-4).
 Manifest yalnız `warehouse.waves.*` bildirir; 0178'in `warehouse.*` anahtarları bildirilmez. Depoda `warehouse.waves.` anahtarı yok
 (`git grep`, services + frontend: 0 eşleşme — çıkarım: yeni).
 
 **Son ek düzeltmesi (Q-5):** iş paketinin listesindeki `edit` PKS-001 §5'te eski yazımdır, kanonik karşılığı `update`'tir
 (`.antigravity/rules/permission-key-standard.md:115-127`) → paket **`warehouse.waves.update`** yazar. `release`, `recall`, `resolve` Tier-3 (bu
-pakette kayıtlı), `cancel` Tier-3 (sözlükte örnek), `export` Tier-2.
+pakette kayıtlı), `cancel` Tier-3 (sözlükte örnek), `export` Tier-2, `settings.configure` Tier-3 (Q-6 = B, karar 03 — fiil `configure`
+PKS-001 §5'te ve Rol İzinleri köprüsünde var, X-15).
+
+**Ayar izni ayrı (Q-6 = B, karar 03; inceleme F-15):** `WaveManaged` anahtarı **bütün depo** için MOD-0178'in görev açılışını değiştirir
+(§8.6); bu yüzden Tier-1 `update`'e bağlanmaz, ayrı Tier-3 anahtar `warehouse.waves.settings.configure` ister. Planlayıcının `update`'i
+depo davranışını değiştiremez (AC-15). Ayar okuması `read`'dedir.
 
 | Anahtar | Tier | Dilim | Anlam |
 |---|---|---|---|
 | `warehouse.waves.read` | 1 | DL-1 | pano, liste, ayrıntı, siparişler, görevler, yük, olaylar, planlayıcı listesi, depo ayarı okuması |
 | `warehouse.waves.create` | 1 | DL-1 | dalga oluştur |
-| `warehouse.waves.update` | 1 | DL-1 | Taslak düzenle, sipariş ekle / çıkar, öneri, depo dalga ayarı (Q-6) |
+| `warehouse.waves.update` | 1 | DL-1 | Taslak düzenle, sipariş ekle / çıkar, öneri (depo dalga ayarı **değil** — Q-6 = B) |
+| `warehouse.waves.settings.configure` | 3 (bu pakette kayıtlı) | DL-1 | depo dalga ayarı yazma: `WaveManaged`, `TimeZoneId`, eşikler; gerekçe zorunlu; Y-1 kapatma kuralı (§4.5) |
 | `warehouse.waves.cancel` | 3 | DL-1 | Taslak iptal (gerekçe) |
 | `warehouse.waves.release` | 3 (bu pakette kayıtlı) | DL-2 | serbest bırak (rota + görev üretimi) |
 | `warehouse.waves.recall` | 3 (bu pakette kayıtlı) | DL-3 | kalan görevleri geri çek (gerekçe) |
@@ -776,21 +830,29 @@ pakette kayıtlı), `cancel` Tier-3 (sözlükte örnek), `export` Tier-2.
 controller'ları da ölçer. Aktör `tenant_user`; sistem komutları (`CompleteWaveRelease`, `Reconcile`) bakım servisinin kapsamıyla (`SetScope`)
 çalışır, HTTP ucu yoktur. Rol şablonu önerisi (yalnız yeni kiracılar; X-13, Ali (Auth)): **Dalga planlayıcı** = `read` + `create` + `update` +
 `cancel` + `release`; **Vardiya sorumlusu** = `read` + `recall` + `exceptions.*`; **Performans izleyici** = `read` + `kpis.*` (rol adları öneri).
+`settings.configure` **hiçbir şablon role girmez** — depo yöneticisine elle verilir (öneri; bütün depoyu etkiler, F-15). Rol şablonu kararı
+Ali'nindir (Q-20, karar 03).
 `read` anahtarlarında kişisel veri: kullanıcı kimliği ve adı (toplayıcı) — KVKK açısından görev ataması 0178'de zaten görünürdür (çıkarım).
 
 **Manifest:** ModuleCode `WAVE-PLANNING`, SortOrder 180 (0178 `PUTAWAY-PICKING-PACKING` / 178 emsali,
-`a3f329ece:INV/Api/Warehouse/PutawayPickingPackingManifestProvider.cs:29`, `:40`), Pages `WAVES` (nav, `read`), `WAVEDETAIL` (nav değil, `read`),
+`dc010b911:INV/Api/Warehouse/PutawayPickingPackingManifestProvider.cs:29`, `:40`), Pages `WAVES` (nav, `read`), `WAVEDETAIL` (nav değil, `read`),
 `WAVEPLANNER` (nav, `read`; eylemler `update`), `WAVEEXCEPTIONS` (nav, `exceptions.read`), `WAVEKPIS` (nav, `kpis.read`; DL-5); `ApiPermissions` =
-yok (ayar uçları `read` / `update` ile — Q-6 B seçilirse ayar anahtarları burada); nav anahtarları `Nav.Module.WAVEPLANNING`, `Nav.Page.WAVES`,
+`warehouse.waves.settings.configure` (DL-1; ekranı olmayan ayar ucu — Q-6 = B; FU-0180-SETTINGS-UI gelince sayfa eylemine taşınır); nav anahtarları `Nav.Module.WAVEPLANNING`, `Nav.Page.WAVES`,
 `Nav.Page.WAVEPLANNER`, `Nav.Page.WAVEEXCEPTIONS`, `Nav.Page.WAVEKPIS`.
 
 ## 15. Gateway / API Routing Decision
 - **Karar:** uçlar `/api/warehouse/waves…` — mevcut `/api/warehouse/{everything}` → 5067 rotasının altında
-  (`a3f329ece:gateway/Diten.ApiGateway/ocelot.json:1153-1161`; taban `/api/warehouse` `:1134-1142`). **`ocelot.json` değişmez (doğrulandı:
+  (`dc010b911:gateway/Diten.ApiGateway/ocelot.json:1153-1161`; taban `/api/warehouse` `:1134-1142`). **`ocelot.json` değişmez (doğrulandı:
   rota ailesi zaten kapsar).** Scope middleware `/api/warehouse` tabanını kapsar (MOD-0181 §15 ölçümü) — değişmez.
 - Gerekli: integration-agent'ın 0180 uç kapsama testi — ayrı dosya `gateway/Diten.ApiGateway.Tests/Mod0180WaveRouteTests.cs` (emsal
-  `Mod0178WarehouseRouteTests.cs`, onun listesine dokunulmaz) ve `/api/warehouse` rota ailesinin sahibi MOD-0178'in onayı (XMC-001; aile tek-yazıcı
+  `Mod0178WarehouseRouteTests.cs`, ona dokunulmaz) ve `/api/warehouse` rota ailesinin sahibi MOD-0178'in onayı (XMC-001; aile tek-yazıcı
   seam'dir — `domain-config.md:56`).
+- **Testin ölçtüğü şey üretimdir (ölçüldü, F-5):** Gateway testleri üretim `gateway/Diten.ApiGateway/ocelot.json`'u okur — test projesi dosyayı
+  bağlı kopya olarak çıktı dizinine alır (`gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj:26`) ve 0178 testi onu
+  `AppContext.BaseDirectory`'den okur (`Mod0178WarehouseRouteTests.cs:23`); uç listesini de üretim controller kaynağından tarar (`:219-236`).
+  0180 testi aynı yolu izler: üretim `ocelot.json` + `INV/Api/Controllers/WavePlanning/` kaynağı + WMS-WAVE-BUNDLE taslağının yolları; uç listesi
+  testte elle yazılmaz. 0178 testi bütün `api/warehouse` controller'larını özyineli taradığı için 0180 uçları onun ölçümüne de girer ve o
+  test **değişmeden** yeşil kalır (X-14, AC-55).
 - İletilen başlıklar: `Authorization`, `X-Legal-Entity-Id`, `X-Correlation-Id`, `Idempotency-Key`, `If-Match`, `Accept-Language`. Dev dilimi
   `ocelot.json`'a yazmaz.
 
@@ -799,6 +861,10 @@ yok (ayar uçları `read` / `update` ile — Q-6 B seçilirse ayar anahtarları 
 Her guard maddesi **üretim koduna karşı** ölçülür ve sabotaj kanıtı ister: ilgili üretim satırı geçici bozulur, test kırmızıya döner, bozma geri
 alınır (kendi kopyasıyla ölçen test guard sayılmaz). Sabotaj kimliği `S-n` biçimindedir; kabul kaydı her `S-n` için komut + kırmızı çıktı + geri
 almayı yazar.
+
+**Bekçi olmayan maddeler (F-13):** AC-40 (`verify_datatable_page.py`), AC-43 (durumlar), AC-44 (375 px), AC-46 (kesim gösterimi) ve
+AC-47 (ağırlık / hacim, ikon + metin) **araç ya da tarayıcı kontrolüdür, bekçi değildir** — sabotaj istenmez; kanıtları araç çıktısı / ekran
+ölçümüdür. AC-27 bir performans ölçümüdür, S-27 eşiğin çalıştığını gösterir. Diğer her maddenin adlı sabotajı vardır.
 
 **DL-1 — sözleşme taslağı + dalga çekirdeği (arka uç)**
 
@@ -812,7 +878,7 @@ almayı yazar.
   yüklemini düşür → kırmızı; S-3b: `LegalEntityId` yüklemini düşür → kırmızı.
 - [ ] AC-4 (zorunlu) — Gövde ya da sorguda `tenantId` / `legalEntityId` → 400. S-4: denetimi kaldır → kırmızı.
 - [ ] AC-5 (zorunlu) — Her eylem `[HasPermission(WavePermissions.*)]`; manifest yalnız uygulanan `warehouse.waves.*` anahtarlarını bildirir;
-  controller'lar `Controllers.WavePlanning` namespace'inde; `WarehouseRegistrationTests` (`a3f329ece:INVT/Warehouse/WarehouseRegistrationTests.cs:49-56`)
+  controller'lar `Controllers.WavePlanning` namespace'inde; `WarehouseRegistrationTests` (`dc010b911:INVT/Warehouse/WarehouseRegistrationTests.cs:49-56`)
   **değişmeden** yeşil. S-5a: bir eylemden özniteliği kaldır → `AuthorizationGuardTests` kırmızı; S-5b: `WavesController`'ı
   `Controllers.Warehouse` namespace'ine taşı → `WarehouseRegistrationTests` kırmızı (0178 manifestinde olmayan anahtar).
 - [ ] AC-6 (zorunlu) — İdempotent yazma: her yazma komutu için aynı anahtar + aynı gövde → 200 replay (olay / `Version` değişmez); farklı gövde → 400
@@ -823,8 +889,10 @@ almayı yazar.
 - [ ] AC-8 (zorunlu) — Silme yok: DELETE / PUT ucu yok, `LedgerImmutabilityArchitectureTests` **değişmeden** yeşil; `cancel` yalnız `Draft`'ta,
   gerekçe zorunlu (400 `WAVE_REASON_REQUIRED`), durum `Cancelled`, `IsDeleted = false`, GET 200; `Released`'da 409 `WAVE_INVALID_STATE`. S-8a:
   `DELETE /waves/{waveId}` ekle → bekçi kırmızı; S-8b: `cancel`'da durum denetimini kaldır → `Released` iptal olur, kırmızı.
-- [ ] AC-9 (zorunlu) — Merkezi denetim: her 0180 yazma komutu `ICentralAuditDeclaration` taşır; `CentralAuditDeclarationTests` sayısı 116 + dilimin
-  0180 komutları ve listede `WavePlanningManifestProvider` (X-10); başarılı yazma → 1 kayıt, replay → 0, başarısız → 0. S-9: bir geri çağrıdan
+- [ ] AC-9 (zorunlu) — Merkezi denetim: her 0180 yazma komutu `ICentralAuditDeclaration` taşır; `CentralAuditDeclarationTests` sayısı =
+  **dilim başındaki ölçülen sayı + dilimin 0180 yazma komutları** (taban dilimin başlangıç commit'inde ölçülür ve kabul kaydına yazılır; r2
+  ölçümü `dc010b911:INVT/CentralAudit/CentralAuditDeclarationTests.cs:53` = 117, bilgi — paket sabit taban yazmaz) ve sağlayıcı listesinde
+  `WavePlanningManifestProvider` (`:60-69`, X-10); başarılı yazma → 1 kayıt, replay → 0, başarısız → 0. S-9: bir geri çağrıdan
   `CentralAuditTransaction.EnlistAsync`'i kaldır → kırmızı.
 - [ ] AC-10 (zorunlu) — Kayıt kodu: `Number` değiştirilemez (gövdede gelirse 400); eşzamanlı iki yaratma farklı numara; sayaç yazılamazsa 503
   `WAVE_RECORD_CODE_UNAVAILABLE` ve dalga yok; 0180 kendi sayacını yazmaz (Q-4 = A: 0178 sayacı `WAV`). S-10: `TypePrefixes`'ten `WAV`'ı çıkar →
@@ -833,32 +901,51 @@ almayı yazar.
   satır sonuçlu); bir outbound iki etkin dalgada olamaz (409 `WAVE_ORDER_IN_OTHER_WAVE`); **eşzamanlı** iki eklemede tam biri; sipariş bütünüyle
   eklenir (üyelik satır / tahsis düzeyinde değil). S-11: tekil kısmi index'i kaldır → eşzamanlı testte ikisi de başarılı, kırmızı.
 - [ ] AC-12 (zorunlu) — Öner (D-1): `GET /waves/{waveId}/suggestions` yalnız uygun ve `ShipToFilter`'a uyan siparişleri, `CreatedAt` artan, kalan
-  kapasite kadar döner; **yazmaz** (olay ve üyelik sayısı değişmez); periyodik kurma yok (hosted service dalga **yaratmaz** — mimari test). S-12:
-  uygunluk süzgecinden `Active` üyelik koşulunu kaldır → başka dalgadaki sipariş önerilir, kırmızı.
+  kapasite kadar döner; **yazmaz** (olay ve üyelik sayısı değişmez); periyodik kurma yok (hosted service dalga **yaratmaz** — mimari test:
+  `WaveMaintenanceHostedService` yalnız `CompleteWaveReleaseCommand` / `ReconcileWaveCommand` gönderir). S-12: uygunluk süzgecinden `Active`
+  üyelik koşulunu kaldır → başka dalgadaki sipariş önerilir, kırmızı; S-12b: `WaveMaintenanceHostedService`'e `CreateWaveCommand` gönderimi
+  ekle → mimari test kırmızı.
 - [ ] AC-13 (zorunlu) — Sınırlar (D-7): `MaxOrders` / `MaxLines` aşan ekleme **yazılır**, cevap `limitWarnings[]` taşır; teknik üst sınır (500 /
   2.000) aşan ekleme 422 `WAVE_TOO_LARGE`. S-13: sınır aşımında ekleme reddi koy → kırmızı (D-7 engellemez).
 - [ ] AC-14 (zorunlu) — Saat dilimi (D-3): `Europe/Istanbul` deposunda `CutoffLocal = 2026-11-20T14:30` → `CutoffAtUtc = 11:30Z`; ABD deposunda yaz
   saati boşluğundaki yerel saat 400 `WAVE_CUTOFF_INVALID`; çakışan saat erken ofset + `cutoffAmbiguousResolved = true`; ayar yoksa 422
   `WAVE_SETTINGS_REQUIRED`. S-14: dönüşümde sunucu saat dilimini kullan → kırmızı.
-- [ ] AC-15 (zorunlu) — Depo dalga ayarı: okuma `read`, yazma `update` (Q-6) + gerekçe; aralık dışı eşik 400, kayıt değişmez; kayıt yokken
-  varsayılanlar (false / — / 90 / 70 / 30) döner; başka şirketin ayarı 404. S-15: yüzde aralık denetimini kaldır → 150 kabul, kırmızı.
+- [ ] AC-15 (zorunlu) — Depo dalga ayarı: okuma `read`; yazma **`warehouse.waves.settings.configure`** (Q-6 = B, karar 03) + gerekçe;
+  yalnız `warehouse.waves.update` taşıyan kullanıcıya yazma 403; aralık dışı eşik 400, kayıt değişmez; kayıt yokken varsayılanlar
+  (false / — / 90 / 70 / 30) döner; başka şirketin ayarı 404. **Kapatma (Y-1, karar 03):** (a) depoda `Deferred` outbound varken
+  `WaveManaged` `true` → `false` → 409 `WAVE_SETTINGS_DEFERRED_ORDERS`, ayar ve `Version` değişmez, merkezi kayıt 0; (b) `Allocating` outbound
+  varken aynı; (c) sipariş dalgayla serbest bırakıldıktan (ya da 0178'de iptal edildikten) sonra aynı istek 200; (d) başka depodaki
+  `Deferred` outbound kapatmayı engellemez; (e) `false` → `true` ve eşik değişikliği `Deferred` varken de 200. S-15: yüzde aralık denetimini
+  kaldır → 150 kabul, kırmızı; S-15b: kapatma ön kontrolünden `Deferred` sayımını kaldır → (a) 200 döner, kırmızı; S-15c: ayar ucunun
+  `[HasPermission]`'ını `WavePermissions.Update`'e çevir → 403 vakası kırmızı.
 - [ ] AC-16 (zorunlu) — 0178 verisine yazılmaz (§2.3 kural 2): mimari test 0180 üretim kodunda (`WavePlanning` / `Waves` / `WaveExceptions` /
   `WaveKpis` klasörleri) `IOutboundShipmentRepository`, `IWarehouseTaskRepository` referansı ve `WarehouseCollections.*` üzerinde `Find` dışı
   koleksiyon çağrısı bulmaz; 0180 hiçbir `OnHand` / `Available` / `Reserved` özelliği taşımaz. S-16a: bir 0180 deposuna `wms_tasks` üzerinde
   `UpdateOneAsync` ekle → kırmızı; S-16b: handler'a `IWarehouseTaskRepository` enjekte et → kırmızı.
 - [ ] AC-17 (zorunlu) — `SingleSystemOfRecordArchitectureTests` `wms_wave_*` koleksiyonlarını açıkça bildirir (X-9). S-17: bildirilmemiş
   `wms_wave_x` koleksiyonu aç → kırmızı.
+- [ ] AC-56 (zorunlu; DL-1'de açılır, DL-3 ve DL-5 kabulünde tekrarlanır — X-15) — Rol İzinleri: manifestin bildirdiği her
+  `warehouse.waves.*` anahtarının fiili ve satır adı 7 dilde söylenir; `frontend/Diten.Web/tests/role-assignments-label-ledger.test.js` yeşil,
+  defter tavanı (`docs/roadmap/backlog/role-permission-label-ledger.md` "fiil 0 · satır 96") **değişmez** (0180 deftere satır eklemez); DL-3'te
+  `recall` köprüde, 7 resx'te ve bir `ACTION_FAMILIES` ailesinde. S-56: `RoleAssignmentsIndex.ar.resx`'ten `ActionVerb_Recall`'ı sil (DL-3) ya da
+  `SharedResource.ru.resx`'ten `Nav.Page.*` karşılığı olmayan bir 0180 `Perm.Entity.*` satır adını (beklenen `WAVESSETTINGS`, çıkarım) sil
+  (DL-1) → vitest kırmızı.
 
 **DL-2 — serbest bırakma + rota + MOD-0178 seam'i**
 
 - [ ] AC-18 (zorunlu) — 0178 varsayılan davranışı değişmez: `WaveManaged = false` (ya da ayar yok) depoda outbound yaratma çıktısı (outbound
-  belgesi, pick görevleri, olaylar) X-1…X-5 öncesiyle **alan alan aynı** (0180 test ağacında karşılaştırma testi); 0178 test dosyaları değişmez
-  (`git diff --stat … -- INVT/Warehouse` boş) ve tam paket yeşil. `WaveManaged = true` depoda outbound `Allocated` + `PickIssuance.State = Deferred`,
+  belgesi, pick görevleri, olaylar) X-1…X-5 öncesiyle **alan alan aynı**. **Karşılaştırma referansı (F-14):** X-1…X-5 öncesi commit'te
+  (DL-2 dilim başı) aynı fikstür betiğiyle üretilen çıktı — kimlik / zaman alanları normalize edilmiş JSON + sha256 — **kabul kaydına
+  yazılır**; dilim sonu çıktısı aynı betikle üretilir ve sha256 eşitliği kayıtta gösterilir. Bu karşılaştırma **kanıttır, bekçi değildir**:
+  0180 test ağacında saklanan bir kopya referans sayılmaz (kendi kopyasıyla ölçme). Bekçi, 0178'in mevcut testleridir: 0178 test dosyaları
+  değişmez (`git diff --stat … -- INVT/Warehouse` boş) ve tam paket yeşil. `WaveManaged = true` depoda outbound `Allocated` + `PickIssuance.State = Deferred`,
   `wms_tasks`'ta o outbound'un görevi **yok**. S-18: politika kontrolünü ters çevir (her depoda ertele) → 0178'in mevcut S2 testleri kırmızı.
 - [ ] AC-19 (zorunlu) — Görev üretimi: serbest bırakma sonrası her `Issued` siparişin `(AllocSeq, LocationId)` plan öğesi için tam **bir** pick
-  görevi; `PlannedQuantity` = `PlannedBins.quantity`, `FromLocationId`, `ToLocationId` (Staging), `ReservationId` 0178 `PickTask` kuruluşuyla aynı;
+  görevi; `PlannedQuantity` = `PlannedBins.quantity`, `FromLocationId`, `ToLocationId` (Staging), `ReservationId` 0178 `PickTask` kuruluşuyla aynı (X-3 (a): `OutboundAllocationService` ile `WavePickIssuanceService` **aynı** ortak
+  kurucuyu çağırır — mimari test: `WavePickIssuanceService` kendi `WarehouseTask` nesne başlatıcısını içermez);
   `WaveRef { WaveId, WaveNumber, Sequence }` dolu; görevler 0178 Toplama Görevleri listesinde görünür ve 0178 onay makinesiyle onaylanır (bir
-  onay `Posted`). S-19: portta `Items` küme eşitliği denetimini kaldır, eksik öğeyle çağır → eksik görev, kırmızı.
+  onay `Posted`). S-19: portta `Items` küme eşitliği denetimini kaldır, eksik öğeyle çağır → eksik görev, kırmızı; S-19b: `WavePickIssuanceService`'e
+  kendi `new WarehouseTask { … }` kuruluşunu yaz → mimari test kırmızı.
 - [ ] AC-20 (zorunlu) — Sipariş düzeyinde atomiklik: 0178 işleminde outbound `PickIssuance` güncellemesi, görevler ve olaylar birlikte yazılır;
   görev yazımı başarısızsa outbound `Deferred` kalır. S-20: görev eklemeyi işlem dışına al → enjekte hatada outbound `Issued`, görev yok, kırmızı.
 - [ ] AC-21 (zorunlu) — İdempotent serbest bırakma ve kurtarma: (a) aynı istek iki kez → tek görev seti; (b) port 2. siparişte zaman aşımı → 503
@@ -890,8 +977,10 @@ almayı yazar.
 - [ ] AC-29 (zorunlu) — İlerleme (D-5): fikstür — 3 sipariş, 6 görev; 4 görev terminal, 1 outbound `Packed`, 1 `Shipped` → toplama %67 (4/6),
   paketleme %67 (2/3), sevk %33 (1/3); 0180 bu okumada hiçbir koleksiyona yazmaz. S-29: paketleme sayımından `Shipped`'i çıkar → %33, kırmızı.
 - [ ] AC-30 (zorunlu) — Durum uzlaştırması: ilk onayla `Picking`; bütün görevler terminal + geri çekme yok → `Completed`, `CompletedAt` = son
-  görevin terminal olay zamanı (uzlaştırma zamanı değil); yazacak şey yoksa komut yazmaz (merkezi kayıt 0). S-30: `CompletedAt`'i şimdiye bağla →
-  kırmızı.
+  görevin terminal olay zamanı (uzlaştırma zamanı değil); yazacak şey yoksa komut yazmaz (merkezi kayıt 0). **Y-2 (karar 03):** bir üyelik
+  `Excluded` (serbest bırakmada) ya da `OrderCancelled` (0178 iptali) iken kalan `Issued` siparişlerin görevleri terminal → `PartiallyCompleted`
+  (`Completed` değil); yalnız kısa toplama varken `Completed` (Q-10 = A). S-30: `CompletedAt`'i şimdiye bağla → kırmızı; S-30b: kısmi koşuldan
+  `Excluded` / `OrderCancelled`'ı çıkar → dalga `Completed` olur, Y-2 vakası kırmızı.
 - [ ] AC-31 (zorunlu) — Geri çekme (D-9): 3 `Issued` sipariş, biri başlamış → geri çekme 200; iki sipariş `Withdrawn`, görevleri 0178'de
   `Cancelled` (`Data.waveRecalled = true`), outbound'ları `Deferred` ve planlayıcıda yeniden uygun; başlamış sipariş dalgada; gerekçe olayda; gerekçesiz
   400. Başlamışın görevleri bitince dalga `PartiallyCompleted`. S-31a: `Started` denetimini kaldır → başlamış siparişin açık görevi iptal olur,
@@ -916,28 +1005,31 @@ almayı yazar.
 **DL-4 — ekranlar (7 dil)**
 
 - [ ] AC-39 (zorunlu) — `Views/Warehouse/{Waves,WavePlanner,WaveExceptions,WaveKpis}/*.cshtml` (ve `Waves/Details.cshtml`) dosyalarının her birinde
-  `Layout = "_LayoutTenantShell"` açık.
-- [ ] AC-40 (zorunlu) — `verify_datatable_page.py . --area Warehouse --module Waves` ve `--module WaveExceptions` PASS; `data_mode: server` beyanla
+  `Layout = "_LayoutTenantShell"` açık (`WavePlanningL10nAndHelpTests`; emsal `CycleCountL10nAndHelpTests.cs:235`). S-39: `WaveKpis/Index.cshtml`'den
+  `Layout` satırını kaldır → kırmızı.
+- [ ] AC-40 (zorunlu; araç kontrolü — bekçi değil) — `verify_datatable_page.py . --area Warehouse --module Waves` ve `--module WaveExceptions` PASS; `data_mode: server` beyanla
   aynı; satır eylemi "İptal" (Taslak), "Sil" yok (G-0180-01).
 - [ ] AC-41 (zorunlu) — 7 dil (D-15): her resx anahtarı en, tr, fr, es, zh, ar, ru'da (parite testi); `ar` sağdan sola; kullanıcıya görünen
   hardcoded metin yok; hata kodu ve istisna türü metinleri 7 dilde. S-41: bir anahtarı `ru`'dan sil → parite kırmızı.
 - [ ] AC-42 (zorunlu) — UAS-001: izni olmayan kullanıcı pano, ayrıntı, planlayıcı, istisna kuyruğu ve performans sayfalarında başlık / kart / boş
   tablo / düğme görmez; tek açıklama; yönlendirme yok. S-42: izin denetimini kaldırıp iskeleti çiz → kırmızı.
-- [ ] AC-43 (zorunlu) — Durumlar: her sayfada yükleniyor, hata ("Stok servisine ulaşılamadı."), boş ("Bu depoda henüz dalga yok", "Dalgaya girmemiş
+- [ ] AC-43 (zorunlu; tarayıcı kontrolü — bekçi değil) — Durumlar: her sayfada yükleniyor, hata ("Stok servisine ulaşılamadı."), boş ("Bu depoda henüz dalga yok", "Dalgaya girmemiş
   sipariş yok", "Açık istisna yok"), çakışma ("Kayıt değişti, yenileyin.") gerçek uç cevaplarıyla tetiklenir (503 / boş liste / 409) ve doğru
   metni gösterir (tarayıcı testi).
-- [ ] AC-44 (zorunlu) — 375 px: pano ve istisna kuyruğu yatay sayfa kaydırmasız (canlı ölçüm `document.scrollingElement.scrollWidth ≤ 375`);
+- [ ] AC-44 (zorunlu; canlı ölçüm — bekçi değil) — 375 px: pano ve istisna kuyruğu yatay sayfa kaydırmasız (canlı ölçüm `document.scrollingElement.scrollWidth ≤ 375`);
   planlayıcı salt okunur liste + "Ekle" düğmesiyle çalışır.
 - [ ] AC-45 (zorunlu) — Planlayıcı klavye ve sürükle-bırak: yalnız klavyeyle (Tab / Enter / Shift+Enter / Delete) bir sipariş eklenir ve çıkarılır;
   sürükle-bırak aynı uca gider; sonuç `aria-live`'da okunur; Allocating satırı gri, eklenemez, nedeni yazılı. S-45: "Ekle" düğmesini kaldır →
   klavye testi kırmızı.
-- [ ] AC-46 (zorunlu) — Kesim gösterimi (D-3): tarayıcı saat dilimi depodan farklıyken iki saat birden; aynıyken tek saat.
-- [ ] AC-47 (zorunlu) — Ağırlık / hacim (D-12) değer yokken "—"; risk / durum / istisna türü ikon + metinle (yalnız renk değil).
+- [ ] AC-46 (zorunlu; tarayıcı kontrolü — bekçi değil) — Kesim gösterimi (D-3): tarayıcı saat dilimi depodan farklıyken iki saat birden; aynıyken tek saat.
+- [ ] AC-47 (zorunlu; tarayıcı kontrolü — bekçi değil) — Ağırlık / hacim (D-12) değer yokken "—"; risk / durum / istisna türü ikon + metinle (yalnız renk değil).
 - [ ] AC-48 (zorunlu) — Manifest sayfaları (`WAVES`, `WAVEDETAIL`, `WAVEPLANNER`, `WAVEEXCEPTIONS`) ve her gerçek düğme için bir eylem;
+  `ApiPermissions` = `warehouse.waves.settings.configure` (Q-6 = B; DL-1'den beri);
   `python3 scripts/check_pack_nav_keys.py` PASS; `delete` / `bulk-delete` eylemi yok. S-48: manifestte `warehouse.waves.delete` bildir → AC-5
   uyum testi kırmızı.
-- [ ] AC-49 (zorunlu) — Sayfa yardımı (UXH-001): `Help.{KOD}.Purpose`, `.Audience`, `.Step{n}Title` / `.Step{n}` (§25) 7 dilde; tur yok.
-- [ ] AC-50 (Q-12 = A ise zorunlu, XMC X-7) — 0178 Toplama Görevleri listesinde "Dalga" sütunu ve `waveId` süzgeci; `sort=waveSequence` dalga
+- [ ] AC-49 (zorunlu) — Sayfa yardımı (UXH-001): `Help.{KOD}.Purpose`, `.Audience`, `.Step{n}Title` / `.Step{n}` (§25) 7 dilde; tur yok
+  (`WavePlanningL10nAndHelpTests`, `PageHelpResource.{7}.resx`'i okur). S-49: `PageHelpResource.zh.resx`'ten `Help.WAVES.Step2`'yi sil → kırmızı.
+- [ ] AC-50 (zorunlu — Q-12 = A, karar 03; XMC X-7) — 0178 Toplama Görevleri listesinde "Dalga" sütunu ve `waveId` süzgeci; `sort=waveSequence` dalga
   sırasını verir; varsayılan sıralama ve 0178 testleri değişmez. S-50: sıralamayı `Number`'a bağla → dalga sırası testi kırmızı.
 
 **DL-5 — performans + CSV**
@@ -950,14 +1042,20 @@ almayı yazar.
   Arapça; sayılar değişmez kültürde; başka kiracının verisi yok. S-53a: CSV yolundan `[HasPermission]` kaldır → `AuthorizationGuardTests` kırmızı;
   S-53b: sayıları istek kültürüyle yaz (`tr` → virgül) → kırmızı.
 - [ ] AC-54 (zorunlu) — Performans menüde **ayrı sayfa** (`WAVEKPIS`, nav, D-16), `Layout` açık, UAS-001, `check_pack_nav_keys.py` PASS.
+  S-54: Web `WaveKpisController`'ın sayfa eyleminden izin denetimini kaldır → izinsiz kullanıcı iskeleti görür, UAS-001 testi kırmızı
+  (AC-42 testinin `WAVEKPIS` vakası).
 
 **DL-6 — Gateway kapsama testi**
 
-- [ ] AC-55 (zorunlu) — `gateway/Diten.ApiGateway.Tests/Mod0180WaveRouteTests.cs` 0180'in her ucunu mevcut `/api/warehouse/{everything}` rotasıyla
-  5067'ye yönlendirildiği haliyle doğrular; `ocelot.json` ve `Mod0178WarehouseRouteTests.cs` değişmez (integration-agent). S-55: testte bir ucu
-  `/api/waves` tabanına çevir → kırmızı.
+- [ ] AC-55 (zorunlu) — `gateway/Diten.ApiGateway.Tests/Mod0180WaveRouteTests.cs` 0180'in her ucunu (uç listesi üretim
+  `INV/Api/Controllers/WavePlanning/` kaynağından ve WMS-WAVE-BUNDLE taslağından okunur, testte elle yazılmaz) **üretim** `ocelot.json`'un
+  (`Diten.ApiGateway.Tests.csproj:26` bağlı kopyası) `/api/warehouse/{everything}` rotasıyla 5067'ye tam bir rotada yönlendirildiği haliyle
+  doğrular; `ocelot.json` ve `Mod0178WarehouseRouteTests.cs` değişmez, 0178 testi değişmeden yeşil (X-14). Sabotajlar **üretimi** bozar
+  (integration-agent, geri alınır; F-5): S-55a: `gateway/Diten.ApiGateway/ocelot.json`'da `/api/warehouse/{everything}` bloğunun
+  `Port`'unu (`:1158`) geçici 5068 yap → kırmızı; S-55b: bir 0180 controller'ının sınıf `[Route]`'unu geçici `api/waves` yap → o uçlar
+  hiçbir rotaya eşleşmez, kırmızı.
 
-**AC sayısı: 55** (zorunlu 54 + koşullu 1 — AC-50).
+**AC sayısı: 56** (hepsi zorunlu; r1'deki koşullu AC-50 Q-12 = A ile zorunlu oldu; AC-56 r2'de eklendi — X-15).
 
 ## 17. Test Expectations
 - **Birim (Domain, saf):** durum makinesi (§8.3 tablosu tam), rota (S-biçimi, ayrıştırma, geri düşüş, eşitlik bozma, ölçü), saat dilimi dönüşümü
@@ -972,30 +1070,36 @@ almayı yazar.
 - **Sabotaj kanıtı:** §16'daki her `S-n` kabul kaydında komut + kırmızı çıktı + geri alma ile.
 - **Frontend:** `verify_datatable_page.py` (AC-40), RESX parite 7 dil (AC-41), UAS-001 (AC-42), durumlar (AC-43), 375 px canlı (AC-44), klavye
   (AC-45), tarayıcı smoke (E3): dalga oluştur → öner → ekle → serbest bırak → 0178'de toplama onayı → ilerleme → geri çek → istisna çöz → KPI + CSV.
-- **Build:** `Diten.InventoryService`, `Diten.Web` PASS; Gateway test projesi (AC-55) PASS.
+- **Rol İzinleri (X-15, AC-56):** `npx vitest run tests/role-assignments-label-ledger.test.js` (Web, `frontend/Diten.Web`) manifest anahtarı
+  bildiren her dilimde (DL-1, DL-3, DL-5) koşar; Web `vitest` paketinin tamamı DL-4 / DL-5'te.
+- **Build:** `Diten.InventoryService`, `Diten.Web` PASS; Gateway test projesi (AC-55) PASS — üretim `ocelot.json`'u okur (§15).
 - **Sözleşme:** WMS-WAVE-BUNDLE taslağına karşı sözleşme testi (AC-1).
 
 ## 18. Ready-for-dev Checklist
-- [x] Golden Reference Slim referans alındı; form alanı 8 → slim (§4.1, Q-1'e bağlı); sapma G-0180-01 adıyla §10'da
+- [x] Golden Reference Slim referans alındı; form alanı 8 → slim (§4.1; Q-1 = A, karar 03); sapma G-0180-01 adıyla §10'da
 - [x] Frontmatter zorunlu alanları dolu (service, shell, golden_reference, data_mode, screens, entity_base)
-- [x] Layout & Shell Contract'ta `_LayoutTenantShell` açıkça yazılı (§9, AC-39)
+- [x] Layout & Shell Contract'ta `_LayoutTenantShell` açıkça yazılı (§9, AC-39 + S-39)
 - [x] Backend File Convention Golden Reference ile birebir (§10)
 - [x] Frontend File Contract Slim dosya listesi tam; Compact dosyası yok (§11)
 - [x] Validation Rules her alan için yazılı (§12)
 - [x] Failure Path en az 4 senaryo (duplicate, missing, unauthorized, concurrency) (§13)
-- [x] Authorization Convention: namespace (D-4), anahtarlar, politika, aktör (§14)
-- [x] Gateway kararı: `ocelot.json` değişmez; integration-agent işi tanımlı (AC-55)
-- [x] Acceptance criteria test edilebilir; her guard sabotajlı (§16)
+- [x] Authorization Convention: namespace (D-4), anahtarlar (Q-6 = B ayar izni dahil), politika, aktör (§14)
+- [x] Gateway kararı: `ocelot.json` değişmez; integration-agent işi tanımlı; sabotaj üretimi bozar (AC-55)
+- [x] Acceptance criteria test edilebilir; her bekçi sabotajlı, bekçi olmayanlar adıyla işaretli (§16)
 - [x] Audited Events tablosu her yazma komutunu tam bir kez içeriyor (§21)
 - [x] Sayfa yardım metni her sayfa için yazılı (§25); tur yok
-- [ ] Açık kararlar Q-1…Q-22 sahip / CT kararıyla kapandı (§19.4)
-- [ ] XMC-001 satırları X-1…X-13 sahiplerinden onay aldı (§5.1)
-- [ ] `.antigravity/**` kapısı (izlenen): PKS-001 §4 `warehouse.waves.*` oyması ve RCS-001 §3 `WAV` satırı (+ X-12) — onaylayan Beste, yazan ayrı WP,
-  **kapanış: modül PR'ı açılmadan önce**; paket onayını ve dilim başlangıcını engellemez (§6)
+- [x] Sahip kararları: Q-1…Q-16, Q-18, Q-19, Q-21, Q-22 ve Y-1…Y-4 karar 03 ile kapandı (§19.4); D-1…D-17 (kararlar 01, 02)
+- [ ] Q-17 hedef tarih — **TBD (sahip)**; künye `target` (dilim başlangıcını engellemez, plan izlemesi için)
+- [ ] Q-20 rol şablonu — karar Ali (Auth); X-13 ayrı WP, DL-4 kabul kapısı (§24)
+- [ ] CT kararı CT-1 — WMS-BUNDLE eklemeli sürüm numarası (1.2.0 ya da 1.3.0, MOD-0178 CT ile eşgüdüm) (§19.4)
+- [ ] XMC-001 satırları X-1…X-16 sahiplerinden onay aldı (§5.1); X-15'in sahibi TBD (öneri Ali)
+- [ ] **`.antigravity/**` kapısı — paket onayından ÖNCE (Y-4, karar 03):** PKS-001 §4 `warehouse.waves.*` satırı ve RCS-001 §3 `WAV` satırı
+  (+ aynı adımda X-12, X-16); CT hazırlar, Beste onaylar; önerilen metin §6. Bu kapı kapanmadan onay satırı yazılmaz (§6, §24)
 - [x] Kararlar 02 dosyası depoya alındı (Q-15) — MVP-1 hattında (`ct/line-ff-2026-11-12i` ve sonrası)
 - [ ] WMS-WAVE-BUNDLE taslağı yazıldı (DL-1 ilk adımı, AC-1); dondurma ayrı CT adımı
-- [ ] WMS-BUNDLE eklemeli üyeleri (X-8) MOD-0178 CT adımıyla yazıldı (DL-2 kabulünden önce)
-- [ ] Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01); yazan ≠ onaylayan
+- [ ] WMS-BUNDLE eklemeli sürümü (X-8: `OutboundEventKind` değerleri + `wave` / `pickIssuance` + X-7 üyeleri) MOD-0178 CT adımıyla yazıldı ve
+  donduruldu — **DL-2 başlamadan önce** (F-3)
+- [ ] r2 bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **onaylayan Ali (GitHub `GMG-ERP`), D-17 (karar 02)**; yazan ≠ onaylayan
 
 ## 19. Implementation Notes
 
@@ -1006,26 +1110,52 @@ almayı yazar.
   `58e3e73b4`'ten `git show` ile okunmuştu; içerik aynı) (Q-15).
 - Mockup v2 (`C:\Users\Ali\Downloads\Dalga Planlama (standalone) v2.html`, 2.223.236 bayt, paketlenmiş JS sayfası) — yalnız metin dizgeleri çıkarıldı
   (form etiketleri, durumlar, KPI, istisna eylemleri, durum örnekleri); çalıştırılmadı, görsel olarak incelenmedi (kısmi inceleme).
-- `execution/domains/supply-chain-execution/domain-config.md` (tamamı); MOD-0181 r7 paketi (yapı, §2–§8, §16, §18, §20–§25 okundu; §19 kısmen);
-  MOD-0178 r27 paketi (§1–§4.6, §8.17–§8.21 başı okundu; diğer bölümler okunmadı — kısmi inceleme).
+- `execution/domains/supply-chain-execution/domain-config.md` (tamamı); MOD-0181 paketi — r1 yazımında **r7** okundu (yapı, §2–§8, §16, §18,
+  §20–§25; §19 kısmen); geçerli onaylı sürüm **r8** (`execution/approvals/approvals.tsv:83`, LF sha256 `f943ab48…` = `dc010b911` dosyası) —
+  r2'de atıflar r8 konumlarına taşındı (`:219`, `:235-239`, `:299-302`, `:573-576`, `:1395`); MOD-0178 paketi — r1'de r27 okundu (§1–§4.6,
+  §8.17–§8.21 başı), r2'de atıflar **r28** konumlarına taşındı (r28 farkı yalnız künye, §19.1.27 ve Item adımı satırları; atıf yapılan bölümler
+  +8 / +9 kaydı, içerik aynı) ve §14.1 (`:2117-2120`) okundu; diğer bölümler okunmadı — kısmi inceleme.
+- r2 girdileri: bağımsız inceleme r1 `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.md` (tamamı); sahip kararları 03
+  `docs/records/decisions/2026-11/mod0180-wave-planning-owner-decisions-03.md` (tamamı); kararlar 02 yeniden (D-9 metni, D-17).
+- r2 ölçümleri (`dc010b911`, salt okuma): `OutboundAllocationService.cs:165-300`; `CentralAuditDeclarationTests.cs:40-132`;
+  `SingleSystemOfRecordArchitectureTests.cs:86-120`; `ContractSchemas.cs:15-24`, `:404-407`; `wms-bundle.openapi.yaml:64`, `:1352`, `:1694`,
+  `:1757`, `:1805-1835`; `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs:1-60`, `:215-250` ve `.csproj:24-26`;
+  `ocelot.json:1130-1162`; Governance `_IndexL10n.cshtml` fiil satırları, `perm-label.js:52-54`, `:165-295`,
+  `role-assignments-label-ledger.test.js:1-40`, `docs/roadmap/backlog/role-permission-label-ledger.md:1-30`; bu dosyaların `git log`'u;
+  `.antigravity/rules/permission-key-standard.md:98-110`, `record-coding-standard.md:45-75`; `RecordCodeTypeCatalogTests.cs:24-29`;
+  `git diff a3f329ece dc010b911` (servis, sözleşme, kural ve paket atıflarının kayması).
+- **Koşulmayanlar (r2):** test, build, vitest, sabotaj koşulmadı; mockup v2 ve Blueprint xlsx r2'de yeniden açılmadı; X-15'in beklenen
+  satır kodları (`WAVES`, `WAVESSETTINGS`, …) üretim `PermLabel.split` ile ölçülmedi — çıkarımdır, DL-1'de vitest ile ölçülür.
 - Blueprint 8.8 satır 181 (xlsx); registry `:318`; MVP-5 planı `:78`, `:124` (W-4 satırı; plan yetenek kimliği vermez).
 - `.claude/agents/module-pack-author.md`, `.antigravity/rules/module-pack-standard.md` (`:1-110`), PKS-001 §4 tablosu ve §5, RCS-001 §3 başlıkları
   ve `CNT` / `PCK` satırları, AGENTS.md §6.1.
 - MOD-0040-FU02 paket künyesi ve DL-8 satırları.
-- DEV-0000 metni bu oturumda **açılmadı**; Golden Slim yapısı module-pack-author ajan tanımındaki kopyadan ve MOD-0181 §10 ölçümünden alındı
-  (kısmi — CT-APR-02 DEV-0000'ı doğrudan karşılaştırmalı).
+- DEV-0000 metni r1'de **açılmadı**; Golden Slim yapısı module-pack-author ajan tanımındaki kopyadan ve MOD-0181 §10 ölçümünden alındı.
+  r1 bağımsız incelemesi DEV-0000 Golden Slim kod ağacını (Application `Features/GoldenReferenceSlim`, Web
+  `Views/DevEnablement/GoldenReferenceSlim`) §10 / §11 ile karşılaştırdı ve uyumlu buldu (inceleme kaydı "Dayanaklar").
 
-### 19.2 Ölçülen gerçekler (`a3f329ece`, salt okuma)
-- 0178 pick görevleri tahsisin işlem B'sinde, outbound'la aynı işlemde açılır (`OutboundAllocationService.cs:172-234`); dalga için erteleme
-  zorunlu bir 0178 değişikliğidir (X-3).
+### 19.2 Ölçülen gerçekler (r1 `a3f329ece`; r2'de `dc010b911`'de yeniden ölçüldü, salt okuma)
+- 0178 pick görevleri tahsisin işlem B'sinde, outbound'la aynı işlemde açılır (`OutboundAllocationService.cs:172-185` numaralar işlem dışı,
+  `:200-213` kurulum, `:227-233` tek `InTransactionAsync`); kurucular `PickTask` `private static` `:248`, `TaskCreated` `private` `:288`;
+  dalga için erteleme zorunlu bir 0178 değişikliğidir (X-3).
 - 0178 kayıt testi `Controllers.Warehouse` namespace'indeki bütün controller anahtarlarını 0178 manifestiyle eşitler (`WarehouseRegistrationTests.cs:49-56`).
-- `CentralAuditDeclarationTests` 116 yazma komutu (`:51`), 14 işlem geri çağrısı (`:128`).
+- `CentralAuditDeclarationTests`: `dc010b911`'de **117** yazma komutu (`:53`; r1'in ölçtüğü 116 `a3f329ece`'deydi, 117'ye MOD-0181 DL-5
+  `c76c02944` çıkardı), 14 işlem geri çağrısı (`:130`), sağlayıcı listesi `:60-69`.
+- `SingleSystemOfRecordArchitectureTests`: 0181 bildirimleri `:88-89`, `:92-93`; `declared` `:100-115`; `wms_` önek süzgeci `:120`.
+- WMS-BUNDLE 1.1.0 (`:64`); `OutboundEventKind` kapalı enum 15 değer (`:1812-1814`); servis sözleşme testleri `additionalProperties`'siz
+  her nesneyi kapalı okur (`ContractSchemas.cs:19-21`, `:404-407`).
 - PUT / DELETE bekçisi `LedgerImmutabilityArchitectureTests.cs:131-160`.
-- Gateway `/api/warehouse` + `/api/warehouse/{everything}` → 5067 (`ocelot.json:1134-1161`).
+- Gateway `/api/warehouse` + `/api/warehouse/{everything}` → 5067 (`ocelot.json:1134-1161`; `{everything}` portu `:1158`); Gateway testleri
+  üretim `ocelot.json`'u bağlı kopya olarak okur (`Diten.ApiGateway.Tests.csproj:26`); 0178 testi `api/warehouse` controller'larını özyineli
+  tarar (`Mod0178WarehouseRouteTests.cs:219-236`).
+- Governance Rol İzinleri: `recall` fiili köprüde ve ailelerde yok; `configure`, `release`, `resolve`, `read`, `create`, `update`, `export`,
+  `cancel` var (`_IndexL10n.cshtml:165-276`, `perm-label.js:52-54`); defter "fiil 0 · satır 96".
 - LOCATION: koridor / raf / saat dilimi alanı yok; yalnız v1.1 toplu bin kodu biçimi (`location.openapi.yaml:148`, `:205-252`, `:280-287`).
 - Outbound: taşıyıcı, müşteri kimliği, kesim saati, ağırlık / hacim alanı yok (`warehouse-outbound.openapi.yaml:76-97`; MOD-0178 §4.5).
-- RCS-001 §3'te `WAV` yok; Platform `RecordCodeTypeCatalogTests` RCS satırı ile kataloğu eşitler (`2f7b6145e`).
+- RCS-001 §3'te `WAV` yok; Platform `RecordCodeTypeCatalogTests` RCS satırı ile kataloğu eşitler (`2f7b6145e`; sözlük `:29` `CNT`).
 - PKS-001 §4: `warehouse.*` → MOD-0178 (`:105`); §5: `edit` → `update`.
+- `a3f329ece` → `dc010b911` arası: sözleşmeler, kurallar, domain-config, registry, plan, brief ve 0180'in atıf yaptığı 0178 kod dosyaları
+  **değişmedi** (`git diff --stat` boş); MOD-0178 paketi r27 → r28, MOD-0181 paketi r7 → r8 (atıf kaymaları §19.1).
 - **Mockup v2 ile brief / karar farkları:** (1) yaratma panelinde 9 alan (taşıyıcı ayrı, "En çok sipariş" ve "En çok satır" ayrı) — paket 8
   (Q-1); (2) mockup "önerilen ad alanı `wave.`" diyor — karar `warehouse.waves.*` (D-4); (3) mockup risk eşiğini "kesime < 90 dk, ilerleme < %70"
   gösterir — D-6 ile aynı; (4) mockup sipariş satırında "taşıyıcı" ve "Taşıyıcı süzgeci yok" uyarısı gösterir — v1'de veri yok (Q-1).
@@ -1035,32 +1165,67 @@ almayı yazar.
 - Uzlaştırma servisinin 60 sn turu durum gecikmesi yaratır; olay yolu (bus) gelince FU-0180-EVENTS.
 - `TaskWaitingLong` görev atanmamış ama başlamamış görevi de sayar; atanmış / atanmamış ayrımı v1'de yok.
 
-### 19.4 Açık kararlar (Q-n — TBD yok; her biri öneri + seçenek)
+### 19.4 Kararlar (Q-n, Y-n) — karar 03 sonrası durum
 
-| Q | Konu | Seçenekler | Öneri | Karar sahibi |
+Kaynak: sahip kararları 03 (`docs/records/decisions/2026-11/mod0180-wave-planning-owner-decisions-03.md`, Beste, 2026-11-12): "Y-1…Y-4 için
+önerdiğin gibi, Q'lar için Q-6 ayar izni, diğerleri öneri gibi". Açık kalan: **Q-17** (TBD, sahip), **Q-20** (Ali), **CT-1** (CT).
+
+| Q | Konu | Seçenekler | Karar (r2) | Karar sahibi |
 |---|---|---|---|---|
-| Q-1 | Taşıyıcı / sevk yöntemi süzgeci (mockup v2 alanı) — outbound'da veri yok | A: v1'de alan yok, 8 alan → slim · B: alan kalır, kaynak kararı + 9 alan → compact | **A**; FU-0180-CARRIER (MVP-6 taşıyıcı bağlanınca) | Beste |
-| Q-2 | Görev ertelemesinin anahtarı | A: depo ayarı `WaveManaged` + 0178 `IPickIssuancePolicy` portu · B: outbound başına istek bayrağı (WMS-BUNDLE / outbound yaratma sözleşmesi değişir) | **A** | Beste (0180 + MOD-0178 sahibi) |
-| Q-3 | Depo saat dilimi kaynağı (D-3) — LOCATION'da yok | A: 0180 depo ayarı `TimeZoneId` · B: LOCATION `Warehouse` alanı (FU02 + LOCATION 1.2 sözleşmesi, XMC) | **A** v1; FU-0180-TZ-LOCATION | Beste |
-| Q-4 | `WAV` ara üreticisi — FU02 DL-8 yok | A: 0178 geçici sayacı + `WAV` (CNT emsali, X-6) · B: FU02 DL-8'i bekle (DL-1 bloklanır) | **A**; FU-0180-RCS | Beste (K2) |
-| Q-5 | İzin son eki `edit` (iş paketi) ↔ PKS-001 §5 `update` | A: `warehouse.waves.update` · B: `edit` (PKS-001 ihlali — sözlük değişikliği gerekir) | **A** | Beste |
-| Q-6 | Depo dalga ayarının izni | A: `warehouse.waves.update` (yeni anahtar yok) · B: yeni `warehouse.waves.settings.configure` (Tier-3) | **A** v1 | Beste |
-| Q-7 | PKS-001 §4 oyma satırı metni (`warehouse.waves.*` → MOD-0180) ve MOD-0178 Q-08 ("her WMS modülü kendi ad alanı") ile fark kaydı | A: §4'e alt ad alanı satırı + MOD-0178 §14.1'e not (XMC, 0178 paketi revizyonu) · B: yalnız §4 satırı | **A** | Beste (içerik D-4 ile onaylı; metin `.antigravity` kapısında) |
-| Q-8 | Teknik üst sınır (500 sipariş / 2.000 görev) | A: kabul · B: başka değer | **A** | Beste / CT |
-| Q-9 | Bölge sırası | A: bölge kodu artan (v1) · B: depo ayarında bölge sırası listesi | **A**; FU-0180-ZONEORDER | Beste |
-| Q-10 | Kısa toplama ve "Tamamlandı" | A: kısa kapatılan görev terminal → dalga `Completed` + `ShortPick` istisnası · B: kısa toplama `PartiallyCompleted` | **A** (D-9 "Kısmen" yalnız geri çekmeye bağlı) | Beste |
-| Q-11 | Uzlaştırma turu | A: 60 sn · B: başka | **A** | CT |
-| Q-12 | Toplayıcı 0178 listesinde dalga sırası (X-7) | A: 0178 listesine dalga sütunu + sıralama (XMC) · B: sıra yalnız 0180 ayrıntısında | **A** | Beste (MOD-0178 sahibi) |
-| Q-13 | Build / Buy (W-0180-01) | A: Build · B: Buy/Partner | **A**; FU-0180-EA | Beste |
-| Q-14 | AI Assist | A: v1 dışı · B: v1'de | **A**; FU-0180-AI | Beste |
-| Q-15 | Kararlar 02 dosyası yalnız dalsız commit `58e3e73b4`'te | A: CT dosyayı çalışma dalına alır (onaydan önce) · B: başka yol | **KAPANDI — A** (dosya MVP-1 hattında, CT 2026-11-12) | CT |
-| Q-16 | Dal | A: tek çalışma dalı `feature/sce/mod-0173-inventory-ledger-valuation` (MOD-0181 Q-23 emsali) · B: ayrı dal | **A** | Beste |
-| Q-17 | Hedef tarih (künye `target`) | plan satırı tarih vermez | sahip tarihi | Beste |
-| Q-18 | KPI CSV okuma denetimi (AUD-001 §7) | A: v1'de yok · B: okuma kaydı | **A**; FU-0180-READAUDIT | Beste |
-| Q-19 | Planlayıcı DataTable değil (pano) — `verify_datatable_page.py` kapsamı dışı | A: kabul · B: sol listeyi DataTable yap | **A** | Beste / CT |
-| Q-20 | Rol şablonu (X-13) | A: §14 önerisi · B: başka | **A** | Ali (Auth) |
-| Q-21 | "Müşteri ya da teslim bölgesi" süzgeci — müşteri kimliği yok | A: `ShipTo` ad / şehir / posta / ülke metin eşleşmesi · B: v1'de süzgeç yok | **A**; FU-0180-CUSTOMER | Beste |
-| Q-22 | Sipariş başına kesim saati yok | A: planlayıcı sütunu "—", dalganın kesimi esas · B: outbound'a kesim alanı (0178 + sözleşme, XMC) | **A** | Beste |
+| Q-1 | Taşıyıcı / sevk yöntemi süzgeci (mockup v2 alanı) — outbound'da veri yok | A: v1'de alan yok, 8 alan → slim · B: alan kalır, kaynak kararı + 9 alan → compact | **A** (karar 03); FU-0180-CARRIER — form 8 alan, slim değişmedi | Beste |
+| Q-2 | Görev ertelemesinin anahtarı | A: depo ayarı `WaveManaged` + 0178 `IPickIssuancePolicy` portu · B: outbound başına istek bayrağı | **A** (karar 03) | Beste (0180 + MOD-0178 sahibi) |
+| Q-3 | Depo saat dilimi kaynağı (D-3) — LOCATION'da yok | A: 0180 depo ayarı `TimeZoneId` · B: LOCATION `Warehouse` alanı | **A** (karar 03); FU-0180-TZ-LOCATION | Beste |
+| Q-4 | `WAV` ara üreticisi — FU02 DL-8 yok | A: 0178 geçici sayacı + `WAV` (X-6) · B: FU02 DL-8'i bekle | **A** (karar 03); FU-0180-RCS | Beste (K2) |
+| Q-5 | İzin son eki `edit` ↔ PKS-001 §5 `update` | A: `warehouse.waves.update` · B: `edit` | **A** (karar 03) | Beste |
+| Q-6 | Depo dalga ayarının izni | A: `warehouse.waves.update` · B: yeni `warehouse.waves.settings.configure` (Tier-3) | **B** (karar 03; inceleme F-15) — §14, AC-15, AC-48 | Beste |
+| Q-7 | PKS-001 §4 satır metni ve MOD-0178 Q-08 ile fark kaydı | A: §4'e alt ad alanı satırı + MOD-0178 §14.1'e not (X-16) · B: yalnız §4 satırı | **A** (karar 03); metin önerisi §6 | Beste |
+| Q-8 | Teknik üst sınır (500 sipariş / 2.000 görev) | A: kabul · B: başka değer | **A** (karar 03) | Beste / CT |
+| Q-9 | Bölge sırası | A: bölge kodu artan · B: depo ayarında liste | **A** (karar 03); FU-0180-ZONEORDER | Beste |
+| Q-10 | Kısa toplama ve "Tamamlandı" | A: kısa kapatılan görev terminal → `Completed` + `ShortPick` · B: kısa toplama `PartiallyCompleted` | **A** (karar 03). Gerekçe (r2, F-2): "Kısmen tamamlandı" geri çekme (D-9) ve `Excluded` / `OrderCancelled` üyeliğe (karar 03 Y-2) bağlıdır; kısa toplama bu kümeye girmez | Beste |
+| Q-11 | Uzlaştırma turu | A: 60 sn · B: başka | **A** (karar 03) | CT |
+| Q-12 | Toplayıcı 0178 listesinde dalga sırası (X-7) | A: 0178 listesine dalga sütunu + sıralama · B: yalnız 0180 ayrıntısı | **A** (karar 03) — AC-50 zorunlu | Beste (MOD-0178 sahibi) |
+| Q-13 | Build / Buy (W-0180-01) | A: Build · B: Buy/Partner | **A** (karar 03); FU-0180-EA | Beste |
+| Q-14 | AI Assist | A: v1 dışı · B: v1'de | **A** (karar 03); FU-0180-AI | Beste |
+| Q-15 | Kararlar 02 dosyası | A: CT dosyayı çalışma dalına alır | **KAPANDI — A** (r1; dosya depoda) | CT |
+| Q-16 | Dal | A: tek çalışma dalı `feature/sce/mod-0173-inventory-ledger-valuation` · B: ayrı dal | **A** (karar 03) | Beste |
+| Q-17 | Hedef tarih (künye `target`) | plan satırı tarih vermez | **TBD (sahip)** — karar 03 "sahipten bekleniyor" | Beste |
+| Q-18 | KPI CSV okuma denetimi (AUD-001 §7) | A: v1'de yok · B: okuma kaydı | **A** (karar 03); FU-0180-READAUDIT | Beste |
+| Q-19 | Planlayıcı DataTable değil | A: kabul · B: sol listeyi DataTable yap | **A** (karar 03) | Beste / CT |
+| Q-20 | Rol şablonu (X-13) | A: §14 önerisi · B: başka | **Açık — karar Ali (Auth)**; öneri §14 (`settings.configure` şablonsuz) | Ali (Auth) |
+| Q-21 | "Müşteri ya da teslim bölgesi" süzgeci | A: `ShipTo` metin eşleşmesi · B: v1'de süzgeç yok | **A** (karar 03); FU-0180-CUSTOMER | Beste |
+| Q-22 | Sipariş başına kesim saati yok | A: planlayıcı sütunu "—" · B: outbound'a kesim alanı | **A** (karar 03) | Beste |
+| Y-1 (F-1) | Ertelenmiş sipariş varken dalga yönetimini kapatma | A: 409 · B: kapatınca 0178'e hepsini aç isteği | **A — 409 `WAVE_SETTINGS_DEFERRED_ORDERS`** (karar 03) — §4.5, §8.6, AC-15, S-15b | Beste |
+| Y-2 (F-2) | Dalgadan çıkarılan / 0178'de iptal edilen sipariş | A: `PartiallyCompleted` · B: `Completed` | **A** (karar 03) — D-9 genişler; §8.3, §8.9, AC-30, S-30b | Beste |
+| Y-3 (F-11) | "En kısa yol" (D-2) | A: S-biçimli v1 yaklaşığı | **A** (karar 03) — §8.7, AC-25 | Beste |
+| Y-4 (F-10) | `.antigravity` satırlarının zamanı | A: paket onayından önce · B: modül PR'ından önce | **A** (karar 03) — §6, §18, §24 | Beste |
+| CT-1 (F-3) | WMS-BUNDLE eklemeli sürüm numarası (X-8) | 1.2.0 (0178 Item adımıyla birleşik) · 1.3.0 (Item 1.2.0'dan sonra) | **Açık — CT kararı**; adım DL-2 başlamadan önce | CT (MOD-0178 CT ile) |
+
+### 19.5 r1 → r2 kapanış tablosu
+
+| # | Bulgu / karar | r2 değişikliği | Bölüm |
+|---|---|---|---|
+| F-1 | Dalga yönetimi kapatılınca ertelenmiş siparişler takılır (ORTA) | Y-1: `Deferred` / `Allocating` outbound varken kapatma 409 `WAVE_SETTINGS_DEFERRED_ORDERS`; kalan yarış ve çıkış yolu yazıldı; AC-15 (a)…(e) + S-15b | §4.5, §8.6, §8.17, §12, §13, §16 AC-15 |
+| F-2 | D-9 genişletilmiş ve yanlış atfedilmiş (ORTA) | Y-2: `Excluded` / `OrderCancelled` → `PartiallyCompleted` "karar 03 Y-2" diye atfedildi; D-9'un karar 02 metni ayrı yazıldı; Q-10 gerekçesi düzeltildi; AC-30 + S-30b | §8.3, §8.9, §16 AC-30, §19.4 Q-10 |
+| F-3 | X-8 eksik ve sırası geç (ORTA) | X-8'e `OutboundEventKind` `PickTasksIssued` / `PickTasksWithdrawn`; kapalı şema ölçümü; eklemeli sürüm **DL-2 başlamadan önce** CT adımı; numara sabitlenmedi — "0178 CT ile eşgüdümlenen bir sonraki eklemeli sürüm (1.2.0 ya da 1.3.0)", CT-1 | §5.1 X-8, §7, §18, §19.4 CT-1, §24 |
+| F-4 | XMC listesinde rol köprüsü yok (ORTA) | X-15 (Governance `_IndexL10n.cshtml`, `RoleAssignmentsIndex` 7 resx, `perm-label.js`; `recall` yeni fiil, `configure` var); sahip depoda ölçüldü (sahiplenen pack yok → TBD, öneri Ali), XMC-001 açık; §5 ortak kaynak tanımı `Perm.Entity.*` ile genişledi; AC-56 + S-56 | §5, §5.1 X-15, §7, §16 AC-56, §17 |
+| F-5 | S-55 sabotajı testi bozuyor (ORTA) | Gateway testinin üretim `ocelot.json`'u okuduğu ölçüldü (`.csproj:26`, `Mod0178WarehouseRouteTests.cs:23`, `:219-236`); S-55a üretim `ocelot.json` portu, S-55b üretim controller `[Route]`'u (integration-agent, geri alınır) | §5.1 X-14, §15, §16 AC-55 |
+| F-6 | AC-9 ve X-10 bayat sayıya bağlı (ORTA) | AC-9 "dilim başındaki ölçülen sayı + dilimin 0180 komutları"; X-10 `:53` (117), `:60-69`, `:130`; X-9 `:88-89`, `:92-93`, `:100-115`, `:120` | §5.1 X-9 / X-10, §16 AC-9, §19.2 |
+| F-7 | Belge atıfları eski konumda; 0181 r7 (DÜŞÜK) | Kod atıfları `dc010b911:` ile sabitlendi; MOD-0178 atıfları r28 (+8 / +9), MOD-0181 atıfları r8 (+38); 0181 onaylı sürüm r8 yazıldı | giriş notu, §0, §2, §3, §4, §6, §7, §8, §19.1 |
+| F-8 | D-17 pakette yok (DÜŞÜK) | Onaylayan Ali (GitHub `GMG-ERP`), D-17 — künye `revision`, giriş notu, §18 | künye, giriş, §18 |
+| F-9 | `status_note` Q-15'i açık sayıyor (DÜŞÜK) | `status_note` güncellendi (Q-15 kapalı; r2 inceleme + Ali onayı bekler) | künye |
+| F-10 | `.antigravity` satırlarının zamanı (DÜŞÜK) | Y-4: paket onayından ÖNCE, sahip onayıyla; CT hazırlar; satır metinleri önerildi | §6, §18, §24 |
+| F-11 | D-2 yorumu sahip teyitsiz (DÜŞÜK) | Y-3: S-biçimli v1 yaklaşığı sahipçe kabul | §8.7, §19.4 |
+| F-12 | Ad ve atıf tutarsızlığı (DÜŞÜK) | Tek ad: port `IPickIssuancePolicy`, 0180 uygulaması `WavePickIssuancePolicy`; X-3 aralığı `:227-233` | §5.1 X-3 / X-4, §8.6 |
+| F-13 | Adlı sabotajı olmayan bekçiler (DÜŞÜK) | S-12b, S-39, S-49, S-54 eklendi; AC-40, AC-43, AC-44, AC-46, AC-47 "bekçi değil" diye işaretlendi | §16, §24 |
+| F-14 | AC-18 karşılaştırma referansı tanımsız (DÜŞÜK) | Referans: X öncesi commit'te aynı fikstür betiğiyle üretilip kabul kaydına yazılan normalize JSON + sha256; kanıttır, bekçi değil; bekçi 0178 testleri | §16 AC-18 |
+| F-15 | Q-6 = A riski (DÜŞÜK) | Q-6 = B (karar 03): `warehouse.waves.settings.configure` Tier-3; izin tablosu, manifest `ApiPermissions`, rol önerisi, AC-15 / AC-48, S-15c | §8.15, §13, §14, §16 |
+| F-16 | Kurucuların paylaşımı (DÜŞÜK) | X-3 (a): `PickTask` / `TaskCreated` davranış değişmeden 0178 içinde ortak yardımcıya (`OutboundPickTaskFactory`); X-4 dosya listesine eklendi; AC-19 + S-19b | §5.1 X-3 / X-4, §8.6, §16 AC-19 |
+| Y-1…Y-4 | Sahip kararları 03 | F-1, F-2, F-11, F-10 satırları | §19.4 |
+| Q-6 | Ayar izni B | F-15 satırı | §14, §16 |
+| Q-1…Q-5, Q-7…Q-16, Q-18, Q-19, Q-21, Q-22 | Öneri gibi (A) | §19.4 "Karar (r2)" sütunu; koşullu ifadeler ("Q-4 = A ise", "Q-12 = A ise") kesinleştirildi; AC-50 zorunlu | §5.1 X-6 / X-7, §16, §19.4 |
+| Q-17 | Hedef tarih | künye `target` "TBD (sahip)" | künye, §18 |
+| Q-20 | Rol şablonu | karar Ali (Auth); öneri §14 | §14, §18 |
+| D-17 | Onaylayan Ali (karar 02) | F-8 satırı | künye, §18 |
 
 ## 20. Follow-up Items
 - **FU-0180-RCS** — `WAV`'ın MOD-0040-FU02 ortak servisine geçişi (DL-8 + FU-0178-RCS-01 ile; Q-4).
@@ -1074,7 +1239,7 @@ almayı yazar.
 - **FU-0180-EVENTS** — uzlaştırma turu yerine olay yolu.
 - **FU-0180-AI** — Blueprint AI Assist (Q-14). **FU-0180-EA** — Blueprint Build/Buy düzeltmesi (Q-13).
 - **FU-0180-READAUDIT** — KPI / CSV okuma denetimi (Q-18).
-- **FU-0180-SETTINGS-UI** — depo dalga ayarı ekranı (v1 yalnız API).
+- **FU-0180-SETTINGS-UI** — depo dalga ayarı ekranı (v1 yalnız API; izin `warehouse.waves.settings.configure`, Q-6 = B).
 
 ## 21. Audited Events
 
@@ -1096,7 +1261,7 @@ olur.
 | RecallWaveRemainingCommand | RecallWaveRemainingCommand + LifecycleTransition | Wave | b | **gerekçe**, çekilen ve başlamış siparişler, iptal edilen görev numaraları | — |
 | ResolveWaveExceptionCommand | ResolveWaveExceptionCommand + Execute | WaveException | b | eylem (çıkar / taşı / yok say), hedef dalga, **gerekçe** | — |
 | ReconcileWaveCommand | ReconcileWaveCommand + Execute | Wave | b | durum geçişi, `CompletedAt`, açılan / kapanan istisnalar, `OrderCancelled` üyelikler; yalnız yazacak şey varsa gönderilir (0178 sweeper deseni) | — |
-| UpdateWaveWarehouseSettingsCommand | UpdateWaveWarehouseSettingsCommand + Update | WaveWarehouseSettings | b | önceki / sonraki: WaveManaged, TimeZoneId, eşikler, **gerekçe** | — |
+| UpdateWaveWarehouseSettingsCommand | UpdateWaveWarehouseSettingsCommand + Update | WaveWarehouseSettings | b | önceki / sonraki: WaveManaged, TimeZoneId, eşikler, **gerekçe**; izin `warehouse.waves.settings.configure` (Q-6 = B); Y-1 reddi (409) başarısızdır, kayıt doğurmaz | — |
 
 **Yazma olmayan:** KPI okuması ve CSV (`ExportWaveKpiCsvQuery`) okumadır, merkezi kayıt doğurmaz (AUD-001 §7 okuma denetimi v1 dışı, Q-18).
 Kayda yazılmayacak alan: yok (parola / token / özel nitelikli veri taşınmaz; `ShipToFilter` serbest metindir — KVKK için olay `Data`'sına yazılır,
@@ -1126,16 +1291,18 @@ Biçim `{ŞİRKET}-WAV-{000001}`, sayaç (kiracı, şirket öneki, tür) başın
 
 ## 24. Dilim kapıları ve bağlı kararlar
 
-Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kaydı + CT-APR-01 onay satırı) hiçbir dilim başlamaz.
+Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kaydı + CT-APR-01 onay satırı, onaylayan Ali — D-17) hiçbir dilim
+başlamaz. **Onaydan önce kapanan kapı (Y-4):** `.antigravity/**` satırları (PKS-001 §4, RCS-001 §3) + aynı adımda X-12 ve X-16 (§6).
+Sahip kararları (karar 03) bütün dilimler için kapalıdır; aşağıdaki "kararlar" sütunu yalnız açık kalanları ve CT adımlarını sayar.
 
 | Dilim | Başlamadan kapanması gereken kararlar | Seam'ler (XMC-001) | AC | Sabotajlar |
 |---|---|---|---|---|
-| DL-1 | Q-1, Q-3, Q-4, Q-5, Q-6, Q-8, Q-13, Q-15, Q-16, Q-21, Q-22; ilk adım: WMS-WAVE-BUNDLE taslağı | X-6 (Q-4 A), X-9, X-10, X-11 | AC-1…AC-17 | S-1…S-17 |
-| DL-2 | Q-2, Q-9; X-8 (WMS-BUNDLE eklemeli üyeler) MOD-0178 CT adımı DL-2 kabulünden önce | X-1, X-2, X-3, X-4, X-5, X-8, X-10, X-11 | AC-18…AC-28 | S-18…S-28 |
-| DL-3 | Q-10, Q-11 | X-10 | AC-29…AC-38 | S-29…S-38 |
-| DL-4 | Q-12, Q-19; AuthService rol şablonu WP'si (Q-20, X-13) kabul kapısı | X-7 (Q-12 A), X-8 | AC-39…AC-50 | S-41, S-42, S-45, S-48, S-50 |
-| DL-5 | Q-18 | X-10 (KPI komutu yok — sayı değişmez) | AC-51…AC-54 | S-51, S-52, S-53 |
-| DL-6 | — | gateway test projesi (integration-agent); `ocelot.json` değişmez | AC-55 | S-55 |
+| DL-1 | `.antigravity` kapısı (Y-4, onaydan önce); ilk adım: WMS-WAVE-BUNDLE taslağı; X-15 sahip teyidi (satır adları) | X-6, X-9, X-10, X-11, X-15 | AC-1…AC-17, AC-56 | S-1…S-17 (S-12b, S-15b, S-15c dahil), S-56 |
+| DL-2 | **CT adımı: WMS-BUNDLE eklemeli sürümü (X-8) DL-2 başlamadan önce yazılır ve dondurulur; sürüm numarası CT-1** | X-1, X-2, X-3, X-4, X-5, X-8, X-10, X-11 | AC-18…AC-28 | S-18…S-28 (S-19b dahil) |
+| DL-3 | X-15 sahip teyidi (`recall` fiili) | X-9, X-10, X-15 | AC-29…AC-38; AC-56 tekrar | S-29…S-38 (S-30b dahil), S-56 |
+| DL-4 | AuthService rol şablonu WP'si (Q-20 Ali, X-13) kabul kapısı; X-7 üyeleri X-8 sürümünde değilse DL-4 öncesi CT adımı | X-7, X-8 | AC-39…AC-50 | S-39, S-41, S-42, S-45, S-48, S-49, S-50 |
+| DL-5 | — | X-10 (KPI komutu yok — sayı değişmez), X-15 (satır adı) | AC-51…AC-54; AC-56 tekrar | S-51, S-52, S-53, S-54, S-56 |
+| DL-6 | — | gateway test projesi (integration-agent); `ocelot.json` değişmez, sabotajda geçici bozulur ve geri alınır | AC-55 | S-55a, S-55b |
 
 Sıra: DL-1 → DL-2 → DL-3 → DL-4 → DL-5; DL-4 geliştirmesi DL-2'den sonra DL-3 ile paralel yürüyebilir ama **DL-4 kabulü DL-3 kabulünden
 sonradır** (istisna kuyruğu ve ilerleme ekranları DL-3 uçlarına dayanır); DL-6 DL-1'den sonra her an. MOD-0178 bekçi testleri her dilimde
