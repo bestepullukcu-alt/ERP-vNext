@@ -19,3 +19,4 @@ Kararlar 01'in mockup'a yansımayanları (tur 2'de düzelir): S-1 v1 yalnız çe
 bağımlılık, Ali (MDM).
 
 | E-3 | Okutma ekranının yeri | **Mevcut mobil uygulamada** (iOS / Android ekipleri) — depo çalışanının okutma akışları; yönetim ekranları (tarama olayları, uyum izi, cihaz sağlığı, dış sistemler, ayarlar) Web'de. Mobil ekiplere erken ihtiyaç notu: `execution/domains/supply-chain-execution/work-packs/mobile/2026-11-12-barcode-scanning/MOBILE-NOTE-2026-11-12-barcode-scanning.md`; API sözleşme notu paket onayından sonra | 2026-11-12 |
+| E-4 | Sahadaki diğer iş akışları | **A:** sahada barkod okutarak yapılan bütün akışlar (MOD-0178 yerleştirme, toplama, paketleme; MOD-0181 sayım formu) mobil uygulamada toplanır; mevcut donmuş API'lerle (WMS-BUNDLE 1.1.0, WMS-COUNT-BUNDLE 1.0.0) MOD-0182 paketini beklemeden başlanabilir; Web'deki telefon uyumlu ekranlar yedek olarak kalır. Mobil not §3A ve mobil mockup brief'i güncellendi | 2026-11-12 |

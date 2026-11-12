@@ -4,6 +4,10 @@
 > Kaynaklar: Web mockup tur 1 (`Barkod RFID Prototip`, telefon görünümü), sahip kararları `docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-01.md`
 > ve `-02.md` (S-1…S-12, E-1…E-3), mobil ekiplere not `execution/domains/supply-chain-execution/work-packs/mobile/2026-11-12-barcode-scanning/MOBILE-NOTE-2026-11-12-barcode-scanning.md`.
 > Karar E-3 (Beste): depo çalışanının okutma ekranları **mevcut mobil uygulamamızda** yapılır; yönetim ekranları Web'de kalır.
+> Karar E-4 (Beste, 2026-11-12): sahada barkod okutarak yapılan **bütün** iş akışları mobil uygulamada toplanır — MOD-0178 rafa yerleştirme,
+> toplama, paketleme ve MOD-0181 sayım formu dahil. Bu akışların Web sürümleri (telefon uyumlu) bugün çalışıyor; mockup bunlarla **aynı
+> alanları ve adımları** göstermeli (referans: Web'de `/Warehouse/CycleCounts/Sheet/{id}` sayım formu ve 0178 görev ekranları; API
+> sözleşmeleri WMS-BUNDLE 1.1.0 ve WMS-COUNT-BUNDLE 1.0.0).
 > **Mockup yapana not:** Görsel dil mevcut mobil uygulamamızın tasarım dilidir (renk, bileşen, menü yapısı ondan alınır). Kurallar henüz
 > pakette yazılı değildir; mockup bu kuralları **önerir**, paket kesinleştirir. Emin olmadığın her yeri "açık soru" olarak yaz.
 
@@ -39,6 +43,12 @@
   - **Mal kabul:** koli / ürün okut (GTIN + lot + SKT tek karekoddan çözülür) → miktar → gerekiyorsa palet etiketi bas.
   - **Paketleme:** ürünleri okut → koliyi kapat → koli / palet etiketi bas.
 - Satır bitince otomatik sonraki satır; hepsi bitince "Görevi tamamla".
+- **Görev üstlenme:** listede bir görevi açınca "Görevi al" (başkası aldıysa "Bu görev X'te" uyarısı).
+- **Eksik kapatma:** rafta yeterli ürün yoksa "Eksik kapat" — gerekçe ister; görev eksik miktarla kapanır.
+- **Sayım ayrıntıları (MOD-0181):** raf raf satırlar, "2 / 12 sayıldı" ilerlemesi, satırda lot **numarası**; **kör sayımda beklenen miktar
+  gösterilmez** (yer bile ayrılmaz); "Bulunan stok ekle" (listede olmayan ürün / lot — lot numarasıyla seçilir); "Sayımı gönder" onay penceresi.
+- **Paketleme ayrıntıları:** sevkiyata koli aç, ürünleri okut, koliyi kapat, koli etiketi bas; koli listesi.
+- Hiçbir ekranda kimlik (GUID) görünmez: raf kodu, lot numarası, SKU kodu ve ürün adı, kişi adı; okunamazsa "Ad okunamadı".
 
 ## 4) TAM EKRAN GERİ BİLDİRİM (çok önemli — eldivenle, uzaktan okunur)
 - **Kabul:** yeşil, büyük onay işareti, kısa ses + titreşim; **1 saniyede kendiliğinden kapanır** (S-12).
@@ -83,4 +93,5 @@
   - **MS-3** Etiket basımı yalnız ağ yazıcısına (sunucu üzerinden) mi, Bluetooth mobil yazıcı da mı? (öneri: v1 ağ yazıcısı)
   - **MS-4** Sorumlu PIN yanlış girilirse kaç deneme, sonra ne olur? (öneri: 3 deneme, 5 dk bekleme)
   - **MS-5** Görev listesi kişiye mi atanır, depodaki herkes mi görür? (MOD-0178 görev atamasına bağlı)
-  - **MS-6** Sayımda kör sayım (beklenen miktar gizli) mobilde nasıl görünür? (MOD-0181 kör sayım kuralı)
+  - **MS-6** Sayımda kör sayım (beklenen miktar gizli) mobilde nasıl görünür? (MOD-0181 kuralı: beklenen gösterilmez, gönderimden sonra görünür)
+  - **MS-7** Mal kabul akışı hangi ekipte / hangi arka uçla? (MVP-6 tarafı — CT netleştirecek; mockup akışı yine çizsin)
