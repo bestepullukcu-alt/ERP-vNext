@@ -1,6 +1,6 @@
 # WMS-COUNT-BUNDLE v1 — proposal (MOD-0181 Cycle Counting / Sayım)
 
-> **Durum: DONDU → 1.0.0 dosyası; DL-5 satırları bağlayıcı taslak (DL-5, 2026-11-12) — 1.1.0'a eklenecek.** §1–§3, §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3), §4.4'ün DL-4 satırı ve §5–§7
+> **Durum: DONDU → 1.0.0 dosyası (DL-1…DL-4) + 1.1.0 (DL-5, eklemeli, 2026-11-12/13).** §1–§3, §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3), §4.4'ün DL-4 satırı ve §5–§7
 > CT'nin tek yazıcı adımıyla (MOD-0178 §19.7 deseni) `docs/analysis/contracts/wms-count-bundle.openapi.yaml`'a donduruldu (`info.version: 1.0.0`,
 > `x-status: FROZEN`, `x-owner: MOD-0181`, `x-owner-service: Diten.InventoryService`; 22 operasyon, 25 `COUNT_*` kodu); **kablo otoritesi artık o
 > dosyadır**, bu dosya değil. Donduktan sonra yalnız eklemeli değişiklik (K16). Dondurmada kod gerçeği yazılan farklar (yalnız ekleme / daraltma,
@@ -16,9 +16,11 @@
 >
 > **Dilim durumu:** DL-1…DL-4 donmuştur — `CycleCountContract` (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve
 > `/count-settings` cevabını dondurulmuş dosyaya karşı doğrular, `WmsCountBundleContractTests` dosyayı koda karşı ölçer. §4.4'ün **DL-5 satırları**
-> (Evidence Pack) 1.0.0'da yoktur; **DL-5 (WP-MVP5-0181-DL5-01) onları bu dosyada bağlayıcı taslak yaptı** (§3.11, §4.4, §5.3) — kod bu satırlara
-> karşı yazıldı ve `CountEvidenceDraftContract` (test projesi) her DL-5 cevabını bu satırlardan türetilmiş kapalı şemalara karşı doğrular. CT,
-> DL-5 kabulünden sonra 1.1.0'ı yalnız ekleyerek dondurur.
+> (Evidence Pack) 1.0.0'da yoktur; **DL-5 (WP-MVP5-0181-DL5-01) onları bu dosyada bağlayıcı taslak yaptı** (§3.11, §4.4, §5.3) ve CT, DL-5 +
+> WP-0181-DL5-FIX-01 kabulünden sonra **1.1.0'ı yalnız ekleyerek dondurdu** (`info.version: 1.1.0`; 25 operasyon, 27 kod; 1.0.0 bayt-eşit fikstür
+> `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Contract/Fixtures/wms-count-bundle-v1.0.0.openapi.yaml`). Kablo otoritesi DL-5 için
+> de artık dosyadır: `CountEvidenceDraftContract` kaldırıldı, DL-5 cevapları `CycleCountContractHandler` ile dondurulmuş dosyaya karşı doğrulanır.
+> Kayıt: `docs/records/audits/2026-11/mod-0181-wms-count-bundle-1.1.0-freeze-2026-11-12.md`.
 
 ## 1. Rules
 
@@ -209,7 +211,9 @@ satırlar, `exactLines` = bunlardan fark 0 olanlar, `accuracyPercent` = `exactLi
   kapsam bin'leri), satırlar (beklenen, anlık görüntüden beri hareket, sayım anında beklenen, sayılan, fark, satır durumu), kararlar (tür, kaynak,
   kim, ne zaman, gerekçe) ve düzeltme durumu + defter `TransactionNumber`'ı, kapsam bin'lerinde `SnapshotAt` → kapanış (kapanmamışsa dışa aktarma
   anı) arası **elle** `COUNT_*` hareketleri (§3.8 iki yönlü kuralı; "kaynak beyanı uyuşmuyor" işaretiyle) ve zaman çizelgesi.
-- **Dil:** `requestedLanguage` = isteğin `Accept-Language` başlığındaki ilk etiketin birincil alt etiketi; 7 dilden biri değilse `en`.
+- **Dil (1.1.0'da koda hizalandı — CT DÜŞÜK-3):** `requestedLanguage` = isteğin `Accept-Language` etiketleri q değerine göre (yüksekten alçağa; q
+  yoksa 1; eşit q'da başlık sırası) sıralandığında **ilk** etiketin birincil alt etiketi (`-` / `_` öncesi, küçük harf); 7 dilden biri değilse
+  (ya da başlık yoksa) `en`.
   `language` = dosyanın çizildiği dil: CSV'de `requestedLanguage`; PDF'te `en | tr | fr | es | ru` ise o, `zh | ar` ise `en` (başta İngilizce not +
   istenen kod). Durum / karar / kaynak / olay / düzeltme / hareket türü dosyaya **kod olarak** girer ve servis resx'inin
   (`CycleCountEvidenceText_{lang}.resx`) anahtarıyla çevrilir — saklanan metin değildir.
@@ -288,7 +292,7 @@ submit 200 döner (sonucu bilinmeyen düzeltme `Pending` kalır, retry / sweeper
 **Sweeper:** `PendingCountAdjustmentReconcilerHostedService` yalnız `ReconcilePendingCountAdjustmentCommand` gönderir (uç değil); son denemesi yaşlanan
 `Pending` düzeltmeleri anahtar-önce kuralıyla toparlar.
 
-### 4.4 DL-4 ve DL-5 (bağlayıcı; DL-5 1.1.0'a eklenecek)
+### 4.4 DL-4 ve DL-5 (bağlayıcı; DL-5 1.1.0'da donduruldu)
 
 | Yöntem + yol | operationId | x-permission | Dilim |
 |---|---|---|---|
@@ -343,7 +347,7 @@ DL-2'de bulunan satır için `UNKNOWN_ITEM`, `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT
 kodu değil, satırın `adjustment.refusalCode` / `refusalDetails`'idir (aynen; approve / retry 200 döner). **İstisna:** posting cevabı 400
 `IDEMPOTENCY_KEY_REUSED` bir ret değildir — anahtar sorulur, `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY` (paket §8.6, r5 SB1/F-4).
 
-### 5.3 DL-5 kodları (1.1.0'a eklenecek; CT önek kuralı `COUNT_EVIDENCE_`)
+### 5.3 DL-5 kodları (1.1.0'da donduruldu; CT önek kuralı `COUNT_EVIDENCE_`)
 
 | Kod | HTTP | Ne zaman |
 |---|---|---|

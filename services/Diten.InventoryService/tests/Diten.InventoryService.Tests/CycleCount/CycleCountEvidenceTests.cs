@@ -19,8 +19,8 @@ using static Diten.InventoryService.Tests.CycleCounting.CycleCountScenario;
 namespace Diten.InventoryService.Tests.CycleCounting;
 
 /// <summary>
-/// MOD-0181 DL-5 — the Evidence Pack (pack §4.5, §21; AC-43, AC-44), end to end on the real host with every answer checked against the DL-5 draft
-/// rows (<see cref="CountEvidenceContractHandler"/>):
+/// MOD-0181 DL-5 — the Evidence Pack (pack §4.5, §21; AC-43, AC-44), end to end on the real host with every answer checked against the FROZEN
+/// WMS-COUNT-BUNDLE 1.1.0 (<see cref="CycleCountContractHandler"/>: JSON bodies, error codes per operation, the file answer's media type and headers):
 /// <list type="bullet">
 /// <item>AC-43 content: the head, every line (expected, movements since the snapshot, expected at count, counted, variance), the decisions (who / when /
 /// source — a tolerance approval's label is the TRANSLATION of the stored code), the ledger numbers, the manual <c>COUNT_*</c> section (SnapshotAt →
@@ -36,7 +36,7 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
     private const string EvidenceRead = "cycle-count.evidence.read";
     private const string EvidenceExport = "cycle-count.evidence.export";
 
-    private readonly HttpClient _http = factory.CreateDefaultClient(new CountEvidenceContractHandler());
+    private readonly HttpClient _http = factory.CreateDefaultClient(new CycleCountContractHandler());
 
     // ── the count every content test exports ─────────────────────────────────────────────────────────────
 
