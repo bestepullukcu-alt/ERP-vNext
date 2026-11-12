@@ -92,8 +92,9 @@ public sealed class Mod0178WarehouseRouteTests
         // GET /integration/status (60). MOD-0181 DL-3 (XMC-001, owner's OK Beste 2026-11-10 "69 yap"): + 9 — GET /count-variances,
         // GET /count-variances/{lineId}, POST /count-variances/{lineId}/approve | /reject | /retry | /resolve-integrity,
         // POST /cycle-counts/{countId}/recount, GET + PUT /count-settings (69). MOD-0181 DL-4 (XMC-001, owner's OK Beste 2026-11-11 "70 yap"):
-        // + 1 — GET /cycle-counts/dashboard (70).
-        Assert.Equal(70, endpoints.Count);
+        // + 1 — GET /cycle-counts/dashboard (70). MOD-0181 DL-5 (XMC-001, owner's OK Beste 2026-11-12 "73 yap"): + 3 — POST
+        // /cycle-counts/{countId}/evidence-exports, GET /count-evidence-exports, GET /count-evidence-exports/{exportId}/file (73).
+        Assert.Equal(73, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
