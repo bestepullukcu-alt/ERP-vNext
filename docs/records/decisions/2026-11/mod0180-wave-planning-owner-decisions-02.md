@@ -12,4 +12,9 @@ açık sorular D-1…D-16). Paket henüz yok; kararlar paketin girdisidir. Sahip
 - **D-4:** mockup `wave.*` izinleri kullandı; karar `warehouse.waves.*`.
 - **D-5:** mockup yalnız "Paketleme" sütunu ve yalnız toplama ilerlemesi gösterdi; karar 01 toplama + paketleme + **sevk** ilerlemesi.
 - **D-15:** 7 dil listesi kuralla sabittir (kiracı modülü: en, tr, fr, es, zh, ar, ru); mockup "paket sırasında belirlenecek" dememeli.
-- Mockup'ın kendi açık soruları D-6…D-14, D-16 sahip kararı bekler (CT önerisi: mockup önerileri kabul).
+- Mockup'ın kendi açık soruları D-6…D-14, D-16: **hepsi mockup önerisiyle kabul** (Beste, 2026-11-12):
+  D-6 riskli dalga = kesime < 90 dk ve ilerleme < %70, eşikler depo ayarı · D-7 sınır aşımı engellenmez, uyarı + serbest bırakırken onay ·
+  D-8 sipariş tek dalgada, bölünmez · D-9 "Kısmen tamamlandı" yalnız kalan görevler geri çekilince; kesimden sonra otomatik kapanış yok,
+  istisna açılır · D-10 lot geri çağırmada otomatik çıkarma yok, istisna + vardiya sorumlusu kararı · D-11 bekleyen görev eşiği 30 dk, depo
+  ayarı · D-12 ağırlık / hacim yoksa "—", v1'de sınır değil · D-13 "sonraki dalgaya taşı" varsayılanı aynı depoda kesimi en yakın taslak
+  dalga, kullanıcı değiştirebilir · D-14 iyimser kilit (sürüm), çakışmada "Kayıt değişti, yenileyin" · D-16 performans menüde ayrı sayfa.
