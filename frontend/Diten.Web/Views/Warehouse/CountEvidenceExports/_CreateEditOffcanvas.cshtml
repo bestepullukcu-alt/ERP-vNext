@@ -1,0 +1,54 @@
+@using Diten.Web.Views.Warehouse.CountEvidenceExports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountEvidenceExportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    The EXPORT request (pack §11: "_CreateEditOffcanvas = dışa aktarma isteği"): a Submitted / Closed count of the company and the format (PDF | CSV —
+    same content, Q-18 = A). The file's language is this page's (pack §4.5); there is no edit — an export is insert-only.
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">@Localizer["ExportTitle"]</h5>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formExportAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formExport" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="exportCount" class="form-label fw-medium">@Localizer["FieldCount"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-list-check diten-field-icon" aria-hidden="true"></i>
+                        <select id="exportCount" class="form-select" data-placeholder="@Localizer["CountPlaceholder"]" required><option value=""></option></select>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["CountHint"]</small>
+                    <small class="text-danger d-none" id="exportCountUnavailable">@Localizer["CountUnavailable"]</small>
+                </div>
+                <div class="col-12">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldFormat"] <span class="text-danger">*</span></span>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exportFormat" id="exportFormatPdf" value="Pdf" checked />
+                            <label class="form-check-label" for="exportFormatPdf">@Localizer["CountEvidence.Format.Pdf"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="exportFormat" id="exportFormatCsv" value="Csv" />
+                            <label class="form-check-label" for="exportFormatCsv">@Localizer["CountEvidence.Format.Csv"]</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-secondary mb-0 small" role="note" id="exportLanguageNote">@Localizer["LanguageNote"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button data-dt-primary="chord" type="button" id="btnSaveExport" class="btn btn-primary">@Localizer["CountEvidence.Action.Export"]</button>
+    </div>
+</div>

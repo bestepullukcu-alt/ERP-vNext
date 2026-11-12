@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>计划和下达盘点</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>将已提交或已关闭的盘点导出为 PDF 或 CSV 证据包以供审计；每个文件连同 SHA-256 一起保存，且不会更改。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>库存控制员、仓库经理和质量审计员。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>选择盘点并导出</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>点击“新建导出”，在“盘点”中选择已提交或已关闭的盘点及格式，然后点击“导出”。文件使用本页面的语言。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>下载文件</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>打开该行并点击“下载”；将文件的 SHA-256 与显示的值比较，以证明它就是保存的证据。</value>
+  </data>
 </root>

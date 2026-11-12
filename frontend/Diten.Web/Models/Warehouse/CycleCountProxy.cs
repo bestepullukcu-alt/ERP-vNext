@@ -24,6 +24,10 @@ public static class CycleCountPermissionKeys
     public const string VariancesRecount = "cycle-count.variances.recount";
     public const string VariancesPost = "cycle-count.variances.post";
     public const string VariancesResolve = "cycle-count.variances.resolve";
+
+    // DL-5 (pack §14; AC-44, AC-50): the Evidence Pack log / download and the export
+    public const string EvidenceRead = "cycle-count.evidence.read";
+    public const string EvidenceExport = "cycle-count.evidence.export";
 }
 
 /// <summary>
@@ -54,6 +58,41 @@ public sealed class CycleCountGatewayClient
     }
 
     public Task<GatewayReply> GetAsync(string pathAndQuery, CancellationToken ct) => SendAsync(HttpMethod.Get, pathAndQuery, null, null, null, ct);
+
+    /// <summary>
+    /// DL-5: a binary answer (the Evidence Pack file) — its bytes, media type, download name and <c>X-Content-SHA256</c>; a refusal comes back as
+    /// <see cref="GatewayFile.Refusal"/> (the JSON error envelope, read as text). Same headers as <see cref="SendAsync"/> (tenant, company, language).
+    /// </summary>
+    public async Task<GatewayFile> GetFileAsync(string pathAndQuery, CancellationToken ct)
+    {
+        if (_companyRequired && _company is null)
+            return new GatewayFile(null, null, null, null, new GatewayReply(403, JsonSerializer.Serialize(new { error = new { code = InventoryGatewayClient.CompanyNotSelected } }), null));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, _gatewayUrl + pathAndQuery);
+        if (_company is not null) request.Headers.Add(CompanySelection.LegalEntityHeader, _company.Value.ToString("D"));
+        if (!string.IsNullOrWhiteSpace(_accessToken)) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+        request.Headers.Add("X-Tenant-Id", _tenantId);
+        if (!string.IsNullOrWhiteSpace(_language)) request.Headers.TryAddWithoutValidation("Accept-Language", _language);
+        try
+        {
+            using var response = await _http.SendAsync(request, ct);
+            response.Headers.TryGetValues("X-Correlation-Id", out var correlation);
+            if (!response.IsSuccessStatusCode)
+                return new GatewayFile(null, null, null, null,
+                    new GatewayReply((int)response.StatusCode, await response.Content.ReadAsStringAsync(ct), correlation?.FirstOrDefault()));
+            response.Headers.TryGetValues("X-Content-SHA256", out var sha);
+            return new GatewayFile(await response.Content.ReadAsByteArrayAsync(ct), response.Content.Headers.ContentType?.ToString(),
+                response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), sha?.FirstOrDefault(), null);
+        }
+        catch (HttpRequestException)
+        {
+            return new GatewayFile(null, null, null, null, GatewayReply.Unreachable);
+        }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return new GatewayFile(null, null, null, null, GatewayReply.Unreachable);
+        }
+    }
 
     public async Task<GatewayReply> SendAsync(HttpMethod method, string pathAndQuery, object? body, string? idempotencyKey, string? ifMatch, CancellationToken ct)
     {
@@ -89,6 +128,9 @@ public sealed class CycleCountGatewayClient
 }
 
 /// <summary>What the two cycle-count controllers share: the Gateway door (with the page language), the body reads and the contract-shaped refusal.</summary>
+/// <summary>DL-5: one binary answer — the bytes with their media type, name and declared SHA-256, or the refusal.</summary>
+public sealed record GatewayFile(byte[]? Content, string? ContentType, string? FileName, string? Sha256, GatewayReply? Refusal);
+
 public static class CycleCountProxy
 {
     /// <summary>The door for this request, or null when the principal carries no tenant. The page's <c>Accept-Language</c> travels on.</summary>
@@ -138,6 +180,8 @@ public static class CycleCountErrorMessages
         "COUNT_QUANTITY_INVALID", "COUNT_SELF_APPROVAL_FORBIDDEN", "COUNT_LOT_UNKNOWN", "COUNT_LOT_REQUIRED", "COUNT_SERIAL_NOT_POSTABLE", "COUNT_REASON_REQUIRED",
         "COUNT_RECOUNT_LIMIT", "COUNT_COMPANY_CODE_INVALID", "COUNT_RECORD_CODE_UNAVAILABLE", "COUNT_INVENTORY_UNAVAILABLE", "COUNT_ADJUSTMENT_INTEGRITY",
         "COUNT_LINE_OUT_OF_SCOPE", "COUNT_LINE_DUPLICATE",
+        // DL-5 (draft §5.3)
+        "COUNT_EVIDENCE_NOT_FOUND", "COUNT_EVIDENCE_INTEGRITY",
         // passed through from INVENTORY / the platform (draft §5.2)
         "IDEMPOTENCY_KEY_REUSED", "INVALID_REQUEST", "UNKNOWN_LOCATION", "UNKNOWN_ITEM", "SKU_ITEM_MISMATCH", "SKU_LEVEL_NOT_STOCKABLE", "LOT_NOT_ALLOWED",
         "PRODUCT_MASTER_UNAVAILABLE", "PRODUCT_MASTER_DATA_INCOMPLETE", "LEGAL_ENTITY_MASTER_UNAVAILABLE", "INSUFFICIENT_STOCK", "LOT_BLOCKED", "LOT_EXPIRED",

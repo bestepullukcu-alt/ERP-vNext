@@ -101,4 +101,6 @@
   <data name="SubmitConfirmUncounted" xml:space="preserve"><value>{0} ligne(s) non comptée(s). Le comptage ne peut être soumis que lorsque toutes les lignes sont comptées.</value></data>
   <data name="UncountedLines" xml:space="preserve"><value>{0} ligne(s) non comptée(s)</value></data>
   <data name="ValidationFound" xml:space="preserve"><value>Sélectionnez l'emplacement, le produit et sa référence.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>L'export de preuve est introuvable.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Le fichier de preuve stocké ne correspond pas à son empreinte enregistrée ; il n'est pas servi.</value></data>
 </root>

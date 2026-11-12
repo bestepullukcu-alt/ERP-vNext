@@ -155,4 +155,6 @@
   <data name="ValidationScope" xml:space="preserve"><value>循环盘点至少选择一个位置。</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>请选择仓库。</value></data>
   <data name="WarehousePlaceholder" xml:space="preserve"><value>请选择仓库</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>未找到该证据导出。</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>存储的证据文件与记录的哈希不一致，不予提供。</value></data>
 </root>

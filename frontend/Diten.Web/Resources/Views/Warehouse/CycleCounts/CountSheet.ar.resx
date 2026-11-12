@@ -101,4 +101,6 @@
   <data name="SubmitConfirmUncounted" xml:space="preserve"><value>{0} سطر لم يُجرد. لا يمكن إرسال الجرد إلا بعد جرد كل الأسطر.</value></data>
   <data name="UncountedLines" xml:space="preserve"><value>{0} سطر لم يُجرد</value></data>
   <data name="ValidationFound" xml:space="preserve"><value>اختر الموقع والمنتج ورمز SKU الخاص به.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>لم يتم العثور على تصدير الأدلة.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>ملف الأدلة المخزَّن لا يطابق البصمة المسجلة؛ لن يتم تقديمه.</value></data>
 </root>

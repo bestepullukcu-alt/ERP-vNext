@@ -103,6 +103,8 @@ public static class PageHelpCatalog
             ["CYCLECOUNTS"] = ["bx-map-pin", "bx-camera", "bx-list-check", "bx-send"],
             ["COUNTSHEET"] = ["bx-grid-alt", "bx-plus-circle", "bx-send"],
             ["COUNTVARIANCES"] = ["bx-search-alt", "bx-check-shield", "bx-refresh", "bx-book-content"],
+            // MOD-0181 DL-5 (pack §25, UXH-001): no tour — the Evidence Pack
+            ["COUNTEVIDENCE"] = ["bx-export", "bx-download"],
         };
 
     /// <summary>The icon of step <paramref name="step"/> (1-based) of a page, or <see cref="DefaultStepIcon"/>.</summary>

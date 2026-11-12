@@ -33,7 +33,8 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
     {
         { "CycleCounts", "CycleCountsIndex" },
         { "CycleCounts", "CountSheet" },
-        { "CountVariances", "CountVariancesIndex" }
+        { "CountVariances", "CountVariancesIndex" },
+        { "CountEvidenceExports", "CountEvidenceExportsIndex" } // DL-5
     };
 
     // The enumerations the scripts and views read by prefix (the service's enum values, draft §3).
@@ -48,7 +49,11 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
         ["CycleCount.Decision.Source."] = ["User", "Tolerance"],
         ["CycleCount.Adjustment."] = ["Pending", "Posted", "Refused", "IntegrityError"],
         ["CycleCount.Integrity."] = ["AcceptHolder", "Reject"],
-        ["MovementType."] = ["COUNT_GAIN", "COUNT_LOSS"]
+        ["MovementType."] = ["COUNT_GAIN", "COUNT_LOSS"],
+        // DL-5: the Evidence Pack's own codes (draft §3.11)
+        ["CountEvidence.Format."] = ["Pdf", "Csv"],
+        ["CountEvidence.Language."] = ["en", "tr", "fr", "es", "zh", "ar", "ru"],
+        ["CountEvidence.Status."] = ["Ready", "Failed"]
     };
 
     private static Dictionary<string, string> Rows(string path) =>
@@ -70,6 +75,8 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
             "CycleCountsIndex" => Directory.GetFiles(Path.Combine(views, "CycleCounts"), "*.cshtml").Where(f => !f.EndsWith("CountSheet.cshtml", StringComparison.Ordinal))
                 .Append(Path.Combine(js, "CycleCounts", "index.js")).Append(Path.Combine(Web, "Controllers", "CycleCountsController.cs")),
             "CountSheet" => [Path.Combine(views, "CycleCounts", "CountSheet.cshtml"), Path.Combine(js, "CycleCounts", "countsheet.js")],
+            "CountEvidenceExportsIndex" => Directory.GetFiles(Path.Combine(views, "CountEvidenceExports"), "*.cshtml")
+                .Append(Path.Combine(js, "CountEvidenceExports", "index.js")).Append(Path.Combine(Web, "Controllers", "CountEvidenceExportsController.cs")),
             _ => Directory.GetFiles(Path.Combine(views, "CountVariances"), "*.cshtml")
                 .Append(Path.Combine(js, "CountVariances", "index.js")).Append(Path.Combine(Web, "Controllers", "CountVariancesController.cs"))
         };
@@ -135,9 +142,11 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
     [Fact]
     public void AC37_action_texts_are_title_case_in_english()
     {
-        foreach (var (folder, marker) in new[] { ("CycleCounts", "CycleCountsIndex"), ("CycleCounts", "CountSheet"), ("CountVariances", "CountVariancesIndex") })
+        foreach (var (folder, marker) in new[] { ("CycleCounts", "CycleCountsIndex"), ("CycleCounts", "CountSheet"), ("CountVariances", "CountVariancesIndex"),
+                     ("CountEvidenceExports", "CountEvidenceExportsIndex") })
         {
-            foreach (var (key, value) in Family(folder, marker)["en"].Where(kv => kv.Key.StartsWith("CycleCount.Action.", StringComparison.Ordinal)))
+            foreach (var (key, value) in Family(folder, marker)["en"].Where(kv => kv.Key.StartsWith("CycleCount.Action.", StringComparison.Ordinal)
+                                                                                   || kv.Key.StartsWith("CountEvidence.Action.", StringComparison.Ordinal)))
             {
                 var words = value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length > 2);
                 Assert.All(words, w => Assert.True(char.IsUpper(w[0]), $"{marker}: {key} = \"{value}\" is not Title Case"));
@@ -151,7 +160,8 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
         foreach (var lang in Languages)
         {
             var shared = Rows(Path.Combine(Web, "Resources", $"SharedResource.{lang}.resx"));
-            foreach (var key in new[] { "Nav.Module.CYCLECOUNTING", "Nav.Page.CYCLECOUNTS", "Nav.Page.COUNTSHEET", "Nav.Page.COUNTVARIANCES", "Perm.Entity.VARIANCES" })
+            foreach (var key in new[] { "Nav.Module.CYCLECOUNTING", "Nav.Page.CYCLECOUNTS", "Nav.Page.COUNTSHEET", "Nav.Page.COUNTVARIANCES", "Nav.Page.COUNTEVIDENCE",
+                         "Perm.Entity.VARIANCES" })
                 Assert.False(string.IsNullOrWhiteSpace(shared.GetValueOrDefault(key)), $"{lang}: {key}");
         }
     }
@@ -167,7 +177,8 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
     {
         { "CYCLECOUNTS", 4, true, "Warehouse/CycleCounts/Index.cshtml" },
         { "COUNTSHEET", 3, false, "Warehouse/CycleCounts/CountSheet.cshtml" },
-        { "COUNTVARIANCES", 4, true, "Warehouse/CountVariances/Index.cshtml" }
+        { "COUNTVARIANCES", 4, true, "Warehouse/CountVariances/Index.cshtml" },
+        { "COUNTEVIDENCE", 2, false, "Warehouse/CountEvidenceExports/Index.cshtml" } // DL-5 (pack §25)
     };
 
     [Theory]
@@ -211,11 +222,11 @@ public sealed class CycleCountL10nAndHelpTests(WebApplicationFactory<Program> fa
     [Fact]
     public void AC35_every_page_view_names_the_tenant_shell_explicitly_and_the_partials_set_no_layout()
     {
-        var files = new[] { "CycleCounts", "CountVariances" }
+        var files = new[] { "CycleCounts", "CountVariances", "CountEvidenceExports" }
             .SelectMany(folder => Directory.GetFiles(Path.Combine(Web, "Views", "Warehouse", folder), "*.cshtml")).ToList();
-        Assert.Equal(13, files.Count);
+        Assert.Equal(19, files.Count); // DL-5: + the six Evidence Pack views
         var pages = files.Where(f => !Path.GetFileName(f).StartsWith('_')).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToList();
-        Assert.Equal(["CountSheet.cshtml", "Index.cshtml", "Index.cshtml"], pages);
+        Assert.Equal(["CountSheet.cshtml", "Index.cshtml", "Index.cshtml", "Index.cshtml"], pages);
         foreach (var file in files)
         {
             var source = File.ReadAllText(file);

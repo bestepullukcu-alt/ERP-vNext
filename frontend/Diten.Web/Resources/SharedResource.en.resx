@@ -1329,4 +1329,7 @@
   <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
     <value>Count Variances</value>
   </data>
+  <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
+    <value>Count Evidence</value>
+  </data>
 </root>

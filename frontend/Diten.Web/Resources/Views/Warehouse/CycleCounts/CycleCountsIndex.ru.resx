@@ -155,4 +155,6 @@
   <data name="ValidationScope" xml:space="preserve"><value>Для циклической инвентаризации выберите хотя бы одно место.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Выберите склад.</value></data>
   <data name="WarehousePlaceholder" xml:space="preserve"><value>Выберите склад</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Экспорт доказательств не найден.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Сохранённый файл доказательств не совпадает с записанным хешем; он не выдаётся.</value></data>
 </root>

@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>To plan and release counts</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Export a submitted or closed count as a PDF or CSV evidence pack for audits; every file is stored with its SHA-256 and never changed.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Inventory controllers, warehouse managers and quality auditors.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Choose the count and export</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Press “New Export”, choose a submitted or closed count in “Count” and the format, then press “Export”. The file is written in this page's language.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Download the file</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Open the row and press “Download”; compare the file's SHA-256 with the one shown to prove it is the stored evidence.</value>
+  </data>
 </root>

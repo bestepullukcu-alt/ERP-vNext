@@ -1271,4 +1271,7 @@
   <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
     <value>Diferencias de recuento</value>
   </data>
+  <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
+    <value>Evidencias de recuento</value>
+  </data>
 </root>

@@ -101,4 +101,6 @@
   <data name="SubmitConfirmUncounted" xml:space="preserve"><value>{0} satır sayılmadı. Sayım, tüm satırlar sayılınca gönderilebilir.</value></data>
   <data name="UncountedLines" xml:space="preserve"><value>{0} satır sayılmadı</value></data>
   <data name="ValidationFound" xml:space="preserve"><value>Raf gözünü, ürünü ve SKU'sunu seçin.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Kanıt dışa aktarımı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Saklanan kanıt dosyası kayıtlı özetiyle uyuşmuyor; dosya verilmez.</value></data>
 </root>

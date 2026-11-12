@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>Чтобы планировать и запускать инвентаризации</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Экспортируйте отправленную или закрытую инвентаризацию в пакет доказательств PDF или CSV для аудита; каждый файл хранится с SHA-256 и не меняется.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Контролёры запасов, руководители склада и аудиторы качества.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Выберите инвентаризацию и экспортируйте</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Нажмите « Новый Экспорт », выберите отправленную или закрытую инвентаризацию в поле « Инвентаризация » и формат, затем нажмите « Экспортировать ». Файл создаётся на языке этой страницы.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Скачайте файл</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Откройте строку и нажмите « Скачать »; сравните SHA-256 файла с показанным, чтобы доказать, что это сохранённое доказательство.</value>
+  </data>
 </root>

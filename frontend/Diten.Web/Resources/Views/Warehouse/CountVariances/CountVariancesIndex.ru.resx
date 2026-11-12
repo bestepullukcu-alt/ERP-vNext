@@ -142,4 +142,6 @@
   <data name="SourceDeclared" xml:space="preserve"><value>Указанный источник</value></data>
   <data name="ValidationDecision" xml:space="preserve"><value>Выберите решение.</value></data>
   <data name="WindowHint" xml:space="preserve"><value>Для «Вручную» и «Все» нужен склад и период не более 31 дня.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Экспорт доказательств не найден.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Сохранённый файл доказательств не совпадает с записанным хешем; он не выдаётся.</value></data>
 </root>

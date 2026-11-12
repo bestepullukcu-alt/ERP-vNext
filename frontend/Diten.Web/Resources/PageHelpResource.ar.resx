@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>لتخطيط عمليات الجرد وإطلاقها</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>صدِّر جردًا مُرسلًا أو مغلقًا كحزمة أدلة PDF أو CSV للتدقيق؛ يُحفظ كل ملف مع بصمة SHA-256 ولا يتغير أبدًا.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>مراقبو المخزون ومديرو المستودعات ومدققو الجودة.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>اختر الجرد وصدِّر</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>اضغط « تصدير جديد »، واختر جردًا مُرسلًا أو مغلقًا في « الجرد » والصيغة، ثم اضغط « تصدير ». يُكتب الملف بلغة هذه الصفحة.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>نزِّل الملف</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>افتح السطر واضغط « تنزيل »؛ قارن بصمة SHA-256 للملف بالمعروضة لإثبات أنه الدليل المحفوظ.</value>
+  </data>
 </root>

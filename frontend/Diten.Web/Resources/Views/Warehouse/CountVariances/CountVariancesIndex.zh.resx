@@ -142,4 +142,6 @@
   <data name="SourceDeclared" xml:space="preserve"><value>声明的来源</value></data>
   <data name="ValidationDecision" xml:space="preserve"><value>请选择一个决定。</value></data>
   <data name="WindowHint" xml:space="preserve"><value>“手工”和“全部”需选择仓库且时间范围不超过 31 天。</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>未找到该证据导出。</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>存储的证据文件与记录的哈希不一致，不予提供。</value></data>
 </root>

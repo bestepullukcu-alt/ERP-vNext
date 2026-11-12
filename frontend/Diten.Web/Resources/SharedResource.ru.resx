@@ -1270,4 +1270,7 @@
   <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
     <value>Расхождения инвентаризации</value>
   </data>
+  <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
+    <value>Доказательства инвентаризации</value>
+  </data>
 </root>

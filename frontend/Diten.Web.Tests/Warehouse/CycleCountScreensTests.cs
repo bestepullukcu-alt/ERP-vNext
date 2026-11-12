@@ -34,6 +34,7 @@ public sealed class CycleCountScreensTests(WebApplicationFactory<Program> factor
     private const string Dashboard = "/Views/Warehouse/CycleCounts/Index.cshtml";
     private const string Sheet = "/Views/Warehouse/CycleCounts/CountSheet.cshtml";
     private const string Variances = "/Views/Warehouse/CountVariances/Index.cshtml";
+    private const string Evidence = "/Views/Warehouse/CountEvidenceExports/Index.cshtml";
     private const string CountId = "b1111111-0000-0000-0000-000000000001";
     private static readonly string Web = TraceViewRenderer.WebRoot;
 
@@ -41,12 +42,13 @@ public sealed class CycleCountScreensTests(WebApplicationFactory<Program> factor
     private static readonly string[] Skeleton =
         ["inlineFilterHost", "skeleton-loader", "data-dt-data-mode", "<h5 class=\"mb-0\"", "offcanvasDetailsPreview", "offcanvasCreateEdit", "offcanvasFound",
          "bulkActionBar", "dt-cyclecounts", "dt-countvariances", "data-cc-kpi", "cc-sheet-bins", "cc-sheet-bar", "btnSubmitCount", "inventory-company-selector",
-         "countsheet.js", "CountVariances/index.js", "CycleCounts/index.js"];
+         "countsheet.js", "CountVariances/index.js", "CycleCounts/index.js", "dt-countevidenceexports", "CountEvidenceExports/index.js", "formExport"];
 
     [Theory]
     [InlineData(Dashboard, CycleCountPermissionKeys.VariancesRead)]
     [InlineData(Sheet, CycleCountPermissionKeys.VariancesRead)]
     [InlineData(Variances, CycleCountPermissionKeys.CountsRead)]
+    [InlineData(Evidence, CycleCountPermissionKeys.EvidenceExport)] // DL-5 AC-50: the export key alone does not open the page (evidence.read is its key)
     public async Task AC38_UAS001_without_the_page_key_only_the_access_explanation_is_drawn(string view, string otherKey)
     {
         var html = await RenderAsync(view, "en", false, otherKey);
@@ -141,11 +143,33 @@ public sealed class CycleCountScreensTests(WebApplicationFactory<Program> factor
     [InlineData("ru", "ltr")]
     public async Task AC37_the_shell_turns_only_arabic_right_to_left_on_the_three_screens(string culture, string direction)
     {
-        foreach (var (view, key) in new[] { (Dashboard, CycleCountPermissionKeys.CountsRead), (Sheet, CycleCountPermissionKeys.CountsRead), (Variances, CycleCountPermissionKeys.VariancesRead) })
+        foreach (var (view, key) in new[]
+                 {
+                     (Dashboard, CycleCountPermissionKeys.CountsRead), (Sheet, CycleCountPermissionKeys.CountsRead), (Variances, CycleCountPermissionKeys.VariancesRead),
+                     (Evidence, CycleCountPermissionKeys.EvidenceRead)
+                 })
         {
             var html = await RenderAsync(view, culture, true, key);
             Assert.Matches($"<html lang=\"{culture}\"[^>]*dir=\"{direction}\"", html);
         }
+    }
+
+    /// <summary>DL-5 AC-50: the Evidence Pack list for evidence.read; the export form only with evidence.export (absent, not disabled).</summary>
+    [Fact]
+    public async Task AC50_the_evidence_page_draws_the_list_for_its_reader_and_the_export_form_only_for_the_exporter()
+    {
+        var reader = await RenderAsync(Evidence, "en", false, CycleCountPermissionKeys.EvidenceRead);
+        Assert.Contains("dt-countevidenceexports", reader, StringComparison.Ordinal);
+        Assert.Contains("data-dt-data-mode=\"server\"", reader, StringComparison.Ordinal);
+        Assert.Contains("oc-btn-download", reader, StringComparison.Ordinal);
+        foreach (var marker in new[] { "offcanvasCreateEdit", "formExport", "btnSaveExport", "bulkActionBar", "dt-checkboxes" })
+            Assert.False(reader.Contains(marker, StringComparison.Ordinal), $"a reader gets {marker}");
+
+        var exporter = await RenderAsync(Evidence, "tr", false, CycleCountPermissionKeys.EvidenceRead, CycleCountPermissionKeys.EvidenceExport);
+        foreach (var marker in new[] { "formExport", "exportCount", "exportFormatPdf", "exportFormatCsv", "btnSaveExport" })
+            Assert.Contains(marker, exporter, StringComparison.Ordinal);
+        Assert.Contains("Sayım Kanıtları", exporter, StringComparison.Ordinal);
+        Assert.Matches("<button[^>]*data-dt-primary=\"chord\"[^>]*id=\"btnSaveExport\"", exporter); // BL-586: an evidence export is consequential
     }
 
     [Fact]

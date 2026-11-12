@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>Sayımları planlamak ve başlatmak için</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Gönderilmiş ya da kapanmış bir sayımı denetimler için PDF veya CSV kanıt paketi olarak dışa aktarın; her dosya SHA-256 özetiyle saklanır ve hiç değişmez.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo yöneticileri ve kalite denetçileri.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Sayımı seçin ve dışa aktarın</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>“Yeni Dışa Aktarım”a basın, “Sayım” alanında gönderilmiş ya da kapanmış bir sayım ve biçimi seçin, sonra “Dışa Aktar”a basın. Dosya bu sayfanın dilinde yazılır.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Dosyayı indirin</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Satırı açın ve “İndir”e basın; saklanan kanıt olduğunu göstermek için dosyanın SHA-256 özetini gösterilenle karşılaştırın.</value>
+  </data>
 </root>

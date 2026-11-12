@@ -142,4 +142,6 @@
   <data name="SourceDeclared" xml:space="preserve"><value>Origen declarado</value></data>
   <data name="ValidationDecision" xml:space="preserve"><value>Elija una decisión.</value></data>
   <data name="WindowHint" xml:space="preserve"><value>Movimiento manual y Todos requieren un almacén y 31 días como máximo.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
 </root>

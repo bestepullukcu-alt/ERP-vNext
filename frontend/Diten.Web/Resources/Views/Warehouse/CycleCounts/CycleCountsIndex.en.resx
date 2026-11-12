@@ -155,4 +155,6 @@
   <data name="ValidationScope" xml:space="preserve"><value>Select at least one location for a cycle count.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Select a warehouse.</value></data>
   <data name="WarehousePlaceholder" xml:space="preserve"><value>Select a warehouse</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>The evidence export was not found.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>The stored evidence file does not match its recorded hash; it is not served.</value></data>
 </root>

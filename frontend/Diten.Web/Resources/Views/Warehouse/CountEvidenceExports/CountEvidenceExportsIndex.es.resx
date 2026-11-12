@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Band.InsertOnly" xml:space="preserve"><value>Una exportación nunca se modifica ni se elimina; otro idioma o formato es una nueva exportación con su propio SHA-256.</value></data>
+  <data name="Band.Language" xml:space="preserve"><value>El archivo se escribe en el idioma de esta página; los PDF en chino y árabe se generan en inglés con una nota (el CSV conserva el idioma).</value></data>
+  <data name="ColCount" xml:space="preserve"><value>N.º de recuento</value></data>
+  <data name="ColFileName" xml:space="preserve"><value>Nombre del archivo</value></data>
+  <data name="ColFormat" xml:space="preserve"><value>Formato</value></data>
+  <data name="ColLanguage" xml:space="preserve"><value>Idioma del archivo</value></data>
+  <data name="ColRequestedAt" xml:space="preserve"><value>Solicitado el</value></data>
+  <data name="ColRequestedBy" xml:space="preserve"><value>Solicitado por</value></data>
+  <data name="ColRequestedLanguage" xml:space="preserve"><value>Idioma solicitado</value></data>
+  <data name="ColSha256" xml:space="preserve"><value>Huella SHA-256</value></data>
+  <data name="ColSize" xml:space="preserve"><value>Tamaño</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyos recuentos exporta.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pueden cargar las empresas ahora.</value></data>
+  <data name="CountEvidence.Action.Download" xml:space="preserve"><value>Descargar</value></data>
+  <data name="CountEvidence.Action.Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="CountEvidence.Action.New" xml:space="preserve"><value>Nueva Exportación</value></data>
+  <data name="CountEvidence.Format.Csv" xml:space="preserve"><value>Tabla CSV</value></data>
+  <data name="CountEvidence.Format.Pdf" xml:space="preserve"><value>Documento PDF</value></data>
+  <data name="CountEvidence.Language.ar" xml:space="preserve"><value>Árabe</value></data>
+  <data name="CountEvidence.Language.en" xml:space="preserve"><value>Inglés</value></data>
+  <data name="CountEvidence.Language.es" xml:space="preserve"><value>Español</value></data>
+  <data name="CountEvidence.Language.fr" xml:space="preserve"><value>Francés</value></data>
+  <data name="CountEvidence.Language.ru" xml:space="preserve"><value>Ruso</value></data>
+  <data name="CountEvidence.Language.tr" xml:space="preserve"><value>Turco</value></data>
+  <data name="CountEvidence.Language.zh" xml:space="preserve"><value>Chino</value></data>
+  <data name="CountEvidence.Saved.Created" xml:space="preserve"><value>Se creó y guardó el archivo de evidencia.</value></data>
+  <data name="CountEvidence.Status.Failed" xml:space="preserve"><value>Fallido</value></data>
+  <data name="CountEvidence.Status.Ready" xml:space="preserve"><value>Listo</value></data>
+  <data name="CountEvidenceTitle" xml:space="preserve"><value>Evidencias de recuento</value></data>
+  <data name="CountHint" xml:space="preserve"><value>Solo los recuentos con diferencias (enviados o cerrados) tienen evidencia.</value></data>
+  <data name="CountPlaceholder" xml:space="preserve"><value>Buscar un recuento enviado o cerrado</value></data>
+  <data name="CountUnavailable" xml:space="preserve"><value>Con su acceso no se pueden listar los recuentos.</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>La clave de la corrección la tiene otro movimiento. Resuelva el problema de integridad.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>El directorio de usuarios no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>No se puede asignar a la persona seleccionada.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>El código de la empresa no se puede usar para el número de recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Otra persona modificó este registro. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Esta acción no está permitida en el estado actual del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>El libro de stock no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Algunas líneas aún no se han contado.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Esta ubicación, producto y lote ya tienen una línea.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>No se encontró la línea del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>La ubicación o el producto está fuera del alcance del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Este producto se controla por lote. Introduzca el lote.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Este lote no es conocido para el producto.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>No se encontró el recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Introduzca una cantidad válida (cero o más).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Introduzca un motivo.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>El servicio de numeración no está disponible. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Una línea seleccionada alcanzó el límite de recuentos.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>El alcance no tiene ubicaciones que contar.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Una ubicación seleccionada no pertenece a este almacén o no está activa.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Otro recuento abierto ya cubre algunas de estas ubicaciones.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>El alcance es demasiado grande para un recuento. Redúzcalo o divídalo.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>No puede aprobar una diferencia que usted contó o envió.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>El stock con número de serie no se puede corregir desde un recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>El stock cambió mientras se tomaba la instantánea. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>El registro cambió mientras tanto. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otros datos. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>No hay stock suficiente para registrar esta pérdida.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>La solicitud no es válida.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>No se pudo aceptar la solicitud. Revise los campos.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos de la empresa no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>El lote está bloqueado.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>El lote ha caducado.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Este producto no se controla por lote. Deje el lote vacío.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>No se encontró el registro.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Los datos del producto están incompletos (por ejemplo, su unidad base).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos del producto no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>El número de series no coincide con la cantidad.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>El SKU no pertenece al producto seleccionado.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Este nivel de SKU no se mantiene en stock.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>El servicio no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>El producto no es conocido.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>La ubicación no es conocida.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Faltan algunos campos o no son válidos.</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>En recuento</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Liberado</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Exportar evidencia</value></data>
+  <data name="FallbackNote" xml:space="preserve"><value>El idioma solicitado no se puede generar en PDF; este archivo está en inglés.</value></data>
+  <data name="FieldCount" xml:space="preserve"><value>Recuento</value></data>
+  <data name="FieldFormat" xml:space="preserve"><value>Formato</value></data>
+  <data name="FilterCount" xml:space="preserve"><value>Recuento</value></data>
+  <data name="LanguageNote" xml:space="preserve"><value>El archivo se escribe en el idioma de esta página.</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Exporte un recuento enviado o cerrado como expediente de evidencia PDF o CSV; cada archivo se guarda con su SHA-256 y nunca cambia.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="RequestedLanguageShort" xml:space="preserve"><value>solicitado</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="ValidationCount" xml:space="preserve"><value>Seleccione un recuento.</value></data>
+</root>

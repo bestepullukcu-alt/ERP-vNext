@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>Para planificar y liberar recuentos</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Exporte un recuento enviado o cerrado como expediente de evidencia PDF o CSV para auditorías; cada archivo se guarda con su SHA-256 y nunca cambia.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Controladores de inventario, jefes de almacén y auditores de calidad.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Elegir el recuento y exportar</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Pulse « Nueva Exportación », elija un recuento enviado o cerrado en « Recuento » y el formato, y pulse « Exportar ». El archivo se escribe en el idioma de esta página.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Descargar el archivo</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Abra la fila y pulse « Descargar »; compare el SHA-256 del archivo con el mostrado para probar que es la evidencia guardada.</value>
+  </data>
 </root>

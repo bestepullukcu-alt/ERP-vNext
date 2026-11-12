@@ -48,15 +48,16 @@ public sealed class CycleCountProxyControllerTests
     // ── antiforgery and permissions ──────────────────────────────────────────────────────────────────────
 
     [Theory]
-    [InlineData(typeof(CycleCountsController))]
-    [InlineData(typeof(CountVariancesController))]
-    public void Every_write_carries_the_antiforgery_check_and_every_action_one_verb(Type controller)
+    [InlineData(typeof(CycleCountsController), 8)]
+    [InlineData(typeof(CountVariancesController), 5)]
+    [InlineData(typeof(CountEvidenceExportsController), 1)] // DL-5: the export is its one write
+    public void Every_write_carries_the_antiforgery_check_and_every_action_one_verb(Type controller, int writes)
     {
         var actions = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any()).ToList();
-        Assert.True(actions.Count >= 8);
+        Assert.True(actions.Count >= 6, $"{controller.Name}: {actions.Count} actions");
         var posts = actions.Where(m => m.GetCustomAttribute<HttpPostAttribute>() is not null).ToList();
-        Assert.True(posts.Count >= 5, $"{controller.Name}: {posts.Count} writes");
+        Assert.Equal(writes, posts.Count);
         Assert.All(posts, m => Assert.True(m.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>() is not null, $"{controller.Name}.{m.Name} lacks [ValidateAntiForgeryToken]"));
         Assert.All(actions, m => Assert.Single(m.GetCustomAttributes<HttpMethodAttribute>()));
         Assert.DoesNotContain(actions, m => m.GetCustomAttribute<HttpDeleteAttribute>() is not null); // no "Sil" — G-0181-01
@@ -100,6 +101,81 @@ public sealed class CycleCountProxyControllerTests
         Assert.All(results, r => Assert.Equal(403, Assert.IsType<JsonResult>(r).StatusCode));
         Assert.All(results, r => Assert.Equal("CycleCount.Error.NoPermission", Body(r).GetProperty("error").GetProperty("message").GetString()));
         Assert.Empty(gateway.Requests);
+    }
+
+    // ── DL-5 Evidence Pack (AC-43, AC-44) ───────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Every_evidence_action_without_its_key_is_refused_and_never_reaches_the_gateway()
+    {
+        var gateway = new FakeGateway();
+        var write = new CountEvidenceWriteRequest { IdempotencyKey = Key, CountId = CountId, Format = "Pdf" };
+        var results = new[]
+        {
+            await Evidence(gateway, [CycleCountPermissionKeys.EvidenceExport], null, ("start", "0"), ("length", "25")).List(CancellationToken.None),
+            await Evidence(gateway, [CycleCountPermissionKeys.EvidenceExport], null).Export(CancellationToken.None),
+            await Evidence(gateway, [CycleCountPermissionKeys.EvidenceExport], null).Download(CountId, CancellationToken.None),
+            await Evidence(gateway, [CycleCountPermissionKeys.EvidenceRead], null).Create(write, CancellationToken.None),
+            await Evidence(gateway, [CycleCountPermissionKeys.EvidenceRead], null).Counts(null, CancellationToken.None)
+        };
+        Assert.All(results, r => Assert.Equal(403, Assert.IsType<JsonResult>(r).StatusCode));
+        Assert.All(results, r => Assert.Equal("CycleCount.Error.NoPermission", Body(r).GetProperty("error").GetProperty("message").GetString()));
+        Assert.Empty(gateway.Requests);
+    }
+
+    /// <summary>AC-43 (r6 SB2/F-3): the export carries the PAGE's language — a tr page sends Accept-Language: tr — and only the draft's two members.</summary>
+    [Fact]
+    public async Task An_export_from_a_Turkish_page_asks_the_service_in_Turkish_with_its_key_and_only_the_format()
+    {
+        var gateway = new FakeGateway();
+        gateway.On($"/api/warehouse/cycle-counts/{CountId}/evidence-exports", 201,
+            $$"""{"exportId":"{{LineId}}","countId":"{{CountId}}","countNumber":"MG-CNT-000001","format":"Pdf","language":"tr","requestedLanguage":"tr","requestedBy":"{{Me}}","requestedAt":"2026-11-12T10:00:00.000Z","fileName":"count-evidence-MG-CNT-000001-tr-20261112100000.pdf","sha256":"{{new string('a', 64)}}","sizeBytes":10,"status":"Ready","contractVersion":"v1"}""");
+
+        var result = await Evidence(gateway, [CycleCountPermissionKeys.EvidenceExport], "tr")
+            .Create(new CountEvidenceWriteRequest { IdempotencyKey = Key, CountId = CountId.ToUpperInvariant(), Format = "Pdf" }, CancellationToken.None);
+
+        var call = Assert.Single(gateway.Requests);
+        Assert.Equal("POST", call.Method);
+        Assert.Equal("tr", call.Language);
+        Assert.Equal(Key, call.IdempotencyKey);
+        using var sent = JsonDocument.Parse(call.Body);
+        Assert.Equal(["format", "idempotencyKey"], sent.RootElement.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal));
+        Assert.Equal("Pdf", sent.RootElement.GetProperty("format").GetString());
+        Assert.Equal("CountEvidence.Saved.Created", Body(result).GetProperty("message").GetString());
+    }
+
+    [Theory]
+    [InlineData("Xlsx", CountId)]
+    [InlineData("Pdf", "not-a-uuid")]
+    public async Task An_export_outside_the_draft_is_refused_before_the_gateway(string format, string countId)
+    {
+        var gateway = new FakeGateway();
+        var result = await Evidence(gateway, [CycleCountPermissionKeys.EvidenceExport], "en")
+            .Create(new CountEvidenceWriteRequest { IdempotencyKey = Key, CountId = countId, Format = format }, CancellationToken.None);
+        Assert.Equal(400, Assert.IsType<JsonResult>(result).StatusCode);
+        Assert.Empty(gateway.Requests);
+    }
+
+    [Fact]
+    public async Task A_download_passes_the_stored_bytes_their_name_and_SHA256_and_a_refusal_comes_back_as_its_sentence()
+    {
+        var bytes = "%PDF-1.7 evidence"u8.ToArray();
+        var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant();
+        var gateway = new FakeGateway();
+        gateway.OnFile($"/api/warehouse/count-evidence-exports/{LineId}/file", bytes, "application/pdf", "count-evidence-MG-CNT-000001-en.pdf", sha);
+        gateway.On($"/api/warehouse/count-evidence-exports/{CountId}/file", 404,
+            """{"error":{"code":"COUNT_EVIDENCE_NOT_FOUND","message":"x","correlationId":"c-5"},"contractVersion":"v1"}""");
+
+        var controller = Evidence(gateway, [CycleCountPermissionKeys.EvidenceRead], "en");
+        var file = Assert.IsType<FileContentResult>(await controller.Download(LineId, CancellationToken.None));
+        Assert.Equal(bytes, file.FileContents);
+        Assert.Equal("application/pdf", file.ContentType);
+        Assert.Equal("count-evidence-MG-CNT-000001-en.pdf", file.FileDownloadName);
+        Assert.Equal(sha, controller.Response.Headers["X-Content-SHA256"].ToString());
+
+        var refused = await Evidence(gateway, [CycleCountPermissionKeys.EvidenceRead], "en").Download(CountId, CancellationToken.None);
+        Assert.Equal(404, Assert.IsType<JsonResult>(refused).StatusCode);
+        Assert.Equal("CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND", Body(refused).GetProperty("error").GetProperty("message").GetString());
     }
 
     // ── language ─────────────────────────────────────────────────────────────────────────────────────────
@@ -255,6 +331,14 @@ public sealed class CycleCountProxyControllerTests
         return controller;
     }
 
+    private static CountEvidenceExportsController Evidence(FakeGateway gateway, string[] permissions, string? language, params (string Key, string Value)[] query)
+    {
+        var controller = new CountEvidenceExportsController(new HttpClient(gateway), Configuration(), new Permissions(permissions),
+            new KeyLocalizer<Diten.Web.Views.Warehouse.CountEvidenceExports.CountEvidenceExportsIndex>(), NullLogger<CountEvidenceExportsController>.Instance);
+        controller.ControllerContext = Context(query, language);
+        return controller;
+    }
+
     private static IConfiguration Configuration() =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
 
@@ -289,6 +373,11 @@ public sealed class CycleCountProxyControllerTests
 
         public void On(string prefix, int status, string body, string? etag = null) => Routes.Add((prefix, status, body, etag));
 
+        private List<(string Prefix, byte[] Bytes, string ContentType, string FileName, string Sha256)> Files { get; } = [];
+
+        /// <summary>DL-5: a binary answer (the Evidence Pack file) with its media type, download name and X-Content-SHA256.</summary>
+        public void OnFile(string prefix, byte[] bytes, string contentType, string fileName, string sha256) => Files.Add((prefix, bytes, contentType, fileName, sha256));
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var pathAndQuery = request.RequestUri!.PathAndQuery;
@@ -305,6 +394,17 @@ public sealed class CycleCountProxyControllerTests
                         body,
                         request.Headers.TryGetValues("Accept-Language", out var lang) ? string.Join(",", lang) : null));
                 }
+            }
+
+            var file = Files.FirstOrDefault(f => pathAndQuery.StartsWith(f.Prefix, StringComparison.Ordinal));
+            if (file.Prefix is not null)
+            {
+                var content = new ByteArrayContent(file.Bytes);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment") { FileName = file.FileName };
+                var ok = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+                ok.Headers.TryAddWithoutValidation("X-Content-SHA256", file.Sha256);
+                return ok;
             }
 
             var route = Routes.Where(r => pathAndQuery.StartsWith(r.Prefix, StringComparison.Ordinal)).OrderByDescending(r => r.Prefix.Length).FirstOrDefault();

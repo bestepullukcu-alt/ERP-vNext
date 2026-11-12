@@ -2400,4 +2400,22 @@
   <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
     <value>Pour planifier et lancer les comptages</value>
   </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Exportez un comptage soumis ou clôturé en dossier de preuve PDF ou CSV pour les audits ; chaque fichier est conservé avec son SHA-256 et n'est jamais modifié.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Contrôleurs de stock, responsables d'entrepôt et auditeurs qualité.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Choisir le comptage et exporter</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Cliquez sur « Nouvel Export », choisissez un comptage soumis ou clôturé dans « Comptage » et le format, puis cliquez sur « Exporter ». Le fichier est rédigé dans la langue de cette page.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Télécharger le fichier</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Ouvrez la ligne et cliquez sur « Télécharger » ; comparez le SHA-256 du fichier à celui affiché pour prouver qu'il s'agit de la preuve conservée.</value>
+  </data>
 </root>

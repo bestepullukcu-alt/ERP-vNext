@@ -101,4 +101,6 @@
   <data name="SubmitConfirmUncounted" xml:space="preserve"><value>Hay {0} líneas sin contar. El recuento solo se puede enviar con todas las líneas contadas.</value></data>
   <data name="UncountedLines" xml:space="preserve"><value>{0} líneas sin contar</value></data>
   <data name="ValidationFound" xml:space="preserve"><value>Seleccione la ubicación, el producto y su referencia.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
 </root>

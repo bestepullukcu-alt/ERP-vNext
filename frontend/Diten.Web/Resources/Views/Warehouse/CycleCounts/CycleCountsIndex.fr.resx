@@ -155,4 +155,6 @@
   <data name="ValidationScope" xml:space="preserve"><value>Sélectionnez au moins un emplacement pour un comptage tournant.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Sélectionnez un entrepôt.</value></data>
   <data name="WarehousePlaceholder" xml:space="preserve"><value>Choisissez un entrepôt</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>L'export de preuve est introuvable.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Le fichier de preuve stocké ne correspond pas à son empreinte enregistrée ; il n'est pas servi.</value></data>
 </root>
