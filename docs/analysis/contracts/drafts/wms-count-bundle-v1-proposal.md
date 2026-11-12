@@ -1,6 +1,6 @@
 # WMS-COUNT-BUNDLE v1 — proposal (MOD-0181 Cycle Counting / Sayım)
 
-> **Durum: DONDU → 1.0.0 dosyası; DL-5 satırları ön taslak.** §1–§3, §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3), §4.4'ün DL-4 satırı ve §5–§7
+> **Durum: DONDU → 1.0.0 dosyası; DL-5 satırları bağlayıcı taslak (DL-5, 2026-11-12) — 1.1.0'a eklenecek.** §1–§3, §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3), §4.4'ün DL-4 satırı ve §5–§7
 > CT'nin tek yazıcı adımıyla (MOD-0178 §19.7 deseni) `docs/analysis/contracts/wms-count-bundle.openapi.yaml`'a donduruldu (`info.version: 1.0.0`,
 > `x-status: FROZEN`, `x-owner: MOD-0181`, `x-owner-service: Diten.InventoryService`; 22 operasyon, 25 `COUNT_*` kodu); **kablo otoritesi artık o
 > dosyadır**, bu dosya değil. Donduktan sonra yalnız eklemeli değişiklik (K16). Dondurmada kod gerçeği yazılan farklar (yalnız ekleme / daraltma,
@@ -16,7 +16,9 @@
 >
 > **Dilim durumu:** DL-1…DL-4 donmuştur — `CycleCountContract` (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve
 > `/count-settings` cevabını dondurulmuş dosyaya karşı doğrular, `WmsCountBundleContractTests` dosyayı koda karşı ölçer. §4.4'ün **DL-5 satırları**
-> (Evidence Pack) paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır** ve 1.0.0'da yoktur; DL-5 onları kendi eklemeli sürümüyle bağlayıcı yapar.
+> (Evidence Pack) 1.0.0'da yoktur; **DL-5 (WP-MVP5-0181-DL5-01) onları bu dosyada bağlayıcı taslak yaptı** (§3.11, §4.4, §5.3) — kod bu satırlara
+> karşı yazıldı ve `CountEvidenceDraftContract` (test projesi) her DL-5 cevabını bu satırlardan türetilmiş kapalı şemalara karşı doğrular. CT,
+> DL-5 kabulünden sonra 1.1.0'ı yalnız ekleyerek dondurur.
 
 ## 1. Rules
 
@@ -195,6 +197,26 @@ satırlar; `refusedAdjustments` = `Approved` + düzeltme `Refused`; dönem = son
 satırlar, `exactLines` = bunlardan fark 0 olanlar, `accuracyPercent` = `exactLines / countedLines × 100` tek ondalık (sayılmış satır yoksa `null`);
 `manualCountMovements` = seçili depoda dönemin elle `COUNT_*` hareketleri (§3.8 sınıflandırması) — **yalnız `warehouseId` verilince**, aksi `null`.
 
+### 3.11 `CountEvidenceExport` (DL-5, paket §4.5; AC-43, AC-44)
+```json
+{ "exportId": "uuid", "countId": "uuid", "countNumber": "GMG-CNT-000042", "format": "Pdf", "language": "en", "requestedLanguage": "zh",
+  "requestedBy": "uuid", "requestedAt": "date-time", "fileName": "count-evidence-GMG-CNT-000042-en-20261112101500.pdf",
+  "sha256": "64 küçük onaltılık", "sizeBytes": 12345, "status": "Ready", "contractVersion": "v1" }
+```
+- **Insert-only** (`wms_count_evidence_exports` + baytlar `wms_count_evidence_files`): kayıt ve dosya bir kez yazılır, hiç değiştirilmez / silinmez;
+  başka dil ya da biçim yeni bir dışa aktarmadır (yeni kayıt, yeni `sha256`).
+- `format` = `Pdf` \| `Csv` (Q-18 = A); ikisi aynı içerik: sayım başlığı (numara, depo, tür, kör, durum, planlanan tarih, `SnapshotAt`, kapanış,
+  kapsam bin'leri), satırlar (beklenen, anlık görüntüden beri hareket, sayım anında beklenen, sayılan, fark, satır durumu), kararlar (tür, kaynak,
+  kim, ne zaman, gerekçe) ve düzeltme durumu + defter `TransactionNumber`'ı, kapsam bin'lerinde `SnapshotAt` → kapanış (kapanmamışsa dışa aktarma
+  anı) arası **elle** `COUNT_*` hareketleri (§3.8 iki yönlü kuralı; "kaynak beyanı uyuşmuyor" işaretiyle) ve zaman çizelgesi.
+- **Dil:** `requestedLanguage` = isteğin `Accept-Language` başlığındaki ilk etiketin birincil alt etiketi; 7 dilden biri değilse `en`.
+  `language` = dosyanın çizildiği dil: CSV'de `requestedLanguage`; PDF'te `en | tr | fr | es | ru` ise o, `zh | ar` ise `en` (başta İngilizce not +
+  istenen kod). Durum / karar / kaynak / olay / düzeltme / hareket türü dosyaya **kod olarak** girer ve servis resx'inin
+  (`CycleCountEvidenceText_{lang}.resx`) anahtarıyla çevrilir — saklanan metin değildir.
+- `status`: v1 yalnız `Ready` yazar (dosya çizilip saklanmadan kayıt yazılmaz); `Failed` paketin adlandırdığı, v1'de üretilmeyen değerdir.
+- `sizeBytes` saklanan bayt sayısı; `sha256` saklanan baytların küçük harfli onaltılık SHA-256'sı.
+- Sayfa: `{ items, total, page, pageSize, contractVersion }` (yeni önce: `requestedAt` azalan).
+
 ## 4. Operations
 
 ### 4.1 DL-1 — bağlayıcı
@@ -266,14 +288,20 @@ submit 200 döner (sonucu bilinmeyen düzeltme `Pending` kalır, retry / sweeper
 **Sweeper:** `PendingCountAdjustmentReconcilerHostedService` yalnız `ReconcilePendingCountAdjustmentCommand` gönderir (uç değil); son denemesi yaşlanan
 `Pending` düzeltmeleri anahtar-önce kuralıyla toparlar.
 
-### 4.4 DL-4 (bağlayıcı) / DL-5 (ön taslak; paket §3)
+### 4.4 DL-4 ve DL-5 (bağlayıcı; DL-5 1.1.0'a eklenecek)
 
 | Yöntem + yol | operationId | x-permission | Dilim |
 |---|---|---|---|
 | `GET /cycle-counts/dashboard` | `getCycleCountDashboard` | `cycle-count.counts.read` | **DL-4 — bağlayıcı:** `warehouseId?` (geçersiz → 400 INVALID_REQUEST); 200 `CycleCountDashboard` (§3.10); başka şirketin sayımları sayılmaz. Rota `{countId}`'den önce eşlenir |
-| `POST /cycle-counts/{countId}/evidence-exports` | `createCountEvidenceExport` | `cycle-count.evidence.export` | DL-5 |
-| `GET /count-evidence-exports` | `listCountEvidenceExports` | `cycle-count.evidence.read` | DL-5 |
-| `GET /count-evidence-exports/{exportId}/file` | `getCountEvidenceExportFile` | `cycle-count.evidence.read` | DL-5 |
+| `POST /cycle-counts/{countId}/evidence-exports` | `createCountEvidenceExport` | `cycle-count.evidence.export` | **DL-5 — bağlayıcı:** `Idempotency-Key` başlığı = gövde `idempotencyKey` (8–100); gövde yalnız `{ idempotencyKey, format: Pdf \| Csv }` (başka üye → 400); `Accept-Language` dili seçer (§3.11). Sayım çağıranın kiracı + şirketinde ve `Submitted` \| `Closed` olmalı. 201 `CountEvidenceExport` (replay 200, yeni dosya yok) · 400 INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED · 404 COUNT_NOT_FOUND · 409 COUNT_INVALID_STATE |
+| `GET /count-evidence-exports` | `listCountEvidenceExports` | `cycle-count.evidence.read` | **DL-5 — bağlayıcı:** `countId?` (uuid; geçersiz → 400), `page`, `pageSize` (1–200). 200 sayfa `CountEvidenceExport` (yalnız çağıranın kiracı + şirketi) · 400 INVALID_REQUEST |
+| `GET /count-evidence-exports/{exportId}/file` | `getCountEvidenceExportFile` | `cycle-count.evidence.read` | **DL-5 — bağlayıcı:** 200 saklanan baytlar (`application/pdf` ya da `text/csv; charset=utf-8`, `Content-Disposition` dosya adıyla, `X-Content-SHA256` = kayıttaki `sha256`); baytlar gönderilmeden önce yeniden özetlenir. 404 COUNT_EVIDENCE_NOT_FOUND (başka kiracı / şirket ya da bilinmeyen id) · 500 COUNT_EVIDENCE_INTEGRITY (saklanan baytların özeti kayıttakiyle aynı değilse dosya verilmez) |
+
+**DL-5'te netleşenler (ön taslağa göre):** (1) gövde üyeleri ve `Idempotency-Key`; (2) yalnız `Submitted` \| `Closed` sayım (farkı olmayan sayımın
+kanıtı yok — 409); (3) iki yeni kod, ikisi de CT'nin 1.1.0 önek kuralıyla `COUNT_EVIDENCE_`: `COUNT_EVIDENCE_NOT_FOUND` (404),
+`COUNT_EVIDENCE_INTEGRITY` (500); (4) liste `countId` süzgeci; (5) dosya cevabı `X-Content-SHA256` başlığını taşır; (6) `status` v1'de yalnız
+`Ready`; (7) dışa aktarma sayım zaman çizelgesine olay yazmaz (1.0.0 `CycleCountEventKind` değişmez) — iz, insert-only dışa aktarma kaydıdır ve
+merkezi denetim kaydı `CreateCountEvidenceExportCommand + Export`'tur; indirme bir okumadır, servis günlüğüne yazılır.
 
 ## 5. Error codes
 
@@ -314,6 +342,13 @@ DL-2'de bulunan satır için `UNKNOWN_ITEM`, `SKU_ITEM_MISMATCH`, `SKU_LEVEL_NOT
 `InventoryErrorCodes`'tan; DL-3'te defter retleri (`INSUFFICIENT_STOCK`, `LOT_BLOCKED`, `LOT_EXPIRED`, `SERIAL_COUNT_MISMATCH`, …) uç cevabının
 kodu değil, satırın `adjustment.refusalCode` / `refusalDetails`'idir (aynen; approve / retry 200 döner). **İstisna:** posting cevabı 400
 `IDEMPOTENCY_KEY_REUSED` bir ret değildir — anahtar sorulur, `IntegrityError` + 409 `COUNT_ADJUSTMENT_INTEGRITY` (paket §8.6, r5 SB1/F-4).
+
+### 5.3 DL-5 kodları (1.1.0'a eklenecek; CT önek kuralı `COUNT_EVIDENCE_`)
+
+| Kod | HTTP | Ne zaman |
+|---|---|---|
+| `COUNT_EVIDENCE_NOT_FOUND` | 404 | dışa aktarma ya da dosyası çağıranın kiracı + şirketinde yok (başka kiracı / şirket dahil) |
+| `COUNT_EVIDENCE_INTEGRITY` | 500 | saklanan dosyanın SHA-256'sı kayıttakiyle aynı değil — dosya verilmez |
 
 ## 6. State machine (paket §8.3)
 
