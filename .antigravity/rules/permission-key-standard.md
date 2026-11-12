@@ -89,7 +89,7 @@ Old/legacy keys are **retained as deprecated aliases** that map to their canonic
 
 ## 4. Module ownership (locked)
 
-Each **namespace** (first segment) is owned by **exactly one** module/service. The owner is the sole authority that may define, deprecate or alias keys in its namespace. No key may be created outside its owning namespace.
+Each **namespace** (first segment) is owned by **exactly one** module/service. The owner is the sole authority that may define, deprecate or alias keys in its namespace. No key may be created outside its owning namespace. Exception — a **named sub-namespace** listed in its own row of the table below (today only `warehouse.waves.*` → MOD-0180, owner decision D-4 2026-11-12) is owned by the module named in that row: only that module defines, deprecates or aliases keys under it, and the first-segment owner (MOD-0178 for `warehouse.*`) does not. A named sub-namespace is created only by an owner decision recorded in both modules' packs.
 
 | Namespace | Owning module / service | Canonical capability |
 |---|---|---|
@@ -102,7 +102,8 @@ Each **namespace** (first segment) is owned by **exactly one** module/service. T
 | `pvg.*` | `Diten.PvgService` — Pharmacovigilance (e.g. `pvg.case-intake-triage.*`; owner decision 2026-10-27, `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`) | Pharmacovigilance (MOD-0230 family) |
 | `cycle-count.*` | `Diten.InventoryService` — MOD-0181 Cycle Counting (sayımlar, fark izi, kanıt paketi, şirket sayım ayarları; owner decision Q-08 — one namespace per WMS module, MOD-0178 pack §14.1; pack r7 approved 2026-11-06) | MOD-0181 (Cycle Counting) |
 | `inventory.*` | `Diten.InventoryService` — MOD-0173 Inventory Ledger & Valuation (stok okuması, hareketler, lokasyonlar, rezervasyonlar; owner decision 2026-10-01 — `supplychain.inventory.*` → `inventory.*`, `supplychain.*` stays with `Diten.SupplyChainService`; MOD-0173 pack §14) | MOD-0173 (Inventory Ledger & Valuation) |
-| `warehouse.*` | `Diten.InventoryService` — MOD-0178 Putaway / Picking / Packing (putaway / pick görevleri, lokasyon rolleri, outbound, koli, izleme; owner decision Q-08 2026-10-21 — one namespace per WMS module, MOD-0178 pack §14.1; base path `/api/warehouse`) | MOD-0178 (Putaway / Picking / Packing) |
+| `warehouse.*` | `Diten.InventoryService` — MOD-0178 Putaway / Picking / Packing (putaway / pick görevleri, lokasyon rolleri, outbound, koli, izleme; owner decision Q-08 2026-10-21 — one namespace per WMS module, MOD-0178 pack §14.1; base path `/api/warehouse`; `warehouse.waves.*` hariç — MOD-0180) | MOD-0178 (Putaway / Picking / Packing) |
+| `warehouse.waves.*` | `Diten.InventoryService` — MOD-0180 Wave Planning (dalgalar, dalga istisnaları, dalga KPI'ları, depo dalga ayarı; owner decision D-4 2026-11-12 — `warehouse.*` altında MOD-0180'e ayrılmış adlı alt ad alanı, Q-08 "one namespace per WMS module" kuralına adlı istisna; MOD-0180 pack §14; base path `/api/warehouse/waves`) | MOD-0180 (Wave Planning) |
 | *(future business domains)* `crm.*`, `hr.*`, `ppm.*`, … | the respective business-domain module | Blueprint-selected (per AG-STEP-022) |
 
 **Legacy prefixes pending remap (AG-STEP-004B):**
