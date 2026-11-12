@@ -28,16 +28,35 @@ public static class DocumentRepositoryAccessPolicy
             && scope == ContentStorageScope.CrmVisitEvidence);
 
     public static bool CanRead(IActorPermissionContext? permissions, RepositoryObject row, string? caller) =>
-        Has(permissions, DocumentRepositoryPermissions.Read)
-        || (IsVisitEvidence(row)
-            && (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceReadAll)
-                || (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceRead) && IsCreator(row, caller))));
+        !IsTrustedConsumerRow(row)
+        && (Has(permissions, DocumentRepositoryPermissions.Read)
+            || (IsVisitEvidence(row)
+                && (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceReadAll)
+                    || (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceRead) && IsCreator(row, caller)))));
 
     public static bool CanCompensate(IActorPermissionContext? permissions, RepositoryObject row, string? caller) =>
-        Has(permissions, DocumentRepositoryPermissions.Manage)
-        || (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceWrite)
-            && IsVisitEvidence(row)
-            && IsCreator(row, caller));
+        !IsTrustedConsumerRow(row)
+        && (Has(permissions, DocumentRepositoryPermissions.Manage)
+            || (Has(permissions, DocumentRepositoryPermissions.VisitEvidenceWrite)
+                && IsVisitEvidence(row)
+                && IsCreator(row, caller)));
+
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 (r4, F-2) — what a trusted consumer sees: its own module's row (<c>TrustedConsumerModule</c>
+    /// equal to the closed-list entry's module) in a scope the entry allows. A user-path row (no module), another module's
+    /// row and another scope are all invisible → 404. <c>TrustedConsumerClientId</c> is deliberately NOT asked: a renewed
+    /// client of the same module still reaches the objects the old client wrote.
+    /// </summary>
+    public static bool IsVisibleToTrustedConsumer(RepositoryObject row, string consumerModule, IReadOnlyCollection<string> scopes) =>
+        row.TrustedConsumerModule is { Length: > 0 } module
+        && string.Equals(module, consumerModule, StringComparison.Ordinal)
+        && scopes.Contains(row.Scope, StringComparer.Ordinal);
+
+    /// <summary>
+    /// K-C — a row a trusted consumer owns is invisible on the user path (<c>api/v1/document-repository</c>), platform
+    /// administrator included: downloading it goes through the consumer module only (KARAR D56/2).
+    /// </summary>
+    private static bool IsTrustedConsumerRow(RepositoryObject row) => row.TrustedConsumerModule is not null;
 
     private static bool IsVisitEvidence(RepositoryObject row) =>
         string.Equals(row.Scope, VisitEvidenceScope, StringComparison.Ordinal);

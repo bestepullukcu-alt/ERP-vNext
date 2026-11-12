@@ -159,6 +159,77 @@ public sealed class TrustedServiceTokenValidationTests : IDisposable
         Assert.False(audit.Succeeded);
     }
 
+    // MOD-0262-FU01 DL-2 (AC-15) — the fifth scheme: four-way audience separation, then each rejection as its own case.
+    [Fact]
+    public async Task Document_repository_scheme_and_the_three_other_service_schemes_refuse_each_others_tokens()
+    {
+        await using var provider = await DocumentRepositoryProviderAsync();
+        var audiences = new Dictionary<string, string>
+        {
+            [TrustedServiceTokenValidationExtensions.DocumentRepositoryAuthenticationScheme] = TrustedServiceTokenValidationExtensions.DocumentRepositoryRequiredAudience,
+            [TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme] = TrustedServiceTokenValidationExtensions.WorkflowRequiredAudience,
+            [TrustedServiceTokenValidationExtensions.AuthenticationScheme] = TrustedServiceTokenValidationExtensions.RequiredAudience,
+            [TrustedServiceTokenValidationExtensions.ReferenceDataAuthenticationScheme] = TrustedServiceTokenValidationExtensions.ReferenceDataRequiredAudience
+        };
+
+        foreach (var (scheme, audience) in audiences)
+        {
+            var token = Token(_current, "current-key", SecurityAlgorithms.RsaSha256, audience: audience);
+            foreach (var other in audiences.Keys)
+            {
+                var result = await AuthenticateAsync(provider, token, other);
+                Assert.True(result.Succeeded == (other == scheme), $"{audience} token on {other}");
+            }
+        }
+
+        Assert.True(TrustedServiceTokenValidationExtensions.HasExactDocumentRepositoryServiceClaims(
+            new JsonWebToken(Token(_current, "current-key", SecurityAlgorithms.RsaSha256,
+                audience: TrustedServiceTokenValidationExtensions.DocumentRepositoryRequiredAudience)), Issuer));
+    }
+
+    [Theory]
+    [InlineData("hs256")]
+    [InlineData("none")]
+    [InlineData("expired")]
+    [InlineData("extra-claim")]
+    [InlineData("service-name")]
+    public async Task Document_repository_scheme_refuses_each_broken_token(string kind)
+    {
+        await using var provider = await DocumentRepositoryProviderAsync();
+        const string audience = TrustedServiceTokenValidationExtensions.DocumentRepositoryRequiredAudience;
+        var token = kind switch
+        {
+            "hs256" => Token(new SigningCredentials(new SymmetricSecurityKey(new byte[64]) { KeyId = "current-key" }, SecurityAlgorithms.HmacSha256), audience: audience),
+            "none" => Token((SigningCredentials?)null, audience: audience),
+            "expired" => Token(_current, "current-key", SecurityAlgorithms.RsaSha256, audience: audience, issuedAtOffsetSeconds: -900),
+            "extra-claim" => Token(_current, "current-key", SecurityAlgorithms.RsaSha256, audience: audience, additionalClaims: [new Claim("permission", "platform.document-repository.manage")]),
+            _ => Token(_current, "current-key", SecurityAlgorithms.RsaSha256, audience: audience, replacedClaimType: "service_name", replacedClaimValue: "Diten.Crm")
+        };
+
+        var result = await AuthenticateAsync(provider, token, TrustedServiceTokenValidationExtensions.DocumentRepositoryAuthenticationScheme);
+
+        Assert.False(result.Succeeded);
+    }
+
+    private async Task<ServiceProvider> DocumentRepositoryProviderAsync()
+    {
+        var options = Options();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:Issuer"] = options.Issuer,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentKeyId"] = options.CurrentKeyId,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentPublicKeyPem"] = options.CurrentPublicKeyPem
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication("HumanBearer");
+        services.AddTrustedServiceTokenValidation(configuration, _clock);
+        await Task.CompletedTask;
+        return services.BuildServiceProvider();
+    }
+
     [Fact]
     public async Task Delegated_user_scheme_reads_only_exact_delegated_header_and_validates_human_jwt()
     {

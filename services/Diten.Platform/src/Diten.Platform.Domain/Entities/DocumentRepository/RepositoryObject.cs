@@ -52,4 +52,17 @@ public sealed class RepositoryObject : TenantScopedEntity
     public required string Checksum { get; set; }
 
     public Guid? CompanyId { get; set; }
+
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 — the trusted consumer service token's subject (<c>sub</c>) that wrote this row; null on the user and
+    /// in-process paths. Trace and audit ONLY — never part of a visibility decision (r4, F-2).
+    /// </summary>
+    public Guid? TrustedConsumerClientId { get; set; }
+
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 — the closed-list consumer module (v1: <c>MOD-0217</c>) that owns this row; null on the user and
+    /// in-process paths. Visibility is bound to it: the trusted path sees only its own module's rows, the user path never sees
+    /// a row where it is set (K-C).
+    /// </summary>
+    public string? TrustedConsumerModule { get; set; }
 }

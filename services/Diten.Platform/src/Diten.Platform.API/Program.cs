@@ -232,6 +232,8 @@ builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<Trus
 builder.Services.AddSingleton<
     Diten.Platform.Application.Features.Workflow.Services.ITrustedWorkflowStartAuthorizationPolicy>(
     services => services.GetRequiredService<ConfiguredTrustedWorkflowStartAuthorizationPolicy>());
+// MOD-0262-FU01 DL-2 — trusted document repository consumer (closed list validated at start-up, executor, refusal records).
+builder.Services.AddTrustedDocumentRepositoryConsumer(builder.Configuration);
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();
