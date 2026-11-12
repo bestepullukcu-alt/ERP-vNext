@@ -477,7 +477,8 @@ public class CiServiceTestsGuardTests
         var code = Code(WorkflowText("agent-adapters.yml"));
         Assert.Equal(["push", "pull_request"], Triggers(code));
         Assert.True(KeyCount(code, "branches") == 1, $"agent-adapters.yml: {KeyCount(code, "branches")} branches keys, expected 1");
-        Assert.Single(Regex.Matches(code, @"(?m)^on:\n  push:\n    branches: \[main\]\n    paths:\n"));
+        // The whole push block: branches [main] and the paths list, nothing else (no tags:, no branches-ignore:).
+        Assert.Single(Regex.Matches(code, @"(?m)^on:\n  push:\n    branches: \[main\]\n    paths:\n(?:      - ""[^""\n]+""\n)+  pull_request:\n"));
     }
 
     /// <summary>
