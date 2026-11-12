@@ -443,7 +443,7 @@ def state_of(cell: str) -> tuple[bool, bool]:
     """(open, decided) of a register state cell. An open state is never also decided: `karar bekliyor` starts with
     `karar` but waits for one (Codex 3). Closing punctuation is not part of the state: `karar bekliyor.` is still
     open (Codex round 2 on a54554143)."""
-    cell = cell.strip().rstrip(".!;,…").rstrip()
+    cell = cell.strip().rstrip(".!;,…").strip("*_ ").rstrip(".!;,…").rstrip()   # `**karar bekliyor**.` too
     o = bool(OPEN.fullmatch(cell) or OPEN_STATE.fullmatch(cell))
     return o, (not o) and bool(DECIDED_STATE.match(cell))
 

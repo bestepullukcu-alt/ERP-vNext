@@ -422,6 +422,7 @@ BAD_LINES = {
 }
 # Codex round 2 on a54554143: the port pattern of a54554143, kept only to pin that the current one is faster
 OLD_PORT_AFTER = r"(?:\(\s*|:\s*|=\s*|\s)?(?:port\s*:?\s*)(\d{4,5})(?![\d])"
+OLD_QUOTE_AFTER = r"^\s*(?:[:=→]|—|–)?\s*`([^`]{4,200})`"        # the same shape in the quote reader of a54554143
 
 
 class CodexRound1(Fixture):
@@ -618,6 +619,30 @@ class CodexRound2(Fixture):
         list(re.finditer(r"MDM\s*" + pr.PORT_AFTER, "MDM port" + " " * 40_000 + "TBD"))
         self.assertLess(time.perf_counter() - start, old)
 
+    def test_r2_1_old_quote_pattern_is_slow(self):
+        start = time.perf_counter()
+        re.match(OLD_QUOTE_AFTER, " " * 4_000 + "x")
+        old = time.perf_counter() - start
+        start = time.perf_counter()
+        pr.QUOTE_AFTER.match(" " * 40_000 + "x")
+        self.assertLess(time.perf_counter() - start, old)
+
+    def test_r2_3_quote_reader_sees_at_most_rest_window(self):
+        seen, real = [], pr.QUOTE_AFTER
+
+        class Spy:
+            def match(self, rest):
+                seen.append(len(rest))
+                return real.match(rest)
+
+        ref = "services/Diten.MdmService/src/Diten.MdmService.Domain/LegalEntityGuard.cs:1"
+        with mock.patch.object(pr, "QUOTE_AFTER", Spy()):
+            for line in (ref + " " * 5_000 + "x", f"`{ref}`" + " " * 5_000 + "x"):
+                self.items(CLEAN.split("## Module Summary")[0] + "## Module Summary\n\n" + line + "\n")
+        self.assertTrue(seen, "the quote reader was not reached")
+        self.assertLessEqual(max(seen), pr.REST_WINDOW)
+        self.assertLess(max(seen), 5_000)                 # never the whole tail, whatever REST_WINDOW is set to
+
     def test_r2_1_port_after_blank_run_still_read(self):
         for written in ("MDM port 6060", "MDM port: 6060", "MDM (port 6060)", "MDM (port : 6060)", "MDM: port 6060"):
             with self.subTest(written=written):
@@ -625,7 +650,7 @@ class CodexRound2(Fixture):
 
     def test_r2_2_punctuated_waiting_state_is_open(self):
         for cell in ("karar bekliyor.", "karar alınmadı.", "karar yok.", "karar bekliyor!", "Karar: açık.",
-                     "açık.", "karar bekliyor…"):
+                     "açık.", "karar bekliyor…", "karar bekliyor**.", "_karar yok_."):
             with self.subTest(cell=cell):
                 self.assertEqual(pr.state_of(cell), (True, False))
                 self.assert_fires("R2", TABLE_OPEN.replace("| karar bekliyor |", f"| {cell} |"))
