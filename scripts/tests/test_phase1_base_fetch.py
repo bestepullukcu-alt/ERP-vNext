@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 SCRIPT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "run_phase1_gates.sh")
 HELPER = re.compile(r"^fetch_base_tip\(\) \{\n.*?^\}\n", re.S | re.M)
@@ -31,10 +32,34 @@ HELPER = re.compile(r"^fetch_base_tip\(\) \{\n.*?^\}\n", re.S | re.M)
 MERGE_GROUP = re.compile(r'^if \[ "\$\{GITHUB_EVENT_NAME:-\}" = "merge_group" \].*?^fi\n', re.S | re.M)
 # A fetch however it is written (`git -c x=y fetch`, `git pull`), or any depth option, outside the helper.
 FETCHING = re.compile(r"\bgit\b.*\b(?:fetch|pull)\b|--depth\b|--deepen\b|--shallow-|--unshallow\b")
-ENV = dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_") and k != "GITHUB_ACTIONS"},
-           GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0",
-           GIT_AUTHOR_NAME="phase1-test", GIT_AUTHOR_EMAIL="phase1-test@example.invalid",
-           GIT_COMMITTER_NAME="phase1-test", GIT_COMMITTER_EMAIL="phase1-test@example.invalid")
+# What bash reads at start-up before the script's first line (Codex round 3 on d3ffd9c7d): a BASH_ENV file can export
+# GIT_DIR again after the GIT_* clean-up, and an exported function (BASH_FUNC_git%%) replaces the git command itself.
+BASH_STARTUP = ("BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "CDPATH")
+FUNC_PREFIX = "BASH_FUNC_"
+
+
+def isolated_env(source) -> dict:
+    """SOURCE without anything that could point git or bash at another repository, plus a fixed identity. Git config
+    outside the throwaway repositories is not read: GIT_CONFIG_GLOBAL needs git 2.32 (GIT_232)."""
+    return dict({k: v for k, v in source.items() if not k.startswith(("GIT_", FUNC_PREFIX)) and k != "GITHUB_ACTIONS"
+                 and k not in BASH_STARTUP},
+                GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull, GIT_TERMINAL_PROMPT="0",
+                GIT_AUTHOR_NAME="phase1-test", GIT_AUTHOR_EMAIL="phase1-test@example.invalid",
+                GIT_COMMITTER_NAME="phase1-test", GIT_COMMITTER_EMAIL="phase1-test@example.invalid")
+
+
+ENV = isolated_env(os.environ)
+
+
+def git_at_least(major: int, minor: int) -> bool:
+    if not shutil.which("git"):
+        return False
+    out = subprocess.run(["git", "--version"], env=ENV, capture_output=True, text=True).stdout
+    found = re.search(r"(\d+)\.(\d+)", out)
+    return bool(found) and (int(found.group(1)), int(found.group(2))) >= (major, minor)
+
+
+GIT_232 = git_at_least(2, 32)          # GIT_CONFIG_GLOBAL: below 2.32 the developer's global config would be read
 
 
 def script_text() -> str:
@@ -47,7 +72,7 @@ def git(cwd: str, *args: str) -> str:
 
 
 @unittest.skipIf(os.name == "nt", "Windows may start WSL's bash, whose git cannot open file:///C:/ — POSIX only")
-@unittest.skipUnless(shutil.which("bash") and shutil.which("git"), "needs bash and git")
+@unittest.skipUnless(shutil.which("bash") and GIT_232, "needs bash and git 2.32+")
 class FetchBaseTipTests(unittest.TestCase):
     def setUp(self):
         match = HELPER.search(script_text())
@@ -469,14 +494,19 @@ def mutant(text: str, *edits: tuple[str, str]) -> str:
 
 
 def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledger: str | None = None,
-                       merge_group: bool = False) -> dict:
+                       merge_group: bool = False, dirty: str | None = None) -> dict:
     """Runs the script TEXT end to end with REAL git (Codex round 2 on b1b7a495e). A bare origin's main holds
     `base_ledger`; the clone's HEAD holds `head_ledger`. Only python3, dotnet, sleep and the sibling .sh scripts are
     stubs: the base is fetched from origin, resolved and compared by git itself.
 
     With `older_ledger` the base has MOVED on (blind pre-check of 5612aab8b): the PR branch starts at an older commit
     holding `older_ledger`, so the fetched base is neither HEAD's parent nor the merge base. With `merge_group` the base
-    is a queue commit off main (MERGE_GROUP_BASE_SHA) and origin/main stays at the older commit."""
+    is a queue commit off main (MERGE_GROUP_BASE_SHA) and origin/main stays at the older commit. The clone is made
+    BEFORE the base moves on, so its local `main` and `origin/main` are stale until the script's own fetch (Codex
+    round 3 on d3ffd9c7d: a clone made after it let `"$GITHUB_BASE_REF"` stand in for the base).
+
+    `dirty` starts bash from a polluted environment, cleaned by isolated_env: "bash_env" (a BASH_ENV file exporting
+    GIT_DIR of another clone) or "function" (an exported `git` function). `leaked` says whether it got through."""
     with tempfile.TemporaryDirectory() as tmp:
         seed, origin, repo, stubs, venv = (os.path.join(tmp, n) for n in ("seed", "origin.git", "repo", "stubs", "venv"))
         ledger = os.path.join(LEDGER, "Diten.Stub.md")
@@ -488,15 +518,14 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
         git(seed, *commit, "-m", "older")
         start = git(seed, "rev-parse", "HEAD")
         base = start
+        git(tmp, "clone", "-q", "--bare", seed, origin)
+        git(tmp, "clone", "-q", origin, repo)            # local main = origin/main = start, from here on stale
         if older_ledger is not None:
             pathlib.Path(seed, ledger).write_text(base_ledger, encoding="utf-8")
             git(seed, *commit, "-am", "base")
             base = git(seed, "rev-parse", "HEAD")
-            if merge_group:                              # the group's parent lives on a queue branch, main stays behind
-                git(seed, "branch", "-q", "queue", base)
-                git(seed, "reset", "-q", "--hard", start)
-        git(tmp, "clone", "-q", "--bare", seed, origin)
-        git(tmp, "clone", "-q", origin, repo)
+            # merge_group: the group's parent lives on a queue branch and origin's main stays behind
+            git(seed, "push", "-q", origin, "HEAD:refs/heads/" + ("queue" if merge_group else "main"))
         git(repo, "checkout", "-q", "-b", "pr", start)
         pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
         pathlib.Path(repo, "other.txt").write_text("x\n", encoding="utf-8")
@@ -515,13 +544,24 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
                 handle.write(body)
             os.chmod(path, 0o755)
         pathlib.Path(stubs, "log").write_text("", encoding="utf-8")
-        clean = {k: v for k, v in ENV.items() if not k.startswith(("GITHUB_", "MERGE_GROUP_", "AUDIT_LEDGER_",
-                                                                     "PAGE_HELP_LEDGER_", "AC_TAG_", "PHASE1_"))}
+        start_env, other, marker = ENV, os.path.join(tmp, "other"), os.path.join(tmp, "marker")
+        if dirty:
+            git(tmp, "clone", "-q", origin, other)
+            if dirty == "bash_env":
+                evil = os.path.join(tmp, "evil.sh")
+                pathlib.Path(evil).write_text(f"export GIT_DIR='{other}/.git'\n", encoding="utf-8")
+                polluted = dict(os.environ, BASH_ENV=evil)
+            else:
+                polluted = dict(os.environ, **{"BASH_FUNC_git%%": f'() {{  : > "{marker}"; command git "$@"\n}}'})
+            start_env = isolated_env(polluted)
+        clean = {k: v for k, v in start_env.items() if not k.startswith(("GITHUB_", "MERGE_GROUP_", "AUDIT_LEDGER_",
+                                                                           "PAGE_HELP_LEDGER_", "AC_TAG_", "PHASE1_"))}
         event = dict(GITHUB_EVENT_NAME="merge_group", MERGE_GROUP_BASE_SHA=base) if merge_group else PULL_REQUEST
         clean.update(PATH=stubs + os.pathsep + ENV.get("PATH", ""), STUB_DIR=stubs, CT_TOOLS_VENV=venv, **event)
         done = subprocess.run(["bash", os.path.join(repo, "scripts", "run_phase1_gates.sh")], cwd=repo, env=clean,
                               capture_output=True, text=True, timeout=120)
-    return {"code": done.returncode, "out": done.stdout + done.stderr}
+        leaked = os.path.exists(os.path.join(other, ".git", "FETCH_HEAD")) or os.path.exists(marker)
+    return {"code": done.returncode, "out": done.stdout + done.stderr, "leaked": leaked}
 
 
 DEBT = ("- OldCmd\n", "- OldCmd\n- NewCmd\n")          # (base, head): one list line added
@@ -533,11 +573,11 @@ DEBT_RUNS = {"pull request, base = HEAD's parent": dict(),
              "merge group, parent off main": dict(older=True, merge_group=True)}
 
 
-def run_debt(text: str, older: bool = False, merge_group: bool = False) -> dict:
+def run_debt(text: str, older: bool = False, merge_group: bool = False, dirty: str | None = None) -> dict:
     if older:
         base, head, earlier = BASE_MOVED_ON
-        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group)
-    return run_gates_real_git(text, *DEBT)
+        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group, dirty=dirty)
+    return run_gates_real_git(text, *DEBT, dirty=dirty)
 
 
 def red_on_new_debt(run: dict) -> list[str]:
@@ -551,7 +591,7 @@ def red_on_new_debt(run: dict) -> list[str]:
 
 
 @unittest.skipIf(os.name == "nt", "Windows may start WSL's bash, whose git cannot open file:///C:/ — POSIX only")
-@unittest.skipUnless(shutil.which("bash") and shutil.which("git"), "needs bash and git")
+@unittest.skipUnless(shutil.which("bash") and GIT_232, "needs bash and git 2.32+")
 class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
     """Codex round 2 on b1b7a495e: the per-file diff of the audit ledger, the comparison that finds new debt, must
     read the fetched base — not HEAD, HEAD's parent, the merge base or origin/main. Real git, as in CI."""
@@ -561,6 +601,18 @@ class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
             with self.subTest(name):
                 run = run_debt(script_text(), **how)
                 self.assertEqual(red_on_new_debt(run), [], run["out"])
+
+    def test_a_polluted_bash_start_reaches_no_other_repository(self):
+        # Codex round 3 on d3ffd9c7d: BASH_ENV exporting GIT_DIR made the run fetch into another clone
+        for dirty in ("bash_env", "function"):
+            with self.subTest(dirty):
+                run = run_debt(script_text(), older=True, dirty=dirty)
+                self.assertFalse(run["leaked"], run["out"])
+                self.assertEqual(red_on_new_debt(run), [], run["out"])
+        for dirty, sabotage in (("bash_env", ("BASH_STARTUP", ())), ("function", ("FUNC_PREFIX", "NO_SUCH_PREFIX_"))):
+            with self.subTest(sabotage=dirty), mock.patch.dict(globals(), dict([sabotage])):
+                self.assertTrue(run_debt(script_text(), older=True, dirty=dirty)["leaked"],
+                                f"without the {sabotage[0]} clean-up the probe saw nothing")
 
     def test_the_same_lines_in_another_order_pass(self):
         run = run_gates_real_git(script_text(), *MOVED)
@@ -631,7 +683,7 @@ class SabotageTests(unittest.TestCase):
                         **PULL_REQUEST)
         self.assertNotEqual(red_with(run, "is not a commit"), [], run["out"])
 
-    @unittest.skipUnless(shutil.which("git"), "needs git")
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
     def test_a_ledger_file_diff_that_leaves_the_base_is_seen(self):
         # Codex round 2 on b1b7a495e + blind pre-check of 5612aab8b: the per-file diff reads something other than the
         # fetched base. FETCH_HEAD is left out: in CI it is the base itself (an equivalent mutant).
@@ -639,7 +691,8 @@ class SabotageTests(unittest.TestCase):
         for name, written in (("HEAD", line.replace('"$base"', "HEAD")),
                               ("HEAD's parent", line.replace('"$base"', "HEAD~1")),
                               ("the merge base (three dots)", 'git diff --unified=0 "$base"...${head:-HEAD} -- "$file"'),
-                              ("origin/main", line.replace('"$base"', "origin/main"))):
+                              ("origin/main", line.replace('"$base"', "origin/main")),
+                              ("the base branch name", line.replace('"$base"', '"$GITHUB_BASE_REF"'))):
             with self.subTest(name):
                 mutated = mutant(script_text(), (line, written))
                 seen = [run for how in DEBT_RUNS.values() if red_on_new_debt(run := run_debt(mutated, **how))]
