@@ -18,5 +18,6 @@ okunmadı). Paket yok, kimlik ayrılmadı. Sahip: Beste.
 1. Bugün KZ / UZ sevkiyatlarında kodlar nasıl alınıyor ve basılıyor (fabrika yazılımı / hizmet sağlayıcı / elle)?
 2. PL / ES fabrikalarında serileştirme hattı ve yazılımı (Level 3 / 4) var mı, hangisi?
 3. Satış modeli: bu ülkelere kendi şirketimiz mi ithal ediyor, yerel distribütör mü (KZ / UZ'de ithalatçının bildirim yükü)?
-4. PL / ES üretiminden AB pazarına ürün çıkıyor mu (AB FMD)?
+4. ~~PL / ES üretiminden AB pazarına ürün çıkıyor mu (AB FMD)?~~ **Cevap (Beste, 2026-11-12): AB'de satış yok** — AB FMD bağdaştırıcısı
+   kapsam dışı (AB dışına ihraç edilen ürün için FMD gerekmediği kabulü resmi kaynaktan doğrulanacak). Soru 2 ve 3 Natig'e soruldu.
 5. Ülke kurallarının resmi kaynaklardan doğrulanması (KZ 2024-07-01, UZ 2022-09-01, AZ 2026-01, UA 2028-01-01).
