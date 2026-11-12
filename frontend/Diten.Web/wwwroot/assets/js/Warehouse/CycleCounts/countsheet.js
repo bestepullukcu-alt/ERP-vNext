@@ -13,8 +13,11 @@ const CountSheet = (function () {
     const host = document.getElementById('cc-sheet');
     const countId = host?.getAttribute('data-count-id') || '';
     const byId = (id) => document.getElementById(id);
-    let words = {};
-    try { words = JSON.parse(byId('countsheet-l10n')?.textContent || '{}').Words || {}; } catch (error) { words = {}; }
+    // DL-4 FIX-01: the page writes its payload with the MVC JSON options (camelCase), so its root names are `words`, `cancel`, `save` — read
+    // exactly those (CycleCountScreensTests holds the rendered names and the names read here equal)
+    let payload = {};
+    try { payload = JSON.parse(byId('countsheet-l10n')?.textContent || '{}') || {}; } catch (error) { payload = {}; }
+    const words = payload.words || {};
     const W = (key) => words[key] || '';
     const format = (template, ...values) => values.reduce((text, value, i) => text.replace(`{${i}}`, value ?? ''), template || '');
     const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

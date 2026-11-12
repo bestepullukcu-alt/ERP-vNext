@@ -95,6 +95,30 @@ public sealed class CycleCountScreensTests(WebApplicationFactory<Program> factor
     }
 
     [Fact]
+    public async Task DL4_FIX01_the_count_sheet_script_reads_exactly_the_root_names_the_rendered_l10n_JSON_has()
+    {
+        // the REAL page through the real shell (the Scripts section renders only on a main page), in Turkish
+        var html = await RenderAsync(Sheet, "tr", true, CycleCountPermissionKeys.CountsRead, CycleCountPermissionKeys.CountsRecord);
+        var json = Regex.Match(html, "<script id=\"countsheet-l10n\" type=\"application/json\">(.*?)</script>", RegexOptions.Singleline);
+        Assert.True(json.Success, "the count sheet renders no countsheet-l10n payload");
+        using var payload = System.Text.Json.JsonDocument.Parse(System.Net.WebUtility.HtmlDecode(json.Groups[1].Value));
+        var rendered = payload.RootElement.EnumerateObject().Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+
+        // the production script: every root name it reads off the parsed payload is one the page really writes
+        var script = File.ReadAllText(Path.Combine(Web, "wwwroot", "assets", "js", "Warehouse", "CycleCounts", "countsheet.js"));
+        Assert.Contains("JSON.parse(byId('countsheet-l10n')", script, StringComparison.Ordinal);
+        var read = Regex.Matches(script, @"\bpayload\.(\w+)").Select(m => m.Groups[1].Value).Distinct().ToList();
+        Assert.Contains("words", read);
+        Assert.All(read, name => Assert.True(rendered.Contains(name), $"countsheet.js reads payload.{name}; the page writes only {string.Join(", ", rendered)}"));
+
+        // and the words it gets are the page's own, in the page's language (no hardcoded or fallback text in the script)
+        var words = payload.RootElement.GetProperty("words");
+        Assert.Equal("Sayım Formu", words.GetProperty("CountSheetTitle").GetString());
+        Assert.False(string.IsNullOrWhiteSpace(words.GetProperty("ReadonlyDraft").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(words.GetProperty("CycleCount.Status.Draft").GetString()));
+    }
+
+    [Fact]
     public async Task AC39_the_count_sheet_has_48px_touch_targets_a_decimal_keypad_and_a_sticky_bottom_bar()
     {
         var html = await RenderAsync(Sheet, "en", false, CycleCountPermissionKeys.CountsRead, CycleCountPermissionKeys.CountsRecord);
