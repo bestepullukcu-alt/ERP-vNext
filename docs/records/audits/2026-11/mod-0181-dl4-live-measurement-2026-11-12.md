@@ -26,3 +26,16 @@
 - FIX-01 sonrası Sayım Formu'nun yeniden ölçümü: başlatılmış sayımda miktar girişi, gönder, tr / ar / 375 px, dokunma hedefleri ≥ 48 px.
 - §24 DL-4 kabul kapısı: AuthService rol şablonu (Q-4 = A; Ali, MOD-0018-FU31).
 - Canlı veride iz: `GMG-CNT-000001` (taslak, not "CT canlı ölçüm MOD-0181 DL-4").
+
+## Ölçüm 2 — WP-0181-DL4-FIX-01 sonrası (2026-11-12, aynı gece)
+- Hedef: hatta `317c3c195` (Sayım Formu çeviri JSON'unu okur) + `8167c1f27` (lot numarası / adlar, hiçbir yerde kimlik yok); ana checkout
+  `8167c1f27`, Web `dotnet watch` yeniden derledi (~2 dk kapalı). Sayım `GMG-CNT-000001` sahip tarafından başlatıldı ve iki satır sayıldı.
+- tr: başlık "Sayım Formu · GMG-CNT-000001", alt satır "D01 · İstanbul Merkez Depo · Sayılıyor"; satırlar "Lot no.: AMX-2604 · Beklenen:
+  348.000" ve "Lot no.: G1-20261020 · Beklenen: 60.000" (kör değil → beklenen görünür); "2 / 2 sayıldı", "Tüm satırlar sayıldı."; sayfa
+  metninde GUID deseni 0.
+- ar / 375 px: RTL, başlık "ورقة الجرد · GMG-CNT-000001", durum "قيد الجرد", "الدفعة: AMX-2604"; `scrollWidth` 375; GUID 0; dokunma
+  hedefleri − / + 57×48, miktar 104×50, onay 90×48 (≥ 48 px). Tek istisna: 327×38 bir metin alanı (gizli panelin alanı olabilir — DÜŞÜK, FIX-02'de bakılır).
+- Sonuç: Sayım Formu **geçti**. Ölçüm 1'deki ORTA-YÜKSEK bulgu kapandı.
+- Açık (FIX-01 raporundan, düzeltilmedi): Pano ve Sayım Farkları'nda ad çözülemeyince kimliğe düşen alanlar (atanan / oluşturan kişi,
+  depo, QuickView kapsamı, Düzenle formunda SKU seçicisi; Sayım Farkları "Lot" sütunu ve QuickView `lotId`, konum / SKU / depo) → önerilen
+  WP-0181-DL4-FIX-02. DL-4 ACCEPTED kapıları: FIX-02 kararı + Auth rol şablonu (Ali).
