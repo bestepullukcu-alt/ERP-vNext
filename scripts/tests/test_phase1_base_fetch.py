@@ -503,7 +503,7 @@ def mutant(text: str, *edits: tuple[str, str]) -> str:
 
 def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledger: str | None = None,
                        merge_group: bool = False, dirty: str | None = None, attributes: str | None = None,
-                       ledger_name: str = "Diten.Stub.md", symlink: bool = False) -> dict:
+                       ledger_name: str = "Diten.Stub.md", symlink: bool = False, rename_to: str | None = None) -> dict:
     """Runs the script TEXT end to end with REAL git (Codex round 2 on b1b7a495e). A bare origin's main holds
     `base_ledger`; the clone's HEAD holds `head_ledger`. Only python3, dotnet, sleep and the sibling .sh scripts are
     stubs: the base is fetched from origin, resolved and compared by git itself.
@@ -541,6 +541,10 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
             os.remove(os.path.join(repo, ledger))
             os.symlink(os.path.relpath(os.path.join(repo, "real.md"), os.path.join(repo, LEDGER)), os.path.join(repo, ledger))
             git(repo, "add", "real.md")
+        elif rename_to:      # blind pre-check of 760c4545a: renamed and a line added in the same change
+            git(repo, "mv", ledger, os.path.join(LEDGER, rename_to))
+            ledger = os.path.join(LEDGER, rename_to)
+            pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
         else:
             pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
         pathlib.Path(repo, "other.txt").write_text("x\n", encoding="utf-8")
@@ -684,6 +688,10 @@ class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
                 run = run_debt(script_text(), older=True, ledger_name=name)
                 self.assertEqual(red_on_new_debt(run), [], run["out"])
 
+    def test_a_ledger_renamed_with_a_line_added_is_red(self):
+        run = run_debt(script_text(), older=True, rename_to="Diten.Renamed.md")
+        self.assertEqual(red_on_new_debt(run), [], run["out"])
+
     def test_the_same_lines_in_another_order_pass(self):
         run = run_gates_real_git(script_text(), *MOVED)
         self.assertEqual(run["code"], 0, run["out"])
@@ -813,6 +821,13 @@ class SabotageTests(unittest.TestCase):
         seen = [name for name in ODD_NAMES if red_on_new_debt(run_debt(mutant(script_text(), old), older=True,
                                                                       ledger_name=name))]
         self.assertNotEqual(seen, [], "the quoted-name mutant went red for no odd name: the test is blind")
+
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
+    def test_a_ledger_listing_that_follows_renames_is_seen(self):
+        # blind pre-check of 760c4545a: without --no-renames the rename + new line passed green
+        mutated = mutant(script_text(), ('git diff --raw -z --no-renames --no-ext-diff "$base"', 'git diff --raw -z -M --no-ext-diff "$base"'))
+        run = run_debt(mutated, older=True, rename_to="Diten.Renamed.md")
+        self.assertNotEqual(red_on_new_debt(run), [], run["out"])
 
     def test_an_override_accepted_in_github_actions_is_seen(self):
         run = run_gates(mutant(script_text(), ('    if [ -n "${!base_override:-}" ]; then', "    if false; then")),
