@@ -13,3 +13,9 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
 | Q-1…Q-5, Q-7…Q-16, Q-18, Q-19, Q-21, Q-22 | paket önerileri | **Öneri gibi (A)** |
 | Q-17 | Hedef tarih | sahipten bekleniyor |
 | Q-20 | Rol şablonu | §14 önerisi; karar Ali (Auth) |
+
+## Ek — Y-1 netleştirmesi (r2 incelemesi F-2; Beste "öneriler tamam", 2026-11-12)
+- **Y-1 = A:** Depoda dalga yönetimi kapatılırken bekleyen (`Deferred`) siparişler **reddedilmez ve iptal edilmez**; kapatma anında her
+  bekleyen siparişin toplama görevleri dalga yokmuş gibi hemen açılır (MOD-0178 normal akışı). r2'deki 409 `WAVE_SETTINGS_DEFERRED_ORDERS`
+  kuralı bu kararla değişir. Sahip ayrıca: MOD-0178'e düşülecek not (X-16) r29'u MOD-0178 r28 ile aynı onay turunda Ali'ye götürmek; PKS-001
+  :92 istisna cümlesi `.antigravity` kapısı onayına dahil.
