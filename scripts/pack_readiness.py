@@ -439,11 +439,34 @@ def r2_text(s: str) -> str:
     return re.sub(r"\"[^\"]*\"|“[^”]*”|«[^»]*»", " ", s)
 
 
+END_PUNCT = ".!;,…"
+
+
+def _unwrap(cell: str) -> str:
+    """The state inside closing punctuation and emphasis. Emphasis is taken off only as a pair (`_karar yok_.`,
+    `**karar bekliyor**`), never one side alone: `_karar alınmadı_ (EA)` keeps both `_` and stays unread, as it was
+    before (Codex round 3 on b4517cc64). The one exception is a trailing `*` run with no `*` in front: the register
+    reader has already stripped the leading `*` (`c.strip("* ")`), so `**karar bekliyor**.` arrives as
+    `karar bekliyor**.`."""
+    cell = cell.strip().rstrip(END_PUNCT).rstrip()
+    changed = True
+    while changed:
+        changed = False
+        for mark in ("**", "__", "*", "_"):
+            if len(cell) > 2 * len(mark) and cell.startswith(mark) and cell.endswith(mark):
+                cell = cell[len(mark):-len(mark)].strip().rstrip(END_PUNCT).rstrip()
+                changed = True
+                break
+    if cell.endswith("*") and not cell.startswith("*"):
+        cell = cell.rstrip("*").rstrip().rstrip(END_PUNCT).rstrip()
+    return cell
+
+
 def state_of(cell: str) -> tuple[bool, bool]:
     """(open, decided) of a register state cell. An open state is never also decided: `karar bekliyor` starts with
     `karar` but waits for one (Codex 3). Closing punctuation is not part of the state: `karar bekliyor.` is still
     open (Codex round 2 on a54554143)."""
-    cell = cell.strip().rstrip(".!;,…").strip("*_ ").rstrip(".!;,…").rstrip()   # `**karar bekliyor**.` too
+    cell = _unwrap(cell)
     o = bool(OPEN.fullmatch(cell) or OPEN_STATE.fullmatch(cell))
     return o, (not o) and bool(DECIDED_STATE.match(cell))
 

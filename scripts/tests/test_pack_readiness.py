@@ -658,6 +658,18 @@ class CodexRound2(Fixture):
             with self.subTest(decided=cell):
                 self.assertEqual(pr.state_of(cell), (False, True))
 
+    def test_r3_1_one_sided_emphasis_is_not_taken_off(self):
+        # Codex round 3 on b4517cc64: `_karar alınmadı_ (EA)` lost its leading `_` and read as decided
+        for cell in ("_karar alınmadı_ (EA)", "_karar yok_ x", "__karar bekliyor__ (EA)"):
+            with self.subTest(cell=cell):
+                self.assertEqual(pr.state_of(cell), (False, False))     # unread, as in a54554143
+        text = TABLE_OPEN.replace("| karar bekliyor |", "| _karar alınmadı_ (EA) |").replace(
+            "- K-1 karar verildi: archive only from Draft.", "- K-1 açık kalır until the owner answers.")
+        self.assertNotIn("R2", {i.code for i in self.items(text)})
+        for cell in ("karar?", "karar ?"):                               # unchanged: never read as a decision
+            with self.subTest(question=cell):
+                self.assertFalse(pr.state_of(cell)[1])
+
     def test_r2_3_cli_reads_at_most_the_limit(self):
         import builtins
         real, reads, pack = builtins.open, [], os.path.join(self.root, PACK_PATH)
