@@ -74,6 +74,27 @@ Bu akışlarda uyulacak kurallar (Web'de canlıda doğrulandı, 2026-11-12):
   olayı (`scanRef`) ve tam ekran geri bildirim türleri (§3) aynı akışa eklenir — ekran akışını şimdiden §3'teki geri bildirim tasarımıyla kurun.
 - **Mal kabul** akışının sahibi ayrıca netleşecek (soru 6); yerleştirme görevleri mal kabulden sonra `putaway-tasks` olarak gelir.
 
+## 3B. Ana sayfa ve görevler — ürün sahibi kararları E-5, E-6 (2026-11-12)
+**E-5 — Menü, Web'deki gezinme çubuğuyla aynı mantıkta:** Mobilde kullanıcı, **erişim izni olan bütün modülleri** görür; modüller mobil
+alışkanlığına uygun **kutucuklar** (ızgara) olarak dizilir, bölümler Web'deki menü gruplarıyla aynıdır (ör. "Tedarik Zinciri Yürütme" altında
+Mal kabul, Yerleştirme, Toplama, Paketleme, Sayım; ayrıca Bu nedir?, Etiket bas, RFID tarama). İzni olmayan modülün kutucuğu görünmez.
+Kaynak: Web menüsünün beslendiği modül kataloğu ve sayfa manifestleri (Platform `api/platform/module-catalog`, `api/platform/module-pages`)
++ kullanıcının izinleri. Mobil için tek bir "benim menüm" ucu bugün var mı, yoksa CT mi açacak — **CT netleştirip sözleşme notunda verir**
+(soru 8). Kutucuk listesi ve sırası uygulamaya sabit yazılmaz.
+
+**E-6 — Bütün depo görevleri Görev Merkezi'nden gelir:** Kişiye atanan her depo işi (toplama, yerleştirme, paketleme, mal kabul, sayım ve
+bunların istisnaları / onayları) **Görev Merkezi'nde** (Platform work-items, `GET /api/v1/work-items/mine`, ayrıntı `GET /api/v1/work-items/{itemId}`,
+eylem `POST /api/v1/work-items/{itemId}/actions/{actionCode}`) o kişinin işi olarak görünür — e-imza onaylarının Görev Merkezi'nden
+yürümesindeki desenle aynı. Mobilde:
+- Ana sayfada **"Görevlerim"**: Görev Merkezi'nden gelen, bana atanmış işler (depo işleri öne çıkar, tür rozeti ile).
+- Bir modül kutucuğu açılınca o modülün görevleri (yine Görev Merkezi'nden, o türe süzülmüş; bana atananlar önce, sonra havuzdakiler "Görevi al").
+- Göreve dokununca ilgili akış (§3A) açılır; tamamlanınca iş Görev Merkezi'nden düşer.
+
+**Bugünkü durum (dürüst not):** depo görevleri Görev Merkezi'ne **henüz bağlı değil** — bugün yalnız modülün kendi listesinden okunuyor
+(§3A uçları). Bağlantıyı (MOD-0178 / MOD-0181 görevlerinin Görev Merkezi sağlayıcısı olması) merkez geliştirecek; tarih sözleşme notunda.
+**Mobil önerisi:** Görev listesini ilk etapta §3A'daki modül uçlarından okuyun, ama ekranı Görev Merkezi modeline göre kurun (iş = tür +
+belge no + atanan + durum + eylemler); bağlantı gelince yalnız veri kaynağı değişsin.
+
 ## 4. Doğrulama kuralları — kim yapar
 - **Bütün doğrulama sunucuda.** Mobil yalnız okunan ham değeri, görev bağlamını ve cihaz kimliğini gönderir; ürün / raf / lot / SKT / geri
   çağırma kararını sunucu verir. Mobil kendi başına "kabul" demez.
@@ -102,3 +123,4 @@ Bu akışlarda uyulacak kurallar (Web'de canlıda doğrulandı, 2026-11-12):
 5. Uygulamanın dil desteği: 7 dil (tr, en, fr, es, zh, ar, ru) ve sağdan sola (ar) var mı?
 6. Mal kabul: el terminalinde kim okutur ve hangi ekipte geliştirilir? (mal kabulün arka ucu MVP-6 / tedarik tarafında — CT netleştirecek)
 7. §3A için sıra önerimiz: toplama → yerleştirme → sayım formu → paketleme. Uygun mu?
+8. Mobil uygulamada bugün Görev Merkezi (work-items) ekranı ve modül menüsü var mı; menüyü hangi uçtan kuruyorsunuz? (E-5 / E-6)

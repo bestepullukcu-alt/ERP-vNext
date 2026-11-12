@@ -27,7 +27,17 @@
 - **Engelli cihaz:** tam ekran "Bu cihaz engellendi. Sorumlunuza başvurun." — okutma yapılamaz.
 - Depo seçimi (birden çok depoda çalışan için) üst çubukta.
 
-## 2) DEPO ANA SAYFASI
+## 2) ANA SAYFA — MODÜL MENÜSÜ VE GÖREVLERİM (kararlar E-5, E-6 — tur 1 bu bölümü değiştirir)
+- **Menü Web'deki gezinme çubuğuyla aynı mantıkta:** kullanıcının erişimi olan bütün modüller, mobil alışkanlığına uygun **kutucuklar**
+  (ızgara) olarak; bölüm başlıkları Web'deki menü gruplarıyla aynı. Depo çalışanı için "Tedarik Zinciri Yürütme" altında **Mal kabul ·
+  Yerleştirme · Toplama · Paketleme · Sayım**, ayrıca **Bu nedir? · Etiket bas · RFID tarama**. İzni olmayan kutucuk görünmez (iki farklı
+  rol için iki örnek çizin: depo çalışanı ve vardiya sorumlusu).
+- **"Görevlerim" Görev Merkezi'nden gelir:** ana sayfanın üstünde bana atanmış işler (tür rozeti, belge no, raf / bölge, öncelik, SLA).
+  Depo işleri dışında Görev Merkezi'nden gelen başka işler de (ör. bir onay) aynı listede görünebilir — örnekte bir tane çizin.
+- **Modül kutucuğu açılınca:** o modülün görevleri — önce bana atananlar, sonra havuzdakiler ("Görevi al"); dokununca §3'teki akış açılır.
+- Mevcut uygulamanın ana sayfası ve menü yapısı kullanılır (MS-8); kutucuklar onun içine yerleşir.
+
+## 2b) DEPO ANA SAYFASI (tur 1 metni — yukarıdaki bölümle birlikte okuyun)
 - Bugünkü görevlerim: tür rozetiyle (Kabul / Yerleştirme / Toplama / Paketleme / Sayım), belge no, raf / bölge, kalan satır, öncelik.
 - Hızlı eylemler: **"Bu nedir?" (sorgu)**, **Etiket bas**, **RFID raf taraması**.
 - Bağlantı göstergesi (çevrimiçi / bağlantı yok).
