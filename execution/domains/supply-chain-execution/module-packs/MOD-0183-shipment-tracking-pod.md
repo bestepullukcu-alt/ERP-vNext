@@ -450,6 +450,10 @@ change: a Warehouse 401 / 403 / 404 writes none, so no row names another tenant'
 shipment. The receipt (operation `warehouse-intake`) fingerprints `outboundId` only. Same `Idempotency-Key`, same outbound →
 replay of the first answer. Same `Idempotency-Key`, another outbound → 409 `IDEMPOTENCY_KEY_REUSED`, nothing read or written.
 Another `Idempotency-Key`, an outbound already linked → 200 with the linked shipment (Q-M6-10), and the new key's receipt is stored.
+The `warehouse-intake` receipt is written **only for 201 and 200**, in the same Mongo transaction as the shipment and its link
+(201) or as the read of the link (200). An error answer is never stored as a receipt: every error of the table, transient ones
+(409 `SOURCE_NOT_READY`, 503) included, may be retried with the same `Idempotency-Key` and is evaluated again; the replay rule
+(fingerprint, then correlation, `ShipmentRepository.cs:70-80`) applies only to a stored 201 / 200.
 
 ## 14. Authorization Convention
 
@@ -1218,7 +1222,8 @@ therefore started by a user, as MOD-0178's own dispatch sync is (Q-M6-4):
 what the service already writes. The DL-5 code applies the patch in the same change, under the §25 DL-5 exception of Repo Scope,
 together with the docs-path authority re-pin of the contract file (owner decision, as for 3.3.0…3.5.0). The patch file
 `docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.6.0.patch` is written and reviewed (`git apply --check` on 3.5.0,
-duplicate-key YAML load, every 3.5.0 leaf unchanged) before the DL-5 work row is READY (25.7).
+duplicate-key YAML load, every 3.5.0 leaf unchanged except the `CustomerRef` schema of item 3 — its `type`, the added `format` and
+its description, whose "Null or absent" becomes "Absent" — which is checked against item 3 instead) before the DL-5 work row is READY (25.7).
 
 | # | Change | For |
 |---|---|---|
@@ -1333,7 +1338,7 @@ text revision before merge.
 | IR-18 | Through the Gateway, `POST /api/shipment-bundle/shipments/warehouse-intake/{outboundId}` reaches SupplyChain (explicit route pinned in `Mvp6ExplicitRoutesTests`) | removing the route makes the Gateway test red |
 | IR-19 | An intake shipment without `customerRef` shows "warehouse shipment — no customer" on list and details in 7 languages, never "Old record" and never an id; a manual pre-3.5.0 shipment still shows "Old record" | mapping the intake case to `OldRecord` makes the list and details tests red; deleting the key in one language makes the parity test red |
 | IR-20 | `outboundNumber` is stored from the outbound, returned on `ShipmentSummary` / `ShipmentDetail` / list, shown as the source code; null for a manual shipment and absent from its body (`WhenWritingNull`) | dropping the field from the summary projection makes the list test red; writing `outboundNumber: null` changes the 3.5.0 golden body → red |
-| IR-21 | A committed intake writes exactly one central audit record (25.11, BL-501), as `createShipment` does; a replay writes none; a refused intake writes none centrally and leaves only the evidence row §13.1 names | sending the intake outside the MediatR pipeline (no `CentralAuditBehavior`) makes the central-record test red |
+| IR-21 | A committed intake writes exactly one central audit record with operation `Create`, entity `Shipment` and the new shipment's id (25.11, BL-501), as `createShipment` does; the declaration test counts 20 commands; a replay writes none; a refused intake writes none centrally and leaves only the evidence row §13.1 names | sending the intake outside the MediatR pipeline (no `CentralAuditBehavior`) makes the central-record test red |
 
 S23-1…S23-21 and SB-1…SB-26 stay green, except SB-17 (replaced by IR-3 from DL-5) and SB-18 (replaced by the widened S23-17, IR-11
 and IR-12 from DL-6), which change in the same change as their replacement; the full SupplyChain assembly runs unfiltered; the MVP-1 / MVP-5 live tour is the
@@ -1387,17 +1392,22 @@ item 3, `customerRef` as `type: string`, `format: uuid`.
 AUD-001 (`module-pack-standard.md` §10.1) is written here because r10 adds a write command; it covers every write command of the
 module. Path `b`: SupplyChain forwards to the central log through BL-501 (`AddCentralAudit`, `…/Api/Program.cs:189`;
 `SupplyChainCentralAuditScope`), which records a command only when its response is successful (`Response.IsSuccessful`,
-`…/Application/Common/Response.cs:4-6`). The operation name is the one BL-501 derives from the command type (as
-`CreateWidgetCommand` → `Create`, `CentralAuditBehaviorTests.cs:27`); the intake command's type name is fixed in DL-5. BL-501 has
+`…/Application/Common/Response.cs:4-6`). BL-501 does not derive the operation name: each command **declares** it through `ICentralAuditDeclaration`
+(`CentralAuditMetadata` from `SupplyChainCentralAudit.For(module, operation, entity)`; operations `Create`, `Update`,
+`LifecycleTransition` at `…/Application/Common/SupplyChainCentralAudit.cs:31-33`). The intake command declares it the same way as
+`CreateShipmentCommand` (`…/Shipments/Commands/CreateShipmentCommand.cs:6-11`): module `ShipmentModule`, operation `Create`,
+entity `Shipment`, `CentralAuditEntityId` = `null` because the repository enlists with the id of the shipment it wrote
+(`ShipmentRepository.cs:265`). The declaration test pins the number of declared commands (`CentralAuditDeclarationTests.cs:25`,
+19 today); DL-5 raises it to 20 in the same change. The intake command's type name is fixed in DL-5. BL-501 has
 no details field, so failed outcomes keep the equivalent in-product traces named below. No command is K2 class (it changes no
 identity, permission, tenant state, GxP record or special-category personal data).
 
 | Command | Event (BL-501 operation) | Object | Path | What is recorded | Exception + reason |
 |---|---|---|---|---|---|
-| `CreateShipmentCommand` | `Create` | Shipment | b | successful create; actor, tenant, company, correlation | — |
-| `TransitionShipmentCommand` (every transition of the frozen state model, dispatch included) | the BL-501 name of the command | Shipment | b | successful transition; failed dispatch outcomes also in `sce_shipment_audit` (§23.4, v1 interim) | — |
-| `CapturePodCommand` | the BL-501 name of the command | Shipment (POD) | b | successful capture; no PII from the POD in the record | — |
-| intake command (`intakeWarehouseOutbound`, r10) | the BL-501 name of the command | Shipment | b | successful intake (201); a replay (200) adds no record; a refused intake is traced by its `sce_shipment_source_evidence` row (§13.1), never with `shipTo` | — |
+| `CreateShipmentCommand` | `Create` (declared) | Shipment | b | successful create; actor, tenant, company, correlation | — |
+| `TransitionShipmentCommand` (every transition of the frozen state model, dispatch included) | `LifecycleTransition` (declared) | Shipment | b | successful transition; failed dispatch outcomes also in `sce_shipment_audit` (§23.4, v1 interim) | — |
+| `CapturePodCommand` | `Update` (declared) | Shipment (POD) | b | successful capture; no PII from the POD in the record | — |
+| intake command (`intakeWarehouseOutbound`, r10) | `Create` (declared, as `CreateShipmentCommand`) | Shipment | b | successful intake (201); a replay (200) adds no record; a refused intake is traced by its `sce_shipment_source_evidence` row (§13.1), never with `shipTo` | — |
 
 Not written to any audit record: `shipTo` and every other address member, the outbound snapshot, tokens. Acceptance: IR-21.
 
