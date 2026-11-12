@@ -1,9 +1,15 @@
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.Json;
+using Diten.InventoryService.Application.Features.Inventory.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
+using Diten.InventoryService.Application.Features.Recall.Ports;
+using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Tests.TestInfrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -198,6 +204,127 @@ public sealed class SourceReversalGuardTests : IClassFixture<HookedQuarantineApi
         await RefusedAsync(w, odd, "Unmatched", w.HoldDoc(oddId)["HoldNumber"].AsString, "QuarantineHold");
     }
 
+    private static string RuleOf(ReversalWorld w, string originalTx) => Assert.Single(RefusalRows(w, originalTx))["Rule"].AsString;
+
+    /// <summary>
+    /// AC-31 (R5a, WP-0175-FU01-DL3-FIX-01 ORTA-2): a Draft lot's Release (the decision changes the lot) stopped right before its first line —
+    /// the lot step has run (lot Released, keyed row), no line posted → 422 DecisionInProgress (rule R5a); the approval then applies.
+    /// </summary>
+    [Fact]
+    public async Task AC31f_the_source_of_a_hold_whose_decision_changed_the_lot_is_locked_DecisionInProgress()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.Lots.CreateLotAsync(expiryDate: "2028-01-31T00:00:00Z"); // Draft: the Release releases the lot (CT-Q5)
+        var source = await w.ReceiveAsync("4", lot, "QUALITY_INSPECTION");
+        var holdId = HoldIdOf(w, source);
+        var decision = Id(await w.S.DecideAsync(holdId, [Release(4m)]), "decisionId");
+        await w.S.SubmitAsync(decision);
+
+        var pause = new Pause();
+        _factory.Hooks.Before = async c =>
+        {
+            if (c.Service == typeof(global::Diten.InventoryService.Domain.Repositories.IInventoryLedgerRepository) && c.Method == "FindByIdempotencyKeyAsync"
+                && c.Arg<string>(0) == $"quarantine:{decision}:1" && pause.TryFire()) await pause.HoldAsync();
+        };
+        try
+        {
+            var approving = ReversalHooks.Detached(() => w.S.OutcomeAsync(decision));
+            await pause.Reached; // the lot step ran, line 1 not posted
+            Assert.Equal("Released", w.S.Lots.LotDocument(lot)["Status"].AsString);
+            await RefusedAsync(w, source, "DecisionInProgress", w.HoldDoc(holdId)["HoldNumber"].AsString, "QuarantineHold");
+            Assert.Equal("R5a", RuleOf(w, source.Tx));
+            pause.Release();
+            await approving;
+        }
+        finally
+        {
+            _factory.Hooks.Clear();
+            pause.Release();
+        }
+    }
+
+    /// <summary>
+    /// AC-31 (R5, ApplyFailed — ORTA-2): the quarantined 4 left the bucket by a ledger movement after the submit, so the approval's only line is
+    /// refused (0 lines, ApplyFailed) → the source REVERSAL is 422 DecisionInProgress (rule R5).
+    /// </summary>
+    [Fact]
+    public async Task AC31g_the_source_of_a_hold_whose_decision_failed_without_a_line_is_locked_DecisionInProgress()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.ReleasedLotAsync();
+        var source = await w.ReceiveAsync("4", lot, "QUARANTINE");
+        var holdId = HoldIdOf(w, source);
+        var decision = Id(await w.S.DecideAsync(holdId, [Release(4m)]), "decisionId");
+        await w.S.SubmitAsync(decision);
+        var away = w.S.Lots.StatusTransfer("4", lot);
+        away["fromStockStatus"] = "QUARANTINE";
+        away["toStockStatus"] = "BLOCKED";
+        await w.S.Lots.PostOkAsync(away);
+        Assert.Equal("ApplyFailed", Id(await w.S.OutcomeAsync(decision), "state"));
+        Assert.Equal("DecisionPending", w.HoldDoc(holdId)["Status"].AsString);
+        Assert.DoesNotContain(w.S.Ledger.Persisted("inventory_transactions"), t => t["IdempotencyKey"].AsString.StartsWith($"quarantine:{decision}:", StringComparison.Ordinal));
+
+        await RefusedAsync(w, source, "DecisionInProgress", w.HoldDoc(holdId)["HoldNumber"].AsString, "QuarantineHold");
+        Assert.Equal("R5", RuleOf(w, source.Tx));
+    }
+
+    /// <summary>
+    /// AC-31 (R10 — ORTA-2): an intake blocked record whose Destroy line is in the ledger but not yet recorded Applied (stopped right after the
+    /// posting) → 422 LinesPosted.
+    /// </summary>
+    [Fact]
+    public async Task AC31h_the_source_of_a_blocked_record_whose_decision_posted_a_line_is_locked_LinesPosted()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.ReleasedLotAsync();
+        var x = await w.ReceiveAsync("3", lot, "BLOCKED");
+        await w.ReceiveAsync("3", lot, "BLOCKED");
+        var xId = w.BlockedOfSource(x.Tx)["_id"].AsString;
+        var destroy = Id(await w.S.DisposeAsync(xId, new { kind = "Destroy", quantity = 1m, destructionMethod = "Yakma", destructionDate = DateTime.UtcNow.ToString("yyyy-MM-dd") }), "decisionId");
+        await w.S.SubmitAsync(destroy);
+
+        var pause = new Pause();
+        _factory.Hooks.After = async c =>
+        {
+            if (c.Service == typeof(global::Diten.InventoryService.Domain.Repositories.IInventoryLedgerRepository) && c.Method == "PostAsync"
+                && c.Arg<global::Diten.InventoryService.Domain.Rules.LedgerPosting>(0).Transaction.IdempotencyKey.StartsWith($"quarantine:{destroy}:", StringComparison.Ordinal)
+                && pause.TryFire()) await pause.HoldAsync();
+        };
+        try
+        {
+            var approving = ReversalHooks.Detached(() => w.S.OutcomeAsync(destroy));
+            await pause.Reached; // the SCRAP line is in the ledger, the record still Open with its 3
+            Assert.Equal(("Open", 3m), (w.BlockedDoc(xId)["Status"].AsString, w.BlockedDoc(xId)["Quantity"].ToDecimal()));
+            await RefusedAsync(w, x, "LinesPosted", w.BlockedDoc(xId)["BlockedNumber"].AsString, "BlockedStock");
+            Assert.Equal("R10", RuleOf(w, x.Tx));
+            pause.Release();
+            await approving;
+        }
+        finally
+        {
+            _factory.Hooks.Clear();
+            pause.Release();
+        }
+    }
+
+    /// <summary>AC-31 (R11 — ORTA-2): an intake blocked record whose Destroy of all 3 was applied (Closed) → 422 Decided.</summary>
+    [Fact]
+    public async Task AC31i_the_source_of_a_closed_blocked_record_is_locked_Decided()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.ReleasedLotAsync();
+        var x = await w.ReceiveAsync("3", lot, "BLOCKED");
+        await w.ReceiveAsync("3", lot, "BLOCKED");
+        var xId = w.BlockedOfSource(x.Tx)["_id"].AsString;
+        var destroy = Id(await w.S.DisposeAsync(xId, new { kind = "Destroy", quantity = 3m, destructionMethod = "Yakma", destructionDate = DateTime.UtcNow.ToString("yyyy-MM-dd") }), "decisionId");
+        await w.S.SubmitAsync(destroy);
+        Assert.Equal("Applied", Id(await w.S.OutcomeAsync(destroy), "state"));
+        Assert.Equal("Closed", w.BlockedDoc(xId)["Status"].AsString);
+
+        await RefusedAsync(w, x, "Decided", w.BlockedDoc(xId)["BlockedNumber"].AsString, "BlockedStock");
+        Assert.Equal("R11", RuleOf(w, x.Tx));
+    }
+
     // ── AC-32: a MOD-0175 movement is never reversed around the quality decision ─────────────────────────────────
 
     private static object Bucket(ReversalWorld w, string lot, decimal quantity, string? location = null)
@@ -289,6 +416,37 @@ public sealed class SourceReversalGuardTests : IClassFixture<HookedQuarantineApi
         }
     }
 
+    /// <summary>
+    /// AC-32, Recall (WP-0175-FU01-DL3-FIX-01 ORTA-1): "Karantinaya Al" of a recall — the MOD-0177 in-process port puts the stock on a Recall
+    /// hold with a MOD-0175 STATUS_TRANSFER; its REVERSAL is 422 OwnMovementReversed with the hold's number, and the stock does not go back to
+    /// AVAILABLE.
+    /// </summary>
+    [Fact]
+    public async Task AC32b_a_reversal_of_the_recall_hold_movement_is_locked_OwnMovementReversed()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.ReleasedLotAsync();
+        await w.ReceiveAsync("20", lot, "AVAILABLE");
+        using (var scope = w.Scope())
+        {
+            var caseId = Guid.NewGuid();
+            Assert.NotNull(await scope.ServiceProvider.GetRequiredService<IRecallQuarantineRequester>().QuarantineAsync(new RecallQuarantineCall(
+                [new RecallQuarantineBucket(w.S.Ledger.Item, w.S.Ledger.Sku, w.S.Ledger.Level, w.S.Ledger.Warehouse, w.S.Ledger.LocationA, 5m, lot)],
+                "Geri çağırma RC-2026-0002 · Tedarikci sapma bildirimi", $"recall:{caseId:D}:r1:Stock:{lot}", caseId, "RC-2026-0002")));
+        }
+
+        var recall = w.S.Holds().Single(h => h["Source"].AsString == "Recall");
+        var tx = recall["SourceMovementId"].AsString;
+        Assert.Equal(5m, await w.S.OnHandAsync("QUARANTINE"));
+        var before = await SnapshotAsync(w);
+
+        var refusal = await w.ReverseExpectingAsync(Persisted(w, tx), 422);
+
+        AssertLocked(w, refusal, tx, "OwnMovementReversed", recall["HoldNumber"].AsString, "QuarantineHold");
+        Assert.Equal(before, await SnapshotAsync(w));
+        Assert.Equal((5m, 15m), (await w.S.OnHandAsync("QUARANTINE"), await w.S.OnHandAsync("AVAILABLE")));
+    }
+
     // ── AC-33: the guard does not stand in the way of a closable record ─────────────────────────────────────────
 
     /// <summary>
@@ -378,5 +536,91 @@ public sealed class SourceReversalGuardTests : IClassFixture<HookedQuarantineApi
         await w.ReverseAsync(available);
 
         Assert.Empty(RefusalRows(w, available.Tx));
+    }
+}
+
+/// <summary>
+/// The MOD-0175 host whose <see cref="IReversalPrecondition"/> is the PRODUCTION <c>QuarantineReversalPrecondition</c> wrapped by a counter
+/// (WP-0175-FU01-DL3-FIX-01 ORTA-3): every <c>CheckAsync</c> call is recorded with the original's id, then passed on unchanged.
+/// </summary>
+public sealed class GuardCountingQuarantineApiFactory : HookedQuarantineApiFactory
+{
+    public ConcurrentQueue<Guid> GuardCalls { get; } = new();
+
+    public int CallsFor(string originalTx) => GuardCalls.Count(id => id == Guid.Parse(originalTx));
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        base.ConfigureWebHost(builder);
+        builder.ConfigureTestServices(services =>
+        {
+            var registered = services.Last(d => d.ServiceType == typeof(IReversalPrecondition));
+            services.Remove(registered);
+            services.Add(new ServiceDescriptor(typeof(IReversalPrecondition),
+                sp => new CountingReversalPrecondition((IReversalPrecondition)ActivatorUtilities.CreateInstance(sp, registered.ImplementationType!), GuardCalls),
+                registered.Lifetime));
+        });
+    }
+
+    private sealed class CountingReversalPrecondition(IReversalPrecondition inner, ConcurrentQueue<Guid> calls) : IReversalPrecondition
+    {
+        public Task<ReversalPreconditionResult> CheckAsync(InventoryTransaction original, CancellationToken cancellationToken)
+        {
+            calls.Enqueue(original.Id);
+            return inner.CheckAsync(original, cancellationToken);
+        }
+
+        public Task FlushRefusalAuditAsync(CancellationToken cancellationToken = default) => inner.FlushRefusalAuditAsync(cancellationToken);
+    }
+}
+
+/// <summary>
+/// WP-0175-FU01-DL3-FIX-01 ORTA-3 (pack §8.8) — the seam's order and its single call: the guard is asked AFTER the "already reversed" check
+/// and exactly ONCE per REVERSAL request. A second REVERSAL of a source already reversed (kurgu (ii): the first one committed before DL-3) answers
+/// ALREADY_REVERSED even though its record is decided — no REVERSAL_QUALITY_RECORD_LOCKED, no refusal row, no guard call.
+/// </summary>
+public sealed class SourceReversalGuardSeamTests : IClassFixture<GuardCountingQuarantineApiFactory>
+{
+    private readonly GuardCountingQuarantineApiFactory _factory;
+
+    public SourceReversalGuardSeamTests(GuardCountingQuarantineApiFactory factory) => _factory = factory;
+
+    private static object Release(decimal q) => QuarantineScenario.Line(1, "Release", q);
+
+    private static List<BsonDocument> RefusalRows(ReversalWorld w, string originalTx)
+        => w.S.Ledger.Persisted("inventory_audit")
+            .Where(a => a.GetValue("Action", BsonNull.Value) == QuarantineReversalRefusalAuditRecord.RefusedAction && a["OriginalTransactionId"].AsString == originalTx).ToList();
+
+    [Fact]
+    public async Task ORTA3_the_guard_is_asked_after_the_already_reversed_check_and_exactly_once_per_reversal()
+    {
+        var w = new ReversalWorld(_factory);
+        var lot = await w.S.ReleasedLotAsync();
+        var decided = await w.ReceiveAsync("4", lot, "QUARANTINE");
+        var open = await w.ReceiveAsync("3", lot, "QUARANTINE", location: w.S.Ledger.LocationB);
+        var locked = await w.ReceiveAsync("2", lot, "QUARANTINE", location: w.S.Ledger.LocationB);
+        foreach (var p in new[] { decided, locked })
+        {
+            var holdId = w.HoldOfSource(p.Tx)["_id"].AsString;
+            Assert.Equal("Applied", Id(await w.S.DecideAndApproveAsync(w.S.DecideAsync(holdId, [Release(p == decided ? 4m : 2m)])), "state"));
+        }
+
+        w.DirectReversal(decided.Tx); // kurgu (ii): the first REVERSAL committed before DL-3
+        var ledger = w.LedgerCount();
+
+        // a second REVERSAL of the reversed source: ALREADY_REVERSED — the guard is not reached
+        var again = await w.ReverseExpectingAsync(decided, 422);
+        Assert.Equal("ALREADY_REVERSED", QuarantineScenario.Code(again));
+        Assert.Empty(RefusalRows(w, decided.Tx));
+        Assert.Equal(0, _factory.CallsFor(decided.Tx));
+        Assert.Equal(ledger, w.LedgerCount());
+
+        // one request, one guard call — allowed (201) and refused (422) alike
+        await w.ReverseAsync(open);
+        Assert.Equal(1, _factory.CallsFor(open.Tx));
+        var refusal = await w.ReverseExpectingAsync(locked, 422);
+        Assert.Equal("REVERSAL_QUALITY_RECORD_LOCKED", QuarantineScenario.Code(refusal));
+        Assert.Equal(1, _factory.CallsFor(locked.Tx));
+        Assert.Single(RefusalRows(w, locked.Tx));
     }
 }
