@@ -264,14 +264,14 @@ case "$1" in
     first=""
     list=no
     for arg in "$@"; do
-      if [ "$arg" = "--name-only" ]; then list=yes; fi
+      if [ "$arg" = "--raw" ]; then list=yes; fi
       if [ -z "$first" ] && [[ "$arg" != -* ]]; then first="$arg"; fi
     done
     if ! known "$first"; then echo "fatal: stub: bad revision '$first'" >&2; exit 128; fi
     mode="$(cat "$STUB_DIR/diff_mode")"
     if [ "$list" = yes ]; then
       if [ "$mode" = fail_list ]; then exit 128; fi
-      if [ "$mode" = fail_file ]; then echo "tests/architecture/audit-ledger/Diten.Stub.md"; fi
+      if [ "$mode" = fail_file ]; then printf ':100644 100644 0000000 0000000 M\0%s\0' "tests/architecture/audit-ledger/Diten.Stub.md"; fi
       exit 0
     fi
     if [ "$mode" = fail_file ]; then exit 128; fi
@@ -335,7 +335,7 @@ def base_reached_every_step(run: dict, sha: str, ref: str) -> list[str]:
     if not fetches or len(fetches) > 3 or any(not line.endswith(f" origin {ref}") for line in fetches):
         problems.append(f"fetched {fetches}, expected 1-3 fetches of {ref}")
     audit = [f"git rev-parse --verify --quiet {sha}^{{commit}}", f"git cat-file -e {sha}:{LEDGER}",
-             f"git diff --name-only {sha} HEAD -- {LEDGER}/Diten.*.md"]
+             f"git diff --raw -z --no-renames --no-ext-diff {sha} HEAD -- {LEDGER}/Diten.*.md"]
     if [line for line in run["log"] if line.startswith(("git rev-parse --verify", "git cat-file", "git diff"))
             and "FETCH_HEAD" not in line] != audit:
         problems.append("the audit ledger step did not compare with the base: "
@@ -469,7 +469,7 @@ class OneVerifiedBaseReachesEveryStepTests(unittest.TestCase):
             run = run_gates(script_text(), ["ok"], commits=[SHA, a], AUDIT_LEDGER_BASE=a, PAGE_HELP_LEDGER_BASE=b,
                             AC_TAG_BASE=c, **event)
             self.assertEqual(run["code"], 0, run["out"])
-            self.assertIn(f"git diff --name-only {a} HEAD -- {LEDGER}/Diten.*.md", run["log"])
+            self.assertIn(f"git diff --raw -z --no-renames --no-ext-diff {a} HEAD -- {LEDGER}/Diten.*.md", run["log"])
             self.assertEqual(calls(run, "scripts/check_page_help_ledger_ceiling.py"),
                              [f"python3 scripts/check_page_help_ledger_ceiling.py --base {b}"])
             self.assertEqual(calls(run, "check-tags"), [f"python3 -B scripts/ac_coverage.py check-tags --base {c}"])
@@ -502,7 +502,8 @@ def mutant(text: str, *edits: tuple[str, str]) -> str:
 
 
 def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledger: str | None = None,
-                       merge_group: bool = False, dirty: str | None = None, attributes: str | None = None) -> dict:
+                       merge_group: bool = False, dirty: str | None = None, attributes: str | None = None,
+                       ledger_name: str = "Diten.Stub.md", symlink: bool = False) -> dict:
     """Runs the script TEXT end to end with REAL git (Codex round 2 on b1b7a495e). A bare origin's main holds
     `base_ledger`; the clone's HEAD holds `head_ledger`. Only python3, dotnet, sleep and the sibling .sh scripts are
     stubs: the base is fetched from origin, resolved and compared by git itself.
@@ -517,7 +518,7 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
     GIT_DIR of another clone) or "function" (an exported `git` function). `leaked` says whether it got through."""
     with tempfile.TemporaryDirectory() as tmp:
         seed, origin, repo, stubs, venv = (os.path.join(tmp, n) for n in ("seed", "origin.git", "repo", "stubs", "venv"))
-        ledger = os.path.join(LEDGER, "Diten.Stub.md")
+        ledger = os.path.join(LEDGER, ledger_name)
         os.makedirs(os.path.join(seed, LEDGER))
         commit = ("-c", "core.hooksPath=/dev/null", "commit", "-q")
         git(tmp, "init", "-q", "-b", "main", seed)
@@ -535,7 +536,13 @@ def run_gates_real_git(text: str, base_ledger: str, head_ledger: str, older_ledg
             # merge_group: the group's parent lives on a queue branch and origin's main stays behind
             git(seed, "push", "-q", origin, "HEAD:refs/heads/" + ("queue" if merge_group else "main"))
         git(repo, "checkout", "-q", "-b", "pr", start)
-        pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
+        if symlink:          # Codex round 4 on 44d7ba95f: the ledger becomes a link to a file that carries the new line
+            pathlib.Path(repo, "real.md").write_text(head_ledger, encoding="utf-8")
+            os.remove(os.path.join(repo, ledger))
+            os.symlink(os.path.relpath(os.path.join(repo, "real.md"), os.path.join(repo, LEDGER)), os.path.join(repo, ledger))
+            git(repo, "add", "real.md")
+        else:
+            pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
         pathlib.Path(repo, "other.txt").write_text("x\n", encoding="utf-8")
         if attributes is not None:                       # the change's own .gitattributes
             pathlib.Path(repo, ".gitattributes").write_text(attributes, encoding="utf-8")
@@ -589,13 +596,15 @@ DEBT_RUNS = {"pull request, base = HEAD's parent": dict(),
              "merge group, parent off main": dict(older=True, merge_group=True)}
 
 
-def run_debt(text: str, older: bool = False, merge_group: bool = False, dirty: str | None = None,
-             attributes: str | None = None) -> dict:
+def run_debt(text: str, older: bool = False, merge_group: bool = False, **extra) -> dict:
     if older:
         base, head, earlier = BASE_MOVED_ON
-        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group, dirty=dirty,
-                                  attributes=attributes)
-    return run_gates_real_git(text, *DEBT, dirty=dirty, attributes=attributes)
+        return run_gates_real_git(text, base, head, older_ledger=earlier, merge_group=merge_group, **extra)
+    return run_gates_real_git(text, *DEBT, **extra)
+
+
+# Codex round 4 on 44d7ba95f: names git quotes in --name-only output (non-ASCII, a double quote, a tab)
+ODD_NAMES = ("Diten.Sécurité.md", 'Diten.a"b.md', "Diten.a\tb.md")
 
 
 HIDING_ATTRIBUTES = ("*.md -diff\n", "tests/architecture/audit-ledger/** binary\n")
@@ -647,17 +656,33 @@ class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
     def test_the_developers_git_attributes_and_bashrc_are_not_read(self):
         run = run_debt(mutant(script_text(), WITHOUT_TEXT), older=True, dirty="xdg_attributes")
         self.assertEqual(red_on_new_debt(run), [], run["out"])
+        # Codex round 4 on 44d7ba95f: the negative control now starts from a minimal environment (PATH, the polluted
+        # HOME, SSH_CLIENT, no SHLVL) in a throwaway cwd, so nothing else of the caller's environment can run in it.
         with tempfile.TemporaryDirectory() as home:
+            marker = os.path.join(home, "function-ran")
             pathlib.Path(home, ".bashrc").write_text("export GIT_DIR=/hijacked\n", encoding="utf-8")
-            polluted = {k: v for k, v in os.environ.items() if k != "SHLVL"}
-            polluted.update(HOME=home, SSH_CLIENT="10.0.0.1 22 22")
-            probe = ["bash", "-c", 'printf %s "${GIT_DIR:-}"']
-            leaked = subprocess.run(probe, env={k: v for k, v in polluted.items() if not k.startswith("GIT_")},
-                                    capture_output=True, text=True).stdout
-            got = subprocess.run(probe, env=isolated_env(polluted), capture_output=True, text=True).stdout
+            minimal = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": home, "SSH_CLIENT": "10.0.0.1 22 22"}
+            probe = ["bash", "-c", 'echo "${GIT_DIR:-}"']
+            leaked = subprocess.run(probe, env=minimal, cwd=home, capture_output=True, text=True).stdout.strip()
+            polluted = dict({k: v for k, v in os.environ.items() if k != "SHLVL"}, HOME=home,
+                            SSH_CLIENT="10.0.0.1 22 22", **{"BASH_FUNC_echo%%": f'() {{  : > "{marker}"; builtin echo "$@"\n}}'})
+            got = subprocess.run(probe, env=isolated_env(polluted), cwd=home, capture_output=True, text=True).stdout.strip()
+            function_ran = os.path.exists(marker)
         self.assertEqual(got, "", "isolated_env let ~/.bashrc in")
+        self.assertFalse(function_ran, "isolated_env let an exported function run")
         if leaked != "/hijacked":
             self.skipTest("this bash does not read ~/.bashrc for `bash -c` over SSH; nothing to sabotage")
+
+    def test_a_ledger_turned_into_a_symbolic_link_is_red(self):
+        run = run_debt(script_text(), older=True, symlink=True)
+        self.assertEqual(run["code"], 1, run["out"])
+        self.assertIn("is not a regular file in this change (git mode 120000)", run["out"])
+
+    def test_a_line_added_to_a_ledger_with_an_odd_name_is_red(self):
+        for name in ODD_NAMES:
+            with self.subTest(name=name):
+                run = run_debt(script_text(), older=True, ledger_name=name)
+                self.assertEqual(red_on_new_debt(run), [], run["out"])
 
     def test_the_same_lines_in_another_order_pass(self):
         run = run_gates_real_git(script_text(), *MOVED)
@@ -690,7 +715,8 @@ class SabotageTests(unittest.TestCase):
         ("one try only", PULL_REQUEST, [("for base_try in 1 2 3; do", "for base_try in 1; do")]),
         # blind pre-check 1: the audit step consumes something other than the base
         ("the audit diff compares HEAD with HEAD", PULL_REQUEST,
-         [('git diff --name-only "$base" ${head:+"$head"}', 'git diff --name-only HEAD ${head:+"$head"}')]),
+         [('git diff --raw -z --no-renames --no-ext-diff "$base" ${head:+"$head"}',
+           'git diff --raw -z --no-renames --no-ext-diff HEAD ${head:+"$head"}')]),
         ("the audit step verifies another ref", PULL_REQUEST,
          [('git rev-parse --verify --quiet "$base^{commit}"', 'git rev-parse --verify --quiet "${base}x^{commit}"')]),
         # blind pre-check 5: merge_group takes GITHUB_BASE_REF again when it is filled
@@ -732,7 +758,7 @@ class SabotageTests(unittest.TestCase):
     def test_a_ledger_file_diff_that_leaves_the_base_is_seen(self):
         # Codex round 2 on b1b7a495e + blind pre-check of 5612aab8b: the per-file diff reads something other than the
         # fetched base. FETCH_HEAD is left out: in CI it is the base itself (an equivalent mutant).
-        line = 'git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- "$file"'
+        line = 'git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- ":(literal)$file"'
         for name, written in (("HEAD", line.replace('"$base"', "HEAD")),
                               ("HEAD's parent", line.replace('"$base"', "HEAD~1")),
                               ("the merge base (three dots)", line.replace('"$base" ${head:+"$head"}',
@@ -767,6 +793,26 @@ class SabotageTests(unittest.TestCase):
         with mock.patch.dict(globals(), isolated_env=leaky):
             run = run_debt(mutant(script_text(), WITHOUT_TEXT), older=True, dirty="xdg_attributes")
         self.assertNotEqual(red_on_new_debt(run), [], "the developer's attributes did not reach git: the probe is blind")
+
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
+    def test_a_ledger_step_without_the_mode_check_is_seen(self):
+        # Codex round 4 on 44d7ba95f: without the mode check the symbolic link passes green
+        mutated = mutant(script_text(), ("      100644|100755|000000) ;;\n      *)\n", "      *) ;;\n      100644)\n"))
+        run = run_debt(mutated, older=True, symlink=True)
+        self.assertEqual(run["code"], 0, run["out"])                    # the mutant really goes green ...
+        self.assertNotIn("git mode 120000", run["out"])                 # ... so the test above would see it
+
+    @unittest.skipUnless(GIT_232, "needs git 2.32+")
+    def test_a_ledger_step_that_reads_quoted_names_is_seen(self):
+        # Codex round 4 on 44d7ba95f: the old listing (--name-only, newline-separated) misses an odd name's new line
+        old = ('''  while IFS= read -r -d '' meta && IFS= read -r -d '' file; do
+    new_mode="${meta#:* }"''', '''  git diff --name-only "$base" ${head:+"$head"} -- "$ledger_dir/Diten.*.md" > "$changed"
+  while IFS= read -r file; do
+    new_mode=100644
+    meta="${meta:-}"''')
+        seen = [name for name in ODD_NAMES if red_on_new_debt(run_debt(mutant(script_text(), old), older=True,
+                                                                      ledger_name=name))]
+        self.assertNotEqual(seen, [], "the quoted-name mutant went red for no odd name: the test is blind")
 
     def test_an_override_accepted_in_github_actions_is_seen(self):
         run = run_gates(mutant(script_text(), ('    if [ -n "${!base_override:-}" ]; then', "    if false; then")),

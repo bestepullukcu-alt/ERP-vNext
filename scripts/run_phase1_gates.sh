@@ -131,20 +131,36 @@ check_audit_ledger_growth() {
   # A line whose command is named in CT-DECISIONS.md was added by a recorded Control Tower decision. The file is in
   # the same diff, so the decision is reviewed with the line it allows.
   local decisions="$ledger_dir/CT-DECISIONS.md"
-  local added="" line name file changed file_diff removed
+  local added="" line name file meta new_mode file_diff removed changed
   # Only the service ledgers (Diten.*.md) carry lists. The README's own bullets are prose, not ledger lines.
   # A diff that cannot be produced is reported, never read as "nothing added".
-  if ! changed="$(git diff --name-only "$base" ${head:+"$head"} -- "$ledger_dir/Diten.*.md")"; then
+  # --raw -z (Codex round 4 on 44d7ba95f): NUL-separated names are never quoted (`Diten.Sécurité.md`, a tab, a quote
+  # came back escaped and the second diff matched nothing), and the new mode of each file is read: a ledger turned
+  # into a symbolic link is diffed by git as the link's text, not the file it points to, so it is red here.
+  changed="$(mktemp)"
+  if ! git diff --raw -z --no-renames --no-ext-diff "$base" ${head:+"$head"} -- "$ledger_dir/Diten.*.md" > "$changed"; then
+    rm -f "$changed"
     echo "[phase1] audit ledger growth: *** $unable *** — the ledger diff against '$base' could not be produced."
     echo "[phase1]   NOTHING WAS CHECKED."
     return "$unable_status"
   fi
 
-  while IFS= read -r file; do
-    [ -z "$file" ] && continue
+  while IFS= read -r -d '' meta && IFS= read -r -d '' file; do
+    new_mode="${meta#:* }"
+    new_mode="${new_mode%% *}"
+    case "$new_mode" in
+      100644|100755|000000) ;;
+      *)
+        rm -f "$changed"
+        echo "[phase1] audit ledger growth: FAILED — $file is not a regular file in this change (git mode $new_mode)."
+        echo "[phase1]   A ledger is a plain text file; a symbolic link or submodule is not read as one."
+        return 1 ;;
+    esac
     # --text --no-textconv --no-ext-diff: the change's own .gitattributes (`*.md -diff`, `binary`, a diff driver) must
     # not turn the ledger into "Binary files differ" and hide an added line (blind pre-check of d01b736b8).
-    if ! file_diff="$(git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- "$file")"; then
+    # :(literal) — the name is a path, never a pattern.
+    if ! file_diff="$(git diff --text --no-textconv --no-ext-diff --unified=0 "$base" ${head:+"$head"} -- ":(literal)$file")"; then
+      rm -f "$changed"
       echo "[phase1] audit ledger growth: *** $unable *** — the diff of $file could not be produced. NOTHING WAS CHECKED."
       return "$unable_status"
     fi
@@ -163,7 +179,8 @@ check_audit_ledger_growth() {
         added="${added}${line}  (${file##*/})"$'\n'
       fi
     done <<< "$(printf '%s\n' "$file_diff" | grep -E '^\+- ' || true)"
-  done <<< "$changed"
+  done < "$changed"
+  rm -f "$changed"
 
   if [ -n "$added" ]; then
     echo "[phase1] audit ledger growth: FAILED — list lines were ADDED to $ledger_dir (base: $base):"
