@@ -278,19 +278,57 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Assert.Equal(2, events.Count(e => IsAllocationRefusal(e) && e.SourceService == "Diten.Platform"));
         Assert.Single(events, e => e.RequestType == "CreateOrganizationUnitCommand" && e.Outcome == AuditOutcome.Failed);
         Assert.Single(events, e => e.RequestType == "CreatePositionCommand" && e.Outcome == AuditOutcome.Failed);
+    }
 
-        // a suspended tenant
-        var suspended = await org.PostUnitAsync(Token(Suspended), CompanyOfSuspended);
-        Assert.Equal((403, "RECORD_CODE_TENANT_NOT_ACTIVE"), Pair(suspended));
+    /// <summary>
+    /// AC-54 (a), CT ORTA-2 — a suspended tenant (step 4, Denied) and a lost allocation transaction (three unknown commit
+    /// results, step 13, Failed), for both record types: the answer is the refusal, no record is written, nothing is in the
+    /// ledger, and both rows are there — the allocation's refusal row and the central <c>Failed</c> row of the create.
+    /// </summary>
+    [Theory]
+    [InlineData(RefusedAllocation.SuspendedTenant, "ORG")]
+    [InlineData(RefusedAllocation.SuspendedTenant, "POS")]
+    [InlineData(RefusedAllocation.Unavailable, "ORG")]
+    [InlineData(RefusedAllocation.Unavailable, "POS")]
+    public async Task AC54a_a_suspended_tenant_or_a_lost_allocation_writes_no_record_and_leaves_the_refusal_and_the_central_row(
+        RefusedAllocation mode, string recordType)
+    {
+        using var org = await OrganizationHost.StartAsync(_mongo);
+        var suspended = mode == RefusedAllocation.SuspendedTenant;
+        var tenant = suspended ? Suspended : TenantA;
+        var company = suspended ? CompanyOfSuspended : Myg;
+        var unit = recordType == "POS" ? await org.SeedUnitAsync("ROOT", company, tenant) : Guid.Empty;
+        var (status, reason, outcome, step) = suspended
+            ? (403, "RECORD_CODE_TENANT_NOT_ACTIVE", AuditOutcome.Denied, 4)
+            : (503, "RECORD_CODE_UNAVAILABLE", AuditOutcome.Failed, 13);
 
-        // the allocation's own transaction is lost (three unknown commit results)
-        org.Hooks.UnknownCommits = 3;
-        var lost = await org.PostUnitAsync(Token(), Myg);
-        Assert.Equal((503, "RECORD_CODE_UNAVAILABLE"), Pair(lost));
-        Assert.True(lost.IsEnvelope);
-        Assert.Equal(1, await org.Host.CountAsync(PlatformCollections.OrganizationUnits));
-        Assert.Single(await org.Host.DeliveredAuditEventsAsync(),
-            e => IsAllocationRefusal(e) && (string?)e.Metadata["ReasonCode"] == "RECORD_CODE_UNAVAILABLE");
+        if (!suspended)
+        {
+            org.Hooks.UnknownCommits = 3;
+        }
+
+        var answer = recordType == "ORG"
+            ? await org.PostUnitAsync(Token(tenant), company)
+            : await org.PostPositionAsync(Token(tenant), unit);
+
+        Assert.Equal((status, reason, true), (answer.Status, answer.Reason, answer.IsEnvelope));
+        Assert.Equal(recordType == "POS" ? 1 : 0, await org.Host.CountAsync(PlatformCollections.OrganizationUnits));
+        Assert.Equal(0, await org.Host.CountAsync(PlatformCollections.Positions));
+        Assert.Equal(0, await org.Host.CountAsync("record_code_allocations"));
+
+        var events = await org.Host.DeliveredAuditEventsAsync();
+        var refusal = Assert.Single(events, IsAllocationRefusal);
+        Assert.Equal(outcome, refusal.Outcome);
+        Assert.Equal(reason, refusal.Metadata["ReasonCode"]);
+        Assert.Equal(step, Convert.ToInt32(refusal.Metadata["EvaluationStep"]));
+        Assert.Equal(tenant, refusal.TenantId);
+        Assert.Equal("Diten.Platform", refusal.SourceService);
+        Assert.DoesNotContain(events, IsAllocationSuccess);
+
+        var central = Assert.Single(events, e => e.RequestType == (recordType == "ORG" ? "CreateOrganizationUnitCommand" : "CreatePositionCommand"));
+        Assert.Equal(AuditOutcome.Failed, central.Outcome);
+        Assert.Equal(tenant, central.TenantId);
+        Assert.Equal("LogicalFailure", central.Metadata["AuditBehaviorOutcome"]);
     }
 
     [Fact]
@@ -334,6 +372,50 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Assert.Equal("MYG-ORG-000002", await org.UnitCodeAsync(next.Id));
     }
 
+    /// <summary>AC-54 (b) for POS, CT ORTA-2: a lost position write is a 500 ProblemDetails, the code a gap, the warning first.</summary>
+    [Fact]
+    public async Task AC54b_pos_a_lost_position_write_is_a_500_the_code_a_gap_and_the_warning_comes_first()
+    {
+        using var org = await OrganizationHost.StartAsync(_mongo);
+        var unit = await org.PostUnitAsync(Token(), Myg);
+        Assert.Equal(201, unit.Status);
+
+        org.Hooks.FailNextRecordWrite = true;
+        var lost = await org.PostPositionAsync(Token(), unit.Id);
+
+        Assert.Equal(500, lost.Status);
+        Assert.False(lost.IsEnvelope);
+        using (var problem = JsonDocument.Parse(lost.Raw))
+        {
+            Assert.Equal("Server Error", problem.RootElement.GetProperty("title").GetString());
+            Assert.False(problem.RootElement.TryGetProperty("reason_code", out _));
+        }
+
+        Assert.DoesNotContain("write lost", lost.Raw);
+        Assert.Equal(0, await org.Host.CountAsync(PlatformCollections.Positions));
+        var gap = Assert.Single(await org.LedgerAsync(), r => r["RecordType"].AsString == "POS");
+        Assert.Equal("MYG-POS-000001", gap["Code"].AsString);
+
+        var events = await org.Host.DeliveredAuditEventsAsync();
+        var central = Assert.Single(events, e => e.RequestType == "CreatePositionCommand");
+        Assert.Equal(AuditOutcome.Failed, central.Outcome);
+        Assert.Equal("RuntimeException", central.Metadata["AuditBehaviorOutcome"]);
+        Assert.Equal(nameof(RecordWriteLostException), central.Metadata["ExceptionType"]);
+        Assert.Contains(events, e => IsAllocationSuccess(e) && (string?)e.AfterState!["Code"] == "MYG-POS-000001");
+
+        var warning = org.Logs.FindIndex(log => log.Level == LogLevel.Warning
+            && log.Category.EndsWith("CreatePositionCommandHandler", StringComparison.Ordinal)
+            && log.Message.Contains("MYG-POS-000001", StringComparison.Ordinal)
+            && log.Message.Contains(TenantA.ToString(), StringComparison.Ordinal)
+            && log.Exception is RecordWriteLostException);
+        var error = org.Logs.FindIndex(log => log.Level >= LogLevel.Error && log.Exception is RecordWriteLostException);
+        Assert.True(warning >= 0, "the position handler's warning (code, record id, tenant) was not written");
+        Assert.True(error < 0 || warning < error, "the warning must be written before the exception travels on");
+
+        var next = await org.PostPositionAsync(Token(), unit.Id);
+        Assert.Equal("MYG-POS-000002", await org.PositionCodeAsync(next.Id));
+    }
+
     [Fact]
     public async Task AC54c_a_validation_failure_is_refused_before_the_allocation()
     {
@@ -348,6 +430,40 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Assert.DoesNotContain(await org.Host.DeliveredAuditEventsAsync(), e => IsAllocationRefusal(e));
     }
 
+    /// <summary>
+    /// AC-54 (c) for POS, CT ORTA-2: every reference check of the position (an unknown or archived unit, an unknown or archived
+    /// reports-to position) answers before the allocation — the unit's company is known, so only the order keeps the counter
+    /// untouched. The request validator's refusal (no name) also comes first.
+    /// </summary>
+    [Fact]
+    public async Task AC54c_pos_a_reference_or_validation_failure_is_refused_before_the_allocation()
+    {
+        using var org = await OrganizationHost.StartAsync(_mongo);
+        var unit = await org.SeedUnitAsync("ROOT", Myg);
+        var archivedUnit = await org.SeedUnitAsync("OLD", Myg, archived: true);
+        var archivedManager = await org.SeedPositionAsync("OLD-MANAGER", unit, archived: true);
+
+        var answers = new[]
+        {
+            await org.PostPositionAsync(Token(), Guid.NewGuid()),
+            await org.PostPositionAsync(Token(), archivedUnit),
+            await org.PostPositionAsync(Token(), unit, reportsTo: Guid.NewGuid()),
+            await org.PostPositionAsync(Token(), unit, reportsTo: archivedManager),
+            await org.PostPositionAsync(Token(), unit, name: "")
+        };
+
+        Assert.Equal(new[] { 404, 404, 404, 404, 400 }, answers.Select(a => a.Status).ToArray());
+        Assert.Contains("Organization Unit not found.", answers[1].Raw);
+        Assert.Contains("Reports-to Position not found.", answers[2].Raw);
+        Assert.Contains("Reports-to Position not found.", answers[3].Raw);
+        Assert.Equal(1, await org.Host.CountAsync(PlatformCollections.Positions)); // only the archived manager
+        Assert.Equal(0, await org.Host.CountAsync("record_code_counters"));
+        Assert.Equal(0, await org.Host.CountAsync("record_code_allocations"));
+        var events = await org.Host.DeliveredAuditEventsAsync();
+        Assert.DoesNotContain(events, e => e.RequestType == "AllocateRecordCodeCommand");
+        Assert.Equal(4, events.Count(e => e.RequestType == "CreatePositionCommand" && e.Outcome == AuditOutcome.Failed));
+    }
+
     [Fact]
     public async Task AC54d_a_door_refusal_on_the_success_path_is_a_503_and_no_record()
     {
@@ -359,6 +475,22 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Assert.Equal((503, "AUDIT_RECORD_UNAVAILABLE"), Pair(answer));
         Assert.False(answer.IsEnvelope);
         Assert.Equal(0, await org.Host.CountAsync(PlatformCollections.OrganizationUnits));
+    }
+
+    /// <summary>AC-54 (d) for POS, CT ORTA-2: the door refusing on the allocation's success path is a 503, no position and no ledger row.</summary>
+    [Fact]
+    public async Task AC54d_pos_a_door_refusal_on_the_success_path_is_a_503_and_no_position()
+    {
+        using var org = await OrganizationHost.StartAsync(_mongo, configure: services =>
+            services.AddScoped<ITransactionalAuditOutboxWriter, RefusingDoor>());
+        var unit = await org.SeedUnitAsync("ROOT", Myg);
+
+        var answer = await org.PostPositionAsync(Token(), unit);
+
+        Assert.Equal((503, "AUDIT_RECORD_UNAVAILABLE"), Pair(answer));
+        Assert.False(answer.IsEnvelope);
+        Assert.Equal(0, await org.Host.CountAsync(PlatformCollections.Positions));
+        Assert.Equal(0, await org.Host.CountAsync("record_code_allocations"));
     }
 
     // ── AC-55 ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -404,6 +536,58 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Assert.Equal(6, await org.Host.CountAsync(PlatformCollections.OrganizationUnits)); // HEADQUARTERS, deleted 000001, created, 3 seeded
         Assert.Contains(await org.Host.DeliveredAuditEventsAsync(),
             e => e.RequestType == "CreateOrganizationUnitCommand" && e.Outcome == AuditOutcome.Failed);
+    }
+
+    /// <summary>
+    /// AC-55 for POS, CT ORTA-1 (RCS-001 §5.8 holds for both types): the position code history counts soft-deleted positions,
+    /// so an old deleted <c>MYG-POS-000001</c> is skipped; three live old codes on the path are a 409 and no position.
+    /// </summary>
+    [Fact]
+    public async Task AC55_pos_a_legacy_position_code_on_the_counter_s_path_is_skipped_even_when_soft_deleted()
+    {
+        using var org = await OrganizationHost.StartAsync(_mongo);
+        var unit = await org.SeedUnitAsync("HEADQUARTERS", Myg);
+        var ceo = await org.SeedPositionAsync("CEO", unit);
+        await org.SeedPositionAsync("MYG-POS-000001", unit, deleted: true);
+
+        var created = await org.PostPositionAsync(Token(), unit);
+
+        Assert.Equal(201, created.Status);
+        Assert.Equal("MYG-POS-000002", await org.PositionCodeAsync(created.Id));
+        Assert.Equal("CEO", await org.PositionCodeAsync(ceo));
+        var ledger = await org.LedgerAsync();
+        Assert.All(ledger, r => Assert.Equal("POS", r["RecordType"].AsString));
+        Assert.Equal(
+            new[] { ("MYG-POS-000001", $"position:{created.Id:N}"), ("MYG-POS-000002", $"position:{created.Id:N}:2") },
+            ledger.Select(r => (r["Code"].AsString, r["IdempotencyKey"].AsString)).OrderBy(p => p.Item1).ToArray());
+        var successes = (await org.Host.DeliveredAuditEventsAsync()).Where(IsAllocationSuccess)
+            .Select(e => ((string)e.AfterState!["Code"]!, (string)e.Metadata["IdempotencyKey"]!)).OrderBy(p => p.Item1).ToArray();
+        Assert.Equal(ledger.Select(r => (r["Code"].AsString, r["IdempotencyKey"].AsString)).OrderBy(p => p.Item1).ToArray(), successes);
+        Assert.Contains(org.Logs, log => log.Level == LogLevel.Warning && log.Message.Contains("MYG-POS-000001", StringComparison.Ordinal)
+            && log.Message.Contains("skipped", StringComparison.Ordinal));
+
+        // three live legacy codes on the path: 409, three numbers burnt, no position written
+        foreach (var code in new[] { "MYG-POS-000003", "MYG-POS-000004", "MYG-POS-000005" })
+        {
+            await org.SeedPositionAsync(code, unit);
+        }
+
+        var positionsBefore = await org.Host.CountAsync(PlatformCollections.Positions);
+        var collided = await org.PostPositionAsync(Token(), unit);
+        Assert.Equal((409, "RECORD_CODE_COLLISION", true), (collided.Status, collided.Reason, collided.IsEnvelope));
+        Assert.Equal(positionsBefore, await org.Host.CountAsync(PlatformCollections.Positions));
+        Assert.Equal(6, positionsBefore); // CEO, deleted 000001, created 000002, 3 seeded
+        var burnt = (await org.LedgerAsync()).Where(r => r["Code"].AsString is "MYG-POS-000003" or "MYG-POS-000004" or "MYG-POS-000005")
+            .Select(r => r["IdempotencyKey"].AsString).ToArray();
+        Assert.Equal(3, burnt.Length);
+        Assert.All(burnt, k => Assert.StartsWith("position:", k, StringComparison.Ordinal));
+        Assert.Single(burnt.Select(k => string.Join(':', k.Split(':').Take(2))).Distinct()); // one record id, three attempts
+        Assert.Contains(burnt, k => k.Count(c => c == ':') == 1);
+        Assert.Contains(burnt, k => k.EndsWith(":2", StringComparison.Ordinal));
+        Assert.Contains(burnt, k => k.EndsWith(":3", StringComparison.Ordinal));
+        Assert.Equal(5L, (await org.Host.Collection("record_code_counters").Find(new BsonDocument("RecordType", "POS")).SingleAsync())["LastNumber"].ToInt64());
+        Assert.Contains(await org.Host.DeliveredAuditEventsAsync(),
+            e => e.RequestType == "CreatePositionCommand" && e.Outcome == AuditOutcome.Failed);
     }
 
     // ── AC-56 ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -577,6 +761,12 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         Archived
     }
 
+    public enum RefusedAllocation
+    {
+        SuspendedTenant,
+        Unavailable
+    }
+
     /// <summary>The test's knobs, shared by every request scope of one host.</summary>
     internal sealed class OrganizationHooks : Diten.Platform.Infrastructure.Persistence.IPlatformTransactionFaultProbe
     {
@@ -670,8 +860,8 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
         public Task<OrganizationAnswer> PutUnitAsync(string token, Guid id, string? code, Guid company, Guid? parent = null) =>
             SendAsync(HttpMethod.Put, $"/api/platform/organization-units/{id}", token, UnitBody(code, company, parent));
 
-        public Task<OrganizationAnswer> PostPositionAsync(string token, Guid unit, string? code = null) =>
-            SendAsync(HttpMethod.Post, "/api/platform/positions", token, PositionBody(code, unit));
+        public Task<OrganizationAnswer> PostPositionAsync(string token, Guid unit, string? code = null, Guid? reportsTo = null, string? name = null) =>
+            SendAsync(HttpMethod.Post, "/api/platform/positions", token, PositionBody(code, unit, reportsTo, name));
 
         public Task<OrganizationAnswer> PutPositionAsync(string token, Guid id, string? code, Guid unit) =>
             SendAsync(HttpMethod.Put, $"/api/platform/positions/{id}", token, PositionBody(code, unit));
@@ -689,20 +879,24 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
             string.Join(";", (await Host.Collection("record_code_counters").Find(FilterDefinition<BsonDocument>.Empty).ToListAsync())
                 .Select(c => $"{c["Prefix"]}-{c["RecordType"]}={c["LastNumber"]}").OrderBy(x => x, StringComparer.Ordinal));
 
-        public async Task<Guid> SeedUnitAsync(string code, Guid company, Guid? tenant = null, bool deleted = false)
+        public async Task<Guid> SeedUnitAsync(string code, Guid company, Guid? tenant = null, bool deleted = false, bool archived = false)
         {
             var unit = new OrganizationUnit
             {
                 TenantId = tenant ?? TenantA, Code = code, Name = code, LegalEntityId = company, IsDeleted = deleted,
-                DeletedAt = deleted ? DateTimeOffset.UtcNow : null
+                DeletedAt = deleted ? DateTimeOffset.UtcNow : null, IsArchived = archived
             };
             await Host.Database.GetCollection<OrganizationUnit>(PlatformCollections.OrganizationUnits).InsertOneAsync(unit);
             return unit.Id;
         }
 
-        public async Task<Guid> SeedPositionAsync(string code, Guid unit)
+        public async Task<Guid> SeedPositionAsync(string code, Guid unit, bool deleted = false, bool archived = false)
         {
-            var position = new Position { TenantId = TenantA, Code = code, Name = code, OrganizationUnitId = unit };
+            var position = new Position
+            {
+                TenantId = TenantA, Code = code, Name = code, OrganizationUnitId = unit, IsDeleted = deleted,
+                DeletedAt = deleted ? DateTimeOffset.UtcNow : null, IsArchived = archived
+            };
             await Host.Database.GetCollection<Position>(PlatformCollections.Positions).InsertOneAsync(position);
             return position.Id;
         }
@@ -717,10 +911,11 @@ public sealed class OrganizationRecordCodeHttpTests : IClassFixture<ReplicaSetCl
                 ["parentOrganizationUnitId"] = parent
             });
 
-        private static string PositionBody(string? code, Guid unit) =>
+        private static string PositionBody(string? code, Guid unit, Guid? reportsTo = null, string? name = null) =>
             JsonSerializer.Serialize(new Dictionary<string, object?>
             {
-                ["code"] = code, ["name"] = "Position " + Guid.NewGuid().ToString("N")[..6], ["organizationUnitId"] = unit
+                ["code"] = code, ["name"] = name ?? "Position " + Guid.NewGuid().ToString("N")[..6], ["organizationUnitId"] = unit,
+                ["reportsToPositionId"] = reportsTo
             });
 
         public void Dispose() => Host.Dispose();
