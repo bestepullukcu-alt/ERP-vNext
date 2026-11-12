@@ -5,13 +5,25 @@ using Diten.SupplyChainService.Domain.Features.Returns;
 namespace Diten.SupplyChainService.Application.Features.Returns;
 public sealed record ReturnResponse(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status,bool IdempotentReplay,string ContractVersion="v1")
 {
+ /// <summary>SHIPMENT-BUNDLE 3.5.0 ReturnSummary.customerRef (MOD-0186 r10 §35.9 item 6): read-only, absent when the return has none.</summary>
+ [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public string? CustomerRef {get;init;}
  /// <summary>SHIPMENT-BUNDLE 3.4.0 (MOD-0186 §34.2): each line's Inventory result of Received; absent before Received.</summary>
  [JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList<ReturnLineResult>? Lines {get;init;}
  public static ReturnResponse From(ReturnMutationResult r)=>new(r.ReturnId,r.RmaNumber,r.ShipmentId,r.Status,r.IdempotentReplay)
- {Lines=r.Lines?.Select(l=>new ReturnLineResult(l.ShipmentLineNumber,l.InventoryTransactionReferenceId,l.InventoryPosting!,l.InventoryPostingReason)).ToArray()};
+ {CustomerRef=r.CustomerRef,Lines=r.Lines?.Select(l=>new ReturnLineResult(l.ShipmentLineNumber,l.InventoryTransactionReferenceId,l.InventoryPosting!,l.InventoryPostingReason)).ToArray()};
 }
 public sealed record ReturnLineResult(string ShipmentLineNumber,string? InventoryTransactionReferenceId,string InventoryPosting,string? InventoryPostingReason);
-public sealed record ReturnSummary(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status);
+public sealed record ReturnSummary(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status,
+ [property:JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] string? CustomerRef=null);
+/// <summary>SHIPMENT-BUNDLE 3.5.0 getReturn (MOD-0186 r10 §35.6, item 1): summary fields, reason, creation time and lines; no workflow field (DL-5).</summary>
+public sealed record ReturnDetail(Guid ReturnId,string RmaNumber,Guid ShipmentId,string Status,
+ [property:JsonIgnore(Condition=JsonIgnoreCondition.WhenWritingNull)] string? CustomerRef,string ReasonCode,DateTimeOffset CreatedAt,
+ IReadOnlyList<ReturnDetailLine> Lines,string ContractVersion="v1")
+{
+ public static ReturnDetail From(ReturnOrder o)=>new(o.Id,o.RmaNumber,o.ShipmentId,o.Status.ToString(),o.CustomerRef,o.ReasonCode,o.CreatedAt,
+  o.Lines.Select(l=>new ReturnDetailLine(l.ShipmentLineNumber,l.Quantity,l.UomId,l.InventoryTransactionReferenceId,l.InventoryPosting,l.InventoryPostingReason)).ToArray());
+}
+public sealed record ReturnDetailLine(string ShipmentLineNumber,string Quantity,string UomId,string? InventoryTransactionReferenceId,string? InventoryPosting,string? InventoryPostingReason);
 public sealed record ReturnListResponse(IReadOnlyList<ReturnSummary> Items,int Total,string ContractVersion="v1");
 public static class ReturnWire
 {
