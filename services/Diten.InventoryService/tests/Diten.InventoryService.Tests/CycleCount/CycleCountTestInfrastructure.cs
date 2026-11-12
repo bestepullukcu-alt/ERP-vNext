@@ -275,7 +275,7 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
 /// <summary>
 /// One isolated cycle-count world: a company with code <c>GMG</c> in the MDM stub, the inventory scenario's warehouse (bins A and B under the
 /// storage location; bin C in the second warehouse), stock put in by the REAL ledger API, and calls to the REAL count API — every
-/// <c>/api/warehouse/cycle-counts*</c> answer checked against the WMS-COUNT-BUNDLE draft (<see cref="CycleCountDraftContractHandler"/>).
+/// <c>/api/warehouse/cycle-counts*</c> answer checked against the frozen WMS-COUNT-BUNDLE (<see cref="CycleCountContractHandler"/>).
 /// </summary>
 public sealed class CycleCountScenario
 {
@@ -307,7 +307,7 @@ public sealed class CycleCountScenario
         Inventory = new InventoryScenario(factory, SkuLevel.Lsku, lotControlled);
         factory.TrackCountTenant(Inventory.Tenant);
         factory.LegalEntities.RegisterName(LegalEntity, companyCode, "Grand Medical " + companyCode);
-        _http = factory.CreateDefaultClient(new CycleCountDraftContractHandler());
+        _http = factory.CreateDefaultClient(new CycleCountContractHandler());
         Token = TokenFor(User, Read, Create, Update, BulkDelete, Cancel, CountsRecord);
     }
 
