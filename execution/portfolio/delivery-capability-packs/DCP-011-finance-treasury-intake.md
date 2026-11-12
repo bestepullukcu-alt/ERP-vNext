@@ -9,9 +9,9 @@ status_note: "approved — Platform sahibi (Beste) 2026-10-29 kabul etti (kanıt
 owner_domain: finance-treasury
 owner: depo sahibi (K1) / Treasury Intake Control Tower
 created: 2026-10-23
-updated: 2026-11-04
+updated: 2026-11-12
 authoring_branch: chore/ct/treasury-intake-ct-01
-current_revision_branch: docs/ct/treasury-dcp011-mod0217-01
+current_revision_branch: docs/ct/treasury-dcp011-r-fix-02
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.8.xlsx#Blueprint_Data"
 canonical_modules: [MOD-0126, MOD-0269, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217]
 candidate_modules: []
@@ -32,6 +32,14 @@ inputs:
 ---
 
 # Finance & Treasury — Treasury intake (Delivery Capability Pack)
+
+> **Revizyon (2026-11-12, onay kaydı onarımı — kapsam değişmedi):** D129 sürümünün (`f6b3ce0a…`) onayı güncel
+> `pack_approval.py check` ile geçersiz çıktı: inceleme kaydı `docs/records/reviews/DCP-011/2026-11-04-f6b3ce0a.md`
+> bulgu dışı bir satırda büyük harfli seviye sözcükleri taşıyor (reviews.tsv satırı main'de ve yalnız ekleme) ve
+> approvals.tsv satırının kart özeti güncel kartla uyuşmuyor. Bu sürüm yalnız künyeyi (`updated`,
+> `current_revision_branch`) ve bu notu değiştirir; üyeler, kod alanı (yalnız MOD-0289), teslim sırası, AC aralıkları ve
+> kapsam dışılar D129 ile aynıdır. Bu sürüm için yeni CT-APR-02 ve CT-APR-01 gerekir; `runtime_code_scope`'taki
+> "bu DCP sürümünün CT-APR-01 satırı" bu sürümün satırıdır.
 
 > **Revizyon (2026-10-28, sahip denetimi f2aacc517 KOŞULLU — D72 hizalaması):** üye AC aralıkları güncel pack'lerden: MOD-0119
 > AC-1…44 (yeni AC-44), MOD-0289 AC-1…61 (yeni AC-61); MOD-0140 satırı D72/5'e hizalandı (liste = silinmemiş Active ilişki =
