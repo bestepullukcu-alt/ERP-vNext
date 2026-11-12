@@ -253,3 +253,11 @@ public sealed class CycleCountBulkItem
     public string? Id { get; set; }
     public int Version { get; set; }
 }
+
+/// <summary>DL-5: the body of the Evidence Pack export request the form script sends to its same-origin proxy (no asp-for binding).</summary>
+public sealed class CountEvidenceWriteRequest
+{
+    public string? IdempotencyKey { get; set; }
+    public string? CountId { get; set; }
+    public string? Format { get; set; }
+}

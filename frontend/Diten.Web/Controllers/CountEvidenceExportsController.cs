@@ -186,11 +186,3 @@ public sealed class CountEvidenceExportsController : Controller
     private IActionResult Refuse(int status, string? code, string? correlationId, object? details = null) =>
         CycleCountProxy.Error(status, code, _localizer[CycleCountErrorMessages.KeyFor(code, status)].Value, correlationId, details);
 }
-
-/// <summary>The body of the export request the form script sends to its same-origin proxy.</summary>
-public sealed class CountEvidenceWriteRequest
-{
-    public string? IdempotencyKey { get; set; }
-    public string? CountId { get; set; }
-    public string? Format { get; set; }
-}
