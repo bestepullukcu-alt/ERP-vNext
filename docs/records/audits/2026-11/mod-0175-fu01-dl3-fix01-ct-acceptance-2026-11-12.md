@@ -21,6 +21,11 @@
 | CT-6 | `CauseOf`: R5a artık `DecisionInProgress` değil | **kırmızı** — `AC31f_the_source_of_a_hold_whose_decision_changed_the_lot…` |
 | CT-7 | `CauseOf`: `QuantityChanged` → Allow | **kırmızı** — `AC31c_the_source_of_a_blocked_record_that_lost_quantity…` |
 
-Geliştirici raporu CT'ye ulaşmadı; kabul kod, testler ve CT ölçümüyle yapıldı.
+Geliştirici raporu kabulden sonra ulaştı (2026-11-12) ve CT ölçümüyle çelişmiyor: 6 yeni vaka (AC32b, AC31f, AC31g, AC31h, AC31i, ORTA3),
+bekçi testleri 15 / 15, Inventory 2107 / 0, geliştiricinin yedi sabotajı (S1…S7) kırmızı ve bayt-eşit geri. İlk tam koşudaki
+`RecallCustomerDirectoryTests.Budget_on_the_host_screen…` kırmızısı (3,55 sn > 3,5 sn) makine yükünden; tekrar koşu 0 kırmızı — CT'nin
+2107 / 0 koşusu da yeşil. **Süreç notu:** geliştirici sabotaj ölçümü için dal dışı geçici bir commit'i (`19be61b94`) git hook'ları kapalıyken
+(`core.hooksPath=/dev/null`) attı; dala giren `2e5104d83` hook'lar açıkken atıldı ve içeriği aynı. Kural ihlali (hook atlatma yasak) kayda
+geçti; tekrar etmemesi talimatlara yazılır.
 
 VERIFIED
