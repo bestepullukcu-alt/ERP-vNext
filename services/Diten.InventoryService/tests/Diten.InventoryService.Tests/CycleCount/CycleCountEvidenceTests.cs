@@ -6,7 +6,9 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Diten.InventoryService.Application.Features.CycleCounting;
+using Diten.InventoryService.Domain.Traceability.Entities;
 using Diten.InventoryService.Persistence.CycleCounting;
+using Diten.InventoryService.Persistence.Traceability;
 using Diten.InventoryService.Tests.Expiry;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using MongoDB.Bson;
@@ -189,6 +191,59 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
         var pdf = ExpiryEvidenceTests.PdfText.Read((await FileAsync(c.S, Str(pdfExport, "exportId"), c.Exporter)).Bytes).Text;
         Assert.Contains(Flat("Ad okunamadı"), Flat(pdf), StringComparison.Ordinal);
         Assert.False(Guid36.IsMatch(pdf), "the PDF writes an id: " + Guid36.Match(pdf).Value);
+    }
+
+    /// <summary>
+    /// FIX-01 (CT ek madde): a lot-controlled count — the file writes the registered lot's NUMBER (MOD-0174 register), never its id; once the lot
+    /// cannot be read from the register (its document is gone) the file writes the language's "could not be read" word and the lot id is nowhere —
+    /// the GUID scan runs on the CSV and the PDF text both times. Sabotage (b): the two unreadable branches of <c>Lot()</c> print <c>lotId</c> → red.
+    /// </summary>
+    [Fact]
+    public async Task FIX01_a_lot_is_its_number_and_an_unreadable_lot_is_the_word_never_the_id()
+    {
+        var s = new CycleCountScenario(factory, lotControlled: true);
+        factory.Products.SetDisplay(s.Inventory.Sku, SkuCode);
+        factory.Products.SetDisplay(s.Inventory.Item, "PRD-AMX", ProductName);
+        var lotId = s.RegisterLot(s.Inventory.Item, s.Inventory.Sku);
+        var lots = factory.Database.GetCollection<Lot>(TraceCollections.Lots);
+        var lotNumber = lots.Find(l => l.Id == Guid.Parse(lotId)).Single().LotNumber;
+        var (countId, _) = await s.SubmittedLineAsync(10, 9, lot: lotId);
+        var c = new Closed(s, countId, (await s.CurrentAsync(countId)).GetProperty("number").GetString()!, "", "",
+            s.TokenFor(Guid.NewGuid(), Read, EvidenceRead, EvidenceExport));
+
+        async Task<(string Csv, string Pdf)> FilesAsync(string language)
+        {
+            var csv = await CsvAsync(c, language);
+            var pdfExport = await Expect(ExportAsync(c, "Pdf", language), 201);
+            return (csv, ExpiryEvidenceTests.PdfText.Read((await FileAsync(c.S, Str(pdfExport, "exportId"), c.Exporter)).Bytes).Text);
+        }
+
+        void NoLotId(string what, string text)
+        {
+            Assert.DoesNotContain(lotId, text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(Guid.Parse(lotId).ToString("N"), text, StringComparison.OrdinalIgnoreCase);
+            Assert.False(Guid36.IsMatch(text), $"{what} writes an id: " + Guid36.Match(text).Value);
+        }
+
+        // the registered lot: its number in the CSV and in the PDF text, no id anywhere
+        var (named, namedPdf) = await FilesAsync("tr");
+        Assert.Contains(";" + lotNumber + ";", named, StringComparison.Ordinal);
+        Assert.Contains(Flat(lotNumber), Flat(namedPdf), StringComparison.Ordinal);
+        NoLotId("the CSV (registered lot)", named);
+        NoLotId("the PDF (registered lot)", namedPdf);
+
+        // the lot can no longer be read from the register: the language's word, never the id (nor the number it no longer has)
+        Assert.Equal(1, (await lots.DeleteOneAsync(l => l.Id == Guid.Parse(lotId))).DeletedCount);
+        foreach (var language in new[] { "tr", "en" })
+        {
+            var (csv, pdf) = await FilesAsync(language);
+            var word = CycleCountEvidenceText.Of("CountPdf.NameUnreadable", language);
+            Assert.Contains(";" + word + ";", csv, StringComparison.Ordinal);
+            Assert.Contains(Flat(word), Flat(pdf), StringComparison.Ordinal);
+            Assert.DoesNotContain(lotNumber, csv, StringComparison.Ordinal);
+            NoLotId($"the CSV ({language}, unreadable lot)", csv);
+            NoLotId($"the PDF ({language}, unreadable lot)", pdf);
+        }
     }
 
     [Fact]
