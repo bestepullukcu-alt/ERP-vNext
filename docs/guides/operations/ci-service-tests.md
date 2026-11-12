@@ -77,8 +77,9 @@ olmadığı için phase1 onu ayrıca derler. Matris satır adları tekil olmalı
 **Eski koşunun iptali** (EES CI-ISRAF-01): her iş akışında tek üst düzey `concurrency` bloğu var. Bir PR'a yeni commit
 gelince o PR'ın aynı iş akışındaki eski koşusu iptal edilir. `main` push'u, birleştirme kuyruğu (`merge_group`) ve elle
 koşu kendi koşu kimliğiyle ayrı grupta kalır: iptal edilmez, sıraya da girmez. Bekçi:
-`Every_workflow_cancels_only_a_superseded_pull_request_run` (metin birebir). PR'da yalnız en son koşuyu yeniden koşturun:
-eski bir koşuyu yeniden başlatmak aynı gruba girer ve en yeni koşuyu iptal eder (kırmızı kalır, yeşile dönmez).
+`Every_workflow_cancels_only_a_superseded_pull_request_run` (metin birebir). Yeniden çalıştırılan bir koşu (2. ve sonraki
+deneme) de koşu kimliğiyle kendi grubuna girer: eski bir commit'i yeniden çalıştırmak en yeni commit'in koşusunu iptal
+etmez, kendisi de yeni commit gelince iptal edilmez.
 `service-tests result` işinin `if: always()` koşulu korunur: iptal edilen koşu kırmızı kalmalıdır; `!cancelled()` işi
 "skipped" bırakır ve GitHub atlanmış zorunlu kontrolü geçmiş sayar.
 
