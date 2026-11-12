@@ -426,8 +426,9 @@ NEAR = 25          # a marker speaks about the decision ids within this many cha
 ID_MAX = 12        # longest decision id DECISION_ID can match (`D123/45`, `KR-123`), for the window of _near
 UNDECIDED = r"(?:alınmadı|alınmamış|verilmedi|verilmemiş|yok\w*|bekl\w*|açık|open|tbd|\?)"
 OPEN_STATE = re.compile(r"(?i)açık|open|bekliyor|karar\s*[:=—–-]?\s*" + UNDECIDED + r"(?:\s.*)?")
-# `karar` followed by a negation or a wait (`karar alınmadı`, `karar yok`, `Karar: açık`) is not a decision
-DECIDED_STATE = re.compile(r"(?i)(?:karar\b(?!\s*[:=—–-]?\s*" + UNDECIDED + r"(?!\w))|kapandı|kapalı|closed|decided|"
+# `karar` followed by a negation or a wait (`karar alınmadı`, `karar yok`, `Karar: açık`) is not a decision; a stray
+# `_` after the negation (`karar alınmadı_`, broken emphasis) does not undo it (blind pre-check of 0032fb0ed)
+DECIDED_STATE = re.compile(r"(?i)(?:karar\b(?!\s*[:=—–-]?\s*" + UNDECIDED + r"(?![^\W_]))|kapandı|kapalı|closed|decided|"
                            r"locked)\b")
 
 

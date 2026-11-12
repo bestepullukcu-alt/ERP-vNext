@@ -666,6 +666,12 @@ class CodexRound2(Fixture):
         text = TABLE_OPEN.replace("| karar bekliyor |", "| _karar alınmadı_ (EA) |").replace(
             "- K-1 karar verildi: archive only from Draft.", "- K-1 açık kalır until the owner answers.")
         self.assertNotIn("R2", {i.code for i in self.items(text)})
+        for cell in ("karar alınmadı_", "Karar: açık_", "_karar alınmadı_._", "**_karar bekliyor_**", "_karar yok_."):
+            with self.subTest(stray_or_nested=cell):                    # blind pre-check of 0032fb0ed
+                self.assertFalse(pr.state_of(cell)[1])
+        self.assertEqual(pr.state_of("**_karar bekliyor_**"), (True, False))   # nested pairs: the loop runs again
+        self.assertEqual(pr.state_of("_karar yok_."), (True, False))
+        self.assertEqual(pr.state_of("_karar bekliyor._"), (True, False))       # punctuation inside the pair
         for cell in ("karar?", "karar ?"):                               # unchanged: never read as a decision
             with self.subTest(question=cell):
                 self.assertFalse(pr.state_of(cell)[1])
