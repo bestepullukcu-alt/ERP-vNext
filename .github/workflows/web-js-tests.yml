@@ -17,6 +17,13 @@ on:
 permissions:
   contents: read
 
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow, whose result
+# nobody reads any more. A push to main, a merge group and a manual run each get a group of their own (the run id), so
+# they are never cancelled and never wait for another run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   web-js-tests:
     name: web-js-tests

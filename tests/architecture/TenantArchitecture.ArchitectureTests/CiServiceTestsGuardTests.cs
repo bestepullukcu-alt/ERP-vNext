@@ -55,6 +55,10 @@ namespace TenantArchitecture.ArchitectureTests;
  * [checks_requested], no branch filter) — GitHub reports no check on a merge group otherwise and the queue cannot merge —
  * and each one that compares with a base takes the merge group's parent commit (merge_group.base_sha) on that event.
  *
+ * EES CI-ISRAF-01: every workflow has one top-level concurrency block, exact text — a new commit on a pull request cancels
+ * that pull request's older run; a push to main, a merge group and a manual run are never cancelled and never queued.
+ * agent-adapters runs on pull requests and on pushes to main only, like phase1-gates.
+ *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
 public class CiServiceTestsGuardTests
@@ -438,6 +442,42 @@ public class CiServiceTestsGuardTests
     public void Phase1_triggers_are_push_pull_request_and_merge_group()
     {
         Assert.Equal(["push", "pull_request", "merge_group"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+    }
+
+    /// <summary>
+    /// EES CI-ISRAF-01: the one concurrency block every workflow carries. On a pull request the group is the workflow and
+    /// the pull request number, and an older run is cancelled; on any other event the group ends in the run id, so it is
+    /// unique — never cancelled, and never left pending behind another run (a shared group would replace a pending run).
+    /// </summary>
+    private const string ConcurrencyBlock =
+        "concurrency:\n"
+        + "  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}\n"
+        + "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n";
+
+    // A job-level concurrency:, a group without the run id or `cancel-in-progress: true` would cancel (or hold back) the
+    // main and merge-queue runs that branch protection and the merge queue wait for — so the text is exact, once, top level.
+    [Fact]
+    public void Every_workflow_cancels_only_a_superseded_pull_request_run()
+    {
+        foreach (var name in NamedWorkflows)
+        {
+            var code = Code(WorkflowText(name));
+            foreach (var key in new[] { "concurrency", "group", "cancel-in-progress" })
+                Assert.True(KeyCount(code, key) == 1, $"{name}: {KeyCount(code, key)} '{key}' keys, expected 1");
+            Assert.True(Regex.Matches(code, "(?m)^" + Regex.Escape(ConcurrencyBlock) + "(?![ \\t])").Count == 1,
+                $"{name}: the top-level concurrency block is not exactly:\n{ConcurrencyBlock}");
+        }
+    }
+
+    // EES CI-ISRAF-01: agent-adapters checked every pushed branch AND its pull request — the same two jobs twice (14 days to
+    // 2026-11-12: 49 branch-push runs). Like phase1-gates (owner decision 2026-11-02): pull requests and main only.
+    [Fact]
+    public void Agent_adapters_runs_on_pull_requests_and_pushes_to_main_only()
+    {
+        var code = Code(WorkflowText("agent-adapters.yml"));
+        Assert.Equal(["push", "pull_request"], Triggers(code));
+        Assert.True(KeyCount(code, "branches") == 1, $"agent-adapters.yml: {KeyCount(code, "branches")} branches keys, expected 1");
+        Assert.Single(Regex.Matches(code, @"(?m)^on:\n  push:\n    branches: \[main\]\n    paths:\n"));
     }
 
     /// <summary>

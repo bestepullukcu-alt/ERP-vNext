@@ -74,6 +74,11 @@ olmadığı için phase1 onu ayrıca derler. Matris satır adları tekil olmalı
 **Tetik** (Control Tower kararı, Actions dakikası için): `pull_request`, yalnız `main`'e `push`, elle
 (`workflow_dispatch`). Dal push'u bu işi koşmaz.
 
+**Eski koşunun iptali** (EES CI-ISRAF-01): her iş akışında tek üst düzey `concurrency` bloğu var. Bir PR'a yeni commit
+gelince o PR'ın aynı iş akışındaki eski koşusu iptal edilir. `main` push'u, birleştirme kuyruğu (`merge_group`) ve elle
+koşu kendi koşu kimliğiyle ayrı grupta kalır: iptal edilmez, sıraya da girmez. Bekçi:
+`Every_workflow_cancels_only_a_superseded_pull_request_run` (metin birebir).
+
 ## phase1: çözüm dışındaki test projeleri derlenir
 
 `phase1-gates.yml` her push'ta servis çözümlerini (`*.sln`) derler, servis testi koşmaz. Çözümde OLMAYAN bir test
@@ -155,7 +160,8 @@ Ek kurallar (kapalı başarısız):
 - `shell:` / `defaults:` anahtarı yok. İş düzeyi `SUITE` / `PROJECT` matris değerleri. `GITHUB_ENV` yazımları sayılı
   (service-tests 9, phase1 0). `GITHUB_PATH` yok. mongod ataması heredoc biçiminde de yakalanır.
 - `github['token']`, `toJSON(` yasak.
-- phase1 `push.branches: ["**"]` sabit; `timeout-minutes` en az 1.
+- phase1 `push.branches: [main]` sabit (sahip kararı 2026-11-02); `agent-adapters` de yalnız PR + `main` push'u
+  (`Agent_adapters_runs_on_pull_requests_and_pushes_to_main_only`); `timeout-minutes` en az 1.
 - YAML düğüm özellikleri (`&`, `*`, `!`), `? anahtar`, onaltılık kaçış yok.
 - Broker taramasında `//` yorum satırları öznitelik sayılmaz.
 
