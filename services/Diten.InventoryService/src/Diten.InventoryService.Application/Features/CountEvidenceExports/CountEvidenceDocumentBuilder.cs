@@ -1,5 +1,7 @@
 using System.Globalization;
 using System.Text;
+using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Application.Features.CountVariances.Handlers.QueryHandlers;
 using Diten.InventoryService.Application.Features.CycleCounting;
 using Diten.InventoryService.Application.Features.CycleCounting.Services;
@@ -9,6 +11,8 @@ using Diten.InventoryService.Domain.CycleCounting.Repositories;
 using Diten.InventoryService.Domain.CycleCounting.Rules;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.Traceability.Repositories;
+using Diten.InventoryService.Domain.Traceability.Rules;
 
 namespace Diten.InventoryService.Application.Features.CountEvidenceExports;
 
@@ -25,12 +29,21 @@ public sealed class CountEvidenceDocumentBuilder
     private readonly ICycleCountRepository _repository;
     private readonly CountVarianceReads _reads;
     private readonly CycleCountSupport _support;
+    private readonly IProductMasterClient _products;
+    private readonly ILegalEntityMasterClient _companies;
+    private readonly IAuditActorNames _people;
+    private readonly ILotRepository _lots;
 
-    public CountEvidenceDocumentBuilder(ICycleCountRepository repository, CountVarianceReads reads, CycleCountSupport support)
+    public CountEvidenceDocumentBuilder(ICycleCountRepository repository, CountVarianceReads reads, CycleCountSupport support, IProductMasterClient products,
+        ILegalEntityMasterClient companies, IAuditActorNames people, ILotRepository lots)
     {
         _repository = repository;
         _reads = reads;
         _support = support;
+        _products = products;
+        _companies = companies;
+        _people = people;
+        _lots = lots;
     }
 
     public async Task<CountEvidenceDocument> BuildAsync(CycleCount count, string language, string requestedLanguage, DateTimeOffset now, CancellationToken ct)
@@ -61,8 +74,46 @@ public sealed class CountEvidenceDocumentBuilder
             .Concat(manual.Select(m => Guid.TryParse(m.MovementType == MovementType.CountGain ? m.ToLocationId : m.FromLocationId, out var id) ? id : Guid.Empty))
             .Where(id => id != Guid.Empty).Distinct().ToList();
         var names = (await _repository.LocationNamesAsync(locationIds, ct)).ToDictionary(n => n.Id);
-        string Place(Guid id) => names.TryGetValue(id, out var n) ? Named(n.Code, n.Name) : id.ToString("D");
-        string PlaceText(string? id) => Guid.TryParse(id, out var g) ? Place(g) : id ?? "—";
+        // DL-5 FIX-01 (CT ORTA-1, owner Beste 2026-11-12): the file names everything — a name that cannot be read is the word, NEVER the id
+        var unreadable = CycleCountEvidenceText.Of("CountPdf.NameUnreadable", language);
+        string Place(Guid id) => names.TryGetValue(id, out var n) ? Named(n.Code, n.Name) : unreadable;
+        string PlaceText(string? id) => Guid.TryParse(id, out var g) ? Place(g) : string.IsNullOrWhiteSpace(id) ? "—" : unreadable;
+
+        // the SKU code (and the product name) from PRODUCT-MASTER — once per distinct SKU / product
+        var skuKeys = lines.Select(l => (l.ItemId, l.SkuId, l.SkuLevel)).Concat(manual.Select(m => (m.ItemId, m.SkuId, m.SkuLevel))).Distinct().ToList();
+        var skuTexts = new Dictionary<(Guid, SkuLevel), string>();
+        var productNames = new Dictionary<Guid, string?>();
+        foreach (var (itemId, skuId, level) in skuKeys)
+        {
+            if (!productNames.ContainsKey(itemId)) productNames[itemId] = await ProductNameAsync(itemId, ct);
+            if (!skuTexts.ContainsKey((skuId, level)))
+            {
+                var code = await SkuCodeAsync(skuId, level, ct);
+                skuTexts[(skuId, level)] = code is null ? unreadable : productNames[itemId] is { } product ? $"{code} · {product}" : code;
+            }
+        }
+
+        string Sku(Guid skuId, SkuLevel level) => skuTexts.TryGetValue((skuId, level), out var text) ? text : unreadable;
+
+        // the lot NUMBER (MOD-0174 register); a lot that is not a registered id is the number as typed; an unknown registered id is the word
+        var lotIds = lines.Select(l => l.LotId).Concat(manual.Select(m => m.LotId))
+            .Select(id => LotPostingRules.IsRegisteredLotForm(id, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().ToList();
+        var lotNumbers = lotIds.Count == 0 ? new Dictionary<Guid, string>()
+            : (await _lots.FindManyAsync(lotIds, ct)).Where(l => !string.IsNullOrWhiteSpace(l.LotNumber)).ToDictionary(l => l.Id, l => l.LotNumber);
+        string? Lot(string? lotId) => string.IsNullOrWhiteSpace(lotId) ? null
+            : LotPostingRules.IsRegisteredLotForm(lotId, out var g) ? (lotNumbers.TryGetValue(g, out var number) ? number : unreadable)
+            : Guid.TryParse(lotId, out _) ? unreadable : lotId;
+
+        // people: the central audit queue's name for the command's (correlation id, user) — the count's events and the manual movements; ONE read
+        var keys = events.Where(e => e.ActorUserId is not null).Select(e => (e.CorrelationId, e.ActorUserId!.Value))
+            .Concat(manual.Select(m => (m.CorrelationId, m.CreatedBy))).Where(k => k.Item1 != Guid.Empty).Distinct().ToList();
+        var recorded = keys.Count == 0 ? new Dictionary<(Guid CorrelationId, Guid ActorId), string>()
+            : await _people.NamesAsync(keys, _support.LegalEntityId, ct);
+        var byUser = recorded.GroupBy(kv => kv.Key.ActorId).ToDictionary(g => g.Key, g => g.First().Value);
+        string Person(Guid? userId, Guid correlationId = default)
+            => userId is not { } user ? "—"
+                : recorded.TryGetValue((correlationId, user), out var exact) ? exact
+                : byUser.TryGetValue(user, out var any) ? any : unreadable;
 
         var header = new CountEvidenceHeader(
             count.Number,
@@ -80,8 +131,8 @@ public sealed class CountEvidenceDocumentBuilder
         var rows = lines.OrderBy(l => Place(l.LocationId), StringComparer.Ordinal).ThenBy(l => l.SkuId).ThenBy(l => l.LotId, StringComparer.Ordinal)
             .Select(l => new CountEvidenceLineRow(
                 Place(l.LocationId),
-                l.SkuId.ToString("D"),
-                l.LotId,
+                Sku(l.SkuId, l.SkuLevel),
+                Lot(l.LotId),
                 l.Origin.ToString(),
                 Q(l.ExpectedQuantity),
                 l.MovementsSinceSnapshot is { } since ? Q(since) : null,
@@ -91,7 +142,7 @@ public sealed class CountEvidenceDocumentBuilder
                 l.Status.ToString(),
                 l.Decision?.Kind.ToString(),
                 l.Decision?.Source.ToString(),
-                l.Decision?.By?.ToString("D"),
+                l.Decision?.By is { } by ? Person(by) : null,
                 l.Decision?.At,
                 l.Decision?.Reason,
                 l.Adjustment?.Status.ToString(),
@@ -101,13 +152,57 @@ public sealed class CountEvidenceDocumentBuilder
         var manualRows = manual.OrderBy(m => m.CreatedAt).ThenBy(m => m.TransactionNumber, StringComparer.Ordinal).Select(m =>
         {
             var gain = m.MovementType == MovementType.CountGain;
-            return new CountEvidenceManualRow(m.CreatedAt, PlaceText(gain ? m.ToLocationId : m.FromLocationId), m.SkuId.ToString("D"), m.LotId,
+            return new CountEvidenceManualRow(m.CreatedAt, PlaceText(gain ? m.ToLocationId : m.FromLocationId), Sku(m.SkuId, m.SkuLevel), Lot(m.LotId),
                 WireNames.ToWire(m.MovementType), InventoryQuantity.ToWire(m.Quantity), m.TransactionNumber, m.SourceModule, m.SourceType,
-                m.CreatedBy.ToString("D"), CycleCountDecisionRules.DeclaresCount(CountVarianceReads.Facts(m)));
+                Person(m.CreatedBy, m.CorrelationId), CycleCountDecisionRules.DeclaresCount(CountVarianceReads.Facts(m)));
         }).ToList();
 
-        var timeline = events.OrderBy(e => e.Seq).Select(e => new CountEvidenceEventRow(e.Seq, e.At, e.Kind.ToString(), e.ActorUserId?.ToString("D"))).ToList();
-        return new CountEvidenceDocument(language, requestedLanguage, now, _support.LegalEntityId.ToString("D"), header, rows, manualRows, timeline);
+        var timeline = events.OrderBy(e => e.Seq)
+            .Select(e => new CountEvidenceEventRow(e.Seq, e.At, e.Kind.ToString(), e.ActorUserId is null ? null : Person(e.ActorUserId, e.CorrelationId))).ToList();
+        return new CountEvidenceDocument(language, requestedLanguage, now, await CompanyAsync(unreadable, ct), header, rows, manualRows, timeline);
+    }
+
+    /// <summary>The company as "code · name" (MDM, the existing <see cref="ILegalEntityMasterClient"/>); unreadable → the word.</summary>
+    private async Task<string> CompanyAsync(string unreadable, CancellationToken ct)
+    {
+        try
+        {
+            if (await _companies.GetLegalEntityNameAsync(_support.LegalEntityId, ct) is { } company)
+            {
+                if (!string.IsNullOrWhiteSpace(company.Code)) return Named(company.Code, company.Name);
+                if (!string.IsNullOrWhiteSpace(company.Name)) return company.Name;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // unreadable: the word
+        }
+
+        return unreadable;
+    }
+
+    private async Task<string?> ProductNameAsync(Guid itemId, CancellationToken ct)
+    {
+        try
+        {
+            return await _products.GetProductAsync(itemId, ct) is { Name: { Length: > 0 } name } ? name : null;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            return null;
+        }
+    }
+
+    private async Task<string?> SkuCodeAsync(Guid skuId, SkuLevel level, CancellationToken ct)
+    {
+        try
+        {
+            return await _products.GetSkuAsync(skuId, level, ct) is { CanonicalCode: { Length: > 0 } code } ? code : null;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            return null;
+        }
     }
 
     private static string Named(string code, string name)

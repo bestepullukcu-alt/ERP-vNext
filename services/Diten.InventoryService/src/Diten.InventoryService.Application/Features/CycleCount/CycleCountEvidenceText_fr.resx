@@ -30,6 +30,7 @@
   <data name="CountPdf.ManualWindow" xml:space="preserve"><value>Fenêtre des mouvements manuels</value></data>
   <data name="CountPdf.MovementType" xml:space="preserve"><value>Type de mouvement</value></data>
   <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>Mouvements depuis l'instantané</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>Nom illisible</value></data>
   <data name="CountPdf.No" xml:space="preserve"><value>Non</value></data>
   <data name="CountPdf.None" xml:space="preserve"><value>Aucun</value></data>
   <data name="CountPdf.NotClosed" xml:space="preserve"><value>Pas encore clôturé</value></data>

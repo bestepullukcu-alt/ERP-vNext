@@ -56,7 +56,22 @@ info:
     the ledger cannot be read for manualCountMovements); (d) CountVariance is written as oneOf two closed rows (Count: countNumber?, line,
     ledgerTransactionId?, ledgerTransactionNumber?; Manual: movement) — the service never writes the Count members on a Manual row; (e) the
     error catalogue below is exactly CycleCountErrorCodes (25 codes; the proposal §5.1 list, including its three "ek" codes).
-  version: 1.0.0
+
+    1.1.0 (CT single-writer step, additive over 1.0.0 — MOD-0181 DL-5 after WP-0181-DL5-FIX-01): the DL-5 Evidence Pack joins — three
+    operations (CountEvidenceExportsController 3; 25 operations in all), CountEvidenceExport (closed, no null, 13 required members), its
+    page, the request {idempotencyKey, format}, the format / status / language enums, the ExportId and Accept-Language parameters, the file
+    answer and two codes: COUNT_EVIDENCE_NOT_FOUND (404) and COUNT_EVIDENCE_INTEGRITY (500 — the one catalogue code that is a 500: the stored
+    bytes do not hash to the recorded sha256 and the file is not served). The catalogue is exactly CycleCountErrorCodes again (27 codes).
+    The 1.0.0 text above is kept as written; where it says DL-5 is not in the contract, 1.1.0 supersedes it. Nothing of 1.0.0 was changed or
+    removed except info.version, x-not-in-this-version (DL-5 is now in x-implemented-by-slice) and this appended paragraph.
+    Language rule (code truth, CT DÜŞÜK-3): the Accept-Language tags are ordered by their q value (highest first; no q = 1; equal q keeps the
+    header order); the first one's primary subtag (before - or _), lower-cased, is requestedLanguage when it is one of en, tr, fr, es, zh, ar,
+    ru — else (or without the header) en. language = the language the file is drawn in: requestedLanguage for a CSV; for a PDF
+    requestedLanguage when it is en | tr | fr | es | ru, else en (an English note at the top names the requested code). Codes in the file
+    (status, decision, source, event, adjustment, movement type) are translated with the service resx (CycleCountEvidenceText_{lang}); a name,
+    SKU or lot that cannot be read is the localized "could not be read" word, never an id (FIX-01). Insert-only: an export and its bytes are
+    written once and never changed; a download is a read (service log), not an event.
+  version: 1.1.0
   x-status: FROZEN
   x-owner: MOD-0181
   x-owner-service: Diten.InventoryService
@@ -69,10 +84,10 @@ info:
     DL-2: [recordCycleCountLine, addCycleCountLine, submitCycleCount]
     DL-3: [listCountVariances, getCountVariance, approveCountVariance, rejectCountVariance, requestCountRecount, retryCountAdjustment, resolveCountAdjustmentIntegrity, getCycleCountSettings, updateCycleCountSettings]
     DL-4: [getCycleCountDashboard]
-  x-not-in-this-version:
     DL-5: [createCountEvidenceExport, listCountEvidenceExports, getCountEvidenceExportFile]
   x-changelog:
     - "1.0.0 — CT freeze of DL-1…DL-4 (MOD-0181 pack r8; proposal §1 rules, §3 schemas, §4.1–§4.3 operations and the DL-4 row of §4.4, §5 error codes, §6 state machine). 22 operations, 25 COUNT_* codes. The DL-5 rows of §4.4 (Evidence Pack) are not frozen — they come in their own additive version. Code-truth notes (a)–(e) in the description."
+    - "1.1.0 — additive (MOD-0181 DL-5 Evidence Pack, CT single-writer step after WP-0181-DL5-FIX-01 VERIFIED): proposal §3.11, the DL-5 rows of §4.4 and §5.3 — createCountEvidenceExport (POST /cycle-counts/{countId}/evidence-exports, cycle-count.evidence.export), listCountEvidenceExports (GET /count-evidence-exports) and getCountEvidenceExportFile (GET /count-evidence-exports/{exportId}/file, both cycle-count.evidence.read); CountEvidenceExport (closed, no null, 13 required members), CountEvidenceExportPage, CreateCountEvidenceExportRequest {idempotencyKey, format}, CountEvidenceFormat, CountEvidenceStatus, CountEvidenceLanguage; COUNT_EVIDENCE_NOT_FOUND (404), COUNT_EVIDENCE_INTEGRITY (500). Language rule written as the code does it (q-ordered Accept-Language, primary subtag, else en; CT DÜŞÜK-3). x-not-in-this-version removed. No existing path, parameter, property, type, required list, status code or enum value of 1.0.0 changed or was removed."
   x-state-machines:
     cycleCount:
       - "— -> Draft: createCycleCount"
@@ -477,6 +492,62 @@ paths:
         '401': { $ref: '#/components/responses/AuthError' }
         '403': { $ref: '#/components/responses/AuthError' }
         '409': { $ref: '#/components/responses/CountError' }
+  # ── §4.4 DL-5 Evidence Pack (1.1.0, additive) ──
+  /cycle-counts/{countId}/evidence-exports:
+    post:
+      operationId: createCountEvidenceExport
+      summary: Draw and store an Evidence Pack file (PDF or CSV, same content) of a Submitted | Closed count; insert-only; the language from Accept-Language (description, 1.1.0). Order — count id (not a UUID -> 404 COUNT_NOT_FOUND), body shape, key header = body key, format Pdf | Csv, the key (replay 200, no new file), the count (404), its state (409).
+      x-permission: cycle-count.evidence.export
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_INVALID_STATE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/AcceptLanguage' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateCountEvidenceExportRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/EvidenceExport' }
+        '200': { $ref: '#/components/responses/EvidenceExport' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /count-evidence-exports:
+    get:
+      operationId: listCountEvidenceExports
+      summary: The company's Evidence Pack export log, newest first (requestedAt descending); countId narrows it
+      x-permission: cycle-count.evidence.read
+      x-error-codes: [INVALID_REQUEST]
+      parameters:
+        - { name: countId, in: query, required: false, description: a UUID (else 400 INVALID_REQUEST), schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Export page (§3.11)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CountEvidenceExportPage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+  /count-evidence-exports/{exportId}/file:
+    get:
+      operationId: getCountEvidenceExportFile
+      summary: The STORED bytes of an export of the caller's tenant + company; re-hashed before they leave — bytes that do not hash to the recorded sha256 are never served (500 COUNT_EVIDENCE_INTEGRITY, no byte of the file in the body). The download is logged by the service (a read, not an event).
+      x-permission: cycle-count.evidence.read
+      x-error-codes: [COUNT_EVIDENCE_NOT_FOUND, COUNT_EVIDENCE_INTEGRITY]
+      parameters: [{ $ref: '#/components/parameters/ExportId' }]
+      responses:
+        '200':
+          description: "The stored file: application/pdf, or text/csv; charset=utf-8 (Content-Disposition attachment with the export's fileName)"
+          headers:
+            X-Content-SHA256: { required: true, description: "the record's sha256 = the SHA-256 of these bytes", schema: { type: string, pattern: '^[0-9a-f]{64}$' } }
+            Content-Disposition: { required: true, description: "attachment; filename=<fileName>", schema: { type: string } }
+          content:
+            application/pdf: { schema: { type: string, contentMediaType: application/pdf } }
+            text/csv: { schema: { type: string, contentMediaType: text/csv } }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '500': { $ref: '#/components/responses/CountError' }
 
 components:
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
@@ -486,6 +557,8 @@ components:
     CountId: { name: countId, in: path, required: true, description: a canonical UUID (else 404 COUNT_NOT_FOUND), schema: { type: string, format: uuid } }
     LineId: { name: lineId, in: path, required: true, description: a canonical UUID (else 404 COUNT_LINE_NOT_FOUND), schema: { type: string, format: uuid } }
     IdempotencyKey: { name: Idempotency-Key, in: header, required: true, description: equals the body's idempotencyKey (rule 5), schema: { type: string, minLength: 8, maxLength: 100 } }
+    ExportId: { name: exportId, in: path, required: true, description: a canonical UUID (else 404 COUNT_EVIDENCE_NOT_FOUND), schema: { type: string, format: uuid } }
+    AcceptLanguage: { name: Accept-Language, in: header, required: false, description: "the file's language (description, 1.1.0 language rule): q-ordered, the first tag's primary subtag if one of the 7, else en", schema: { type: string } }
     IfMatch: { name: If-Match, in: header, required: true, description: 'W/"<version>" of the count, the line or the settings record (rule 6); missing -> 400 INVALID_REQUEST, stale -> 409 COUNT_CONFLICT', schema: { type: string } }
   headers:
     ETag: { description: 'W/"<version>"', schema: { type: string } }
@@ -508,6 +581,9 @@ components:
       description: The company settings (ETag)
       headers: { ETag: { $ref: '#/components/headers/ETag' } }
       content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountSettings' } } }
+    EvidenceExport:
+      description: The Evidence Pack export record (1.1.0)
+      content: { application/json: { schema: { $ref: '#/components/schemas/CountEvidenceExport' } } }
   schemas:
     # ── primitives ──
     Uuid: { type: string, format: uuid }
@@ -835,6 +911,39 @@ components:
         page: { type: integer, minimum: 1 }
         pageSize: { type: integer, minimum: 1, maximum: 200 }
         contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.11 CountEvidenceExport (DL-5, 1.1.0) ──
+    CountEvidenceFormat: { type: string, enum: [Pdf, Csv], description: "Q-18 = A — the two formats carry the same content" }
+    CountEvidenceStatus: { type: string, enum: [Ready, Failed], description: "v1 writes only Ready (the record is written after the file is drawn and stored); Failed is named by the pack and reserved" }
+    CountEvidenceLanguage: { type: string, enum: [en, tr, fr, es, zh, ar, ru] }
+    CountEvidenceExport:
+      type: object
+      additionalProperties: false
+      description: "Insert-only (wms_count_evidence_exports + the bytes in wms_count_evidence_files): written once, never changed or deleted; another language or format is a new export"
+      required: [exportId, countId, countNumber, format, language, requestedLanguage, requestedBy, requestedAt, fileName, sha256, sizeBytes, status, contractVersion]
+      properties:
+        exportId: { $ref: '#/components/schemas/Uuid' }
+        countId: { $ref: '#/components/schemas/Uuid' }
+        countNumber: { $ref: '#/components/schemas/CountNumber' }
+        format: { $ref: '#/components/schemas/CountEvidenceFormat' }
+        language: { $ref: '#/components/schemas/CountEvidenceLanguage' }
+        requestedLanguage: { $ref: '#/components/schemas/CountEvidenceLanguage' }
+        requestedBy: { $ref: '#/components/schemas/Uuid' }
+        requestedAt: { $ref: '#/components/schemas/DateTime' }
+        fileName: { type: string, pattern: '^count-evidence-[A-Z]{2,5}-CNT-\d{6,}-(en|tr|fr|es|zh|ar|ru)-\d{14}\.(pdf|csv)$' }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: lower-case hex SHA-256 of the stored bytes }
+        sizeBytes: { type: integer, minimum: 1, description: the stored byte count }
+        status: { $ref: '#/components/schemas/CountEvidenceStatus' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CountEvidenceExportPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CountEvidenceExport' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
     # ── requests (the members the service's request reader accepts; an unknown member -> 400) ──
     CycleCountFormRequest:
       type: object
@@ -931,6 +1040,13 @@ components:
         tolerancePercent: { $ref: '#/components/schemas/Quantity' }
         maxRecounts: { type: integer, minimum: 0, maximum: 10 }
         maxLinesPerCount: { type: integer, minimum: 1, maximum: 5000 }
+    CreateCountEvidenceExportRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, format]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        format: { $ref: '#/components/schemas/CountEvidenceFormat' }
 
   # ── §5.1 the contract's own codes (pack §8.14's proposal fixed in the proposal §5.1; the code's CycleCountErrorCodes) ──
   x-error-codes:
@@ -959,6 +1075,8 @@ components:
     COUNT_ADJUSTMENT_INTEGRITY: { status: 409, meaning: "the posting key holds another content / the holder movement is reversed / AcceptHolder on a holder that is not this correction" }
     COUNT_LINE_OUT_OF_SCOPE: { status: 422, meaning: "a found line outside scopeBinIds / a non-empty scopeSkuIds, or its key in RecountExcludedKeys" }
     COUNT_LINE_DUPLICATE: { status: 409, meaning: "a found line's key is already in the count" }
+    COUNT_EVIDENCE_NOT_FOUND: { status: 404, meaning: "1.1.0 (DL-5): the export or its file is not in the caller's tenant + company (another tenant / company, an unknown or non-UUID id)" }
+    COUNT_EVIDENCE_INTEGRITY: { status: 500, meaning: "1.1.0 (DL-5): the stored file's SHA-256 is not the recorded sha256 — the file is not served (the one 500 of the catalogue)" }
   # ── §5.2 codes used, not redefined (InventoryErrorCodes). Ledger refusals (INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, SERIAL_COUNT_MISMATCH, …) are
   #    not an answer code: they are the line's adjustment.refusalCode / refusalDetails (approve / retry answer 200). Exception: a posting 400
   #    IDEMPOTENCY_KEY_REUSED is not a refusal — IntegrityError + 409 COUNT_ADJUSTMENT_INTEGRITY (pack §8.6, r5 SB1/F-4). ──
