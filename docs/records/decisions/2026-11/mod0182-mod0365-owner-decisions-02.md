@@ -17,3 +17,5 @@ Kaynak: mockup tur 1 (`Barkod RFID Prototip (tek dosya).html`, açık sorular S-
 Kararlar 01'in mockup'a yansımayanları (tur 2'de düzelir): S-1 v1 yalnız çevrimiçi (06-11), S-2 RFID + etiket v1'de, S-3 telefon kameraları
 **cihaz olarak kaydedilir**, S-5 MOD-0365 sahibi merkez, S-6 İTS ayrı modül (MOD-0247). S-4 (barkoddan ürün bulma MOD-0290-FU07 GTIN'e bağlı) —
 bağımlılık, Ali (MDM).
+
+| E-3 | Okutma ekranının yeri | **Mevcut mobil uygulamada** (iOS / Android ekipleri) — depo çalışanının okutma akışları; yönetim ekranları (tarama olayları, uyum izi, cihaz sağlığı, dış sistemler, ayarlar) Web'de. Mobil ekiplere erken ihtiyaç notu: `execution/domains/supply-chain-execution/work-packs/mobile/2026-11-12-barcode-scanning/MOBILE-NOTE-2026-11-12-barcode-scanning.md`; API sözleşme notu paket onayından sonra | 2026-11-12 |
