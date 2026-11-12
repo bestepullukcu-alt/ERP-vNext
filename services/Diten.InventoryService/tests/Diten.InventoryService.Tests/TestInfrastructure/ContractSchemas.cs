@@ -166,6 +166,15 @@ public static class ContractSchemas
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named WMS-BUNDLE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateWms(string schemaName, string body) => Wms.Validate(schemaName, body);
 
+    // WMS-COUNT-BUNDLE (MOD-0181, frozen 1.0.0 by the CT single-writer step — the MOD-0178 §19.7 pattern). Lifted like WMS-BUNDLE:
+    // every declared response body as "{operationId}.{status}".
+    private static readonly Contract WmsCount = new("wms-count-bundle.openapi.yaml", "wms-count-bundle", WmsResponses);
+
+    public static string WmsCountContractPath => RepoPaths.Contract("wms-count-bundle.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named WMS-COUNT-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateWmsCount(string schemaName, string body) => WmsCount.Validate(schemaName, body);
+
     private static IDictionary<string, JsonNode> WmsResponses(JsonObject doc)
     {
         var lifted = new Dictionary<string, JsonNode>(StringComparer.Ordinal);
