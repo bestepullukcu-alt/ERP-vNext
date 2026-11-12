@@ -256,7 +256,8 @@ public sealed class CycleCountRepository : ICycleCountRepository
 
     private static CycleCountLedgerMovementRow MovementRow(InventoryTransaction t) => new(t.Id, t.TransactionNumber, t.MovementType, t.ItemId, t.SkuId, t.SkuLevel,
         t.FromWarehouseId, t.FromLocationId, t.ToWarehouseId, t.ToLocationId, t.LotId, t.FromStockStatus, t.ToStockStatus, t.Quantity, t.UomId, t.BaseQuantity,
-        t.SourceModule, t.SourceType, t.SourceDocumentId, t.SourceLineId, t.IdempotencyKey, t.CreatedBy, t.CreatedAt, t.TransactionDate, t.PostingDate);
+        t.SourceModule, t.SourceType, t.SourceDocumentId, t.SourceLineId, t.IdempotencyKey, t.CreatedBy, t.CreatedAt, t.TransactionDate, t.PostingDate,
+        t.CorrelationId);
 
     /// <summary>
     /// The SKUs with AVAILABLE stock in the scope, read OUTSIDE any transaction — only to fetch their PRODUCT-MASTER serial flags before the

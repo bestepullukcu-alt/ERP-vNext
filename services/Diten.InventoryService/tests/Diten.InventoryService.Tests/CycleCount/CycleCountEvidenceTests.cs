@@ -10,6 +10,7 @@ using Diten.InventoryService.Persistence.CycleCounting;
 using Diten.InventoryService.Tests.Expiry;
 using Diten.InventoryService.Tests.TestInfrastructure;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 using static Diten.InventoryService.Tests.CycleCounting.CycleCountScenario;
 
@@ -39,13 +40,28 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
 
     private sealed record Closed(CycleCountScenario S, string CountId, string Number, string ApprovedLineTn, string ManualTn, string Exporter);
 
+    // DL-5 FIX-01 (CT ORTA-1): the names the file must carry — PRODUCT-MASTER's SKU code + product name, the central audit queue's people names
+    private const string SkuCode = "SKU-AMX-500";
+    private const string ProductName = "Amoksisilin 500 mg";
+    private const string CounterName = "Ayşe Demir";
+    private const string ApproverName = "Mehmet Kaya";
+
+    /// <summary>A GUID anywhere in the visible text (PDF text, CSV) — the file names, it never writes an id.</summary>
+    private static readonly Regex Guid36 = new("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", RegexOptions.CultureInvariant);
+
     /// <summary>
     /// Bin A 10 counted 12 (+2, over the tolerance → approved by the approver, posted), bin B 5 counted 4 (−1 = 20 %, inside 1 / 50 % → approved
     /// by the tolerance, posted) and a manual COUNT_GAIN (MOD-0173 / MANUAL_MOVEMENT) on bin B after the submit — the count closes after it.
     /// </summary>
-    private async Task<Closed> ClosedCountAsync()
+    private async Task<Closed> ClosedCountAsync(bool named = true)
     {
         var s = new CycleCountScenario(factory);
+        if (named)
+        {
+            factory.Products.SetDisplay(s.Inventory.Sku, SkuCode);
+            factory.Products.SetDisplay(s.Inventory.Item, "PRD-AMX", ProductName);
+        }
+
         await s.ToleranceAsync("1", "50");
         await s.ReceiveAsync(10, s.BinA);
         await s.ReceiveAsync(5, s.BinB);
@@ -70,6 +86,20 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
         var current = await s.CurrentAsync(countId);
         Assert.Equal("Closed", current.GetProperty("status").GetString());
         var exporter = s.TokenFor(Guid.NewGuid(), Read, EvidenceRead, EvidenceExport);
+        if (named)
+        {
+            // the names the central audit queue recorded for the commands (as a named token of the live round would have) — the counter / submitter /
+            // manual poster is the scenario user, the approver the second user
+            var outbox = factory.Collection("central_audit_outbox");
+            foreach (var (user, name) in new[] { (s.User, CounterName), (s.Approver, ApproverName) })
+            {
+                var named1 = await outbox.UpdateManyAsync(
+                    Builders<BsonDocument>.Filter.Eq("TenantId", s.Tenant.ToString("D")) & Builders<BsonDocument>.Filter.Eq("ActorId", user.ToString("D")),
+                    Builders<BsonDocument>.Update.Set("ActorDisplayName", name));
+                Assert.True(named1.ModifiedCount > 0, $"no central row of {name}");
+            }
+        }
+
         return new Closed(s, countId, current.GetProperty("number").GetString()!,
             approved.GetProperty("adjustment").GetProperty("transactionNumber").GetString()!, manualTn, exporter);
     }
@@ -89,7 +119,6 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
         var pdf = ExpiryEvidenceTests.PdfText.Read((await FileAsync(c.S, Str(pdfExport, "exportId"), c.Exporter)).Bytes).Text;
 
         // the head, the four sections, the quantities, the decisions, the ledger numbers, the manual movement and the timeline — in Turkish
-        var approver = c.S.Approver.ToString("D");
         foreach (var expected in new[]
                  {
                      "Sayım kanıt paketi", c.Number, "Anlık görüntü zamanı", "Kapanış", "Kapsamdaki raf gözleri",
@@ -97,7 +126,7 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
                      "Sayım anında beklenen", "Anlık görüntüden beri hareket", "Sayılan", "Fark",
                      // the ledger's wire quantities: bin A expected 10, counted 12, variance +2; bin B expected 5, counted 4, variance −1
                      ";10.000;", ";12.000;", ";2.000;", ";5.000;", ";4.000;", ";-1.000;",
-                     "tolerans içinde", "kullanıcı kararı", approver, c.ApprovedLineTn, c.ManualTn, "MOD-0173 / MANUAL_MOVEMENT", "Sayım fazlası",
+                     "tolerans içinde", "kullanıcı kararı", ApproverName, CounterName, $"{SkuCode} · {ProductName}", "GMG · Grand Medical GMG", c.ApprovedLineTn, c.ManualTn, "MOD-0173 / MANUAL_MOVEMENT", "Sayım fazlası",
                      "Kapandı", "Fark onaylandı"
                  })
         {
@@ -112,6 +141,54 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
         var missing = cells.Where(x => !flatPdf.Contains(Flat(x), StringComparison.Ordinal)).ToList();
         Assert.True(missing.Count == 0, "the PDF lacks: " + string.Join(" | ", missing.Take(10)));
         Assert.Contains("Sayımkanıtpaketi", flatPdf, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// DL-5 FIX-01 (CT ORTA-1, owner Beste 2026-11-12): the file NAMES — the SKU code · product name, the person, the company code · name, the place —
+    /// and no GUID is anywhere in its visible text (the PDF text and the CSV). Sabotage: put an <c>?? id</c> fallback back → red.
+    /// </summary>
+    [Fact]
+    public async Task FIX01_the_evidence_file_names_every_sku_person_company_and_place_and_carries_no_id()
+    {
+        var c = await ClosedCountAsync();
+        var csv = await CsvAsync(c, "tr");
+        var pdfExport = await Expect(ExportAsync(c, "Pdf", "tr"), 201);
+        var pdf = ExpiryEvidenceTests.PdfText.Read((await FileAsync(c.S, Str(pdfExport, "exportId"), c.Exporter)).Bytes).Text;
+
+        foreach (var name in new[] { $"{SkuCode} · {ProductName}", CounterName, ApproverName, "GMG · Grand Medical GMG" })
+        {
+            Assert.Contains(name, csv, StringComparison.Ordinal);
+            Assert.Contains(Flat(name), Flat(pdf), StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain(CycleCountEvidenceText.Of("CountPdf.NameUnreadable", "tr"), csv, StringComparison.Ordinal);
+        Assert.False(Guid36.IsMatch(csv), "the CSV writes an id: " + Guid36.Match(csv).Value);
+        Assert.False(Guid36.IsMatch(pdf), "the PDF writes an id: " + Guid36.Match(pdf).Value);
+    }
+
+    /// <summary>
+    /// FIX-01: nothing could be read (PRODUCT-MASTER has no code, the central audit queue no name, MDM no company, the location directory no place) —
+    /// the file writes the localized "could not be read" word, NEVER the id; in every language the word is that language's.
+    /// </summary>
+    [Fact]
+    public async Task FIX01_an_unreadable_name_is_the_localized_word_and_never_the_id()
+    {
+        var c = await ClosedCountAsync(named: false);
+        factory.LegalEntities.RegisterName(c.S.LegalEntity, "", "");
+        foreach (var language in new[] { "tr", "en", "fr" })
+        {
+            var csv = await CsvAsync(c, language);
+            var word = CycleCountEvidenceText.Of("CountPdf.NameUnreadable", language);
+            Assert.Contains(word, csv, StringComparison.Ordinal);
+            var company = csv.Split(["\r\n"], StringSplitOptions.None).Single(l => l.StartsWith(CycleCountEvidenceText.Of("CountPdf.Company", language) + ";", StringComparison.Ordinal));
+            Assert.Equal(CycleCountEvidenceText.Of("CountPdf.Company", language) + ";" + word, company);
+            Assert.False(Guid36.IsMatch(csv), $"{language}: the CSV writes an id: " + Guid36.Match(csv).Value);
+        }
+
+        var pdfExport = await Expect(ExportAsync(c, "Pdf", "tr"), 201);
+        var pdf = ExpiryEvidenceTests.PdfText.Read((await FileAsync(c.S, Str(pdfExport, "exportId"), c.Exporter)).Bytes).Text;
+        Assert.Contains(Flat("Ad okunamadı"), Flat(pdf), StringComparison.Ordinal);
+        Assert.False(Guid36.IsMatch(pdf), "the PDF writes an id: " + Guid36.Match(pdf).Value);
     }
 
     [Fact]
@@ -186,6 +263,42 @@ public sealed class CycleCountEvidenceTests(CycleCountApiFactory factory) : ICla
         Assert.Equal(Str(second, "exportId"), Str(log.GetProperty("items")[0], "exportId")); // newest first
         Assert.Single(c.S.CentralRows("CreateCountEvidenceExportCommand").Where(r => r.ToJson().Contains(Str(first, "exportId"), StringComparison.Ordinal)));
         Assert.Equal(2, c.S.CentralRows("CreateCountEvidenceExportCommand").Count);
+    }
+
+    /// <summary>
+    /// DL-5 FIX-01 (CT ORTA-2): the download RE-HASHES the stored bytes — a file whose bytes were changed in the store (the real Mongo document, one
+    /// byte flipped) is refused with 500 <c>COUNT_EVIDENCE_INTEGRITY</c> and NO byte of the file in the body; the untouched file of the same count
+    /// still downloads. Sabotage: drop the re-hash → red.
+    /// </summary>
+    [Fact]
+    public async Task FIX01_a_stored_file_whose_bytes_changed_is_refused_with_500_integrity_and_no_bytes()
+    {
+        var c = await ClosedCountAsync();
+        var tampered = await Expect(ExportAsync(c, "Csv", "en"), 201);
+        var intact = await Expect(ExportAsync(c, "Csv", "en"), 201);
+        var original = (await FileAsync(c.S, Str(tampered, "exportId"), c.Exporter)).Bytes;
+
+        var files = factory.Collection(CycleCountCollections.EvidenceFiles);
+        var stored = Assert.Single(c.S.Stored(CycleCountCollections.EvidenceFiles),
+            f => f["Content"].AsByteArray.AsSpan().SequenceEqual(original) && f.ToJson().Contains(Str(tampered, "exportId"), StringComparison.OrdinalIgnoreCase));
+        var changed = (byte[])original.Clone();
+        changed[^3] ^= 0x20; // one byte of the stored file, the length unchanged
+        var update = await files.UpdateOneAsync(new BsonDocument("_id", stored["_id"]), new BsonDocument("$set", new BsonDocument("Content", new BsonBinaryData(changed))));
+        Assert.Equal(1, update.ModifiedCount);
+
+        using var response = await SendAsync(c.S, HttpMethod.Get, $"/api/warehouse/count-evidence-exports/{Str(tampered, "exportId")}/file", null, c.Exporter, "en");
+        Assert.Equal(500, (int)response.StatusCode);
+        Assert.False(response.Headers.Contains("X-Content-SHA256"));
+        Assert.Null(response.Content.Headers.ContentDisposition);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal("COUNT_EVIDENCE_INTEGRITY", JsonDocument.Parse(body).RootElement.GetProperty("error").GetProperty("code").GetString());
+        var text = Encoding.UTF8.GetString(changed);
+        Assert.DoesNotContain(c.Number, body, StringComparison.Ordinal);       // no byte of the file: neither the count number it carries,
+        Assert.DoesNotContain(c.ApprovedLineTn, body, StringComparison.Ordinal); // nor its ledger numbers
+        Assert.DoesNotContain(text[..Math.Min(40, text.Length)], body, StringComparison.Ordinal);
+
+        Assert.Equal(200, (int)(await SendAsync(c.S, HttpMethod.Get, $"/api/warehouse/count-evidence-exports/{Str(intact, "exportId")}/file", null, c.Exporter,
+            "en")).StatusCode); // the other file of the count is untouched and still served
     }
 
     // ── state, body and paging rules ─────────────────────────────────────────────────────────────────────

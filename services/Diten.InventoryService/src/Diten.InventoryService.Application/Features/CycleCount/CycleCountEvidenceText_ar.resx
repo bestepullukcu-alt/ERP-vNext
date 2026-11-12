@@ -30,6 +30,7 @@
   <data name="CountPdf.ManualWindow" xml:space="preserve"><value>نافذة الحركات اليدوية</value></data>
   <data name="CountPdf.MovementType" xml:space="preserve"><value>نوع الحركة</value></data>
   <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>الحركات منذ اللقطة</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>تعذّرت قراءة الاسم</value></data>
   <data name="CountPdf.No" xml:space="preserve"><value>لا</value></data>
   <data name="CountPdf.None" xml:space="preserve"><value>لا يوجد</value></data>
   <data name="CountPdf.NotClosed" xml:space="preserve"><value>لم يُغلق بعد</value></data>

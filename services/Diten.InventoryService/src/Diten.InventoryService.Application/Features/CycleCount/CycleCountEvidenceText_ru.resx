@@ -30,6 +30,7 @@
   <data name="CountPdf.ManualWindow" xml:space="preserve"><value>Период ручных движений</value></data>
   <data name="CountPdf.MovementType" xml:space="preserve"><value>Тип движения</value></data>
   <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>Движения после снимка</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>Не удалось прочитать название</value></data>
   <data name="CountPdf.No" xml:space="preserve"><value>Нет</value></data>
   <data name="CountPdf.None" xml:space="preserve"><value>Нет данных</value></data>
   <data name="CountPdf.NotClosed" xml:space="preserve"><value>Ещё не закрыта</value></data>

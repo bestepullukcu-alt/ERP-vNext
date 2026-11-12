@@ -30,6 +30,7 @@
   <data name="CountPdf.ManualWindow" xml:space="preserve"><value>手工移动时间范围</value></data>
   <data name="CountPdf.MovementType" xml:space="preserve"><value>移动类型</value></data>
   <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>快照后移动</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>无法读取名称</value></data>
   <data name="CountPdf.No" xml:space="preserve"><value>否</value></data>
   <data name="CountPdf.None" xml:space="preserve"><value>无</value></data>
   <data name="CountPdf.NotClosed" xml:space="preserve"><value>尚未关闭</value></data>

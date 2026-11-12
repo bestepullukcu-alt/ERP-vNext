@@ -96,7 +96,8 @@ public sealed record CycleCountDashboardCounts(long OpenCounts, long AwaitingApp
 public sealed record CycleCountLedgerMovementRow(Guid TransactionId, string TransactionNumber, MovementType MovementType, Guid ItemId, Guid SkuId, SkuLevel SkuLevel,
     string? FromWarehouseId, string? FromLocationId, string? ToWarehouseId, string? ToLocationId, string? LotId, StockStatus? FromStockStatus,
     StockStatus? ToStockStatus, decimal Quantity, string UomId, decimal BaseQuantity, string SourceModule, string SourceType, string? SourceDocumentId,
-    string? SourceLineId, string IdempotencyKey, Guid CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset TransactionDate, DateTimeOffset PostingDate);
+    string? SourceLineId, string IdempotencyKey, Guid CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset TransactionDate, DateTimeOffset PostingDate,
+    Guid CorrelationId = default);
 
 /// <summary>Pack §2.4: the <c>COUNT_*</c> movements on <see cref="BinIds"/> created in <c>[From, To)</c> — bin indexes (COUNT_GAIN → to, COUNT_LOSS → from).</summary>
 /// <summary>DL-5: one page of the company's Evidence Pack export log (newest first), optionally of one count.</summary>
