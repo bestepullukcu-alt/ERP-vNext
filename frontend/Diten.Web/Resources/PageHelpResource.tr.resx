@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Klavyeyi kullanın</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>Bu sayfa tek bir iadeyi gösterir: özetini, ürün ve lotuyla satırlarını ve teslim alınırken oluşan karantina kayıtlarını.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>İade ve depo personeli</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Özeti okuyun</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>Özet durumu, sevkiyatı (kendi sayfasına bağlantı), müşteriyi, gerekçeyi ve iadenin ne zaman oluşturulduğunu gösterir. Müşterinin iadeye kaydedilmesinden önce oluşturulmuş bir iade “Old record” olarak işaretlenir.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Satırları kontrol edin</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Her satır ürünü / SKU'yu, lotu, miktarı ve birimi ve teslim alınırken stokunun nasıl kaydedildiğini gösterir. Kaydedilmemiş bir satır nedenini gösterir.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Karantina kaydını açın</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>Karantina kayıtlarına erişiminiz varsa, teslim alınan her satır KRN numarasını gösterir; karantina kaydını açmak için tıklayın. Bu erişim yoksa sütun gösterilmez.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>Her üründen ne kadar stokunuz olduğunu depo, lokasyon, lot ve stok durumuna göre görün. Liste salt okunurdur: stok yalnız hareketlerle değişir.</value>

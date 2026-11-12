@@ -10,7 +10,7 @@ public sealed class CreateReturnHandler(IReturnRepository repository,ReturnReque
   if(!ReturnWire.CreateValid(request.Body))return Response<ReturnResponse>.Fail("INVALID_REQUEST",400);
   try {
    var r=await repository.MutateAsync(context.Scope,null,context.IdempotencyKey,ReturnRequestFingerprint.Create(request.Body),context.CorrelationId,ReturnWire.Plan(request.Body),null,null,null,null,reader.ObserveAsync,ct,request.Body.GetRawText());
-   return r.ErrorCode is null?Response<ReturnResponse>.Success(new(r.ReturnId,r.RmaNumber,r.ShipmentId,r.Status,r.IdempotentReplay),r.StatusCode):Response<ReturnResponse>.Fail(r.ErrorCode,r.StatusCode);
+   return r.ErrorCode is null?Response<ReturnResponse>.Success(ReturnResponse.From(r),r.StatusCode):Response<ReturnResponse>.Fail(r.ErrorCode,r.StatusCode);
   }catch(ReturnFailureException e){return Response<ReturnResponse>.Fail(e.Code,e.Status);}
  }
 }

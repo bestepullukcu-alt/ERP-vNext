@@ -9,6 +9,10 @@ public static class ShipmentProjection
         shipmentId = s.Id,
         s.ShipmentNumber,
         s.SourceDocumentId,
+        // 3.5.0 (MOD-0183 r9 §24.7 items 2, 3): on the list row too, so ShipmentDetail inherits them.
+        s.WarehouseReferenceId,
+        s.ShipToReference,
+        s.CustomerRef,
         status = s.Status.ToString(),
         s.CarrierId,
         loadId = s.LoadPlanId,
@@ -20,7 +24,6 @@ public static class ShipmentProjection
     {
         var data = Summary(s);
         data["sourceModule"] = s.SourceModule; data["sourceType"] = s.SourceType;
-        data["warehouseReferenceId"] = s.WarehouseReferenceId; data["shipToReference"] = s.ShipToReference;
         // 3.4.0: the line stock fields, and each line's issue of the completed dispatch attempt (null until Dispatched).
         var issued = s.DispatchAttempt?.State == DispatchState.Completed ? s.DispatchAttempt.Lines : [];
         data["lines"] = JsonSerializer.SerializeToNode(s.Lines.Select(l => new

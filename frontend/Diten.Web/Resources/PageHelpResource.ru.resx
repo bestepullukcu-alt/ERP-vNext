@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Пользуйтесь клавиатурой</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>Эта страница показывает один возврат: сводку, строки с товаром и партией и записи карантина, созданные при его приёмке.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>Сотрудники отдела возвратов и склада</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Прочитайте сводку</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>Сводка показывает статус, отправку (ссылка на её страницу), клиента, причину и дату создания возврата. Возврат, созданный до того, как клиент стал записываться в возвраты, помечен «Old record».</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Проверьте строки</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Каждая строка показывает товар / SKU, партию, количество и единицу, а также как был проведён запас при приёмке. Для непроведённой строки указана причина.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Откройте запись карантина</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>При доступе к записям карантина каждая принятая строка показывает свой номер KRN; нажмите его, чтобы открыть запись. Без этого доступа столбец не отображается.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>Смотрите, сколько каждого товара у вас есть по складам, местам хранения, партиям и статусам. Список только для чтения: запас меняется только движениями.</value>
