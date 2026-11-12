@@ -36,6 +36,13 @@ public sealed class WmsCountBundleContractTests
         => File["paths"]!.AsObject().SelectMany(p => p.Value!.AsObject().Where(m => m.Value is JsonObject o && o["operationId"] is not null)
             .Select(m => m.Value!.AsObject()));
 
+    // DL-5 (Evidence Pack) is coded against the proposal §4.4 rows and joins the contract only at the 1.1.0 freeze (CT step, additive). Until then
+    // the 1.0.0 equalities below leave out exactly these named DL-5 parts of the code — nothing else — and the 1.1.0 freeze removes this set.
+    private static readonly string[] Dl5OperationIds = ["createCountEvidenceExport", "listCountEvidenceExports", "getCountEvidenceExportFile"];
+    private const string Dl5Controller = "CountEvidenceExportsController";
+    private static readonly string[] Dl5Permissions = ["cycle-count.evidence.export", "cycle-count.evidence.read"];
+    private const string Dl5ErrorCodePrefix = "COUNT_EVIDENCE_";
+
     private static string[] Strings(JsonNode? list) => list?.AsArray().Select(v => v!.GetValue<string>()).ToArray() ?? [];
 
     private static string[] StringConstants(Type type)
@@ -76,24 +83,30 @@ public sealed class WmsCountBundleContractTests
             contract[$"{method.ToUpperInvariant()} {Normal(CycleCountContract.BasePath + path)}"] = operation!["x-permission"]?.GetValue<string>();
 
         var served = new Dictionary<string, string>(StringComparer.Ordinal);
+        var dl5Served = new Dictionary<string, string>(StringComparer.Ordinal);
         var controllers = typeof(CycleCountsController).Assembly.GetTypes()
             .Where(t => t.Namespace == typeof(CycleCountsController).Namespace && typeof(ControllerBase).IsAssignableFrom(t));
         foreach (var controller in controllers)
         {
+            var into = controller.Name == Dl5Controller ? dl5Served : served;
             var prefix = "/" + controller.GetCustomAttribute<RouteAttribute>()!.Template;
             foreach (var action in controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             foreach (var verb in action.GetCustomAttributes<HttpMethodAttribute>())
             foreach (var method in verb.HttpMethods)
             {
                 var permission = action.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..];
-                served[$"{method} {Normal(prefix + (string.IsNullOrEmpty(verb.Template) ? string.Empty : "/" + verb.Template))}"] = permission;
+                into[$"{method} {Normal(prefix + (string.IsNullOrEmpty(verb.Template) ? string.Empty : "/" + verb.Template))}"] = permission;
             }
         }
 
         Assert.Equal(served.Keys.Order(StringComparer.Ordinal), contract.Keys.Order(StringComparer.Ordinal));
         Assert.Equal(13 + 9, served.Count); // CycleCountsController 13 (DL-1 9, DL-2 3, DL-4 1) + CountVariancesController 9 (DL-3)
         foreach (var (route, permission) in served) Assert.Equal(permission, contract[route]);
-        Assert.Equal(CycleCountPermissions.Implemented.Order(StringComparer.Ordinal), served.Values.Distinct().Order(StringComparer.Ordinal));
+        Assert.All(dl5Served, r => Assert.Contains(r.Value, Dl5Permissions)); // the DL-5 controller (not yet in 1.0.0) enforces only DL-5 keys
+        Assert.True(dl5Served.Count is 0 or 3, $"the DL-5 controller serves {dl5Served.Count} routes; proposal §4.4 has 3");
+        Assert.Empty(served.Values.Intersect(Dl5Permissions));
+        Assert.Equal(CycleCountPermissions.Implemented.Except(Dl5Permissions).Order(StringComparer.Ordinal),
+            served.Values.Distinct().Order(StringComparer.Ordinal));
     }
 
     /// <summary>The write operationIds are the service's own <c>RequestOp</c> names (the key events store them, rule 5) — no more, no fewer.</summary>
@@ -104,7 +117,7 @@ public sealed class WmsCountBundleContractTests
             .Where(m => m.Key is "post" or "put").Select(m => m.Value!["operationId"]!.GetValue<string>()).Order(StringComparer.Ordinal).ToArray();
         var service = typeof(ServiceContract).GetFields(BindingFlags.Public | BindingFlags.Static)
             .Where(f => f.IsLiteral && f.Name.StartsWith("Op", StringComparison.Ordinal)).Select(f => (string)f.GetRawConstantValue()!)
-            .Order(StringComparer.Ordinal).ToArray();
+            .Except(Dl5OperationIds).Order(StringComparer.Ordinal).ToArray(); // DL-5 operationIds join at 1.1.0
         Assert.Equal(service, writes);
         Assert.Equal(14, writes.Length);
         Assert.Equal(["updateCycleCountSettings"], File["paths"]!.AsObject().SelectMany(p => p.Value!.AsObject())
@@ -118,7 +131,7 @@ public sealed class WmsCountBundleContractTests
     {
         Assert.DoesNotContain(File["paths"]!.AsObject(), p => p.Key.Contains("evidence", StringComparison.OrdinalIgnoreCase));
         var deferred = Strings(File["info"]!["x-not-in-this-version"]!["DL-5"]);
-        Assert.Equal(["createCountEvidenceExport", "listCountEvidenceExports", "getCountEvidenceExportFile"], deferred);
+        Assert.Equal(Dl5OperationIds, deferred);
         var operationIds = OperationNodes.Select(o => o["operationId"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal);
         Assert.All(deferred, id => Assert.DoesNotContain(id, operationIds));
         var slices = File["info"]!["x-implemented-by-slice"]!.AsObject().SelectMany(s => Strings(s.Value)).Order(StringComparer.Ordinal);
@@ -133,7 +146,9 @@ public sealed class WmsCountBundleContractTests
     public void The_error_catalogue_is_exactly_CycleCountErrorCodes()
     {
         var catalogue = File["components"]!["x-error-codes"]!.AsObject().Select(c => c.Key).Order(StringComparer.Ordinal).ToArray();
-        Assert.Equal(StringConstants(typeof(CycleCountErrorCodes)).Order(StringComparer.Ordinal), catalogue);
+        Assert.Empty(catalogue.Where(c => c.StartsWith(Dl5ErrorCodePrefix, StringComparison.Ordinal)));
+        Assert.Equal(StringConstants(typeof(CycleCountErrorCodes)).Where(c => !c.StartsWith(Dl5ErrorCodePrefix, StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal), catalogue); // DL-5 codes (COUNT_EVIDENCE_*) join at 1.1.0
         Assert.Equal(25, catalogue.Length);
 
         var reused = Strings(File["components"]!["x-reused-error-codes"]);
