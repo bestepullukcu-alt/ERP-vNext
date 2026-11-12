@@ -1,19 +1,22 @@
 # WMS-COUNT-BUNDLE v1 — proposal (MOD-0181 Cycle Counting / Sayım)
 
-> **Durum: TASLAK (proposal) — sözleşme değil.** `docs/analysis/contracts/` altında WMS-COUNT-BUNDLE yok (`git grep WMS-COUNT` docs +
-> execution: yalnız MOD-0181 paketi). Blueprint 8.8 satır 182 sözleşmeyi "WMS-COUNT-BUNDLE (count tasks, variance schema, approvals optional,
-> evidence export)" diye adlandırır. Dondurma ayrı CT adımıdır (MOD-0178 §19.7 deseni): DL-3 CT kabulünden sonra tek yazıcı adımıyla
-> `docs/analysis/contracts/wms-count-bundle.openapi.yaml` (`info.version: 1.0.0`, `x-status: FROZEN`, `x-owner: MOD-0181`,
-> `x-owner-service: Diten.InventoryService`) yazılır; donduktan sonra yalnız eklemeli değişiklik (K16).
+> **Durum: DONDU → 1.0.0 dosyası; DL-5 satırları ön taslak.** §1–§3, §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3), §4.4'ün DL-4 satırı ve §5–§7
+> CT'nin tek yazıcı adımıyla (MOD-0178 §19.7 deseni) `docs/analysis/contracts/wms-count-bundle.openapi.yaml`'a donduruldu (`info.version: 1.0.0`,
+> `x-status: FROZEN`, `x-owner: MOD-0181`, `x-owner-service: Diten.InventoryService`; 22 operasyon, 25 `COUNT_*` kodu); **kablo otoritesi artık o
+> dosyadır**, bu dosya değil. Donduktan sonra yalnız eklemeli değişiklik (K16). Dondurmada kod gerçeği yazılan farklar (yalnız ekleme / daraltma,
+> paketle çelişki yok) dosyanın `info.description`'ında (a)–(e): her yazmada `INVALID_REQUEST`; `bulkDeleteCycleCounts` `COUNT_CONFLICT`;
+> `getCycleCountDashboard` `COUNT_INVENTORY_UNAVAILABLE`; `CountVariance` iki kapalı satır şemasının `oneOf`'u; §3.10'un "null" dediği
+> `accuracyPercent` / `manualCountMovements` kabloda yazılmaz (kural 4). Blueprint 8.8 satır 182 sözleşmeyi "WMS-COUNT-BUNDLE (count tasks,
+> variance schema, approvals optional, evidence export)" diye adlandırır.
 >
-> **Kaynak (davranış otoritesi):** paket `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md` **r7**
-> (sha256 `acf91c8506f4ff0e4468d89fdacdb2f73ef20e6c332b560f895d51449930dedd`, onay satırı `execution/approvals/approvals.tsv`, sahip «onayla»
-> Beste 2026-11-06). Bu dosya yalnız kablo şeklidir; paketle çelişirse paket kazanır ve bu dosya düzeltilir. Sahip kararları Q-1…Q-24
-> (paket §19.4) ve F-1 = A (PUT / DELETE yok, komut uçları; tek istisna `PUT /count-settings`).
+> **Kaynak (davranış otoritesi):** paket `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md` **r8**
+> (sha256 `f943ab48c0bcdcab512cc1fd21dd80e0710649b29bb520fb90bae2f840eaa856`, onay satırı `execution/approvals/approvals.tsv`, onaylayan Ali /
+> `GMG-ERP` «onayla» 2026-11-12). Bu dosya yalnız kablo şeklidir; paketle çelişirse paket kazanır. Sahip kararları Q-1…Q-24
+> (paket §19.4) ve F-1 = A (PUT / DELETE yok, komut uçları; tek istisna `PUT /count-settings`); r8'in `AcceptHolder` aynılığı SKU + kalemi de sayar (ORTA-2).
 >
-> **Dilim durumu:** §4.1 (DL-1), §4.2 (DL-2), §4.3 (DL-3) ve §4.4'ün DL-4 satırı (`getCycleCountDashboard`, §3.10) **bağlayıcı taslak** — kod bu tablolara karşı yazılır ve `CycleCountDraftContract`
-> (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve `/count-settings` cevabını bu şemalara karşı doğrular. §4.4'ün DL-5 satırları
-> paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır**; her dilim kendi satırlarını bağlayıcı yapar.
+> **Dilim durumu:** DL-1…DL-4 donmuştur — `CycleCountContract` (test projesi) her `/api/warehouse/cycle-counts*`, `/count-variances*` ve
+> `/count-settings` cevabını dondurulmuş dosyaya karşı doğrular, `WmsCountBundleContractTests` dosyayı koda karşı ölçer. §4.4'ün **DL-5 satırları**
+> (Evidence Pack) paketin §3 / §8 / §16'sından çıkarılmış **ön taslaktır** ve 1.0.0'da yoktur; DL-5 onları kendi eklemeli sürümüyle bağlayıcı yapar.
 
 ## 1. Rules
 
