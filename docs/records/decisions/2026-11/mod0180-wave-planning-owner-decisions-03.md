@@ -19,3 +19,5 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   bekleyen siparişin toplama görevleri dalga yokmuş gibi hemen açılır (MOD-0178 normal akışı). r2'deki 409 `WAVE_SETTINGS_DEFERRED_ORDERS`
   kuralı bu kararla değişir. Sahip ayrıca: MOD-0178'e düşülecek not (X-16) r29'u MOD-0178 r28 ile aynı onay turunda Ali'ye götürmek; PKS-001
   :92 istisna cümlesi `.antigravity` kapısı onayına dahil.
+- **Q-17 = 24 Kasım 2026** (Beste, 2026-11-12). **"Hemen" teyidi** (r3 incelemesi (c) 3; Beste "evet hemen sayılır", 2026-11-13): kapatma
+  isteğinde ilk tur (en çok 200 sipariş / 2.000 görev), kalanı en geç bir bakım turu (60 sn) içinde açılır — Y-1'in "hemen"i budur.
