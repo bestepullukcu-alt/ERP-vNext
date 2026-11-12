@@ -470,6 +470,74 @@ def mutant(text: str, *edits: tuple[str, str]) -> str:
 
 @unittest.skipIf(os.name == "nt", "the stubs are bash scripts — POSIX only")
 @unittest.skipUnless(shutil.which("bash"), "needs bash")
+def run_gates_real_git(text: str, base_ledger: str, head_ledger: str) -> dict:
+    """Runs the script TEXT end to end on a pull request with REAL git (Codex round 2 on b1b7a495e): a bare origin whose
+    main holds `base_ledger`, a clone whose HEAD holds `head_ledger`. Only python3, dotnet, sleep and the sibling .sh
+    scripts are stubs; the base is fetched from origin, resolved and compared by git itself."""
+    with tempfile.TemporaryDirectory() as tmp:
+        seed, origin, repo, stubs, venv = (os.path.join(tmp, n) for n in ("seed", "origin.git", "repo", "stubs", "venv"))
+        ledger = os.path.join(LEDGER, "Diten.Stub.md")
+        os.makedirs(os.path.join(seed, LEDGER))
+        pathlib.Path(seed, ledger).write_text(base_ledger, encoding="utf-8")
+        git(tmp, "init", "-q", "-b", "main", seed)
+        git(seed, "add", ledger)
+        git(seed, "-c", "core.hooksPath=/dev/null", "commit", "-q", "-m", "base")
+        git(tmp, "clone", "-q", "--bare", seed, origin)
+        git(tmp, "clone", "-q", origin, repo)
+        pathlib.Path(repo, ledger).write_text(head_ledger, encoding="utf-8")
+        git(repo, "-c", "core.hooksPath=/dev/null", "commit", "-q", "-am", "head")
+        for folder in (os.path.join(repo, "scripts"), stubs, os.path.join(venv, "bin")):
+            os.makedirs(folder, exist_ok=True)
+        files = {os.path.join(repo, "scripts", "run_phase1_gates.sh"): text,
+                 os.path.join(venv, "bin", "python3"): LOGGING_STUB.format(name="python3")}
+        for name in ("python3", "dotnet", "sleep"):
+            files[os.path.join(stubs, name)] = LOGGING_STUB.format(name=name)
+        for name in set(re.findall(r"(?m)^\./scripts/([\w.-]+\.sh)\b", text)):
+            files[os.path.join(repo, "scripts", name)] = LOGGING_STUB.format(name=name)
+        for path, body in files.items():
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(body)
+            os.chmod(path, 0o755)
+        pathlib.Path(stubs, "log").write_text("", encoding="utf-8")
+        clean = {k: v for k, v in ENV.items() if not k.startswith(("GITHUB_", "MERGE_GROUP_", "AUDIT_LEDGER_",
+                                                                     "PAGE_HELP_LEDGER_", "AC_TAG_", "PHASE1_"))}
+        clean.update(PATH=stubs + os.pathsep + ENV.get("PATH", ""), STUB_DIR=stubs, CT_TOOLS_VENV=venv, **PULL_REQUEST)
+        done = subprocess.run(["bash", os.path.join(repo, "scripts", "run_phase1_gates.sh")], cwd=repo, env=clean,
+                              capture_output=True, text=True, timeout=120)
+    return {"code": done.returncode, "out": done.stdout + done.stderr}
+
+
+DEBT = ("- OldCmd\n", "- OldCmd\n- NewCmd\n")          # (base, head): one list line added
+MOVED = ("- OldCmd\n- Other\n", "- Other\n- OldCmd\n")   # the same lines in another order: not growth
+
+
+def red_on_new_debt(run: dict) -> list[str]:
+    """What is wrong (empty = nothing) with a run whose HEAD adds `- NewCmd` to a ledger on the fetched base."""
+    problems = []
+    if run["code"] != 1:
+        problems.append(f"exit {run['code']}, expected 1")
+    if "audit ledger growth: FAILED" not in run["out"] or "- NewCmd" not in run["out"]:
+        problems.append("the added line was not reported")
+    return problems
+
+
+@unittest.skipIf(os.name == "nt", "Windows may start WSL's bash, whose git cannot open file:///C:/ — POSIX only")
+@unittest.skipUnless(shutil.which("bash") and shutil.which("git"), "needs bash and git")
+class TheFetchedBaseReachesTheLedgerContentTests(unittest.TestCase):
+    """Codex round 2 on b1b7a495e: the per-file diff of the audit ledger, the comparison that finds new debt, must
+    read the fetched base. Real git, so a diff against anything else (HEAD) comes back empty, as it would in CI."""
+
+    def test_a_line_added_against_the_fetched_base_is_red(self):
+        run = run_gates_real_git(script_text(), *DEBT)
+        self.assertEqual(red_on_new_debt(run), [], run["out"])
+
+    def test_the_same_lines_in_another_order_pass(self):
+        run = run_gates_real_git(script_text(), *MOVED)
+        self.assertEqual(run["code"], 0, run["out"])
+        self.assertIn("[phase1] audit ledger growth: ok", run["out"])
+        self.assertIn("[phase1] gates passed", run["out"])
+
+
 class SabotageTests(unittest.TestCase):
     """Each change below breaks the one-base rule; each must make the behaviour checks above report a problem. The
     anchors must be found exactly once (a sabotage that does not apply proves nothing)."""
@@ -529,6 +597,14 @@ class SabotageTests(unittest.TestCase):
         run = run_gates(mutant(script_text(), ("    unable_status=1\n", "    unable_status=0\n")), ["ok"], commits=[],
                         **PULL_REQUEST)
         self.assertNotEqual(red_with(run, "is not a commit"), [], run["out"])
+
+    @unittest.skipUnless(shutil.which("git"), "needs git")
+    def test_a_ledger_file_diff_that_leaves_the_base_is_seen(self):
+        # Codex round 2 on b1b7a495e: the per-file diff compares HEAD with HEAD; the list diff still finds the file
+        edit = ('git diff --unified=0 "$base" ${head:+"$head"}', 'git diff --unified=0 HEAD ${head:+"$head"}')
+        run = run_gates_real_git(mutant(script_text(), edit), *DEBT)
+        self.assertEqual(run["code"], 0, run["out"])                    # the mutant really goes green ...
+        self.assertNotEqual(red_on_new_debt(run), [], run["out"])       # ... and the check above sees it
 
     def test_an_override_accepted_in_github_actions_is_seen(self):
         run = run_gates(mutant(script_text(), ('    if [ -n "${!base_override:-}" ]; then', "    if false; then")),
