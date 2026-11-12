@@ -22,8 +22,13 @@ as `docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md` (no `wms-bundle.op
 | R10-6 | OD-R10-2 — customer on an intake shipment | **Separate state:** an intake shipment shows its own customer state "warehouse shipment — no customer" (new localized text, 7 languages), never "Old record"; a customer on the outbound is a later MOD-0178 topic | §25.3, §25.8 |
 | R10-7 | OD-R10-3 — showing `outboundNumber` | **Add to 3.6.0:** optional, read-only `outboundNumber` on `ShipmentSummary` (so also `ShipmentDetail` and the list); shown as the source code on list and details; null for manual shipments | §25.1, §25.3, §25.8 |
 | R10-8 | OD-R10-5 — drift hash over a body with an address | **Accepted residual risk:** only the SHA-256 is stored, the address is neither stored nor recoverable from it | §25.2, §25.9 |
+| R10-9 | `customerRef` type in SHIPMENT-BUNDLE 3.6.0 (MOD-0177-FU01 AC-17 request, 2026-11-12) | **`type: string`, `format: uuid`, absent when there is none:** the lower-case pattern is kept, `null` leaves the type, the field stays optional; absent means "no customer" (records before 3.5.0, intake shipments, calls that do not send it). The service already never writes `null`; it keeps reading an explicit `null` in a create request as absent | §25.3.1 item 3, IR-17 |
 
 Decision source: the owner's answers to the four questions in the MVP-6 CT conversation, 2026-11-11 ("Tam aç",
 "İç alan", "r10'a girsin", "Taslak + kod kapısı"); R10-5…R10-8: the owner's answers of the same day ("SHIPMENT 3.6.0",
-"Ayrı durum metni", "3.6.0'a ekle", "Kalan risk olarak kabul"). These are decisions on the revision's scope; they are not a pack approval,
+"Ayrı durum metni", "3.6.0'a ekle", "Kalan risk olarak kabul"). R10-9: the owner's answer of 2026-11-12 ("string+uuid, yoksa yok"), the same day restating the target ≈ 2026-11-21 ("~21 Kasım geçerli"). These are decisions on the revision's scope; they are not a pack approval,
 and no code, commit to `main` or deployment follows from them.
+
+Input, not an owner decision (2026-11-12): the MOD-0178 CT's message to MVP-6 says MOD-0178 writes WAREHOUSE-OUTBOUND 1.1.0
+and WMS-BUNDLE 1.2.0 in one CT step "when the revision comes"; the pack reads this as "after r10 is approved on `main`"
+(§25.6 order, OD-R10-6) and asks MOD-0178 to word its pack the same way.
