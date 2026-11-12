@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -29,15 +30,15 @@ public sealed class UpdatePositionCommandHandler : IRequestHandler<UpdatePositio
             return Response<NoContent>.Fail("Archived Position cannot be mutated.", 409);
         }
 
-        var canonicalCode = OrganizationCodeNormalizer.Normalize(request.Request.Code);
-        if (string.IsNullOrWhiteSpace(canonicalCode))
+        /*
+         * MOD-0040-FU02 DL-2 (Q-2 A, RCS-001 §6) — NO code changes on update, old hand-typed codes included. Blank keeps the
+         * stored code; one EQUAL to it (ordinal — nothing trimmed, upper-cased or normalized) is accepted, because the forms
+         * and the drag-and-drop re-link send the whole record back; anything else is 409 and nothing is written.
+         */
+        if (!string.IsNullOrWhiteSpace(request.Request.Code)
+            && !string.Equals(request.Request.Code, entity.Code, StringComparison.Ordinal))
         {
-            return Response<NoContent>.Fail("Position code is required.", 400);
-        }
-
-        if (await _positions.ExistsByCodeAsync(canonicalCode, request.Id, ct))
-        {
-            return Response<NoContent>.Fail("Position code already exists.", 409);
+            return Response<NoContent>.Fail("The Position code cannot be changed.", 409, RecordCodeReasonCodes.Immutable);
         }
 
         var referenceCheck = await PositionReferenceGuard.ValidateAsync(_positions, _organizationUnits, request.Id, request.Request.OrganizationUnitId, request.Request.ReportsToPositionId, ct);
@@ -46,7 +47,6 @@ public sealed class UpdatePositionCommandHandler : IRequestHandler<UpdatePositio
             return referenceCheck;
         }
 
-        entity.Code = canonicalCode;
         entity.Name = request.Request.Name.Trim();
         entity.OrganizationUnitId = request.Request.OrganizationUnitId;
         entity.ReportsToPositionId = request.Request.ReportsToPositionId;

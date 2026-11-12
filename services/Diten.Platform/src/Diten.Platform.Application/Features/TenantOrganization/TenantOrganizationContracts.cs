@@ -6,7 +6,8 @@ namespace Diten.Platform.Application.Features.TenantOrganization;
 // construction (and JSON binding by name) keeps working. Enum-valued fields arrive as strings and are parsed
 // case-insensitively (fallback to the enum default), so no JSON enum-converter config is required.
 public sealed record OrganizationUnitRequest(
-    string Code,
+    // MOD-0040-FU02 DL-2 — system-assigned: a create carries none (a filled one is 400), an update may echo the stored one.
+    string? Code,
     string Name,
     Guid LegalEntityId,
     Guid? ParentOrganizationUnitId,
@@ -49,7 +50,8 @@ public sealed record OrganizationUnitDto(
     Guid? AdministrativeParentOrganizationUnitId);
 
 public sealed record PositionRequest(
-    string Code,
+    // MOD-0040-FU02 DL-2 — system-assigned: a create carries none (a filled one is 400), an update may echo the stored one.
+    string? Code,
     string Name,
     Guid OrganizationUnitId,
     Guid? ReportsToPositionId,

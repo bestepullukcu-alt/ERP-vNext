@@ -97,4 +97,19 @@
   <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>请输入一个值</value></data>
   <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>请输入一个数字</value></data>
   <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>请选择日期</value></data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>保存记录时由系统分配代码。</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>代码不能更改。</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>代码由系统分配，请将此字段留空。</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>后续代码已被占用，无法分配代码。请联系管理员。</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>公司简码在使用后已更改。请联系主数据管理员。</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>公司没有有效的简码（2 至 5 个大写字母）。请联系主数据管理员。</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>未找到该公司，或该公司未启用。</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>该公司尚未获批使用。</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>您没有读取公司记录的权限，无法分配代码。</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>您没有创建此记录的权限。</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>您的组织账户未激活，无法分配代码。</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>代码服务当前不可用。请稍后重试。</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>当前无法读取公司信息。请稍后重试。</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>此请求不允许获取记录代码。</value></data>
 </root>

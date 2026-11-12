@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using System.Reflection;
+using Diten.Platform.API.Controllers.Platform;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Domain.Enums.RecordCodes;
@@ -66,7 +68,7 @@ public sealed class RecordCodeTypeCatalogTests
         Assert.False(RecordCodeTypeCatalog.TryGet(recordType, out _));
 
     [Fact]
-    public void AC09_each_type_allows_exactly_its_scopes_and_ORG_POS_have_no_caller_and_no_scope()
+    public void AC09_each_type_allows_exactly_its_scopes_and_PLN_has_no_caller()
     {
         var scopes = RecordCodeTypeCatalog.All.ToDictionary(d => d.RecordType, d => d.AllowedScopes.OrderBy(s => s).ToArray());
         Assert.Equal([RecordCodePrefixScope.Group], scopes["BNK"]);
@@ -77,15 +79,13 @@ public sealed class RecordCodeTypeCatalogTests
         }
 
         Assert.Equal([RecordCodePrefixScope.Platform], scopes["PLN"]);
-        foreach (var type in new[] { "ORG", "POS", "PLN" })
-        {
-            var definition = Assert.Single(RecordCodeTypeCatalog.All, d => d.RecordType == type);
-            Assert.Null(definition.AllowedCaller);
-            Assert.Null(definition.RequiredPermission);
-        }
+        var pln = Assert.Single(RecordCodeTypeCatalog.All, d => d.RecordType == "PLN");
+        Assert.Null(pln.AllowedCaller);
+        Assert.Null(pln.RequiredPermission);
 
-        Assert.Empty(scopes["ORG"]);
-        Assert.Empty(scopes["POS"]);
+        // DL-2 (AC-48 replaces this test's ORG / POS sentence): one scope, LegalEntity.
+        Assert.Equal([RecordCodePrefixScope.LegalEntity], scopes["ORG"]);
+        Assert.Equal([RecordCodePrefixScope.LegalEntity], scopes["POS"]);
     }
 
     [Fact]
@@ -102,11 +102,47 @@ public sealed class RecordCodeTypeCatalogTests
 
         var mapped = TrustedRecordCodeCredentialAuthenticator.Consumers.SelectMany(c => c.RecordTypes).ToArray();
         Assert.Equal(mapped.Length, mapped.Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(RecordCodeTypeCatalog.All.Where(d => d.AllowedCaller is not null).Select(d => d.RecordType).OrderBy(t => t),
+        // DL-2: Diten.Platform is the in-process caller (ORG / POS) and has no HTTP binding; every other caller is the map.
+        Assert.Equal(RecordCodeTypeCatalog.All
+                .Where(d => d.AllowedCaller is not null && d.AllowedCaller != InProcessCaller)
+                .Select(d => d.RecordType).OrderBy(t => t),
             mapped.OrderBy(t => t));
         Assert.DoesNotContain("ORG", mapped);
         Assert.DoesNotContain("POS", mapped);
         Assert.DoesNotContain("PLN", mapped);
+    }
+
+    // ── AC-48 (DL-2) ────────────────────────────────────────────────────────────────────────────────────────
+
+    private const string InProcessCaller = "Diten.Platform";
+
+    [Theory]
+    [InlineData("ORG", "platform.organization-units.create")]
+    [InlineData("POS", "platform.positions.create")]
+    public void AC48_org_and_pos_allow_only_legal_entity_and_only_the_in_process_caller(string recordType, string permission)
+    {
+        var definition = Assert.Single(RecordCodeTypeCatalog.All, d => d.RecordType == recordType);
+
+        Assert.Equal([RecordCodePrefixScope.LegalEntity], definition.AllowedScopes);
+        Assert.Equal(InProcessCaller, definition.AllowedCaller);
+        Assert.Equal(permission, definition.RequiredPermission);
+        Assert.DoesNotContain(TrustedRecordCodeCredentialAuthenticator.Consumers, c => c.RecordTypes.Contains(recordType));
+        Assert.DoesNotContain(TrustedRecordCodeCredentialAuthenticator.Consumers, c => c.SourceService == InProcessCaller);
+        Assert.Equal(3, TransactionOwnedAuditSourceServices.Names.Count);
+        Assert.Contains(InProcessCaller, TransactionOwnedAuditSourceServices.Names);
+    }
+
+    [Theory]
+    [InlineData("ORG", typeof(OrganizationUnitsController))]
+    [InlineData("POS", typeof(PositionsController))]
+    public void AC48_the_catalogue_permission_is_the_controller_s_has_permission_key(string recordType, Type controller)
+    {
+        var create = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .Single(m => m.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpPostAttribute>() is { Template: null });
+        var key = Assert.Single(create.GetCustomAttributes<HasPermissionAttribute>()).Permission;
+
+        Assert.True(RecordCodeTypeCatalog.TryGet(recordType, out var definition));
+        Assert.Equal(key, definition.RequiredPermission);
     }
 
     [Fact]

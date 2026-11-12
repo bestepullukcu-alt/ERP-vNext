@@ -28,8 +28,29 @@
     let L = {};
     let parentSeedLegalEntityId = '';
 
-    const REQUIRED = ['ouCode', 'ouName', 'ouLegalEntityId'];
+    const REQUIRED = ['ouName', 'ouLegalEntityId'];
     const DATE_FIELDS = ['ouEffectiveFrom', 'ouEffectiveTo'];
+    // MOD-0040-FU02 DL-2 — the code is system-assigned (pack §11). A record-code answer is shown in the user's language,
+    // never the service's English errors[] text; any other answer keeps today's behaviour.
+    const RECORD_CODE_REASONS = {
+        RECORD_CODE_IMMUTABLE: 'RecordCodeImmutable',
+        RECORD_CODE_SYSTEM_ASSIGNED: 'RecordCodeSystemAssigned',
+        RECORD_CODE_COLLISION: 'RecordCodeCollision',
+        LEGAL_ENTITY_SHORT_CODE_CHANGED: 'RecordCodeShortCodeChanged',
+        LEGAL_ENTITY_SHORT_CODE_MISSING: 'RecordCodeShortCodeMissing',
+        LEGAL_ENTITY_NOT_FOUND: 'RecordCodeLegalEntityNotFound',
+        LEGAL_ENTITY_NOT_ELIGIBLE: 'RecordCodeLegalEntityNotEligible',
+        LEGAL_ENTITY_READ_PERMISSION_MISSING: 'RecordCodeLegalEntityReadPermissionMissing',
+        RECORD_CODE_PERMISSION_MISSING: 'RecordCodePermissionMissing',
+        RECORD_CODE_TENANT_NOT_ACTIVE: 'RecordCodeTenantNotActive',
+        RECORD_CODE_UNAVAILABLE: 'RecordCodeUnavailable',
+        LEGAL_ENTITY_SOURCE_UNAVAILABLE: 'RecordCodeLegalEntitySourceUnavailable',
+        RECORD_CODE_FORBIDDEN: 'RecordCodeForbidden',
+    };
+    const recordCodeMessage = (json) => {
+        const key = RECORD_CODE_REASONS[json && (json.reason_code || json.reasonCode)];
+        return key && L[key] ? [L[key]] : null;
+    };
 
     // FU03 — permission keys are FU02 §14 verbatim; they are not re-invented here.
     const PERM_REPORTING_LINE = 'platform.organization-units.reporting-line.update';
@@ -246,7 +267,8 @@
     const valueOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? v : null; };
 
     const collectPayload = () => ({
-        code: trim(byId('ouCode')?.value),
+        // A create sends no code (the system assigns it); an edit echoes the stored one, which the server keeps.
+        code: isEdit ? trim(byId('ouCode')?.value) : undefined,
         name: trim(byId('ouName')?.value),
         legalEntityId: valueOrNull('ouLegalEntityId'),
         parentOrganizationUnitId: valueOrNull('ouParentId'),
@@ -271,6 +293,8 @@
     const readErrors = async (res) => {
         try {
             const json = await res.json();
+            const recordCode = recordCodeMessage(json);
+            if (recordCode) return recordCode;
             const errors = json.errors || json.Errors || [];
             return errors.length ? errors : [L.ErrorOccurred || 'An error occurred.'];
         } catch {

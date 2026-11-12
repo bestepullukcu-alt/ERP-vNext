@@ -4,7 +4,7 @@ using Diten.Platform.Domain.Repositories;
 namespace Diten.Platform.Application.Tests.TenantOrganization;
 
 internal sealed class InMemoryOrganizationUnitRepository
-    : IOrganizationUnitRepository, IOrganizationReportingGraphRepository
+    : IOrganizationUnitRepository, IOrganizationReportingGraphRepository, IOrganizationUnitCodeHistoryRepository
 {
     private readonly Guid _tenantId;
     private readonly List<OrganizationUnit> _items = [];
@@ -32,6 +32,10 @@ internal sealed class InMemoryOrganizationUnitRepository
             && !x.IsDeleted
             && x.Code == code
             && (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+    // MOD-0040-FU02 DL-2 — deleted rows included (deletion is a flag, the row stays in the list).
+    public Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default) =>
+        Task.FromResult(_items.Any(x => x.TenantId == _tenantId && x.Code == code));
 
     public Task UpdateAsync(OrganizationUnit organizationUnit, CancellationToken ct = default)
     {
@@ -301,7 +305,7 @@ internal sealed class InMemoryOrganizationFieldValueRepository : IOrganizationFi
     public void Add(OrganizationFieldValue item) => _items.Add(item);
 }
 
-internal sealed class InMemoryPositionRepository : IPositionRepository
+internal sealed class InMemoryPositionRepository : IPositionRepository, IPositionCodeHistoryRepository
 {
     private readonly Guid _tenantId;
     private readonly List<Position> _items = [];
@@ -329,6 +333,10 @@ internal sealed class InMemoryPositionRepository : IPositionRepository
             && !x.IsDeleted
             && x.Code == code
             && (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+    // MOD-0040-FU02 DL-2 — deleted rows included (deletion is a flag, the row stays in the list).
+    public Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default) =>
+        Task.FromResult(_items.Any(x => x.TenantId == _tenantId && x.Code == code));
 
     public Task UpdateAsync(Position position, CancellationToken ct = default)
     {

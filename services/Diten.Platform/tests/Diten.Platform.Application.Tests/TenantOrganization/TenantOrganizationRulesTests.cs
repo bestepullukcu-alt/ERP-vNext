@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Handlers.CommandHandlers;
@@ -6,8 +7,10 @@ using Diten.Platform.Application.Features.TenantOrganization.Handlers.QueryHandl
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Features.TenantOrganization.Validators;
+using Diten.Platform.Application.Tests.RecordCodes;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.TenantOrganization;
@@ -22,51 +25,65 @@ public sealed class TenantOrganizationRulesTests
     public async Task Organization_unit_create_rejects_missing_legal_entity()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(false), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(false), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
+        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(null, "Root", LegalEntityId, null)), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(404, response.StatusCode);
     }
 
     [Fact]
-    public async Task Organization_unit_create_rejects_duplicate_code_in_tenant()
+    public async Task Organization_unit_create_refuses_a_client_code_even_one_an_existing_unit_holds()
     {
+        // MOD-0040-FU02 DL-2 (AC-52) — was "rejects duplicate code" (409): the code is system-assigned now.
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         orgUnits.Add(OrgUnit("ROOT"));
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var recordCodes = new FakeInProcessRecordCodeAllocator();
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(),
+            recordCodes, orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(" root ", "Root 2", LegalEntityId, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(409, response.StatusCode);
+        Assert.Equal((400, RecordCodeReasonCodes.SystemAssigned), (response.StatusCode, response.ReasonCode));
+        Assert.Empty(recordCodes.Requests);
+        Assert.Single(await orgUnits.GetAllAsync());
     }
 
     [Fact]
-    public async Task Organization_unit_create_rejects_normalized_empty_code()
+    public async Task Organization_unit_create_refuses_any_filled_code_and_assigns_one_for_a_blank_code()
     {
+        // MOD-0040-FU02 DL-2 (AC-52) — was "rejects normalized empty code": nothing is normalized any more; filled = 400,
+        // blank (whitespace only included) = the system's code.
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("!!!", "Root", LegalEntityId, null)), CancellationToken.None);
+        var filled = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("!!!", "Root", LegalEntityId, null)), CancellationToken.None);
+        var blank = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("   ", "Root", LegalEntityId, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
+        Assert.Equal((400, RecordCodeReasonCodes.SystemAssigned), (filled.StatusCode, filled.ReasonCode));
+        Assert.Equal(201, blank.StatusCode);
+        Assert.Equal("MYG-ORG-000001", (await orgUnits.GetByIdAsync(blank.Data))!.Code);
     }
 
     [Fact]
-    public async Task Organization_unit_update_rejects_normalized_empty_code()
+    public async Task Organization_unit_update_cannot_change_the_code()
     {
+        // MOD-0040-FU02 DL-2 (AC-53, Q-2 A) — was "rejects normalized empty code" (400): every code is immutable now.
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
         var handler = new UpdateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true));
 
-        var response = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("---", "Root", LegalEntityId, null)), CancellationToken.None);
+        var changed = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("---", "Root", LegalEntityId, null)), CancellationToken.None);
+        var cased = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("root", "Root", LegalEntityId, null)), CancellationToken.None);
+        var same = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
+        var blank = await handler.Handle(new UpdateOrganizationUnitCommand(org.Id, new OrganizationUnitRequest("  ", "Root", LegalEntityId, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
+        Assert.Equal((409, RecordCodeReasonCodes.Immutable), (changed.StatusCode, changed.ReasonCode));
+        Assert.Equal((409, RecordCodeReasonCodes.Immutable), (cased.StatusCode, cased.ReasonCode));
+        Assert.Equal((204, 204), (same.StatusCode, blank.StatusCode));
+        Assert.Equal("ROOT", (await orgUnits.GetByIdAsync(org.Id))!.Code);
     }
 
     [Fact]
@@ -75,9 +92,9 @@ public sealed class TenantOrganizationRulesTests
         var parent = new OrganizationUnit { TenantId = OtherTenantId, Code = "PARENT", Name = "Parent", LegalEntityId = LegalEntityId };
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         orgUnits.Add(parent);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("CHILD", "Child", LegalEntityId, parent.Id)), CancellationToken.None);
+        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(null, "Child", LegalEntityId, parent.Id)), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(404, response.StatusCode);
@@ -87,9 +104,9 @@ public sealed class TenantOrganizationRulesTests
     public async Task Organization_unit_create_rejects_orphan_parent()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("CHILD", "Child", LegalEntityId, Guid.NewGuid())), CancellationToken.None);
+        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(null, "Child", LegalEntityId, Guid.NewGuid())), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(404, response.StatusCode);
@@ -131,32 +148,36 @@ public sealed class TenantOrganizationRulesTests
     public async Task Position_create_rejects_missing_org_unit()
     {
         var positions = new InMemoryPositionRepository(TenantId);
-        var handler = new CreatePositionCommandHandler(positions, new InMemoryOrganizationUnitRepository(TenantId), TenantContext());
+        var handler = new CreatePositionCommandHandler(positions, new InMemoryOrganizationUnitRepository(TenantId), TenantContext(), new FakeInProcessRecordCodeAllocator(), positions, NullLogger<CreatePositionCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreatePositionCommand(new PositionRequest("CEO", "CEO", Guid.NewGuid(), null)), CancellationToken.None);
+        var response = await handler.Handle(new CreatePositionCommand(new PositionRequest(null, "CEO", Guid.NewGuid(), null)), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(404, response.StatusCode);
     }
 
     [Fact]
-    public async Task Position_create_rejects_normalized_empty_code()
+    public async Task Position_create_refuses_any_filled_code_and_assigns_one_for_a_blank_code()
     {
+        // MOD-0040-FU02 DL-2 (AC-52) — was "rejects normalized empty code".
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
         var positions = new InMemoryPositionRepository(TenantId);
-        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext());
+        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext(), new FakeInProcessRecordCodeAllocator(), positions, NullLogger<CreatePositionCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreatePositionCommand(new PositionRequest("!!!", "CEO", org.Id, null)), CancellationToken.None);
+        var filled = await handler.Handle(new CreatePositionCommand(new PositionRequest("!!!", "CEO", org.Id, null)), CancellationToken.None);
+        var blank = await handler.Handle(new CreatePositionCommand(new PositionRequest(" ", "CEO", org.Id, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
+        Assert.Equal((400, RecordCodeReasonCodes.SystemAssigned), (filled.StatusCode, filled.ReasonCode));
+        Assert.Equal(201, blank.StatusCode);
+        Assert.Equal("MYG-POS-000001", (await positions.GetByIdAsync(blank.Data))!.Code);
     }
 
     [Fact]
-    public async Task Position_update_rejects_normalized_empty_code()
+    public async Task Position_update_cannot_change_the_code()
     {
+        // MOD-0040-FU02 DL-2 (AC-53, Q-2 A) — was "rejects normalized empty code" (400).
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
@@ -165,26 +186,34 @@ public sealed class TenantOrganizationRulesTests
         positions.Add(position);
         var handler = new UpdatePositionCommandHandler(positions, orgUnits);
 
-        var response = await handler.Handle(new UpdatePositionCommand(position.Id, new PositionRequest("---", "CEO", org.Id, null)), CancellationToken.None);
+        var changed = await handler.Handle(new UpdatePositionCommand(position.Id, new PositionRequest("---", "CEO", org.Id, null)), CancellationToken.None);
+        var padded = await handler.Handle(new UpdatePositionCommand(position.Id, new PositionRequest(" CEO", "CEO", org.Id, null)), CancellationToken.None);
+        var same = await handler.Handle(new UpdatePositionCommand(position.Id, new PositionRequest("CEO", "CEO", org.Id, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
+        Assert.Equal((409, RecordCodeReasonCodes.Immutable), (changed.StatusCode, changed.ReasonCode));
+        Assert.Equal((409, RecordCodeReasonCodes.Immutable), (padded.StatusCode, padded.ReasonCode));
+        Assert.Equal(204, same.StatusCode);
+        Assert.Equal("CEO", (await positions.GetByIdAsync(position.Id))!.Code);
     }
 
     [Fact]
-    public async Task Position_create_rejects_duplicate_code_in_tenant()
+    public async Task Position_create_refuses_a_client_code_even_one_an_existing_position_holds()
     {
+        // MOD-0040-FU02 DL-2 (AC-52) — was "rejects duplicate code" (409).
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
         var positions = new InMemoryPositionRepository(TenantId);
         positions.Add(Position("CEO", org.Id));
-        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext());
+        var recordCodes = new FakeInProcessRecordCodeAllocator();
+        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext(), recordCodes, positions,
+            NullLogger<CreatePositionCommandHandler>.Instance);
 
         var response = await handler.Handle(new CreatePositionCommand(new PositionRequest(" ceo ", "Chief Executive", org.Id, null)), CancellationToken.None);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(409, response.StatusCode);
+        Assert.Equal((400, RecordCodeReasonCodes.SystemAssigned), (response.StatusCode, response.ReasonCode));
+        Assert.Empty(recordCodes.Requests);
+        Assert.Single(await positions.GetAllAsync());
     }
 
     [Fact]
@@ -194,9 +223,9 @@ public sealed class TenantOrganizationRulesTests
         var otherTenantOrgUnit = new OrganizationUnit { TenantId = OtherTenantId, Code = "ROOT", Name = "Root", LegalEntityId = LegalEntityId };
         orgUnits.Add(otherTenantOrgUnit);
         var positions = new InMemoryPositionRepository(TenantId);
-        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext());
+        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext(), new FakeInProcessRecordCodeAllocator(), positions, NullLogger<CreatePositionCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreatePositionCommand(new PositionRequest("CEO", "CEO", otherTenantOrgUnit.Id, null)), CancellationToken.None);
+        var response = await handler.Handle(new CreatePositionCommand(new PositionRequest(null, "CEO", otherTenantOrgUnit.Id, null)), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(404, response.StatusCode);
@@ -422,9 +451,9 @@ public sealed class TenantOrganizationRulesTests
     public async Task Tenant_id_is_server_side_only_for_create()
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
-        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest("ROOT", "Root", LegalEntityId, null)), CancellationToken.None);
+        var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(null, "Root", LegalEntityId, null)), CancellationToken.None);
         var created = await orgUnits.GetByIdAsync(response.Data);
 
         Assert.True(response.IsSuccessful);

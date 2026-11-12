@@ -9,7 +9,8 @@ using MongoDB.Driver;
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
 public sealed class OrganizationUnitRepository
-    : TenantRepository<OrganizationUnit>, IOrganizationUnitRepository, IOrganizationReportingGraphRepository
+    : TenantRepository<OrganizationUnit>, IOrganizationUnitRepository, IOrganizationReportingGraphRepository,
+        IOrganizationUnitCodeHistoryRepository
 {
     private readonly IMongoCollection<BsonDocument> _structureTokens;
 
@@ -108,6 +109,13 @@ public sealed class OrganizationUnitRepository
 
         return Collection.Find(Builders<OrganizationUnit>.Filter.And(filters)).AnyAsync(ct);
     }
+
+    /// <summary>MOD-0040-FU02 DL-2 — tenant-exact and deliberately WITHOUT the soft-delete filter <see cref="ExistsByCodeAsync"/> has.</summary>
+    public Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default) =>
+        Collection.Find(Builders<OrganizationUnit>.Filter.And(
+                Builders<OrganizationUnit>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+                Builders<OrganizationUnit>.Filter.Eq(x => x.Code, code)))
+            .AnyAsync(ct);
 
     public async Task UpdateAsync(OrganizationUnit organizationUnit, CancellationToken ct = default)
     {

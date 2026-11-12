@@ -2,11 +2,13 @@ using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.TenantOrganization;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Handlers.CommandHandlers;
+using Diten.Platform.Application.Tests.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.TenantOrganization.Queries;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.TenantOrganization;
@@ -25,11 +27,11 @@ public sealed class OrganizationEnterpriseFieldsTests
     {
         var orgUnits = new InMemoryOrganizationUnitRepository(TenantId);
         var managerPositionId = Guid.NewGuid();
-        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext());
+        var handler = new CreateOrganizationUnitCommandHandler(orgUnits, orgUnits, new FakeLegalEntityValidator(true), TenantContext(), new FakeInProcessRecordCodeAllocator(), orgUnits, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
 
         var effectiveFrom = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var response = await handler.Handle(new CreateOrganizationUnitCommand(new OrganizationUnitRequest(
-            "HQ1", "Head Office", LegalEntityId, null,
+            null, "Head Office", LegalEntityId, null,
             OrgUnitType: "Branch", ManagerPositionId: managerPositionId, Description: "Main branch",
             Status: "Inactive", EffectiveFrom: effectiveFrom, LocationCode: "IST", CostCenterCode: "CC-100")),
             CancellationToken.None);
@@ -57,10 +59,10 @@ public sealed class OrganizationEnterpriseFieldsTests
         var org = OrgUnit("ROOT");
         orgUnits.Add(org);
         var positions = new InMemoryPositionRepository(TenantId);
-        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext());
+        var handler = new CreatePositionCommandHandler(positions, orgUnits, TenantContext(), new FakeInProcessRecordCodeAllocator(), positions, NullLogger<CreatePositionCommandHandler>.Instance);
 
         var response = await handler.Handle(new CreatePositionCommand(new PositionRequest(
-            "ENG1", "Engineer", org.Id, null,
+            null, "Engineer", org.Id, null,
             JobTitle: "Software Engineer", PositionType: "Contractor", Fte: 0.5m, Status: "Active",
             GradeCode: "G7")), CancellationToken.None);
 
