@@ -79,7 +79,10 @@ gelince o PR'ın aynı iş akışındaki eski koşusu iptal edilir. `main` push'
 koşu kendi koşu kimliğiyle ayrı grupta kalır: iptal edilmez, sıraya da girmez. Bekçi:
 `Every_workflow_cancels_only_a_superseded_pull_request_run` (metin birebir). Yeniden çalıştırılan bir koşu (2. ve sonraki
 deneme) de koşu kimliğiyle kendi grubuna girer: eski bir commit'i yeniden çalıştırmak en yeni commit'in koşusunu iptal
-etmez, kendisi de yeni commit gelince iptal edilmez.
+etmez, kendisi de yeni commit gelince iptal edilmez (gereksiz kaldıysa elle iptal edin). Bu, GitHub'ın yeniden
+çalıştırmada grubu yeni `run_attempt` ile yeniden hesaplamasına dayanır; belgeler bunu açıkça yazmıyor ve canlı
+gözlenmedi (2026-11-12). Hesaplamazsa davranış bu satırdan önceki gibi kalır, daha kötü olmaz. İlk PR'da ölçülecek:
+C1 ve C2 push edilir, C2 koşarken C1'in koşusu yeniden çalıştırılır; C2 iptal edilmemeli, ardından C3 push'u C2'yi iptal etmeli.
 `service-tests result` işinin `if: always()` koşulu korunur: iptal edilen koşu kırmızı kalmalıdır; `!cancelled()` işi
 "skipped" bırakır ve GitHub atlanmış zorunlu kontrolü geçmiş sayar.
 
