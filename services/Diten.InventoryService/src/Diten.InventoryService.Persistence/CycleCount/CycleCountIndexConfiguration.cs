@@ -23,9 +23,10 @@ public static class CycleCountIndexConfiguration
     public const string BinClaimOpenIndex = "ux_wms_count_bin_claim_open";
     public const string AdjustmentKeyIndex = "ux_wms_count_adjustment_key";
     public const string SettingsIndex = "ux_wms_count_settings_company";
+    public const string EvidenceKeyIndex = "ux_wms_count_evidence_key";
 
     public static readonly IReadOnlyList<string> UniqueIndexes =
-        [NumberIndex, CreateKeyIndex, LineKeyIndex, EventSeqIndex, EventKeyIndex, BinClaimOpenIndex, AdjustmentKeyIndex, SettingsIndex];
+        [NumberIndex, CreateKeyIndex, LineKeyIndex, EventSeqIndex, EventKeyIndex, BinClaimOpenIndex, AdjustmentKeyIndex, SettingsIndex, EvidenceKeyIndex];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
 
@@ -84,6 +85,18 @@ public static class CycleCountIndexConfiguration
                 new CreateIndexOptions<CycleCountBinClaim>
                     { Name = BinClaimOpenIndex, Unique = true, PartialFilterExpression = new BsonDocument(nameof(CycleCountBinClaim.Open), true) }),
             new(claims.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CountId), new CreateIndexOptions { Name = "ix_wms_count_bin_claim_count" })
+        ], ct);
+
+        // DL-5 (pack §4.5, §4.6 pattern): the export's key per requester; the log by company and count, newest first
+        var exports = Builders<CountEvidenceExport>.IndexKeys;
+        await database.GetCollection<CountEvidenceExport>(CycleCountCollections.EvidenceExports).Indexes.CreateManyAsync(
+        [
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.RequestedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = EvidenceKeyIndex, Unique = true }),
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Descending(x => x.RequestedAt),
+                new CreateIndexOptions { Name = "ix_wms_count_evidence_requested" }),
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CountId).Descending(x => x.RequestedAt),
+                new CreateIndexOptions { Name = "ix_wms_count_evidence_count" })
         ], ct);
     }
 }

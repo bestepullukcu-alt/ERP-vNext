@@ -34,7 +34,10 @@ public enum CycleCountUniqueIndex
     BinClaim,
 
     /// <summary>DL-3: <c>(TenantId, LegalEntityId)</c> of <c>wms_count_settings</c> — one settings record per company.</summary>
-    Settings
+    Settings,
+
+    /// <summary>DL-5: <c>(TenantId, LegalEntityId, RequestedBy, IdempotencyKey)</c> of <c>wms_count_evidence_exports</c> — the export's key.</summary>
+    EvidenceKey
 }
 
 public sealed class CycleCountDuplicateException(CycleCountUniqueIndex index, Exception? inner = null) : Exception($"Duplicate on {index}.", inner)
@@ -96,6 +99,12 @@ public sealed record CycleCountLedgerMovementRow(Guid TransactionId, string Tran
     string? SourceLineId, string IdempotencyKey, Guid CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset TransactionDate, DateTimeOffset PostingDate);
 
 /// <summary>Pack §2.4: the <c>COUNT_*</c> movements on <see cref="BinIds"/> created in <c>[From, To)</c> — bin indexes (COUNT_GAIN → to, COUNT_LOSS → from).</summary>
+/// <summary>DL-5: one page of the company's Evidence Pack export log (newest first), optionally of one count.</summary>
+public sealed record CountEvidenceExportPage(IReadOnlyList<CountEvidenceExport> Items, long Total);
+
+/// <summary>DL-5: a location's code and name (the Evidence Pack names the bins — pack §4.5; read with <c>Find</c> only).</summary>
+public sealed record CycleCountLocationName(Guid Id, string Code, string Name);
+
 public sealed record CycleCountManualRequest(IReadOnlyCollection<Guid> BinIds, DateTimeOffset From, DateTimeOffset To);
 
 /// <summary>
@@ -156,6 +165,21 @@ public interface ICycleCountRepository
 
     Task<IReadOnlyList<CycleCountEvent>> FindBulkKeyEventsAsync(Guid actorUserId, string requestOp, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    // ── DL-5 Evidence Pack (pack §4.5): the export log and the stored bytes, always of the caller's tenant + company (another one's is 404) ──
+
+    /// <summary>The caller's export with this idempotency key (the replay rule).</summary>
+    Task<CountEvidenceExport?> FindEvidenceExportByKeyAsync(Guid requestedBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
+    Task<CountEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    Task<CountEvidenceExportPage> ListEvidenceExportsAsync(Guid? countId, int page, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>The stored bytes of an export (what was hashed).</summary>
+    Task<CountEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    /// <summary>Codes and names of locations of the caller's company (bins, warehouse) — <c>Find</c> only.</summary>
+    Task<IReadOnlyList<CycleCountLocationName>> LocationNamesAsync(IReadOnlyCollection<Guid> locationIds, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// The SKUs with AVAILABLE stock in the scope, read OUTSIDE any transaction — only so the release can fetch their PRODUCT-MASTER flags before
     /// its snapshot transaction opens. A read that cannot be done is <see cref="CycleCountInventoryUnavailableException"/>.
@@ -207,6 +231,9 @@ public interface ICycleCountWriteSession
 
     /// <summary>Replaces the settings if their stored version is still <paramref name="expectedVersion"/>; false = 0 records.</summary>
     Task<bool> ReplaceSettingsAsync(CycleCountSettings settings, int expectedVersion, CancellationToken cancellationToken = default);
+
+    /// <summary>DL-5: the export record and its bytes, both insert-only (a second export with the caller's key is <see cref="CycleCountUniqueIndex.EvidenceKey"/>).</summary>
+    Task InsertEvidenceExportAsync(CountEvidenceExport export, CountEvidenceFile file, CancellationToken cancellationToken = default);
 
     /// <summary>Sets the count's own open claims to <c>Open = false</c> (soft; pack §4.7) and returns how many it released.</summary>
     Task<long> ReleaseBinClaimsAsync(Guid countId, DateTimeOffset at, CancellationToken cancellationToken = default);

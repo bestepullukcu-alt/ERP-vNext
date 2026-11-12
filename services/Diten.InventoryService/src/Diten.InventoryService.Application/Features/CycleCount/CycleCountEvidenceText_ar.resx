@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CountPdf.AdjustmentStatus" xml:space="preserve"><value>حالة التصحيح</value></data>
+  <data name="CountPdf.At" xml:space="preserve"><value>الوقت</value></data>
+  <data name="CountPdf.Bin" xml:space="preserve"><value>الموقع</value></data>
+  <data name="CountPdf.Blind" xml:space="preserve"><value>جرد أعمى</value></data>
+  <data name="CountPdf.By" xml:space="preserve"><value>صاحب القرار</value></data>
+  <data name="CountPdf.ClosedAt" xml:space="preserve"><value>وقت الإغلاق</value></data>
+  <data name="CountPdf.Company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="CountPdf.Count" xml:space="preserve"><value>الجرد</value></data>
+  <data name="CountPdf.Counted" xml:space="preserve"><value>المجرود</value></data>
+  <data name="CountPdf.Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="CountPdf.Decisions" xml:space="preserve"><value>القرارات وتصحيحات السجل</value></data>
+  <data name="CountPdf.DeclaredSource" xml:space="preserve"><value>المصدر المصرّح به</value></data>
+  <data name="CountPdf.EnglishFallback" xml:space="preserve"><value>لا يمكن رسم اللغة المطلوبة بخط المستند؛ ملف PDF هذا باللغة الإنجليزية.</value></data>
+  <data name="CountPdf.Event" xml:space="preserve"><value>الحدث</value></data>
+  <data name="CountPdf.Expected" xml:space="preserve"><value>المتوقع عند اللقطة</value></data>
+  <data name="CountPdf.ExpectedAtCount" xml:space="preserve"><value>المتوقع عند الجرد</value></data>
+  <data name="CountPdf.Flag" xml:space="preserve"><value>العلامة</value></data>
+  <data name="CountPdf.Generated" xml:space="preserve"><value>وقت الإنشاء</value></data>
+  <data name="CountPdf.LedgerNumber" xml:space="preserve"><value>رقم حركة السجل</value></data>
+  <data name="CountPdf.LineStatus" xml:space="preserve"><value>حالة السطر</value></data>
+  <data name="CountPdf.Lines" xml:space="preserve"><value>أسطر الجرد</value></data>
+  <data name="CountPdf.Lot" xml:space="preserve"><value>الدفعة</value></data>
+  <data name="CountPdf.Manual" xml:space="preserve"><value>حركات COUNT اليدوية في مواقع النطاق</value></data>
+  <data name="CountPdf.ManualWindow" xml:space="preserve"><value>نافذة الحركات اليدوية</value></data>
+  <data name="CountPdf.MovementType" xml:space="preserve"><value>نوع الحركة</value></data>
+  <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>الحركات منذ اللقطة</value></data>
+  <data name="CountPdf.No" xml:space="preserve"><value>لا</value></data>
+  <data name="CountPdf.None" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="CountPdf.NotClosed" xml:space="preserve"><value>لم يُغلق بعد</value></data>
+  <data name="CountPdf.Origin" xml:space="preserve"><value>المنشأ</value></data>
+  <data name="CountPdf.Origin.Found" xml:space="preserve"><value>مخزون موجود</value></data>
+  <data name="CountPdf.Origin.Recount" xml:space="preserve"><value>إعادة جرد</value></data>
+  <data name="CountPdf.Origin.Snapshot" xml:space="preserve"><value>لقطة</value></data>
+  <data name="CountPdf.Page" xml:space="preserve"><value>صفحة</value></data>
+  <data name="CountPdf.PlannedDate" xml:space="preserve"><value>التاريخ المخطط</value></data>
+  <data name="CountPdf.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="CountPdf.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="CountPdf.RequestedLanguage" xml:space="preserve"><value>اللغة المطلوبة: {0}</value></data>
+  <data name="CountPdf.ScopeBins" xml:space="preserve"><value>مواقع النطاق</value></data>
+  <data name="CountPdf.Seq" xml:space="preserve"><value>الرقم</value></data>
+  <data name="CountPdf.Sku" xml:space="preserve"><value>رمز SKU</value></data>
+  <data name="CountPdf.SnapshotAt" xml:space="preserve"><value>وقت اللقطة</value></data>
+  <data name="CountPdf.Source" xml:space="preserve"><value>مصدر القرار</value></data>
+  <data name="CountPdf.SourceMismatch" xml:space="preserve"><value>تصريح المصدر غير متطابق</value></data>
+  <data name="CountPdf.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="CountPdf.Timeline" xml:space="preserve"><value>الخط الزمني</value></data>
+  <data name="CountPdf.Title" xml:space="preserve"><value>حزمة أدلة الجرد</value></data>
+  <data name="CountPdf.Type" xml:space="preserve"><value>نوع الجرد</value></data>
+  <data name="CountPdf.User" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="CountPdf.Variance" xml:space="preserve"><value>الفرق</value></data>
+  <data name="CountPdf.Warehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="CountPdf.Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>خطأ في السلامة</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>معلّق</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>مُرحّل</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>إعادة الجرد</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>ضمن التفاوت المسموح</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>بواسطة مستخدم</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>خطأ في سلامة التصحيح</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>التصحيح معلّق</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>تم ترحيل التصحيح</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>تم رفض التصحيح</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>تم اعتماد الفرق</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>تم الإلغاء</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>تم الإغلاق</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>تم حل السلامة</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>تمت إضافة مخزون موجود</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>تم جرد سطر</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>تم طلب إعادة الجرد</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>تم رفض الفرق</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>تم الإطلاق</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>تم التحديث</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>تم حساب الفرق</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>بانتظار الاعتماد</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>تم الجرد</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>لا فرق</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>لم يُجرد</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>أُرسل لإعادة الجرد</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>قيد الجرد</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>مُطلق</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>مُرسل</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>جرد دوري</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>جرد كامل</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>زيادة جرد</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>نقص جرد</value></data>
+</root>

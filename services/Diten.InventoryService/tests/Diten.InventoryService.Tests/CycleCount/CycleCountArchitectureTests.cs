@@ -32,7 +32,8 @@ public sealed class CycleCountArchitectureTests
         var types = typeof(CycleCount).Assembly.GetTypes()
             .Where(t => t.Namespace?.StartsWith("Diten.InventoryService.Domain.CycleCounting", StringComparison.Ordinal) == true && typeof(EntityBase).IsAssignableFrom(t))
             .ToList();
-        Assert.Equal(["CycleCount", "CycleCountBinClaim", "CycleCountEvent", "CycleCountLine", "CycleCountSettings"], types.Select(t => t.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(["CountEvidenceExport", "CountEvidenceFile", "CycleCount", "CycleCountBinClaim", "CycleCountEvent", "CycleCountLine", "CycleCountSettings"],
+            types.Select(t => t.Name).Order(StringComparer.Ordinal)); // DL-5: the evidence log and its bytes (insert-only, no stock)
         var carriers = types.Where(t => t.GetProperties().Any(p => p.Name is "OnHand" or "Available" or "Reserved")).Select(t => t.Name).ToList();
         Assert.True(carriers.Count == 0, "a MOD-0181 type carries a stock total: " + string.Join(", ", carriers));
     }
@@ -70,7 +71,7 @@ public sealed class CycleCountArchitectureTests
         Assert.Equal(CycleCountCentralAudit.Module, manifest.ModuleCode);
         Assert.Equal(181, manifest.SortOrder);
         // DL-4 (pack §8.13, §14; AC-41): the three screens and their actions; DL-5 adds COUNTEVIDENCE
-        Assert.Equal(["COUNTSHEET", "COUNTVARIANCES", "CYCLECOUNTS"], manifest.Pages.Select(p => p.PageCode).Order(StringComparer.Ordinal));
+        Assert.Equal(["COUNTEVIDENCE", "COUNTSHEET", "COUNTVARIANCES", "CYCLECOUNTS"], manifest.Pages.Select(p => p.PageCode).Order(StringComparer.Ordinal)); // DL-5: COUNTEVIDENCE (AC-50)
         var actions = manifest.Pages.SelectMany(p => p.Actions ?? []).ToDictionary(a => a.ActionCode, a => a.PermissionKey);
         Assert.Equal(new Dictionary<string, string>
         {
@@ -80,7 +81,10 @@ public sealed class CycleCountArchitectureTests
             ["COUNT_LINE_ADD"] = CycleCountPermissions.CountsRecord, ["CYCLE_COUNT_SUBMIT"] = CycleCountPermissions.CountsRecord,
             ["COUNT_VARIANCE_APPROVE"] = CycleCountPermissions.VariancesApprove, ["COUNT_VARIANCE_REJECT"] = CycleCountPermissions.VariancesReject,
             ["COUNT_VARIANCE_RECOUNT"] = CycleCountPermissions.VariancesRecount, ["COUNT_ADJUSTMENT_RETRY"] = CycleCountPermissions.VariancesPost,
-            ["COUNT_ADJUSTMENT_RESOLVE_INTEGRITY"] = CycleCountPermissions.VariancesResolve
+            ["COUNT_ADJUSTMENT_RESOLVE_INTEGRITY"] = CycleCountPermissions.VariancesResolve,
+            // DL-5 (AC-50): the Evidence Pack page
+            ["COUNT_EVIDENCE_EXPORT"] = CycleCountPermissions.EvidenceExport,
+            ["COUNT_EVIDENCE_DOWNLOAD"] = CycleCountPermissions.EvidenceRead
         }, actions);
         Assert.DoesNotContain(actions.Keys, k => k.EndsWith("_DELETE", StringComparison.Ordinal) && k != "CYCLE_COUNT_BULK_DELETE"); // G-0181-01: "İptal", no "Sil"
 
@@ -109,7 +113,7 @@ public sealed class CycleCountArchitectureTests
     [Fact]
     public void AC51_the_cycle_count_controllers_open_GET_and_POST_only_under_api_warehouse_with_the_one_settings_PUT()
     {
-        Assert.Equal(["CountVariancesController", "CycleCountsController"], Controllers().Select(c => c.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(["CountEvidenceExportsController", "CountVariancesController", "CycleCountsController"], Controllers().Select(c => c.Name).Order(StringComparer.Ordinal));
         Assert.All(Controllers(), c => Assert.Equal("api/warehouse", c.GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()?.Template));
         var verbs = Actions().SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().SelectMany(h => h.HttpMethods.Select(v => (Verb: v, Action: a, h.Template))))
             .ToList();
@@ -120,11 +124,13 @@ public sealed class CycleCountArchitectureTests
         var routes = verbs.Select(v => $"{v.Verb} {v.Template}").Order(StringComparer.Ordinal);
         Assert.Equal(
             [
+                "GET count-evidence-exports", "GET count-evidence-exports/{exportId}/file",
                 "GET count-settings", "GET count-variances", "GET count-variances/{lineId}",
                 "GET cycle-counts", "GET cycle-counts/dashboard", "GET cycle-counts/{countId}", "GET cycle-counts/{countId}/events", "GET cycle-counts/{countId}/lines",
                 "POST count-variances/{lineId}/approve", "POST count-variances/{lineId}/reject", "POST count-variances/{lineId}/resolve-integrity",
                 "POST count-variances/{lineId}/retry",
-                "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/lines",
+                "POST cycle-counts", "POST cycle-counts/bulk-delete", "POST cycle-counts/{countId}/cancel", "POST cycle-counts/{countId}/evidence-exports",
+                "POST cycle-counts/{countId}/lines",
                 "POST cycle-counts/{countId}/lines/{lineId}/count", "POST cycle-counts/{countId}/recount", "POST cycle-counts/{countId}/release",
                 "POST cycle-counts/{countId}/submit", "POST cycle-counts/{countId}/update",
                 "PUT count-settings"

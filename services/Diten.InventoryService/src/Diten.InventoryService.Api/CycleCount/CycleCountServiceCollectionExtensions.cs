@@ -38,6 +38,10 @@ public static class CycleCountServiceCollectionExtensions
         services.AddSingleton<CycleCountReconciler>();
         services.AddHostedService<PendingCountAdjustmentReconcilerHostedService>();
 
+        // DL-5 (pack §4.5): the Evidence Pack document (one source for PDF and CSV) and the PDF renderer (MOD-0176's embedded font resolver).
+        services.AddScoped<Application.Features.CountEvidenceExports.CountEvidenceDocumentBuilder>();
+        services.AddSingleton<ICycleCountEvidencePdfRenderer, CycleCountEvidencePdfRenderer>();
+
         // Index gate (fail-closed): the unique indexes carry the number, the request keys and "one open count per bin" (F-6).
         services.AddHostedService<CycleCountIndexInitializerHostedService>();
         return services;

@@ -222,6 +222,21 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
     public Task<IReadOnlyList<CycleCountLedgerMovementRow>> MovementsByKeysAsync(IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default)
         => inner.MovementsByKeysAsync(keys, cancellationToken);
 
+    public Task<CountEvidenceExport?> FindEvidenceExportByKeyAsync(Guid requestedBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => inner.FindEvidenceExportByKeyAsync(requestedBy, idempotencyKey, cancellationToken);
+
+    public Task<CountEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => inner.FindEvidenceExportAsync(exportId, cancellationToken);
+
+    public Task<CountEvidenceExportPage> ListEvidenceExportsAsync(Guid? countId, int page, int pageSize, CancellationToken cancellationToken = default)
+        => inner.ListEvidenceExportsAsync(countId, page, pageSize, cancellationToken);
+
+    public Task<CountEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => inner.FindEvidenceFileAsync(exportId, cancellationToken);
+
+    public Task<IReadOnlyList<CycleCountLocationName>> LocationNamesAsync(IReadOnlyCollection<Guid> locationIds, CancellationToken cancellationToken = default)
+        => inner.LocationNamesAsync(locationIds, cancellationToken);
+
     public Task<CycleCountLedgerMovementRow?> LedgerMovementAsync(Guid transactionId, CancellationToken cancellationToken = default)
         => inner.LedgerMovementAsync(transactionId, cancellationToken);
 
@@ -263,6 +278,9 @@ public sealed class SeamedCountRepository(CycleCountRepository inner, ITenantCon
             CancellationToken cancellationToken = default) => inner.TransferBinClaimsAsync(fromCountId, toCountId, binIds, at, cancellationToken);
 
         public Task InsertSettingsAsync(CycleCountSettings settings, CancellationToken cancellationToken = default) => inner.InsertSettingsAsync(settings, cancellationToken);
+
+        public Task InsertEvidenceExportAsync(CountEvidenceExport export, CountEvidenceFile file, CancellationToken cancellationToken = default)
+            => inner.InsertEvidenceExportAsync(export, file, cancellationToken);
 
         public Task<bool> ReplaceSettingsAsync(CycleCountSettings settings, int expectedVersion, CancellationToken cancellationToken = default)
             => inner.ReplaceSettingsAsync(settings, expectedVersion, cancellationToken);

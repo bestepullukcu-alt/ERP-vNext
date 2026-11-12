@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CountPdf.AdjustmentStatus" xml:space="preserve"><value>Düzeltme durumu</value></data>
+  <data name="CountPdf.At" xml:space="preserve"><value>Zaman</value></data>
+  <data name="CountPdf.Bin" xml:space="preserve"><value>Raf gözü</value></data>
+  <data name="CountPdf.Blind" xml:space="preserve"><value>Kör sayım</value></data>
+  <data name="CountPdf.By" xml:space="preserve"><value>Karar veren</value></data>
+  <data name="CountPdf.ClosedAt" xml:space="preserve"><value>Kapanış</value></data>
+  <data name="CountPdf.Company" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CountPdf.Count" xml:space="preserve"><value>Sayım</value></data>
+  <data name="CountPdf.Counted" xml:space="preserve"><value>Sayılan</value></data>
+  <data name="CountPdf.Decision" xml:space="preserve"><value>Karar</value></data>
+  <data name="CountPdf.Decisions" xml:space="preserve"><value>Kararlar ve defter düzeltmeleri</value></data>
+  <data name="CountPdf.DeclaredSource" xml:space="preserve"><value>Beyan edilen kaynak</value></data>
+  <data name="CountPdf.EnglishFallback" xml:space="preserve"><value>İstenen dil belge yazı tipiyle çizilemiyor; bu PDF İngilizcedir.</value></data>
+  <data name="CountPdf.Event" xml:space="preserve"><value>Olay</value></data>
+  <data name="CountPdf.Expected" xml:space="preserve"><value>Anlık görüntüde beklenen</value></data>
+  <data name="CountPdf.ExpectedAtCount" xml:space="preserve"><value>Sayım anında beklenen</value></data>
+  <data name="CountPdf.Flag" xml:space="preserve"><value>İşaret</value></data>
+  <data name="CountPdf.Generated" xml:space="preserve"><value>Oluşturulma</value></data>
+  <data name="CountPdf.LedgerNumber" xml:space="preserve"><value>Defter hareket no.</value></data>
+  <data name="CountPdf.LineStatus" xml:space="preserve"><value>Satır durumu</value></data>
+  <data name="CountPdf.Lines" xml:space="preserve"><value>Sayım satırları</value></data>
+  <data name="CountPdf.Lot" xml:space="preserve"><value>Lot no.</value></data>
+  <data name="CountPdf.Manual" xml:space="preserve"><value>Kapsam raf gözlerinde elle COUNT hareketleri</value></data>
+  <data name="CountPdf.ManualWindow" xml:space="preserve"><value>Elle hareket aralığı</value></data>
+  <data name="CountPdf.MovementType" xml:space="preserve"><value>Hareket türü</value></data>
+  <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>Anlık görüntüden beri hareket</value></data>
+  <data name="CountPdf.No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="CountPdf.None" xml:space="preserve"><value>Yok</value></data>
+  <data name="CountPdf.NotClosed" xml:space="preserve"><value>Henüz kapanmadı</value></data>
+  <data name="CountPdf.Origin" xml:space="preserve"><value>Köken</value></data>
+  <data name="CountPdf.Origin.Found" xml:space="preserve"><value>Bulunan stok</value></data>
+  <data name="CountPdf.Origin.Recount" xml:space="preserve"><value>Yeniden sayım</value></data>
+  <data name="CountPdf.Origin.Snapshot" xml:space="preserve"><value>Anlık görüntü</value></data>
+  <data name="CountPdf.Page" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="CountPdf.PlannedDate" xml:space="preserve"><value>Planlanan tarih</value></data>
+  <data name="CountPdf.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="CountPdf.Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="CountPdf.RequestedLanguage" xml:space="preserve"><value>İstenen dil: {0}</value></data>
+  <data name="CountPdf.ScopeBins" xml:space="preserve"><value>Kapsamdaki raf gözleri</value></data>
+  <data name="CountPdf.Seq" xml:space="preserve"><value>Sıra</value></data>
+  <data name="CountPdf.Sku" xml:space="preserve"><value>SKU (stok kodu)</value></data>
+  <data name="CountPdf.SnapshotAt" xml:space="preserve"><value>Anlık görüntü zamanı</value></data>
+  <data name="CountPdf.Source" xml:space="preserve"><value>Karar kaynağı</value></data>
+  <data name="CountPdf.SourceMismatch" xml:space="preserve"><value>Kaynak beyanı uyuşmuyor</value></data>
+  <data name="CountPdf.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="CountPdf.Timeline" xml:space="preserve"><value>Zaman çizelgesi</value></data>
+  <data name="CountPdf.Title" xml:space="preserve"><value>Sayım kanıt paketi</value></data>
+  <data name="CountPdf.Type" xml:space="preserve"><value>Sayım türü</value></data>
+  <data name="CountPdf.User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="CountPdf.Variance" xml:space="preserve"><value>Fark</value></data>
+  <data name="CountPdf.Warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="CountPdf.Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>Bütünlük hatası</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>İşlendi</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>Yeniden sayım</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>tolerans içinde</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>kullanıcı kararı</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>Düzeltme bütünlük hatası</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>Düzeltme bekliyor</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>Düzeltme işlendi</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>Düzeltme reddedildi</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>Fark onaylandı</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>Bütünlük çözüldü</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>Bulunan stok eklendi</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>Satır sayıldı</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>Yeniden sayım istendi</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>Fark reddedildi</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>Fark hesaplandı</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Sayıldı</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Fark yok</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Sayılmadı</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Yeniden sayıma gönderildi</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Sayılıyor</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>Dönemsel sayım</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>Tam sayım</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>Sayım fazlası</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>Sayım eksiği</value></data>
+</root>

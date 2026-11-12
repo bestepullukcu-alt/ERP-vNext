@@ -48,7 +48,9 @@ public sealed class CentralAuditDeclarationTests
         // 116 after MOD-0181 DL-3 (pack §24 DL-3 seam "CentralAuditDeclarationTests"): ApproveCountVariance, RejectCountVariance, RequestCountRecount,
         // RetryCountAdjustment, ResolveCountAdjustmentIntegrity, ReconcilePendingCountAdjustment, UpdateCycleCountSettings — 15 of 0181's 16 (DL-5 adds
         // the 16th); measured 109 at 65af0e638. The sweeper sends its command and opens no transaction: the sweeper list below is unchanged (F-18).
-        Assert.Equal(116, WriteCommands.Length);
+        // 117 after MOD-0181 DL-5 (pack §24 DL-5 seam "CentralAuditDeclarationTests"; XMC-001, Beste 2026-11-12): CreateCountEvidenceExport —
+        // 16 of 0181's 16; measured 116 at 200c1a71a. It writes inside CycleCountRepository.InTransactionAsync: the callback count below is unchanged.
+        Assert.Equal(117, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 

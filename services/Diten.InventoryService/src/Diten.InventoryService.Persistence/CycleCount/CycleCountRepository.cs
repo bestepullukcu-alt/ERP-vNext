@@ -29,6 +29,8 @@ public sealed class CycleCountRepository : ICycleCountRepository
     private readonly IMongoCollection<CycleCountEvent> _events;
     private readonly IMongoCollection<CycleCountBinClaim> _claims;
     private readonly IMongoCollection<CycleCountSettings> _settings;
+    private readonly IMongoCollection<CountEvidenceExport> _evidenceExports;
+    private readonly IMongoCollection<CountEvidenceFile> _evidenceFiles;
     private readonly ICycleCountReleaseProbe _probe;
     private readonly ICycleCountSubmitProbe _submitProbe;
     private readonly Guid _tenantId;
@@ -44,6 +46,8 @@ public sealed class CycleCountRepository : ICycleCountRepository
         _events = database.GetCollection<CycleCountEvent>(CycleCountCollections.Events);
         _claims = database.GetCollection<CycleCountBinClaim>(CycleCountCollections.BinClaims);
         _settings = database.GetCollection<CycleCountSettings>(CycleCountCollections.Settings);
+        _evidenceExports = database.GetCollection<CountEvidenceExport>(CycleCountCollections.EvidenceExports);
+        _evidenceFiles = database.GetCollection<CountEvidenceFile>(CycleCountCollections.EvidenceFiles);
         _probe = probe;
         _submitProbe = submitProbe;
         _tenantId = tenant.TenantId;
@@ -292,6 +296,37 @@ public sealed class CycleCountRepository : ICycleCountRepository
 
     // ── writes ────────────────────────────────────────────────────────────────────────────────────────────
 
+    // ── DL-5 Evidence Pack reads (pack §4.5; AC-44: the tenant + company predicate on every one) ─────────
+
+    public async Task<CountEvidenceExport?> FindEvidenceExportByKeyAsync(Guid requestedBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _evidenceExports.Find(Company<CountEvidenceExport>() & Builders<CountEvidenceExport>.Filter.Eq(x => x.RequestedBy, requestedBy)
+                                       & Builders<CountEvidenceExport>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<CountEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _evidenceExports.Find(Company<CountEvidenceExport>() & Builders<CountEvidenceExport>.Filter.Eq(x => x.Id, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<CountEvidenceExportPage> ListEvidenceExportsAsync(Guid? countId, int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var filter = Company<CountEvidenceExport>();
+        if (countId is { } id) filter &= Builders<CountEvidenceExport>.Filter.Eq(x => x.CountId, id);
+        var total = await _evidenceExports.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _evidenceExports.Find(filter).Sort(Builders<CountEvidenceExport>.Sort.Descending(x => x.RequestedAt).Descending(x => x.Id))
+            .Skip((page - 1) * pageSize).Limit(pageSize).ToListAsync(cancellationToken);
+        return new CountEvidenceExportPage(items, total);
+    }
+
+    public async Task<CountEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _evidenceFiles.Find(Company<CountEvidenceFile>() & Builders<CountEvidenceFile>.Filter.Eq(x => x.ExportId, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<CycleCountLocationName>> LocationNamesAsync(IReadOnlyCollection<Guid> locationIds, CancellationToken cancellationToken = default)
+    {
+        if (locationIds.Count == 0) return [];
+        var lf = Builders<Location>.Filter;
+        return (await _database.GetCollection<Location>(InventoryCollections.Locations)
+                .Find(lf.Eq(x => x.TenantId, _tenantId) & lf.Eq(x => x.LegalEntityId, _legalEntityId) & lf.In(x => x.Id, locationIds)).ToListAsync(cancellationToken))
+            .Select(x => new CycleCountLocationName(x.Id, x.Code, x.Name)).ToList();
+    }
+
     public async Task<CycleCountWriteOutcome> InTransactionAsync(Func<ICycleCountWriteSession, CancellationToken, Task<CycleCountWriteOutcome>> work,
         CancellationToken cancellationToken = default)
     {
@@ -327,6 +362,7 @@ public sealed class CycleCountRepository : ICycleCountRepository
         if (message.Contains(CycleCountIndexConfiguration.CreateKeyIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.CreateKey;
         if (message.Contains(CycleCountIndexConfiguration.LineKeyIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.Line;
         if (message.Contains(CycleCountIndexConfiguration.SettingsIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.Settings;
+        if (message.Contains(CycleCountIndexConfiguration.EvidenceKeyIndex, StringComparison.Ordinal)) return CycleCountUniqueIndex.EvidenceKey;
         return message.Contains(CycleCountIndexConfiguration.EventSeqIndex, StringComparison.Ordinal)
                || message.Contains(CycleCountIndexConfiguration.EventKeyIndex, StringComparison.Ordinal)
             ? CycleCountUniqueIndex.Event
@@ -443,6 +479,14 @@ public sealed class CycleCountRepository : ICycleCountRepository
                 .Set(x => x.UpdatedAt, at).Inc(x => x.Version, 1);
             await owner._claims.UpdateManyAsync(session, filter, update, cancellationToken: cancellationToken);
             return moved;
+        }
+
+        public async Task InsertEvidenceExportAsync(CountEvidenceExport export, CountEvidenceFile file, CancellationToken cancellationToken = default)
+        {
+            owner.Stamp(export);
+            owner.Stamp(file);
+            await owner._evidenceExports.InsertOneAsync(session, export, cancellationToken: cancellationToken);
+            await owner._evidenceFiles.InsertOneAsync(session, file, cancellationToken: cancellationToken);
         }
 
         public Task InsertSettingsAsync(CycleCountSettings settings, CancellationToken cancellationToken = default)

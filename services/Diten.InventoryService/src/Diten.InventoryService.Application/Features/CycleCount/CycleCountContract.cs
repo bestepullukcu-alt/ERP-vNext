@@ -42,6 +42,9 @@ public static class CycleCountContract
     public const string OpResolveCountAdjustmentIntegrity = "resolveCountAdjustmentIntegrity";
     public const string OpUpdateCycleCountSettings = "updateCycleCountSettings";
 
+    // DL-5 (draft §4.4, binding in DL-5; WMS-COUNT-BUNDLE 1.1.0): the Evidence Pack write. Its key lives on the export record (not a count event).
+    public const string OpCreateCountEvidenceExport = "createCountEvidenceExport";
+
     /// <summary>Pack §8.5: a recount selects 1..200 lines.</summary>
     public const int MaxRecountLines = 200;
 

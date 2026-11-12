@@ -63,13 +63,23 @@ public sealed class CountVarianceReads
     public async Task<List<(DateTimeOffset At, CountVarianceDto Row)>> ManualRowsAsync(Guid warehouseId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
     {
         var nodes = (await _repository.WarehouseNodesAsync(warehouseId, ct)).Append(warehouseId).Distinct().ToList();
+        return (await ManualMovementsAsync(nodes, from, to, ct))
+            .Select(m => (m.CreatedAt, new CountVarianceDto { Source = CycleCountContract.RowSourceManual, Movement = Manual(m) }))
+            .ToList();
+    }
+
+    /// <summary>
+    /// The manual <c>COUNT_*</c> movements on <paramref name="nodes"/> in the window — every one that is NOT a line's correction by the two-way rule
+    /// (pack §2.4). The Variance Trace (a warehouse's nodes) and the Evidence Pack (a count's scope bins, SnapshotAt → close; DL-5) share it.
+    /// </summary>
+    public async Task<List<CycleCountLedgerMovementRow>> ManualMovementsAsync(IReadOnlyCollection<Guid> nodes, DateTimeOffset from, DateTimeOffset to, CancellationToken ct)
+    {
         var movements = await _repository.CountMovementsAsync(new CycleCountManualRequest(nodes, from, to), ct);
         var lineIds = movements.Select(m => CycleCountDecisionRules.LineOfKey(m.IdempotencyKey)).OfType<Guid>().Distinct().ToList();
         var lines = (await _repository.FindLinesAsync(lineIds, ct)).ToDictionary(l => l.Id);
         return movements
             .Where(m => !CycleCountDecisionRules.IsCountMovement(Facts(m),
                 CycleCountDecisionRules.LineOfKey(m.IdempotencyKey) is { } id && lines.TryGetValue(id, out var line) ? line : null))
-            .Select(m => (m.CreatedAt, new CountVarianceDto { Source = CycleCountContract.RowSourceManual, Movement = Manual(m) }))
             .ToList();
     }
 

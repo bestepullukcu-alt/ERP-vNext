@@ -11,7 +11,9 @@ namespace Diten.InventoryService.Api.CycleCounting;
 /// <para><b>DL-4</b> (pack §8.13, §11, §14; AC-41, AC-49): the three screens — <c>CYCLECOUNTS</c> (nav; Cycle Count Dashboard), <c>COUNTSHEET</c>
 /// (not in the menu; the count sheet, reached from a count) and <c>COUNTVARIANCES</c> (nav; Variance Trace) — with one action per real button; the
 /// Draft row action is "İptal" (<c>counts.cancel</c>; no "Sil", no <c>counts.delete</c> — G-0181-01). Their keys leave <c>ApiPermissions</c>, which
-/// is now exactly the screenless settings pair (F-11). <c>COUNTEVIDENCE</c> and the <c>evidence.*</c> keys come with DL-5.</para>
+/// is now exactly the screenless settings pair (F-11).</para>
+/// <para><b>DL-5</b> (pack §8.13, F-14; AC-50): <c>COUNTEVIDENCE</c> (nav; Evidence Pack) — the export (<c>evidence.export</c>) and the download
+/// (<c>evidence.read</c>, the page key).</para>
 /// </summary>
 public sealed class CycleCountingManifestProvider : IModuleManifestProvider
 {
@@ -80,6 +82,20 @@ public sealed class CycleCountingManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("COUNT_VARIANCE_RECOUNT", "Request recount", CycleCountPermissions.VariancesRecount, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("COUNT_ADJUSTMENT_RETRY", "Retry correction", CycleCountPermissions.VariancesPost, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("COUNT_ADJUSTMENT_RESOLVE_INTEGRITY", "Resolve integrity error", CycleCountPermissions.VariancesResolve, "RowAction", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "COUNTEVIDENCE",
+                    DisplayName: "Count evidence",
+                    RoutePath: "/Warehouse/CountEvidenceExports",
+                    RequiredPermission: CycleCountPermissions.EvidenceRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 40,
+                    Actions:
+                    [
+                        new ModuleManifestAction("COUNT_EVIDENCE_EXPORT", "Export evidence (PDF / CSV)", CycleCountPermissions.EvidenceExport, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("COUNT_EVIDENCE_DOWNLOAD", "Download evidence file", CycleCountPermissions.EvidenceRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],
             ApiPermissions:

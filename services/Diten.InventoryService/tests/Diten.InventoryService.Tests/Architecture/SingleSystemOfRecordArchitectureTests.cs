@@ -87,6 +87,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // DL-3 (pack §3 / §4.4, XMC-001 decision Beste 2026-11-10 "mevcut 0181 satırına ekle"): + wms_count_settings, the company's count settings.
         Assert.Equal(["wms_count_bin_claims", "wms_count_counts", "wms_count_events", "wms_count_lines", "wms_count_settings"],
             Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // DL-5 (pack §24 DL-5 seam "kanıt koleksiyonları", XMC-001 decision Beste 2026-11-12): the insert-only Evidence Pack log and its stored bytes —
+        // a list of their own (the MOD-0177 SinceR7b pattern); not stock.
+        Assert.Equal(["wms_count_evidence_exports", "wms_count_evidence_files"],
+            Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Evidence.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -107,7 +111,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl2) // MOD-0178 (DL-2)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4) // MOD-0178 (DL-4)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5) // MOD-0178 (DL-5)
-            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All).ToList(); // MOD-0181 (DL-1)
+            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All) // MOD-0181 (DL-1)
+            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Evidence).ToList(); // MOD-0181 (DL-5, XMC-001)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
