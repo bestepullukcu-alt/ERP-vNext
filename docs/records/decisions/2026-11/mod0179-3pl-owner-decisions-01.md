@@ -19,3 +19,12 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
 | M-15 | "3PL ortağı" terimi | **Kalır** (öneri kabul) | Beste | 2026-11-13 |
 | M-16 | Kanal kapatma | **Gerekçe ister**; kapalı kanala gelen mesaj reddedilir ve istisna kutusuna düşer (öneri kabul) | Beste | 2026-11-13 |
 | — | Örnek veride Türkiye 3PL'i | Önemli değil, düzeltilmez | Beste | 2026-11-13 |
+
+## Ek (2026-11-12, aynı gün)
+- **M-4 kapandı — öneri:** yoldaki miktar = 3PL stok raporunun üretildiği saate kadar gönderilmiş ama onayı gelmemiş sevk talimatları ve mal
+  kabul ön bildirimleri (Beste: "önerdiğim gibi").
+- **Mockup tur 2 yaptırılmayacak** (Beste: "mockup'ı tekrardan yaptırmaya gerek yok, biz bunları kendimiz düzeltiriz"): CT'nin tur 2
+  düzeltme listesi (7 dil en/tr/fr/es/zh/ar/ru; ücret ekranı ve izni v1'de yok, "v2 · planlı" notu; eşik ayar sayfası; kanal kapatma
+  gerekçeli, kapalı kanala gelen mesaj ret + "kanal kapalı" istisnası; toplu yeniden işleme ≤ 200 ve uyarı; ortak MDM iş ortağından
+  seçilir, ad / adres / iletişim MDM'den, düzenlenmez; sırlar Platform sır kasasında, yardımda bir cümle) **paket yazımında doğrudan
+  uygulanır**; mockup v1 bu farklarla paketin girdisidir.

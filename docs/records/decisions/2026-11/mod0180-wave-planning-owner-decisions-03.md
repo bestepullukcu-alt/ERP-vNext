@@ -1,0 +1,15 @@
+# MOD-0180 Dalga Planlama — sahip kararları 03 (2026-11-12)
+
+Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.md` (r1, KOŞULLU) ve paketin Q-1…Q-22'si. Sahip: Beste —
+"Y-1…Y-4 için önerdiğin gibi, Q'lar için Q-6 ayar izni, diğerleri öneri gibi" (MVP-5 WMS CT oturumu `ca7382cf`, 2026-11-12).
+
+| # | Konu | Karar |
+|---|---|---|
+| Y-1 (F-1) | Ertelenmiş sipariş varken depoda dalga yönetimini kapatmak | **Reddedilir (409)**; önce bekleyen siparişler dalgaya alınır ya da geri bırakılır |
+| Y-2 (F-2) | Dalgadan çıkarılan / 0178'de iptal edilen sipariş | **"Kısmen tamamlandı" sayılır** — D-9 bu ekle genişler |
+| Y-3 (F-11) | "En kısa yol" (D-2) | v1'de **S-biçimli belirlenimci yaklaşık yöntem** kabul (kesin optimum iddia edilmez; AC-25 39 / 66 ölçüsü) |
+| Y-4 (F-10) | `.antigravity` satırları (PKS-001 `warehouse.waves.*` oyması, RCS-001 `WAV`) | **Paket onayından önce** yazılır; CT satırları hazırlar, `.antigravity/**` değişikliği sahip onayıyla |
+| Q-6 | Depo dalga ayarı (WaveManaged) izni | **B — ayrı ayar izni** `warehouse.waves.settings.configure` (Tier-3) |
+| Q-1…Q-5, Q-7…Q-16, Q-18, Q-19, Q-21, Q-22 | paket önerileri | **Öneri gibi (A)** |
+| Q-17 | Hedef tarih | sahipten bekleniyor |
+| Q-20 | Rol şablonu | §14 önerisi; karar Ali (Auth) |

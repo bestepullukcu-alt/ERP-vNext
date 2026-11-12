@@ -39,3 +39,10 @@
 - Açık (FIX-01 raporundan, düzeltilmedi): Pano ve Sayım Farkları'nda ad çözülemeyince kimliğe düşen alanlar (atanan / oluşturan kişi,
   depo, QuickView kapsamı, Düzenle formunda SKU seçicisi; Sayım Farkları "Lot" sütunu ve QuickView `lotId`, konum / SKU / depo) → önerilen
   WP-0181-DL4-FIX-02. DL-4 ACCEPTED kapıları: FIX-02 kararı + Auth rol şablonu (Ali).
+
+## Ölçüm 3 — WP-0181-DL4-FIX-02 sonrası (hat `ef2fa3821`, FIX-02 `15fe4c44a`)
+- Pano (tr): liste satırı ve Hızlı Bakış (depo "D01 · İstanbul Merkez Depo", konum "A-01-01-01 · Raf A-01-01-01", geçmiş kişileri "Admin User")
+  — sayfa metninde GUID deseni 0. Sayım Farkları: kayıt yok (sayım gönderilmedi) → boş liste; satır / lot hücreleri FIX-02 bekçileriyle
+  (Web proxy testi + vitest jsdom, sabotajlar kırmızı) ölçüldü, canlıda satır olmadığı için görsel ölçüm sayım gönderilince.
+- FIX-02 Web.Tests 4539 / 3 (bilinen 3), vitest 13 kırmızı = main; `verify_datatable_page` iki modül PASS (geliştirici raporu).
+- DL-4 kalan: Auth rol şablonu (Ali) → ACCEPTED. Açık not: Sayım Formu alt satırında depo adı okunamazsa boş kalıyor (kimlik değil) — DÜŞÜK.
