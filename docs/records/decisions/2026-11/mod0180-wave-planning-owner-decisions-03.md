@@ -27,3 +27,7 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
 - **2026-11-13 — X-16 bekçisi onaylandı** (MOD-0178 r29 incelemesi F-1; kaynak: sahip sohbet cevabı, Beste 2026-11-13): MOD-0178'in
   `warehouse.waves.*` izinlerini kullanmadığını ölçen test (AC-5 alt ad alanı sahipliği vakası, sabotajlar S-5c / S-5d) MOD-0180'in ilk
   dilimine (DL-1) konur — **sahip onayladı 2026-11-13** (MOD-0180 r6 §14, §16 AC-5, §18, §24).
+- **2026-11-13 — X-14 Gateway uç sayısı (XMC-001 sahip onayı)** (MOD-0180 r7 yazar raporu; kaynak: sahip sohbet cevabı, Beste 2026-11-13,
+  "tamam" — MOD-0181'deki "70'ten 73'e çıkar" kararıyla aynı yol): `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` :97
+  `api/warehouse` uç sayısını 73'e sabitler; MOD-0180'in ilk Gateway dilimi kendi uçlarını eklerken bu sayıyı yeni toplama günceller.
+  Rota (`ocelot.json`) ve bu test değişikliği integration-agent'ındır. MOD-0180 X-14 ve AC-55 buna göre yazılır.
