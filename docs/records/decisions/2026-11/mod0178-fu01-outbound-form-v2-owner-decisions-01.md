@@ -74,3 +74,7 @@ Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-looku
 
 - **2026-11-13 — Q-8 = kabul (Ali, GMG-ERP; kaynak: Ali'nin yazılı cevabı, Beste'nin sohbete aktarımı):** Golden Reference sapması G-FU01-01 kabul —
   Compact sayfada satırlar sayfa içi (istemci modu) DataTable ve yan panelde düzenlenir; bu yerel tabloda dışa aktarma ve toplu silme yoktur.
+
+- **2026-11-13 — Q-7 = öneri kabul (CT — MVP-5 CT; paket Q-7'nin sahibini "Ali / CT" yazar):** sürüm sırası — FU01 eki Item adımından
+  (WAREHOUSE-OUTBOUND 1.1.0 + WMS-BUNDLE 1.2.0) sonra yazılır; MOD-0183 r10 onayı FU01 DL-2 bitişinden sonra kalırsa CT iki eki tek adımda
+  yazar (iki dosya, tek sürüm artışı). DL-2 yayın kapısıdır; paket r4'e işlendi.
