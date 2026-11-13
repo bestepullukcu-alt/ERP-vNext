@@ -55,12 +55,18 @@ public sealed class RecallCrmLoggingTests : IClassFixture<RecallApiFactory>
 }
 
 /// <summary>
-/// MOD-0177-FU01 AC-17 — the acceptance gate D-1: the reader's one field name is the frozen SHIPMENT-BUNDLE 3.5.0 getShipment member
-/// (string, uuid). SHIPMENT-BUNDLE 3.5.0 is frozen on main (PR #400, 3b42f0005): the Skip and its CI allow-list line
+/// MOD-0177-FU01 AC-17 (pack r9 §19.13; owner decision 2026-11-13) — the acceptance gate D-1 against the frozen SHIPMENT-BUNDLE 3.5.0:
+/// the getShipment 200 schema, with its allOf parts resolved, carries the reader's one field name as a $ref to
+/// components/schemas/CustomerRef; CustomerRef's type set is exactly [string, null] (order free) and its pattern is the contract's
+/// lower-case GUID pattern, to the letter. format is not looked at — the contract has none. The Skip and its CI allow-list line
 /// (SHIPMENT_BUNDLE_350) are removed and the test runs.
 /// </summary>
 public sealed class ShipmentBundle350AlignmentTests
 {
+    private const string SchemaRefPrefix = "#/components/schemas/";
+    private const string CustomerRefSchemaRef = SchemaRefPrefix + "CustomerRef";
+    private const string LowerCaseGuidPattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+
     [Fact]
     public void CustomerRef_field_matches()
     {
@@ -70,9 +76,48 @@ public sealed class ShipmentBundle350AlignmentTests
         Assert.True(version >= new Version(3, 5, 0), version.ToString());
         var getShipment = doc["paths"]!.AsObject().SelectMany(p => p.Value!.AsObject()).Single(m => m.Value?["operationId"]?.GetValue<string>() == "getShipment").Value!;
         var schemaRef = getShipment["responses"]!["200"]!["content"]!["application/json"]!["schema"]!["$ref"]!.GetValue<string>();
-        var schema = doc["components"]!["schemas"]![schemaRef.Split('/')[^1]]!;
-        var member = schema["properties"]![ShipmentBundleHttpReader.CustomerRefField]!;
-        Assert.Equal(("string", "uuid"), (member["type"]!.GetValue<string>(), member["format"]!.GetValue<string>()));
+        var schemas = doc["components"]!["schemas"]!.AsObject();
+        var field = ShipmentBundleHttpReader.CustomerRefField;
+
+        // the schema's own properties and those of every allOf part ($ref parts resolved, inline parts as they are)
+        var members = Parts(schemas, Resolve(schemas, schemaRef), [schemaRef]).Select(part => part["properties"]?[field]).Where(member => member is not null).ToList();
+        Assert.True(members.Count > 0, $"getShipment 200 schema ({schemaRef}) has no '{field}' property, in itself or in its allOf parts");
+        foreach (var member in members)
+        {
+            var bound = member is JsonObject o && !o.ContainsKey("type") && o["$ref"] is JsonValue r && r.GetValue<string>() == CustomerRefSchemaRef;
+            Assert.True(bound, $"'{field}' must be a $ref to {CustomerRefSchemaRef} (no inline type), found {member!.ToJsonString()}");
+        }
+
+        var customerRef = Resolve(schemas, CustomerRefSchemaRef);
+        var types = customerRef["type"] switch
+        {
+            JsonArray many => many.Select(t => t?.GetValue<string>() ?? "(yaml null)").ToHashSet(StringComparer.Ordinal),
+            JsonValue one => [one.GetValue<string>()], // a scalar type is a set of one
+            _ => new HashSet<string>(StringComparer.Ordinal),
+        };
+        Assert.True(types.SetEquals(["string", "null"]), $"CustomerRef type must be exactly [string, null], found [{string.Join(", ", types.Order(StringComparer.Ordinal))}]");
+        var pattern = customerRef["pattern"] is JsonValue p ? p.GetValue<string>() : null;
+        Assert.True(pattern == LowerCaseGuidPattern, $"CustomerRef pattern must be {LowerCaseGuidPattern}, found {pattern ?? "(none)"}");
+    }
+
+    private static JsonObject Resolve(JsonObject schemas, string reference)
+    {
+        Assert.StartsWith(SchemaRefPrefix, reference, StringComparison.Ordinal);
+        var schema = schemas[reference[SchemaRefPrefix.Length..]] as JsonObject;
+        Assert.True(schema is not null, $"{reference} is not a schema object of the contract");
+        return schema!;
+    }
+
+    private static IEnumerable<JsonObject> Parts(JsonObject schemas, JsonObject schema, HashSet<string> seen)
+    {
+        yield return schema;
+        if (schema["allOf"] is not JsonArray allOf) yield break;
+        foreach (var part in allOf.OfType<JsonObject>())
+        {
+            var reference = part["$ref"] is JsonValue r ? r.GetValue<string>() : null;
+            if (reference is not null && !seen.Add(reference)) continue;
+            foreach (var inner in Parts(schemas, reference is null ? part : Resolve(schemas, reference), seen)) yield return inner;
+        }
     }
 }
 
