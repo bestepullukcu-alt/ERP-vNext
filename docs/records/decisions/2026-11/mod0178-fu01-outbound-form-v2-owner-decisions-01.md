@@ -78,3 +78,16 @@ Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-looku
 - **2026-11-13 — Q-7 = öneri kabul (CT — MVP-5 CT; paket Q-7'nin sahibini "Ali / CT" yazar):** sürüm sırası — FU01 eki Item adımından
   (WAREHOUSE-OUTBOUND 1.1.0 + WMS-BUNDLE 1.2.0) sonra yazılır; MOD-0183 r10 onayı FU01 DL-2 bitişinden sonra kalırsa CT iki eki tek adımda
   yazar (iki dosya, tek sürüm artışı). DL-2 yayın kapısıdır; paket r4'e işlendi.
+
+- **2026-11-13 — CRM cevabı: CRM-ACCOUNT-LOOKUP 1.1 taslağı main'de (PR #421, merge `5b95e90ab`; dosya
+  `docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md`, x-status DRAFT; kaynak: CRM ekibinin mesajı, Beste'nin
+  sohbete aktarımı; CT `origin/main`'de okudu).** U-4 `GET /api/crm/accounts/{accountId:guid}/ship-to`, izin `crm.account-ship-to.read`;
+  gövde §2.2 (`accountId`, `code`, `name`, `status`, `defaultAddressId`, `addresses[]` — `addressId` (`"primary"` ya da UUID), `kind`,
+  `label`, `isDefault`, `countryRef`, `cityRef`, `districtRef`, `postalCode`, `addressLine` — `contractVersion` `crm-account-lookup/1.1`).
+  CT karşılaştırması: FU01 r4'ün beklediği alan listesiyle (§8.4, satır 385-392) birebir aynı; FU01'de içerik değişikliği gerekmez.
+  **Q-13 kapandı:** cevapta `status` var, `isBillable` yok; CRM durumu 404'e katmaz (pasif hesap 200 + `status`); kontrol tüketicide —
+  FU01'in kuralı (yeni sevkiyatta yalnız `active`; `status = "active"` ⇔ `isBillable`) geçerli (CRM K-14). **DL-3 kapısı değişmedi:** 1.1
+  donması (pack eki onayı + CRM DL-3 kabulü) ve uç CRM'de uygulanınca; CRM "uç kodlanınca haber vereceğiz" dedi. **XMC-CRM-01 açık:**
+  taslak MOD-0178'i "aday" yazar ("MOD-0178 paketi bugün bu okumayı içermez") — tüketici paket MOD-0178-FU01'dir (r4, ready-for-dev);
+  CRM'e donmada x-consumers ve §5a'ya "MOD-0178-FU01 (MOD-0178 çıkış sevkiyatı formu v2)" yazılması iletilir. Pakete işleniş: sonraki
+  içerik revizyonunda (§19 açık kalanlar, Q-13 satırı).
