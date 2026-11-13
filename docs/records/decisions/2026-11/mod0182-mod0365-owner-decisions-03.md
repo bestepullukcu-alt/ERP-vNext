@@ -29,3 +29,7 @@ geçerlidir. Paket r2 bu kararları işler. Sahip: Beste.
 (okutma olayının merkezi denetim yolu); Q-7'nin donanım seçimi (TBD, Beste). Q-1'e bağlı `.antigravity` kapısı (PKS-001 §4 `warehouse.barcode.*`
 satırı + `:92` / `:105`, RCS-001 §3 `DVC` / `LBL`, aynı adımda `RecordCodeTypeCatalogTests` X-8 ve MOD-0178 §14.1 notu X-9) **paket onayından önce**
 kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
+
+- **2026-11-13 — Q-3 genişletme teyidi** (kaynak: sahip sohbet cevabı, Beste 2026-11-13, "evet"): farklı lot (`DIFFERENT_LOT`) hiçbir okutma
+  bağlamında PIN ile aşılamaz — yerleştirmede de. v1'de PIN ile aşılabilen tek durum yerleştirmede yanlış raftır (`Putaway` x `WRONG_LOCATION`);
+  lot değişimi FU-0178-LOTSWAP'a kalır. MOD-0182 r2'deki yazar çıkarımı böylece sahip kararı oldu.
