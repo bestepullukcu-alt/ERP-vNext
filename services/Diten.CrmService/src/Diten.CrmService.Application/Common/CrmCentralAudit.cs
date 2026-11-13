@@ -32,8 +32,17 @@ public static class CrmCentralAudit
     /// <summary>Submit / Decide / Approve / Withdraw / Release / Retire / Archive.</summary>
     public static CentralAuditMetadata Lifecycle(string entityType) => new(Category, "LifecycleTransition", entityType, SourceModule);
 
-    /// <summary>Render.</summary>
+    /// <summary>Render / Transmit / the scheduler's retry.</summary>
     public static CentralAuditMetadata Execute(string entityType) => new(Category, "Execute", entityType, SourceModule);
+
+    /// <summary>Archive of a keyed setting that stops applying (an evidence policy scope). Platform <c>AuditOperation.Deactivate</c> (5).</summary>
+    public static CentralAuditMetadata Deactivate(string entityType) => new(Category, "Deactivate", entityType, SourceModule);
+
+    /// <summary>Revoke (an institution's visit QR code). Platform <c>AuditOperation.Revoke</c> (9).</summary>
+    public static CentralAuditMetadata Revoke(string entityType) => new(Category, "Revoke", entityType, SourceModule);
+
+    /// <summary>Print / export of something already stored (a visit QR payload). Platform <c>AuditOperation.Export</c> (10).</summary>
+    public static CentralAuditMetadata Export(string entityType) => new(Category, "Export", entityType, SourceModule);
 
     /// <summary>The id inside a SUCCEEDED <see cref="Response{T}"/> envelope, or null (failed envelope, no data, other type).</summary>
     public static Guid? IdFrom<T>(object? response, Func<T, Guid> pick)

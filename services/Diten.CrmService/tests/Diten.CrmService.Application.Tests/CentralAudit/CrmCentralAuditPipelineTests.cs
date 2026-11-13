@@ -302,6 +302,20 @@ public sealed class CrmCentralAuditApiFactory : WebApplicationFactory<Program>
         }
     }
 
+    /// <summary>WP-CRM-SYNC-S0B B0b — one scope as a hosted service opens it (<c>PreOrderTransmissionHostedService</c>): the
+    /// row's tenant pinned on <see cref="TenantContext"/> (or none), and NO HTTP context.</summary>
+    public async Task<TResponse> SendInBackgroundAsync<TResponse>(Guid? tenant, IRequest<TResponse> command)
+    {
+        using var scope = Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = null;
+        if (tenant is { } id)
+        {
+            scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(id);
+        }
+
+        return await scope.ServiceProvider.GetRequiredService<IMediator>().Send(command);
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         lock (EnvironmentGate)
