@@ -65,6 +65,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     // admin can grant it.
     private const string AccountLookupValidation = "crm.account.lookup-validation";
 
+    // WP-0149-SHIPTO-DL3b (MOD-0149 §32.3 K-13, CRM-ACCOUNT-LOOKUP 1.1) — the key CrmService AccountController enforces on
+    // U-4 (ship-to). No page or button either: an API permission only.
+    private const string AccountShipToRead = "crm.account-ship-to.read";
+
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "CRM",
@@ -82,6 +86,9 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             ApiPermissions:
             [
                 new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant"),
+                // WP-0149-SHIPTO-DL3b — MOD-0149 §32.3 (K-13): the U-4 ship-to key. API-only like the lookup key: on no page
+                // and no action; CrmService enforces it with [HasPermission] on GET /api/crm/accounts/{id}/ship-to.
+                new ModuleManifestPermission(AccountShipToRead, "Read account ship-to addresses (CRM-ACCOUNT-LOOKUP 1.1)", "Tenant"),
                 // WP-VW-W6 W6-BE-b + W6-WEB-b — the MOD-0156 key without a screen yet (the FX import endpoint; screen D enters and
                 // corrects rates one by one). The other fifteen MOD-0156 keys are the COMMERCIALPRICING page and its actions below,
                 // the MOD-0168 keys the PREORDERS / PREORDERSETTINGS pages. CrmService enforces each one with [HasPermission].
