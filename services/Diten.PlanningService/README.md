@@ -30,10 +30,16 @@ Outbox index upgrade for persistent Mongo databases: before enabling the worker,
 inspect the outbox collection's index list. If the earlier
 `ix_mod0188_outbox_claim` compound index on `DispatchedAt` and `OccurredAt`
 exists, an operator must remove that exact index after verifying its name and
-keys. Mongo serializes both `DateTimeOffset` values as arrays; retaining the
-compound index can reject delivery receipts with a parallel-arrays error.
+keys. Mongo serializes both `DateTimeOffset` values as arrays. Without this
+preflight, the processor publishes to RabbitMQ *before* `CompletePublishAsync`
+writes `DispatchedAt`; the old compound index then rejects that receipt with a
+parallel-arrays error. The processor retries and republishes the same event up
+to `MaxAttempts`, then can incorrectly mark it `DeadLettered`. The opt-in
+worker now checks index names and keys at startup, logs a critical error and
+stops the host before any broker publish when an unsafe index remains.
 The later `ix_mod0188_outbox_undispatched` single-field index is safe but
-obsolete; it can be removed separately after the new
+obsolete and still accumulates `DeadLettered` entries. Removing it is
+recommended after the new
 `ix_mod0188_outbox_claim_active` partial index is present. The new index keeps
 Pending, Publishing, and legacy records without `DeliveryState` claimable,
 while excluding DeadLettered records. Do not drop any other outbox index.

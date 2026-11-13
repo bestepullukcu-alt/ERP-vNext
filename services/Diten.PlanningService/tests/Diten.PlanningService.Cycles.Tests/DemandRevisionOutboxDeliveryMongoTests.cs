@@ -226,4 +226,30 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         Assert.Contains("IXSCAN", plan);
         Assert.Contains("ix_mod0188_outbox_claim_active", plan);
     }
+
+    [ManualDraftMongoFact]
+    public async Task V2Outbox_UnsafeLegacyCompoundIndex_BlocksBeforeBrokerDelivery()
+    {
+        var (_, _, context) = Open(databaseName: "mod0188_unsafe_outbox_index_tests");
+        await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
+        await context.Outbox.Indexes.CreateOneAsync(new CreateIndexModel<DemandOutboxMessage>(
+            Builders<DemandOutboxMessage>.IndexKeys
+                .Ascending(x => x.DispatchedAt).Ascending(x => x.OccurredAt),
+            new CreateIndexOptions { Name = "ix_mod0188_outbox_claim" }));
+        var eventId = Guid.NewGuid();
+        await context.Outbox.InsertOneAsync(new DemandOutboxMessage
+        {
+            EventId = eventId, CorrelationId = Guid.NewGuid(), TenantId = Guid.NewGuid(),
+            LegalEntityId = Guid.NewGuid(), RevisionId = Guid.NewGuid(),
+            EventType = "demand.revision.published.v2", Payload = "{}",
+            OccurredAt = DateTimeOffset.UtcNow, CreatedAt = DateTimeOffset.UtcNow
+        });
+
+        var store = new DemandRevisionOutboxStore(context);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => store.VerifyAsync());
+        Assert.Contains("Unsafe Demand outbox index", error.Message);
+        var unchanged = await context.Outbox.Find(x => x.EventId == eventId).SingleAsync();
+        Assert.Equal("Pending", unchanged.DeliveryState);
+        Assert.Null(unchanged.DispatchedAt);
+    }
 }

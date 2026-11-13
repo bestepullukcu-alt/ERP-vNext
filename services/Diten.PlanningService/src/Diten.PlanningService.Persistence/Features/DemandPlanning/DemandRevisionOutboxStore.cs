@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
+using Diten.PlanningService.Application.Features.DemandPlanning;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -8,12 +9,40 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 
 // Publication and invalidation insert these records inside their own Mongo transaction.
 // This adapter only claims and delivers already committed records.
-public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context) : IEventOutboxStore
+public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context)
+    : IEventOutboxStore, IDemandRevisionOutboxPreflight
 {
     private const string ClaimIndexName = "ix_mod0188_outbox_claim_active";
+    private const string UnsafeLegacyIndexName = "ix_mod0188_outbox_claim";
     private readonly IMongoCollection<DemandOutboxMessage> _outbox = context.Outbox;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
+    private readonly SemaphoreSlim _preflightGate = new(1, 1);
     private volatile bool _claimIndexReady;
+    private volatile bool _preflightReady;
+
+    public async Task VerifyAsync(CancellationToken cancellationToken = default)
+    {
+        if (_preflightReady) return;
+        await _preflightGate.WaitAsync(cancellationToken);
+        try
+        {
+            if (_preflightReady) return;
+            using var cursor = await _outbox.Indexes.ListAsync(cancellationToken);
+            foreach (var index in await cursor.ToListAsync(cancellationToken))
+            {
+                var name = index.GetValue("name", BsonNull.Value).AsString;
+                var keys = index.GetValue("key", new BsonDocument()).AsBsonDocument;
+                var hasBothDates = keys.Contains(nameof(DemandOutboxMessage.DispatchedAt)) &&
+                                   keys.Contains(nameof(DemandOutboxMessage.OccurredAt));
+                if (name == UnsafeLegacyIndexName || hasBothDates)
+                    throw new InvalidOperationException(
+                        "Unsafe Demand outbox index detected. Verify and remove the legacy DispatchedAt/OccurredAt compound index before enabling event delivery.");
+            }
+            await EnsureClaimIndexAsync(cancellationToken);
+            _preflightReady = true;
+        }
+        finally { _preflightGate.Release(); }
+    }
 
     public Task<EventOutboxWriteResult> EnqueueAsync(EventOutboxWriteRequest request,
         CancellationToken cancellationToken = default) =>
@@ -23,7 +52,7 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
         DateTimeOffset stalePublishingCutoffUtc, CancellationToken cancellationToken = default)
     {
         // Trusted background worker: this is a global queue scan, never a user data query.
-        await EnsureClaimIndexAsync(cancellationToken);
+        await VerifyAsync(cancellationToken);
         var f = Builders<DemandOutboxMessage>.Filter;
         var pending = (f.Eq(x => x.DeliveryState, "Pending") |
                        f.Exists(nameof(DemandOutboxMessage.DeliveryState), false)) &
