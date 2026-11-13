@@ -33,3 +33,7 @@ kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
 - **2026-11-13 — Q-3 genişletme teyidi** (kaynak: sahip sohbet cevabı, Beste 2026-11-13, "evet"): farklı lot (`DIFFERENT_LOT`) hiçbir okutma
   bağlamında PIN ile aşılamaz — yerleştirmede de. v1'de PIN ile aşılabilen tek durum yerleştirmede yanlış raftır (`Putaway` x `WRONG_LOCATION`);
   lot değişimi FU-0178-LOTSWAP'a kalır. MOD-0182 r2'deki yazar çıkarımı böylece sahip kararı oldu.
+
+- **2026-11-13 — Q-6 = ZXing.Net** (kaynak: sahip sohbet cevabı, Beste 2026-11-13: "Ali'ye sorma, biz karar veririz; ücretsizse
+  kullanabiliriz"): barkod çizimi (Code 128, GS1-128, DataMatrix) için ZXing.Net kullanılır — Apache-2.0 lisanslı, ücretsiz ve ticari
+  kullanıma açık. Soru Ali'ye gitmez; paket bir sonraki revizyonda Q-6'yı "karar 03" olarak işler.
