@@ -1,0 +1,58 @@
+# MOD-0188 Demand v2 — PR #228 bağımsız CT kabul kararı (2026-11-13)
+
+- Hedef: PR #228 (`feat(mod-0188): Demand v2 Superseded niyeti ve sayfalama sözleşmesi`, yazar ElikPenco, MVP-4), baş
+  `f95fe4d2f50dfefcd5e408a4b1355f00553cc1e9`. Girdi: MVP-4'ün CT kabul ölçüm kaydı (PR yorumu `issuecomment-6820599826`).
+- Paket: `execution/domains/supply-chain-execution/module-packs/MOD-0188-demand-planning.md` (`ready-for-dev`; PR paketi değiştirmez; AC
+  metinleri :242-251).
+- İnceleyen: merkez CT (Beste adına), bağımsız inceleyici alt ajan aea91df60c1a7f5a6 (claude-opus-5-5; kodu yazmadı). Salt okunur:
+  `refs/ct/pr228` üzerinde `git show` / `git grep`; test koşulmadı (yerelde RabbitMQ yok).
+- Ölçüm: `origin/main` `5b95e90ab`, merge-base `ce4358070` — PR main'in 73 commit gerisinde. CI: `f95fe4d2f` check-runs 39/39 `success`
+  (GitHub API, CT 2026-11-13); `service-tests (planning-tests)` koşusu 2026-11-11 15:14-15:15 UTC, iş 130610056368.
+
+## Karar: KOŞULLU — dar kabul
+
+**Kabul edilen dar ölçümler (yalnız bunlar):**
+- AC-D19 / AC-D25 atomiklik parçası: Superseded outbox niyeti Published ile aynı Mongo session / transaction'da; Superseded yazısı
+  gerçek benzersiz indeksle çakıştırılınca geri alma gerçek Mongo testiyle ölçülür (`PublishedRevisionMongoIntegrationTests.cs:538-574`);
+  replay'de ikinci outbox etkisi yok.
+- AC-D23: HTTP manifest + bütün satır sayfalarından checksum, üretim yardımcısı çağrılmadan yeniden hesaplanır; ilk miktar bozulunca
+  digest farkı (`RevisionHttpChecksumContractTests.cs:14-47`, CANONICAL-1).
+- AC-D25 taşıyıcı parçası: taşıyıcı Production'da kapalı (`DemandRevisionEventTransport.cs:206-209`, Development / IntegrationTest dışında
+  açılırsa başlangıçta hata); gerçek broker testi kuyruktan okunan `eventId` / `correlationId`'yi Mongo outbox alındısıyla eşler; CI
+  RabbitMQ'yu digest ile pinli imajla başlatır, filtresiz koşar, Skipped = 0 ve proof JSON `cat` adımı zorunludur
+  (`.github/workflows/service-tests.yml:38`, :268-280).
+
+**Bu PR'dan çıkmayanlar (açık):** AC-D18 (yayın öncesi doğrulamaya yeni kod / test yok); AC-D24 "boş / gerçek sıfır / eksik / bilinmeyen"
+ayrımı (yalnız çok sayfalı tutarlılık ölçülür); AC-D25 uçtan uca (broker testi gerçek yayından değil elle eklenmiş sentetik kayıtla,
+`Payload="{}"`); AC-D27 (kısmi, değişiklik yok); Demand v2 dondurması; Superseded tarihsel içerik; canlı tüketici.
+
+**Merge koşulları:** (1) main alınır (merge, 73 commit) ve CI yeniden yeşil; (2) planning-tests koşu logu ve `mod0188-rabbitmq-delivery-proof.json`
+artefaktı CT'ye gösterilir (bağlantı); (3) aşağıdaki orta bulgular giderilir ya da PR kaydına "açık" olarak yazılır; (4) merge yalnız Ali /
+CT onayıyla, merge commit ile.
+
+## Bulgular
+
+- F-1 orta — broker testi env yoksa sessizce geçer: `DemandRevisionRabbitMqIntegrationTests.cs:28-29` `MOD0188_TEST_RABBITMQ_ENABLED != "true"`
+  → `return;` (Skip değil; Skipped = 0 kapısı yakalamaz; yalnız CI'daki `cat` adımı yakalar). Öneri: `Assert.Skip` ya da env yoksa fail.
+- F-2 orta — broker kanıtı sentetik kayıtla (`:70-81`); gerçek yayının Published + Superseded niyetleri yalnız sahte taşıyıcıyla
+  (`DemandRevisionOutboxDeliveryMongoTests.cs:66-103`). AC-D25 uçtan uca iddiası bu PR'dan çıkmaz.
+- F-3 orta — rollback testi iddiadan dar: `DemandAuditEntry` Action="Superseded" (`PublishedRevisionMongoStore.cs:206-212`), eski
+  `ManualDraftManifest` durumu / StateVersion ve yeni revision'ın `PublishedRevisionManifests` / Parts yokluğu sayılmıyor.
+- F-4 orta — `Publish_AuditFailure_RollsBackStateSnapshotSlotAndOutbox` (`:576-620`) main'de zaten var, ilk yayını sınar; Superseded rollback
+  kanıtı sayılmaz.
+- F-5 düşük — CANONICAL-2 testinde (`RevisionHttpChecksumContractTests.cs:50-92`) bozma negatifi ve çok sayfa / `nextCursor` kontrolü yok.
+- F-6 düşük — `contracts/drafts/demand-v2.openapi.yaml` x-implementation-gaps "actual RabbitMQ delivery … remain unproven" der; PR'ın
+  AC-D25 iddiası ve `tests/MOD0188-rabbitmq-ci-evidence.md` ile çelişir.
+- F-7 düşük — `ClaimForPublishAsync` (`DemandRevisionOutboxStore.cs:339-368`) DeliveryState / NextAttemptAt / DispatchedAt için indekssiz tarar.
+- F-8 düşük — geçersiz correlation `HttpOutboxCorrelationReader.cs:88-89` publish transaction'ında 500'e döner.
+
+Kiracı / yetki: yeni HTTP ucu yok; `RevisionReadController.cs` değişmedi, her eylemde `[HasPermission]`; outbox kayıtları TenantId /
+LegalEntityId taşır, benzersiz indeks (TenantId, LegalEntityId, EventId); Superseded payload satır taşımaz.
+
+## Ölçülmeyenler
+
+CI koşu logu ve proof JSON içeriği (GitHub oturumu gerekir); testler koşulmadı (CANONICAL eşleşmesi, sabotaj 1-3 sonuçları);
+`pack_approval.py check` ve Ali'nin CI dosyası onayı PR'da doğrulanmadı; `scripts/test-env/mod0188-ci-mongo.sh`, `check_trx_no_skipped.py`,
+`ci-skip-allowlist.tsv` planning satırı, `EventOutboxPublisherProcessor` okunmadı.
+
+MOD-0189 kodlaması bu karardan bağımsızdır; yeni bağımsız onay ister (MVP-4 beyanıyla aynı).

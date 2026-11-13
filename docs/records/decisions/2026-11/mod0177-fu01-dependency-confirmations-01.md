@@ -17,3 +17,16 @@
 - `accountType` sözleşmede yok; paket `status` ve `isBillable`'ı da kullanmaz.
 - Tüketici satırı: CRM, MOD-0177-FU01 main'e gelince sözleşme §5a'daki "aday" satırını "tüketici"ye çevirip §7 D-5 sınırlarını yazacak (1.x ekleme). **Takip: MVP-1 CT, FU01 main'e girince CRM CT'ye haber verir.**
 - MOD-0183 / MOD-0186 seçicisi: U-3 (`GET /api/crm/accounts/lookup`, ad ya da koda göre arama, adres yok) MVP-1 CT cevabını (listede ad ve kod, adres seçimden sonra) karşılar; adres eki K-9 açık, acele yok.
+
+## Ek — 2026-11-13: AC-17 sahip kararı (Beste, "öneriler evet"; kaynak: sahip sohbet cevabı)
+
+- **Bulgu (MVP-1 CT):** skip kaldırma dalı `fix/ci/remove-shipment-bundle-350-skip-01` (gönderilmedi) AC-17'de takıldı. Paket r8 AC-17
+  `customerRef` için `type: string`, `format: uuid` bekler; donmuş SHIPMENT-BUNDLE 3.5.0 (`docs/analysis/contracts/shipment-bundle.openapi.yaml`
+  `info.version` 3.5.0, `components/schemas/CustomerRef` `:3434-3437`) `type: [string, 'null']` ve küçük harf GUID `pattern`'i
+  (`^[0-9a-f]{8}-…-[0-9a-f]{12}$`) taşır; `format: uuid` yok. Sözleşme donmuştur ve doğrudur (açıklaması: CRM `Account.Id`, "D" biçimi,
+  küçük harf; tüketici büyük/küçük harf duyarsız karşılaştırır).
+- **Karar:** paket sözleşmeye hizalanır — **r9'da AC-17 yeniden yazılır:** `getShipment` 200 şemasındaki `customerRef` özelliği
+  `components/schemas/CustomerRef`'e bağlıdır; `CustomerRef` `type` kümesi tam `[string, null]`, `pattern` küçük harf GUID deseni,
+  `info.version` ≥ 3.5.0. Test `ShipmentBundle350AlignmentTests.CustomerRef_field_matches` buna göre; sabotaj S-17 (desen ya da `null`
+  kaldırılırsa kırmızı) adıyla kalır. Sözleşme değişmez. Akış: r9 → bağımsız inceleme (CT-APR-02) → Ali onayı (EES 2.14: r8 onayı geçersiz)
+  → skip kaldırma dalı.
