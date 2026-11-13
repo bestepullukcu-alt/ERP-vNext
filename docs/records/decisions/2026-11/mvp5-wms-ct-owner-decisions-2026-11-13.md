@@ -14,3 +14,14 @@
 - **MOD-0049-FU01 `.antigravity` kapısı ("yaz", Beste):** RCS-001 §3'e `BPT` (İş Ortağı, OTOMATİK, grup önekli, ortak servisten) satırı
   yazıldı; aynı adımda X-6: Platform `RecordCodeTypeCatalogTests` `RuleAheadOfCatalogue["BPT"] = "MOD-0049-FU01 DL-1"` — 17/17 yeşil,
   satır silinince AC16 kırmızı, geri alındı. Bu onay öneki `BPT` olarak seçer (Q-1). Q-2…Q-7 açık.
+- **MOD-0049-FU01 Q-2…Q-7 ("hepsinde öneri gibi", Beste):** Q-2 = A (denetim: `mdm-merkezi-iletim` en iyi çaba + aynı işlemde yerel
+  geçmiş, Brand emsali); Q-3 = iletişim kişilerine 90 gün kuralı uygulanmaz, en aza indirme + kişi silinince kalıcı silme, v1'de zamanlanmış
+  temizlik yok; Q-4 = vergi numarası kiracıda tekil, listede maskeli, ayrıntıda yetkiliye açık; Q-5 = Golden Compact sapmaları paketteki gibi,
+  son rol kaldırılamaz (önce pasifleştirme); Q-6 = pasif kayıt salt okunur, yalnız etkinleştir; Q-7 = domain-config'e MDM ekran / Gateway
+  istisna satırı eklenir (merkez yazar). Q-1 = `BPT` (yukarıda).
+- **MOD-0040-FU02 r14 Q-8…Q-16 ("hepsinde öneri gibi"):** hepsi paketteki A önerisi — Q-8 TTY kataloğa girer; Q-9 oluşturmada elle kod
+  gerekçe istemez, yalnız sonraki değişiklik; Q-10 gerekçe 10–500 karakter; Q-11 kırp + Türkçe→ASCII + büyük harf, diğer işaretler red;
+  Q-12 elle kod 2–40; Q-13 tekillik (kiracı, tür); Q-14 emekli koda geri dönüş yok; Q-15 DL-3'te HTTP / Gateway / ekran yok; Q-16 tüketici
+  tutarlılığı DL-4'te. A-20 (dört denetim belirteci `platform-islem-ici` iz satırına) CT kararı: kabul, DL-3 merge kapısı.
+- **MOD-0182 panel penceresi ("öneri gibi"):** dashboard "son 24 saat" (çağrı anından geriye); takvim günü yok, paket değişikliği yok.
+  Paket "bugünkü" ifadesi bir sonraki revizyonda (r8) hizalanır.
