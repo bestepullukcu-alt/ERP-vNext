@@ -164,7 +164,7 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
   anahtarı" cümlesi (artık iki anahtar) ve Gateway cümlesi ("üç uç da" → dört uç); **§2b (yeni bölüm**, §2a'dan sonra:
   U-4 gövdesi = bu taslağın §2); §5a (tüketici satırları); **§5b (yeni bölüm**, §5a'dan sonra: U-4 tüketici kuralları =
   bu taslağın §4); §6 (K-13 anahtarı); §7 durum kodları (U-4); §8 Gateway (`{everything}` jokerinin kapsadığı yollara
-  `{id}/ship-to` eklenir; yeni rota yok — bu taslağın §6); §9 (S- fikstürleri); §10 (yukarıdaki iki madde); §11 (K-9
+  `{id}/ship-to` eklenir; yeni rota yok — bu taslağın §1); §9 (S- fikstürleri); §10 (yukarıdaki iki madde); §11 (K-9
   kapandı, K-12…K-19); §12 değişiklik geçmişi. 1.0.0 metninin öteki bölümleri (§2, §2a, §3, §4, §5) değişmez.
 - Çoklu adres (K-18) ve ek adreslerde posta kodu bu biçimle **aynı sürümde** gelir: yalnız listeye öğe eklenir.
   Tüketici ilk günden listeyle çalışır; tek öğeli liste özel durum değildir.
