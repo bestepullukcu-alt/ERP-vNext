@@ -25,3 +25,6 @@
   tutarlılığı DL-4'te. A-20 (dört denetim belirteci `platform-islem-ici` iz satırına) CT kararı: kabul, DL-3 merge kapısı.
 - **MOD-0182 panel penceresi ("öneri gibi"):** dashboard "son 24 saat" (çağrı anından geriye); takvim günü yok, paket değişikliği yok.
   Paket "bugünkü" ifadesi bir sonraki revizyonda (r8) hizalanır.
+- **MOD-0049-FU01 C-5 — rol uçları (Beste, "iki komutu v1'den çıkar"):** v1'de tek rol (ThirdPartyLogistics) olduğundan rol ver / rol kaldır
+  komutları, uçları ve `mdm.business-partners.assign-role` izni v1'den çıkar; rol oluşturmada verilir. "Son rol kaldırılamaz" (Q-5) alan
+  kuralı olarak kalır; ikinci rol eklenince iki komut eklemeli olarak gelir.
