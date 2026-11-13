@@ -53,3 +53,11 @@ kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
     commit'te güncellenir; yorum satırına dilim adı yazılır; kabul kaydı önce → sonra yazar (MOD-0181 DL-1 ve MOD-0180 X-10 emsali) — onaylandı.
   - **Cihaz anahtarının telefona teslimi:** Web'den kayıt ya da yeniden etkinleştirmede üretilen anahtar telefona **QR kod** ile verilir;
     QR tek kullanımlık ve kısa ömürlüdür, anahtar sunucuda yalnız özetiyle tutulur — onaylandı (ayrıntı paket r4'te, SCAN-BUNDLE'da).
+
+- **2026-11-13 — Q-18 = evet** (MOD-0182 r5 / r6 incelemeleri; kaynak: sahip sohbet cevabı, Beste 2026-11-13): QR'da anahtarın kendisi değil, tek
+  kullanımlık ve kısa ömürlü (10 dk) bir **eşleştirme kodu** bulunur; telefon kodu `POST /barcode/devices/pair` ile gönderir, anahtar o anda
+  üretilip yalnız telefona bir kez verilir; anahtar Web ekranında hiç görünmez, sunucuda yalnız özeti saklanır. 4168e7a90'daki "anahtar QR ile
+  verilir" kararının uygulama biçimi budur. DL-1 kapısı kapandı.
+- **2026-11-13 — `.antigravity` kapısı onaylandı** (sahip sohbet cevabı, Beste 2026-11-13, "ikisine de evet"): PKS-001 :92 adlı alt ad alanı cümlesi,
+  `warehouse.*` satırı ve yeni `warehouse.barcode.*` satırı; RCS-001 §3 `DVC` ve `LBL` satırları; aynı adımda X-8 (`RecordCodeTypeCatalogTests`
+  `DVC` / `LBL`); X-9 (MOD-0178 §14.1 notu) MOD-0178 r30 ile.
