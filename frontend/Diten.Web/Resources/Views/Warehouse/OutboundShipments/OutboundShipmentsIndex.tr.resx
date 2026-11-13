@@ -80,19 +80,19 @@
   <data name="Warehouse.Status.Completed" xml:space="preserve"><value>Tamamlandı</value></data>
   <data name="Warehouse.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
   <data name="Warehouse.Status.InFlight" xml:space="preserve"><value>Onay işleniyor</value></data>
-  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Outbound bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Çıkış sevkiyatı bulunamadı; listeyi yenileyin.</value></data>
   <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>Her satır için stok tahsis edilemedi; hiçbir şey kaydedilmedi.</value></data>
-  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Bir outbound en fazla 100 satır içerebilir.</value></data>
-  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Bu outbound'a birden çok sevkiyat bağlı; sevkiyat ekibinden kontrol isteyin.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Bir çıkış sevkiyatı en fazla 100 satır içerebilir.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Bu çıkış sevkiyatına birden çok sevkiyat bağlı; sevkiyat ekibinden kontrol isteyin.</value></data>
   <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>Sevkiyatları okuma yetkiniz yok; sevkiyat okuma yetkisi isteyin.</value></data>
   <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>Sevkiyat servisine ulaşılamıyor; hiçbir şey değişmedi. Birazdan yeniden deneyin.</value></data>
-  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Kalem düzeyindeki outbound, sevkiyat tarafı desteklenene kadar sevke hazır yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Kalem düzeyindeki çıkış sevkiyatı, sevkiyat tarafı desteklenene kadar sevke hazır yapılamaz.</value></data>
   <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>Kalem satırı stoklanabilir bir SKU'ya çözümlenemedi; ürünü kontrol edin.</value></data>
   <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>Seçilen lot tahsis edilemez; önizlemedeki bir lotu seçin.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Bu outbound'un tahsisi hâlâ tamamlanıyor; biraz sonra yenileyin.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Sevke hazır ya da sevk edilmiş bir outbound iptal edilemez.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Outbound sevke hazır; artık değiştirilemez.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Bir outbound'da kalem satırları ile SKU satırları karışamaz.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Bu çıkış sevkiyatının tahsisi hâlâ tamamlanıyor; biraz sonra yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Sevke hazır ya da sevk edilmiş bir çıkış sevkiyatı iptal edilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Çıkış sevkiyatı sevke hazır; artık değiştirilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Bir çıkış sevkiyatında kalem satırları ile SKU satırları karışamaz.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Koliyi kapatmadan önce en az bir içerik satırı girin.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>Koliler bir tahsiste toplanandan fazlasını içerecek.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Koli bulunamadı; sayfayı yenileyin.</value></data>
@@ -116,16 +116,16 @@
   <data name="Warehouse.Package.Status.Open" xml:space="preserve"><value>Açık</value></data>
   <data name="Warehouse.Package.Status.Closed" xml:space="preserve"><value>Kapalı</value></data>
   <data name="Warehouse.Package.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
-  <data name="OutboundShipmentsTitle" xml:space="preserve"><value>Outbound Sevkiyatlar</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Satırlarıyla bir outbound açın; stok FEFO sırasıyla tahsis edilir ve toplama görevleri açılır. Paketleyin, sevke hazır yapın ve sevkiyatı kontrol edin.</value></data>
-  <data name="AddNewOutbound" xml:space="preserve"><value>Yeni Outbound</value></data>
+  <data name="OutboundShipmentsTitle" xml:space="preserve"><value>Çıkış Sevkiyatları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Satırlarıyla bir çıkış sevkiyatı açın; stok FEFO sırasıyla tahsis edilir ve toplama görevleri açılır. Paketleyin, sevke hazır yapın ve sevkiyatı kontrol edin.</value></data>
+  <data name="AddNewOutbound" xml:space="preserve"><value>Yeni Çıkış Sevkiyatı</value></data>
   <data name="ColWarehouse" xml:space="preserve"><value>Depo</value></data>
   <data name="ColOrderRef" xml:space="preserve"><value>Sipariş ref.</value></data>
   <data name="ColShipTo" xml:space="preserve"><value>Alıcı</value></data>
   <data name="ColLines" xml:space="preserve"><value>Satır</value></data>
   <data name="ColCreated" xml:space="preserve"><value>Oluşturulma</value></data>
-  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni outbound</value></data>
-  <data name="FormTitleEdit" xml:space="preserve"><value>Outbound'u düzenle</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni çıkış sevkiyatı</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Çıkış sevkiyatını düzenle</value></data>
   <data name="SectionWarehouse" xml:space="preserve"><value>Depo ve sevkiyat hazırlık</value></data>
   <data name="SectionLines" xml:space="preserve"><value>Satırlar</value></data>
   <data name="SectionShipTo" xml:space="preserve"><value>Alıcı</value></data>
@@ -139,7 +139,7 @@
   <data name="FieldPostalCode" xml:space="preserve"><value>Posta kodu</value></data>
   <data name="FieldLine1" xml:space="preserve"><value>Adres 1</value></data>
   <data name="FieldLine2" xml:space="preserve"><value>Adres 2</value></data>
-  <data name="LinesLockedHint" xml:space="preserve"><value>Satırlar ve tahsisleri değişmez; değiştirmek için outbound'u iptal edip yenisini açın.</value></data>
+  <data name="LinesLockedHint" xml:space="preserve"><value>Satırlar ve tahsisleri değişmez; değiştirmek için çıkış sevkiyatını iptal edip yenisini açın.</value></data>
   <data name="LineAdd" xml:space="preserve"><value>Satır Ekle</value></data>
   <data name="LineRemove" xml:space="preserve"><value>Satırı kaldır</value></data>
   <data name="LineOrderLine" xml:space="preserve"><value>Sipariş satırı</value></data>
@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>Satır {0}: {1} (istenen {2}, alınabilir {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>Bu lot ilk FEFO lotu değil; 10–1000 karakterlik bir gerekçe yazın.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>Bu lot ilk FEFO lotu değil; gerekçe isteğe bağlı.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>Seçtiğiniz lot kayıtta uygulanır; FEFO sırasında ilk değil — FEFO önerisi lot {0} (SKT {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>Seçilen lokasyon bu deponun sevkiyat hazırlık lokasyonu değil; Sevkiyat Hazırlık rolü olan bir lokasyon seçin ya da alanı boş bırakın.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>Şirketiniz FEFO sırası dışındaki lotu reddeder; FEFO sırasını koruyun.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>SKU'nun temel birimi okunamadı; birazdan yeniden deneyin.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Bir depo seçin.</value></data>
@@ -194,16 +196,16 @@
   <data name="Warehouse.Outbound.Action.SyncDispatch" xml:space="preserve"><value>Sevkiyatı Kontrol Et</value></data>
   <data name="Warehouse.Outbound.Action.Cancel" xml:space="preserve"><value>İptal</value></data>
   <data name="Warehouse.Outbound.Action.Preview" xml:space="preserve"><value>Tahsisi Önizle</value></data>
-  <data name="Warehouse.Outbound.Action.Cancel.Confirm" xml:space="preserve"><value>Outbound iptal edilir: rezervasyonları bırakılır, toplanan stok bir yerleştirme göreviyle rafa döner.</value></data>
-  <data name="Warehouse.Outbound.Action.Release.Confirm" xml:space="preserve"><value>Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez.</value></data>
-  <data name="Warehouse.Outbound.Action.SyncDispatch.Confirm" xml:space="preserve"><value>Bu outbound'un sevkiyatları okunur; biri sevk edildiyse outbound Sevk edildi olur.</value></data>
-  <data name="Warehouse.Outbound.Disabled.ItemLevelNotPublishable" xml:space="preserve"><value>Kalem düzeyindeki outbound, sevkiyat tarafı kalem satırlarını destekleyene kadar sevke hazır yapılamaz</value></data>
-  <data name="Warehouse.Outbound.Saved.Created" xml:space="preserve"><value>Outbound oluşturuldu; toplama görevleri açıldı.</value></data>
-  <data name="Warehouse.Outbound.Saved.Updated" xml:space="preserve"><value>Outbound kaydedildi.</value></data>
-  <data name="Warehouse.Outbound.Saved.Released" xml:space="preserve"><value>Outbound sevke hazır.</value></data>
-  <data name="Warehouse.Outbound.Saved.Shipped" xml:space="preserve"><value>Sevkiyat çıktı; outbound sevk edildi.</value></data>
+  <data name="Warehouse.Outbound.Action.Cancel.Confirm" xml:space="preserve"><value>Çıkış sevkiyatı iptal edilir: rezervasyonları bırakılır, toplanan stok bir yerleştirme göreviyle rafa döner.</value></data>
+  <data name="Warehouse.Outbound.Action.Release.Confirm" xml:space="preserve"><value>Sevke hazır yapılan çıkış sevkiyatı değiştirilemez ve iptal edilemez.</value></data>
+  <data name="Warehouse.Outbound.Action.SyncDispatch.Confirm" xml:space="preserve"><value>Bu çıkış sevkiyatına bağlı sevkiyatlar okunur; biri sevk edildiyse çıkış sevkiyatı Sevk edildi olur.</value></data>
+  <data name="Warehouse.Outbound.Disabled.ItemLevelNotPublishable" xml:space="preserve"><value>Kalem düzeyindeki çıkış sevkiyatı, sevkiyat tarafı kalem satırlarını destekleyene kadar sevke hazır yapılamaz</value></data>
+  <data name="Warehouse.Outbound.Saved.Created" xml:space="preserve"><value>Çıkış sevkiyatı oluşturuldu; toplama görevleri açıldı.</value></data>
+  <data name="Warehouse.Outbound.Saved.Updated" xml:space="preserve"><value>Çıkış sevkiyatı kaydedildi.</value></data>
+  <data name="Warehouse.Outbound.Saved.Released" xml:space="preserve"><value>Çıkış sevkiyatı sevke hazır.</value></data>
+  <data name="Warehouse.Outbound.Saved.Shipped" xml:space="preserve"><value>Sevkiyat çıktı; çıkış sevkiyatı sevk edildi.</value></data>
   <data name="Warehouse.Outbound.Saved.NotShippedYet" xml:space="preserve"><value>Henüz sevk edilmiş sevkiyat yok; hiçbir şey değişmedi.</value></data>
-  <data name="Warehouse.Outbound.Saved.Cancelled" xml:space="preserve"><value>Outbound iptal edildi.</value></data>
+  <data name="Warehouse.Outbound.Saved.Cancelled" xml:space="preserve"><value>Çıkış sevkiyatı iptal edildi.</value></data>
   <data name="Warehouse.Outbound.Event.Created" xml:space="preserve"><value>Oluşturuldu</value></data>
   <data name="Warehouse.Outbound.Event.AllocationFailed" xml:space="preserve"><value>Tahsis başarısız</value></data>
   <data name="Warehouse.Outbound.Event.Allocated" xml:space="preserve"><value>Tahsis edildi</value></data>

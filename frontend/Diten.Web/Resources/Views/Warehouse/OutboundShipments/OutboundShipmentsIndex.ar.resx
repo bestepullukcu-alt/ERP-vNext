@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>السطر {0}: {1} (المطلوب {2}، القابل للتخصيص {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>هذه التشغيلة ليست أول تشغيلة وفق FEFO؛ اكتب سببًا من 10 إلى 1000 حرف.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>هذه التشغيلة ليست أول تشغيلة وفق FEFO؛ السبب اختياري.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>تُطبَّق التشغيلة المختارة عند الحفظ؛ وهي ليست الأولى وفق FEFO — يقترح FEFO التشغيلة {0} (انتهاء {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>الموقع المختار ليس موقع تجهيز لهذا المستودع؛ اختر موقعًا له دور التجهيز أو اترك الحقل فارغًا.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>ترفض شركتك التشغيلة خارج ترتيب FEFO؛ حافظ على ترتيب FEFO.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>تعذّرت قراءة الوحدة الأساسية لـ SKU؛ حاول مجددًا بعد قليل.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>اختر مستودعًا.</value></data>

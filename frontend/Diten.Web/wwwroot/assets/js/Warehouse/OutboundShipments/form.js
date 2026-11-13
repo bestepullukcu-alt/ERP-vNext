@@ -28,6 +28,9 @@ const OutboundShipmentForm = (function () {
     const token = () => form?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
     const format = (template, ...values) => values.reduce((text, value, i) => text.replace(`{${i}}`, value ?? ''), template || '');
     const value = (id) => (byId(id)?.value || '').trim();
+    // E3-FIX-01 (G-1): quantities on screen are in the reader's culture (tr "2", "1,5"); the lines sent keep the dot-decimal wire string
+    const culture = () => window.CurrentLanguage || document.documentElement.lang || undefined;
+    const qty = (v) => rules.quantityText(v, culture());
 
     const getJson = async (url) => {
         const res = await fetch(url, { credentials: 'same-origin', headers: getAuthHeaders() });
@@ -98,7 +101,8 @@ const OutboundShipmentForm = (function () {
         window.jQuery?.(product).on('change', () => { window.jQuery(sku).val(null).trigger('change'); setUom(n, null); invalidatePreview(); });
         window.jQuery?.(sku).on('change', () => { loadUom(n); invalidatePreview(); });
         byId(`lineQty${n}`).addEventListener('input', invalidatePreview);
-        byId(`lineLot${n}`).addEventListener('change', () => refreshLot(n));
+        // E3-FIX-01 (item 4): a lot change is previewed at once — the preview shows the CHOSEN lot, not the FEFO suggestion again
+        byId(`lineLot${n}`).addEventListener('change', () => { refreshLot(n); if (preview) runPreview(); });
     };
 
     const setUom = (n, uom) => {
@@ -170,36 +174,57 @@ const OutboundShipmentForm = (function () {
         row.querySelector('[data-reason-hint]').textContent = need === 'Blocked' ? W('DeviationBlocked') : need === 'Required' ? W('DeviationNeedsReason') : need === 'Optional' ? W('DeviationOptional') : '';
     };
 
+    /**
+     * E3-FIX-01 (item 4): the line's chosen lot is IN the preview (the service previews a lot override and reports its FEFO deviation without
+     * refusing — §8.17 step 7, `deviation`). When the chosen lot is not the first free one, the line says so and names the FEFO suggestion.
+     */
+    const deviationNote = (line) => {
+        const d = line.deviation;
+        if (!d) return '';
+        return `<div class="small text-warning" data-preview-deviation>${esc(format(W('PreviewChosenLot'), d.firstEligibleLotNumber || '-', d.firstEligibleExpiry || '-'))}</div>`;
+    };
+
     const renderPreview = () => {
         const host = byId('outbound-preview-lines');
         const rows = rowsOf();
         host.innerHTML = (preview.lines || []).map((line, i) => {
             const failed = line.failureCode ? `<div class="text-danger small">${esc(W(`Warehouse.Outbound.LineFailure.${line.failureCode}`) || W(`Warehouse.Error.${line.failureCode}`) || W('Warehouse.Error.Invalid'))}</div>` : '';
-            const allocations = (line.allocations || []).map((a) => `<div class="small">${esc(format(W('PreviewAllocation'), a.lotNumber || '-', a.quantity, a.fefoRank ?? '-'))}</div>`).join('');
-            return `<div class="border rounded p-2" data-preview-line="${esc(line.lineSeq)}"><strong>${esc(line.orderLineId)}</strong> — ${esc(format(W('LineAllocatable'), line.allocatable ?? line.allocated))}${failed}${allocations}</div>`;
+            const allocations = (line.allocations || []).map((a) => `<div class="small">${esc(format(W('PreviewAllocation'), a.lotNumber || '-', qty(a.quantity), a.fefoRank ?? '-'))}</div>`).join('');
+            return `<div class="border rounded p-2" data-preview-line="${esc(line.lineSeq)}"><strong>${esc(line.orderLineId)}</strong> — ${esc(format(W('LineAllocatable'), qty(line.allocatable ?? line.allocated)))}${failed}${allocations}${deviationNote(line)}</div>`;
         }).join('');
         (preview.lines || []).forEach((line, i) => {
             const row = rows[i];
             if (!row) return;
             const select = byId(`lineLot${row.n}`);
             const lots = line.lots || [];
-            select.innerHTML = `<option value="">${esc(W('LineFefoFirst'))}</option>` + lots.map((l) => `<option value="${esc(l.lotId)}">${esc(format(W('LotOption'), l.lotNumber, l.fefoRank, l.expiryDate || '-', l.allocatable))}</option>`).join('');
+            select.innerHTML = `<option value="">${esc(W('LineFefoFirst'))}</option>` + lots.map((l) => `<option value="${esc(l.lotId)}">${esc(format(W('LotOption'), l.lotNumber, l.fefoRank, l.expiryDate || '-', qty(l.allocatable)))}</option>`).join('');
+            // the reader's choice survives the redraw (it is what this preview was asked for)
+            if (row.lotId && lots.some((l) => l.lotId === row.lotId)) select.value = row.lotId;
             select.closest('[data-lot-block]').classList.toggle('d-none', lots.length < 2);
             refreshLot(row.n);
         });
         byId('outbound-preview').classList.remove('d-none');
     };
 
+    // E3-FIX-01 (item 4): a refusal about the chosen Staging location points at that field, not only at the top of the form
+    const StagingCodes = { WMS_TARGET_NOT_ALLOWED: 'StagingNotAllowed', WMS_STAGING_NOT_CONFIGURED: 'Warehouse.Error.WMS_STAGING_NOT_CONFIGURED' };
+    const stagingError = (answer) => {
+        const word = StagingCodes[answer?.json?.error?.code];
+        fieldError('StagingLocationIdError', word ? W(word) : '');
+        return word ? W(word) : null;
+    };
+
     const runPreview = async () => {
         showAlert('');
+        fieldError('StagingLocationIdError', '');
         const { body, shipTo } = header();
         if (!body.warehouseId) { fieldError('WarehouseIdError', W('ValidationWarehouse')); return; }
         fieldError('WarehouseIdError', '');
-        const rows = rowsOf().map((r) => rules.lineBody(Object.assign({}, r, { lotId: '' })));
+        const rows = rowsOf().map((r) => rules.lineBody(r));
         if (!rows.length || rows.some((r) => r.error)) { fieldError('LinesError', W(rows.length ? 'ValidationLine' : 'ValidationLines')); return; }
         fieldError('LinesError', '');
         const answer = await post('/Warehouse/OutboundShipments/preview', Object.assign({}, body, { shipTo: shipTo.name && shipTo.country ? shipTo : null, lines: rows.map((r) => r.line) }));
-        if (!answer.ok) { showAlert(failure(answer)); return; }
+        if (!answer.ok) { showAlert(stagingError(answer) || failure(answer)); return; }
         preview = answer.json;
         renderPreview();
     };
@@ -211,7 +236,7 @@ const OutboundShipmentForm = (function () {
     const allocationFailure = (answer) => {
         const lines = answer?.json?.error?.details?.lines || [];
         if (!lines.length) return failure(answer);
-        return [failure(answer), ...lines.map((l) => format(W('AllocationLineFailed'), l.lineSeq, W(`Warehouse.Outbound.LineFailure.${l.code}`) || l.code, l.requested, l.allocatable))].join(' ');
+        return [failure(answer), ...lines.map((l) => format(W('AllocationLineFailed'), l.lineSeq, W(`Warehouse.Outbound.LineFailure.${l.code}`) || l.code, qty(l.requested), qty(l.allocatable)))].join(' ');
     };
 
     const submitCreate = async () => {
@@ -222,8 +247,9 @@ const OutboundShipmentForm = (function () {
         fieldError('ShipToError', '');
         const lines = linesBody();
         if (!lines) return;
+        fieldError('StagingLocationIdError', '');
         const answer = await post('/Warehouse/OutboundShipments/create', Object.assign({ idempotencyKey: saveKey, shipTo, lines }, body));
-        if (!answer.ok) { showAlert(allocationFailure(answer)); return; }
+        if (!answer.ok) { showAlert(stagingError(answer) || allocationFailure(answer)); return; }
         window.showToast?.(answer.json?.message || '', 'success');
         window.location.href = `/Warehouse/OutboundShipments/Details/${encodeURIComponent(answer.json.id)}`;
     };
@@ -265,7 +291,7 @@ const OutboundShipmentForm = (function () {
         setValue('ShipToLine1', o.shipTo?.line1);
         setValue('ShipToLine2', o.shipTo?.line2);
         const host = byId('outbound-lines-readonly');
-        if (host) host.innerHTML = (o.lines || []).map((l) => `<div class="small">${esc(l.orderLineId)} · ${esc(l.sku)} · ${esc(l.quantity)} ${esc(l.uom)}</div>`).join('');
+        if (host) host.innerHTML = (o.lines || []).map((l) => `<div class="small">${esc(l.orderLineId)} · ${esc(l.sku)} · ${esc(qty(l.quantity))} ${esc(l.uom)}</div>`).join('');
         if (!rules.EditStatuses.includes(o.status)) { showAlert(W('Warehouse.Error.WMS_OUTBOUND_IMMUTABLE')); byId('btnSaveOutbound')?.setAttribute('disabled', 'disabled'); }
     };
 

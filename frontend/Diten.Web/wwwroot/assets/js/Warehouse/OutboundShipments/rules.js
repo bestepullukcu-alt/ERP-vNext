@@ -100,6 +100,29 @@ const OutboundRules = (function () {
     const isQuantity = (text) => /^\d{1,12}([.,]\d{1,6})?$/.test(String(text ?? '').trim()) && num(text) > 0;
 
     /**
+     * E3-FIX-01 (G-1) — a service decimal ("2.000", "1.500") as the reader writes numbers: the user's culture, no trailing zeros (tr "2", "1,5";
+     * en "2", "1.5"), Latin digits. Display only: what the screens send stays the dot-decimal wire string. Anything that is not a plain decimal is
+     * shown as given. `grouping` false = the form an input can take back (no thousands separator).
+     */
+    const quantityText = (value, culture, grouping = true) => {
+        if (value === null || value === undefined || value === '') return '';
+        const text = String(value).trim();
+        if (!/^-?\d+(\.\d+)?$/.test(text)) return text;
+        try {
+            return new Intl.NumberFormat(culture || undefined, { maximumFractionDigits: 6, useGrouping: grouping, numberingSystem: 'latn' }).format(text);
+        } catch (error) {
+            return text;
+        }
+    };
+
+    /** A package's "L x W x H" (cm) with each number in the reader's culture ("30.5x20x10" → tr "30,5x20x10"); anything else as given. */
+    const dimensionsText = (value, culture) => {
+        const text = String(value ?? '').trim();
+        if (!/^\d+(\.\d+)?(x\d+(\.\d+)?){2}$/i.test(text)) return text;
+        return text.split(/x/i).map((part) => quantityText(part, culture, false)).join('x');
+    };
+
+    /**
      * One form line → the proxy's line (or a validation key): order line, item (itemId, skuId, skuLevel), base unit, quantity, optional lot override
      * with its FEFO reason. The service decides FEFO, Item resolution and the unit (§8.17).
      */
@@ -126,7 +149,10 @@ const OutboundRules = (function () {
         return mode === 'Block' ? 'Blocked' : mode === 'Warn' ? 'Optional' : 'Required';
     };
 
-    return { Keys, StatusMenu, EditStatuses, ActionWord, menu, canEdit, reasonWord, statusBadge, actionUrl, nothingPicked, deviations, releaseBody, parseSku, isQuantity, lineBody, lotNeed };
+    return {
+        Keys, StatusMenu, EditStatuses, ActionWord, menu, canEdit, reasonWord, statusBadge, actionUrl, nothingPicked, deviations, releaseBody, parseSku, isQuantity,
+        lineBody, lotNeed, quantityText, dimensionsText
+    };
 })();
 
 if (typeof window !== 'undefined') window.OutboundRules = OutboundRules;

@@ -139,11 +139,12 @@ public sealed class WarehouseS2ScreensTests(WebApplicationFactory<Program> facto
         var read = await RenderAsync(OutboundDetails, "en", WarehousePermissionKeys.OutboundShipmentsRead);
         var all = await RenderAsync(OutboundDetails, "en", OutboundAll);
 
-        foreach (var control in new[] { "modalOutboundCancel", "modalOutboundRelease", "outboundActionToken" })
-        {
-            Assert.False(read.Contains(control, StringComparison.Ordinal), $"a read-only reader gets {control}");
-            Assert.Contains(control, all, StringComparison.Ordinal);
-        }
+        // WP-0178-E3-FIX-01: "İptal" and "Sevke hazır" are window.showConfirm (MOD-0013) opened by details.js for a menu entry the reader's keys
+        // allow — no page-drawn Bootstrap modal for anyone; the anti-forgery token the writes carry is drawn only with a key
+        Assert.False(read.Contains("outboundActionToken", StringComparison.Ordinal), "a read-only reader gets the action token");
+        Assert.Contains("outboundActionToken", all, StringComparison.Ordinal);
+        foreach (var control in new[] { "modalOutboundCancel", "modalOutboundRelease" })
+            Assert.False(all.Contains(control, StringComparison.Ordinal), $"the Details page still draws the Bootstrap modal {control}");
 
         Assert.Contains("data-outbound-id=\"" + OutboundId + "\"", all, StringComparison.Ordinal);
     }
@@ -398,7 +399,9 @@ public sealed class WarehouseS2ScreensTests(WebApplicationFactory<Program> facto
         };
         // the module's own panels / dialogs (their × is labelled with the shared "Cancel"); the list shell's shared offcanvas ("Close") is the platform's
         var closes = pages.SelectMany(p => Regex.Matches(p, "<button[^>]*class=\"btn-close[^\"]*\"[^>]*aria-label=\"Cancel\"[^>]*>").Select(m => m.Value)).ToList();
-        Assert.True(closes.Count >= 9, $"only {closes.Count} panel close buttons found");
+        // 9 → 7 (WP-0178-E3-FIX-01): the Details page's "İptal" / "Sevke hazır" Bootstrap modals became window.showConfirm (MOD-0013), whose buttons
+        // are the shared component's — the page draws two × fewer
+        Assert.True(closes.Count >= 7, $"only {closes.Count} panel close buttons found");
         foreach (var close in closes)
             Assert.True(close.Contains("wh-touch", StringComparison.Ordinal), $"a close button without the 48 px class: {close}");
         Assert.Contains("id=\"offcanvasConfirm\"", pages[0], StringComparison.Ordinal);
