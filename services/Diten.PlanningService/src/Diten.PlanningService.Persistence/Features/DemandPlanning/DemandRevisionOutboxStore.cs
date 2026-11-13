@@ -10,7 +10,7 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // This adapter only claims and delivers already committed records.
 public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context) : IEventOutboxStore
 {
-    private const string ClaimIndexName = "ix_mod0188_outbox_undispatched";
+    private const string ClaimIndexName = "ix_mod0188_outbox_claim_active";
     private readonly IMongoCollection<DemandOutboxMessage> _outbox = context.Outbox;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
     private volatile bool _claimIndexReady;
@@ -59,13 +59,20 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
         try
         {
             if (_claimIndexReady) return;
-            // The worker must see all tenants. The index narrows to unshipped records;
+            // Keep legacy records without DeliveryState claimable: Mongo equality to null
+            // includes missing fields. Dead letters must not accumulate in the claim index.
             // OccurredAt remains the sort. Mongo stores DateTimeOffset as an array, so
             // indexing both dates would reject a dispatched record (parallel arrays).
             var keys = Builders<DemandOutboxMessage>.IndexKeys;
+            var active = new BsonDocument
+            {
+                [nameof(DemandOutboxMessage.DispatchedAt)] = BsonNull.Value,
+                [nameof(DemandOutboxMessage.DeliveryState)] = new BsonDocument("$in",
+                    new BsonArray { "Pending", "Publishing", BsonNull.Value })
+            };
             await _outbox.Indexes.CreateOneAsync(new CreateIndexModel<DemandOutboxMessage>(
-                keys.Ascending(x => x.DispatchedAt),
-                new CreateIndexOptions { Name = ClaimIndexName }),
+                keys.Ascending(x => x.DispatchedAt).Ascending(x => x.DeliveryState),
+                new CreateIndexOptions<DemandOutboxMessage> { Name = ClaimIndexName, PartialFilterExpression = active }),
                 cancellationToken: cancellationToken);
             _claimIndexReady = true;
         }

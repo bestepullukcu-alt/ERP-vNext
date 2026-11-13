@@ -26,6 +26,18 @@ The local Mongo/fake-transport tests do not prove RabbitMQ delivery or authorize
 live Demand v2 consumers. Superseded content remains closed until MOD-0189
 provides an approved server-verifiable bound-run contract.
 
+Outbox index upgrade for persistent Mongo databases: before enabling the worker,
+inspect the outbox collection's index list. If the earlier
+`ix_mod0188_outbox_claim` compound index on `DispatchedAt` and `OccurredAt`
+exists, an operator must remove that exact index after verifying its name and
+keys. Mongo serializes both `DateTimeOffset` values as arrays; retaining the
+compound index can reject delivery receipts with a parallel-arrays error.
+The later `ix_mod0188_outbox_undispatched` single-field index is safe but
+obsolete; it can be removed separately after the new
+`ix_mod0188_outbox_claim_active` partial index is present. The new index keeps
+Pending, Publishing, and legacy records without `DeliveryState` claimable,
+while excluding DeadLettered records. Do not drop any other outbox index.
+
 The unfiltered PlanningService test assembly includes a real RabbitMQ delivery
 test. It requires `MOD0188_TEST_RABBITMQ_ENABLED=true`,
 `MOD0188_TEST_RABBITMQ_HOST=127.0.0.1`, `MOD0188_TEST_RABBITMQ_PORT`, and the

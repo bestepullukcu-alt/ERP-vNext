@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -164,5 +165,65 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         Assert.Equal(EventOutboxPublishOutcome.Published,
             Assert.Single(await processor.PublishPendingAsync()).Outcome);
         Assert.Equal(eventId, Assert.Single(transport.Delivered).CorrelationId);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task V2Outbox_ClaimUsesPartialIndexThatExcludesDeadLetters()
+    {
+        var (_, _, context) = Open(databaseName: "mod0188_delivery_index_tests");
+        await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
+        var now = DateTimeOffset.UtcNow;
+        var tenantId = Guid.NewGuid();
+        var pendingId = Guid.NewGuid();
+        await context.Outbox.InsertManyAsync([
+            new DemandOutboxMessage
+            {
+                EventId = pendingId, CorrelationId = Guid.NewGuid(), TenantId = tenantId,
+                LegalEntityId = Guid.NewGuid(), RevisionId = Guid.NewGuid(),
+                EventType = "demand.revision.published.v2", Payload = "{}",
+                OccurredAt = now, CreatedAt = now
+            },
+            new DemandOutboxMessage
+            {
+                EventId = Guid.NewGuid(), CorrelationId = Guid.NewGuid(), TenantId = tenantId,
+                LegalEntityId = Guid.NewGuid(), RevisionId = Guid.NewGuid(),
+                EventType = "demand.revision.published.v2", Payload = "{}",
+                OccurredAt = now, CreatedAt = now, DeliveryState = "DeadLettered"
+            }
+        ]);
+
+        var store = new DemandRevisionOutboxStore(context);
+        var claimed = await store.ClaimForPublishAsync(now.AddMinutes(1), now.AddMinutes(-5));
+        Assert.NotNull(claimed);
+        Assert.Equal(pendingId, claimed.Metadata.EventId);
+        Assert.Null(await store.ClaimForPublishAsync(now.AddMinutes(1), now.AddMinutes(-5)));
+
+        using var indexCursor = await context.Outbox.Indexes.ListAsync();
+        var indexes = await indexCursor.ToListAsync();
+        var index = Assert.Single(indexes, x => x["name"] == "ix_mod0188_outbox_claim_active");
+        var filter = index["partialFilterExpression"].AsBsonDocument;
+        Assert.Equal(BsonNull.Value, filter["DispatchedAt"]);
+        var states = filter["DeliveryState"]["$in"].AsBsonArray;
+        Assert.Contains(new BsonString("Pending"), states);
+        Assert.Contains(new BsonString("Publishing"), states);
+        Assert.Contains(BsonNull.Value, states); // legacy records without the field
+        Assert.DoesNotContain(new BsonString("DeadLettered"), states);
+
+        var explain = await context.Outbox.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            ["explain"] = new BsonDocument
+            {
+                ["find"] = context.Outbox.CollectionNamespace.CollectionName,
+                ["filter"] = new BsonDocument
+                {
+                    ["DispatchedAt"] = BsonNull.Value,
+                    ["DeliveryState"] = "Pending"
+                },
+                ["hint"] = "ix_mod0188_outbox_claim_active"
+            }
+        });
+        var plan = explain["queryPlanner"]["winningPlan"].ToJson();
+        Assert.Contains("IXSCAN", plan);
+        Assert.Contains("ix_mod0188_outbox_claim_active", plan);
     }
 }
