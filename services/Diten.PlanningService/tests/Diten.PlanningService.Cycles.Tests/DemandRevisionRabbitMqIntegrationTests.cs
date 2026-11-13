@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Threading.Channels;
 using Diten.BuildingBlocks.Eventing;
+using Diten.PlanningService.Application.Features.DemandPlanning;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
 using Diten.PlanningService.Persistence.Features.DemandPlanning;
