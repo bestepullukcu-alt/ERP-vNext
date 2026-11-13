@@ -1,6 +1,7 @@
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
@@ -9,7 +10,10 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // This adapter only claims and delivers already committed records.
 public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context) : IEventOutboxStore
 {
+    private const string ClaimIndexName = "ix_mod0188_outbox_claim";
     private readonly IMongoCollection<DemandOutboxMessage> _outbox = context.Outbox;
+    private readonly SemaphoreSlim _indexGate = new(1, 1);
+    private volatile bool _claimIndexReady;
 
     public Task<EventOutboxWriteResult> EnqueueAsync(EventOutboxWriteRequest request,
         CancellationToken cancellationToken = default) =>
@@ -19,6 +23,7 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
         DateTimeOffset stalePublishingCutoffUtc, CancellationToken cancellationToken = default)
     {
         // Trusted background worker: this is a global queue scan, never a user data query.
+        await EnsureClaimIndexAsync(cancellationToken);
         var f = Builders<DemandOutboxMessage>.Filter;
         var pending = (f.Eq(x => x.DeliveryState, "Pending") |
                        f.Exists(nameof(DemandOutboxMessage.DeliveryState), false)) &
@@ -34,6 +39,7 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
             new FindOneAndUpdateOptions<DemandOutboxMessage>
             {
                 ReturnDocument = ReturnDocument.After,
+                Hint = new BsonString(ClaimIndexName),
                 Sort = Builders<DemandOutboxMessage>.Sort.Ascending(x => x.OccurredAt)
             }, cancellationToken);
         if (message is null) return null;
@@ -44,6 +50,25 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
                 message.OccurredAt.ToUniversalTime()),
             Encoding.UTF8.GetBytes(message.Payload), TrustedTransportMetadata.Empty,
             EventOutboxDeliveryStatus.Publishing, message.AttemptCount, null);
+    }
+
+    private async Task EnsureClaimIndexAsync(CancellationToken cancellationToken)
+    {
+        if (_claimIndexReady) return;
+        await _indexGate.WaitAsync(cancellationToken);
+        try
+        {
+            if (_claimIndexReady) return;
+            // The worker must see all tenants. DispatchedAt narrows the queue;
+            // OccurredAt preserves the oldest-first claim order across statuses.
+            var keys = Builders<DemandOutboxMessage>.IndexKeys;
+            await _outbox.Indexes.CreateOneAsync(new CreateIndexModel<DemandOutboxMessage>(
+                keys.Ascending(x => x.DispatchedAt).Ascending(x => x.OccurredAt),
+                new CreateIndexOptions { Name = ClaimIndexName }),
+                cancellationToken: cancellationToken);
+            _claimIndexReady = true;
+        }
+        finally { _indexGate.Release(); }
     }
 
     public async Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default)
