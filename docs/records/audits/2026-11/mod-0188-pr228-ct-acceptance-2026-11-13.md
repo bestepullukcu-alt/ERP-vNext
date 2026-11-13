@@ -107,3 +107,5 @@ ise alınır ve CI yeniden yeşil olur. MOD-0189 kodlaması bu karardan bağıms
 - PR açıklaması ve sabotaj kanıtı okunmadı (oturum gerekir).
 
 **Karar: merge'e hazır.** Merge commit ile (squash değil); Y-1…Y-3 sonraki MOD-0188 işinde.
+
+- **Merge:** PR #422 baş `72d00448f` main'e **merge commit** `8773562d4` ile alındı (Beste, 2026-11-13; CT origin/main'de ölçtü). Y-1…Y-3 sonraki MOD-0188 işine.
