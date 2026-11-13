@@ -56,3 +56,28 @@ CI koşu logu ve proof JSON içeriği (GitHub oturumu gerekir); testler koşulma
 `ci-skip-allowlist.tsv` planning satırı, `EventOutboxPublisherProcessor` okunmadı.
 
 MOD-0189 kodlaması bu karardan bağımsızdır; yeni bağımsız onay ister (MVP-4 beyanıyla aynı).
+
+## Yeniden inceleme — baş 2744d5216 (2026-11-13, aynı gün)
+
+- Hedef: PR #228 baş `2744d521697b52a2c56d739af79973ab03232e95`; `origin/main` `5b95e90ab` ile senkron (geride 0; main birleşmesi
+  `be67ffd79`, merge commit; PlanningService altında main birleşmesinden değişiklik yok). Merge sonrası fark yalnız `demand-v2.openapi.yaml` ve
+  üç test dosyası; `src/` değişmedi; `.github/workflows`'ta merge sonrası değişiklik yok.
+- İnceleyen: bağımsız inceleyici alt ajan a09b02dc0fbfb31c8 (salt okunur, `refs/ct/pr228`); CI ölçümü CT (GitHub API).
+- CI (CT ölçtü): `2744d5216` check-runs 39/39 `success`; çalıştırma 43409041189 `success`; iş 131830526628 `service-tests (planning-tests)`
+  `success` — adımlar "Start RabbitMQ", "Start owned Mongo (Planning)", "Test" (proof JSON `cat` bu adımın içinde, dosya yoksa adım kırmızı),
+  "Skipped = 0", "Upload test results" hepsi `success`; artefakt `test-results-planning-tests` 98.303 bayt, süresi dolmamış. Artefakt
+  içeriği ve koşu logu CT tarafından açılmadı (GitHub oturumu gerekir).
+- Bulgular: F-1 **kapandı** (env yoksa `throw`, `DemandRevisionRabbitMqIntegrationTests.cs:30-31`); F-2 **kapandı** (gerçek Approve →
+  Publish → Publish akışı, gerçek publisher ve RabbitMQ; 3 olay, alındı eşleşmesi; düşük kalıntı N-2); F-3 **kapandı**
+  (`PublishedRevisionMongoIntegrationTests.cs:545-608`); F-4 **kapandı** (`Publish_SupersededAuditFailure_RollsBackBothRevisionsAndOutbox`
+  `:610-683`); F-5 **kapandı** (`RevisionHttpChecksumContractTests.cs:83-106`); F-6 **kapandı** (`demand-v2.openapi.yaml:76`); F-7 ve F-8
+  açık (düşük, `src/` değişmedi). Yeni: N-1 düşük — yerelde Mongo var RabbitMQ yoksa planning takımı kırmızı (CI için doğru; yerel not);
+  N-2 düşük — broker testi alındı ile mesaj CorrelationId'sinin birbirine eşitliğine bakar, verilen değere ve Superseded mesajının eski
+  revision'a ait olduğuna bakmaz; N-3 bilgi — test `guest`/`guest` (RabbitMQ varsayılanı, yalnız 127.0.0.1), sır değil.
+- Kiracı / yetki: yeni HTTP ucu yok; controller değişmedi; yeni test sorguları TenantId + LegalEntityId ile.
+
+**Karar: merge'e hazır DAR KABUL.** Kabul edilen dar kapsam ilk karardakiyle aynı (AC-D19 / AC-D25 atomiklik, AC-D23, AC-D25 taşıyıcı
+kısmı) ve F-2 kapandığı için AC-D25'in "gerçek yayın niyetlerinin gerçek broker'a teslimi" CI düzeyinde ölçülmüştür. Açık kalanlar
+değişmedi: AC-D18, AC-D24 ayrımı, AC-D27, Demand v2 dondurması, Superseded tarihsel içerik, canlı tüketici; düşük F-7, F-8, N-1, N-2 PR
+kaydında "açık" olarak kalır. Merge: Ali (GMG-ERP) onayı ve kararıyla, **merge commit** (squash değil); merge öncesi main yeniden geride
+ise alınır ve CI yeniden yeşil olur. MOD-0189 kodlaması bu karardan bağımsızdır, yeni bağımsız paket onayı ister.
