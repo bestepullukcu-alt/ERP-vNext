@@ -86,6 +86,16 @@ public sealed class AccountController : CustomBaseController
     public async Task<IActionResult> LookupValidation(Guid accountId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetAccountLookupValidationQuery(accountId), cancellationToken));
 
+    /// <summary>MOD-0149 §32 U-4 (CRM-ACCOUNT-LOOKUP 1.1 §2): the ship-to copy of one account (identity, code, name,
+    /// status, delivery addresses). Only <c>crm.account-ship-to.read</c> (K-13): neither <c>crm.account.read</c> nor
+    /// <c>crm.account.lookup-validation</c> suffices, and this key opens neither U-1 nor U-3. Same tenant-token rule as
+    /// <see cref="Lookup"/> (K-11).</summary>
+    [HttpGet("{accountId:guid}/ship-to")]
+    [HasPermission("crm.account-ship-to.read")]
+    [RequireTokenTenant]
+    public async Task<IActionResult> ShipTo(Guid accountId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetAccountShipToQuery(accountId), cancellationToken));
+
     [HttpGet("{id:guid}")]
     [HasPermission("crm.account.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)

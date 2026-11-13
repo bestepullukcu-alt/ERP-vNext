@@ -113,3 +113,28 @@ public sealed record AccountLookupPageDto(
     int PageSize,
     long Total,
     string ContractVersion);
+
+/// <summary>MOD-0149 §32 U-4 — CRM-ACCOUNT-LOOKUP 1.1 §2.2. Identity, code, name, status and the delivery addresses ONLY:
+/// no responsible person, note, parent, external reference, attribute, logo, location or <c>isBillable</c>. Built by
+/// <see cref="AccountLookupContract.ToShipTo"/>.</summary>
+public sealed record AccountShipToDto(
+    Guid AccountId,
+    string Code,
+    string Name,
+    string Status,
+    string? DefaultAddressId,
+    IReadOnlyList<AccountShipToAddressDto> Addresses,
+    string ContractVersion);
+
+/// <summary>MOD-0149 §32 U-4 — one delivery address (CRM-ACCOUNT-LOOKUP 1.1 §2.2). The reference fields are value CODES
+/// (Reference Data <c>country</c> / <c>city</c> / <c>district</c>); display names are the consumer's to resolve (K-15).</summary>
+public sealed record AccountShipToAddressDto(
+    string AddressId,
+    string Kind,
+    string? Label,
+    bool IsDefault,
+    string? CountryRef,
+    string? CityRef,
+    string? DistrictRef,
+    string? PostalCode,
+    string? AddressLine);

@@ -28,8 +28,8 @@ public sealed class AccountLookupApiCollection;
  * fake, so "the store was never read" is measured. The collection runs alone: Program.cs reads its settings from
  * process variables while the host is built.
  *
- * K-11 placement (inceleme 2026-11-05-2840220b F-1): the filter is found ONLY on U-1 and U-3 in the endpoint metadata,
- * and never in MvcOptions.Filters. What other CRM endpoints do with a tenant-less token is BL-324's question: no test
+ * K-11 placement (inceleme 2026-11-05-2840220b F-1): the filter is found ONLY on U-1, U-3 and (since DL-3, §32.2) U-4 in
+ * the endpoint metadata, and never in MvcOptions.Filters. What other CRM endpoints do with a tenant-less token is BL-324's question: no test
  * here expects or pins their data.
  */
 [Collection(nameof(AccountLookupApiCollection))]
@@ -173,11 +173,12 @@ public sealed class AccountLookupApiTests : IClassFixture<AccountLookupApiFactor
         { "u3", true }
     };
 
-    /// <summary>K-11 placement, read from the running host: the filter's metadata sits on U-1 and U-3 and on no other
-    /// endpoint; it is not a global MVC filter. A rejection moved into the shared middleware (attribute removed) or the
-    /// filter lifted to the controller / MvcOptions both turn this red.</summary>
+    /// <summary>K-11 placement, read from the running host: the filter's metadata sits on U-1, U-3 and (MOD-0149 §32.2,
+    /// DL-3: the one exception to AC-AR-15's set) U-4 <c>ship-to</c>, and on no other endpoint; it is not a global MVC
+    /// filter. A rejection moved into the shared middleware (attribute removed) or the filter lifted to the controller /
+    /// MvcOptions both turn this red.</summary>
     [Fact]
-    public void AC_AR_15_K11_filter_is_on_u1_and_u3_only_and_never_global()
+    public void AC_AR_15_K11_filter_is_on_u1_u3_and_u4_only_and_never_global()
     {
         _factory.CreateClient().Dispose(); // starts the host so the endpoint data source is built
 
@@ -199,7 +200,8 @@ public sealed class AccountLookupApiTests : IClassFixture<AccountLookupApiFactor
             new[]
             {
                 "Diten.CrmService.Api.Controllers.CRM.AccountController.Lookup",
-                "Diten.CrmService.Api.Controllers.CRM.AccountController.LookupValidation"
+                "Diten.CrmService.Api.Controllers.CRM.AccountController.LookupValidation",
+                "Diten.CrmService.Api.Controllers.CRM.AccountController.ShipTo"
             },
             carrying);
 
