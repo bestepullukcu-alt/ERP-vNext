@@ -27,15 +27,23 @@
 3. Zarf: InventoryService'in ölçülmüş kablosu — başarı gövdesi şemanın kendisi (sarmalanmamış); hata `Error` =
    `{ error: { code, message, details?, correlationId }, contractVersion: "v1" }` (INVENTORY `Error`; WMS-BUNDLE / WMS-COUNT-BUNDLE ile aynı).
 4. **Boş isteğe bağlı üye yazılmaz** (JSON `null` yok). İstekte `null` isteğe bağlı üyenin yokluğu sayılır. Şemalarda `?` isteğe bağlı üyedir.
+   Paketin "null" dediği her cevap üyesi (ör. AC-15 (g) `stopReason`) kabloda **yoktur** — `null` = üye yazılmaz (DL-2 şemaları dahil).
 5. Her yazma `Idempotency-Key` başlığı alır, gövde `idempotencyKey` ile eşit (8–100 karakter). Aynı anahtar + aynı gövde → **200 replay**
    (kaydın güncel hâli; ilk cevabın kodu tekrarlanmaz), farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED`. Anahtar, isteyen kullanıcı + operasyon
    (`operationId`) + hedef kayıt kapsamında saklanır (yaratma: dalga kaydında, yaratanla — tekil `(TenantId, LegalEntityId, CreatedBy,
    IdempotencyKey)`; diğerleri: komutun ilk yazımının `WaveEvent`'inde, `RequestOp` = `operationId`) ve **`If-Match`'ten ve bütün iş kurallarından
    önce** aranır. Parmak izi = operasyon + hedef (`waveId` / `warehouseId`) + normalleşmiş gövde; başlıklar girmez. Eşzamanlı iki özdeş istekten
    kaybeden 200 replay alır. Hiç yazmadan reddedilen istek anahtar bırakmaz (paket AC-6).
+   **Çarpışmada anahtar yeniden aranır — bütün yazma uçlarında** (`createWave`, `updateWave`, `addWaveOrders`, `removeWaveOrders`, `cancelWave`,
+   `updateWaveWarehouseSettings`): yazım `Version` koşulunu kaybeder ya da tekil bir index'e çarparsa önce isteğin anahtarı yeniden aranır;
+   **aynı anahtar** (özdeş isteğin ikizi kazandı) → 200 replay; **farklı anahtar** (başka bir istek kazandı) → 409 (`WAVE_CONFLICT`; etkin üyelik
+   index'inde `WAVE_ORDER_IN_OTHER_WAVE`). Yaratmada farklı anahtarla numara index'ine çarpan istek 503 `WAVE_RECORD_CODE_UNAVAILABLE` alır.
 6. Değişebilir kayıt (`Wave`, `WaveWarehouseSettings`, DL-3'te `WaveException`) değişiklikte `If-Match: W/"<version>"` ister; eksik → 400
    `INVALID_REQUEST`, bayat → 409 `WAVE_CONFLICT` (D-14). Cevap `ETag: W/"<version>"`. Bayatlık kural 5'ten sonra değerlendirilir. Dalga üyeliğini
    değiştiren işlemler (`addWaveOrders`, `removeWaveOrders`) **dalganın** `If-Match`'ini ister ve dalganın `version`'ını artırır.
+   **`WaveOrder.version` yalnız okunur üyedir:** v1'de hiçbir işlemin `If-Match` hedefi değildir; üyelik kapanışları depoda `State` + `Version`
+   koşullu (CAS) yazılır (paket §8.12; CT kararı 2026-11-13). Depo ayarının **ilk** yazımı `If-Match: W/"0"` ister (kayıt yokken `version: 0`);
+   eşzamanlı iki ilk yazımda tekil index kaybedeni yakalar (kural 5).
 7. **Bu sözleşme stok, rezervasyon, görev ya da outbound yazmaz** (paket §2.3). MOD-0178 verisi süreç içi **yalnız `Find`** ile okunur; toplama
    görevini MOD-0178 kendi portuyla açar / geri çeker (§7, bilgi).
 8. **PUT / DELETE yok** (paket §8.1, AC-8): güncelleme, iptal ve ayar yazımı `POST` komut uçlarıdır. Silme yoktur; Taslak dalganın tek
@@ -43,7 +51,9 @@
 9. Tarihler: `date-time` = UTC an (`…Z`, milisaniye); `localDateTime` = deponun saat diliminde saniyesiz yerel an (`yyyy-MM-ddTHH:mm`, ofsetsiz);
    `timeZoneId` = IANA kimliği (ör. `Europe/Istanbul`). Kesim dönüşümü paket §8.4 (§6.3).
 10. Yollardaki `{waveId}`, `{exceptionId}` `:guid` kısıtlıdır; sabit kesimler (`dashboard`, `candidates`, `exceptions`, `kpis`, `settings`)
-    parametreli yoldan önce eşleşir (paket §3). `{warehouseId}` uuid'dir.
+    parametreli yoldan önce eşleşir (paket §3). `{warehouseId}` uuid'dir. Kanonik uuid olmayan `{waveId}` → 404 `WAVE_NOT_FOUND`
+    (WMS-COUNT-BUNDLE `COUNT_NOT_FOUND` deseni; `:guid` kısıtına uymayan yol hiçbir işleme eşleşmez, cevap aynı zarfla 404'tür); kanonik uuid
+    olmayan `{warehouseId}` → 404 `UNKNOWN_LOCATION`.
 11. Correlation: `X-Correlation-Id` her cevapta (servis geneli).
 12. **İzin:** her işlem `x-permission` anahtarını `[HasPermission]` ile zorlar; eksik izin → 403 (gövde servis genelinin yetki cevabı).
 13. **Ağırlık / hacim (D-12):** hiçbir şema ağırlık / hacim üyesi taşımaz (veri yok); ekran "—" yazar.
@@ -62,7 +72,7 @@
 | Teknik üst sınır | dalga başına 500 sipariş, Σ `plannedTaskCount` 2.000 (aşım 422 `WAVE_TOO_LARGE`) | paket §8.5, Q-8 = A |
 | Not | ≤ 500 karakter (trim; boş = yok) | paket §12 |
 | Gerekçe (iptal, ayar, geri çekme, istisna eylemi) | 10..500 karakter (trim) | paket §12, §8.13 |
-| Taslak çıkarma gerekçesi | isteğe bağlı, ≤ 500 | paket §8.2 kural 4 |
+| Taslak düzenleme / ekleme / çıkarma gerekçesi (`reason?`) | isteğe bağlı, ≤ 500 (trim; boş = yok); olayın `data.reason`'ına yazılır | paket §8.2 kural 4, §8.13 |
 | `outboundIds` (ekle / çıkar) | 1..200, uuid, tekrarsız | paket §12 |
 | Kesim geçmiş toleransı | `cutoffAtUtc ≥ şimdi − 1 saat` | paket §8.4 |
 | Öneri üst sınırı | kalan kapasite; sınır yoksa 200 | paket §8.2 kural 5 |
@@ -95,7 +105,8 @@
   `limitWarnings`, `updatedAt`, `releasedBy`, `releasedAt`, `cancelledBy`, `cancelledAt`, `cancelReason`, `completedAt`. Diğer üyeler zorunludur.
 - `number`, `status`, `cutoffAtUtc`, `timeZoneId`, `warehouseCode` ve sayımlar sunucu üyesidir; istekte gelirse 400 `INVALID_REQUEST` (paket AC-10).
 - `timeZoneId` yaratmada depo ayarından kopyalanır, sonra değişmez; `updateWave` kesimi dalganın kendi `timeZoneId`'siyle dönüştürür.
-- `cutoffAmbiguousResolved` yalnız `true` iken yazılır (kural 4): kesim çakışan yerel saatteydi, erken ofset seçildi (paket §8.4).
+- `cutoffAmbiguousResolved` yalnız `true` iken yazılır (kural 4): kesim çakışan yerel saatteydi, erken ofset seçildi (paket §8.4). `Wave`
+  varlığının **kalıcı alanıdır** (yaratma / düzenleme yazar) — yalnız yazma cevabında değil, her okumada (`getWave`, `listWaves`) döner.
 - `orderCount` / `lineCount` / `plannedTaskCount` = etkin üyeliklerin (`state ∈ Planned | Issued`) toplamı (okuma anında; stok değil).
 - `limitWarnings` yalnız aşım varken yazılır; aşım yazımı engellemez (D-7).
 - `Releasing` iç durumdur; listede görünür (rozet), istemci yazma yapmaz (DL-2). DL-2 eki: `routeSummary { taskCount, fallbackCount,
@@ -167,9 +178,11 @@
   "contractVersion": "v1"
 }
 ```
-- `addWaveOrders`: hepsi ya da hiçbiri — bir sipariş uygun değilse 422 `WAVE_ORDER_NOT_ELIGIBLE`, başka etkin dalgadaysa 409
-  `WAVE_ORDER_IN_OTHER_WAVE`; ikisinde de `error.details.orders[] { outboundId, code }` (`code` ∈ `NotFound` \| `OtherWarehouse` \| `NotAllocated` \|
-  `NotDeferred` \| `InOtherWave`) ve **yazım yok**. Başarıda her satır `Added`; sınır aşımı `wave.limitWarnings`'tedir (paket AC-13).
+- `addWaveOrders`: **hepsi ya da hiçbiri** (paket §8.2 kural 3, AC-11; CT kararı 2026-11-13) — bir satır reddedilirse istek bütünüyle
+  reddedilir, **yazım yok**; reddedilen **her** satır `error.details.orders[] { outboundId, code }`'tadır (`code` ∈ `NotFound` \| `OtherWarehouse` \|
+  `NotAllocated` \| `NotDeferred` \| `InOtherWave` \| `AlreadyInWave`). Durum kodu: reddedilen satırların **hepsi** `InOtherWave` ise 409
+  `WAVE_ORDER_IN_OTHER_WAVE`; başka nedenle reddedilen satır varsa 422 `WAVE_ORDER_NOT_ELIGIBLE` (bütün satır kodlarıyla). `AlreadyInWave` = sipariş
+  **bu** dalgada zaten etkin (422'ye girer). Başarıda her satır `Added`; sınır aşımı `wave.limitWarnings`'tedir (paket AC-13).
 - `removeWaveOrders`: dalganın `Planned` üyesi olan satır `Removed`; üyesi olmayan satır `NotMember` (yazım yok, hata değil).
 
 ### 3.7 `WaveLoad` (yük sekmesi)
@@ -212,9 +225,9 @@
 | `GET /waves` | `listWaves` | `warehouse.waves.read` | `warehouseId` (zorunlu), `status*` (tekrarlanabilir), `waveType?`, `q?` (numara), `cutoffFrom?`, `cutoffTo?` (`date-time`), `page`, `pageSize` | 200 sayfa `Wave` (sıra: `cutoffAtUtc` artan, sonra `number`) | INVALID_REQUEST |
 | `POST /waves` | `createWave` | `warehouse.waves.create` | `{ idempotencyKey, warehouseId, waveType, cutoffLocal, shipToFilter?, maxOrders?, maxLines?, responsibleUserId?, note? }` | 201 `Wave` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, WAVE_SETTINGS_REQUIRED, WAVE_CUTOFF_INVALID, WAVE_RESPONSIBLE_INVALID, WAVE_RESPONSIBLE_DIRECTORY_UNAVAILABLE, WAVE_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, WAVE_RECORD_CODE_UNAVAILABLE, WAVE_INVENTORY_UNAVAILABLE |
 | `GET /waves/{waveId}` | `getWave` | `warehouse.waves.read` | — | 200 `Wave` + ETag | WAVE_NOT_FOUND |
-| `POST /waves/{waveId}/update` | `updateWave` | `warehouse.waves.update` | If-Match; `{ idempotencyKey, warehouseId, waveType, cutoffLocal, shipToFilter?, maxOrders?, maxLines?, responsibleUserId?, note? }` — **Taslak formunun tamamı** (yok olan isteğe bağlı üye temizlenir); `warehouseId` dalganınkine eşit olmalı; yalnız `Draft` | 200 `Wave` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE, WAVE_WAREHOUSE_IMMUTABLE, WAVE_CUTOFF_INVALID, WAVE_RESPONSIBLE_INVALID, WAVE_RESPONSIBLE_DIRECTORY_UNAVAILABLE |
+| `POST /waves/{waveId}/update` | `updateWave` | `warehouse.waves.update` | If-Match; `{ idempotencyKey, warehouseId, waveType, cutoffLocal, shipToFilter?, maxOrders?, maxLines?, responsibleUserId?, note?, reason? }` — **Taslak formunun tamamı** (yok olan isteğe bağlı üye temizlenir); `warehouseId` dalganınkine eşit olmalı; yalnız `Draft` | 200 `Wave` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE, WAVE_WAREHOUSE_IMMUTABLE, WAVE_CUTOFF_INVALID, WAVE_RESPONSIBLE_INVALID, WAVE_RESPONSIBLE_DIRECTORY_UNAVAILABLE |
 | `GET /waves/{waveId}/orders` | `listWaveOrders` | `warehouse.waves.read` | `state*` (tekrarlanabilir; varsayılan bütün durumlar), `page`, `pageSize` (sıra: `addedAt`, sonra `outboundNumber`) | 200 sayfa `WaveOrder` | WAVE_NOT_FOUND, INVALID_REQUEST |
-| `POST /waves/{waveId}/orders` | `addWaveOrders` | `warehouse.waves.update` | If-Match (dalga); `{ idempotencyKey, outboundIds[], via? }` (`via` = `Manual` (varsayılan) \| `Suggestion`); yalnız `Draft` | 200 `WaveOrdersResult` + ETag (dalga; replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE, WAVE_SETTINGS_REQUIRED, WAVE_ORDER_NOT_ELIGIBLE, WAVE_ORDER_IN_OTHER_WAVE, WAVE_TOO_LARGE, WAVE_INVENTORY_UNAVAILABLE |
+| `POST /waves/{waveId}/orders` | `addWaveOrders` | `warehouse.waves.update` | If-Match (dalga); `{ idempotencyKey, outboundIds[], via?, reason? }` (`via` = `Manual` (varsayılan) \| `Suggestion`); yalnız `Draft` | 200 `WaveOrdersResult` + ETag (dalga; replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE, WAVE_SETTINGS_REQUIRED, WAVE_ORDER_NOT_ELIGIBLE, WAVE_ORDER_IN_OTHER_WAVE, WAVE_TOO_LARGE, WAVE_INVENTORY_UNAVAILABLE |
 | `POST /waves/{waveId}/orders/remove` | `removeWaveOrders` | `warehouse.waves.update` | If-Match (dalga); `{ idempotencyKey, outboundIds[], reason? }`; yalnız `Draft` | 200 `WaveOrdersResult` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE |
 | `GET /waves/{waveId}/suggestions` | `listWaveSuggestions` | `warehouse.waves.update` | — (süzgeç dalganın `shipToFilter`'ı; sıra outbound `createdAt` artan; sayı kalan `maxOrders` / `maxLines` kapasitesi, sınır yoksa 200) — **yazmaz**; yalnız `Draft` | 200 `{ items: [WaveCandidate], limitedBy: "MaxOrders" \| "MaxLines" \| "Default", contractVersion }` | WAVE_NOT_FOUND, WAVE_INVALID_STATE, WAVE_INVENTORY_UNAVAILABLE |
 | `POST /waves/{waveId}/cancel` | `cancelWave` | `warehouse.waves.cancel` | If-Match; `{ idempotencyKey, reason }` — yalnız `Draft`; durum `Cancelled`, etkin üyelikler `Removed` (silinmez) | 200 `Wave` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WAVE_REASON_REQUIRED, WAVE_NOT_FOUND, WAVE_CONFLICT, WAVE_INVALID_STATE |
@@ -234,14 +247,16 @@ Numarası alınıp yazılamayan istek numarayı **atlar** (yeniden verilmez).
 sınır (500 sipariş / 2.000 görev → 422 `WAVE_TOO_LARGE`) → tek işlem: üyelikler (`Planned`, `Active = true`), dalga `version` + 1, `OrdersAdded`
 olayı, merkezi denetim **ve** depo ayarı kaydına koşullu yazım (`waveManaged = true` + `gateSeq` + 1; eşleşmezse 422 `WAVE_SETTINGS_REQUIRED`, yazım
 yok — paket §8.19 "Sıralama"). Eşzamanlı iki eklemede `wms_wave_orders` tekil kısmi index'i `(TenantId, LegalEntityId, OutboundId)`
-`{ Active: true }` ikinciyi reddeder → 409 `WAVE_ORDER_IN_OTHER_WAVE`, kaybedende kayıt yok (paket AC-11). `iş sınırı` aşımı yazar (D-7).
+`{ Active: true }` ikinciyi reddeder; kaybeden önce kendi anahtarını yeniden arar (kural 5): **aynı anahtar** → 200 replay, **farklı anahtar** →
+409 `WAVE_ORDER_IN_OTHER_WAVE`, kaybedende kayıt yok (paket AC-11). `iş sınırı` aşımı yazar (D-7).
 
 **Kesim (paket §8.4):** `cutoffAtUtc = ToUtc(cutoffLocal, timeZoneId)`; yaz saati boşluğundaki yerel saat → 400 `WAVE_CUTOFF_INVALID`; çakışan
 yerel saat → erken ofset + `cutoffAmbiguousResolved: true`; `cutoffAtUtc < şimdi − 1 saat` → 400 `WAVE_CUTOFF_INVALID`. Dönüşüm sunucunun
 saat dilimini kullanmaz (paket AC-14).
 
 **Ayar (paket §4.5, AC-15 a…e):** okuma `read`, yazma `settings.configure` (yalnız `update` taşıyana 403); gerekçe zorunlu (400
-`WAVE_REASON_REQUIRED`); aralık dışı eşik ve geçersiz IANA kimliği → 400 `INVALID_REQUEST` (`details.field`), kayıt değişmez; başka şirketin deposu →
+`WAVE_REASON_REQUIRED`); aralık dışı eşik ve geçersiz IANA kimliği → 400 `INVALID_REQUEST` (ileti alanı adıyla söyler; servisin doğrulama zarfı
+`details` taşımaz), kayıt değişmez; başka şirketin deposu →
 404 `UNKNOWN_LOCATION`; `false → true` ve eşik değişikliği her zaman 200. `true → false` reddedilmez (Y-1 = A); bekleyen siparişlerin görev açılışı
 (`pendingRelease`) DL-2'dedir (paket AC-15 f…q). Yazım `SettingsUpdated` olayını (akış `Settings`) ve merkezi denetimi aynı işlemde yazar.
 
@@ -354,7 +369,8 @@ yalnız `wms_wave_events.Data`'da. Başarılı ve yazan komut 1 kayıt; replay /
 2. **Ekleme hepsi-ya-da-hiçbiri:** paket §8.2 kural 3 "her biri uygun olmalı (aksi 422 …, satır sonucu)" der; taslak bunu "bir satır uygun değilse
    istek bütünüyle reddedilir, satır sonuçları `error.details.orders[]`'ta" diye okur (yazım yok). Kısmi ekleme isteniyorsa dondurmadan önce söylenmeli.
 3. **Ayarın ilk yazımı:** paket "yaratma dışı her yazma `If-Match` ister" der, ayar kaydı ilk yazımda yaratılır. Taslak kayıt yokken GET'te
-   `version: 0` döner ve ilk yazımı `If-Match: W/"0"` ile kabul eder (eşzamanlı iki ilk yazımda tekil index ikinciyi 409 `WAVE_CONFLICT`'e çevirir).
+   `version: 0` döner ve ilk yazımı `If-Match: W/"0"` ile kabul eder (eşzamanlı iki ilk yazımda tekil index kaybedeni yakalar: aynı anahtar →
+   200 replay, farklı anahtar → 409 `WAVE_CONFLICT` — kural 5).
 4. **`listWaveSuggestions` izni:** paket §14 öneriyi `update` satırına yazar (Taslağa ekleme hazırlığı); taslak `update` ister. `read` taşıyan
    ama `update` taşımayan kullanıcı öneri göremez.
 5. **`getWaveLoad` DL-1'de:** WP X-14 dağılımı yük ucunu DL-1'de sayar; ertelenmiş outbound DL-1'de oluşamadığı için `zones` ve `pickers` DL-1'de
@@ -371,6 +387,14 @@ yalnız `wms_wave_events.Data`'da. Başarılı ve yazan komut 1 kayıt; replay /
    yazımları (DL-2 / DL-3) üyelik `Version`'ını depoda koşullu kullanır.
 10. **LOCATION okunamazsa (paket §13 "0178 / LOCATION erişilemez → 503, yazım yok"):** `createWave` ve `updateWaveWarehouseSettings` de
     `WAVE_INVENTORY_UNAVAILABLE` taşır (MOD-0181 `createCycleCount` bu durumu kodlamaz; burada paket §13 / §8.17 geçerlidir).
+
+**CT kararları (2026-11-13; kayıt `docs/records/decisions/2026-11/mod0180-wave-planning-owner-decisions-03.md` son madde, CT zinciri `c1003f93f`):**
+madde 1 — iki ek kod **kabul** (fail-closed: dizin cevap vermezse yazım yok); madde 2 — hepsi ya da hiçbiri **kabul**, durum kodu kuralı ve
+`AlreadyInWave` §3.6'da; madde 3 — ilk yazım `If-Match: W/"0"` **kabul**; madde 8 — `UNKNOWN_LOCATION` aynı kod, yolda 404 / gövdede 422, yeni kod
+yok (dondurmada `x-reused-error-codes`'a iki durumuyla yazılır); madde 9 — `WaveOrder.version` yalnız okunur (kural 6). CT düzeltmeleri A-1 (kural 5
+çarpışmada anahtar yeniden aranır — bütün yazma uçları), A-2 (`updateWave` / `addWaveOrders` `reason?`), A-3 (§3.6), A-4 (`cutoffAmbiguousResolved`
+kalıcı alan), A-5 (kural 4 `null` notu) ve kanonik olmayan yol kimlikleri (kural 10) bu sürümde işlendi. Geliştirici düzeltmesi: ayar doğrulama
+hatası `details.field` taşımaz (servisin doğrulama zarfı). **Dondurma:** 1.0.0, DL-5 kabulünden sonra ve DL-6'dan önce.
 
 ## 10. Doğrulama kaydı (geliştirici oturumu, 2026-11-13)
 
