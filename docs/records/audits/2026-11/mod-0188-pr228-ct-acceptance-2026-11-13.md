@@ -109,3 +109,12 @@ ise alınır ve CI yeniden yeşil olur. MOD-0189 kodlaması bu karardan bağıms
 **Karar: merge'e hazır.** Merge commit ile (squash değil); Y-1…Y-3 sonraki MOD-0188 işinde.
 
 - **Merge:** PR #422 baş `72d00448f` main'e **merge commit** `8773562d4` ile alındı (Beste, 2026-11-13; CT origin/main'de ölçtü). Y-1…Y-3 sonraki MOD-0188 işine.
+
+## PR #423 — Y-1…Y-3 (2026-11-13)
+
+- Hedef: baş `4a9dc6a27` (main'in gerisinde değil); inceleyen bağımsız alt ajan a8d1e99c68298ba5d; CI CT ölçtü: 39/39 `success`, planning-tests `success` 12:31 UTC (eski kayıt testi `V2Outbox_LegacyRecordWithoutDeliveryFields_CanBeClaimed` Hint'li kısmi indeksle 7.0.28'de geçmiş sayılır).
+- Y-1 kısmi indeks `{DispatchedAt:null, DeliveryState:$in[Pending,Publishing,null]}` claim filtresini kapsıyor; ad çakışması yok. Ama eski tek alan indeksi kalıcı DB'de kalır ve DeadLettered birikmesi orada sürer (düşük).
+- Y-2 explain testi Hint ile zorlandığı için büyük ölçüde totolojik; planlayıcının kendiliğinden seçimini ölçmez (orta, metin/test notu).
+- Y-3 README etkiyi küçük gösteriyor: eski bileşik indeks varsa `CompletePublishAsync` "parallel arrays" hatası → olay broker'a **MaxAttempts kez yeniden yayınlanır**, sonra sahte DeadLettered (orta). Öneri: başlangıçta listIndexes ile ad+anahtar kontrolü, bulunursa worker fail-closed + log (ya da kontrollü drop); en az README etkiyi doğru yazmalı.
+
+**Karar: KOŞULLU** — merge öncesi Y-3 README düzeltmesi (tercihen fail-closed kontrol); Y-2 ve eski tek alan indeksi notu sonraki iş.
