@@ -4,7 +4,8 @@ name: service-tests
 # none of their tests ran in CI, so Linux-only behaviour (BL-570: the Auth operator commands' Unix secret channel and
 # lock) was never measured. Guide: docs/guides/operations/ci-service-tests.md.
 #
-# Triggers (Control Tower decision, to save Actions minutes): pull requests, pushes to main, and by hand. A branch
+# Triggers (Control Tower decision, to save Actions minutes): pull requests, the merge queue's merge groups (EES MQ-01:
+# the required check must be reported on the group or the queue cannot merge), pushes to main, and by hand. A branch
 # push does NOT run these; phase1-gates.yml keeps its own triggers.
 #
 # The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
@@ -13,6 +14,8 @@ name: service-tests
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
   workflow_dispatch:

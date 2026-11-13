@@ -25,8 +25,9 @@ namespace TenantArchitecture.ArchitectureTests;
  *   • BL-590: the job-local mongod for MDM and Eventing is a one-node replica set (--replSet, the bounded initiator,
  *     directConnection=true); RabbitMQ is pinned by tag AND digest, with a bounded readiness wait; Auth rows carry the
  *     owned-Mongo flag (takes effect with BL-570 FIX3);
- *   • triggers are pull_request + push to main + workflow_dispatch (Control Tower decision), permissions are
- *     contents: read, no secret is read, and every action is one of the three allowed, pinned to a commit SHA.
+ *   • triggers are pull_request + merge_group + push to main + workflow_dispatch (Control Tower decision; merge_group
+ *     EES MQ-01), permissions are contents: read, no secret is read, and every action is one of the three allowed,
+ *     pinned to a commit SHA.
  * And scripts/check_trx_no_skipped.py is run on fixture TRX files: 0 skipped → 0; a skipped test → 1 and its name;
  * no file → 1; malformed XML → 1; a file without results → 1.
  *
@@ -49,6 +50,10 @@ namespace TenantArchitecture.ArchitectureTests;
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
  * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
+ *
+ * EES MQ-01 (merge queue): every workflow that reports a required check listens to merge_group (types:
+ * [checks_requested], no branch filter) — GitHub reports no check on a merge group otherwise and the queue cannot merge —
+ * and each one that compares with a base takes the merge group's parent commit (merge_group.base_sha) on that event.
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
@@ -311,8 +316,8 @@ public class CiServiceTestsGuardTests
     public void Triggers_permissions_and_actions_are_the_decided_ones()
     {
         var workflow = Workflow();
-        Assert.Equal(["pull_request", "push", "workflow_dispatch"], Triggers(Code(workflow)));
-        Assert.Matches(@"(?m)^on:\n  pull_request:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
+        Assert.Equal(["pull_request", "merge_group", "push", "workflow_dispatch"], Triggers(Code(workflow)));
+        Assert.Matches(@"(?m)^on:\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
         AssertReadOnlyAndPinned(workflow);
     }
 
@@ -430,9 +435,70 @@ public class CiServiceTestsGuardTests
     }
 
     [Fact]
-    public void Phase1_triggers_are_push_and_pull_request()
+    public void Phase1_triggers_are_push_pull_request_and_merge_group()
     {
-        Assert.Equal(["push", "pull_request"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+        Assert.Equal(["push", "pull_request", "merge_group"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+    }
+
+    /// <summary>
+    /// EES MQ-01 (merge queue): the workflows whose checks branch protection requires (web-js-tests: may require) and their
+    /// exact triggers. A required check whose workflow does not listen to merge_group is never reported on the merge
+    /// group, and the queue waits until its timeout removes the pull request (GitHub, "Managing a merge queue").
+    /// </summary>
+    private static readonly Dictionary<string, string[]> MergeQueueWorkflows = new(StringComparer.Ordinal)
+    {
+        ["phase1-gates.yml"] = ["push", "pull_request", "merge_group"],
+        ["service-tests.yml"] = ["pull_request", "merge_group", "push", "workflow_dispatch"],
+        ["ui-compliance.yml"] = ["pull_request", "merge_group"],
+        ["web-js-tests.yml"] = ["pull_request", "merge_group", "push"],
+        ["approvals-append-only.yml"] = ["pull_request", "merge_group", "push"]
+    };
+
+    [Fact]
+    public void Every_required_check_runs_on_the_merge_queue_and_compares_with_the_group_parent()
+    {
+        foreach (var (name, triggers) in MergeQueueWorkflows)
+        {
+            var code = Code(WorkflowText(name));
+            Assert.Equal(triggers, Triggers(code));
+            // One merge_group key whose block is exactly its one activity type: a branches / paths filter could leave a
+            // group without the run, and its required check would never report.
+            Assert.True(KeyCount(code, "merge_group") == 1, $"{name}: {KeyCount(code, "merge_group")} merge_group keys, expected 1");
+            Assert.Single(Regex.Matches(code, @"(?m)^  merge_group:\n    types: \[checks_requested\]\n(?!    )"));
+        }
+
+        // The base of a merge_group run is the group's parent commit — the pull_request payload is empty there.
+        Assert.Contains("      - name: Run Phase 1 Gates\n        env:\n          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n"
+                        + "        run: ./scripts/run_phase1_gates.sh\n", Code(WorkflowText("phase1-gates.yml")), StringComparison.Ordinal);
+        var gates = GatesText();
+        // Blind pre-check 5: on merge_group the parent is the base whatever GITHUB_BASE_REF holds (no `-z` condition).
+        Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \]; then$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^  GITHUB_BASE_REF=""\$merge_group_base""$"));
+        // Blind review B3: no other assignment of GITHUB_BASE_REF anywhere in the script (an empty one would make the
+        // base steps skip green on a merge_group run).
+        Assert.Single(Regex.Matches(gates, @"(?m)^\s*(?:export\s+)?GITHUB_BASE_REF="));
+        Assert.True(gates.IndexOf("GITHUB_BASE_REF=\"$merge_group_base\"", StringComparison.Ordinal)
+                    < gates.IndexOf("\ncheck_audit_ledger_growth\n", StringComparison.Ordinal), "the merge_group base is set after the first base step");
+
+        var ui = Code(WorkflowText("ui-compliance.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", ui, StringComparison.Ordinal);
+        Assert.Contains("          if [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then base=\"$GROUP_BASE_SHA\"; fi\n"
+                        + "          if python3 scripts/uic_changed_pages.py --base \"$base\" > uic-selector-stdout.txt; then code=0; else code=$?; fi\n",
+            ui, StringComparison.Ordinal);
+
+        var approvals = Code(WorkflowText("approvals-append-only.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", approvals, StringComparison.Ordinal);
+        Assert.Contains(
+            "          if [ \"$GITHUB_EVENT_NAME\" = \"pull_request\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$GROUP_BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"push\" ]; then\n"
+            + "            python3 scripts/pack_approval.py ci-main \"$BEFORE_SHA\" HEAD\n"
+            + "          else\n"
+            + "            echo \"beklenmeyen olay: $GITHUB_EVENT_NAME\"\n"
+            + "            exit 1\n"
+            + "          fi\n", approvals, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -565,7 +631,7 @@ public class CiServiceTestsGuardTests
             Assert.Equal(expectedTestStep, Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
-        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n", Code(WorkflowText("phase1-gates.yml")));
         // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
         // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
@@ -1157,6 +1223,105 @@ public class CiServiceTestsGuardTests
             "the ceiling check is called before it is defined");
         Assert.Matches(@"(?m)^python3 -m unittest discover -s scripts/tests -p 'test_\*\.py'$", gates);
         Assert.True(File.Exists(Path.Combine(RepoRoot(), "scripts", "tests", "test_check_page_help_ledger_ceiling.py")));
+    }
+
+    // EES MQ-01, Codex round 1 (ENGEL): the three base steps (audit ledger growth, page-help ceiling, acceptance criteria
+    // tags) share ONE base, fetched once with bounded retries and resolved to a verified commit SHA; a base that cannot
+    // be fetched stops the run red (exit 1) instead of letting two steps say SKIPPED while a later one passes. The shape
+    // is locked here; that the base REACHES the steps is measured by running the whole script with stubs
+    // (scripts/tests/test_phase1_base_fetch.py, OneVerifiedBaseReachesEveryStepTests + SabotageTests).
+    [Fact]
+    public void The_three_base_steps_share_one_verified_base_and_a_failed_fetch_is_red()
+    {
+        var gates = GatesText();
+        var code = string.Join('\n', gates.Split('\n').Where(line => !line.TrimStart().StartsWith('#')));
+
+        // One fetch call outside the helper itself, inside one bounded retry loop, resolved with rev-parse --verify; its
+        // stderr is kept for the FAILED message (blind pre-check 4).
+        Assert.Single(Regex.Matches(code, @"\bfetch_base_tip\b(?!\(\))"));
+        Assert.Single(Regex.Matches(code,
+            @"(?m)^    if base_fetch_err=""\$\(fetch_base_tip ""\$GITHUB_BASE_REF"" 2>&1 >/dev/null\)"" && base_fetched=""\$\(git rev-parse --verify --quiet 'FETCH_HEAD\^\{commit\}'\)""; then$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  for base_try in 1 2 3; do$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^      sleep 5$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^if \[ -n ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
+
+        // Each red path is "*** FAILED ***" + exit 1 as the block's last line — the wording is free, the structure is not
+        // (blind pre-check 6): no else / elif, no return, no exit 0 inside.
+        void RedBlock(string ifLine, string indent)
+        {
+            Assert.Single(Regex.Matches(code, "(?m)^" + Regex.Escape(ifLine) + "$"));
+            var at = code.IndexOf(ifLine + "\n", StringComparison.Ordinal);
+            var close = code.IndexOf("\n" + indent + "fi\n", at, StringComparison.Ordinal);
+            Assert.True(at >= 0 && close > at, $"no block for '{ifLine}'");
+            var block = code[at..close];
+            Assert.Contains("*** FAILED ***", block, StringComparison.Ordinal);
+            Assert.EndsWith("\n" + indent + "  exit 1", block, StringComparison.Ordinal);
+            Assert.True(!Regex.IsMatch(block, @"\b(?:else|elif|return)\b|\bexit\s+0\b"), $"'{ifLine}' has another way out: {block}");
+        }
+
+        // A result that is not a commit SHA, or (merge_group) not the group's parent, is red — never a skip.
+        RedBlock("  if ! [[ \"$base_fetched\" =~ ^[0-9a-f]{40}$ ]]; then", "  ");
+        Assert.Contains("    printf '%s\\n' \"$base_fetch_err\" | sed 's/^/[phase1]   last try, git: /'\n    exit 1\n  fi\n", code,
+            StringComparison.Ordinal);
+        RedBlock("  if [ \"${GITHUB_EVENT_NAME:-}\" = \"merge_group\" ] && [ \"$base_fetched\" != \"${MERGE_GROUP_BASE_SHA:-}\" ]; then", "  ");
+        // Blind pre-check 3: in GitHub Actions a set override (which would replace the verified base) is red, before the fetch.
+        Assert.Contains("if [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n"
+                        + "  for base_override in AUDIT_LEDGER_BASE PAGE_HELP_LEDGER_BASE AC_TAG_BASE; do\n"
+                        + "    if [ -n \"${!base_override:-}\" ]; then\n", code, StringComparison.Ordinal);
+        RedBlock("    if [ -n \"${!base_override:-}\" ]; then", "    ");
+        Assert.True(code.IndexOf("for base_override in", StringComparison.Ordinal)
+                    < code.IndexOf("for base_try in", StringComparison.Ordinal), "the override check runs after the fetch");
+        // Blind pre-check 2: with the verified base the audit step's "cannot compare" paths are red, without it they skip.
+        Assert.Contains("  local unable=\"SKIPPED\" unable_status=0\n  if [ -n \"$PHASE1_BASE_SHA\" ]; then\n"
+                        + "    unable=\"FAILED\"\n    unable_status=1\n  fi\n", code, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(code, @"(?m)^ +return ""\$unable_status""$").Count);
+        Assert.Equal(3, Regex.Matches(code, @"audit ledger growth: \*\*\* \$unable \*\*\*").Count);
+        Assert.Equal(2, Regex.Matches(code, @"\bunable_status=").Count);
+
+        // The base is set once, read-only, from the verified value. Nothing unsets, re-declares, exports away or evaluates
+        // the base, GITHUB_BASE_REF or an override (blind pre-check 6: aimed at those names, not at the whole script).
+        Assert.Single(Regex.Matches(code, @"(?m)^.*\bPHASE1_BASE_SHA="));
+        Assert.Single(Regex.Matches(code, @"(?m)^readonly PHASE1_BASE_SHA=""\$phase1_base""$"));
+        Assert.Equal(2, Regex.Matches(code, @"(?m)^.*\bphase1_base=").Count);
+        Assert.Single(Regex.Matches(code, @"(?m)^phase1_base=""""$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  phase1_base=""\$base_fetched""$"));
+        Assert.DoesNotMatch(@"(?m)(?:^|[;&|(]\s*)\s*(?:unset|eval|declare|typeset|source|export\s+-n)\b[^\n]*"
+                            + @"\b(?:PHASE1_BASE_SHA|phase1_base|GITHUB_BASE_REF|AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)\b", code);
+        Assert.DoesNotMatch(@"(?m)^\s*(?:export\s+|local\s+|readonly\s+)?(?:AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)=", code);
+
+        // Each step reads that one variable (its local override first) and fetches nothing itself.
+        foreach (var (step, overrideName) in new[]
+                 {
+                     ("check_audit_ledger_growth", "AUDIT_LEDGER_BASE"), ("check_page_help_ledger_ceiling", "PAGE_HELP_LEDGER_BASE"),
+                     ("check_ac_tags", "AC_TAG_BASE")
+                 })
+        {
+            var start = code.IndexOf("\n" + step + "() {\n", StringComparison.Ordinal);
+            Assert.True(start >= 0, $"{step}() is gone");
+            var end = code.IndexOf("\n}\n", start, StringComparison.Ordinal);
+            var body = code[start..end];
+            Assert.Single(Regex.Matches(body, $@"(?m)^  local base=""\$\{{{overrideName}:-\$PHASE1_BASE_SHA\}}""$"));
+            Assert.Single(Regex.Matches(body, @"\bbase="));
+            Assert.True(!Regex.IsMatch(body, @"GITHUB_BASE_REF|FETCH_HEAD|\bfetch\b"), $"{step} reads or fetches a base of its own");
+            // Called once (as a main-flow line), after the base is fixed.
+            Assert.Single(Regex.Matches(code, $@"(?m)^{step}$"));
+            Assert.True(code.IndexOf("\n" + step + "\n", StringComparison.Ordinal)
+                        > code.IndexOf("readonly PHASE1_BASE_SHA=", StringComparison.Ordinal), $"{step} runs before the base is fixed");
+        }
+
+        // Order: the merge_group parent → the one fetch → the read-only base → the first step's definition.
+        var order = new[]
+        {
+            "  GITHUB_BASE_REF=\"$merge_group_base\"\n", "    if base_fetch_err=\"$(fetch_base_tip \"$GITHUB_BASE_REF\"", "readonly PHASE1_BASE_SHA=",
+            "\ncheck_audit_ledger_growth() {\n"
+        }.Select(anchor => code.IndexOf(anchor, StringComparison.Ordinal)).ToArray();
+        Assert.True(order.All(at => at >= 0) && order.Zip(order.Skip(1)).All(pair => pair.First < pair.Second),
+            "the base block is out of order: " + string.Join(", ", order));
+
+        // Non-vacuity: the behaviour tests that run the whole script are there (phase1 runs scripts/tests — asserted above).
+        var behaviour = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "tests", "test_phase1_base_fetch.py"));
+        Assert.Contains("class OneVerifiedBaseReachesEveryStepTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
+        Assert.Contains("class SabotageTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
     }
 
     // ------------------------------------------------------------------------------------------------- reading
