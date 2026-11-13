@@ -36,3 +36,8 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   `Mod0178WarehouseRouteTests.cs` uç sayısı onayını (bugün `Assert.Equal(73, endpoints.Count)`) dilim başında ölçülen sayı + kendi eklediği
   uç sayısıyla, uçlarıyla aynı commit'te günceller (beklenen 73 → 87 → 89 → 94 → 96). Her artışın önce / sonra değeri dilimin kabul kaydına
   yazılır; ayrı sahip onayı gerekmez.
+- **2026-11-13 — X-17 MOD-0173 manifest testi dışlaması (XMC-001 sahip onayı)** (MOD-0182 r3 yazarının bulgusu, CT kodda doğruladı;
+  kaynak: sahip sohbet cevabı, Beste 2026-11-13, "evet"): `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs`
+  `Every_enforced_permission_is_reachable_from_the_manifest` controller'ları namespace ile dışlar (Traceability, Quarantine, Expiry, Recall,
+  Warehouse, CycleCounting); MOD-0180 DL-1 dışlama listesine `.Controllers.WavePlanning` satırını (yorumuyla: WMS-WAVE manifesti, kendi
+  bütünlük testi) ekler — MOD-0181 emsali. Ayrı sahip onayı gerekmez.

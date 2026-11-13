@@ -44,3 +44,6 @@ posta kodu alan işi mi açılır?
 - **Q-9 = öneri:** Recall'daki CRM okuyucusuyla kod paylaşılmaz; Warehouse kendi okuyucusunu yazar.
 - **Q-10 = öneri:** v1'de CRM'den seçilen alıcıda posta kodu boş gelir ve formda elle eklenebilir; MOD-0182 SSCC etiketinde alıcıdan
   şehir + ilçe yazılır (posta kodu varsa o da); account'a posta kodu alanı CRM'de ayrı ve sonraki bir iştir.
+- **2026-11-13 — CRM sorusu 5 (aktif olmayan account), sahip "evet":** yeni sevkiyatta yalnız `active` account seçilir (Q-2). Seçimden sonra
+  pasif / askıda / arşiv olan account'ta mevcut sevkiyat sürer; WMS kayıt ve "sevke hazır" adımında durumu ship-to ucundan yeniden okur ve
+  kullanıcıyı uyarır, akışı durdurmaz.

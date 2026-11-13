@@ -37,3 +37,11 @@ kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
 - **2026-11-13 — Q-6 = ZXing.Net** (kaynak: sahip sohbet cevabı, Beste 2026-11-13: "Ali'ye sorma, biz karar veririz; ücretsizse
   kullanabiliriz"): barkod çizimi (Code 128, GS1-128, DataMatrix) için ZXing.Net kullanılır — Apache-2.0 lisanslı, ücretsiz ve ticari
   kullanıma açık. Soru Ali'ye gitmez; paket bir sonraki revizyonda Q-6'yı "karar 03" olarak işler.
+
+- **2026-11-13 — XMC-001 sahip onayları** (MOD-0182 r3; kaynak: sahip sohbet cevabı, Beste 2026-11-13, "dördüne de evet"):
+  - **X-15:** `InventoryLedgerManifestCompletenessTests.cs` dışlama listesine `.Controllers.Barcode` (DL-1) — onaylandı.
+  - **X-12:** `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` uç sayısı onayı (`Assert.Equal(<n>, endpoints.Count)`) uç ekleyen
+    her MOD-0182 dilimi (DL-1, DL-4, DL-6, DL-7) için, dilim başında ölçülen sayı + kendi uçları, uçlarla aynı commit'te; MOD-0180 ile
+    hangisi önce gelirse ölçülen sayıdan devam; kabul kaydı önce → sonra yazar; dosyayı integration-agent değiştirir — onaylandı (her artış dahil).
+  - **X-1:** MOD-0174 `Gs1CodeParser`'a kapalı "okunur, kullanılmaz" AI listesi (37), (310n), (240); liste dışı AI'lar reddedilmeye devam eder;
+    MOD-0174 gs1-check ucunun da bu AI'ları kabul etmesi yan etkisi kabul — onaylandı (DL-5 öncesi).
