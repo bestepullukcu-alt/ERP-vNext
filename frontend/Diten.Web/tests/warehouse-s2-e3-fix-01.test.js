@@ -169,6 +169,9 @@ describe('WP-0178-E3-FIX-01 — the outbound screens (MOD-0178)', () => {
         expect(read(js('OutboundShipments', 'details.js'))).not.toMatch(/bootstrap\?*\.Modal/);
     });
 
+    // MOD-0178-FU01 DL-1 (FU01 pack §8.1: "FIX-01'in testi FU01'in DOM'una göre güncellenir, silinmez"): the line is no longer a card on the form
+    // but a row of #outbound-lines-table, edited in the side panel (#offcanvasOutboundLine); the item 4 assertions are kept as they were and now
+    // run through the panel — its lot list, its single-line preview and the table's "Tahsisi önizle".
     describe('the Create form — "Tahsisi önizle"', () => {
         const LOT_A = 'aaaaaaaa-0000-4000-8000-000000000001';
         const LOT_B = 'bbbbbbbb-0000-4000-8000-000000000002';
@@ -177,8 +180,13 @@ describe('WP-0178-E3-FIX-01 — the outbound screens (MOD-0178)', () => {
             <select id="WarehouseId"><option value="11111111-1111-4111-8111-111111111111" selected>D01</option></select><div id="WarehouseIdError"></div>
             <select id="StagingLocationId"><option value="22222222-2222-4222-8222-222222222222" selected>A-01-01-01</option></select><div id="StagingLocationIdError"></div>
             <input id="OrderRef"><input id="Note"><input id="ShipToName"><input id="ShipToCountry"><input id="ShipToCity"><input id="ShipToPostalCode"><input id="ShipToLine1"><input id="ShipToLine2">
-            <div id="outbound-lines"></div><div id="LinesError"></div><button type="button" id="btnAddLine"></button><button type="button" id="btnPreview"></button>
-            <div id="outbound-preview" class="d-none"><div id="outbound-preview-lines"></div></div><input name="__RequestVerificationToken" value="tok"></form>`;
+            <button type="button" id="btnAddLine"></button><button type="button" id="btnPreview"></button><small id="outbound-lines-limit"></small>
+            <table id="outbound-lines-table" data-dt-standard="v2" data-dt-data-mode="client"><thead><tr>${'<th></th>'.repeat(8)}</tr></thead><tbody id="outbound-lines-body"></tbody></table>
+            <div id="LinesError"></div><input name="__RequestVerificationToken" value="tok"></form>
+            <div class="offcanvas offcanvas-end" id="offcanvasOutboundLine"><h5 id="offcanvasOutboundLineLabel"></h5><div id="lineAlert" class="d-none"></div>
+            <select id="lineProduct"><option value=""></option></select><select id="lineSku"><option value=""></option></select><input id="lineQuantity"><small id="lineUom" data-template="{0}"></small>
+            <input id="lineOrderLine"><select id="lineLot"></select><div id="lineReasonBlock" class="d-none"><textarea id="lineReason"></textarea><small id="lineReasonHint"></small></div>
+            <div id="linePreview" class="d-none"><div id="linePreviewBody"></div></div><button type="button" id="btnLinePreview"></button><button type="button" id="btnLineSave"></button></div>`;
 
         const previewAnswer = (chosen) => ({
             fefoOutboundMode: 'RequireReason',
@@ -191,30 +199,36 @@ describe('WP-0178-E3-FIX-01 — the outbound screens (MOD-0178)', () => {
             }]
         });
 
-        const fillLine = () => {
-            const row = document.querySelector('[data-line="1"]');
-            const option = (select, value) => { select.add(new Option(value, value, true, true)); };
-            option(row.querySelector('[data-field="itemId"]'), '33333333-3333-4333-8333-333333333333');
-            option(row.querySelector('[data-field="sku"]'), 'Sku:44444444-4444-4444-8444-444444444444');
-            row.querySelector('[data-field="uomId"]').value = 'EA';
-            row.querySelector('[data-field="quantity"]').value = '2';
-            return row;
+        /** The panel path: "Satır ekle" → product → SKU (its base unit EA from sku-facts) → quantity 2. */
+        const fillLine = async () => {
+            document.getElementById('btnAddLine').click();
+            const choose = (id, value) => {
+                const select = document.getElementById(id);
+                select.add(new Option(value, value, true, true));
+                select.dispatchEvent(new Event('change'));
+            };
+            choose('lineProduct', '33333333-3333-4333-8333-333333333333');
+            choose('lineSku', 'Sku:44444444-4444-4444-8444-444444444444');
+            await settle();
+            document.getElementById('lineQuantity').value = '2';
         };
+        const skuFacts = (url) => (String(url).includes('/sku-facts') ? reply({ available: true, baseUom: 'EA' }) : null);
 
         it('item 4: the chosen lot goes into the preview (lotOverride) and the line says it is not the FEFO suggestion; the choice survives the redraw', async () => {
             document.body.innerHTML = FORM_DOM;
             const fetchMock = await boot([js('OutboundShipments', 'rules.js'), js('OutboundShipments', 'form.js')], (url, init) => {
+                if (skuFacts(url)) return skuFacts(url);
                 const body = JSON.parse(init.body);
                 return reply(previewAnswer(body.lines[0].lotOverride?.lotId));
             });
-            const row = fillLine();
-            document.getElementById('btnPreview').click();
+            await fillLine();
+            document.getElementById('btnLinePreview').click();
             await settle();
             expect(posts(fetchMock, '/preview')[0].lines[0].lotOverride).toBeUndefined();
-            expect(text('outbound-preview-lines')).toContain('Alınabilir: 408,5');
-            expect(text('outbound-preview-lines')).toContain('Lot AMX-2604: 2 (FEFO sırası 1)');
+            expect(text('linePreviewBody')).toContain('Alınabilir: 408,5');
+            expect(text('linePreviewBody')).toContain('Lot AMX-2604: 2 (FEFO sırası 1)');
 
-            const lot = row.querySelector('[data-field="lotId"]');
+            const lot = document.getElementById('lineLot');
             expect(lot.options[1].textContent).toBe('AMX-2604 · FEFO 1 · SKT 2028-03-31 · 408,5 alınabilir');
             lot.value = LOT_B;
             lot.dispatchEvent(new Event('change'));
@@ -223,17 +237,27 @@ describe('WP-0178-E3-FIX-01 — the outbound screens (MOD-0178)', () => {
             const second = posts(fetchMock, '/preview')[1];
             expect(second.lines[0].lotOverride).toEqual({ lotId: LOT_B, fefoBypassReason: null });
             expect(second.lines[0].quantity).toBe('2');
-            const shown = text('outbound-preview-lines');
+            const shown = text('linePreviewBody');
             expect(shown).toContain('Lot G1-20261020: 2 (FEFO sırası 2)');
             expect(shown).toContain('Seçtiğiniz lot kayıtta uygulanır; FEFO önerisi lot AMX-2604 (SKT 2028-03-31).');
-            expect(row.querySelector('[data-field="lotId"]').value).toBe(LOT_B);
+            expect(document.getElementById('lineLot').value).toBe(LOT_B);
+
+            // the line, saved with its reason, keeps the choice through the table's "Tahsisi önizle" too
+            document.getElementById('lineReason').value = 'Müşteri bu lotu istedi';
+            document.getElementById('btnLineSave').click();
+            document.getElementById('btnPreview').click();
+            await settle();
+            const third = posts(fetchMock, '/preview')[2];
+            expect(third.lines[0].lotOverride).toEqual({ lotId: LOT_B, fefoBypassReason: 'Müşteri bu lotu istedi' });
+            expect(document.querySelector('#outbound-lines-body [data-line-lot]').textContent).toBe('G1-20261020');
         });
 
         it('item 4: a WMS_TARGET_NOT_ALLOWED on the preview points at the Staging field', async () => {
             document.body.innerHTML = FORM_DOM;
             await boot([js('OutboundShipments', 'rules.js'), js('OutboundShipments', 'form.js')],
-                () => reply({ error: { code: 'WMS_TARGET_NOT_ALLOWED', message: 'Hedef raf olmalı.' } }, 422));
-            fillLine();
+                (url) => skuFacts(url) || reply({ error: { code: 'WMS_TARGET_NOT_ALLOWED', message: 'Hedef raf olmalı.' } }, 422));
+            await fillLine();
+            document.getElementById('btnLineSave').click();
             document.getElementById('btnPreview').click();
             await settle();
             expect(text('StagingLocationIdError')).toBe(WORDS.StagingNotAllowed);
