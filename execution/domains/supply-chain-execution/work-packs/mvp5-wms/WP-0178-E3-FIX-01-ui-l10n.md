@@ -25,6 +25,12 @@
 - Bugün: tr başlık ve metinlerde "Outbound Sevkiyatlar", "Yeni outbound", "Outbound'u düzenle", "Outbound Ayrıntısı", modal metinleri ("Bu outbound'un sevkiyatları okunur…").
 - Beklenen: tr'de "Çıkış Sevkiyatları", "Yeni çıkış sevkiyatı", "Çıkış sevkiyatını düzenle", "Çıkış sevkiyatı ayrıntısı" (WMS sözlüğünde başka bir terim kararlaştırılmışsa o kullanılır; önce `WarehouseVocabulary.cs` ve sayfa `.resx`'leri tara). Menü (Nav) başlığı dahil. Diğer 5 dilde de terim kontrol edilir.
 
+## 4. "Tahsisi Önizle" seçilen lotu yok sayıyor (sahip: "çalışmıyor gibi")
+
+- Bugün: önizleme her satırı `lotId: ''` ile gönderiyor (`form.js` :198); kullanıcı "Lot değişimi"nden FEFO 2 lotunu (G1-20261020) seçse de önizleme yine FEFO 1 lotunu (AMX-2604) gösteriyor. Kullanıcı seçiminin işe yaramadığını düşünüyor (sahip turu, 2026-11-13; önizleme 200 döndü, ölçüldü).
+- Ayrıca seçilen sevkiyat hazırlık lokasyonu Sevkiyat Hazırlık rolünde değilse ilk önizleme 422 `WMS_TARGET_NOT_ALLOWED` dönüyor; uyarının ekranda göründüğü ve hangi alanı işaret ettiği kontrol edilir.
+- Beklenen (en dar yol): seçilen lot önizlemede gösterilir — servis önizlemesi lot değişimini kabul ediyorsa `lotId` gönderilir; etmiyorsa önizleme satırında "seçtiğiniz lot (G1-20261020) kayıtta uygulanır; FEFO sapma gerekçesi gerekir" notu çizilir ve FEFO önerisi ayrıca gösterilir. Hangisinin mümkün olduğu MOD-0178 §8.17 / önizleme sözleşmesinden doğrulanır; sözleşme değişikliği gerekiyorsa bu iş durur ve CT'ye sorulur.
+
 ## Kabul
 
 - Üç ekranda tr ve en ile elle tur: modal standardı, "1,5" girişi ve gösterimi, başlıklar.
