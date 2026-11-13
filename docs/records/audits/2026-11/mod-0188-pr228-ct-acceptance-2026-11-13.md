@@ -89,3 +89,21 @@ ise alınır ve CI yeniden yeşil olur. MOD-0189 kodlaması bu karardan bağıms
   döndürür; HTTP test sunucusu bu korumayı kurmaz — 500 iddiası aynı hat üzerinden yeniden ölçülecek), N-1 (yerel RabbitMQ notu), N-2
   (correlation değeri ve Superseded olayının eski revision'a aitliği). Açık AC'ler değişmedi (AC-D18, AC-D24 ayrımı, AC-D27, Demand v2
   dondurması, Superseded tarihsel içerik, canlı tüketici). MOD-0189 kodlaması yeni bağımsız paket onayı bekliyor.
+
+## PR #422 — #228'den kalan düşük bulgular (2026-11-13)
+
+- Hedef: PR #422 baş `72d00448f4f6caf4e901e2ca31693970b8506ade` (ortak taban `6f55974a8`, main'in gerisinde değil); 5 dosya, +87.
+  İnceleyen: bağımsız alt ajan ab79a2e160f88b272 (salt okunur, `refs/ct/pr422`); CI CT tarafından GitHub API ile ölçüldü.
+- CI: check-runs 39/39 `success`; `service-tests (planning-tests)` `success` 2026-11-13 11:44 UTC — adımlar Start RabbitMQ, Start owned
+  Mongo, Test, Skipped = 0, Upload test results hepsi `success`.
+- F-7 **kapandı (çekinceli):** `DemandRevisionOutboxStore.cs:13` `ix_mod0188_outbox_undispatched` (tek alan `DispatchedAt`), `:42` Hint,
+  `:55-73` tembel kurulum; bileşik indeks `DateTimeOffset` dizi saklaması yüzünden kullanılamadı (`:63-65`, doğru). `DeliveryState` /
+  `NextAttemptAt` indekste değil. F-8 **kapandı:** `PlanningCorrelationProductionPipelineTests.cs:24` üretim `Program.cs` ile 400 / 401
+  (`Program.cs:19-27` ara katman kimlik doğrulamadan önce). N-1 **kapandı:** `services/Diten.PlanningService/README.md:29-37`. N-2
+  **kapandı:** `DemandRevisionRabbitMqIntegrationTests.cs:105`, `:109-113`.
+- Yeni (düşük, sonraki iş): Y-1 dead-letter kayıtları `DispatchedAt` null kaldığı için indeks aralığında birikir (kısmi indeks önerisi);
+  Y-2 indeksin sorguda kullanıldığını ölçen test yok (kurulum + Hint birlikte silinirse kırmızı yok); Y-3 ilk commit 5503b500e'nin
+  `ix_mod0188_outbox_claim` bileşik indeksi kalıcı bir veritabanında kurulduysa kalır (CI'da sorun yok).
+- PR açıklaması ve sabotaj kanıtı okunmadı (oturum gerekir).
+
+**Karar: merge'e hazır.** Merge commit ile (squash değil); Y-1…Y-3 sonraki MOD-0188 işinde.
