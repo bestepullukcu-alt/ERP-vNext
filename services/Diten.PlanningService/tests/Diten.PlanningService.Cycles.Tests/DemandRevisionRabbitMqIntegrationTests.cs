@@ -62,8 +62,9 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
 
         try
         {
+            var correlationId = Guid.NewGuid();
             var (drafts, published, context) = Open(
-                databaseName: "mod0188_broker_proof_tests", correlationId: Guid.NewGuid());
+                databaseName: "mod0188_broker_proof_tests", correlationId: correlationId);
             await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
             var tenantId = Guid.NewGuid();
             var companyId = Guid.NewGuid();
