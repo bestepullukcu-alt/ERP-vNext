@@ -212,7 +212,7 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
 | K-17 | Kod kümesi doğrulaması (yazmada doğrulama yok) | commercial-suite | AÇIK → DL-4 — U-4 saklananı döner; yeni ve değişen adreslerde yazma doğrulaması MOD-0149 DL-4'te (pack §32.10) |
 | K-9 | MVP-6 adres yüzeyi | commercial-suite | Bu ekle kapanır (donmada); MVP-6 `GET /api/crm/accounts/{id}`'den U-4'e geçer |
 | K-18 | Çoklu teslimat adresi | commercial-suite (Beste) | **KARAR 2026-11-13: yapılacak.** Hesaba ek teslimat adresleri (ad, ülke / şehir / ilçe, posta kodu, adres satırı, varsayılan, pasif) — MOD-0149 DL-4 (pack §32.10; veri + hesap ekranı + 7 dil + yazmada Reference Data doğrulaması, K-17'yi yeni adreslerde kapatır). Ekran: mockup yok; hesap detayının mevcut sekme yapısında (Work Center sekme kartı) standart liste + form (Beste 2026-11-13). Sözleşme biçimi §2.2 bunu bugünden taşır |
-| K-19 | Yeni anahtarı alan CRM rolleri | commercial-suite (Beste); CT önerisi | **ÖNERİ (CT) — CT-APR-01 onayıyla kesinleşir** (inceleme 0a9fd4ef F-2): CRM Admin alır; öteki CRM rolleri almaz (pack §16) |
+| K-19 | Yeni anahtarı alan CRM rolleri | commercial-suite (Beste); CT önerisi | **KARAR 2026-11-13** (Beste; CT önerisi, inceleme 0a9fd4ef F-2): CRM Admin alır; öteki CRM rolleri almaz (pack §16; pack §32.8 "CT-APR-01 onayıyla kesinleşir") |
 
 Kayıt: docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md (taslak — sahip okuması pack onayıyla kayda geçer).
 
@@ -232,3 +232,5 @@ Kayıt: docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md (ta
 - 1.1.0 taslak r6 (2026-11-13) — dar yeniden inceleme 2026-11-13-dadab82e (KOŞULLU, 3 düşük): donmada işleniş listesi
   temel dosyanın bölümleriyle eşlendi — §2b ve §5b yeni bölüm, §1 Gateway cümlesi ve §8 eklendi (F-3); K-19 "ÖNERİ (CT)"
   olarak etiketlendi (F-2); K-17 "DL-4" (not). Sözleşme biçimi değişmedi.
+- 1.1.0 taslak r7 (2026-11-13) — dar yeniden inceleme 2 (2026-11-13-8749bc2a, KOŞULLU, 2 düşük): §5 Gateway atfı
+  §6 → §1 (F-2); K-19 Beste kararı (2026-11-13). Sözleşme biçimi değişmedi.
