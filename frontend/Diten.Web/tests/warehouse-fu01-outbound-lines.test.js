@@ -23,7 +23,8 @@ const fmt = (template, ...values) => values.reduce((text, value, i) => text.repl
 const razor = (source) => source
     .replace(/@\*[\s\S]*?\*@/g, '')
     .replace(/^@(using|inject|model)[^\n]*\n/gm, '')
-    .replace(/@(Shared)?Localizer\["([^"]+)"\]/g, (_, shared, key) => (shared ? key : (WORDS[key] ?? key)));
+    // `.Value` (raw template, CT live tour 2026-11-13) renders the same words as the bare form
+    .replace(/@(Shared)?Localizer\["([^"]+)"\](?:\.Value)?/g, (_, shared, key) => (shared ? key : (WORDS[key] ?? key)));
 
 const PANEL = () => razor(read(VIEW('_LineOffcanvas.cshtml')));
 
