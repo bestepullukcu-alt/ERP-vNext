@@ -64,7 +64,7 @@
 - **Kabul:** yeşil, büyük onay işareti, kısa ses + titreşim; **1 saniyede kendiliğinden kapanır** (S-12).
 - **Ret:** kırmızı, büyük ikon, nedeni tek cümle, farklı ses + uzun titreşim; **dokununca kapanır**. Ret türleri:
   yanlış ürün · yanlış raf · SKT geçmiş · geri çağrılmış lot · tanınmayan barkod · engelli cihaz.
-- **Uyarı (sarı):** farklı lot · seri tekrar. "Farklı lot" ve "yanlış raf" için **"Sorumlu onayı (PIN)"** düğmesi (S-7).
+- **Uyarı (sarı):** yanlış raf (yalnız yerleştirmede) · seri tekrar. **"Sorumlu onayı (PIN)"** düğmesi yalnız yerleştirmedeki yanlış raf uyarısında çıkar (S-7, MOD-0182 karar 03 Q-3, 2026-11-13). Farklı lot **ret**tir (kırmızı), PIN düğmesi yok; toplamada PIN düğmesi hiç yok.
   **Geri çağrılmış lot ve SKT geçmiş retlerinde PIN düğmesi hiç olmaz.**
 - Durumlar yalnız renge dayanmaz (ikon + metin).
 

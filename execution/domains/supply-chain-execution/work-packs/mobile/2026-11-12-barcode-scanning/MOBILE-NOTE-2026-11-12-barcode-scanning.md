@@ -24,7 +24,7 @@
 | S-1 | v1 yalnız çevrimiçi | Bağlantı yoksa okutma ekranı "Bağlantı yok, okutma yapılamaz" der; yerelde kuyruk tutulmaz, sonradan gönderme yok |
 | S-2 | RFID ve etiket basımı v1'de | RFID el okuyucu desteği ve "Etiket bas" akışı v1 kapsamında |
 | S-3 | Telefon kameraları **cihaz olarak kaydedilir** | Uygulama ilk açılışta cihaz kimliğini kaydettirir (tür: Telefon-kamera); engellenmiş cihazdan okutma reddedilir |
-| S-7 | Vardiya sorumlusu PIN'i | Yalnız **farklı lot** ve **yanlış raf** uyarısında PIN ile aşılabilir; **geri çağrılmış lot** ve **SKT geçmiş** retlerinde PIN seçeneği **hiç gösterilmez** |
+| S-7 | Vardiya sorumlusu PIN'i | **Güncellendi (MOD-0182 karar 03, Q-3, 2026-11-13):** PIN ile yalnız **yerleştirmede yanlış raf** uyarısı aşılabilir. **Farklı lot** hiçbir işlemde aşılamaz; **toplamada** hiçbir uyarı PIN ile aşılamaz. **Geri çağrılmış lot** ve **SKT geçmiş** retlerinde PIN seçeneği **hiç gösterilmez** |
 | S-8 | RFID raf taramasında fark | Fark listesi + "Yeniden tara" + "Sayım başlat"; stok mobilde değişmez |
 | S-10 | Gerekçe listeleri | Elle giriş ve yeniden basım gerekçeleri sabit liste; sonda "Diğer" (açıklama zorunlu) |
 | S-12 | Tam ekran geri bildirim | **Kabul 1 sn'de kendiliğinden kapanır**; **ret dokununca** kapanır |
@@ -37,13 +37,13 @@
 | A-2 | Sorgu ("Bu nedir?") | Okutulan barkodun ürün, lot, SKT, raf ve durum bilgisi |
 | A-3 | Kamera ile okut | Kamera açılır, karekod çerçeveye hizalanır; izin yoksa "Kamera izni gerekli" + elle giriş seçeneği |
 | A-4 | Elle giriş | Barkod / ürün kodu, lot, seri (varsa), **gerekçe zorunlu**; kayıt "elle girildi" olarak işaretlenir |
-| A-5 | Sorumlu PIN onayı | Yalnız S-7'deki iki uyarıda; onay sorumlunun adıyla kaydedilir |
+| A-5 | Sorumlu PIN onayı | Yalnız yerleştirmede yanlış raf uyarısında (S-7, Q-3); onay sorumlunun adıyla kaydedilir |
 | A-6 | RFID toplu okuma | Beklenen / okunan sayısı, fark listesi, yeniden tara / sayım başlat |
 | A-7 | Etiket bas | Tür (raf, palet SSCC, koli GTIN + lot + SKT, RFID kodlama), yazıcı (her basımda seçilir), adet, **önizleme**, yeniden basımda gerekçe. Basım **sunucu üzerinden** ağ yazıcısına gider; mobil yazıcıya doğrudan bağlanmaz (öneri, §7 soru 4) |
 | A-8 | Ses ve titreşim | Cihaz bazında ayar (kabul / ret sesleri, titreşim) |
 
 **Sonuç türleri (tam ekran):** Kabul · Ret: yanlış ürün · Ret: yanlış raf · Ret: SKT geçmiş · Ret: geri çağrılmış lot · Ret: tanınmayan barkod ·
-Ret: engelli cihaz · Uyarı: farklı lot (PIN) · Uyarı: seri tekrar. Metinler sunucudan / yerelleştirmeden gelir, uygulamada sabit Türkçe metin olmaz.
+Ret: engelli cihaz · Ret: farklı lot (PIN yok) · Uyarı: yanlış raf — yalnız yerleştirmede (PIN) · Uyarı: seri tekrar. Metinler sunucudan / yerelleştirmeden gelir, uygulamada sabit Türkçe metin olmaz.
 
 **Mobilde OLMAYACAKLAR (Web'de):** tarama olayları listesi, uyum izi ve kanıt paketi (PDF / CSV), cihaz sağlığı ve cihaz engelleme,
 dış sistemler, eşik ayarları.
@@ -103,7 +103,7 @@ belge no + atanan + durum + eylemler); bağlantı gelince yalnız veri kaynağı
 
 ## 5. Bağımlılıklar (mobil dışı, bilgi)
 - Barkoddan ürün bulma, MDM'de GTIN işinin (MOD-0290-FU07) main'e girmesine bağlı.
-- Cihaz kaydı ve engelleme MOD-0365 (merkez / Platform).
+- Cihaz kaydı ve engelleme **MOD-0182**'dedir (MOD-0182 karar 03, Q-2, 2026-11-13); MOD-0365 yalnız cihaz ara yazılımı sınırıdır, v1'de kullanılmaz.
 - Kimlik doğrulama, kiracı / şirket başlıkları ve yanıt zarfı mevcut mobil sözleşmelerle aynı olacak (`X-Tenant-Id`, `Response<T>`).
 
 ## 6. Bugünkü durum — kontrol edin, yazın
