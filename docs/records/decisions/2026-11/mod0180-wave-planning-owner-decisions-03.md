@@ -41,3 +41,9 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   `Every_enforced_permission_is_reachable_from_the_manifest` controller'ları namespace ile dışlar (Traceability, Quarantine, Expiry, Recall,
   Warehouse, CycleCounting); MOD-0180 DL-1 dışlama listesine `.Controllers.WavePlanning` satırını (yorumuyla: WMS-WAVE manifesti, kendi
   bütünlük testi) ekler — MOD-0181 emsali. Ayrı sahip onayı gerekmez.
+- **2026-11-13 — X-15 Governance Rol İzinleri köprüsü (XMC-001 sahip onayı)** (paket r11 §5.1 X-15 ve §24 DL-1 kapısı "X-15 sahip
+  teyidi"; kaynak: sahip sohbet cevabı, Beste 2026-11-13, "evet" — soru: MOD-0181'deki "Köprüye eklemeli yaz" kararı MOD-0180 için de
+  geçerli mi): MOD-0180 köprü dosyalarına yalnız eklemeli yazar — `_IndexL10n.cshtml` `ActionVerbs`, `RoleAssignmentsIndex.{7}.resx`
+  `ActionVerb_*`, `perm-label.js` `ACTION_FAMILIES` ve `SharedResource.{7}.resx` `Perm.Entity.*`. DL-1: satır adları (`settings.configure`
+  dahil, fiil `configure` zaten var); DL-3: yeni fiil `recall` (aile önerisi `secondary`) + satır; DL-5: satır. Var olan satırlar
+  değişmez; fiil defteri tavanı paketteki gibi ölçülür (role-assignments-label-ledger vitest). MOD-0181 emsali `65b968b64`.
