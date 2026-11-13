@@ -25,3 +25,19 @@
   F-2 — erişim anahtarının bitişi oturum bitişini **asla geçmez**: exp = min(nbf + 15 dk, oturum sonu); oturum tam 8 saatte biter.
   F-5 — bağlamada `eligibleForTransactions` yanında tedarikçinin **onay durumu (onboardingStatus) ve satın almaya açıklığı
   (purchasingEnabled)** da denetlenir; reddedilmiş ya da satın almaya kapalı tedarikçiye portal açılmaz.
+- **2026-11-13 — Auth soruları SQ-1…SQ-6, SQ-12, SQ-13, SQ-15 (Beste, merkez — Platform / Auth işini merkez yürütür: "diğerleri öneri
+  gibi olsun"; Ali'ye bilgi verilir; paket MOD-0360-FU01 r2 8086bf9a 23):**
+  SQ-1 hesap düzeyinde ayırt edici: **`AccountKind.Supplier = 3`** (taslağın "hesap Human kalır" metni değişir).
+  SQ-2 v1 iki adımlı doğrulama **yalnız e-posta kodu**; challenge kaydına **kapı alanı** eklenir (kiracı kapısı tedarikçi challenge'ını kabul etmez).
+  SQ-3 S2S `binding_rev` ucu: ayrı audience **`TRUSTED_SUPPLIER_BINDING_CONSUMER`** (MOD-0140 DL-7 audience'ından ayrı; MOD-0012-FU01
+  `TRUSTED_SECRET_VAULT_CONSUMER` deseni), kabul edilen tek `service_name` **`Diten.SupplyChain`** (MOD-0148 portalını taşıyan servis);
+  başka servis adı 403.
+  SQ-4 D7 MOD-0140 S-4'e hizalanır (servis token'ı `POST /validate` ve tekil `GET /{supplierId}/eligibility`).
+  SQ-5 Bölüm 5'teki Auth dosya listesine XMC-001 izni (merkez).
+  SQ-6 ayrı **`auth.supplier-bindings.read`** anahtarı; bağa görünen kayıt kodu verilmez (RCS-001 "kod yok"); kod düzeltmesini kiracıda
+  `auth.supplier-bindings.manage` yetkili hesap yürütür.
+  SQ-12 (a) yalnız `[Authorize]` taşıyan uçların envanteri çıkarılır, her biri AC-15 kapsamına (tedarikçi token'ı reddi) eklenir — en az Auth uçları.
+  SQ-13 (1) tedarikçi hesabı kiracı kullanıcı kotasına **sayılmaz** (ayrı sayım); (2) davet bağlantısı bugünkü Platform bildirim akışıyla;
+  (3) v1 parola belirleme bugünkü anonim `/api/users/set-password` + kiracı Web sayfasıyla.
+  SQ-15 son aktif bağ kaldırılınca hesap **pasif**; kişisel veri saklama kiracının kullanıcı saklama kuralını izler.
+  Açık kalanlar: SQ-7, SQ-8, SQ-11, SQ-14 (Natig), SQ-9, SQ-10 (Cihan).

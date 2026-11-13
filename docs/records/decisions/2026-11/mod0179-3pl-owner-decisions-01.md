@@ -52,3 +52,8 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   ThirdPartyLogistics); eşleştirme / birleştirme, tedarikçi ve müşteri SoR'u kapsam dışı. Ayrı paket gerekir; MOD-0179 DL-3 bu FU'ya
   bağımlılık olarak yeniden yazılır (r2). Kimlik kaydına MOD-0049 ve MOD-0049-FU01 satırları eklenir. Aynı firmanın tedarikçi (SUP-),
   3PL ve CRM müşterisi kayıtlarının bağlanması backlog BL-665.
+- **2026-11-13 — MOD-0012-FU01 (Tenant Runtime Secret Vault) sahip soruları (Beste, "öneri gibi olsun"; paket r1 23):** Q-6 3PL gelen
+  imza sırrı değişiminde eski ve yeni sır en çok 72 saat birlikte geçerli (geçiş penceresi); Q-7 yönetim (meta) ekranı v1'de **yok**;
+  Q-8 resolve okumaları denetim kaydına yazılmaz, yalnız sayaç; Q-9 meta sorgusu kalır; Q-14 LegalEntityId kasada ayrıca doğrulanmaz
+  (çağıran servis doğrular); Q-15 SMTP sırrının taşınması ayrı FU. Ali'ye kalan: Q-1 KEK yeri / erişimi, Q-2 yedek / kurtarma, Q-3
+  Inventory servis istemcisi, Q-4 servisler arası TLS, Q-13 FU onayının ana paket durumunu bekleyip beklemediği.
