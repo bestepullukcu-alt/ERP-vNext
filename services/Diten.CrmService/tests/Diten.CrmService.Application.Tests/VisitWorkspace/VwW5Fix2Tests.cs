@@ -41,8 +41,10 @@ public sealed class VwW5Fix2Tests
     [Fact]
     public async Task K2_a_timeout_is_uncertain_the_row_is_retried_with_the_same_key_and_the_platform_answers_its_first_dispatch()
     {
-        // The first call reaches the Platform (it stores the dispatch) but answers after CRM's 3-second budget.
-        var platform = new DedupingPlatform { SlowFirstAnswer = TimeSpan.FromSeconds(4) };
+        // The first call reaches the Platform (it stores the dispatch) but its answer does not come within CRM's budget.
+        // SYNC S0B K-2: no race between two wall clocks (a 4-second answer against the 3-second budget went either way on
+        // a busy machine) — the answer is withheld until CRM's own budget gives up, so the outcome is the same every run.
+        var platform = new DedupingPlatform { FirstAnswerMissesTheBudget = true };
         var sender = Sender(platform);
         var row = NewRow();
 
@@ -118,12 +120,13 @@ public sealed class VwW5Fix2Tests
     };
 
     /// <summary>The Platform's internal dispatch as W5-FIX2 made it: one dispatch per idempotency key, and the same answer
-    /// for a repeat. The first answer can be made slow (the call landed; the answer missed CRM's budget).</summary>
+    /// for a repeat. The first answer can be withheld (the call landed; the answer missed CRM's budget): it waits for the
+    /// CALLER's time-out and never for a clock of its own.</summary>
     private sealed class DedupingPlatform : HttpMessageHandler
     {
         private readonly Dictionary<string, string> _answers = new(StringComparer.Ordinal);
         public List<string> Bodies { get; } = new();
-        public TimeSpan SlowFirstAnswer { get; set; }
+        public bool FirstAnswerMissesTheBudget { get; set; }
         public int DispatchesOpened { get; private set; }
         public string? FirstDispatchId { get; private set; }
 
@@ -144,9 +147,9 @@ public sealed class VwW5Fix2Tests
                     _answers[key] = answer;
                 }
 
-                if (SlowFirstAnswer > TimeSpan.Zero && DispatchesOpened == 1)
+                if (FirstAnswerMissesTheBudget && DispatchesOpened == 1)
                 {
-                    await Task.Delay(SlowFirstAnswer, ct);
+                    await Task.Delay(Timeout.InfiniteTimeSpan, ct); // ends only when the caller's budget cancels the call
                 }
             }
 
