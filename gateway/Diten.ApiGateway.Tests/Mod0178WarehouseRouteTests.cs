@@ -94,7 +94,13 @@ public sealed class Mod0178WarehouseRouteTests
         // POST /cycle-counts/{countId}/recount, GET + PUT /count-settings (69). MOD-0181 DL-4 (XMC-001, owner's OK Beste 2026-11-11 "70 yap"):
         // + 1 — GET /cycle-counts/dashboard (70). MOD-0181 DL-5 (XMC-001, owner's OK Beste 2026-11-12 "73 yap"): + 3 — POST
         // /cycle-counts/{countId}/evidence-exports, GET /count-evidence-exports, GET /count-evidence-exports/{exportId}/file (73).
-        Assert.Equal(73, endpoints.Count);
+        // MOD-0180 DL-1 (pack §5.1 X-14, XMC-001 Beste 2026-11-13; measured 73 at 4a64b9119): + 14 — the endpoints of WavesController
+        // (Controllers/WavePlanning/, [Route("api/warehouse")]): GET + POST /waves, GET /waves/{waveId}, POST /waves/{waveId}/update,
+        // GET + POST /waves/{waveId}/orders, POST /waves/{waveId}/orders/remove, GET /waves/{waveId}/suggestions, POST /waves/{waveId}/cancel,
+        // GET /waves/candidates, GET /waves/{waveId}/load, GET /waves/{waveId}/events, GET /waves/settings/{warehouseId},
+        // POST /waves/settings/{warehouseId}/update (87). All GET / POST, every one served by the single /api/warehouse/{everything} route;
+        // ocelot.json unchanged.
+        Assert.Equal(87, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
