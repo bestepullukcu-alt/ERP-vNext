@@ -7,7 +7,8 @@ shell: tenant
 golden_reference: slim
 data_mode: server
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
+status_note: "r2 (2026-11-13): ready-for-dev künyesi S-49 gereği CT-APR-01'den önce yazıldı; CT-APR-02 r2 teyidi ve CT-APR-01 onay satırı gelene ve Bölüm 0.4 S0 kapısı ile Bölüm 22 dilim kapıları kapanana kadar kod yetkisi yoktur."
 approval_status: pending
 owner: platform-shared-services / merkez (Beste) — DC-03 sahibi
 approver: Ali (GMG-ERP) — Auth sahibi (MOD-0017 / MOD-0018); CT-APR-01 yüksek risk, paketi yazmamış onaylayıcı
@@ -23,10 +24,19 @@ decision_gate: DC-03 (MVP-6 plan v10.0 C4 / C7)
 
 # MOD-0360-FU01 — Supplier User Binding (DC-03)
 
-> **Taslak — kod başlatma izni değildir.** Bu paket kod, şema, izin kataloğu, rol, token, gateway rotası ya da dağıtım
-> yetkisi vermez. Kod yalnız paket `approved` / `ready-for-dev` olduktan, CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay
-> satırı yazıldıktan ve Bölüm 0'daki S0 kapısı kapandıktan sonra, dilim sırasıyla (DL-1 → DL-4) yazılır. Auth ve Gateway
-> dosyalarına dokunmak ayrıca XMC-001 izni ister (Bölüm 0.3).
+> **r2 (2026-11-13) — inceleme `docs/records/reviews/MOD-0360-FU01/2026-11-13-ce91314f.md` (KOŞULLU, F-1…F-12) işlendi.**
+> Sahip kararları (Beste, "hepsi öneri gibi"; `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md`
+> son madde): **F-2** erişim token'ının bitişi oturum bitişini asla geçmez — `exp = min(nbf + 15 dk, oturum sonu)`, oturum tam 8
+> saatte biter (Bölüm 8, 14; AC-12, AC-13); **F-5** bağlamada `eligibleForTransactions` yanında `onboardingStatus = Approved` ve
+> `purchasingEnabled = true` da denetlenir (Bölüm 12, 13; AC-27, AC-8). Diğerleri: **F-1** F4 sertleştirmesi yalnız kimliği
+> doğrulanmış istekte (Bölüm 15; AC-22); **F-3** DL-2 dosya listesi tamamlandı (Bölüm 3, 4, 5); **F-4, F-6, F-7, F-8, F-9** sahipli
+> açık sorular SQ-11…SQ-15 (Bölüm 23; S0 kapanışı 0.4); **F-10** Gateway satır atıfları düzeltildi; **F-11** AC-13'e 7 sa 50 dk
+> yenileme vakası; **F-12** künye `ready-for-dev` (S-49), `approval_status: pending`. Ölçüm tabanı HEAD `70cb6ca01`.
+>
+> **ready-for-dev ≠ kod yetkisi.** Bu paket kod, şema, izin kataloğu, rol, token, gateway rotası ya da dağıtım yetkisi
+> vermez. Kod yalnız CT-APR-02 (bu sürüm) ve CT-APR-01 onay satırı yazıldıktan ve Bölüm 0'daki S0 kapısı kapandıktan sonra,
+> dilim sırasıyla (DL-1 → DL-4) ve Bölüm 22'deki dilim kapılarıyla yazılır. Auth ve Gateway dosyalarına dokunmak ayrıca
+> XMC-001 izni ister (Bölüm 0.3).
 >
 > **Kimlik kapısı (DCP-002, 2026-11-13):** `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0360-FU01
 > --name "Supplier User Binding" --parent MOD-0360` → `OK  MOD-0360-FU01: proven against Blueprint/registry.` (çıkış 0).
@@ -55,9 +65,9 @@ kapandığı için bu metinler main'de yoktur; S0'da sahibe yeniden sunulur.
 | D1 | Bağ Auth'ta: `SupplierActorBinding(UserId, TenantId, LegalEntityId, SupplierId, Status, Revision)` | Aynı; `SupplierId` yerine **kanonik `SUP-` kodu** (`SupplierCode`) — M2 (2026-11-13) | yeniden onay |
 | D2 | Yeni `actor_type = supplier_user`; hesap `Human` kalır; token yalnız aktif bağ varken | `actor_type = supplier_user` aynı; **hesap türü ayırt edicisi SQ-1'e bağlı** (öneri: hesap düzeyinde ayırt edici, `Human` kalmaz) | SQ-1 |
 | D3 | Token `supplier_id`, `legal_entity_id`, `binding_rev` taşır; her yazma Auth'tan güncel `binding_rev` sorar; Auth yoksa 503 | Aynı; S2S `binding_rev` ucu DL-2'de (AC-19); ucun audience'ı SQ-3 | yeniden onay + SQ-3 |
-| D4 | Yazmada anında, okumada token ömrü içinde iptal; erişim token'ı 15 dk | 15 dk erişim + sessiz yenileme + **en çok 8 saat oturum**, sonra yeniden giriş + e-posta kodu (sahip, 2026-11-13) | yeniden onay (8 saat eki) |
+| D4 | Yazmada anında, okumada token ömrü içinde iptal; erişim token'ı 15 dk | 15 dk erişim + sessiz yenileme + **en çok 8 saat oturum**, sonra yeniden giriş + e-posta kodu (sahip, 2026-11-13); erişim token'ı oturum sonunu geçmez: `exp = min(nbf + 15 dk, oturum sonu)` (r2, F-2) | yeniden onay (8 saat eki + F-2) |
 | D5 | Kiracı + LE başına kişi başına en çok bir aktif bağ; çoklu bağda girişte seçim; token tek bağ | Aynı (tekil indeks + seçim bileti, AC-3, AC-17) | yeniden onay |
-| D6 | Bağı kiracı Admin'i kurar/kaldırır (`auth.supplier-bindings.manage`); bağlama anında tedarikçi Procurement'ta `Active`, Admin'in token'ıyla okunur | Aynı; okuma MOD-0140 `GET /api/suppliers/{supplierId}/eligibility`, ölçüt `eligibleForTransactions = true` (MOD-0140 S-1); kod düzeltme komutu eklendi (M2) | yeniden onay |
+| D6 | Bağı kiracı Admin'i kurar/kaldırır (`auth.supplier-bindings.manage`); bağlama anında tedarikçi Procurement'ta `Active`, Admin'in token'ıyla okunur | Aynı; okuma MOD-0140 `GET /api/suppliers/{supplierId}/eligibility`; ölçüt üç alanın birlikte doğruluğu: `eligibleForTransactions = true` (MOD-0140 S-1), `onboardingStatus = Approved`, `purchasingEnabled = true` (r2, F-5); kod düzeltme komutu eklendi (M2) | yeniden onay (F-5 eki) |
 | D7 | MOD-0148 Procurement'ı SupplyChain servis kimliğiyle çağırır; S2S kapsamı yalnız `validate` | MOD-0148'in işi, bu paketin kodu değil; **MOD-0140 S-4 ile çelişir** (S-4: `POST /validate` **ve** tekil `GET /{supplierId}/eligibility`) | SQ-4 |
 | D8 | Hata önceliği 401 → 403 (aktör/bağ/rev) → 403 (tedarikçi Active değil) → 400 → 503; her ret sıfır yazma | Tedarikçi kapısı ve S2S ucu için aynı sıra (Bölüm 13); portal tarafı MOD-0148'de | yeniden onay |
 
@@ -89,9 +99,11 @@ gateway kuralı için ayrı Auth/Platform paketi" — bu paket o ayrı pakettir.
 
 ### 0.4 S0 kapanış ölçütü
 
-S0, (1) D1–D8'in bu paketteki biçimiyle yeniden onayı karar dosyasına yazıldığında, (2) SQ-1, SQ-3, SQ-4, SQ-7 cevaplandığında,
-(3) 0.3 tablosundaki Auth ve Gateway izinleri yazılı alındığında ve (4) Bölüm 21'deki denetim izi için Control Tower defter
-kararı verildiğinde kapanır. SQ-2, SQ-8, SQ-9, SQ-10 DL-1'i bekletmez; ilgili dilimin başında kapanır (Bölüm 22).
+S0, (1) D1–D8'in bu paketteki biçimiyle yeniden onayı karar dosyasına yazıldığında, (2) SQ-1, SQ-3, SQ-4, SQ-7, SQ-11, SQ-12,
+SQ-13 cevaplandığında, (3) 0.3 tablosundaki Auth ve Gateway izinleri yazılı alındığında ve (4) Bölüm 21'deki denetim izi için
+Control Tower defter kararı verildiğinde kapanır. SQ-2, SQ-8, SQ-9, SQ-10, SQ-14, SQ-15 DL-1'i bekletmez; ilgili dilimin
+başında kapanır (Bölüm 22). Sahipli maddeler (r2): SQ-11 ve SQ-14 Natig; SQ-12, SQ-13 ve SQ-15 Ali — inceleme bulguları F-4,
+F-6, F-7, F-8, F-9.
 
 ## 1. Module Summary
 
@@ -133,6 +145,14 @@ paketin dışındadır.
 ## 3. Owned Objects
 
 - **Varlık:** `SupplierActorBinding` (koleksiyon `supplierActorBindings`).
+- **Varlık (DL-2, r2 F-3):** `SupplierSelectionTicket` (koleksiyon `supplierSelectionTickets`, TTL indeksli) + `ISupplierSelectionTicketRepository`.
+- **Mevcut varlıklara ek alan (DL-2, r2 F-3; XMC-001):** `RefreshToken` — `SessionStartedAtUtc`, `SessionEndsAtUtc` (mutlak oturum);
+  `MfaChallenge` — `Door` (`tenant` / `supplier`, SQ-2). Ayrıntı Bölüm 4.
+- **Servis token'ı doğrulama şeması (DL-2, r2 F-3):** Auth'ta bugün yalnız kullanıcı `JwtBearer` şeması var
+  (`services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs:42-43`); `service_name` claim'ini yalnız
+  belirteç üretici yazar (`services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/ServiceIdentityTokenIssuer.cs:49`).
+  AC-19 için ayrı adlı bir kimlik doğrulama şeması + doğrulayıcı (`SupplierBindingRevisionServiceTokenValidator`) ve DI kaydı kurulur;
+  biçim MOD-0140 DL-7'nin Platform emsaliyle aynı (zorunlu claim kümesi tam, audience tek — SQ-3).
 - **Repository:** `ISupplierActorBindingRepository` + Mongo uygulaması (oturumlu yazma: iş yazımı + denetim sonuç satırı
   aynı işlemde — Bölüm 21).
 - **Komutlar (DL-1):** `CreateSupplierActorBindingCommand` (kur; gerekirse tedarikçi hesabını açar ve davet gönderir),
@@ -184,6 +204,26 @@ paketin dışındadır.
 `{Email, TenantId}` kısmi `IsDeleted = false` (`services/Diten.AuthService/src/Diten.AuthService.Persistence/Configurations/MongoDbIndexConfigurations.cs:11-15`).
 Ayırt edici alanın biçimi SQ-1'e bağlıdır; öneri `IsPlatformAccount` emsalidir (`services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/User.cs:50`).
 
+**`SupplierSelectionTicket : EntityBase` (DL-2, r2 F-3)** — çoklu bağda kod doğrulamasından sonra verilen tek kullanımlık bilet.
+
+| Alan | Tip | Kural |
+|---|---|---|
+| `TenantId` / `UserId` | Guid | doğrulanan challenge'ın kiracısı ve kullanıcısı |
+| `TicketHash` | string | biletin SHA-256 karması; bilet kendisi saklanmaz; tekil indeks `ux_supplier_selection_ticket_hash` |
+| `AllowedBindingIds` | Guid[] | verildiği anda kişinin aktif bağları; seçim bu kümeyle ve güncel bağ okumasıyla sınanır |
+| `SessionStartedAtUtc` | DateTime | kod doğrulaması anı; seçimle başlayan oturumun 8 saati buradan sayılır |
+| `ExpiresAtUtc` | DateTime | verilişten 5 dk sonra; TTL indeksi `ix_supplier_selection_ticket_expires` (`ExpireAfter = 0`, `mfaChallenges` emsali `MongoDbIndexConfigurations.cs:98-99`) |
+| `ConsumedAtUtc` | DateTime? | koşullu güncellemeyle bir kez yazılır (yarışta tek kazanan) |
+
+**`RefreshToken` ek alanları (DL-2, r2 F-3; XMC-001):** bugün `SessionId` var, oturum başlangıcı ya da bitişi yok
+(`services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/RefreshToken.cs:33`, `:39`). Yalnız ekleme: `SessionStartedAtUtc`
+(DateTime?) ve `SessionEndsAtUtc` (DateTime?); tedarikçi oturumunda dolu, döndürmede (rotation) değişmeden taşınır; eski ve kiracı
+kayıtlarında boş kalır. `IRefreshTokenRepository` / `RefreshTokenRepository` döndürme yolu bu iki alanı yeni kayda kopyalar.
+
+**`MfaChallenge` ek alanı (DL-2, r2 F-3; SQ-2):** `Door` (string, `tenant` varsayılan; tedarikçi kapısı `supplier` yazar). Bugün
+kanal dışında kapı bilgisi yok (`services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/MfaChallenge.cs:31-41`). Her
+kapının `mfa/verify`'ı yalnız kendi kapısının challenge'ını kabul eder.
+
 **RCS-001:** bağ kullanıcıya görünen bir iş belgesi değildir (kişi ↔ tedarikçi eşlemesi); ekranda e-posta, LE ve `SUP-` kodu
 görünür, ayrı kayıt kodu üretilmez. **Öneri** — SQ-6 ile sahibe sorulur.
 
@@ -218,6 +258,17 @@ Yollar DL başında yeniden ölçülür; burada adı geçmeyen dosyaya dokunulma
 - Değişir (XMC-001, Ali): `LoginCommandHandler.cs`, `VerifyMfaCommandHandler.cs`, `RefreshTokenCommandHandler.cs`,
   `ForcedChangeTenantPasswordCommandHandler.cs`, `TenantDoorPlatformAccountRefusal.cs` — kiracı kapısının tedarikçi hesabını reddi;
   `AuthController.cs` (`me`, `refresh-token`, `logout` uçlarında `supplier_user` reddi); `MfaChallengeService.cs` (challenge'ın kapısı — SQ-2)
+- **r2 (F-3) eklenenler:**
+  - Servis token'ı doğrulama (AC-19): yeni `.../Infrastructure/Security/SupplierBindingRevisionServiceTokenValidator.cs`; değişir
+    `.../Infrastructure/DependencyInjection.cs` (`:42-43` kullanıcı `JwtBearer` şemasının yanına ayrı adlı ikinci şema + yetki politikası).
+  - Seçim bileti (AC-17): yeni `.../Domain/Entities/SupplierSelectionTicket.cs`, `.../Application/Common/Interfaces/ISupplierSelectionTicketRepository.cs`,
+    `.../Persistence/Repositories/SupplierSelectionTicketRepository.cs`; değişir `.../Persistence/Configurations/MongoDbIndexConfigurations.cs`
+    (`supplierSelectionTickets` için tekil karma indeksi + TTL indeksi), `.../Persistence/DependencyInjection.cs`.
+  - Challenge kapısı (SQ-2): değişir `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/MfaChallenge.cs` (`Door` alanı).
+  - Mutlak oturum (AC-13): değişir `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/RefreshToken.cs` (iki oturum alanı),
+    `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IRefreshTokenRepository.cs` ve
+    `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RefreshTokenRepository.cs` (döndürmede iki alanın taşınması).
+  - Testler: `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/SupplierAuth/` (yeni).
 
 **DL-3 (Gateway — integration-agent / MOD-0032 sahibi)**
 - Değişir: `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` (izin listesi + F4)
@@ -267,6 +318,9 @@ Yollar DL başında yeniden ölçülür; burada adı geçmeyen dosyaya dokunulma
 - Token ömürleri: `supplier_user` erişim 15 dk, oturum (yenileme anahtarı) mutlak 8 saat — yeni `JwtSettings` anahtarları
   `SupplierAccessTokenExpirationMinutes = 15`, `SupplierSessionMaxHours = 8`. Kiracı ömürleri (`appsettings.json:49-50`,
   120 dk / 7 gün) değişmez.
+- **Erişim token'ı oturum sonunu geçmez (sahip, r2 F-2):** `exp = min(nbf + 15 dk, SessionEndsAtUtc)`. Oturum, kod doğrulamasının
+  anından tam 8 saat sonra biter (`SessionEndsAtUtc = SessionStartedAtUtc + 8 sa`); ör. 7 sa 50 dk'da yenilenen token'ın ömrü
+  10 dk'dır, 7 sa 58 dk'da yenilenenin 2 dk. Yenileme anahtarının bitişi de `SessionEndsAtUtc`'dir.
 - Oturum mutlaktır: kiracı yenilemesi her dönüşte ömrü kiracı ayarından yeniden başlatır
   (`services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RefreshTokenCommandHandler.cs:246-249`);
   tedarikçi yenilemesi ilk oturumun bitişini taşır, uzatmaz.
@@ -362,7 +416,7 @@ frontend/Diten.Web/wwwroot/assets/js/Governance/SupplierBindings/
 | `LegalEntityId` | Evet | boş olmayan Guid | — | uygunluk cevabı 200 (Procurement LE'yi kiracıda çözer) |
 | `SupplierCode` (istek) | Evet | trim, ≤ 64; kanonik ya da eski kod ya da uuid (MOD-0140 §3.1 kod çözümü) | — | uygunluk okuması |
 | Saklanan `SupplierCode` | — | **cevabın `supplierId`'si**, `^SUP-` ile başlar; değilse 502/503 sınıfı ret, yazma yok | — | — |
-| Uygunluk | Evet | `relationshipExists = true` ve `eligibleForTransactions = true` (MOD-0140 S-1) | — | — |
+| Uygunluk | Evet | üçü birden: `relationshipExists = true` ve `eligibleForTransactions = true` (MOD-0140 S-1); `onboardingStatus = Approved`; `purchasingEnabled = true` (r2, F-5). `null` değer "uygun değil" sayılır. Alanlar sözleşme 1.3.0'da tanımlı: `docs/analysis/contracts/supplier.openapi.yaml:362-372` (`SupplierEligibility`), `OnboardingStatus` enum `Draft / InReview / Approved / Rejected` (`:319`); `eligibleForTransactions` onboarding ve `purchasingEnabled`'ı hesaba katmaz, bu yüzden ikisi ayrıca denetlenir (`:372`) | — | — |
 | Tekil aktif bağ | Evet | kiracı + LE + kullanıcı başına bir `Active` | `ux_supplier_binding_tenant_le_user_active` | var mı |
 | `Reason` (kaldır, kod düzelt) | Evet | trim, 3–500 | — | — |
 | `expectedRevision` (kaldır, kod düzelt) | Evet | pozitif tam sayı, kayıttakine eşit | koşullu güncelleme | — |
@@ -378,7 +432,9 @@ Bağ yönetimi (DL-1):
 - **Yinelenen aktif bağ** (aynı kiracı + LE + kullanıcı): 409 `SUPPLIER_BINDING_EXISTS`; eşzamanlı iki kurulumda biri kazanır,
   diğeri 409 (tekil indeks); sıfır ek yazma.
 - **E-posta kiracı hesabına ait** (aynı kiracı, tedarikçi olmayan hesap): 409 `SUPPLIER_BINDING_EMAIL_IS_TENANT_ACCOUNT`; yazma yok.
-- **Tedarikçi uygun değil** (`eligibleForTransactions = false`): 422 `SUPPLIER_NOT_ELIGIBLE`; yazma yok.
+- **Tedarikçi uygun değil**: 422 `SUPPLIER_NOT_ELIGIBLE`, `details.reason` ilk tutmayan koşul — `NOT_ACTIVE`
+  (`eligibleForTransactions = false`), `ONBOARDING_NOT_APPROVED` (`onboardingStatus` `Approved` değil ya da `null`),
+  `PURCHASING_DISABLED` (`purchasingEnabled` `true` değil ya da `null`) (r2, F-5); yazma yok. Kod düzeltmede aynı kural.
 - **Tedarikçi bilinmiyor / LE'de ilişki yok** (Procurement 404): 422 `SUPPLIER_BINDING_SUPPLIER_UNKNOWN`; yazma yok.
 - **Admin'in uygunluk okuma izni yok** (Procurement 403): 403 `SUPPLIER_BINDING_ELIGIBILITY_FORBIDDEN`; yazma yok.
 - **Procurement erişilemez / 5xx / zaman aşımı / beklenmeyen gövde**: 503 `SUPPLIER_BINDING_ELIGIBILITY_UNAVAILABLE`; yazma yok.
@@ -415,7 +471,8 @@ Tedarikçi kapısı (DL-2), D8 sırası:
   `services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/PlatformAuthController.cs:617` (`IsPlatformActorToken`) ve
   `:717-721` (`NormalizeActorType`).
 - **`supplier_user` token içeriği:** `sub`, `tenant_id`, `actor_type = supplier_user`, `supplier_id` (kanonik `SUP-`),
-  `legal_entity_id`, `binding_id`, `binding_rev`, `amr = ["pwd","otp"]`, `jti`, `iat`, `nbf`, `exp` (`exp − nbf = 15 dk`);
+  `legal_entity_id`, `binding_id`, `binding_rev`, `amr = ["pwd","otp"]`, `jti`, `iat`, `nbf`, `exp`
+  (`exp = min(nbf + 15 dk, oturum sonu)`, r2 F-2);
   `permission` claim'leri **tam olarak** `supplychain.supplier-portal.read` ve `supplychain.supplier-portal.submit`; rol claim'i
   yok. Verilme yolu (sabit küme mi, kiracı rolü mü) SQ-7; öneri sabit küme (D2: kiracı rolü taşımaz).
 - **S2S `binding_rev` ucu:** yalnız güvenilir servis token'ı (Auth'un kendi `ServiceClientIdentity` kaydı; audience ve
@@ -438,12 +495,19 @@ Karar: Gateway değişikliği **gerekli** (DL-3); `ocelot.json` kısmı `integra
 - `TenantResolutionMiddleware`:
   - `supplier_user` için izin listesi: yalnız `/api/supplier-performance/portal/*` ve `/api/supplier-auth/*`; başka her yolda
     403 "Forbidden Actor". Bugün `tenant_user` dışı her aktör kiracı uçlarında 403 alır — portal dahil
-    (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs:229-235`), bu yüzden izin listesi zorunludur.
+    (`gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs:229-236`), bu yüzden izin listesi zorunludur.
   - `/api/supplier-auth/login`, `/mfa/verify`, `/mfa/resend`, `/select`, `/refresh-token` kamu uçları listesine eklenir
     (emsal `IsPublicEndpoint`, `TenantResolutionMiddleware.cs:438-449`); kiracı çözümü kiracı kapısıyla aynı (host ya da `X-Tenant-Id`).
   - **F4 sertleştirmesi:** üç dal da `!string.IsNullOrWhiteSpace(actorType) &&` ile başlıyor — `actor_type` claim'i olmayan imzalı
-    token kiracı kullanıcısı gibi geçer: kişiselleştirme `:146-150`, servis kararlı başlık çatışması `:185-190`, genel kiracı ucu
-    `:229-235`. DL-3'te claim yoksa 403. **Bütün kiracı uçlarını etkiler** — regresyon testi zorunlu (AC-22).
+    token kiracı kullanıcısı gibi geçer: kişiselleştirme `:147-151`, servis kararlı başlık çatışması `:186-191`, genel kiracı ucu
+    `:229-236` (r2, F-10: satır atıfları HEAD `70cb6ca01`'de yeniden ölçüldü). DL-3'te claim yoksa 403. **Bütün kiracı uçlarını
+    etkiler** — regresyon testi zorunlu (AC-22).
+  - **Yalnız kimliği doğrulanmış istek (r2, F-1):** `actorType` kimliği doğrulanmamış `context.User`'dan da `null` döner
+    (`TenantResolutionMiddleware.cs:69`, `ReadActorType(context.User)`); kişiselleştirme ve servis kararlı dallar kamu uçlarını
+    dışarıda bırakmaz. Bu yüzden yeni kural `context.User.Identity?.IsAuthenticated == true` **ve** claim yok → 403 biçimindedir.
+    Tokensız istek ve süresi dolmuş / reddedilmiş token'la gelen istek bugünkü davranışını korur (kamu uçlarında geçer; korumalı
+    uçta 401 — 403 değil), böylece istemcinin 401'e bağlı sessiz yenilemesi bozulmaz. Süresi dolmuş token'ın Gateway kimlik
+    doğrulayıcısındaki davranışı (`GatewayJwtAuthenticationHandler`) DL-3 başında ölçülür ve AC-22 testine sabitlenir.
   - `tenant_user` token'ı portal yoluna gateway'den geçer; ret MOD-0148'in bildirdiği kodlarla serviste verilir (MOD-0148 §0.0).
 
 ## 16. Acceptance Criteria
@@ -472,9 +536,14 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
   aynı e-posta başka kiracıda ayrı hesaptır. Sabotaj: tedarikçi olmayan hesabı bağlamaya izin vermek → test kırmızı.
 - [ ] AC-7 (zorunlu) — Kaldır = soft delete: `IsDeleted = true`, `DeletedAt`, `Status = Revoked`, `Revision + 1`, gerekçe zorunlu;
   kayıt listeden düşer, geçmişi okunur; fiziksel silme yok. Sabotaj: repository'de `DeleteOneAsync` kullanmak → test kırmızı.
-- [ ] AC-8 (zorunlu) — Kod düzelt (M2): yeni uygunluk okuması yapılır, cevabın kanonik kodu saklanır, `Revision + 1`, gerekçe
-  zorunlu; `expectedRevision` eski → 409; kanonik kod aynı → 422 `SUPPLIER_BINDING_CODE_UNCHANGED`. Sabotaj: düzeltmede
-  `Revision` artışını kaldırmak → test kırmızı.
+- [ ] AC-8 (zorunlu) — Kod düzelt (M2): yeni uygunluk okuması yapılır, AC-27'nin üç koşulu yeniden sınanır, cevabın kanonik kodu
+  saklanır, `Revision + 1`, gerekçe zorunlu; `expectedRevision` eski → 409; kanonik kod aynı → 422 `SUPPLIER_BINDING_CODE_UNCHANGED`.
+  Sabotaj: düzeltmede `Revision` artışını kaldırmak → test kırmızı.
+- [ ] AC-27 (zorunlu) — Onay ve satın alma denetimi (sahip, r2 F-5): `eligibleForTransactions = true` olsa da `onboardingStatus`
+  `Approved` değilse (`Draft`, `InReview`, `Rejected`, `null`) → 422 `SUPPLIER_NOT_ELIGIBLE` `details.reason = ONBOARDING_NOT_APPROVED`;
+  `purchasingEnabled` `true` değilse (`false`, `null`) → 422 `details.reason = PURCHASING_DISABLED`; her iki dalda sıfır yazma; üçü
+  birden doğruysa bağ kurulur. Kur ve kod düzelt komutlarının ikisi de sınanır. Sabotaj: uygunluk denetimini yalnız
+  `eligibleForTransactions`'a indirmek (onboarding ya da satın alma koşulunu silmek) → `Rejected` / `purchasingEnabled = false` testi kırmızı.
 - [ ] AC-9 (zorunlu) — Denetim K2: üç komutun her biri iş yazımından önce deneme satırı yazar; deneme yazılamazsa 503, iş verisi
   yok; iş yazımı ve sonuç satırı aynı Mongo işlemindedir; geçmiş ucu bağın satırlarını sırayla döner ve sonuçsuz denemeyi
   "sonuçlanmadı" gösterir; defterde yeni iz satırı, `PinnedCounts` değişmez. Sabotaj: yazıcının hatasını işleyicide yutmak ya da
@@ -490,10 +559,14 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
   parola tek başına token vermez. Sabotaj: tedarikçi giriş işleyicisinde kiracı ayarına (`LoginCommandHandler.cs:151` deseni)
   bağlanmak → `MfaRequired = false` testi kırmızı.
 - [ ] AC-12 (zorunlu) — Token: `actor_type = supplier_user`; `supplier_id`, `legal_entity_id`, `binding_id`, `binding_rev`,
-  `tenant_id`, `amr` var; `exp − nbf = 900 sn`; `permission` claim kümesi tam olarak iki portal anahtarı; rol claim'i yok. Sabotaj:
-  ömrü `AccessTokenExpirationMinutes`'ten (120) okumak ya da kiracı izinlerini eklemek → test kırmızı.
-- [ ] AC-13 (zorunlu) — Oturum mutlak 8 saat: art arda yenilemeler ilk girişin bitişini aşmaz; 8 saatten sonra yenileme 401
-  `SUPPLIER_SESSION_EXPIRED`. Sabotaj: yeni yenileme anahtarının bitişini `UtcNow + 8 sa` yapmak (kayan pencere) → test kırmızı.
+  `tenant_id`, `amr` var; `exp = min(nbf + 900 sn, oturum sonu)` — oturumun ilk 7 sa 45 dk'sında `exp − nbf = 900 sn`, sonrasında
+  `exp = oturum sonu` (r2, F-2); `permission` claim kümesi tam olarak iki portal anahtarı; rol claim'i yok. Sabotaj: ömrü
+  `AccessTokenExpirationMinutes`'ten (120) okumak ya da kiracı izinlerini eklemek → test kırmızı.
+- [ ] AC-13 (zorunlu) — Oturum mutlak 8 saat (r2, F-2, F-11): art arda yenilemeler ilk girişin bitişini aşmaz; **7 sa 50 dk'da
+  yenilemede** yeni erişim token'ının `exp`'i tam oturum sonudur (ömür 10 dk, 15 değil) ve yeni yenileme anahtarının bitişi hâlâ ilk
+  girişe göre 8 sa'dir; 8 saatten sonra yenileme 401 `SUPPLIER_SESSION_EXPIRED`. Sabotaj 1: yeni yenileme anahtarının bitişini
+  `UtcNow + 8 sa` yapmak (kayan pencere) ya da platform emsalindeki `Math.Max(1, …)` gün tabanını kopyalamak → 7 sa 50 dk testi
+  kırmızı. Sabotaj 2: son yenilemede oturum sonu tavanını kaldırmak (`exp = nbf + 15 dk`) → 7 sa 50 dk testinin `exp` beyanı kırmızı.
 - [ ] AC-14 (zorunlu) — Yenileme bağı yeniden okur: kaldırılmış bağ → 401 + oturum ailesi iptal; kod düzeltilmiş bağ → yeni token
   güncel `binding_rev` ve `supplier_id` taşır. Sabotaj: yenilemede bağ okumasını atlayıp eski claim'leri kopyalamak → test kırmızı.
 - [ ] AC-15 (zorunlu) — Kapı ayrımı: tedarikçi hesabı kiracı kapısında (giriş, MFA doğrulama, yenileme, zorunlu parola değişimi)
@@ -519,10 +592,13 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 - [ ] AC-21 (zorunlu) — `supplier_user` token'ı `/api/supplier-performance/portal/*` ve `/api/supplier-auth/*` dışında her yolda
   (ör. `/api/suppliers`, `/api/users`, `/api/inventory/...`) gateway'de 403 "Forbidden Actor"; izinli iki önekte servise iletilir.
   Sabotaj: izin listesi denetimini kaldırmak → portal dışı yol testi kırmızı.
-- [ ] AC-22 (zorunlu) — F4: `actor_type` claim'i olmayan imzalı token kişiselleştirme, servis kararlı ve genel kiracı uçlarında
-  403; regresyon: `tenant_user` token'ıyla örnek kiracı rotaları (en az Auth, Procurement, SupplyChain, Inventory, MDM birer uç) ve
-  platform token'ıyla platform uçları önceki davranışla aynı. Sabotaj: `TenantResolutionMiddleware.cs`'te
-  `!string.IsNullOrWhiteSpace(actorType) &&` kısa devresini geri koymak → claim'siz token testi kırmızı.
+- [ ] AC-22 (zorunlu) — F4: `actor_type` claim'i olmayan, **kimliği doğrulanmış** imzalı token kişiselleştirme, servis kararlı ve
+  genel kiracı uçlarında 403. Kimliği doğrulanmamış istekler bugünkü davranışı korur (r2, F-1): **tokensız** istek kamu ucunda
+  (ör. `/api/tenant-auth/login`) geçer, korumalı kiracı ucunda 401 (403 değil); **süresi dolmuş** token'la korumalı uç 401 (403 değil)
+  ve `/api/auth/refresh-token` geçer. Regresyon: `tenant_user` token'ıyla örnek kiracı rotaları (en az Auth, Procurement,
+  SupplyChain, Inventory, MDM birer uç) ve platform token'ıyla platform uçları önceki davranışla aynı. Sabotaj 1:
+  `TenantResolutionMiddleware.cs`'te `!string.IsNullOrWhiteSpace(actorType) &&` kısa devresini geri koymak → claim'siz token testi
+  kırmızı. Sabotaj 2: yeni kuraldan `IsAuthenticated` koşulunu kaldırmak → tokensız ve süresi dolmuş istek testleri kırmızı (403 döner).
 - [ ] AC-23 (zorunlu) — `ocelot.json`'da `/api/supplier-auth/{everything}` → 5056 ve `/api/supplier-performance/portal/{everything}`
   → 5066 rotaları OPTIONS dahil var; gateway rota testi her iki öneki doğru servise iletir. Değişikliği `integration-agent` yapar.
   Sabotaj: portal rotasını kaldırmak → rota testi kırmızı.
@@ -548,21 +624,22 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 | AC-6 | `SupplierBindings/SupplierAccountEmailRulesTests` | işleyici + gerçek indeks | sabotaj: tedarikçi olmayan hesap bağlanabilir |
 | AC-7 | `SupplierBindings/RevokeIsSoftDeleteTests` | repository + gerçek Mongo | sabotaj: `DeleteOneAsync` ile fiziksel silme |
 | AC-8 | `SupplierBindings/CorrectCodeTests` | işleyici | sabotaj: `Revision` artışı kaldırılır |
+| AC-27 | `SupplierBindings/BindRequiresApprovedAndPurchasingTests` (kur + düzelt; `Draft`, `InReview`, `Rejected`, `null`; `purchasingEnabled` `false` / `null`) | işleyici + sahte uygunluk istemcisi (sözleşme 1.3.0 örnek gövdeleri) | sabotaj: denetim yalnız `eligibleForTransactions`'a indirilir |
 | AC-9 | `SupplierBindings/SupplierAccessAuditWriterTests`, `SupplierBindingHistoryHttpTests`, `AuditTrailStandardTests` | yazıcı + arıza enjeksiyonu + mimari test | sabotaj: yazıcı hatası yutulur / sonuç satırı işlem dışı |
 | AC-10 | `SupplierBindings/DriftQueryTests` | işleyici | sabotaj: hata durumunda boş liste |
 | AC-26 | `SupplierBindings/AssignRoleRefusesSupplierAccountTests` | işleyici (XMC-001) | sabotaj: tedarikçi hesabı denetimi kaldırılır |
 | AC-11 | `SupplierAuth/SupplierLoginAlwaysRequiresOtpTests` | işleyici, `MfaRequired` her iki değer | sabotaj: kiracı `MfaRequired` ayarına bağlanır |
-| AC-12 | `SupplierAuth/SupplierTokenClaimsTests` | TokenService + JWT çözümü | sabotaj: ömür 120 dk anahtarından / kiracı izinleri eklenir |
-| AC-13 | `SupplierAuth/SupplierSessionAbsoluteLifetimeTests` | işleyici + sahte saat | sabotaj: kayan pencere (`UtcNow + 8 sa`) |
+| AC-12 | `SupplierAuth/SupplierTokenClaimsTests` (oturumun başında ve son 15 dk'sında) | TokenService + JWT çözümü | sabotaj: ömür 120 dk anahtarından / kiracı izinleri eklenir |
+| AC-13 | `SupplierAuth/SupplierSessionAbsoluteLifetimeTests` (7 sa 50 dk ve 8 sa + 1 sn vakaları) | işleyici + sahte saat + gerçek Mongo (döndürmede oturum alanları) | sabotaj: kayan pencere (`UtcNow + 8 sa`) / `Math.Max(1, …)` gün tabanı / son yenilemede oturum sonu tavanı kaldırılır |
 | AC-14 | `SupplierAuth/SupplierRefreshRereadsBindingTests` | işleyici | sabotaj: yenilemede bağ okuması atlanır |
 | AC-15 | `SupplierAuth/DoorSeparationHttpTests` (kiracı kapısının dört işleyicisi + `/api/auth/*`) | HTTP | sabotaj: kiracı kapısındaki tedarikçi reddi kaldırılır |
 | AC-16 | `SupplierAuth/SupplierLoginUniformRefusalTests` | HTTP + süre bandı | sabotaj: bağ yokken ayrı hata kodu |
-| AC-17 | `SupplierAuth/SupplierBindingSelectionTests` | HTTP | sabotaj: bilet tek kullanımlık işaretlenmez |
+| AC-17 | `SupplierAuth/SupplierBindingSelectionTests` (eşzamanlı iki seçim, TTL indeksi var) | HTTP + gerçek Mongo | sabotaj: bilet tek kullanımlık işaretlenmez |
 | AC-18 | `SupplierAuth/SupplierLogoutAndMeTests` | HTTP | sabotaj: yalnız sunulan anahtar iptal edilir |
 | AC-19 | `SupplierAuth/BindingRevisionServiceEndpointTests` | HTTP + Platform biçimli servis token'ı | sabotaj: uç kullanıcı şemasına açılır |
 | AC-20 | `SupplierAuth/SupplierSessionAuditFailClosedTests` | arıza enjeksiyonu | sabotaj: denetim yazımı token üretiminden sonraya alınır |
 | AC-21 | Gateway `SupplierUserAllowListTests` | gateway middleware testi | sabotaj: izin listesi denetimi kaldırılır |
-| AC-22 | Gateway `MissingActorTypeRefusedTests` + `TenantRouteRegressionTests` | gateway middleware testi | sabotaj: `IsNullOrWhiteSpace` kısa devresi geri konur |
+| AC-22 | Gateway `MissingActorTypeRefusedTests` + `UnauthenticatedRequestUnchangedTests` (tokensız, süresi dolmuş) + `TenantRouteRegressionTests` | gateway middleware testi | sabotaj: `IsNullOrWhiteSpace` kısa devresi geri konur / `IsAuthenticated` koşulu kaldırılır |
 | AC-23 | Gateway `SupplierRoutesOcelotTests` | rota testi | sabotaj: portal rotası kaldırılır |
 | AC-24 | `verify_datatable_page.py`, `quality-gate-datatable` | doğrulayıcı | sabotaj: `Layout` satırı silinir |
 | AC-25 | RESX parite testi, vitest (UAS-001), sayfa yardımı testi | frontend | sabotaj: bir dilden bir anahtar silinir |
@@ -576,7 +653,8 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 
 ## 18. Ready-for-dev Checklist
 
-- [ ] S0 kapandı (Bölüm 0.4): D1–D8 yeniden onayı karar dosyasında; SQ-1, SQ-3, SQ-4, SQ-7 cevaplı
+- [ ] S0 kapandı (Bölüm 0.4): D1–D8 yeniden onayı karar dosyasında; SQ-1, SQ-3, SQ-4, SQ-7, SQ-11, SQ-12, SQ-13 cevaplı
+- [ ] CT-APR-02 r2 teyidi: F-1…F-12'nin bu sürümde kapanışı (r2 notu, başlık altı)
 - [ ] XMC-001: Auth (Ali) ve Gateway (MOD-0032 sahibi / `integration-agent`) izinleri yazılı
 - [ ] Control Tower defter kararı: yeni Auth denetim izi (Bölüm 21) — DL-1 kodundan önce
 - [ ] MOD-0140 DL-3 main'de + Gateway üzerinden canlı kanıt (SQ-9) — DL-1 kodundan önce
@@ -625,7 +703,13 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
   (`execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md:457`, S-5 `:714`).
 - **Sahip kararı kaynağı:** `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md`; Natig'in isteği
   `docs/roadmap/plans/mvp6-mod0147-v1-scorecard-01/DC03-BINDING-CANONICAL-CODE-REQUEST.md` (M2 ile kabul).
-- Ölçümler HEAD `e8128c224` üzerinde kod okumasıdır; çalışma testi yapılmadı.
+- Ölçümler HEAD `e8128c224` (r1) ve `70cb6ca01` (r2) üzerinde kod okumasıdır; çalışma testi yapılmadı. İncelemeye göre Auth ve
+  Gateway üretim kodu iki taban arasında değişmedi; r2'de Gateway satırları, `MfaChallenge.cs`, `RefreshToken.cs`,
+  `IRefreshTokenRepository.cs`, Auth `DependencyInjection.cs:42-43`, `ServiceIdentityTokenIssuer.cs:49`, `AuthController.cs:72-84`,
+  `CreateUserCommandHandler.cs` ve `supplier.openapi.yaml:319`, `:362-372` yeniden ölçüldü.
+- **r2 bulgu → yer eşlemesi:** F-1 → Bölüm 15, AC-22; F-2 → Bölüm 0.1 (D4), 8, 14, AC-12, AC-13; F-3 → Bölüm 3, 4, 5; F-4 → SQ-11;
+  F-5 → Bölüm 0.1 (D6), 12, 13, AC-27, AC-8; F-6 → SQ-12; F-7 → SQ-13; F-8 → SQ-14; F-9 → SQ-15; F-10 → Bölüm 15; F-11 → AC-13;
+  F-12 → künye.
 
 ## 20. Follow-up Items
 
@@ -672,8 +756,8 @@ borç yok.
 
 | Dilim | Başlamadan önce |
 |---|---|
-| DL-1 | S0 kapalı (0.4); XMC-001 Auth izni; Control Tower defter kararı (Bölüm 21); **MOD-0140 DL-3 main'de + Gateway canlı kanıtı** (SQ-9); CT-APR-02 + CT-APR-01 |
-| DL-2 | DL-1 kabul; SQ-2 (challenge kapısı), SQ-3 (audience), SQ-7 (izin verme yolu); MOD-0148 anahtarları Auth kataloğunda |
+| DL-1 | S0 kapalı (0.4; SQ-12 ve SQ-13 dahil); XMC-001 Auth izni; Control Tower defter kararı (Bölüm 21); **MOD-0140 DL-3 main'de + Gateway canlı kanıtı** (SQ-9); CT-APR-02 + CT-APR-01 |
+| DL-2 | DL-1 kabul; SQ-2 (challenge kapısı), SQ-3 (audience), SQ-7 (izin verme yolu), SQ-14 (katalog tek yazarı), SQ-15 (son bağdan sonra hesap); MOD-0148 anahtarları Auth kataloğunda; SQ-11 cevabı MOD-0148 paketine kapı olarak yazılmış (D3 tüketicisi) |
 | DL-3 | DL-2 kabul; Gateway izni (MOD-0032 sahibi); `integration-agent` görevi; regresyon rota listesi onaylı |
 | DL-4 | DL-1 kabul; Web ekran sahibi izni; isteğe bağlı — sahip isterse |
 
@@ -693,12 +777,34 @@ borç yok.
   `AccountKind` bekçisi) için izin.
 - **SQ-6 — `auth.supplier-bindings.read` ayrı anahtar mı** (öneri: evet, yalnız okuma rolleri için), RCS-001 "görünen kod yok" önerisi
   ve merkezin kod düzeltmesini kiracıda hangi hesapla yürüteceği.
+- **SQ-12 — yalnız `[Authorize]` taşıyan uçlar (r2, F-6; S0'ı bekletir):** taslak koşulu "`actor_type` denetimi Gateway'de **ve her
+  serviste**" idi; paket bunu Gateway izin listesi + token'ın tam izin kümesiyle karşılıyor. Yalnız `[Authorize]` taşıyan uçlar
+  servise doğrudan erişimde `supplier_user` token'ını kabul eder — ör. `POST /api/auth/change-password`
+  (`services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/AuthController.cs:72-84`); v1 iç ağda servis portları
+  erişilebilir. Karar: (a) bu uçların envanteri çıkarılır ve her biri AC-15 kapsamına (tedarikçi token'ı reddi) eklenir; (b) daraltma
+  yazılı karar olarak kabul edilir ve servis portları ağda kapatılır. Öneri (a) — en azından Auth uçları için. Sahip: Ali.
+- **SQ-13 — kota, davet bağlantısı, parola belirleme sayfası (r2, F-7; S0'ı bekletir):** (1) tedarikçi hesabı kiracının kullanıcı
+  kotasına sayılır mı (BL-459; `CreateUserCommandHandler.cs` `IUserQuotaClient`, kota aşımı reddi)? Öneri: sayılmaz, ayrı sayım —
+  ama karar sahibindir. (2) Davet bağlantısı hangi yoldan gider (Platform bildirim akışı korunan yol)? (3) v1'de tedarikçi UI'ı
+  yokken parolayı hangi sayfada belirler (mevcut anonim `/api/users/set-password` + kiracı Web sayfası mı, ayrı sayfa mı)? AC-6 bu
+  cevaplara göre kesinleşir. Sahip: Ali.
+- **SQ-15 — son bağ kaldırılınca hesap (r2, F-9):** tedarikçi hesabı kapatılır mı, pasifleştirilir mi, ne kadar saklanır (kişisel
+  veri)? Öneri: son aktif bağ kaldırılınca hesap pasif (giriş zaten bağ yokken genel 401), kişisel veri saklama süresi kiracının
+  kullanıcı saklama kuralını izler. DL-2'den önce. Sahip: Ali.
 
 **Natig'e (MOD-0148 sahibi)**
 - **SQ-7 — izin verme yolu:** `supplier_user` token'ına `.read` / `.submit` sabit küme olarak mı (öneri) yoksa kiracıda tohumlanan bir
   rolle mi girsin?
 - **SQ-8 — iki adımlı doğrulama claim'i:** portal `amr` claim'ini yeniden denetler mi, yoksa Auth'a mı güvenir (MOD-0148 §0.0 bu
   pakete bırakıyor)?
+- **SQ-11 — D3'ün tüketicisi (r2, F-4; S0'ı bekletir):** D3 "her yazmada Auth'tan güncel `binding_rev` sor" diyor; MOD-0148 paketinde
+  `binding_rev` karşılaştırması ya da S2S revizyon ucu çağrısı yok. Yapılmazsa bağ kaldırma yazmalarda anında değil, erişim
+  token'ının ömrü sonunda (en çok 15 dk) etkili olur. Soru: MOD-0148 `createOwnPortalSubmission` ve `submitOwnPortalSubmission`
+  öncesinde AC-19 ucunu çağırıp `binding_rev` uyuşmazlığında 403, Auth erişilemezse 503 (D8) dönecek mi — evetse MOD-0148 paketine
+  kapı olarak yazılır; hayırsa D3 "yazmada token ömrü içinde" diye yeniden yazılır. Sahip: Natig.
+- **SQ-14 — portal izin anahtarlarının kataloğa tek yazarı (r2, F-8):** `supplychain.supplier-portal.read` / `.submit` Auth kataloğuna
+  hangi tek yazarla (MOD-0148 manifesti / §14 "permission/composition single writer") ve ne zaman girer? DL-2 başında anahtarlar
+  katalogda olmalıdır. Sahip: Natig.
 
 **Cihan'a (MOD-0140 / Procurement)**
 - **SQ-9 — DL-3 main + canlı kanıt:** uygunluk ucu ne zaman main'de; Gateway üzerinden gerçek 200, gerçek 404 `UNKNOWN_SUPPLIER` ve
