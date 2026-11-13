@@ -32,3 +32,6 @@
   istemez») CT'nin sahibe sunduğu tablodaki yanlış özetti (B'yi anlatıyordu). Sahip A'yı teyit etti: elle yazılan kod oluşturmada da gerekçe
   ister (RCS-001 §2), her değişiklikte de. r15 (c4499f37) A ile yazılı; paket değişmez. r15 18.1'deki "Q-9 kayıt metni düzeltmesi" işi bu
   satırla kapandı.
+- **CT kararı — MOD-0040-FU02 r15 inceleme F-1 (kilit filtresi):** LockIfUnlockedAsync filtresine ön okunan kod eklenir (Code eşit);
+  eşleşmezse satır yeniden okunur ve 409 RECORD_CODE_CONFLICT döner — çağıranın görmediği yeni kod kilitlenmez. DL-3 WP'si bunu adıyla
+  taşır; AC-70 / AC-72 metni paketin bir sonraki revizyonunda hizalanır (r15 onayı geçersiz olmasın diye).
