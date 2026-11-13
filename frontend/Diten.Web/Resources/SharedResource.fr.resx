@@ -1274,4 +1274,10 @@
   <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
     <value>Preuves d'inventaire</value>
   </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>Vagues</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>Paramètres des vagues</value>
+  </data>
 </root>

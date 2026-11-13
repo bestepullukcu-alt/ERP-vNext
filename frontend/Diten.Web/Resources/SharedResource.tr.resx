@@ -1332,4 +1332,10 @@
   <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
     <value>Sayım Kanıtları</value>
   </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>Dalgalar</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>Dalga Ayarları</value>
+  </data>
 </root>
