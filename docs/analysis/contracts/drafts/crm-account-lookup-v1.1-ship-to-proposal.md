@@ -79,12 +79,12 @@
 | `addresses[].countryRef` | string \| null | kırpılmış; boşsa null. Küme: Reference Data `country` |
 | `addresses[].cityRef` | string \| null | kırpılmış; boşsa null. Küme: `city` |
 | `addresses[].districtRef` | string \| null | kırpılmış; boşsa null. Küme: `district` |
-| `addresses[].postalCode` | string \| null | `primary` için bugün her zaman null (hesapta alan yok, K-16); `delivery` adreste dolu olabilir |
+| `addresses[].postalCode` | string \| null | kırpılmış; boşsa null. `primary`: `Account.PostalCode` (K-16 ile eklenecek alan; eklenene kadar null). `delivery`: adresin posta kodu |
 | `addresses[].addressLine` | string \| null | kırpılmış; boşsa null; kesilmez |
 | `contractVersion` | string | `crm-account-lookup/1.1` |
 
-- **`primary` öğesi:** `Account.CountryRef`, `CityRef`, `DistrictRef`, `AddressLine`'dan kurulur. Dört alan da boşsa
-  `primary` öğesi **listeye girmez**.
+- **`primary` öğesi:** `Account.CountryRef`, `CityRef`, `DistrictRef`, `AddressLine` (K-16 sonrası `PostalCode`)'dan
+  kurulur. Bu alanların hepsi boşsa `primary` öğesi **listeye girmez**.
 - **İlk dilim (DL-3):** hesapta yalnız ana adres olduğundan liste en çok bir öğe (`primary`, `isDefault = true`) taşır.
   Ek teslimat adresleri K-18 ile geldiğinde liste büyür; gövde biçimi değişmez (yeni sürüm gerekmez).
 - **Silinmiş / pasif ek adres** listede yer almaz.
@@ -193,10 +193,10 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
 | K-13 | Anahtar `crm.account-ship-to.read` | commercial-suite (Beste) | **KARAR 2026-11-13** |
 | K-14 | Aktif olmayan hesaba sevkiyat | tüketici (MOD-0178 / MOD-0183) | AÇIK — CRM durumu verir, kural tüketicide |
 | K-15 | Görünen adı kim çözer | commercial-suite | ÖNERİ: tüketici, Reference Data'dan (dile bağlı, kaynak Reference Data) |
-| K-16 | Posta kodu | commercial-suite + tüketici | AÇIK — hesapta alan yok; gerekiyorsa ayrı CRM işi (form + 7 dil + veri), sonra 1.x ekleme |
+| K-16 | Ana adreste posta kodu | commercial-suite (Beste) | **KARAR 2026-11-13: eklenecek.** `Account.PostalCode` K-18 FU'su içinde (veri + hesap formu + 7 dil); U-4 `primary.postalCode` o zamana kadar null, sonra dolu — biçim değişmez |
 | K-17 | Kod kümesi doğrulaması (yazmada doğrulama yok) | commercial-suite | AÇIK — U-4 saklananı döner; yazma doğrulaması ayrı iş |
 | K-9 | MVP-6 adres yüzeyi | commercial-suite | Bu ekle kapanır (donmada); MVP-6 `GET /api/crm/accounts/{id}`'den U-4'e geçer |
-| K-18 | Çoklu teslimat adresi | commercial-suite (Beste) | **KARAR 2026-11-13: yapılacak.** Hesaba ek teslimat adresleri (ad, ülke / şehir / ilçe, posta kodu, adres satırı, varsayılan, pasif) — ayrı MOD-0149 FU (veri + hesap ekranı + 7 dil + yazmada Reference Data doğrulaması, K-17'yi yeni adreslerde kapatır). Sözleşme biçimi §2.2 bunu bugünden taşır |
+| K-18 | Çoklu teslimat adresi | commercial-suite (Beste) | **KARAR 2026-11-13: yapılacak.** Hesaba ek teslimat adresleri (ad, ülke / şehir / ilçe, posta kodu, adres satırı, varsayılan, pasif) — ayrı MOD-0149 FU (veri + hesap ekranı + 7 dil + yazmada Reference Data doğrulaması, K-17'yi yeni adreslerde kapatır). Ekran: mockup yok; hesap detayının mevcut sekme yapısında (Work Center sekme kartı) standart liste + form (Beste 2026-11-13). Sözleşme biçimi §2.2 bunu bugünden taşır |
 
 ## 9. Değişiklik geçmişi
 
@@ -204,3 +204,5 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
   commercial-suite.
 - 1.1.0 taslak r2 (2026-11-13) — K-18 (çoklu teslimat adresi, Beste): gövde tek `address` yerine `addresses[]` +
   `defaultAddressId`; ana adres `addressId = "primary"`; `postalCode` öğe alanı (ana adreste null).
+- 1.1.0 taslak r3 (2026-11-13) — K-16 kararı: ana adrese `Account.PostalCode` eklenecek (K-18 FU'su içinde);
+  K-18 ekranı mockup'sız, mevcut sekme yapısında standart liste + form.
