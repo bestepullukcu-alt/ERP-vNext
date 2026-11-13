@@ -58,14 +58,19 @@ public sealed class CrmManifestAccountLookupPermissionTests
         Assert.Empty(onActions);
     }
 
-    // (c)
+    // (c) SYNC S0 (CT decision 2026-11-13, WP-CRM-SYNC-S0B K-1): the boundary is Diten.CrmService's TWO namespaces, a closed
+    // set — `crm.*` and `commercial.*` (PKS-001, .antigravity/rules/permission-key-standard.md:101: `commercial.*` is
+    // CrmService's, distinct from `crm.*`; user decision 2026-10-19, WP-VW-W6 K-O2). Any other prefix is another service's.
+    private static readonly string[] CrmServiceNamespaces = ["crm.", "commercial."];
+
     [Fact]
-    public void Every_api_permission_is_crm_prefixed_and_listed_once()
+    public void Every_api_permission_is_in_a_crm_service_namespace_and_listed_once()
     {
         var keys = (Manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).ToList();
 
         Assert.NotEmpty(keys);
-        Assert.All(keys, k => Assert.StartsWith("crm.", k, StringComparison.Ordinal));
+        Assert.All(keys, k => Assert.True(CrmServiceNamespaces.Any(ns => k.StartsWith(ns, StringComparison.Ordinal)),
+            $"'{k}' is outside Diten.CrmService's namespaces ({string.Join(" / ", CrmServiceNamespaces)}; PKS-001)."));
         Assert.Equal(keys.Count, keys.Distinct(StringComparer.OrdinalIgnoreCase).Count());
     }
 
