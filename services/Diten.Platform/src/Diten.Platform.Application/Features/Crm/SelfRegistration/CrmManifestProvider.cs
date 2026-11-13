@@ -77,9 +77,15 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             SortOrder: 60,
             Icon: "bx-buildings",
             IsBaseline: false, // HARD: CRM is a licensed module — tenant entitlement required (never entitlement-free).
+            // SYNC 2026-11-09 (S0) — ONE list: main's WP-0149-AR-DL1-FU01 key and the test branch's MOD-0156 key each arrived as
+            // their own ApiPermissions argument (no textual conflict, CS1740 after the merge); both entries are kept as they were.
             ApiPermissions:
             [
-                new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant")
+                new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant"),
+                // WP-VW-W6 W6-BE-b + W6-WEB-b — the MOD-0156 key without a screen yet (the FX import endpoint; screen D enters and
+                // corrects rates one by one). The other fifteen MOD-0156 keys are the COMMERCIALPRICING page and its actions below,
+                // the MOD-0168 keys the PREORDERS / PREORDERSETTINGS pages. CrmService enforces each one with [HasPermission].
+                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ],
             Pages:
             [
@@ -376,13 +382,6 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 PreOrderEvent(PreOrderCancelledEvent, "NotificationEvent_CommercialPreOrderCancelled", "Pre-order cancelled",
                     "Sent to the representative and the line manager when a pre-order is cancelled, and to the depot and the pharmacy only when it had been transmitted.",
                     "Warning", ["reason"], [])
-            ],
-            // WP-VW-W6 W6-BE-b + W6-WEB-b — the MOD-0156 key without a screen yet (the FX import endpoint; screen D enters and
-            // corrects rates one by one). The other fifteen MOD-0156 keys are the COMMERCIALPRICING page and its actions above,
-            // the MOD-0168 keys the PREORDERS / PREORDERSETTINGS pages. CrmService enforces each one with [HasPermission].
-            ApiPermissions:
-            [
-                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ]);
 
     // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the
