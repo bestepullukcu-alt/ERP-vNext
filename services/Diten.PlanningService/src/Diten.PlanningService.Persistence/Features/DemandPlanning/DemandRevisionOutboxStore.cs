@@ -10,7 +10,7 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // This adapter only claims and delivers already committed records.
 public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context) : IEventOutboxStore
 {
-    private const string ClaimIndexName = "ix_mod0188_outbox_claim";
+    private const string ClaimIndexName = "ix_mod0188_outbox_undispatched";
     private readonly IMongoCollection<DemandOutboxMessage> _outbox = context.Outbox;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
     private volatile bool _claimIndexReady;
@@ -59,11 +59,12 @@ public sealed class DemandRevisionOutboxStore(DemandPlanningMongoContext context
         try
         {
             if (_claimIndexReady) return;
-            // The worker must see all tenants. DispatchedAt narrows the queue;
-            // OccurredAt preserves the oldest-first claim order across statuses.
+            // The worker must see all tenants. The index narrows to unshipped records;
+            // OccurredAt remains the sort. Mongo stores DateTimeOffset as an array, so
+            // indexing both dates would reject a dispatched record (parallel arrays).
             var keys = Builders<DemandOutboxMessage>.IndexKeys;
             await _outbox.Indexes.CreateOneAsync(new CreateIndexModel<DemandOutboxMessage>(
-                keys.Ascending(x => x.DispatchedAt).Ascending(x => x.OccurredAt),
+                keys.Ascending(x => x.DispatchedAt),
                 new CreateIndexOptions { Name = ClaimIndexName }),
                 cancellationToken: cancellationToken);
             _claimIndexReady = true;
