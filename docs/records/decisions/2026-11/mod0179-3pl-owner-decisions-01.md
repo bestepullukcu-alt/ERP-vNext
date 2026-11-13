@@ -30,3 +30,10 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   uygulanır**; mockup v1 bu farklarla paketin girdisidir.
 
 - **2026-11-13 — T-5 izni verildi (Ali, MDM sahibi; kaynak: Beste'nin sohbete aktarımı "MOD-0179 Ali MDM iznini verdi"):** 3PL ortağı MDM'de iş ortağı olarak tanımlanır; MDM tarafındaki değişikliği merkez geliştirir (XMC-001 izni MDM sahibinden alındı). Kapsam ve dosyalar MOD-0179 paketinde adıyla yazılır; MDM'de yalnız eklemeli değişiklik. Sırada MOD-0179 paketi.
+- **2026-11-13 — Paket r1 soruları Q-1…Q-9 = öneri kabul (Beste, "hepsi öneri gibi"; kaynak: sahip sohbet cevabı; paket
+  `execution/domains/supply-chain-execution/module-packs/MOD-0179-3pl-integration.md` r1 `:1080-1089`):** Q-1 izin alt ad alanı
+  `warehouse.third-party-logistics.*` (`.antigravity` PKS-001 satırı onaydan önce); Q-2 EDI taşıma v1 SFTP (AS2 FU-0179-AS2); Q-3 EDIFACT
+  INSDES, DESADV (iki yön), RECADV, INVRPT; X12 940, 943, 944, 945, 846; Q-4 v1'de "Düzeltme öner" düğmesi yok, "Çözüldü" yalnız gerekçeyle
+  (FU-0179-ADJUST); Q-5 rotalar `/Warehouse/ThirdParty*`; Q-6 varsayılan eşikler sevk onayı 120 dk, giriş onayı 240 dk, stok raporu 26 sa,
+  hata hedefi %1; Q-7 askıdayken bekletilenler işlenmez, önce etkinleştirilir; Q-8 giriş ön bildirimi v1 elle (FU-0179-AUTOADVICE); Q-9
+  3PL deposunda depo başına tek stoklanabilir lokasyon (MOD-0173-FU02 ile). Açık kalanlar: Q-10…Q-13 (Ali), Q-14…Q-17 (CT), Q-18, Q-19.
