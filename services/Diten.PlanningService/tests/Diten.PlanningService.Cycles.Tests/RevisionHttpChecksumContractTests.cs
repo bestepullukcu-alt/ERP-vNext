@@ -80,15 +80,30 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         using var manifestRequest = host.Request(path + "/manifest", tenant, company, actor);
         using var manifestResponse = await host.Client.SendAsync(manifestRequest);
         var manifest = await SuccessData(manifestResponse);
-        using var rowsRequest = host.Request(path + "/rows?pageSize=52", tenant, company, actor);
-        using var rowsResponse = await host.Client.SendAsync(rowsRequest);
-        var page = await SuccessData(rowsResponse);
-        var rows = page.GetProperty("items").EnumerateArray().Select(x => x.Clone()).ToArray();
-        Assert.Equal(52, rows.Length);
+        var rows = new List<JsonElement>();
+        string? cursor = null;
+        var pageCount = 0;
+        do
+        {
+            var suffix = cursor is null ? string.Empty : "&cursor=" + Uri.EscapeDataString(cursor);
+            using var rowsRequest = host.Request(path + "/rows?pageSize=17" + suffix,
+                tenant, company, actor);
+            using var rowsResponse = await host.Client.SendAsync(rowsRequest);
+            var page = await SuccessData(rowsResponse);
+            Assert.Equal(manifest.GetProperty("integrity").GetProperty("digest").GetString(),
+                page.GetProperty("integrity").GetProperty("digest").GetString());
+            rows.AddRange(page.GetProperty("items").EnumerateArray().Select(x => x.Clone()));
+            cursor = page.TryGetProperty("nextCursor", out var next) ? next.GetString() : null;
+            pageCount++;
+        } while (cursor is not null);
+        Assert.True(pageCount > 1);
+        Assert.Equal(52, rows.Count);
         Assert.Equal("MOD0188-CANONICAL-2/SHA-256",
             manifest.GetProperty("integrity").GetProperty("definitionId").GetString());
         Assert.Equal(manifest.GetProperty("integrity").GetProperty("digest").GetString(),
             HttpContractDigest(manifest, rows));
+        Assert.NotEqual(manifest.GetProperty("integrity").GetProperty("digest").GetString(),
+            HttpContractDigest(manifest, rows, tamperFirstQuantity: true));
     }
 
     // Contract-only encoder: reads public JSON, not Mongo documents or producer helpers.

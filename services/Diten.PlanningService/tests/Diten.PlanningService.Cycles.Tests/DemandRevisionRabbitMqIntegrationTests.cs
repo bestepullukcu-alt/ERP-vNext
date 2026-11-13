@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Channels;
 using Diten.BuildingBlocks.Eventing;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
@@ -12,12 +13,12 @@ namespace Diten.PlanningService.Cycles.Tests;
 [Collection(LiveRabbitMqCollection.Name)]
 public sealed partial class PublishedRevisionMongoIntegrationTests
 {
-    private sealed class DemandBrokerProbe(TaskCompletionSource<EventTransportMessage> received)
+    private sealed class DemandBrokerProbe(ChannelWriter<EventTransportMessage> received)
         : IConsumer<EventTransportMessage>
     {
         public Task Consume(ConsumeContext<EventTransportMessage> context)
         {
-            received.TrySetResult(context.Message);
+            received.TryWrite(context.Message);
             return Task.CompletedTask;
         }
     }
@@ -26,7 +27,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     public async Task RabbitMqOptIn_ConsumesCommittedOutboxEventAndMatchesMongoReceipt()
     {
         if (Environment.GetEnvironmentVariable("MOD0188_TEST_RABBITMQ_ENABLED") != "true")
-            return; // The CI planning-tests job enables this after its pinned broker is ready.
+            throw new InvalidOperationException("MOD0188_TEST_RABBITMQ_ENABLED_REQUIRED");
 
         var host = Environment.GetEnvironmentVariable("MOD0188_TEST_RABBITMQ_HOST")
             ?? throw new InvalidOperationException("MOD0188_TEST_RABBITMQ_HOST_REQUIRED");
@@ -37,8 +38,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         if (!ushort.TryParse(portText, out var port))
             throw new InvalidOperationException("Invalid broker test port.");
 
-        var signal = new TaskCompletionSource<EventTransportMessage>(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        var received = Channel.CreateUnbounded<EventTransportMessage>();
         var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
         {
             cfg.Host(host, port, "/", options =>
@@ -47,7 +47,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
                 options.Password("guest");
             });
             cfg.ReceiveEndpoint("mod0188-demand-broker-proof-" + Guid.NewGuid().ToString("N"),
-                endpoint => endpoint.Consumer(() => new DemandBrokerProbe(signal)));
+                endpoint => endpoint.Consumer(() => new DemandBrokerProbe(received.Writer)));
         });
         using var startupLimit = new CancellationTokenSource(TimeSpan.FromSeconds(12));
         try
@@ -61,45 +61,49 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
 
         try
         {
-            var (_, _, context) = Open(databaseName: "mod0188_broker_proof_tests");
+            var (drafts, published, context) = Open(
+                databaseName: "mod0188_broker_proof_tests", correlationId: Guid.NewGuid());
             await context.Outbox.DeleteManyAsync(Builders<DemandOutboxMessage>.Filter.Empty);
-            var eventId = Guid.NewGuid();
-            var correlationId = Guid.NewGuid();
             var tenantId = Guid.NewGuid();
             var companyId = Guid.NewGuid();
-            await context.Outbox.InsertOneAsync(new DemandOutboxMessage
-            {
-                EventId = eventId,
-                CorrelationId = correlationId,
-                TenantId = tenantId,
-                LegalEntityId = companyId,
-                RevisionId = Guid.NewGuid(),
-                EventType = "demand.revision.published.v2",
-                Payload = "{}",
-                OccurredAt = Now,
-                CreatedAt = Now
-            });
+            var creator = Guid.NewGuid();
+            var reviewer = Guid.NewGuid();
+            var first = Draft(tenantId, companyId, creator, FirstWeek);
+            var replacement = Draft(tenantId, companyId, creator, FirstWeek, quantity: 7m);
+            await Approve(drafts, first, creator, reviewer);
+            await Approve(drafts, replacement, creator, reviewer);
+            Assert.Equal(PublishOutcome.Published,
+                (await Publish(published, first, reviewer)).Outcome);
+            Assert.Equal(PublishOutcome.Published,
+                (await Publish(published, replacement, reviewer)).Outcome);
 
             var publisher = new DemandRevisionRabbitMqPublisher(bus);
             var processor = new EventOutboxPublisherProcessor(
                 new DemandRevisionOutboxStore(context), publisher,
-                new EventOutboxPublisherOptions(1, 3, TimeSpan.Zero,
+                new EventOutboxPublisherOptions(3, 3, TimeSpan.Zero,
                     TimeSpan.Zero, TimeSpan.FromMinutes(5)));
-            var delivery = Assert.Single(await processor.PublishPendingAsync());
-            Assert.Equal(EventOutboxPublishOutcome.Published, delivery.Outcome);
-            Assert.Equal(eventId, delivery.EventId);
-
-            var brokerMessage = await signal.Task.WaitAsync(TimeSpan.FromSeconds(15));
-            Assert.Equal(eventId, brokerMessage.EventId);
-            Assert.Equal(correlationId, brokerMessage.CorrelationId);
-            Assert.Equal(tenantId, brokerMessage.TenantId);
-            Assert.Equal("demand.revision.published.v2", brokerMessage.EventName);
-
-            var receipt = await context.Outbox.Find(x => x.EventId == brokerMessage.EventId)
-                .SingleAsync();
-            Assert.Equal(correlationId, receipt.CorrelationId);
-            Assert.Equal("Published", receipt.DeliveryState);
-            Assert.NotNull(receipt.DispatchedAt);
+            var deliveries = await processor.PublishPendingAsync();
+            Assert.Equal(3, deliveries.Count);
+            Assert.All(deliveries, x => Assert.Equal(EventOutboxPublishOutcome.Published, x.Outcome));
+            var brokerMessages = new List<EventTransportMessage>();
+            for (var index = 0; index < 3; index++)
+                brokerMessages.Add(await received.Reader.ReadAsync().AsTask()
+                    .WaitAsync(TimeSpan.FromSeconds(15)));
+            Assert.Equal(3, brokerMessages.Select(x => x.EventId).Distinct().Count());
+            Assert.Equal(2, brokerMessages.Count(x => x.EventName == "demand.revision.published.v2"));
+            Assert.Single(brokerMessages, x => x.EventName == "demand.revision.superseded.v2");
+            Assert.All(brokerMessages, x => Assert.Equal(tenantId, x.TenantId));
+            var receipts = await context.Outbox.Find(x => x.TenantId == tenantId &&
+                x.LegalEntityId == companyId).ToListAsync();
+            Assert.Equal(3, receipts.Count);
+            foreach (var message in brokerMessages)
+            {
+                var receipt = Assert.Single(receipts, x => x.EventId == message.EventId);
+                Assert.Equal(receipt.CorrelationId, message.CorrelationId);
+                Assert.Equal("Published", receipt.DeliveryState);
+                Assert.NotNull(receipt.DispatchedAt);
+                Assert.NotEqual("{}", receipt.Payload);
+            }
 
             // CI uploads this proof alongside its TRX only after the real consumer and Mongo receipt agree.
             var runnerTemp = Environment.GetEnvironmentVariable("RUNNER_TEMP");
@@ -110,12 +114,20 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
                 var proof = new
                 {
                     Broker = "RabbitMQ",
-                    BrokerEventId = brokerMessage.EventId,
-                    BrokerCorrelationId = brokerMessage.CorrelationId,
-                    OutboxEventId = receipt.EventId,
-                    OutboxCorrelationId = receipt.CorrelationId,
-                    OutboxDeliveryState = receipt.DeliveryState,
-                    OutboxDispatchedAt = receipt.DispatchedAt
+                    Events = brokerMessages.Select(message =>
+                    {
+                        var receipt = receipts.Single(x => x.EventId == message.EventId);
+                        return new
+                        {
+                            message.EventName,
+                            BrokerEventId = message.EventId,
+                            BrokerCorrelationId = message.CorrelationId,
+                            OutboxEventId = receipt.EventId,
+                            OutboxCorrelationId = receipt.CorrelationId,
+                            OutboxDeliveryState = receipt.DeliveryState,
+                            OutboxDispatchedAt = receipt.DispatchedAt
+                        };
+                    }).ToArray()
                 };
                 await File.WriteAllTextAsync(
                     Path.Combine(resultsDirectory, "mod0188-rabbitmq-delivery-proof.json"),
