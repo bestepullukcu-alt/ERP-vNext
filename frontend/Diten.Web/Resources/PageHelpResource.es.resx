@@ -2135,31 +2135,31 @@
     <value>Pulse «Nueva Salida» y elija el almacén. Elija una zona de preparación solo si el almacén tiene varias.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Líneas y vista previa</value>
+    <value>Líneas en el panel lateral</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Introduzca cada línea (producto, SKU, cantidad, línea de pedido) y pulse «Vista Previa de Asignación»: aparecen los lotes en orden FEFO y la cantidad asignable.</value>
+    <value>Pulse «Añadir Línea»: en el panel lateral introduzca el producto, el SKU y la cantidad (el número de línea de pedido se rellena) y pulse «Guardar Línea»; la línea aparece en la tabla.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Cambio de lote</value>
+    <value>Vista previa y cambio de lote</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>Si hace falta, elija otro lote en «Cambio de lote»; un lote que no es el primero en orden FEFO pide un motivo según la regla FEFO de su empresa.</value>
+    <value>Pulse «Vista Previa de Asignación» para ver los lotes y el estado de cada línea; para otro lote use «Cambiar Lote» en el menú de la línea — un lote que no es el primero en orden FEFO pide un motivo según la regla FEFO de su empresa.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Seguir la preparación</value>
+    <value>Destinatario</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Al guardar se asigna el stock y se abren las tareas de preparación; sígalas en la página Detalles hasta que la salida esté Preparada.</value>
+    <value>Escriba a mano el nombre, el país y la dirección del destinatario.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Lista para enviar y despacho</value>
+    <value>Guardar</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Cuando esté embalada pulse «Lista para Enviar»; cuando salga la mercancía pulse «Comprobar el Envío».</value>
+    <value>Pulse «Guardar»: la asignación se recalcula con todas las líneas; una línea que ya no se puede cumplir se marca en la tabla y no se guarda nada.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Una salida lista para enviar no se puede modificar ni cancelar.</value>
+    <value>Una vista previa no reserva stock; si el stock ha cambiado al guardar, la línea se marca como no se puede cumplir.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Para preparar el stock asignado</value>

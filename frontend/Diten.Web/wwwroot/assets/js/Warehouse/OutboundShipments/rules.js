@@ -149,9 +149,107 @@ const OutboundRules = (function () {
         return mode === 'Block' ? 'Blocked' : mode === 'Warn' ? 'Optional' : 'Required';
     };
 
+    // ─── MOD-0178-FU01 DL-1 — the lines table and the line panel (pack §8.2, §8.3, §12) ─────────────────────────────────────────────────────
+
+    /** The service's line limit (WMS-BUNDLE CreateOutboundShipmentRequest.lines maxItems 100): the 101st line is added by no path. */
+    const MaxLines = 100;
+    const canAddLine = (count) => Number(count) < MaxLines;
+
+    /** The next free order line number ("1", "2", …) — the panel's default; the reader may write another. */
+    const nextOrderLine = (lines) => {
+        const taken = new Set((lines || []).map((l) => String(l.orderLineId ?? '').trim()));
+        let n = 1;
+        while (taken.has(String(n))) n += 1;
+        return String(n);
+    };
+
+    /** §12: the order line number is unique among the lines (client check only — the service has no such rule). `uid` = the line being edited. */
+    const orderLineTaken = (lines, orderLineId, uid) => {
+        const wanted = String(orderLineId ?? '').trim();
+        return !!wanted && (lines || []).some((l) => l.uid !== uid && String(l.orderLineId ?? '').trim() === wanted);
+    };
+
+    /**
+     * One answer line → what a table row / the panel keeps of it: the free lots (FEFO order), the company's FEFO mode, the allocations (the CHOSEN
+     * lot when the line had a lot override — D-4), the deviation (FEFO suggestion), the allocatable quantity and a failure code.
+     */
+    const previewOf = (answerLine, mode) => (answerLine ? {
+        lots: answerLine.lots || [], mode: mode || null, allocations: answerLine.allocations || [], deviation: answerLine.deviation || null,
+        allocatable: answerLine.allocatable ?? answerLine.allocated ?? null, failureCode: answerLine.failureCode || null
+    } : null);
+
+    /** The preview answer mapped to the lines in table order: line i is the answer's lineSeq i + 1 (the request order — §8.3). */
+    const mapPreview = (answer, count) => {
+        const lines = answer?.lines || [];
+        return Array.from({ length: Number(count) || 0 }, (_, i) => previewOf(lines.find((l) => Number(l.lineSeq) === i + 1), answer?.fefoOutboundMode));
+    };
+
+    /**
+     * A refusal → the lines it names, by index (lineSeq − 1): a lot / FEFO / item refusal names one line in details.lineSeq; 422
+     * WMS_ALLOCATION_FAILED lists details.lines[] { lineSeq, code, requested, allocatable } (§8.3, AC-7, AC-10).
+     */
+    const lineErrors = (error) => {
+        const out = {};
+        const details = error?.details || {};
+        (details.lines || []).forEach((l) => {
+            const seq = Number(l.lineSeq);
+            if (seq >= 1) out[seq - 1] = { code: l.code || error?.code || null, requested: l.requested ?? null, allocatable: l.allocatable ?? null };
+        });
+        const seq = Number(details.lineSeq);
+        if (seq >= 1 && !out[seq - 1]) out[seq - 1] = { code: error?.code || null, requested: null, allocatable: null };
+        return out;
+    };
+
+    /** The chosen lot is still among the preview's free lots (the reader's choice is never reset silently — AC-8). */
+    const lotEligible = (preview, lotId) => !lotId || !preview || (preview.lots || []).some((l) => l.lotId === lotId);
+
+    /**
+     * A line's state on the table (pack §8.2 rozetleri): NotPreviewed · Stale · Fulfillable · Unfulfillable · DeviationReasonRequired ·
+     * DeviationReasonGiven · DeviationBlocked. `line` = { lotId, reason, preview, stale, error }.
+     */
+    const lineStatus = (line) => {
+        if (line?.error) return 'Unfulfillable';
+        if (line?.stale) return 'Stale';
+        const preview = line?.preview;
+        if (!preview) return 'NotPreviewed';
+        if (preview.failureCode || !lotEligible(preview, line.lotId)) return 'Unfulfillable';
+        const need = lotNeed(preview, line.lotId);
+        if (need === 'Blocked') return 'DeviationBlocked';
+        if (need === 'Required') return String(line.reason ?? '').trim().length >= 10 ? 'DeviationReasonGiven' : 'DeviationReasonRequired';
+        if (need === 'Optional' && String(line.reason ?? '').trim()) return 'DeviationReasonGiven';
+        return 'Fulfillable';
+    };
+
+    /** The badge of a line state: icon + word (never colour alone — §8.2). */
+    const LineBadge = {
+        NotPreviewed: { cls: 'bg-label-secondary', icon: 'bx-time' },
+        Stale: { cls: 'bg-label-warning', icon: 'bx-history' },
+        Fulfillable: { cls: 'bg-label-success', icon: 'bx-check-circle' },
+        Unfulfillable: { cls: 'bg-label-danger', icon: 'bx-error-circle' },
+        DeviationReasonRequired: { cls: 'bg-label-warning', icon: 'bx-error' },
+        DeviationReasonGiven: { cls: 'bg-label-info', icon: 'bx-comment-check' },
+        DeviationBlocked: { cls: 'bg-label-danger', icon: 'bx-block' }
+    };
+    const lineBadge = (status) => Object.assign({ word: `LineStatus.${status}` }, LineBadge[status] || LineBadge.NotPreviewed);
+
+    /**
+     * Can this line go into the save body as it is (the panel's "Satırı kaydet" and the page's "Kaydet")? A validation key or null:
+     * a lot change needs a CURRENT preview of the line (a stale one is "yeniden önizleyin" — AC-8), then the FEFO mode decides (AC-7).
+     */
+    const lineSaveError = (line) => {
+        if (lineBody(line).error) return 'ValidationLine';
+        if (!line.lotId) return null;
+        if (line.stale || !line.preview) return 'LinePanel.PreviewAgain';
+        const need = lotNeed(line.preview, line.lotId);
+        if (need === 'Blocked') return 'DeviationBlocked';
+        if (need === 'Required' && String(line.reason ?? '').trim().length < 10) return 'DeviationNeedsReason';
+        return null;
+    };
+
     return {
         Keys, StatusMenu, EditStatuses, ActionWord, menu, canEdit, reasonWord, statusBadge, actionUrl, nothingPicked, deviations, releaseBody, parseSku, isQuantity,
-        lineBody, lotNeed, quantityText, dimensionsText
+        lineBody, lotNeed, quantityText, dimensionsText,
+        MaxLines, canAddLine, nextOrderLine, orderLineTaken, previewOf, mapPreview, lineErrors, lotEligible, lineStatus, lineBadge, lineSaveError
     };
 })();
 

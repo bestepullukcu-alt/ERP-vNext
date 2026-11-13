@@ -2135,31 +2135,31 @@
     <value>Press “New Outbound” and choose the warehouse. Choose a staging location only when the warehouse has several.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Lines and preview</value>
+    <value>Lines in the side panel</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Enter each line (product, SKU, quantity, order line) and press “Preview Allocation”: the lots in FEFO order and the quantity that can be allocated appear.</value>
+    <value>Press “Add Line”: in the side panel enter the product, the SKU and the quantity (the order line number is filled in) and press “Save Line”; the line appears in the table.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Lot change</value>
+    <value>Preview and lot change</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>If needed, choose another lot in “Lot change”; a lot that is not first in FEFO order needs a reason according to your company's FEFO rule.</value>
+    <value>Press “Preview Allocation” to see each line's lots and status; for another lot use “Change Lot” on the line's menu — a lot that is not first in FEFO order asks a reason by your company's FEFO rule.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Follow picking</value>
+    <value>Recipient</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Saving allocates the stock and opens the pick tasks; follow them on the Details page until the outbound is Picked.</value>
+    <value>Write the recipient's name, country and address by hand.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Ready to ship and dispatch</value>
+    <value>Save</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>When it is packed press “Ready to Ship”; after the goods leave press “Check the Shipment”.</value>
+    <value>Press “Save”: the allocation is computed again with all lines; a line that can no longer be fulfilled is marked in the table and nothing is saved.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>An outbound that is ready to ship cannot be changed or cancelled.</value>
+    <value>A preview does not reserve stock; if the stock has changed when you save, the line is marked as cannot be fulfilled.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>To pick the allocated stock</value>

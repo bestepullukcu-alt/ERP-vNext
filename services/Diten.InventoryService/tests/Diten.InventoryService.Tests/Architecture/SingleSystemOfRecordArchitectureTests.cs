@@ -91,6 +91,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
         // a list of their own (the MOD-0177 SinceR7b pattern); not stock.
         Assert.Equal(["wms_count_evidence_exports", "wms_count_evidence_files"],
             Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Evidence.OrderBy(x => x, StringComparer.Ordinal).ToList());
+        // MOD-0180 (DL-1, XMC-001 X-9 decision Beste 2026-11-13) — the waves, their order memberships, the insert-only timeline and the warehouse
+        // wave settings, prefix wms_wave_ (pack §3, own WaveCollections). None is stock: a membership's counts are copied plan sizes, not balances.
+        Assert.Equal(["wms_wave_events", "wms_wave_orders", "wms_wave_settings", "wms_wave_waves"],
+            Diten.InventoryService.Persistence.WavePlanning.WaveCollections.All.OrderBy(x => x, StringComparer.Ordinal).ToList());
     }
 
     [Fact]
@@ -112,7 +116,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl4) // MOD-0178 (DL-4)
             .Concat(Diten.InventoryService.Persistence.Warehouse.WarehouseCollections.SinceDl5) // MOD-0178 (DL-5)
             .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.All) // MOD-0181 (DL-1)
-            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Evidence).ToList(); // MOD-0181 (DL-5, XMC-001)
+            .Concat(Diten.InventoryService.Persistence.CycleCounting.CycleCountCollections.Evidence) // MOD-0181 (DL-5, XMC-001)
+            .Concat(Diten.InventoryService.Persistence.WavePlanning.WaveCollections.All).ToList(); // MOD-0180 (DL-1, XMC-001 X-9)
         var named = persistence
             .SelectMany(f => CollectionName.Matches(f.Body).Select(m => m.Groups[1].Value))
             .Where(n => n.StartsWith("inventory_", StringComparison.Ordinal) || n.StartsWith("trace_", StringComparison.Ordinal)
@@ -133,6 +138,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
             || arg.StartsWith("RecallCollections.", StringComparison.Ordinal) // MOD-0177 (WP-0177-R1)
             || arg.StartsWith("WarehouseCollections.", StringComparison.Ordinal) // MOD-0178 (DL-1)
             || arg.StartsWith("CycleCountCollections.", StringComparison.Ordinal) // MOD-0181 (DL-1, F-2)
+            || arg.StartsWith("WaveCollections.", StringComparison.Ordinal) // MOD-0180 (DL-1, XMC-001 X-9)
             || arg.StartsWith("QuarantineCollections.", StringComparison.Ordinal) || arg.StartsWith("ExpiryCollections.", StringComparison.Ordinal),
             $"GetCollection({arg}) does not name a declared collection constant."));
     }

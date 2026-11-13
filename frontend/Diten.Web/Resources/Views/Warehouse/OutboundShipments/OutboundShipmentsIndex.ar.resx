@@ -223,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>أُلغي</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>المخزون الحر غير كافٍ</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>المخزون في مواقع الانتقاء غير كافٍ</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>القابل للتخصيص</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>لا توجد أسطر بعد — استخدم إضافة سطر.</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (المقترح: {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>سبب FEFO:</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>يُزال السطر {0} من هذا النموذج. لا يُحذف أي شيء محفوظ.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>السطر {0}: {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>لم تتم المعاينة</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>المعاينة قديمة</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>يمكن تلبيته</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>لا يمكن تلبيته</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>انحراف عن FEFO — السبب مطلوب</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>انحراف عن FEFO — السبب مُدخل</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>انحراف عن FEFO — غير مسموح (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>إضافة سطر</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>تعديل السطر</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>الوحدة الأساسية: {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>حسب FEFO (المقترح: {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>معاينة السطر</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>حفظ السطر</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>معاينة سطر واحد — عند الحفظ يُعاد حساب التخصيص مع جميع الأسطر.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>اقتراح FEFO: التشغيلة {0} (الانتهاء {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>نمط FEFO في شركتك: {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>يُرفض الانحراف (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>السبب إلزامي (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>تحذير فقط (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>رقم سطر الطلب هذا مستخدم في سطر آخر.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>المعاينة قديمة؛ عاين السطر مجددًا قبل حفظ تغيير التشغيلة.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>تغيير التشغيلة</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>تحمل شحنة الصادر 100 سطر على الأكثر؛ لا يمكن إضافة المزيد من الأسطر.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>التشغيلة المختارة لم تعد مؤهلة.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>سبب FEFO</value></data>
 </root>

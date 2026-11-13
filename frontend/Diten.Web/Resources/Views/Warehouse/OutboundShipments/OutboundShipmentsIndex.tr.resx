@@ -223,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>Yeterli serbest stok yok</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>Toplama raflarında yeterli stok yok</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>Lot no</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>Alınabilir</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>Henüz satır yok — Satır Ekle'yi kullanın.</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (önerilen: {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>FEFO gerekçesi:</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>Sil</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>Satır {0} bu formdan kaldırılır. Kayıtlı hiçbir şey silinmez.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>Satır {0}: {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>Önizlenmedi</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>Önizleme eski</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>Karşılanır</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>Karşılanamaz</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>FEFO sapması — gerekçe gerekli</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>FEFO sapması — gerekçe var</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>FEFO sapması — izin yok (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>Satırı Düzenle</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>Temel birim: {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>FEFO'ya göre (önerilen: {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>Satırı Önizle</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>Satırı Kaydet</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>Tek satır önizlemesi — kayıtta tahsis bütün satırlarla yeniden hesaplanır.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>FEFO önerisi: lot {0} (SKT {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>Şirketinizin FEFO kipi: {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>sapma reddedilir (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>gerekçe zorunlu (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>yalnız uyarı (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>Bu sipariş satırı numarası başka bir satırda kullanılıyor.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>Önizleme eski; lot değişimini kaydetmeden önce satırı yeniden önizleyin.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>Lot Değiştir</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>Bir çıkış sevkiyatı en çok 100 satır taşır; daha fazla satır eklenemez.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>Seçilen lot artık uygun değil.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>FEFO gerekçesi</value></data>
 </root>

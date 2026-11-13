@@ -1332,4 +1332,10 @@
   <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
     <value>Count Evidence</value>
   </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>Waves</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>Wave Settings</value>
+  </data>
 </root>

@@ -1273,4 +1273,10 @@
   <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
     <value>أدلة الجرد</value>
   </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>الموجات</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>إعدادات الموجات</value>
+  </data>
 </root>

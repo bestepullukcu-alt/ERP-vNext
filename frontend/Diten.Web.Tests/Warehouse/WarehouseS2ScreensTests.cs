@@ -108,7 +108,8 @@ public sealed class WarehouseS2ScreensTests(WebApplicationFactory<Program> facto
     {
         var files = new[] { "OutboundShipments", "PickTasks", "Packing" }
             .SelectMany(folder => Directory.GetFiles(Path.Combine(Web, "Views", "Warehouse", folder), "*.cshtml")).ToList();
-        Assert.Equal(15, files.Count);
+        // 15 → 16 (MOD-0178-FU01 DL-1, FU01 pack §11): the outbound line panel _LineOffcanvas.cshtml is a new PARTIAL — the page count below stays 6
+        Assert.Equal(16, files.Count);
         Assert.Equal(6, files.Count(f => !Path.GetFileName(f).StartsWith('_')));
         foreach (var file in files)
         {

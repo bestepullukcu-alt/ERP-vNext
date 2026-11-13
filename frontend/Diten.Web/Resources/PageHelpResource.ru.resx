@@ -2135,31 +2135,31 @@
     <value>Нажмите «Новая Отгрузка» и выберите склад. Зону подготовки выбирайте, только если их на складе несколько.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Строки и предпросмотр</value>
+    <value>Строки в боковой панели</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Заполните каждую строку (товар, SKU, количество, строка заказа) и нажмите «Предпросмотр Распределения»: появятся партии в порядке FEFO и количество, которое можно распределить.</value>
+    <value>Нажмите «Добавить Строку»: в боковой панели укажите товар, SKU и количество (номер строки заказа заполняется) и нажмите «Сохранить Строку»; строка появится в таблице.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Замена партии</value>
+    <value>Предпросмотр и смена партии</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>При необходимости выберите другую партию в поле «Замена партии»; для партии не первой по FEFO нужна причина согласно правилу FEFO вашей компании.</value>
+    <value>Нажмите «Предпросмотр Распределения», чтобы увидеть партии и статус каждой строки; для другой партии используйте «Сменить Партию» в меню строки — партия не первая в порядке FEFO требует причину по правилу FEFO вашей компании.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Следите за сборкой</value>
+    <value>Получатель</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Сохранение распределяет запас и открывает задачи сборки; следите за ними на странице сведений, пока отгрузка не будет собрана.</value>
+    <value>Введите вручную имя, страну и адрес получателя.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Готовность и отправка</value>
+    <value>Сохранение</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Когда упаковано, нажмите «Готова к Отправке»; после отправки товара нажмите «Проверить Поставку».</value>
+    <value>Нажмите «Сохранить»: распределение пересчитывается по всем строкам; строка, которую больше нельзя выполнить, отмечается в таблице, и ничего не сохраняется.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Отгрузку, готовую к отправке, нельзя изменить или отменить.</value>
+    <value>Предпросмотр не резервирует запас; если к моменту сохранения запас изменился, строка отмечается как невыполнимая.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Чтобы собрать распределённый запас</value>

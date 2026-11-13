@@ -2135,31 +2135,31 @@
     <value>Appuyez sur « Nouvelle Sortie » et choisissez l'entrepôt. Choisissez une zone de préparation seulement si l'entrepôt en a plusieurs.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Lignes et aperçu</value>
+    <value>Lignes dans le panneau latéral</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Saisissez chaque ligne (produit, SKU, quantité, ligne de commande) et appuyez sur « Aperçu de l'Allocation » : les lots dans l'ordre FEFO et la quantité allouable s'affichent.</value>
+    <value>Appuyez sur « Ajouter une Ligne » : dans le panneau latéral, saisissez le produit, le SKU et la quantité (le numéro de ligne de commande est prérempli) et appuyez sur « Enregistrer la Ligne » ; la ligne apparaît dans le tableau.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Changement de lot</value>
+    <value>Aperçu et changement de lot</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>Si besoin, choisissez un autre lot dans « Changement de lot » ; un lot qui n'est pas le premier dans l'ordre FEFO demande un motif selon la règle FEFO de votre société.</value>
+    <value>Appuyez sur « Aperçu de l'Allocation » pour voir les lots et le statut de chaque ligne ; pour un autre lot, utilisez « Changer de Lot » dans le menu de la ligne — un lot qui n'est pas le premier dans l'ordre FEFO demande un motif selon la règle FEFO de votre société.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Suivre le prélèvement</value>
+    <value>Destinataire</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>L'enregistrement alloue le stock et ouvre les tâches de prélèvement ; suivez-les sur la page Détails jusqu'à ce que la sortie soit Prélevée.</value>
+    <value>Saisissez à la main le nom, le pays et l'adresse du destinataire.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Prête à expédier et départ</value>
+    <value>Enregistrer</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Une fois emballée, appuyez sur « Prête à Expédier » ; après le départ des marchandises, appuyez sur « Vérifier l'Expédition ».</value>
+    <value>Appuyez sur « Enregistrer » : l'allocation est recalculée avec toutes les lignes ; une ligne qui ne peut plus être réalisée est signalée dans le tableau et rien n'est enregistré.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Une sortie prête à expédier ne peut plus être modifiée ni annulée.</value>
+    <value>Un aperçu ne réserve pas de stock ; si le stock a changé au moment de l'enregistrement, la ligne est signalée comme non réalisable.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Pour prélever le stock alloué</value>

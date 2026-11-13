@@ -194,7 +194,9 @@
 }
 ```
 - `zones`: etkin üyeliklerin kalıcı pick planındaki (`PlannedBins`) bin'lerin LOCATION bölge anahtarı ve (ayrıştırılabilirse) koridoru başına sayım
-  (paket §8.7 girdileri). DL-1'de ertelenmiş outbound oluşamadığı için boştur.
+  (paket §8.7 girdileri): `zoneKey` = bin'in yolundaki `Zone` kodu, `Zone` yoksa `StorageLocation` kodu; `aisle` yalnız bin kodu toplu kod
+  biçimindeyse yazılır. **DL-1'den itibaren gerçek hesaplanır** (CT kararı 2026-11-13); MOD-0178 DL-2'ye kadar ertelenmiş outbound üretmediği
+  için canlıda üyeliksiz dalgada `[]`'dir.
 - `pickers`: açılmış dalga görevlerinin atanan toplayıcıya göre sayımı — DL-2 / DL-3'te dolar; DL-1'de hep `[]`.
 
 ### 3.8 Sayfalar
@@ -249,6 +251,13 @@ olayı, merkezi denetim **ve** depo ayarı kaydına koşullu yazım (`waveManage
 yok — paket §8.19 "Sıralama"). Eşzamanlı iki eklemede `wms_wave_orders` tekil kısmi index'i `(TenantId, LegalEntityId, OutboundId)`
 `{ Active: true }` ikinciyi reddeder; kaybeden önce kendi anahtarını yeniden arar (kural 5): **aynı anahtar** → 200 replay, **farklı anahtar** →
 409 `WAVE_ORDER_IN_OTHER_WAVE`, kaybedende kayıt yok (paket AC-11). `iş sınırı` aşımı yazar (D-7).
+
+**Öneri (`listWaveSuggestions`; paket §8.2 kural 5, CT kararı 2026-11-13):** uygun siparişler outbound `createdAt` artan (en eski önce) sırayla
+alınır; sipariş sayısı kalan `maxOrders` kapasitesiyle (sınır yoksa 200) sınırlanır; satır kapasitesinde **sığmayan ilk siparişte durulur** —
+atlanıp sonraki denenmez — ve `limitedBy = MaxLines` olur. Yazmaz.
+
+**Düzenleme ve kesim (paket §8.4, CT kararı 2026-11-13):** kesim kuralı `updateWave`'de **her** düzenlemede uygulanır — kesimi 1 saatten fazla
+geçmiş Taslak, kesim ileri alınmadan düzenlenemez (400 `WAVE_CUTOFF_INVALID`); `cancelWave` kesim denetimi yapmaz.
 
 **Kesim (paket §8.4):** `cutoffAtUtc = ToUtc(cutoffLocal, timeZoneId)`; yaz saati boşluğundaki yerel saat → 400 `WAVE_CUTOFF_INVALID`; çakışan
 yerel saat → erken ofset + `cutoffAmbiguousResolved: true`; `cutoffAtUtc < şimdi − 1 saat` → 400 `WAVE_CUTOFF_INVALID`. Dönüşüm sunucunun

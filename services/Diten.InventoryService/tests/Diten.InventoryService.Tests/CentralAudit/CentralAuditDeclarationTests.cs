@@ -50,7 +50,9 @@ public sealed class CentralAuditDeclarationTests
         // the 16th); measured 109 at 65af0e638. The sweeper sends its command and opens no transaction: the sweeper list below is unchanged (F-18).
         // 117 after MOD-0181 DL-5 (pack §24 DL-5 seam "CentralAuditDeclarationTests"; XMC-001, Beste 2026-11-12): CreateCountEvidenceExport —
         // 16 of 0181's 16; measured 116 at 200c1a71a. It writes inside CycleCountRepository.InTransactionAsync: the callback count below is unchanged.
-        Assert.Equal(117, WriteCommands.Length);
+        // 123 after MOD-0180 DL-1 (pack §5.1 X-10 "dilim başında ölçülen sayı + dilimin 0180 yazma komutları"; XMC-001, Beste 2026-11-13): CreateWave,
+        // UpdateWave, AddWaveOrders, RemoveWaveOrders, CancelWave, UpdateWaveWarehouseSettings — 6 of 0180's 12; measured 117 at 4a64b9119.
+        Assert.Equal(123, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
@@ -65,7 +67,8 @@ public sealed class CentralAuditDeclarationTests
             new ExpiryFefoManifestProvider(),
             new RecallReadinessManifestProvider(),
             new PutawayPickingPackingManifestProvider(), // MOD-0178 (pack §14.4)
-            new Diten.InventoryService.Api.CycleCounting.CycleCountingManifestProvider() // MOD-0181 (pack §14, XMC-001)
+            new Diten.InventoryService.Api.CycleCounting.CycleCountingManifestProvider(), // MOD-0181 (pack §14, XMC-001)
+            new Diten.InventoryService.Api.WavePlanning.WavePlanningManifestProvider() // MOD-0180 (pack §14, XMC-001 X-10)
         }.Select(p => p.GetManifest().ModuleCode).ToHashSet(StringComparer.Ordinal);
 
         foreach (var type in WriteCommands)
@@ -127,7 +130,8 @@ public sealed class CentralAuditDeclarationTests
         // 9 + RecallDrillRepository.InTransactionAsync (WP-0177-R5) + WarehouseLocationRoleRepository.InTransactionAsync (MOD-0178 DL-1)
         // + WarehouseTaskRepository.InTransactionAsync (MOD-0178 DL-2) + OutboundShipmentRepository.InTransactionAsync (MOD-0178 DL-4)
         // + CycleCountRepository.InTransactionAsync (MOD-0181 DL-1, XMC-001)
-        Assert.Equal(14, seen);
+        // + WaveRepository.InTransactionAsync (MOD-0180 DL-1, XMC-001 X-10)
+        Assert.Equal(15, seen);
         Assert.Empty(failures);
     }
 }

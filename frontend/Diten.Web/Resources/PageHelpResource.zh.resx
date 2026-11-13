@@ -2135,31 +2135,31 @@
     <value>点击“新建出库单”并选择仓库。仅当仓库有多个暂存位置时才选择暂存位置。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>明细行与预览</value>
+    <value>侧边面板中的明细行</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>填写每一行（产品、SKU、数量、订单行），然后点击“预览分配”：将显示按 FEFO 排序的批次和可分配数量。</value>
+    <value>点击“添加行”：在侧边面板中输入产品、SKU 和数量（订单行号会自动填写），然后点击“保存此行”；该行会出现在表格中。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>更换批次</value>
+    <value>预览与更换批次</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>如有需要，在“更换批次”中选择其他批次；非 FEFO 首选的批次需按公司 FEFO 规则填写原因。</value>
+    <value>点击“预览分配”查看每行的批次和状态；如需其他批次，请使用行菜单中的“更换批次” — 不是 FEFO 顺序第一的批次需按贵公司的 FEFO 规则填写原因。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>跟踪拣货</value>
+    <value>收货人</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>保存后将分配库存并生成拣货任务；在详情页跟踪，直到出库单变为已拣货。</value>
+    <value>手动填写收货人的名称、国家和地址。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>待发运与发运</value>
+    <value>保存</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>包装完成后点击“设为待发运”；货物发出后点击“核对发运”。</value>
+    <value>点击“保存”：将按所有明细行重新计算分配；已无法满足的行会在表格中标出，且不会保存任何内容。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>设为待发运的出库单不能再修改或取消。</value>
+    <value>预览不会预留库存；如果保存时库存已变化，该行会被标记为无法满足。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>拣取已分配的库存</value>

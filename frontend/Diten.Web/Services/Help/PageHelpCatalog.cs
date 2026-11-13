@@ -92,7 +92,8 @@ public static class PageHelpCatalog
             ["PUTAWAYTASKS"] = ["bx-package", "bx-barcode-reader", "bx-check-circle", "bx-refresh"],
             ["WAREHOUSELOCATIONROLES"] = ["bx-map-pin", "bx-purchase-tag-alt", "bx-check-shield"],
             // MOD-0178 DL-6 (pack §24, UXH-001): no tour — the S2 screens
-            ["OUTBOUNDSHIPMENTS"] = ["bx-buildings", "bx-list-check", "bx-sort-up", "bx-cart-download", "bx-send"],
+            // MOD-0178-FU01 DL-1 (FU01 pack §25): 2 lines in the side panel, 3 preview / lot change, 4 the recipient by hand, 5 save
+            ["OUTBOUNDSHIPMENTS"] = ["bx-buildings", "bx-list-plus", "bx-sort-up", "bx-user-pin", "bx-save"],
             ["PICKTASKS"] = ["bx-user-plus", "bx-transfer", "bx-package"],
             ["PACKINGSTATION"] = ["bx-box", "bx-ruler", "bx-lock-alt"],
             // MOD-0178 DL-7 (pack §24, UXH-001): no tour — the S3 monitoring screens

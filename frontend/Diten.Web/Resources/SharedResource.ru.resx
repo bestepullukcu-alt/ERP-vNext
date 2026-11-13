@@ -1273,4 +1273,10 @@
   <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
     <value>Доказательства инвентаризации</value>
   </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>Волны</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>Настройки волн</value>
+  </data>
 </root>
