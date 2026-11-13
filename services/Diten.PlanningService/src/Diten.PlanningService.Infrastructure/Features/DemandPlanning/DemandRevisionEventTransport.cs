@@ -1,4 +1,5 @@
 using Diten.BuildingBlocks.Eventing;
+using Diten.PlanningService.Application.Features.DemandPlanning;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,11 +54,24 @@ public sealed class DemandRevisionRabbitMqPublisher(IPublishEndpoint publisher)
 }
 
 public sealed class DemandRevisionOutboxWorker(
-    IServiceScopeFactory scopes, ILogger<DemandRevisionOutboxWorker> logger)
+    IServiceScopeFactory scopes, IHostApplicationLifetime lifetime,
+    ILogger<DemandRevisionOutboxWorker> logger)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        try
+        {
+            using var preflightScope = scopes.CreateScope();
+            await preflightScope.ServiceProvider.GetRequiredService<IDemandRevisionOutboxPreflight>()
+                .VerifyAsync(stoppingToken);
+        }
+        catch (Exception error) when (error is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
+        {
+            logger.LogCritical(error, "Demand revision outbox worker stopped before broker delivery: unsafe or unreadable Mongo indexes.");
+            lifetime.StopApplication();
+            throw;
+        }
         while (!stoppingToken.IsCancellationRequested)
         {
             try
