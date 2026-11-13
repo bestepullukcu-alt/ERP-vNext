@@ -20,3 +20,13 @@ Kaynak: CT kayıtları `docs/records/audits/2026-11/mod-0262-fu01-dl2-ct-accepta
   doğrulaması) bu FU'nun beklentisine girer, F-2 (sahip biçimi) FU açılırken kapanır. K-3'ün (a) / (b) seçeneği FU açılırken karara
   bağlanır (CT önerisi: (b) — `AuditBehavior` başarılı yanıttan `EntityId` / `AfterState` alır; korunan yol onayı gerekir). DL-2 kabulünü
   bekletmez (K-2, K-3 aynen).
+- **K-6 (Beste, 2026-11-13, "Birleşik ek işi açalım önerini kabul ediyorum"; kaynak: sahip sohbet cevabı):** K-5'teki birleşik FU açılır ve
+  K-3'ün seçeneği **(b)**: `AuditBehavior` başarılı yanıttan `EntityId` / `AfterState` alır. Kimlik **MOD-0262-FU08** (DCP-002 ön kontrolü:
+  `verify_module_id.py --check-id MOD-0262-FU08 --name "Document Binary Store Upload Audit Completion" --parent MOD-0262` OK; FU02…FU07
+  DCP-008'de başka içeriğe ayrılmış; FU08 depoda yalnız FU01 §19.3'ün "yok" cümlesinde geçiyor). Paket taslağı
+  `execution/domains/platform-shared-services/module-packs/MOD-0262-FU08-upload-audit-completion.md`.
+- **CT kararları (MVP-1 CT, 2026-11-13) — FU08 taslağının açık soruları:** S-2 arayüz biçimi (komut `IAuditResponseStateProvider<TResponse>`
+  sağlar; yansıma yok); S-3 sağlayıcı istisnası yutulur, kayıt durumsuz yazılır, uyarı logu (iş sonucu bozulmaz); S-4 tek dilim kalır — XMC
+  izni gecikirse (B) yalnız-test kısmı ayrı dilime alınabilir; S-5 kayıt satırı ve FU01 §20 yönlendirmesi paket onayıyla birlikte CT yazar;
+  S-6 dal tabanı MVP-1 hattı (DL-2 kodu orada). **S-1 açık:** `AuditBehavior.cs` ve `Contracts/Audit/**` korunan yoluna (MOD-0021 Audit
+  Trail) dokunma izni — sahip onayı gerekir.
