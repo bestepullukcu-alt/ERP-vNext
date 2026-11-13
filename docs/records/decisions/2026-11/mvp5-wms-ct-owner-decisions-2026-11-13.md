@@ -28,3 +28,7 @@
 - **MOD-0049-FU01 C-5 — rol uçları (Beste, "iki komutu v1'den çıkar"):** v1'de tek rol (ThirdPartyLogistics) olduğundan rol ver / rol kaldır
   komutları, uçları ve `mdm.business-partners.assign-role` izni v1'den çıkar; rol oluşturmada verilir. "Son rol kaldırılamaz" (Q-5) alan
   kuralı olarak kalır; ikinci rol eklenince iki komut eklemeli olarak gelir.
+- **Düzeltme — MOD-0040-FU02 Q-9 (Beste, 2026-11-13, "A — oluşturmada da gerekçe"):** yukarıdaki Q-9 özeti («oluşturmada elle kod gerekçe
+  istemez») CT'nin sahibe sunduğu tablodaki yanlış özetti (B'yi anlatıyordu). Sahip A'yı teyit etti: elle yazılan kod oluşturmada da gerekçe
+  ister (RCS-001 §2), her değişiklikte de. r15 (c4499f37) A ile yazılı; paket değişmez. r15 18.1'deki "Q-9 kayıt metni düzeltmesi" işi bu
+  satırla kapandı.
