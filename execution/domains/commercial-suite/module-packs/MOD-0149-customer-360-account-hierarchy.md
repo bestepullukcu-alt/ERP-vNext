@@ -378,14 +378,14 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 
 | Role | Permissions | Data Scope |
 |---|---|---|
-| CRM Admin | tüm `crm.account.*` (`crm.account.lookup-validation` dahil) | Tenant |
+| CRM Admin | tüm `crm.account.*` (`crm.account.lookup-validation` dahil) + `crm.account-ship-to.read` (önek `crm.account.` değil; eşleşme tam eşitlik — açıkça yazılır, K-19) | Tenant |
 | CRM Manager | read/create/update/export + hierarchy.manage + attribute.manage | Tenant |
 | Sales Manager | read/export | Tenant (ekip, FU15) |
 | Sales Representative / MR | read | Tenant → territory scoped later (FU15) |
 | Marketing Manager | read | Tenant |
 | Read-only CRM Viewer | read | Tenant |
 | AR kullanıcısı (MOD-0120; atama MOD-0018-FU27) | yalnız `lookup-validation` — `read` **almaz** (K-1) | Tenant |
-| Sevkiyat kullanıcısı (MOD-0178; adaylar MOD-0183 / MOD-0186; atama tüketici + MOD-0018) | `lookup-validation` (U-3 arama) + `account-ship-to.read` (U-4) — `read` **almaz** (K-13) | Tenant |
+| Sevkiyat kullanıcısı (aday tüketiciler, istek: MOD-0178, MOD-0183 / MOD-0186; atama tüketici + MOD-0018) | `lookup-validation` (U-3 arama) + `account-ship-to.read` (U-4) — `read` **almaz** (K-13) | Tenant |
 
 ## 17. Gateway / API Routing Decision
 
@@ -810,13 +810,16 @@ birlikte kayda geçer); K-7 = D112/2 (`docs/records/decisions/2026-10/treasury-i
 
 > **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§31'de yalnız §16 izin tablosu ve rol eşlemesi
 > K-13 anahtarıyla genişler, §31'e DL-3 satırı eklenir. Mevcut AC'ler (§21, §30.5), `status` ve `runtime_code_scope`
-> değişmez. Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`) ve
+> değişmez — **tek istisna AC-AR-15'in filtre kümesidir:** DL-3 ile K-11 filtresi U-4'e de konur, AC-AR-15'teki
+> "yalnız U-1 ve U-3" kümesi {U-1, U-3, U-4} olur (§32.2; inceleme 2026-11-13-0a9fd4ef F-1). Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`) ve
 > CT-APR-01 onay satırı (`execution/approvals/approvals.tsv`) gerekir. Kaynak: WMS (MOD-0178 çıkış sevkiyatı formu v2)
 > isteği 2026-11-13; sözleşme K-9 (MVP-6 adres yüzeyi); commercial-suite sahibi kararları K-12…K-18 (Beste, 2026-11-13).
 
 ### 32.1 Sevkiyat adresi — kapsam
 
-- Sevkiyat tüketicileri (MOD-0178 çıkış sevkiyatı; adaylar MOD-0183 / MOD-0186, MVP-6) alıcıyı CRM hesabından seçer ve
+- Sevkiyat tüketicileri — hepsi **aday (istek)**: MOD-0178 (WMS ekibinin "çıkış sevkiyatı formu v2" isteği,
+  2026-11-13; MOD-0178 paketi bugün `customerRef` / adres okuması içermez — paket sözleşmeye hizalanınca tüketici olur,
+  sahip SCE), MOD-0183 / MOD-0186 (MVP-6) — alıcıyı CRM hesabından seçer ve
   hesabın kimliğini (`customerRef` = `Account.Id`) ve adres kopyasını tutar. Adresi **yalnız sözleşmeyle** okurlar:
   `crm.account.read` almazlar, tam hesap kaydını (`GET /api/crm/accounts/{id}`) okumazlar.
 - Bu ek tek bir **salt-okuma** ucu (U-4) ve bir izin anahtarı ekler. Account modeline alan, yeni koleksiyon, yeni yazma
@@ -840,6 +843,11 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.1.0 taslağı](../../../../docs/analysis/contr
 - Denetleyici: `Controllers/CRM/AccountController.cs`; `[HasPermission("crm.account-ship-to.read")]` ve U-1/U-3'teki
   `[RequireTokenTenant]` filtresi (K-11) **yalnız bu eyleme** eklenir. Ortak kiracı ara katmanı
   (`Infrastructure/Middleware/TenantResolutionMiddleware.cs`) değişmez.
+- **AC-AR-15 istisnası (tek):** filtrenin bulunduğu eylem kümesi {U-1, U-3} → {U-1, U-3, U-4} olur. Bu dilimde
+  güncellenenler: DL-1 yansıma testi (`AccountLookupApiTests.cs`, `AC_AR_15_K11_filter_is_on_u1_and_u3_only_and_never_global`)
+  beklenen kümesi ve adı; `Api/Filters/RequireTokenTenantAttribute.cs` açıklaması. Filtre yine denetleyici ya da genel
+  düzeyde **değildir**; AC-AR-15'in öteki koşulları (400 durumları, ortak ara katman değişmez, öteki uçlar sabitlenmez)
+  aynı kalır.
 - DTO: `AccountShipToDto` ve `AccountShipToAddressDto` `AccountModels.cs` içinde (tek dosya kuralı); U-4 sabitleri
   (`contractVersion = "crm-account-lookup/1.1"`, `"primary"`) `AccountLookupContract.cs`'te. U-1 / U-3 gövdeleri ve
   `contractVersion` değerleri (`crm-account-lookup/1.0`) **değişmez**.
@@ -876,7 +884,7 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 
 ### 32.5 Kabul ölçütleri — DL-3 (U-4)
 
-- [ ] **AC-ST-1** Kendi kiracısındaki hesap, dört ana adres alanı dolu → 200; `addresses` tek öğe (`addressId = "primary"`, `kind = "primary"`, `label = null`, `isDefault = true`, `postalCode = null`), alanlar kırpılmış; `defaultAddressId = "primary"`; `contractVersion = "crm-account-lookup/1.1"`; `code`, `name`, `status` hesapla aynı.
+- [ ] **AC-ST-1** Kendi kiracısındaki hesap, dört ana adres alanı dolu, **ek teslimat adresi ve `Account.PostalCode` verisi yokken** (DL-4 öncesi) → 200; `addresses` tek öğe (`addressId = "primary"`, `kind = "primary"`, `label = null`, `isDefault = true`, `postalCode = null`), alanlar kırpılmış; `defaultAddressId = "primary"`; `contractVersion = "crm-account-lookup/1.1"`; `code`, `name`, `status` hesapla aynı.
 - [ ] **AC-ST-2** Dört ana adres alanı boş ya da yalnız boşluk → 200, `addresses = []`, `defaultAddressId = null`. Yalnız biri dolu → tek `primary` öğe, öteki alanlar null.
 - [ ] **AC-ST-3** Başka kiracının hesabı, silinmiş hesap ve olmayan kimlik → 404; üç gövde bayt bayt aynı; depo kiracı + `IsDeleted` filtresiyle okunur.
 - [ ] **AC-ST-4** `inactive`, `draft`, `suspended`, `archived` ve kümede olmayan bir kod → 200; `status` saklandığı gibi; adres yine döner.
@@ -884,7 +892,7 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 - [ ] **AC-ST-6** İzin: anahtarsız 403; yalnız `crm.account.read` → 403; yalnız `crm.account.lookup-validation` → 403; yalnız `crm.account-ship-to.read` → 200. `crm.account-ship-to.read` U-1 ve U-3'e yetmez (403).
 - [ ] **AC-ST-7** Kiracı (K-11): başlık ↔ token uyuşmazlığı 400; kiracısız çağrı 400; `tenant_id`'siz token + `X-Tenant-Id` 400; üçünde veri dönmez, depo sorgulanmaz. `RequireTokenTenant` filtresi U-4 eyleminde bulunur (öznitelik / yansıma); ortak kiracı ara katmanı değişmez.
 - [ ] **AC-ST-8** Depo okunamazsa 503; 500, 200 ya da 404 dönmez.
-- [ ] **AC-ST-9** Değişmezlik: U-1 ve U-3 gövdeleri, `contractVersion` değerleri (`crm-account-lookup/1.0`) ve izinleri değişmez — mevcut `AccountLookup` testleri tabandaki sonuçla aynı; Account listesi / detay testleri tabanla aynı; `dotnet build` (CrmService) PASS.
+- [ ] **AC-ST-9** Değişmezlik: U-1 ve U-3 gövdeleri, `contractVersion` değerleri (`crm-account-lookup/1.0`) ve izinleri değişmez — mevcut `AccountLookup` testleri tabandaki sonuçla aynı, **tek istisna** AC-AR-15 filtre kümesi testinin beklenen kümesi {U-1, U-3, U-4} (§32.2); Account listesi / detay testleri tabanla aynı; `dotnet build` (CrmService) PASS.
 - [ ] **AC-ST-10** (DL-3b) CRM manifest'inde `crm.account-ship-to.read` tam bir kez, scope `Tenant`, boş olmayan görünen adla; hiçbir sayfa ya da eyleme bağlı değil; kayıt işleyicisi anahtarı Auth kataloğuna CRM modülüyle eşitler (DL-1-FU01 testleri emsali). Testler CRM sayfa listesini **sabitlemez** (alt küme kontrolü).
 
 ### 32.6 Sabotaj beklentileri — DL-3
@@ -895,7 +903,7 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 | `IsDeleted` filtresini kaldır | AC-ST-3 |
 | Başka kiracının hesabı için ayrı ileti ya da 403 döndür | AC-ST-3 |
 | `active` dışı hesap için 404 döndür | AC-ST-4 |
-| Gövdeye `ContactPersonPhone` (ya da herhangi bir kişi alanı) ekle | AC-ST-5 |
+| Gövdeye `ResponsiblePersonPhone` (ya da herhangi bir kişi alanı: `ResponsiblePersonName` / `ResponsiblePersonEmail`) ekle | AC-ST-5 |
 | Gövdeye `isBillable` ekle | AC-ST-5 |
 | Adres alanlarında `Trim()`'i kaldır | AC-ST-1 |
 | Dört alan boşken yine `primary` öğe üret | AC-ST-2 |
@@ -916,9 +924,11 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
   istisna atar → 503).
 - **Depo (gerçek mongod):** kiracı ve `IsDeleted` filtresi depodadır → AC-ST-3 test sahipli mongod ile koşar
   (`DisposableCrmMongod` kalıbı; 27017'ye bağlanılmaz; CI'da `DITEN_TEST_MONGOD`).
-- **Api / yetki:** `[HasPermission]` anahtar ataması ve dört izin durumu (AC-ST-6); `RequireTokenTenant` yalnız U-1, U-3
-  ve U-4 eylemlerinde (yansıma; `EndpointDataSource` + `MvcOptions.Filters` — DL-1 testi genişletilir, yeni küme
-  {U-1, U-3, U-4}); kiracı üç durumu (AC-ST-7).
+- **Api / yetki:** `[HasPermission]` anahtar ataması ve izin durumları (AC-ST-6): U-4'te anahtarsız, yalnız
+  `crm.account.read`, yalnız `crm.account.lookup-validation` → 403, yalnız `crm.account-ship-to.read` → 200; ayrıca
+  **yalnız `crm.account-ship-to.read` taşıyan token ile U-1 ve U-3 → 403** (Api testi; "U-3'e alternatif anahtar"
+  sabotajını yakalar). `RequireTokenTenant` yalnız U-1, U-3 ve U-4 eylemlerinde (yansıma; `EndpointDataSource` +
+  `MvcOptions.Filters` — DL-1 testinin beklenen kümesi {U-1, U-3, U-4} olur, §32.2 istisnası); kiracı üç durumu (AC-ST-7).
 - **Değişmezlik (AC-ST-9):** mevcut `AccountLookup*Tests` ve Account testleri tabanla karşılaştırılır.
 - **DL-3b (Platform):** `CrmManifestAccountLookupPermissionTests` emsali; sayfa listesi alt küme kontrolü.
 - **Gelecek dilime karşı (DL-4):** testler ek teslimat adresi verisi olmayan hesapla ölçer; "liste en çok bir öğe" ya da
@@ -937,6 +947,10 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 | K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | **AÇIK → DL-4**: yeni ve değişen adreslerde Reference Data doğrulaması DL-4'te; U-4 saklananı döner |
 | K-18 | Çoklu teslimat adresi | **KAPANDI** (Beste, 2026-11-13): yapılacak — DL-4; ekran mockup'sız, hesap detayının mevcut sekme yapısında standart liste + form |
 | K-9 | MVP-6 adres yüzeyi (sözleşme 1.0 §11) | DL-3 kabulü + 1.1 donmasıyla kapanır; MVP-6'nın U-4'e geçişi kendi işi |
+| K-19 | Yeni anahtarı alan CRM rolleri (inceleme F-2) | **KAPANDI** (CT önerisi, sahip kaydında): CRM Admin alır; öteki CRM rolleri (Manager, Sales, Marketing, Viewer) almaz (§16) |
+
+Kayıt: K-12…K-19 ve WMS isteği / K-14 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md` (durum: taslak —
+sahip okuması CT-APR-01 onayıyla birlikte kayda geçer).
 
 ### 32.9 Teslim sırası
 
