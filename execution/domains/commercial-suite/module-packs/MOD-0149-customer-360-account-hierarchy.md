@@ -847,7 +847,8 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.1.0 taslağı](../../../../docs/analysis/contr
   güncellenenler: DL-1 yansıma testi (`AccountLookupApiTests.cs`, `AC_AR_15_K11_filter_is_on_u1_and_u3_only_and_never_global`)
   beklenen kümesi ve adı; `Api/Filters/RequireTokenTenantAttribute.cs` açıklaması. Filtre yine denetleyici ya da genel
   düzeyde **değildir**; AC-AR-15'in öteki koşulları (400 durumları, ortak ara katman değişmez, öteki uçlar sabitlenmez)
-  aynı kalır.
+  aynı kalır. §30.2, §30.7 (sabotaj satırı) ve §30.8'deki "yalnız U-1 ve U-3" / "iki eylem" ifadeleri DL-3'ten sonra
+  {U-1, U-3, U-4} okunur; §30 metni değiştirilmez (inceleme 2026-11-13-dadab82e F-1).
 - DTO: `AccountShipToDto` ve `AccountShipToAddressDto` `AccountModels.cs` içinde (tek dosya kuralı); U-4 sabitleri
   (`contractVersion = "crm-account-lookup/1.1"`, `"primary"`) `AccountLookupContract.cs`'te. U-1 / U-3 gövdeleri ve
   `contractVersion` değerleri (`crm-account-lookup/1.0`) **değişmez**.
@@ -892,7 +893,7 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 - [ ] **AC-ST-6** İzin: anahtarsız 403; yalnız `crm.account.read` → 403; yalnız `crm.account.lookup-validation` → 403; yalnız `crm.account-ship-to.read` → 200. `crm.account-ship-to.read` U-1 ve U-3'e yetmez (403).
 - [ ] **AC-ST-7** Kiracı (K-11): başlık ↔ token uyuşmazlığı 400; kiracısız çağrı 400; `tenant_id`'siz token + `X-Tenant-Id` 400; üçünde veri dönmez, depo sorgulanmaz. `RequireTokenTenant` filtresi U-4 eyleminde bulunur (öznitelik / yansıma); ortak kiracı ara katmanı değişmez.
 - [ ] **AC-ST-8** Depo okunamazsa 503; 500, 200 ya da 404 dönmez.
-- [ ] **AC-ST-9** Değişmezlik: U-1 ve U-3 gövdeleri, `contractVersion` değerleri (`crm-account-lookup/1.0`) ve izinleri değişmez — mevcut `AccountLookup` testleri tabandaki sonuçla aynı, **tek istisna** AC-AR-15 filtre kümesi testinin beklenen kümesi {U-1, U-3, U-4} (§32.2); Account listesi / detay testleri tabanla aynı; `dotnet build` (CrmService) PASS.
+- [ ] **AC-ST-9** Değişmezlik: U-1 ve U-3 gövdeleri, `contractVersion` değerleri (`crm-account-lookup/1.0`) ve izinleri değişmez — mevcut `AccountLookup` testleri tabandaki sonuçla aynı, **tek istisna** AC-AR-15 filtre kümesi testinin beklenen kümesi {U-1, U-3, U-4}, test adı ve `RequireTokenTenantAttribute` açıklaması dahil (§32.2); Account listesi / detay testleri tabanla aynı; `dotnet build` (CrmService) PASS.
 - [ ] **AC-ST-10** (DL-3b) CRM manifest'inde `crm.account-ship-to.read` tam bir kez, scope `Tenant`, boş olmayan görünen adla; hiçbir sayfa ya da eyleme bağlı değil; kayıt işleyicisi anahtarı Auth kataloğuna CRM modülüyle eşitler (DL-1-FU01 testleri emsali). Testler CRM sayfa listesini **sabitlemez** (alt küme kontrolü).
 
 ### 32.6 Sabotaj beklentileri — DL-3
@@ -947,7 +948,7 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 | K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | **AÇIK → DL-4**: yeni ve değişen adreslerde Reference Data doğrulaması DL-4'te; U-4 saklananı döner |
 | K-18 | Çoklu teslimat adresi | **KAPANDI** (Beste, 2026-11-13): yapılacak — DL-4; ekran mockup'sız, hesap detayının mevcut sekme yapısında standart liste + form |
 | K-9 | MVP-6 adres yüzeyi (sözleşme 1.0 §11) | DL-3 kabulü + 1.1 donmasıyla kapanır; MVP-6'nın U-4'e geçişi kendi işi |
-| K-19 | Yeni anahtarı alan CRM rolleri (inceleme F-2) | **KAPANDI** (CT önerisi, sahip kaydında): CRM Admin alır; öteki CRM rolleri (Manager, Sales, Marketing, Viewer) almaz (§16) |
+| K-19 | Yeni anahtarı alan CRM rolleri (inceleme F-2) | **ÖNERİ (CT) — CT-APR-01 onayıyla kesinleşir**: CRM Admin alır; öteki CRM rolleri (Manager, Sales, Marketing, Viewer) almaz (§16) |
 
 Kayıt: K-12…K-19 ve WMS isteği / K-14 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md` (durum: taslak —
 sahip okuması CT-APR-01 onayıyla birlikte kayda geçer).

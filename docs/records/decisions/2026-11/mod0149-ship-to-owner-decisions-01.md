@@ -1,9 +1,9 @@
 ---
 status: taslak — sahip (Beste) okuması bekliyor (CT-APR-01 onayıyla birlikte); bu belge yeni bir karar vermez, alınmış kararları kayda geçirir
-decided: 2026-11-13 (K-12, K-13, K-16, K-18, K-19; Q-DEPOT-SOR), 2026-11-13 (K-14, tüketici WMS)
+decided: 2026-11-13 (K-12, K-13, K-16, K-18; Q-DEPOT-SOR), 2026-11-13 (K-14, tüketici WMS)
 module: MOD-0149
 work_packages: MOD-0149 sevkiyat adresi eki (pack §32, DL-3; DL-4 taslağı §32.10), CRM-ACCOUNT-LOOKUP 1.1.0 taslağı
-decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (açık → DL-4), K-18, K-19
+decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (açık → DL-4), K-18, K-19 (öneri — CT; CT-APR-01 onayıyla kesinleşir)
 ---
 
 # MOD-0149 sevkiyat adresi eki — sahip kararları K-12…K-19
@@ -37,5 +37,5 @@ decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (açık → DL-4), K-1
 | K-16 | Ana adrese posta kodu | Eklenecek (`Account.PostalCode`), DL-4 içinde | 2026-11-13, Beste |
 | K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | Açık → DL-4'te yeni ve değişen adreslerde Reference Data doğrulaması | açık |
 | K-18 | Çoklu teslimat adresi | Yapılacak (DL-4); ekran mockup'sız, hesap detayının mevcut sekme yapısında standart liste + form; sözleşme gövdesi bugünden liste | 2026-11-13, Beste |
-| K-19 | Yeni anahtarı alan CRM rolleri | CRM Admin alır; öteki CRM rolleri almaz | 2026-11-13, CT önerisi — sahip okumasıyla kesinleşir |
+| K-19 | Yeni anahtarı alan CRM rolleri | CRM Admin alır; öteki CRM rolleri almaz | ÖNERİ (CT, 2026-11-13) — CT-APR-01 onayıyla kesinleşir; sahip onayından sonra pack §32.8, taslak §8 ve bu satır birlikte "KAPANDI (Beste, tarih)" olur (inceleme 2026-11-13-dadab82e F-2) |
 | Q-DEPOT-SOR | Ecza depoları ve dağıtıcılar | Ecza depoları (toptancı) CRM Account, tip `wholesaler`; ürünümüzü bir pazarda bizim adımıza dağıtan firma `distributor` (Blueprint 8.8: Customer (Account) SoR = MOD-0149; partner katmanı MOD-0282). Kendi depolarımız (warehouse) CRM'de değil | 2026-11-13, Beste |
