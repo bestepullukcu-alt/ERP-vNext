@@ -11,10 +11,10 @@ screens:
   - module: BusinessPartners
     data_mode: server
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 approval_status: pending
-revision: "r1 (2026-11-13) — ilk taslak. Girdiler: sahip kararları docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md (T-5 izni, Q-10 kimlik kararı, r1 inceleme F-5 notu); MOD-0179 paketi r3 (onaylı tüketici) §4.10, DL-4, AC-34 (b), AC-35…AC-38; MOD-0179 r1 (commit 241659850) §4.10 alan tasarımı ve X-1…X-3; MOD-0179 r1 Q-11 (kayıt kodu öneki) bu pakete taşındı."
-status_note: "draft — kod izni yok. Onaya giden yol: Beste kararları Q-1…Q-7 → .antigravity kapısı (RCS-001 §3 BPT satırı + aynı adımda X-6 RuleAheadOfCatalogue satırı) → domain-config satırı (X-11) → bağımsız inceleme (CT-APR-02) → onay satırı (CT-APR-01, onaylayan Ali / GitHub GMG-ERP; yazan ≠ onaylayan). MOD-0179 DL-4 kapısı = bu paketin DL-1 kabulü + Gateway rotası (X-8) main'de + BUSINESS-PARTNER-READ 1.0.0 FROZEN."
+revision: "r2 (2026-11-13) — sahip kararları işlendi (docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:14-21): Q-1 = BPT ve .antigravity kapısı kapandı (commit 63f046c92: RCS-001 §3 BPT satırı, RecordCodeTypeCatalogTests RuleAheadOfCatalogue BPT); Q-2 = A; Q-3 90 gün kuralı yok, kalıcı silme, zamanlanmış temizlik yok; Q-4 vergi no kiracıda tekil, listede maskeli, ayrıntıda yetkiliye açık; Q-5 Golden Compact sapmaları paketteki gibi, son rol kaldırılamaz (önce pasifleştirme) — AC-26 + S-26a/S-26b; Q-6 pasif kayıt salt okunur; Q-7 domain-config satırı CT yazar (metin önerisi §19.8). Kararlar §26'dan §19.7'ye taşındı. Künye ready-for-dev (çağıran CT talimatı, S-49); approval_status pending. r1 (2026-11-13, commit 22139776c) — ilk taslak. Girdiler: sahip kararları docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md (T-5 izni, Q-10 kimlik kararı, r1 inceleme F-5 notu); MOD-0179 paketi r3 (onaylı tüketici) §4.10, DL-4, AC-34 (b), AC-35…AC-38; MOD-0179 r1 (commit 241659850) §4.10 alan tasarımı ve X-1…X-3; MOD-0179 r1 Q-11 (kayıt kodu öneki) bu pakete taşındı."
+status_note: "ready-for-dev r2 — approval_status pending; kod izni yok. Sahip kararları Q-1…Q-7 verildi (§19.7); .antigravity kapısı kapandı (63f046c92). Onaya kalan: domain-config satırı (X-11, CT yazar — metin §19.8) → bağımsız inceleme (CT-APR-02) → onay satırı (CT-APR-01, onaylayan Ali / GitHub GMG-ERP; yazan ≠ onaylayan). Ali bilgi notları A-1…A-5 ve CT soruları C-1…C-5 açık (§26). MOD-0179 DL-4 kapısı = bu paketin DL-1 kabulü + Gateway rotası (X-8) main'de + BUSINESS-PARTNER-READ 1.0.0 FROZEN."
 owner: master-data-management / merkez (Beste) — geliştirme merkezde (T-5)
 approver: Ali (GitHub GMG-ERP) — MDM sahibi
 risk: "HIGH — (1) yeni kiracı ana verisi ve Mongo şeması (yeni koleksiyonlar, tekil index'ler); (2) yeni izin ad kaynağı mdm.business-partners.* ve manifest (RBAC); (3) kişisel veri (iletişim kişileri, şahıs şirketinde vergi no = kimlik no); (4) Gateway rotası (integration-agent); (5) Platform kayıt kodu kataloğu ve FROZEN RECORD-CODE-ALLOCATE sözleşmesine eklemeli sürüm + .antigravity RCS-001 satırı (korunan yol); (6) MOD-0179 için HARD bağımlılık (DL-4 kapısı) — sözleşme hatası tüketiciyi bozar. CT-APR-01: ilk onay + izin + kiracı + şema + gateway + korunan yol = yüksek risk."
@@ -27,10 +27,16 @@ dependencies: [MOD-0049 (Blueprint ebeveyni — paket yok, GAP-039), MOD-0040-FU
 
 # MOD-0049-FU01 — Business Partner Master Foundation (İş Ortağı Ana Verisi — Temel)
 
-> **draft (r1, 2026-11-13).** `status: draft`, `approval_status: pending`. Bu sürüm kod, commit, push, PR ya da onay izni **değildir**. Kod yalnız
-> `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**) ile yazılır
-> (AGENTS.md Çekirdek madde 7, §10). **Onaydan önce kapanması gereken kapılar:** Beste kararları Q-1…Q-7 (§26), `.antigravity` RCS-001 §3 `BPT` satırı
-> (+ aynı adımda X-6), domain-config satırı (X-11). Ali'ye giden maddeler (A-1…A-5) **bilgi** niteliğindedir; T-5 izni verilmiştir.
+> **ready-for-dev (r2, 2026-11-13).** `status: ready-for-dev` (çağıran CT talimatı, S-49), `approval_status: pending`. **Paket onaylanmadan geliştirme
+> başlamaz:** kod yalnız künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**) ile yazılır (AGENTS.md
+> Çekirdek madde 7, §10). Bu sürüm kod, commit, push, PR ya da onay izni **değildir**.
+>
+> **r2 revizyon notu.** Sahip kararları Q-1…Q-7 verildi ve §19.7'ye yazıldı (kaynak `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:14-21`);
+> `.antigravity` kapısı kapandı (commit `63f046c92`: `.antigravity/rules/record-coding-standard.md:76` `BPT` satırı ve
+> `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs:34` `["BPT"] = "MOD-0049-FU01 DL-1"`). Değişen yerler:
+> §4.1, §4.3, §4.5, §4.6, §6, §8.2, §8.4, §8.5, §8.7, §10, §11, §12, §13, X-6, X-11, X-12, AC-6, AC-7, AC-8, AC-11, AC-12, AC-20, AC-22, AC-24, yeni AC-26, §18, §19.7,
+> §19.8, §21, §22, §24, §26. **Onaydan önce kalan kapı:** domain-config satırı (X-11 — CT yazar; metin önerisi §19.8). Ali'ye giden maddeler (A-1…A-5)
+> **bilgi** niteliğindedir; T-5 izni verilmiştir.
 
 ## 0. Kimlik ön kontrolü ve keşif
 
@@ -72,7 +78,7 @@ Bu paketin **DL-1'i MOD-0179 DL-4'ün kapısıdır.**
 Hedef kullanıcı: kiracının ana veri sorumlusu (oluşturur, düzenler, rol verir, pasifleştirir) ve okuma izni olan her modül kullanıcısı (3PL operatörü).
 
 Kapasite özeti: 6 yazma komutu, 4 sorgu, 10 servis ucu, 1 Compact ekran (liste + oluştur + düzenle + ayrıntı), 1 okuma sözleşmesi
-(`BUSINESS-PARTNER-READ` 1.0.0), 1 kayıt kodu türü (`BPT`, öneri), 7 izin anahtarı.
+(`BUSINESS-PARTNER-READ` 1.0.0), 1 kayıt kodu türü (`BPT` — Q-1), 7 izin anahtarı.
 
 ## 2. Ownership and Boundaries
 
@@ -155,15 +161,15 @@ Koleksiyon `mdm_business_partners`.
 
 | Alan | Tip | Zorunlu | Kural |
 |---|---|---|---|
-| `Code` | string | sistem | RCS-001 `{GRUP}-BPT-{000001}` (öneri `BPT`, Q-1); OTOMATİK; oluşturmada bir kez; **değişmez**; yazma isteğinde alan yok |
+| `Code` | string | sistem | RCS-001 `{GRUP}-BPT-{000001}` (Q-1 = `BPT`); OTOMATİK; oluşturmada bir kez; **değişmez**; yazma isteğinde alan yok |
 | `LegalName` | string | Evet | trim, 2..200 (ticari unvan) |
 | `ShortName` | string | Evet | trim, 2..60; **kiracıda tekil** (büyük/küçük harf ve Türkçe karakter duyarsız normalleştirilmiş `ShortNameNormalized` ile); seçim listesinde görünen ad (`displayName`) |
 | `ShortNameNormalized`, `LegalNameNormalized` | string | sistem | arama ve tekillik için (ASCII büyük harf, boşluk sıkıştırma) |
-| `TaxNumber` | string \| null | Hayır | trim, 1..30, `[A-Za-z0-9-]`; **kişisel veri olabilir** (şahıs şirketinde kimlik no); `(TenantId, CountryCode, TaxNumberNormalized)` tekil (Q-4) |
+| `TaxNumber` | string \| null | Hayır | trim, 1..30, `[A-Za-z0-9-]`; **kişisel veri olabilir** (şahıs şirketinde kimlik no); `(TenantId, CountryCode, TaxNumberNormalized)` tekil; listede maskeli, ayrıntıda yetkiliye açık (Q-4) |
 | `TaxNumberNormalized` | string \| null | sistem | boşluk / tire atılmış büyük harf |
 | `Address` | nesne | Evet | `CountryCode` (ISO-3166 alpha-2, `^[A-Z]{2}$`, zorunlu), `City` (1..100, zorunlu), `District` (≤100), `AddressLine` (≤300), `PostalCode` (≤20) |
 | `Contacts` | `BusinessPartnerContact[]` | Hayır | 0..10 (§4.2) |
-| `Roles` | `BusinessPartnerRoleAssignment[]` | oluşturmada ≥1 | §4.3; aynı rol iki kez yok |
+| `Roles` | `BusinessPartnerRoleAssignment[]` | **her zaman ≥1** | §4.3; aynı rol iki kez yok; son rol kaldırılamaz — ortak pasifleştirilir (Q-5) |
 | `Status` | `BusinessPartnerStatus` | sistem | `Active` (oluşturmada) \| `Inactive` (§8.2) |
 | `StatusReason`, `StatusChangedAt`, `StatusChangedBy` | string / UTC / string | sistem | gerekçe 10..500 |
 | `CreatedBy`, `UpdatedBy` | string | sistem | JWT `sub` — yalnız denetim kimliği, yetki girdisi değil (Brand emsali) |
@@ -191,7 +197,8 @@ Gömülü.
 | `Role` | `BusinessPartnerRole` | v1 kümesi `{ ThirdPartyLogistics }`; string olarak saklanır |
 | `AssignedAt`, `AssignedBy` | UTC / string | sunucu |
 
-Rol kaldırılınca atama satırı kayıttan çıkar; iz geçmişte kalır (§4.4).
+Rol kaldırılınca atama satırı kayıttan çıkar; iz geçmişte kalır (§4.4). **Değişmez kural (Q-5):** kayıtta her an en az bir rol vardır; son rolü kaldırma
+isteği 409 `MDM_BP_LAST_ROLE` döner ve hiçbir şey yazmaz — bir ortağın kullanımını bitirmenin yolu pasifleştirmedir (§8.2).
 
 ### 4.4 BusinessPartnerHistoryEntry
 Koleksiyon `mdm_business_partner_history`, yalnız ekleme.
@@ -206,19 +213,23 @@ Koleksiyon `mdm_business_partner_history`, yalnız ekleme.
   Yeni rol ayrıca rol başına alan gerektirirse (ör. tedarikçi ödeme koşulu) o alanlar bu kökte değil **rol sahibinin modülünde** tutulur (BL-665 ile tutarlı).
 - Sorgu `role` parametresi bilinmeyen değerde **400** `MDM_BP_ROLE_UNKNOWN` döner (sessiz boş liste yok).
 - Tüketiciler rolü string olarak okur; bilinmeyen rol değerini yok sayar (ileri uyum — §8.4 tüketici kuralı).
+- **v1 sonucu (Q-5 + tek değerli küme):** her kayıt tam olarak `ThirdPartyLogistics` taşır; bu yüzden v1 üretiminde rol ver her zaman 409
+  `MDM_BP_ROLE_ALREADY_ASSIGNED`, rol kaldır her zaman 409 `MDM_BP_LAST_ROLE` döner. İki komut ve uçları genişleme noktası olarak durur (Q-5: sapmalar paketteki
+  gibi); başarı yolları ikinci rol geldiğinde o rolün paketinde AC'lenir (C-5). Ekranda Roller sekmesi v1'de salt okunurdur (§11).
 
 ### 4.6 Kişisel veri kuralı
 MOD-0179 r1 F-5 notunun devri.
-Kararlar 01 `:44-45`: MOD-0179'un "ham mesajda kişisel veri 90 gün sonra kaldırılır" kuralı MDM iş ortağı `Contacts` için **ayrıca** değerlendirilecekti. Öneri (Q-3):
+Kararlar 01 `:44-45`: MOD-0179'un "ham mesajda kişisel veri 90 gün sonra kaldırılır" kuralı MDM iş ortağı `Contacts` için **ayrıca** değerlendirilecekti. **Karar (Q-3, Beste 2026-11-13):**
 1. **90 gün kuralı uygulanmaz:** ham mesaj işlem kaydıdır; iletişim kişisi ise ortak etkin olduğu sürece işin yürümesi için gereken canlı ana veridir.
 2. **En aza indirme:** yalnız iş iletişim alanları (§4.2); kimlik no / kişisel adres alanı yok.
 3. **Silme hakkı:** kişi `UpdateBusinessPartnerCommand` ile listeden çıkarılınca kayıttan **kalıcı** gider; geçmişte ve merkezi denetimde değeri **yoktur**, yalnız
    `Contacts` alan adı yazılır (AUD-001 §3 `.antigravity/rules/audit-trail-standard.md:112-115`: "Bir alan değiştiyse adı yazılır, değeri değil").
-4. **Yayılım sınırı:** liste uçları, dışa aktarım ve sözleşmenin liste öğesi kişi / adres satırı / posta kodu / vergi no **taşımaz**; yalnız tekil uç taşır.
+4. **Yayılım sınırı:** liste uçları, dışa aktarım ve sözleşmenin liste öğesi kişi / adres satırı / posta kodu **taşımaz**; vergi no listede yalnız **maskeli**
+   (madde 5), dışa aktarımda hiç yoktur; kişi ve adres yalnız tekil uçtadır.
    Tüketici (MOD-0179) bu alanları **saklamaz** (MOD-0179 §4.1: "Ad, adres, iletişim, vergi no alanı YOKTUR", ≤ 60 sn önbellek).
-5. **Vergi no maskeleme (Q-4):** tekil uç `TaxNumber`'ı yalnız `mdm.business-partners.update` sahibine açık döner; diğerlerine maskeli (`6140•••••21`
-   biçimi: ilk 4 + son 2). Liste ve sözleşme listesinde vergi no hiç yoktur.
-6. **Pasif ortakta saklama süresi** (ör. pasifleşmeden N ay sonra kişilerin silinmesi): v1'de **zamanlanmış iş yok**; süre Beste kararıdır (Q-3), karar gelirse
+5. **Vergi no (Q-4 kararı):** kiracıda (ülke, vergi no) tekil; **listede her zaman maskeli** (`taxNumberMasked`, `6140•••••21` biçimi: ilk 4 + son 2; kimse için
+   açık değil); **ayrıntıda yetkiliye açık** — tekil uç `TaxNumber`'ı yalnız `mdm.business-partners.update` sahibine açık, diğerlerine maskeli döner.
+6. **Zamanlanmış temizlik yok (Q-3):** v1'de pasif ortakta kişi verisi için zamanlanmış silme / maskeleme işi **yoktur**; saklama süresi istenirse ayrı karar ve
    takip adayı (§20).
 7. Okuma denetimi: kişi verisi KVKK özel nitelikli değil, toplu dışa aktarım kişi verisi taşımıyor → AUD-001 §7 okuma denetimi gerekmez (§21 okuma satırı).
 
@@ -270,13 +281,13 @@ MDM dosyaları (X-1, X-2, X-3) T-5 izniyle (Ali, 2026-11-13; kararlar 01 `:32`) 
 | X-3 | MDM kayıt kodu portu `IRecordCodeAllocator` + HTTP bağdaştırıcısı | **yok** (MdmService `src` altında `RecordCode` geçen dosya yalnız `ExternalReferenceReservation.cs`, `MasterDataAtomicWrite.cs` — ölçüldü); MOD-0289 Repo Scope'u "MOD-0217 ile **tek** port ve tek bağdaştırıcı: iki paketten DL-1'e önce giren açar" der | MOD-0289 / MOD-0217'den önce DL-1'e girilirse port **MOD-0289'un imzasıyla** açılır (`AllocateAsync(prefixScope, legalEntityId, recordType, idempotencyKey)`); sonra girilirse yalnız tüketilir. İkinci port, kendi sayaç, yedek üretici ya da ürün ailesinin `CodeReservation`'ı **yok** | MDM + Treasury CT (MOD-0289) | DL-1 |
 | X-4 | `services/Diten.Platform/src/Diten.Platform.Domain/Features/RecordCodes/RecordCodeTypeCatalog.cs:37` bölgesi | `BNK`, `BAC`, `AGR` Mdm türleri; `BPT` yok | `new("BPT", "İş Ortağı", "OTOMATİK", "MOD-0049-FU01", [RecordCodePrefixScope.Group], Mdm, "mdm.business-partners.create")` | Platform (merkez / Beste — MOD-0040-FU02) | DL-1 |
 | X-5 | `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedRecordCodeCredentialAuthenticator.cs:21` | Mdm tüketicisi `["BNK", "BAC", "AGR"]` | listeye `"BPT"` | Platform (merkez / Beste) | DL-1 |
-| X-6 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs:27-37` (`RuleAheadOfCatalogue`), `:41` (AC16), `:75` (AC09) | `TPX` dahil dokuz satır | **`.antigravity` kapısında** RCS-001 §3'e `BPT` yazıldığı aynı adımda `["BPT"] = "MOD-0049-FU01 DL-1"` (yoksa AC16 kırmızı — MOD-0179 X-18 emsali); **DL-1'de** X-4 ile aynı commit'te satır kalkar ve AC09'a `BPT` → `[Group]` iddiası eklenir | Platform (merkez) | kapı + DL-1 |
+| X-6 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs:27-38` (`RuleAheadOfCatalogue`), `:34` (`BPT` satırı) | **kapıda yazıldı** (`63f046c92`): `["BPT"] = "MOD-0049-FU01 DL-1"` | **DL-1'de** X-4 ile aynı commit'te `BPT` satırı kalkar ve AC09'a `BPT` → `[Group]` iddiası eklenir | Platform (merkez) | DL-1 |
 | X-7 | `docs/analysis/contracts/record-code-allocate.md` (1.0.0 FROZEN; `:5` "değişiklik yalnız yeni sürümle ve yalnız ekleme") | `:51` Mdm çağıran türleri, `:63` tür → izin tablosu, `:160-169` tür kataloğu | eklemeli **1.1.0**: `BPT` (yalnız Group, çağıran Mdm, izin `mdm.business-partners.create`) | CT (MOD-0040-FU02 sözleşme sahibi) | DL-1 kabulünden önce |
 | X-8 | `gateway/Diten.ApiGateway/ocelot.json` — MDM rota bloğu (`/api/mdm/brands` `:3819`, `/{everything}` `:3836` emsali) | `/api/mdm/business-partners` yok; MDM her kaynağı ayrı rota | iki blok: `/api/mdm/business-partners` (`GET`, `POST`, `OPTIONS`) ve `/api/mdm/business-partners/{everything}` (`GET`, `POST`, `PUT`, `OPTIONS`) → `localhost:5059`; **`DELETE` yok** | **integration-agent** (T-6) | rota DL-1; test DL-3 |
 | X-9 | `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`, `frontend/Diten.Web/Resources/PageHelpResource.{7}.resx`, `frontend/Diten.Web/Services/Help/PageHelpCatalog.cs` | `Nav.Module.BRANDPRODUCTMASTER`, `Nav.Page.BRANDS` var; iş ortağı anahtarı yok | `Nav.Module.BUSINESSPARTNERMASTER`, `Nav.Page.BUSINESSPARTNERS`, `Perm.Entity.BUSINESSPARTNERS`, `Help.BUSINESSPARTNERS.*` 7 dilde; **yeni izin fiili yok** (§14 — rol köprüsü değişmez) | Web ortak (merkez) | DL-2 |
 | X-10 | `services/Diten.AuthService/**` rol şablonları | — | 3PL operatör rolüne `mdm.business-partners.read` (MOD-0179 Q-13 ile birlikte); ana veri sorumlusu rolüne yazma anahtarları | Ali (Auth) | ayrı WP — A-2 |
-| X-11 | `execution/domains/master-data-management/domain-config.md` — `:58` "Frontend / Gateway Scope Exception (MOD-0290-FU02 only)", `:71` "This exception applies to no other MDM module pack." | MOD-0049 / FU01 satırı yok | "In-Scope" satırı (MOD-0049-FU01, placement T-5 / Q-10) + frontend / gateway kapsam cümlesi (`MasterData/BusinessPartners`, iki rota) | CT / MDM (bilgi Ali) | **onaydan önce** (Q-7) |
-| X-12 | `tests/architecture/audit-ledger/Diten.MdmService.md` | `:12` `mdm-merkezi-iletim` yol b işaret izi kabul edilmiş | **Q-2 = A ise değişiklik yok** (işaret izi komutları tanır); Q-2 = B ise `mdm-guvenilir-kaynak-niyeti` belirtecine yazma üyeleri + `tests/architecture/audit-ledger/CT-DECISIONS.md` satırı (CT kararı) | CT | DL-1 |
+| X-11 | `execution/domains/master-data-management/domain-config.md` — `:58` "Frontend / Gateway Scope Exception (MOD-0290-FU02 only)", `:71` "This exception applies to no other MDM module pack." | MOD-0049 / FU01 satırı yok | "In-Scope" satırı (MOD-0049-FU01, placement T-5 / Q-10) + frontend / gateway kapsam cümlesi (`MasterData/BusinessPartners`, iki rota) | CT yazar (bilgi Ali); bu paket domain-config'e dokunmaz — metin önerisi §19.8 | **onaydan önce** (Q-7 kararı) |
+| X-12 | `tests/architecture/audit-ledger/Diten.MdmService.md` | `:12` `mdm-merkezi-iletim` yol b işaret izi kabul edilmiş | **değişiklik yok** (Q-2 = A kararı: işaret izi komutları tanır; yeni borç satırı yok) | — | — |
 
 **MDM bekçi testleri değişmez (bağlayıcı):** MdmService test projelerindeki **mevcut** dosyalar hiçbir satırı değişmeden yeşil kalır; X-1/X-2'nin üretim satırları dışında
 mevcut MDM üretim dosyası değişmez. Kanıt: dilim kabulünde `git diff --stat <dilim-başı>..<dilim-sonu> -- services/Diten.MdmService/tests` yalnız **yeni** dosyaları
@@ -284,9 +295,9 @@ gösterir (AC-14).
 
 ## 6. Protected Paths
 
-- `.antigravity/**` — kullanıcı onayı ister. **Kapı — paket onayından ÖNCE:** RCS-001 §3'e `BPT` satırı (Q-1) ve aynı adımda X-6 (`RuleAheadOfCatalogue`).
-  **Hazırlayan:** CT; **onaylayan:** Beste. Bu paket ve dilimleri `.antigravity/**`'a **yazmaz**. Önerilen RCS-001 §3 satırı:
-  `` | İş Ortağı (MOD-0049-FU01) | OTOMATİK | `BPT` | yok — **yeni** (sahip kararı Q-1, MOD-0049-FU01 paketi; kod yok); kiracı geneli kayıt — şirket öneki yerine grup öneki; ortak servisten (MOD-0040-FU02, `prefixScope = Group`) | ``
+- `.antigravity/**` — kullanıcı onayı ister. **Kapı KAPANDI (Beste "yaz", commit `63f046c92`):** RCS-001 §3 `BPT` satırı
+  `.antigravity/rules/record-coding-standard.md:76` ve aynı adımda X-6 (`RecordCodeTypeCatalogTests.cs:34`); 17/17 yeşil, satır silinince AC16 kırmızı (karar kaydı
+  `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:14-16`). Bu paket ve dilimleri `.antigravity/**`'a **yazmaz**.
   PKS-001 değişmez: `mdm.*` ad alanı `Diten.MdmService`'indir (`.antigravity/rules/permission-key-standard.md:97`); `mdm.business-partners` yeni kaynak, yeni ad alanı değil.
 - `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız integration-agent (X-8).
 - `services/Diten.Platform/**` — yalnız X-4, X-5, X-6'nın adlı satırları (Platform sahibinin eliyle).
@@ -305,7 +316,7 @@ gösterir (AC-14).
 | MDM `IRecordCodeAllocator` portu | HARD (DL-1) | yok (X-3) | kod isteği | X-3 | MDM + Treasury CT |
 | Kiracı grup öneki hizalaması | HARD (işletim) | Platform ucu var (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Admin/TenantRecordCodeGroupPrefixController.cs`); hizalanmamış kiracıda servis 409 `GROUP_PREFIX_MISSING` | grup öneki (bugün `GMG`) | yok — Platform yöneticisi işlemi | Platform yöneticisi |
 | Platform `TrustedRecordCode` Mdm kimlik bilgisi | HARD (işletim) | `services/Diten.Platform/src/Diten.Platform.API/appsettings.json:207` `"Mdm"` bağlaması boş değerlerle | MDM → Platform çağrısı | yok — ortam sırları | işletim (A-5) |
-| MDM merkezi denetim iletimi | HARD | `IPlatformAuditForwarder` kayıtlı (`services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs:462`); defter `tests/architecture/audit-ledger/Diten.MdmService.md:12` yol b, `:18` "En iyi çaba: iletim hatası yutulur" | §21 | X-12 (Q-2 = B ise) | MDM |
+| MDM merkezi denetim iletimi | HARD | `IPlatformAuditForwarder` kayıtlı (`services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs:462`); defter `tests/architecture/audit-ledger/Diten.MdmService.md:12` yol b, `:18` "En iyi çaba: iletim hatası yutulur" | §21 (Q-2 = A; başarısız komut `Outcome = Failed` ile iletilir — `services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/AuditForwardingBehavior.cs:60`) | yok (X-12) | MDM |
 | BL-501 ortak iletici | SOFT | `services/Diten.Building.Blocks/Diten.BuildingBlocks.CentralAudit.Tests` var; MdmService kendi iletici kopyasını kullanır (BL-501'e geçmedi) | — | yok: FU01 MDM'nin mevcut işaretini kullanır; MDM'nin BL-501'e geçişi ayrı merkez işi, FU01 komutlarını değiştirmez | merkez |
 | MOD-0018 RBAC + plan senkronu | HARD | `[HasPermission]` + manifest (Brand emsali) | 7 anahtar | X-10 (A-2), kiracı planına modül (A-3) | Ali / Platform yöneticisi |
 | Gateway | HARD (DL-1 canlı kanıt, DL-2, MOD-0179 DL-4) | `/api/mdm/business-partners` yok | rota | X-8 | integration-agent |
@@ -325,7 +336,7 @@ gösterir (AC-14).
   sahipliği kararı gelirse doğrulama sıkılaşır (§20).
 
 ### 8.2 Durum makinesi
-`Active` →(deactivate, gerekçe 10..500)→ `Inactive` →(activate, gerekçe 10..500)→ `Active`. Öneri (Q-6): `Inactive` kayıt **salt okunur** — güncelleme ve rol
+`Active` →(deactivate, gerekçe 10..500)→ `Inactive` →(activate, gerekçe 10..500)→ `Active`. **Karar (Q-6):** `Inactive` kayıt **salt okunur** — güncelleme ve rol
 komutları 409 `MDM_BP_INACTIVE`; yalnız `activate` çalışır. Aynı duruma geçiş 409 (`MDM_BP_ALREADY_ACTIVE` / `MDM_BP_ALREADY_INACTIVE`). Pasifleşme tüketicide
 yeni bağlamayı kapatır, mevcut bağlantıyı bozmaz (MOD-0179 §4.10 `:365-366`); FU01 tüketiciyi bilmez ve onu denetlemez.
 
@@ -354,11 +365,11 @@ Kimlik: kullanıcı token'ı (JWT) + Gateway kiracı çözümü; izin `mdm.busin
 | `orderBy`, `orderDir` | string | beyaz liste: `code`, `shortName`, `legalName`, `status`, `updatedAt`; `asc` \| `desc`; başka değer 400 |
 
 Yanıt `data`: `{ items: BusinessPartnerListItem[], totalCount, page, pageSize }`.
-`BusinessPartnerListItem` = `{ id, code, legalName, shortName, displayName (= shortName), countryCode, city, status, roles: string[], version, updatedAt }` —
-**kişisel veri yok** (kişi, adres satırı, posta kodu, vergi no taşımaz).
+`BusinessPartnerListItem` = `{ id, code, legalName, shortName, displayName (= shortName), countryCode, city, taxNumberMasked (string | null, her zaman maskeli),
+status, roles: string[], version, updatedAt }` — kişi, adres satırı, posta kodu **taşımaz**; vergi no yalnız maskeli (Q-4).
 
 **Operasyon 2 — `getBusinessPartner`:** `GET /api/mdm/business-partners/{id}` → `BusinessPartnerDetail` = liste öğesi alanları + `taxNumber` (maskeli ya da açık —
-§4.6 madde 5; `taxNumberMasked: bool`), `address { countryCode, city, district, addressLine, postalCode }`, `contacts: [{ contactId, type, name, email, phone }]`,
+§4.6 madde 5; `isTaxNumberMasked: bool`), `address { countryCode, city, district, addressLine, postalCode }`, `contacts: [{ contactId, type, name, email, phone }]`,
 `roles: [{ role, assignedAt }]`, `statusReason`, `statusChangedAt`, `createdAt`. 404 `MDM_BP_NOT_FOUND` (yok, silinmiş ya da başka kiracı — aynı gövde).
 
 **Tüketici kuralları (bağlayıcı):** (1) tüketici yalnız `id` ve `code`'u saklar; ad / adres / kişi / vergi no **saklanmaz** (önbellek ≤ 60 sn); (2) bilinmeyen
@@ -372,7 +383,7 @@ operasyon 2'nin `contacts`'ından türetir (saklamaz).
 **Kullanıcısız okuma:** v1 yalnız kullanıcı token'ıyla okunur. MOD-0179'un kullanıcısız işçisi (giden mesaj öncesi ortak durumu, MOD-0179 AC-37) servis
 kimliği ister (MOD-0033-FU02, MOD-0179 Q-12) — gelince sözleşmeye **eklemeli** 1.1.0 (A-4). Değişiklik olayı yayını v1'de yok (§20).
 
-**Fikstürler (taslakta):** F-1 etkin 3PL ortağı; F-2 pasif 3PL ortağı; F-3 rolsüz ortak; F-4 başka kiracının kaydı (404); F-5 maskeli vergi no; F-6 bilinmeyen rol
+**Fikstürler (taslakta):** F-1 etkin 3PL ortağı; F-2 pasif 3PL ortağı; F-3 başka rollü ortak (ileri uyum; v1 API'si üretemez — test belgesi doğrudan Mongo'ya yazılır); F-4 başka kiracının kaydı (404); F-5 maskeli vergi no; F-6 bilinmeyen rol
 sorgusu (400); F-7 MDM kapalı (Gateway 502/503).
 
 ### 8.5 Hata kodları
@@ -385,12 +396,13 @@ Sınıf `BusinessPartnerErrorCodes`.
 | `MDM_BP_TAX_NUMBER_DUPLICATE` | 409 | aynı ülke + vergi no kiracıda var (Q-4) |
 | `MDM_BP_EXPECTED_VERSION_REQUIRED` | 400 | yazma isteğinde `expectedVersion` yok / negatif |
 | `MDM_BP_VERSION_CONFLICT` | 409 | sürüm uyuşmuyor; yazma yok |
-| `MDM_BP_INACTIVE` | 409 | pasif kayıtta güncelleme / rol komutu (Q-6) |
+| `MDM_BP_INACTIVE` | 409 | pasif kayıtta güncelleme / rol komutu (Q-6 kararı) |
 | `MDM_BP_ALREADY_ACTIVE`, `MDM_BP_ALREADY_INACTIVE` | 409 | aynı duruma geçiş |
 | `MDM_BP_REASON_REQUIRED` | 400 | gerekçe yok / 10..500 dışında |
 | `MDM_BP_ROLE_UNKNOWN`, `MDM_BP_STATUS_UNKNOWN` | 400 | tanımsız rol / durum |
 | `MDM_BP_ROLE_ALREADY_ASSIGNED` | 409 | rol zaten var |
 | `MDM_BP_ROLE_NOT_ASSIGNED` | 409 | kaldırılan rol kayıtta yok |
+| `MDM_BP_LAST_ROLE` | 409 | kaldırılmak istenen rol kaydın son rolü (Q-5) — ortak pasifleştirilir |
 | `MDM_BP_ROLES_REQUIRED` | 400 | oluşturmada rol yok |
 | `MDM_BP_CONTACT_INVALID` | 400 | kişi kuralı (§4.2) ya da 10'dan fazla kişi |
 | `MDM_BP_RECORD_CODE_UNAVAILABLE` | 503 | §8.3 |
@@ -404,11 +416,11 @@ görür. Gerekçe: 3PL ortağı grup düzeyinde sözleşilen dış hizmet sağla
 görünürlük gerekirse ayrı karar (§20).
 
 ### 8.7 Merkezi denetim ve yerel geçmiş
-Öneri Q-2 = **A**: her komut `IAuditableCommand` + `IAuditMetadataProvider` (+ `IAuditDetailsProvider`) taşır → MDM `AuditForwardingBehavior` → `IPlatformAuditForwarder`
+**Karar Q-2 = A (Beste 2026-11-13):** her komut `IAuditableCommand` + `IAuditMetadataProvider` (+ `IAuditDetailsProvider`) taşır → MDM `AuditForwardingBehavior` → `IPlatformAuditForwarder`
 → `POST /api/internal/audit/append` (yol **b**, iz `mdm-merkezi-iletim`, en iyi çaba). İletim kaybına karşı kaydın kendi geçmişi (§4.4) aynı işlemde yazılır
 (Brand emsali: "audited twice over"). Merkezi kayıt: `Category = MasterData`, `EntityType = "BusinessPartner"`, `SourceModule = "business-partner-master"`,
 `Operation` §21. **K2 sınıfı değildir** (kimlik / yetki / kiracı durumu / GxP / KVKK özel nitelikli veri değiştirmez) → kapalı-başarısız şartı yoktur.
-Alternatif Q-2 = **B**: güvenilir kaynak niyeti (`mdm-guvenilir-kaynak-niyeti`, MOD-0289 emsali) — daha güçlü, daha pahalı (X-12, CT kararı).
+Seçilmeyen seçenek B (güvenilir kaynak niyeti, `mdm-guvenilir-kaynak-niyeti`, MOD-0289 emsali) bu pakette kullanılmaz; X-12'de değişiklik yoktur.
 
 ## 9. Layout & Shell Contract
 - `shell: tenant` → `Index.cshtml`, `Create.cshtml`, `Edit.cshtml`, `Details.cshtml` dosyalarının her birinde Razor bloğunda **açıkça** `Layout = "_LayoutTenantShell";`
@@ -468,7 +480,7 @@ services/Diten.MdmService/src/Diten.MdmService.Application/Features/BusinessPart
 Adlandırma: Handler / Validator adlarında `Command` / `Query` soneki **yok**. Controller sınıf düzeyinde `[Authorize]` + `[ApiController]` + `[Route("api/mdm/business-partners")]`;
 `[HasPermission]` **her eylemde**, sınıf düzeyinde yasak (AC-10).
 
-**Golden Compact'tan bilinçli sapmalar (Q-5 — CT / Beste kabulü):**
+**Golden Compact'tan bilinçli sapmalar (Q-5 kararı: paketteki gibi kabul):**
 | Sapma | Gerekçe |
 |---|---|
 | `Delete` / `BulkDelete` komutu, handler'ı, ucu yok | ana veride silme yok, pasifleştirme var (Brand emsali `BrandsController.cs` "There is deliberately NO DELETE action") |
@@ -505,9 +517,10 @@ frontend/Diten.Web/Resources/Views/MasterData/BusinessPartners/
 **Compact'ta YASAK:** `_CreateEditOffcanvas.cshtml`, `_DetailsQuickView.cshtml`, Index içinde oluştur / düzenle paneli.
 
 Kurallar: (1) toplu seçim yok (silme yok) → `_BulkActionBar` yok; (2) satır eylemleri izinle çizilir: Görüntüle (`read`), Düzenle (`update`, yalnız `Active`),
-Pasifleştir (`deactivate`), Etkinleştir (`activate`); araç çubuğu: Yeni (`create`), Dışa aktar (`export`); (3) Pasifleştir / Etkinleştir / Rol kaldır gerekçe ister —
+Pasifleştir (`deactivate`), Etkinleştir (`activate`); araç çubuğu: Yeni (`create`), Dışa aktar (`export`); (3) Pasifleştir / Etkinleştir (ve çizildiğinde Rol kaldır) gerekçe ister —
 Premium SweetAlert2 (MOD-0013), birincil düğme `data-dt-primary="chord"` (BL-586); (4) ülke listesi vekil üzerinden `/api/lookups/reference/countries`, sabit
-yedek **yok**; (5) form `Code` girdisi içermez; (6) "Roller" sekmesi: rol ver (v1 seçenek tek: 3PL ortağı) / rol kaldır (gerekçe); (7) ayrıntıda vergi no maskeli
+yedek **yok**; (5) form `Code` girdisi içermez; (6) "Roller" sekmesi: rolleri listeler; "Rol ver" düğmesi yalnız atanabilir bir rol varken, "Rol kaldır" yalnız kayıtta birden fazla rol varken çizilir — v1'de
+ikisi de çizilmez (§4.5; son rol kaldırılamaz, Q-5); (7) ayrıntıda vergi no maskeli
 gelirse "maskeli" rozeti; (8) "Geçmiş" sekmesi `GET …/{id}/history` (alan adları ve kişisel olmayan değerler). Liste ekranı dokunma protokolü:
 `python3 .antigravity/scripts/verify_datatable_page.py . --area MasterData --module BusinessPartners --api-profile proxy --data-mode --format gaps`.
 
@@ -528,10 +541,10 @@ gelirse "maskeli" rozeti; (8) "Geçmiş" sekmesi `GET …/{id}/history` (alan ad
 | ExpectedVersion (güncelle / durum / rol) | Evet | ≥0 | koşullu yazım `Version == expected` | — |
 | Reason (deactivate / activate / rol kaldır) | Evet | trim, 10..500 | — | — |
 | Reason (rol ver) | Hayır | ≤500 | — | — |
-| Role (rol ver / kaldır) | Evet | tanımlı enum adı | — | atanmış mı / atanmamış mı |
+| Role (rol ver / kaldır) | Evet | tanımlı enum adı | — | atanmış mı / atanmamış mı; kaldırmada son rol değil (Q-5) |
 | Code, TenantId, Status, Version | — | istekte alan **yok**; gönderilirse bağlanmaz | — | — |
 
-İlişkili kural: pasif kayıtta güncelleme ve rol komutları 409 `MDM_BP_INACTIVE` (Q-6).
+İlişkili kurallar: pasif kayıtta güncelleme ve rol komutları 409 `MDM_BP_INACTIVE` (Q-6); son rolün kaldırılması 409 `MDM_BP_LAST_ROLE` (Q-5).
 
 ## 13. Failure Path to Verify
 
@@ -546,7 +559,8 @@ gelirse "maskeli" rozeti; (8) "Geçmiş" sekmesi `GET …/{id}/history` (alan ad
 - **Gerekçesiz pasifleştirme** — 400 `MDM_BP_REASON_REQUIRED`; durum değişmez.
 - **Bilinmeyen rol sorgusu** — 400 `MDM_BP_ROLE_UNKNOWN` (sessiz boş liste değil).
 - **Silme denemesi** — `DELETE /api/mdm/business-partners/{id}` Gateway'de rota yok, serviste eylem yok (405 / 404); kayıt değişmez.
-- **Merkezi denetim iletimi düşer** — komut başarılı, yerel geçmiş satırı var (yol b en iyi çaba; Q-2 = A).
+- **Merkezi denetim iletimi düşer** — komut başarılı, yerel geçmiş satırı var (yol b en iyi çaba; Q-2 kararı).
+- **Son rolü kaldırma** — 409 `MDM_BP_LAST_ROLE`; kayıt ve sürüm değişmez; ileti "ortağı pasifleştirin" der (Q-5).
 - **Dışa aktarım çok büyük** — 413 `EXPORT_TOO_LARGE` (> 50 000 satır), kısmi dosya yok (Brand emsali).
 
 ## 14. Authorization Convention
@@ -597,27 +611,29 @@ controller'ın uyguladığı anahtarla birebir (Brand manifest notu). Plan senkr
 - [ ] AC-3 (zorunlu) — Kod `IRecordCodeAllocator` ile `prefixScope = Group`, `recordType = "BPT"`; biçim `^[A-Z]{2,5}-BPT-\d{6,}$`; yazma isteklerinde `Code` alanı yok, hiçbir uç kodu değiştiremez; kod servisi 403 → 403, diğer her hata / zaman aşımı / bağlı olmayan port → 503 `MDM_BP_RECORD_CODE_UNAVAILABLE`, kayıt ve geçmiş yok, yedek kod yok (sahte allocator ile). S-3a: allocator hatasında yerel kod üret → vaka kırmızı; S-3b: `UpdateBusinessPartnerHandler`'a `Code` ataması ekle → değişmezlik vakası kırmızı; S-3c: `prefixScope`'u `LegalEntity` yap → istek iddiası kırmızı.
 - [ ] AC-4 (zorunlu) — §12 doğrulamaları; kısa ad ve (ülke, vergi no) tekilliği hem ön denetimde hem index'te; iki eşzamanlı aynı kısa adlı oluşturmada tam biri başarılı, diğeri 409 (gerçek Mongo). S-4a: ön denetimi ve tekil index'i kaldır → eşzamanlı vaka kırmızı; S-4b: kişi kuralında "Email ∨ Phone" denetimini kaldır → vaka kırmızı.
 - [ ] AC-5 (zorunlu) — Güncelle / pasifleştir / etkinleştir / rol ver / rol kaldır `expectedVersion` ister (yoksa 400); uyuşmazlıkta 409 `MDM_BP_VERSION_CONFLICT` ve hiçbir alan yazılmaz; başarılı her yazma `Version`'ı +1 artırır. S-5: koşullu yazımdan sürüm yüklemini kaldır → çakışma vakası kırmızı.
-- [ ] AC-6 (zorunlu) — Pasifleştir / etkinleştir gerekçe 10..500 ister; pasif kayıtta güncelleme ve rol komutları 409 `MDM_BP_INACTIVE` (Q-6); aynı duruma geçiş 409; controller'larda, komut katmanında ve manifestte silme yok (yansıma testi: `BusinessPartnersController`'da `HttpDelete` yok, `Features/BusinessPartner` altında `Delete*` tipi yok). S-6a: gerekçe denetimini kaldır → vaka kırmızı; S-6b: controller'a `[HttpDelete]` eylem ekle → mimari test kırmızı; S-6c: pasif denetimini güncelleme handler'ından kaldır → vaka kırmızı.
-- [ ] AC-7 (zorunlu) — `BusinessPartnerRole` değer kümesi tam olarak `{ ThirdPartyLogistics }` (küme testi; yeni rol aynı commit'te testi ve paketi günceller — §4.5); rol ver: tanımsız 400, var olan 409; rol kaldır: gerekçe zorunlu, atanmamış 409; oluşturma ≥1 rol ister; son rolün kaldırılması Q-5 kararına göre (öneri: izinli, kayıt rolsüz kalır). S-7a: enum'a ikinci değer ekle → küme testi kırmızı; S-7b: rol kaldırmada gerekçe denetimini kaldır → vaka kırmızı.
-- [ ] AC-8 (zorunlu) — Liste `role` + `status` + `search` + `countryCode` süzgeçleri, sayfa (`pageSize` ≤ 100), beyaz liste sıralama; `role=ThirdPartyLogistics&status=Active` yalnız etkin ve 3PL rollü kayıtları döndürür (F-1 döner, F-2 / F-3 dönmez); bilinmeyen rol / durum / sıralama 400; tekil uç ve geçmiş ucu çalışır. S-8a: rol süzgecini kaldır → F-3 vakası kırmızı; S-8b: durum süzgecini kaldır → F-2 vakası kırmızı; S-8c: sıralama beyaz listesini kaldır → `orderBy=tenantId` vakası kırmızı.
+- [ ] AC-6 (zorunlu) — Pasifleştir / etkinleştir gerekçe 10..500 ister; pasif kayıtta güncelleme ve rol komutları 409 `MDM_BP_INACTIVE` (Q-6 kararı; yalnız etkinleştir çalışır); aynı duruma geçiş 409; controller'larda, komut katmanında ve manifestte silme yok (yansıma testi: `BusinessPartnersController`'da `HttpDelete` yok, `Features/BusinessPartner` altında `Delete*` tipi yok). S-6a: gerekçe denetimini kaldır → vaka kırmızı; S-6b: controller'a `[HttpDelete]` eylem ekle → mimari test kırmızı; S-6c: pasif denetimini güncelleme handler'ından kaldır → vaka kırmızı.
+- [ ] AC-7 (zorunlu) — `BusinessPartnerRole` değer kümesi tam olarak `{ ThirdPartyLogistics }` (küme testi; yeni rol aynı commit'te testi ve paketi günceller — §4.5); rol ver: tanımsız 400, var olan 409; rol kaldır: gerekçe zorunlu (gerekçe denetimi son rol denetiminden **önce** çalışır, 400), atanmamış 409; oluşturma ≥1 rol ister; son rol kuralı AC-26'da. S-7a: enum'a ikinci değer ekle → küme testi kırmızı; S-7b: rol kaldırmada gerekçe denetimini kaldır → gerekçesiz istek vakası (400 beklenir) kırmızı.
+- [ ] AC-8 (zorunlu) — Liste `role` + `status` + `search` + `countryCode` süzgeçleri, sayfa (`pageSize` ≤ 100), beyaz liste sıralama; `role=ThirdPartyLogistics&status=Active` yalnız etkin ve 3PL rollü kayıtları döndürür (F-1 döner, F-2 / F-3 dönmez; F-3 doğrudan Mongo'ya yazılmış başka rollü test belgesi); bilinmeyen rol / durum / sıralama 400; tekil uç ve geçmiş ucu çalışır. S-8a: rol süzgecini kaldır → F-3 vakası kırmızı; S-8b: durum süzgecini kaldır → F-2 vakası kırmızı; S-8c: sıralama beyaz listesini kaldır → `orderBy=tenantId` vakası kırmızı.
 - [ ] AC-9 (zorunlu) — Kiracılar arası: başka kiracının kaydına GET / PUT / POST eylemleri 404 `MDM_BP_NOT_FOUND` (yok olanla aynı gövde), yazma yok; liste ve dışa aktarım başka kiracı satırı döndürmez (iki kiracılı gerçek Mongo testi). S-9: depo okuma süzgecinden `TenantId` yüklemini düşür → vaka kırmızı.
 - [ ] AC-10 (zorunlu) — 10 eylemin her birinde §3'teki tam anahtarla `[HasPermission]`; sınıf düzeyinde `HasPermission` yok; izinsiz çağrı 403 (HTTP testi, her uç); manifest tam 7 anahtar bildirir, hepsi `mdm.business-partners.` önekli ve her biri bir eylemin anahtarı (`BusinessPartnerMasterManifestProviderTests`). S-10a: bir eylemden `[HasPermission]`'ı kaldır → yansıma testi kırmızı; S-10b: manifestte anahtar yazımını boz → manifest testi kırmızı; S-10c: sınıfa `[HasPermission("mdm.business-partners.read")]` ekle → yansıma testi kırmızı.
-- [ ] AC-11 (zorunlu) — Altı komutun her biri `IAuditableCommand` + `IAuditMetadataProvider` taşır; `Operation` §21'deki gibi; `EntityType = "BusinessPartner"`, `SourceModule = "business-partner-master"`; `AuditTrailStandardTests` defterde **yeni borç satırı olmadan** yeşil (Q-2 = A); ayrıntıda kişisel alanların (`TaxNumber`, `Address.AddressLine`, `Address.PostalCode`, `Address.District`, `Contacts`) yalnız **adı** geçer, değeri geçmez (merkezi ayrıntı ve yerel geçmiş için ayrı vaka). S-11a: `AssignBusinessPartnerRoleCommand`'dan `IAuditableCommand`'ı kaldır → `AuditTrailStandardTests` kırmızı; S-11b: güncelleme ayrıntısına kişinin e-postasını yaz → kişisel veri vakası kırmızı.
-- [ ] AC-12 (zorunlu) — Liste öğesi, dışa aktarım sütun kümesi ve sözleşmenin liste öğesi kişi / adres satırı / posta kodu / vergi no **taşımaz** (yansıma + yanıt gövdesi testi); tekil uç vergi no'yu `update` izni yoksa maskeli (ilk 4 + son 2), varsa açık döner, `taxNumberMasked` buna uyar. S-12a: `BusinessPartnerListItemDto`'ya `TaxNumber` ekle → test kırmızı; S-12b: maskelemeyi kaldır → `read`-yalnız kullanıcı vakası kırmızı.
+- [ ] AC-11 (zorunlu) — Altı komutun her biri `IAuditableCommand` + `IAuditMetadataProvider` taşır; `Operation` §21'deki gibi; `EntityType = "BusinessPartner"`, `SourceModule = "business-partner-master"`; `AuditTrailStandardTests` defterde **yeni borç satırı olmadan** yeşil (Q-2 kararı: yol b + yerel geçmiş); ayrıntıda kişisel alanların (`TaxNumber`, `Address.AddressLine`, `Address.PostalCode`, `Address.District`, `Contacts`) yalnız **adı** geçer, değeri geçmez (merkezi ayrıntı ve yerel geçmiş için ayrı vaka). S-11a: `AssignBusinessPartnerRoleCommand`'dan `IAuditableCommand`'ı kaldır → `AuditTrailStandardTests` kırmızı; S-11b: güncelleme ayrıntısına kişinin e-postasını yaz → kişisel veri vakası kırmızı.
+- [ ] AC-12 (zorunlu) — Q-4 kararı: liste öğesi ve sözleşmenin liste öğesi kişi / adres satırı / posta kodu taşımaz, vergi no'yu yalnız `taxNumberMasked` (ilk 4 + son 2) olarak taşır — `update` sahibine de listede açık değer dönmez; dışa aktarım sütun kümesinde vergi no hiç yok (yansıma + yanıt gövdesi testi); tekil uç vergi no'yu `update` izni yoksa maskeli, varsa açık döner, `isTaxNumberMasked` buna uyar. S-12a: `BusinessPartnerListItemDto`'ya açık `TaxNumber` ekle → test kırmızı; S-12b: tekil uçta maskelemeyi kaldır → `read`-yalnız kullanıcı vakası kırmızı; S-12c: liste maskesini `update` sahibi için atla → `update` sahibinin liste vakası kırmızı.
 - [ ] AC-13 (zorunlu) — Platform kayıt kodu kataloğu `BPT` (`Group`, çağıran Mdm, izin `mdm.business-partners.create`) — X-4, X-5; `RuleAheadOfCatalogue`'dan `BPT` satırı aynı commit'te kalkar ve `RecordCodeTypeCatalogTests` (AC16, AC09 `BPT` → `[Group]`) yeşil; RECORD-CODE-ALLOCATE 1.1.0 eklemeli sürümü (X-7) main'de. S-13: Mdm tüketici listesinden `BPT`'yi çıkar → Platform tüketici eşleme testi (`AC14_the_consumer_map…`) kırmızı.
 - [ ] AC-14 (zorunlu) — MdmService'in **bütün** test projeleri filtresiz yeşil; `git diff --stat <dilim-başı>..<dilim-sonu> -- services/Diten.MdmService/tests` yalnız yeni dosyaları gösterir; mevcut MDM üretim dosyalarında yalnız X-1 / X-2 satırları değişir. S-14: mevcut bir Brand testinin bir satırını değiştir → diff denetimi kabul kaydında kırmızı.
 - [ ] AC-15 (zorunlu) — Canlı kanıt (dev ortamı, Gateway 5000, gerçek Platform kod servisi; `scripts/run_record.py` kaydı): oluşturma `GMG-BPT-…` biçiminde kod alır; `role=ThirdPartyLogistics&status=Active` listesi; başka kiracı 404; Platform kod servisi durdurulunca oluşturma 503 ve kayıt yok. S-15: kod servisi kapalıyken oluşturma 201 dönerse kanıt kırmızı (negatif adım kayıtta zorunlu).
 - [ ] AC-16 (zorunlu) — `GET …/export?format=csv|xlsx`: liste süzgeçleri ve aynı 400'ler, ≤ 50 000 satır (fazlası 413 `EXPORT_TOO_LARGE`, kısmi dosya yok), `Cache-Control: no-store`, sütunlar kişisel veri içermez (AC-12), en iyi çaba `DataExport` olayı (§21 okuma satırı). S-16: sütun kümesine `TaxNumber` ekle → dışa aktarım sözcük bekçisi (Brand `BrandExportWordsGuardTests` deseni) kırmızı.
 
+- [ ] AC-26 (zorunlu) — Q-5 kararı: kayıtta her an ≥1 rol; son rolü kaldırma isteği 409 `MDM_BP_LAST_ROLE`, kayıt / `Version` / geçmiş değişmez, merkezi kayıt `Outcome = Failed`; v1'de her kayıt tek rollü olduğundan `POST …/roles/ThirdPartyLogistics/remove` her zaman bu 409'u döner; kural ortak bir alan yöntemindedir (handler'da değil), ikinci rol eklendiğinde de geçerli kalır. S-26a: alan yöntemindeki son rol denetimini kaldır → vaka kırmızı (kayıt rolsüz kalır); S-26b: denetimi `Count > 0` yerine `Count >= 0` yaz → vaka kırmızı.
+
 **DL-2 — MDM kiracı ekranı**
 - [ ] AC-17 (zorunlu) — `Views/MasterData/BusinessPartners/{Index,Create,Edit,Details}.cshtml` dosyalarının her birinde `Layout = "_LayoutTenantShell";` açıkça yazılı; partial'larda `Layout =` yok. S-17: `Details.cshtml`'den Layout satırını sil → view testi kırmızı.
 - [ ] AC-18 (zorunlu) — Dosya seti tam Compact (§11); `_CreateEditOffcanvas.cshtml` ve `_DetailsQuickView.cshtml` yok; `verify_datatable_page.py . --area MasterData --module BusinessPartners --api-profile proxy --data-mode` PASS (`data-dt-standard="v2"`, `data-dt-data-mode="server"`, sunucu dışa aktarımı) ve `quality-gate-datatable` PASS. S-18a: `_DetailsQuickView.cshtml` ekle → dosya seti testi kırmızı; S-18b: `data-dt-data-mode="client"` yap → doğrulayıcı kırmızı.
 - [ ] AC-19 (zorunlu) — 7 dil (en, tr, fr, es, zh, ar, ru) resx paritesi; nav anahtarları, `Perm.Entity.BUSINESSPARTNERS`, rol etiketi ("3PL ortağı"), durumlar, kişi türleri, hata kodu iletileri; sabit kullanıcı metni yok; `scripts/check_pack_nav_keys.py` PASS; vitest rol etiketi defteri yeşil (yeni fiil yok). S-19: `BusinessPartnersIndex.zh.resx`'ten bir anahtar sil → parite testi kırmızı.
-- [ ] AC-20 (zorunlu) — UAS-001: `read` yoksa Index / Details yalnız `_AccessDenied`, HTTP 403, filtre / başlık / iskelet / düğme yok, yönlendirme yok; Yeni / Düzenle / Pasifleştir / Etkinleştir / Rol ver-kaldır / Dışa aktar düğmeleri yalnız ilgili izinle çizilir; Düzenle yalnız `Active` satırda. S-20a: izin denetimini filtre partial'ından sonraya taşı → view testi kırmızı; S-20b: Dışa aktar düğmesini koşulsuz çiz → view testi kırmızı.
+- [ ] AC-20 (zorunlu) — UAS-001: `read` yoksa Index / Details yalnız `_AccessDenied`, HTTP 403, filtre / başlık / iskelet / düğme yok, yönlendirme yok; Yeni / Düzenle / Pasifleştir / Etkinleştir / Dışa aktar düğmeleri yalnız ilgili izinle çizilir; Düzenle yalnız `Active` satırda; Rol ver / Rol kaldır v1'de çizilmez (§11 kural 6 — atanabilir rol yok, son rol kaldırılamaz). S-20a: izin denetimini filtre partial'ından sonraya taşı → view testi kırmızı; S-20b: Dışa aktar düğmesini koşulsuz çiz → view testi kırmızı.
 - [ ] AC-21 (zorunlu) — Formda `Code` girdisi yok (Edit / Details'ta salt okunur gösterim); ülke seçim listesi vekil üzerinden `/api/lookups/reference/countries`, uç düşerse alan hata durumu gösterir, sabit yedek liste yok; ayrıntıda maskeli vergi no "maskeli" rozetiyle. S-21a: `form.js`'e sabit ülke dizisi ekle → JS taraması kırmızı; S-21b: `_Form.cshtml`'e `Code` girdisi ekle → view testi kırmızı.
-- [ ] AC-22 (zorunlu) — Pasifleştir / Etkinleştir / Rol kaldır Premium SweetAlert2 modalı gerekçe ister (10..500, istemcide ve sunucuda), sunucu hata kodları 7 dilde gösterilir, birincil düğme `data-dt-primary="chord"` (vitest BL-586 yeşil); `window.confirm` yok. S-22: modal gerekçe zorunluluğunu kaldır → vitest vakası kırmızı.
+- [ ] AC-22 (zorunlu) — Pasifleştir / Etkinleştir Premium SweetAlert2 modalı gerekçe ister (10..500, istemcide ve sunucuda), sunucu hata kodları 7 dilde gösterilir, birincil düğme `data-dt-primary="chord"` (vitest BL-586 yeşil); `window.confirm` yok. S-22: modal gerekçe zorunluluğunu kaldır → vitest vakası kırmızı.
 - [ ] AC-23 (zorunlu) — Sayfa yardımı `Help.BUSINESSPARTNERS.Purpose`, `.Audience`, `.Step1…Step4` + `Step{n}Title` 7 dilde (§25); "tur yok". S-23: `PageHelpResource.tr.resx`'ten `Help.BUSINESSPARTNERS.Step1` sil → yardım testi kırmızı.
-- [ ] AC-24 (zorunlu) — Tarayıcı 5059'a ve doğrudan Gateway'e gitmez (yalnız same-origin vekil); vekil her yazmada `[ValidateAntiForgeryToken]`, `Accept-Language` iletir; tarayıcı smoke (E3, kayıtlı): oluştur → ayrıntı → rol kaldır → rol ver → pasifleştir → etkinleştir, tr ve en. S-24: `index.js`'e `localhost:5059` adresi yaz → JS taraması kırmızı.
+- [ ] AC-24 (zorunlu) — Tarayıcı 5059'a ve doğrudan Gateway'e gitmez (yalnız same-origin vekil); vekil her yazmada `[ValidateAntiForgeryToken]`, `Accept-Language` iletir; tarayıcı smoke (E3, kayıtlı): oluştur → ayrıntı → düzenle → pasifleştir (Düzenle düğmesi kaybolur) → etkinleştir, tr ve en. S-24: `index.js`'e `localhost:5059` adresi yaz → JS taraması kırmızı.
 
 **DL-3 — Gateway kapsama testi (integration-agent)**
 - [ ] AC-25 (zorunlu) — `gateway/Diten.ApiGateway.Tests/Mod0049Fu01BusinessPartnerRouteTests.cs`: §3'teki 10 uç (yöntem + yol) 5059'a aynı yolla yönlenir; `DELETE` hiçbir `/api/mdm/business-partners…` rotasında yok; `OPTIONS` iki rotada var; başka hiçbir rota bu öneki yakalamaz; Gateway test projesinin geri kalanı değişmeden yeşil. S-25a: `{everything}` rotasını kaldır → test kırmızı; S-25b: rotaya `DELETE` ekle → test kırmızı.
@@ -652,7 +668,7 @@ controller'ın uyguladığı anahtarla birebir (Brand manifest notu). Plan senkr
 | AC-9 | iki kiracılı gerçek Mongo + HTTP | S-9 |
 | AC-10 | yansıma + HTTP 403 + manifest testi | S-10a, S-10b, S-10c |
 | AC-11 | `AuditTrailStandardTests` + ayrıntı vakası | S-11a, S-11b |
-| AC-12 | yansıma + yanıt gövdesi | S-12a, S-12b |
+| AC-12 | yansıma + yanıt gövdesi | S-12a, S-12b, S-12c |
 | AC-13 | Platform `RecordCodeTypeCatalogTests` | S-13 |
 | AC-14 | tam MDM paketi + diff denetimi | S-14 |
 | AC-15 | canlı kanıt kaydı (E4) | S-15 |
@@ -666,6 +682,7 @@ controller'ın uyguladığı anahtarla birebir (Brand manifest notu). Plan senkr
 | AC-23 | yardım testi | S-23 |
 | AC-24 | JS taraması + tarayıcı smoke (E3) | S-24 |
 | AC-25 | Gateway rota testi | S-25a, S-25b |
+| AC-26 | birim (alan yöntemi) + HTTP | S-26a, S-26b |
 
 Her sabotaj aynı oturumda geri alınır; kabul kaydı "sabotaj → kırmızı → geri al → yeşil" sırasını test adıyla yazar.
 
@@ -685,9 +702,9 @@ Her sabotaj aynı oturumda geri alınır; kabul kaydı "sabotaj → kırmızı �
 - [x] Audited Events her yazma komutunu tam bir kez içeriyor (§21)
 - [x] Sayfa yardımı ve tur kararı (§25)
 - [x] Kayıt kodu sınıfı ve öneki gerekçeli (§22); `BPT` çakışma ölçümü (§19.2)
-- [ ] Beste kararları Q-1…Q-7 (§26)
-- [ ] `.antigravity` kapısı: RCS-001 §3 `BPT` satırı + aynı adımda X-6 (CT hazırlar, Beste onaylar)
-- [ ] domain-config satırı ve frontend / gateway kapsam cümlesi (X-11)
+- [x] Beste kararları Q-1…Q-7 (§19.7)
+- [x] `.antigravity` kapısı: RCS-001 §3 `BPT` satırı + aynı adımda X-6 (commit `63f046c92`)
+- [ ] domain-config satırı ve frontend / gateway kapsam cümlesi (X-11 — CT yazar; metin §19.8) — onaydan önce
 - [ ] Ali bilgilendirildi (A-1…A-5) — itiraz yok
 - [ ] Bağımsız inceleme (CT-APR-02) — bu sürüm için
 - [ ] Onay satırı (CT-APR-01, onaylayan Ali / `GMG-ERP`) — bu sürüm için
@@ -736,12 +753,12 @@ Her sabotaj aynı oturumda geri alınır; kabul kaydı "sabotaj → kırmızı �
 | r1 X-1 (MdmService kodu, `mdm.business-partners.*`, manifest, yol b) | §5, X-1, X-2, §14, §21 |
 | r1 X-2 (MDM Gateway rotası) | X-8, §15, AC-25 |
 | r1 X-3 (MDM ekranı, Golden Slim) | §9, §11 — **Compact**'a çevrildi (10 alan) |
-| r1 Q-11 (MDM iş ortağı kayıt kodu öneki) | Q-1, §22 (`BPT` önerisi, grup önekli) |
+| r1 Q-11 (MDM iş ortağı kayıt kodu öneki) | Q-1 = `BPT`, §22 (grup önekli) |
 | r1 AC-35…AC-38 (MDM dilimi) | AC-2…AC-12, AC-25 (genişletildi) |
 | r3 §4.10 okuma portu `ListAsync(role, status)`, `GetAsync(id)` | §8.4 operasyon 1 ve 2, port eşlemesi |
 | r3 AC-34 (b) seçim listesi "3PL rollü etkin" | AC-8 (rol + durum süzgeci) |
 | r3 DL-4 kapısı "FU01 API'si `main`'de" | §24: FU01 DL-1 kabulü + X-8 rotası + sözleşme FROZEN |
-| Kararlar 01 F-5 notu (Contacts kişisel veri) | §4.6 (Q-3) |
+| Kararlar 01 F-5 notu (Contacts kişisel veri) | §4.6 (Q-3 kararı) |
 
 MOD-0179 §4.10 "Kesin uç ve alan adları FU01 paketinin sözleşmesinden gelir (DL-4 başında)" dediği için MOD-0179 paketi bu paketle **değişmez**.
 
@@ -753,13 +770,56 @@ MVP'si MVP-5 (MOD-0179 §23, çağıran CT aktarımı). Plan satırı açılırs
 Künye `branch` alanı sahibin tek çalışma dalı kuralına göre `feature/sce/mod-0173-inventory-ledger-valuation` (MOD-0179 ile aynı). Standart biçim
 `feature/mdm/mod-0049-fu01-business-partner-master-foundation` bu kural nedeniyle kullanılmaz.
 
+### 19.7 Sahip kararları (r2)
+Kaynak: `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:14-21` (Beste; Q-1 ".antigravity kapısı — yaz", Q-2…Q-7 "hepsinde öneri gibi").
+
+| # | Konu | Karar | Pakette |
+|---|---|---|---|
+| Q-1 | Kayıt kodu öneki (MOD-0179 r1 Q-11'in devri) | **`BPT`**, OTOMATİK, grup önekli (`GMG-BPT-000001`); `.antigravity` RCS-001 §3 satırı ve X-6 aynı adımda yazıldı (`63f046c92`) | §4.1, §6, §8.3, §22, X-6 |
+| Q-2 | Denetim yolu | **A** — yol b `mdm-merkezi-iletim` (en iyi çaba) + aynı işlemde yerel geçmiş (Brand emsali); defter değişmez | §8.7, §21, AC-11, X-12 |
+| Q-3 | İletişim kişileri kişisel veri kuralı (kararlar 01 F-5 notunun devri) | 90 gün kuralı **uygulanmaz**; en aza indirme; kişi silinince **kalıcı** silme (geçmişte / denetimde değer yok); v1'de zamanlanmış temizlik **yok** | §4.2, §4.6, AC-11 |
+| Q-4 | Vergi numarası | kiracıda (ülke, vergi no) **tekil**; **listede maskeli**; **ayrıntıda yetkiliye** (`mdm.business-partners.update`) açık | §4.1, §4.6, §4.7, §8.4, AC-4, AC-12 |
+| Q-5 | Golden Compact sapmaları ve son rol | sapmalar **paketteki gibi** (§10); **son rol kaldırılamaz** — önce pasifleştirme | §4.3, §4.5, §8.5, §10, §11, AC-7, AC-26 |
+| Q-6 | Pasif kayıt | **salt okunur**; yalnız etkinleştir | §8.2, AC-6 |
+| Q-7 | domain-config | MDM ekran / Gateway istisna satırı **eklenir; merkez (CT) yazar** — bu paket domain-config'e dokunmaz | X-11, §19.8 |
+
+**r1 → r2 kapanış:** Q-1…Q-7 kapandı; Beste'ye açık soru kalmadı. Açık kalanlar yalnız Ali bilgi notları A-1…A-5 ve CT soruları C-1…C-5 (§26).
+
+### 19.8 domain-config satırı önerisi (Q-7 — CT yazar)
+`execution/domains/master-data-management/domain-config.md`'ye eklenmesi önerilen metin (mevcut `## Frontend / Gateway Scope Exception (MOD-0290-FU02 only)`
+bölümü ve `:71` cümlesi olduğu gibi kalır; yeni bölüm ayrı başlıktır):
+
+```text
+## In-Scope Reserved Module (owner decisions T-5 / Q-10, 2026-11-13)
+
+- `MOD-0049-FU01 Business Partner Master Foundation` — child of Blueprint `MOD-0049` (registry rows MOD-0049 / MOD-0049-FU01);
+  placement owner decision Q-10 (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md`), MDM owner permission T-5
+  (Ali, 2026-11-13; central team develops); pack
+  [MOD-0049-FU01](module-packs/MOD-0049-FU01-business-partner-master-foundation.md); `Diten.MdmService`, no new service or port.
+  v1 scope: tenant-wide party record + roles (v1 role `ThirdPartyLogistics`); match / merge, survivorship and supplier / customer
+  SoR are out of scope (BL-665). Consumer: MOD-0179 (read only, `BUSINESS-PARTNER-READ`).
+
+## Frontend / Gateway Scope Exception (MOD-0049-FU01)
+
+The "frontend and gateway remain outside the first implementation slice" restriction is narrowly lifted for MOD-0049-FU01, per the
+module-pack-over-domain-config authority rule:
+
+- `frontend/Diten.Web/**` — only the `MasterData/BusinessPartners` surface (views, same-origin proxy controller, JS, resx) plus
+  additive shared keys (`Nav.Module.BUSINESSPARTNERMASTER`, `Nav.Page.BUSINESSPARTNERS`, `Perm.Entity.BUSINESSPARTNERS`,
+  `Help.BUSINESSPARTNERS.*`); `_LayoutTenantShell.cshtml` is unchanged (navigation comes from the manifest). Exact scope: pack §5 / §11.
+- `gateway/Diten.ApiGateway/ocelot.json` — only the two `/api/mdm/business-partners` route blocks, downstream `localhost:5059`,
+  no `DELETE` method (pack §15). Ownership remains with `integration-agent`.
+
+This exception applies to no other MDM module pack.
+```
+
 ## 20. Follow-up Items
 
 - **BL-665** — aynı firmanın tedarikçi (`SUP-`), 3PL ve CRM müşterisi kayıtlarının bağlanması; eşleştirme / birleştirme / survivorship (MOD-0049 ileri FU).
 - Yeni roller (tedarikçi, müşteri, fason üretici MOD-0197, taşıyıcı) — her biri karar + paket (§4.5).
 - Değişiklik olayı yayını (`BusinessPartnerChanged` outbox) — tüketicilerin kullanıcısız güncel kalması (A-4 ile birlikte).
 - Servis kimliğiyle okuma (MOD-0033-FU02) → `BUSINESS-PARTNER-READ` 1.1.0 eklemeli.
-- Pasif ortakta kişi verisinin saklama süresi ve zamanlanmış temizlik (Q-3 kararına bağlı).
+- Pasif ortakta kişi verisinin saklama süresi ve zamanlanmış temizlik — v1'de yok (Q-3 kararı); istenirse ayrı karar.
 - İş ülkesi SoR'u kararı gelince `CountryCode` doğrulamasının sıkılaşması (domain-config açık kararı).
 - İçe aktarma (mevcut 3PL listelerinin toplu yüklenmesi) ve toplu güncelleme.
 - Tüzel kişilik bazlı görünürlük (SEC-002) — ihtiyaç doğarsa.
@@ -767,8 +827,8 @@ Künye `branch` alanı sahibin tek çalışma dalı kuralına göre `feature/sce
 
 ## 21. Audited Events
 
-Servisin denetim altyapısı **bugün var**: `mdm-merkezi-iletim` yol b, işaret izi (`tests/architecture/audit-ledger/Diten.MdmService.md:12`). Yol Q-2 = A önerisiyle
-yazılmıştır; Q-2 = B seçilirse "Yol" sütunu `b (mdm-guvenilir-kaynak-niyeti)` olur ve X-12 açılır.
+Servisin denetim altyapısı **bugün var**: `mdm-merkezi-iletim` yol b, işaret izi (`tests/architecture/audit-ledger/Diten.MdmService.md:12`). Yol Q-2 kararıyla (A)
+yazılmıştır: yol b + aynı işlemde yerel geçmiş; X-12'de değişiklik yok.
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
 |---|---|---|---|---|---|
@@ -777,7 +837,7 @@ yazılmıştır; Q-2 = B seçilirse "Yol" sütunu `b (mdm-guvenilir-kaynak-niyet
 | DeactivateBusinessPartnerCommand | `mdm.business-partner.deactivated` (`Operation = Deactivate`) | BusinessPartner | b | önceki / sonraki Status, gerekçe | — |
 | ActivateBusinessPartnerCommand | `mdm.business-partner.activated` (`Operation = Activate`) | BusinessPartner | b | önceki / sonraki Status, gerekçe | — |
 | AssignBusinessPartnerRoleCommand | `mdm.business-partner.role-assigned` (`Operation = Assign`) | BusinessPartner | b | Role, (varsa) gerekçe | — |
-| RemoveBusinessPartnerRoleCommand | `mdm.business-partner.role-removed` (`Operation = Revoke`) | BusinessPartner | b | Role, gerekçe | — |
+| RemoveBusinessPartnerRoleCommand | `mdm.business-partner.role-removed` (`Operation = Revoke`) | BusinessPartner | b | Role, gerekçe; son rol reddi (409 `MDM_BP_LAST_ROLE`) `Outcome = Failed` ile | — |
 
 - **Okuma satırı:** `GetBusinessPartnerExportQuery` → `BusinessPartnerRegisterExport` (`Category = DataExport`, `Operation = Export`), en iyi çaba, satır sayısı yazılmaz
   (Brand dışa aktarım emsali). AUD-001 §7 zorunluluğu **yok** (dışa aktarım kişisel veri taşımaz — AC-12); kayıt yine yazılır.
@@ -791,11 +851,11 @@ yazılmıştır; Q-2 = B seçilirse "Yol" sütunu `b (mdm-guvenilir-kaynak-niyet
 
 | Kayıt türü | Sınıf | TÜR öneki | Üretici | Gerekçe |
 |---|---|---|---|---|
-| İş Ortağı (`BusinessPartner.Code`) | **OTOMATİK** | `BPT` (öneri, Q-1) | MOD-0040-FU02 ortak servisi, `prefixScope = Group` | ana veri yüksek hacimli değildir ama kodu tüketiciler (MOD-0179 `PartnerCode`) **kopyalar** — değişmez olmalı; elle kod (İKİSİ DE) çapraz referansları kırar. Kiracı geneli kayıt → grup öneki (`GMG-BPT-000001`) |
+| İş Ortağı (`BusinessPartner.Code`) | **OTOMATİK** | `BPT` (Q-1 kararı; `.antigravity/rules/record-coding-standard.md:76`) | MOD-0040-FU02 ortak servisi, `prefixScope = Group` | ana veri yüksek hacimli değildir ama kodu tüketiciler (MOD-0179 `PartnerCode`) **kopyalar** — değişmez olmalı; elle kod (İKİSİ DE) çapraz referansları kırar. Kiracı geneli kayıt → grup öneki (`GMG-BPT-000001`) |
 | İletişim kişisi, rol ataması, geçmiş satırı | — | kod yok | — | kaydın parçası |
 
-Önek ölçümü: RCS-001 §3'te `BPT` yok; Platform kataloğunda yok; depo kodunda yok; `SUP-` (MOD-0140 kanonik tedarikçi kodu, `SUP-xxxxxxxx`) ile ve
-CRM `ACC-` ile çakışmaz. Alternatifler `BPR`, `PTN` (Q-1). Kapı: `.antigravity` RCS-001 §3 satırı **paket onayından önce** (§6) + X-6; katalog DL-1'de (X-4, X-5, X-7).
+Önek ölçümü (r1, `b3e9e6b7a`): RCS-001 §3'te, Platform kataloğunda ve depo kodunda `BPT` yoktu; `SUP-` (MOD-0140 kanonik tedarikçi kodu, `SUP-xxxxxxxx`) ve
+CRM `ACC-` ile çakışmaz. RCS-001 §3 satırı kapıda yazıldı (`63f046c92`, §6); katalog DL-1'de (X-4, X-5, X-7) ve aynı commit'te X-6 satırı kalkar.
 RCS-001 §6 listesi: sınıf + önek (bu tablo), ortak servis (§8.3), OTOMATİK değişmezlik API'de (AC-3), kiracı geneli tekillik (`(TenantId, Code)`), testler (eşzamanlı iki
 oluşturma farklı kod — Platform servisinin kendi testi; değişmezlik AC-3; ASCII biçim AC-3).
 
@@ -811,16 +871,16 @@ DL-1 çekirdek dilimdir; DL-2 ve DL-3 DL-1'e dayanır. Plan kaynağı: §19.5.
 
 ## 24. Dilim kapıları
 
-Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 + CT-APR-01, onaylayan Ali) hiçbir dilim başlamaz. **Onaydan önce kapanan kapılar:** Q-1…Q-7,
-`.antigravity` RCS-001 §3 `BPT` + X-6, X-11.
+Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 + CT-APR-01, onaylayan Ali) hiçbir dilim başlamaz. **Kapanan kapılar:** sahip kararları
+(§19.7) ve `.antigravity` RCS-001 §3 `BPT` + X-6 (`63f046c92`). **Onaydan önce kalan:** X-11 domain-config satırı (CT yazar, §19.8).
 
 | Dilim | Başlamadan kapanması gereken | Seam'ler (XMC-001) | AC | Sabotajlar |
 |---|---|---|---|---|
-| DL-1 | ilk adım sözleşme taslağı; X-3 port koordinasyonu (MOD-0289 / MOD-0217 DL-1 durumu ölçülür); X-4…X-6 Platform onayı; X-8 integration-agent onayı. **Kabul kapısı:** X-7 1.1.0 main'de, dev ortamı kod kimlik bilgisi + grup öneki (A-5), sözleşme 1.0.0 FROZEN (CT) | X-1, X-2, X-3, X-4, X-5, X-6, X-7, X-8 (rota), X-12 (Q-2 = B ise) | AC-1…AC-16 | S-1, S-2a, S-2b, S-3a, S-3b, S-3c, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-7a, S-7b, S-8a, S-8b, S-8c, S-9, S-10a, S-10b, S-10c, S-11a, S-11b, S-12a, S-12b, S-13, S-14, S-15, S-16 |
+| DL-1 | ilk adım sözleşme taslağı; X-3 port koordinasyonu (MOD-0289 / MOD-0217 DL-1 durumu ölçülür); X-4…X-6 Platform onayı; X-8 integration-agent onayı. **Kabul kapısı:** X-7 1.1.0 main'de, dev ortamı kod kimlik bilgisi + grup öneki (A-5), sözleşme 1.0.0 FROZEN (CT) | X-1, X-2, X-3, X-4, X-5, X-6, X-7, X-8 (rota) | AC-1…AC-16, AC-26 | S-1, S-2a, S-2b, S-3a, S-3b, S-3c, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-7a, S-7b, S-8a, S-8b, S-8c, S-9, S-10a, S-10b, S-10c, S-11a, S-11b, S-12a, S-12b, S-12c, S-13, S-14, S-15, S-16, S-26a, S-26b |
 | DL-2 | DL-1 kabulü; X-9 Web ortak sahibi onayı; ekran brief / mockup (merkez kuralı — yeni modül ekranı) | X-9 | AC-17…AC-24 | S-17, S-18a, S-18b, S-19, S-20a, S-20b, S-21a, S-21b, S-22, S-23, S-24 |
 | DL-3 | DL-1 kabulü (rota main'de) | Gateway test projesi | AC-25 | S-25a, S-25b |
 
-**MOD-0179 DL-4 kapısı** = bu paketin DL-1 kabulü (AC-1…AC-16, AC-15 canlı kanıt dahil) + X-8 rotası main'de + `docs/analysis/contracts/business-partner-read.md` 1.0.0 FROZEN.
+**MOD-0179 DL-4 kapısı** = bu paketin DL-1 kabulü (AC-1…AC-16 ve AC-26, AC-15 canlı kanıt dahil) + X-8 rotası main'de + `docs/analysis/contracts/business-partner-read.md` 1.0.0 FROZEN.
 DL-2 ve DL-3 MOD-0179 DL-4'ü bekletmez. Sıra: DL-1 → DL-2 ve DL-3 (paralel).
 
 ## 25. Page Help (UXH-001)
@@ -828,25 +888,14 @@ DL-2 ve DL-3 MOD-0179 DL-4'ü bekletmez. Sıra: DL-1 → DL-2 ve DL-3 (paralel).
 - Sayfa kodu `BUSINESSPARTNERS` (Index; Create / Edit / Details aynı kodun alt sayfaları): `Help.BUSINESSPARTNERS.Purpose` ("Dış iş ortaklarının — v1'de 3PL
   ortaklarının — tek ana kaydı; kod, ad, adres, iletişim ve roller burada tutulur, diğer modüller buradan okur"), `Help.BUSINESSPARTNERS.Audience` (ana veri
   sorumlusu; okuma: 3PL operatörü), `Step1` (ortak ekle: ticari ad, kısa ad, ülke, şehir, rol), `Step2` (iletişim kişilerini ekle — yalnız iş iletişimi), `Step3`
-  (rol ver / kaldır — kaldırma gerekçe ister), `Step4` (pasifleştir — gerekçe; pasif ortak yeni bağlantıda seçilemez) + `Step{n}Title`; `Help.BUSINESSPARTNERS.Immediate`
+  (roller — v1'de ortak 3PL ortağıdır; son rol kaldırılamaz, kullanımı bitirmek için pasifleştirilir), `Step4` (pasifleştir — gerekçe; pasif ortak yeni bağlantıda seçilemez) + `Step{n}Title`; `Help.BUSINESSPARTNERS.Immediate`
   ("Kod otomatik verilir ve değişmez"). Kiracı modülü → 7 dil.
 - İlgili sayfa: MOD-0179 `TPLHEALTH` menüde olunca `PageHelpCatalog` + `Help.BUSINESSPARTNERS.Related.TPLHEALTH` (MOD-0179'un ekranı gelmeden link çizilmez).
 - **Tur yok** (beş akıştan biri değil).
 
 ## 26. Açık sorular
 
-**Beste'ye — karar (onaydan önce):**
-- **Q-1 Kayıt kodu öneki** (MOD-0179 r1 Q-11'in devri). Öneri: **`BPT`**, OTOMATİK, grup önekli (`GMG-BPT-000001`). Alternatifler `BPR`, `PTN`. Seçilen önek
-  `.antigravity` RCS-001 §3 satırıyla (CT hazırlar, Beste onaylar) + aynı adımda X-6.
-- **Q-2 Denetim yolu.** Öneri **A**: yol b `mdm-merkezi-iletim` (en iyi çaba) + aynı işlemde yerel geçmiş (Brand emsali; defter değişmez). B: güvenilir kaynak niyeti
-  (MOD-0289 emsali; kayıp yok ama CT kararı, defter belirteci, denetim niyeti koleksiyon listesi değişir).
-- **Q-3 İletişim kişileri kişisel veri kuralı** (kararlar 01 F-5 notunun devri). Öneri: 90 gün kuralı uygulanmaz; en aza indirme + kalıcı silme + değersiz denetim +
-  listede / dışa aktarımda / sözleşme listesinde yok (§4.6); pasif ortakta saklama süresi için v1'de zamanlanmış iş yok — süre istenirse takip adayı.
-- **Q-4 Vergi numarası.** Öneri: (ülke, vergi no) kiracıda tekil; tekil uçta `update` izni olmayana maskeli (ilk 4 + son 2).
-- **Q-5 Golden Compact sapmaları** (§10: silme / toplu silme yok, ek yaşam döngüsü ve rol komutları, geçmiş ve dışa aktarım sorguları) ve **son rolün kaldırılması**
-  (öneri: izinli; rolsüz ortak listede kalır, hiçbir rol süzgecinde görünmez). CT ile birlikte.
-- **Q-6 Pasif kayıt.** Öneri: salt okunur — güncelleme ve rol komutları 409; yalnız etkinleştir.
-- **Q-7 domain-config satırı** (X-11): MOD-0049-FU01'in "In-Scope" satırı ve frontend / gateway kapsam cümlesi — onaydan önce CT yazar (öneri: evet).
+Beste'ye açık soru yoktur — Q-1…Q-7 kararları §19.7'de.
 
 **Ali'ye — bilgi (T-5 izni verildi; itiraz hakkı saklı):**
 - **A-1** MDM'ye eklenenler: yeni `BusinessPartner` kökü ve iki koleksiyon, 10 uç, 7 izin anahtarı (`mdm.business-partners.*`), yeni manifest modülü
@@ -862,3 +911,5 @@ DL-2 ve DL-3 MOD-0179 DL-4'ü bekletmez. Sıra: DL-1 → DL-2 ve DL-3 (paralel).
 - **C-2** `BUSINESS-PARTNER-READ` 1.0.0 dondurma adımı — DL-1 kabulünde; MOD-0179 DL-4 kapısının parçası.
 - **C-3** Plan satırı yok (§19.5) — MVP-5 bağlamı ve hedef tarih sahipten.
 - **C-4** X-3: MdmService kayıt kodu portunu hangi paketin açacağı (MOD-0289 / MOD-0217 / bu paket) — DL-1 başında ölçülür.
+- **C-5** Q-5 + tek değerli rol kümesi sonucu (§4.5): v1'de rol ver / rol kaldır uçları üretimde yalnız 409 döner; başarı yolları ikinci rolün paketinde AC'lenir.
+  İnceleme bunu kabul etmezse seçenek: iki komut v1'den çıkarılır, ikinci rolle gelir (bu, Q-5'in "sapmalar paketteki gibi" kararını değiştirir — sahibe sorulur).
