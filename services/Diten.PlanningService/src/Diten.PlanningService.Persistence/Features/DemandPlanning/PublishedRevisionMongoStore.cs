@@ -11,7 +11,7 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // Internal only. The authoritative actor/scope adapter is intentionally fail-closed in production.
 public sealed class PublishedRevisionMongoStore(
     DemandPlanningMongoContext context, ManualDraftMongoStore drafts,
-    IInternalPublishAuthority authority) : IInternalPublishedRevisionStore
+    IInternalPublishAuthority authority, IOutboxCorrelationReader? correlation = null) : IInternalPublishedRevisionStore
 {
     private const int SafeDocumentBytes = 15_000_000;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
@@ -210,6 +210,19 @@ public sealed class PublishedRevisionMongoStore(
                     EvidenceReference = current.RevisionId.ToString("D"),
                     OccurredAt = occurredAt, CreatedAt = occurredAt
                 }, cancellationToken: cancellationToken);
+                var supersededEventId = DeterministicSupersededEventId(
+                    tenantId, legalEntityId, current.RevisionId, revisionId);
+                await context.Outbox.InsertOneAsync(session, new DemandOutboxMessage
+                {
+                    TenantId = tenantId, LegalEntityId = legalEntityId,
+                    RevisionId = current.RevisionId, EventId = supersededEventId,
+                    CorrelationId = correlation?.CurrentId ?? Guid.Empty,
+                    EventType = "demand.revision.superseded.v2",
+                    StateVersion = oldSnapshot.Value.Manifest.StateVersion,
+                    Payload = DemandRevisionOutboxPayload.Superseded(
+                        oldSnapshot.Value.Manifest, supersededEventId, occurredAt),
+                    OccurredAt = occurredAt, CreatedAt = occurredAt
+                }, cancellationToken: cancellationToken);
             }
             var manualFilter = Builders<ManualDraftManifest>.Filter.Where(x =>
                 x.TenantId == tenantId && x.LegalEntityId == legalEntityId &&
@@ -284,6 +297,7 @@ public sealed class PublishedRevisionMongoStore(
             {
                 TenantId = tenantId, LegalEntityId = legalEntityId,
                 RevisionId = revisionId, EventId = eventId,
+                CorrelationId = correlation?.CurrentId ?? Guid.Empty,
                 EventType = "demand.revision.published.v2",
                 StateVersion = published.StateVersion,
                 Payload = DemandRevisionOutboxPayload.Published(published, eventId, occurredAt),
@@ -394,6 +408,14 @@ public sealed class PublishedRevisionMongoStore(
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(
             $"MOD0188-PUBLISHED|{tenantId:D}|{legalEntityId:D}|{revisionId:D}"));
+        return new Guid(hash.AsSpan(0, 16));
+    }
+
+    public static Guid DeterministicSupersededEventId(Guid tenantId, Guid legalEntityId,
+        Guid revisionId, Guid replacementRevisionId)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"MOD0188-SUPERSEDED|{tenantId:D}|{legalEntityId:D}|{revisionId:D}|{replacementRevisionId:D}"));
         return new Guid(hash.AsSpan(0, 16));
     }
 
