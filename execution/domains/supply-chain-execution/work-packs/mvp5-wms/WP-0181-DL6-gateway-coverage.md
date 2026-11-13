@@ -3,7 +3,7 @@
 - Paket: `execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md` (r8; onay satırı approvals.tsv'de). Dilim: **DL-6 — Gateway**, yalnız kapsama testi (paket F-9).
 - Sahip: integration-agent (Gateway testi). Talimatı veren: MVP-5 WMS CT, sahip Beste (2026-11-13).
 - Kapsam: **yalnız test.** `ocelot.json` değişmez (Q-15 = A); servis, sözleşme ve Web değişmez.
-- Git: MVP-1 hat dalı (`feature/sce/mod-0173-inventory-ledger-valuation`), ana checkout. CT etiketi `ct/line-ff-2026-11-13e` (r2, 2026-11-13): `git merge-base --is-ancestor ct/line-ff-2026-11-13e HEAD` doğruysa devam; değilse `git merge --ff-only ct/line-ff-2026-11-13e`; ff değilse `git merge --no-ff ct/line-ff-2026-11-13e` (yalnız CT kayıtları), çakışmada `--abort` ve dur. Aynı checkout'ta MOD-0180 DL-1 (Inventory), MOD-0178-FU01 DL-1 (Web) ve MOD-0177-FU01 (test) oturumları çalışıyor: stage yalnız açık yolla ve yalnız bu WP'nin dosyası; derleme / test / sabotaj ayrık worktree'de. Açık yol ile stage; yerel commit; push / PR yok.
+- Git: MVP-1 hat dalı (`feature/sce/mod-0173-inventory-ledger-valuation`), ana checkout. CT etiketi `ct/line-ff-2026-11-13f` (r2, 2026-11-13): `git merge-base --is-ancestor ct/line-ff-2026-11-13f HEAD` doğruysa devam; değilse `git merge --ff-only ct/line-ff-2026-11-13f`; ff değilse `git merge --no-ff ct/line-ff-2026-11-13f` (yalnız CT kayıtları), çakışmada `--abort` ve dur. Aynı checkout'ta MOD-0180 DL-1 (Inventory), MOD-0178-FU01 DL-1 (Web) ve MOD-0177-FU01 (test) oturumları çalışıyor: stage yalnız açık yolla ve yalnız bu WP'nin dosyası; derleme / test / sabotaj ayrık worktree'de. Açık yol ile stage; yerel commit; push / PR yok.
 
 ## Yapılacak
 
