@@ -81,3 +81,11 @@ kısmı) ve F-2 kapandığı için AC-D25'in "gerçek yayın niyetlerinin gerçe
 değişmedi: AC-D18, AC-D24 ayrımı, AC-D27, Demand v2 dondurması, Superseded tarihsel içerik, canlı tüketici; düşük F-7, F-8, N-1, N-2 PR
 kaydında "açık" olarak kalır. Merge: Ali (GMG-ERP) onayı ve kararıyla, **merge commit** (squash değil); merge öncesi main yeniden geride
 ise alınır ve CI yeniden yeşil olur. MOD-0189 kodlaması bu karardan bağımsızdır, yeni bağımsız paket onayı ister.
+
+## Merge (2026-11-13)
+
+- PR #228 baş `2744d5216` main'e **merge commit** `6f55974a8` ile alındı (Beste); CT `origin/main`'de ölçtü: `2744d5216` main'in atası.
+- MVP-4 açık düşükleri sonraki MOD-0188 işine kaydetti: F-7 (claim taraması indeksi), F-8 (üretim `Program.cs` geçersiz correlation'da 400
+  döndürür; HTTP test sunucusu bu korumayı kurmaz — 500 iddiası aynı hat üzerinden yeniden ölçülecek), N-1 (yerel RabbitMQ notu), N-2
+  (correlation değeri ve Superseded olayının eski revision'a aitliği). Açık AC'ler değişmedi (AC-D18, AC-D24 ayrımı, AC-D27, Demand v2
+  dondurması, Superseded tarihsel içerik, canlı tüketici). MOD-0189 kodlaması yeni bağımsız paket onayı bekliyor.
