@@ -46,7 +46,10 @@
    (adlı alanlar üzerinde düz SHA-256); başlıklar girmez; **`pin` hiçbir parmak izine girmez** (alan listesinde yoktur): aynı anahtarla yalnız
    PIN'i farklı gövde **replay'dir** (ilk cevap; PIN değerlendirilmez). Eşleştirme kodu parmak izine yalnız SHA-256 özetiyle girer. Başarısız
    komut anahtar bırakmaz (aynı anahtarla yeniden deneme yeniden çalışır). Çarpışmada (eşzamanlı ikiz) anahtar yeniden aranır: aynı anahtar →
-   replay, farklı anahtar → 409.
+   replay, farklı anahtar → 409. **Replay ayrıntısı (CT kararı 2026-11-13):** (a) replay'de `message` / `noticeMessage` **o anki**
+   `Accept-Language`'a göre yeniden üretilir — kodlar, kimlikler ve diğer üyeler ilk cevabınkidir, gövde bayt bayt aynı olmak zorunda
+   değildir; (b) replay'in `ETag`'i saklanan gövdedeki `version`'dır (kaydın o anki sürümü değil). 201'in replay'i 201'dir — servisin
+   200 emsalinden (WMS-WAVE-BUNDLE) **bilinçli ayrışma**, dondurma notuna yazılır.
 7. **If-Match.** Değişebilir kayıt (`ScanDevice`, `BarcodeSettings`) yaratma dışı yazmada `If-Match: W/"<version>"` ister; eksik → 400
    `INVALID_REQUEST` (428 değil), bayat → 409 `BARCODE_CONFLICT`. Cevap `ETag: W/"<version>"`. Bayatlık kural 6'daki anahtar aramasından sonra
    değerlendirilir. **Adlı muafiyetler:** `recordDeviceHeartbeat` (nabız alanları `version`'ı artırmaz; `If-Match` gelirse yok sayılır),
@@ -73,7 +76,9 @@
 13. Tarihler `date-time` = UTC an (`…Z`, milisaniye). Sunucu yalnız kendi zamanını (`receivedAt`) geçerli sayar; `capturedAt` saklanır, karar
     vermez (v1 yalnız çevrimiçi — paket §8.6; çevrimdışı yeniden oynatma FU-0182-OFFLINE'da eklemeli gelir).
 14. Yollardaki `{scanId}`, `{deviceId}` `:guid` kısıtlıdır; sabit kesimler (`scan-events/dashboard`, `devices/pair`) parametreli yoldan önce
-    eşleşir. `:guid` kısıtına uymayan yol hiçbir işleme eşleşmez (404).
+    eşleşir. `:guid` kısıtına uymayan yol hiçbir işleme eşleşmez: cevap **boş gövdeli 404**'tür (ölçüldü 2026-11-13,
+    `GET /barcode/devices/not-a-uuid` — yönlendirici cevabı, `Error` zarfı yok; WMS-WAVE-BUNDLE taslağının "aynı zarf" ifadesi bu
+    servis için ölçümle doğrulanmadı).
 15. **İzin:** her işlem `x-permission` anahtarını `[HasPermission]` ile zorlar; eksik izin → 403 (gövde servis genelinin yetki cevabı).
 16. **Ekranda kimlik (GUID) gösterilmez** (paket §4): şemalar raf kodu, lot numarası, SKU kodu / adı, kişi adı, cihaz adı / numarası taşır.
 17. **Kör sayım sızdırılmaz** (paket §2.3 kural 4): hiçbir cevap açık kör sayımın bin'inde beklenen miktarı ya da o bin'in stok miktarını
@@ -248,7 +253,8 @@
 { "warehouseId": "uuid", "from": "date-time", "to": "date-time", "scanCount": 0, "rejectedCount": 0, "rejectRatePercent": 0.0,
   "topRejectReason": "string?", "manualCount": 0, "manualRatePercent": 0.0, "contractVersion": "v1" }
 ```
-- Okuma anında hesaplanır (paket §8.14 üst kartlar): pencere = çağrı anından geriye 24 saat (`from` / `to` cevapta); oranlar bir ondalık,
+- Okuma anında hesaplanır (paket §8.14 üst kartlar): pencere = **çağrı anından geriye son 24 saat** (`from` / `to` cevapta; takvim günü değil —
+  sahip kararı 2026-11-13, §9); oranlar bir ondalık,
   `scanCount = 0` iken `0.0`; `topRejectReason` yalnız `rejectedCount > 0` iken (eşitlikte alfabetik ilk kod).
 
 ### 3.9 `BarcodeSettings`
@@ -260,6 +266,8 @@
   alanın hepsi zorunlu).
 - **DL-3 / DL-5 ekleri (eklemeli, o dilimlerde bağlayıcı):** `scanRequiredWarehouseIds: uuid[]` (DL-3), `ssccCompanyPrefix?` ve
   `ssccExtensionDigit` (DL-5). DL-1'de bu üyeler şemada **yoktur**; istekte gelirse 400 `INVALID_REQUEST` (bilinmeyen üye).
+  Eklendiklerinde **isteğe bağlı** istek üyesi olurlar (gönderilmezse mevcut değer korunur): "altı alan zorunlu, bütün ayarı yazar" kuralı
+  sonradan gelen üyeler için kırıcı olmaz (CT kararı 2026-11-13).
 
 ### 3.10 `SupervisorPin` (`setSupervisorPin` cevabı)
 ```json
@@ -281,20 +289,20 @@
 
 | Yöntem + yol | operationId | x-permission | Gövde / parametre | Başarı | x-error-codes |
 |---|---|---|---|---|---|
-| `POST /barcode/scans` | `recordScan` | `warehouse.barcode.scans.create` | cihaz başlıkları; `{ idempotencyKey, sessionId?, warehouseId, source, rawValue, context: { kind, refId?, lineRef?, step }, manual?: { reasonCode, note? }, capturedAt? }` — `Query` dışında `sessionId`, `context.refId` zorunlu; `Query`'de `sessionId` / `refId` / `lineRef` **üye değildir** | 201 `ScanResult` (replay 201, ilk gövde) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_DEVICE_KEY_INVALID, BARCODE_CONTEXT_NOT_FOUND, BARCODE_SESSION_INVALID, BARCODE_INVENTORY_UNAVAILABLE |
+| `POST /barcode/scans` | `recordScan` | `warehouse.barcode.scans.create` | cihaz başlıkları; `{ idempotencyKey, sessionId?, warehouseId, source, rawValue, context: { kind, refId?, lineRef?, step }, manual?: { reasonCode, note? }, capturedAt? }` — `Query` dışında `sessionId`, `context.refId` zorunlu; `Query`'de `sessionId` / `refId` / `lineRef` **üye değildir** | 201 `ScanResult` (replay 201, ilk gövde) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_DEVICE_KEY_INVALID, BARCODE_CONTEXT_NOT_FOUND, UNKNOWN_LOCATION, BARCODE_SESSION_INVALID, BARCODE_INVENTORY_UNAVAILABLE |
 | `POST /barcode/scans/{scanId}/override` | `overrideScan` | `warehouse.barcode.scans.create` | cihaz başlıkları; `{ idempotencyKey, supervisorUserId, pin, note? }` | 201 `ScanOverrideResult` (replay 201) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_DEVICE_KEY_INVALID, BARCODE_SCAN_NOT_FOUND, BARCODE_OVERRIDE_NOT_ALLOWED, BARCODE_OVERRIDE_SELF, BARCODE_ALREADY_OVERRIDDEN, BARCODE_PIN_NOT_SET, BARCODE_PIN_LOCKED, BARCODE_PIN_INVALID, BARCODE_INVENTORY_UNAVAILABLE |
 | `GET /barcode/scan-events` | `listScanEvents` | `warehouse.barcode.scan-events.read` | `warehouseId` (zorunlu), `from?`, `to?` (`date-time`; ≤ 31 gün), `userId?`, `deviceId?`, `outcome*`, `contextKind*` (tekrarlanabilir), `overridden?` (`true` \| `false`), `manual?` (`true` \| `false`), `page`, `pageSize` (sıra: `receivedAt` azalan) | 200 sayfa `ScanEvent` | INVALID_REQUEST |
 | `GET /barcode/scan-events/dashboard` | `getScanEventDashboard` | `warehouse.barcode.scan-events.read` | `warehouseId` (zorunlu) | 200 `ScanEventDashboard` | INVALID_REQUEST |
 | `GET /barcode/scan-events/{scanId}` | `getScanEvent` | `warehouse.barcode.scan-events.read` | — | 200 `ScanEvent` (+ `override`, `overrideAttempts`) | BARCODE_SCAN_NOT_FOUND |
-| `GET /barcode/devices` | `listScanDevices` | `warehouse.barcode.devices.read` | `status*`, `deviceType*` (tekrarlanabilir), `warehouseId?`, `q?` (ad / numara içerir), `page`, `pageSize` (sıra: `number`) | 200 sayfa `ScanDevice` | INVALID_REQUEST |
+| `GET /barcode/devices` | `listScanDevices` | `warehouse.barcode.devices.read` | `status*`, `deviceType*` (tekrarlanabilir), `warehouseId?`, `q?` (ad / numara içerir), `page`, `pageSize` (sıra: `number`) | 200 sayfa `ScanDevice` | INVALID_REQUEST, BARCODE_INVENTORY_UNAVAILABLE |
 | `POST /barcode/devices` | `registerScanDevice` | `warehouse.barcode.devices.create` | `{ idempotencyKey, name, deviceType, platform, installationId, warehouseId?, note?, keyDelivery? }` — cihaz **her zaman `Pending`** doğar | 201 `ScanDeviceResult` + ETag (replay 201, sırsız) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, BARCODE_DEVICE_ALREADY_REGISTERED, BARCODE_DEVICE_NAME_TAKEN, BARCODE_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, BARCODE_RECORD_CODE_UNAVAILABLE, BARCODE_INVENTORY_UNAVAILABLE |
-| `POST /barcode/devices/pair` | `pairScanDevice` | `warehouse.barcode.devices.create` | **cihaz başlığı yok**; `{ idempotencyKey, pairingCode, installationId }` | 200 `ScanDeviceResult` (`deviceKey` bir kez; replay 200, sırsız) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_PAIRING_NOT_FOUND, BARCODE_PAIRING_EXPIRED, BARCODE_PAIRING_INVALID |
-| `GET /barcode/devices/{deviceId}` | `getScanDevice` | `warehouse.barcode.devices.read` | — | 200 `ScanDevice` (+ `overrideAttempts`) + ETag | BARCODE_DEVICE_NOT_FOUND |
+| `POST /barcode/devices/pair` | `pairScanDevice` | `warehouse.barcode.devices.create` | **cihaz başlığı yok**; `{ idempotencyKey, pairingCode, installationId }` | 200 `ScanDeviceResult` (`deviceKey` bir kez; replay 200, sırsız) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_PAIRING_NOT_FOUND, BARCODE_PAIRING_EXPIRED, BARCODE_PAIRING_INVALID, BARCODE_INVENTORY_UNAVAILABLE |
+| `GET /barcode/devices/{deviceId}` | `getScanDevice` | `warehouse.barcode.devices.read` | — | 200 `ScanDevice` (+ `overrideAttempts`) + ETag | BARCODE_DEVICE_NOT_FOUND, BARCODE_INVENTORY_UNAVAILABLE |
 | `POST /barcode/devices/{deviceId}/update` | `updateScanDevice` | `warehouse.barcode.devices.update` | If-Match; `{ idempotencyKey, name, warehouseId?, note? }` — düzenlenebilir alanların tamamı (yok olan isteğe bağlı üye temizlenir); `deviceType` / `platform` / `installationId` üye değildir | 200 `ScanDeviceResult` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_DEVICE_NOT_FOUND, BARCODE_CONFLICT, UNKNOWN_LOCATION, BARCODE_DEVICE_NAME_TAKEN, BARCODE_INVENTORY_UNAVAILABLE |
 | `POST /barcode/devices/{deviceId}/activate` | `activateScanDevice` | `warehouse.barcode.devices.activate` | If-Match; `{ idempotencyKey, reason? }` — `Pending → Active` (onay; `reason` üye olabilir, zorunlu değil) ya da `Blocked → Active` (yeniden etkinleştirme; `reason` **zorunlu** 10..500) | 200 `ScanDeviceResult` + ETag (replay 200, sırsız) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_REASON_REQUIRED, BARCODE_DEVICE_NOT_FOUND, BARCODE_CONFLICT, BARCODE_INVALID_STATE, BARCODE_DEVICE_NAME_TAKEN |
 | `POST /barcode/devices/{deviceId}/deactivate` | `deactivateScanDevice` | `warehouse.barcode.devices.deactivate` | If-Match; `{ idempotencyKey, reason }` — yalnız `Active → Blocked` | 200 `ScanDeviceResult` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_REASON_REQUIRED, BARCODE_DEVICE_NOT_FOUND, BARCODE_CONFLICT, BARCODE_INVALID_STATE |
 | `POST /barcode/devices/{deviceId}/heartbeat` | `recordDeviceHeartbeat` | `warehouse.barcode.scans.create` | cihaz başlıkları (`X-Scan-Device-Id` = `{deviceId}`); `{ appVersion, batteryPercent? }` — `Idempotency-Key` ve `If-Match` **istenmez** | 200 `DeviceHeartbeat` | INVALID_REQUEST, BARCODE_DEVICE_KEY_INVALID |
-| `GET /barcode/settings` | `getBarcodeSettings` | `warehouse.barcode.settings.read` | — | 200 `BarcodeSettings` + ETag | — |
+| `GET /barcode/settings` | `getBarcodeSettings` | `warehouse.barcode.settings.read` | — | 200 `BarcodeSettings` + ETag | BARCODE_INVENTORY_UNAVAILABLE |
 | `POST /barcode/settings/update` | `updateBarcodeSettings` | `warehouse.barcode.settings.configure` | If-Match (`W/"0"` kayıt yokken); `{ idempotencyKey, silentDeviceHours, lowBatteryPercent, pinMaxAttempts, pinLockMinutes, pinValidityDays, scanSessionMaxMinutes }` | 200 `BarcodeSettings` + ETag (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, BARCODE_CONFLICT |
 | `POST /barcode/supervisor-pin` | `setSupervisorPin` | `warehouse.barcode.scan-overrides.approve` | `{ idempotencyKey, pin }` — çağıranın **kendi** PIN'i (başka kullanıcı hedeflenemez) | 200 `SupervisorPin` (replay 200) | INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED |
 
@@ -346,7 +354,8 @@ araması (replay → ilk cevap; **cihaz durumu değerlendirmesinden önce** — 
 olayı yazmaz); (4) cihaz durumu → `DEVICE_PENDING` / `DEVICE_BLOCKED` / `DEVICE_WRONG_WAREHOUSE` (cihazın deposu doluysa ve okutma başka
 depodaysa) — **olay yazılır**, 201 `Rejected`; (5) oturum sahipliği: `sessionId`'de başka kullanıcının olayı varsa 422
 `BARCODE_SESSION_INVALID`, olay yazılmaz; (6) bağlam kaydı (`context.refId`): yoksa / başka şirketin / `warehouseId` bağlamın deposu değilse
-404 `BARCODE_CONTEXT_NOT_FOUND`, olay yazılmaz; kapanmışsa olay yazılır, `Rejected` `CONTEXT_CLOSED`; (7) ayrıştırma (MOD-0174
+404 `BARCODE_CONTEXT_NOT_FOUND`, olay yazılmaz; kapanmışsa olay yazılır, `Rejected` `CONTEXT_CLOSED`; `Query`'de bağlam kaydı yoktur — gövdedeki `warehouseId` şirketin etkin deposu değilse
+422 `UNKNOWN_LOCATION`, olay yazılmaz (CT kararı 2026-11-13); (7) ayrıştırma (MOD-0174
 `Gs1CodeParser`; ikinci ayrıştırıcı yok) → çözümleme → bağlam karşılaştırması (§6.3); (8) olay + merkezi kayıt **aynı işlemde** (Q-16 = yol b:
 her başarılı okutma 1 merkezi kayıt). Bağımlılık (Mongo, LOCATION, PRODUCT-MASTER) okunamazsa 503 `BARCODE_INVENTORY_UNAVAILABLE`, olay ve kayıt
 yazılmaz. Elle giriş (`source = Manual`): `manual.reasonCode` zorunlu, `Other`'da `note` zorunlu (400); doğrulama okutmayla aynıdır.
@@ -433,7 +442,7 @@ DL-8 (yalnız test) servis ucu eklemez. `getRfidSweep` izni paket §14'te adsız
 |---|---|---|
 | `INVALID_REQUEST` | 400 | gövde / sorgu şekli, bilinmeyen ya da sunucu üyesi, eksik `If-Match`, `tenantId` / `legalEntityId` istekte, aralık dışı ayar, zayıf PIN, elle girişte gerekçe yok. **Paket §8.15 bu durumu `VALIDATION_FAILED` diye adlandırır; servis kablosunun kodu `INVALID_REQUEST`'tir — §9 açık nokta 3** |
 | `IDEMPOTENCY_KEY_REUSED` | 400 | aynı anahtar, farklı gövde |
-| `UNKNOWN_LOCATION` | 422 | gövdedeki `warehouseId` depo değil / `Active` değil / başka şirketin (MOD-0180 / 0181 emsali) |
+| `UNKNOWN_LOCATION` | 422 | gövdedeki `warehouseId` depo değil / `Active` değil / başka şirketin (MOD-0180 / 0181 emsali) — cihaz kaydı, düzenleme ve `Query` okutması |
 | `LEGAL_ENTITY_MASTER_UNAVAILABLE` | 503 | MDM tüzel kişilik okunamadı (şirket öneki; scope middleware) |
 | `CROSS_LE_FORBIDDEN` | 403 | başlık / token / üyelik uyuşmazlığı (scope middleware — servis geneli) |
 
@@ -519,7 +528,7 @@ Her yazma komutu BL-501 kaydı bildirir: kategori `MasterData`, kaynak modül `B
 (`Update`), `UpdateBarcodeSettingsCommand` (`Update`). Başarılı ve yazan komut 1 kayıt; replay 0; başarısız 0; nabız 0. Yanlış PIN / kilit
 merkezi kayıt doğurmaz (yerel iz `ScanOverrideAttempt`). Kayıt PIN, anahtar, kod ve özetlerini taşımaz.
 
-## 9. Açık noktalar (paketle çelişki değil; CT incelemesine / dondurmaya öneri)
+## 9. Açık noktalar ve kararları (paketle çelişki değil; CT incelemesi 2026-11-13 — kararlar bölüm sonunda)
 
 1. **Ek kodlar / adlar:** paket §8.15 404'ü kodsuz yazar ("404 —"); servisin `Error` zarfı kod ister, taslak dört 404 adı verir
    (`BARCODE_DEVICE_NOT_FOUND`, `BARCODE_SCAN_NOT_FOUND`, `BARCODE_CONTEXT_NOT_FOUND`, `BARCODE_PAIRING_NOT_FOUND`). Ayrıca paketin kuralını
@@ -556,9 +565,54 @@ merkezi kayıt doğurmaz (yerel iz `ScanOverrideAttempt`). Kayıt PIN, anahtar, 
     içinde lot numarası" der; taslak `Lot`'u ürün bağlamlı bağlamlarda geçerli adım sayar (GS1 karekodu olmayan, yalnız lot barkodu taşıyan
     ürünler için).
 
+**CT kararları 2026-11-13 (MVP-5 WMS CT; 63cf96ead incelemesi):**
+- **Madde 1 — kabul:** dört 404 adı (`BARCODE_DEVICE_NOT_FOUND`, `BARCODE_SCAN_NOT_FOUND`, `BARCODE_CONTEXT_NOT_FOUND`, `BARCODE_PAIRING_NOT_FOUND`) ve ek
+  kodlar (`BARCODE_DEVICE_NAME_TAKEN` 409, `BARCODE_REASON_REQUIRED` 400, `BARCODE_COMPANY_CODE_INVALID` 422, `BARCODE_RECORD_CODE_UNAVAILABLE` 503).
+  `Query` bağlamında bilinmeyen ya da başka şirketin `warehouseId`'si **422 `UNKNOWN_LOCATION`** (yeni kod yok). `:guid` kısıtına uymayan yol: ölçüldü —
+  boş gövdeli 404 (kural 14).
+- **Madde 2 — kabul:** `setSupervisorPin` `If-Match`'sizdir (her belirleme yeni bir kimlik bilgisi yaratır, kişi yalnız kendi kaydını yazar, okuyan GET
+  yok). **`pairScanDevice`'ın `If-Match` muafiyeti de adıyla:** paket §12 yalnız nabzı ve PIN sayacını sayar; eşleştirme tek kullanımlık kodun atomik
+  tüketimidir (§8.2 filtresi), `version`'ı artırmaz ve `If-Match` istemez (kural 7).
+- **Madde 3 — karar:** `INVALID_REQUEST` kullanılır, `VALIDATION_FAILED` değil (servis genelinde tek kod); paket §8.15'teki ad bir sonraki paket
+  revizyonunda errata olarak düzeltilir.
+- **Madde 4 — karar:** anahtar başlıkta ve gövdede, ikisi eşit. Replay paketi izler (201'in replay'i 201 — bilinçli ayrışma, dondurma notu); replay'de
+  `message` / `noticeMessage` o anki dile göre yeniden üretilir; replay `ETag`'i saklanan gövdedeki `version`'dır (kural 6).
+- **Madde 5 — kabul:** hiçbir bağlamda `expected*` yok.
+- **Madde 6 — karar:** engellenmiş cihazdan aşım taslaktaki gibi kalır (paket §8.5 sırası bağlayıcı).
+- **Madde 7 — karar:** `Pending → Blocked` 409 (paketteki gibi).
+- **Madde 8 — kabul:** `keySet` ve `pairingExpiresAt` GET cevaplarında kalır (sır değil).
+- **Madde 9 — kabul:** her durumdaki cihaz nabız gönderebilir.
+- **Madde 10 — kabul, koşullu:** DL-3 / DL-5 ayar üyeleri DL-1 şemasında yok; eklendiklerinde isteğe bağlı istek üyesidirler (§3.9).
+- **Madde 11 — kabul:** `Lot` adımı Putaway / Pick / Pack / Count'ta geçerlidir.
+
+**CT incelemesinin ek bulguları (2026-11-13):**
+- **Pano penceresi — sahip kararı (Beste, 2026-11-13):** `getScanEventDashboard` **son 24 saati** (çağrı anından geriye) sayar; takvim günü yoktur
+  (serviste depo saat dilimi kaynağı yok). Paketin "bugünkü okutma" ifadesi paket r8'de hizalanır; ekran etiketi DL-2'de.
+- `getBarcodeSettings`, `listScanDevices`, `getScanDevice` ve `pairScanDevice` hata listelerine `BARCODE_INVENTORY_UNAVAILABLE` (503) eklendi (§4.1).
+- **`ScanOverrideAttempt` kablosunda `failedAttemptsAfter` yoktur — bilinçli daraltma:** paket §4.3 alanı varlıkta sayar; kabloya çıkmaz ("kalan hak /
+  deneme sayısı yok" ilkesi, paket §8.15). Alan yalnız depoda durur.
+- **`warehouseId` ↔ bağlam deposu uyuşmazlığı 404 `BARCODE_CONTEXT_NOT_FOUND` — CT yorumu:** paket §12 "bağlamın deposuyla aynı" der, durum kodunu
+  yazmaz; uyuşmayan depo için bağlam kaydı yok sayılır.
+- **`SupervisorPin` okuma ucu yok** (son kullanma ve son kilit zamanı — paket §8.14): paket değişikliği ister (CT paket r8'i açacak); DL-2'yi etkiler,
+  DL-1'i bekletmez. Bu taslak ucu **eklemez**.
+- **ZXing.Net — CT kararı B-4 = A:** `Diten.InventoryService.Api` (çizici `Api/Barcode/PairingQrRenderer.cs`, portu
+  `Application/Features/Barcode/Ports/IPairingQrRenderer.cs`) — paket §5 lafzından sapma, emsal PDFsharp.
+
+**Mobil ekip akışı — `Count` bağlamı (CT bilgisi, 2026-11-13):** mobil "raf okut → ürün okut → sunucu satırı ya da bulunan stoğu söyler" akışını ve
+sayım girişinde `scanRef = scan-session:{sessionId}` gönderimini bekliyor.
+- **Uyumlu:** `Count` bağlamı `Location` → `Product` (→ `Lot`) adımlarını kabul eder; okutmalar aynı `sessionId` altında yazılır; WMS-COUNT-BUNDLE'da
+  `scanRef` 1..200 karakterlik opak dizgedir (`wms-count-bundle.openapi.yaml` `scanRef: { type: string, minLength: 1, maxLength: 200 }`) —
+  `scan-session:` + uuid (49 karakter) bu alana sığar; bugün opaktır, kapı DL-3'tedir (§6.3 (d)). Ürün okutmasının cevabı satırda **olmayan** SKU /
+  lot için `foundStock: true` verir.
+- **Açık nokta (12):** cevap "satırı" **kimliğiyle söylemez** — `resolved` SKU ve lotu (kod, ad, numara) taşır, sayım satırının `lineId`'sini taşımaz;
+  mobil satırı WMS-COUNT-BUNDLE'dan aldığı satır listesinde (lokasyon + SKU + lot) kendisi eşler. Mobil satır kimliğini cevapta isterse eklemeli bir üye
+  (`resolved.lineId` — yalnız `Count`, miktar taşımadan) eklenebilir; kör sayım kuralını bozmaz (kimlik miktar değildir). **Karar CT / mobil ekip.**
+
 ## 10. Doğrulama kaydı (geliştirici oturumu, 2026-11-13)
 
 Bu dosya paket r7'ye (LF sha256 `9f8fcc33…ce1e7`) karşı yazıldı: §3 uç listesi (33 işlem; DL-1 16 = WP §2), §4.1–§4.4, §4.10, §4.11,
 §8.1–§8.6, §8.12, §8.13, §8.15, §8.16 (a), (b), (e), (f), (g) — (c), (d), (h) "DL-3'te gelir" notuyla §6.3'te —, §12, §13, §14 izin anahtarları
 (DL-1 10 anahtar, işlem başına eşleşme), §21 denetim işlemleri, §22 kayıt kodu, AC-1…AC-30. Taslağın pakete eklediği her şey §9'da adıyla
-yazılıdır. Dilim başı: `5591b1213` (`ct/line-ff-2026-11-13i`).
+yazılıdır. Dilim başı: `5591b1213` (`ct/line-ff-2026-11-13i`). **İkinci sürüm (CT incelemesi sonrası):** §9'daki CT kararları, sahip kararı
+(pano penceresi) ve ek bulgular işlendi; §4.1 hata listeleri, kural 6 / 14, §3.8, §3.9 güncellendi. Üretim kodu bu sürümle aynıdır: sözleşme testi
+(`INVT/Barcode/BarcodeDraftContract.cs` + `BarcodeArchitectureTests.AC1_*` + `BarcodeAccessTests.AC1_*`) 16 işlemi kapalı şemayla doğrular.
