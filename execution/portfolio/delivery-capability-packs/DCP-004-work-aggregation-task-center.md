@@ -3,6 +3,8 @@ id: DCP-004
 slug: work-aggregation-task-center
 name: Work Aggregation / Task Center (Görev Merkezi)
 candidate_id: CAND-CAP-0006
+canonical_id: MOD-0024
+canonical_id_note: "Blueprint 8.7: CAND-CAP-0006 is absorbed as the MOD-0024 Work Center workspace (formerly CAND-CAP-0006; CRM-BP87-03)"
 product_name: "Görev Merkezi / Task Center"
 type: Delivery Capability Pack
 standard: CAP-001

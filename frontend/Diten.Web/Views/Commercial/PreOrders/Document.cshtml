@@ -1,0 +1,66 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["DocumentTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/PreOrders";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-a — E: the depot document of ONE order (mockup W6 E; not a menu item — it belongs to the order).
+    The button group switches between the DEPOT COPY and the PHARMACY COPY; both are the W6-BE-c2 document endpoint's PDF
+    (GET …/document?copy=depot|pharmacy — one template for the preview and the transmitted PDF; the depot copy carries no
+    discount %), shown inline and downloadable. Above it the transmission trail (each attempt and its outcome). UAS-001:
+    without a read key NOTHING but the notice; an order outside the caller's scope is the CRM's 404.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["DocumentTitle"].Value" />
+    return;
+}
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+    <div class="mb-0">
+        <h5 class="mb-0" id="po-title">@Localizer["DocumentTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["DocumentDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="btn-group" role="group" aria-label="@Localizer["CopyGroupLabel"]" id="po-copies">
+            <input type="radio" class="btn-check" name="po-copy" id="po-copy-depot" value="depot" autocomplete="off" checked />
+            <label class="btn btn-outline-primary" for="po-copy-depot">@Localizer["CopyDepot"]</label>
+            <input type="radio" class="btn-check" name="po-copy" id="po-copy-pharmacy" value="pharmacy" autocomplete="off" />
+            <label class="btn btn-outline-primary" for="po-copy-pharmacy">@Localizer["CopyPharmacy"]</label>
+        </div>
+        <a id="po-download" href="#" class="btn btn-primary"><i class="bx bx-download me-1"></i>@Localizer["DownloadPdf"]</a>
+        <a href="/Commercial/PreOrders/Details/@Model.OrderId" class="btn btn-label-secondary">@Localizer["OpenDetails"]</a>
+    </div>
+</div>
+
+<div id="po-root" data-screen="document" data-order-id="@Model.OrderId">
+    <div class="alert alert-danger d-none" id="po-alert" role="alert"></div>
+    <section class="card mb-3">
+        <div class="card-body py-2">
+            <div class="d-flex flex-wrap align-items-center gap-2"><span class="text-muted small me-1">@Localizer["TrailTitle"]</span><span id="po-trail"></span></div>
+        </div>
+    </section>
+    <section class="card">
+        <div class="card-body p-0">
+            <iframe id="po-pdf" class="po-pdf" title="@Localizer["DocumentTitle"]"></iframe>
+        </div>
+    </section>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/PreOrders/preorders.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PreOrders/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PreOrders/document.js" asp-append-version="true"></script>
+}

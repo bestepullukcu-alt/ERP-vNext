@@ -84,7 +84,10 @@ public static class VisitEvidenceExceptionRules
     /// <summary>accountWithoutLocation → <c>allow_flagged</c>.</summary>
     public const string AccountWithoutLocationAllow = "account_without_location_allow";
 
-    public static readonly IReadOnlyList<string> All = new[] { LocationInfo, PhotoOptional, AccountWithoutLocationAllow };
+    /// <summary>WP-VW-W3E (W3E-BE-a, K-W3E-9) — qrMode <c>required</c> → <c>optional</c>.</summary>
+    public const string QrOptional = "qr_optional";
+
+    public static readonly IReadOnlyList<string> All = new[] { LocationInfo, PhotoOptional, AccountWithoutLocationAllow, QrOptional };
 }
 
 public static class VisitEvidenceExceptionLimits
@@ -113,8 +116,12 @@ public sealed class VisitEvidencePolicyChange : EntityBase
     public DateTimeOffset At { get; set; }
     public string? By { get; set; }
 
-    /// <summary><c>tenant</c> this round (legal entity / business unit come with their layers).</summary>
+    /// <summary><c>tenant</c> | <c>legal-entity</c> | <c>business-unit</c> (<see cref="VisitEvidencePolicyScopeTypes"/>).
+    /// A row written before WP-VW-W3L is a tenant row.</summary>
     public string Scope { get; set; } = VisitEvidencePolicyScopes.Tenant;
+
+    /// <summary>WP-VW-W3L — the layer's legal entity id / business unit code; null for the tenant.</summary>
+    public string? ScopeRef { get; set; }
 
     /// <summary>The policy field (camelCase, as on the wire); null for the <c>created</c> row.</summary>
     public string? Field { get; set; }
@@ -122,17 +129,24 @@ public sealed class VisitEvidencePolicyChange : EntityBase
     public string? OldValue { get; set; }
     public string? NewValue { get; set; }
 
-    /// <summary><c>set</c> | <c>created</c>.</summary>
+    /// <summary><c>set</c> | <c>created</c> | <c>cleared</c> (a layer stops overriding the field) | <c>archived</c>
+    /// (the scope was removed).</summary>
     public string Kind { get; set; } = VisitEvidencePolicyChangeKinds.Set;
 }
 
 public static class VisitEvidencePolicyScopes
 {
-    public const string Tenant = "tenant";
+    public const string Tenant = VisitEvidencePolicyScopeTypes.Tenant;
 }
 
 public static class VisitEvidencePolicyChangeKinds
 {
     public const string Set = "set";
     public const string Created = "created";
+
+    /// <summary>WP-VW-W3L — a layer no longer overrides the field (it is inherited again).</summary>
+    public const string Cleared = "cleared";
+
+    /// <summary>WP-VW-W3L — "remove the scope": the layer is archived (K-L6).</summary>
+    public const string Archived = "archived";
 }

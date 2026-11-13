@@ -65,7 +65,7 @@ const parent = (childStatus) => ({
 const tick = async ({ childStatus = "not-started", startOk = true, completeOk = true } = {}) => {
   const calls = [];
   const said = [];
-  // The product's own toast seam (MOD-0013). Recorded rather than rendered, so what the reader is TOLD is
+  // The product's own toast seam (MOD-0286 (formerly MOD-0013)). Recorded rather than rendered, so what the reader is TOLD is
   // assertable — a write that reports nothing is the failure mode this whole file exists for.
   global.showToast = (message, type) => { said.push({ message, type }); };
   let version = 3;

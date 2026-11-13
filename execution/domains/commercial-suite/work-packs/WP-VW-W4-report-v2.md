@@ -1095,3 +1095,78 @@ Fleet yeniden başlatıldıktan sonra:
 - G-3 + G-4 arayüzden eczane hedefli + saatli plan dışı ziyaret: aynı gün aynı hedef 409 Türkçe mesaj; Karabük eczanesi 16:00 → 201, kayıt `0e3776f1` TargetType `pharmacy`, 16:00–16:20, Source `unplanned`.
 
 **W4 sonucu:** yerel E4 3 turda tamamlandı; açık hata yok. Kalan veri sahibi / kapsam dışı maddeler §37 FIX-c/d "Açık" listesinde. Temizlik listesine `0e3776f1` eklendi.
+
+
+## FU-W4-DOCINSIGHT-DATE — CT teşhisi (2026-10-19)
+**Kırmızı:** `VwW4DoctorInsightsTests.A_manual_profile_edit_needs_the_current_version_and_reads_availability_and_preferences_from_their_owners`, satır 372: `read.Preferences.Single()` → "Sequence contains no elements". Test dalında 2026-10-16'dan beri kırmızı.
+
+**Kök neden:** test karışık saat kullanıyor.
+- `World.Clock` sabit: `new TestClock(2026-10-13 09:00Z)` (satır 429).
+- Tercih kayıtları `EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)` (satır 362, 367) **gerçek saatle** yazılıyor.
+- Okuma tarafı (`DoctorInsightsHandlers.cs:168`: `EffectiveFrom <= now`, `now` = sabit saat) gerçek tarih 2026-10-14'ü geçince tercihi "henüz yürürlükte değil" sayıp eliyor.
+
+**Ürün kodu doğru, test yanlış.** Benzer risk: `VwW4ShelfPhotoTests.cs:107` `PlannedDate = DateOnly.FromDateTime(DateTime.UtcNow)`.
+
+## §36.1 Agent Prompt — FU-W4-DOCINSIGHT-DATE (paste-ready · yalnız CRM testleri)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · FU-W4-DOCINSIGHT-DATE — CRM W4 doktor içgörü testi gerçek saat ile sabit test saatini karıştırıyor (2026-10-16'dan beri kırmızı); test saati tek kaynak olsun + ziyaret test ailesinde aynı karışımı tara ve düzelt
+Repository: C:\tmp\fu-w4-docinsight-date (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/fu-w4-docinsight-date · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "FU-W4-DOCINSIGHT-DATE — CT teşhisi". Emsal: W3E-FIX CT-3 (smoke saatinin sabitlenmesi) ve W3E-FLAGS-STD (Node düzeneğinde saat 2026-10-14'e sabit).
+MEVCUT: services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/VisitWorkspace/VwW4DoctorInsightsTests.cs — World.Clock = TestClock(2026-10-13 09:00Z) (satır ~429); satır ~362 ve ~367 PreferenceRecord.EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1) (gerçek saat); okuma DoctorInsightsHandlers.cs:168 "EffectiveFrom <= now" (now = enjekte saat) → bugün tercih elenir, satır 372 Single() boş. Aynı risk: VwW4ShelfPhotoTests.cs:107 PlannedDate = DateOnly.FromDateTime(DateTime.UtcNow).
+NE:
+(1) VwW4DoctorInsightsTests: test verisindeki her zaman değeri World.Clock'tan (Clock.GetUtcNow()) türetilir; gerçek saat (DateTime.UtcNow / DateTimeOffset.UtcNow / DateTime.Now / DateOnly.FromDateTime(DateTime.UtcNow)) bu dosyada kalmaz.
+(2) Tarama: CRM Application.Tests altında enjekte bir saat (TimeProvider / TestClock / FakeTimeProvider / sabit "now") kullanan ve aynı zamanda gerçek saat okuyan test dosyalarını listele (VwW*, VisitWorkspace, VisitEvidence, VisitQr, DoctorInsights öncelikli). Bizim ziyaret ailemizde (WP-VW-W2 / W3 / W3E / W4 testleri) karışım varsa aynı şekilde düzelt; başka modülün testlerini DÜZELTME, yalnız raporla (XMC-001).
+(3) Ürün koduna DOKUNMA: DoctorInsightsHandlers / ProductIndicationProfileReader zaten enjekte saatle çalışıyor — doğru.
+KORU/YAPMA: testlerin anlattığı kural ve beklentiler aynı kalır (yalnız zaman kaynağı değişir); hiçbir assertion gevşetilmez / silinmez; yeni muafiyet yok; localhost:27017'ye BAĞLANMA.
+DOĞRULA: (a) düzeltilen test bugün yeşil; (b) saatten bağımsızlık kanıtı — testi farklı "bugün"lerde koştur (ör. sistem saatini değiştirmeden: World.Clock'u geçici olarak 2026-10-13 ve 2027-03-01 yapıp ikisinde de yeşil) ve raporla; (c) tarama listesi (dosya · satır · düzeltildi / yalnız raporlandı) + 1 sabotaj (.bak + touch): satır 362'yi tekrar DateTimeOffset.UtcNow.AddDays(-1) yap ve World.Clock'u 2026-10-13'te bırak → kırmızı (bugünün tarihiyle). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: bu testin kırmızı olduğu bilinen 2 kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı ve bu test).
+Commit: "test(crm): FU-W4-DOCINSIGHT-DATE — doctor insight test data takes its times from the pinned test clock (a real-time EffectiveFrom fell after the pinned now and hid the preference); same mix fixed across the visit test family" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §37 CT kabul — FU-W4-DOCINSIGHT-DATE E2 ACCEPTED (2026-10-19)
+Test dalına alındı: `f6cae237f` (ajan `0785004a3`), çakışmasız.
+- **Değişiklik:** `VwW4DoctorInsightsTests` satır 362 / 367 `EffectiveFrom = w.Clock.GetUtcNow().AddDays(-1)`; dosyada gerçek saat kalmadı. Ürün koduna ve assertion'lara dokunulmadı.
+- **Ajan:** sınıf 39/39 (saat 2026-10-13 ve 2027-03-01); sabotaj (362 gerçek saat) kırmızı; CRM Application 2891/1 (yalnız `-o` artefaktı `VisitPlanningFix2…shared_pattern`), taban 2889/3.
+- **Tarama:** ziyaret ailesinde başka karışım yok (işleyiciler saat almıyor, test de gerçek saat kullanıyor → tutarlı). Claims / KnowledgePath yalnız raporlandı.
+- **CT sabotajları → TEST EKSİĞİ bulundu:**
+  - (1) `DoctorInsightsHandlers.cs:168` müsaitlik `EffectiveFrom <= now` kaldırıldı → DoctorInsight + VwW4 95/95 **yeşil kaldı**.
+  - (2) satır 174 tercih `IsEffectiveAt(now)` kaldırıldı → 95/95 **yeşil kaldı**.
+  - Yani "henüz başlamamış (ya da süresi dolmuş) müsaitlik / tercih doktor profilinde görünmez" kuralı testsiz. Eski test bu kurala saat hatası yüzünden tesadüfen çarpıyordu.
+  - → **FU-W4-INSIGHT-WINDOW-TEST:** gelecek tarihli ve süresi dolmuş müsaitlik + tercih kayıtları profilde görünmez (sabit saatle). Her iki sabotaj bu testle kırmızı olmalı.
+
+
+## §36.1 Agent Prompt — FU-W4-INSIGHT-WINDOW-TEST (paste-ready · yalnız CRM testi)
+**CT ölçümü (2026-10-19):** `DoctorInsightsHandlers` doktor profilinde müsaitliği (satır ~166-168) ve iletişim tercihini (satır ~173-175) yürürlük penceresine göre süzüyor. İki koşul da CT sabotajında kaldırıldı, DoctorInsight + VwW4 95/95 yeşil kaldı → kural testsiz.
+- Müsaitlik: `(EffectiveFrom is null || EffectiveFrom <= now) && (EffectiveTo is null || now <= EffectiveTo)`; ayrıca `!IsDeleted`, `!AvailabilityLifecycle.IsClosed(Status)`.
+- Tercih: `PreferenceRecord.IsEffectiveAt(now)` = `EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo)` (`ConsentRecord.cs:146`); ayrıca `!IsDeleted`, `!IsArchived()`, tür yalnız PreferredChannel / PreferredVisitWindow.
+
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · FU-W4-INSIGHT-WINDOW-TEST — doktor profilinin müsaitlik ve iletişim tercihi okumasında yürürlük penceresi (gelecek tarihli / süresi dolmuş kayıt görünmez) testle korunur; yalnız test eklenir
+Repository: C:\tmp\fu-w4-insight-window (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/fu-w4-insight-window · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "§37 CT kabul — FU-W4-DOCINSIGHT-DATE" (CT sabotajları) ve bu istemin üstündeki "CT ölçümü".
+MEVCUT: services/Diten.CrmService/src/Diten.CrmService.Application/Features/DoctorInsights/DoctorInsightsHandlers.cs ~166-177 (GetDoctorProfileQuery okuması) · Domain/Entities/ConsentRecord.cs:146 PreferenceRecord.IsEffectiveAt · tests/Diten.CrmService.Application.Tests/VisitWorkspace/VwW4DoctorInsightsTests.cs (World: sabit TestClock 2026-10-13 09:00Z, w.Availability / w.Preferences, w.Queries(...).Handle(new GetDoctorProfileQuery(doctor))) — mevcut "A_manual_profile_edit…" testi yalnız yürürlükteki kayıtları kullanıyor.
+NE: VwW4DoctorInsightsTests'e (ya da aynı World'ü kullanan yeni bir test sınıfına) yürürlük penceresi testleri ekle; TÜM zamanlar w.Clock'tan türetilir (gerçek saat YOK — FU-W4-DOCINSIGHT-DATE dersi):
+(1) Müsaitlik: yürürlükte (from = now-1g, to = null) GÖRÜNÜR; gelecek (from = now+1g) GÖRÜNMEZ; süresi dolmuş (to = now-1g) GÖRÜNMEZ; sınır dahil (from = now ve to = now) GÖRÜNÜR; from ve to null GÖRÜNÜR; silinmiş / kapalı durum GÖRÜNMEZ.
+(2) Tercih: PreferredChannel yürürlükte GÖRÜNÜR; gelecek (EffectiveFrom = now+1g) GÖRÜNMEZ; süresi dolmuş (EffectiveTo = now-1g) GÖRÜNMEZ; sınır dahil (from = now, to = now) GÖRÜNÜR; arşivlenmiş GÖRÜNMEZ; tür süzgeci — DoNotContact yürürlükte olsa bile GÖRÜNMEZ, PreferredVisitWindow GÖRÜNÜR.
+(3) Her kontrol sonucu görünen kayıtları değeriyle ölçer (yalnız sayı değil: hangi gün / hangi tercih), böylece yanlış kaydın görünmesi de yakalanır.
+KORU/YAPMA: ürün koduna DOKUNMA (yalnız test); mevcut testleri değiştirme / gevşetme; yeni muafiyet yok; localhost:27017'ye BAĞLANMA.
+DOĞRULA: yeni testler yeşil + 4 sabotaj (.bak + touch, hepsi ürün kodunda, geri al + md5): (1) müsaitlik EffectiveFrom koşulu kaldırılsın (CT'nin 1. sabotajı) → kırmızı; (2) müsaitlik EffectiveTo koşulu kaldırılsın → kırmızı; (3) tercih IsEffectiveAt(now) kaldırılsın (CT'nin 2. sabotajı) → kırmızı; (4) tercih tür süzgecine DoNotContact eklensin → kırmızı. Ayrıca World.Clock geçici olarak 2027-03-01 yapılınca yeni testler yine yeşil (saatten bağımsızlık). CRM Application tam takım (-o repo içi), taban karşılaştırması (taban: 1 bilinen kırmızı — VisitPlanningFix2…shared_pattern -o artefaktı).
+Commit: "test(crm): FU-W4-INSIGHT-WINDOW-TEST — the doctor profile shows only availability and contact preferences effective at the injected now (future / expired / archived / wrong type hidden; window bounds inclusive)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §37 CT kabul — FU-W4-INSIGHT-WINDOW-TEST E2 ACCEPTED (2026-10-19)
+Test dalına alındı: `615823f42` (ajan `674bed7b1`), çakışmasız. Yalnız test dosyası (+75 satır); ürün kodu aynı.
+
+**Eklenen testler:** iki test, mevcut World ve sabit saat (`w.Clock`); gerçek saat yok.
+- **Müsaitlik (10 kayıt):** beklenen tam olarak `monday@09:00, thursday@09:00, friday@09:00`. Görünmeyenler: gelecek, süresi dolmuş, silinmiş, inactive, archived, ±1 tik dışı.
+- **Tercih (11 kayıt):** beklenen tam olarak `(preferred-channel, email), (preferred-channel, phone), (preferred-visit-window, 09:00-11:00)`. Görünmeyenler: gelecek, süresi dolmuş, arşivlenmiş, silinmiş, ±1 tik dışı, DoNotContact, DoNotVisit.
+- Assertion'lar kayıtları adıyla ve sırasıyla ölçüyor.
+
+**Sonuçlar:**
+- **Ajan:** sınıf 41/41; 4 sabotaj kırmızı. Bunlar: müsaitlik From / To, tercih IsEffectiveAt (CT'nin iki sabotajı artık kırmızı), tür süzgecine DoNotContact. Saat 2027-03-01'de 41/41. CRM Application 2891/3, taban 2891/1; fazladan 2 kırmızı (`PiiMasking…`, `ContactWorkbookImportTests.Import_Audit_Carries_Counts_Only`) tek başına iki kez yeşil → paralel koşu kararsızlığı.
+- **CT sabotajı (sınır):** müsaitlik `now <= EffectiveTo` → `now < EffectiveTo` → `The_profile_shows_only_the_availability_effective_at_the_injected_now_bounds_inclusive` **kırmızı**; md5 ile geri alındı.
+
+**Not:** `ContactWorkbookImportTests.Import_Audit_Carries_Counts_Only` ilk kez kararsız göründü (başka modül, dokunulmadı). Tekrar ederse ayrı iş.

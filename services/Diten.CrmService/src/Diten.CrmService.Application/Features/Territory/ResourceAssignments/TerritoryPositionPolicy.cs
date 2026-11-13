@@ -4,6 +4,9 @@ namespace Diten.CrmService.Application.Features.Territory.ResourceAssignments;
 /// FU04A compatibility seam until the canonical Position Directory exposes territory metadata.
 /// This table is position based; the retired territory-resource-role vocabulary is never consulted.
 /// Unknown, complete snapshots are planning-only and therefore fail closed during operational activation.
+/// <para>WP-VW-W3L (K-L7) — a country position code is the same position: a code EQUAL to a rule key, or ending with
+/// "-" + the key (<c>uz-medical-representative</c>, <c>tr-area-manager</c>), takes that key's rule; the longest key wins
+/// when several fit. Anything else (<c>medical-representative-x</c>, <c>xmedical-representative</c>) stays unknown.</para>
 /// </summary>
 public static class TerritoryPositionPolicy
 {
@@ -24,7 +27,19 @@ public static class TerritoryPositionPolicy
         };
 
     public static bool TryResolve(string positionCode, out Rule rule)
-        => Rules.TryGetValue(positionCode.Trim(), out rule!);
+    {
+        var code = positionCode.Trim();
+        if (Rules.TryGetValue(code, out rule!))
+        {
+            return true;
+        }
+
+        var key = Rules.Keys
+            .Where(k => code.Length > k.Length + 1 && code.EndsWith("-" + k, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(k => k.Length)
+            .FirstOrDefault();
+        return key is not null && Rules.TryGetValue(key, out rule!);
+    }
 
     private static IReadOnlySet<string> Set(params string[] values)
         => values.ToHashSet(StringComparer.OrdinalIgnoreCase);

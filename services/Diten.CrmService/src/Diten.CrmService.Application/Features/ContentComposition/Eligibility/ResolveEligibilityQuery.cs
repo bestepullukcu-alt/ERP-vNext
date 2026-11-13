@@ -4,7 +4,7 @@ using MediatR;
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011, docx C2) — the SINGLE source of truth for an eligibility decision. Both consumers are thin
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011, docx C2) — the SINGLE source of truth for an eligibility decision. Both consumers are thin
 /// adapters over this one query: the in-process <see cref="IEligibilityEvaluationPort"/> and, later, the HTTP action
 /// (SCMM-11 follow). It resolves ONE <see cref="EligibilityContext"/> against ONE policy (by id) at an instant and
 /// returns a disjoint <see cref="EligibilityResult"/>. No side effect on the domain (read); it writes only the RM4

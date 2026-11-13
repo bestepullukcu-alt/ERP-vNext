@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-12-UI · Claim authoring console + component picker (frontend)
 
-> **Control Tower kaydı (SoR).** SCMM R1, gate G2. Module: **CAND-CAP-0011** (Claim). Branch: `feature/scmm-content-studio` (HEAD 861d56ea).
+> **Control Tower kaydı (SoR).** SCMM R1, gate G2. Module: **MOD-0363** (eski CAND-CAP-0011) (Claim). Branch: `feature/scmm-content-studio` (HEAD 861d56ea).
 > **Ön koşul HAZIR:** SCMM-12-API (ClaimsController, CT-ACCEPTED E2+E4) + SCMM-12-API-GW (ocelot route, canlı doğrulandı) → claim uçları gateway'den tüketilebilir. Bu WP **yalnız frontend** (Diten.Web); backend'e DOKUNMA.
 
 ## Ölçülmüş girdi (CT, 2026-09-13)

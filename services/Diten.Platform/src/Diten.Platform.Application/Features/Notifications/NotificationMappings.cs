@@ -109,7 +109,8 @@ public static class NotificationMappings
             dispatch.SentAt,
             dispatch.FailedAt,
             dispatch.To.Count + dispatch.Cc.Count + dispatch.Bcc.Count,
-            dispatch.CorrelationId);
+            dispatch.CorrelationId,
+            dispatch.SourceModule);
 
     public static EmailRecipientDto ToDto(this EmailRecipient recipient) =>
         new(MaskEmail(recipient.Email), recipient.DisplayName);

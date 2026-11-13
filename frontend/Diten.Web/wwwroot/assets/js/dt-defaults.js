@@ -1,5 +1,5 @@
 /**
- * MOD-0013: Merkezi DataTable Konfigürasyonu (Sneat 2.x Layout API)
+ * MOD-0286 (formerly MOD-0013): Merkezi DataTable Konfigürasyonu (Sneat 2.x Layout API)
  * Referans: _Reference/Theme/full-version/assets/js/app-user-list.js
  */
 'use strict';

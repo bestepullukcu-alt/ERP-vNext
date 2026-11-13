@@ -2,7 +2,7 @@
 
 // MOD-0144 Contracting Details — contract lifecycle actions (activate / terminate). State-changing calls go
 // through the same-origin controller proxy (/Contracts/...), which keeps the Idempotency-Key server-side.
-// Confirmations use the premium shared helpers (window.showConfirm/showToast, premium-modal-standard MOD-0013).
+// Confirmations use the premium shared helpers (window.showConfirm/showToast, premium-modal-standard, MOD-0286 (formerly MOD-0013)).
 (function () {
     const root = document.querySelector('.contracts-details');
     if (!root) return;

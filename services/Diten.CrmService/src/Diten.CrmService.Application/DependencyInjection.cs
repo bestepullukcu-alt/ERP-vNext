@@ -11,6 +11,8 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
+        // F8-b (WP-CRM-SYNC-S0B): the central audit record of a marked command (ICentralAuditDeclaration) is written by the
+        // shared CentralAuditBehavior, registered by the host AFTER this call (Program.cs: AddCentralAudit — innermost).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionHandlingBehavior<,>));
@@ -128,16 +130,29 @@ public static class DependencyInjection
         services.AddScoped<Features.Knowledge.Path.IKnowledgePathProductResolver, Features.Knowledge.Path.ChainKnowledgePathProductResolver>();
         services.AddScoped<Features.VisitEvidence.IVisitEvidencePolicyResolver, Features.VisitEvidence.VisitEvidencePolicyResolver>();
         services.AddScoped<Features.VisitEvidence.IVisitEvidenceRepRoster, Features.VisitEvidence.VisitEvidenceRepRoster>();
+        // WP-VW-W3L (W3-BE-d) — the business unit of a rep (K-L4) and the rep's scope chain (+ the Platform seat, K-L3)
+        services.AddScoped<Features.VisitEvidence.IEvidenceBusinessUnitReader, Features.VisitEvidence.EvidenceBusinessUnitReader>();
+        services.AddScoped<Features.VisitEvidence.IEvidenceScopeChainResolver, Features.VisitEvidence.EvidenceScopeChainResolver>();
         services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
+        // WP-VW-W5 (W5-BE) — the visit notifications: the sender (once per subject), the report notifier (both submit
+        // paths), the scheduler's tick (the hosted service is Infrastructure's)
+        services.AddScoped<Features.VisitNotifications.VisitNotificationSender>();
+        services.AddScoped<Features.VisitNotifications.IVisitReportNotifier, Features.VisitNotifications.VisitReportNotifier>();
+        services.AddScoped<Features.VisitNotifications.VisitNotificationWorker>();
         // WP-VW-W4 (W4-BE-c) — doctor insights: the team scope (subtree assignments), the visibility (own / team /
         // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
         // recorder seam for BE-a) and the shared read plumbing.
         services.AddScoped<Features.DoctorInsights.TeamScopeResolver>();
+        services.AddScoped<Features.VisitEvidenceFlags.VisitEvidenceFlagScopeResolver>(); // WP-VW-W3E (BE-b)
         services.AddScoped<Features.DoctorInsights.DoctorInsightsVisibility>();
         services.AddScoped<Features.DoctorInsights.ProductIndicationProfileReader>();
         services.AddScoped<Features.DoctorInsights.DoctorInsightsRecorder>();
         services.AddScoped<Features.DoctorInsights.IDoctorInsightsRecorder>(sp => sp.GetRequiredService<Features.DoctorInsights.DoctorInsightsRecorder>());
         services.AddScoped<Features.DoctorInsights.DoctorInsightsReader>();
+        // WP-VW-W3E (W3E-BE-a) — the institution QR codes: the shared handler plumbing and the ONE start-time verifier (the
+        // signing key ring is the host's: Api registers IVisitQrKeyRing on ISecretsProvider).
+        services.AddScoped<Features.VisitQr.VisitQrService>();
+        services.AddScoped<Features.VisitQr.IVisitQrVerifier, Features.VisitQr.VisitQrVerifier>();
         // WP-VW-W4 (W4-BE-a) — the report v2 (pre-fill, draft, submit, amend, competitor usage).
         services.AddScoped<Features.VisitReport.V2.VisitReportV2Service>();
         // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
@@ -156,6 +171,31 @@ public static class DependencyInjection
         services.AddScoped<Features.Segmentation.Resolution.IContactSegmentSetReader,
             Features.Segmentation.Resolution.ContactSegmentSetReader>();
         services.AddScoped<Features.VisitPlanning.TargetStatus.ContactPeriodStatusReader>();
+
+        // WP-VW-W6 W6-BE-b — MOD-0156 Price Lists & Discount Guardrails (Features/Commercial/Pricing): the in-process
+        // contracts MOD-0168 consumes (IPriceResolver, IPricingEvaluator, IFxRateReader — pure reads, the arithmetic in
+        // Evaluation/ only), the change-log writer, the shared handler contexts, the four-eyes outcome applier + reconciler.
+        services.AddScoped<Features.Commercial.Pricing.Evaluation.PriceResolver>();
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IPriceResolver>(sp =>
+            sp.GetRequiredService<Features.Commercial.Pricing.Evaluation.PriceResolver>());
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IPricingEvaluator, Features.Commercial.Pricing.Evaluation.PricingEvaluator>();
+        services.AddScoped<Features.Commercial.Pricing.Contracts.IFxRateReader, Features.Commercial.Pricing.Evaluation.FxRateReader>();
+        services.AddScoped<Features.Commercial.Pricing.PricingChangeLogWriter>();
+        services.AddScoped<Features.Commercial.Pricing.PriceLists.PriceListItemWriter>();
+        services.AddScoped<Features.Commercial.Pricing.PriceLists.Handlers.CommandHandlers.PriceListCommandContext>();
+        services.AddScoped<Features.Commercial.Pricing.PricingRules.Handlers.PricingRuleContext>();
+        services.AddScoped<Features.Commercial.Pricing.PricingApprovalOutcomeApplier>();
+        services.AddScoped<Features.Commercial.Pricing.PricingApprovalReconciler>();
+
+        // WP-VW-W6 W6-BE-a — MOD-0168 Order Capture (pharmacy pre-order): the shared handler context, the parts reader, the
+        // MOD-0156 bridge (its three §4.6 interfaces only), the approval and transmission services, the team scope (the
+        // existing territory-subtree resolver, consumed as is).
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderContext>();
+        services.AddScoped<Features.Commercial.PreOrders.Handlers.CommandHandlers.PreOrderParts>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderPricing>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderApprovalService>();
+        services.AddScoped<Features.Commercial.PreOrders.PreOrderTransmissionService>();
+        services.AddScoped<Features.Commercial.PreOrders.IPreOrderTeamScope, Features.Commercial.PreOrders.TerritoryPreOrderTeamScope>();
 
         return services;
     }

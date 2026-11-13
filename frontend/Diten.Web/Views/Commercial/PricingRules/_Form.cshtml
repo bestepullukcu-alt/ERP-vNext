@@ -1,0 +1,78 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+
+@*
+    WP-VW-W6 · W6-WEB-b — a rule draft (mockup W6 D "Yeni kural"; DESIGN-GAP §3: the key is company × SKU × optional segment
+    / period): the company and the product (fixed once the rule exists — they are its key), the validity, the pharmacy
+    segment shown as "coming soon" (the first version has none — AÇIK-3), and the soft / hard pairs: max discount %, max MF
+    written "10+2" with its effective % beside it — the CRM's answer (the trial endpoint), never a formula here —, the
+    combined ceiling % and the quantity min / soft max / hard max. An active rule is changed by a revision (a new version
+    draft); every change goes through the second person's approval (D13).
+*@
+<div id="pr-form-root" data-id="@(Model.Id?.ToString("D") ?? "")" data-screen="@Model.Screen">
+    <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+    <section class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-section-title mb-3"><i class="bx bx-key"></i>@Localizer["RuleKeySection"]</h6>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="pr-company">@Localizer["CompanyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-company"><option value=""></option></select></div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="pr-sku">@Localizer["ProductLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-capsule diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-sku" data-placeholder="@Localizer["ProductPlaceholder"]"><option value=""></option></select></div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label" for="pr-segment">@Localizer["SegmentLabel"] <small class="text-muted">@Localizer["Optional"]</small></label>
+                    <div class="diten-field"><i class="bx bx-group diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-segment" disabled><option>@Localizer["SegmentSoon"]</option></select></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <label class="form-label" for="pr-from">@Localizer["ValidFromLabel"] <small class="text-muted">@Localizer["Optional"]</small></label>
+                    <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-from" autocomplete="off" /></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <label class="form-label" for="pr-to">@Localizer["ValidToLabel"] <small class="text-muted">@Localizer["Optional"]</small></label>
+                    <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-to" autocomplete="off" /></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-section-title mb-3"><i class="bx bx-slider-alt"></i>@Localizer["LimitsSection"]</h6>
+            <div class="row g-2 align-items-center pr-limits">
+                <div class="col-12 col-md-4"></div>
+                <div class="col-6 col-md-4"><span class="badge bg-label-warning">@Localizer["SoftLabel"]</span></div>
+                <div class="col-6 col-md-4"><span class="badge bg-label-danger">@Localizer["HardLabel"]</span></div>
+                @foreach (var (id, key, icon) in new[] { ("disc", "MaxDiscountLabel", "bx-purchase-tag-alt"), ("mf", "MaxMfLabel", "bx-gift"), ("comb", "MaxCombinedLabel", "bx-layer") })
+                {
+                    <div class="col-12 col-md-4"><span class="form-label mb-0">@Localizer[key]</span></div>
+                    foreach (var side in new[] { "soft", "hard" })
+                    {
+                        <div class="col-6 col-md-4">
+                            <div class="diten-field"><i class="bx @icon diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="decimal" class="form-control" id="pr-@id-@side" aria-label="@Localizer[key] · @Localizer[side == "soft" ? "SoftLabel" : "HardLabel"]" @(id == "mf" ? "placeholder=10+2" : "") /></div>
+                            @if (id == "mf")
+                            {
+                                <small class="text-muted pr-mf-ratio" id="pr-mf-@side-ratio"></small>
+                            }
+                        </div>
+                    }
+                }
+                <div class="col-12 col-md-4"><span class="form-label mb-0">@Localizer["QuantityLabel"]</span></div>
+                <div class="col-4 col-md-2"><div class="diten-field"><i class="bx bx-down-arrow-alt diten-field-icon" aria-hidden="true"></i><input type="number" min="0" class="form-control" id="pr-qty-min" aria-label="@Localizer["QuantityMin"]" placeholder="@Localizer["QuantityMin"]" /></div></div>
+                <div class="col-4 col-md-3"><div class="diten-field"><i class="bx bx-up-arrow-alt diten-field-icon" aria-hidden="true"></i><input type="number" min="0" class="form-control" id="pr-qty-soft" aria-label="@Localizer["QuantitySoftMax"]" placeholder="@Localizer["QuantitySoftMax"]" /></div></div>
+                <div class="col-4 col-md-3"><div class="diten-field"><i class="bx bx-up-arrow-alt diten-field-icon" aria-hidden="true"></i><input type="number" min="0" class="form-control" id="pr-qty-hard" aria-label="@Localizer["QuantityHardMax"]" placeholder="@Localizer["QuantityHardMax"]" /></div></div>
+            </div>
+            <small class="text-muted d-block mt-3">@Localizer["MfRatioHelp"]</small>
+        </div>
+    </section>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="/Commercial/Pricing/Rules" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <button type="button" class="btn btn-primary" id="pr-save"><i class="bx bx-save me-1"></i>@Localizer["SaveDraft"]</button>
+    </div>
+</div>

@@ -131,9 +131,9 @@ public static class DependencyInjection
         services.AddScoped<IKnowledgeContentConceptLinkRepository, KnowledgeContentConceptLinkRepository>();
         // SCMM-09 (②) — atomic node+edge combined-write (transaction when supported, else compensation).
         services.AddScoped<IConceptNodeWithRelationshipUnitOfWork, ConceptNodeWithRelationshipUnitOfWork>();
-        // SCMM-11 (CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
-        // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
+        // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
         services.AddScoped<IObjectionResponseRepository, ObjectionResponseRepository>(); // WP-VW-W3 (W3-BE-b)
         // WP-CL-BE-1 (claims v2) — claim country versions.
@@ -278,6 +278,11 @@ public static class DependencyInjection
         // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
         services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
         services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
+        // WP-VW-W5 (K-N6 / K-N5) — the visit notification log (once per subject) and the tenant notification settings.
+        services.AddScoped<IVisitNotificationRepository, VisitNotificationRepository>();
+        services.AddScoped<IVisitNotificationSettingsRepository, VisitNotificationSettingsRepository>();
+        // WP-VW-W3L (W3-BE-d) — the legal entity / business unit layers of the evidence rules (archive, never delete).
+        services.AddScoped<IVisitEvidencePolicyLayerRepository, VisitEvidencePolicyLayerRepository>();
         // WP-VW-W4 (W4-BE-c) — doctor profile + potential + thresholds and their append-only histories.
         services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
         services.AddScoped<IDoctorProfileChangeRepository, DoctorProfileChangeRepository>();
@@ -285,6 +290,22 @@ public static class DependencyInjection
         services.AddScoped<IDoctorProductPotentialChangeRepository, DoctorProductPotentialChangeRepository>();
         services.AddScoped<IProductPotentialThresholdRepository, ProductPotentialThresholdRepository>();
         services.AddScoped<IProductPotentialThresholdChangeRepository, ProductPotentialThresholdChangeRepository>();
+        // WP-VW-W3E (W3E-BE-a) — the institution QR codes (one active per institution) and their append-only history.
+        services.AddScoped<IInstitutionQrCodeRepository, InstitutionQrCodeRepository>();
+        services.AddScoped<IInstitutionQrEventRepository, InstitutionQrEventRepository>();
+        // WP-VW-W6 W6-BE-b — MOD-0156 pricing stores (lists + items, imports + rows, rules, FX rates, change log).
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListRepository, Repositories.Commercial.PriceListRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListItemRepository, Repositories.Commercial.PriceListItemRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPriceListImportRepository, Repositories.Commercial.PriceListImportRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPricingRuleRepository, Repositories.Commercial.PricingRuleRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IFxRateRepository, Repositories.Commercial.FxRateRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPricingChangeLogRepository, Repositories.Commercial.PricingChangeLogRepository>();
+        // WP-VW-W6 W6-BE-a — MOD-0168 pre-order stores (orders, settings, approval links, the ORD counter).
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderRepository, Repositories.Commercial.PreOrderRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderSettingsRepository, Repositories.Commercial.PreOrderSettingsRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderSettingsHistoryRepository, Repositories.Commercial.PreOrderSettingsHistoryRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderApprovalLinkRepository, Repositories.Commercial.PreOrderApprovalLinkRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderCodeSequenceRepository, Repositories.Commercial.PreOrderCodeSequenceRepository>();
 
         // Index creation talks to the server during registration. Mongo:EnsureIndexesOnStartup=false (default true) lets a
         // wiring test resolve the container with no server at all — a missing server surfaces as System.TimeoutException,
@@ -623,7 +644,7 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<AudienceDimensionAssignment>(map => map.AutoMap());
         }
 
-        // SCMM-11 (CAND-CAP-0011) — eligibility policy. Its only Guids are Id/TenantId (mapped on the EntityBase base
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy. Its only Guids are Id/TenantId (mapped on the EntityBase base
         // map, inherited here); the embedded EligibilityCondition carries no Guid but is registered so the driver maps
         // it explicitly rather than treating it as an anonymous document.
         Map<EligibilityPolicy>(_ => { });
@@ -632,7 +653,7 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<EligibilityCondition>(map => map.AutoMap());
         }
 
-        // SCMM-12 (CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
+        // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
         // EligibilityPolicyId take the string-Guid convention; without it those FKs store binary and every ref lookup
         // silently returns nothing (the new-aggregate class-map trap).
         // WP-CL-BE-1 (claims v2) — the new optional Guid members (ProductId, AudienceProfileIds, ResponsibleOrgUnitId,
@@ -1317,6 +1338,11 @@ public static class DependencyInjection
         {
             BsonClassMap.RegisterClassMap<VisitExecutionLocation>(map => map.AutoMap());
         }
+        // WP-VW-W3E (BE-b) — the device declaration (no Guid members; strict like every CRM map)
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionDevice)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionDevice>(map => map.AutoMap());
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionEvidence)))
         {
             BsonClassMap.RegisterClassMap<VisitExecutionEvidence>(map =>
@@ -1379,6 +1405,36 @@ public static class DependencyInjection
         });
         Map<VisitEvidencePolicyChange>(_ => { });
 
+        // WP-VW-W5 (K-N6) - the notification log: every Guid a string (the GUID trap: a binary Guid makes the list's /
+        // the claim's filters come back EMPTY silently), the visit date a sortable "yyyy-MM-dd" string; the recipients
+        // carry user ids as strings already. The settings document has no Guid beyond the base Id / TenantId.
+        Map<VisitNotification>(map =>
+        {
+            map.GetMemberMap(n => n.SubjectId).SetSerializer(stringGuid);
+            map.GetMemberMap(n => n.PlannedVisitId).SetSerializer(stringGuid);
+            map.GetMemberMap(n => n.VisitReportId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(n => n.VisitDate).SetSerializer(dateOnlyString);
+        });
+        Map<VisitNotificationRecipient>(_ => { });
+        Map<VisitNotificationResolvedRecipient>(_ => { });
+        Map<VisitNotificationSettings>(_ => { });
+
+        // WP-VW-W3L (W3-BE-d) - the evidence layers (no Guid of their own beyond the base Id / TenantId: the legal entity
+        // id is the ScopeRef STRING) and the scope chain stored with a visit start (its legal entity a string-Guid).
+        Map<VisitEvidencePolicyLayer>(_ => { });
+        Map<VisitExecutionEvidenceScope>(map => map.GetMemberMap(s => s.LegalEntityId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+
+        // WP-VW-W3E (W3E-BE-a) - the institution QR codes, their events and the QR evidence embedded in VisitExecution:
+        // every Guid as a string (the GUID trap: an unmapped Guid is written binary and the by-account / Qr.AccountId
+        // filters come back EMPTY silently).
+        Map<InstitutionQrCode>(map => map.GetMemberMap(c => c.AccountId).SetSerializer(stringGuid));
+        Map<InstitutionQrEvent>(map =>
+        {
+            map.GetMemberMap(e => e.AccountId).SetSerializer(stringGuid);
+            map.GetMemberMap(e => e.QrCodeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<VisitExecutionQr>(map => map.GetMemberMap(q => q.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+
         // WP-VW-W4 (W4-BE-c) - the doctor insights: every Guid FK as a string (the GUID trap: a type missing here stores
         // its Guids binary and the string-Guid queries come back EMPTY silently).
         var nullableStringGuid = new NullableSerializer<Guid>(stringGuid);
@@ -1401,6 +1457,128 @@ public static class DependencyInjection
         });
         Map<ProductPotentialThreshold>(map => map.GetMemberMap(t => t.GlobalProductId).SetSerializer(nullableStringGuid));
         Map<ProductPotentialThresholdChange>(map => map.GetMemberMap(c => c.GlobalProductId).SetSerializer(nullableStringGuid));
+
+        // WP-VW-W6 W6-BE-b — MOD-0156 pricing (commercial_*): every Guid a string and every DateOnly a sortable "yyyy-MM-dd"
+        // string (the GUID trap: a binary Guid makes a filter come back EMPTY silently); the review rounds / decisions reuse
+        // the ClaimReviewRound / RegulatoryTextDecision maps above; money stays decimal (the driver writes it as text).
+        var pricingDate = new NullableSerializer<DateOnly>(dateOnlyString);
+        Map<Domain.Entities.Commercial.PriceList>(map =>
+        {
+            map.GetMemberMap(l => l.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.FamilyId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.PreviousPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(l => l.SourceImportId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(l => l.ValidFrom).SetSerializer(dateOnlyString);
+            map.GetMemberMap(l => l.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PriceListItem>(map =>
+        {
+            map.GetMemberMap(i => i.PriceListId).SetSerializer(stringGuid);
+            map.GetMemberMap(i => i.SkuId).SetSerializer(stringGuid);
+        });
+        Map<Domain.Entities.Commercial.PriceListImport>(map =>
+        {
+            map.GetMemberMap(i => i.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(i => i.ComparedPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(i => i.ConvertedPriceListId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(i => i.ValidFrom).SetSerializer(dateOnlyString);
+            map.GetMemberMap(i => i.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PriceListImportRow>(map =>
+        {
+            map.GetMemberMap(r => r.ImportId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.SkuId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PricingRule>(map =>
+        {
+            map.GetMemberMap(r => r.RuleKey).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.SkuId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ValidFrom).SetSerializer(pricingDate);
+            map.GetMemberMap(r => r.ValidTo).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PricingPctLimit>(_ => { });
+        Map<Domain.Entities.Commercial.PricingMfLimit>(_ => { });
+        Map<Domain.Entities.Commercial.PricingMfTerm>(_ => { });
+        Map<Domain.Entities.Commercial.PricingQuantityLimit>(_ => { });
+        Map<Domain.Entities.Commercial.FxRate>(map =>
+        {
+            map.GetMemberMap(r => r.LegalEntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.RateDate).SetSerializer(dateOnlyString);
+        });
+        Map<Domain.Entities.Commercial.PricingChangeLog>(map =>
+        {
+            map.GetMemberMap(c => c.EntityId).SetSerializer(stringGuid);
+            map.GetMemberMap(c => c.ParentId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PricingFieldChange>(_ => { });
+
+        // WP-VW-W6 W6-BE-a — MOD-0168 pre-orders (commercial_pre_order*): the root AND every embedded type is mapped (the
+        // CRM new-root GUID trap); every Guid (lists included) a string, every DateOnly "yyyy-MM-dd"; money stays decimal.
+        var guidList = new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid);
+        Map<Domain.Entities.Commercial.PreOrder>(map =>
+        {
+            map.GetMemberMap(o => o.VisitId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(o => o.CopiedFromPreOrderId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(o => o.RequestedDeliveryDate).SetSerializer(pricingDate);
+        });
+        Map<Domain.Entities.Commercial.PreOrderSeller>(map => map.GetMemberMap(s => s.LegalEntityId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderParty>(map => map.GetMemberMap(p => p.AccountId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderRep>(map =>
+        {
+            map.GetMemberMap(r => r.UserId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.PositionId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderLine>(map => map.GetMemberMap(l => l.SkuId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderSkuSnapshot>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderMf>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderFinding>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderRuleRef>(map => map.GetMemberMap(r => r.RuleKey).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderTotals>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderFxSnapshot>(map => map.GetMemberMap(f => f.RateDate).SetSerializer(dateOnlyString));
+        Map<Domain.Entities.Commercial.PreOrderPriceSnapshot>(map =>
+        {
+            map.GetMemberMap(p => p.PriceListId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.ValidFrom).SetSerializer(dateOnlyString);
+        });
+        Map<Domain.Entities.Commercial.PreOrderEvaluationSnapshot>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderApprovalRequirement>(map =>
+        {
+            map.GetMemberMap(r => r.ApproverPositionId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(r => r.ApproverUserIds).SetSerializer(guidList);
+        });
+        Map<Domain.Entities.Commercial.PreOrderSignature>(map =>
+        {
+            map.GetMemberMap(s => s.BinaryRef).SetSerializer(stringGuid);
+            map.GetMemberMap(s => s.CapturedByUserId).SetSerializer(stringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderApproval>(map =>
+        {
+            map.GetMemberMap(a => a.WorkflowInstanceId).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(a => a.DecidedByUserId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderTransmission>(map =>
+        {
+            map.GetMemberMap(t => t.DepotDocumentRef).SetSerializer(nullableStringGuid);
+            map.GetMemberMap(t => t.PharmacyCopyRef).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderTransmissionAttempt>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCancellation>(map => map.GetMemberMap(c => c.ByUserId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderDepotResponse>(map => map.GetMemberMap(d => d.ByUserId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderPartialLine>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderEvent>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettings>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettingsChange>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettingsFieldChange>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCountryTier>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderCompanyPrefix>(map => map.GetMemberMap(p => p.LegalEntityId).SetSerializer(stringGuid));
+        Map<Domain.Entities.Commercial.PreOrderApprovalLink>(map =>
+        {
+            map.GetMemberMap(l => l.PreOrderId).SetSerializer(stringGuid);
+            map.GetMemberMap(l => l.ApproverUserIds).SetSerializer(guidList);
+            map.GetMemberMap(l => l.ConsumedByUserId).SetSerializer(nullableStringGuid);
+        });
+        Map<Domain.Entities.Commercial.PreOrderCodeSequence>(_ => { });
 
         _classMapsRegistered = true;
     }
@@ -1897,14 +2075,14 @@ public static class DependencyInjection
                 Builders<AudienceProfile>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.ProfileCode),
                 new CreateIndexOptions { Name = "ix_knowledge_audience_profiles_tenant_code" }));
 
-            // SCMM-11 (CAND-CAP-0011) — eligibility policy index (tenant scoped). PolicyCode is shared across versions,
+            // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility policy index (tenant scoped). PolicyCode is shared across versions,
             // so this is NOT unique. EffectiveFrom/EffectiveTo are DateTimeOffset (BSON array) — never index keys.
             var eligibilityPolicies = database.GetCollection<EligibilityPolicy>(EligibilityPolicyRepository.CollectionName);
             eligibilityPolicies.Indexes.CreateOne(new CreateIndexModel<EligibilityPolicy>(
                 Builders<EligibilityPolicy>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.PolicyCode),
                 new CreateIndexOptions { Name = "ix_eligibility_policies_tenant_code" }));
 
-            // SCMM-12 (CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
+            // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
             var claims = database.GetCollection<Claim>(ClaimRepository.CollectionName);
             claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
                 Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
@@ -2152,6 +2330,15 @@ public static class DependencyInjection
             visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
                 Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Ascending(e => e.Status),
                 new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_status" }));
+            // WP-VW-W3E (BE-b, §2.6) - the manager's evidence flags read: (TenantId, StartedAt) + (TenantId, ResourceId,
+            // StartedAt). StartedAt is a BSON array [ticks, offset]; the key is its SCALAR ticks element "StartedAt.0"
+            // (server UTC clock: offset 0), never the array itself (the parallel-arrays rule above holds).
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Descending(VisitExecutionRepository.StartedTicksField),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_started" }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Descending(VisitExecutionRepository.StartedTicksField),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_started" }));
 
             // WP-VW-W3 (BE-a, K-W2) - visit_evidence_policies: one document per tenant.
             var evidencePolicies = database.GetCollection<VisitEvidencePolicy>(VisitEvidencePolicyRepository.CollectionName);
@@ -2163,6 +2350,154 @@ public static class DependencyInjection
                     Unique = true,
                     PartialFilterExpression = Builders<VisitEvidencePolicy>.Filter.Eq(p => p.IsDeleted, false)
                 }));
+
+            // WP-VW-W3L (W3-BE-d) - visit_evidence_policy_layers: ONE ACTIVE layer per (tenant, scope type, scope ref).
+            // Equality-only partial filter (Status "active", IsDeleted false): an archived layer keeps its row.
+            var evidenceLayers = database.GetCollection<VisitEvidencePolicyLayer>(VisitEvidencePolicyLayerRepository.CollectionName);
+            evidenceLayers.Indexes.CreateOne(new CreateIndexModel<VisitEvidencePolicyLayer>(
+                Builders<VisitEvidencePolicyLayer>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.ScopeType).Ascending(l => l.ScopeRef),
+                new CreateIndexOptions<VisitEvidencePolicyLayer>
+                {
+                    Name = "ux_visit_evidence_policy_layers_tenant_scope_active",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitEvidencePolicyLayer>.Filter.And(
+                        Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.Status, VisitEvidencePolicyLayerStatuses.Active),
+                        Builders<VisitEvidencePolicyLayer>.Filter.Eq(l => l.IsDeleted, false))
+                }));
+
+            // WP-VW-W5 (K-N6) - crm_visit_notifications: ONE row per (tenant, event, subject) - the same report never sends
+            // the same e-mail twice (a concurrent second insert loses); the list reads (tenant, created) newest first; the
+            // scheduler's claim reads (status, claimed-until). Scalar keys only.
+            var visitNotifications = database.GetCollection<VisitNotification>(VisitNotificationRepository.CollectionName);
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.TenantId).Ascending(n => n.EventCode).Ascending(n => n.SubjectId),
+                new CreateIndexOptions { Name = "ux_crm_visit_notifications_tenant_event_subject", Unique = true }));
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.TenantId).Descending(n => n.CreatedTicks),
+                new CreateIndexOptions { Name = "ix_crm_visit_notifications_tenant_created" }));
+            visitNotifications.Indexes.CreateOne(new CreateIndexModel<VisitNotification>(
+                Builders<VisitNotification>.IndexKeys.Ascending(n => n.Status).Ascending(n => n.ClaimedUntilTicks),
+                new CreateIndexOptions { Name = "ix_crm_visit_notifications_status_claim" }));
+            var notificationSettings = database.GetCollection<VisitNotificationSettings>(VisitNotificationSettingsRepository.CollectionName);
+            notificationSettings.Indexes.CreateOne(new CreateIndexModel<VisitNotificationSettings>(
+                Builders<VisitNotificationSettings>.IndexKeys.Ascending(s => s.TenantId),
+                new CreateIndexOptions<VisitNotificationSettings>
+                {
+                    Name = "ux_crm_visit_notification_settings_tenant",
+                    Unique = true,
+                    PartialFilterExpression = Builders<VisitNotificationSettings>.Filter.Eq(s => s.IsDeleted, false)
+                }));
+
+            // WP-VW-W6 W6-BE-b - MOD-0156 pricing: the evaluation reads ONE list and ONE rule set per call (§8); an item is unique
+            // per (list, SKU) among the live rows (equality-only partial filter: an item removed from a draft frees its SKU), a
+            // rule version unique per (key, version), a rate unique per (legal entity, pair, day). Scalar keys only.
+            var priceLists = database.GetCollection<Domain.Entities.Commercial.PriceList>(Repositories.Commercial.PriceListRepository.CollectionName);
+            priceLists.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceList>(
+                Builders<Domain.Entities.Commercial.PriceList>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.LegalEntityId)
+                    .Ascending(l => l.CountryCode).Ascending(l => l.Status).Ascending(l => l.ValidFrom),
+                new CreateIndexOptions { Name = "ix_commercial_price_lists_tenant_le_country_status_from" }));
+            var priceListItems = database.GetCollection<Domain.Entities.Commercial.PriceListItem>(Repositories.Commercial.PriceListItemRepository.CollectionName);
+            priceListItems.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListItem>(
+                Builders<Domain.Entities.Commercial.PriceListItem>.IndexKeys.Ascending(i => i.TenantId).Ascending(i => i.PriceListId).Ascending(i => i.SkuId),
+                new CreateIndexOptions<Domain.Entities.Commercial.PriceListItem>
+                {
+                    Name = "ux_commercial_price_list_items_tenant_list_sku",
+                    Unique = true,
+                    PartialFilterExpression = Builders<Domain.Entities.Commercial.PriceListItem>.Filter.Eq(i => i.IsDeleted, false)
+                }));
+            var priceListImports = database.GetCollection<Domain.Entities.Commercial.PriceListImport>(Repositories.Commercial.PriceListImportRepository.CollectionName);
+            priceListImports.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListImport>(
+                Builders<Domain.Entities.Commercial.PriceListImport>.IndexKeys.Ascending(i => i.TenantId).Descending(i => i.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_price_list_imports_tenant_created" }));
+            var priceListImportRows = database.GetCollection<Domain.Entities.Commercial.PriceListImportRow>(Repositories.Commercial.PriceListImportRepository.RowsCollectionName);
+            priceListImportRows.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PriceListImportRow>(
+                Builders<Domain.Entities.Commercial.PriceListImportRow>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.ImportId).Ascending(r => r.RowNo),
+                new CreateIndexOptions { Name = "ix_commercial_price_list_import_rows_tenant_import_row" }));
+            var pricingRules = database.GetCollection<Domain.Entities.Commercial.PricingRule>(Repositories.Commercial.PricingRuleRepository.CollectionName);
+            pricingRules.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingRule>(
+                Builders<Domain.Entities.Commercial.PricingRule>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.LegalEntityId)
+                    .Ascending(r => r.SkuId).Ascending(r => r.Status),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_rules_tenant_le_sku_status" }));
+            pricingRules.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingRule>(
+                Builders<Domain.Entities.Commercial.PricingRule>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.RuleKey).Ascending(r => r.RuleVersion),
+                new CreateIndexOptions { Name = "ux_commercial_pricing_rules_tenant_key_version", Unique = true }));
+            var fxRates = database.GetCollection<Domain.Entities.Commercial.FxRate>(Repositories.Commercial.FxRateRepository.CollectionName);
+            fxRates.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.FxRate>(
+                Builders<Domain.Entities.Commercial.FxRate>.IndexKeys.Ascending(r => r.TenantId).Ascending(r => r.LegalEntityId)
+                    .Ascending(r => r.FromCurrency).Ascending(r => r.ToCurrency).Ascending(r => r.RateDate),
+                new CreateIndexOptions { Name = "ux_commercial_fx_rates_tenant_le_pair_date", Unique = true }));
+            var pricingLog = database.GetCollection<Domain.Entities.Commercial.PricingChangeLog>(Repositories.Commercial.PricingChangeLogRepository.CollectionName);
+            pricingLog.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingChangeLog>(
+                Builders<Domain.Entities.Commercial.PricingChangeLog>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.EntityType).Descending(c => c.At),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_change_log_tenant_type_at" }));
+            pricingLog.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PricingChangeLog>(
+                Builders<Domain.Entities.Commercial.PricingChangeLog>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.EntityId),
+                new CreateIndexOptions { Name = "ix_commercial_pricing_change_log_tenant_entity" }));
+
+            // WP-VW-W6 W6-BE-a — MOD-0168 pre-orders (§17): one code per tenant; the list / scope / pharmacy reads; one settings
+            // document per tenant; one link per token hash; one ORD counter per (tenant, prefix). No partial filters.
+            var preOrders = database.GetCollection<Domain.Entities.Commercial.PreOrder>(Repositories.Commercial.PreOrderRepository.CollectionName);
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Code),
+                new CreateIndexOptions { Name = "ux_commercial_pre_orders_tenant_code", Unique = true }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Status).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_status_created" }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Rep.UserId).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_rep_created" }));
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.TenantId).Ascending(o => o.Pharmacy.AccountId).Descending(o => o.CreatedAt),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_tenant_pharmacy_created" }));
+            // WP-VW-W6 W6-BE-c1 — the transmission retry scheduler's due query (cross-tenant like the W5 claim). No partial filter.
+            preOrders.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrder>(
+                Builders<Domain.Entities.Commercial.PreOrder>.IndexKeys.Ascending(o => o.Status).Ascending(o => o.Transmission!.NextAttemptAtTicks),
+                new CreateIndexOptions { Name = "ix_commercial_pre_orders_status_next_attempt" }));
+            var preOrderSettings = database.GetCollection<Domain.Entities.Commercial.PreOrderSettings>(Repositories.Commercial.PreOrderSettingsRepository.CollectionName);
+            preOrderSettings.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettings>(
+                Builders<Domain.Entities.Commercial.PreOrderSettings>.IndexKeys.Ascending(s => s.TenantId),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_settings_tenant", Unique = true }));
+            // WP-CRM-SYNC-S0B B0a — MOD-0168 §21: the settings change history, read per tenant newest first. No partial filter.
+            var preOrderSettingsHistory = database.GetCollection<Domain.Entities.Commercial.PreOrderSettingsChange>(Repositories.Commercial.PreOrderSettingsHistoryRepository.CollectionName);
+            preOrderSettingsHistory.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettingsChange>(
+                Builders<Domain.Entities.Commercial.PreOrderSettingsChange>.IndexKeys.Ascending(c => c.TenantId).Descending(c => c.At),
+                new CreateIndexOptions { Name = "ix_commercial_pre_order_settings_history_tenant_at" }));
+            var preOrderLinks = database.GetCollection<Domain.Entities.Commercial.PreOrderApprovalLink>(Repositories.Commercial.PreOrderApprovalLinkRepository.CollectionName);
+            preOrderLinks.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderApprovalLink>(
+                Builders<Domain.Entities.Commercial.PreOrderApprovalLink>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.TokenHash),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_approval_links_tenant_hash", Unique = true }));
+            preOrderLinks.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderApprovalLink>(
+                Builders<Domain.Entities.Commercial.PreOrderApprovalLink>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.PreOrderId),
+                new CreateIndexOptions { Name = "ix_commercial_pre_order_approval_links_tenant_order" }));
+            var preOrderSequences = database.GetCollection<Domain.Entities.Commercial.PreOrderCodeSequence>(Repositories.Commercial.PreOrderCodeSequenceRepository.CollectionName);
+            preOrderSequences.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderCodeSequence>(
+                Builders<Domain.Entities.Commercial.PreOrderCodeSequence>.IndexKeys.Ascending(q => q.TenantId).Ascending(q => q.Prefix),
+                new CreateIndexOptions { Name = "ux_commercial_pre_order_code_sequences_tenant_prefix", Unique = true }));
+
+            // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database
+            // (a concurrent second issue loses). Equality-only partial filter (Status:"active", IsDeleted:false) - $ne in a
+            // partial filter crash-loops startup. Scalar keys only.
+            var qrCodes = database.GetCollection<InstitutionQrCode>(InstitutionQrCodeRepository.CollectionName);
+            qrCodes.Indexes.CreateOne(new CreateIndexModel<InstitutionQrCode>(
+                Builders<InstitutionQrCode>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.AccountId),
+                new CreateIndexOptions<InstitutionQrCode>
+                {
+                    Name = "ux_crm_institution_qr_codes_tenant_account_active",
+                    Unique = true,
+                    PartialFilterExpression = Builders<InstitutionQrCode>.Filter.And(
+                        Builders<InstitutionQrCode>.Filter.Eq(c => c.Status, InstitutionQrCodeStatuses.Active),
+                        Builders<InstitutionQrCode>.Filter.Eq(c => c.IsDeleted, false))
+                }));
+            qrCodes.Indexes.CreateOne(new CreateIndexModel<InstitutionQrCode>(
+                Builders<InstitutionQrCode>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.Status),
+                new CreateIndexOptions { Name = "ix_crm_institution_qr_codes_tenant_status" }));
+            var qrEvents = database.GetCollection<InstitutionQrEvent>(InstitutionQrEventRepository.CollectionName);
+            qrEvents.Indexes.CreateOne(new CreateIndexModel<InstitutionQrEvent>(
+                Builders<InstitutionQrEvent>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.AccountId),
+                new CreateIndexOptions { Name = "ix_crm_institution_qr_events_tenant_account" }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending("Qr.AccountId").Ascending("Qr.Status"),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_qr_account_status" }));
         }
         catch (MongoException)
         {

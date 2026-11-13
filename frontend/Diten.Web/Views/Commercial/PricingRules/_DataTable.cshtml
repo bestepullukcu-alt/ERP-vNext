@@ -1,0 +1,29 @@
+@using Diten.Web.Views.Commercial.Pricing
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    // W6-WEB-b — the rules table is the shared component (BL-440), server mode. A rule is never deleted (versions + the
+    // change history), a draft is discarded on its own page: the selection is DECLARED off.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-pricingrules",
+        DataMode = "server",
+        Slug = "pricingrules",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColProduct"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColMaxDiscount"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColMaxMf"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColMaxCombined"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColQuantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColValidity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColVersion"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

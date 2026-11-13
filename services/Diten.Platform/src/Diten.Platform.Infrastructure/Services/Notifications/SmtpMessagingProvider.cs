@@ -83,7 +83,7 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         try
         {
             var message = BuildMessage(request, settings);
-            if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail) && message.ReplyTo.Count == 0)
+            if (!string.IsNullOrWhiteSpace(request.ReplyToEmail ?? settings.ReplyToEmail) && message.ReplyTo.Count == 0)
             {
                 _logger.LogWarning(
                     "smtp.provider.reply_to_refused DispatchId={DispatchId} TenantId={TenantId}. The configured reply address is not a single valid address; the message is sent without one.",
@@ -212,9 +212,12 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         // BL-454 — a reply address from a tenant's settings goes in only if it is ONE plain address: a value with a
         // line break or a second mailbox never reaches the header. A refused value is logged by the caller below,
         // never with the value itself.
-        if (EmailAddressText.IsSingleAddress(settings.ReplyToEmail?.Trim()))
+        // WP-VW-W5 PLT-NOTIFY — this message's own reply address (the representative's) goes before the settings row's,
+        // under the same one-plain-address rule.
+        var replyTo = string.IsNullOrWhiteSpace(request.ReplyToEmail) ? settings.ReplyToEmail : request.ReplyToEmail;
+        if (EmailAddressText.IsSingleAddress(replyTo?.Trim()))
         {
-            message.ReplyTo.Add(new MailboxAddress(string.Empty, settings.ReplyToEmail!.Trim()));
+            message.ReplyTo.Add(new MailboxAddress(string.Empty, replyTo!.Trim()));
         }
 
         AddRecipients(message.To, request.To);

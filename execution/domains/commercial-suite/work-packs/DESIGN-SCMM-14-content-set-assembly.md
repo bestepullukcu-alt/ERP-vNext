@@ -1,6 +1,6 @@
 # TASARIM BRIEF — SCMM-14 · ContentSet (Assembly) aggregate
 
-> **Control Tower §14 tasarım brief'i (SoR).** Amaç: SCMM-14 aggregate şeklini WP paketlemeden ÖNCE netleştirmek. Kaynak: docx §7 records (Content set and draft) + SCMM planı + tüketilen aggregate'ler (SCMM-10/11/12/13). Module: **CAND-CAP-0011**, CrmService. Branch: `feature/scmm-content-studio`.
+> **Control Tower §14 tasarım brief'i (SoR).** Amaç: SCMM-14 aggregate şeklini WP paketlemeden ÖNCE netleştirmek. Kaynak: docx §7 records (Content set and draft) + SCMM planı + tüketilen aggregate'ler (SCMM-10/11/12/13). Module: **MOD-0363** (formerly CAND-CAP-0011), CrmService. Branch: `feature/scmm-content-studio`.
 
 ## 1. Ne (legacy ⑤ UCLN Book karşılığı — "resolved book" / Argument Set)
 Seçili içerik **component**'lerini + **claim**'leri, bir **composition template** (ConceptChainTemplate) düzenine göre, opsiyonel bir **scope** içinde birleştiren **versiyonlu, mutable DRAFT**. Amaç: yetkili bir output'a giden yolu kurmak; kaynak sürümlere izlenebilir.

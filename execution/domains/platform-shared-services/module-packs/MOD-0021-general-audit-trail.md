@@ -15,7 +15,7 @@ form_field_count: 6
 tier: 2
 ---
 
-# MOD-0021 - General Audit Trail
+# MOD-0021 — Audit Trail Service (formerly titled: General Audit Trail)
 
 ## Module Summary
 MOD-0021 is the master-plan General Audit Trail module for Platform & Shared Services. Do not create a new PSS ID for this work.

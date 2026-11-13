@@ -1,0 +1,115 @@
+@model Diten.Web.Models.CRM.VisitEvidenceFlagsViewModel
+@using Diten.Web.Views.CRM.VisitEvidenceFlags
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/CRM/VisitEvidenceFlags";
+    var tabCard = new Diten.Web.Models.Tabs.TabCardViewModel
+    {
+        AriaLabel = Localizer["PageTitle"].Value,
+        Tabs =
+        [
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "visits", Id = "vf-tab-visits", Icon = "bx-list-ul", Text = Localizer["TabVisits"].Value, Active = true, Controls = "vf-pane-visits" },
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "reps", Id = "vf-tab-reps", Icon = "bx-group", Text = Localizer["TabReps"].Value, Controls = "vf-pane-reps" }
+        ]
+    };
+}
+
+@*
+    WP-VW-W3E · the manager's visit evidence flags (mockup "W3E Ek Kanitlar" M1–M6) — W3E-FLAGS-STD (K-STD): the Golden
+    Compact LIST STANDARD (frontend-datatable-template.md). The standard wins over the mockup; the mockup gives the content
+    (the columns, the chip words and values, the states). Order: the inline filter (period ≤ 92 days · rep · flag types ·
+    institution · "only flagged") → the list header → the summary card (started, flagged + rate, the flag-type bars with
+    "Other (N types)") → the tabs "Visits" (the server-mode table: the CRM pages the visits, newest start first) / "Rep
+    summary" (the bounded rep set of the summary read, client mode; a row filters the visits to that rep) — the tabs on the
+    shared K-TABS card — → the quick view
+    (M2). ONE filter state for the card and both tables; Save View keeps it. Read only: no selection, no bulk bar.
+    UAS-001: without a flags read key NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/VisitEvidenceFlags/_Filter.cshtml" model="Model" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="vf-root" class="d-none"
+     data-can-read-all="@Model.CanReadAll.ToString().ToLowerInvariant()"
+     data-can-see-photos="@Model.CanSeePhotos.ToString().ToLowerInvariant()"
+     data-visit-url="/CRM/VisitReport"
+     data-exception-url="/CRM/VisitEvidenceSettings"></div>
+
+@* M1 — the summary card (the summary read; the same filter state as the tables) *@
+<div class="card mb-4 vf-summary" id="vf-summary">
+    <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumStarted"]</span><span class="vf-stat-value" id="vf-sum-started">—</span><span class="vf-sub" id="vf-sum-range"></span></div>
+    <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumFlagged"]</span><span class="vf-row"><span class="vf-stat-value" id="vf-sum-flagged">—</span><span class="vf-pill vf-tone-warning" id="vf-sum-rate"></span></span><span class="vf-sub">@Localizer["SumReview"]</span></div>
+    <div class="vf-bars-wrap"><div class="vf-sub"><span class="vf-strong-sub">@Localizer["SumByFlag"]</span> · @Localizer["SumByFlagNote"]</div><div class="vf-bars" id="vf-bars"></div></div>
+</div>
+
+@* K-TABS — the shared tab card (the Work Center's tab strip, Views/Shared/Components/Tabs/_TabCard.cshtml); the selected
+   tab is not part of Save View *@
+<partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="tabCard" />
+
+<div class="tab-content p-0 vf-tab-content">
+    @* M1 / M4 — the visits: the server-mode Golden Compact table *@
+    <div class="tab-pane fade show active" id="vf-pane-visits" role="tabpanel" aria-labelledby="vf-tab-visits">
+        @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-visitevidenceflags" data-dt-standard="v2"> *@
+        <partial name="~/Views/CRM/VisitEvidenceFlags/_DataTable.cshtml" />
+    </div>
+
+    @* M3 — the rep summary: the same shared table card, client mode (a bounded set), no filter / Save View of its own *@
+    <div class="tab-pane fade" id="vf-pane-reps" role="tabpanel" aria-labelledby="vf-tab-reps">
+        <partial name="~/Views/CRM/VisitEvidenceFlags/_RepSummaryTable.cshtml" />
+    </div>
+</div>
+
+@* ④ Quick view (M2) — the standard offcanvas; the visit's evidence, read once per open *@
+<div class="offcanvas offcanvas-end vf-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title" style="width: 480px;">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-shield-quarter fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitle"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+                <small id="oc-target" class="text-muted d-block"></small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="p-4 d-flex flex-column gap-3" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["OpenVisit"] <i class="bx bx-right-arrow-alt vf-flip ms-1"></i></a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitEvidenceFlags/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/flags-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/rep-summary.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/index.js" asp-append-version="true"></script>
+}

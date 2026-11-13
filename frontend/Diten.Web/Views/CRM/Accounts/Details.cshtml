@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<Diten.Web.Views.CRM.Accounts.AccountIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.CRM.VisitQrCodes.VisitQrIndex> QrLocalizer
 @{
     ViewData["Title"] = SharedLocalizer["Details"].Value;
     Layout = "_LayoutTenantShell";
@@ -46,6 +47,8 @@
     <div class="row g-4">
         <!-- Main Column (Left) -->
         <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            @* WP-VW-W3E (W3E-WEB-a, Q1) — the institution QR card (crm.visit-qr.read; buttons with .manage). *@
+            <partial name="~/Views/CRM/Accounts/_VisitQrCard.cshtml" model="Model" />
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
                 <div class="row g-4">
@@ -356,7 +359,24 @@
     <partial name="~/Views/CRM/Accounts/_RelationshipEndOffcanvas.cshtml" />
 }
 
+@section Styles {
+    @if (Model.VisitQrRead)
+    {
+        <link rel="stylesheet" href="~/assets/js/CRM/VisitQrCodes/visit-qr.css" asp-append-version="true" />
+    }
+}
+
 @section Scripts {
+    @if (Model.VisitQrRead)
+    {
+        <script>
+            window.VisitQrL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Diten.Web.Views.CRM.VisitQrCodes.VisitQrIndex.ScriptKeys.ToDictionary(k => k, k => QrLocalizer[k].Value)));
+        </script>
+        <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+        <script src="~/assets/js/CRM/VisitQrCodes/qr-core.js" asp-append-version="true"></script>
+        <script src="~/assets/js/CRM/VisitQrCodes/qr-card.js" asp-append-version="true"></script>
+    }
     <partial name="~/Views/CRM/Accounts/_DetailsL10n.cshtml" />
     <script src="~/assets/js/CRM/Accounts/details.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/Accounts/details-dt-section.js" asp-append-version="true"></script>

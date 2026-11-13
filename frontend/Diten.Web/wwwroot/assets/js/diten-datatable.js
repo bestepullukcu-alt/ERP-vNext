@@ -1318,7 +1318,6 @@ window.DitenDataTable = (function () {
             exportToServer: exportToServer,
             controlledCopyRows: controlledCopyRows,
             lastExport: null,
-            get appliedFilters() { return appliedFilters; },
             dataMode: options.dataMode,
             lastResponse: handle.lastResponse || null,
             reload: function (messageKey, interpolationValue) {
@@ -1382,6 +1381,11 @@ window.DitenDataTable = (function () {
                 }
             }
         });
+        // A LIVE accessor, defined on the handle itself: Object.assign above would copy a getter's value once, at
+        // assign time — handle.appliedFilters stayed the initial (empty / saved-view) filters after every Apply,
+        // Reset and saved view (measured live 2026-10-15 on /CRM/VisitEvidenceFlags). lastResponse needs no
+        // accessor: dataFilter writes handle.lastResponse itself on every envelope.
+        Object.defineProperty(handle, 'appliedFilters', { get: function () { return appliedFilters; }, enumerable: true, configurable: true });
 
         return handle;
     }

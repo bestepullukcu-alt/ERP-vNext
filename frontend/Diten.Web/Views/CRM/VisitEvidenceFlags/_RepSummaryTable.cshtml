@@ -1,0 +1,29 @@
+@using Diten.Web.Views.CRM.VisitEvidenceFlags
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-a (U-6) — the rep summary on the Golden Compact LOOK: the same shared table card as the visits list
+    // (_ListShell: the card, the shaped placeholder, the v2 table), in CLIENT mode — the summary read's rep set is bounded
+    // (my team, or the tenant's reps with read-all) and comes back whole. Read only, so the selection is declared off.
+    // It has no filter bar and no Save View of its own: it follows the visits list's applied filter state (rep-summary.js).
+    var repShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-vf-reps",
+        DataMode = "client",
+        Slug = "vf-reps",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColRep"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColStarted"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColFlagged"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTopFlag"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="repShell" />
+<p class="text-muted small mt-2 mb-0">@Localizer["RepsHint"]</p>

@@ -3,7 +3,7 @@
    mirrors the tree, the tables, the drawers and the arrows. */
 #ve-root, .ve-modal, .ve-drawer {
     --ve-bg: #f5f5f9; --ve-card: #fff; --ve-h: #384551; --ve-tx: #646e78; --ve-mu: #8592a3; --ve-bd: #e4e6e8; --ve-bd2: #d9dee3;
-    --ve-soft: #f5f5f9; --ve-soft2: #fafafb; --ve-pl: #e0e2f3; --ve-pbd: #c5c9e8; --ve-p: #0b1a8c; --ve-pt: #0b1a8c;
+    --ve-soft: #f5f5f9; --ve-soft2: #fafafb; --ve-pl: rgba(var(--bs-primary-rgb), .12); --ve-pbd: rgba(var(--bs-primary-rgb), .28); --ve-p: var(--bs-primary); --ve-pt: var(--bs-primary);
     --ve-okb: #e8fadf; --ve-ok: #4a9a22; --ve-okc: #71dd37; --ve-wab: #fff2d6; --ve-wa: #b27800; --ve-wac: #ffab00;
     --ve-dab: #ffe0db; --ve-da: #d1301a; --ve-dac: #ff3e1d; --ve-inb: #d7f5fc; --ve-in: #028aa6; --ve-seb: #ebeef0; --ve-se: #6d7887;
     --ve-sh: 0 3px 8px rgba(34, 48, 62, .08); --ve-sh2: 0 6px 20px rgba(34, 48, 62, .18);
@@ -11,7 +11,7 @@
 }
 [data-bs-theme="dark"] #ve-root, [data-bs-theme="dark"] .ve-modal, [data-bs-theme="dark"] .ve-drawer {
     --ve-bg: #232333; --ve-card: #2b2c40; --ve-h: #d5d5e2; --ve-tx: #b2b2c4; --ve-mu: #8a8ba5; --ve-bd: #3d3e58; --ve-bd2: #4e4f6c;
-    --ve-soft: #34354e; --ve-soft2: #303148; --ve-pl: #2f3163; --ve-pbd: #4a4f8c; --ve-p: #4655d6; --ve-pt: #a3aaf5;
+    --ve-soft: #34354e; --ve-soft2: #303148; --ve-pl: rgba(var(--bs-primary-rgb), .22); --ve-pbd: rgba(var(--bs-primary-rgb), .45); --ve-p: var(--bs-primary); --ve-pt: color-mix(in srgb, var(--bs-primary) 60%, #fff);
     --ve-okb: #344a35; --ve-ok: #86e05a; --ve-wab: #4d4130; --ve-wa: #ffbf3d; --ve-dab: #4f2e36; --ve-da: #ff7a66;
     --ve-inb: #23435a; --ve-in: #4fd6f2; --ve-seb: #3a3b55; --ve-se: #a1a2b8; --ve-sh: 0 3px 8px rgba(0, 0, 0, .25); --ve-sh2: 0 6px 24px rgba(0, 0, 0, .45);
 }
@@ -19,10 +19,6 @@
 
 /* ── layout ── */
 .ve-page { display: flex; flex-direction: column; gap: 20px; }
-.ve-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.ve-crumb { font-size: 13px; color: var(--ve-mu); }
-.ve-title { margin: 2px 0 0; font-size: 22px; font-weight: 500; color: var(--ve-h); }
-.ve-intro { font-size: 14px; margin-top: 4px; max-width: 760px; }
 .ve-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .ve-wrap { flex-wrap: wrap; }
 .ve-top { align-items: flex-start; }
@@ -44,11 +40,6 @@
 .ve-cap { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--ve-h); }
 
 /* ── tabs ── */
-.ve-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.ve-tab { height: 38px; border: 0; border-radius: 6px; padding: 0 16px; font-size: 15px; display: inline-flex; gap: 6px; align-items: center; background: var(--ve-card); color: var(--ve-h); box-shadow: var(--ve-sh); cursor: pointer; }
-.ve-tab.active { background: var(--ve-p); color: #fff; box-shadow: 0 2px 4px rgba(11, 26, 140, .35); }
-.ve-badge { padding: 0 7px; border-radius: 10px; font-size: 12px; font-weight: 600; background: var(--ve-okb); color: var(--ve-ok); }
-.ve-tab.active .ve-badge { background: rgba(255, 255, 255, .25); color: #fff; }
 
 /* ── alerts / pills / buttons ── */
 .ve-alert { border-radius: 6px; padding: 12px 16px; display: flex; gap: 8px; align-items: center; font-size: 14px; }
@@ -97,7 +88,8 @@
 .ve-side { flex: 1 1 280px; max-width: 360px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .ve-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 #ve-scope { display: flex; flex-direction: column; gap: 20px; }
-#ve-scope.d-none, #ve-effective.d-none, #ve-pane-form.d-none, #ve-pane-history.d-none, #ve-pane-settings.d-none, #ve-pane-exceptions.d-none { display: none !important; }
+#ve-scope > .wcn-tabcard { margin-bottom: 0 !important; } /* the column gap spaces it */
+#ve-scope.d-none, #ve-effective.d-none, #ve-pane-settings.d-none, #ve-pane-exceptions.d-none { display: none !important; }
 .ve-tree { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
 .ve-node { border: 0; background: transparent; border-radius: 6px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; text-align: start; width: 100%; }
 .ve-node.active { background: var(--ve-pl); }
@@ -106,15 +98,17 @@
 .ve-node-name { font-size: 14px; color: var(--ve-h); font-weight: 600; display: flex; gap: 6px; align-items: center; }
 .ve-node-meta { font-size: 12px; color: var(--ve-mu); }
 .ve-node-last { font-size: 11px; color: var(--ve-mu); }
-.ve-add { border: 0; background: transparent; border-radius: 6px; padding: 6px 12px; display: flex; gap: 6px; align-items: center; color: var(--ve-pt); font-size: 13px; opacity: .5; cursor: not-allowed; }
+.ve-add { border: 0; background: transparent; border-radius: 6px; padding: 6px 12px; padding-inline-start: 28px; display: flex; gap: 6px; align-items: center; color: var(--ve-pt); font-size: 13px; cursor: pointer; width: 100%; text-align: start; }
+.ve-add:hover { background: var(--ve-soft); }
 .ve-hint { font-size: 12px; color: var(--ve-mu); padding: 0 12px 8px; display: flex; gap: 4px; align-items: flex-start; }
 .ve-field .ve-hint, .ve-fields .ve-hint { padding: 0; }
 .ve-input { height: 38px; border: 1px solid var(--ve-bd2); border-radius: 6px; padding: 0 12px; font-size: 14px; color: var(--ve-h); background: var(--ve-card); width: 100%; }
 .ve-textarea { height: auto; padding: 8px 12px; resize: vertical; }
 .ve-invalid { border-color: var(--ve-dac); }
-.ve-panes { display: flex; gap: 4px; padding: 0 24px; }
-.ve-pane-tab { border: 0; background: transparent; height: 46px; padding: 0 14px; font-size: 15px; color: var(--ve-tx); display: inline-flex; gap: 6px; align-items: center; box-shadow: inset 0 -2px 0 transparent; }
-.ve-pane-tab.active { color: var(--ve-pt); font-weight: 500; box-shadow: inset 0 -2px 0 var(--ve-p); }
+/* W3E-E4R2-FIX-d — the inner panes are the shared tab card (its own mb-3); the scope header stands alone above it, each table pane opens
+   with its title line (the table card is the shared one) */
+#ve-scope > .ve-card > .ve-card-head { border-bottom: 0; }
+.ve-pane-note { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: .75rem; }
 .ve-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 20px; align-items: start; }
 .ve-form-grid.d-none { display: none !important; }
 .ve-sticky { position: sticky; top: 80px; }
@@ -154,6 +148,9 @@
 .ve-pv-loc { border: 1px solid var(--ve-bd); border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
 .ve-pv-sign { margin: 0 14px 12px; border-radius: 6px; background: var(--ve-soft2); padding: 8px 10px; display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ve-h); }
 .ve-pv-sign.d-none { display: none !important; }
+/* W3E-FIX (G-5) — the QR row (its mode as a pill at the end) and the web device line (S7: a hint, never a block) */
+.ve-pv-qr .ve-grow { flex: 1 1 auto; min-width: 0; }
+.ve-pv-device { align-items: flex-start; background: var(--ve-wab); color: var(--ve-wa); }
 .ve-pv-foot { padding: 10px 14px; border-top: 1px solid var(--ve-bd); display: flex; justify-content: flex-end; }
 .ve-pv-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
 .ve-pv-lines li { display: flex; gap: 8px; align-items: flex-start; }
@@ -165,16 +162,9 @@
 .ve-table th { text-align: start; padding: 12px 16px; font-size: 13px; font-weight: 500; text-transform: uppercase; color: var(--ve-h); border-bottom: 1px solid var(--ve-bd); }
 .ve-table td { padding: 12px 16px; border-bottom: 1px solid var(--ve-bd); color: var(--ve-tx); vertical-align: middle; }
 .ve-table th:first-child, .ve-table td:first-child { padding-inline-start: 24px; }
-.ve-click { cursor: pointer; }
-.ve-click:hover td { background: var(--ve-soft2); }
 .ve-reason { max-width: 240px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.4; }
 .ve-empty { text-align: center; color: var(--ve-mu); padding: 28px 16px !important; }
 .ve-foot-note { padding: 12px 24px 18px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; align-items: center; }
-.ve-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-.ve-chip { border: 1px solid var(--ve-bd2); background: var(--ve-card); color: var(--ve-h); border-radius: 6px; padding: 3px 10px; font-size: 13px; cursor: pointer; }
-.ve-chip span { color: var(--ve-mu); }
-.ve-chip.active { background: var(--ve-p); color: #fff; border-color: var(--ve-p); }
-.ve-chip.active span { color: rgba(255, 255, 255, .8); }
 
 /* dialogs / drawers */
 .ve-modal .modal-content { border-radius: 8px; box-shadow: var(--ve-sh2); background: var(--ve-card); }
@@ -208,3 +198,42 @@
     .ve-drawer.offcanvas-end { width: 100% !important; }
     .ve-two { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ── WP-VW-W3E (W3E-WEB-b) — "additional evidence" (E1), the new badge (E2 / E3), the reps pane (E3) ── */
+.ve-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.ve-choice { display: flex; flex-direction: column; gap: 4px; text-align: start; border: 1px solid var(--ve-bd2); border-radius: 8px; padding: 12px 14px; background: var(--ve-card); color: var(--ve-tx); cursor: pointer; font-size: 13.5px; }
+.ve-choice:disabled { cursor: default; }
+.ve-choice.active { border-color: var(--ve-p); background: var(--ve-pl); box-shadow: 0 0 0 1px var(--ve-p) inset; }
+.ve-choice-head { display: flex; align-items: center; gap: 8px; color: var(--ve-h); }
+.ve-choice-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ve-p); flex-shrink: 0; position: relative; }
+.ve-choice.active .ve-choice-dot::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: var(--ve-p); }
+.ve-seg-btn.ve-soon-opt, .ve-seg-btn:disabled.ve-soon-opt { color: var(--ve-mu); cursor: not-allowed; background: var(--ve-soft2); }
+.ve-pill-xs { padding: 0 6px; font-size: 11px; font-weight: 500; }
+.ve-extra .ve-link { align-self: flex-start; text-decoration: none; color: var(--ve-pt); font-weight: 500; font-size: 14px; }
+.ve-row-new td { background: var(--ve-pl); }
+.ve-table .ve-col-new { background: var(--ve-pl); }
+.ve-table th.ve-col-new { color: var(--ve-pt); }
+@media (max-width: 900px) { .ve-choices { grid-template-columns: 1fr; } }
+.ve-tone-primary { background: var(--ve-pl); color: var(--ve-pt); }
+
+/* ── W3E-E4R2-FIX-b — the time-boxed exceptions on the Golden Compact list: the header, the tabs (the shared tab card),
+   the table card, the filter and the toolbar are the standard's; the page keeps only its cells' chips and the empty state ── */
+.datatables-visitevidenceexceptions .ve-pill { white-space: nowrap; }
+.ve-empty-state { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 32px 24px; text-align: center; color: var(--ve-h); }
+.ve-empty-state i { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: var(--ve-pl); color: var(--ve-pt); margin-bottom: 4px; }
+
+/* ── WP-VW-W3L (W3-WEB-e) — the scope layers (mockup C1 / C2 / screen 7) ── */
+.ve-node-layer { padding-inline-start: 28px; }
+.ve-node-icon.ve-tone-secondary, .ve-scope-icon.ve-tone-secondary { background: var(--ve-seb); color: var(--ve-se); }
+.ve-node-icon.ve-tone-info, .ve-scope-icon.ve-tone-info { background: var(--ve-inb); color: var(--ve-in); }
+.ve-node-icon.ve-tone-primary, .ve-scope-icon.ve-tone-primary { background: var(--ve-pl); color: var(--ve-pt); }
+.ve-node-layer .ve-node-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ve-node-layer.active .ve-node-name { font-weight: 600; }
+.ve-node-meta.ve-node-diff { color: var(--ve-pt); }
+.ve-inherited .ve-seg, .ve-inherited .ve-radios, .ve-inherited .ve-num, .ve-inherited .ve-switch, .ve-inherited .ve-choices { opacity: .55; }
+.ve-inh { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+.ve-inh .ve-link { display: inline-flex; gap: 3px; align-items: center; text-decoration: none; color: var(--ve-pt); font-weight: 500; padding: 0; }
+.ve-dlg-icon-danger { background: var(--ve-dab); color: var(--ve-da); }
+.ve-dlg-icon-primary { background: var(--ve-pl); color: var(--ve-pt); }
+.ve-history-filter { max-width: 360px; }
+#ve-eff-chain .ve-pill { font-size: 13px; }

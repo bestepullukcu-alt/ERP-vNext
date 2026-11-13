@@ -10,4 +10,6 @@ public sealed record GetNotificationDispatchListQuery(
     string? Status = null,
     DateTimeOffset? QueuedFrom = null,
     DateTimeOffset? QueuedTo = null,
-    string? TemplateKey = null) : IRequest<Response<IReadOnlyList<NotificationDispatchListItemDto>>>;
+    string? TemplateKey = null,
+    // WP-VW-W5 PLT-NOTIFY — only the dispatches this module asked for (exact, trimmed); null = every source.
+    string? SourceModule = null) : IRequest<Response<IReadOnlyList<NotificationDispatchListItemDto>>>;

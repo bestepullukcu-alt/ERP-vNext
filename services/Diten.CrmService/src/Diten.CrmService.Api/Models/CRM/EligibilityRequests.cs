@@ -1,6 +1,6 @@
 namespace Diten.CrmService.Api.Models.CRM;
 
-// SCMM-11-follow-API (CAND-CAP-0011) eligibility request models. TenantId is NEVER part of any request body (server-
+// SCMM-11-follow-API (MOD-0363, formerly CAND-CAP-0011) eligibility request models. TenantId is NEVER part of any request body (server-
 // resolved from the JWT claim). Route ids come from the path. These map 1:1 onto the ready EligibilityPolicy commands
 // and the ResolveEligibilityQuery (archive carries only the route id, so it needs no body).
 

@@ -1,0 +1,30 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+
+@* WP-VW-W6 · W6-WEB-b — screen D's head on every one of its pages: the Golden header (h5 + p) and the shared tab card with
+   the five tabs (MOD-0156 §9: price lists · MF / discount rules · rule trial · change history · FX rates). Each tab is its
+   own page (pricing-tabs.js follows the card's diten:tab-change to it); a tab exists only for the caller who may open it.
+   The mockup's underlined tabs and its own breadcrumb are not taken (DESIGN-GAP §4). *@
+@{
+    var tabs = new List<Diten.Web.Models.Tabs.TabCardItem>();
+    void Add(bool allowed, string key, string icon, string text)
+    {
+        if (allowed) tabs.Add(new Diten.Web.Models.Tabs.TabCardItem { Key = key, Id = "pr-tab-" + key, Icon = icon, Text = text, Active = Model.Tab == key, Controls = "pr-pane" });
+    }
+
+    Add(Model.CanReadLists, "lists", "bx-list-ul", Localizer["TabLists"].Value);
+    Add(Model.CanReadRules, "rules", "bx-slider-alt", Localizer["TabRules"].Value);
+    Add(Model.CanReadRules, "trial", "bx-test-tube", Localizer["TabTrial"].Value);
+    Add(Model.CanReadHistory, "history", "bx-history", Localizer["TabHistory"].Value);
+    Add(Model.CanReadFx, "fx", "bx-transfer-alt", Localizer["TabFx"].Value);
+    var card = new Diten.Web.Models.Tabs.TabCardViewModel { AriaLabel = Localizer["ScreenTitle"].Value, Tabs = tabs };
+}
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ScreenTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["ScreenDescription"]</p>
+</div>
+<div id="pr-tabs-nav" class="d-none" data-lists="/Commercial/Pricing/PriceLists" data-rules="/Commercial/Pricing/Rules" data-trial="/Commercial/Pricing/Trial"
+     data-history="/Commercial/Pricing/History" data-fx="/Commercial/Pricing/FxRates"></div>
+<partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="card" />

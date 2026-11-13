@@ -1,0 +1,29 @@
+@using Diten.Web.Views.Commercial.Pricing
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    // W6-WEB-b — the price lists table is the shared component (BL-440): server mode (the CRM pages them). A published list
+    // is never deleted (MOD-0156 §10: history + the orders' snapshot source), so the selection is DECLARED off.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-pricelists",
+        DataMode = "server",
+        Slug = "pricelists",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColName"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColCompany"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCountry"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCurrency"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColKind"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColValidity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColItems"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

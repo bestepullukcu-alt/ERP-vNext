@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 namespace Diten.CrmService.Infrastructure.Artifacts;
 
 /// <summary>
-/// SCMM-16B (CAND-CAP-0011, SCMM-16) — stores/reads a rendered artifact through the MOD-0262-FU01 document repository
+/// SCMM-16B (MOD-0363, formerly CAND-CAP-0011, SCMM-16) — stores/reads a rendered artifact through the MOD-0262-FU01 document repository
 /// (<c>/api/v1/document-repository</c>) over the Gateway. Mirrors the CRM cross-service transport verbatim
 /// (<see cref="Diten.CrmService.Infrastructure.CyclePeriod.MdmCyclePeriodLegalEntityValidator"/> /
 /// <c>HttpCrmAuditPublisher</c>): <c>Gateway:BaseUrl</c>, the caller's <c>Authorization</c> / <c>X-Tenant-Id</c> /

@@ -1,0 +1,88 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ListDetailsTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.ListFormHelpCode; // UXH-001 — COM-PRICELIST-FORM
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — one price list: its head, its items (SKU, barcode, depot / pharmacist purchase / public price, VAT)
+    with the difference to the previous version (added · changed with the old value · removed), its approval rounds and
+    the actions the list lets the caller take (PricingCore.listActions): edit / discard a draft, submit it, publish or
+    return it (FOUR EYES — never for the one who prepared it: the note says why), make a new version of a published one.
+    UAS-001: without commercial.price-lists.read NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["ListDetailsTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+<div id="pr-pane">
+    <div id="pr-detail-root" data-id="@Model.Id"
+         data-can-update="@Model.CanUpdateList.ToString().ToLowerInvariant()" data-can-create="@Model.CanCreateList.ToString().ToLowerInvariant()"
+         data-can-submit="@Model.CanSubmitList.ToString().ToLowerInvariant()" data-can-publish="@Model.CanPublishList.ToString().ToLowerInvariant()">
+        <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+            <div>
+                <h6 class="mb-1" id="pr-title">@Localizer["ListDetailsTitle"]</h6>
+                <span id="pr-badge"></span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="/Commercial/Pricing/PriceLists" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+                <a href="#" class="btn btn-label-primary d-none" id="pr-edit"><i class="bx bx-edit-alt me-1"></i>@Localizer["EditDraft"]</a>
+                <button type="button" class="btn btn-label-danger d-none" id="pr-discard"><i class="bx bx-trash me-1"></i>@Localizer["DiscardDraft"]</button>
+                <button type="button" class="btn btn-label-primary d-none" id="pr-version"><i class="bx bx-copy me-1"></i>@Localizer["NewVersion"]</button>
+                <button type="button" class="btn btn-primary d-none" id="pr-submit"><i class="bx bx-send me-1"></i>@Localizer["SubmitForPublishing"]</button>
+            </div>
+        </div>
+
+        <section class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-section-title mb-3"><i class="bx bx-id-card"></i>@Localizer["ListHeadSection"]</h6>
+                <div id="pr-facts"></div>
+            </div>
+        </section>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="card-section-title mb-3"><i class="bx bx-check-shield"></i>@Localizer["ApprovalTitle"]</div>
+                <div id="pr-approval"></div>
+                <div class="mt-3" id="pr-decision"></div>
+            </div>
+        </div>
+
+        <section class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h6 class="card-section-title mb-0"><i class="bx bx-capsule"></i>@Localizer["ItemsSection"]</h6>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="pr-diff" />
+                        <label class="form-check-label" for="pr-diff">@Localizer["DiffToggle"]</label>
+                    </div>
+                </div>
+                <div id="pr-items"></div>
+                <small class="text-muted d-block mt-2" id="pr-items-more"></small>
+            </div>
+        </section>
+    </div>
+</div>
+
+<partial name="~/Views/Commercial/PreOrders/_ReasonModal.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Commercial/PriceLists/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PriceLists/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/PriceLists/details.js" asp-append-version="true"></script>
+}

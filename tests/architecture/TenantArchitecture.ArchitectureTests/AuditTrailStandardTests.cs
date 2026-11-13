@@ -60,9 +60,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // commands on the existing best-effort recorder until the write-once pattern (FU-0022-AUD-02).
         ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 11),
         // Main sync (2026-10-11): the Crm ledger shrank to 169 on main (the CT line never touched it).
-        // measured 2026-11-02 — CRM-AUD-KN-01: the 34 Knowledge commands audited through crm-merkezi-iletim; none was in the
-        // debt list (all were new, unaudited), so the debt stays 169.
-        ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
+        // measured 2026-11-09 (SYNC S0, merged code): main 169 − CRM-ACC-EDIT's Create / UpdateAccountCommand (audited
+        // since 2026-10-21, out of the list) = 167; CRM-AUD-KN-01's 34 Knowledge commands were never in the list.
+        ["Diten.CrmService"] = new(Debt: 167, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
@@ -819,7 +819,58 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         "Diten.MdmService: type IPlatformAuditForwarder",
         "Diten.MdmService: type PlatformAuditForwarder",
         "Diten.MdmService: services/Diten.MdmService/src/Diten.MdmService.Api/Audit/PlatformAuditForwarder.cs"
+        // F8-b closed (WP-CRM-SYNC-S0B, CT 2026-11-13): CRM's F8-a entry (CrmAuditForwarding) and the second shared forwarder
+        // (Diten.BuildingBlocks.Auditing) are gone — see TheSecondSharedForwarder_F8a_IsGone below.
     };
+
+    /// <summary>
+    /// F8-b (WP-CRM-SYNC-S0B, CT-DECISIONS 2026-11-13): there is ONE shared forwarder. The F8-a library
+    /// (<c>Diten.BuildingBlocks.Auditing</c>) was removed when CRM moved to <c>Diten.BuildingBlocks.CentralAudit</c>; a
+    /// project, solution, workflow or gate script that names it again (a reference, a re-added folder) is red. Source
+    /// comments and the ledger's history do not count — only build inputs and the library's own folders.
+    /// </summary>
+    [Fact]
+    public void TheSecondSharedForwarder_F8a_IsGone()
+    {
+        const string library = "Diten.BuildingBlocks.Auditing";
+        var root = AuditTrailMeasurement.FindRepoRoot();
+        var failures = new List<string>();
+
+        foreach (var folder in new[] { Path.Combine("src", library), Path.Combine("tests", library + ".Tests") })
+        {
+            var path = Path.Combine(root, "services", "Diten.Building.Blocks", folder);
+            if (Directory.Exists(path) && Directory.EnumerateFiles(path, "*.cs*", SearchOption.AllDirectories)
+                    .Any(file => !IsBuildOutput(file)))
+            {
+                failures.Add($"services/Diten.Building.Blocks/{folder.Replace('\\', '/')} — F8-a kitaplığı geri gelmiş; ortak iletici tektir: Diten.BuildingBlocks.CentralAudit (kural §5 K4)");
+            }
+        }
+
+        var buildInputs = new[] { "services", "gateway", "frontend", "tests" }
+            .Select(top => Path.Combine(root, top))
+            .Where(Directory.Exists)
+            .SelectMany(top => new[] { "*.csproj", "*.sln", "*.slnx", "*.props", "*.targets" }
+                .SelectMany(pattern => Directory.EnumerateFiles(top, pattern, SearchOption.AllDirectories)))
+            .Where(file => !IsBuildOutput(file))
+            .Concat(Directory.Exists(Path.Combine(root, ".github", "workflows"))
+                ? Directory.EnumerateFiles(Path.Combine(root, ".github", "workflows"), "*.y*ml")
+                : [])
+            .Append(Path.Combine(root, "scripts", "run_phase1_gates.sh"))
+            .Where(File.Exists);
+
+        failures.AddRange(buildInputs
+            .Where(file => File.ReadAllText(file).Contains(library, StringComparison.Ordinal))
+            .Select(file => $"{Path.GetRelativePath(root, file).Replace('\\', '/')} — kaldırılan F8-a kitaplığını ({library}) anıyor; CRM komutları ICentralAuditDeclaration taşır (F8-b)"));
+
+        Assert.True(failures.Count == 0, Report("İkinci ortak iletici (F8-a) kaldırıldı", failures.OrderBy(x => x, StringComparer.Ordinal).ToList()));
+
+        static bool IsBuildOutput(string file)
+        {
+            var normalized = file.Replace('\\', '/');
+            return normalized.Contains("/obj/", StringComparison.Ordinal) || normalized.Contains("/bin/", StringComparison.Ordinal)
+                   || normalized.Contains("/node_modules/", StringComparison.Ordinal);
+        }
+    }
 
     /// <summary>
     /// Outside Diten.Building.Blocks (and Platform, which RECEIVES the append), a type named <c>*AuditForward*</c> or a file

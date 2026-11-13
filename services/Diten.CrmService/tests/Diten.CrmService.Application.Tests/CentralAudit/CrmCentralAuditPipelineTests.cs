@@ -213,6 +213,38 @@ public sealed class CrmCentralAuditPipelineTests : IClassFixture<CrmCentralAudit
         Assert.Empty(_factory.Events(caller.Tenant));
     }
 
+    /// <summary>WP-CRM-SYNC-S0B B0b (CT decision D-2) — as the pre-order retry scheduler runs a command: its own scope, the
+    /// row's tenant pinned, NO HTTP context → the System actor, no user, never a tenant user with an empty actor.</summary>
+    [Fact]
+    public async Task A_command_run_by_a_background_job_is_recorded_as_the_system_in_the_pinned_tenant()
+    {
+        var tenant = Guid.NewGuid();
+        var id = Guid.NewGuid();
+        _factory.Outcome = _ => Response<bool>.Success(true);
+
+        await _factory.SendInBackgroundAsync(tenant, new UpdateObjectionResponseCommand(id, Guid.NewGuid(), null, null, null, null));
+
+        var row = Assert.Single(_factory.Events(tenant));
+        Assert.Equal(CentralAuditActorTypes.System, row.ActorType);
+        Assert.Null(row.ActorId);
+        Assert.Null(row.ActorDisplayName);
+        Assert.Equal(id, row.EntityId);
+        Assert.Equal(CentralAuditPlatformValues.ActorTypes[CentralAuditActorTypes.System], CentralAuditPlatformValues.ActorTypes[row.ActorType]);
+    }
+
+    [Fact]
+    public async Task A_background_command_without_a_pinned_tenant_files_nothing()
+    {
+        var before = _factory.Store.Rows.Count;
+        _factory.Outcome = _ => Response<bool>.Success(true);
+
+        var response = await _factory.SendInBackgroundAsync(tenant: null, new UpdateObjectionResponseCommand(Guid.NewGuid(), Guid.NewGuid(), null, null, null, null));
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(before, _factory.Store.Rows.Count); // the class fixture is this class's own; its tests run one by one
+        Assert.DoesNotContain(_factory.Store.Rows, r => r.TenantId == Guid.Empty);
+    }
+
     [Fact]
     public async Task Without_platform_settings_the_health_check_says_degraded()
     {
@@ -300,6 +332,20 @@ public sealed class CrmCentralAuditApiFactory : WebApplicationFactory<Program>
         {
             http.HttpContext = null;
         }
+    }
+
+    /// <summary>WP-CRM-SYNC-S0B B0b — one scope as a hosted service opens it (<c>PreOrderTransmissionHostedService</c>): the
+    /// row's tenant pinned on <see cref="TenantContext"/> (or none), and NO HTTP context.</summary>
+    public async Task<TResponse> SendInBackgroundAsync<TResponse>(Guid? tenant, IRequest<TResponse> command)
+    {
+        using var scope = Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = null;
+        if (tenant is { } id)
+        {
+            scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(id);
+        }
+
+        return await scope.ServiceProvider.GetRequiredService<IMediator>().Send(command);
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

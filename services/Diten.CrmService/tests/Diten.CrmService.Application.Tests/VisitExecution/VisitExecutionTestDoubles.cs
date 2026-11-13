@@ -53,6 +53,31 @@ internal sealed class FakeVisitExecutionRepository : IVisitExecutionRepository
         entity.Version = expectedVersion + 1;
         return Task.FromResult(true);
     }
+
+    // WP-VW-W3E (BE-b) — the evidence flags read, in memory (the Mongo filter is pinned by its own test)
+    public int EvidenceReads { get; private set; }
+
+    private IEnumerable<ExecutionEntity> Evidence(Guid tenantId, VisitEvidenceFlagFilter f)
+        => Items.Where(x => x.TenantId == tenantId && !x.IsDeleted
+                            && x.StartedAt >= f.FromInclusive && x.StartedAt < f.ToExclusive
+                            && (f.ResourceIds is null || f.ResourceIds.Contains(x.ResourceId))
+                            && (f.AnyFlags is not { Count: > 0 } || x.Flags.Any(f.AnyFlags.Contains))
+                            && (!f.OnlyFlagged || x.Flags.Count > 0)
+                            && (f.PlannedVisitIds is null || f.PlannedVisitIds.Contains(x.PlannedVisitId)));
+
+    public Task<(IReadOnlyList<ExecutionEntity> Items, long Total)> ListForEvidenceFlagsAsync(
+        Guid tenantId, VisitEvidenceFlagFilter filter, int skip, int take, CancellationToken ct)
+    {
+        EvidenceReads++;
+        var all = Evidence(tenantId, filter).OrderByDescending(x => x.StartedAt).ThenByDescending(x => x.Id).ToList();
+        return Task.FromResult<(IReadOnlyList<ExecutionEntity>, long)>((all.Skip(skip).Take(take).ToList(), all.Count));
+    }
+
+    public Task<IReadOnlyList<ExecutionEntity>> ListForEvidenceSummaryAsync(Guid tenantId, VisitEvidenceFlagFilter filter, CancellationToken ct)
+    {
+        EvidenceReads++;
+        return Task.FromResult<IReadOnlyList<ExecutionEntity>>(Evidence(tenantId, filter).ToList());
+    }
 }
 
 internal sealed class FakeVisitEvidencePolicyRepository : IVisitEvidencePolicyRepository

@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Diten.CrmService.Domain\Diten.CrmService.Domain.csproj" />
-    <!-- BL-501 / CRM-AUD-KN-01: the central-audit marker (ICentralAuditDeclaration) the Knowledge commands carry. -->
+    <!-- BL-501 / CRM-AUD-KN-01: the central-audit marker (ICentralAuditDeclaration) the audited commands carry. -->
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit.Abstractions\Diten.BuildingBlocks.CentralAudit.Abstractions.csproj" />
   </ItemGroup>
 </Project>

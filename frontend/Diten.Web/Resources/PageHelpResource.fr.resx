@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2055,6 +2055,672 @@
   </data>
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Laissez votre propre spécimen</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Définissez les preuves qu'un délégué doit fournir au début d'une visite : localisation, photo, code QR de l'établissement et vérification de l'appareil. Le paramétrage est en couches et le plus précis l'emporte : l'unité commerciale prime sur l'entité juridique, qui prime sur le locataire ; une exception limitée dans le temps assouplit une règle pour un seul délégué, pour une durée donnée.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Responsables des opérations commerciales</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Enregistrer et appliquer le paramètre</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>Dans l'onglet « Paramètres par périmètre », choisissez le locataire, une entité juridique ou une unité commerciale dans « Périmètres ». Pour un nouveau périmètre, cliquez sur « Ajouter une entité juridique » ou « Ajouter une unité commerciale » ; il démarre vide et tous les champs viennent du niveau supérieur.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Choisir le périmètre</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>Dans « Formulaire », cliquez sur « Modifier dans ce périmètre » sur le champ à changer ; « Revenir au paramètre supérieur » le fait de nouveau hériter. Cliquez sur « Enregistrer », vérifiez les lignes modifiées et le nombre de délégués concernés, puis confirmez avec « Enregistrer et appliquer ».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Modifier les champs et appliquer</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>« Voir le paramètre effectif d'un délégué » montre la valeur de chaque champ et le périmètre dont elle vient. « Historique des modifications » montre qui a modifié quoi et quand, filtré par périmètre ; « Délégués » montre le périmètre appliqué à chaque délégué. « Supprimer le périmètre » ramène aussitôt ses délégués au paramètre supérieur ; confirmez avec Ctrl+Entrée (⌘+Entrée sur Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Suivre la source et l'historique</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>Dans l'onglet « Exceptions temporaires », cliquez sur « Nouvelle exception ». Saisissez le délégué, les règles à assouplir, une période de 30 jours au plus et le motif, puis cliquez sur « Envoyer pour approbation » ou appuyez sur Ctrl+Entrée (⌘+Entrée sur Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Demander une exception</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>L'exception est approuvée dans le Centre des tâches ; le demandeur ne peut pas approuver la sienne. Seule une exception approuvée et dans sa période s'applique. Dans l'aperçu rapide, « Annuler l'exception » et « Terminer plus tôt » demandent un motif ; saisissez-le et confirmez avec Ctrl+Entrée.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Gérer l'exception</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Examinez les signalements de preuve des visites démarrées : localisation éloignée ou absente, visite courte, code QR non scanné ou invalide, démarrage sous exception. Un signalement est un indice à examiner ; à lui seul, il ne signifie pas qu'une règle a été enfreinte.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Responsables de secteur et équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>Pour « Période », choisissez « 7 derniers jours », « 30 derniers jours » ou « Période personnalisée… ». Une plage personnalisée couvre 92 jours au plus.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Choisir la période</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Filtrez par « Délégué », « Établissement » et type de signalement. « Signalées uniquement » est activé ; désactivez-le pour voir aussi les visites sans signalement.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Affiner la liste</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Les cartes du haut indiquent « Visites commencées », « Visites signalées » et « Par type de signalement ». Une visite peut porter plusieurs signalements.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Lire la synthèse</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>L'aperçu rapide de la ligne montre la localisation, la distance à l'établissement, le résultat du code QR et l'éventuelle exception ; voir la photo exige une autorisation propre. « Ouvrir la visite » ouvre la visite elle-même.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Ouvrir la preuve</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>L'onglet « Synthèse par délégué » montre, par délégué, les visites démarrées et signalées, le taux et le signalement le plus fréquent. Un clic sur une ligne filtre la liste des visites sur ce délégué.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Comparer les délégués</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Consultez les e-mails envoyés automatiquement par le CRM à partir des rapports de visite — résumé, événement indésirable, demande hors AMM, rapport en retard — avec leurs destinataires et leur statut, et ouvrez chacun tel qu'il a été rédigé. Aucune adresse e-mail n'est affichée.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Délégués (leurs propres visites), managers (leur équipe) et l'équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Réglez la « Période » : les 30 ou 7 derniers jours, ce mois-ci ou une « Période personnalisée… ». La période porte sur le jour de la visite.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Choisissez la période</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Filtrez par « Type d'e-mail », « Statut » et — en tant que manager — « Délégué ». « Routage PV en attente » signifie que l'adresse de sécurité PV n'est pas définie : seul le manager a été informé.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Affinez la liste</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>La colonne « Destinataire » montre des rôles, jamais des adresses : « Manager », « Sécurité PV », « MSL (liaison médicale) ». Un e-mail de sécurité part vers la PV ou le MSL, le manager en copie.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Lisez les destinataires</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>L'« Aperçu rapide » de la ligne montre l'e-mail tel qu'il a été envoyé : l'objet, « À », « Copie », « Date d'envoi », le contenu et « Voir le rapport ».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Ouvrez l'e-mail</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>Avec le droit de paramétrage, l'onglet « Paramètres de notification » définit l'« E-mail de sécurité PV » et l'« E-mail MSL » et active ou non le résumé et le rappel de retard. Si quelqu'un a enregistré entre-temps, rechargez puis enregistrez à nouveau.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Réglez les adresses</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Gérez les codes QR affichés à l'accueil des établissements. Le délégué scanne ce code au début de la visite ; une sous-unité sans code propre utilise celui de l'établissement parent.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Équipe des opérations commerciales</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Générer, régénérer et révoquer un code</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Filtrez la liste par « Région », « Ville », « Type d'établissement » et « Statut QR ». « Dernier scan » et « 30 derniers jours » indiquent si le code est utilisé.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Trouver les établissements</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Sélectionnez des lignes et lancez « Générer pour la sélection (sans code) » ; les établissements qui ont déjà un code actif sont ignorés. Jusqu'à 200 établissements peuvent être sélectionnés à la fois.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Générer en masse</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Imprimez un code avec « Imprimer le code » sur la ligne et plusieurs avec « Imprimer la sélection (planche d’étiquettes) ». Sur la page d'impression, choisissez « Unique » ou « Planche d’étiquettes » et cliquez sur « Imprimer ».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Imprimer</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>Sur la page de l'établissement, utilisez « Régénérer » ou « Révoquer » dans la carte « Code QR de l’établissement ». Les deux invalident immédiatement les anciens codes affichés et imprimés ; la révocation demande un motif.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Renouveler ou révoquer</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Le caractère obligatoire ou facultatif du code se règle avec « Code QR de l'établissement » sur la page Preuves de visite. Avec le réglage obligatoire, une visite démarrée dans un établissement sans code est signalée.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Lire avec le paramètre</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Fixez les limites qui classent le nombre mensuel de patients d'un médecin dans les indications d'un produit en Faible, Moyen ou Élevé. Une ligne produit passe avant la valeur par défaut du locataire ; à défaut des deux, les valeurs intégrées s'appliquent.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Responsables des opérations commerciales et du marketing</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Une modification de seuil</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>Dans l'onglet « Seuils », la ligne « Valeur par défaut du locataire » reste en tête quel que soit le tri ; les lignes produit l'emportent sur elle. La colonne « Source » indique l'origine d'une valeur.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Lire les seuils</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>L'action « Modifier » de la ligne ouvre le panneau latéral. Saisissez « Faible en dessous de (X) » et « Élevé au-dessus de (Y) » ; essayez un nombre mensuel de patients dans l'aperçu pour voir sa classe.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Cliquez sur « Enregistrer » ou appuyez sur Entrée ; vérifiez les valeurs modifiées et confirmez avec « Oui, enregistrer ». La modification prend effet immédiatement.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Pour un produit qui demande des limites différentes de la valeur par défaut, ouvrez sa propre ligne avec « Ajouter un produit ».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Ajouter un produit</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>L'onglet « Historique des modifications » montre chaque modification avec la personne, la ligne et l'ancienne → nouvelle valeur ; la liste s'exporte en CSV ou Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Suivre l'historique</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Rédigez des réponses approuvées aux objections qu'un délégué peut entendre d'un médecin pendant une visite. Une réponse approuvée est choisie comme objection attendue dans les étapes d'un parcours de connaissances et apparaît dans les notes du délégué pendant la présentation.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Équipes de contenu et approbateurs médicaux</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Retirer une réponse</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Affinez la liste par « Produit », « Catégorie » et « Statut », ou recherchez dans le texte de l'objection.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Filtrer la bibliothèque</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Cliquez sur « Nouvelle réponse à une objection » ; remplissez « Produit », « Catégorie », « Objection · la question du médecin » et « Réponse approuvée », choisissez des allégations d'appui parmi celles approuvées pour le produit et cliquez sur « Enregistrer le brouillon ».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Rédiger une réponse</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>« Envoyer pour approbation » verrouille la réponse pendant la revue ; « Retirer la demande » la remet en brouillon.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Envoyer pour approbation</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>L'approbateur choisit « Approuver », ou rédige une note et choisit « Renvoyer en brouillon ». La personne qui a rédigé ou envoyé la réponse ne peut pas l'approuver.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Approuver ou renvoyer</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Une réponse approuvée ne peut pas être modifiée ; ouvrez un nouveau brouillon avec « Nouveau brouillon à partir d’une copie ». « Retirer » retire la réponse de toutes les présentations immédiatement, sans retour possible ; « Où elle est utilisée » montre les étapes concernées.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Modifier ou retirer</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Gérez les produits que les délégués choisissent comme concurrents dans leurs rapports : laboratoire, principe actif, nos produits concurrencés, prix et remboursement par pays.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Équipes données de référence et opérations commerciales</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Enregistrer, désactiver</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Filtrez par « Notre produit », « Laboratoire », « Principe actif », « Pays » ou « Statut » ; la recherche couvre aussi les autres noms.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Filtrer la liste</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Cliquez sur « Nouveau produit concurrent » ; saisissez le nom, le laboratoire, le principe actif et au moins un de nos produits, indiquez le prix de la boîte et le remboursement sur les lignes pays, puis cliquez sur « Enregistrer ». « Vue du délégué » montre la carte que le délégué verra dans le rapport.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Ajouter un enregistrement</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>Dans l'onglet « Propositions des délégués » attendent les nouveaux concurrents saisis par les délégués dans leurs rapports. Avec « Décision », préparez une décision de compléter, fusionner ou rejeter, puis cliquez sur « Envoyer pour approbation ».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Statuer sur les propositions</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>La décision s'applique une fois approuvée dans le Centre des tâches ; la personne qui l'a préparée ne peut pas l'approuver. D'ici là, la proposition n'est utilisée que dans les rapports du délégué qui l'a faite.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Attendre l'approbation</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>La page de détail montre « Utilisation dans les rapports » et « Historique des modifications ». « Fusionner avec un autre enregistrement » rattache l'enregistrement à un autre après approbation, sans retour possible ; « Désactiver » le rend non sélectionnable dans les nouveaux rapports.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Gérer un enregistrement</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Planifiez, visitez et rendez compte de votre semaine dans un seul calendrier. Au début d'une visite, les preuves demandées par le locataire (localisation, photo, code QR de l'établissement) sont prises ; le rapport est envoyé sous 48 heures.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Délégués terrain et responsables de secteur</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Approuver la semaine, démarrer une visite, envoyer un rapport</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Passez en mode « Planifier » ; glissez les médecins cibles sur un jour ou une heure. Ajoutez des produits aux médecins planifiés d'un établissement avec « Appliquer des produits ».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Planifier la semaine</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Quand le plan est prêt, cliquez sur « Valider la semaine ». Une semaine approuvée est en lecture seule ; pour la modifier, utilisez « Rouvrir la semaine » avec un motif.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Approuver la semaine</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>En mode « Exécuter », ouvrez la visite du jour et cliquez sur « Démarrer la visite » à votre arrivée. Selon le paramètre, une photo, la localisation et le « Code QR de l’établissement » sont demandés ; « Démarrer la présentation » ouvre ensuite la présentation.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Démarrer la visite</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>Après la visite, cliquez sur « Envoyer le rapport ». Vous disposez de 48 heures pour le rapport ; ensuite l'enregistrement est verrouillé.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Rendre compte</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Pour une visite non réalisée, choisissez « Non réalisée » ou « Reporter » et indiquez la raison. Vous pouvez ajouter une visite non planifiée pour aujourd'hui avec « Visite non planifiée ».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Clore ce qui n'a pas eu lieu</value>
+  </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Liste les pré-commandes de pharmacie que vous pouvez voir — les vôtres, celles de votre équipe et celles qui attendent votre validation — avec leur statut et la réponse du dépositaire.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Les délégués, leurs responsables (approbateurs) et les opérations commerciales.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Filtrez la liste</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Ouvrez « Filtre » : période, statut, pharmacie, dépositaire, produit, pays — un approbateur a aussi « En attente de ma validation ».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Lisez les montants</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Chaque total porte sa devise ; des commandes de devises différentes ne sont jamais additionnées. « Équivalent local » s'affiche via la visibilité des colonnes.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Ouvrez l'aperçu rapide</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>L'icône œil affiche les lignes, les totaux et la chronologie, avec des liens vers le document et la validation.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Saisissez la réponse du dépositaire</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Les opérations commerciales marquent une commande transmise « Livrée » ou « Livraison partielle » (boîtes par ligne et note) dans l'aperçu rapide.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Prend la commande d'une pharmacie pour la transmettre à son dépositaire, qui facture. La société, la devise et les prix viennent du système.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Les délégués terrain (tablette et téléphone).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Choisissez la pharmacie et les produits</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Cherchez la pharmacie, puis ajoutez les produits avec leur quantité, l'UG (par exemple 10+2) et — si une liste de prix est en vigueur — la remise.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Surveillez les badges de règle</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Chaque ligne indique « Dans les limites », « Validation requise » ou « Non autorisé », avec la limite dépassée. Une ligne non autorisée doit être corrigée.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Enregistrez et faites signer le pharmacien</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>« Enregistrer le brouillon » attribue le numéro. Choisissez le dépositaire, puis tendez l'appareil au pharmacien pour la signature. Modifier les lignes efface la signature.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Envoyez</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>« Envoyer » s'active quand rien ne bloque (les raisons sont écrites dessous) ; il devient « Envoyer pour approbation du responsable » quand une approbation est requise. La commande envoyée s'ouvre sur sa page de détail : elle attend l'approbateur ou, si le locataire le permet, part directement chez le dépositaire.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Statuez sur une pré-commande qui vous attend : validez-la, refusez-la ou renvoyez-la pour modification.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>Le responsable du délégué (le poste de rattachement).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Voyez pourquoi elle vous revient</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>« Pourquoi chez moi ? » indique le paramètre du locataire ou les lignes au-delà d'une limite souple.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Comparez aux limites</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Chaque cellule montre la saisie et, dessous, la limite de la règle ; les six derniers mois de la pharmacie sont à droite.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Statuez</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>« Valider » demande une confirmation, puis transmet la commande au dépositaire. « Refuser » et « Demander des modifications » exigent un motif ; une demande de modification la renvoie en brouillon au délégué.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>Depuis le lien de l'e-mail</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>Le lien de l'e-mail demande de se connecter, ne sert qu'une fois et expire ; la décision du premier approbateur l'emporte.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Définit comment les pré-commandes de ce locataire sont validées, tarifées, numérotées et transmises.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Les opérations commerciales.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Choisissez le mode de validation</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>« Toujours la validation d'un responsable » (par défaut) ou « Automatique dans les limites » — une commande au-delà d'une limite souple va toujours au responsable.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Réglez le lien et les tentatives</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>Le lien de validation vit 12 à 168 heures (48 par défaut) ; une transmission échouée est relancée 0 à 10 fois.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Choisissez le niveau de prix</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Par pays : achat pharmacien (par défaut), prix dépositaire ou prix public.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Donnez son préfixe à chaque société</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2 à 5 lettres débutent le numéro de commande (MG-ORD-000123). Un préfixe ayant numéroté une commande est verrouillé.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>Les listes de prix de chaque société vendeuse, pays et devise : les prix que lit une pré-commande.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>Le marketing (prépare) et les opérations commerciales (publient).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>Lisez le statut</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>Brouillon, En revue, Planifiée, En vigueur ou Passée — lu au jour même ; une liste en vigueur par société et pays.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>Ajoutez une liste</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>« Nouvelle liste » pour la saisir à la main, ou « Importer » pour un fichier Excel / CSV.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>Utilisez les onglets</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>Les règles, l'essai de règle, l'historique et les taux de change sont les autres onglets.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>Exportez</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>« Exporter » donne toutes les listes du filtre, avec les colonnes visibles.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>Une liste de prix : son en-tête, ses articles et la différence avec la version précédente ; la publication exige une autre personne.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>Le marketing (prépare) et les opérations commerciales (publient).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>Remplissez l'en-tête</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>Nom, société vendeuse, devise, type et premier jour ; le pays est celui de la société.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>Ajoutez les articles</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>Chaque produit une fois, avec prix dépositaire, achat pharmacien, prix public et TVA.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>Envoyez en publication</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>« Envoyer en publication » la confie à une autre personne ; le préparateur ne voit pas « Publier ».</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>Modifiez une liste publiée</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>Une liste publiée n'est pas modifiée : « Nouvelle version » la copie dans un nouveau brouillon.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>Importe une liste de prix depuis un fichier Excel / CSV en trois étapes.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>Le marketing.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>Choisissez le fichier</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>L'en-tête (la devise est obligatoire), le fichier et, si besoin, les noms de colonnes.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>Vérifiez l'aperçu</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>Les lignes trouvées, non trouvées, retirées, en double et à prix invalide sont comptées à part, avec la différence avec la liste en vigueur.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>Créez le brouillon</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>« Créer le brouillon » ne prend que les lignes trouvées ; la correspondance par code-barres (GTIN) reste désactivée jusqu'à product-master v1.2.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>Envoyez en publication</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>Le brouillon va à une autre personne, qui le publie ou le renvoie.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>Les limites UG / remise par société et produit auxquelles une ligne de pré-commande est confrontée.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>Le marketing (prépare) et les opérations commerciales (valident).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>Lisez souple et stricte</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>Au-delà d'une limite souple, la commande va au responsable ; au-delà d'une stricte, la ligne ne peut pas être saisie.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>La plus spécifique l'emporte</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>Une règle à période l'emporte sur une générale ; les segments viendront plus tard.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>Modifiez une règle</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>Une règle active se change par « Réviser » ou « Retirer » : une nouvelle version validée par une autre personne.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>Essayez</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>L'onglet « Essai de règle » montre ce qu'obtiendrait une ligne, sans rien enregistrer.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>Rédige un brouillon de règle : sa clé et ses limites souples / strictes.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>Le marketing.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>Choisissez la clé</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>Société et produit (fixés ensuite), et la validité si la règle porte sur une période.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>Saisissez les limites</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>Remise %, UG sous la forme « 10+2 », plafond combiné et quantité ; la souple ne dépasse pas la stricte.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>Lisez le % effectif</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>Une fois la société et le produit choisis, le système affiche le % effectif à côté de chaque UG.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>Envoyez en validation</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>Enregistrez, puis « Envoyer en validation » sur la règle : une autre personne l'active.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>Montre ce qu'une ligne de commande obtiendrait de la liste de prix et des règles, sans rien enregistrer.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>Le marketing et les opérations commerciales.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>Remplissez la ligne</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>Société, produit, quantité, UG et remise ; le jour et le niveau de prix si besoin.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>Essayez</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>« Essayer » interroge le système ; rien n'est enregistré.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>Lisez le résultat</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>Le badge (dans les limites / validation requise / non autorisé) et les messages de chaque limite dépassée.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>Voyez la règle appliquée</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>La règle la plus spécifique du jour s'applique ; sa version est affichée.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>Chaque modification des listes, articles, règles et taux : qui, quand, ancien → nouveau.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>Le marketing, les opérations commerciales et l'audit.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>Filtrez</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>Par type d'enregistrement et par période.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>Lisez ancien → nouveau</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>Chaque ligne nomme le champ, son ancienne et sa nouvelle valeur.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>Vos droits décident</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>Vous ne voyez que les types couverts par vos droits (listes, règles, taux).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>Ouvrez une modification</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>L'icône œil affiche toute la modification dans le panneau latéral.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>Les taux de change provisoires par société, paire et jour qu'une pré-commande utilise pour son équivalent local.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>Les opérations commerciales.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>Saisissez un taux</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>« Nouveau taux » : société, paire, jour, taux et source ; un taux par société, paire et jour.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>Corrigez un taux</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>Ouvrez le taux puis « Corriger » : l'ancien → nouveau est inscrit dans l'historique.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>Les commandes gardent leur taux</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>Une commande envoyée garde le taux de son envoi ; une correction ne le change pas.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>Le dernier avant le jour</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>Une commande utilise le dernier taux du jour ou d'avant ; sans taux, aucun équivalent local n'est affiché.</value>
   </data>
   <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
     <value>Déplacez le stock reçu de la zone de réception vers son casier et confirmez-le ; la confirmation déplace le stock dans le registre des stocks.</value>

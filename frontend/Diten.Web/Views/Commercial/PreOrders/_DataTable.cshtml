@@ -1,0 +1,35 @@
+@model Diten.Web.Models.Commercial.PreOrderPageViewModel
+@using Diten.Web.Views.Commercial.PreOrders
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PreOrdersIndex> Localizer
+@{
+    // W6-WEB-a — the pre-orders table is the shared component (BL-440): the page describes it, _ListShell renders it. Server
+    // mode (the CRM pages the orders, newest first). No row is deleted (MOD-0168 §10: an order is never deleted, a draft is
+    // discarded on its own screen), so the selection is DECLARED off and no bulk bar is rendered. The local-equivalent column
+    // is off by default (Column Visibility turns it on — the mockup's "Yerel karşılık sütunu" switch).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-preorders",
+        DataMode = "server",
+        Slug = "preorders",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColCode"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColPharmacy"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColDepot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRep"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLines"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTotal"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLocal"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColEffective"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRule"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

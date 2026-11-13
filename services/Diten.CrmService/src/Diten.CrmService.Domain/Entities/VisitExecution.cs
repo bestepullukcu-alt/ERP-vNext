@@ -56,11 +56,36 @@ public sealed class VisitExecution : EntityBase
     public Guid? ExceptionId { get; set; }
     public List<string> RelaxedRules { get; set; } = new();
 
+    /// <summary>WP-VW-W3L (W3-BE-d, K-L5) — the evidence layers the start's rules were resolved through: the legal entity
+    /// and the business unit that applied (null = that layer was skipped) and why (<c>Note</c>). Null on a start before
+    /// W3L. Answers "which rule applied" later.</summary>
+    public VisitExecutionEvidenceScope? EvidenceScope { get; set; }
+
+    /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the institution QR code at the start (null on a start before W3E).</summary>
+    public VisitExecutionQr? Qr { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
+    /// <summary>WP-VW-W3E (BE-b, §2.5) — the device's declaration at the start (recorded in every anti-fraud mode; null on
+    /// an execution started before W3E). Unverified: the integrity token itself is never stored (W3E-ATTEST verifies).</summary>
+    public VisitExecutionDevice? Device { get; set; }
+
     public bool IsStarted() => string.Equals(Status, VisitExecutionStatus.Started, StringComparison.Ordinal);
     public bool IsFinished() => string.Equals(Status, VisitExecutionStatus.Finished, StringComparison.Ordinal);
+}
+
+/// <summary>WP-VW-W3L (K-L5) — the scope chain stored with a visit start.</summary>
+public sealed class VisitExecutionEvidenceScope
+{
+    public Guid? LegalEntityId { get; set; }
+    public string? BusinessUnit { get; set; }
+
+    /// <summary><c>resolved</c>, or the skipped layers' reasons joined by a comma (see EvidenceScopeNotes).</summary>
+    public string Note { get; set; } = string.Empty;
+
+    public string? LegalEntityNote { get; set; }
+    public string? BusinessUnitNote { get; set; }
 }
 
 /// <summary>Where the rep was at the start, measured against the institution (Haversine).</summary>
@@ -85,6 +110,29 @@ public sealed class VisitExecutionLocation
 }
 
 /// <summary>The start photo: a pointer into the document repository. <see cref="ContentId"/> never leaves the server.</summary>
+/// <summary>WP-VW-W3E (BE-b, §2.5) — what the client DECLARED about its device at the start. <see cref="Verified"/> is
+/// false until W3E-ATTEST verifies the integrity token server-side; the token is never stored, only <see cref="TokenProvided"/>.</summary>
+public sealed class VisitExecutionDevice
+{
+    /// <summary><see cref="VisitClientPlatforms"/> (the Web proxy always writes <c>web</c>); null = not declared.</summary>
+    public string? Platform { get; set; }
+
+    public string? AppVersion { get; set; }
+
+    /// <summary>Android <c>Location.isMock</c> / iOS <c>isSimulatedBySoftware</c> as the app reported it.</summary>
+    public bool? MockLocation { get; set; }
+
+    /// <summary><see cref="VisitIntegrityProviders"/>.</summary>
+    public string? IntegrityProvider { get; set; }
+
+    /// <summary><see cref="VisitIntegrityVerdicts"/> — the app's own reading of the integrity result.</summary>
+    public string? IntegrityVerdict { get; set; }
+
+    public bool TokenProvided { get; set; }
+
+    public bool Verified { get; set; }
+}
+
 public sealed class VisitExecutionEvidence
 {
     public Guid ContentId { get; set; }
@@ -198,10 +246,53 @@ public static class VisitExecutionFlags
     /// <summary>WP-VW-W3 (W3-BE-c) — the start ran under an approved time-boxed exception (see ExceptionId / RelaxedRules).</summary>
     public const string StartedWithException = "started_with_exception";
 
+    /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the QR verdicts that start with a flag (K-W3E-6 / K-W3E-7).</summary>
+    public const string QrNotIssued = "qr_not_issued";
+    public const string QrInvalid = "qr_invalid";
+    public const string QrWrongAccount = "qr_wrong_account";
+    public const string QrRevoked = "qr_revoked";
+    public const string QrUnverifiable = "qr_unverifiable";
+
+    // WP-VW-W3E (BE-b, §2.5) — the device flags (anti-fraud mode "flag" only; they never refuse a start)
+    public const string MockLocation = "mock_location";
+    public const string DeviceIntegrityFailed = "device_integrity_failed";
+    public const string DeviceUnverified = "device_unverified";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit, StartedWithException
+        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit, StartedWithException,
+        QrNotIssued, QrInvalid, QrWrongAccount, QrRevoked, QrUnverifiable,
+        MockLocation, DeviceIntegrityFailed, DeviceUnverified
     };
+}
+
+/// <summary>WP-VW-W3E (BE-b, §2.5) — the client platform a start declares.</summary>
+public static class VisitClientPlatforms
+{
+    public const string Web = "web";
+    public const string Android = "android";
+    public const string Ios = "ios";
+
+    public static readonly IReadOnlyList<string> All = new[] { Web, Android, Ios };
+}
+
+/// <summary>WP-VW-W3E (BE-b, §2.5) — the integrity attestation source.</summary>
+public static class VisitIntegrityProviders
+{
+    public const string PlayIntegrity = "play_integrity";
+    public const string AppAttest = "app_attest";
+
+    public static readonly IReadOnlyList<string> All = new[] { PlayIntegrity, AppAttest };
+}
+
+/// <summary>WP-VW-W3E (BE-b, §2.5) — the app's integrity verdict.</summary>
+public static class VisitIntegrityVerdicts
+{
+    public const string Passed = "passed";
+    public const string Failed = "failed";
+    public const string Unavailable = "unavailable";
+
+    public static readonly IReadOnlyList<string> All = new[] { Passed, Failed, Unavailable };
 }
 
 public static class VisitLocationStatus
@@ -242,4 +333,8 @@ public static class VisitExecutionLimits
     public const long MaxEvidenceBytes = 10L * 1024 * 1024;
 
     public const string ObjectionCategorySet = "visit-objection-category";
+
+    // WP-VW-W3E (BE-b, §2.5) — the device declaration bounds (the token is checked for size, never stored)
+    public const int MaxIntegrityTokenBytes = 8 * 1024;
+    public const int MaxAppVersionLength = 40;
 }

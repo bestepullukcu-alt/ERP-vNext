@@ -32,7 +32,7 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+    public Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
         Guid tenantId,
         int skip = 0,
         int take = 50,
@@ -40,6 +40,18 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         DateTimeOffset? queuedFrom = null,
         DateTimeOffset? queuedTo = null,
         string? templateKey = null,
+        CancellationToken ct = default) =>
+        ListByTenantAsync(tenantId, skip, take, status, queuedFrom, queuedTo, templateKey, sourceModule: null, ct);
+
+    public async Task<IReadOnlyList<NotificationDispatch>> ListByTenantAsync(
+        Guid tenantId,
+        int skip,
+        int take,
+        NotificationDispatchStatus? status,
+        DateTimeOffset? queuedFrom,
+        DateTimeOffset? queuedTo,
+        string? templateKey,
+        string? sourceModule,
         CancellationToken ct = default)
     {
         var filters = new List<FilterDefinition<NotificationDispatch>>
@@ -66,6 +78,11 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         if (!string.IsNullOrWhiteSpace(templateKey))
         {
             filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.TemplateKey, templateKey));
+        }
+
+        if (!string.IsNullOrWhiteSpace(sourceModule))
+        {
+            filters.Add(Builders<NotificationDispatch>.Filter.Eq(x => x.SourceModule, sourceModule));
         }
 
         return await _collection.Find(Builders<NotificationDispatch>.Filter.And(filters))
@@ -171,6 +188,61 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             .ToListAsync(ct);
 
         return rows.Select(x => new NotificationDispatchRetryHandle(x.TenantId, x.Id)).ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<NotificationDispatchRetryHandle>> ClaimDueQueuedAsync(
+        DateTimeOffset asOfUtc,
+        DateTimeOffset leaseUntil,
+        int take,
+        CancellationToken ct = default)
+    {
+        if (take <= 0)
+        {
+            return [];
+        }
+
+        // Served by ix_notification_dispatches_queued_due (its partial filter is this query's Status + NextRetryAt).
+        var filter = Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Queued),
+            Builders<NotificationDispatch>.Filter.Ne<DateTimeOffset?>(x => x.NextRetryAt, null),
+            Builders<NotificationDispatch>.Filter.Lte(x => x.NextRetryAt, asOfUtc),
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null));
+
+        var projection = Builders<NotificationDispatch>.Projection
+            .Include(x => x.Id)
+            .Include(x => x.TenantId)
+            .Include(x => x.NextRetryAt);
+
+        var rows = await _collection
+            .Find(filter)
+            .Project<NotificationDispatch>(projection)
+            .SortBy(x => x.NextRetryAt)
+            .Limit(Math.Min(take, MaxSweepBatchSize))
+            .ToListAsync(ct);
+
+        var claimed = new List<NotificationDispatchRetryHandle>(rows.Count);
+        foreach (var row in rows)
+        {
+            // The claim: only the run that still sees the value it read moves it on — the other one enqueues nothing.
+            var claim = Builders<NotificationDispatch>.Filter.And(
+                ActiveFilter,
+                Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, row.TenantId),
+                Builders<NotificationDispatch>.Filter.Eq(x => x.Id, row.Id),
+                Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Queued),
+                Builders<NotificationDispatch>.Filter.Eq(x => x.NextRetryAt, row.NextRetryAt));
+            var result = await _collection.UpdateOneAsync(
+                claim,
+                Builders<NotificationDispatch>.Update.Set(x => x.NextRetryAt, leaseUntil),
+                cancellationToken: ct);
+            if (result.ModifiedCount == 1)
+            {
+                claimed.Add(new NotificationDispatchRetryHandle(row.TenantId, row.Id));
+            }
+        }
+
+        return claimed;
     }
 
     public async Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(

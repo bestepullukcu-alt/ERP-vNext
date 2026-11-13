@@ -7,7 +7,7 @@ public sealed record EligibilityConditionDto(
     IReadOnlyList<string> Values,
     bool Required);
 
-/// <summary>SCMM-11 (CAND-CAP-0011) read model for an eligibility policy. <c>Conditions</c> is frozen once published.</summary>
+/// <summary>SCMM-11 (MOD-0363, formerly CAND-CAP-0011) read model for an eligibility policy. <c>Conditions</c> is frozen once published.</summary>
 public sealed record EligibilityPolicyDto(
     Guid EligibilityPolicyId,
     string PolicyCode,

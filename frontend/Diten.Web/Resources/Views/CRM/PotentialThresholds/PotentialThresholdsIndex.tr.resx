@@ -5,8 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Potansiyel eşikleri</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM Ayarlar / Doktor içgörüleri</value></data>
-  <data name="Intro" xml:space="preserve"><value>Doktorun bir ürünün endikasyonlarındaki aylık hasta sayısı bu sınırlarla Az, Orta veya Çok olarak sınıflanır. Ürün satırı kiracı varsayılanından önce gelir; ikisi de yoksa yerleşik değerler uygulanır.</value></data>
   <data name="AddProduct" xml:space="preserve"><value>Ürün ekle</value></data>
   <data name="ReadOnly" xml:space="preserve"><value>Eşikleri görüntüleyebilirsiniz; değiştirmek için eşik yönetimi yetkisi gerekir.</value></data>
   <data name="RetryButton" xml:space="preserve"><value>Tekrar dene</value></data>
@@ -78,4 +76,6 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Sunucuya ulaşılamadı; değerleriniz bu ekranda korunuyor.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Doktorun bir ürünün endikasyonlarındaki aylık hasta sayısı bu sınırlarla Az, Orta veya Çok olarak sınıflanır. Ürün satırı kiracı varsayılanından önce gelir; ikisi de yoksa yerleşik değerler uygulanır.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
 </root>

@@ -240,10 +240,11 @@ public sealed class NotificationsController : CustomBaseController
         [FromQuery] DateTimeOffset? queuedFrom = null,
         [FromQuery] DateTimeOffset? queuedTo = null,
         [FromQuery] string? templateKey = null,
+        [FromQuery] string? sourceModule = null,
         CancellationToken ct = default)
     {
         var response = await _mediator.Send(
-            new GetNotificationDispatchListQuery(targetTenantId, page, pageSize, status, queuedFrom, queuedTo, templateKey), ct);
+            new GetNotificationDispatchListQuery(targetTenantId, page, pageSize, status, queuedFrom, queuedTo, templateKey, sourceModule), ct);
         return CreateActionResultInstance(response);
     }
 

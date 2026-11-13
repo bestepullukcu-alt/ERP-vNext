@@ -98,7 +98,7 @@ public class AccountController : Controller
     {
         if (HasValidActor("tenant_user"))
         {
-            return Redirect(returnUrl ?? "/WorkCenterNext");
+            return Redirect(ResolveReturnUrl(returnUrl, "/WorkCenterNext"));
         }
 
         ViewBag.AuthMode = "tenant";
@@ -232,7 +232,7 @@ public class AccountController : Controller
     {
         if (HasValidActor("platform_admin", "partner_admin"))
         {
-            return Redirect(returnUrl ?? "/Platform/Tenants");
+            return Redirect(ResolveReturnUrl(returnUrl, "/Platform/Tenants"));
         }
 
         ViewBag.AuthMode = "platform";
@@ -616,15 +616,11 @@ public class AccountController : Controller
                || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string ResolveReturnUrl(string? returnUrl, string defaultPath)
-    {
-        if (!string.IsNullOrWhiteSpace(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative))
-        {
-            return returnUrl;
-        }
-
-        return defaultPath;
-    }
+    // WP-VW-W6 W6-FIX-a (G-13) — back to the page asked for, only ever a page of this site: "//host" and "/\host" are
+    // well-formed RELATIVE uris a browser follows to another host (an open redirect), so they fall to the default too.
+    // Static, so MVC never treats it as an action.
+    public static string ResolveReturnUrl(string? returnUrl, string defaultPath)
+        => LoginReturn.IsLocal(returnUrl) && Uri.IsWellFormedUriString(returnUrl, UriKind.Relative) ? returnUrl! : defaultPath;
 
     public sealed record LoginRequest(string Email, string Password, Guid TenantId, string? ReturnUrl, bool RememberMe = false);
     public sealed record MfaLoginRequest(string ChallengeId, string Code, string? ReturnUrl);

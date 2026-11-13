@@ -728,7 +728,7 @@ const ClaimsList = (function () {
         if (transitionPending) { window.showToast?.(t('RequestPending'), 'warning'); return; }
         const { target } = buildTransitionBody();
         const subtext = target === 'Settled' ? `${t('ConfirmTransition')} ${t('SettledNoPaymentNote')}` : t('ConfirmTransition');
-        // Shared premium wrapper only (MOD-0013 _GlobalConfirmation: showConfirm(title, callback, options));
+        // Shared premium wrapper only (MOD-0286 (formerly MOD-0013) _GlobalConfirmation: showConfirm(title, callback, options));
         // no native dialog and no direct SweetAlert call. Title and subtext are resx text only.
         window.showConfirm?.(targetLabel(target), () => { void submitTransition(); }, {
             subtext,

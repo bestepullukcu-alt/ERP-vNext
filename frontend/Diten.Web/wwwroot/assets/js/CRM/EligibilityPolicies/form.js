@@ -1,5 +1,5 @@
 /**
- * SCMM-11-UI (CAND-CAP-0011) EligibilityPolicy form — create/edit interactions:
+ * SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) EligibilityPolicy form — create/edit interactions:
  *  - flatpickr on the effective-window dates
  *  - Select2 on Status + each condition row's Dimension / Match (single) and Values (free multi-tag; reference strings)
  *  - Condition builder: add/remove rows via the .Index model-binding convention

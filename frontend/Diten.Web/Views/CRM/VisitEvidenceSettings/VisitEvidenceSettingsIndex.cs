@@ -44,20 +44,39 @@ public sealed class VisitEvidenceSettingsIndex
         "Err_visit_evidence_policy_invalid", "Err_visit_execution_concurrency_conflict", "Err_workflow_template_missing",
         "Err_workflow_unavailable", "Err_approval_forbidden", "Err_no_open_review", "Err_withdraw_not_possible",
         "Err_rejection_comment_required", "Err_workflow_request_rejected", "Err_permission_denied",
-        "Err_conflict", "Err_unavailable", "Err_generic"
+        "Err_conflict", "Err_unavailable", "Err_generic",
+        // WP-VW-W3E (W3E-WEB-b) — additional evidence (E1), qr_optional (E2), the reps pane and the new fields (E3)
+        "G_extra", "QrCaption", "QrIntro", "DeviceCaption", "DeviceIntro", "ManageQrLink", "F_qrMode", "F_antiFraudMode", "Opt_qrMode_off", "Opt_qrMode_optional", "Opt_qrMode_required", "Opt_antiFraudMode_off", "Opt_antiFraudMode_flag", "Opt_antiFraudMode_block", "D_qrMode_off", "D_qrMode_optional", "D_qrMode_required", "NewBadge", "SoonBadge", "XRule_qr_optional", "XRuleDesc_qr_optional", "XRuleQrNotRequired", "SourceExceptionShort", "RepsEmpty",
+        // W3E-E4R2-FIX-b — the exceptions list on the Golden Compact DataTable (index.js reads them through window.L10n)
+        "QuickView", "NewException",
+        // WP-VW-W3L (W3-WEB-e) — the scope tree, a layer's form (inheritance), add / remove, the source of a value, the
+        // rep's chain notes, the history's scope
+        "TenantDefault", "TypeTenant", "TypeLegalEntity", "TypeBusinessUnit", "Diff", "NoDiff", "RepsAtLeast",
+        "AddLegalEntity", "AddBusinessUnit", "AddTitleLegalEntity", "AddTitleBusinessUnit", "AddPlaceholder", "AddNone", "AddUnavailable",
+        "NewScopeBadge", "NewScopeNote", "InheritNote", "InheritNoneNote", "InheritBuNote", "InheritedFrom", "ChangeHere",
+        "OverriddenHere", "UpperValue", "BackToUpperLink", "LayerEmpty", "SaveTextNew", "ScopeCreated", "DiffInherited",
+        "DiffBackToUpper", "RemoveText", "Removed", "SourceLegalEntity", "SourceBusinessUnit",
+        "ChainNoSeat", "ChainPlatformDown", "ChainNoTerritory", "ChainNoBusinessUnit", "ChainBuAmbiguous",
+        "HistAllScopes", "HistArchived", "HistScopeCreated", "HistInherited"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
     public static readonly string[] ViewKeys =
     [
-        "PageTitle", "Crumb", "Intro", "NewException", "TabSettings", "TabExceptions", "Retry", "ReadOnly", "ScopesTitle",
-        "ScopesNote", "TenantDefault", "Locked", "AddLegalEntity", "AddLegalEntityHint", "LookTitle", "LookSearch",
+        "PageTitle", "PageDescription", "NewException", "TabSettings", "TabExceptions", "Retry", "ReadOnly", "ScopesTitle",
+        "ScopesNote", "TenantDefault", "Locked", "LookTitle", "LookSearch",
         "EffectiveTitle", "CloseButton", "ColField", "ColValue", "ColSource", "Priority", "SourceException", "SourceTenant",
-        "ScopeUnresolved", "TypeTenant", "PaneForm", "PaneHistory", "SoonTitle", "SoonText", "SoonBadge", "PreviewTitle",
-        "PvStartTitle", "PvSample", "PvPhoto", "PvLocation", "PvSign", "PvStart", "LastChange", "Unsaved", "CancelButton", "SaveButton",
+        "TypeTenant", "PaneForm", "PaneHistory", "PreviewTitle",
+        // WP-VW-W3L — the effective card's priority, remove / add, the history's scope filter and the scope columns
+        "TypeLegalEntity", "TypeBusinessUnit", "ScopeRemove", "RemoveTitle", "AddDescription", "AddConfirm", "HistScopeFilter", "ColScope",
+        "PvStartTitle", "PvSample", "PvPhoto", "PvLocation", "PvSign", "PvQr", "PvDeviceWeb", "PvStart", "LastChange", "Unsaved", "CancelButton", "SaveButton",
         "HistoryTitle", "AuditReadOnly", "ColDate", "ColPerson", "ColChange", "ExceptionsInfo", "ExceptionsTitle",
         "XColRep", "XColRules", "XColRange", "XColReason", "XColPeople", "XColStatus", "OpenRow", "SaveTitle", "SaveConfirm",
         "XNewTitle", "XRep", "XRules", "XRulesHint", "XFrom", "XTo", "XReason", "XReasonPlaceholder", "XSodNew", "XSubmit",
-        "XDetailTitle"
+        "XDetailTitle",
+        "PaneReps", "RepsTitle", "RepsNote", "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice",
+        // W3E-E4R2-FIX-b — the exceptions list: the filter (status = XColStatus, phase), the actions column, the quick view
+        "FilterPhase", "ColActions", "QuickView", "XFilter_all", "XFilter_active", "XFilter_planned", "XFilter_in_review", "XFilter_draft",
+        "XFilter_expired", "XFilter_cancelled", "XFilter_ended_early"
     ];
 }

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Localization;
 namespace Diten.Web.Controllers.CRM;
 
 /// <summary>
-/// SCMM-11-UI (CAND-CAP-0011) Eligibility policy authoring console + evaluate/preview. Proxy-only, mirroring the SCMM-14
+/// SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) Eligibility policy authoring console + evaluate/preview. Proxy-only, mirroring the SCMM-14
 /// ContentSets / SCMM-12 Claims consoles: all business traffic is proxied server-side through Gateway 5000 to the ready
 /// SCMM-11 eligibility surface (/api/crm/content-composition/eligibility-policies + eligibility:evaluate); the browser
 /// never sees a service URL or bearer token, and no eligibility logic lives here (the CrmService resolver is

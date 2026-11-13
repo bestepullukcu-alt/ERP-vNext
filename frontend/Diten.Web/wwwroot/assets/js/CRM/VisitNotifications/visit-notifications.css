@@ -1,0 +1,51 @@
+/* WP-VW-W5 (W5-WEB) — the sent visit e-mails: the quick view's e-mail preview (mockup 06-epostalar: the header, the band,
+   the white "paper" on a grey canvas, the rows, the KVKK footer). Colours come from the theme (Bootstrap / Sneat tokens and
+   the layout primary): no fixed brand colour, light and dark alike. The list itself is the shared standard (no CSS here). */
+
+.vn-drawer { width: 600px; max-width: 100vw; }
+
+.vn-mu { color: var(--bs-secondary-color); }
+
+.vn-mail-head { display: grid; gap: .375rem; }
+.vn-subject { font-size: 1.0625rem; font-weight: 600; color: var(--bs-heading-color); }
+.vn-head-grid { display: grid; grid-template-columns: auto 1fr; gap: .2rem .75rem; font-size: .8125rem; }
+.vn-hv { color: var(--bs-heading-color); min-width: 0; overflow-wrap: anywhere; }
+
+.vn-canvas { background: var(--bs-tertiary-bg, var(--bs-body-bg)); }
+.vn-mail {
+    max-width: 640px; margin: 0 auto; border-radius: .5rem; overflow: hidden;
+    background: var(--bs-paper-bg, var(--bs-body-bg)); box-shadow: var(--bs-box-shadow-sm); color: var(--bs-body-color);
+}
+.vn-mail-brand { display: flex; align-items: center; gap: .625rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--bs-border-color); }
+.vn-logo {
+    width: 1.875rem; height: 1.875rem; border-radius: .4375rem; display: inline-flex; align-items: center; justify-content: center;
+    background: var(--bs-primary); color: var(--bs-white);
+}
+.vn-kind { margin-inline-start: auto; font-size: .75rem; color: var(--bs-secondary-color); }
+
+.vn-band { display: flex; gap: .5rem; align-items: center; padding: .75rem 1.5rem; font-size: .875rem; font-weight: 500; }
+.vn-band i { font-size: 1.1875rem; }
+.vn-band-success { background: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+.vn-band-danger { background: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }
+.vn-band-info { background: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); }
+.vn-band-warning { background: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+
+.vn-mail-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.vn-title-block { display: grid; gap: .375rem; }
+.vn-title { font-size: 1.125rem; font-weight: 600; color: var(--bs-heading-color); line-height: 1.3; }
+.vn-intro { font-size: .875rem; line-height: 1.6; color: var(--bs-secondary-color); }
+
+.vn-kv { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.vn-kv td { padding: .5rem 0; border-bottom: 1px solid var(--bs-border-color); vertical-align: top; }
+.vn-kv .vn-k { color: var(--bs-secondary-color); width: 40%; padding-inline-end: .75rem; }
+.vn-kv .vn-v { color: var(--bs-heading-color); font-weight: 500; overflow-wrap: anywhere; }
+
+.vn-sec { display: grid; gap: .375rem; }
+.vn-sec-title { font-size: .8125rem; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; color: var(--bs-heading-color); }
+.vn-items { margin: 0; padding-inline-start: 1.125rem; font-size: .875rem; }
+.vn-note { font-size: .8125rem; color: var(--bs-secondary-color); background: var(--bs-tertiary-bg, transparent); border-radius: .375rem; padding: .5rem .75rem; }
+
+.vn-foot { padding: .875rem 1.5rem; border-top: 1px solid var(--bs-border-color); font-size: .75rem; color: var(--bs-secondary-color); line-height: 1.5; }
+
+.vn-empty { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: 2rem 1rem; }
+.vn-empty i { font-size: 2rem; color: var(--bs-primary); }

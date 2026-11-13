@@ -75,7 +75,7 @@
     const gateAction = (action, enabled, reasonKey, reasonFallback) =>
         enabled ? action : disableAction(action, t(reasonKey, reasonFallback));
 
-    // MOD-0013 / Golden Compact toast surface. reasonCode + correlationId are surfaced in the message.
+    // MOD-0286 (formerly MOD-0013) / Golden Compact toast surface. reasonCode + correlationId are surfaced in the message.
     const notify = (kind, message, debug) => {
         const text = [message, debug ? `(${debug})` : ''].filter(Boolean).join(' ');
         const type = kind === 'error' || kind === 'danger'

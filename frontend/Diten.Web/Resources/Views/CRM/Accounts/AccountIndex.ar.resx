@@ -119,4 +119,16 @@
   <data name="ReportsToNone" xml:space="preserve"><value>— لا يوجد (الأعلى) —</value></data>
   <data name="ReportsToHelp" xml:space="preserve"><value>اختر جهة اتصال مرتبطة بالفعل بهذا الحساب. التسلسل داخل الحساب؛ لا يُسمح بالتبعية الذاتية أو الحلقات.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة الحقول المطلوبة بشكل صحيح.</value></data>
+  <data name="Error.account_version_conflict" xml:space="preserve"><value>قام شخص آخر بتغيير هذا الحساب. أعد تحميله وطبّق تغييرك مرة أخرى.</value></data>
+  <data name="VersionConflictReload" xml:space="preserve"><value>إعادة التحميل</value></data>
+  <data name="Error.account_expected_version_required" xml:space="preserve"><value>النموذج غير محدّث. أعد تحميل الحساب وحاول مرة أخرى.</value></data>
+  <data name="Error.account_code_taken" xml:space="preserve"><value>رمز الحساب هذا مستخدم بالفعل.</value></data>
+  <data name="Error.external_reference_taken" xml:space="preserve"><value>هذا المرجع الخارجي مسجل بالفعل على حساب آخر.</value></data>
+  <data name="Error.account_type_invalid" xml:space="preserve"><value>اختر نوع الحساب من القائمة.</value></data>
+  <data name="Error.account_status_invalid" xml:space="preserve"><value>اختر الحالة من القائمة.</value></data>
+  <data name="Error.account_category_invalid" xml:space="preserve"><value>اختر الفئة من القائمة.</value></data>
+  <data name="Error.account_reference_set_missing" xml:space="preserve"><value>لم تُنشر البيانات المرجعية لهذا الحقل بعد.</value></data>
+  <data name="Error.account_logo_invalid" xml:space="preserve"><value>يجب أن يكون الشعار صورة PNG أو JPG أو GIF أو WEBP أو SVG.</value></data>
+  <data name="Error.account_logo_too_large" xml:space="preserve"><value>الشعار كبير جدًا (256 كيلوبايت كحد أقصى).</value></data>
+  <data name="Error.account_logo_conflict" xml:space="preserve"><value>اختر إما شعارًا جديدًا أو إزالة الشعار، وليس كليهما.</value></data>
 </root>

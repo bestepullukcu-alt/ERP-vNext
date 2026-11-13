@@ -43,10 +43,14 @@ public sealed class ContentStorageScopeRules
 {
     public CrmVisitEvidenceFileRule CrmVisitEvidence { get; set; } = new();
 
+    /// <summary>WP-VW-W6 PLT-W6-DOC — <c>DocumentManagement:ContentStorage:Scopes:CommercialPreOrderDocument:MaxFileSizeBytes</c>.</summary>
+    public CommercialPreOrderDocumentFileRule CommercialPreOrderDocument { get; set; } = new();
+
     /// <summary>The rule for <paramref name="scope"/>, or <c>null</c> when the scope uses the general rule.</summary>
     public IContentStorageFileRule? For(ContentStorageScope scope) => scope switch
     {
         ContentStorageScope.CrmVisitEvidence => CrmVisitEvidence,
+        ContentStorageScope.CommercialPreOrderDocument => CommercialPreOrderDocument,
         _ => null
     };
 }
@@ -60,6 +64,9 @@ public interface IContentStorageFileRule
     IReadOnlyList<string> AllowedMediaTypes { get; }
 
     long MaxFileSizeBytes { get; }
+
+    /// <summary>The size used when the configured one is not positive (an unset or zero value never means "no limit").</summary>
+    long DefaultMaxFileSizeBytes => CrmVisitEvidenceFileRule.DefaultMaxFileSizeBytes;
 }
 
 /// <summary>
@@ -79,4 +86,25 @@ public sealed class CrmVisitEvidenceFileRule : IContentStorageFileRule
     IReadOnlyList<string> IContentStorageFileRule.AllowedExtensions => Extensions;
 
     IReadOnlyList<string> IContentStorageFileRule.AllowedMediaTypes => MediaTypes;
+}
+
+/// <summary>
+/// WP-VW-W6 PLT-W6-DOC — the pre-order depot document is a PDF: <c>.pdf</c> declared as <c>application/pdf</c>, at most
+/// 256 KB — the internal dispatch's attachment budget (PLT-W6), so a stored document always fits the mail it is sent with.
+/// The type lists are the contract and are not configurable; only the size is.
+/// </summary>
+public sealed class CommercialPreOrderDocumentFileRule : IContentStorageFileRule
+{
+    public const long DefaultMaxFileSizeBytes = 256 * 1024;
+
+    private static readonly string[] Extensions = [".pdf"];
+    private static readonly string[] MediaTypes = ["application/pdf"];
+
+    public long MaxFileSizeBytes { get; set; } = DefaultMaxFileSizeBytes;
+
+    IReadOnlyList<string> IContentStorageFileRule.AllowedExtensions => Extensions;
+
+    IReadOnlyList<string> IContentStorageFileRule.AllowedMediaTypes => MediaTypes;
+
+    long IContentStorageFileRule.DefaultMaxFileSizeBytes => DefaultMaxFileSizeBytes;
 }

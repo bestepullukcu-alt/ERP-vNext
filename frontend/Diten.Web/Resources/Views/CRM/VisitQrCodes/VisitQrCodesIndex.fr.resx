@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="VisitQrCodesTitle" xml:space="preserve"><value>Codes QR des établissements</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Codes affichés à l’accueil des établissements. Si une unité n’a pas son propre code, celui de l’établissement parent s’applique.</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>Établissement</value></data>
+  <data name="ColType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColCity" xml:space="preserve"><value>Ville</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Statut QR</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>Dernier scan</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>30 derniers jours</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>Aucun</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>Révoqué</value></data>
+  <data name="FilterRegion" xml:space="preserve"><value>Région</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Type d'établissement</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="BulkGenerateConfirm" xml:space="preserve"><value>Générer un code pour les {0} établissements sélectionnés ? Ceux qui ont déjà un code actif sont ignorés.</value></data>
+</root>

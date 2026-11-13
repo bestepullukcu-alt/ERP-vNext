@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2055,6 +2055,672 @@
   </data>
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Свой образец оставьте другим</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Задайте подтверждения, которые представитель должен дать при начале визита: геолокация, фото, QR-код учреждения и проверка устройства. Настройка многоуровневая, действует самая конкретная: настройка бизнес-подразделения важнее настройки юрлица, а та — настройки арендатора; временное исключение на время ослабляет правило для одного представителя.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Руководители коммерческих операций</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Сохранение и применение настройки</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>На вкладке «Настройки по областям» выберите в списке «Области» арендатора, юрлицо или бизнес-подразделение. Для новой области нажмите «Добавить юрлицо» или «Добавить бизнес-подразделение»; она начинается пустой, и все поля берутся сверху.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Выберите область</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>В разделе «Форма настроек» нажмите «Изменить в этой области» у нужного поля; «Вернуть вышестоящую настройку» снова берёт его сверху. Нажмите «Сохранить», проверьте изменённые строки и число затронутых представителей и подтвердите кнопкой «Сохранить и применить».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Измените поля и примените</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>«Действующие настройки представителя» показывает значение каждого поля и область, из которой оно взято. «История изменений» показывает, кто, что и когда изменил, с фильтром по области; «Представители» показывает область, применённую к каждому представителю. «Удалить область» сразу возвращает её представителей к вышестоящей настройке; подтвердите сочетанием Ctrl+Enter (⌘+Enter на Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Следите за источником и историей</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>На вкладке «Временные исключения» нажмите «Новое исключение». Укажите представителя, ослабляемые правила, период не длиннее 30 дней и причину, затем нажмите «Отправить на одобрение» или Ctrl+Enter (⌘+Enter на Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Запросите временное исключение</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>Исключение утверждается в разделе Центр задач; запросивший не может утвердить своё исключение. Действует только утверждённое исключение в пределах его дат. В быстром просмотре «Отменить исключение» и «Завершить досрочно» требуют причину; введите её и подтвердите сочетанием Ctrl+Enter.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Управляйте исключением</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Просматривайте отметки подтверждений начатых визитов: далёкая или отсутствующая геолокация, короткий визит, неотсканированный или недействительный QR-код, начало по исключению. Отметка — повод проверить; сама по себе она не означает нарушения правила.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Региональные менеджеры и команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>В поле «Период» выберите «Последние 7 дней», «Последние 30 дней» или «Свой период…». Произвольный диапазон — не более 92 дней.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Выберите период</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Фильтруйте по полям «Представитель», «Учреждение» и типу отметки. Переключатель «Только отмеченные» включён; выключите его, чтобы видеть и визиты без отметок.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Карточки вверху показывают «Начатые визиты», «Отмеченные визиты» и «По типу отметки». У одного визита может быть несколько отметок.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Прочитайте сводку</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>Быстрый просмотр строки показывает геолокацию, расстояние до учреждения, результат QR-кода и исключение, если оно есть; для просмотра фото нужно отдельное право. «Открыть визит» открывает сам визит.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Откройте подтверждение</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>Вкладка «Сводка по представителям» показывает по каждому представителю начатые и отмеченные визиты, долю и самую частую отметку. Щелчок по строке фильтрует список визитов по этому представителю.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Сравните представителей</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Просматривайте письма, которые CRM автоматически отправила по отчётам о визитах (сводка, нежелательное явление, запрос вне показаний, просроченный отчёт), с получателями и статусом, и открывайте каждое в том виде, в каком оно было составлено. Адреса электронной почты не показываются.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Представители (свои визиты), руководители (своя команда) и команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Задайте «Период»: последние 30 или 7 дней, текущий месяц или «Свой период…». Период считается по дню визита.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Выберите период</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Фильтруйте по «Тип письма», «Статус» и — для руководителя — «Представитель». «Маршрут ФН не задан» означает, что адрес безопасности ФН не задан и уведомлён только руководитель.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>Столбец «Получатель» показывает роли, а не адреса: «Руководитель», «Безопасность ФН», «MSL (медицинский советник)». Письмо по безопасности уходит в ФН или MSL, руководитель в копии.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Посмотрите получателей</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>«Быстрый просмотр» строки показывает письмо в том виде, в каком оно было отправлено: тема, «Кому», «Копия», «Дата», содержание и «Открыть отчёт».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Откройте письмо</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>При наличии права на настройки во вкладке «Настройки уведомлений» задаются «Адрес безопасности ФН» и «Адрес MSL», включаются сводка отчёта и напоминание о просрочке. Если кто-то сохранил раньше вас, обновите страницу и сохраните снова.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Настройте адреса</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Управляйте QR-кодами, размещёнными на стойках регистрации учреждений. Представитель сканирует этот код при начале визита; подразделение без собственного кода использует код родительского учреждения.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Команда коммерческих операций</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Создание, перевыпуск и отзыв кода</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Фильтруйте список по полям «Регион», «Город», «Тип учреждения» и «Статус QR». «Последнее сканирование» и «За 30 дней» показывают, используется ли код.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Найдите учреждения</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Выберите строки и выполните «Создать для выбранных (без кода)»; учреждения с уже активным кодом пропускаются. За один раз можно выбрать до 200 учреждений.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Создайте коды массово</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Один код печатается кнопкой «Напечатать код» в строке, несколько — через «Печать выбранных (лист наклеек)». На странице печати выберите «Один» или «Лист наклеек» и нажмите «Печать».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Напечатайте</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>На странице учреждения в карточке «QR-код учреждения» используйте «Создать заново» или «Отозвать». Оба действия сразу делают недействительными размещённые и напечатанные старые коды; для отзыва нужна причина.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Обновите или отзовите код</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Обязателен код или нет, задаёт настройка «QR-код учреждения» на странице Подтверждение визита. При обязательной настройке визит, начатый в учреждении без кода, отмечается.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Учитывайте настройку</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Задайте границы, по которым число пациентов врача в месяц по показаниям продукта относится к классу Низкий, Средний или Высокий. Строка продукта важнее значения арендатора по умолчанию; если нет ни того ни другого, действуют встроенные значения.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Руководители коммерческих операций и маркетинга</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Изменение порога</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>На вкладке «Пороги» строка «Значение арендатора по умолчанию» остаётся вверху при любой сортировке; строки продуктов имеют приоритет над ней. Столбец «Источник» показывает, откуда взято значение.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Просмотрите пороги</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>Действие «Изменить» в строке открывает боковую панель. Введите «Низкий ниже (X)» и «Высокий выше (Y)»; попробуйте в предпросмотре число пациентов в месяц, чтобы увидеть класс.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Измените</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Нажмите «Сохранить» или Enter; проверьте изменённые значения и подтвердите кнопкой «Да, сохранить». Изменение вступает в силу сразу.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Сохраните</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Для продукта, которому нужны границы, отличные от значения по умолчанию, откройте собственную строку кнопкой «Добавить продукт».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Добавьте продукт</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>Вкладка «История изменений» показывает каждое изменение с автором, строкой и старым → новым значением; список можно выгрузить в CSV или Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Следите за историей</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Пишите утверждённые ответы на возражения, которые представитель может услышать от врача на визите. Утверждённый ответ выбирается как ожидаемое возражение в шагах пути знаний и появляется в заметках представителя во время презентации.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Команды контента и медицинские утверждающие</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Вывод ответа из обращения</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Сузьте список по полям «Продукт», «Категория» и «Статус» или ищите по тексту возражения.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте библиотеку</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Нажмите «Новый ответ на возражение»; заполните «Продукт», «Категория», «Возражение · вопрос врача» и «Утверждённый ответ», выберите опорные утверждения из утверждённых для продукта и нажмите «Сохранить черновик».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Напишите ответ</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>«Отправить на утверждение» блокирует ответ на время проверки; «Отозвать» возвращает его в черновик.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Отправьте на утверждение</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>Утверждающий выбирает «Утвердить» или пишет заметку и выбирает «Вернуть в черновик». Автор или отправитель ответа не может его утвердить.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Утвердите или верните</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Утверждённый ответ изменить нельзя; откройте новый черновик через «Новый черновик из копии». «Вывести из обращения» сразу убирает ответ из всех презентаций без возможности отмены; «Где используется» показывает затронутые шаги.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Измените или выведите из обращения</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Управляйте продуктами, которые представители выбирают как конкурентов в отчётах: компания, действующее вещество, наши продукты, с которыми они конкурируют, цена и возмещение по странам.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Команды мастер-данных и коммерческих операций</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Сохранение, деактивация</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Фильтруйте по полям «Наш продукт», «Компания», «Действующее вещество», «Страна» или «Статус»; поиск охватывает и другие названия.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте список</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Нажмите «Новый продукт конкурента»; укажите название, компанию, действующее вещество и хотя бы один наш продукт, впишите цену упаковки и возмещение в строки стран и нажмите «Сохранить». «Вид представителя» показывает карточку, которую представитель увидит в отчёте.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Добавьте запись</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>На вкладке «Предложения представителей» ждут новые конкуренты, которых представители вписали в отчёты. Через «Решение» подготовьте решение — дополнить, объединить или отклонить — и нажмите «Отправить на одобрение».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Решите по предложениям</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>Решение применяется после утверждения в разделе Центр задач; подготовивший его не может его утвердить. До этого предложение используется только в отчётах предложившего представителя.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Дождитесь утверждения</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>Страница сведений показывает «Использование в отчётах» и «История изменений». «Объединить с другой записью» после утверждения связывает запись с другой без возможности отмены; «Деактивировать» делает её недоступной для выбора в новых отчётах.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Управляйте записью</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Планируйте неделю, проводите визиты и отчитывайтесь в одном календаре. При начале визита собираются подтверждения, которые требует арендатор (геолокация, фото, QR-код учреждения); отчёт отправляется в течение 48 часов.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Полевые представители и региональные менеджеры</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Утверждение недели, начало визита, отправка отчёта</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Перейдите в режим «Планирование»; перетащите целевых врачей на день или время. Добавьте продукты запланированным врачам учреждения через «Применить продукты».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Спланируйте неделю</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Когда план готов, нажмите «Утвердить неделю». Утверждённая неделя доступна только для чтения; чтобы её изменить, используйте «Открыть неделю заново» с указанием причины.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Утвердите неделю</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>В режиме «Выполнение» откройте сегодняшний визит и по прибытии в учреждение нажмите «Начать визит». В зависимости от настройки запрашиваются фото, геолокация и «QR-код учреждения»; затем «Начать презентацию» открывает презентацию.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Начните визит</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>После визита нажмите «Отправить отчёт». На отчёт даётся 48 часов; после этого запись блокируется.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Отчитайтесь</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Для визита, который не состоялся, выберите «Не выполнен» или «Перенести» и укажите причину. Внеплановый визит на сегодня добавляется через «Внеплановый визит».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Закройте несостоявшееся</value>
+  </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Показывает предзаказы аптек, доступные вам, — ваши, вашей команды и ждущие вашего согласования — со статусом и ответом дистрибьютора.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Представители, их руководители (согласующие) и отдел продаж.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте список</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Откройте «Фильтр»: период, статус, аптека, дистрибьютор, препарат, страна; у согласующего также «Ждут моего согласования».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Смотрите суммы</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Каждая сумма указана в своей валюте; заказы в разных валютах не суммируются. «Местный эквивалент» включается в видимости столбцов.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Откройте быстрый просмотр</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>Значок глаза показывает строки, итоги и хронологию со ссылками на документ и согласование.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Отметьте ответ дистрибьютора</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Отдел продаж отмечает переданный заказ как «Доставлено» или «Частичная поставка» (упаковки по строкам и примечание) в быстром просмотре.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Оформляет заказ аптеки для передачи её дистрибьютору, который выставляет счёт. Компания, валюта и цены берутся из системы.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Полевые представители (планшет и телефон).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Выберите аптеку и препараты</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Найдите аптеку и добавьте препараты с количеством, бонусом (например 10+2) и — при действующем прайс-листе — скидкой.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Следите за значками правил</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Каждая строка показывает «В пределах лимитов», «Требуется согласование» или «Недопустимо» с превышенным лимитом. Недопустимую строку нужно исправить.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Сохраните и дайте подписать провизору</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>«Сохранить черновик» присваивает номер. Выберите дистрибьютора и передайте устройство провизору для подписи. Изменение строк снимает подпись.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Отправьте</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>«Отправить» становится доступной, когда ничто не мешает (причины написаны под ней); если нужно согласование, она называется «Отправить на согласование руководителю». Отправленный заказ открывается на странице сведений: он ждёт согласующего или, если арендатор разрешает, сразу уходит дистрибьютору.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Решение по ждущему вас предзаказу: согласовать, отклонить или вернуть на доработку.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>Руководитель представителя (вышестоящая должность).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Посмотрите, почему он у вас</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>«Почему на моём согласовании?» называет настройку арендатора или строки сверх мягкого лимита.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Сравните с лимитами</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>В каждой ячейке введённое значение и под ним лимит правила; последние шесть месяцев аптеки — справа.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Примите решение</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>«Согласовать» сначала переспрашивает, затем передаёт заказ дистрибьютору. «Отклонить» и «Запросить изменения» требуют причины; запрос изменений возвращает заказ представителю черновиком.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>По ссылке из письма</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>Ссылка из письма требует входа, срабатывает один раз и истекает; действует решение первого согласующего.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Задаёт, как предзаказы этого арендатора согласуются, оцениваются, нумеруются и передаются.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Отдел продаж.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Выберите режим согласования</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>«Всегда согласование руководителя» (по умолчанию) или «Автоматически в пределах лимитов» — заказ сверх мягкого лимита всё равно идёт руководителю.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Настройте ссылку и повторы</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>Ссылка согласования действует 12–168 часов (по умолчанию 48); неудачная передача повторяется 0–10 раз.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Выберите уровень цены</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>По стране: закупочная для аптеки (по умолчанию), цена дистрибьютора или розничная.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Задайте каждой компании префикс</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>Номер заказа начинается с 2–5 букв (MG-ORD-000123). Использованный префикс блокируется.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>Прайс-листы каждой компании-продавца, страны и валюты: цены, которые берёт предзаказ.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>Маркетинг (готовит) и отдел продаж (публикует).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>Смотрите статус</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>Черновик, на согласовании, запланирован, действует или прошлый — на текущий день; одна действующая на компанию и страну.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>Добавьте прайс-лист</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>«Новый прайс-лист» — вручную, «Импорт» — из файла Excel / CSV.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>Используйте вкладки</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>Правила, проверка правил, история и курсы — на других вкладках.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>Выгрузите</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>«Экспорт» выгружает все прайс-листы фильтра с видимыми столбцами.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>Один прайс-лист: шапка, позиции и отличие от прежней версии; публикует второй человек.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>Маркетинг (готовит) и отдел продаж (публикует).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>Заполните шапку</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>Название, компания, валюта, вид и первый день; страна — компании.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>Добавьте позиции</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>Каждый препарат один раз: цены дистрибьютора, закупочная, розничная и НДС.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>Отправьте на публикацию</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>«Отправить на публикацию» передаёт её второму человеку; подготовивший не видит «Опубликовать».</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>Измените опубликованный прайс-лист</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>Опубликованный не редактируется: «Новая версия» копирует его в черновик.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>Загружает прайс-лист из файла Excel / CSV за три шага.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>Маркетинг.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>Выберите файл</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>Шапка (валюта обязательна), файл и при необходимости названия столбцов.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>Проверьте просмотр</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>Сопоставленные, несопоставленные, выведенные, повторы и неверные цены считаются отдельно, с отличием от действующего прайс-листа.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>Создайте черновик</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>«Создать черновик» берёт только сопоставленные строки; сопоставление по штрихкоду (GTIN) отключено до product-master v1.2.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>Отправьте на публикацию</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>Черновик уходит второму человеку, который публикует или возвращает его.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>Лимиты бонусов / скидок по компании и препарату, по которым проверяется строка предзаказа.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>Маркетинг (готовит) и отдел продаж (согласует).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>Смотрите мягкий и жёсткий</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>При превышении мягкого заказ идёт руководителю; жёсткого — строку нельзя ввести.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>Действует самое конкретное</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>Правило с периодом сильнее общего; сегменты появятся позже.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>Измените правило</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>Активное правило меняется через «Пересмотреть» или «Вывести»: новая версия, которую согласует второй.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>Проверьте</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>Вкладка «Проверка правил» показывает результат строки, ничего не сохраняя.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>Создаёт черновик правила: ключ и мягкие / жёсткие лимиты.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>Маркетинг.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>Выберите ключ</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>Компания и препарат (потом не меняются) и срок, если правило на период.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>Укажите лимиты</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>Скидка %, бонус «10+2», совокупный потолок и количество; мягкий не выше жёсткого.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>Смотрите фактический %</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>После выбора компании и препарата система покажет фактический % рядом с каждым бонусом.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>Отправьте на согласование</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>Сохраните, затем «Отправить на согласование»: активирует второй человек.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>Показывает, что получит строка заказа от прайс-листа и правил, ничего не сохраняя.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>Маркетинг и отдел продаж.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>Заполните строку</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>Компания, препарат, количество, бонус и скидка; при необходимости день и уровень цены.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>Проверьте</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>«Проверить» запрашивает систему; ничего не сохраняется.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>Смотрите результат</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>Значок (в пределах / нужно согласование / недопустимо) и сообщения по каждому превышенному лимиту.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>Посмотрите применённое правило</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>Применяется самое конкретное правило дня; видна его версия.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>Каждое изменение прайс-листов, позиций, правил и курсов: кто, когда, было → стало.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>Маркетинг, отдел продаж и аудит.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>По типу записи и периоду.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>Смотрите было → стало</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>В каждой строке поле, старое и новое значение.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>Решают ваши права</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>Видны только типы, доступные по вашим правам (прайсы, правила, курсы).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>Откройте изменение</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>Значок глаза показывает изменение целиком в боковой панели.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>Временные курсы по компании, паре и дню, по которым предзаказ считает местный эквивалент.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>Отдел продаж.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>Введите курс</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>«Новый курс»: компания, пара, день, курс и источник; один курс на компанию, пару и день.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>Исправьте курс</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>Откройте курс и «Исправить»: было → стало запишется в историю.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>Заказы сохраняют курс</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>Отправленный заказ сохраняет свой курс; исправление его не меняет.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>Последний до дня</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>Заказ берёт последний курс на свой день или ранее; без курса местный эквивалент не показывается.</value>
   </data>
   <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
     <value>Переместите принятый товар из зоны приёмки в его ячейку и подтвердите; подтверждение проводит движение в складском журнале.</value>

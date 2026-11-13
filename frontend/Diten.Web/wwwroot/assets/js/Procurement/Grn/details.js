@@ -3,7 +3,7 @@
 // MOD-0142 Receiving (GRN) Details — the Reverse lifecycle action (ASSUMPTION-GRN-02).
 // The state-changing call goes through the same-origin controller proxy (/Grn/reverse/{id}), which keeps the
 // Idempotency-Key server-side. Confirmation uses the premium shared helpers (window.showConfirm/showToast,
-// premium-modal-standard MOD-0013). A Posted GRN is corrected by an INVENTORY REVERSAL, never by an edit.
+// premium-modal-standard, MOD-0286 (formerly MOD-0013)). A Posted GRN is corrected by an INVENTORY REVERSAL, never by an edit.
 (function () {
     const root = document.querySelector('.grn-details');
     if (!root) return;

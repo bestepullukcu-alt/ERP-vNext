@@ -470,6 +470,9 @@ public sealed class TenantResolutionMiddleware
         return path.StartsWithSegments("/api/platform/organization-units", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform/positions", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/platform/position-assignments", StringComparison.OrdinalIgnoreCase)
+               // WP-VW-W3L PLT-ORG-SEAT — a tenant user's current primary seat (own seat, or with platform.organization-seats.read).
+               // Exactly this sub-path: /api/platform/organization itself is not a tenant group.
+               || path.StartsWithSegments("/api/platform/organization/seats", StringComparison.OrdinalIgnoreCase)
                // MOD-0285 — runtime navigation menu is the tenant's own entitled-module nav (tenant-scoped).
                || path.StartsWithSegments("/api/platform/navigation", StringComparison.OrdinalIgnoreCase)
                // FU17-FU01 — tenant-admin self-service security settings (tenant manages its OWN login policy).

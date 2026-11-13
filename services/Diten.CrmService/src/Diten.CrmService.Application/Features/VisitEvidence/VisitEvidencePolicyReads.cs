@@ -11,7 +11,9 @@ namespace Diten.CrmService.Application.Features.VisitEvidence;
 // the rep search. Read with crm.visit-evidence-policy.read OR .manage (the controller decides).
 
 public sealed record VisitEvidencePolicyChangeDto(
-    DateTimeOffset At, string? By, string Scope, string? Field, string? OldValue, string? NewValue, string Kind);
+    DateTimeOffset At, string? By, string Scope, string? Field, string? OldValue, string? NewValue, string Kind,
+    // WP-VW-W3L (additive) — the layer's legal entity id / business unit code (null for the tenant)
+    string? ScopeRef = null);
 
 public sealed record VisitEvidencePolicyHistoryDto(IReadOnlyList<VisitEvidencePolicyChangeDto> Items, long Total, int Page, int PageSize,
     // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name for the page's "by" values.
@@ -19,7 +21,13 @@ public sealed record VisitEvidencePolicyHistoryDto(IReadOnlyList<VisitEvidencePo
 
 public sealed record EffectiveEvidenceFieldDto(string Field, string Value, string Source, Guid? ExceptionId);
 
-public sealed record EvidenceScopeChainDto(Guid? LegalEntity, string? BusinessUnit, string Note);
+public sealed record EvidenceScopeChainDto(Guid? LegalEntity, string? BusinessUnit, string Note,
+    // WP-VW-W3L (additive) — why each layer was (not) taken
+    string? LegalEntityNote = null, string? BusinessUnitNote = null)
+{
+    public static EvidenceScopeChainDto From(EvidenceScopeChain c)
+        => new(c.LegalEntity, c.BusinessUnit, c.Note, c.LegalEntityNote, c.BusinessUnitNote);
+}
 
 public sealed record VisitEvidenceEffectiveDto(
     string ResourceId,
@@ -28,12 +36,25 @@ public sealed record VisitEvidenceEffectiveDto(
     IReadOnlyList<string> RelaxedRules,
     EvidenceScopeChainDto ScopeChain);
 
-public sealed record GetVisitEvidencePolicyHistoryQuery(int? Page = null, int? PageSize = null)
+/// <summary>WP-VW-W3L — <paramref name="Scope"/> (tenant | legal-entity | business-unit) + <paramref name="ScopeRef"/>
+/// filter the history to one scope; both absent = the whole history (as before).</summary>
+public sealed record GetVisitEvidencePolicyHistoryQuery(int? Page = null, int? PageSize = null, string? Scope = null, string? ScopeRef = null)
     : IRequest<Response<VisitEvidencePolicyHistoryDto>>;
 
 public sealed record GetVisitEvidenceEffectiveQuery(string? ResourceId) : IRequest<Response<VisitEvidenceEffectiveDto>>;
 
 public sealed record ListVisitEvidenceRepsQuery(string? Q) : IRequest<Response<IReadOnlyList<EvidenceRepDto>>>;
+
+/// <summary>
+/// WP-VW-W3E (W3E-E4R2-FIX-d, U-7) — the settings page's REP ROSTER: the same reps as the picker read (the same source, the
+/// same <c>q</c> filter) but PAGED with the total, so the panel never cuts the list silently. The picker read
+/// (<see cref="ListVisitEvidenceRepsQuery"/>, at most <see cref="VisitEvidencePolicyReadHandlers.MaxReps"/>) is unchanged.
+/// </summary>
+public sealed record ListVisitEvidenceRepRosterQuery(string? Q, int? Page = null, int? PageSize = null)
+    : IRequest<Response<EvidenceRepRosterDto>>;
+
+/// <summary>A roster page: the reps by name (ties by id — a stable order across pages), the matching total.</summary>
+public sealed record EvidenceRepRosterDto(IReadOnlyList<EvidenceRepDto> Items, long Total, int Page, int PageSize);
 
 public static class VisitEvidencePolicyHistory
 {
@@ -71,9 +92,14 @@ public static class VisitEvidencePolicyHistory
 public sealed class VisitEvidencePolicyReadHandlers :
     IRequestHandler<GetVisitEvidencePolicyHistoryQuery, Response<VisitEvidencePolicyHistoryDto>>,
     IRequestHandler<GetVisitEvidenceEffectiveQuery, Response<VisitEvidenceEffectiveDto>>,
-    IRequestHandler<ListVisitEvidenceRepsQuery, Response<IReadOnlyList<EvidenceRepDto>>>
+    IRequestHandler<ListVisitEvidenceRepsQuery, Response<IReadOnlyList<EvidenceRepDto>>>,
+    IRequestHandler<ListVisitEvidenceRepRosterQuery, Response<EvidenceRepRosterDto>>
 {
     public const int MaxReps = 20;
+
+    /// <summary>The roster page size: default 25, at most 100.</summary>
+    public const int RosterDefaultPageSize = 25;
+    public const int RosterMaxPageSize = 100;
 
     private readonly ITenantContext _tenant;
     private readonly IVisitEvidencePolicyChangeRepository _changes;
@@ -81,10 +107,13 @@ public sealed class VisitEvidencePolicyReadHandlers :
     private readonly IVisitEvidenceRepRoster _reps;
     private readonly TimeProvider _clock;
     private readonly IUserDisplayNameResolver? _names;
+    private readonly IVisitEvidencePolicyLayerRepository? _layers;
+    private readonly IEvidenceScopeChainResolver? _chains;
 
     public VisitEvidencePolicyReadHandlers(ITenantContext tenant, IVisitEvidencePolicyChangeRepository changes,
         IVisitEvidencePolicyResolver resolver, IVisitEvidenceRepRoster reps, TimeProvider? clock = null,
-        IUserDisplayNameResolver? names = null)
+        IUserDisplayNameResolver? names = null, IVisitEvidencePolicyLayerRepository? layers = null,
+        IEvidenceScopeChainResolver? chains = null)
     {
         _tenant = tenant;
         _changes = changes;
@@ -92,6 +121,8 @@ public sealed class VisitEvidencePolicyReadHandlers :
         _reps = reps;
         _clock = clock ?? TimeProvider.System;
         _names = names;
+        _layers = layers;
+        _chains = chains;
     }
 
     public async Task<Response<VisitEvidencePolicyHistoryDto>> Handle(GetVisitEvidencePolicyHistoryQuery request, CancellationToken ct)
@@ -103,10 +134,25 @@ public sealed class VisitEvidencePolicyReadHandlers :
 
         var page = Math.Max(1, request.Page ?? 1);
         var size = Math.Clamp(request.PageSize ?? 50, 1, 200);
-        var (items, total) = await _changes.ListAsync(tenantId, (page - 1) * size, size, ct);
+        var scope = request.Scope?.Trim().ToLowerInvariant();
+        var scopeRef = string.IsNullOrWhiteSpace(request.ScopeRef) ? null : request.ScopeRef.Trim();
+        if (scope is { Length: > 0 }
+            && scope is not (VisitEvidencePolicyScopeTypes.Tenant or VisitEvidencePolicyScopeTypes.LegalEntity or VisitEvidencePolicyScopeTypes.BusinessUnit))
+        {
+            return VisitEvidenceExceptionChecks.Invalid<VisitEvidencePolicyHistoryDto>("scope must be tenant | legal-entity | business-unit.");
+        }
+
+        if (scope == VisitEvidencePolicyScopeTypes.LegalEntity && scopeRef is not null)
+        {
+            scopeRef = Guid.TryParse(scopeRef, out var le) ? le.ToString("D") : scopeRef;
+        }
+
+        var (items, total) = scope is { Length: > 0 }
+            ? await _changes.ListAsync(tenantId, scope, scope == VisitEvidencePolicyScopeTypes.Tenant ? null : scopeRef, (page - 1) * size, size, ct)
+            : await _changes.ListAsync(tenantId, (page - 1) * size, size, ct);
         var names = await UserDisplayNames.MapAsync(_names, items.Select(c => c.By), ct);
         return Response<VisitEvidencePolicyHistoryDto>.Success(new VisitEvidencePolicyHistoryDto(
-            items.Select(c => new VisitEvidencePolicyChangeDto(c.At, c.By, c.Scope, c.Field, c.OldValue, c.NewValue, c.Kind)).ToList(),
+            items.Select(c => new VisitEvidencePolicyChangeDto(c.At, c.By, c.Scope, c.Field, c.OldValue, c.NewValue, c.Kind, c.ScopeRef)).ToList(),
             total, page, size, names));
     }
 
@@ -133,7 +179,7 @@ public sealed class VisitEvidencePolicyReadHandlers :
             effective.Fields.Select(f => new EffectiveEvidenceFieldDto(f.Field, f.Value, f.Source, f.ExceptionId)).ToList(),
             active is null ? null : VisitEvidenceExceptionDto.From(active, today, none),
             effective.RelaxedRules,
-            new EvidenceScopeChainDto(effective.ScopeChain.LegalEntity, effective.ScopeChain.BusinessUnit, effective.ScopeChain.Note)));
+            EvidenceScopeChainDto.From(effective.ScopeChain)));
     }
 
     public async Task<Response<IReadOnlyList<EvidenceRepDto>>> Handle(ListVisitEvidenceRepsQuery request, CancellationToken ct)
@@ -145,10 +191,53 @@ public sealed class VisitEvidencePolicyReadHandlers :
 
         var q = request.Q?.Trim();
         var reps = (await _reps.ListAsync(tenantId, _clock.GetUtcNow(), ct))
-            .Where(r => string.IsNullOrEmpty(q) || r.DisplayName.Contains(q, StringComparison.CurrentCultureIgnoreCase)
-                                                 || r.ResourceId.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Where(r => Matches(r, q))
             .Take(MaxReps)
             .ToList();
         return Response<IReadOnlyList<EvidenceRepDto>>.Success(reps);
     }
+
+    public async Task<Response<EvidenceRepRosterDto>> Handle(ListVisitEvidenceRepRosterQuery request, CancellationToken ct)
+    {
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<EvidenceRepRosterDto>.Fail("Tenant context is required.", 400);
+        }
+
+        if (request.PageSize is { } bad && (bad < 1 || bad > RosterMaxPageSize))
+        {
+            return VisitEvidenceExceptionChecks.Invalid<EvidenceRepRosterDto>($"pageSize must be 1–{RosterMaxPageSize}.");
+        }
+
+        if (request.Page is < 1)
+        {
+            return VisitEvidenceExceptionChecks.Invalid<EvidenceRepRosterDto>("page must be 1 or more.");
+        }
+
+        var page = request.Page ?? 1;
+        var size = request.PageSize ?? RosterDefaultPageSize;
+        var q = request.Q?.Trim();
+        var matching = (await _reps.ListAsync(tenantId, _clock.GetUtcNow(), ct))
+            .Where(r => Matches(r, q))
+            .OrderBy(r => r.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(r => r.ResourceId, StringComparer.Ordinal)
+            .ToList();
+        var items = matching.Skip((page - 1) * size).Take(size).ToList();
+        // WP-VW-W3L — each row's resolved chain: the page's seats in ONE bulk read (never one Platform call per rep)
+        if (_chains is not null && items.Count > 0)
+        {
+            var readSeat = _layers is not null
+                && (await _layers.ListActiveAsync(tenantId, ct)).Any(l => l.TenantId == tenantId && l.IsActive()
+                                                                         && l.ScopeType == VisitEvidencePolicyScopeTypes.LegalEntity);
+            var chains = await _chains.ResolveManyAsync(tenantId, items.Select(r => r.ResourceId).ToList(), readSeat, _clock.GetUtcNow(), ct);
+            items = items.Select(r => chains.TryGetValue(r.ResourceId, out var c) ? r with { ScopeChain = EvidenceScopeChainDto.From(c) } : r).ToList();
+        }
+
+        return Response<EvidenceRepRosterDto>.Success(new EvidenceRepRosterDto(items, matching.Count, page, size));
+    }
+
+    /// <summary>The picker's and the roster's one filter: the name (culture, case-insensitive) or the resource id.</summary>
+    public static bool Matches(EvidenceRepDto r, string? q)
+        => string.IsNullOrEmpty(q) || r.DisplayName.Contains(q, StringComparison.CurrentCultureIgnoreCase)
+                                   || r.ResourceId.Contains(q, StringComparison.OrdinalIgnoreCase);
 }

@@ -1,0 +1,54 @@
+@using Diten.Web.Views.CRM.VisitNotifications
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitNotificationsIndex> Localizer
+
+@* W5-WEB (K-N5) — the tenant's notification settings: the interim PV / MSL mailboxes (until K-W8) and the two switches.
+   Rendered ONLY for crm.visit-notifications.settings.manage (Index.cshtml); the save proxy checks the same key itself.
+   A version conflict (409) is said in words and the fields stay as typed. Saving is reversible (plain Enter in a field). *@
+<div class="card" id="vn-settings">
+    <div class="card-header">
+        <h5 class="card-title mb-0">@Localizer["SettingsTitle"]</h5>
+        <p class="mb-0 text-muted small">@Localizer["SettingsDescription"]</p>
+    </div>
+    <div class="card-body">
+        <div class="alert d-none" id="vn-settings-alert" role="alert"></div>
+        <form id="vn-settings-form" class="row g-4" novalidate>
+            <div class="col-md-6">
+                <label class="form-label" for="vn-pv-email">@Localizer["PvMailboxLabel"]</label>
+                <div class="diten-field"><i class="bx bx-shield-plus diten-field-icon" aria-hidden="true"></i><input type="email" class="form-control" id="vn-pv-email" maxlength="254" autocomplete="off" /></div>
+                <div class="invalid-feedback d-block" id="vn-pv-email-error"></div>
+                <small class="text-muted d-block mt-1">@Localizer["PvMailboxHelp"]</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="vn-msl-email">@Localizer["MslMailboxLabel"]</label>
+                <div class="diten-field"><i class="bx bx-help-circle diten-field-icon" aria-hidden="true"></i><input type="email" class="form-control" id="vn-msl-email" maxlength="254" autocomplete="off" /></div>
+                <div class="invalid-feedback d-block" id="vn-msl-email-error"></div>
+                <small class="text-muted d-block mt-1">@Localizer["MslMailboxHelp"]</small>
+            </div>
+            <div class="col-12">
+                <div class="alert alert-info d-flex gap-2 align-items-start mb-0" role="note">
+                    <i class="bx bx-info-circle mt-1"></i><span>@Localizer["MailboxEmptyNote"]</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="vn-report-summary" />
+                    <label class="form-check-label" for="vn-report-summary">@Localizer["ReportSummaryLabel"]</label>
+                </div>
+                <small class="text-muted d-block">@Localizer["ReportSummaryHelp"]</small>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="vn-overdue-reminders" />
+                    <label class="form-check-label" for="vn-overdue-reminders">@Localizer["OverdueRemindersLabel"]</label>
+                </div>
+                <small class="text-muted d-block">@Localizer["OverdueRemindersHelp"]</small>
+            </div>
+            <div class="col-12"><small class="text-muted"><i class="bx bx-error-circle me-1"></i>@Localizer["SafetyAlwaysNote"]</small></div>
+            <div class="col-12 d-flex align-items-center gap-3">
+                <button type="submit" class="btn btn-primary" id="vn-settings-save">@Localizer["SaveSettings"]</button>
+                <small class="text-muted" id="vn-settings-meta"></small>
+            </div>
+        </form>
+    </div>
+</div>

@@ -298,4 +298,42 @@
   <data name="UnpPharmacySearch" xml:space="preserve"><value>ابحث عن الصيدلية بالاسم (حرفان على الأقل)</value></data>
   <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>يوجد لهذا الهدف زيارة من النوع نفسه اليوم.</value></data>
   <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>وقت الزيارة غير صالح؛ اختر وقت بدء آخر.</value></data>
+  <data name="QrCap" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
+  <data name="QrMode_optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="QrMode_required" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="QrIdle" xml:space="preserve"><value>امسح رمز QR الموجود في الاستقبال.</value></data>
+  <data name="QrNoCode" xml:space="preserve"><value>لا أجد الرمز</value></data>
+  <data name="QrScan" xml:space="preserve"><value>مسح</value></data>
+  <data name="QrFrame" xml:space="preserve"><value>ضع الرمز داخل الإطار</value></data>
+  <data name="QrFullTitle" xml:space="preserve"><value>امسح رمز QR الموجود في الاستقبال</value></data>
+  <data name="QrCancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="QrOk" xml:space="preserve"><value>{0} · تم التحقق من الرمز</value></data>
+  <data name="QrOkParent" xml:space="preserve"><value>رمز المؤسسة الأم لـ {0} · قُرئ {1}</value></data>
+  <data name="QrOkSelf" xml:space="preserve"><value>قُرئ {0}</value></data>
+  <data name="QrRescan" xml:space="preserve"><value>إعادة المسح</value></data>
+  <data name="QrWrong" xml:space="preserve"><value>هذا الرمز يخص مؤسسة أخرى ({0}). امسح رمز المؤسسة التي تزورها.</value></data>
+  <data name="QrWrongUnknown" xml:space="preserve"><value>هذا الرمز يخص مؤسسة أخرى. امسح رمز المؤسسة التي تزورها.</value></data>
+  <data name="QrInvalid" xml:space="preserve"><value>هذا الرمز لم يعد صالحًا. ربما حصلت المؤسسة على رمز جديد؛ أبلغ مدير منطقتك.</value></data>
+  <data name="QrUnverifiable" xml:space="preserve"><value>لا يمكن التحقق من الرمز الآن. حاول بعد قليل.</value></data>
+  <data name="QrScannedUnchecked" xml:space="preserve"><value>تمت قراءة الرمز؛ وسيُتحقق منه عند بدء الزيارة.</value></data>
+  <data name="QrNoPermTitle" xml:space="preserve"><value>لا يوجد إذن لاستخدام الكاميرا</value></data>
+  <data name="QrNoPerm1" xml:space="preserve"><value>اضغط على رمز القفل في شريط العنوان.</value></data>
+  <data name="QrNoPerm2" xml:space="preserve"><value>غيّر «الكاميرا» إلى «السماح».</value></data>
+  <data name="QrNoPerm3" xml:space="preserve"><value>عُد إلى هذه النافذة واضغط «إعادة المحاولة».</value></data>
+  <data name="QrRetry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="QrNoCamera" xml:space="preserve"><value>لا توجد كاميرا قابلة للاستخدام على هذا الجهاز.</value></data>
+  <data name="QrNoCodeOpt" xml:space="preserve"><value>إذا لم يكن الرمز موجودًا في الاستقبال أو تعذّرت قراءته يمكنك المتابعة دون QR.</value></data>
+  <data name="QrSkip" xml:space="preserve"><value>المتابعة دون QR</value></data>
+  <data name="QrBack" xml:space="preserve"><value>العودة إلى المسح</value></data>
+  <data name="QrNoCodeReq" xml:space="preserve"><value>لبدء زيارة في هذه المؤسسة يجب مسح رمز QR الخاص بها. إذا لم يكن الرمز موجودًا أو تعذّرت قراءته فلا يمكنك البدء دون QR اليوم.</value></data>
+  <data name="QrAskException" xml:space="preserve"><value>اطلب استثناءً من مديرك</value></data>
+  <data name="QrNoPrinted" xml:space="preserve"><value>لم يُطبع رمز QR لهذه المؤسسة بعد. يمكنك البدء دون مسح؛ وتُعلَّم الزيارة بأن «المؤسسة ليس لها رمز QR».</value></data>
+  <data name="QrSkipped" xml:space="preserve"><value>المتابعة دون QR.</value></data>
+  <data name="DeviceUnverified" xml:space="preserve"><value>لا يمكن التحقق من هذا الجهاز؛ ستُعلَّم زيارتك بأنها «جهاز غير متحقَّق منه». يُنصح باستخدام تطبيق الجوال.</value></data>
+  <data name="E3Missing_qr" xml:space="preserve"><value>رمز QR</value></data>
+  <data name="StartErr_visit_qr_required" xml:space="preserve"><value>امسح رمز QR الخاص بالمؤسسة لبدء الزيارة.</value></data>
+  <data name="StartErr_visit_qr_invalid" xml:space="preserve"><value>هذا ليس رمز QR صالحًا لمؤسسة.</value></data>
+  <data name="StartErr_visit_qr_wrong_account" xml:space="preserve"><value>رمز QR هذا يخص مؤسسة أخرى.</value></data>
+  <data name="StartErr_visit_qr_revoked" xml:space="preserve"><value>تم استبدال رمز QR هذا أو إلغاؤه. امسح الرمز الحالي للمؤسسة.</value></data>
+  <data name="StartErr_visit_qr_signing_unavailable" xml:space="preserve"><value>لا يمكن التحقق من رمز QR الآن. حاول بعد قليل.</value></data>
 </root>

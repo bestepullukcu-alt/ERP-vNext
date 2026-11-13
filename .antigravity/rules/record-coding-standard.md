@@ -60,6 +60,7 @@ Notta adı geçen türler (bağlayıcı) + yeni türler için önerilen önekler
 | Ürün (MDM ürün kimliği ailesi) | KALSIN | — | `GP-` `GS-` `LS-` `FG-` + 12 hane, otomatik ✅ (§4) |
 | Kalem / Malzeme (MDM ürün kimliği ailesi, MOD-0290-FU04) | KALSIN | `IT` | `IT-` + 12 hane, ürün kimliği ailesinin ortak sayacı — **yeni (2026-10-07)**, henüz kod yok (FU04 S1) |
 | Doküman (QMS) | KALSIN | — | `UID-0000001` + `GMG-QMS-SOP-0001`, otomatik ✅ (GMG-QMS-LOG-0001) |
+| Ön Sipariş (CRM, MOD-0168) | OTOMATİK | `ORD` | **yeni (2026-10-20, kullanıcı onayı — WP-VW-W6)**; ortak üretici gelene kadar CRM içinde §5.8 desenli sayaç (kiracı × şirket öneki × `ORD`), sonra ortak servise geçer |
 | Ödeme Partisi (MOD-0126) | OTOMATİK | `PAY` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
 | AP Belgesi — fatura / alacak dekontu (MOD-0119) | OTOMATİK | `APD` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |
 | AR Alacak Faturası (MOD-0120) | OTOMATİK | `ARI` | yok — **yeni** (Treasury intake, sahip kararı D29/2, 2026-10-25; kod yok) |

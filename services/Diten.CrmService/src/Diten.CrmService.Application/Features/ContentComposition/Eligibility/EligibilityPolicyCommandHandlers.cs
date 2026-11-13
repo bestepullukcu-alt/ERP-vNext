@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
-/// <summary>SCMM-11 (CAND-CAP-0011) shared policy rules: structural validation, condition mapping, and the freeze
+/// <summary>SCMM-11 (MOD-0363, formerly CAND-CAP-0011) shared policy rules: structural validation, condition mapping, and the freeze
 /// comparison. Self-contained (no cross-feature dependency); condition values are never checked against a hardcoded
 /// vocabulary (sector-neutral).</summary>
 internal static class EligibilityPolicyRules

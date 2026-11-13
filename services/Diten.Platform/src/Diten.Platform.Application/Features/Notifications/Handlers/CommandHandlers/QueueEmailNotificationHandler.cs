@@ -51,7 +51,9 @@ public sealed class QueueEmailNotificationHandler
     // BL-374 — an attachment has no secret to protect, but it does cost storage; above this the FIRST send
     // still carries it (this bound is a persistence decision, not a delivery one) and only the retry path
     // loses it, exactly like the gap this WP was written to close in reverse.
-    private const int MaxPersistedAttachmentBytes = 256 * 1024;
+    // WP-VW-W6 PLT-W6 — public: the internal event dispatch refuses (400) anything above it, so an attachment a service
+    // sends is always persisted and every retry carries it.
+    public const int MaxPersistedAttachmentBytes = 256 * 1024;
 
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
     private readonly INotificationTemplateRepository _templateRepository;
@@ -161,16 +163,43 @@ public sealed class QueueEmailNotificationHandler
         // cut, or carrying a tab, a double space or a soft hyphen the cleaning would change, is still found whole.
         var subject = EmailHeaderText.CleanSubject(renderResponse.Data.Subject);
         var storedSubject = EmailHeaderText.CleanSubject(MaskSensitiveValues(renderResponse.Data.Subject, variables, secretNames));
+        // WP-VW-W5 PLT-NOTIFY — a reply address of this message's own is ONE plain address or it is not used.
+        var replyToEmail = Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(request.Request.ReplyToEmail?.Trim())
+            ? request.Request.ReplyToEmail!.Trim()
+            : null;
+        if (replyToEmail is null && !string.IsNullOrWhiteSpace(request.Request.ReplyToEmail))
+        {
+            _logger.LogWarning(
+                "notification.reply_to_refused TenantId={TenantId} TemplateKey={TemplateKey}. Not a single valid address; the tenant's reply address applies.",
+                request.TenantId, template.TemplateKey);
+        }
+
         var composed = _shellComposer is null
             ? null
             : await _shellComposer.ComposeAsync(
                 request.TenantId, template, template.Locale, subject,
-                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, ct);
+                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, replyToEmail, ct);
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
             : request.CorrelationId;
         var persistedAttachments = PrepareAttachmentsForPersistence(request.Request.Attachments, out var attachmentsSkippedForSize);
+        // WP-VW-W5 W5-FIX2 (F-1) — the internal event dispatch does not wait for the provider: the row is written due at
+        // once and the retry sweep sends it. Only where that sweep runs, and only when the row holds everything the send
+        // needs: otherwise the send stays in this request, as before. Two things the row cannot hold: an attachment too
+        // large to keep, and — WP-VW-W6 W6-FIX-a (G-12) — a SECRET variable (a one-time approval link): BL-454 never stores
+        // it, so the sweep could only send the masked mail and closes it ACTION_LINK_NOT_RETRYABLE — the approver got
+        // nothing. A mail with a secret is therefore sent in the request; a mail without one is still queued.
+        var holdsSecret = secretNames.Count > 0;
+        var queueOnly = request.Request.QueueOnly && _retriesScheduled && !attachmentsSkippedForSize && !holdsSecret;
+        if (request.Request.QueueOnly && !queueOnly)
+        {
+            _logger.LogWarning(
+                "email.dispatch.queue_only_unavailable TenantId={TenantId} TemplateKey={TemplateKey} RetriesScheduled={RetriesScheduled} AttachmentsTooLarge={AttachmentsTooLarge} HoldsSecret={HoldsSecret}. Sending in the request.",
+                request.TenantId, template.TemplateKey, _retriesScheduled, attachmentsSkippedForSize, holdsSecret);
+        }
+
+        var queuedAt = DateTimeOffset.UtcNow;
         var dispatch = new NotificationDispatch
         {
             TenantId = request.TenantId,
@@ -202,11 +231,15 @@ public sealed class QueueEmailNotificationHandler
             // reproduce this exact send, or whether the template has since moved on.
             TemplateSemanticVersion = template.SemanticVersion,
             Attachments = persistedAttachments,
-            QueuedAt = DateTimeOffset.UtcNow,
+            QueuedAt = queuedAt,
+            // W5-FIX2 — a queue-only row is due for its FIRST send now (NotificationDispatchRepository.FindDueQueuedAsync).
+            NextRetryAt = queueOnly ? queuedAt : null,
             RetryCount = 0,
             CorrelationId = correlationId,
             CausationId = request.Request.CausationId,
-            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId
+            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId,
+            SourceModule = string.IsNullOrWhiteSpace(request.Request.SourceModule) ? null : request.Request.SourceModule.Trim(),
+            ReplyToEmail = replyToEmail
         };
 
         await _dispatchRepository.CreateAsync(dispatch, ct);
@@ -235,6 +268,14 @@ public sealed class QueueEmailNotificationHandler
             new EventPublishOptions { TenantId = dispatch.TenantId, CausationId = dispatch.CausationId },
             ct);
 
+        if (queueOnly)
+        {
+            _logger.LogInformation(
+                "Notification dispatch queued for the background send. DispatchId={DispatchId} TenantId={TenantId} SourceModule={SourceModule} CorrelationId={CorrelationId}",
+                dispatch.Id, dispatch.TenantId, dispatch.SourceModule, dispatch.CorrelationId);
+            return Response<NotificationDispatchDto>.Success(dispatch.ToDto(), 202);
+        }
+
         var providerResult = await providerResponse.Data.SendEmailAsync(
             new MessagingProviderEmailRequest(
                 dispatch.Id,
@@ -253,7 +294,8 @@ public sealed class QueueEmailNotificationHandler
                 // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
                 // comment on why a later retry already cannot have one anyway).
                 request.Request.Attachments,
-                composed?.SenderName),
+                composed?.SenderName,
+                replyToEmail),
             ct);
 
         if (providerResult.Accepted)

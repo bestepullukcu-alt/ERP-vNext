@@ -5,7 +5,7 @@ using MongoDB.Driver;
 namespace Diten.CrmService.Persistence.Repositories;
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011) claim persistence. Tenant scoped, soft-delete aware, no delete method (closing is the soft
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011) claim persistence. Tenant scoped, soft-delete aware, no delete method (closing is the soft
 /// archive lifecycle). The active-code guard excludes archived rows with an <c>ArchivedAt == null</c> equality filter
 /// (never <c>$ne</c>, which crash-loops partial indexes). EffectiveFrom / EffectiveTo / ApprovedAt / ArchivedAt
 /// (DateTimeOffset → BSON array) are never sorted server-side.

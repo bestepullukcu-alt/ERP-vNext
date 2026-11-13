@@ -6,7 +6,8 @@ namespace Diten.CrmService.Application.Features.Account;
 public static class AccountMapper
 {
     public static AccountListItemDto ToListItem(DomainAccount a)
-        => new(a.Id, a.AccountName, a.AccountCode, a.AccountType, a.AccountCategory, a.Status, a.ParentAccountId, a.LogoDataUri, a.CountryRef);
+        => new(a.Id, a.AccountName, a.AccountCode, a.AccountType, a.AccountCategory, a.Status, a.ParentAccountId, a.LogoDataUri, a.CountryRef,
+            Version: a.Version);
 
     public static AccountExternalReferenceDto ToDto(AccountExternalReference r)
         => new(r.Id, r.SourceSystem, r.ExternalId, r.SourceEntity, r.DisplayName, r.Notes);
@@ -22,5 +23,5 @@ public static class AccountMapper
             a.Id, a.AccountName, a.AccountCode, a.AccountType, a.AccountCategory, a.ParentAccountId, a.Status,
             a.CountryRef, a.CityRef, a.DistrictRef, a.AddressLine, a.Latitude, a.Longitude,
             a.ResponsiblePersonName, a.ResponsiblePersonPhone, a.ResponsiblePersonEmail, a.Notes,
-            a.CreatedAt, a.UpdatedAt, externalReferences, attributes, a.LogoDataUri);
+            a.CreatedAt, a.UpdatedAt, externalReferences, attributes, a.LogoDataUri, a.Version);
 }

@@ -2,7 +2,7 @@ using Diten.CrmService.Domain.Entities;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
-/// <summary>SCMM-11 (CAND-CAP-0011) aggregate ↔ DTO projection. Reads never echo TenantId (server-resolved).</summary>
+/// <summary>SCMM-11 (MOD-0363, formerly CAND-CAP-0011) aggregate ↔ DTO projection. Reads never echo TenantId (server-resolved).</summary>
 public static class EligibilityPolicyMapper
 {
     public static EligibilityPolicyDto ToDto(EligibilityPolicy p) => new(

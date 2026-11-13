@@ -45,8 +45,11 @@ public static class DependencyInjection
             // SCMM-09 audit bundle — concept graph events forwarded with SourceModule "MOD-0162".
             services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
-            // SCMM-12 audit — claim / composition events forwarded with SourceModule "CAND-CAP-0011".
+            // SCMM-12 audit — claim / composition events forwarded with SourceModule "MOD-0363" (formerly CAND-CAP-0011).
             services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // WP-VW-W3L — the visit evidence scope writes, forwarded with SourceModule "MOD-0155".
+            services.AddScoped<Application.Features.VisitEvidence.IVisitEvidenceAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
         }
         else
@@ -59,9 +62,11 @@ public static class DependencyInjection
             // SCMM-12 audit — structured-logging fallback for claim / composition events.
             services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher,
                 LoggingContentCompositionAuditPublisher>();
+            // WP-VW-W3L — structured-logging fallback for the visit evidence scope writes.
+            services.AddScoped<Application.Features.VisitEvidence.IVisitEvidenceAuditPublisher, LoggingVisitEvidenceAuditPublisher>();
         }
 
-        // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
+        // SCMM-11 (MOD-0363, formerly CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
         // evaluation-log writer (structured-logging default; a durable/audit sink is a follow).
         services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationPort,
             Application.Features.ContentComposition.Eligibility.EligibilityEvaluationPort>();
@@ -104,6 +109,37 @@ public static class DependencyInjection
         services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
         // WP-VW-W4 (W4-BE-a) — the MDM competitor products (report lookup, proposals, merged survivors) with the caller's token.
         services.AddHttpClient<Application.Features.VisitReport.V2.IMdmCompetitorClient, Mdm.GatewayMdmCompetitorClient>();
+        // WP-VW-W6 W6-BE-b — MOD-0156: product-master v1.1 SKU reads and the MDM legal entity (Gateway, caller token, fail
+        // closed), the price file parser (xlsx / csv, never stored) and the publication workflow template (W6-CFG creates it).
+        services.AddHttpClient<Application.Features.Commercial.Pricing.IPricingSkuDirectory, Commercial.MdmPricingSkuDirectory>();
+        services.AddHttpClient<Application.Features.Commercial.Pricing.IPricingLegalEntityDirectory, Commercial.MdmPricingLegalEntityDirectory>();
+        services.AddSingleton<Application.Features.Commercial.Pricing.IPriceListFileParser, Commercial.PriceListFileParser>();
+        services.AddSingleton<Application.Features.Commercial.Pricing.IPricingApprovalSettings, Commercial.ConfigurationPricingApprovalSettings>();
+        // WP-VW-W6 W6-BE-a — MOD-0168: MDM (seller legal entity, SKUs) and Platform line managers through the Gateway with the
+        // caller's token; the e-mail events and the depot transmission stay unwired until W6-BE-c (log line / "deferred").
+        services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderMdmDirectory, Commercial.MdmPreOrderDirectory>();
+        services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderLineManagerReader, Commercial.PlatformPreOrderLineManagerReader>();
+        // WP-VW-W6 W6-BE-c1 — the seven pre-order e-mails through the Platform's internal dispatch (the W5 client), the links,
+        // and the transmission frame (the document producer below, W6-BE-c2, switches it on). The scheduler retries failed
+        // transmissions and takes the approved orders that never had an attempt.
+        services.AddScoped<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>();
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderNotifier>(sp =>
+            sp.GetRequiredService<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>());
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmissionMailer>(sp =>
+            sp.GetRequiredService<Application.Features.Commercial.PreOrders.PlatformPreOrderNotifier>());
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderTransmitter, Application.Features.Commercial.PreOrders.PreOrderTransmitter>();
+        // WP-VW-W6 W6-BE-c2 — the depot document: one template (PDF + preview), MOD-0262 through the Platform's internal door
+        // (no user token), and the producer — registering it switches the transmission ON.
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderDocumentRenderer, Commercial.PreOrderDocumentRenderer>();
+        services.AddHttpClient<Application.Features.Commercial.PreOrders.IPreOrderDocumentStore, Commercial.PlatformPreOrderDocumentStore>();
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderDocumentSettings, Commercial.ConfigurationPreOrderDocumentSettings>();
+        services.AddScoped<Application.Features.Commercial.PreOrders.IPreOrderDocumentProducer, Application.Features.Commercial.PreOrders.PreOrderDocumentProducer>();
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderLinks, Commercial.ConfigurationPreOrderLinks>();
+        services.AddHostedService<Commercial.PreOrderTransmissionHostedService>();
+        // WP-VW-W6 W6-BE-c1 (decision B) — the external recipients' language (W5 mailboxes + W6 depot / pharmacy): ONE resolver.
+        services.AddScoped<ILegalEntityCountryReader, Commercial.MdmLegalEntityCountryReader>();
+        services.AddScoped<IExternalRecipientLanguageResolver, ExternalRecipientLanguageResolver>();
+        services.AddSingleton<Application.Features.Commercial.PreOrders.IPreOrderApprovalSettings, Commercial.ConfigurationPreOrderApprovalSettings>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs
@@ -127,7 +163,7 @@ public static class DependencyInjection
             Application.Features.CyclePeriod.Read.ITerritoryBusinessUnitCatalog,
             CyclePeriod.TerritoryBusinessUnitCatalog>();
 
-        // MOD-0155 FU06 - the READ-ONLY working-day seam onto CAND-CAP-0008. Same fail-closed transport profile as
+        // MOD-0155 FU06 - the READ-ONLY working-day seam onto MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008). Same fail-closed transport profile as
         // the validators above (cacheless, 3s budget, one transient retry, always through the Gateway), but a
         // deliberately different failure MEANING: this is a calculation input rather than a write proof, so an
         // unreachable calendar makes the ESTIMATE unavailable and never blocks authoring a capacity.
@@ -136,6 +172,21 @@ public static class DependencyInjection
         services.AddHttpClient<
             Application.Features.CycleCapacity.Read.IWorkingDayCounter,
             CycleCapacity.WorkingCalendarWorkingDayCounter>();
+
+        // WP-VW-W3L (K-L8) - the reps' Platform primary seats (legal entity layer): the same fail-soft transport profile,
+        // through the Gateway with the caller's token; every failure = "platform-unavailable", never a blocked start.
+        services.AddHttpClient<
+            Application.Features.VisitEvidence.IOrganizationSeatReader,
+            VisitEvidence.PlatformOrganizationSeatReader>();
+
+        // WP-VW-W5 (K-N1 / K-N7) - the Platform internal event dispatch (directly to the Platform with the internal API key,
+        // no user token: the scheduler sends without a request), the e-mail links, and the CRM notification scheduler
+        // (Crm:Notifications:Enabled=false turns it off).
+        services.AddHttpClient<
+            Application.Features.VisitNotifications.IPlatformNotificationClient,
+            VisitNotifications.PlatformNotificationClient>();
+        services.AddSingleton<Application.Features.VisitNotifications.IVisitNotificationLinks, VisitNotifications.ConfigurationVisitNotificationLinks>();
+        services.AddHostedService<VisitNotifications.VisitNotificationHostedService>();
 
         // WP-VP-FIX-1 - the same door + transport, per-day op is-working-day: the visit planner's non-working days.
         services.AddHttpClient<

@@ -25,8 +25,14 @@ internal sealed class FakePlannedVisitRepository : IPlannedVisitRepository
     public Task<PlannedVisitEntity?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
         => Task.FromResult(Scope(tenantId).FirstOrDefault(x => x.Id == id));
 
+    /// <summary>W3E-BE-b: reads of the whole list (the default batch reads go through it — the N+1 counter).</summary>
+    public int ListCalls { get; private set; }
+
     public Task<IReadOnlyList<PlannedVisitEntity>> ListAsync(Guid tenantId, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Scope(tenantId).ToList());
+    {
+        ListCalls++;
+        return Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Scope(tenantId).ToList());
+    }
 
     public Task<IReadOnlyList<PlannedVisitEntity>> ListByCodeAsync(Guid tenantId, string visitCode, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(

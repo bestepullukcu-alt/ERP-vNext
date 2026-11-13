@@ -1,0 +1,128 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
+using Diten.CrmService.Application.Common.Models;
+using MediatR;
+
+namespace Diten.CrmService.Application.Features.VisitQr;
+
+// ── read models (§2.3) ───────────────────────────────────────────────────────────────────────────────────────────────
+
+/// <summary>The institution's QR state (NO payload): the latest row (active, or the last revoked one; <c>none</c> when the
+/// institution never had a code), the last scan, the successful scans of the last 30 days, and the parent's active code
+/// a visit here also accepts (K-W3E-5). WP-VW-W3E (W3E-FIX, G-4): <see cref="IssuedByName"/> / <see cref="RevokedByName"/>
+/// are the people's display names (the tenant's users only; null when unresolved — the screen then shows "—", never the id).</summary>
+public sealed record VisitQrAccountDto(
+    Guid AccountId,
+    string AccountName,
+    string? AccountCode,
+    string Status,
+    int? Version,
+    DateTimeOffset? IssuedAt,
+    string? IssuedBy,
+    DateTimeOffset? RevokedAt,
+    string? RevokedBy,
+    string? RevokeReason,
+    DateTimeOffset? LastScannedAt,
+    int ScanCount,
+    int RecentScanCount,
+    VisitQrInheritedDto? InheritedFrom,
+    string? IssuedByName = null,
+    string? RevokedByName = null);
+
+public sealed record VisitQrInheritedDto(Guid AccountId, string AccountName, int Version);
+
+/// <summary>WP-VW-W3E (W3E-BE-c, D-4) — a <c>printed</c> event carries the paper and copies the print said (else null).
+/// W3E-FIX (G-4): <see cref="ByName"/> is the person's display name (the tenant's users only; null when unresolved).</summary>
+public sealed record VisitQrEventDto(
+    Guid Id, string Kind, int Version, DateTimeOffset At, string? By, string? Reason, string? Paper = null, int? Copies = null, string? ByName = null);
+
+/// <summary>The print payload (the ONLY place a payload leaves the server; <c>Cache-Control: no-store</c>).</summary>
+public sealed record VisitQrPayloadDto(Guid AccountId, string AccountName, string? AccountCode, int Version, string Payload, DateTimeOffset IssuedAt);
+
+public sealed record VisitQrBulkIssueItemDto(Guid AccountId, string Result, int? Version);
+
+public sealed record VisitQrBulkIssueDto(IReadOnlyList<VisitQrBulkIssueItemDto> Items, int Issued, int SkippedActive, int NotFound);
+
+/// <summary>A list row. WP-VW-W3E (W3E-BE-c, D-5): the parent institution (↳), the parent's active code a visit here
+/// also accepts (<see cref="InheritedFrom"/>, K-W3E-5), the successful scans of the last 30 days.</summary>
+public sealed record VisitQrListItemDto(
+    Guid AccountId, string AccountName, string? AccountCode, string AccountType, string? CityRef, string Status, int? Version,
+    DateTimeOffset? IssuedAt, DateTimeOffset? LastScannedAt,
+    Guid? ParentAccountId = null, string? ParentAccountName = null, VisitQrInheritedDto? InheritedFrom = null, int RecentScanCount = 0);
+
+public sealed record VisitQrListDto(IReadOnlyList<VisitQrListItemDto> Items, long Total, int Page, int PageSize);
+
+public static class VisitQrBulkResults
+{
+    public const string Issued = "issued";
+    public const string SkippedActive = "skipped_active";
+    public const string NotFound = "not_found";
+}
+
+// ── inputs ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/// <summary><c>issue</c>: no active code → the next version; an active code → REGENERATE (<paramref name="ExpectedVersion"/> required).</summary>
+public sealed record VisitQrIssueInput(int? ExpectedVersion, string? Reason);
+
+public sealed record VisitQrRevokeInput(int? ExpectedVersion, string? Reason);
+
+/// <summary>The bulk body. WP-VW-W3E (W3E-BE-c, D-4): <paramref name="Paper"/> / <paramref name="Copies"/> are read by
+/// <c>bulk-payload</c> only (the printed events); <c>bulk-issue</c> ignores them.</summary>
+public sealed record VisitQrBulkInput(IReadOnlyList<Guid>? AccountIds, string? Paper = null, int? Copies = null);
+
+// ── commands / queries ───────────────────────────────────────────────────────────────────────────────────────────────
+
+public sealed record GetVisitQrAccountQuery(Guid AccountId) : IRequest<Response<VisitQrAccountDto>>;
+
+public sealed record GetVisitQrHistoryQuery(Guid AccountId) : IRequest<Response<IReadOnlyList<VisitQrEventDto>>>;
+
+public sealed record IssueVisitQrCommand(Guid AccountId, VisitQrIssueInput Input)
+    : IRequest<Response<VisitQrAccountDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create(VisitQrAudit.EntityType);
+    public Guid? CentralAuditEntityId(object? response) => AccountId;
+}
+
+public sealed record RevokeVisitQrCommand(Guid AccountId, VisitQrRevokeInput Input)
+    : IRequest<Response<VisitQrAccountDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Revoke(VisitQrAudit.EntityType);
+    public Guid? CentralAuditEntityId(object? response) => AccountId;
+}
+
+/// <summary>A command (it writes the <c>printed</c> event), although it is a GET on the wire. W3E-BE-c (D-4): the paper /
+/// copies the print says (optional; recorded on the event).</summary>
+public sealed record GetVisitQrPayloadCommand(Guid AccountId, string? Paper = null, int? Copies = null)
+    : IRequest<Response<VisitQrPayloadDto>>, ICentralAuditDeclaration
+{
+    // The record names the institution — NEVER the payload (a signed code; AUD-001 §3).
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Export(VisitQrAudit.EntityType);
+    public Guid? CentralAuditEntityId(object? response) => AccountId;
+}
+
+public sealed record BulkIssueVisitQrCommand(VisitQrBulkInput Input)
+    : IRequest<Response<VisitQrBulkIssueDto>>, ICentralAuditDeclaration
+{
+    // One record for the batch (no single entity id); each institution's code is in the QR history.
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create(VisitQrAudit.EntityType);
+    public Guid? CentralAuditEntityId(object? response) => null;
+}
+
+public sealed record BulkVisitQrPayloadCommand(VisitQrBulkInput Input)
+    : IRequest<Response<IReadOnlyList<VisitQrPayloadDto>>>, ICentralAuditDeclaration
+{
+    // One record for the batch (no single entity id) — NEVER a payload.
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Export(VisitQrAudit.EntityType);
+    public Guid? CentralAuditEntityId(object? response) => null;
+}
+
+/// <summary>The entity name of the institution QR commands in the central record (<c>CrmCentralAudit</c>, AUD-001 path b;
+/// W3E, F8-b). The entity id is the institution's account id.</summary>
+public static class VisitQrAudit
+{
+    public const string EntityType = "AccountVisitQr";
+}
+
+public sealed record ListVisitQrAccountsQuery(
+    string? Status, string? AccountType, string? City, string? TerritoryId, string? Search, int Page, int PageSize)
+    : IRequest<Response<VisitQrListDto>>;

@@ -26,6 +26,10 @@ namespace Diten.CrmService.Infrastructure.Eventing;
 /// route; the claim and path routes are unchanged).</para>
 /// <para>WP-VW-W3 (W3-BE-c) — <c>crm.objection-response</c> / <c>crm.visit-evidence-exception</c> → the authoring approval
 /// applier (an added route; the others are unchanged).</para>
+/// <para>WP-VW-W6 (W6-BE-b) — <c>commercial.price-list</c> / <c>commercial.pricing-rule</c> → the MOD-0156 pricing approval
+/// applier (an added route; the others are unchanged).</para>
+/// <para>WP-VW-W6 (W6-BE-a) — <c>commercial.pre-order</c> → the MOD-0168 pre-order approval service (an added route; the
+/// others are unchanged).</para>
 /// </summary>
 public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessage>
 {
@@ -39,10 +43,14 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
     private readonly KnowledgePathRevisionOutcomeApplier? _pathApplier;
     private readonly RegulatoryTextOutcomeApplier? _regulatoryApplier;
     private readonly WorkflowApprovalOutcomeApplier? _authoringApplier;
+    private readonly Application.Features.Commercial.Pricing.PricingApprovalOutcomeApplier? _pricingApplier;
+    private readonly Application.Features.Commercial.PreOrders.PreOrderApprovalService? _preOrderApproval;
 
     public ClaimWorkflowOutcomeConsumer(ClaimReviewOutcomeApplier applier, ICrmEventInboxRepository inbox,
         ILogger<ClaimWorkflowOutcomeConsumer> logger, KnowledgePathRevisionOutcomeApplier? pathApplier = null,
-        RegulatoryTextOutcomeApplier? regulatoryApplier = null, WorkflowApprovalOutcomeApplier? authoringApplier = null)
+        RegulatoryTextOutcomeApplier? regulatoryApplier = null, WorkflowApprovalOutcomeApplier? authoringApplier = null,
+        Application.Features.Commercial.Pricing.PricingApprovalOutcomeApplier? pricingApplier = null,
+        Application.Features.Commercial.PreOrders.PreOrderApprovalService? preOrderApproval = null)
     {
         _applier = applier;
         _inbox = inbox;
@@ -50,6 +58,8 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
         _pathApplier = pathApplier;
         _regulatoryApplier = regulatoryApplier;
         _authoringApplier = authoringApplier;
+        _pricingApplier = pricingApplier;
+        _preOrderApproval = preOrderApproval;
     }
 
     public Task Consume(ConsumeContext<EventTransportMessage> context) => ConsumeAsync(context.Message, context.CancellationToken);
@@ -65,8 +75,10 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
         var isPath = payload?.ObjectType == KnowledgePathReviewRules.ObjectType && _pathApplier is not null;
         var isRegulatory = RegulatoryTextOutcomeApplier.Handles(payload?.ObjectType) && _regulatoryApplier is not null;
         var isAuthoring = WorkflowApprovalOutcomeApplier.Handles(payload?.ObjectType) && _authoringApplier is not null;
+        var isPricing = Application.Features.Commercial.Pricing.PricingApprovalOutcomeApplier.Handles(payload?.ObjectType) && _pricingApplier is not null;
+        var isPreOrder = Application.Features.Commercial.PreOrders.PreOrderApprovalService.Handles(payload?.ObjectType) && _preOrderApproval is not null;
         if (payload is null
-            || (!isPath && !isRegulatory && !isAuthoring
+            || (!isPath && !isRegulatory && !isAuthoring && !isPricing && !isPreOrder
                 && payload.ObjectType is not (ClaimReviewRules.ClaimObjectType or ClaimReviewRules.CountryVersionObjectType)))
         {
             return; // another module's workflow
@@ -98,6 +110,12 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
             : isAuthoring
                 ? await _authoringApplier!.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
                     payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct)
+            : isPricing
+                ? await _pricingApplier!.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
+                    payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct)
+            : isPreOrder
+                ? await _preOrderApproval!.ApplyOutcomeAsync(tenantId, objectId, payload.WorkflowInstanceId, payload.Outcome!,
+                    payload.CompletedBy, payload.ReasonCode, completedAt, ct)
             : await _applier.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
                 payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct);
         _logger.LogInformation(

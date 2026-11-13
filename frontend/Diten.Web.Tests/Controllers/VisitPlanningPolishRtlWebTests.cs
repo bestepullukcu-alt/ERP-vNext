@@ -125,7 +125,8 @@ public sealed class VisitPlanningPolishRtlWebTests
         var row = Between(js, "const accountRow = a => {", "\n    };");
         // line 1: the name, the type badge at the far end
         Assert.Contains("'<span class=\"d-flex justify-content-between align-items-start gap-2\"><span class=\"fw-medium text-heading\" style=\"min-width:0;font-size:14px\">' + bidi(a.name) + outBadge(a) + '</span>' + typeBadge(a.type) + '</span>'", row);
-        Assert.Contains("const TYPE_TONE = { clinic: 'background:#e0e2f3;color:#0b1a8c', hospital: 'background:#d7f5fc;color:#028aa6' };", js);
+        // W3E-THEME (K-THEME): a clinic wears the layout's primary colour; the hospital turquoise is a type colour
+        Assert.Contains("const TYPE_TONE = { clinic: 'background:rgba(var(--bs-primary-rgb),.12);color:var(--bs-primary)', hospital: 'background:#d7f5fc;color:#028aa6' };", js);
         Assert.Contains("badge flex-shrink-0 text-nowrap", Between(js, "const typeBadge = type =>", ": '';"));
         // line 2: province · "x / y selected" · amber "N this week" — separate items, gap 10px, no dots
         Assert.Contains("'<span class=\"d-flex flex-wrap text-muted vp-acc-stats\" style=\"gap:10px;font-size:13px\"", row);
@@ -134,7 +135,7 @@ public sealed class VisitPlanningPolishRtlWebTests
         Assert.DoesNotContain("' · '", stats);
         Assert.Contains("n.innerHTML = accountStatsHtml(n.dataset.aid, n.dataset.city);", js);
         // the highlight: the OPEN account only (light bg + 3px bar on the leading edge — logical, so the right one in RTL)
-        Assert.Contains("const ACTIVE_ACCOUNT_STYLE = 'background:#f3f4fb;border-inline-start:3px solid #0b1a8c !important;';", js);
+        Assert.Contains("const ACTIVE_ACCOUNT_STYLE = 'background:rgba(var(--bs-primary-rgb),.06);border-inline-start:3px solid var(--bs-primary) !important;';", js);
         Assert.Contains("' style=\"cursor:pointer;padding:12px 14px;' + (active ? ACTIVE_ACCOUNT_STYLE : '') + '\">'", row);
         Assert.DoesNotContain("inPlan ?", Between(row, "' style=\"cursor:pointer", "'\">'"));
         Assert.DoesNotContain("bg-label-primary", row);

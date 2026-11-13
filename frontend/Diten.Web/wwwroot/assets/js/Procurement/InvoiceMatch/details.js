@@ -3,7 +3,7 @@
 // MOD-0143 Invoice Capture & 3-Way Match Details — the runThreeWayMatch + resolveMatchException lifecycle actions.
 // Both state-changing calls go through the same-origin controller proxy (/InvoiceMatch/match/{id},
 // /InvoiceMatch/resolve/{exceptionId}), which keeps the Idempotency-Key server-side. Confirmation uses the premium
-// shared helpers (window.showConfirm/showToast, premium-modal-standard MOD-0013). This module produces the match
+// shared helpers (window.showConfirm/showToast, premium-modal-standard, MOD-0286 (formerly MOD-0013)). This module produces the match
 // OUTCOME only — it never executes payment (AP/payment = Finance/Treasury).
 (function () {
     const root = document.querySelector('.invoice-match-details');

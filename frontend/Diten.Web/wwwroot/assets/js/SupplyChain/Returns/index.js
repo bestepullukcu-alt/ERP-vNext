@@ -1139,7 +1139,7 @@ const ReturnsList = (function () {
         // Mirror of the business rule only: Received needs both places (400 otherwise; the backend stays authoritative).
         if (target === 'Received' && receiptPlaceMissing()) return;
         const subtext = target === 'Received' ? `${t('ConfirmTransition')} ${t('ReceivedPostsQuarantineNote')}` : t('ConfirmTransition');
-        // Shared premium wrapper only (MOD-0013 _GlobalConfirmation: showConfirm(title, callback, options));
+        // Shared premium wrapper only (MOD-0286 (formerly MOD-0013) _GlobalConfirmation: showConfirm(title, callback, options));
         // no native dialog and no direct SweetAlert call. Title and subtext are resx text only.
         window.showConfirm?.(targetLabel(target), () => { void submitTransition(); }, {
             subtext,

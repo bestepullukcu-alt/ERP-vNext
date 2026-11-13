@@ -12,7 +12,7 @@ dates:
   started: 2026-04-27
 ---
 
-# MOD-0009-FU03: Tenant Core UI
+# MOD-0009-FU03 — Tenant / Environment Management — Core UI (FU03) (formerly titled: Tenant Core UI)
 
 > **Canonicalization (DCP-002):** Canonical ID is now **MOD-0009-FU03**, a child/FU (UI surface) of **MOD-0009 Tenant / Environment Management** (Blueprint canonical). Prior repo ID **MOD-0046** is a deprecated alias retained for traceability; repo MOD-0046 had drifted onto a Blueprint ID reserved for "Performance & Capacity Management". Body text below predates canonicalization and may reference MOD-0046; scope and meaning are unchanged. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
 

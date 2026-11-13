@@ -58,8 +58,9 @@ public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient, IWorkflow
             objectType = request.ObjectType,
             objectId = request.ObjectId,
             objectRef = request.ObjectRef,
-            // Candidates come from the template's positions (WP-ORG-02); CRM sends none.
-            candidatePrincipalIds = Array.Empty<string>(),
+            // Candidates come from the template's positions (WP-ORG-02); only a caller that names runtime candidates
+            // (W6-BE-a: the pre-order's line managers) sends any.
+            candidatePrincipalIds = request.CandidatePrincipalIds?.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToArray() ?? Array.Empty<string>(),
             // WP-KP-5a-FIX-1 — the caller's kind decides the audit label; the claim code is only the default.
             reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? ClaimReviewRules.SubmitReasonCode : request.ReasonCode,
             idempotencyKey = request.IdempotencyKey,

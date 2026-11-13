@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Commercial.Pricing
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    // W6-WEB-b — the change history, server mode, read only: nothing to select.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-pricinghistory",
+        DataMode = "server",
+        Slug = "pricinghistory",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColWhen"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColWho"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWhat"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColChanges"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

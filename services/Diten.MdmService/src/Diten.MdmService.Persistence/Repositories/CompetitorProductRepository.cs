@@ -45,8 +45,11 @@ public sealed class CompetitorProductRepository : ICompetitorProductRepository
         if (record.TenantId == Guid.Empty) return false;
         record.Version = expectedVersion + 1;
         record.UpdatedAt = DateTimeOffset.UtcNow;
-        var result = await _collection.ReplaceOneAsync(
-            x => x.TenantId == record.TenantId && x.Id == record.Id && x.Version == expectedVersion, record, cancellationToken: ct);
+        // BL-640 — a field-level $set of the mapped members (FieldLevelUpdate), never a whole replace: a field a later binary
+        // added to the stored record survives this update. Same compare-and-swap: tenant + id + the expected version.
+        var result = await _collection.UpdateOneAsync(
+            x => x.TenantId == record.TenantId && x.Id == record.Id && x.Version == expectedVersion,
+            FieldLevelUpdate.SetMappedFields(record), cancellationToken: ct);
         if (result.MatchedCount == 1) return true;
         record.Version = expectedVersion;
         return false;

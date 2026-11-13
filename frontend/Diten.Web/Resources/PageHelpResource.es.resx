@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2055,6 +2055,672 @@
   </data>
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>Deje su propia muestra</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>Defina las evidencias que un representante debe aportar al iniciar una visita: ubicación, foto, código QR de la institución y verificación del dispositivo. La configuración es por capas y gana la más específica: la unidad de negocio prevalece sobre la entidad legal, y esta sobre el inquilino; una excepción temporal relaja una regla para un solo representante durante un tiempo.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>Responsables de operaciones comerciales</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>Guardar y aplicar la configuración</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>En la pestaña «Ajustes por ámbito», elija el inquilino, una entidad legal o una unidad de negocio en «Ámbitos». Para un ámbito nuevo, haga clic en «Añadir entidad legal» o «Añadir unidad de negocio»; empieza vacío y todos los campos vienen del nivel superior.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>Elegir el ámbito</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>En «Formulario», haga clic en «Cambiar en este ámbito» en el campo que quiera cambiar; «Volver al ajuste superior» lo vuelve a heredar. Haga clic en «Guardar», revise las filas cambiadas y a cuántos representantes llega, y confirme con «Guardar y aplicar».</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>Cambiar los campos y aplicar</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>«Ver el ajuste efectivo de un representante» muestra el valor de cada campo y el ámbito del que viene. «Historial de cambios» muestra quién cambió qué y cuándo, filtrado por ámbito; «Representantes» muestra el ámbito aplicado a cada representante. «Quitar el ámbito» devuelve de inmediato a sus representantes al ajuste superior; confirme con Ctrl+Intro (⌘+Intro en Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>Seguir el origen y el historial</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>En la pestaña «Excepciones temporales», haga clic en «Nueva excepción». Indique el representante, las reglas que se relajan, un periodo de 30 días como máximo y el motivo, y haga clic en «Enviar a aprobación» o pulse Ctrl+Intro (⌘+Intro en Mac).</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>Solicitar una excepción</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>La excepción se aprueba en el Centro de tareas; quien la solicita no puede aprobar la suya. Solo se aplica una excepción aprobada y dentro de sus fechas. En la vista rápida, «Cancelar excepción» y «Finalizar antes» piden un motivo; escríbalo y confirme con Ctrl+Intro.</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>Gestionar la excepción</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>Revise las señales de evidencia de las visitas iniciadas: ubicación lejana o ausente, visita corta, código QR no escaneado o no válido, inicio con excepción. Una señal es un indicio que revisar; por sí sola no significa que se haya incumplido una regla.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>Gerentes de zona y equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>En «Periodo», elija «Últimos 7 días», «Últimos 30 días» o «Rango personalizado…». Un rango personalizado abarca como máximo 92 días.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>Elegir el periodo</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>Filtre por «Representante», «Institución» y tipo de señal. «Solo marcadas» está activado; desactívelo para ver también las visitas sin señales.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>Acotar la lista</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>Las tarjetas superiores muestran «Visitas iniciadas», «Visitas marcadas» y «Por tipo de marca». Una visita puede tener varias señales.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>Leer el resumen</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>La vista rápida de la fila muestra la ubicación, la distancia a la institución, el resultado del código QR y la excepción, si la hay; ver la foto requiere un permiso propio. «Abrir la visita» abre la visita.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>Abrir la evidencia</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>La pestaña «Resumen por representante» muestra, por representante, las visitas iniciadas y señaladas, la tasa y la señal más frecuente. Al hacer clic en una fila, la lista de visitas se filtra por ese representante.</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>Comparar representantes</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>Vea los correos que el CRM envió automáticamente a partir de los informes de visita — resumen, evento adverso, solicitud fuera de indicación, informe vencido — con sus destinatarios y su estado, y abra cada uno tal como se redactó. No se muestra ninguna dirección de correo.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>Representantes (sus propias visitas), responsables (su equipo) y el equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>Fije el «Periodo»: los últimos 30 o 7 días, este mes o un «Rango personalizado…». El periodo es el día de la visita.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>Elija el periodo</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>Filtre por «Tipo de correo», «Estado» y —si es responsable— «Representante». «Ruta de FV pendiente» significa que la dirección de seguridad de FV no está definida y solo se informó al responsable.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>Acote la lista</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>La columna «Destinatario» muestra roles, nunca direcciones: «Responsable», «Seguridad FV», «MSL (enlace médico)». Un correo de seguridad va a FV o al MSL con el responsable en copia.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>Lea los destinatarios</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>La «Vista rápida» de la fila muestra el correo tal como se envió: el asunto, «Para», «CC», «Fecha», el contenido y «Ver informe».</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>Abra el correo</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>Con el permiso de ajustes, la pestaña «Ajustes de notificación» define el «Correo de seguridad de FV» y el «Correo de MSL» y activa o no el resumen y el recordatorio de vencimiento. Si alguien guardó mientras tanto, recargue y guarde de nuevo.</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>Configure las direcciones</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>Gestione los códigos QR colocados en la recepción de las instituciones. El representante escanea este código al iniciar la visita; una subunidad sin código propio usa el de su institución principal.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>Equipo de operaciones comerciales</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>Generar, regenerar y revocar un código</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>Filtre la lista por «Región», «Ciudad», «Tipo de institución» y «Estado QR». «Último escaneo» y «Últimos 30 días» indican si el código se usa.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>Encontrar las instituciones</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>Seleccione filas y ejecute «Generar para las seleccionadas (sin código)»; se omiten las instituciones que ya tienen un código activo. Se pueden seleccionar hasta 200 instituciones a la vez.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>Generar en bloque</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>Imprima un código con «Imprimir el código» en la fila y varios con «Imprimir las seleccionadas (hoja de etiquetas)». En la página de impresión, elija «Individual» o «Hoja de etiquetas» y haga clic en «Imprimir».</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>Imprimir</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>En la página de la institución, use «Regenerar» o «Revocar» en la tarjeta «Código QR de la institución». Ambos invalidan de inmediato los códigos antiguos colocados e impresos; revocar pide un motivo.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>Renovar o revocar</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>Que el código sea obligatorio u opcional se define con «Código QR de la institución» en la página Evidencias de visita. Con la opción obligatoria, una visita iniciada en una institución sin código queda señalada.</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>Leerlo con la configuración</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>Fije los límites que clasifican el número mensual de pacientes de un médico en las indicaciones de un producto como Bajo, Medio o Alto. Una fila de producto va antes que el valor predeterminado del inquilino; si no hay ninguno, se aplican los valores integrados.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>Responsables de operaciones comerciales y de marketing</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>Un cambio de umbral</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>En la pestaña «Umbrales», la fila «Valor predeterminado del inquilino» queda arriba en cualquier orden; las filas de producto prevalecen sobre ella. La columna «Origen» indica de dónde viene un valor.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>Leer los umbrales</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>La acción «Editar» de la fila abre el panel lateral. Indique «Bajo por debajo de (X)» y «Alto por encima de (Y)»; pruebe un número mensual de pacientes en la vista previa para ver su clase.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>Editar</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>Haga clic en «Guardar» o pulse Intro; revise los valores cambiados y confirme con «Sí, guardar». El cambio surte efecto de inmediato.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>Para un producto que necesite límites distintos del predeterminado, abra su propia fila con «Añadir producto».</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>Añadir un producto</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>La pestaña «Historial de cambios» muestra cada cambio con la persona, la fila y el valor anterior → nuevo; la lista se puede exportar a CSV o Excel.</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>Seguir el historial</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>Redacte respuestas aprobadas a las objeciones que un representante puede oír de un médico durante una visita. Una respuesta aprobada se elige como objeción esperada en los pasos de una ruta de conocimiento y aparece en las notas del representante durante la presentación.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>Equipos de contenido y aprobadores médicos</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>Retirar una respuesta</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>Acote la lista por «Producto», «Categoría» y «Estado», o busque en el texto de la objeción.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>Filtrar la biblioteca</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>Haga clic en «Nueva respuesta a objeción»; complete «Producto», «Categoría», «Objeción · la pregunta del médico» y «Respuesta aprobada», elija afirmaciones de apoyo entre las aprobadas del producto y haga clic en «Guardar borrador».</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>Redactar una respuesta</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>«Enviar para aprobación» bloquea la respuesta durante la revisión; «Retirar solicitud» la devuelve a borrador.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>Enviar a aprobación</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>El aprobador elige «Aprobar», o escribe una nota y elige «Devolver a borrador». Quien redactó o envió la respuesta no puede aprobarla.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>Aprobar o devolver</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>Una respuesta aprobada no se puede cambiar; abra un nuevo borrador con «Nuevo borrador a partir de copia». «Retirar» quita la respuesta de todas las presentaciones de inmediato y no se puede deshacer; «Dónde se usa» muestra los pasos afectados.</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>Cambiar o retirar</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>Gestione los productos que los representantes eligen como competidores en sus informes: laboratorio, principio activo, nuestros productos con los que compiten y precio y reembolso por país.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>Equipos de datos maestros y de operaciones comerciales</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>Guardar, desactivar</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>Filtre por «Nuestro producto», «Empresa», «Principio activo», «País» o «Estado»; la búsqueda también cubre otros nombres.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>Filtrar la lista</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>Haga clic en «Nuevo producto competidor»; indique el nombre, el laboratorio, el principio activo y al menos uno de nuestros productos, escriba el precio por caja y el reembolso en las filas de país y haga clic en «Guardar». «Vista del representante» muestra la tarjeta que verá el representante en el informe.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>Añadir un registro</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>En la pestaña «Propuestas de representantes» esperan los nuevos competidores que los representantes escribieron en sus informes. Con «Decisión», prepare una decisión de completar, fusionar o rechazar y haga clic en «Enviar a aprobación».</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>Decidir sobre las propuestas</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>La decisión se aplica cuando se aprueba en el Centro de tareas; quien la preparó no puede aprobarla. Hasta entonces, la propuesta solo se usa en los informes del representante que la hizo.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>Esperar la aprobación</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>La página de detalle muestra «Uso en informes» y «Historial de cambios». «Fusionar con otro registro» vincula el registro a otro tras la aprobación y no se puede deshacer; «Desactivar» impide seleccionarlo en informes nuevos.</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>Gestionar un registro</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>Planifique, visite e informe su semana en un solo calendario. Al iniciar una visita se toman las evidencias que pide el inquilino (ubicación, foto, código QR de la institución); el informe se envía en un plazo de 48 horas.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>Representantes de campo y gerentes de zona</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>Aprobar la semana, iniciar una visita, enviar un informe</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>Cambie al modo «Planificar»; arrastre los médicos objetivo a un día o una hora. Añada productos a los médicos planificados de una institución con «Aplicar productos».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>Planificar la semana</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>Cuando el plan esté listo, haga clic en «Aprobar la semana». Una semana aprobada es de solo lectura; para cambiarla, use «Reabrir la semana» con un motivo.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>Aprobar la semana</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>En el modo «Ejecutar», abra la visita de hoy y haga clic en «Iniciar visita» al llegar a la institución. Según la configuración, se piden una foto, la ubicación y el «Código QR de la institución»; después «Iniciar presentación» abre la presentación.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>Iniciar la visita</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>Después de la visita, haga clic en «Enviar el informe». Tiene 48 horas para el informe; después el registro se bloquea.</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>Informar</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>Para una visita que no se realizó, elija «No realizada» o «Reprogramar» e indique el motivo. Puede añadir una visita no planificada para hoy con «Visita no planificada».</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>Cerrar lo que no ocurrió</value>
+  </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>Lista los prepedidos de farmacia que puede ver —los suyos, los de su equipo y los pendientes de su aprobación— con su estado y la respuesta del distribuidor.</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>Representantes, sus responsables (aprobadores) y operaciones comerciales.</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>Filtre la lista</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>Abra «Filtro»: período, estado, farmacia, distribuidor, producto, país; un aprobador tiene además «Pendientes de mi aprobación».</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>Lea los importes</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>Cada total lleva su moneda; los pedidos en monedas distintas nunca se suman. «Equivalente local» se muestra desde la visibilidad de columnas.</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>Abra la vista rápida</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>El icono del ojo muestra las líneas, los totales y la cronología, con enlaces al documento y a la aprobación.</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>Registre la respuesta del distribuidor</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>Operaciones comerciales marca un pedido enviado como «Entregado» o «Entrega parcial» (cajas por línea y una nota) en la vista rápida.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>Toma el pedido de una farmacia para enviarlo a su distribuidor, que factura. La empresa, la moneda y los precios vienen del sistema.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>Representantes de campo (tableta y teléfono).</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>Elija la farmacia y los productos</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>Busque la farmacia y añada productos con su cantidad, la bonificación (por ejemplo 10+2) y, si hay lista de precios vigente, el descuento.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>Observe las insignias de regla</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>Cada línea indica «Dentro de los límites», «Requiere aprobación» o «No permitido», con el límite superado. Una línea no permitida debe corregirse.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>Guarde y haga firmar al farmacéutico</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>«Guardar borrador» asigna el número de pedido. Elija el distribuidor y entregue el dispositivo al farmacéutico para firmar. Cambiar las líneas borra la firma.</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>Envíe</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>«Enviar» se activa cuando nada lo bloquea (los motivos aparecen debajo); dice «Enviar para aprobación del responsable» cuando hace falta una aprobación. El pedido enviado se abre en su página de detalle: espera al aprobador o, si el inquilino lo permite, va directo al distribuidor.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>Decide sobre un prepedido pendiente de usted: apruébelo, rechácelo o devuélvalo para cambios.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>El responsable del representante (el puesto superior).</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>Vea por qué le llega</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>«¿Por qué me llega a mí?» indica la configuración del inquilino o las líneas que superan un límite flexible.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>Compare con los límites</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>Cada celda muestra lo introducido y, debajo, el límite de la regla; los últimos seis meses de la farmacia están a la derecha.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>Decida</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>«Aprobar» pide una confirmación y después envía el pedido al distribuidor. «Rechazar» y «Solicitar cambios» requieren un motivo; una solicitud de cambios lo devuelve como borrador al representante.</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>Desde el enlace del correo</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>El enlace del correo pide iniciar sesión, funciona una sola vez y caduca; prevalece la decisión del primer aprobador.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>Define cómo se aprueban, valoran, numeran y envían los prepedidos de este inquilino.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>Operaciones comerciales.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>Elija el modo de aprobación</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>«Siempre aprobación del responsable» (predeterminado) o «Automática dentro de los límites»; un pedido que supere un límite flexible va igualmente al responsable.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>Ajuste el enlace y los reintentos</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>El enlace de aprobación dura 12–168 horas (48 por defecto); un envío fallido se reintenta automáticamente 0–10 veces.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>Elija el nivel de precio</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>Por país: compra del farmacéutico (predeterminado), precio de distribuidor o precio al público.</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>Asigne a cada empresa su prefijo</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>2–5 letras inician el número de pedido (MG-ORD-000123). Un prefijo que ya numeró un pedido queda bloqueado.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>Las listas de precios de cada empresa vendedora, país y moneda: los precios que lee un prepedido.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (publica).</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>Lea el estado</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>Borrador, En revisión, Planificada, Vigente o Pasada, según el día; una lista vigente por empresa y país.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>Añada una lista</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>«Nueva lista» para escribirla a mano o «Importar» para un archivo Excel / CSV.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>Use las pestañas</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>Las reglas, la prueba de reglas, el historial y los tipos de cambio están en las otras pestañas.</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>Exporte</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>«Exportar» da todas las listas del filtro con las columnas visibles.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>Una lista de precios: su cabecera, sus artículos y la diferencia con la versión anterior; publicar requiere otra persona.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (publica).</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>Complete la cabecera</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>Nombre, empresa vendedora, moneda, tipo y primer día; el país es el de la empresa.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>Añada los artículos</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>Cada producto una vez, con precio de distribuidor, de compra del farmacéutico, al público e IVA.</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>Envíe a publicación</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>«Enviar a publicación» la pasa a otra persona; quien la preparó no ve «Publicar».</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>Cambie una lista publicada</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>Una lista publicada no se edita: «Nueva versión» la copia en un borrador nuevo.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>Trae una lista de precios desde un archivo Excel / CSV en tres pasos.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>Marketing.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>Elija el archivo</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>La cabecera (la moneda es obligatoria), el archivo y, si hace falta, los nombres de columnas.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>Revise la vista previa</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>Las filas con coincidencia, sin ella, retiradas, repetidas y con precio no válido se cuentan aparte, con la diferencia frente a la lista vigente.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>Cree el borrador</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>«Crear el borrador» toma solo las filas con coincidencia; la coincidencia por código de barras (GTIN) sigue desactivada hasta product-master v1.2.</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>Envíe a publicación</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>El borrador va a otra persona, que lo publica o lo devuelve.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>Los límites de bonificación / descuento por empresa y producto con que se comprueba una línea de prepedido.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>Marketing (prepara) y operaciones comerciales (aprueba).</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>Lea flexible y estricto</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>Si se supera un límite flexible, el pedido va al responsable; si es estricto, la línea no se puede introducir.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>Gana la más específica</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>Una regla con período prevalece sobre una general; los segmentos llegarán después.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>Cambie una regla</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>Una regla activa se cambia con «Revisar» o «Retirar»: una versión nueva que aprueba otra persona.</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>Pruébela</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>La pestaña «Prueba de reglas» muestra qué obtendría una línea, sin guardar nada.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>Escribe un borrador de regla: su clave y sus límites flexibles / estrictos.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>Marketing.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>Elija la clave</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>Empresa y producto (fijos después) y la vigencia si la regla es para un período.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>Escriba los límites</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>Descuento %, bonificación como «10+2», tope combinado y cantidad; el flexible no supera al estricto.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>Lea el % efectivo</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>Al elegir empresa y producto, el sistema muestra el % efectivo junto a cada bonificación.</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>Envíe a aprobación</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>Guarde y luego «Enviar a aprobación» en la regla: otra persona la activa.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>Muestra qué obtendría una línea de pedido de la lista de precios y las reglas, sin guardar nada.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>Marketing y operaciones comerciales.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>Complete la línea</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>Empresa, producto, cantidad, bonificación y descuento; el día y el nivel de precio si hace falta.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>Pruebe</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>«Probar» consulta al sistema; no se guarda nada.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>Lea el resultado</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>La insignia (dentro de límites / requiere aprobación / no permitido) y los mensajes de cada límite superado.</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>Vea qué regla se aplicó</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>Se aplica la regla más específica del día; se muestra su versión.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>Cada cambio en listas, artículos, reglas y tipos de cambio: quién, cuándo, anterior → nuevo.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>Marketing, operaciones comerciales y auditoría.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>Filtre</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>Por tipo de registro y por período.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>Lea anterior → nuevo</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>Cada fila indica el campo, su valor anterior y el nuevo.</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>Sus permisos deciden</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>Solo ve los tipos que cubren sus permisos (listas, reglas, tipos).</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>Abra un cambio</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>El icono del ojo muestra todo el cambio en el panel lateral.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>Los tipos de cambio provisionales por empresa, par y día que usa un prepedido para su equivalente local.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>Operaciones comerciales.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>Introduzca un tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>«Nuevo tipo»: empresa, par, día, tipo y fuente; un tipo por empresa, par y día.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>Corrija un tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>Abra el tipo y «Corregir»: el anterior → nuevo se registra en el historial.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>Los pedidos conservan su tipo</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>Un pedido enviado conserva el tipo con que se envió; una corrección no lo cambia.</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>El último antes del día</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>Un pedido usa el último tipo de su día o anterior; sin tipo, no se muestra equivalente local.</value>
   </data>
   <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
     <value>Mueva el stock recibido desde la ubicación de recepción a su hueco y confírmelo; la confirmación mueve el stock en el libro de stock.</value>

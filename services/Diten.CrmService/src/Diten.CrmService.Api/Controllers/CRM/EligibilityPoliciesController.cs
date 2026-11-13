@@ -10,7 +10,7 @@ using Perms = Diten.CrmService.Application.Features.ContentComposition.Eligibili
 namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
-/// SCMM-11-follow-API (CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. Canonical under
+/// SCMM-11-follow-API (MOD-0363, formerly CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. Canonical under
 /// <c>/api/crm/content-composition/eligibility-policies</c> (CRUD) and <c>/api/crm/content-composition/eligibility:evaluate</c>
 /// (the resolve action). A thin adapter over the ready EligibilityPolicy CQRS + the single <see cref="ResolveEligibilityQuery"/>
 /// resolver — every action maps the request onto the command / query and dispatches through MediatR; no business logic,

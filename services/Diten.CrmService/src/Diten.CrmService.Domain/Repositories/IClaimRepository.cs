@@ -3,7 +3,7 @@ using Diten.CrmService.Domain.Entities;
 namespace Diten.CrmService.Domain.Repositories;
 
 /// <summary>
-/// SCMM-12 (CAND-CAP-0011) — claim master. Tenant scoped, soft-delete aware. No delete method: closing a claim is the
+/// SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim master. Tenant scoped, soft-delete aware. No delete method: closing a claim is the
 /// soft archive lifecycle. <c>ClaimCode</c> is shared across versions; a duplicate ACTIVE (non-archived) claim code is
 /// guarded on create.
 /// </summary>

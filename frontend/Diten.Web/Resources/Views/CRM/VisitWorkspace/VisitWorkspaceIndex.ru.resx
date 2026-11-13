@@ -298,4 +298,42 @@
   <data name="UnpPharmacySearch" xml:space="preserve"><value>Поиск аптеки по названию (минимум 2 буквы)</value></data>
   <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>У этой цели сегодня уже есть визит такого типа.</value></data>
   <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>Время визита недопустимо; выберите другое время начала.</value></data>
+  <data name="QrCap" xml:space="preserve"><value>QR-код учреждения</value></data>
+  <data name="QrMode_optional" xml:space="preserve"><value>необязательно</value></data>
+  <data name="QrMode_required" xml:space="preserve"><value>обязательно</value></data>
+  <data name="QrIdle" xml:space="preserve"><value>Отсканируйте QR-код на ресепшене.</value></data>
+  <data name="QrNoCode" xml:space="preserve"><value>Не могу найти код</value></data>
+  <data name="QrScan" xml:space="preserve"><value>Сканировать</value></data>
+  <data name="QrFrame" xml:space="preserve"><value>Наведите рамку на код</value></data>
+  <data name="QrFullTitle" xml:space="preserve"><value>Отсканируйте QR-код на ресепшене</value></data>
+  <data name="QrCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="QrOk" xml:space="preserve"><value>{0} · код подтверждён</value></data>
+  <data name="QrOkParent" xml:space="preserve"><value>Код головного учреждения для {0} · считан в {1}</value></data>
+  <data name="QrOkSelf" xml:space="preserve"><value>Считан в {0}</value></data>
+  <data name="QrRescan" xml:space="preserve"><value>Сканировать снова</value></data>
+  <data name="QrWrong" xml:space="preserve"><value>Этот код принадлежит другому учреждению ({0}). Отсканируйте код учреждения, которое вы посещаете.</value></data>
+  <data name="QrWrongUnknown" xml:space="preserve"><value>Этот код принадлежит другому учреждению. Отсканируйте код учреждения, которое вы посещаете.</value></data>
+  <data name="QrInvalid" xml:space="preserve"><value>Этот код больше не действует. Возможно, у учреждения новый код; сообщите региональному менеджеру.</value></data>
+  <data name="QrUnverifiable" xml:space="preserve"><value>Сейчас не удаётся проверить код. Повторите чуть позже.</value></data>
+  <data name="QrScannedUnchecked" xml:space="preserve"><value>Код считан; он будет проверен при начале визита.</value></data>
+  <data name="QrNoPermTitle" xml:space="preserve"><value>Нет доступа к камере</value></data>
+  <data name="QrNoPerm1" xml:space="preserve"><value>Нажмите на значок замка в адресной строке.</value></data>
+  <data name="QrNoPerm2" xml:space="preserve"><value>Установите для «Камера» значение «Разрешить».</value></data>
+  <data name="QrNoPerm3" xml:space="preserve"><value>Вернитесь в это окно и нажмите «Повторить».</value></data>
+  <data name="QrRetry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="QrNoCamera" xml:space="preserve"><value>На этом устройстве нельзя использовать камеру.</value></data>
+  <data name="QrNoCodeOpt" xml:space="preserve"><value>Если кода на ресепшене нет или он не читается, можно продолжить без QR.</value></data>
+  <data name="QrSkip" xml:space="preserve"><value>Продолжить без QR</value></data>
+  <data name="QrBack" xml:space="preserve"><value>Вернуться к сканированию</value></data>
+  <data name="QrNoCodeReq" xml:space="preserve"><value>Чтобы начать визит в этом учреждении, нужно отсканировать его QR-код. Если кода нет или он не читается, сегодня начать без QR нельзя.</value></data>
+  <data name="QrAskException" xml:space="preserve"><value>Запросите исключение у руководителя</value></data>
+  <data name="QrNoPrinted" xml:space="preserve"><value>Для этого учреждения QR-код ещё не напечатан. Можно начать без сканирования; визит будет помечен «У учреждения нет QR-кода».</value></data>
+  <data name="QrSkipped" xml:space="preserve"><value>Продолжение без QR.</value></data>
+  <data name="DeviceUnverified" xml:space="preserve"><value>Это устройство нельзя проверить; визит будет помечен «устройство не проверено». Рекомендуется мобильное приложение.</value></data>
+  <data name="E3Missing_qr" xml:space="preserve"><value>QR-код</value></data>
+  <data name="StartErr_visit_qr_required" xml:space="preserve"><value>Отсканируйте QR-код учреждения, чтобы начать визит.</value></data>
+  <data name="StartErr_visit_qr_invalid" xml:space="preserve"><value>Это недействительный QR-код учреждения.</value></data>
+  <data name="StartErr_visit_qr_wrong_account" xml:space="preserve"><value>Этот QR-код принадлежит другому учреждению.</value></data>
+  <data name="StartErr_visit_qr_revoked" xml:space="preserve"><value>Этот QR-код заменён или отозван. Отсканируйте текущий код учреждения.</value></data>
+  <data name="StartErr_visit_qr_signing_unavailable" xml:space="preserve"><value>Сейчас не удаётся проверить QR-код. Повторите чуть позже.</value></data>
 </root>

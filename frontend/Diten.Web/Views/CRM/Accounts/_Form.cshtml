@@ -42,6 +42,20 @@
       class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    @* WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the version this page read (an edit sends it back; a stale one is 409) and whether
+       the user touched the logo (untouched ⇒ not sent, the backend keeps it). *@
+    <input type="hidden" asp-for="Version" id="accountVersion" />
+    <input type="hidden" asp-for="LogoChanged" id="accountLogoChanged" value="@(Model.LogoChanged ? "true" : "false")" />
+
+    @if (Model.VersionConflict && Model.Id is { } conflictId)
+    {
+        <div id="accountVersionConflict" class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2" role="alert">
+            <span><i class="bx bx-error me-1"></i>@Localizer["Error.account_version_conflict"]</span>
+            <a class="btn btn-sm btn-warning" asp-controller="Accounts" asp-action="Edit" asp-route-id="@conflictId">
+                <i class="bx bx-refresh me-1"></i>@Localizer["VersionConflictReload"]
+            </a>
+        </div>
+    }
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
@@ -77,6 +91,7 @@
                                     asp-items="@(new SelectList(Model.AccountCategoryOptions, nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Value), nameof(Diten.Web.Models.CRM.ReferenceOptionViewModel.Text)))">
                                 <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
                             </select>
+                            <span asp-validation-for="AccountCategory" class="text-danger small mt-1"></span>
                         </div>
                         <div class="col-12 col-md-6">
                             <label asp-for="ParentAccountId" class="form-label fw-medium">@Localizer["ParentAccount"]</label>
@@ -159,6 +174,7 @@
                         <div class="col-12">
                             <label asp-for="AddressLine" class="form-label fw-medium">@Localizer["AddressLine"]</label>
                             <textarea asp-for="AddressLine" class="form-control" rows="2" maxlength="500" placeholder="@Localizer["AddressLinePlaceholder"]"></textarea>
+                            <span asp-validation-for="AddressLine" class="text-danger small mt-1"></span>
                         </div>
                         <div class="col-12 col-md-6">
                             <label asp-for="Latitude" class="form-label fw-medium">@Localizer["Latitude"]</label>
@@ -179,6 +195,7 @@
                     <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["NotesSection"]</h6>
                     <label asp-for="Notes" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
                     <textarea asp-for="Notes" class="form-control" rows="6" maxlength="2000" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger small mt-1"></span>
                 </div>
             </section>
         </div>
@@ -225,6 +242,7 @@
 
                         <div class="form-text text-center mb-0">@Localizer["LogoHelp"]</div>
                         <div id="accountLogoError" class="text-danger small text-center d-none"></div>
+                        <span asp-validation-for="LogoDataUri" class="text-danger small text-center"></span>
                     </div>
                 </div>
             </section>
@@ -252,10 +270,12 @@
                         <div class="col-12">
                             <label asp-for="ResponsiblePersonName" class="form-label fw-medium">@Localizer["ResponsiblePersonName"]</label>
                             <input asp-for="ResponsiblePersonName" class="form-control" maxlength="200" placeholder="@Localizer["ResponsiblePersonNamePlaceholder"]" />
+                            <span asp-validation-for="ResponsiblePersonName" class="text-danger small mt-1"></span>
                         </div>
                         <div class="col-12">
                             <label asp-for="ResponsiblePersonPhone" class="form-label fw-medium">@Localizer["ResponsiblePersonPhone"]</label>
                             <input asp-for="ResponsiblePersonPhone" class="form-control" maxlength="32" placeholder="@Localizer["ResponsiblePersonPhonePlaceholder"]" />
+                            <span asp-validation-for="ResponsiblePersonPhone" class="text-danger small mt-1"></span>
                         </div>
                         <div class="col-12">
                             <label asp-for="ResponsiblePersonEmail" class="form-label fw-medium">@Localizer["ResponsiblePersonEmail"]</label>
@@ -273,6 +293,7 @@
                         <div class="col-12">
                             <label asp-for="ExternalReference" class="form-label fw-medium">@Localizer["ExternalReference"]</label>
                             <input asp-for="ExternalReference" class="form-control" maxlength="128" placeholder="@Localizer["ExternalReferencePlaceholder"]" />
+                            <span asp-validation-for="ExternalReference" class="text-danger small mt-1"></span>
                             <div class="form-text">@Localizer["ExternalReferenceHelp"]</div>
                         </div>
                     </div>

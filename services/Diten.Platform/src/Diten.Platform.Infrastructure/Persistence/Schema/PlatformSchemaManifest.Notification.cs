@@ -139,6 +139,22 @@ public static partial class PlatformSchemaManifest
                                 Builders<NotificationDispatch>.Filter.Eq(x => x.Status, Domain.Enums.NotificationDispatchStatus.Failed),
                                 Builders<NotificationDispatch>.Filter.Exists(x => x.NextRetryAt, true))
                         }),
+                    // WP-VW-W5 W5-FIX2 (F-1) — the sweep's claim of internal-dispatch rows waiting for their FIRST send
+                    // (NotificationDispatchRepository.ClaimDueQueuedAsync). Cross-tenant like the retry index above; a new
+                    // index rather than a wider partial filter on that one (a changed filter under the same name is an
+                    // IndexOptionsConflict at startup). Only Queued rows WITH a NextRetryAt are in it — the queue-only ones.
+                    new CreateIndexModel<NotificationDispatch>(
+                        Builders<NotificationDispatch>.IndexKeys
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.NextRetryAt),
+                        new CreateIndexOptions<NotificationDispatch>
+                        {
+                            Name = "ix_notification_dispatches_queued_due",
+                            PartialFilterExpression = Builders<NotificationDispatch>.Filter.And(
+                                Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false),
+                                Builders<NotificationDispatch>.Filter.Eq(x => x.Status, Domain.Enums.NotificationDispatchStatus.Queued),
+                                Builders<NotificationDispatch>.Filter.Exists(x => x.NextRetryAt, true))
+                        }),
                     // BL-454 — the retry sweep's window close (NotificationDispatchRepository.RetryWindowExpiredFilter):
                     // cross-tenant like the retry index above, run every minute. Status + QueuedAt are the bounds; the
                     // PARTIAL filter keeps a closed row (PermanentlyFailedNotifiedAt set) out of the index altogether, so
@@ -172,6 +188,21 @@ public static partial class PlatformSchemaManifest
                                     x => x.PermanentlyFailedNotifiedAt, NotificationDispatch.PermanentFailurePending))
                         })
 
+            }),
+        // WP-VW-W5 W5-FIX2 (F-1) — one claim per (tenant, asking module, key): the unique index IS the idempotency rule, so
+        // two concurrent internal dispatch calls with one key land exactly one row. Not partial on IsDeleted: a key is never
+        // deleted (a refused call RELEASES it), and a deleted one must still block a second dispatch.
+        Collection<InternalDispatchKey>(
+            SchemaProfile.Notification,
+            PlatformCollections.InternalDispatchKeys,
+            () => new CreateIndexModel<InternalDispatchKey>[]
+            {
+                new CreateIndexModel<InternalDispatchKey>(
+                    Builders<InternalDispatchKey>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.SourceModule)
+                        .Ascending(x => x.Key),
+                    new CreateIndexOptions { Unique = true, Name = "ux_notification_internal_dispatch_keys_tenant_module_key" })
             }),
         /*
          * BL-279 — ONE index, and it is the exception the tenant-first rule (DB-001) names rather than a

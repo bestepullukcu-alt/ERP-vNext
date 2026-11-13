@@ -5,8 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Umbrales de potencial</value></data>
-  <data name="Crumb" xml:space="preserve"><value>Ajustes CRM / Perfiles de médicos</value></data>
-  <data name="Intro" xml:space="preserve"><value>Los pacientes mensuales de un médico en las indicaciones de un producto se clasifican como Bajo, Medio o Alto según estos límites. Una fila de producto prevalece sobre el valor predeterminado del inquilino; sin ninguno, se aplican los valores integrados.</value></data>
   <data name="AddProduct" xml:space="preserve"><value>Añadir producto</value></data>
   <data name="ReadOnly" xml:space="preserve"><value>Puede ver los umbrales; para cambiarlos necesita el permiso de gestión de umbrales.</value></data>
   <data name="RetryButton" xml:space="preserve"><value>Reintentar</value></data>
@@ -78,4 +76,6 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>No tiene permiso para esto.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>No se pudo contactar con el servidor; sus valores se conservan en esta pantalla.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la operación.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Los pacientes mensuales de un médico en las indicaciones de un producto se clasifican como Bajo, Medio o Alto según estos límites. Una fila de producto prevalece sobre el valor predeterminado del inquilino; sin ninguno, se aplican los valores integrados.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
 </root>

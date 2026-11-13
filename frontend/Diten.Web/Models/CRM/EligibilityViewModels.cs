@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Diten.Web.Models.CRM;
 
-// SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring view models. TenantId is never part of any model
+// SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) eligibility policy authoring view models. TenantId is never part of any model
 // (server-resolved). The console is the Compact route-based pattern (Claims/ContentScopes mirror); the evaluate panel is
 // JS-driven over the same-origin proxy. Condition/context VALUES are opaque reference strings (not entity ids) — free
 // multi-tag entry; Dimension / Match / the policy picker are searchable select2 (no raw entity-id — D14-e).

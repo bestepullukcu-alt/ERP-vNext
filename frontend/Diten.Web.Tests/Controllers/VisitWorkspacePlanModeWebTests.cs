@@ -245,7 +245,9 @@ public sealed class VisitWorkspacePlanModeWebTests
             Assert.Contains("Ziyaret mesai bitişini aşıyor, erkene alındı", list);
             var approve = d.GetProperty("approveCalls").EnumerateArray().Select(x => x.GetString()!).ToList();
             Assert.Contains(approve, c => c.StartsWith("POST /api/apply", StringComparison.Ordinal) && c.Contains("\"expectedVersion\":7"));
-            Assert.DoesNotContain(approve, c => c.StartsWith("GET /api/sessions/", StringComparison.Ordinal)); // the read's sessionVersion
+            // the read's sessionVersion: no session read BEFORE the apply (W6-FIX-e G-16 reads it AFTER, to redraw the band)
+            var applied = approve.FindIndex(c => c.StartsWith("POST /api/apply", StringComparison.Ordinal));
+            Assert.DoesNotContain(approve.Take(applied), c => c.StartsWith("GET /api/sessions/", StringComparison.Ordinal));
         }
     }
 

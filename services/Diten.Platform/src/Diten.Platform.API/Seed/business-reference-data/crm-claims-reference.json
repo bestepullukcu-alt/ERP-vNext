@@ -1,7 +1,7 @@
 {
   "catalog_version": "2026.09.28-crm-claims-reference",
   "module": "BusinessReferenceData",
-  "note": "WP-CL-REF-1 (Claims v2, CAND-CAP-0011 / MOD-0031): country content languages for claim country versions, the single-choice claim x country closure reason, the country adaptation type and the evidence type. The country axis itself is the existing global COUNTRY_CODES set (not declared here).",
+  "note": "WP-CL-REF-1 (Claims v2, MOD-0363, formerly CAND-CAP-0011 / MOD-0031): country content languages for claim country versions, the single-choice claim x country closure reason, the country adaptation type and the evidence type. The country axis itself is the existing global COUNTRY_CODES set (not declared here).",
   "sets": [
     {
       "set_code": "country-content-languages",

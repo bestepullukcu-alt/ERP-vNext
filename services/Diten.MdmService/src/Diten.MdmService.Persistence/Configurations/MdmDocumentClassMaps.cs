@@ -49,7 +49,15 @@ public static class MdmDocumentClassMaps
         // AutoMap + flag); the walk then covers what it embeds.
         typeof(Item),
         // FU04 S2: the item activation operation (mdm_item_workflow_operations).
-        typeof(ItemWorkflowOperation)
+        typeof(ItemWorkflowOperation),
+        // WP-SYNC-144 BL-640 (WP-VW-W4, W4-BE-b1 / b2): the competitor products, their proposal decisions (with the embedded
+        // fields, prices, history, merge trace, change log, approval rounds and decisions) and the event inbox's private
+        // record. The former CompetitorProductClassMaps never mapped the two roots (its MapIdMember on the inherited Id threw
+        // inside a swallowed ArgumentException), so they were the driver's own STRICT auto-map; the stored shape IS that
+        // auto-map (_id, standard UUIDs, no IsSelectable) — this registry adds only the flag. Their writes are field-level
+        // (FieldLevelUpdate): a field a later binary added survives an older binary's update.
+        typeof(CompetitorProduct), typeof(CompetitorProposalDecision),
+        NestedDocument(typeof(Repositories.MdmEventInboxRepository), "ProcessedEvent")
     ]);
 
     /// <summary>The document types the repositories read and write (collections, raw deserializations, projections) that

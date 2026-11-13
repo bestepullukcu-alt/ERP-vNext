@@ -77,9 +77,15 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
             SortOrder: 60,
             Icon: "bx-buildings",
             IsBaseline: false, // HARD: CRM is a licensed module — tenant entitlement required (never entitlement-free).
+            // SYNC 2026-11-09 (S0) — ONE list: main's WP-0149-AR-DL1-FU01 key and the test branch's MOD-0156 key each arrived as
+            // their own ApiPermissions argument (no textual conflict, CS1740 after the merge); both entries are kept as they were.
             ApiPermissions:
             [
-                new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant")
+                new ModuleManifestPermission(AccountLookupValidation, "Validate and look up accounts (Treasury AR, CRM-ACCOUNT-LOOKUP)", "Tenant"),
+                // WP-VW-W6 W6-BE-b + W6-WEB-b — the MOD-0156 key without a screen yet (the FX import endpoint; screen D enters and
+                // corrects rates one by one). The other fifteen MOD-0156 keys are the COMMERCIALPRICING page and its actions below,
+                // the MOD-0168 keys the PREORDERS / PREORDERSETTINGS pages. CrmService enforces each one with [HasPermission].
+                new ModuleManifestPermission("commercial.fx-rates.import", "Import FX Rates")
             ],
             Pages:
             [
@@ -164,6 +170,12 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("INSIGHTS_READ_ALL", "Read All Doctors' Insights", "crm.doctor-insights.read-all", "RowAction", 30, false, false, true),
                     new ModuleManifestAction("INSIGHTS_READ_AGGREGATE", "Read Aggregated Doctor Insights", "crm.doctor-insights.read-aggregate", "RowAction", 40, false, false, true)
                 ]),
+                // WP-VW-W3E (W3E-BE-a, §2.7) — the institution QR codes (bulk page: state, issue, print). Read = the QR state
+                // and history (never a payload); manage = issue / regenerate / revoke / print.
+                new ModuleManifestPage("CRM_VISIT_QR_CODES", "Visit QR Codes", "/CRM/VisitQrCodes", "crm.visit-qr.read", null, true, "List", 69,
+                [
+                    new ModuleManifestAction("QR_MANAGE", "Issue, Revoke and Print Institution QR Codes", "crm.visit-qr.manage", "Toolbar", 10, false, true, false)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
@@ -224,7 +236,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Journey", "crm.knowledge.content-engagement-journey.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.content-engagement-journey.publish", "RowAction", 20, false, false, true)
                 ]),
-                // SCMM-12 (CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
+                // SCMM-12 (MOD-0363, formerly CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
                 // approver SoD); there is no delete surface (closing a claim is Archive).
                 new ModuleManifestPage("CLAIMS", "Claims", "/CRM/Claims", ClaimRead, null, true, "List", 140,
                 [
@@ -257,7 +269,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
                 // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration
                 // of this manifest prunes both pages from the live menu.
-                // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
+                // SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
                 // manage (author-vs-evaluator SoD); no delete surface (Archive).
                 new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,
                 [
@@ -273,6 +285,190 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Policy", "crm.visit-frequency-policy.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("RESOLVE", "Resolve", "crm.visit-frequency-policy.resolve", "Toolbar", 20, false, true, false),
                     new ModuleManifestAction("DELETE", "Delete", "crm.visit-frequency-policy.manage", "RowAction", 30, false, false, true)
+                ]),
+                // WP-VW-W3E (BE-b, §2.7, K-W3E-11) — the manager's visit evidence flags (read only): .read = the caller's
+                // team (+ the caller), .read-all = the tenant.
+                new ModuleManifestPage("CRM_VISIT_EVIDENCE_FLAGS", "Visit Evidence Flags", "/CRM/VisitEvidenceFlags", "crm.visit-evidence-flags.read", null, true, "List", 71,
+                [
+                    new ModuleManifestAction("FLAGS_READ_ALL", "Read All Visit Evidence Flags (Tenant-Wide)", "crm.visit-evidence-flags.read-all", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W5 (W5-WEB, K-N9) — the sent visit e-mails (list + preview) and the notification settings card: .read =
+                // the caller's own + team's visit e-mails; .settings.manage = the tenant's PV / MSL mailboxes and switches, and
+                // every visit e-mail of the tenant (the settings tab is drawn only with it).
+                new ModuleManifestPage("CRM_VISIT_NOTIFICATIONS", "Sent Visit E-mails", "/CRM/VisitNotifications", "crm.visit-notifications.read", null, true, "List", 72,
+                [
+                    new ModuleManifestAction("SETTINGS_MANAGE", "Manage Visit Notification Settings", "crm.visit-notifications.settings.manage", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W6 (W6-WEB-a, MOD-0168 §9 / §14) — the pharmacy pre-orders (B list → A create / edit, Details, C approval,
+                // C-link, E document) and the tenant's pre-order settings. .read = own + team (+ the resolved approver); every
+                // other §14 key is an action of the page it is used on. DEFINITION ONLY — the role grant is W6-CFG.
+                new ModuleManifestPage("PREORDERS", "Pre-Orders", "/Commercial/PreOrders", "commercial.pre-orders.read", null, true, "List", 73,
+                [
+                    new ModuleManifestAction("READ_ALL", "Read All Pre-Orders", "commercial.pre-orders.read-all", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("CREATE", "Create and Edit Pre-Order Drafts", "commercial.pre-orders.create", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit Pre-Orders", "commercial.pre-orders.submit", "RowAction", 30, false, false, true),
+                    new ModuleManifestAction("APPROVE", "Approve, Reject or Send Back Pre-Orders", "commercial.pre-orders.approve", "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("CANCEL", "Cancel Pre-Orders", "commercial.pre-orders.cancel", "RowAction", 50, true, false, true),
+                    new ModuleManifestAction("RECORD_DEPOT_RESPONSE", "Record the Depot's Answer", "commercial.pre-orders.record-depot-response", "RowAction", 60, false, false, true),
+                    new ModuleManifestAction("RETRY_TRANSMISSION", "Retry a Failed Transmission", "commercial.pre-orders.retry-transmission", "RowAction", 70, false, false, true),
+                    new ModuleManifestAction("EXPORT", "Export Pre-Orders", "commercial.pre-orders.export", "Toolbar", 80, false, true, false)
+                ]),
+                new ModuleManifestPage("PREORDERSETTINGS", "Pre-Order Settings", "/Commercial/PreOrderSettings", "commercial.pre-order-settings.read", null, true, "Form", 74,
+                [
+                    new ModuleManifestAction("UPDATE", "Change Pre-Order Settings", "commercial.pre-order-settings.update", "Toolbar", 10, false, true, false)
+                ]),
+                // WP-VW-W6 (W6-WEB-b, MOD-0156 §9 / §14) — screen D, ONE menu item (Nav.Page.COMMERCIALPRICING) with five tabs:
+                // price lists · MF / discount rules · rule trial · change history · FX rates. The page opens with the price
+                // lists' read key; every other screen-D key is an action of it (the tabs a caller may open follow the keys).
+                // fx-rates.import has no screen yet and stays API-only below. DEFINITION ONLY — the role grant is W6-CFG.
+                new ModuleManifestPage("COMMERCIALPRICING", "Price Lists and Rules", "/Commercial/Pricing", "commercial.price-lists.read", null, true, "List", 75,
+                [
+                    new ModuleManifestAction("LISTS_CREATE", "Create Price List Drafts", "commercial.price-lists.create", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("LISTS_UPDATE", "Edit Price List Drafts", "commercial.price-lists.update", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("LISTS_IMPORT", "Import Price Lists", "commercial.price-lists.import", "Toolbar", 30, false, true, false),
+                    new ModuleManifestAction("LISTS_SUBMIT", "Submit Price Lists for Publication", "commercial.price-lists.submit", "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("LISTS_PUBLISH", "Publish or Return Price Lists (Four Eyes)", "commercial.price-lists.publish", "RowAction", 50, true, false, true),
+                    new ModuleManifestAction("LISTS_EXPORT", "Export Price Lists", "commercial.price-lists.export", "Toolbar", 60, false, true, false),
+                    new ModuleManifestAction("RULES_READ", "Read Pricing Rules and Try Them", "commercial.pricing-rules.read", "Toolbar", 70, false, true, false),
+                    new ModuleManifestAction("RULES_CREATE", "Create Pricing Rule Drafts", "commercial.pricing-rules.create", "Toolbar", 80, false, true, false),
+                    new ModuleManifestAction("RULES_UPDATE", "Revise or Retire Pricing Rules (Drafts)", "commercial.pricing-rules.update", "RowAction", 90, false, false, true),
+                    new ModuleManifestAction("RULES_SUBMIT", "Submit Pricing Rules for Approval", "commercial.pricing-rules.submit", "RowAction", 100, false, false, true),
+                    new ModuleManifestAction("RULES_PUBLISH", "Approve or Return Pricing Rules (Four Eyes)", "commercial.pricing-rules.publish", "RowAction", 110, true, false, true),
+                    new ModuleManifestAction("FX_READ", "Read FX Rates", "commercial.fx-rates.read", "Toolbar", 120, false, true, false),
+                    new ModuleManifestAction("FX_CREATE", "Enter FX Rates", "commercial.fx-rates.create", "Toolbar", 130, false, true, false),
+                    new ModuleManifestAction("FX_UPDATE", "Correct FX Rates", "commercial.fx-rates.update", "RowAction", 140, false, false, true)
                 ])
+            ],
+            // WP-VW-W5 PLT-NOTIFY (K-N3, K-N4) — the visit report e-mails, sent by MOD-0155 through the internal event dispatch
+            // (POST api/internal/notifications/events/dispatch, sourceModule MOD-0155 — InternalEventDispatchService lists it as
+            // speaking for this manifest). Email only; the templates are platform defaults in all seven tenant languages
+            // (NotificationTemplateSeed, 06 mockup). The variables are the package's contract annex (W5-BE, 2026-10-19), named as
+            // CRM sends them. No variable carries a patient's identity — there is none to carry.
+            NotificationEvents:
+            [
+                VisitReportEvent(VisitReportSubmittedEvent, "NotificationEvent_CrmVisitReportSubmitted", "Visit report submitted",
+                    "Sent to the representative's line manager when a visit report is submitted. An amendment sends nothing.",
+                    "Info", ["products", "note", "adverseEvent", "offLabelRequest", "followUpDate"]),
+                VisitReportEvent(VisitReportAdverseEventEvent, "NotificationEvent_CrmVisitReportAdverseEvent", "Adverse event reported in a visit",
+                    "Sent to pharmacovigilance (line manager in copy) when a visit report records an adverse event: 24-hour rule.",
+                    "Critical", ["products", "adverseEventNote"]),
+                VisitReportEvent(VisitReportOffLabelRequestEvent, "NotificationEvent_CrmVisitReportOffLabelRequest", "Off-label information request",
+                    "Sent to the medical science liaison (line manager in copy) when a doctor asked for off-label information.",
+                    "Warning", ["products"]),
+                VisitReportEvent(VisitReportOverdueEvent, "NotificationEvent_CrmVisitReportOverdue", "Visit report overdue",
+                    "Sent to the representative's line manager when a visit's report was not entered within its deadline.",
+                    "Warning", [], requiredExtra: ["deadline"]),
+                // WP-VW-W6 W6-BE-c1 — the MOD-0168 pre-order e-mails (MOD-0168 §4.6), sent by CRM through the internal event
+                // dispatch with sourceModule CRM. No target page and no page permission: the depot and the pharmacy are outside
+                // recipients, and the internal links are CRM's own variables (the W6-WEB-a pages /Commercial/PreOrders/…).
+                PreOrderEvent(PreOrderApprovalRequestedEvent, "NotificationEvent_CommercialPreOrderApprovalRequested", "Pre-order approval requested",
+                    "Sent to the approver(s) when a submitted pre-order needs approval: the one-time, signed-in approval link.",
+                    "Warning", ["approvalUrl"], ["expiresAt"]),
+                PreOrderEvent(PreOrderAutoApprovedEvent, "NotificationEvent_CommercialPreOrderAutoApproved", "Pre-order approved automatically",
+                    "Sent to the representative (line manager in copy) when a pre-order within every limit is approved by the tenant setting.",
+                    "Info", [], []),
+                PreOrderEvent(PreOrderChangesRequestedEvent, "NotificationEvent_CommercialPreOrderChangesRequested", "Pre-order changes requested",
+                    "Sent to the representative when the approver sends the pre-order back to the draft.",
+                    "Warning", ["reason"], []),
+                PreOrderEvent(PreOrderRejectedEvent, "NotificationEvent_CommercialPreOrderRejected", "Pre-order rejected",
+                    "Sent to the representative when the approver rejects the pre-order.",
+                    "Warning", ["reason"], []),
+                PreOrderEvent(PreOrderTransmittedDepotEvent, "NotificationEvent_CommercialPreOrderTransmittedDepot", "Pre-order sent to the depot",
+                    "Sent to the depot when an approved pre-order is transmitted (the depot copy is attached).",
+                    "Info", [], ["note"]),
+                PreOrderEvent(PreOrderPharmacyCopyEvent, "NotificationEvent_CommercialPreOrderPharmacyCopy", "Pre-order copy to the pharmacy",
+                    "Sent to the pharmacy when its pre-order is transmitted to the depot (the pharmacy copy is attached).",
+                    "Info", [], []),
+                PreOrderEvent(PreOrderCancelledEvent, "NotificationEvent_CommercialPreOrderCancelled", "Pre-order cancelled",
+                    "Sent to the representative and the line manager when a pre-order is cancelled, and to the depot and the pharmacy only when it had been transmitted.",
+                    "Warning", ["reason"], [])
             ]);
+
+    // WP-VW-W5 PLT-NOTIFY — the four visit report events (K-N4). Template key = event code. No hyphen in a code: the
+    // notification catalogue accepts lowercase dotted segments of letters and digits only (NotificationParsing), so the
+    // package's crm.visit-report.* names are written crm.visitreport.* (user decision 2026-10-19).
+    public const string VisitReportSubmittedEvent = "crm.visitreport.submitted";
+    public const string VisitReportAdverseEventEvent = "crm.visitreport.adverseevent";
+    public const string VisitReportOffLabelRequestEvent = "crm.visitreport.offlabelrequest";
+    public const string VisitReportOverdueEvent = "crm.visitreport.overdue";
+
+    /// <summary>What every visit report e-mail must carry (contract annex): the representative, the visit date
+    /// (yyyy-MM-dd) and the link to the report — CRM always has them. A required variable that arrives empty is refused by
+    /// the dispatch adapter, so a value CRM may leave empty is never required.</summary>
+    public static readonly IReadOnlyList<string> VisitReportRequiredVariables = ["repName", "visitDate", "reportUrl"];
+
+    /// <summary>Shown when CRM has them (an empty one hides its row): the doctor and the institution — empty when the visit
+    /// has no contact or account.</summary>
+    public static readonly IReadOnlyList<string> VisitReportOptionalVariables = ["doctorName", "institutionName"];
+
+    // WP-VW-W6 W6-BE-c1 — the seven pre-order events (MOD-0168 §4.6). The package wrote them commercial.pre-order.*; the
+    // catalogue accepts no hyphen, so they are written without one (the W5 lesson). CRM pins the same seven strings.
+    public const string PreOrderApprovalRequestedEvent = "commercial.preorder.approvalrequested";
+    public const string PreOrderAutoApprovedEvent = "commercial.preorder.autoapproved";
+    public const string PreOrderChangesRequestedEvent = "commercial.preorder.changesrequested";
+    public const string PreOrderRejectedEvent = "commercial.preorder.rejected";
+    public const string PreOrderTransmittedDepotEvent = "commercial.preorder.transmitteddepot";
+    public const string PreOrderPharmacyCopyEvent = "commercial.preorder.pharmacycopy";
+    public const string PreOrderCancelledEvent = "commercial.preorder.cancelled";
+
+    public static readonly IReadOnlyList<string> PreOrderEvents =
+    [
+        PreOrderApprovalRequestedEvent, PreOrderAutoApprovedEvent, PreOrderChangesRequestedEvent, PreOrderRejectedEvent,
+        PreOrderTransmittedDepotEvent, PreOrderPharmacyCopyEvent, PreOrderCancelledEvent
+    ];
+
+    /// <summary>What every pre-order e-mail carries (CRM always has them): the order number and the pharmacy.</summary>
+    public static readonly IReadOnlyList<string> PreOrderRequiredVariables = ["orderCode", "pharmacyName"];
+
+    /// <summary>Shown when CRM has them (an empty one hides its row; an empty orderUrl hides the button — external mails).</summary>
+    public static readonly IReadOnlyList<string> PreOrderOptionalVariables =
+        ["repName", "depotName", "deliveryDate", "lineCount", "totalText", "orderUrl", "sellerName"];
+
+    private static ModuleManifestNotificationEvent PreOrderEvent(
+        string eventCode, string displayNameKey, string fallbackDisplayName, string description, string severity,
+        IReadOnlyList<string> requiredExtra, IReadOnlyList<string> optionalExtra) =>
+        new(
+            EventCode: eventCode,
+            Channel: "Email",
+            DefaultTemplateKey: eventCode,
+            DisplayNameKey: displayNameKey,
+            FallbackDisplayName: fallbackDisplayName,
+            Description: description,
+            RequiredVariables: PreOrderRequiredVariables.Concat(requiredExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
+            OptionalVariables: PreOrderOptionalVariables.Concat(optionalExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name, IsRequired: false))
+                .ToList(),
+            TargetPageCode: null,
+            RequiredPermissionKey: null,
+            CanTenantOverride: true,
+            UsageType: "SystemEvent",
+            SeverityDefault: severity,
+            LinkPolicy: "None",
+            Status: "Active");
+
+    private static ModuleManifestNotificationEvent VisitReportEvent(
+        string eventCode, string displayNameKey, string fallbackDisplayName, string description, string severity,
+        IReadOnlyList<string> optionalExtra, IReadOnlyList<string>? requiredExtra = null) =>
+        new(
+            EventCode: eventCode,
+            Channel: "Email",
+            DefaultTemplateKey: eventCode,
+            DisplayNameKey: displayNameKey,
+            FallbackDisplayName: fallbackDisplayName,
+            Description: description,
+            RequiredVariables: VisitReportRequiredVariables.Concat(requiredExtra ?? [])
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
+            OptionalVariables: VisitReportOptionalVariables.Concat(optionalExtra)
+                .Select(name => new ModuleManifestNotificationVariable(name, IsRequired: false))
+                .ToList(),
+            TargetPageCode: "VISIT_WORKSPACE",
+            RequiredPermissionKey: VisitReportRead,
+            CanTenantOverride: true,
+            UsageType: "SystemEvent",
+            SeverityDefault: severity,
+            LinkPolicy: "TargetPage",
+            Status: "Active");
 }

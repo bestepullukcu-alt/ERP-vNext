@@ -15,7 +15,7 @@
  * only what changed, guarded by If-Match (stale → LOCATION_CONFLICT: "reload", never a silent retry). One
  * Idempotency-Key per opened create form: a double submit is a replay, never a second location.
  *
- * STATUS (K-04…K-06): Activate / Deactivate / Archive through the shared window.showConfirm (MOD-0013, one dialog
+ * STATUS (K-04…K-06): Activate / Deactivate / Archive through the shared window.showConfirm (MOD-0286 (formerly MOD-0013), one dialog
  * implementation). Archive is the danger variant and says it cannot be undone. A refusal (LOCATION_HAS_STOCK,
  * LOCATION_HAS_ACTIVE_CHILDREN, LOCATION_PARENT_INACTIVE …) stays IN the dialog through its didOpen seam — the
  * FU01 pattern — with the reference id; nothing is changed.

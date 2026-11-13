@@ -31,6 +31,7 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
     private readonly IVisitRescheduleUnitOfWork? _reschedule;
     private readonly VisitWorkspaceDays? _days;
     private readonly IVisitExecutionRepository? _executions;
+    private readonly Features.VisitNotifications.IVisitReportNotifier? _notifier;
 
     public SubmitVisitReportHandler(
         ITenantContext tenant, IActorContext actor,
@@ -40,8 +41,11 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
         IVisitRescheduleUnitOfWork? reschedule = null,
         VisitWorkspaceDays? days = null,
         // WP-VW-W3 (BE-a) — the visit's execution (finish before submit; ExecutedAt = the server startedAt).
-        IVisitExecutionRepository? executions = null)
+        IVisitExecutionRepository? executions = null,
+        // WP-VW-W5 (K-N4 / K-N8) — the report's e-mails after a successful submit (never part of it)
+        Features.VisitNotifications.IVisitReportNotifier? notifier = null)
     {
+        _notifier = notifier;
         _executions = executions;
         _reschedule = reschedule;
         _days = days;
@@ -53,7 +57,20 @@ public sealed class SubmitVisitReportHandler : IRequestHandler<SubmitVisitReport
         _plannedVisits = plannedVisits;
     }
 
+    /// <summary>WP-VW-W5 — the submit, then (when it stored a report) the report's e-mails: the notifier reads the stored
+    /// report itself and never throws, so the answer is the submit's whatever happens to the e-mail (K-N8).</summary>
     public async Task<Response<Guid>> Handle(SubmitVisitReportCommand request, CancellationToken cancellationToken)
+    {
+        var result = await SubmitAsync(request, cancellationToken);
+        if (result.IsSuccessful && _notifier is not null && _tenant.TenantId is { } tenantId && result.Data != Guid.Empty)
+        {
+            await _notifier.ReportSubmittedAsync(tenantId, result.Data, cancellationToken);
+        }
+
+        return result;
+    }
+
+    private async Task<Response<Guid>> SubmitAsync(SubmitVisitReportCommand request, CancellationToken cancellationToken)
     {
         if (_tenant.TenantId is not { } tenantId)
         {

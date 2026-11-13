@@ -24,7 +24,7 @@ namespace Diten.Web.Tests.Controllers;
 /// presentation page, the in_progress actions, createError null; (3) the proxies: start (multipart streamed) and the
 /// contract only with their keys, nothing else accepted; UAS-001 stays; (4) seven languages, no echo, Arabic RTL.
 /// </summary>
-public sealed class VisitWorkspaceStartWebTests
+public sealed partial class VisitWorkspaceStartWebTests
 {
     private const string GatewayUrl = "http://gateway.test";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
@@ -376,7 +376,9 @@ public sealed class VisitWorkspaceStartWebTests
         Assert.Contains("id=\"vw-e3-webcam\"", e3);
         Assert.Contains("id=\"vw-e3-upload\"", e3);
         Assert.Contains("Localizer[\"E3StartValue\"]", e3);
-        foreach (var banned in new[] { "qr", "anti-fraud", "antifraud", "kiracı ayarı", "tenant setting", "photoReq", "locReq" })
+        // WP-VW-W3E (W3E-WEB-a) — the QR section and the web device line belong to the window now (S1–S8); they are
+        // drawn only with contract.policy.qrMode / antiFraudMode (VisitWorkspaceStartW3EQrWebTests). No design note ever.
+        foreach (var banned in new[] { "anti-fraud", "antifraud", "kiracı ayarı", "tenant setting", "photoReq", "locReq" })
         {
             Assert.DoesNotContain(banned, e3, StringComparison.OrdinalIgnoreCase);
         }
@@ -384,7 +386,6 @@ public sealed class VisitWorkspaceStartWebTests
         var all = Script("workspace-core.js") + Script("visit-workspace.js");
         Assert.DoesNotContain("strategyTemplate", all, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("campaign", all, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("qr", Script("visit-workspace.js").Replace("querySelector", "", StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase);
         // nothing of the visit is kept in the browser (the photo stays a blob in memory)
         Assert.DoesNotContain("localStorage.setItem", Script("visit-workspace.js"));
     }
@@ -407,8 +408,13 @@ public sealed class VisitWorkspaceStartWebTests
         Assert.Equal("POST", sent.Method);
         Assert.Equal(GatewayUrl + "/api/crm/visit-execution/start", sent.Uri);
         Assert.Equal(TenantId.ToString(), sent.Tenant);
-        Assert.Equal(contentType, sent.ContentType);   // the boundary kept: the CRM parses the same body
-        Assert.Equal(body, sent.Body);                 // streamed through unchanged
+        // W3E-BE-b (K-W3E-10): the body is rebuilt — every field as it came, plus clientPlatform=web (a new boundary)
+        Assert.StartsWith("multipart/form-data", sent.ContentType);
+        var parts = await PartsAsync(sent.ContentType!, sent.Body!);
+        Assert.Equal(new[] { "plannedVisitId", "photo", "clientPlatform", "appVersion" }, parts.Select(x => x.Name).ToArray()); // + W3E-BE-c (D-2)
+        Assert.Equal(Id, parts[0].Value);
+        Assert.Equal(("JPEGDATA", "visit-photo.jpg", "image/jpeg"), (parts[1].Value, parts[1].FileName, parts[1].ContentType));
+        Assert.Equal("web", parts[2].Value);
 
         // without the record key: 403, nothing reaches the gateway (the read key is not enough)
         var (noKeyGateway, noKey) = Arrange([ExecRead, ReportRead, PlanRead], body, contentType);

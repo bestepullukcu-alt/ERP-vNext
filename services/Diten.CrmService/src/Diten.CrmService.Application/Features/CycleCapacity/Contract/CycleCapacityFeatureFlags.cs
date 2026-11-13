@@ -55,7 +55,7 @@ public sealed record CycleCapacityFeatureFlags(
         SupportsComputedValuePersistence: false,            // the figure is a read-time projection, never stored
         SupportsMultipleCapacitiesPerPeriod: false,         // 1:1 — scenarios are F-SCENARIO
         SupportsCyclePeriodMutation: false,                 // MOD-0165 FU06/FU07 owns the period; nothing is written
-        SupportsWorkingCalendarWrite: false,                // CAND-CAP-0008 owns the calendar
+        SupportsWorkingCalendarWrite: false,                // MOD-0362 (formerly CAND-CAP-0010 / CAND-CAP-0008) owns the calendar
         SupportsOrganizationUnitCalendarNarrowing: false,   // CRM has no organization-unit scope (F-WC-ORG-UNIT)
         SupportsBusinessUnitCalendarNarrowing: false,       // a value code is not an org-unit id (F-WC-ORG-UNIT)
         SupportsMicroTargetGeneration: false,               // MOD-0155 FU05

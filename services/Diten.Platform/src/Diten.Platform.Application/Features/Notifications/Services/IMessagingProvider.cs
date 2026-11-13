@@ -36,7 +36,13 @@ public sealed record MessagingProviderEmailRequest(
     /// provider on its settings row's own name, exactly as before. The ADDRESS is never carried here: it stays
     /// the settings row's.
     /// </summary>
-    string? SenderName = null);
+    string? SenderName = null,
+    /// <summary>
+    /// WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. This message's own reply address (already checked to be ONE plain address
+    /// by the queue handler), used over the settings row's. Null — every caller that predates it — leaves the provider
+    /// on the settings row's reply address, exactly as before.
+    /// </summary>
+    string? ReplyToEmail = null);
 
 /// <summary>One file attached to an outgoing e-mail — MOD-0357 S5b's own reason to exist is the meeting
 /// <c>.ics</c> invite, but the shape carries nothing meeting-specific.</summary>

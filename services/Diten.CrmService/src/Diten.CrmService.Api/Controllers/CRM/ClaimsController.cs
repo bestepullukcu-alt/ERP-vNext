@@ -9,7 +9,7 @@ using Perms = Diten.CrmService.Application.Features.ContentComposition.Claims.Cl
 namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
-/// SCMM-12-API (CAND-CAP-0011) — Claim authoring HTTP surface. Canonical under
+/// SCMM-12-API (MOD-0363, formerly CAND-CAP-0011) — Claim authoring HTTP surface. Canonical under
 /// <c>/api/crm/content-composition/claims</c>. A thin adapter over the ready Claim CQRS (SCMM-12): every action just
 /// maps the request onto the command/query and dispatches through MediatR — no business logic lives here. Approval is a
 /// dedicated action (draft → approved); there is <b>no delete endpoint</b> — closing a claim is Archive.

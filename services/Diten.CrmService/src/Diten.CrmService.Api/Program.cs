@@ -50,6 +50,10 @@ builder.WebHost.UseIISIntegration();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+// WP-VW-W3E (W3E-BE-a) — the visit QR signing keys from the secret store (crm-visit-qr-signing:<keyId>,
+// Crm:VisitQr:ActiveKeyId); Development falls back to a deterministic dev key with a warning, elsewhere no key = 503.
+builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "CrmService");
+builder.Services.AddSingleton<Diten.CrmService.Application.Features.VisitQr.IVisitQrKeyRing, Diten.CrmService.Api.Security.SecretsVisitQrKeyRing>();
 // CRM-AUD-KN-01 (BL-501, AUD-001 K4 path b): every marked write command also lands in Platform's central audit log. The
 // outbox is in this service's database; RequireEnlistment stays false — CRM's Knowledge writes own no Mongo transaction,
 // so the record is written right after the command succeeds (owner decision K-AUD-2: not the §4.4 K2 class). Registered

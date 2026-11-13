@@ -1,4 +1,4 @@
-﻿<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:schema id="root">
     <xs:element name="root" ns1:IsDataSet="true">
@@ -2055,6 +2055,672 @@
   </data>
   <data name="Help.ESIGNSAMPLEAPPROVALS.Step5Title" xml:space="preserve">
     <value>自己的样本交给他人</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Purpose" xml:space="preserve">
+    <value>设置代表开始拜访时必须提供的证据：位置、照片、机构二维码和设备验证。设置分层，最具体的生效：业务单元设置优先于法人实体设置，法人实体设置优先于租户设置；限时例外会在一段时间内为某一位代表放宽规则。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Audience" xml:space="preserve">
+    <value>销售运营经理</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Immediate" xml:space="preserve">
+    <value>保存并应用设置</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1" xml:space="preserve">
+    <value>在“分范围设置”选项卡的“范围”中选择租户、某个法人实体或业务单元。要新建范围，请点击“添加法人实体”或“添加业务单元”；新范围初始为空，所有字段都继承自上级。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step1Title" xml:space="preserve">
+    <value>选择范围</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2" xml:space="preserve">
+    <value>在“设置表单”中，对要更改的字段点击“在此范围中更改”；“恢复为上级设置”会重新继承上级的值。点击“保存”，检查变更的行及受影响的代表人数，然后用“保存并应用”确认。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step2Title" xml:space="preserve">
+    <value>更改字段并应用</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3" xml:space="preserve">
+    <value>“查看代表的生效设置”显示每个字段的值及其来源范围。“变更历史”按范围显示谁在何时更改了什么；“代表”显示每位代表所适用的范围。“移除范围”会立即让其代表恢复为上级设置；请按 Ctrl+Enter（Mac 上为 ⌘+Enter）确认。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step3Title" xml:space="preserve">
+    <value>查看来源和历史</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4" xml:space="preserve">
+    <value>在“限时例外”选项卡中点击“新建例外”。填写代表、要放宽的规则、最长 30 天的日期范围和理由，然后点击“提交审批”或按 Ctrl+Enter（Mac 上为 ⌘+Enter）。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step4Title" xml:space="preserve">
+    <value>申请限时例外</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5" xml:space="preserve">
+    <value>例外在任务中心中审批；申请人不能审批自己的例外。只有已批准且在日期范围内的例外才会生效。在快速查看中，“取消例外”和“提前结束”需要填写理由；填写后按 Ctrl+Enter 确认。</value>
+  </data>
+  <data name="Help.VISITEVIDENCESETTINGS.Step5Title" xml:space="preserve">
+    <value>管理例外</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Purpose" xml:space="preserve">
+    <value>查看已开始拜访的证据标记：位置过远或缺失、拜访过短、二维码未扫描或无效、在例外下开始。标记是需要查看的线索，本身并不表示违反了规则。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Audience" xml:space="preserve">
+    <value>区域经理和销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1" xml:space="preserve">
+    <value>在“期间”中选择“最近 7 天”、“最近 30 天”或“自定义范围…”。自定义范围最长 92 天。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step1Title" xml:space="preserve">
+    <value>选择期间</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2" xml:space="preserve">
+    <value>按“代表”、“机构”和标记类型筛选。“仅已标记”默认开启；关闭后也会列出没有标记的拜访。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3" xml:space="preserve">
+    <value>顶部的卡片显示“已开始的拜访”、“已标记的拜访”和“按标记类型”。一次拜访可以有多个标记。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step3Title" xml:space="preserve">
+    <value>阅读汇总</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4" xml:space="preserve">
+    <value>行的快速查看显示位置、到机构的距离、二维码结果以及例外（如有）；查看照片需要单独的权限。“打开拜访”会打开该拜访本身。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step4Title" xml:space="preserve">
+    <value>打开证据</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5" xml:space="preserve">
+    <value>“代表汇总”选项卡按代表显示已开始和已标记的拜访、比率以及最常见的标记。点击某一行，拜访列表会按该代表筛选。</value>
+  </data>
+  <data name="Help.CRMVISITEVIDENCEFLAGS.Step5Title" xml:space="preserve">
+    <value>比较代表</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Purpose" xml:space="preserve">
+    <value>查看 CRM 根据拜访报告自动发送的邮件（报告摘要、不良事件、超说明书请求、报告逾期）及其收件人和状态，并按原样打开每封邮件。不显示任何邮箱地址。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Audience" xml:space="preserve">
+    <value>代表（本人的拜访）、直属经理（其团队）以及销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1" xml:space="preserve">
+    <value>设置“期间”：最近 30 天、最近 7 天、本月或“自定义范围…”。期间按拜访日期计算。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step1Title" xml:space="preserve">
+    <value>选择期间</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2" xml:space="preserve">
+    <value>按“邮件类型”、“状态”以及（经理可用）“代表”筛选。“药物警戒路由待定”表示未设置药物警戒安全邮箱，仅通知了直属经理。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step2Title" xml:space="preserve">
+    <value>缩小列表</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3" xml:space="preserve">
+    <value>“收件人”列显示角色而非地址：“直属经理”、“药物警戒”、“医学联络官 (MSL)”。安全邮件发给药物警戒或 MSL，并抄送直属经理。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step3Title" xml:space="preserve">
+    <value>查看收件人</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4" xml:space="preserve">
+    <value>行的“快速查看”按发送时的样子显示邮件：主题、“收件人”、“抄送”、“日期”、内容以及“查看报告”。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step4Title" xml:space="preserve">
+    <value>打开邮件</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5" xml:space="preserve">
+    <value>拥有设置权限时，可在“通知设置”选项卡设置“药物警戒安全邮箱”和“MSL 邮箱”，并开关报告摘要和逾期提醒。如有他人同时保存，请刷新后再保存。</value>
+  </data>
+  <data name="Help.CRMVISITNOTIFICATIONS.Step5Title" xml:space="preserve">
+    <value>设置邮箱</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Purpose" xml:space="preserve">
+    <value>管理张贴在机构接待处的二维码。代表开始拜访时扫描此码；没有自己代码的下级单位使用上级机构的代码。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Audience" xml:space="preserve">
+    <value>销售运营团队</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Immediate" xml:space="preserve">
+    <value>生成、重新生成和撤销代码</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1" xml:space="preserve">
+    <value>按“区域”、“城市”、“机构类型”和“二维码状态”筛选列表。“最近扫描”和“近 30 天”显示代码是否在使用。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step1Title" xml:space="preserve">
+    <value>查找机构</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2" xml:space="preserve">
+    <value>选择行并执行“为所选生成（无二维码的）”；已有有效代码的机构会被跳过。一次最多可选择 200 家机构。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step2Title" xml:space="preserve">
+    <value>批量生成</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3" xml:space="preserve">
+    <value>用行上的“打印二维码”打印单个代码，用“打印所选（标签页）”打印多个代码。在打印页面选择“单张”或“标签页”，然后点击“打印”。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step3Title" xml:space="preserve">
+    <value>打印</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4" xml:space="preserve">
+    <value>在机构页面的“机构二维码”卡片上使用“重新生成”或“撤销”。两者都会使张贴和打印的旧代码立即失效；撤销需要填写理由。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step4Title" xml:space="preserve">
+    <value>更新或撤销代码</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5" xml:space="preserve">
+    <value>代码是必需还是可选，由拜访证据页面上的“机构二维码”设置决定。在必需设置下，在没有代码的机构开始的拜访会被标记。</value>
+  </data>
+  <data name="Help.CRMVISITQRCODES.Step5Title" xml:space="preserve">
+    <value>结合设置理解</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Purpose" xml:space="preserve">
+    <value>设置界限，将医生在某产品适应症中的月患者数分为低、中或高。产品行优先于租户默认值；两者都没有时使用内置值。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Audience" xml:space="preserve">
+    <value>销售运营和市场经理</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Immediate" xml:space="preserve">
+    <value>阈值变更</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1" xml:space="preserve">
+    <value>在“阈值”选项卡中，“租户默认值”行在任何排序下都保持在最上方；产品行优先于它。“来源”列显示值的来源。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step1Title" xml:space="preserve">
+    <value>查看阈值</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2" xml:space="preserve">
+    <value>行的“编辑”操作会打开侧边面板。输入“低于此值为低（X）”和“高于此值为高（Y）”；在预览中输入一个月患者数，查看其分类。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step2Title" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3" xml:space="preserve">
+    <value>点击“保存”或按 Enter；检查变更的值，然后用“是，保存”确认。变更立即生效。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step3Title" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4" xml:space="preserve">
+    <value>如果某个产品需要不同于默认值的界限，用“添加产品”为其开设单独的行。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step4Title" xml:space="preserve">
+    <value>添加产品</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5" xml:space="preserve">
+    <value>“变更历史”选项卡显示每次变更的人员、行以及旧值 → 新值；列表可导出为 CSV 或 Excel。</value>
+  </data>
+  <data name="Help.CRMDOCTORINSIGHTTHRESHOLDS.Step5Title" xml:space="preserve">
+    <value>查看历史</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Purpose" xml:space="preserve">
+    <value>为代表在拜访中可能听到的医生异议编写已批准的回答。已批准的回答会在知识路径步骤中被选为预期异议，并在演示期间显示在代表的备注中。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Audience" xml:space="preserve">
+    <value>内容团队和医学审批人</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Immediate" xml:space="preserve">
+    <value>停用回答</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1" xml:space="preserve">
+    <value>按“产品”、“类别”和“状态”缩小列表，或在异议文本中搜索。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step1Title" xml:space="preserve">
+    <value>筛选资料库</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2" xml:space="preserve">
+    <value>点击“新建异议回应”；填写“产品”、“类别”、“异议 · 医生的问题”和“已批准回应”，从该产品已批准的声明中选择依据，然后点击“保存草稿”。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step2Title" xml:space="preserve">
+    <value>编写回答</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3" xml:space="preserve">
+    <value>“提交审批”会在审核期间锁定回答；“撤回”可将其退回草稿。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step3Title" xml:space="preserve">
+    <value>提交审批</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4" xml:space="preserve">
+    <value>审批人选择“批准”，或写下备注并选择“退回草稿”。编写或提交回答的人不能批准它。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step4Title" xml:space="preserve">
+    <value>批准或退回</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5" xml:space="preserve">
+    <value>已批准的回答不能更改；请用“从副本新建草稿”新建草稿。“停用”会立即从所有演示中移除该回答，且无法撤销；“使用位置”显示受影响的步骤。</value>
+  </data>
+  <data name="Help.OBJECTIONRESPONSES.Step5Title" xml:space="preserve">
+    <value>更改或停用</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Purpose" xml:space="preserve">
+    <value>管理代表在报告中选作竞品的产品：公司、活性成分、与之竞争的我方产品，以及各国的价格和报销。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Audience" xml:space="preserve">
+    <value>主数据和销售运营团队</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Immediate" xml:space="preserve">
+    <value>保存、停用</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1" xml:space="preserve">
+    <value>按“我方产品”、“公司”、“活性成分”、“国家”或“状态”筛选；搜索也会覆盖其他名称。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step1Title" xml:space="preserve">
+    <value>筛选列表</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2" xml:space="preserve">
+    <value>点击“新建竞品”；填写名称、公司、活性成分和至少一个我方产品，在国家行中写明每盒价格和报销，然后点击“保存”。“代表视图”显示代表在报告中看到的卡片。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step2Title" xml:space="preserve">
+    <value>添加记录</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3" xml:space="preserve">
+    <value>“代表建议”选项卡中是代表在报告中填写的新竞品。通过“决定”准备完成、合并或拒绝的决定，然后点击“提交审批”。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step3Title" xml:space="preserve">
+    <value>处理提议</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4" xml:space="preserve">
+    <value>决定在任务中心中获批后生效；准备决定的人不能批准它。在此之前，该提议只在提议代表的报告中使用。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step4Title" xml:space="preserve">
+    <value>等待审批</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5" xml:space="preserve">
+    <value>详情页面显示“报告中的使用情况”和“变更历史”。“与其他记录合并”会在审批后将记录关联到另一条记录，且无法撤销；“停用”使其在新报告中不可选。</value>
+  </data>
+  <data name="Help.COMPETITORPRODUCTS.Step5Title" xml:space="preserve">
+    <value>管理记录</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Purpose" xml:space="preserve">
+    <value>在一个日历中计划、拜访并报告您的一周。开始拜访时会采集租户要求的证据（位置、照片、机构二维码）；报告须在 48 小时内发送。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Audience" xml:space="preserve">
+    <value>一线代表和区域经理</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Immediate" xml:space="preserve">
+    <value>批准一周、开始拜访、发送报告</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1" xml:space="preserve">
+    <value>切换到“计划”模式；将目标医生拖到某一天或某个时间。用“应用产品”为机构已计划的医生添加产品。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step1Title" xml:space="preserve">
+    <value>计划一周</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2" xml:space="preserve">
+    <value>计划就绪后点击“确认本周”。已批准的一周为只读；如需更改，请填写理由并使用“重新开放本周”。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step2Title" xml:space="preserve">
+    <value>批准一周</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3" xml:space="preserve">
+    <value>在“执行”模式下打开今天的拜访，到达机构后点击“开始拜访”。根据设置，会要求照片、位置和“机构二维码”；随后“开始演示”会打开演示。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step3Title" xml:space="preserve">
+    <value>开始拜访</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4" xml:space="preserve">
+    <value>拜访后点击“提交报告”。报告有 48 小时时限；超时后记录会被锁定。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step4Title" xml:space="preserve">
+    <value>报告</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5" xml:space="preserve">
+    <value>对于未进行的拜访，选择“未完成”或“改期”并填写原因。可用“计划外拜访”为今天添加一个计划外拜访。</value>
+  </data>
+  <data name="Help.VISITWORKSPACE.Step5Title" xml:space="preserve">
+    <value>关闭未完成的拜访</value>
+  </data>
+  <data name="Help.PREORDERS.Purpose" xml:space="preserve">
+    <value>列出您可查看的药店预订单——您自己的、团队的以及等待您审批的——及其状态和经销商答复。</value>
+  </data>
+  <data name="Help.PREORDERS.Audience" xml:space="preserve">
+    <value>代表、其经理（审批人）和销售运营。</value>
+  </data>
+  <data name="Help.PREORDERS.Step1Title" xml:space="preserve">
+    <value>筛选列表</value>
+  </data>
+  <data name="Help.PREORDERS.Step1" xml:space="preserve">
+    <value>打开“筛选”：期间、状态、药店、经销商、产品、国家——审批人还可选“待我审批”。</value>
+  </data>
+  <data name="Help.PREORDERS.Step2Title" xml:space="preserve">
+    <value>查看金额</value>
+  </data>
+  <data name="Help.PREORDERS.Step2" xml:space="preserve">
+    <value>每个合计都标明各自货币；不同货币的订单从不相加。“本币等值”可在列显示中打开。</value>
+  </data>
+  <data name="Help.PREORDERS.Step3Title" xml:space="preserve">
+    <value>打开快速查看</value>
+  </data>
+  <data name="Help.PREORDERS.Step3" xml:space="preserve">
+    <value>眼睛图标显示明细行、合计和时间线，并链接到单据和审批。</value>
+  </data>
+  <data name="Help.PREORDERS.Step4Title" xml:space="preserve">
+    <value>登记经销商答复</value>
+  </data>
+  <data name="Help.PREORDERS.Step4" xml:space="preserve">
+    <value>销售运营在快速查看中将已转交订单标记为“已交货”或“部分交货”（每行盒数和备注）。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Purpose" xml:space="preserve">
+    <value>记录药店订单以转交其经销商，发票由经销商开具。公司、货币和价格均来自系统。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Audience" xml:space="preserve">
+    <value>一线代表（平板和手机）。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1Title" xml:space="preserve">
+    <value>选择药店和产品</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step1" xml:space="preserve">
+    <value>搜索药店，然后添加产品及其数量、赠品（例如 10+2），如有生效价目表还可填写折扣。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2Title" xml:space="preserve">
+    <value>留意规则标记</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step2" xml:space="preserve">
+    <value>每行显示“在限额内”“需要审批”或“不允许”，并注明超出的限额。不允许的行必须修改。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3Title" xml:space="preserve">
+    <value>保存并请药剂师签名</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step3" xml:space="preserve">
+    <value>“保存草稿”会生成订单号。选择经销商，然后把设备交给药剂师签名。修改明细行会清除签名。</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4Title" xml:space="preserve">
+    <value>发送</value>
+  </data>
+  <data name="Help.COMPREORDERFORM.Step4" xml:space="preserve">
+    <value>没有阻碍时“发送”才可用（原因写在下方）；需要审批时按钮显示为“提交经理审批”。发送后的订单在其详情页打开：等待审批人，或在租户允许时直接转交经销商。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Purpose" xml:space="preserve">
+    <value>审批等待您处理的预订单：通过、拒绝或退回修改。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Audience" xml:space="preserve">
+    <value>代表的经理（直属上级岗位）。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1Title" xml:space="preserve">
+    <value>查看为何由您审批</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step1" xml:space="preserve">
+    <value>“为什么由我审批？”说明是租户设置还是超出软限额的明细行。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2Title" xml:space="preserve">
+    <value>与限额对比</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step2" xml:space="preserve">
+    <value>每个单元格显示输入值，下方为规则限额；药店最近六个月的数据在右侧。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3Title" xml:space="preserve">
+    <value>作出决定</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step3" xml:space="preserve">
+    <value>“审批通过”会再确认一次，然后把订单转交经销商。“拒绝”和“要求修改”需要理由；要求修改会把订单作为草稿退回代表。</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4Title" xml:space="preserve">
+    <value>通过邮件链接</value>
+  </data>
+  <data name="Help.COMPREORDERAPPROVE.Step4" xml:space="preserve">
+    <value>邮件链接需要登录，只能使用一次并会过期；以第一位审批人的决定为准。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Purpose" xml:space="preserve">
+    <value>设置本租户预订单的审批、定价、编号和转交方式。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Audience" xml:space="preserve">
+    <value>销售运营。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1Title" xml:space="preserve">
+    <value>选择审批模式</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step1" xml:space="preserve">
+    <value>“始终需要经理审批”（默认）或“在限额内自动审批”——超出软限额的订单仍交经理审批。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2Title" xml:space="preserve">
+    <value>设置链接和重试</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step2" xml:space="preserve">
+    <value>审批链接有效期 12–168 小时（默认 48）；转交失败会自动重试 0–10 次。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3Title" xml:space="preserve">
+    <value>选择价格层级</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step3" xml:space="preserve">
+    <value>按国家：药剂师采购价（默认）、经销商价或零售价。</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4Title" xml:space="preserve">
+    <value>为每家公司设置前缀</value>
+  </data>
+  <data name="Help.PREORDERSETTINGS.Step4" xml:space="preserve">
+    <value>订单编号以 2–5 个字母开头（MG-ORD-000123）。已用于编号的前缀会被锁定。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Purpose" xml:space="preserve">
+    <value>各销售公司、国家和货币的价目表：预订单读取的价格。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Audience" xml:space="preserve">
+    <value>市场部（准备）与销售运营（发布）。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1Title" xml:space="preserve">
+    <value>查看状态</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step1" xml:space="preserve">
+    <value>草稿、审核中、已计划、生效中或已过期——按当日判断；每个公司和国家只有一份生效价目表。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2Title" xml:space="preserve">
+    <value>新增价目表</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step2" xml:space="preserve">
+    <value>“新建价目表”手动录入，或“导入”Excel / CSV 文件。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3Title" xml:space="preserve">
+    <value>使用标签页</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step3" xml:space="preserve">
+    <value>规则、规则试算、变更历史和汇率位于其他标签页。</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4Title" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="Help.COMMERCIALPRICING.Step4" xml:space="preserve">
+    <value>“导出”会输出符合筛选的全部价目表及可见列。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Purpose" xml:space="preserve">
+    <value>单份价目表：表头、明细及与上一版本的差异；发布需由另一人完成。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Audience" xml:space="preserve">
+    <value>市场部（准备）与销售运营（发布）。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1Title" xml:space="preserve">
+    <value>填写表头</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step1" xml:space="preserve">
+    <value>名称、销售公司、货币、类型和首日；国家取自公司。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2Title" xml:space="preserve">
+    <value>添加明细</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step2" xml:space="preserve">
+    <value>每个产品一次，填写经销商价、药剂师采购价、零售价和增值税。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3Title" xml:space="preserve">
+    <value>提交发布</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step3" xml:space="preserve">
+    <value>“提交发布”交由另一人处理；准备人看不到“发布”。</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4Title" xml:space="preserve">
+    <value>修改已发布的价目表</value>
+  </data>
+  <data name="Help.COMPRICELISTFORM.Step4" xml:space="preserve">
+    <value>已发布的价目表不能编辑：“新建版本”会复制为新草稿。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Purpose" xml:space="preserve">
+    <value>分三步从 Excel / CSV 文件导入价目表。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Audience" xml:space="preserve">
+    <value>市场部。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1Title" xml:space="preserve">
+    <value>选择文件</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step1" xml:space="preserve">
+    <value>表头（货币必填）、文件以及必要时的列名。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2Title" xml:space="preserve">
+    <value>检查预览</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step2" xml:space="preserve">
+    <value>已匹配、未匹配、已停用、重复和价格无效的行分别统计，并显示与生效价目表的差异。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3Title" xml:space="preserve">
+    <value>生成草稿</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step3" xml:space="preserve">
+    <value>“生成草稿”只采用已匹配的行；条码（GTIN）匹配在 product-master v1.2 之前关闭。</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4Title" xml:space="preserve">
+    <value>提交发布</value>
+  </data>
+  <data name="Help.COMPRICELISTIMPORT.Step4" xml:space="preserve">
+    <value>草稿交由另一人发布或退回。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Purpose" xml:space="preserve">
+    <value>按公司和产品设定的赠品 / 折扣限额，预订单各行据此检查。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Audience" xml:space="preserve">
+    <value>市场部（准备）与销售运营（审批）。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1Title" xml:space="preserve">
+    <value>查看软 / 硬限额</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step1" xml:space="preserve">
+    <value>超出软限额时订单交经理审批；超出硬限额时该行不能录入。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2Title" xml:space="preserve">
+    <value>最具体的规则优先</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step2" xml:space="preserve">
+    <value>带期间的规则优先于通用规则；细分稍后推出。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3Title" xml:space="preserve">
+    <value>修改规则</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step3" xml:space="preserve">
+    <value>有效规则通过“修订”或“停用”变更：由另一人审批的新版本。</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4Title" xml:space="preserve">
+    <value>试算</value>
+  </data>
+  <data name="Help.COMPRICINGRULELIST.Step4" xml:space="preserve">
+    <value>“规则试算”标签页可在不保存的情况下显示某行的结果。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Purpose" xml:space="preserve">
+    <value>编写规则草稿：规则键及软 / 硬限额。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Audience" xml:space="preserve">
+    <value>市场部。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1Title" xml:space="preserve">
+    <value>选择规则键</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step1" xml:space="preserve">
+    <value>公司和产品（之后固定），若规则针对某期间则填写有效期。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2Title" xml:space="preserve">
+    <value>填写限额</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step2" xml:space="preserve">
+    <value>折扣 %、“10+2”形式的赠品、综合上限和数量；软限额不得高于硬限额。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3Title" xml:space="preserve">
+    <value>查看实际比例</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step3" xml:space="preserve">
+    <value>选择公司和产品后，系统在每个赠品旁显示实际比例。</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4Title" xml:space="preserve">
+    <value>提交审批</value>
+  </data>
+  <data name="Help.COMPRICINGRULEFORM.Step4" xml:space="preserve">
+    <value>保存后在规则页点击“提交审批”：由另一人使其生效。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Purpose" xml:space="preserve">
+    <value>在不保存的情况下显示一行订单从价目表和规则得到的结果。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Audience" xml:space="preserve">
+    <value>市场部与销售运营。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1Title" xml:space="preserve">
+    <value>填写该行</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step1" xml:space="preserve">
+    <value>公司、产品、数量、赠品和折扣；必要时填写日期和价格层级。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2Title" xml:space="preserve">
+    <value>试算</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step2" xml:space="preserve">
+    <value>“试算”向系统查询；不保存任何内容。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3Title" xml:space="preserve">
+    <value>查看结果</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step3" xml:space="preserve">
+    <value>标记（在限额内 / 需要审批 / 不允许）以及每个超出限额的提示。</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4Title" xml:space="preserve">
+    <value>查看适用规则</value>
+  </data>
+  <data name="Help.COMPRICINGTRIAL.Step4" xml:space="preserve">
+    <value>适用当日最具体的规则，并显示其版本。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Purpose" xml:space="preserve">
+    <value>价目表、明细、规则和汇率的每次变更：人员、时间、旧值 → 新值。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Audience" xml:space="preserve">
+    <value>市场部、销售运营和审计。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1Title" xml:space="preserve">
+    <value>筛选</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step1" xml:space="preserve">
+    <value>按记录类型和期间筛选。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2Title" xml:space="preserve">
+    <value>查看旧值 → 新值</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step2" xml:space="preserve">
+    <value>每行列出字段及其旧值和新值。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3Title" xml:space="preserve">
+    <value>由您的权限决定</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step3" xml:space="preserve">
+    <value>您只能看到权限覆盖的类型（价目表、规则、汇率）。</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4Title" xml:space="preserve">
+    <value>打开某项变更</value>
+  </data>
+  <data name="Help.COMPRICINGHISTORY.Step4" xml:space="preserve">
+    <value>眼睛图标在侧边栏显示完整变更。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Purpose" xml:space="preserve">
+    <value>按公司、货币对和日期的临时汇率，预订单用于计算本币等值。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Audience" xml:space="preserve">
+    <value>销售运营。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1Title" xml:space="preserve">
+    <value>录入汇率</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step1" xml:space="preserve">
+    <value>“新建汇率”：公司、货币对、日期、汇率和来源；每个公司、货币对和日期只能有一条。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2Title" xml:space="preserve">
+    <value>更正汇率</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step2" xml:space="preserve">
+    <value>打开汇率并点击“更正”：旧值 → 新值将写入变更历史。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3Title" xml:space="preserve">
+    <value>订单保留其汇率</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step3" xml:space="preserve">
+    <value>已发送的订单保留发送时的汇率；更正不会改变它。</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4Title" xml:space="preserve">
+    <value>当日之前的最新汇率</value>
+  </data>
+  <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
+    <value>订单使用当日或之前的最新汇率；若无汇率则不显示本币等值。</value>
   </data>
   <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
     <value>将收货库位的库存移至其货位并确认；确认后库存在库存台账中移动。</value>

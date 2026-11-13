@@ -53,14 +53,14 @@ public sealed class VisitEvidenceSettingsWebTests
         Assert.True(manager.CanRead && manager.CanManagePolicy && manager.CanReadExceptions && manager.CanManageExceptions);
         Assert.Equal("user-1", manager.Me);
 
-        // this round: the tenant default only; the legal entity layer is a disabled button with its hint
-        Assert.Contains("class=\"ve-add\" disabled", view);
-        Assert.Contains("Localizer[\"AddLegalEntityHint\"]", view);
-        Assert.DoesNotContain("AddBusinessUnit", view);
-        // the "Additional evidence · Coming soon" card has no control
-        var soon = view[view.IndexOf("ve-soon", StringComparison.Ordinal)..view.IndexOf("ve-sticky", StringComparison.Ordinal)];
-        Assert.DoesNotContain("<button", soon);
-        Assert.DoesNotContain("<input", soon);
+        // WP-VW-W3L (W3-WEB-e) — the layers are live: the script draws them (and "add") into the tree; no disabled stand-in
+        Assert.Contains("<div class=\"ve-col ve-gap-xs\" id=\"ve-tree-layers\"></div>", view);
+        Assert.DoesNotContain("class=\"ve-add\" disabled", view);
+        Assert.DoesNotContain("AddLegalEntityHint", view);
+        Assert.DoesNotContain("ScopeUnresolved", view);
+        // WP-VW-W3E (W3E-WEB-b, E1) — the former "Additional evidence · Coming soon" card is replaced by the live section
+        Assert.DoesNotContain("ve-soon", view);
+        Assert.Contains("<div id=\"ve-extra\"></div>", view);
     }
 
     // ═══ 2 · the pure rules (Node) ══════════════════════════════════════════════════════════════════════════
@@ -230,9 +230,10 @@ public sealed class VisitEvidenceSettingsWebTests
         var put = o.GetProperty("put");
         Assert.Equal(("info", 4), (put.GetProperty("locationMode").GetString(), put.GetProperty("expectedVersion").GetInt32()));
 
-        // exceptions: the badge (in review + active), New shown, 31 days refused, 30 days created → sent
+        // exceptions: the shared tab card's corner count (in review + active), New opens, 31 days refused, 30 days created → sent
         Assert.Equal("⁨2⁩", S("badge"));
-        Assert.False(o.GetProperty("newHidden").GetBoolean());
+        Assert.Equal("badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle", S("badgeClass"));
+        Assert.Equal("function,function", S("pageApi"));
         Assert.True(o.GetProperty("newShown").GetBoolean());
         Assert.Contains("Önce temsilci seçin.", S("rulesBeforeRep"));
         Assert.Contains("Şu an: Zorunlu · Kiracı", S("rulesWithRep"));
@@ -261,7 +262,7 @@ public sealed class VisitEvidenceSettingsWebTests
         var o = r.Value;
         Assert.Equal(JsonValueKind.Null, o.GetProperty("createError").ValueKind);
         Assert.True(o.GetProperty("saveBarHidden").GetBoolean());
-        Assert.True(o.GetProperty("newHidden").GetBoolean());
+        Assert.False(o.GetProperty("newShown").GetBoolean()); // without the manage key "New exception" opens nothing
         Assert.False(o.GetProperty("unsavedShown").GetBoolean());
         Assert.False(o.GetProperty("saveModalShown").GetBoolean());
         Assert.Equal(0, o.GetProperty("readonlyPuts").GetInt32());
@@ -276,7 +277,8 @@ public sealed class VisitEvidenceSettingsWebTests
         { "GetPolicy", "GET", "/api/crm/visit-evidence-policy", new[] { PolicyRead } },
         { "GetPolicy", "GET", "/api/crm/visit-evidence-policy", new[] { PolicyManage } },
         { "PutPolicy", "PUT", "/api/crm/visit-evidence-policy", new[] { PolicyManage } },
-        { "History", "GET", "/api/crm/visit-evidence-policy/history?page=1", new[] { PolicyRead } },
+        { "History", "GET", "/api/crm/visit-evidence-policy/history?page=1&pageSize=10", new[] { PolicyRead } },
+        { "Roster", "GET", "/api/crm/visit-evidence-policy/reps/roster?page=1&pageSize=10", new[] { PolicyManage } },
         { "Effective", "GET", "/api/crm/visit-evidence-policy/effective?resourceId=rep-1", new[] { PolicyManage } },
         { "Reps", "GET", "/api/crm/visit-evidence-policy/reps?q=ok", new[] { PolicyRead } },
         { "ListExceptions", "GET", "/api/crm/visit-evidence-exceptions?status=draft", new[] { ExcRead } },
@@ -303,7 +305,7 @@ public sealed class VisitEvidenceSettingsWebTests
 
         // every other key of the page is not enough
         var others = new[] { PolicyRead, PolicyManage, ExcRead, ExcManage }.Where(k => !keys.Contains(k)
-            && !(action is "GetPolicy" or "History" or "Effective" or "Reps" && k is PolicyRead or PolicyManage)).ToArray();
+            && !(action is "GetPolicy" or "History" or "Roster" or "Effective" or "Reps" && k is PolicyRead or PolicyManage)).ToArray();
         var (none, refused) = Arrange(others);
         refused.ControllerContext.HttpContext.Request.QueryString = new QueryString(query);
         Assert.Equal(403, Status(await Invoke(refused, action)));
@@ -445,7 +447,8 @@ public sealed class VisitEvidenceSettingsWebTests
     {
         "GetPolicy" => c.GetPolicy(CancellationToken.None),
         "PutPolicy" => c.PutPolicy(CancellationToken.None),
-        "History" => c.History(CancellationToken.None),
+        "History" => c.History(null, null, null, null, null, CancellationToken.None),
+        "Roster" => c.Roster(null, null, null, null, null, CancellationToken.None),
         "Effective" => c.Effective(CancellationToken.None),
         "Reps" => c.Reps(CancellationToken.None),
         "ListExceptions" => c.ListExceptions(CancellationToken.None),
@@ -533,7 +536,7 @@ public sealed class VisitEvidenceSettingsWebTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             Requests.Add((request.Method.Method, request.RequestUri!.ToString(), request.Headers.TryGetValues("X-Tenant-Id", out var t) ? t.Single() : null));
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"data\":{}}", Encoding.UTF8, "application/json") });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"data\":{\"items\":[],\"total\":0}}", Encoding.UTF8, "application/json") });
         }
     }
 }

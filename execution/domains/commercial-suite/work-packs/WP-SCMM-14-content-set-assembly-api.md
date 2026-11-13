@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-14 (backend+API) · ContentScope + ContentSet (Assembly) aggregate
 
-> **Control Tower kaydı (SoR).** SCMM R1, Content Studio ④⑤⑥. Module: **CAND-CAP-0011**, CrmService. Branch: `feature/scmm-content-studio` (HEAD accae9aa). Bağ: SCMM-10/11/12/13 ✅. **Tasarım: [DESIGN-SCMM-14](DESIGN-SCMM-14-content-set-assembly.md) (kararlar KİLİTLİ).**
+> **Control Tower kaydı (SoR).** SCMM R1, Content Studio ④⑤⑥. Module: **MOD-0363** (eski CAND-CAP-0011), CrmService. Branch: `feature/scmm-content-studio` (HEAD accae9aa). Bağ: SCMM-10/11/12/13 ✅. **Tasarım: [DESIGN-SCMM-14](DESIGN-SCMM-14-content-set-assembly.md) (kararlar KİLİTLİ).**
 > **Sınır:** yalnız **mutable draft authoring**. Freeze/immutable Revision/review = SCMM-15 (MOD-0023 bloklu); render/output = 16; release = 17. **Bu WP freeze/review/output/release YAPMAZ.** UI = SCMM-14-UI (ayrı, D14-e).
 
 ## Ölçülmüş girdi (CT)

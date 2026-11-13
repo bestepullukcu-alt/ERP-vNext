@@ -18,7 +18,7 @@ public sealed class CompetitorProductRepositoryTests
     [Fact]
     public async Task The_record_round_trips_is_tenant_scoped_and_replaces_only_on_the_expected_version()
     {
-        CompetitorProductClassMaps.Register();
+        MdmDocumentClassMaps.Register(); // BL-640: the registry maps the competitor documents (the former CompetitorProductClassMaps is gone)
         var settings = MongoClientSettings.FromConnectionString(MdmTestMongo.ConnectionString); // main-sync 2026-10-14: shared Mongo (MdmTestMongo.SharedPort) default removed (BL-595), owner approved
 #pragma warning disable CS0618
         settings.GuidRepresentation = GuidRepresentation.Standard;

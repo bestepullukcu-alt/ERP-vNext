@@ -295,6 +295,16 @@ public sealed class VisitPresentationWebTests
             Assert.Equal(1, s.GetProperty("finishCalls").GetInt32());
             Assert.True(s.GetProperty("summaryShown").GetBoolean());
             Assert.Contains("Ziyaret bitti", s.GetProperty("summary").GetString());
+            Assert.Contains("Hacettepe · ", s.GetProperty("summary").GetString());
+        }
+
+        // FU-VISIT-END-SEPARATOR (W6-FIX-b) — a visit without an institution has no empty slot between two separators
+        if (Smoke("summaryNoAccount") is { } a)
+        {
+            var line = a.GetProperty("summary").GetString()!;
+            Assert.Contains("Ziyaret bitti", line);
+            Assert.DoesNotMatch(@"·\s*·", line);
+            Assert.Matches(@"· \d{2}[.:]\d{2}–", line);
         }
 
         if (Smoke("notStarted") is { } n)

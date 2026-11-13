@@ -41,7 +41,7 @@ Kapalı kalırsa aşağıdaki "bu tur için gerekli" işler **hiç çalışmaz**
 | `Diten.Platform.MOD-0024.TaskRecurrenceSweepJob` | saatte bir | **Gerekli** — tekrarlayan görevler |
 | `Diten.Platform.MOD-0024.TaskDueSoonSweepJob` | saatte bir | **Gerekli** — "süresi yaklaşıyor" bildirimi |
 | `Diten.Platform.MOD-0023.WorkflowEscalationSweepJob` | 5 dakikada bir | Bu turun konusu değil |
-| `Diten.Platform.MOD-0297.TrialExpiryScanJob` · `SubscriptionRenewalJob` | günlük | Bu turun konusu değil |
+| `Diten.Platform.MOD-0361.TrialExpiryScanJob` · `SubscriptionRenewalJob` (formerly `MOD-0297.*`; eski kimlikler açılışta Hangfire'dan silinir) | günlük | Bu turun konusu değil |
 | `Diten.Platform.MOD-0033.QuotaResetJob` · `MOD-0018.EntitlementCacheRefreshJob` · `MOD-0034.WebhookRetryJob` · `MOD-0021.AuditLogArchiveJob` · `MOD-0009.ProvisioningRetryJob` | çeşitli | Bu turun konusu değil |
 
 Açmak için: `BackgroundJobs:Enabled = true` ve her iş için `BackgroundJobs:EnabledJobs:<iş kimliği> = true`.

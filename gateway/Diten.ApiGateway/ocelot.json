@@ -217,6 +217,54 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/platform/organization/seats/{userId}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/organization/seats/{userId}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/organization/seats/{userId}/line-managers",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/organization/seats/{userId}/line-managers",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/platform/organization/seats/lookup",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/platform/organization/seats/lookup",
+      "UpstreamHttpMethod": [
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/platform/navigation/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -3522,6 +3570,311 @@
       "UpstreamPathTemplate": "/api/crm/visit-evidence-policy/{everything}",
       "UpstreamHttpMethod": [
         "GET",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-notifications",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-notifications",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-notifications/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-notifications/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/price-lists",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/price-lists",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/price-lists/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/price-lists/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/price-list-imports",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/price-list-imports",
+      "UpstreamHttpMethod": [
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/price-list-imports/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/price-list-imports/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-rules",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-rules",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-rules/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-rules/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-contract",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-contract",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-contract/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-contract/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/fx-rates",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/fx-rates",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/fx-rates/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/fx-rates/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-history",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-history",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pricing-history/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pricing-history/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pre-orders",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pre-orders",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pre-orders/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pre-orders/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pre-order-settings",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pre-order-settings",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/commercial/pre-order-approval-links/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/commercial/pre-order-approval-links/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
@@ -6168,7 +6521,7 @@
       ],
       "UpstreamScheme": "http"
     },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/shipments",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6185,7 +6538,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6201,7 +6554,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/transition",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6217,7 +6570,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/pod",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6233,7 +6586,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/carriers",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6250,7 +6603,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6266,7 +6619,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/loads",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6283,7 +6636,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/loads/{loadId}/transition",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6299,7 +6652,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/returns",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6348,7 +6701,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/claims",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6365,7 +6718,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/shipment-bundle/claims/{claimId}/transition",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6381,7 +6734,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/sandop-plans",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6397,7 +6750,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6413,7 +6766,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/snapshots",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6430,7 +6783,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/sandop-plans/{sandopPlanId}/sign-offs",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6447,7 +6800,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6463,7 +6816,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6479,7 +6832,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6495,7 +6848,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6511,7 +6864,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6527,7 +6880,7 @@
         ],
         "UpstreamScheme": "http"
       },
-      {
+    {
         "DownstreamPathTemplate": "/api/supply-chain/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [
@@ -6542,7 +6895,72 @@
           "OPTIONS"
         ],
         "UpstreamScheme": "http"
-      }
+      },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-qr",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-qr",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-qr/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-qr/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-evidence-flags",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-evidence-flags",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-evidence-flags/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-evidence-flags/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    }
   ],
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:5000"

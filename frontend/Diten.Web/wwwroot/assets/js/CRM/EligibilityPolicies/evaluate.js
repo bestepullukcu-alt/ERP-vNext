@@ -1,5 +1,5 @@
 /**
- * SCMM-11-UI (CAND-CAP-0011) eligibility evaluate/preview panel. Read-only: pick a policy, build a context, POST
+ * SCMM-11-UI (MOD-0363, formerly CAND-CAP-0011) eligibility evaluate/preview panel. Read-only: pick a policy, build a context, POST
  * eligibility:evaluate through the same-origin proxy, and render the disjoint result. The resolver decides — this only
  * sends the context and shows the outcome. A non-Eligible result is NEVER silent (badge + reason + per-condition table).
  */

@@ -43,7 +43,8 @@ public sealed class VisitExecutionController : CustomBaseController
 
     /// <summary>Starts the visit. multipart/form-data: plannedVisitId, kind?, latitude?, longitude?, accuracyMeters?,
     /// locationError? (denied | unavailable | timeout), photo? (file), photoCapturedAt?. Numbers use the invariant
-    /// culture ("41.0123").</summary>
+    /// culture ("41.0123"). WP-VW-W3E (W3E-BE-a): qrPayload? (the scanned institution QR text, ≤ 200, sent as read),
+    /// qrScannedAt? (informative).</summary>
     [HttpPost("api/crm/visit-execution/start")]
     [HasPermission(Perms.Record)]
     [RequestSizeLimit(MaxRequestBytes)]
@@ -57,7 +58,16 @@ public sealed class VisitExecutionController : CustomBaseController
         [FromForm] string? locationError,
         IFormFile? photo,
         [FromForm] string? photoCapturedAt,
-        CancellationToken cancellationToken)
+        // WP-VW-W3E (BE-b, §2.5) — the device declaration (all optional)
+        [FromForm] string? clientPlatform,
+        [FromForm] string? appVersion,
+        [FromForm] string? mockLocationDetected,
+        [FromForm] string? integrityProvider,
+        [FromForm] string? integrityVerdict,
+        [FromForm] string? integrityToken,
+        CancellationToken cancellationToken,
+        [FromForm] string? qrPayload = null,
+        [FromForm] string? qrScannedAt = null)
     {
         if (!TryNumber(latitude, out var lat) || !TryNumber(longitude, out var lng) || !TryNumber(accuracyMeters, out var accuracy))
         {
@@ -65,11 +75,47 @@ public sealed class VisitExecutionController : CustomBaseController
                 new[] { "latitude / longitude / accuracyMeters must be numbers.", VisitExecutionErrorCodes.CaptureInvalid }, 400));
         }
 
+        if (!TryBool(mockLocationDetected, out var mock))
+        {
+            return CreateActionResultInstance(Response<VisitExecutionDto>.Fail(
+                new[] { "mockLocationDetected must be true or false.", VisitExecutionErrorCodes.CaptureInvalid }, 400));
+        }
+
         var file = await ReadAsync(photo, cancellationToken);
         return CreateActionResultInstance(await _mediator.Send(
-            new StartVisitExecutionCommand(plannedVisitId, kind, lat, lng, accuracy, locationError, file, photoCapturedAt),
+            new StartVisitExecutionCommand(plannedVisitId, kind, lat, lng, accuracy, locationError, file, photoCapturedAt,
+                QrPayload: qrPayload, QrScannedAt: qrScannedAt,
+                Device: DeviceOf(clientPlatform, appVersion, mock, integrityProvider, integrityVerdict, integrityToken)),
             cancellationToken));
     }
+
+    /// <summary>W3E-BE-b — the device declaration; the integrity token is reduced to its BYTE COUNT here and goes no
+    /// further (never to the handler, the database or a log). Null when nothing was declared.</summary>
+    public static VisitDeviceEvidenceInput? DeviceOf(string? clientPlatform, string? appVersion, bool? mockLocationDetected,
+        string? integrityProvider, string? integrityVerdict, string? integrityToken)
+    {
+        var tokenBytes = string.IsNullOrEmpty(integrityToken) ? (int?)null : System.Text.Encoding.UTF8.GetByteCount(integrityToken);
+        return clientPlatform is null && appVersion is null && mockLocationDetected is null && integrityProvider is null
+               && integrityVerdict is null && tokenBytes is null
+            ? null
+            : new VisitDeviceEvidenceInput(clientPlatform, appVersion, mockLocationDetected, integrityProvider, integrityVerdict, tokenBytes);
+    }
+
+    private static bool TryBool(string? raw, out bool? value)
+    {
+        value = null;
+        if (string.IsNullOrWhiteSpace(raw)) return true;
+        if (bool.TryParse(raw.Trim(), out var parsed)) { value = parsed; return true; }
+        return false;
+    }
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, §2.10) — the QR pre-check: what the start would answer for this QR, written nowhere
+    /// (no execution, no scan counter, no event). The start's plan rules and errors; the payload is never logged.</summary>
+    [HttpPost("api/crm/visit-execution/qr-check")]
+    [HasPermission(Perms.Record)]
+    public async Task<IActionResult> QrCheck([FromBody] VisitQrCheckInput? input, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new CheckVisitQrQuery(input?.PlannedVisitId ?? Guid.Empty, input?.QrPayload, input?.Kind), cancellationToken));
 
     [HttpPut("api/crm/visit-execution/{id:guid}/capture")]
     [HasPermission(Perms.Record)]

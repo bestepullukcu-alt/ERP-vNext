@@ -1,0 +1,29 @@
+@using Diten.Web.Views.CRM.VisitQrCodes
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitQrCodesIndex> Localizer
+@{
+    // W3E-FIX (U-1) — the table card is the shared component (BL-440): the page describes it, _ListShell renders it.
+    // Server mode (the CRM pages 43K institutions). The selection column is drawn for everyone and HIDDEN by index.js without
+    // crm.visit-qr.manage (no bulk bar is rendered then either) — the column layout stays one shape for both.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-visitqrcodes",
+        DataMode = "server",
+        Slug = "visitqrcodes",
+        HasSelection = true,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColInstitution"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColVersion"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLastScan"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRecent"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

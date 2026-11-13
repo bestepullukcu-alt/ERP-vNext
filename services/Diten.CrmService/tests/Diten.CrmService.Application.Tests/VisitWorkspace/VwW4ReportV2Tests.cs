@@ -29,7 +29,7 @@ namespace Diten.CrmService.Application.Tests.VisitWorkspace;
 /// MDM down; the 60-minute rule; old / new values in an amendment (v2 and v1); a v1 report still reads; competitor usage
 /// counts (&lt;5, merged survivor); the journey stage's adoption code.
 /// </summary>
-public sealed class VwW4ReportV2Tests
+public sealed partial class VwW4ReportV2Tests
 {
     private static readonly Guid Tenant = Guid.Parse("97c50000-0000-0000-0000-0000000000a4");
     private static readonly Guid ProductA = Guid.Parse("a0000000-0000-0000-0000-00000000000a");
@@ -680,6 +680,9 @@ public sealed class VwW4ReportV2Tests
         public MdmFake Mdm { get; } = new();
         private Guid _journeyId = Guid.NewGuid();
 
+        /// <summary>WP-VW-W5 — the report's e-mails (null = none, as before).</summary>
+        public Diten.CrmService.Application.Features.VisitNotifications.IVisitReportNotifier? Notifier { get; set; }
+
         public TenantContext Ctx()
         {
             var ctx = new TenantContext();
@@ -697,7 +700,7 @@ public sealed class VwW4ReportV2Tests
         {
             var indications = new ProductIndicationProfileReader(GraphTypes, GraphNodes, GraphRelationships, null, Clock);
             return new VisitReportV2Service(Ctx(), new Actor(Rep), Caller(), Reports, Plans, Executions, Codes,
-                Profiles, Potentials, new NoThresholds(), indications, Recorder, Progress, Journeys, Contacts, Accounts, Mdm.Available ? Mdm : Mdm.Down, null, Clock);
+                Profiles, Potentials, new NoThresholds(), indications, Recorder, Progress, Journeys, Contacts, Accounts, Mdm.Available ? Mdm : Mdm.Down, null, Clock, Notifier);
         }
 
         public PlanAtom DoctorPlan(int daysAgo = 0, Guid? contactId = null, string resource = Rep, int stageIndex = 0)

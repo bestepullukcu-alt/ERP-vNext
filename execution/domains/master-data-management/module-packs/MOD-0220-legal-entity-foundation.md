@@ -14,7 +14,7 @@ target: ""
 form_field_count: 0
 ---
 
-# MOD-0220 - Legal Entity Foundation
+# MOD-0220 — Corporate Secretarial / Entity Management (formerly titled: Legal Entity Foundation)
 
 > **Ready-for-dev note:** MOD-0220 is ready-for-dev for the explicitly authorized minimal backend slice only.
 > This does not authorize frontend, gateway, full Corporate Secretarial scope, business-country catalog, or

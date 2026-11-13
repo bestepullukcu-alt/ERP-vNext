@@ -24,7 +24,9 @@ public sealed record AccountListItemDto(
     string? TerritoryCountryScope = null,
     // WP-VP-2B (mobile R1, additive) — the account's ACTIVE contacts: link not deleted, not ended / inactive
     // (case-insensitive), contact not soft-deleted — what /accounts/{id}/contacts lists as active. A count only.
-    int ActiveContactCount = 0);
+    int ActiveContactCount = 0,
+    // WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the concurrency token an edit sends back as expectedVersion.
+    int Version = 0);
 
 public sealed record AccountExternalReferenceDto(
     Guid Id,
@@ -65,7 +67,9 @@ public sealed record AccountDetailDto(
     DateTimeOffset? UpdatedAt,
     IReadOnlyList<AccountExternalReferenceDto> ExternalReferences,
     IReadOnlyList<AccountAttributeDto> Attributes,
-    string? LogoDataUri);
+    string? LogoDataUri,
+    // WP-CRM-MOBILE-REQ CRM-ACC-EDIT — the concurrency token an edit sends back as expectedVersion.
+    int Version = 0);
 
 public sealed record AccountOverviewDto(
     AccountDetailDto Account,

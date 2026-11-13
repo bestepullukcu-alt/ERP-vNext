@@ -196,7 +196,7 @@
     };
 
     /**
-     * MOD-0013: Platform Standards - Global Confirmation System
+     * MOD-0286 (UI Design System & Page Pattern Governance; formerly MOD-0013 modal/toast standard): Global Confirmation System
      * window.showConfirm(keyOrTitle, callback, entityNameOrOptions)
      *
      * `subtext`, `entityName`, the title and the button texts are TEXT. A caller whose body is a FORM (fields it
@@ -472,7 +472,7 @@
             // ⚠ FAIL CLOSED. This used to call `callback()`: a dialog that could not be drawn (an option that threw
             // while being read) CONFIRMED the action it was asking about — a delete nobody agreed to. A question
             // that was never shown has not been answered; the caller hears "dismissed".
-            console.error('[MOD-0013 showConfirm] CRITICAL ERROR:', err);
+            console.error('[MOD-0286 showConfirm] CRITICAL ERROR:', err);
             if (typeof options.onCancel === 'function') { options.onCancel(); }
         }
     };

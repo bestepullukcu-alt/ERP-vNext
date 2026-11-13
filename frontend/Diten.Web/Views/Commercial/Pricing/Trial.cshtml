@@ -1,0 +1,74 @@
+@model Diten.Web.Models.Commercial.PricingPageViewModel
+@using Diten.Web.Views.Commercial.Pricing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PricingIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["TrialTitle"].Value;
+    ViewData["PageCode"] = PricingIndex.TrialHelpCode; // UXH-001 — COM-PRICING-TRIAL
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/Commercial/Pricing";
+}
+
+@*
+    WP-VW-W6 · W6-WEB-b — screen D · tab 3: the rule trial (mockup W6 D "Kural deneme"): company + product + quantity + MF +
+    discount (+ day, price tier; the pharmacy segment "coming soon") → the CRM's evaluation of that one line, saved nowhere:
+    the outcome badge, the rule messages (the shared source), the price list and unit price, the free boxes, the MF ratio,
+    the combined discount and the rule that applied. Nothing is computed on the page. UAS-001: without
+    commercial.pricing-rules.read NOTHING but the notice.
+*@
+@if (!Model.Allowed)
+{
+    <partial name="_AccessDenied" model="@Localizer["TrialTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Commercial/Pricing/_PricingHeader.cshtml" model="Model" />
+<div id="pr-pane">
+    <div class="row g-3" id="pr-trial-root">
+        <div class="col-12 col-lg-5">
+            <form class="card h-100" id="pr-trial-form" novalidate>
+                <div class="card-body">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-test-tube"></i>@Localizer["TrialTitle"]</h6>
+                    <div class="alert alert-danger d-none" id="pr-alert" role="alert"></div>
+                    <label class="form-label" for="pr-company">@Localizer["CompanyLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field mb-3"><i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-company"><option value=""></option></select></div>
+                    <label class="form-label" for="pr-sku">@Localizer["ProductLabel"] <span class="text-danger">*</span></label>
+                    <div class="diten-field mb-3"><i class="bx bx-capsule diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-sku" data-placeholder="@Localizer["ProductPlaceholder"]"><option value=""></option></select></div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4"><label class="form-label" for="pr-qty">@Localizer["ColQty"]</label><div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input type="number" min="1" class="form-control" id="pr-qty" value="10" /></div></div>
+                        <div class="col-4"><label class="form-label" for="pr-mf">@Localizer["ColMf"]</label><div class="diten-field"><i class="bx bx-gift diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="pr-mf" placeholder="10+2" /></div></div>
+                        <div class="col-4"><label class="form-label" for="pr-disc">@Localizer["ColDiscount"]</label><div class="diten-field"><i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="decimal" class="form-control" id="pr-disc" /></div></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6"><label class="form-label" for="pr-asof">@Localizer["AsOfLabel"]</label><div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="pr-asof" autocomplete="off" /></div></div>
+                        <div class="col-6"><label class="form-label" for="pr-tier">@Localizer["TierLabel"]</label><div class="diten-field"><i class="bx bx-layer diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-tier">
+                            <option value="pharmacist-purchase">@Localizer["Tier_pharmacist_purchase"]</option><option value="depot">@Localizer["Tier_depot"]</option><option value="public">@Localizer["Tier_public"]</option></select></div></div>
+                    </div>
+                    <label class="form-label" for="pr-segment">@Localizer["SegmentLabel"]</label>
+                    <div class="diten-field mb-3"><i class="bx bx-group diten-field-icon" aria-hidden="true"></i><select class="form-select" id="pr-segment" disabled><option>@Localizer["SegmentSoon"]</option></select></div>
+                    <button type="submit" class="btn btn-primary" id="pr-try"><i class="bx bx-play me-1"></i>@Localizer["TryButton"]</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-12 col-lg-7">
+            <div class="card h-100"><div class="card-body">
+                <h6 class="card-section-title mb-3"><i class="bx bx-clipboard"></i>@Localizer["TrialResult"]</h6>
+                <div id="pr-trial-result"><p class="text-muted mb-0">@Localizer["TrialEmpty"]</p></div>
+            </div></div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/js/Commercial/Pricing/pricing.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="~/Views/Commercial/PricingRules/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Commercial/PricingRules/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Commercial/Pricing/_PricingScripts.cshtml" />
+    <script src="~/assets/js/Commercial/Pricing/pricing-ui.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Commercial/Pricing/trial.js" asp-append-version="true"></script>
+}

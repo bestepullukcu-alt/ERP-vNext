@@ -1024,6 +1024,105 @@ public sealed partial class EmailShellDispatchTests
         Assert.DoesNotContain('\r', message.Subject);
     }
 
+    /// <summary>
+    /// WP-VW-W5 PLT-NOTIFY — a CRM visit report mail through the REAL queue handler, shell and SMTP provider: the seeded
+    /// Turkish adverse event template leaves URGENT, framed, with its table, the report link and the KVKK footnote; the
+    /// dispatch row names the module that asked for it, and only that.
+    /// </summary>
+    [Fact]
+    public async Task A_crm_visit_report_mail_leaves_in_the_shell_and_its_dispatch_names_the_source_module()
+    {
+        var rig = new Rig { TenantLocale = "tr" };
+        rig.AddSeeded(SeededTemplates().Single(t => t.TemplateKey == Diten.Platform.Application.Features.Crm.SelfRegistration.CrmManifestProvider.VisitReportAdverseEventEvent && t.Locale == "tr"));
+
+        var response = await rig.Handler().Handle(
+            new QueueEmailNotificationCommand(
+                rig.TenantId,
+                new QueueEmailNotificationRequest(
+                    TemplateKey,
+                    "tr",
+                    new Dictionary<string, object?>
+                    {
+                        ["doctorName"] = "Doç. Dr. Mehmet Yılmaz",
+                        ["institutionName"] = "Şişli Hamidiye Etfal EAH",
+                        ["visitDate"] = "2026-10-08",
+                        ["repName"] = "Ayşe Demir",
+                        ["reportUrl"] = "https://crm.test/CRM/VisitReport?plannedVisitId=v26",
+                        ["products"] = "ÜROFLEKS 0,4 mg kapsül",
+                        ["adverseEventNote"] = ""
+                    },
+                    [new EmailRecipientDto("pv@example.com", "PV")],
+                    SourceModule: " MOD-0155 ",
+                    ReplyToEmail: "ayse.demir@diten.test"),
+                "corr-visit"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful, string.Join(" | ", response.Errors));
+        var message = rig.Sent;
+        Assert.StartsWith("ACİL · Advers olay bildirimi · Doç. Dr. Mehmet Yılmaz · 24 saat", message.Subject);
+        Assert.StartsWith("<!doctype html>", message.HtmlBody);
+        Assert.Contains("Ziyarette advers olay bildirildi", message.HtmlBody);
+        Assert.Contains("Temsilci tıbbi değerlendirme yapmaz", message.HtmlBody);
+        Assert.Contains("ÜROFLEKS 0,4 mg kapsül", message.HtmlBody);
+        Assert.Contains("https://crm.test/CRM/VisitReport?plannedVisitId=v26", message.HtmlBody);
+        Assert.Contains("KVKK", message.HtmlBody);
+        // A row with no value is left out: the representative's note came empty.
+        Assert.DoesNotContain("Temsilcinin notu", message.HtmlBody);
+        // The reply goes to the representative (K-N4) — the header AND the footer that names it.
+        Assert.Equal("ayse.demir@diten.test", Assert.Single(message.ReplyTo.Mailboxes).Address);
+        Assert.Contains("ayse.demir@diten.test", message.HtmlBody);
+
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+        Assert.Equal("MOD-0155", dispatch.SourceModule);
+        Assert.Equal("MOD-0155", dispatch.ToListItemDto().SourceModule);
+        Assert.Equal("ayse.demir@diten.test", dispatch.ReplyToEmail);
+    }
+
+    [Fact]
+    public async Task A_message_reply_address_that_is_not_one_plain_address_is_not_used_the_settings_one_applies()
+    {
+        // The rig's settings row has no reply address of its own: the refused one leaves the message with none at all.
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>Task: {{TaskTitle}}</p>", "Task: {{TaskTitle}}");
+
+        var response = await rig.Handler().Handle(
+            new QueueEmailNotificationCommand(
+                rig.TenantId,
+                new QueueEmailNotificationRequest(TemplateKey, "en", new Dictionary<string, object?> { ["TaskTitle"] = "T" },
+                    [new EmailRecipientDto("user@example.com", "User")], ReplyToEmail: "a@x.test, b@x.test"),
+                "corr-reply"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful, string.Join(" | ", response.Errors));
+        Assert.Empty(rig.Sent.ReplyTo.Mailboxes);
+        Assert.DoesNotContain("a@x.test", rig.Sent.HtmlBody);
+        Assert.Null(Assert.Single(rig.Dispatches.Items).ReplyToEmail);
+    }
+
+    [Fact]
+    public async Task A_retry_replies_to_the_same_person_the_first_send_did()
+    {
+        var rig = new Rig();
+        var dispatch = rig.AddFailedDispatch(variablesJson: "{\"TaskTitle\":\"[REDACTED]\"}", templateId: null);
+        dispatch.ReplyToEmail = "ayse.demir@diten.test";
+
+        await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext());
+
+        Assert.Equal("ayse.demir@diten.test", Assert.Single(rig.Sent.ReplyTo.Mailboxes).Address);
+        Assert.Contains("ayse.demir@diten.test", rig.Sent.HtmlBody);
+    }
+
+    [Fact]
+    public async Task A_platform_producers_dispatch_names_no_source_module()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>Task: {{TaskTitle}}</p>", "Task: {{TaskTitle}}");
+
+        Assert.True((await rig.QueueAsync("en", new() { ["TaskTitle"] = "Batch record review" })).IsSuccessful);
+
+        Assert.Null(Assert.Single(rig.Dispatches.Items).SourceModule);
+    }
+
     private sealed class Rig
     {
         public Guid TenantId { get; init; } = Guid.NewGuid();

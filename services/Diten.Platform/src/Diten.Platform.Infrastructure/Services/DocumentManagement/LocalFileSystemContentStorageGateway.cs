@@ -56,7 +56,7 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
         IReadOnlyList<string> allowedMediaTypes = scopeRule?.AllowedMediaTypes ?? _options.AllowedMediaTypes;
         var maxFileSizeBytes = scopeRule is null
             ? _options.MaxFileSizeBytes
-            : scopeRule.MaxFileSizeBytes > 0 ? scopeRule.MaxFileSizeBytes : CrmVisitEvidenceFileRule.DefaultMaxFileSizeBytes;
+            : scopeRule.MaxFileSizeBytes > 0 ? scopeRule.MaxFileSizeBytes : scopeRule.DefaultMaxFileSizeBytes;
 
         if (allowedExtensions.Count > 0 && !allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
@@ -236,7 +236,7 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
         {
             ContentStorageScope.Templates => "templates",
             ContentStorageScope.TaskAttachments => "task-attachments",
-            // WP-SCMM-16A (CAND-CAP-0011 / SCMM-16) — a new scope value MUST get its own folder segment here, or the
+            // WP-SCMM-16A (MOD-0363, formerly CAND-CAP-0011 / SCMM-16) — a new scope value MUST get its own folder segment here, or the
             // `_ => "documents"` default silently files it under the documents partition with no way to tell them
             // apart on disk. That is the exact MOD-0024 trap called out above; ContentMessagingArtifacts gets its own.
             ContentStorageScope.ContentMessagingArtifacts => "content-messaging-artifacts",
@@ -244,6 +244,8 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
             ContentStorageScope.ESignatureImages => "esign-images",
             // WP-VW-W3-PLT — same rule: visit evidence (photo/signature) gets its own partition, never "documents".
             ContentStorageScope.CrmVisitEvidence => "crm-visit-evidence",
+            // WP-VW-W6 PLT-W6-DOC — the pre-order depot documents get their own partition too.
+            ContentStorageScope.CommercialPreOrderDocument => "commercial-pre-order-documents",
             _ => "documents"
         };
         if (!string.IsNullOrWhiteSpace(request.StoragePartition))

@@ -38,6 +38,30 @@ public static class PageHelpCatalog
             ["ROLEPERMISSIONS"] = ["bx-id-card", "bx-filter-alt", "bx-check-square", "bx-x-circle", "bx-bar-chart-alt-2"],
             ["USERROLES"] = ["bx-user", "bx-filter-alt", "bx-user-check", "bx-user-minus"],
             ["ITEMS"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-transfer-alt", "bx-help-circle"],
+            // WP-SYNC-144 W-UXH — the CRM tenant pages of W3 / W4 / W3E (BL-642 + the two W3E pages)
+            ["VISITEVIDENCESETTINGS"] = ["bx-layer", "bx-slider-alt", "bx-history", "bx-time-five", "bx-task"],
+            ["CRMVISITEVIDENCEFLAGS"] = ["bx-calendar", "bx-filter-alt", "bx-bar-chart-alt-2", "bx-show", "bx-group"],
+            ["CRMVISITQRCODES"] = ["bx-filter-alt", "bx-qr", "bx-printer", "bx-block", "bx-slider-alt"],
+            // WP-VW-W5 W5-WEB — the sent visit e-mails
+            ["CRMVISITNOTIFICATIONS"] = ["bx-calendar", "bx-filter-alt", "bx-user-check", "bx-envelope-open", "bx-cog"],
+            // WP-VW-W6 W6-WEB-a — the pharmacy pre-orders (COM-PREORDER-LIST / -FORM / -APPROVE / -SETTINGS)
+            ["PREORDERS"] = ["bx-filter-alt", "bx-money", "bx-show", "bx-package"],
+            ["COMPREORDERFORM"] = ["bx-capsule", "bx-error", "bx-pen", "bx-send"],
+            ["COMPREORDERAPPROVE"] = ["bx-help-circle", "bx-bar-chart-alt-2", "bx-check-shield", "bx-link"],
+            ["PREORDERSETTINGS"] = ["bx-user-check", "bx-time-five", "bx-purchase-tag-alt", "bx-hash"],
+            // WP-VW-W6 W6-WEB-b — screen D (COMMERCIALPRICING = COM-PRICELIST-LIST and the pages of its tabs)
+            ["COMMERCIALPRICING"] = ["bx-badge-check", "bx-plus-circle", "bx-tab", "bx-export"],
+            ["COMPRICELISTFORM"] = ["bx-id-card", "bx-capsule", "bx-send", "bx-copy"],
+            ["COMPRICELISTIMPORT"] = ["bx-spreadsheet", "bx-search-alt", "bx-transfer", "bx-send"],
+            ["COMPRICINGRULELIST"] = ["bx-slider-alt", "bx-sort-up", "bx-revision", "bx-test-tube"],
+            ["COMPRICINGRULEFORM"] = ["bx-key", "bx-edit-alt", "bx-calculator", "bx-send"],
+            ["COMPRICINGTRIAL"] = ["bx-edit", "bx-play", "bx-badge-check", "bx-list-check"],
+            ["COMPRICINGHISTORY"] = ["bx-filter-alt", "bx-transfer-alt", "bx-shield-quarter", "bx-show"],
+            ["COMFXRATELIST"] = ["bx-plus-circle", "bx-edit-alt", "bx-lock-alt", "bx-calendar"],
+            ["CRMDOCTORINSIGHTTHRESHOLDS"] = ["bx-table", "bx-edit-alt", "bx-check-circle", "bx-plus-circle", "bx-history"],
+            ["OBJECTIONRESPONSES"] = ["bx-filter-alt", "bx-plus-circle", "bx-send", "bx-check-shield", "bx-archive"],
+            ["COMPETITORPRODUCTS"] = ["bx-filter-alt", "bx-plus-circle", "bx-user-voice", "bx-task", "bx-git-merge"],
+            ["VISITWORKSPACE"] = ["bx-calendar-week", "bx-check-double", "bx-play-circle", "bx-send", "bx-calendar-x"],
             // WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — one icon per step, the same count as Help.{CODE}.Step{n}
             ["STOCKLEDGER"] = ["bx-filter-alt", "bx-bar-chart-alt-2", "bx-table", "bx-history", "bx-plus-circle"],
             ["STOCKLEDGERCREATE"] = ["bx-shuffle", "bx-cube", "bx-map-pin", "bx-calculator", "bx-check-circle"],

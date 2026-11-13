@@ -14,6 +14,10 @@ public sealed class VisitExecutionRepository : IVisitExecutionRepository
 {
     public const string CollectionName = "visit_executions";
 
+    /// <summary>WP-VW-W3E (BE-b) — the SCALAR ticks element of <c>StartedAt</c> ([ticks, offset]; the server's UTC clock
+    /// writes offset 0): the range filter, the sort and the index key of the evidence flags read.</summary>
+    public const string StartedTicksField = "StartedAt.0";
+
     private readonly IMongoCollection<VisitExecution> _collection;
 
     public VisitExecutionRepository(IMongoDatabase database)
@@ -55,6 +59,40 @@ public sealed class VisitExecutionRepository : IVisitExecutionRepository
             return false; // the plan already has its execution (the unique index won the race)
         }
     }
+
+    // ── WP-VW-W3E (BE-b, §2.6) — the evidence flags read (ix_visit_executions_tenant_started / _tenant_resource_started) ──
+
+    public static FilterDefinition<VisitExecution> EvidenceFilter(Guid tenantId, VisitEvidenceFlagFilter f)
+    {
+        var b = Builders<VisitExecution>.Filter;
+        var filter = Tenant(tenantId)
+                     & b.Gte(StartedTicksField, f.FromInclusive.UtcTicks)
+                     & b.Lt(StartedTicksField, f.ToExclusive.UtcTicks);
+        if (f.ResourceIds is not null) filter &= b.In(x => x.ResourceId, f.ResourceIds);
+        if (f.AnyFlags is { Count: > 0 }) filter &= b.AnyIn(x => x.Flags, f.AnyFlags);
+        if (f.OnlyFlagged) filter &= b.Exists("Flags.0");
+        if (f.PlannedVisitIds is not null) filter &= b.In(x => x.PlannedVisitId, f.PlannedVisitIds);
+        return filter;
+    }
+
+    public async Task<(IReadOnlyList<VisitExecution> Items, long Total)> ListForEvidenceFlagsAsync(
+        Guid tenantId, VisitEvidenceFlagFilter filter, int skip, int take, CancellationToken cancellationToken)
+    {
+        var where = EvidenceFilter(tenantId, filter);
+        var total = await _collection.CountDocumentsAsync(where, cancellationToken: cancellationToken);
+        var items = await _collection.Find(where)
+            .Sort(Builders<VisitExecution>.Sort.Descending(StartedTicksField).Descending(x => x.Id))
+            .Skip(skip).Limit(take)
+            .ToListAsync(cancellationToken);
+        return (items, total);
+    }
+
+    public async Task<IReadOnlyList<VisitExecution>> ListForEvidenceSummaryAsync(
+        Guid tenantId, VisitEvidenceFlagFilter filter, CancellationToken cancellationToken)
+        => await _collection.Find(EvidenceFilter(tenantId, filter))
+            .Project<VisitExecution>(Builders<VisitExecution>.Projection
+                .Include(x => x.Id).Include(x => x.TenantId).Include(x => x.ResourceId).Include(x => x.Flags))
+            .ToListAsync(cancellationToken);
 
     public async Task<bool> ReplaceAsync(VisitExecution entity, int expectedVersion, CancellationToken cancellationToken)
     {

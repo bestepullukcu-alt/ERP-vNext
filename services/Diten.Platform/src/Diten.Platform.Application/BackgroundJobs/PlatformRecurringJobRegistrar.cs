@@ -27,8 +27,8 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
     {
         var registrations = new List<RecurringJobRegistration>
         {
-            CreateDeferred("Diten.Platform.MOD-0297.TrialExpiryScanJob", "TrialExpiryScanJob", "MOD-0297", "0 2 * * *"),
-            CreateDeferred("Diten.Platform.MOD-0297.SubscriptionRenewalJob", "SubscriptionRenewalJob", "MOD-0297/MOD-0299", "0 3 * * *"),
+            CreateDeferred(TrialExpiryScanJobId, "TrialExpiryScanJob", "MOD-0361", "0 2 * * *"),
+            CreateDeferred(SubscriptionRenewalJobId, "SubscriptionRenewalJob", "MOD-0361/MOD-0364", "0 3 * * *"),
             CreateDeferred("Diten.Platform.MOD-0033.QuotaResetJob", "QuotaResetJob", "MOD-0033", "0 0 1 * *"),
             CreateDeferred("Diten.Platform.MOD-0018.EntitlementCacheRefreshJob", "EntitlementCacheRefreshJob", "MOD-0018", "0 * * * *"),
             CreateDeferred("Diten.Platform.MOD-0034.WebhookRetryJob", "WebhookRetryJob", "MOD-0034", "*/5 * * * *"),
@@ -51,7 +51,52 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             registrations.Add(CreateHolidayAutoFetchRegistration());
         }
 
+        // CRM-BP87-03 — ids retired by the Blueprint 8.7 identity move stay in Hangfire storage of every installation
+        // that ever registered them, still firing on their cron next to the renamed job. A registration that is never
+        // enabled is removed by the scheduler (RemoveIfExists), so each retired id is listed here, always disabled.
+        registrations.AddRange(RetiredRecurringJobIds.Select(CreateRetired));
+
         return registrations;
+    }
+
+    /// <summary>Blueprint 8.7: MOD-0361 SaaS Subscription, Plan &amp; Entitlement Management (formerly MOD-0297).</summary>
+    public const string TrialExpiryScanJobId = "Diten.Platform.MOD-0361.TrialExpiryScanJob";
+
+    /// <summary>Blueprint 8.7: MOD-0361 (formerly MOD-0297); billing side MOD-0364 (formerly MOD-0299).</summary>
+    public const string SubscriptionRenewalJobId = "Diten.Platform.MOD-0361.SubscriptionRenewalJob";
+
+    /// <summary>Recurring job ids no longer registered under their own name; each is removed from Hangfire on start.</summary>
+    public static readonly IReadOnlyList<string> RetiredRecurringJobIds = new[]
+    {
+        "Diten.Platform.MOD-0297.TrialExpiryScanJob",
+        "Diten.Platform.MOD-0297.SubscriptionRenewalJob",
+    };
+
+    private RecurringJobRegistration CreateRetired(string id)
+    {
+        // IsEnabled is false whatever EnabledJobs says: an operator who still has the old key switched on must not
+        // keep the retired id alive beside its replacement.
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: id[(id.LastIndexOf('.') + 1)..],
+            Owner: "retired",
+            CronExpression: null,
+            TimeZoneId: "UTC",
+            IsEnabled: false,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(DeferredPlatformJobHandler),
+            typeof(DeferredPlatformJobArgs),
+            new DeferredPlatformJobArgs("retired", "Retired recurring job id; removed from the scheduler on registration."),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string> { ["owner"] = "retired", ["execution"] = "removed" }));
     }
 
     private RecurringJobRegistration CreateHolidayAutoFetchRegistration()

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 
-/// <summary>SCMM-12 (CAND-CAP-0011) — claim applicability input: product / market / audience references (config strings,
+/// <summary>SCMM-12 (MOD-0363, formerly CAND-CAP-0011) — claim applicability input: product / market / audience references (config strings,
 /// sector-neutral) + an optional eligibility-policy reference (by id). All refs are opaque provenance in this slice.</summary>
 public sealed record ClaimApplicabilityInput(
     IReadOnlyList<string>? ProductRefs = null,
@@ -11,7 +11,7 @@ public sealed record ClaimApplicabilityInput(
     IReadOnlyList<string>? AudienceRefs = null,
     Guid? EligibilityPolicyId = null);
 
-/// <summary>SCMM-12 (CAND-CAP-0011) claim write surface. <c>TenantId</c> server-resolved. No delete — closing is
+/// <summary>SCMM-12 (MOD-0363, formerly CAND-CAP-0011) claim write surface. <c>TenantId</c> server-resolved. No delete — closing is
 /// <see cref="ArchiveClaimCommand"/>. Approval is the outcome of a MOD-0023 workflow round (WP-CL-BE-4, draft → in-review → approved);
 /// an approved claim freezes its governed body (change ⇒ new version). <c>EvidenceRefs</c> are opaque (MOD-0031
 /// resolution deferred); <c>ComponentRefs</c> are by-id KnowledgeContent references (D02c reuse, provenance only).

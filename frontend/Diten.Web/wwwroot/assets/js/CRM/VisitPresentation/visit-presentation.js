@@ -423,6 +423,17 @@
             : '';
     }
 
+    /**
+     * FU-VISIT-END-SEPARATOR (W6-FIX-b) — "who · where · from–to": a visit with no institution has no middle part, and
+     * the line then has no empty slot between two separators ("AYŞE ABACI · · 17:57" before).
+     */
+    function summaryLine(e) {
+        const account = accountName();
+        return account
+            ? fmt(L.SummaryLine || '{0} · {1} · {2}–{3}', visitName(), account, timeOf(e.startedAt), timeOf(e.finishedAt))
+            : fmt(L.SummaryLineNoAccount || '{0} · {1}–{2}', visitName(), timeOf(e.startedAt), timeOf(e.finishedAt));
+    }
+
     /** E4c — the finish summary (from the SERVER's execution: its timings, marks, note, co-visitors, shortVisit). */
     function renderSummary() {
         const box = el('vp-summary');
@@ -438,7 +449,7 @@
 
         let html = '<div class="vp-sum-head"><div class="vp-sum-icon"><i class="bx bx-check-circle"></i></div><div>'
             + '<div class="vp-sum-title">' + esc(L.SummaryTitle || '') + '</div>'
-            + '<div class="vp-muted">' + esc(fmt(L.SummaryLine || '{0} · {1} · {2}–{3}', visitName(), accountName(), timeOf(e.startedAt), timeOf(e.finishedAt))) + '</div></div></div>';
+            + '<div class="vp-muted">' + esc(summaryLine(e)) + '</div></div></div>';
 
         html += '<div class="vp-card"><div class="d-flex justify-content-between align-items-baseline"><span class="vp-card-cap">' + esc(L.DurationHeading || '') + '</span><span class="vp-sum-total">' + esc(C.clock(e.durationSeconds != null ? e.durationSeconds : total)) + '</span></div>'
             + rows.map(r => '<div class="vp-row"><div class="d-flex justify-content-between"><span><strong>' + esc(r.name) + '</strong> <span class="vp-muted">· ' + esc(r.role === 'promo' ? L.RolePromo || '' : L.RoleReminder || '') + '</span></span><span>' + esc(fmt(L.MinutesClock || '{0}', C.clock(r.seconds))) + '</span></div>'
@@ -479,6 +490,8 @@
         const canvas = el('vp-sig');
         if (!canvas || typeof canvas.getContext !== 'function') { return; }
         const ctx = canvas.getContext('2d');
+        // W3E-THEME (K-THEME) — the ink is the layout's primary colour (Template Customizer → :root --bs-primary)
+        const primaryInk = () => (window.getComputedStyle ? window.getComputedStyle(document.documentElement).getPropertyValue('--bs-primary') : '').trim() || '#1d2129';
         let down = false;
         const pos = e => {
             const r = canvas.getBoundingClientRect();
@@ -487,7 +500,7 @@
         canvas.addEventListener('pointerdown', e => {
             down = true;
             if (canvas.setPointerCapture) { canvas.setPointerCapture(e.pointerId); }
-            ctx.strokeStyle = '#0b1a8c';
+            ctx.strokeStyle = primaryInk(); // W3E-THEME — the layout's primary colour, read when the stroke starts
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             ctx.beginPath();

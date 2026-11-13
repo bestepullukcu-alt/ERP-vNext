@@ -4,23 +4,23 @@
  * pill quick filters, the plain doctor table, the lavender summary card).
  */
 :root {
-    --vp-indigo: #0b1a8c;
-    --vp-indigo-soft: #e0e2f3;
-    --vp-indigo-line: #c5c9e8;
-    --vp-indigo-text: #4b55a8;
+    --vp-indigo: var(--bs-primary);
+    --vp-indigo-soft: rgba(var(--bs-primary-rgb), .12);
+    --vp-indigo-line: rgba(var(--bs-primary-rgb), .28);
+    --vp-indigo-text: rgba(var(--bs-primary-rgb), .78);
     --vp-pill-bg: #f1f2f4;
     --vp-pill-fg: #646e78;
 }
 [data-bs-theme="dark"] {
-    --vp-indigo: #8f9bff;
-    --vp-indigo-soft: rgba(105, 108, 255, .16);
-    --vp-indigo-line: rgba(143, 155, 255, .35);
-    --vp-indigo-text: #b4bbff;
+    --vp-indigo: color-mix(in srgb, var(--bs-primary) 60%, #fff);
+    --vp-indigo-soft: rgba(var(--bs-primary-rgb), .22);
+    --vp-indigo-line: rgba(var(--bs-primary-rgb), .45);
+    --vp-indigo-text: color-mix(in srgb, var(--bs-primary) 45%, #fff);
     --vp-pill-bg: rgba(255, 255, 255, .06);
     --vp-pill-fg: #b2b6c4;
 }
 
-/* thin scrollbars (mockup: scrollbar-width:thin; #c5c9e8) — this page only */
+/* thin scrollbars (mockup: scrollbar-width:thin; the primary line tone) — this page only */
 html, html * {
     scrollbar-width: thin;
     scrollbar-color: var(--vp-indigo-line) transparent;

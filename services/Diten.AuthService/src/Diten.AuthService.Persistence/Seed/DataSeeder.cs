@@ -579,20 +579,20 @@ public static class DataSeeder
             new("crm", "country-legal-profile", "manage", "CRM Country Legal Profile Manage", "Permission to author draft country legal profiles, start a new version and archive", moduleOverride: "crm-knowledge"),
             new("crm", "country-legal-profile", "submit", "CRM Country Legal Profile Submit", "Permission to send a country legal profile draft for Regulatory approval and withdraw it", moduleOverride: "crm-knowledge"),
 
-            // SCMM-12-API (CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
+            // SCMM-12-API (MOD-0363, formerly CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
             // ∉ PlatformAdminModules → Scope=Tenant). Canonical crm.claim.* keys for the ContentComposition claim console.
             new("crm", "claim", "read", "CRM Claim Read", "Permission to view SCMM claims", moduleOverride: "crm-content-composition"),
             new("crm", "claim", "manage", "CRM Claim Manage", "Permission to create/update/archive SCMM claims", moduleOverride: "crm-content-composition"),
             new("crm", "claim", "approve", "CRM Claim Approve", "Permission to approve SCMM claims (draft to approved)", moduleOverride: "crm-content-composition"),
 
-            // SCMM-14 (CAND-CAP-0011) — ContentScope + ContentSet (assembly) HTTP surface. Tenant-scoped keys (same
+            // SCMM-14 (MOD-0363, formerly CAND-CAP-0011) — ContentScope + ContentSet (assembly) HTTP surface. Tenant-scoped keys (same
             // module code "crm-content-composition" ∉ PlatformAdminModules → Scope=Tenant).
             new("crm", "content-scope", "read", "CRM Content Scope Read (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired; kept so existing role grants stay intact. Read-only scope API only.", moduleOverride: "crm-content-composition"),
             new("crm", "content-scope", "manage", "CRM Content Scope Manage (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
             new("crm", "content-set", "read", "CRM Content Set Read (deprecated)", "Deprecated (WP-KP-4): the content set is retired (the Knowledge Path Studio took its job); kept so existing role grants stay intact. Read-only access to old content sets and revisions only.", moduleOverride: "crm-content-composition"),
             new("crm", "content-set", "manage", "CRM Content Set Manage (deprecated)", "Deprecated (WP-KP-4): the content set is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
 
-            // SCMM-11-follow-API (CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. evaluate is a
+            // SCMM-11-follow-API (MOD-0363, formerly CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. evaluate is a
             // SEPARATE key from manage (author-vs-evaluator SoD).
             new("crm", "eligibility", "read", "CRM Eligibility Read", "Permission to view SCMM eligibility policies", moduleOverride: "crm-content-composition"),
             new("crm", "eligibility", "manage", "CRM Eligibility Manage", "Permission to create/update/archive SCMM eligibility policies", moduleOverride: "crm-content-composition"),
@@ -623,6 +623,17 @@ public static class DataSeeder
             // WP-VW-W4 (W4-BE-a, G2) — competitor usage counts from the visit reports (no doctor identity; cells under five
             // hidden). Tenant-scoped ("crm-visit-report" ∉ PlatformAdminModules). Catalog only: granted to no role here.
             new("crm", "visit-report", "read-aggregate", "CRM Visit Report Read Aggregate", "Permission to view aggregated competitor usage counts from visit reports without any doctor's identity (cells under five are hidden)", moduleOverride: "crm-visit-report"),
+
+            // WP-VW-W3E (W3E-BE-a, §2.7) — the institution QR codes. Tenant-scoped ("crm-visit-qr" ∉ PlatformAdminModules).
+            // read = the QR state and history of an institution (never a payload); manage = issue / regenerate / revoke / print
+            // (the payload). Catalog only: granted to no role here.
+            new("crm", "visit-qr", "read", "CRM Visit QR Read", "Permission to view an institution's visit QR code state and history (never the printable payload)", moduleOverride: "crm-visit-qr"),
+            new("crm", "visit-qr", "manage", "CRM Visit QR Manage", "Permission to issue, regenerate, revoke and print institution visit QR codes, one by one or in bulk", moduleOverride: "crm-visit-qr"),
+            // WP-VW-W3E (BE-b, §2.7) — the manager's visit evidence flags (location, device, QR, short visit), read only.
+            // Tenant-scoped ("crm-visit-evidence-flags" ∉ PlatformAdminModules). read = the caller's team + the caller;
+            // read-all = the whole tenant. Catalog only: granted to no role here.
+            new("crm", "visit-evidence-flags", "read", "CRM Visit Evidence Flags Read", "Permission to view the visit start evidence and its flags of the representatives in the caller's team", moduleOverride: "crm-visit-evidence-flags"),
+            new("crm", "visit-evidence-flags", "read-all", "CRM Visit Evidence Flags Read All", "Permission to view the visit start evidence and its flags of every representative in the tenant", moduleOverride: "crm-visit-evidence-flags"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -1521,7 +1532,7 @@ public static class DataSeeder
     }
 
     /// <summary>
-    /// WP-SCMM-12-API — grants the CAND-CAP-0011 <c>crm.claim.*</c> permissions to the tenant-97c5 Admin role (mirrors
+    /// WP-SCMM-12-API — grants the MOD-0363 (formerly CAND-CAP-0011) <c>crm.claim.*</c> permissions to the tenant-97c5 Admin role (mirrors
     /// <see cref="SeedTenant97c5CrmKnowledgeGrantAsync"/>). Enables the authenticated claim console (create / list /
     /// approve / archive) for the CRM-tenant Admin. Idempotent: existing grants are skipped; explicit 3-key allowlist.
     /// </summary>
@@ -1576,7 +1587,7 @@ public static class DataSeeder
         Console.WriteLine($"Granted {granted} missing crm.claim.* permission(s) to tenant-97c5 Admin role.");
     }
 
-    // WP-SCMM-14 (CAND-CAP-0011) — grant the ContentScope + ContentSet (assembly) permissions to the tenant-97c5 Admin
+    // WP-SCMM-14 (MOD-0363, formerly CAND-CAP-0011) — grant the ContentScope + ContentSet (assembly) permissions to the tenant-97c5 Admin
     // role so the content-studio authoring surface works. Idempotent, explicit key allowlist, GUID-safe
     // (RolePermission.SystemGrant). Same shape as the SCMM-12-API claim grant.
     private static async Task SeedTenant97c5CrmContentAssemblyGrantAsync(IMongoDatabase database)
@@ -1629,7 +1640,7 @@ public static class DataSeeder
         Console.WriteLine($"Granted {granted} missing crm.content-scope/set.* permission(s) to tenant-97c5 Admin role.");
     }
 
-    // WP-SCMM-11-follow-API (CAND-CAP-0011) — grant the eligibility policy read/manage/evaluate permissions to the
+    // WP-SCMM-11-follow-API (MOD-0363, formerly CAND-CAP-0011) — grant the eligibility policy read/manage/evaluate permissions to the
     // tenant-97c5 Admin role so the eligibility HTTP surface (policy CRUD + evaluate) works. Idempotent, explicit key
     // allowlist, GUID-safe (RolePermission.SystemGrant). Same shape as the SCMM-12-API / SCMM-14 grants.
     private static async Task SeedTenant97c5CrmEligibilityGrantAsync(IMongoDatabase database)

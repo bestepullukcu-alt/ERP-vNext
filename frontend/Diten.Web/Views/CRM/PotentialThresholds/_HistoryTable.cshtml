@@ -1,0 +1,27 @@
+@using Diten.Web.Views.CRM.PotentialThresholds
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PotentialThresholdsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-c (U-5) — the change history: the SAME shared table card (_ListShell, v2) in SERVER mode — the CRM pages
+    // the append-only history (newest first). Read only: no selection, no actions column. It has no filter bar and no Save
+    // View of its own (history.js: the page's second table, built after the primary list).
+    var historyShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-pt-history",
+        DataMode = "server",
+        Slug = "pt-history",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColDate"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColPerson"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTarget"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColField"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColChange"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = null
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="historyShell" />

@@ -11,7 +11,7 @@ form_field_count: 0
 golden_reference: not_applicable
 ---
 
-# MOD-0033 - Consumer / Quota Model
+# MOD-0033 — API Consumer & Credential Management (Developer Portal) (formerly titled: Consumer / Quota Model)
 
 This module pack is structured as six execution documents inside one tracked pack file:
 

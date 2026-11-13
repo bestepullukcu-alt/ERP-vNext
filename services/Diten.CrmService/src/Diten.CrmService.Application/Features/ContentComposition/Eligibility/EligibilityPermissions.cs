@@ -1,8 +1,8 @@
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011) permission keys (PKS-001: lowercase-dotted, ≥3 segments). DEFINITION ONLY — this file seeds
-/// NOTHING (no DB write, no grant). The canonical CAND-CAP-0011 eligibility keys; the HTTP surface + RBAC seed/grant are
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011) permission keys (PKS-001: lowercase-dotted, ≥3 segments). DEFINITION ONLY — this file seeds
+/// NOTHING (no DB write, no grant). The canonical MOD-0363 (formerly CAND-CAP-0011) eligibility keys; the HTTP surface + RBAC seed/grant are
 /// the SCMM-11 follow (same S1 pattern the concept keys followed). Until then the policy CRUD + evaluator are exposed
 /// only through MediatR + the in-process port, so no endpoint runs on an unseeded key.
 /// </summary>

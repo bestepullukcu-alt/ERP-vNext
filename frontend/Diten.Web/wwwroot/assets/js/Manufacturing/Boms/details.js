@@ -3,7 +3,7 @@
 // MOD-0193 BOM Details — release (Draft → Effective), delete a draft, and the requirement check (explode) on an
 // effective version. Every call goes through the same-origin adapter (/Manufacturing/Boms/api/…) with the antiforgery
 // header; the adapter forwards the caller's token and answers the screen's words in `message`. Confirmations use the
-// premium shared helpers (window.showConfirm / showToast, MOD-0013).
+// premium shared helpers (window.showConfirm / showToast, MOD-0286 (formerly MOD-0013)).
 (function () {
     const root = document.querySelector('.bom-details');
     if (!root) return;

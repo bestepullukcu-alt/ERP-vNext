@@ -12,7 +12,7 @@ using Xunit;
 namespace Diten.CrmService.Application.Tests;
 
 /// <summary>
-/// SCMM-11-follow-API (CAND-CAP-0011) — EligibilityPoliciesController surface. Reflection over attributes (class
+/// SCMM-11-follow-API (MOD-0363, formerly CAND-CAP-0011) — EligibilityPoliciesController surface. Reflection over attributes (class
 /// [Authorize], per-action verb + canonical route + HasPermission key Read/Manage/Evaluate, no delete/patch) plus
 /// behaviour: Create/Update/Evaluate map the request onto the ready command/query and dispatch through MediatR, and an
 /// empty/malformed evaluate context is rejected with a 400 up front (no silent default, no dispatch).

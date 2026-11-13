@@ -12,17 +12,18 @@ public static class AccountReferenceValidation
     public const string AccountStatusSet = "account-status";
     public const string AccountCategorySet = "account-category";
 
-    public static async Task<IReadOnlyList<string>> ValidateAsync(
+    public static async Task<IReadOnlyList<(string Message, string Code)>> ValidateAsync(
         IReferenceDataValidator validator,
         string accountType,
         string status,
         string? accountCategory,
         CancellationToken cancellationToken)
     {
-        var errors = new List<string>();
+        // WP-CRM-MOBILE-REQ CRM-ACC-EDIT — every problem carries its machine code (§19; errors = [message, code])
+        var errors = new List<(string Message, string Code)>();
 
-        await CheckRequiredAsync(validator, AccountTypeSet, accountType, errors, cancellationToken);
-        await CheckRequiredAsync(validator, AccountStatusSet, status, errors, cancellationToken);
+        await CheckRequiredAsync(validator, AccountTypeSet, accountType, AccountErrors.TypeRequired, AccountErrors.TypeInvalid, errors, cancellationToken);
+        await CheckRequiredAsync(validator, AccountStatusSet, status, AccountErrors.StatusRequired, AccountErrors.StatusInvalid, errors, cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(accountCategory))
         {
@@ -33,11 +34,12 @@ public static class AccountReferenceValidation
     }
 
     private static async Task CheckRequiredAsync(
-        IReferenceDataValidator validator, string setCode, string value, List<string> errors, CancellationToken ct)
+        IReferenceDataValidator validator, string setCode, string value, string requiredCode, string invalidCode,
+        List<(string Message, string Code)> errors, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            errors.Add($"'{setCode}' is required.");
+            errors.Add(($"'{setCode}' is required.", requiredCode));
             return;
         }
 
@@ -45,21 +47,21 @@ public static class AccountReferenceValidation
         switch (result.Status)
         {
             case ReferenceValidationStatus.InvalidValue:
-                errors.Add($"'{value}' is not a valid published value of reference set '{setCode}'.");
+                errors.Add(($"'{value}' is not a valid published value of reference set '{setCode}'.", invalidCode));
                 break;
             case ReferenceValidationStatus.SetMissing:
-                errors.Add($"Required reference set '{setCode}' is not published yet (MOD-0048 authoring pending).");
+                errors.Add(($"Required reference set '{setCode}' is not published yet (MOD-0048 authoring pending).", AccountErrors.ReferenceSetMissing));
                 break;
         }
     }
 
     private static async Task CheckOptionalAsync(
-        IReferenceDataValidator validator, string setCode, string value, List<string> errors, CancellationToken ct)
+        IReferenceDataValidator validator, string setCode, string value, List<(string Message, string Code)> errors, CancellationToken ct)
     {
         var result = await validator.ValidateAsync(setCode, value, ct);
         if (result.Status == ReferenceValidationStatus.InvalidValue)
         {
-            errors.Add($"'{value}' is not a valid published value of reference set '{setCode}'.");
+            errors.Add(($"'{value}' is not a valid published value of reference set '{setCode}'.", AccountErrors.CategoryInvalid));
         }
         // SetMissing for an optional field is tolerated: the value is simply not validated until the set is published.
     }

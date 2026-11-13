@@ -96,6 +96,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         // First close what the window has given up on, so the same pass never also enqueues a retry for it.
         await CloseExpiredAsync(asOfUtc, batchSize, context, cancellationToken);
         await RedrivePendingEffectsAsync(asOfUtc, batchSize, context, cancellationToken);
+        await EnqueueQueuedFirstSendsAsync(asOfUtc, batchSize, maxRetryCount, context, cancellationToken);
 
         IReadOnlyList<NotificationDispatchRetryHandle> dueHandles;
         try
@@ -162,6 +163,75 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
             batchSize,
             maxRetryCount,
             context.EffectiveCorrelationId);
+    }
+
+    /// <summary>How long a claimed first send waits for its job before the sweep may enqueue it again.</summary>
+    public static readonly TimeSpan QueuedFirstSendLease = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// WP-VW-W5 W5-FIX2 (F-1) — the internal event dispatch writes its rows Queued and due instead of sending in the
+    /// request; this is where their first send starts: each due row is claimed (see
+    /// <see cref="INotificationDispatchRepository.ClaimDueQueuedAsync"/>) and handed to the same per-dispatch
+    /// <see cref="EmailDispatchJob"/> a retry uses — a failed first send then follows the ordinary retry path.
+    /// </summary>
+    private async Task EnqueueQueuedFirstSendsAsync(
+        DateTimeOffset asOfUtc, int batchSize, int maxRetryCount, BackgroundJobContext context, CancellationToken ct)
+    {
+        IReadOnlyList<NotificationDispatchRetryHandle> queued;
+        try
+        {
+            queued = await _dispatchRepository.ClaimDueQueuedAsync(asOfUtc, asOfUtc + QueuedFirstSendLease, batchSize, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                "email.dispatch.sweep.queued_query_failed ExceptionType={ExceptionType} CorrelationId={CorrelationId}",
+                ex.GetType().Name,
+                context.EffectiveCorrelationId);
+            return;
+        }
+
+        foreach (var handle in queued)
+        {
+            ct.ThrowIfCancellationRequested();
+            try
+            {
+                await _scheduler.EnqueueAsync<EmailDispatchJobArgs, EmailDispatchJob>(
+                    new EmailDispatchJobArgs(handle.TenantId, handle.DispatchId, maxRetryCount),
+                    new BackgroundJobContext(
+                        CorrelationId: context.CorrelationId,
+                        CausationId: context.EventId,
+                        TenantId: handle.TenantId,
+                        TriggerType: BackgroundJobTriggerTypes.Recurring,
+                        TriggeredBy: nameof(EmailDispatchSweepJob)),
+                    ct);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // The claim's lease runs out and the next sweep after it tries again.
+                _logger.LogWarning(
+                    "email.dispatch.sweep.queued_enqueue_failed DispatchId={DispatchId} TenantId={TenantId} ExceptionType={ExceptionType}",
+                    handle.DispatchId,
+                    handle.TenantId,
+                    ex.GetType().Name);
+            }
+        }
+
+        if (queued.Count > 0)
+        {
+            _logger.LogInformation(
+                "email.dispatch.sweep.queued_enqueued Count={Count} CorrelationId={CorrelationId}",
+                queued.Count,
+                context.EffectiveCorrelationId);
+        }
     }
 
     private async Task CloseExpiredAsync(DateTimeOffset asOfUtc, int batchSize, BackgroundJobContext context, CancellationToken ct)

@@ -1,0 +1,57 @@
+@using Diten.Web.Views.CRM.VisitQrCodes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitQrCodesIndex> Localizer
+@inject IHtmlLocalizer<VisitQrIndex> QrLocalizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W3E-FIX (U-1) — the L10n payload of the standard (index.l10n.js merges it into window.L10n): the toolbar / filter / bulk
+   vocabulary of the shared layer + this page's words; the QR row words (chips, errors, bulk result) are VisitQrIndex's,
+   the same the card reads. *@
+<script id="visitqrcodes-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        ComingSoon = SharedLocalizer["ComingSoon"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Institution = Localizer["ColInstitution"].Value,
+        BulkGenerate = QrLocalizer["BulkGenerate"].Value,
+        BulkGenerateConfirm = Localizer["BulkGenerateConfirm"].Value,
+        BulkResult = QrLocalizer["BulkResult"].Value,
+        BulkLimit = QrLocalizer["BulkLimit"].Value,
+        RowPrint = QrLocalizer["RowPrint"].Value,
+        RowOpen = QrLocalizer["RowOpen"].Value,
+        ChipActive = QrLocalizer["Chip_active"].Value,
+        ChipRevoked = QrLocalizer["Chip_revoked"].Value,
+        ChipNone = QrLocalizer["Chip_none"].Value,
+        InheritsParent = QrLocalizer["InheritsParent"].Value,
+        InheritedInfo = QrLocalizer["InheritedInfo"].Value,
+        VersionShort = QrLocalizer["VersionShort"].Value,
+        Today = QrLocalizer["Today"].Value,
+        Yesterday = QrLocalizer["Yesterday"].Value,
+        ErrGeneric = QrLocalizer["Err_generic"].Value,
+        ErrPermission = QrLocalizer["Err_permission"].Value,
+        ErrRequestInvalid = QrLocalizer["Err_visit_qr_request_invalid"].Value,
+        ErrSigningUnavailable = QrLocalizer["Err_visit_qr_signing_unavailable"].Value
+    })
+</script>

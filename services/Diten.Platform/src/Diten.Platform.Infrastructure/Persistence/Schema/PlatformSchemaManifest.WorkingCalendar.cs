@@ -6,7 +6,7 @@ namespace Diten.Platform.Infrastructure.Persistence.Schema;
 public static partial class PlatformSchemaManifest
 {
     /// <summary>
-    /// CAND-CAP-0010 Working Calendar & Public Holidays (working_calendars + import batches). Ported from
+    /// MOD-0362 (formerly CAND-CAP-0010) Working Calendar & Public Holidays (working_calendars + import batches). Ported from
     /// the pre-refactor MongoDbIndexConfigurations monolith on 2026-08-28 (F-WC-DOC-SCHEMA-PORT). The
     /// ux_working_calendars_scope_country_year_code partial-unique index is dropped-before-rebuild in
     /// PlatformSchemaMigrations (its options changed across versions).

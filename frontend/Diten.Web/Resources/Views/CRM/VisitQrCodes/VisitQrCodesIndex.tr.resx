@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="VisitQrCodesTitle" xml:space="preserve"><value>Kurum QR kodları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kurumların kabulüne asılan kodlar. Alt birim kendi kodunu almadıysa üst kurumun kodu geçer.</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>Kurum</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColCity" xml:space="preserve"><value>Şehir</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>QR durumu</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>Son okutma</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>Son 30 gün</value></data>
+  <data name="Actions" xml:space="preserve"><value>Eylemler</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>Yok</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>İptal</value></data>
+  <data name="FilterRegion" xml:space="preserve"><value>Bölge</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Kurum türü</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="BulkGenerateConfirm" xml:space="preserve"><value>Seçilen {0} kuruma kod üretilsin mi? Zaten aktif kodu olanlar atlanır.</value></data>
+</root>

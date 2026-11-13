@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-09-UI-refine · Concept Nodes datatable + Connections formu UX düzeltmeleri
 
-> **Control Tower kaydı (SoR).** SCMM R1, kavram konsolu UX rötuşu (kullanıcı manuel-test geri bildirimi). Module: **MOD-0162 / CAND-CAP-0011**. Branch: `feature/scmm-content-studio` (HEAD `c09a0814`). **Yalnız frontend** (Diten.Web, KnowledgeConcepts konsolu); backend/API/RBAC'a **DOKUNMA**. Kaynak: manuel test notları 1-4.
+> **Control Tower kaydı (SoR).** SCMM R1, kavram konsolu UX rötuşu (kullanıcı manuel-test geri bildirimi). Module: **MOD-0162 / MOD-0363** (eski CAND-CAP-0011). Branch: `feature/scmm-content-studio` (HEAD `c09a0814`). **Yalnız frontend** (Diten.Web, KnowledgeConcepts konsolu); backend/API/RBAC'a **DOKUNMA**. Kaynak: manuel test notları 1-4.
 
 ## Ölçülmüş girdi (CT)
 - **Nodes datatable:** `wwwroot/assets/js/CRM/KnowledgeConcepts/index.js` — `typeMap` (id→name, `fetchList('concept-types', ... 'conceptTypeName', typeMap)`, satır ~128); Concept Type kolonu target 3 düz metin (`const name = typeMap[v]`, ~265). **concept-types DTO'da `color` alanı VAR** (ConceptType.Color).

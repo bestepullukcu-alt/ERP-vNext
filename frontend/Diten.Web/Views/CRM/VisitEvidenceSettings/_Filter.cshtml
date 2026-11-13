@@ -1,0 +1,51 @@
+@using Diten.Web.Views.CRM.VisitEvidenceSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceSettingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W3E-E4R2-FIX-b — the inline collapse filter of the standard for the time-boxed exceptions: the two axes the former chips
+   ("Tümü · Aktif · Planlı · Onay bekliyor · Taslak · Süresi doldu · İptal · Erken bitti") filtered on, as the standard's
+   select2 chips. Status = the exception's own state (the chips that named a status); phase = where an APPROVED exception
+   stands against today (the chips that named a phase — the CRM gives a phase to approved ones only). The values are the
+   CRM's wire values: index.js sends them as the proxy's ?status= / ?phase= (GET api/exceptions?status&phase). The baseline
+   value "" of each = every exception (the former "Tümü"); Save View keeps them. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["XColStatus"]">
+                            <option value=""></option>
+                            <option value="in_review">@Localizer["XFilter_in_review"]</option>
+                            <option value="draft">@Localizer["XFilter_draft"]</option>
+                            <option value="cancelled">@Localizer["XFilter_cancelled"]</option>
+                            <option value="ended_early">@Localizer["XFilter_ended_early"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Phase (approved exceptions) *@
+                    <div class="filter-chip filter-phase">
+                        <select id="filterPhase" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterPhase"]">
+                            <option value=""></option>
+                            <option value="active">@Localizer["XFilter_active"]</option>
+                            <option value="planned">@Localizer["XFilter_planned"]</option>
+                            <option value="expired">@Localizer["XFilter_expired"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

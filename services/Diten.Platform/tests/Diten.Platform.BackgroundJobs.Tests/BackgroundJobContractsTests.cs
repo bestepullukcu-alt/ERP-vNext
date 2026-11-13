@@ -59,9 +59,13 @@ public sealed class BackgroundJobContractsTests
                 "Diten.Platform.MOD-0280.TimerMidnightCloseJob",
                 "Diten.Platform.MOD-0280.TimesheetDecisionSweepJob",
                 "Diten.Platform.MOD-0280.TimesheetReminderJob",
+                // CRM-BP87-03 — retired by the Blueprint 8.7 move to MOD-0361; listed always disabled so the scheduler
+                // removes them from Hangfire (RetiredRecurringJobIdTests).
                 "Diten.Platform.MOD-0297.SubscriptionRenewalJob",
                 "Diten.Platform.MOD-0297.TrialExpiryScanJob",
                 "Diten.Platform.MOD-0357.MeetingSeriesSweepJob",
+                "Diten.Platform.MOD-0361.SubscriptionRenewalJob",
+                "Diten.Platform.MOD-0361.TrialExpiryScanJob",
             },
             jobs.Select(job => job.Descriptor.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray());
 

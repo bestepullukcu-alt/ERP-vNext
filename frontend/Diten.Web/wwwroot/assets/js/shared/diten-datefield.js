@@ -458,6 +458,50 @@
         return nodes.length;
     };
 
+    /*
+     * W6-FIX-b (G-2) — THE CALENDAR SPEAKS THE PAGE'S LANGUAGE. Measured: no page of the product ever gave flatpickr a
+     * locale (no l10n file is shipped, no `locale:` option, no `flatpickr.localize`), so on a Turkish page every calendar
+     * read "October / Mon Tue …". This was not the pre-order screen's defect but the shared one, so it is fixed HERE, once:
+     * the month and weekday names come from the browser's own Intl for <html lang> (seven tenant languages, no word
+     * list to keep), and the week starts where that locale starts it. English stays flatpickr's own default. Only the
+     * calendar's words change: the value format ('Y-m-d') and the display format (altFormat / dateFormat) do not.
+     */
+    const localeFor = (lang) => {
+        const tag = String(lang || '').trim();
+        if (!tag || /^en(-|$)/i.test(tag) || typeof Intl === 'undefined') return null;
+        let probe;
+        try { probe = new Intl.DateTimeFormat(tag, { timeZone: 'UTC' }); } catch (e) { return null; }
+        if (!probe) return null;
+        const names = (options, dates) => {
+            const f = new Intl.DateTimeFormat(tag, Object.assign({ timeZone: 'UTC' }, options));
+            return dates.map((d) => f.format(d));
+        };
+        const sunday = Date.UTC(2023, 0, 1); // 1 Jan 2023 was a Sunday: flatpickr's weekday lists start on Sunday
+        const week = Array.from({ length: 7 }, (_, i) => new Date(sunday + i * 86400000));
+        const year = Array.from({ length: 12 }, (_, i) => new Date(Date.UTC(2023, i, 1)));
+        let firstDay = 1;
+        try {
+            const loc = new Intl.Locale(tag);
+            const info = typeof loc.getWeekInfo === 'function' ? loc.getWeekInfo() : loc.weekInfo;
+            if (info && info.firstDay) firstDay = info.firstDay % 7;
+        } catch (e) { /* an older browser: Monday */ }
+        return {
+            weekdays: { shorthand: names({ weekday: 'short' }, week), longhand: names({ weekday: 'long' }, week) },
+            months: { shorthand: names({ month: 'short' }, year), longhand: names({ month: 'long' }, year) },
+            firstDayOfWeek: firstDay
+        };
+    };
+
+    const localizeCalendars = () => {
+        const fp = global.flatpickr;
+        const lang = global.document && global.document.documentElement ? global.document.documentElement.lang : '';
+        const locale = localeFor(lang);
+        if (!fp || typeof fp.localize !== 'function' || !locale) return false;
+        fp.localize(locale);
+        return true;
+    };
+    localizeCalendars();
+
     // guardAgainstSilentMisparse exposed so a test can drive it directly against a real flatpickr instance.
-    global.DitenDateField = { enhance, guardAgainstSilentMisparse, typedReadsBack, normalizeTyped };
+    global.DitenDateField = { enhance, guardAgainstSilentMisparse, typedReadsBack, normalizeTyped, localeFor, localizeCalendars };
 })(typeof window !== 'undefined' ? window : globalThis);

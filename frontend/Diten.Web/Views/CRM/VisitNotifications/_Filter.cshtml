@@ -1,0 +1,68 @@
+@model Diten.Web.Models.CRM.VisitNotificationsViewModel
+@using Diten.Web.Views.CRM.VisitNotifications
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitNotificationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W5-WEB — the inline collapse filter of the standard (Save View keeps it). The period is on the VISIT day (the CRM
+   filters on it); its baseline "" is the last 30 days. The option texts that depend on today or on the data (the reps the
+   list has shown) are written by index.js through loadOptions; the baseline value "" of each select is the default. The
+   custom range is the shared date field (.diten-field + the calendar icon that OPENS it), shown only for "custom". The rep
+   chip is for a manager / the settings key: hidden until the list shows more than one rep (a rep sees only themself). *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Period (the baseline "" = the last 30 days) *@
+                    <div class="filter-chip filter-period">
+                        <select id="filterPeriod" class="form-select form-select-sm select2" data-placeholder="@Localizer["PeriodLabel"]">
+                            <option value=""></option>
+                            <option value="last7"></option>
+                            <option value="month"></option>
+                            <option value="custom"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-from d-none" id="filterRangeFrom" data-vn-range>
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vn-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" placeholder="@Localizer["CustomFrom"]" /></div>
+                    </div>
+                    <div class="filter-chip filter-to d-none" id="filterRangeTo" data-vn-range>
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vn-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" placeholder="@Localizer["CustomTo"]" /></div>
+                    </div>
+
+                    @* Filter Chip: Event (the four visit report e-mails) *@
+                    <div class="filter-chip filter-event">
+                        <select id="filterEvent" class="form-select form-select-sm select2" data-placeholder="@Localizer["EventLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Status *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["StatusLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Rep (a manager / the settings key) *@
+                    <div class="filter-chip filter-rep@(Model.CanManageSettings ? "" : " d-none")" id="filterRepChip">
+                        <select id="filterRep" class="form-select form-select-sm select2" data-placeholder="@Localizer["RepLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

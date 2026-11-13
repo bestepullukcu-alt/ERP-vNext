@@ -7,7 +7,7 @@ using MediatR;
 namespace Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 
 /// <summary>
-/// SCMM-11 (CAND-CAP-0011, docx C2) — the ONE deterministic eligibility resolver. It reads the policy (by id) and maps
+/// SCMM-11 (MOD-0363, formerly CAND-CAP-0011, docx C2) — the ONE deterministic eligibility resolver. It reads the policy (by id) and maps
 /// the supplied <see cref="EligibilityContext"/> to a disjoint <see cref="EligibilityState"/>, then records the RM4
 /// evaluation log. Mirrors the MOD-0029 effectiveness resolver:
 /// <list type="bullet">

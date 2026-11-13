@@ -1,0 +1,10 @@
+@* W6-WEB-b — the scripts every page of screen D loads after its own L10n payload: the shared commercial rule messages
+   (W6-WEB-a's ONE source — no copy here), the shared pre-order helpers it reuses (request / badges / reason dialog / MF
+   reading — PreOrdersCore, PreOrdersUi), the screen's rules (PricingCore) and the tab card's page switch. *@
+<partial name="~/Views/Commercial/_CommercialRulesL10n.cshtml" />
+<script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+<script src="~/assets/js/Commercial/PreOrders/preorders-core.js" asp-append-version="true"></script>
+<script src="~/assets/js/Commercial/PreOrders/preorders-ui.js" asp-append-version="true"></script>
+<script src="~/assets/js/Commercial/Pricing/pricing-core.js" asp-append-version="true"></script>
+<script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
+<script src="~/assets/js/Commercial/Pricing/pricing-tabs.js" asp-append-version="true"></script>

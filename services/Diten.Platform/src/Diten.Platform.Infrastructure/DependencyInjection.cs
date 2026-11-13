@@ -329,6 +329,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsRepository, TenantMessagingSettingsRepository>();
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
+        services.AddScoped<IInternalDispatchKeyRepository, InternalDispatchKeyRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
         // ONE instance answers both contracts: the unit repository and, for MOD-0288-FU02, the reporting

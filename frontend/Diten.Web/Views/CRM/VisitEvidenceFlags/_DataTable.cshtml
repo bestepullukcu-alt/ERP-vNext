@@ -1,0 +1,30 @@
+@using Diten.Web.Views.CRM.VisitEvidenceFlags
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@{
+    // W3E-FLAGS-STD (K-STD) — the visits table is the shared component (BL-440): the page describes it, _ListShell renders
+    // it. Server mode (the CRM pages the visits of the window). The page is READ ONLY: nothing a selection could act on
+    // (the CRM has no bulk endpoint for evidence flags), so the selection is DECLARED off (HasSelection = false — the
+    // Users list precedent) and no bulk bar is rendered.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-visitevidenceflags",
+        DataMode = "server",
+        Slug = "visitevidenceflags",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColStart"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColRep"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTarget"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColKind"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColFlags"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColDuration"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColException"].Value }
+        ],
+        ActionsHeader = Localizer["ColActions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

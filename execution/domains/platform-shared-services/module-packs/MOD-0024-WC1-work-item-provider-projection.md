@@ -18,7 +18,7 @@ status_changed: draft -> ready-for-dev on 2026-07-24 (EA/user-approved; conditio
 form_field_count: 0
 ---
 
-# WC-1 — Unified Work-Item Provider Contract & Projection (CAND-CAP-0006 / DCP-004)
+# WC-1 — Unified Work-Item Provider Contract & Projection (MOD-0024, formerly CAND-CAP-0006 / DCP-004)
 
 > **Blueprint 8.7 (2026-10-19):** the Master absorbs `CAND-CAP-0006` into `MOD-0024` Task & Checklist Engine as its Work Center page / workspace. This pack's identity is now `MOD-0024-WC1` (child of `MOD-0024`; file renamed from `CAND-CAP-0006-WC1-work-item-provider-projection.md`). The `CAND-CAP-0006` sentences below are the record before that; runtime code, slugs and the product name Görev Merkezi / Task Center are unchanged.
 

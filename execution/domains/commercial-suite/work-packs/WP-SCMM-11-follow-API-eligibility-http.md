@@ -1,6 +1,6 @@
 # WORK PACKAGE — WP-SCMM-11-follow-API · Eligibility HTTP yüzeyi + RBAC (policy CRUD + evaluate)
 
-> **Control Tower kaydı (SoR).** SCMM R1. Module: **CAND-CAP-0011**, CrmService. Branch: `feature/scmm-content-studio` (HEAD 10ac6735). Bağ: SCMM-11-core ✅ (EligibilityPolicy + evaluator + port). **Yalnız HTTP adapter + RBAC** — logic hazır, DOKUNMA.
+> **Control Tower kaydı (SoR).** SCMM R1. Module: **MOD-0363** (eski CAND-CAP-0011), CrmService. Branch: `feature/scmm-content-studio` (HEAD 10ac6735). Bağ: SCMM-11-core ✅ (EligibilityPolicy + evaluator + port). **Yalnız HTTP adapter + RBAC** — logic hazır, DOKUNMA.
 > **Bağlam:** SCMM-11-core backend'i (policy aggregate + ResolveEligibilityQuery/port) main'de/branch'te AMA **HTTP controller YOK** (SCMM-12/14 ile aynı desen). Bu WP ucu açar → policy authoring UI (SCMM-11-UI) + ContentSet apply-eligibility gerçek policy'lerle çalışır.
 
 ## Ölçülmüş girdi (CT)

@@ -7008,18 +7008,6 @@ DURUM: AÇIK · SAHİP: CT (Platform çalışma saatleri) · BULAN: MOD-0280-FU0
 kiracıda yerel gün ve gece yarısı tek bölgeden gelir (takvim motoru ve MOD-0280-FU01). Öneri: tüzel kişi halkası (sıra 40) bir bölge de
 döndürür; tüketiciler değişmez. Gelecek regresyon riski: 🟡 saklanan satırlar yakaladıkları `TimeZoneId`'yi korur, yeniden hesaplanmaz.
 
-### BL-474
-
-**Çalışma takvimi paketinin kimliği eski: dosya adı CAND-CAP-0008, kayıt CAND-CAP-0010**
-
-DURUM: AÇIK · SAHİP: CT · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
-
-`execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-working-calendar-public-holidays.md` (ve FU02) dosya adı ve ön
-bilgisi eski kimliği taşıyor; kayıt defteri CAND-CAP-0010 diyor, CAND-CAP-0008 artık MOD-0354'ün eski takma adı. İş: dosya adı + ön bilgi +
-içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.py --check-all`) yeşil kalır. Gelecek regresyon riski: 🟢.
-
----
-
 ### BL-475
 
 **MOD-0023 tek atanan: çok adaylı onay, üstlenme ve vekâlet yok**
@@ -10127,46 +10115,8 @@ türü farklı aynı adla bir sıralamayı kaçırabilir.
 
 ---
 
-### BL-640
 
-**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
 
-DURUM: AÇIK · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
-kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
-ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
-eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
-**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
-**Gelecek regresyon riski:** 🟡
-
----
-
-### BL-641
-
-**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
-
-DURUM: AÇIK · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
-`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
-**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
-**Gelecek regresyon riski:** 🟢
-
----
-
-### BL-642
-
-**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
-
-DURUM: AÇIK · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
-
-**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
-satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
-**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
-**Gelecek regresyon riski:** 🟢
-
----
 
 ### BL-643
 

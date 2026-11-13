@@ -5339,3 +5339,66 @@ Ayrı bir turda, kendi Scope-korunumu ölçümüyle.
   MOD-0251'in 8 snake_case aksiyonu da düzeldi — kurala istisna listesi açmamak için; anahtarları ve modül kodu
   dokunulmadan duruyor ve HCM'e sorulacak soru BL-342'de.
 
+
+### BL-641
+
+**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
+
+DURUM: KAPANDI · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
+`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
+**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 W-UXH (`4b88fed8a`, test dalı). Üç panelin birincil düğmesi işaretli (`_PresentationNotes` pnSave enter · PotentialThresholds pt-save enter · VisitEvidenceSettings yeni istisna "Onaya gönder" chord); `diten-enter-primary.test.js`'teki adlı satırlar çıktı. Not: modal / sayfa formu işaretleri (kaydet onayları, QR yeniden üret / iptal, ayar formu Kaydet, yazdır) ortak Enter modülü modalları dinlemediği için bugün etkisiz — takip FU-UXH-MODAL (Kapanış / ortak modül sahibi).
+
+---
+
+### BL-642
+
+**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: KAPANDI · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
+satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
+**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 W-UXH (`4b88fed8a`, test dalı). 5 sayfa + W3E'nin 2 sayfası (CRMVISITQRCODES, CRMVISITEVIDENCEFLAGS) için `PageHelpResource` 7 dilde (Purpose / Audience / Immediate / Step1..5 + Title) + `PageHelpCatalog` adım ikonları; `MAIN_SYNC_3_PAGES` boşaldığı için nesnesi ve testi kaldırıldı. Node 16'da ledger taraması: taban 1 kırmızı (CRMVISIT* + DEMANDPLANNING) → yalnız DEMANDPLANNING (MOD-0188, başka modül).
+
+---
+
+### BL-640
+
+**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
+
+DURUM: KAPANDI · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
+kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
+ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
+eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
+**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
+**Gelecek regresyon riski:** 🟡
+
+**Kapanış (2026-10-19, CT):** WP-SYNC-144 BL-640 (test dalı `93171f288`; ajan `16fef0d6a`). CompetitorProduct, CompetitorProposalDecision ve ProcessedEvent `MdmDocumentClassMaps` köklerinde (alt tipler kayıt gezintisiyle); `CompetitorProductClassMaps` silindi (iki kökü hiç kaydetmiyormuş — MapIdMember istisnası yutuluyordu, türler katı AutoMap'teydi). `CompetitorProductRepository` ve `MongoWorkflowApprovalStore<T>` alan düzeyi `$set` (`FieldLevelUpdate`), kiracı + kimlik + sürüm CAS aynı; `MainSyncUncoveredTypes` / `MainSyncLenientWholeWrites` boşaldı. Kalan bilinen sınır: liste elemanlarının alt alanları (fiyatlar, onay turları…) güncellemede yine bütün yazılır.
+
+---
+
+### BL-474
+
+**Çalışma takvimi paketinin kimliği eski: dosya adı CAND-CAP-0008, kayıt CAND-CAP-0010**
+
+DURUM: KAPANDI · SAHİP: CT · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
+
+`execution/domains/platform-shared-services/module-packs/MOD-0362-working-calendar-public-holidays.md` (ve FU02) dosya adı ve ön
+bilgisi eski kimliği taşıyor; kayıt defteri CAND-CAP-0010 diyor, CAND-CAP-0008 artık MOD-0354'ün eski takma adı. İş: dosya adı + ön bilgi +
+içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.py --check-all`) yeşil kalır. Gelecek regresyon riski: 🟢.
+
+2026-10-19 · CRM-BP87-04: paket `MOD-0362-working-calendar-public-holidays.md`, FU02 / FU03 `MOD-0362-FU02-…` / `MOD-0362-FU03-…` adına taşındı (yukarıdaki yol yeni ad); künye `id: MOD-0362` / `MOD-0362-FU02` / `MOD-0362-FU03` + `formerly_id`; bağlantılar güncellendi; `check-all` 0 hard. Kapanış CT'de.
+
+**Kapanış (2026-10-19, CT):** CRM-BP87-04 (test dalı; ajan `76c0b2fd3`). Çalışma takvimi paketi ve FU02 / FU03 kanonik MOD-0362 adlarıyla taşındı, künye `id` + `formerly_id`, bağlantılar güncellendi; kayıtta MOD-0362-FU02 / FU03 satırları; `check-all` 0 hard, filename/id uyarısı kalmadı (CT sabotajı: FU03 künyesi eski kimliğe döndürülünce uyarı geri geliyor). Mühürlü `mod-0183-root-uptake-recovery-01/baseline.json` ve docs/records manifestleri eski yolları tarihli kanıt olarak tutar.
+
+---

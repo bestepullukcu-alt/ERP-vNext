@@ -75,7 +75,7 @@ describe("MOD-0024 task surface contract", () => {
     });
   });
 
-  // MOD-0013: "standart, özelleştirilmemiş SweetAlert2 diyalogları kullanmak KESİNLİKLE YASAKTIR".
+  // MOD-0286 (formerly MOD-0013): "standart, özelleştirilmemiş SweetAlert2 diyalogları kullanmak KESİNLİKLE YASAKTIR".
   describe("premium modal standard", () => {
     const surfaceFiles = [
       ...fs.readdirSync(root("wwwroot", "assets", "js", "Tasks"))

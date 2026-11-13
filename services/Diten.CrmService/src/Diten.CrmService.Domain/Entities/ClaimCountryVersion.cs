@@ -1,7 +1,7 @@
 namespace Diten.CrmService.Domain.Entities;
 
 /// <summary>
-/// WP-CL-BE-1 (claims v2, CAND-CAP-0011) — a claim's localisation for ONE country: per-language wording, adaptation
+/// WP-CL-BE-1 (claims v2, MOD-0363, formerly CAND-CAP-0011) — a claim's localisation for ONE country: per-language wording, adaptation
 /// (verbatim / narrowed / softened + reason), an audience that may only narrow the core's, and a validity window.
 /// <para>
 /// <see cref="ClaimCode"/> ties the line to the logical claim across core versions; <see cref="ClaimId"/> is the claim

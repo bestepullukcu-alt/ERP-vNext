@@ -1,0 +1,385 @@
+/**
+ * WP-VW-W6 · W6-WEB-a — the pre-order screens' shared drawing (B quick view, A, Details, C, C-link, E): the request helper,
+ * the badges, the facts, the lines, the totals with the local equivalent, the timeline and the reason dialog. Every word is
+ * window.L10n (the page resource + the shared rule messages); every data text is escaped and isolated (<bdi>) for RTL;
+ * dates and numbers are in the application's culture (<html lang>). Amounts are the CRM's (MOD-0156) — drawn, never computed.
+ */
+(function (root) {
+    'use strict';
+
+    const C = root.PreOrdersCore;
+    const R = () => root.CommercialRules;
+    const L = () => root.L10n || {};
+    const culture = () => ((root.document && root.document.documentElement && root.document.documentElement.lang) || '').trim() || 'en';
+    const dateCulture = () => (/^en(-|$)/i.test(culture()) ? 'en-GB' : culture());
+    const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const bidi = (s) => '<bdi>' + esc(s) + '</bdi>';
+    const fmt = (t, args) => (args || []).reduce((x, v, i) => x.split('{' + i + '}').join(String(v)), String(t || ''));
+    const T = (key, ...args) => fmt(L()[key] || '', args);
+    /** A template whose {n} slots are DATA: each escaped + isolated, the words around them escaped. */
+    const Th = (key, ...args) => String(L()[key] || '').split(/(\{\d+\})/).map((p) => {
+        const m = /^\{(\d+)\}$/.exec(p);
+        return m ? bidi(args[Number(m[1])] == null ? '' : args[Number(m[1])]) : esc(p);
+    }).join('');
+    const dtf = (o) => { try { return new Intl.DateTimeFormat(dateCulture(), o); } catch (e) { return new Intl.DateTimeFormat('en-GB', o); } };
+    const day = (v) => {
+        if (!v) return '';
+        const d = /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? new Date(v + 'T00:00:00Z') : new Date(v);
+        return isNaN(d) ? '' : dtf({ day: 'numeric', month: 'short', year: 'numeric', timeZone: /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? 'UTC' : undefined }).format(d);
+    };
+    const moment = (v) => { const d = new Date(v); return v && !isNaN(d) ? dtf({ day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d) : ''; };
+    const money = (a, c) => C.money(a, c, culture());
+    const pct = (v) => C.pct(v, culture());
+
+    const headers = (json) => {
+        const h = (root.DitenDataTable && root.DitenDataTable.getAuthHeaders && root.DitenDataTable.getAuthHeaders(json)) || {};
+        if (json && !h['Content-Type']) h['Content-Type'] = 'application/json';
+        return h;
+    };
+    /** fetch → { ok, status, body } (never throws; a network failure is status 0). */
+    const request = (method, url, body) => root.fetch(url, {
+        method: method, credentials: 'same-origin', headers: headers(body !== undefined),
+        body: body === undefined ? undefined : JSON.stringify(body)
+    }).then((r) => r.text().then((t) => { let b = null; try { b = t ? JSON.parse(t) : null; } catch (e) { b = null; } return { ok: r.ok, status: r.status, body: b }; }))
+        .catch(() => ({ ok: false, status: 0, body: null }));
+    const data = (r) => (r && r.ok && r.body ? (r.body.data !== undefined ? r.body.data : r.body) : null);
+
+    /** The words of a failed answer: the rule source's message for its code, else the page's generic words by status. */
+    const errorText = (r) => {
+        const code = C.errorCode(r && r.body);
+        const own = code && R() ? R().error(code) : null;
+        if (own) return own;
+        if (r && r.status === 403) return L().Err_permission_denied || '';
+        if (r && r.status === 404) return L().Err_not_found || '';
+        if (r && (r.status === 0 || r.status === 502 || r.status === 503)) return L().Err_unavailable || '';
+        return L().Err_generic || '';
+    };
+
+    const statusBadge = (status) => {
+        const s = C.statusOf(status);
+        return '<span class="badge bg-label-' + s.tone + ' d-inline-flex align-items-center gap-1 text-nowrap"><i class="bx ' + s.icon + '"></i>' + esc(L()[s.key] || status || '') + '</span>';
+    };
+    const outcomeBadge = (outcome) => {
+        const o = C.outcomeOf(outcome);
+        return '<span class="badge bg-label-' + o.tone + ' d-inline-flex align-items-center gap-1 text-nowrap po-outcome po-outcome-' + esc(outcome || 'ok') + '"><i class="bx ' + o.icon + '"></i>' + esc(R() ? R().outcome(outcome || 'ok') : '') + '</span>';
+    };
+    const depotResponseBadge = (status) => (status ? '<span class="badge bg-label-info text-nowrap">' + esc(L()['DR_' + status] || status) + '</span>' : '');
+
+    /** A finding in words (the shared rule source; {skuId} named by the line's product). Beside the line's outcome badge
+     *  (badge) a finding of that outcome leaves the badge's words out (W6-FIX-e G-17). */
+    const findingHtml = (f, skuName, badge) => '<span class="po-msg po-msg-' + esc(f.severity || '') + '">'
+        + (R() ? R().reasonHtml(f, badge, { skuName: () => skuName, culture: culture() }) : esc(f.code)) + '</span>';
+
+    /** The order's facts; V-10 (W6-FIX-b): the date WITH its time, the pharmacy WITH its city (the CRM's snapshot name). */
+    const facts = (order) => {
+        const o = order || {};
+        const ph = o.pharmacy || {};
+        const rows = [
+            ['FactCode', o.code], ['FactDate', moment(o.createdAt)], ['FactPharmacy', [ph.name, ph.cityName].filter(Boolean).join(' · ')], ['FactDepot', (o.depot || {}).name],
+            ['FactRep', (o.rep || {}).displayName], ['FactDelivery', day(o.requestedDeliveryDate)], ['FactSeller', (o.seller || {}).name],
+            ['FactMode', o.priceMode === 'priced' ? T('ModePriced', o.currency || '') : T('ModeQuantity')]
+        ].filter((r) => r[1]);
+        return '<dl class="po-facts row g-2 mb-0">' + rows.map((r) => '<div class="col-6 col-md-3"><dt class="small text-muted fw-normal">' + esc(L()[r[0]] || '') + '</dt><dd class="mb-0 text-heading">' + bidi(r[1]) + '</dd></div>').join('') + '</dl>';
+    };
+
+    /** The order's lines: product (name · code · barcode), quantity, MF (+ free boxes), and in priced mode discount, unit price, VAT, line total; the outcome + messages. */
+    const linesTable = (order, opts) => {
+        const o = order || {};
+        const priced = o.priceMode === 'priced';
+        const showRules = !(opts && opts.noRules);
+        const head = ['ColProduct', 'ColQty', 'ColMf'].concat(priced ? ['ColDiscount', 'ColUnitPrice', 'ColVat', 'ColLineTotal'] : []).concat(showRules ? ['ColRule'] : []);
+        const rows = (o.lines || []).map((l) => {
+            const sku = l.sku || {};
+            const meta = [sku.code, sku.gtin ? T('GtinShort', sku.gtin) : ''].filter(Boolean).join(' · ');
+            const cells = [
+                '<div class="text-heading">' + bidi(sku.name || sku.code || '') + '</div>' + (meta ? '<small class="text-muted">' + bidi(meta) + '</small>' : ''),
+                esc(C.num(l.quantity, culture(), 0)),
+                l.mf ? bidi(C.mfText(l.mf)) + (l.freeQuantity ? '<small class="text-muted d-block">' + esc(T('FreeBoxes', C.num(l.freeQuantity, culture(), 0))) + '</small>' : '') : '—'
+            ];
+            if (priced) cells.push(l.discountPct == null ? '—' : esc(pct(l.discountPct)), esc(money(l.unitPrice, o.currency)), l.vatRate == null ? '—' : esc(pct(l.vatRate)), '<span class="text-heading">' + esc(money(l.netAmount, o.currency)) + '</span>');
+            if (showRules) {
+                const msgs = (l.findings || []).map((f) => findingHtml(f, sku.name || sku.code, l.outcome)).join('');
+                cells.push(outcomeBadge(l.outcome) + (msgs ? '<div class="po-msgs">' + msgs + '</div>' : ''));
+            }
+            return '<tr>' + cells.map((c) => '<td>' + c + '</td>').join('') + '</tr>';
+        }).join('');
+        return '<div class="table-responsive"><table class="table table-sm align-middle po-lines mb-0"><thead><tr>' + head.map((h) => '<th>' + esc(L()[h] || '') + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    };
+
+    /**
+     * V-3 (W6-FIX-b) — list subtotal (VAT excl.) · discount · net (VAT excl.) · VAT %rate · effective discount (MF +
+     * discount) · grand total · the local equivalent (only with an FX snapshot) — or the quantity-mode note. EVERY value is
+     * a field of the CRM's totals, written as it came (C.summaryRows names the field); a missing field is a missing row.
+     */
+    const totals = (order, opts) => {
+        const o = order || {};
+        if (o.priceMode !== 'priced' || !o.totals) return '<div class="alert alert-info d-flex gap-2 align-items-start mb-0 py-2"><i class="bx bx-info-circle mt-1"></i><span>' + esc(L().QuantityModeNote || '') + '</span></div>';
+        const t = o.totals;
+        const rows = C.summaryRows(t, { hideEffective: !!(opts && opts.hideEffective), vatRate: C.vatRateOf(o.lines) });
+        const value = (r) => (r.kind === 'pct' ? pct(t[r.field]) : (r.kind === 'discount' ? '− ' + money(t[r.field], o.currency) : money(t[r.field], o.currency)));
+        const fx = C.fxArgs(o.fx, culture(), day);
+        return '<div class="po-totals">' + rows.map((r) => '<div class="d-flex justify-content-between gap-2 po-total-' + esc(r.field) + '"><span class="text-muted">' + esc(r.rate != null ? T(r.key, pct(r.rate)) : (L()[r.key] || '')) + '</span><span class="text-nowrap">' + esc(value(r)) + '</span></div>').join('')
+            + '<div class="d-flex justify-content-between gap-2 fw-semibold text-heading border-top pt-1 mt-1 po-total-gross"><span>' + esc(L().TotalGross || '') + '</span><span class="text-nowrap">' + esc(money(t.gross, o.currency)) + '</span></div>'
+            + (fx ? '<small class="text-muted d-block mt-1">' + Th('FxLine', ...fx) + '</small>' : '') + '</div>';
+    };
+
+    const timelineHtml = (order) => {
+        const items = C.timeline(order);
+        if (!items.length) return '<p class="text-muted small mb-0">' + esc(L().TimelineEmpty || '') + '</p>';
+        return '<ul class="po-timeline list-unstyled mb-0">' + items.map((e) => '<li class="d-flex gap-2"><span class="po-tl-dot bg-label-' + e.tone + '"><i class="bx ' + e.icon + '"></i></span><div><div class="text-heading">' + esc(L()[e.key] || e.type) + '</div><small class="text-muted">' + esc(moment(e.at)) + '</small>'
+            + (e.reason ? '<small class="d-block">' + Th('ReasonLine', e.reason) + '</small>' : '')
+            + (e.code && R() && R().error(e.code) ? '<small class="d-block text-muted">' + esc(R().error(e.code)) + '</small>' : '') + '</div></li>').join('') + '</ul>';
+    };
+
+    /** The transmission trail (screen E): each attempt with its outcome; the last status. */
+    const trailHtml = (order) => {
+        const tr = (order && order.transmission) || null;
+        if (!tr || !(tr.attempts || []).length) return '<span class="text-muted small">' + esc(L().TrailNone || '') + '</span>';
+        return tr.attempts.map((a, i) => '<span class="badge bg-label-' + (a.status === 'sent' ? 'success' : 'danger') + ' d-inline-flex align-items-center gap-1 me-1 mb-1"><i class="bx ' + (a.status === 'sent' ? 'bx-send' : 'bx-error') + '"></i>'
+            + esc(T('TrailAttempt', i + 1, moment(a.at), L()['Trail_' + a.status] || a.status)) + '</span>').join('');
+    };
+
+    /**
+     * The reason dialog (reject / request changes / cancel — the reason is REQUIRED, D5): resolves the typed reason, or
+     * null when dismissed. The confirm button is disabled until a reason is typed; Ctrl / ⌘ + Enter confirms (a
+     * consequential act, UXH-001 chord) — a plain Enter is a new line of the textarea.
+     */
+    const askReason = (title, text, button) => new Promise((resolve) => {
+        const el = root.document.getElementById('po-reason-modal');
+        if (!el || !root.bootstrap) { resolve(null); return; }
+        const area = el.querySelector('#po-reason-text');
+        const ok = el.querySelector('#po-reason-ok');
+        el.querySelector('#po-reason-title').textContent = title;
+        el.querySelector('#po-reason-body').textContent = text;
+        ok.textContent = button;
+        area.value = '';
+        ok.disabled = true;
+        let done = false;
+        const finish = (v) => { if (done) return; done = true; area.removeEventListener('input', onInput); ok.removeEventListener('click', onOk); area.removeEventListener('keydown', onKey); el.removeEventListener('hidden.bs.modal', onHide); modal.hide(); resolve(v); };
+        const onInput = () => { ok.disabled = !area.value.trim(); };
+        const onOk = () => { if (area.value.trim()) finish(area.value.trim()); };
+        const onKey = (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && area.value.trim()) { e.preventDefault(); onOk(); } };
+        const onHide = () => finish(null);
+        area.addEventListener('input', onInput); ok.addEventListener('click', onOk); area.addEventListener('keydown', onKey); el.addEventListener('hidden.bs.modal', onHide);
+        const modal = root.bootstrap.Modal.getOrCreateInstance(el);
+        modal.show();
+        setTimeout(() => area.focus(), 200);
+    });
+
+    /**
+     * Screen A — the head of the line table (V-1, W6-FIX-b): drawn ONCE, shown from md up (preorders.css); below md each
+     * line is a card that carries its own labels. Product · quantity · MF and, in priced mode only, discount % · unit
+     * price · line total.
+     */
+    const lineHeadHtml = (priced) => {
+        const cols = ['ColProduct', 'ColQty', 'ColMf'].concat(priced ? ['ColDiscount', 'ColUnitPrice', 'ColLineTotal'] : []);
+        return '<div class="po-line-head po-line-grid ' + (priced ? 'po-grid-priced' : 'po-grid-quantity') + '" aria-hidden="true">'
+            + cols.map((c, i) => '<span class="po-head-' + (i < 3 ? ['product', 'qty', 'mf'][i] : ['disc', 'unit', 'total'][i - 3]) + '">' + esc(L()[c] || '') + '</span>').join('') + '<span></span></div>';
+    };
+
+    /**
+     * Screen A — the INPUTS of one line: product, quantity, MF and, in priced mode only, the discount — one ROW of the line
+     * table from md up, a card below it (V-1). In quantity mode no discount and no price field exists at all (AC-PRICE-3:
+     * the CRM refuses a discount there anyway). The price is never an input: the unit price and the line total cells are
+     * the CRM's answer (lineCells), behind a lock.
+     */
+    const formLineHtml = (line, priced, locked) => {
+        const k = esc(line.key);
+        const dis = locked ? ' disabled' : '';
+        const label = (id, key) => '<label class="form-label small po-cell-label" for="' + id + '-' + k + '">' + esc(L()[key] || '') + '</label>';
+        const sku = '<div class="po-cell po-cell-product">' + label('po-sku', 'ColProduct')
+            + '<div class="diten-field"><i class="bx bx-capsule diten-field-icon" aria-hidden="true"></i><select class="form-select po-sku" id="po-sku-' + k + '" data-key="' + k + '"' + dis + '>'
+            + (line.skuId ? '<option value="' + esc(line.skuId) + '" selected>' + esc(line.skuText || line.skuId) + '</option>' : '<option value=""></option>') + '</select></div>'
+            + '<small class="text-muted d-block po-sku-facts" id="po-facts-' + k + '"></small></div>';
+        const qty = '<div class="po-cell po-cell-qty">' + label('po-qty', 'ColQty')
+            + '<div class="diten-field"><i class="bx bx-package diten-field-icon" aria-hidden="true"></i><input type="number" inputmode="numeric" min="1" step="1" class="form-control po-qty" id="po-qty-' + k + '" data-key="' + k + '" value="' + esc(line.quantity == null ? '' : line.quantity) + '"' + dis + ' /></div></div>';
+        const mf = '<div class="po-cell po-cell-mf">' + label('po-mf', 'ColMf')
+            + '<div class="diten-field"><i class="bx bx-gift diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="numeric" class="form-control po-mf" id="po-mf-' + k + '" data-key="' + k + '" placeholder="10+2" value="' + esc(line.mf || '') + '"' + dis + ' /></div></div>';
+        const priceCells = priced
+            ? '<div class="po-cell po-cell-disc">' + label('po-disc', 'ColDiscount')
+                + '<div class="diten-field"><i class="bx bx-purchase-tag-alt diten-field-icon" aria-hidden="true"></i><input type="text" inputmode="decimal" class="form-control po-disc" id="po-disc-' + k + '" data-key="' + k + '" value="' + esc(line.discount == null ? '' : line.discount) + '"' + dis + ' /></div></div>'
+                + '<div class="po-cell po-cell-unit"><span class="small text-muted po-cell-label">' + esc(L().ColUnitPrice || '') + '</span><div class="po-cell-value text-muted" id="po-unit-' + k + '">—</div></div>'
+                + '<div class="po-cell po-cell-total"><span class="small text-muted po-cell-label">' + esc(L().ColLineTotal || '') + '</span><div class="po-cell-value text-heading fw-semibold" id="po-total-' + k + '">—</div></div>'
+            : '';
+        const remove = '<div class="po-cell po-cell-act">' + (locked ? '' : '<button type="button" class="btn btn-sm btn-icon btn-label-danger po-remove" data-key="' + k + '" aria-label="' + esc(L().RemoveLine || '') + '" title="' + esc(L().RemoveLine || '') + '"><i class="bx bx-trash"></i></button>') + '</div>';
+        return '<div class="po-line" data-key="' + k + '"><div class="po-line-grid ' + (priced ? 'po-grid-priced' : 'po-grid-quantity') + '">' + sku + qty + mf + priceCells + remove + '</div>'
+            + '<div class="po-line-result" id="po-res-' + k + '"></div></div>';
+    };
+
+    /** Screen A — the line's unit price (locked) and line total cells: the CRM's answer as it came; "—" before it. */
+    const lineCells = (result, ctx) => {
+        const c = ctx || {};
+        if (!c.priced || !result || result.unitPrice == null) return { unit: '—', total: '—' };
+        return {
+            unit: '<span class="text-nowrap"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>' + esc(money(result.unitPrice, c.currency)) + '</span>',
+            // the unit price rides under the total where the table has no room for its own column (preorders.css)
+            total: '<span class="text-nowrap">' + esc(money(result.netAmount, c.currency)) + '</span>'
+                + '<small class="po-unit-inline text-muted fw-normal text-nowrap"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>' + esc(T('PerBox', money(result.unitPrice, c.currency))) + '</small>'
+        };
+    };
+
+    /** V-2 — the product's facts under its name (form · pack · GTIN — each only when MDM carries it). */
+    const skuFactsText = (sku) => C.skuFacts(sku).map((p) => (p.pack ? (C.num(p.value, culture(), 2) + (p.unit ? ' ' + p.unit : '')) : (p.key ? T(p.key, p.value) : p.value))).join(' · ');
+
+    /**
+     * V-2 — where the price comes from: the list · its tier · valid from · the line's VAT rate (the CRM's), as words.
+     * `list` = the order's price snapshot or the preview's list; `tier` its tier code.
+     */
+    const priceSourceHtml = (list, tier, vatRate) => {
+        if (!list) return '';
+        const tierText = L()['Tier_' + String(tier || '').replace(/-/g, '_')] || tier || '';
+        return Th('PriceSource', list.name || '', tierText, day(list.validFrom)) + (vatRate != null ? ' · ' + esc(T('TotalVatRate', pct(vatRate))) : '');
+    };
+
+    /**
+     * Screen A — what the CRM answered for one line under its row (the preview / the order): the free boxes and the
+     * combined discount; the price source (V-2); the outcome badge and the rule messages. The unit price and the line total
+     * are the row's own cells (lineCells).
+     */
+    const lineResult = (result, ctx) => {
+        if (!result) return '';
+        const c = ctx || {};
+        const parts = [];
+        const meta = [];
+        if (result.freeQuantity) meta.push(T('FreeBoxes', C.num(result.freeQuantity, culture(), 0)));
+        if (c.priced && result.combinedDiscountPct != null) meta.push(T('CombinedLine', pct(result.combinedDiscountPct)));
+        else if (result.mfRatioPct != null && result.freeQuantity) meta.push(T('MfRatioLine', pct(result.mfRatioPct)));
+        if (meta.length) parts.push('<small class="text-muted d-block">' + esc(meta.join(' · ')) + '</small>');
+        if (c.priceSource) parts.push('<small class="text-muted d-block"><i class="bx bx-purchase-tag-alt me-1"></i>' + c.priceSource + '</small>');
+        const msgs = (result.findings || []).map((f) => findingHtml(f, c.skuName, result.outcome)).join('');
+        parts.push('<div class="d-flex flex-wrap align-items-start gap-2 mt-1">' + outcomeBadge(result.outcome) + (msgs ? '<div class="po-msgs">' + msgs + '</div>' : '') + '</div>');
+        return parts.join('');
+    };
+
+    /** W6-FIX-e (G-15) — who the cancellation mail reached, as the CRM recorded it (notifiedDepot / notifiedPharmacy: the
+     *  order had been transmitted AND the party had an e-mail). Not notified on a transmitted order = it had no e-mail;
+     *  an order never transmitted tells nobody outside, so it says nothing. */
+    const cancelNotices = (o) => {
+        const c = o.cancellation || {};
+        const transmitted = !!(o.transmission && o.transmission.transmittedAt);
+        const line = (key) => '<small class="d-block text-muted po-cancel-notice">' + esc(L()[key] || '') + '</small>';
+        const of = (notified, party) => (notified ? line('CancelNotified' + party) : (transmitted ? line('CancelNoEmail' + party) : ''));
+        return of(c.notifiedDepot === true, 'Depot') + of(c.notifiedPharmacy === true, 'Pharmacy');
+    };
+
+    /** Signature · approval (or "approved automatically") · transmission · cancellation · the depot's answer. */
+    const stateHtml = (order) => {
+        const o = order || {};
+        const rows = [];
+        const row = (icon, html) => rows.push('<li class="d-flex gap-2 mb-2"><i class="bx ' + icon + ' mt-1"></i><div>' + html + '</div></li>');
+        if (o.signature) row('bx-pen', Th('SignedBy', o.signature.signerName, moment(o.signature.signedAt)));
+        else row('bx-pen', '<span class="text-muted">' + esc(L().SignatureNone || '') + '</span>');
+        const a = o.approval;
+        if (a && a.auto) row('bx-check-double', esc(L().AutoApproved || ''));
+        else if (a && a.decision) {
+            const names = (o.approvalRequirement && o.approvalRequirement.approverNames) || {};
+            const by = names[a.decidedByUserId] || '';
+            row(a.decision === 'approve' ? 'bx-check' : 'bx-x-circle', Th('Decision_' + String(a.decision).replace(/-/g, '_'), by, moment(a.decidedAt)) + (a.reason ? '<small class="d-block">' + Th('ReasonLine', a.reason) + '</small>' : ''));
+        } else if (o.status === 'pending_approval') {
+            const names = Object.values((o.approvalRequirement && o.approvalRequirement.approverNames) || {}).filter(Boolean).join(', ');
+            row('bx-time-five', names ? Th('AwaitingApprover', names) : esc(L().AwaitingApproverUnknown || ''));
+        }
+        const t = o.transmission;
+        if (t && t.transmittedAt) row('bx-send', Th('TransmittedAt', (o.depot || {}).name || '', moment(t.transmittedAt)));
+        else if (t && t.lastStatus === 'failed') row('bx-error text-danger', esc(L().TransmissionFailedLine || ''));
+        if (o.cancellation) row('bx-block', Th('CancelledLine', moment(o.cancellation.at)) + '<small class="d-block">' + Th('ReasonLine', o.cancellation.reason) + '</small>' + cancelNotices(o));
+        if (o.depotResponse) {
+            const lines = (o.depotResponse.partialLines || []).map((p) => {
+                const l = (o.lines || []).find((x) => x.lineNo === p.lineNo) || {};
+                return '<small class="d-block">' + Th('PartialLine', (l.sku || {}).name || '', C.num(p.deliveredQuantity, culture(), 0), C.num(l.quantity, culture(), 0)) + '</small>';
+            }).join('');
+            row('bx-package', depotResponseBadge(o.depotResponse.status) + lines + (o.depotResponse.note ? '<small class="d-block">' + bidi(o.depotResponse.note) + '</small>' : ''));
+        }
+        if (o.note) row('bx-note', Th('NoteLine', o.note));
+        return '<ul class="list-unstyled mb-0 po-state">' + rows.join('') + '</ul>';
+    };
+
+    /** Screen C — "Neden onayımda?": the tenant setting and / or each line over a soft limit with its messages. */
+    const whyHtml = (order) => {
+        const why = C.whyOnMe(order);
+        if (!why.length) return '<p class="text-muted small mb-0">' + esc(L().WhyMeNone || '') + '</p>';
+        return why.map((w) => '<div class="d-flex gap-2 mb-2"><i class="bx ' + w.icon + ' mt-1"></i><div><div class="text-heading">' + esc(L()[w.key] || '') + '</div>'
+            + w.lines.map((l) => '<small class="d-block"><strong>' + bidi(l.name) + '</strong> · ' + l.findings.map((f) => (R() ? R().html(f, { skuName: () => l.name, culture: culture() }) : esc(f.code))).join(' · ') + '</small>').join('')
+            + '</div></div>').join('');
+    };
+
+    /**
+     * Screen C — every line's ENTERED value with the LIMIT under it (from the findings' parameters: the CRM's evaluation),
+     * the line total in priced mode and the outcome. A limit appears only where a rule spoke; nothing is computed.
+     */
+    const limitsTable = (order) => {
+        const o = order || {};
+        const priced = o.priceMode === 'priced';
+        const head = ['ColProduct', 'ColQty', 'ColMf'].concat(priced ? ['ColDiscount', 'ColCombined', 'ColLineTotal'] : []).concat(['ColRule']);
+        const cell = (value, limit) => '<div class="text-heading">' + (value === '' || value == null ? '—' : esc(value)) + '</div>' + (limit ? '<small class="po-limit">' + esc(limit) + '</small>' : '');
+        const rows = (o.lines || []).map((l) => {
+            const lim = C.limitCells(l);
+            const sku = l.sku || {};
+            const limitText = (c, asPct) => (c ? T(c.severity === 'hard' ? 'LimitHard' : 'LimitSoft', asPct ? pct(c.limitPct != null ? c.limitPct : c.limit) : c.limit) : '');
+            const cells = [
+                '<div class="text-heading">' + bidi(sku.name || sku.code || '') + '</div>' + (sku.gtin ? '<small class="text-muted">' + esc(T('GtinShort', sku.gtin)) + '</small>' : ''),
+                cell(C.num(l.quantity, culture(), 0), limitText(lim.quantity, false)),
+                cell(l.mf ? C.mfText(l.mf) + (l.mfRatioPct != null ? ' (' + pct(l.mfRatioPct) + ')' : '') : '', lim.mf ? T(lim.mf.severity === 'hard' ? 'LimitHard' : 'LimitSoft', lim.mf.limit + (lim.mf.limitPct != null ? ' (' + pct(lim.mf.limitPct) + ')' : '')) : '')
+            ];
+            if (priced) cells.push(cell(l.discountPct == null ? '' : pct(l.discountPct), limitText(lim.discount, true)), cell(l.combinedDiscountPct == null ? '' : pct(l.combinedDiscountPct), limitText(lim.combined, true)), '<span class="text-heading">' + esc(money(l.netAmount, o.currency)) + '</span>');
+            cells.push(outcomeBadge(l.outcome));
+            return '<tr>' + cells.map((c) => '<td>' + c + '</td>').join('') + '</tr>';
+        }).join('');
+        return '<div class="table-responsive"><table class="table table-sm align-middle po-lines mb-0"><thead><tr>' + head.map((h) => '<th>' + esc(L()[h] || '') + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    };
+
+    /** Screen C — the pharmacy's six months: a bar per month (orders) and the table (orders · boxes · total PER currency). */
+    /**
+     * Screen C's six months (V-9, mockup C) — the CRM's `months` as they come: the chart is the effective discount trend
+     * (MF + discount), the table Month · Orders · Amount (each currency on its own) · Effective. Every number is a CRM field;
+     * the page only scales the bars to the tallest month. A month without priced orders shows "—" and no bar.
+     */
+    const historyHtml = (months) => {
+        const list = months || [];
+        const has = (v) => v != null && v !== '';
+        const max = Math.max(0, ...list.filter((m) => has(m.effectiveDiscountPct)).map((m) => Number(m.effectiveDiscountPct)));
+        const month = (m) => { try { return new Intl.DateTimeFormat(dateCulture(), { month: 'short', year: '2-digit', timeZone: 'UTC' }).format(new Date(m + '-01T00:00:00Z')); } catch (e) { return m; } };
+        const effText = (m) => (has(m.effectiveDiscountPct) ? pct(m.effectiveDiscountPct) : '—');
+        const grossText = (m) => (m.gross || []).map((g) => money(g.amount, g.currency)).join(' · ') || '—';
+        const height = (m) => (has(m.effectiveDiscountPct) && max > 0 ? Math.round((Number(m.effectiveDiscountPct) / max) * 100) : 0);
+        const bars = '<small class="d-block text-muted mb-2">' + esc(L().HistoryTrend || '') + '</small><div class="po-bars d-flex align-items-end gap-2 mb-3" role="img" aria-label="' + esc(L().HistoryTrend || '') + '">' + list.map((m) => '<div class="po-bar-col flex-fill text-center"><small class="d-block text-muted fw-medium">' + esc(effText(m)) + '</small><div class="po-bar' + (has(m.effectiveDiscountPct) ? '' : ' po-bar-none') + '" style="--po-bar:' + height(m) + '%"></div><small class="d-block text-muted">' + esc(month(m.month)) + '</small></div>').join('') + '</div>';
+        const table = '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>' + esc(L().ColMonth || '') + '</th><th class="text-center">' + esc(L().ColOrders || '') + '</th><th class="text-end">' + esc(L().ColAmount || '') + '</th><th class="text-end">' + esc(L().ColEffectiveShort || '') + '</th></tr></thead><tbody>'
+            + list.map((m) => '<tr><td>' + esc(month(m.month)) + '</td><td class="text-center">' + esc(C.num(m.orders, culture(), 0)) + '</td><td class="text-end text-nowrap">' + esc(grossText(m)) + '</td><td class="text-end fw-medium">' + esc(effText(m)) + '</td></tr>').join('') + '</tbody></table></div>';
+        return bars + table;
+    };
+
+    const toast = (text, kind) => { if (root.showToast) root.showToast(text, kind || 'info'); };
+
+    /**
+     * G-6 / G-7 (W6-FIX-b) — every consequential act asks through the product's ONE confirmation (window.showConfirm,
+     * _GlobalConfirmation — MOD-0286), never the browser's own box. `type` colours the dialog (danger · warning · success ·
+     * info); `onYes` runs only on the confirm button. Fail closed: without the shared dialog nothing happens.
+     */
+    const confirm = (title, text, button, type, onYes) => {
+        if (typeof root.showConfirm !== 'function') return;
+        root.showConfirm(title || '', () => { onYes(); }, { subtext: text || '', confirmButtonText: button || undefined, type: type || 'info' });
+    };
+
+    /** G-8 — a toast that survives the move to the next page (sessionStorage; shown once by takeFlashToast there). */
+    const FLASH = 'po-toast';
+    const flashToast = (text, kind) => { try { root.sessionStorage.setItem(FLASH, JSON.stringify({ text: text || '', kind: kind || 'info' })); } catch (e) { /* storage off: no toast */ } };
+    const takeFlashToast = () => {
+        try {
+            const raw = root.sessionStorage.getItem(FLASH);
+            root.sessionStorage.removeItem(FLASH);
+            const v = raw ? JSON.parse(raw) : null;
+            if (v && v.text) toast(v.text, v.kind);
+        } catch (e) { /* storage off */ }
+    };
+
+    const api = {
+        esc: esc, bidi: bidi, T: T, Th: Th, day: day, moment: moment, money: money, pct: pct, culture: culture, request: request, data: data,
+        errorText: errorText, statusBadge: statusBadge, outcomeBadge: outcomeBadge, depotResponseBadge: depotResponseBadge, findingHtml: findingHtml,
+        facts: facts, linesTable: linesTable, totals: totals, timelineHtml: timelineHtml, trailHtml: trailHtml, askReason: askReason, toast: toast,
+        formLineHtml: formLineHtml, lineResult: lineResult, stateHtml: stateHtml, whyHtml: whyHtml, limitsTable: limitsTable, historyHtml: historyHtml,
+        lineHeadHtml: lineHeadHtml, lineCells: lineCells, skuFactsText: skuFactsText, priceSourceHtml: priceSourceHtml,
+        confirm: confirm, flashToast: flashToast, takeFlashToast: takeFlashToast
+    };
+    root.PreOrdersUi = api;
+    if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof window !== 'undefined' ? window : globalThis);

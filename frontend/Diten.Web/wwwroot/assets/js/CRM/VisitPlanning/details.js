@@ -495,7 +495,8 @@
     // markers + a route polyline, total drive time, and a reorderable stop list. ──
     const accCoord = accId => { const a = accountSource.find(x => x.id === accId); if (!a) return null; const la = (typeof a.lat === 'number') ? a.lat : null, ln = (typeof a.lng === 'number') ? a.lng : null; return (la != null && ln != null) ? { lat: la, lng: ln } : null; };
     let mapInstance = null, mapLatLngs = null;
-    const themePrimary = () => (getComputedStyle(document.body).getPropertyValue('--bs-primary') || '#696cff').trim() || '#696cff';
+    // W3E-THEME (K-THEME) — the layout's primary colour (Template Customizer → :root --bs-primary); never a fixed hex
+    const themePrimary = () => (getComputedStyle(document.documentElement).getPropertyValue('--bs-primary') || '').trim() || 'currentColor';
     // Toggle native fullscreen on the map canvas; Leaflet is re-sized by the fullscreenchange listener (wired once).
     const toggleMapFullscreen = () => {
         const c = el('vp-map-canvas'); if (!c) return;
@@ -1010,8 +1011,9 @@
     // hospital cyan); below, the province, "x / y selected" and the amber "N this week" as separate items (no dots). ONLY
     // the open account is highlighted (a light background + a 3px bar on the leading edge — the right one in RTL); a plan
     // account reads by its "x / y selected" (still listed first) and is removed from its Selected group's header.
-    const TYPE_TONE = { clinic: 'background:#e0e2f3;color:#0b1a8c', hospital: 'background:#d7f5fc;color:#028aa6' };
-    const ACTIVE_ACCOUNT_STYLE = 'background:#f3f4fb;border-inline-start:3px solid #0b1a8c !important;';
+    // W3E-THEME — a clinic wears the layout's primary colour (the hospital turquoise is a type colour, not the primary)
+    const TYPE_TONE = { clinic: 'background:rgba(var(--bs-primary-rgb),.12);color:var(--bs-primary)', hospital: 'background:#d7f5fc;color:#028aa6' };
+    const ACTIVE_ACCOUNT_STYLE = 'background:rgba(var(--bs-primary-rgb),.06);border-inline-start:3px solid var(--bs-primary) !important;';
     const typeBadge = type => type
         ? '<span class="badge flex-shrink-0 text-nowrap" style="font-weight:500;' + (TYPE_TONE[String(type).toLowerCase()] || 'background:#ebeef0;color:#8592a3') + '">' + esc(typeLabel(type)) + '</span>'
         : '';
@@ -1688,7 +1690,7 @@
     (() => {
         const tabs = el('vp-day-tabs'); if (!tabs) return;
         const dropAt = e => e.target.closest('[data-day]');
-        const hi = t => { t.style.outline = '2px dashed var(--bs-primary, #696cff)'; t.style.outlineOffset = '2px'; };
+        const hi = t => { t.style.outline = '2px dashed var(--bs-primary)'; t.style.outlineOffset = '2px'; };
         const unhi = t => { t.style.outline = ''; t.style.outlineOffset = ''; };
         const accepts = t => !!t && (draggingBlockIdx != null || draggingVisitCid != null) && !t.classList.contains('disabled')
             && routeCanMove() && parseInt(t.dataset.day, 10) !== activeDayOrderVal && (routeDayDate(parseInt(t.dataset.day, 10)) || '') >= ymd(new Date());

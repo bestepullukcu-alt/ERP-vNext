@@ -113,4 +113,5 @@
   <data name="Err_visit_execution_not_found" xml:space="preserve"><value>Визит не найден.</value></data>
   <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Визит изменён на другом экране. Обновите страницу.</value></data>
   <data name="Err_resource_not_caller" xml:space="preserve"><value>Записывать визит может только его представитель.</value></data>
+  <data name="SummaryLineNoAccount" xml:space="preserve"><value>{0} · {1}–{2}</value></data>
 </root>

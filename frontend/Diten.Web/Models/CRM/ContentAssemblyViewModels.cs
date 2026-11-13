@@ -1,6 +1,6 @@
 namespace Diten.Web.Models.CRM;
 
-// SCMM-14-UI (CAND-CAP-0011) content-composition view models. WP-SB-1R retired the ContentScope console and WP-KP-4
+// SCMM-14-UI (MOD-0363, formerly CAND-CAP-0011) content-composition view models. WP-SB-1R retired the ContentScope console and WP-KP-4
 // the ContentSet console (the Knowledge Path Studio took its job); what remains is shared by the other
 // content-composition consoles (Eligibility Policies). TenantId is never part of any model (server-resolved).
 

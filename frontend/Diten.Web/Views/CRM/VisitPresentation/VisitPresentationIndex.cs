@@ -20,7 +20,7 @@ public sealed class VisitPresentationIndex
         "VisitNote", "VisitNotePlaceholder", "VoiceNote", "Listening", "JointVisit", "CoVisitorsPlaceholder",
         "CoVisitorsMax", "NoPeople", "DurationConsistency", "FinishVisit", "FinishConfirmTitle", "FinishConfirmText",
         "FinishConfirmYes", "CancelButton", "PinSetTitle", "PinConfirmTitle", "PinUnlockTitle", "PinMismatch",
-        "PinWrong", "SummaryTitle", "SummaryLine", "DurationHeading", "RolePromo", "RoleReminder", "MinutesClock",
+        "PinWrong", "SummaryTitle", "SummaryLine", "SummaryLineNoAccount", "DurationHeading", "RolePromo", "RoleReminder", "MinutesClock",
         "ShortVisitWarning", "NotesHeading", "CoVisitorsLine", "SignatureTitleApproval", "SignatureTitleSample",
         "SignatureTextApproval", "SignatureTextSample", "ClearSignature", "ConfirmVisit", "SignatureSave",
         "SignatureSaved", "Signed", "EnterReport", "Later", "LaterHint", "CaptureFailed", "ImagePlaceholder",

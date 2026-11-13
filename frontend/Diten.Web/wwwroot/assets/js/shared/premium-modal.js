@@ -1,7 +1,7 @@
 'use strict';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DitenModal — the single premium alert helper (MOD-0013 premium modal standard).
+// DitenModal — the single premium alert helper (MOD-0286 (UI Design System & Page Pattern Governance; formerly MOD-0013 modal/toast standard)).
 //
 // The standard FORBIDS bare, unstyled SweetAlert2 dialogs: every error, success,
 // warning and info popup must carry the Sneat premium chrome (rounded-4 + shadow-lg,

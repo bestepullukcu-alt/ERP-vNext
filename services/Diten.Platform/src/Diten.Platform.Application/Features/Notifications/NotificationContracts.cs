@@ -134,7 +134,21 @@ public sealed record QueueEmailNotificationRequest(
     /// onto <see cref="Domain.Entities.Notifications.NotificationDispatch.MeetingAttendeeUserId"/> so a permanent
     /// failure can be attributed back to the one attendee this dispatch was for. Null for every non-meeting
     /// producer.</summary>
-    Guid? MeetingAttendeeUserId = null);
+    Guid? MeetingAttendeeUserId = null,
+    /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. Copied onto
+    /// <see cref="Domain.Entities.Notifications.NotificationDispatch.SourceModule"/>; set only by the internal event
+    /// dispatch (the module a service or scheduler named), null for every platform producer.</summary>
+    string? SourceModule = null,
+    /// <summary>WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY. This message's own reply address, over the tenant's: ONE plain
+    /// address or it is not used (logged). Kept on the dispatch so a retry replies to the same person. Null for every
+    /// producer that predates it — the tenant's reply address, exactly as before.</summary>
+    string? ReplyToEmail = null,
+    /// <summary>WP-VW-W5 W5-FIX2 (F-1) — ADDITIVE ONLY, set by the internal event dispatch alone. The row is written
+    /// <c>Queued</c> and due at once, the answer returns without calling the provider, and the retry sweep sends it (the
+    /// first send runs on <c>EmailDispatchJob</c>, like any retry). Honoured only where that sweep is scheduled; on a server
+    /// without it the send stays in the request as before (nothing would ever send the row otherwise). False for every
+    /// other producer — their behaviour is unchanged.</summary>
+    bool QueueOnly = false);
 
 public sealed record NotificationDispatchDto(
     Guid Id,
@@ -187,4 +201,6 @@ public sealed record NotificationDispatchListItemDto(
     DateTimeOffset? SentAt,
     DateTimeOffset? FailedAt,
     int RecipientCount,
-    string? CorrelationId);
+    string? CorrelationId,
+    // WP-VW-W5 PLT-NOTIFY — ADDITIVE ONLY, appended last: the module that asked for the mail, when one did.
+    string? SourceModule = null);

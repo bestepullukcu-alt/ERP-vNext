@@ -7,7 +7,7 @@ public sealed record ClaimApplicabilityDto(
     IReadOnlyList<string> AudienceRefs,
     Guid? EligibilityPolicyId);
 
-/// <summary>SCMM-12 (CAND-CAP-0011) read model for a claim. The governed body is frozen once approved. EvidenceRefs are
+/// <summary>SCMM-12 (MOD-0363, formerly CAND-CAP-0011) read model for a claim. The governed body is frozen once approved. EvidenceRefs are
 /// opaque (MOD-0031 resolution deferred); ComponentRefs are by-id KnowledgeContent references (D02c reuse).
 /// <para>WP-CL-BE-1 (claims v2) appends the v2 members at the END with defaults — every pre-v2 field keeps its name and
 /// position, so existing consumers are unaffected.</para></summary>
