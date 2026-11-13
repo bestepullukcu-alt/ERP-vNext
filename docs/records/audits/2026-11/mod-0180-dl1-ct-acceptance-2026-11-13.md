@@ -43,3 +43,13 @@ X-15, X-17 — hepsi eklemeli ve onaylı. CT taslak kararları kodda uygulanmı�
 
 Arka uç kabul edilir. Dilim kapanışı D-1 düzeltmesine bağlıdır (FIX WP; XMC-001 onayı). D-1 kapanınca VERIFIED. MOD-0182 DL-1 başlangıç
 sayıları: Gateway 87, merkezi denetim 123 / seen 15.
+
+## VERIFIED (2026-11-13, FIX-01 `3e31bfde9`)
+
+- D-1 kapandı: `Nav.Module.WAVEPLANNING` yedi dilde, `PagelessUntil` `WAVE-PLANNING` (DL-4'e kadar); guard 8/8.
+- CT tam koşu, ayrı ağaç `C:\Users\Ali\erp-vnext-wt-ct-0180-verify` (ayrık, `3e31bfde9`): Diten.Web.Tests filtresiz 4546 = 4543 geçti /
+  3 kırmızı — yalnız main'de de kırmızı olan üçü (CapacityPlansPageTests, SandopPlansPageTests, ReturnDetailsBehaviorTests). 0180'in açtığı
+  kırmızı kalmadı. Bu koşu MOD-0178-FU01 DL-1 Web değişikliklerini de kapsar (hat dalında `3e31bfde9` öncesi).
+- D-2 (düşük) DL-2'ye taşındı. Hat CT zincirine alındı; yeni etiket `ct/line-ff-2026-11-13i`.
+
+## Karar: VERIFIED — MOD-0180 DL-1 kapandı. MOD-0182 DL-1 başlar (Gateway 87, merkezi denetim 123 / seen 15).
