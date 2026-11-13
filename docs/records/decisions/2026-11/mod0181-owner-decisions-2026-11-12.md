@@ -7,3 +7,13 @@
 | # | Karar | Gerekçe | Pakette |
 |---|---|---|---|
 | D-1 | **Onaylayan Ali (`GMG-ERP`).** MOD-0181 r8'in CT-APR-01 onay satırında onaylayan Ali'dir. Satırları Beste'nin hesabı yazdığı için PR'ı da Ali birleştirir. | EES 2.14: yazan ≠ onaylayan; MOD-0178 D-6 ve MOD-0262-FU01 D-3 emsali. | §18 r8 kapısı |
+
+## Ek — 2026-11-13
+
+- **K-2 (Beste, "olur … ikisi de"; kaynak: sahip sohbet cevabı):** mobil sayım cevabındaki (`execution/domains/supply-chain-execution/work-packs/mobile/2026-11-13-cycle-count/WMS-CEVAP-2026-11-13-sayim.md`)
+  soru 2 ve 3 için WMS-COUNT-BUNDLE eklemeli **1.2.0** açılır: `CycleCountLine`'a `locationCode`, `skuCode`, `lotNumber` (dil kuralıyla
+  `skuName`), liste ucuna `assignedTo` / `unassigned=true` süzgeci. Rol yetkisi genişletilmez. MOD-0181 için yeni FU açılır (kimlik
+  DCP-002 ön kontrolüyle). 1.1.0 FROZEN değişmez.
+- **K-1 (Beste, aynı cevap):** MVP-1 hat dalı GitHub'a gönderildi — önce origin/main birleştirildi (onay defterleri: main satırları önce,
+  ardından hat satırları; main ve eski uzak hat ucu ön ek olarak doğrulandı), `a9fd192ba..a1aba4066`, fast-forward, force yok. Main'e PR
+  değil. Etiket `ct/line-ff-2026-11-13h`.
