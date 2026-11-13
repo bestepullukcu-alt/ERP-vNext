@@ -12,7 +12,12 @@
   (`docs/roadmap/plans/mvp6-mod0147-v1-scorecard-01/DC03-BINDING-CANONICAL-CODE-REQUEST.md`) kabul edildi: bağlama kaydı, bağlama anında
   MOD-0140'ın döndürdüğü kanonik `SUP-` kodunu saklar; kanonik kod değişirse bağlamayı DC-03 sahibi (merkez) düzeltir.
 
-## Açık (sahibe soruldu, 2026-11-13)
-
-- Kimlik: MOD-0360-FU01 (CT önerisi) — sahip Blueprint adını sordu, cevap bekleniyor.
-- D1–D8'in bağlayıcılığı ve D4 giriş anahtarı süresi (15 dk) — sahip sürenin kısa olup olmadığını sordu, cevap bekleniyor.
+- **2026-11-13 — Kimlik (Beste, "tamam bu olabilir"):** DC-03 bağlama işi **MOD-0360-FU01** olarak açılır (Blueprint SoR: MOD-0360
+  Tenant User & Identity Management — "external identity bindings"). Pack açılmadan önce `verify_module_id.py --check-id MOD-0360-FU01
+  --name "Supplier User Binding" --parent MOD-0360` koşulur (fail-closed).
+- **2026-11-13 — Token süresi (Beste, "Öneriyi kabul ediyorum"):** D4 düzeltildi: `supplier_user` erişim anahtarı **15 dk**, arka planda
+  sessizce yenilenir; oturum (yenileme anahtarı) en çok **8 saat**, sonra yeniden giriş + e-posta kodu.
+- **2026-11-13 — Taban:** paket, main dışı D1–D8 taslağını (D4 yukarıdaki gibi) esas alır; D1–D8 paketin S0 diliminde sahip onayına
+  yeniden sunulur (bağlayıcı kayıt bu dosyaya yazılır).
+- **Kiracı modeli (CT açıklaması, sahip sorusu üzerine):** tedarikçi kendi kiracısını açmaz; hizmet verdiği firmanın kiracısında (ör. GMG)
+  `supplier_user` hesabıdır; başka bir kiracıda ayrı hesap (DC-03 C4 "kiracı başına e-posta başına tek hesap").
