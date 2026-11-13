@@ -35,3 +35,12 @@ posta kodu alan işi mi açılır?
 - D-5 Golden Reference'tan bilinçli sapmaları kaldırmaz: satır tablosunun yerel (kaydedilmemiş) veriyle çalışması paket §11'de G-FU01-01
   olarak yazılıdır ve onayla birlikte kabul edilir.
 - Bu kayıt bir onay değildir; paketin onayı `execution/approvals/approvals.tsv` satırıyla (CT-APR-01, onaylayan Ali) olur.
+
+## Ek — 2026-11-13: sahip cevapları (Beste, sohbet: "hepsi öneri gibi")
+
+- **Q-2 = öneri:** CRM'den yalnız `active` durumundaki account'lar seçilebilir.
+- **Q-3 = öneri:** CRM'den gelen adres sevkiyatta düzenlenebilir; kopya düzenlenmiş değeri tutar, account kimliği kalır.
+- **Q-4 = öneri:** alan adı `customerRef` (MVP-6 SHIPMENT ile aynı; değer `Account.Id`).
+- **Q-9 = öneri:** Recall'daki CRM okuyucusuyla kod paylaşılmaz; Warehouse kendi okuyucusunu yazar.
+- **Q-10 = öneri:** v1'de CRM'den seçilen alıcıda posta kodu boş gelir ve formda elle eklenebilir; MOD-0182 SSCC etiketinde alıcıdan
+  şehir + ilçe yazılır (posta kodu varsa o da); account'a posta kodu alanı CRM'de ayrı ve sonraki bir iştir.
