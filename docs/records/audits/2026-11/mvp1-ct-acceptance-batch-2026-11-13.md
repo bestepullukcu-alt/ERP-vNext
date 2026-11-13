@@ -43,3 +43,23 @@ CI'ı. Her kalemde "Ölçülmeyen" ayrıca yazılı.
 
 ## Karar
 MOD-0181 DL-6, MOD-0177-FU01 AC-17, MOD-0262-FU08 DL-1: VERIFIED. MOD-0178-FU01 DL-1: render hatası düzeltildi; canlı tur sonrası VERIFIED.
+
+## Ek — MOD-0178-FU01 DL-1 canlı tur (CT, 2026-11-13 akşam) · VERIFIED
+
+Ortam: ana checkout Web 5001 (dotnet watch), hat `73b632263` (`ct/line-ff-2026-11-13m`, düzeltme `1a9ee5333` dahil); kiracı GMG, depo D01,
+ürün GP-000123 / LSKU-TR-000045. Kayıt yapılmadı; yalnız önizleme (sunucuda yazım yok).
+- Create sayfası tam çiziliyor (`</html>` dahil); `#lineUom` "Temel birim: EA" (düzeltilen şablon doldu).
+- Tek satır önizleme, iki lot: AMX-2604 (FEFO 1, SKT 2028-03-31, 346) ve G1-20261020 (FEFO 2, SKT 2028-12-31, 58). FEFO dışı lot seçilince
+  gerekçe alanı açılıyor ("10–1000 karakter"), şirket FEFO kipi "gerekçe zorunlu (RequireReason)" gösteriliyor.
+- Toplu "Tahsisi Önizle", iki satır: (1) G1-20261020, 2 EA, "FEFO sapması — gerekçe var"; (2) FEFO (önerilen AMX-2604), 3 EA, "Karşılanır".
+- 375 px (öykünülen görünüm), iki satırla:
+
+| Dil | dir | document scrollWidth | tablo scrollWidth | kutu clientWidth |
+|---|---|---|---|---|
+| tr | ltr | 375 | 1003 | 311 |
+| en | ltr | 375 | 956 | 311 |
+| ar | rtl | 375 | 801 | 311 |
+
+  Sayfa taşmıyor; tablo `table-responsive` içinde kayıyor (CT kararı). Başlıklar ve düğmeler üç dilde çevrili.
+- Ölçülmeyen: gerçek telefon; Edit / Details canlı turu; kaydetme ve tahsis yazımı (DL-1 kapsamı önizleme ve gövde; yazım servis testleriyle).
+  Dil, tur sonunda tr'ye geri alındı.
