@@ -71,14 +71,59 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
             ? BuildLogicalFailureMetadata(response)
             : null;
 
+        // MOD-0262-FU08 (K-6 path b, K-7): only on success, only for a command that opts in.
+        var recordMetadata = outcome == AuditOutcome.Succeeded
+            ? WithResponseState(request, response, auditPlan.Metadata!)
+            : auditPlan.Metadata!;
+
         var appendResult = await AppendAuditAsync(
-            auditPlan.Metadata!,
+            recordMetadata,
             outcome,
             behaviorMetadata,
             cancellationToken);
 
         EnforceAppendResult(appendResult, auditPlan.Metadata!, auditPlan.RequestTypeName);
         return response;
+    }
+
+    /// <summary>
+    /// MOD-0262-FU08 (K-6 path b; form: CT decision; permission K-7, Beste 2026-11-13). A command that implements
+    /// <see cref="IAuditResponseStateProvider{TResponse}"/> names the object its record is about from its OWN successful
+    /// response (an id the store assigned while the handler ran). The command's metadata wins; nothing is read by reflection.
+    /// A provider that throws does not change the business answer: the record is written without state and only the request
+    /// type's name is logged. A command that does not implement the interface gets exactly the metadata it gave.
+    /// </summary>
+    private AuditRequestMetadata WithResponseState(TRequest request, TResponse response, AuditRequestMetadata metadata)
+    {
+        if (request is not IAuditResponseStateProvider<TResponse> provider)
+        {
+            return metadata;
+        }
+
+        AuditResponseState? state;
+        try
+        {
+            state = provider.GetAuditResponseState(response);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            _logger.LogWarning(
+                "Audit response state of {RequestType} could not be read; the record is written without it.",
+                typeof(TRequest).Name);
+            return metadata;
+        }
+
+        return state is null
+            ? metadata
+            : metadata with
+            {
+                EntityId = metadata.EntityId ?? state.EntityId,
+                AfterState = metadata.AfterState ?? state.AfterState
+            };
     }
 
     private static bool IsAuthorizedTransactionOwnedAuditCommand(Type requestType) =>

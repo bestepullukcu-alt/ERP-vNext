@@ -129,3 +129,36 @@ internal static class TrustedRepositoryAuditMetadata
         ["operation"] = operation
     };
 }
+
+/// <summary>
+/// MOD-0262-FU08 — the ONE after-state list of the two upload records (pack §4): <c>ContentId</c>, <c>Scope</c>,
+/// <c>OwningItemId</c>, <c>OwningVersionId</c>, <c>ByteSize</c>, <c>Checksum</c>, and on the trusted path
+/// <c>TrustedConsumerModule</c>. Guids are written as <c>"D"</c> text. Never written: <c>ObjectKey</c>, the file name, the
+/// media type, the provider name, the creator, the content.
+/// </summary>
+internal static class RepositoryObjectAuditState
+{
+    public static Contracts.Audit.AuditResponseState? For(RepositoryObjectModel? model, string? trustedConsumerModule)
+    {
+        if (model is null || model.ContentId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var afterState = new Dictionary<string, object?>
+        {
+            ["ContentId"] = model.ContentId.ToString("D"),
+            ["Scope"] = model.Scope,
+            ["OwningItemId"] = model.OwningItemId.ToString("D"),
+            ["OwningVersionId"] = model.OwningVersionId.ToString("D"),
+            ["ByteSize"] = model.ByteSize,
+            ["Checksum"] = model.Checksum
+        };
+        if (trustedConsumerModule is not null)
+        {
+            afterState["TrustedConsumerModule"] = trustedConsumerModule;
+        }
+
+        return new Contracts.Audit.AuditResponseState(model.ContentId, afterState);
+    }
+}
