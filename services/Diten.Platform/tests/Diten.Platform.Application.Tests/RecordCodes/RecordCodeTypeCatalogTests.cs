@@ -31,6 +31,7 @@ public sealed class RecordCodeTypeCatalogTests
         ["DVC"] = "MOD-0040-FU02 DL-8",
         ["LBL"] = "MOD-0040-FU02 DL-8",
         ["TPX"] = "MOD-0040-FU02 DL-8",
+        ["BPT"] = "MOD-0049-FU01 DL-1",
         ["PUT"] = "MOD-0040-FU02 DL-8",
         ["PCK"] = "MOD-0040-FU02 DL-8",
         ["OUT"] = "MOD-0040-FU02 DL-8",

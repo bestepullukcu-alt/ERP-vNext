@@ -93,7 +93,9 @@ public static class DemandPlanningServiceCollectionExtensions
 
         services.AddSingleton<DemandPlanningMongoContext>();
         services.AddSingleton<IOutboxCorrelationReader, HttpOutboxCorrelationReader>();
-        services.AddSingleton<IEventOutboxStore, DemandRevisionOutboxStore>();
+        services.AddSingleton<DemandRevisionOutboxStore>();
+        services.AddSingleton<IEventOutboxStore>(sp => sp.GetRequiredService<DemandRevisionOutboxStore>());
+        services.AddSingleton<IDemandRevisionOutboxPreflight>(sp => sp.GetRequiredService<DemandRevisionOutboxStore>());
         services.AddScoped<ILegalEntityScopeReader, MdmLegalEntityScopeReader>();
         services.AddScoped<ILeadTimeAuthority, MdmLeadTimeAuthority>();
         services.AddScoped<IMrpInventoryReader, InventoryAvailabilityReader>();

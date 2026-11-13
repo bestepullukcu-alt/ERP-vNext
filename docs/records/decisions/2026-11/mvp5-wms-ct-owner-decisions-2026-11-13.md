@@ -11,3 +11,27 @@
 - **Ali'ye bağlı işler (geliştirmeyi bekletmez, unutulmaz):** Auth AC-76 (MOD-0018-FU31; MOD-0178 canlıya çıkışı), sayım rol şablonu
   (MOD-0181 DL-4 ACCEPTED), MDM kısa kod kilidi (MOD-0040-FU02 DL-2 canlıya alma), sır kasası teknik soruları (MOD-0012-FU01 Q-1…Q-5,
   Q-13). Geliştirme bunları beklemeden sürer; her biri ilgili kabul ya da canlıya alma kapısında kontrol edilir.
+- **MOD-0049-FU01 `.antigravity` kapısı ("yaz", Beste):** RCS-001 §3'e `BPT` (İş Ortağı, OTOMATİK, grup önekli, ortak servisten) satırı
+  yazıldı; aynı adımda X-6: Platform `RecordCodeTypeCatalogTests` `RuleAheadOfCatalogue["BPT"] = "MOD-0049-FU01 DL-1"` — 17/17 yeşil,
+  satır silinince AC16 kırmızı, geri alındı. Bu onay öneki `BPT` olarak seçer (Q-1). Q-2…Q-7 açık.
+- **MOD-0049-FU01 Q-2…Q-7 ("hepsinde öneri gibi", Beste):** Q-2 = A (denetim: `mdm-merkezi-iletim` en iyi çaba + aynı işlemde yerel
+  geçmiş, Brand emsali); Q-3 = iletişim kişilerine 90 gün kuralı uygulanmaz, en aza indirme + kişi silinince kalıcı silme, v1'de zamanlanmış
+  temizlik yok; Q-4 = vergi numarası kiracıda tekil, listede maskeli, ayrıntıda yetkiliye açık; Q-5 = Golden Compact sapmaları paketteki gibi,
+  son rol kaldırılamaz (önce pasifleştirme); Q-6 = pasif kayıt salt okunur, yalnız etkinleştir; Q-7 = domain-config'e MDM ekran / Gateway
+  istisna satırı eklenir (merkez yazar). Q-1 = `BPT` (yukarıda).
+- **MOD-0040-FU02 r14 Q-8…Q-16 ("hepsinde öneri gibi"):** hepsi paketteki A önerisi — Q-8 TTY kataloğa girer; Q-9 oluşturmada elle kod
+  gerekçe istemez, yalnız sonraki değişiklik; Q-10 gerekçe 10–500 karakter; Q-11 kırp + Türkçe→ASCII + büyük harf, diğer işaretler red;
+  Q-12 elle kod 2–40; Q-13 tekillik (kiracı, tür); Q-14 emekli koda geri dönüş yok; Q-15 DL-3'te HTTP / Gateway / ekran yok; Q-16 tüketici
+  tutarlılığı DL-4'te. A-20 (dört denetim belirteci `platform-islem-ici` iz satırına) CT kararı: kabul, DL-3 merge kapısı.
+- **MOD-0182 panel penceresi ("öneri gibi"):** dashboard "son 24 saat" (çağrı anından geriye); takvim günü yok, paket değişikliği yok.
+  Paket "bugünkü" ifadesi bir sonraki revizyonda (r8) hizalanır.
+- **MOD-0049-FU01 C-5 — rol uçları (Beste, "iki komutu v1'den çıkar"):** v1'de tek rol (ThirdPartyLogistics) olduğundan rol ver / rol kaldır
+  komutları, uçları ve `mdm.business-partners.assign-role` izni v1'den çıkar; rol oluşturmada verilir. "Son rol kaldırılamaz" (Q-5) alan
+  kuralı olarak kalır; ikinci rol eklenince iki komut eklemeli olarak gelir.
+- **Düzeltme — MOD-0040-FU02 Q-9 (Beste, 2026-11-13, "A — oluşturmada da gerekçe"):** yukarıdaki Q-9 özeti («oluşturmada elle kod gerekçe
+  istemez») CT'nin sahibe sunduğu tablodaki yanlış özetti (B'yi anlatıyordu). Sahip A'yı teyit etti: elle yazılan kod oluşturmada da gerekçe
+  ister (RCS-001 §2), her değişiklikte de. r15 (c4499f37) A ile yazılı; paket değişmez. r15 18.1'deki "Q-9 kayıt metni düzeltmesi" işi bu
+  satırla kapandı.
+- **CT kararı — MOD-0040-FU02 r15 inceleme F-1 (kilit filtresi):** LockIfUnlockedAsync filtresine ön okunan kod eklenir (Code eşit);
+  eşleşmezse satır yeniden okunur ve 409 RECORD_CODE_CONFLICT döner — çağıranın görmediği yeni kod kilitlenmez. DL-3 WP'si bunu adıyla
+  taşır; AC-70 / AC-72 metni paketin bir sonraki revizyonunda hizalanır (r15 onayı geçersiz olmasın diye).

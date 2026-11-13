@@ -62,3 +62,10 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   X-18 aynı adımda: Platform `RecordCodeTypeCatalogTests` `["TPX"]` — 17/17 yeşil, satır silinince AC16 kırmızı, geri alındı. X-17
   (MOD-0178 paketi §14.1 notu) MOD-0178'in bir sonraki içerik revizyonuna bırakıldı (r30 onayı geçersiz olmasın diye); kural PKS-001
   satırıyla zaten bağlayıcı.
+- **2026-11-13 — MOD-0012-FU01 Q-10 (çalışma dalı, CT):** sahibin tek çalışma dalı kuralı geçerli; FU01 geliştirmesi
+  `feature/sce/mod-0173-inventory-ledger-valuation` üzerinde yapılır, ayrı dal açılmaz. Q-5 (işlem içi denetim kümesi) AUD-001 §4.4 gereği
+  CT kararıdır, Ali sorusu değildir; Ali'de kalanlar Q-1…Q-4 ve Q-13.
+- **2026-11-13 — MOD-0012-FU01 Q-5 / X-2 (CT kararı, r3 incelemesi F-1):** `TenantSecretAuditIntent` belirteçleri `platform-islem-ici` izine
+  eklenir. X-2 tek adımdır: denetim defteri (`tests/architecture/audit-ledger/Diten.Platform.md` :16) ile `AuditTrailStandardTests.AcceptedTrails`
+  sabit satırı aynı commit'te güncellenir (`AcceptedTrails_ArePinned_ALedgerCellCannotGrantCredit` ikisini eşit ister). DL-1 WP'si bu
+  satırı adıyla taşır; paket metni bir sonraki içerik revizyonunda hizalanır (r3 onayı geçersiz olmasın diye).
