@@ -28,3 +28,5 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   gerekçeli, kapalı kanala gelen mesaj ret + "kanal kapalı" istisnası; toplu yeniden işleme ≤ 200 ve uyarı; ortak MDM iş ortağından
   seçilir, ad / adres / iletişim MDM'den, düzenlenmez; sırlar Platform sır kasasında, yardımda bir cümle) **paket yazımında doğrudan
   uygulanır**; mockup v1 bu farklarla paketin girdisidir.
+
+- **2026-11-13 — T-5 izni verildi (Ali, MDM sahibi; kaynak: Beste'nin sohbete aktarımı "MOD-0179 Ali MDM iznini verdi"):** 3PL ortağı MDM'de iş ortağı olarak tanımlanır; MDM tarafındaki değişikliği merkez geliştirir (XMC-001 izni MDM sahibinden alındı). Kapsam ve dosyalar MOD-0179 paketinde adıyla yazılır; MDM'de yalnız eklemeli değişiklik. Sırada MOD-0179 paketi.
