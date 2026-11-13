@@ -18,8 +18,8 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-revision: "r3 (2026-11-13) — bağımsız inceleme r2 (`docs/records/reviews/MOD-0182/2026-11-13-7ce2f1cb.md`, KOŞULLU, F-1…F-5 orta, F-6…F-12 düşük) ve kararlar 03'ün iki eki (Q-3 genişletme teyidi `7f584f546`; Q-6 = ZXing.Net `bea6662d9`) işlendi; F-1…F-12 kapandı (kapanış tablosu §19.6). Başlıca değişiklikler: X-12 'değişmez' satırından XMC-001 satırına çevrildi — `Mod0178WarehouseRouteTests.cs` `Assert.Equal(<n>, endpoints.Count)` uç ekleyen her dilimde (DL-1 15, DL-4 11, DL-6 2, DL-7 4; DL-5 0) dilim başında ölçülen sayı + dilimin uçlarıyla, aynı commit'te, integration-agent; sahip onayı bekliyor (F-1); yeni X-15 `InventoryLedgerManifestCompletenessTests.cs` `Controllers.Barcode` dışlaması (DL-1, MOD-0173; sahip onayı bekliyor) ve karşılığında 0182'nin kendi manifest bütünlük vakası (F-2); aşım ucu `warehouse.barcode.scans.create` ister, olay çağıranın olmalı (F-3); cihaz anahtarı replay'de dönmez, `deviceKeyNotice = BARCODE_DEVICE_KEY_NOT_REPLAYED`, replay anahtar üretmez (F-4); açık kör sayımın bin'i bir toplama ya da iz adımına katılıyorsa o toplamın / adımın miktarı gizlenir (F-5); yazma komutu 18 değil **16** (F-6); §8.4 Outcome değerleri + S-11b (F-7); mobil not / brief CT tarafından düzeltildi `bf7bd7852` (F-8); Q-6 = ZXing.Net kapandı, Q-3 teyidi işlendi (F-9); nabız ve PIN sayacı If-Match muafiyeti + atomik yazım (F-10); başka kullanıcının oturumuna olay reddedilir, replay araması cihaz durumundan önce (F-11); X-1'e kapalı listeli AI toleransı (37, 310n, 240) (F-12); Q-11 güncellendi — SSCC etiketinde alıcıdan şehir + ilçe, posta kodu yalnız sevkiyat kopyasında varsa (MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; AC-56, S-56b). AC numaraları değişmedi (AC-1…AC-65); yeni sabotajlar S-2c, S-6d, S-9b, S-9c, S-9d, S-11b, S-16b, S-18d, S-18e, S-18f, S-18g, S-20b, S-56b, S-58b, S-62b, S-65c. Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r2 (2026-11-13) — sahip kararları 03 (`docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md`; Beste 2026-11-13 sohbet cevabı, 'hepsi öneri gibi') işlendi: Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (kapanış tablosu §19.5). Davranış daralması yalnız Q-3: S-7'nin PIN aşımı toplamada geçmez — v1'de aşılabilir tek durum yerleştirmedeki `WRONG_LOCATION`; `DIFFERENT_LOT` hiçbir bağlamda aşılamaz (§2.1, §4.2, §8.4, §8.5, §13, AC-12, §17). Q-7'nin donanım seçimi açık (TBD, Beste — DL-6 kapısı). Q-2'ye bağlı CT işi: mobil not `:106` düzeltilir (paket dokunmaz). `.antigravity` kapısı (Q-1 = A satırları) onaydan önce açık. AC 65, yazma komutu 18 (r3'te 16 olarak düzeltildi — F-6), sabotaj adları — değişmedi. Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r1 (2026-11-13) — ilk taslak. Girdiler: sahip kararları 01 (S-2, S-3, S-5, S-6) ve 02 (S-7…S-12, E-1…E-7; mockup v2 kabul), Web ve mobil mockup brief'leri, mobil ekip notu (§3A dondurulmuş uçlar, §3B menü ve Görev Merkezi), Görev Merkezi analizi ve sahip kararı (2026-11-13: Görev Merkezi bağlantısı MVP-5 sonrası), MOD-0290-FU07 (GTIN) paketi, MOD-0178 / MOD-0180 / MOD-0181 paketleri. Kimlik ön kontrolü bu oturumda yeniden koşuldu (§0). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) yok."
-status_note: "draft r3 — kod izni yok. r2 bağımsız incelemesi (7ce2f1cb, KOŞULLU) F-1…F-12 r3'te kapandı (§19.6); Q-6 = ZXing.Net (karar 03 eki bea6662d9, Ali'ye gitmez) ve Q-3 genişletme teyidi (7f584f546) işlendi; Q-11 güncellendi (şehir + ilçe, posta kodu varsa — MOD-0178-FU01 kararları 01 eki Q-10, a7c1d32b8); mobil not / brief düzeltmesi CT tarafından yapıldı (bf7bd7852). Sahip onayı bekleyen XMC-001 satırları: X-12 (Mod0178WarehouseRouteTests uç sayısı, uç ekleyen her dilim) ve X-15 (InventoryLedgerManifestCompletenessTests Controllers.Barcode dışlaması); X-1 kapsamı genişledi (AI toleransı) — MOD-0174 sahibinin onayı. r3 için bağımsız yeniden inceleme (CT-APR-02) önerilir. Onaylayan Ali (GitHub GMG-ERP); satırları yazan Beste'nin hesabı (yazan ≠ onaylayan). Sahip kararları 03 (Beste 2026-11-13, 'hepsi öneri gibi') ile Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (§19.5). Onaydan önce kapanacak: .antigravity kapısı (Q-1 = A: PKS-001 §4 warehouse.barcode.* satırı + :92 / :105, RCS-001 §3 DVC / LBL, aynı adımda X-8 RecordCodeTypeCatalogTests ve X-9 MOD-0178 §14.1 notu — CT hazırlar, Beste onaylar; bu paket .antigravity'ye yazmaz); r3 bağımsız yeniden inceleme (CT-APR-02) ve onay satırı (CT-APR-01, Ali). Beste'ye kalan: RFID okuyucu donanım seçimi (Q-7'nin kalanı, TBD — DL-6 kapısı, onayı bekletmez); X-12 ve X-15 sahip onayı (XMC-001). Ali'ye: Q-13 şirket bağlamı (legal_entities claim + X-Legal-Entity-Id), Q-14 rol şablonları. CT'ye: Q-16 okutma olayının merkezi denetim yolu. Başka ekip: MDM (MOD-0290-FU07 DL-1'in main tarihi — DL-5 kapısı), mobil ekipler (D-1…D-5 cevapları; SCAN-BUNDLE sözleşme notu paket onayından sonra). target: TBD — sahip tarihi yok, plan satırı verilmedi."
+revision: "r4 (2026-11-13) — bağımsız inceleme r3 (`docs/records/reviews/MOD-0182/2026-11-13-11585181.md`, KOŞULLU, F-1…F-3 orta, F-4…F-9 düşük) ve kararlar 03'ün iki son eki (XMC-001 onayları X-15 / X-12 / X-1 `ad1100158`; r3 incelemesi sonrası X-6 genişletmesi + QR ile anahtar teslimi `4168e7a90`) işlendi; F-1…F-9 kapandı (kapanış tablosu §19.7). Başlıca değişiklikler: X-6'ya `CentralAuditDeclarationTests.cs` işlem çağrı yeri sayısı (`Assert.Equal(<n>, seen)`, bugün `:130`, yorum `:127-129`) — dilim başında ölçülen sayı + dilimin yeni `WithTransactionAsync(` çağrı yerleri, aynı commit, yorumda dilim adı; öneri tek ortak işlem yardımcısı (beklenen DL-1 +1, sonra 0); AC-23'e vaka + S-23b / S-23c (F-1); cihaz anahtarı Web'den kayıt ve yeniden etkinleştirmede anahtar yerine tek kullanımlık, 10 dakikalık eşleştirme kodu + QR; telefon `POST /barcode/devices/pair` ile (çalışanın JWT'si + `devices.create` + kod + aynı `InstallationId`) anahtarı bir kez alır; kod ve anahtar sunucuda yalnız özet; yeni komut `PairScanDeviceCommand` → yazma komutu **17** (DL-1 10), DL-1 servis ucu **16** (toplam 33); ZXing.Net DL-1'e çekildi (QR çizimi); AC-3'e vaka + S-3b / S-3c / S-3d (F-2); PIN taşıyan gövdelerde idempotency parmak izi PIN'i dışlar, idempotency deposunda PIN ya da türevi yok; AC-19'a vaka + S-19c / S-19d (F-3); komut idempotency deposu `wms_barcode_command_requests` (§3, §4.10, §4.11, X-5) ve replay araması If-Match / durum / tekillik denetimlerinden önce; AC-9'a S-9e / S-9f (F-4); aşım denetim sırası 404 → 422 aşılamaz → 422 öz-aşım → 409 → 422 PIN yok → 423 kilit → PIN; yanlış PIN ve kilit yerel izi `wms_barcode_override_attempts`, ScanEvents ve Device Health'te görünür; AC-18'e S-18h / S-18i (F-5); ilçe FU01 DL-2'den önce basılmaz, DL-5 beklemez, ilçe vakası ilçe okumasını ekleyen dilimde (S-56c); posta kodu ifadesi FU01 kararları 01 son ekiyle hizalandı (`cb612efc9`) (F-6); (00)+(02)+(37)+(10) lojistik etiket Product adımında `Rejected` `PRODUCT_NOT_VERIFIABLE`, X-1'in `:40` kuralına etkisi açık; AC-58'e S-58c (F-7); şirket başına cihaz kaydı / anahtar / Web onayı kuralı §8.2'de, SCAN-BUNDLE ve mobil sözleşme notu CT işi olarak §18'de (F-8); X-1 / X-6 / X-12 / X-15 onay atıfları, §8.12 nabız atfı `CentralAuditRecorder.cs:160-162`, §5.1 ölçüm HEAD `db70c9f37` (F-9). Çağıran CT'nin ek kararları (mobil ekip soruları 2026-11-13, inceleme dışı): önerisi olmayan yerleştirme görevinde 0178 hedef kurallarından geçen bin `Accepted`, geçmeyen aşılamaz `Rejected`, `WRONG_LOCATION` `Warning` yalnız öneri varken (AC-11, S-11c); 423 gövdesi `details.lockedUntil`, kalan hak yok (AC-18, S-18j); SCAN-BUNDLE'da `DIFFERENT_LOT` = `Rejected` aşılamaz, PIN aşımı sonrası 0178 `deviationReason`'ı sunucu yazar, bağ `scanRef = scan-session:{sessionId}` (kapı bu önekte depo ayarından bağımsız da çalışır) (§8.7, §8.16, AC-41). AC numaraları değişmedi (AC-1…AC-65). Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r3 (2026-11-13) — bağımsız inceleme r2 (`docs/records/reviews/MOD-0182/2026-11-13-7ce2f1cb.md`, KOŞULLU, F-1…F-5 orta, F-6…F-12 düşük) ve kararlar 03'ün iki eki (Q-3 genişletme teyidi `7f584f546`; Q-6 = ZXing.Net `bea6662d9`) işlendi; F-1…F-12 kapandı (kapanış tablosu §19.6). Başlıca değişiklikler: X-12 'değişmez' satırından XMC-001 satırına çevrildi — `Mod0178WarehouseRouteTests.cs` `Assert.Equal(<n>, endpoints.Count)` uç ekleyen her dilimde (DL-1 15, DL-4 11, DL-6 2, DL-7 4; DL-5 0) dilim başında ölçülen sayı + dilimin uçlarıyla, aynı commit'te, integration-agent; sahip onayı bekliyordu — r4: onaylandı `ad1100158` (F-1); yeni X-15 `InventoryLedgerManifestCompletenessTests.cs` `Controllers.Barcode` dışlaması (DL-1, MOD-0173; sahip onayı bekliyordu — r4: onaylandı `ad1100158`) ve karşılığında 0182'nin kendi manifest bütünlük vakası (F-2); aşım ucu `warehouse.barcode.scans.create` ister, olay çağıranın olmalı (F-3); cihaz anahtarı replay'de dönmez, `deviceKeyNotice = BARCODE_DEVICE_KEY_NOT_REPLAYED`, replay anahtar üretmez (F-4); açık kör sayımın bin'i bir toplama ya da iz adımına katılıyorsa o toplamın / adımın miktarı gizlenir (F-5); yazma komutu 18 değil **16** (F-6); §8.4 Outcome değerleri + S-11b (F-7); mobil not / brief CT tarafından düzeltildi `bf7bd7852` (F-8); Q-6 = ZXing.Net kapandı, Q-3 teyidi işlendi (F-9); nabız ve PIN sayacı If-Match muafiyeti + atomik yazım (F-10); başka kullanıcının oturumuna olay reddedilir, replay araması cihaz durumundan önce (F-11); X-1'e kapalı listeli AI toleransı (37, 310n, 240) (F-12); Q-11 güncellendi — SSCC etiketinde alıcıdan şehir + ilçe, posta kodu yalnız sevkiyat kopyasında varsa (MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; AC-56, S-56b). AC numaraları değişmedi (AC-1…AC-65); yeni sabotajlar S-2c, S-6d, S-9b, S-9c, S-9d, S-11b, S-16b, S-18d, S-18e, S-18f, S-18g, S-20b, S-56b, S-58b, S-62b, S-65c. Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r2 (2026-11-13) — sahip kararları 03 (`docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md`; Beste 2026-11-13 sohbet cevabı, 'hepsi öneri gibi') işlendi: Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (kapanış tablosu §19.5). Davranış daralması yalnız Q-3: S-7'nin PIN aşımı toplamada geçmez — v1'de aşılabilir tek durum yerleştirmedeki `WRONG_LOCATION`; `DIFFERENT_LOT` hiçbir bağlamda aşılamaz (§2.1, §4.2, §8.4, §8.5, §13, AC-12, §17). Q-7'nin donanım seçimi açık (TBD, Beste — DL-6 kapısı). Q-2'ye bağlı CT işi: mobil not `:106` düzeltilir (paket dokunmaz). `.antigravity` kapısı (Q-1 = A satırları) onaydan önce açık. AC 65, yazma komutu 18 (r3'te 16 olarak düzeltildi — F-6), sabotaj adları — değişmedi. Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r1 (2026-11-13) — ilk taslak. Girdiler: sahip kararları 01 (S-2, S-3, S-5, S-6) ve 02 (S-7…S-12, E-1…E-7; mockup v2 kabul), Web ve mobil mockup brief'leri, mobil ekip notu (§3A dondurulmuş uçlar, §3B menü ve Görev Merkezi), Görev Merkezi analizi ve sahip kararı (2026-11-13: Görev Merkezi bağlantısı MVP-5 sonrası), MOD-0290-FU07 (GTIN) paketi, MOD-0178 / MOD-0180 / MOD-0181 paketleri. Kimlik ön kontrolü bu oturumda yeniden koşuldu (§0). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) yok."
+status_note: "draft r4 — kod izni yok. r3 bağımsız incelemesi (11585181, KOŞULLU) F-1…F-9 r4'te kapandı (§19.7). XMC-001 sahip onayları kayıtlı: X-15, X-12 (her artış dahil), X-1 (AI toleransı + gs1-check yan etkisi) — ad1100158; X-6 genişletmesi (CentralAuditDeclarationTests işlem çağrı yeri sayısı) ve QR ile anahtar teslimi — 4168e7a90. r4 ile yazma komutu 17 (PairScanDeviceCommand), DL-1 servis ucu 16. r4 için kısa bağımsız yeniden inceleme (CT-APR-02) önerilir. r2 bağımsız incelemesi (7ce2f1cb, KOŞULLU) F-1…F-12 r3'te kapandı (§19.6); Q-6 = ZXing.Net (karar 03 eki bea6662d9, Ali'ye gitmez) ve Q-3 genişletme teyidi (7f584f546) işlendi; Q-11 (şehir + ilçe, posta kodu varsa — MOD-0178-FU01 kararları 01 ekleri a7c1d32b8, cb612efc9); mobil not / brief düzeltmesi CT tarafından yapıldı (bf7bd7852). Onaylayan Ali (GitHub GMG-ERP); satırları yazan Beste'nin hesabı (yazan ≠ onaylayan). Sahip kararları 03 (Beste 2026-11-13, 'hepsi öneri gibi') ile Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (§19.5). Onaydan önce kapanacak: .antigravity kapısı (Q-1 = A: PKS-001 §4 warehouse.barcode.* satırı + :92 / :105, RCS-001 §3 DVC / LBL, aynı adımda X-8 RecordCodeTypeCatalogTests ve X-9 MOD-0178 §14.1 notu — CT hazırlar, Beste onaylar; bu paket .antigravity'ye yazmaz); r4 bağımsız yeniden inceleme (CT-APR-02) ve onay satırı (CT-APR-01, Ali). Beste'ye kalan: RFID okuyucu donanım seçimi (Q-7'nin kalanı, TBD — DL-6 kapısı, onayı bekletmez); X-2…X-5, X-7…X-11, X-13, X-14 ve X-6'nın :53 / :60-69 kısmı için XMC-001 sahip onayları (dilim başlamadan). CT işi (r4, F-8): SCAN-BUNDLE taslağına (DL-1) ve mobil sözleşme notuna şirket başına cihaz kaydı / anahtar / Web onayı kuralı ve QR eşleştirme akışı. Ali'ye: Q-13 şirket bağlamı (legal_entities claim + X-Legal-Entity-Id), Q-14 rol şablonları. CT'ye: Q-16 okutma olayının merkezi denetim yolu. Başka ekip: MDM (MOD-0290-FU07 DL-1'in main tarihi — DL-5 kapısı), mobil ekipler (D-1…D-5 cevapları; SCAN-BUNDLE sözleşme notu paket onayından sonra). target: TBD — sahip tarihi yok, plan satırı verilmedi."
 owner: supply-chain-execution / merkez (Beste) — MVP-5 WMS CT
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-13
@@ -30,17 +30,30 @@ dependencies: [MOD-0178 (görev bağlamı okuması; DL-3 scanRef kapısı — XM
 
 # MOD-0182 — Barcode/RFID (Barkod / RFID)
 
-> **draft (r3, 2026-11-13).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
+> **draft (r4, 2026-11-13).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
 > `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**)
 > ile yazılır (AGENTS.md Çekirdek madde 7). Bu sürüm kod, commit, push, PR ya da onay izni değildir.
+>
+> **r4 revizyon notu (2026-11-13).** Girdi: bağımsız inceleme r3 `docs/records/reviews/MOD-0182/2026-11-13-11585181.md` (KOŞULLU; 3 orta,
+> 6 düşük; hedef r3 LF sha256 `11585181…`) ve kararlar 03'ün iki son eki: XMC-001 onayları (`ad1100158` — X-15, X-12 her artış dahil, X-1 AI
+> toleransı + gs1-check yan etkisi) ve r3 incelemesi sonrası sahip kararları (`4168e7a90` — X-6 genişletmesi: `CentralAuditDeclarationTests`
+> işlem sayısı satırı; cihaz anahtarının telefona QR ile teslimi). Her bulgunun kapanışı §19.7 "r3 → r4 kapanış tablosu"ndadır; seçimler CT
+> önerisidir, sahibe yeni soru açılmadı. **Sayı değişiklikleri:** QR teslimi bir eşleştirme komutu ve ucu ekler — yazma komutu **17** (DL-1 10,
+> DL-4 5, DL-6 1, DL-7 1), DL-1 servis ucu **16** (toplam 33; X-12 beklenen dağılımı 73 → 89 → 100 → 102 → 106, çıkarım). **Yeni koleksiyonlar:**
+> komut idempotency deposu `wms_barcode_command_requests` (F-4) ve aşım denemesi yerel izi `wms_barcode_override_attempts` (F-5); ikisi de
+> `BarcodeCollections.All`'da (X-5). **ZXing.Net** QR çizimi için DL-1'in ilk adımına çekildi (Q-6 kararı değişmedi). AC numaraları (AC-1…AC-65)
+> değişmedi; yeni vakalar mevcut AC'lere eklendi, yeni sabotajlar (S-3b, S-3c, S-3d, S-9e, S-9f, S-11c, S-18h, S-18i, S-18j, S-19c, S-19d,
+> S-23b, S-23c, S-56c, S-58c) §16 ile §24'te iki yönde adlı. **Çağıran CT'nin ek kararları (mobil ekip soruları 2026-11-13, inceleme dışı;
+> §19.7 "CT ek 1–3"):** önerisi olmayan yerleştirme görevi (§8.4, AC-11); 423 `details.lockedUntil`, kalan hak yok (§8.15, AC-18); SCAN-BUNDLE
+> açıklamaları — `DIFFERENT_LOT`, sunucunun yazdığı `deviationReason`, `scanRef = scan-session:{sessionId}` bağı (§8.7, §8.16).
 >
 > **r3 revizyon notu (2026-11-13).** Girdi: bağımsız inceleme r2 `docs/records/reviews/MOD-0182/2026-11-13-7ce2f1cb.md` (KOŞULLU; 5 orta,
 > 7 düşük; hedef r2 LF sha256 `7ce2f1cb…`) ve kararlar 03'ün iki eki: Q-3 genişletme teyidi (`7f584f546` — farklı lot hiçbir bağlamda, yerleştirmede
 > de, PIN'le aşılamaz) ve Q-6 = ZXing.Net (`bea6662d9` — Ali'ye gitmez). Her bulgunun kapanışı §19.6 "r2 → r3 kapanış tablosu"ndadır. Seçimler CT
 > önerisidir; sahibe yeni soru açılmadı. **Sahip onayı bekleyen XMC-001 satırları:** X-12 (0178 Gateway testinin uç sayısı, uç ekleyen her dilim —
 > F-1) ve X-15 (yeni; MOD-0173 manifest bütünlük testinde `Controllers.Barcode` dışlaması — F-2); X-1'in kapsamı genişledi (kapalı listeli AI
-> toleransı — F-12), MOD-0174 sahibinin X-1 onayı bunu da kapsamalıdır. **Düzeltilen sayı:** yazma komutu **16**'dır (DL-1 9, DL-4 5, DL-6 1, DL-7 1);
-> r1 / r2'nin "18" yazımı yanlıştı (F-6). **Q-11 güncellemesi (sahip kararı, inceleme dışı):** posta kodu CRM'den boş gelebilir; SSCC etiketinde
+> toleransı — F-12), MOD-0174 sahibinin X-1 onayı bunu da kapsamalıdır (r4: üçü de onaylandı — `ad1100158`). **Düzeltilen sayı:** yazma komutu **16**'dır (DL-1 9, DL-4 5, DL-6 1, DL-7 1);
+> r1 / r2'nin "18" yazımı yanlıştı (F-6; r4'te eşleştirme komutuyla 17). **Q-11 güncellemesi (sahip kararı, inceleme dışı):** posta kodu CRM'den boş gelebilir; SSCC etiketinde
 > alıcıdan **şehir + ilçe** yazılır, posta kodu yalnız sevkiyat kopyasında varsa (MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; §8.9, AC-56,
 > S-56b). AC numaraları (AC-1…AC-65) değişmedi; yeni vakalar mevcut AC'lere eklendi, yeni sabotajlar §16 ile §24'te
 > iki yönde adlı.
@@ -198,6 +211,8 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 | `ScanOverride` | DL-1 | `wms_barcode_scan_overrides` | Insert-only; olay başına en çok bir |
 | `SupervisorPin` | DL-1 | `wms_barcode_supervisor_pins` | Kullanıcı + şirket başına bir; yalnız özet (hash) |
 | `BarcodeSettings` | DL-1 | `wms_barcode_settings` | Şirket başına bir; `Version` |
+| `BarcodeCommandRequest` | DL-1 | `wms_barcode_command_requests` | **r4 (F-4):** okutma dışındaki her 0182 yazma komutunun idempotency deposu; insert-only, komutun işleminde yazılır; sır taşımaz (§4.11) |
+| `ScanOverrideAttempt` | DL-1 | `wms_barcode_override_attempts` | **r4 (F-5):** başarısız aşım denemesi (yanlış PIN, kilit kuruldu, kilitliyken deneme) yerel izi; insert-only, işlem dışı; PIN taşımaz (§4.3, §8.5) |
 | `ScanSessionBinding` | DL-3 | `wms_barcode_session_bindings` | Insert-only; `SessionId` tekil — bir oturum bir onayda harcanır |
 | `LabelTemplate` | DL-4 | `wms_barcode_label_templates` | Değişebilir, `Version`; pasifleştirilir, silinmez |
 | `LabelPrintJob` | DL-4 | `wms_barcode_label_prints` + `wms_barcode_label_files` | Insert-only; PDF dosyası ve sha256 |
@@ -209,10 +224,10 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 
 Koleksiyon öneki `wms_barcode_*` önerisidir; kesin ad DL-1'in ilk ölçümüyle sabitlenir.
 
-**Komutlar (yazma, 16 — DL-1 9, DL-4 5, DL-6 1, DL-7 1; r1 / r2'nin "18" yazımı yanlıştı, r3 F-6):**
+**Komutlar (yazma, 17 — DL-1 10, DL-4 5, DL-6 1, DL-7 1; r1 / r2'nin "18" yazımı yanlıştı, r3 F-6; r4 F-2 ile `PairScanDeviceCommand` eklendi):**
 - DL-1: `RegisterScanDeviceCommand`, `UpdateScanDeviceCommand`, `ActivateScanDeviceCommand` (onay ve yeniden etkinleştirme),
-  `DeactivateScanDeviceCommand` (engelleme, gerekçe), `RecordDeviceHeartbeatCommand`, `RecordScanCommand`, `OverrideScanCommand`,
-  `SetSupervisorPinCommand`, `UpdateBarcodeSettingsCommand`.
+  `DeactivateScanDeviceCommand` (engelleme, gerekçe), `PairScanDeviceCommand` (r4, F-2: eşleştirme koduyla anahtarın telefona teslimi — §8.2),
+  `RecordDeviceHeartbeatCommand`, `RecordScanCommand`, `OverrideScanCommand`, `SetSupervisorPinCommand`, `UpdateBarcodeSettingsCommand`.
 - DL-4: `CreateLabelTemplateCommand`, `UpdateLabelTemplateCommand`, `ActivateLabelTemplateCommand`, `DeactivateLabelTemplateCommand`,
   `CreateLabelPrintJobCommand` (yeniden basım dahil; DL-5'te SSCC ve lot / koli türleri eklenir).
 - DL-6: `RecordRfidSweepCommand`.
@@ -229,14 +244,15 @@ Koleksiyon öneki `wms_barcode_*` önerisidir; kesin ad DL-1'in ilk ölçümüyl
 `POST /barcode/scans` (okut — sonuç gövdede) · `POST /barcode/scans/{scanId}/override` (PIN aşımı; izin `scans.create` — §8.5, r3) · `GET /barcode/scan-events` ·
 `GET /barcode/scan-events/{scanId}` · `GET /barcode/scan-events/dashboard` · `GET/POST /barcode/devices` · `GET /barcode/devices/{deviceId}` ·
 `POST /barcode/devices/{deviceId}/update` · `POST /barcode/devices/{deviceId}/activate` · `POST /barcode/devices/{deviceId}/deactivate` ·
+`POST /barcode/devices/pair` (r4, F-2: eşleştirme kodu → anahtar, bir kez; izin `devices.create` — §8.2) ·
 `POST /barcode/devices/{deviceId}/heartbeat` · `GET /barcode/settings` · `POST /barcode/settings/update` · `POST /barcode/supervisor-pin` ·
 DL-4: `GET/POST /barcode/label-templates` · `GET /barcode/label-templates/{templateId}` · `POST /barcode/label-templates/{templateId}/update` ·
 `…/activate` · `…/deactivate` · `POST /barcode/label-previews` (salt okuma; gövde GS karakteri taşıyabildiği için POST) ·
 `GET/POST /barcode/label-prints` · `GET /barcode/label-prints/{jobId}` · `GET /barcode/label-prints/{jobId}/file` (PDF) · DL-6:
 `POST /barcode/rfid-sweeps` · `GET /barcode/rfid-sweeps/{sweepId}` · DL-7: `GET /barcode/trace` (`lot` + `skuId` \| `serial` + `skuId` \| `sscc`) ·
 `GET/POST /barcode/trace/exports` · `GET /barcode/trace/exports/{exportId}/file`. Sabit kesimler (`dashboard`, `settings`, `trace`) parametreli
-yoldan önce eşleşir; `{…Id}` parametreleri `:guid` kısıtlıdır. **Dilim başına servis ucu (r3, F-1 — X-12'nin sayısı; §3 listesinden):** DL-1 15,
-DL-4 11, DL-6 2, DL-7 4 = 32; DL-2 (yalnız Web), DL-3 (0178 / 0181 içinde port), DL-5 (SSCC ve lot / koli türleri var olan `label-prints`'e,
+yoldan önce eşleşir (`devices/pair` sabit kesimi `devices/{deviceId:guid}`'den önce); `{…Id}` parametreleri `:guid` kısıtlıdır. **Dilim başına servis
+ucu (r3, F-1 — X-12'nin sayısı; §3 listesinden; r4, F-2: DL-1'e `devices/pair`):** DL-1 16, DL-4 11, DL-6 2, DL-7 4 = 33; DL-2 (yalnız Web), DL-3 (0178 / 0181 içinde port), DL-5 (SSCC ve lot / koli türleri var olan `label-prints`'e,
 GTIN çözümü `scans`'e, önek `settings/update`'e gelir) ve DL-8 (yalnız test) servis ucu eklemez.
 
 **Controller tabanı:** `BarcodeScansController`, `ScanDevicesController`, `BarcodeSettingsController`, `LabelTemplatesController`,
@@ -271,7 +287,8 @@ Kullanıcı alanı `EntityBase`'de yoktur; gereken varlık kendi alanını taş�
 | `InstallationId` | string | istemcinin kalıcı kurulum kimliği, 8..100; şirkette tekil (aynı telefon iki kez kaydolmaz) |
 | `WarehouseId` | uuid \| null | doluysa okutma yalnız o depoda; boşsa şirketin her deposu (çok depolu çalışan — mobil brief §1) |
 | `Status` | enum | `Pending` → `Active` → `Blocked` → `Active` (§8.2); silinmez |
-| `KeyHash` | string | cihaz anahtarının SHA-256 özeti; anahtarın kendisi yalnız kayıt (ve yeniden etkinleştirme) cevabında bir kez döner, hiçbir yerde saklanmaz / loglanmaz — idempotency kaydı da anahtarsız cevabı saklar; replay anahtarı döndürmez (§8.2, r3 F-4) |
+| `KeyHash` | string \| null | cihaz anahtarının SHA-256 özeti; anahtarın kendisi yalnız mobilden doğrudan kaydın ya da eşleştirmenin (`POST /barcode/devices/pair`) cevabında bir kez döner, hiçbir yerde saklanmaz / loglanmaz — idempotency kaydı da anahtarsız cevabı saklar; replay anahtarı döndürmez (§8.2, r3 F-4). **r4 (F-2):** Web'den kayıt ve yeniden etkinleştirme anahtar üretmez; `KeyHash` null olur (eski anahtar o anda 403) ve eşleştirme kodu üretilir — null iken her anahtar 403 |
+| `PairingCodeHash`, `PairingExpiresAt`, `PairingIssuedBy`, `PairedAt` | string \| null / UTC \| null / uuid \| null / UTC \| null | **r4 (F-2):** tek kullanımlık eşleştirme kodunun SHA-256 özeti (kodun kendisi saklanmaz), son geçerlilik (üretim + 10 dk), kodu üreten Web kullanıcısı, son başarılı eşleştirme zamanı; kod kullanılınca `PairingCodeHash` / `PairingExpiresAt` null (§8.2) |
 | `LastSeenAt`, `LastUserId`, `LastUserName`, `AppVersion`, `BatteryPercent`, `BatteryReportedAt` | nabız alanları | `Version`'ı artırmaz; yalnız nabız ve okutma yazar |
 | `BlockedReason`, `BlockedAt`, `BlockedBy` | string / UTC / uuid | engellemede zorunlu gerekçe 10..500 |
 | `Note` | string \| null | ≤ 500 |
@@ -304,7 +321,10 @@ Okutma sonucunun "Aşıldı" (Overridden) hali `ScanEvent`'e yazılmaz; okumada 
 `SupervisorPin`: `UserId` (şirkette tekil), `PinHash` + `Salt` + `Iterations` (PBKDF2-SHA256, ≥ 100.000 tur, .NET `Rfc2898DeriveBytes.Pbkdf2`),
 `SetAt`, `ExpiresAt` (`SetAt` + `PinValidityDays`), `FailedAttempts`, `LockedUntil`, `Version`. `FailedAttempts` / `LockedUntil` yalnız aşım
 denemesinin tek belgelik atomik yazımlarıyla değişir, `Version`'ı artırmaz ve `If-Match` istemez (§8.5, r3 F-10). PIN 4..8 hane; PIN ve özeti hiçbir cevapta,
-logda, OTel'de ya da denetim kaydında yer almaz (Q-4 = A, karar 03).
+logda, OTel'de, denetim kaydında **ya da idempotency deposunda / parmak izinde** yer almaz (Q-4 = A, karar 03; r4 F-3 — §8.1).
+`ScanOverrideAttempt` (r4, F-5): `ScanId`, `DeviceId`, `DeviceNumber`, `AttemptedBy` + `AttemptedByName` (JWT kullanıcısı), `SupervisorUserId` +
+`SupervisorName`, `Result` (`PinInvalid` \| `LockSet` — bu deneme kilidi kurdu \| `Locked` — kilitliyken deneme), `FailedAttemptsAfter` (int),
+`LockedUntil?`, `At` (UTC). Insert-only; PIN, PIN özeti ve girilen değerin hiçbir türevi yoktur.
 
 ### 4.4 BarcodeSettings
 | Alan | Tip | Varsayılan | Kural |
@@ -358,6 +378,15 @@ yalnız sayıyla değil, hiç yazılmaz, §2.3 kural 4), `Differences[]`, `Repea
 | `wms_barcode_label_templates` | `(TenantId, LegalEntityId, Name)` tekil; `(…, LabelType, IsDefault)` tekil kısmi (`IsDefault = true`, `Status = Active`) | |
 | `wms_barcode_sscc` | `(TenantId, Sscc)` tekil; `(TenantId, LegalEntityId, PackageId)` tekil kısmi | SSCC tekilliği, koli başına bir SSCC |
 | `wms_barcode_sscc_counters` | `(TenantId, CompanyPrefix, ExtensionDigit)` tekil | |
+| `wms_barcode_devices` | `(TenantId, LegalEntityId, PairingCodeHash)` tekil kısmi (`PairingCodeHash` dolu) — r4, F-2 | eşleştirme kodu araması |
+| `wms_barcode_command_requests` | `(TenantId, LegalEntityId, ActorUserId, RequestOp, IdempotencyKey)` tekil — r4, F-4 | komut idempotency'si (MOD-0181 `CycleCountEvent` `EventKeyIndex` deseni) |
+| `wms_barcode_override_attempts` | `(TenantId, LegalEntityId, ScanId, At)`; `(TenantId, LegalEntityId, DeviceId, At desc)`; `(TenantId, LegalEntityId, SupervisorUserId, At desc)` — r4, F-5 | olay ayrıntısı, Device Health, sorumlu başına deneme görünümü |
+
+### 4.11 BarcodeCommandRequest (komut idempotency deposu — r4, F-4)
+`RequestOp` (komut adı, ör. `RegisterScanDevice`, `OverrideScan`), `ActorUserId`, `IdempotencyKey`, `RequestFingerprint` (§8.1 kuralı — PIN
+dışlanır), `TargetId`, `ResponseStatus` (int), `ResponseBody` (sırsız cevap DTO'su — §8.1), `CreatedAt`. Okutma olayının (`RecordScanCommand`)
+anahtarı `ScanEvent` üzerindedir (§4.2, §4.10) ve buraya yazılmaz; cihaz nabzı idempotency kaydı yazmaz (§8.2, §12 muafiyeti). Belge komutun
+yazımıyla **aynı işlemde** eklenir: başarısız komut kayıt bırakmaz, aynı anahtarla yeniden deneme yeniden çalışır.
 
 ## 5. Repo Scope
 
@@ -380,23 +409,33 @@ yalnız sayıyla değil, hiç yazılmaz, §2.3 kural 4), `Differences[]`, `Repea
 | `gateway/Diten.ApiGateway.Tests/Mod0182BarcodeRouteTests.cs` (yeni, integration-agent) | uç kapsama testi + cihaz başlıklarının iletimi; üretim `ocelot.json`'u okur | DL-8 |
 
 ### 5.1 XMC-001 — başka modülün dosyalarına dokunuşlar
-Her satır dokunmadan önce sahibine **tek tek** sorulur; yalnız eklemeli. Ölçüm HEAD `90f6a1da8`.
+Her satır dokunmadan önce sahibine **tek tek** sorulur; yalnız eklemeli. Ölçüm HEAD'leri: r1 `90f6a1da8`; X-12, X-15 ve X-6'nın `:53` / `:54` /
+`:60-69` atıfları r3'te `bf7bd7852`; **r4 (F-9):** X-6 (`:53`, `:127-130`), X-12 (`:97`), X-15 (`:209-225`) ve X-1 (`Gs1CodeParser.cs:24`, `:40`)
+`db70c9f37`'de yeniden ölçüldü — satır numaraları r3 ölçümüyle aynı (arada yalnız inceleme kayıtları değişti). **Sahip onayları (XMC-001):**
+X-1, X-12 (her artış dahil), X-15 — kararlar 03 eki `ad1100158`; X-6 genişletmesi (`:130` işlem sayısı) — kararlar 03 eki `4168e7a90`. Diğer
+satırlar (X-2…X-5, X-7…X-11, X-13, X-14 ve X-6'nın `:53` / `:60-69` kısmı) dilim başlamadan sahibinden onay ister.
 
 | # | Dosya | Bugün | Gereken değişiklik | Sahip | Dilim |
 |---|---|---|---|---|---|
-| X-1 | `services/Diten.InventoryService/src/Diten.InventoryService.Domain/Traceability/Rules/Gs1Code.cs` ve `Gs1CodeParser.cs` | ayrıştırıcı (00) uzunluğunu bilir (`Gs1CodeParser.cs:24`) ama `Gs1Code` (00)'ı taşımaz (`Gs1Code.cs:8`: GTIN, seri, SKT, lot) | `Gs1Code`'a eklemeli `Sscc` üyesi (init özelliği — konumlu kurucuyu bozmaz); (00) tek başına gelen dizge de okunur. **r3 (F-12) — kapalı listeli AI toleransı:** ham (FNC1 / GS) biçimde ayrıştırıcı tablosunda olmayan her AI bütün dizgeyi reddeder (`Gs1CodeParser.cs:133-136`; köşeli biçimde bilinmeyen AI zaten okunup yok sayılır, `:92`), gerçek koli / palet etiketlerindeki (37), (3103), (240) okutmayı `UNREADABLE` yapar. Ekleme: ayrıştırıcıya **kapalı bir "okunur, kullanılmaz" listesi** — (37) değişken ≤ 8 rakam, (310n) n = 0..5 sabit 6 rakam (4 haneli AI), (240) değişken ≤ 30; bu alanlar uzunluklarıyla atlanır, `Gs1Code`'a üye eklenmez; listede olmayan AI bugünkü gibi reddedilir (`TraceDomainRulesTests.cs:147` `"99ABC"` vakası değişmeden yeşil); yalnız toleranslı AI'lardan oluşan dizge okunmaz (`:40` kuralı aynı). Liste genişletmesi FU-0182-GS1AI. MOD-0174'ün `gs1-check` ucu da bu listeyi kabul etmeye başlar — davranış farkı MOD-0174 sahibinin onayındadır. MOD-0174 testleri değişmeden yeşil | MOD-0174 (merkez, Beste) | DL-5 |
+| X-1 | `services/Diten.InventoryService/src/Diten.InventoryService.Domain/Traceability/Rules/Gs1Code.cs` ve `Gs1CodeParser.cs` | ayrıştırıcı (00) uzunluğunu bilir (`Gs1CodeParser.cs:24`) ama `Gs1Code` (00)'ı taşımaz (`Gs1Code.cs:8`: GTIN, seri, SKT, lot) | `Gs1Code`'a eklemeli `Sscc` üyesi (init özelliği — konumlu kurucuyu bozmaz); (00) tek başına gelen dizge de okunur. **r3 (F-12) — kapalı listeli AI toleransı:** ham (FNC1 / GS) biçimde ayrıştırıcı tablosunda olmayan her AI bütün dizgeyi reddeder (`Gs1CodeParser.cs:133-136`; köşeli biçimde bilinmeyen AI zaten okunup yok sayılır, `:92`), gerçek koli / palet etiketlerindeki (37), (3103), (240) okutmayı `UNREADABLE` yapar. Ekleme: ayrıştırıcıya **kapalı bir "okunur, kullanılmaz" listesi** — (37) değişken ≤ 8 rakam, (310n) n = 0..5 sabit 6 rakam (4 haneli AI), (240) değişken ≤ 30; bu alanlar uzunluklarıyla atlanır, `Gs1Code`'a üye eklenmez; listede olmayan AI bugünkü gibi reddedilir (`TraceDomainRulesTests.cs:147` `"99ABC"` vakası değişmeden yeşil); yalnız toleranslı AI'lardan oluşan dizge okunmaz (`:40` kuralı aynı). Liste genişletmesi FU-0182-GS1AI. MOD-0174'ün `gs1-check` ucu da bu listeyi kabul etmeye başlar — davranış farkı MOD-0174 sahibinin onayındadır. MOD-0174 testleri değişmeden yeşil. **r4 (F-7) — `:40` kuralına etkisi açıkça:** bugün `:40`
+"en az biri (01), (21), (10), (17)" ister; X-1 bu kümeye **yalnız (00)**'ı ekler — (00) tek başına gelen dizge okunur (`Gs1Code` dört alanı null,
+`Sscc` dolu); toleranslı AI'lar ((37), (310n), (240)) ve (02) kümeye **eklenmez**, yalnız onlardan oluşan dizge okunmaz. (02) bugün de okunur
+(`:24` sabit 14) ama `Gs1Code`'a girmez; X-1 (02) için üye eklemez (FU-0182-GS1AI). Sonuç: (00) + (02) + (37) + (10) taşıyan lojistik etiket
+okunur (SSCC + lot), GTIN null'dır — ürün adımı davranışı §8.4 (Rejected `PRODUCT_NOT_VERIFIABLE`). MOD-0174 `gs1-check` ucu için etki: yalnız
+(00) taşıyan dizge artık ayrıştırılır (alanlar null). **Sahip onayı: `ad1100158`** (X-1 satırı r3 metniyle; onay metni AI listesini ve gs1-check
+yan etkisini adıyla anar) | MOD-0174 (merkez, Beste) | DL-5 |
 | X-2 | MOD-0178 yerleştirme / toplama onay işleyicileri (`PutawayTasks`, `PickTasks` onay komutları) | `scanRef` opak, ≤ 200, doğrulanmaz (`WarehouseRequestReader.cs:285`, `:305`) | depo `ScanRequired` ise onay işleminin içinde `IScanSessionGate.ConsumeAsync` çağrısı (§8.7); kapalıysa davranış aynı | MOD-0178 (merkez) | DL-3 |
 | X-3 | MOD-0181 sayım girişi ve bulunan satır işleyicileri (`RecordCountLineHandler`, `AddCountLineHandler`) | `scanRef` opak, ≤ 200 (`CycleCountContract.cs:62`) | X-2 ile aynı kapı; kör sayım cevabı değişmez | MOD-0181 (merkez) | DL-3 |
 | X-4 | `INV/Domain/Warehouse/Rules/WarehouseRecordCodeRules.cs` `TypePrefixes` | PUT / PCK / OUT / PKG / CNT (+ WAV — MOD-0180) | `DVC`, `LBL` sabitleri ve listeye ekleme (MOD-0181 `CNT`, MOD-0180 `WAV` emsali) | MOD-0178 | DL-1 (`DVC`), DL-4 (`LBL`) |
-| X-5 | `INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs` | 0181 / 0180 koleksiyon bildirimleri | `BarcodeCollections.All` bildirimi; önek süzgeci değişmez | MOD-0173 (merkez) | DL-1 |
-| X-6 | `INVT/CentralAudit/CentralAuditDeclarationTests.cs` | yazma komutu sayısı sabit (`:53` `Assert.Equal(117, WriteCommands.Length)`, HEAD `bf7bd7852`); `:54` **her** `IRequest` yazma komutunun `ICentralAuditDeclaration` taşımasını ister; `:60-69` kayıtlı modül kodları listesi | sayı = dilim başındaki ölçülen sayı + dilimin 0182 komutları (§21): **DL-1 +9, DL-4 +5, DL-6 +1, DL-7 +1** (DL-2, DL-3, DL-5 0; toplam 16 — r3 F-6); yorum satırına dilimin komutları adıyla; DL-1'de `:60-69` listesine `BarcodeRfidManifestProvider` (MOD-0181 `:68` emsali). `RecordDeviceHeartbeatCommand` da sayılır ve işaret taşır (İ2 — kayıt doğurmaması §21'de) | MOD-0173 (merkez) | DL-1, DL-4, DL-6, DL-7 |
+| X-5 | `INVT/Architecture/SingleSystemOfRecordArchitectureTests.cs` | 0181 / 0180 koleksiyon bildirimleri | `BarcodeCollections.All` bildirimi (r4: `wms_barcode_command_requests` ve `wms_barcode_override_attempts` dahil — §3); önek süzgeci değişmez | MOD-0173 (merkez) | DL-1 |
+| X-6 | `INVT/CentralAudit/CentralAuditDeclarationTests.cs` | yazma komutu sayısı sabit (`:53` `Assert.Equal(117, WriteCommands.Length)`); `:54` **her** `IRequest` yazma komutunun `ICentralAuditDeclaration` taşımasını ister; `:60-69` kayıtlı modül kodları listesi. **r4 (F-1):** aynı dosyada `Every_transaction_a_command_can_run_in_enlists_the_central_audit_event` Persistence'taki her `WithTransactionAsync(` **çağrı yerini** sayar (`:130` `Assert.Equal(14, seen)`, yorum `:127-129`; süpürücüler hariç) ve her çağrı yerinin geri çağrısında (ilk 1.200 karakter) `CentralAuditTransaction.EnlistAsync(s` ister; ölçüm HEAD `db70c9f37` | (a) **komut sayısı (`:53`):** dilim başındaki ölçülen sayı + dilimin 0182 komutları (§21): **DL-1 +10, DL-4 +5, DL-6 +1, DL-7 +1** (DL-2, DL-3, DL-5 0; toplam 17 — r3 F-6, r4 F-2 `PairScanDeviceCommand`); yorum satırına dilimin komutları adıyla; DL-1'de `:60-69` listesine `BarcodeRfidManifestProvider` (MOD-0181 `:68` emsali). `RecordDeviceHeartbeatCommand` da sayılır ve işaret taşır (İ2 — kayıt doğurmaması §21'de). (b) **işlem çağrı yeri sayısı (`:130`, r4 F-1):** işlem açan her MOD-0182 dilimi sayıyı **dilim başında ölçülen sayı + dilimin 0182 Persistence'a eklediği yeni `WithTransactionAsync(` çağrı yerleri** yapar; değişiklik o çağrı yerleriyle **aynı commit'tedir**; `:127-129` yorumuna dilimin adı ve çağrı yeri yazılır (ör. "+ BarcodeTransactions.InTransactionAsync (MOD-0182 DL-1, XMC-001)" — MOD-0181 DL-1 emsali); kabul kaydı önce → sonra değerini yazar ve satır numarasına değil `Assert.Equal(<n>, seen)` satırına atıf yapar. **İşlem içinde yazan dilimler** (§3 / §21'den doğrulandı): DL-1 (nabız hariç 9 komut — nabız ve PIN sayacı / aşım denemesi izi işlem açmaz, §8.2, §8.5), DL-4 (5 komut), DL-5 (SSCC ataması ve sayaç — DL-4'ün basım komutunun işleminde), DL-6 (1), DL-7 (1); DL-2, DL-3 (bağlama 0178 / 0181'in **kendi** işlemine katılır — §8.7), DL-8 işlem açmaz. **Öneri (en dar):** 0182 Persistence'ta tek ortak işlem yardımcısı (`BarcodeTransactions.InTransactionAsync`; MOD-0181'in 16 komutunun tek `CycleCountRepository.InTransactionAsync` çağrı yeri emsali, `:51-52` yorumu) — beklenen dağılım (çıkarım) DL-1 **+1** (14 → 15, arada başka modül eklemezse), DL-4 / DL-5 / DL-6 / DL-7 **+0** (satıra dokunulmaz); bir dilim yeni bir çağrı yeri açarsa (ör. ayrı SSCC deposu işlemi) kural ona uygulanır. MOD-0180 (X-10) ile sıra: hangisi önce gelirse dilim başında ÖLÇÜLEN sayıdan devam; paralel dallarda sonra birleşen dal birleştirmeden sonra yeniden ölçer. **Sahip onayı: (b) `4168e7a90`** (kararlar 03, "r3 incelemesi sonrası sahip kararları"); (a) dilim başlamadan sahibinden | MOD-0173 (merkez, Beste) | DL-1, DL-4, DL-6, DL-7 (a); işlem çağrı yeri ekleyen her dilim — beklenen yalnız DL-1 (b) |
 | X-7 | `INV/Api/Program.cs` | manifest kayıtları | `BarcodeRfidManifestProvider` + `AddBarcode()` (kompozisyon kökü) | MOD-0173 (merkez) | DL-1 |
 | X-8 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs` `RuleAheadOfCatalogue` | `CNT`, `WAV` satırları | RCS-001 §3'e `DVC` / `LBL` yazıldığı **aynı adımda** `["DVC"]`, `["LBL"]` = "MOD-0040-FU02 DL-8" | Platform (merkez) | `.antigravity` kapısı (§6) |
 | X-9 | `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` §14.1 | Q-08 notu: "0182 kendi namespace'ini açar (önerilen `barcode.*`)" (`:2131-2132`); `warehouse.waves.*` istisna notu | Q-1 = A (karar 03) olduğu için not: "`warehouse.barcode.*` adlı alt ad alanı MOD-0182'nindir; MOD-0178 bu alt ad alanında anahtar tanımlamaz" — 0178 paket revizyonu (yalnız not), ayrı inceleme + Ali onayı | MOD-0178 (merkez) | `.antigravity` kapısı (§6) |
 | X-10 | Governance Rol İzinleri köprüsü (`frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml`, `SharedResource.*.resx` `Perm.Entity.*`) | fiiller `activate` `:188`, `approve` `:192`, `configure` `:239`, `deactivate` `:243`, `export` `:179` var | **yeni fiil yok**; yalnız varlık satır adları (`Perm.Entity.SCANS`, `.SCANEVENTS`, `.SCANOVERRIDES`, `.DEVICES`, `.SETTINGS`, `.LABELTEMPLATES`, `.LABELPRINTS`, `.TRACE` — kesin adlar DL-2 ölçümü) 7 dilde | Web ortak (merkez) | DL-2, DL-4, DL-7 |
 | X-11 | `services/Diten.AuthService/**` rol şablonu | — | §14 rol önerisi (Q-14) | Ali (Auth) | ayrı WP |
-| X-12 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` — **yalnız `Assert.Equal(<n>, endpoints.Count)` satırı** (bugün `:97`, HEAD `bf7bd7852`) ve üstündeki uç yorumu (`:80-96`) (r3, F-1) | 0178 uç kapsama testi; üretim `ocelot.json`'u okur (`:23`; bağlı kopya `Diten.ApiGateway.Tests.csproj:26`) ve **bütün** InventoryService controller'larını özyineli tarar — sınıf `[Route]`'u `api/warehouse` ile başlayan her controller (`:219-237`, önek süzgeci `:228`, eylem regex'i `:229`); `:97` `Assert.Equal(73, endpoints.Count)` yönlendirilen uç sayısını sabitler, yorum her artışı adıyla sayar (son artış MOD-0181 DL-5, 70 → 73) | **XMC-001 değişikliği (r2'nin "değişmez" yazımı yanlıştı):** 0182 controller'ları (`[Route("api/warehouse")]`, `Controllers/Barcode/`) taramaya kendiliğinden girer; her 0182 ucu `/api/warehouse/{everything}` ile tek rotaya eşleşir, PUT / DELETE / PATCH yoktur — rota iddiaları (`:98-108`) değişmeden yeşil kalır, ama sayı satırı ilk 0182 ucuyla kırmızı olur. **Kural:** uç ekleyen her dilim (**DL-1 15, DL-4 11, DL-6 2, DL-7 4** — §3 / §23 / §24'ten; DL-2, DL-3, DL-5, DL-8 servis ucu eklemez, DL-5 bir uç eklerse kural ona da uygulanır) sayıyı **dilim başında ölçülen sayı + dilimin eklediği 0182 uç sayısı** yapar ve yorumuna dilimin uçlarını adıyla ekler (MOD-0181 emsali; MOD-0180 X-14 deseni); değişiklik dilimin controller uçlarıyla **aynı commit'tedir**, dilim kabulünde Gateway test projesi koşar — arada kırmızı pencere kalmaz (AC-65 0178 sayı vakası, S-65c). Kabul kaydı önce → sonra değerini yazar ve satır numarasına değil `Assert.Equal(<n>, endpoints.Count)` satırına atıf yapar. Eylem öznitelikleri `[HttpX("…")]` biçimindedir (ek argüman yok) — aksi halde `:229` regex'i ucu saymaz. Paket sabit taban yazmaz; beklenen dağılım **çıkarım**: arada başka modül uç eklemezse 73 → 88 → 99 → 101 → 105 (§3 listesine göre; PIN sayfasının son kullanma tarihi okuması §3'te ayrı uç yazılı değil — DL-1 bir GET eklerse sayı ölçümden gelir). **MOD-0180 ile sıra:** MOD-0180 (X-14) aynı satırı DL-1 / DL-2 / DL-3 / DL-5'te 23 uçla artırır; iki paketin dilimleri hangi sırayla gelirse gelsin her dilim **dilim başında ÖLÇÜLEN** sayıdan devam eder, paralel dallarda sonra birleşen dal sayıyı birleştirmeden sonra yeniden ölçer ve yalnız kendi uçlarını ekler; yorumdaki iki paketin satırları adıyla kalır. `ocelot.json` ve bu iki satır dışındaki satırlar değişmez. **Durum: sahip onayı bekliyor (XMC-001)** — MOD-0180'in X-14 onayı (`c7dc4ea6a` / `6235794ab`) 0182'yi kapsamaz | integration-agent (test dosyası); rota ailesi MOD-0178 (Beste) | DL-1, DL-4, DL-6, DL-7 |
-| X-15 | `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs` — `Every_enforced_permission_is_reachable_from_the_manifest` dışlama listesi (bugün `:209-225`, HEAD `bf7bd7852`; r3, F-2) | MOD-0173 testi; `:213-223` controller'ları namespace ile dışlar (Traceability, Quarantine, Expiry, Recall, Warehouse, CycleCounting); dışlanmayan her controller'ın `[HasPermission]` anahtarı INVENTORY-LEDGER manifestinde aranır | dışlama satırı + yorum: `.Where(t => t.Namespace?.EndsWith(".Controllers.Barcode", StringComparison.Ordinal) != true)` — "MOD-0182: the barcode controllers belong to BARCODE-RFID (own completeness test, AC-6)". Eklenmezse ilk `warehouse.barcode.*` anahtarı bu testi kırmızı yapar. Dışlamanın karşılığı 0182'nin kendi bütünlük vakasıdır (AC-6, S-6d). Emsal: MOD-0181'in `:223` dışlaması (sahip onaylı, MOD-0181 paketi `:1392`). MOD-0180 (`Controllers.WavePlanning`) önce gelirse satır kayar — dilim başında ölçülür. **Durum: sahip onayı bekliyor (XMC-001)** | MOD-0173 (merkez, Beste) | DL-1 |
+| X-12 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` — **yalnız `Assert.Equal(<n>, endpoints.Count)` satırı** (bugün `:97`, HEAD `bf7bd7852`) ve üstündeki uç yorumu (`:80-96`) (r3, F-1) | 0178 uç kapsama testi; üretim `ocelot.json`'u okur (`:23`; bağlı kopya `Diten.ApiGateway.Tests.csproj:26`) ve **bütün** InventoryService controller'larını özyineli tarar — sınıf `[Route]`'u `api/warehouse` ile başlayan her controller (`:219-237`, önek süzgeci `:228`, eylem regex'i `:229`); `:97` `Assert.Equal(73, endpoints.Count)` yönlendirilen uç sayısını sabitler, yorum her artışı adıyla sayar (son artış MOD-0181 DL-5, 70 → 73) | **XMC-001 değişikliği (r2'nin "değişmez" yazımı yanlıştı):** 0182 controller'ları (`[Route("api/warehouse")]`, `Controllers/Barcode/`) taramaya kendiliğinden girer; her 0182 ucu `/api/warehouse/{everything}` ile tek rotaya eşleşir, PUT / DELETE / PATCH yoktur — rota iddiaları (`:98-108`) değişmeden yeşil kalır, ama sayı satırı ilk 0182 ucuyla kırmızı olur. **Kural:** uç ekleyen her dilim (**DL-1 16, DL-4 11, DL-6 2, DL-7 4** — §3 / §23 / §24'ten; r4: DL-1'e `POST /barcode/devices/pair`, F-2; DL-2, DL-3, DL-5, DL-8 servis ucu eklemez, DL-5 bir uç eklerse kural ona da uygulanır) sayıyı **dilim başında ölçülen sayı + dilimin eklediği 0182 uç sayısı** yapar ve yorumuna dilimin uçlarını adıyla ekler (MOD-0181 emsali; MOD-0180 X-14 deseni); değişiklik dilimin controller uçlarıyla **aynı commit'tedir**, dilim kabulünde Gateway test projesi koşar — arada kırmızı pencere kalmaz (AC-65 0178 sayı vakası, S-65c). Kabul kaydı önce → sonra değerini yazar ve satır numarasına değil `Assert.Equal(<n>, endpoints.Count)` satırına atıf yapar. Eylem öznitelikleri `[HttpX("…")]` biçimindedir (ek argüman yok) — aksi halde `:229` regex'i ucu saymaz. Paket sabit taban yazmaz; beklenen dağılım **çıkarım**: arada başka modül uç eklemezse 73 → 89 → 100 → 102 → 106 (§3 listesine göre; r4 — r3'te 73 → 88 → 99 → 101 → 105; PIN sayfasının son kullanma tarihi okuması §3'te ayrı uç yazılı değil — DL-1 bir GET eklerse sayı ölçümden gelir). **MOD-0180 ile sıra:** MOD-0180 (X-14) aynı satırı DL-1 / DL-2 / DL-3 / DL-5'te 23 uçla artırır; iki paketin dilimleri hangi sırayla gelirse gelsin her dilim **dilim başında ÖLÇÜLEN** sayıdan devam eder, paralel dallarda sonra birleşen dal sayıyı birleştirmeden sonra yeniden ölçer ve yalnız kendi uçlarını ekler; yorumdaki iki paketin satırları adıyla kalır. `ocelot.json` ve bu iki satır dışındaki satırlar değişmez. **Durum: sahip onaylı (XMC-001) — kararlar 03 eki `ad1100158`, her artış dahil** (r4, F-9; MOD-0180'in X-14 onayı `c7dc4ea6a` / `6235794ab` 0182'yi kapsamaz; r4'teki DL-1 +1 uç aynı kuralla — "her artış dahil") | integration-agent (test dosyası); rota ailesi MOD-0178 (Beste) | DL-1, DL-4, DL-6, DL-7 |
+| X-15 | `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs` — `Every_enforced_permission_is_reachable_from_the_manifest` dışlama listesi (bugün `:209-225`, HEAD `bf7bd7852`; r3, F-2) | MOD-0173 testi; `:213-223` controller'ları namespace ile dışlar (Traceability, Quarantine, Expiry, Recall, Warehouse, CycleCounting); dışlanmayan her controller'ın `[HasPermission]` anahtarı INVENTORY-LEDGER manifestinde aranır | dışlama satırı + yorum: `.Where(t => t.Namespace?.EndsWith(".Controllers.Barcode", StringComparison.Ordinal) != true)` — "MOD-0182: the barcode controllers belong to BARCODE-RFID (own completeness test, AC-6)". Eklenmezse ilk `warehouse.barcode.*` anahtarı bu testi kırmızı yapar. Dışlamanın karşılığı 0182'nin kendi bütünlük vakasıdır (AC-6, S-6d). Emsal: MOD-0181'in `:223` dışlaması (sahip onaylı, MOD-0181 paketi `:1392`). MOD-0180 (`Controllers.WavePlanning`, MOD-0180 r10 X-17) önce gelirse satır kayar — dilim başında ölçülür. **Durum: sahip onaylı (XMC-001) — kararlar 03 eki `ad1100158`** (r4, F-9) | MOD-0173 (merkez, Beste) | DL-1 |
 | X-13 | Inventory'nin PRODUCT-MASTER istemcisi (TRACE `ITraceSkuDirectory` ve onun uygulaması) | SKU `gtin` (FG satış kutusu) okunur | iki okuma eklenir: `GET /product-master/identifiers/{gtin}`, `GET /product-master/gs1-company-prefixes` (MOD-0290-FU07 sözleşmesi) — ayrı port arkasında, MOD-0174 davranışı değişmez | MOD-0174 / MOD-0173 (merkez) | DL-5 |
 | X-14 | `docs/analysis/contracts/wms-bundle.openapi.yaml` (1.1.0) ve `wms-count-bundle.openapi.yaml` (1.0.0) | `scanRef` opak; `BARCODE_SESSION_*` kodları yok | eklemeli hata kodları (§8.15) yeni sözleşme sürümünde; servis sözleşme testleri şemayı kapalı okur — CT adımı, **DL-3 başlamadan önce** | MOD-0178 / MOD-0181 + CT | DL-3 |
 
@@ -415,7 +454,7 @@ boş (AC-41).
   aşımı, etiket şablonları ve basımı, RFID taraması, uyum izi; owner decision Q-1 (MOD-0182 owner decisions 03, 2026-11-13) — `warehouse.*` altında MOD-0182'ye ayrılmış adlı alt ad
   alanı; MOD-0182 pack §14; base path `/api/warehouse/barcode`) | MOD-0182 (Barcode/RFID) | ``
 - `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız integration-agent; bu paket değişiklik **istemez** (§15). `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs`
-  yalnız X-12'nin iki satırı için, uç ekleyen dilimde, integration-agent eliyle (XMC-001, sahip onayı bekliyor — r3).
+  yalnız X-12'nin iki satırı için, uç ekleyen dilimde, integration-agent eliyle (XMC-001, sahip onaylı — `ad1100158`; r4).
 - `services/Diten.Building.Blocks/**` (BL-501 olduğu gibi).
 - MOD-0173 / 0174 / 0175 / 0176 / 0177 / 0178 / 0180 / 0181 kodu ve testleri — yalnız §5.1'de **adıyla** sayılan dosyalar; listede olmayan bir
   dosyaya dokunmak gerekirse dilim durur ve XMC-001 ile sahibine sorulur.
@@ -429,7 +468,7 @@ boş (AC-41).
 | Bağımlılık | Tür | Durum (ölçüm) | Kullanım | Değişiklik | Sahip |
 |---|---|---|---|---|---|
 | MOD-0178 görevler ve koliler | HARD (okuma); DL-3 XMC | kod var; onay gövdesi opak `scanRef` alır (`services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/Warehouse/PickTasksController.cs:83`, `services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/Warehouse/PutawayTasksController.cs:121`); koli `HandlingUnit` SSCC taşımaz (`services/Diten.InventoryService/src/Diten.InventoryService.Domain/Warehouse/Entities/HandlingUnitEntities.cs:24-27`) | bağlam (beklenen bin / SKU / lot), SSCC'nin koliye bağlanması 0182 tarafında | X-2, X-4, X-14 | merkez (Beste) |
-| MOD-0178-FU01 outbound formu v2 | SOFT (DL-5, okuma) | taslak r1, kodu yok; `ShipTo`'ya `District` / `DistrictRef` ekler, CRM'den seçilen alıcıda `PostalCode` boş gelebilir (`execution/domains/supply-chain-execution/module-packs/MOD-0178-FU01-outbound-form-v2.md:149-151`) | SSCC etiketinde alıcı ilçesi (Q-11, r3); FU01 yoksa ilçe basılmaz | yok | merkez (Beste) |
+| MOD-0178-FU01 outbound formu v2 | SOFT (DL-5, okuma) — **DL-5 FU01'i beklemez** (r4, F-6) | taslak r2, onaysız, kodu yok (HEAD'de `District` yok); FU01 DL-2 `ShipTo`'ya `District` / `DistrictRef` ekler (`execution/domains/supply-chain-execution/module-packs/MOD-0178-FU01-outbound-form-v2.md:156-172`, `District` `:171`, `PostalCode` `:172`); posta kodu CRM ana adresinde CRM alanı ekleyene kadar boş gelir, ek teslimat adreslerinde dolu gelir; elle girişte şehir / ilçe serbest metin (`:339`) | SSCC etiketinde alıcı ilçesi (Q-11): FU01 DL-2 `main`'de değilken 0182 `District`'e kod düzeyinde başvurmaz, ilçe basılmaz; ilçe okuması FU01 DL-2 geldikten sonraki ilk 0182 dilimine eklenir (§8.9) | yok | merkez (Beste) |
 | MOD-0181 sayım | HARD (okuma); DL-3 XMC | kod var; `scanRef` opak (`services/Diten.InventoryService/src/Diten.InventoryService.Api/CycleCount/CycleCountRequestReader.cs:70`, `:86`); kör sayım bayrağı ve bin talebi var (`CycleCountEntities.cs`) | sayım bağlamı; kör sayım gizliliği (§2.3 kural 4) | X-3, X-14 | merkez |
 | MOD-0174 GS1 ayrıştırıcı, lot, seri | HARD | `Gs1CodeParser` ham ve köşeli biçimi okur (01, 21, 17, 10); `POST /api/trace/serials/gs1-check` var (`services/Diten.InventoryService/src/Diten.InventoryService.Api/Controllers/Traceability/TraceController.cs:143-144`) | ayrıştırma (ikinci ayrıştırıcı yazılmaz), lot / seri çözümü, alan karşılaştırması | X-1 (DL-5) | merkez |
 | MOD-0175 / MOD-0176 / MOD-0177 | HARD (okuma) | geri çağırma kapısı `LOT_UNDER_RECALL` (`services/Diten.InventoryService/src/Diten.InventoryService.Application/Common/InventoryErrorCodes.cs:80`); 0178 yerleştirme ve rezervasyon aynı kuralı okur | statü, SKT, geri çağırma reddi — kaynak 0178 denetimleriyle aynı (DL-1 ilk ölçümünde adıyla sabitlenir) | yok | merkez |
@@ -442,11 +481,11 @@ boş (AC-41).
 | Auth şirket bağlamı | HARD (mobil) | `legal_entities` claim + `X-Legal-Entity-Id` (E-7; teyit Ali) | mobil şirket seçimi | yok (teyit — Q-13) | Ali (Auth) |
 | BL-501 merkezi denetim | HARD | InventoryService'te var — `tests/architecture/audit-ledger/Diten.InventoryService.md:12` (`inventory-merkezi-iletim`, yol b) | §21 | yok | korunan yol |
 | PDF üretimi | HARD (DL-4, DL-7) | `PDFsharp-MigraDoc` 6.1.1 Inventory API'de var (`services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj:19`) | etiket PDF'i, kanıt paketi | yok | — |
-| Barkod çizim kütüphanesi | HARD (DL-4) | depoda **yok** (csproj taraması: barkod / DataMatrix kütüphanesi 0); **karar: ZXing.Net** (Q-6, karar 03 eki `bea6662d9` — Apache-2.0, ücretsiz, ticari kullanıma açık; r3) | Code 128, GS1-128, GS1 DataMatrix çizimi; AC-49 / AC-57'de PDF'teki barkodun aynı kütüphanenin okuyucusuyla çözülmesi | yeni NuGet (`ZXing.Net`, DL-4'ün ilk adımı; sürüm ve bilinen güvenlik açığı taraması — `dotnet list package --vulnerable` — dilim kabul kaydında) | Beste (karar 03) |
+| Barkod çizim kütüphanesi | HARD (DL-4) | depoda **yok** (csproj taraması: barkod / DataMatrix kütüphanesi 0); **karar: ZXing.Net** (Q-6, karar 03 eki `bea6662d9` — Apache-2.0, ücretsiz, ticari kullanıma açık; r3) | Code 128, GS1-128, GS1 DataMatrix çizimi; AC-49 / AC-57'de PDF'teki barkodun aynı kütüphanenin okuyucusuyla çözülmesi; **r4 (F-2): cihaz eşleştirme QR'ı** (QR_CODE, DL-1 — §8.2) | yeni NuGet (`ZXing.Net`, **DL-1'in ilk adımı** — r4: QR DL-1'de gerektiği için DL-4'ten çekildi; sürüm ve bilinen güvenlik açığı taraması — `dotnet list package --vulnerable` — DL-1 kabul kaydında) | Beste (karar 03) |
 | SCAN-BUNDLE | HARD (contract-first) | yok | sözleşme taslağı; mobil sözleşme notu | bu paket (DL-1) | supply-chain-execution (Beste) |
 | Mobil ekipler | tüketici | mock veriyle başladılar (E-7); §3A uçları dondurulmuş | SCAN-BUNDLE'ı okur | yok | mobil ekipler |
 | Görev Merkezi | bağımlılık DEĞİL (v1) | depo görevleri bağlı değil; bağlantı MVP-5 sonrası | — | — | merkez |
-| Gateway | — | `/api/warehouse/{everything}` → 5067 (`gateway/Diten.ApiGateway/ocelot.json:1153-1161`) | §15 | `ocelot.json` değişmez; `Mod0178WarehouseRouteTests` uç sayısı uç ekleyen her dilimde (X-12, r3 — sahip onayı bekliyor) | integration-agent |
+| Gateway | — | `/api/warehouse/{everything}` → 5067 (`gateway/Diten.ApiGateway/ocelot.json:1153-1161`) | §15 | `ocelot.json` değişmez; `Mod0178WarehouseRouteTests` uç sayısı uç ekleyen her dilimde (X-12, r3 — sahip onaylı `ad1100158`) | integration-agent |
 
 ## 8. Runtime Constraints
 
@@ -457,21 +496,73 @@ boş (AC-41).
   (`W/"<version>"`). Mobil okutma ve nabız ayrıca `X-Scan-Device-Id` + `X-Scan-Device-Key` taşır (§8.2).
 - InventoryService PUT / DELETE bekçisi (`LedgerImmutabilityArchitectureTests`) değişmez; 0182 yalnız GET / POST yazar.
 - Kiracı + şirket her sorguda yüklemdir; başka modülün koleksiyonunda okuma da aynı yüklemle yapılır.
+- **Idempotency deposu (r4, F-4):** okutma (`RecordScanCommand`) anahtarını `ScanEvent`'te tutar (§4.2, §4.10); diğer her 0182 yazma komutu —
+  cihaz (kayıt, düzenleme, onay / yeniden etkinleştirme, engelleme, eşleştirme), aşım, PIN, ayar, şablon, basım, RFID taraması, dışa aktarım —
+  anahtarını `wms_barcode_command_requests`'te (`BarcodeCommandRequest`, §4.11) tutar; koleksiyon `BarcodeCollections.All`'dadır (X-5). Kayıt
+  komutun yazımıyla **aynı işlemde** eklenir; başarısız komut kayıt bırakmaz. Cihaz nabzı idempotency kaydı yazmaz (adlı muafiyet — yazımı
+  doğası gereği tekrarlanabilir `$set`'tir; `Idempotency-Key` gelirse yok sayılır, §8.2, §12). **Replay araması sırası:** izin (403) → cihaz
+  kimliği (cihaz başlığı isteyen uçlarda, 403) → biçim (400) → **idempotency araması** (aynı kullanıcı + şirket + `RequestOp` + anahtar; aynı
+  parmak izi → ilk cevabın durum kodu ve sırsız gövdesi, yeni yazım / merkezi kayıt / sayaç değişimi yok; farklı parmak izi → 400
+  `IDEMPOTENCY_KEY_REUSED`) → ancak sonra varlık (404), `If-Match` (409), durum (409) ve **tekillik** (409, ör. `BARCODE_ALREADY_OVERRIDDEN`)
+  denetimleri. Böylece başarılı bir aşımın ya da düzenlemenin replay'i 409 değil ilk cevabı alır.
+- **Parmak izi ve sırlar (r4, F-3):** parmak izi MOD-0181 deseniyle (`CycleCountSupport.Fingerprint`, `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/CycleCount/Services/CycleCountSupport.cs:132-136`
+  — adlı alanlar üzerinde düz SHA-256) hesaplanır; **PIN taşıyan gövdelerde (`OverrideScanCommand`: `supervisorUserId`, `pin`, `note`;
+  `SetSupervisorPinCommand`: `pin`) PIN alanı parmak izine katılmaz** — alan listesinde hiç yoktur (yer tutucu da yazılmaz); 4..8 haneli PIN
+  düz SHA-256 izinden saniyeler içinde geri bulunabileceği için. Sonuç: aynı anahtarla yalnız PIN'i farklı gövde **replay'dir** (ilk cevap;
+  PIN değerlendirilmez, sayaç değişmez) — Web her gönderimde yeni anahtar üretir, mobil yalnız aynı isteği tekrarlarken anahtarı korur.
+  Idempotency deposunda (`RequestFingerprint`, `ResponseBody`, başka hiçbir alan) PIN, PIN özeti, tuz ya da PIN'in herhangi bir türevi
+  **saklanmaz**. Aynı kural cihaz anahtarı ve eşleştirme kodu için de geçerlidir: saklanan `ResponseBody` sır alanı taşımayan ayrı bir DTO
+  tipidir (`deviceKey`, `pairing.code`, `pairing.qrPng` o tipte yoktur — derleme düzeyinde). Eşleştirme kodu 256 bitlik rastgele değer olduğu
+  için parmak izine yalnız özeti (`PairingCodeHash` ile aynı değer) olarak girer; PIN'e bu istisna uygulanmaz.
 
 ### 8.2 Cihaz kimliği ve yaşam döngüsü
-- **Kayıt (S-3):** mobil uygulama ilk açılışta `POST /barcode/devices` (`Name`, `Type`, `Platform`, `InstallationId`, `WarehouseId?`) çağırır;
-  cevap **bir kez** rastgele 32 baytlık cihaz anahtarını döner (base64url). Sunucu yalnız SHA-256 özetini saklar. Aynı `InstallationId` ikinci
-  kez → 409 `BARCODE_DEVICE_ALREADY_REGISTERED` (anahtar yenileme yalnız Web'den "yeniden etkinleştir" ile — yeni anahtar, eskisi geçersiz).
-- **Anahtar ve idempotency replay (r3, F-4 — anahtar saklanmaz ilkesi korunur):** `RegisterScanDeviceCommand` ve anahtar üreten
-  `ActivateScanDeviceCommand` (yeniden etkinleştirme, `Blocked` → `Active`) için idempotency kaydı cevabı **anahtarsız** saklar. Aynı
+- **Kayıt (S-3):** mobil uygulama ilk açılışta `POST /barcode/devices` (`Name`, `Type`, `Platform`, `InstallationId`, `WarehouseId?`,
+  `keyDelivery?`) çağırır; `keyDelivery = Direct` (varsayılan — çağıran telefonun kendisi) iken cevap **bir kez** rastgele 32 baytlık cihaz
+  anahtarını döner (base64url). Sunucu yalnız SHA-256 özetini saklar. Aynı `InstallationId` ikinci kez → 409 `BARCODE_DEVICE_ALREADY_REGISTERED`
+  (anahtar yenileme yalnız Web'den "yeniden etkinleştir" ile — eski anahtar o anda geçersiz, yenisi QR eşleştirmesiyle; aşağıda).
+- **Anahtarın telefona QR ile teslimi (r4, F-2 — sahip kararı, kararlar 03 eki `4168e7a90`):** Web'den kayıt (Web proxy her zaman
+  `keyDelivery = Pairing` gönderir) ve yeniden etkinleştirme (`Blocked` → `Active`) **anahtar üretmez ve döndürmez**: `KeyHash` null olur (eski
+  anahtar hemen 403) ve tek kullanımlık bir **eşleştirme kodu** üretilir — 32 bayt rastgele (base64url), ömrü **10 dakika** (sabit
+  `BarcodeContract.PairingCodeLifetimeMinutes = 10`; ayar değildir). Cevap `pairing: { code, qrPng, expiresAt }` taşır (`qrPng` = ZXing.Net ile
+  çizilmiş QR, içerik `diten-scan-pair:1:{code}`; kod QR'ın altında kopyalanabilir metin olarak da gösterilir). Sunucu yalnız
+  `PairingCodeHash` (SHA-256) + `PairingExpiresAt` + `PairingIssuedBy` saklar; kod hiçbir kayıtta, logda, OTel'de, merkezi kayıtta ya da
+  idempotency deposunda yoktur. Telefon QR'ı okutur ve **`POST /barcode/devices/pair`** `{ pairingCode, installationId }` çağırır; sunucu
+  (kiracı + şirket yüklemiyle) kod özetini arar ve **tek belgelik atomik** `findOneAndUpdate` ile (filtre: kiracı + şirket + `PairingCodeHash` +
+  `PairingExpiresAt > şimdi` + `InstallationId` = gövde + `Status ≠ Blocked`) yeni 32 baytlık anahtarı üretip `KeyHash`'e yazar,
+  `PairingCodeHash` / `PairingExpiresAt`'i null, `PairedAt`'i şimdi yapar; anahtar cevapta **bir kez** döner. Kurallar: kod **tek kullanımlıktır**
+  — kullanılmış kod artık bulunmaz (404), eşzamanlı iki kullanımdan tam biri başarılıdır; süresi dolmuş kod 422 `BARCODE_PAIRING_EXPIRED` (Web'de
+  yeni kod gerekir); bilinmeyen kod, başka kiracının ya da şirketin kodu 404 (varlık açılmaz); `InstallationId` uyuşmazsa ya da cihaz `Blocked`
+  ise 422 `BARCODE_PAIRING_INVALID` (kod geçerli kalır, süresi işler). Yeni kod (yeniden etkinleştirme) önceki kullanılmamış kodu geçersiz kılar
+  (aynı alanın üzerine yazılır). Eşleştirme cihaz durumunu değiştirmez: Web'den kaydedilen cihaz `Pending` kalır ve Web onayı yine gerekir (Q-8);
+  `Pending` cihaz eşleşebilir, okutması `DEVICE_PENDING` olur. Eşleştirme replay'i (aynı anahtar + gövde) anahtarı **döndürmez**
+  (`deviceKeyNotice`, yukarıdaki kural); Web kayıt / yeniden etkinleştirme replay'i kodu döndürmez, gövde `pairingCodeNotice:
+  "BARCODE_PAIRING_CODE_NOT_REPLAYED"` taşır, yeni kod üretmez. **Süresi dolan ya da kaybolan kod:** v1'de ayrı "yeni kod" ucu yoktur (en dar
+  yol); yeni kod Web'de engelle (gerekçe) → yeniden etkinleştir ile alınır (bilinen sınır, FU-0182-PAIR-REISSUE).
+  **İzin ve kimlik (en dar yol):** eşleştirme ucu **çalışanın JWT'si + `[HasPermission(BarcodePermissions.DevicesCreate)]` + kod** ister; cihaz
+  başlığı istemez (anahtar henüz yoktur). Gerekçe: `devices.create` telefonun kendi kaydı için depo çalışanında zaten bulunan anahtardır
+  (§14 rol önerisi) ve eşleştirme kaydın cihaz tarafındaki yarısıdır; yetki kararı Web'de `devices.create` / `devices.activate` taşıyan
+  kullanıcının kodu üretmesiyle verilmiştir, kod bu kararın tek kullanımlık taşıyıcısıdır. `devices.activate` istenseydi çalışan 403 alırdı
+  (r3 F-2'nin sorunu); `scans.create` okutma yetkisidir, cihaz yaşam döngüsüne karışmamalıdır; anonim uç (yalnız kod) her eylemde
+  `[HasPermission]` kuralına (Çekirdek madde 3) aykırıdır; yeni anahtar (`devices.pair`) güvenlik kazancı olmadan manifest / Rol İzinleri satırı
+  açar. Kod kiracı + şirket kapsamında aranır: başka kiracının ya da şirketin kodu 404'tür. Atomik tüketim komutun işleminin içindedir
+(idempotency kaydı ve merkezi kayıt aynı işlemde — §8.1, §21).
+- **Şirket başına kayıt (r4, F-8):** cihaz kaydı, `InstallationId` tekilliği, anahtar ve Web onayı **şirket (`LegalEntityId`) kapsamındadır.**
+  Aynı telefon iki şirkette okutacaksa her şirkette **ayrı kayıt** (ayrı `Number`, ayrı `DeviceId`, ayrı anahtar) ve her şirkette **ayrı Web
+  onayı** gerekir; mobil uygulama cihaz kimliği + anahtarı (kiracı, şirket) başına saklar ve şirket değiştirdiğinde o şirketin kimliğini ve
+  anahtarını gönderir. Başka şirketin cihaz kimliği / anahtarıyla gelen okutma → 403 `BARCODE_DEVICE_KEY_INVALID` (o şirkette cihaz yok
+  sayılır; varlık açılmaz). Şirket seçiminin kendisi Q-13'e bağlıdır (`legal_entities` + `X-Legal-Entity-Id`). SCAN-BUNDLE taslağı (DL-1, AC-1)
+  bu kuralı ve QR eşleştirme akışını yazar; mobil sözleşme notu CT işidir (§18).
+- **Anahtar ve idempotency replay (r3, F-4 — anahtar saklanmaz ilkesi korunur; r4: anahtarı yalnız `Direct` kayıt ve eşleştirme üretir):**
+  `RegisterScanDeviceCommand` (`Direct`) ve `PairScanDeviceCommand` için idempotency kaydı cevabı **anahtarsız** saklar (Web kaydı ve
+  yeniden etkinleştirme için **kodsuz** — yukarıda). Aynı
   `Idempotency-Key` + aynı gövde → ilk cevabın durum kodu ve gövdesi döner, **yalnız `deviceKey` alanı yoktur** ve gövde
   `deviceKeyNotice: "BARCODE_DEVICE_KEY_NOT_REPLAYED"` taşır (mesajı 7 dilde: "Anahtar yalnız ilk cevapta verildi; kaybolduysa cihazı Web'den
   yeniden etkinleştirin"). Replay **yeni anahtar üretmez**, `KeyHash`'i değiştirmez, cihaz / merkezi kayıt yazmaz — ilk cevaptaki anahtar
   geçerli kalır. Farklı gövde → 400 `IDEMPOTENCY_KEY_REUSED` (§8.3). Kurtarma (ilk cevap hiç ulaşmadıysa): `Pending` cihaz için Web'de onayla →
-  engelle (gerekçe) → yeniden etkinleştir (yeni anahtar); `Blocked` → `Active` için yeniden etkinleştirmeyi yeni anahtarla tekrarla. Yeni
-  durum geçişi açılmaz. `Pending` → `Active` onayı anahtar üretmediği için replay'i ilk cevabın aynısıdır.
+  engelle (gerekçe) → yeniden etkinleştir → telefon QR'ı okutup eşleşir (yeni anahtar); `Blocked` → `Active` için yeniden etkinleştirme ve QR
+  eşleştirmesi tekrarlanır. Yeni durum geçişi açılmaz (r4: kurtarma yolu artık telefona ulaşır — çalışanın `devices.activate` izni gerekmez). `Pending` → `Active` onayı anahtar üretmediği için replay'i ilk cevabın aynısıdır.
 - **Durum makinesi:** `Pending` —(activate, `devices.activate`)→ `Active` —(deactivate + gerekçe, `devices.deactivate`)→ `Blocked`
-  —(activate + gerekçe)→ `Active` (yeni anahtar). Q-8 = A (karar 03): yeni kayıt **her zaman** `Pending` doğar, Web'den onaylanır; kendiliğinden
+  —(activate + gerekçe)→ `Active` (eski anahtar geçersiz, yeni anahtar QR eşleştirmesiyle — r4). Q-8 = A (karar 03): yeni kayıt **her zaman** `Pending` doğar, Web'den onaylanır; kendiliğinden
   etkin kayıt yoktur. Geçersiz geçiş 409 `BARCODE_INVALID_STATE`.
 - **Okutma kapısı:** başlıktaki cihaz yoksa ya da anahtar özeti uyuşmazsa → **403 `BARCODE_DEVICE_KEY_INVALID`, hiçbir şey yazılmaz.** Cihaz
   geçerli ama `Pending` / `Blocked` ise okutma **olay olarak yazılır**, `Outcome = Rejected`, `ReasonCode = DEVICE_PENDING` / `DEVICE_BLOCKED`
@@ -481,7 +572,8 @@ boş (AC-41).
   bu alanlar **`Version`'ı artırmaz** (Web'deki düzenleme If-Match'i nabızla bozulmasın). Nabız merkezi kayıt doğurmaz (§21, İ2).
   **r3 (F-10):** nabız `If-Match` **istemez** (mobil sürüm bilmez; gelirse yok sayılır) — §12'deki If-Match kuralının adlı muafiyetidir. Nabız
   yazımı tek belgelik atomik `findOneAndUpdate` (`$set` yalnız nabız alanları; filtre kiracı + şirket + `Id`; `Version` dokunulmaz) ve işlem
-  açmaz; eşzamanlı Web düzenlemesi (`Version` koşullu yazım) nabız alanlarına dokunmaz, iki yazım birbirini ezmez.
+  açmaz; eşzamanlı Web düzenlemesi (`Version` koşullu yazım) nabız alanlarına dokunmaz, iki yazım birbirini ezmez. r4 (F-4): nabız
+  idempotency kaydı yazmaz ve `Idempotency-Key` istemez (§8.1 adlı muafiyeti; tekrar aynı `$set`'tir).
 - **Sağlık (okuma anında hesaplanır, saklanmaz):** `Silent` = `LastSeenAt` + `SilentDeviceHours` < şimdi; `LowBattery` = son pil
   < `LowBatteryPercent` ve rapor `SilentDeviceHours` içinde. Eşikler ayar sayfasından değişir (S-11).
 
@@ -517,11 +609,21 @@ boş (AC-41).
 ### 8.4 Bağlam kuralları
 | Bağlam | Adımlar | Beklenen (kaynak) | Karşılaştırma ve sonuç |
 |---|---|---|---|
-| `Putaway` (MOD-0178 görevi) | `Product` → `Location` | görevin SKU + lotu, önerilen hedef bin | ürün / lot: §8.3; görevin lotundan farklı lot → **`Rejected`** `DIFFERENT_LOT`, **aşılamaz** (Q-3 = A: v1'de farklı lot aşımı yok; sahip teyidi karar 03 eki `7f584f546` — yerleştirmede de; S-11b); hedef bin ≠ okunan → `Warning` `WRONG_LOCATION`, **aşılabilir** — v1'in aşılabilir tek durumu (0178 sapma gerekçesi yolu var); kilitli / karantina rolündeki bin 0178 kuralıyla `Rejected` |
+| `Putaway` (MOD-0178 görevi) | `Product` → `Location` | görevin SKU + lotu, önerilen hedef bin | ürün / lot: §8.3; görevin lotundan farklı lot → **`Rejected`** `DIFFERENT_LOT`, **aşılamaz** (Q-3 = A: v1'de farklı lot aşımı yok; sahip teyidi karar 03 eki `7f584f546` — yerleştirmede de; S-11b); hedef bin ≠ okunan → `Warning` `WRONG_LOCATION`, **aşılabilir** — v1'in aşılabilir tek durumu (0178 sapma gerekçesi yolu var); kilitli / karantina rolündeki bin 0178 kuralıyla `Rejected`. **r4 (CT kararı, mobil ekip sorusu 2026-11-13) — önerisi olmayan görev:** görevde planlı / önerilen hedef bin yoksa (`ToLocationId` null — 0178'in sapma kuralı yalnız plan varken gerekçe ister, `ConfirmPutawayTaskHandler.cs:64`) okunan bin 0178'in hedef kurallarından geçiyorsa — aynı depo, etkin, stok tutabilen (bin / saklama yeri), kaynakla aynı olmayan, mal kabul / sevkiyat hazırlık (`Receiving` / `Staging`) rolünde olmayan (`PutawayChecks.TargetAsync`, `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/PutawayTasks/Services/PutawayChecks.cs:51-70`), saklama koşulu uyumlu (`StorageFitAsync`, `:78`) ve 0178'in kilit / karantina kuralına takılmayan — `Accepted`; geçmiyorsa 0178 kuralıyla **`Rejected`** (neden `WRONG_LOCATION`, o bin'in reddi **aşılamaz**, `overridable = false`). **`WRONG_LOCATION` `Warning` (aşılabilir) yalnız öneri varken doğar**; öneri varken okunan bin ≠ öneri ve okunan bin 0178 kurallarından geçmiyorsa sonuç aşılamaz `Rejected`'dır (aşım 0178'in reddedeceği bir hedefe izin veremez). Bin kuralı 0182'de yeniden yazılmaz; 0178'in denetimleri salt okuma olarak çağrılır (yazım yok) |
 | `Pick` (MOD-0178 görevi) | `Location` → `Product` (→ `Serial`) | tahsisin kaynak bin'i ve lotu | bin ≠ → **`Rejected`** `WRONG_LOCATION`; lot ≠ → **`Rejected`** `DIFFERENT_LOT` (r3, F-7: aşılamayan uyuşmazlık `Rejected`'dır — `Warning` yalnız aşılabilir ya da bilgi niteliğinde sonuçtadır). **İkisi de aşılamaz — geçerli PIN'le bile** (Q-3 = A, karar 03; S-7 toplama için daraltıldı): 0178 toplama onayı kaynak / lot almaz; cevap `overridable = false`, kullanıcıya "Sorumluya başvurun — tahsis değişmeli" (7 dil, §8.16); lot / bin değişimi FU-0178-LOTSWAP |
 | `Count` (MOD-0181 sayımı) | `Location` → `Product` | sayımın bin'leri ve satır anahtarları | bin sayım kapsamında değil → `Rejected` `WRONG_LOCATION` (aşılamaz); satırda olmayan SKU / lot → `Accepted` + `foundStock: true` (istemci 0181 "bulunan stok" yoluna gider); **kör sayımda beklenen miktar ve bin stoğu cevapta yok** |
 | `Pack` (MOD-0178 outbound) | `Product` (→ `Package`) | outbound'un toplanmış tahsisleri | outbound'da olmayan SKU / lot → `Rejected` `WRONG_PRODUCT` / `DIFFERENT_LOT` (aşılamaz); koli bağlaması v1'de yalnız kayıt (0178 koli uçları `scanRef` almaz) |
 | `Query` ("Bu nedir?") | tek okutma | — | çözülen nesnenin özeti; lot için SKT, geri çağırma uyarısı, depodaki statü kovaları (kullanılabilir / karantina / bloke) ve miktarlar; **açık kör sayımın bin'inde miktarlar gizlenir** (`quantitiesHidden: true`); **r3 (F-5):** lot / SKU / GTIN düzeyindeki depo toplamına açık kör sayım bin'inin bakiyesi katılıyorsa o toplamın miktarı bütünüyle gizlenir (`hiddenReason: BLIND_COUNT_OPEN`; bin dışlanıp kalan gösterilmez — §2.3 kural 4) |
+
+**Ürün kimliği olmayan GS1 dizgesi (r4, F-7):** `Product` adımında okunan GS1 dizgesinde (01) yoksa — tipik örnek (00) SSCC + (02) içerik GTIN'i +
+(37) adet + (10) lot taşıyan lojistik (koli / palet) etiketi; ayrıştırıcı (02)'yi okur ama `Gs1Code` taşımaz (§5.1 X-1) — sonuç her bağlamda
+**`Rejected` `PRODUCT_NOT_VERIFIABLE`**, `overridable = false`; mesaj "Bu bir koli / palet etiketi — ürünün kendi barkodunu okutun" (7 dil).
+**Asla `Accepted` değildir:** dizgedeki (10) lot beklenen lotla aynı olsa bile ürün doğrulanmış sayılmaz (lot numarası SKU'lar arasında tekil
+değildir). Aynı kod iki sonuçla gelebilir ve sonucu `Outcome` belirler: `Warning` `PRODUCT_NOT_VERIFIABLE` = (01) okundu ama SKU'nun ana veride
+GTIN'i yok (bilgi, §8.3); `Rejected` `PRODUCT_NOT_VERIFIABLE` = okutmada ürün kimliği yok. Aynı etiket `Pack` bağlamının `Package` adımında ve
+`Query`'de (00) ile koliyi / paleti çözer (§8.8, DL-5). DL-5'ten (X-1) önce: ham biçimde (37) bütün dizgeyi reddettiği için etiket
+`UNREADABLE`'dır (`Gs1CodeParser.cs:133-136`); köşeli biçimde bilinmeyen AI yok sayıldığından (`:92`) (10) okunur ve kural yine `Rejected`
+`PRODUCT_NOT_VERIFIABLE`'dır. Kural DL-1'in bağlam karşılaştırmasındadır (AC-58 vakası DL-5'te ham biçimle de koşar).
 
 `SERIAL_DUPLICATE`: aynı oturumda (ya da `Query` dışında aynı görev satırında) aynı seri ikinci kez → `Warning` (aşılamaz; ikinci okutma sayılmaz).
 Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa ya da başka şirketinse → **404** (olay yazılmaz).
@@ -544,13 +646,33 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
   artar; `PinMaxAttempts`'e ulaşınca `PinLockMinutes` kilit, 423 `BARCODE_PIN_LOCKED`; aşılamaz neden 422 `BARCODE_OVERRIDE_NOT_ALLOWED`
   (geçerli PIN'le bile); olay başına tek aşım (ikinci 409 `BARCODE_ALREADY_OVERRIDDEN`). Başarılı aşım `ScanOverride` + merkezi kayıt;
   olayın görünen sonucu "Aşıldı — {sorumlu adı}".
-- **PIN deneme sayacı (r3, F-10):** kilit denetimi (`LockedUntil` > şimdi → 423) PIN doğrulamasından önce. Yanlış PIN'de sayaç **aşım işleminin
+- **Aşım denetim sırası (r4, F-5 — bağlayıcı):** (1) izin `scans.create` (403) ve cihaz kimliği (403 `BARCODE_DEVICE_KEY_INVALID`);
+  (2) biçim (400); (3) **idempotency replay araması** (§8.1 — tekillikten önce: başarılı bir aşımın replay'i 409 değil ilk cevabı alır; PIN
+  değerlendirilmez, sayaç ve iz yazılmaz); (4) **olay sahipliği / varlığı** — olay yok, başka kiracı / şirket ya da başka kullanıcının → 404;
+  (5) **aşılamaz neden** → 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; (6) **öz-aşım** (sorumlu = okutan) → 422 `BARCODE_OVERRIDE_SELF`; (7) olay zaten
+  aşılmış → 409 `BARCODE_ALREADY_OVERRIDDEN`; (8) sorumlunun geçerli PIN'i yok / süresi dolmuş → 422 `BARCODE_PIN_NOT_SET`; (9) **kilit**
+  (`LockedUntil` > şimdi) → 423 `BARCODE_PIN_LOCKED`; (10) **PIN doğrulaması** → yanlışsa sayaç (aşağıda) ve 422 `BARCODE_PIN_INVALID` (sınıra
+  ulaşınca kilit kurulur, o deneme 423); doğruysa (11) `ScanOverride` + idempotency kaydı + merkezi kayıt tek işlemde (tekil index son
+  bekçidir — eşzamanlı ikinci aşım 409). **Gerekçe:** PIN gerektirmeyen her denetim PIN'den önce gelir; böylece PIN denemesi (ve sayaç
+  artışı) yalnız çağıranın kendi, aşılabilir, aşılmamış olayında mümkündür — başkasının olayı, aşılamaz neden ya da aşılmış olay üzerinden PIN
+  denenemez, sorumlu kilitlenemez.
+- **Yanlış PIN ve kilit izi (r4, F-5):** (10)'daki her yanlış PIN ve (9)'daki her kilitliyken deneme `ScanOverrideAttempt` olarak **yerel iz**
+  bırakır (`wms_barcode_override_attempts`, §4.3; `Result` = `PinInvalid` \| `LockSet` \| `Locked`; çağıran kullanıcı, cihaz, olay, sorumlu,
+  zaman; PIN ve türevi yok). İz, sayaç yazımı gibi **aşım işleminin dışında** tek belgelik ekleme ile yazılır (422 / 423 cevabına rağmen kalır);
+  yazılamazsa cevap 503 `BARCODE_INVENTORY_UNAVAILABLE` olur (iz bırakmadan deneme yok). **Merkezi kayıt doğurmaz:** başarısız komut BL-501'de
+  0 kayıttır (§8.12) ve aşım denemesi komut değildir; kilit olayının merkezi denetime taşınması Q-16 ile birlikte CT kararıdır
+  (FU-0182-PIN-AUDIT). **Görünürlük:** `/Warehouse/ScanEvents` satır ayrıntısında olayın aşım denemeleri (zaman, deneyen, sorumlu, sonuç);
+  `/Warehouse/ScanDevices` listesinde son `SilentDeviceHours` içinde kilit kurulmuşsa "PIN kilidi" rozeti (ikon + metin) ve cihaz ayrıntısında
+  son denemeler — veri mevcut `GET /barcode/scan-events/{scanId}` ve `GET /barcode/devices[/{deviceId}]` cevaplarına eklenir (yeni uç yok;
+  X-12 sayısı değişmez). Görünürlük `scan-events.read` / `devices.read` ile; sorumlunun kendi `/Warehouse/SupervisorPin` sayfasında son
+  kilit zamanı gösterilir.
+- **PIN deneme sayacı (r3, F-10):** kilit denetimi (`LockedUntil` > şimdi → 423) PIN doğrulamasından önce (r4: tam sıra yukarıda). Yanlış PIN'de sayaç **aşım işleminin
   dışında**, tek belgelik atomik yazımla artar: `findOneAndUpdate` (filtre kiracı + şirket + `UserId`, `$inc: { FailedAttempts: 1 }`, yeni değer
   döner); dönen değer ≥ `PinMaxAttempts` ise aynı belgeye koşullu ikinci atomik yazım (`FailedAttempts >= PinMaxAttempts` filtresiyle
   `LockedUntil = şimdi + PinLockMinutes`, `FailedAttempts = 0`). Eşzamanlı N yanlış deneme sayacı tam N artırır (oku-yaz yok, kayıp artış yok);
   aşım komutu 422 ile başarısız olsa da sayaç kalır (işlem geri alınması sayacı geri almaz); doğru PIN sayacı atomik sıfırlar (`$set:
   { FailedAttempts: 0 }`). Bu yazımlar `Version`'ı artırmaz, `If-Match` istemez (§12 muafiyeti) ve merkezi kayıt doğurmaz (başarısız komut 0;
-  sayaç komut değildir).
+  sayaç komut değildir). Sayaç ve aşım denemesi izi işlem açmaz — X-6'nın işlem çağrı yeri sayısına girmez (r4).
 - **PIN (Q-4 = A, karar 03 — 90 gün geçerli, 3 yanlışta 5 dk kilit; §4.4 varsayılanları):** kullanıcı kendi PIN'ini Web'de `/Warehouse/SupervisorPin` sayfasından belirler; ucu çağırmak için JWT'sinde
   `warehouse.barcode.scan-overrides.approve` olmalıdır. Yetki PIN belirlenirken ölçülür; sonradan geri alınan yetki PIN süresi
   (`PinValidityDays`) dolana kadar geçerli kalır — **bilinen sınır**: canlı yetki denetimi AuthService'ten başka kullanıcının izinlerini okumayı
@@ -565,16 +687,26 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 ### 8.7 WMS işlemlerine bağlama
 - **Bugün:** 0178 yerleştirme / toplama onayı ve 0181 sayım girişi opak `scanRef` (≤ 200) alır, doğrulamaz (MOD-0178 `:360`, MOD-0181 `:469`,
   AC-46). MOD-0182 bu kapıyı doldurur: `scanRef` = `scan-session:{SessionId}`.
-- **DL-3 (XMC X-2, X-3):** depo `ScanRequiredWarehouseIds`'te ise (Q-9 = A, karar 03: depo başına, varsayılan kapalı), 0178 / 0181 onay işlemi **kendi işleminin içinde**
+- **Bağ (r4, CT kararı):** okutma ile 0178 / 0181 onayı arasındaki bağ **`scanRef` = `scan-session:{SessionId}`** üzerinden kurulur; `SessionId`
+  okutmalarda istemcinin gönderdiği `sessionId`'dir (§4.2). Başka bağ (görev kimliği ile olay eşlemesi, olay listesi) yoktur.
+- **DL-3 (XMC X-2, X-3):** depo `ScanRequiredWarehouseIds`'te ise (Q-9 = A, karar 03: depo başına, varsayılan kapalı) **ya da** (r4) onay
+  `scan-session:` önekli bir `scanRef` taşıyorsa (depo ayarından bağımsız — aşılmış okutmanın onaya bağlanabilmesi için; bugün depoda bu önek
+  kullanılmıyor, 0178 testleri `"SCAN-0001"` gibi öneksiz değer gönderir — DL-3 ilk ölçümünde teyit), 0178 / 0181 onay işlemi **kendi işleminin içinde**
   `IScanSessionGate.ConsumeAsync(sessionId, target, user)` çağırır. Kapı şunları ister: oturumda **onaylayan kullanıcının** olayları aynı kiracı +
   şirket + bağlam (`refId`, `lineRef`) — başka kullanıcının olayı (§8.3 sıra 4'ün dar yarış artığı) ne doğrular ne geçersiz kılar, sayılmaz
   (r3, F-11); onaylayanın oturumda olayı yoksa 422 `BARCODE_SESSION_INVALID`; gerekli adımların her biri için son olay `Accepted` ya da aşılmış (`Putaway`: `Product` + `Location`; `Pick`:
   `Location` + `Product`; `Count`: `Location` + `Product`); son olay `ScanSessionMaxMinutes` içinde; oturum harcanmamış. Uygunsa
   `ScanSessionBinding` aynı işlemde yazılır (tekil `SessionId` — eşzamanlı iki onaydan biri kazanır). Uymazsa 422 `BARCODE_SESSION_REQUIRED` /
   `BARCODE_SESSION_INVALID` / `BARCODE_SESSION_CONSUMED`; onay yazılmaz.
-- Putaway'de `WRONG_LOCATION` aşıldıysa 0178 onayı okunan bin'i hedef ve sapma gerekçesini "Sorumlu onayı" olarak alır (0178'in mevcut
-  `deviationReason` alanı; değer biçimi DL-3 ölçümü).
-- Depo listede değilse 0178 / 0181 davranışı **bugünkü gibidir** (opak `scanRef`); 0178 / 0181 testleri değişmez (AC-41).
+- **Putaway'de aşılmış `WRONG_LOCATION` → sapma gerekçesini sunucu yazar (r4, CT kararı):** oturumun `Location` adımındaki son olay aşılmış
+  `WRONG_LOCATION` ise ve onayın `toLocationId`'si o olayda okunan bin ise, 0178 onay işleyicisi kapıdan dönen aşım bilgisiyle 0178'in mevcut
+  `deviationReason` alanını **sunucu tarafında** doldurur: "Sorumlu onayı — {sorumlu adı}, {ApprovedAt, UTC}" (onaylayan isteğin dilinde,
+  `Accept-Language`, 7 dil; 0178'in 10..1000 kuralını karşılar). **Kullanıcıdan ayrıca gerekçe istenmez** — mobil gerekçe alanı göstermez;
+  istemci `deviationReason` gönderirse yok sayılır ve sunucu metni yazılır. 0178'in "plan ≠ hedef ise gerekçe" denetimi
+  (`ConfirmPutawayTaskHandler.cs:64`) kapı çözümlemesinden sonra çalışır (X-2'nin parçası). Aşım yoksa ve hedef plandan farklıysa 0178'in
+  bugünkü kuralı (kullanıcı gerekçesi, yoksa 400 `REASON_REQUIRED`) aynen geçerlidir.
+- Depo listede değilse **ve** `scanRef` `scan-session:` önekli değilse 0178 / 0181 davranışı **bugünkü gibidir** (opak `scanRef`); 0178 / 0181
+  testleri değişmez (AC-41).
 - Seri kontrollü SKU'da kısmi yerleştirme (FU-0178-SERIAL-01) bu pakette yoktur; MOD-0178 paketinin FU'su olarak kalır.
 
 ### 8.8 GTIN çözümleme ve SSCC
@@ -596,7 +728,7 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 |---|---|---|---|---|
 | `Location` (raf) | Code 128 — bin kodu (0178'in tam kod eşleşmesiyle aynı dizge) | bin kodu, depo / bölge yolu, rol | LOCATION bin'leri (tek tek ya da bölge altındaki hepsi, ≤ 500) | DL-4 |
 | `LotCase` (lot / koli) | GS1 DataMatrix + GS1-128: (01) GTIN + (17) SKT + (10) lot | ürün adı, SKU kodu, GTIN, lot, SKT | `{skuId, lotId}` + ambalaj düzeyi (GTIN FU07'den) | DL-5 |
-| `Sscc` (koli / palet) | GS1-128: (00) SSCC | SSCC, gönderen şirket, koli no (PKG), outbound no (OUT), alıcı **şehri + ilçesi**, posta kodu yalnız sevkiyat kopyasında varsa (Q-11 — r3 güncellemesi: MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; posta kodu CRM'den boş gelebilir — Beste 2026-11-13: CRM account'un ana adresine ve ek teslimat adreslerine posta kodu alanı eklenecek, eklenene kadar boş gelir, biçim değişmez; r2'nin "şehir ve posta kodu" yazımı bunun yerine geçer). Kaynak: MOD-0178 outbound `ShipTo` kopyası — `City`, `District` (MOD-0178-FU01'in yeni alanı; FU01 teslim edilmeden ya da elle yazılmış adreste boşsa ilçe satırı basılmaz, yer tutucu yok), `PostalCode` (sevkiyat kopyasında doluysa basılır, boşsa basılmaz; CRM'den dolu gelmeye başladığında kural değişmez). Kişi / müşteri adı (`ShipTo.Name`) ve açık adres (`Line1`, `Line2`) izinli kümede **yok** | 0178 kolisi ya da serbest palet adedi | DL-5 |
+| `Sscc` (koli / palet) | GS1-128: (00) SSCC | SSCC, gönderen şirket, koli no (PKG), outbound no (OUT), alıcı **şehri + ilçesi**, posta kodu yalnız sevkiyat kopyasında varsa (Q-11 — r3 güncellemesi: MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; **r4 (F-6) hizalaması — aynı kaydın "Q-10 düzeltmesi" eki, `cb612efc9`:** CRM cevabı ilk günden adres listesidir (`addresses[]` + `defaultAddressId`, ilk sürümde `addressId = "primary"`); posta kodu biçimi ilk günden vardır — ek teslimat adreslerinde dolu gelir, account'un ana adresine alanı **CRM ekliyor** (tarih CRM'de) ve eklenene kadar ana adreste **boş gelir**; sözleşme biçimi değişmez; WMS `customerRef` + `customerAddressId` + adres kopyası tutar; elle girişte posta kodu isteğe bağlıdır; r2'nin "şehir ve posta kodu" yazımı bunun yerine geçer). Kaynak: MOD-0178 outbound `ShipTo` kopyası — `City`, `District` (MOD-0178-FU01 DL-2'nin yeni alanı, FU01 paketi `:171`), `PostalCode` (sevkiyat kopyasında doluysa basılır, boşsa basılmaz; CRM'den dolu gelmeye başladığında kural değişmez). **İlçe kaynağının zamanlaması (r4, F-6):** DL-5 FU01'i **beklemez**. DL-5 başladığında FU01 DL-2 `main`'de değilse 0182 `District`'e kod düzeyinde başvurmaz ve ilçe satırı basılmaz (yer tutucu yok); ilçe okuması FU01 DL-2 `main`'e geldikten sonraki **ilk 0182 dilimine** (DL-5 sürüyorsa DL-5, değilse DL-6 ya da DL-7; hiçbiri kalmadıysa FU-0182-DISTRICT) eklenir ve AC-56'nın ilçe vakası (S-56c) o dilimin kabulünde koşar. FU01 geldikten sonra da elle yazılmış adreste ya da CRM'de ilçesiz adreste `District` boş olabilir — boşsa basılmaz. Kişi / müşteri adı (`ShipTo.Name`) ve açık adres (`Line1`, `Line2`) izinli kümede **yok** | 0178 kolisi ya da serbest palet adedi | DL-5 |
 
 - **Önizleme (E-1):** `POST /barcode/label-previews` seçilen şablon + kaynakla ilk etiketin PNG görüntüsünü ve alan listesini döner; **hiçbir
   şey yazmaz** (iş, SSCC sayacı, merkezi kayıt yok). SSCC önizlemesi örnek "000000000000000000" değil, `(00)` alanını "basımda atanır" diye
@@ -637,13 +769,17 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 - Merkezi kayıt yalnız **başarılı ve yazan** komutta 1; replay ve başarısız 0. Değerlerin yeri 0182'nin kendi kayıtlarıdır (okutma olayı,
   aşım, cihaz alanları, iş).
 - **Nabız ve işaret (r3, F-6 ölçümü):** `CentralAuditDeclarationTests.cs:54` her `IRequest` yazma komutunun `ICentralAuditDeclaration` taşımasını
-  ister; bu yüzden `RecordDeviceHeartbeatCommand` da işaret taşır ve 16'ya dahildir. Kayıt doğurmaması (İ2) işaretten değil yazımın biçiminden
-  gelir: nabız işlem açmaz, olayı enlist etmez — `RequireEnlistment` altında enlist edilmeyen komut kayıt bırakmaz
-  (`services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit.Abstractions/ICentralAuditDeclaration.cs:32-36` yorumu; davranış DL-1'in
-  ilk ölçümünde AC-20 / AC-23 ile doğrulanır). `ICentralAuditOutsideTransaction` **taşımaz** (o işaret kaydı işlem dışında yazdırır).
+  ister; bu yüzden `RecordDeviceHeartbeatCommand` da işaret taşır ve 17'ye dahildir (r4). Kayıt doğurmaması (İ2) işaretten değil yazımın biçiminden
+  gelir: nabız işlem açmaz, olayı enlist etmez — `RequireEnlistment` altında başarılı ama hiçbir işlemi enlist etmemiş komut kayıt bırakmaz.
+  **Doğrudan atıf (r4, F-9):** `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditRecorder.cs:160-162`
+  (`if (_requireEnlistment && !pending.OutsideTransaction)` → "a success that enlisted nothing wrote nothing … no central record") ve seçeneğin
+  tanımı `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit/CentralAuditOptions.cs:39-46` (`RequireEnlistment`); r3'ün
+  `ICentralAuditDeclaration.cs:32-36` atfı dolaylıdır. Davranış DL-1'in ilk ölçümünde AC-20 / AC-23 ile doğrulanır. `ICentralAuditOutsideTransaction` **taşımaz** (o işaret kaydı işlem dışında yazdırır).
 - **Hacim notu (Q-16, CT):** `RecordScanCommand` her okutmada 1 merkezi kayıt doğurur (yol b). Depo başına günde binlerce okutma beklenir
   (ölçülmedi). Alternatif: `ScanEvent` defteri yol c eşdeğer izi (insert-only, kullanıcıya gösterilir) — CT kabulü ister. r1 varsayılanı **b**.
-- PIN, PIN özeti, cihaz anahtarı ve anahtar özeti **hiçbir kayda, loga ya da OTel'e** yazılmaz (AC-19, AC-2).
+- PIN, PIN özeti, cihaz anahtarı ve anahtar özeti, eşleştirme kodu ve özeti **hiçbir kayda, loga ya da OTel'e** yazılmaz (AC-19, AC-2, AC-3);
+  idempotency deposu ve parmak izi için §8.1 (r4, F-3).
+- **Yanlış PIN ve kilit (r4, F-5):** merkezi kayıt doğurmaz (başarısız komut 0); yerel iz `ScanOverrideAttempt` (§8.5) kullanıcıya gösterilir.
 
 ### 8.13 Kayıt kodu üretimi
 - `ScanDevice.Number` = `{ŞİRKET}-DVC-{000001}`; `LabelPrintJob.Number` = `{ŞİRKET}-LBL-{000001}` (RCS-001 biçimi). Ara üretici MOD-0178'in
@@ -655,10 +791,10 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 ### 8.14 Ekranlar ve Blueprint soft pages
 | Blueprint soft page | Ekran | Sayfa kodu | Veri |
 |---|---|---|---|
-| Scan Event Monitor | `/Warehouse/ScanEvents` — üst kartlar (bugünkü okutma, ret oranı %, en sık ret nedeni, elle giriş oranı %) + liste: zaman, kullanıcı, cihaz, depo, işlem türü, okunan değer (çözümlenmiş GTIN / lot / SKT / seri / SSCC), sonuç (+ neden, "Aşıldı — sorumlu", "elle" rozeti), bağlı görev (bağlantı); süzgeç depo (zorunlu), tarih (≤ 31 gün), kullanıcı, cihaz, sonuç, işlem türü; satır ayrıntısı yan panelde | `SCANEVENTS` (nav) | KPI'lar okuma anında |
-| Device Health | `/Warehouse/ScanDevices` — liste: ad / kod, tür, depo, son görülme, son kullanıcı, sürüm, pil, durum + sağlık rozetleri (Sessiz, Düşük pil); eylemler Kaydet, Onayla / Etkinleştir, Engelle (gerekçe), düzenle; **Sil yok** | `SCANDEVICES` (nav) | sağlık okuma anında |
+| Scan Event Monitor | `/Warehouse/ScanEvents` — üst kartlar (bugünkü okutma, ret oranı %, en sık ret nedeni, elle giriş oranı %) + liste: zaman, kullanıcı, cihaz, depo, işlem türü, okunan değer (çözümlenmiş GTIN / lot / SKT / seri / SSCC), sonuç (+ neden, "Aşıldı — sorumlu", "elle" rozeti), bağlı görev (bağlantı); süzgeç depo (zorunlu), tarih (≤ 31 gün), kullanıcı, cihaz, sonuç, işlem türü; satır ayrıntısı yan panelde (r4, F-5: ayrıntıda olayın aşım denemeleri — zaman, deneyen, sorumlu, sonuç: yanlış PIN / kilit kuruldu / kilitliyken deneme) | `SCANEVENTS` (nav) | KPI'lar okuma anında |
+| Device Health | `/Warehouse/ScanDevices` — liste: ad / kod, tür, depo, son görülme, son kullanıcı, sürüm, pil, durum + sağlık rozetleri (Sessiz, Düşük pil; r4, F-5: "PIN kilidi" — son `SilentDeviceHours` içinde bu cihazdan kilit kuruldu; ayrıntıda son aşım denemeleri); eylemler Kaydet, Onayla / Etkinleştir, Engelle (gerekçe), düzenle; **Sil yok**. **r4 (F-2):** Web kaydı ve yeniden etkinleştirme sonrası panelde anahtar **yoktur**; eşleştirme QR'ı + kopyalanabilir kod + kalan süre (10 dk) gösterilir, panel kapanınca kod bir daha gösterilmez; süresi dolarsa "Engelle → yeniden etkinleştir ile yeni kod" açıklaması | `SCANDEVICES` (nav) | sağlık okuma anında |
 | (ayarlar) | `/Warehouse/BarcodeSettings` — §4.4 alanları; DataTable değil | `BARCODESETTINGS` (nav) | |
-| (sorumlu PIN'i) | `/Warehouse/SupervisorPin` — kendi PIN'ini belirle / değiştir; son kullanma tarihi | `SUPERVISORPIN` (nav) | |
+| (sorumlu PIN'i) | `/Warehouse/SupervisorPin` — kendi PIN'ini belirle / değiştir; son kullanma tarihi; son kilit zamanı (r4, F-5) | `SUPERVISORPIN` (nav) | |
 | (etiket şablonları) | `/Warehouse/LabelTemplates` — liste + form + önizleme | `LABELTEMPLATES` (nav) | DL-4 |
 | (etiket basımı) | `/Warehouse/LabelPrints` — basım işleri listesi; "Yeni basım" formu (tür, şablon, kaynak, adet, yeniden basım + gerekçe) + **önizleme** + PDF'i aç | `LABELPRINTS` (nav) | DL-4 |
 | Compliance Trace | `/Warehouse/ScanTrace` — lot / seri / SSCC ile ara, zaman çizelgesi, "Kanıt paketi indir" (PDF / CSV) | `SCANTRACE` (nav) | DL-7 |
@@ -672,14 +808,15 @@ tek açıklama — S-9). Masaüstü öncelikli, 375 px'te okunur, yatay sayfa ka
 |---|---|---|
 | 400 | `VALIDATION_FAILED`, `IDEMPOTENCY_KEY_REUSED` | biçim; aynı anahtar farklı gövde; gövdede `tenantId` / `legalEntityId` |
 | 403 | `BARCODE_DEVICE_KEY_INVALID`; izin yok | cihaz başlığı / anahtarı; `[HasPermission]` |
-| 404 | — | kayıt ya da bağlam yok / başka kiracı / şirket |
+| 404 | — | kayıt ya da bağlam yok / başka kiracı / şirket; r4: bilinmeyen, kullanılmış ya da başka kiracının / şirketin eşleştirme kodu (§8.2) |
 | 409 | `BARCODE_CONFLICT`, `BARCODE_INVALID_STATE`, `BARCODE_DEVICE_ALREADY_REGISTERED`, `BARCODE_ALREADY_OVERRIDDEN`, `LABEL_TEMPLATE_NAME_TAKEN` | eski `If-Match`; geçersiz geçiş; tekillik |
-| 422 | `BARCODE_OVERRIDE_NOT_ALLOWED`, `BARCODE_OVERRIDE_SELF`, `BARCODE_PIN_NOT_SET`, `BARCODE_PIN_INVALID`, `LABEL_SOURCE_INVALID`, `LABEL_REPRINT_REASON_REQUIRED`, `SSCC_PREFIX_NOT_SET`, `SSCC_CAPACITY_EXHAUSTED`, `BARCODE_TRACE_TOO_LARGE`, DL-3: `BARCODE_SESSION_REQUIRED`, `BARCODE_SESSION_INVALID`, `BARCODE_SESSION_CONSUMED`; DL-1 (r3, F-11): `BARCODE_SESSION_INVALID` okutmada da — başka kullanıcının oturumu | iş kuralı |
-| 423 | `BARCODE_PIN_LOCKED` | deneme sınırı |
+| 422 | `BARCODE_OVERRIDE_NOT_ALLOWED`, `BARCODE_OVERRIDE_SELF`, `BARCODE_PIN_NOT_SET`, `BARCODE_PIN_INVALID`, `LABEL_SOURCE_INVALID`, `LABEL_REPRINT_REASON_REQUIRED`, `SSCC_PREFIX_NOT_SET`, `SSCC_CAPACITY_EXHAUSTED`, `BARCODE_TRACE_TOO_LARGE`, DL-3: `BARCODE_SESSION_REQUIRED`, `BARCODE_SESSION_INVALID`, `BARCODE_SESSION_CONSUMED`; DL-1 (r3, F-11): `BARCODE_SESSION_INVALID` okutmada da — başka kullanıcının oturumu; DL-1 (r4, F-2): `BARCODE_PAIRING_EXPIRED` (süresi dolmuş eşleştirme kodu), `BARCODE_PAIRING_INVALID` (`InstallationId` uyuşmuyor ya da cihaz `Blocked`) | iş kuralı |
+| 423 | `BARCODE_PIN_LOCKED` | deneme sınırı; **r4 (CT kararı):** gövde `details.lockedUntil` (UTC, ISO-8601) taşır — istemci kalan süreyi buradan gösterir; deneme sayısı / kalan hak gövdede **yoktur** (422 `BARCODE_PIN_INVALID` gövdesinde de yok — PIN zorlamaya ipucu verilmez) |
 | 503 | `BARCODE_INVENTORY_UNAVAILABLE`, `BARCODE_GTIN_RESOLUTION_UNAVAILABLE` | bağımlılık erişilemez |
 
 Okutma **sonucu** kodları HTTP değildir (§8.3). Kullanıcı metni kodun 7 dildeki karşılığıdır; istemcide sabit metin yok. Gövde bildirimleri
-(HTTP hatası değil — r3): `deviceKeyNotice: BARCODE_DEVICE_KEY_NOT_REPLAYED` (§8.2, F-4), `hiddenReason: BLIND_COUNT_OPEN` (§2.3, F-5).
+(HTTP hatası değil — r3): `deviceKeyNotice: BARCODE_DEVICE_KEY_NOT_REPLAYED` (§8.2, F-4), `hiddenReason: BLIND_COUNT_OPEN` (§2.3, F-5); r4 (F-2):
+`pairingCodeNotice: BARCODE_PAIRING_CODE_NOT_REPLAYED` (§8.2). Okutma sonucu `PRODUCT_NOT_VERIFIABLE` hem `Warning` hem `Rejected` olabilir — §8.4 (r4, F-7).
 
 ### 8.16 Mobil sözleşme ve mobil ekip sınırı
 - Mobil ekipler sözleşmeyi SCAN-BUNDLE taslağından okur; paket onaylanınca CT **sözleşme notu** yazar (E-3). Mobil şimdilik mock veriyle
@@ -691,6 +828,12 @@ Okutma **sonucu** kodları HTTP değildir (§8.3). Kullanıcı metni kodun 7 dil
   platforma göre davranış değiştirmez; `Platform` yalnız kayıt bilgisidir.
 - Tam ekran geri bildirim (S-12: kabul 1 sn'de kendiliğinden, ret dokunuşla kapanır) ve ses / titreşim mobilin işidir; sunucu yalnız
   `outcome` + `reasonCode` + `overridable` verir. `overridable = false` iken mobil PIN düğmesi göstermez (S-7; toplamada hiç gösterilmez — Q-3 = A).
+- **SCAN-BUNDLE'da açıkça yazılacaklar (r4, CT kararı — mobil ekip soruları 2026-11-13):** (a) farklı lot sonucu `reasonCode = DIFFERENT_LOT`,
+  `outcome = Rejected`, `overridable = false` — her bağlamda; (b) önerisi olmayan yerleştirme görevinde okunan bin 0178 kurallarından geçerse
+  `Accepted`, geçmezse aşılamaz `Rejected` `WRONG_LOCATION`; aşılabilir `Warning` `WRONG_LOCATION` yalnız öneri varken (§8.4); (c) yerleştirmede
+  PIN aşımından sonra 0178 onayında `deviationReason`'ı **sunucu** "Sorumlu onayı" olarak yazar, istemci ayrıca gerekçe istemez (§8.7);
+  (d) okutma ile onay arasındaki bağ `scanRef = scan-session:{sessionId}`'dir (§8.7); (e) 423 `BARCODE_PIN_LOCKED` gövdesi
+  `details.lockedUntil` taşır, kalan hak sayısı hiçbir cevapta yoktur (§8.15).
 
 ### 8.17 AI Assist
 Blueprint AI Tier `Assist` (Summarize; Extract; Recommend; Route). v1'de **yok** (FU-0182-AI); AI kapıları (Prompt Registry, HITL, …) yok.
@@ -743,7 +886,7 @@ Golden Slim seti (`frontend/Diten.Web/Views/DevEnablement/GoldenReferenceSlim/`)
 | Klasör | Dosyalar |
 |---|---|
 | `Views/Warehouse/ScanEvents/` | `Index.cshtml` (KPI kartları + liste), `_Filter.cshtml` (depo zorunlu, tarih ≤ 31 gün, kullanıcı, cihaz, sonuç, işlem türü), `_DataTable.cshtml` (`data-dt-standard="v2"`, `data-dt-data-mode="server"`, skeleton), `_IndexL10n.cshtml`, `_DetailsQuickView.cshtml`, `ScanEventsIndex.cs` — `_CreateEditOffcanvas.cshtml` **yok** (G-0182-01) |
-| `Views/Warehouse/ScanDevices/` | `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `_CreateEditOffcanvas.cshtml` (6 alan: ad, tür, platform, depo, kurulum kimliği — yalnız Web kaydında, not), `_DetailsQuickView.cshtml` (sağlık + engelleme geçmişi), `ScanDevicesIndex.cs` |
+| `Views/Warehouse/ScanDevices/` | `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `_CreateEditOffcanvas.cshtml` (6 alan: ad, tür, platform, depo, kurulum kimliği — yalnız Web kaydında, not; r4, F-2: kayıt ve yeniden etkinleştirme sonrası aynı panelde eşleştirme QR'ı + kod + kalan süre, anahtar yok), `_DetailsQuickView.cshtml` (sağlık + engelleme geçmişi + r4 F-5 son aşım denemeleri), `ScanDevicesIndex.cs` |
 | `Views/Warehouse/BarcodeSettings/` | `Index.cshtml` (form; DataTable değil), `_IndexL10n.cshtml`, `BarcodeSettingsIndex.cs` |
 | `Views/Warehouse/SupervisorPin/` | `Index.cshtml` (PIN formu; DataTable değil), `_IndexL10n.cshtml`, `SupervisorPinIndex.cs` |
 | `Views/Warehouse/LabelTemplates/` | `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml`, `_IndexL10n.cshtml`, `_CreateEditOffcanvas.cshtml` (6 alan + canlı önizleme), `_DetailsQuickView.cshtml`, `LabelTemplatesIndex.cs` |
@@ -776,7 +919,9 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 | Okutma `warehouseId` | Evet | uuid; bağlamın deposuyla aynı | — | — |
 | `manual.reasonCode` / `manual.note` | `source = Manual` ise evet / `Other` ise evet | §8.5 listesi / 10..500 | — | — |
 | `capturedAt` | Hayır | ISO-8601 UTC | — | — |
-| Aşım `supervisorUserId` / `pin` | Evet | uuid / 4..8 hane | — | PIN kaydı |
+| Aşım `supervisorUserId` / `pin` | Evet | uuid / 4..8 hane; **`pin` parmak izine katılmaz** (r4, F-3 — §8.1) | — | PIN kaydı |
+| Cihaz kaydı `keyDelivery` (r4, F-2) | Hayır | `Direct` (varsayılan) \| `Pairing`; Web proxy her zaman `Pairing` | — | — |
+| Eşleştirme `pairingCode` / `installationId` (r4, F-2) | Evet / Evet | 43 karakter base64url (32 bayt) / §4.1 `InstallationId` kuralı | `PairingCodeHash` tekil kısmi | kod özeti araması (kiracı + şirket) |
 | PIN belirleme | Evet | 4..8 hane; aynı rakamın tekrarı (`1111`) ve ardışık dizi (`1234`) reddedilir | tekil (kullanıcı) | — |
 | Ayar alanları | Evet | §4.4 aralıkları; `ScanRequiredWarehouseIds` şirketin depoları; `SsccCompanyPrefix` FU07 etkin listesinde | tekil (şirket) | LOCATION / FU07 okuması |
 | Şablon `Name` / `LabelType` / `Size` / `HumanReadableFields` | Evet | 2..80 / enum / sabit liste / türün izinli kümesinden 1..8, tekrarsız | tekil (şirket, ad) | — |
@@ -786,7 +931,7 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 | Yeniden basım `reprintOfJobId` / gerekçe / not | `isReprint` ise evet / evet / `Other` ise evet | uuid aynı şirket / §8.9 listesi / 10..500 | — | iş okuması |
 | RFID `epcs` | Evet | 1..5.000, 24 hane hex (96 bit), tekrarsız | — | — |
 | İz sorgusu | Evet | tam olarak bir anahtar: `lot` + `skuId` \| `serial` + `skuId` \| `sscc` (18 hane) | — | — |
-| Idempotency-Key | Evet (her yazma) | 8–100 karakter (MOD-0178 emsali) | tekil kısmi index | anahtar araması |
+| Idempotency-Key | Evet (her yazma) — **adlı muafiyet (r4, F-4):** cihaz nabzı (tekrarlanabilir `$set`, kayıt yazmaz) | 8–100 karakter (MOD-0178 emsali) | tekil index (`ScanEvent` ya da `wms_barcode_command_requests`, §4.10) | anahtar araması If-Match / durum / tekillikten önce (§8.1) |
 | If-Match | Evet (değişebilir kayıtta yaratma dışı yazma) — **adlı muafiyetler (r3, F-10):** cihaz nabzı (§8.2) ve aşım denemesinin `SupervisorPin.FailedAttempts` / `LockedUntil` yazımları (§8.5); ikisi de `Version`'ı artırmaz, tek belgelik atomik `findOneAndUpdate`'tir | `W/"<version>"` | — | — |
 | TenantId / LegalEntityId gövdede | Hayır | gelirse 400 | — | — |
 
@@ -794,6 +939,15 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 - **Duplicate (aynı Idempotency-Key, aynı gövde)** — Expected: ilk cevap aynen; yeni olay / kayıt / merkezi kayıt / numara / SSCC yok.
 - **Cihaz kaydı / yeniden etkinleştirme replay'i (r3, F-4)** — Expected: ilk durum kodu ve gövde, `deviceKey` yok, `deviceKeyNotice =
   BARCODE_DEVICE_KEY_NOT_REPLAYED`; yeni anahtar üretilmez, `KeyHash` değişmez, ilk anahtar geçerli.
+- **Eşleştirme kodu ikinci kez / eşzamanlı iki kez (r4, F-2)** — Expected: ilk kullanım 200 + anahtar; ikinci 404, yeni anahtar yok, `KeyHash`
+  ilk eşleştirmedeki; eşzamanlı ikisinden tam biri 200.
+- **Süresi dolmuş eşleştirme kodu (r4, F-2)** — Expected: 422 `BARCODE_PAIRING_EXPIRED`; anahtar üretilmez; `KeyHash` null kalır.
+- **Başka şirketin / kiracının eşleştirme kodu; başka `InstallationId` (r4, F-2)** — Expected: 404 / 422 `BARCODE_PAIRING_INVALID`; yazım yok.
+- **Başka şirkette kayıtlı cihazın kimliği ve anahtarıyla okutma (r4, F-8)** — Expected: 403 `BARCODE_DEVICE_KEY_INVALID`; olay yok.
+- **Başarılı aşımın replay'i (r4, F-4)** — Expected: ilk cevap (201) aynen; 409 `BARCODE_ALREADY_OVERRIDDEN` değil; PIN değerlendirilmez,
+  sayaç ve deneme izi değişmez.
+- **Aynı anahtar, yalnız PIN'i farklı aşım / PIN belirleme gövdesi (r4, F-3)** — Expected: replay (ilk cevap); 400 değil; idempotency
+  deposunda PIN ya da türevi yok.
 - **Cihaz engellendikten sonra eski okutmanın replay'i (r3, F-11)** — Expected: ilk cevap aynen; yeni `DEVICE_BLOCKED` olayı yok.
 - **Başka kullanıcının `SessionId`'siyle okutma (r3, F-11)** — Expected: 422 `BARCODE_SESSION_INVALID`; olay yazılmaz.
 - **Başkasının okutmasına aşım (r3, F-3)** — Expected: 404; aşım ve sayaç yazımı yok.
@@ -810,7 +964,11 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 - **Toplamada yanlış raf ya da farklı lot + geçerli PIN'le aşım (Q-3 = A)** — Expected: 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; aşım yazılmaz; olay
   `overridable = false` kalır.
 - **Sorumlu kendi okutmasını aşar** — Expected: 422 `BARCODE_OVERRIDE_SELF`.
-- **Yanlış PIN art arda** — Expected: `PinMaxAttempts`'e kadar 422 `BARCODE_PIN_INVALID`, sonra 423 `BARCODE_PIN_LOCKED` `PinLockMinutes` boyunca.
+- **Yanlış PIN art arda** — Expected: `PinMaxAttempts`'e kadar 422 `BARCODE_PIN_INVALID`, sonra 423 `BARCODE_PIN_LOCKED` `PinLockMinutes` boyunca;
+  423 gövdesi `details.lockedUntil` (UTC) taşır, deneme sayısı / kalan hak hiçbir gövdede yok (r4, CT kararı).
+  r4 (F-5): her yanlış deneme ve kilitliyken deneme `ScanOverrideAttempt` yerel izi bırakır; iz `ScanEvents` ayrıntısında ve Device Health'te görünür.
+- **Aşılamaz nedenli, başkasının ya da aşılmış olayda yanlış PIN (r4, F-5)** — Expected: 422 `BARCODE_OVERRIDE_NOT_ALLOWED` / 404 / 409; PIN
+  değerlendirilmez, sayaç artmaz, sorumlu kilitlenmez.
 - **Kör sayım bin'inde "Bu nedir?" / sayım okutması / RFID** — Expected: miktar ve beklenen yok (`quantitiesHidden` / `expectedHidden`).
 - **Lot / SKU / GTIN toplamına ya da iz adımına açık kör sayım bin'i katılıyor (r3, F-5)** — Expected: toplamın miktarı bütünüyle gizli; iz
   adımı görünür, miktarı `null` + `quantityHidden`; kanıt paketinde de.
@@ -843,7 +1001,7 @@ kapısı) **paket onayından önce** kapanır ve hâlâ açıktır (§6). Depoda
 | `warehouse.barcode.scan-events.read` | 1 | DL-1 | okutma olayları listesi, ayrıntı, KPI |
 | `warehouse.barcode.scan-overrides.approve` | 2 | DL-1 | sorumlu olma yetkisi: kendi PIN'ini belirleme (`POST /barcode/supervisor-pin`, `SUPERVISORPIN` sayfası); PIN'i aşımda kabul edilir. Aşım ucunu **korumaz** (r3, F-3) |
 | `warehouse.barcode.devices.read` | 1 | DL-1 | cihaz listesi, sağlık |
-| `warehouse.barcode.devices.create` | 1 | DL-1 | cihaz kaydı (mobil ilk açılış — depo çalışanında olmalı) |
+| `warehouse.barcode.devices.create` | 1 | DL-1 | cihaz kaydı (mobil ilk açılış — depo çalışanında olmalı); **r4 (F-2): eşleştirme ucu** `POST /barcode/devices/pair` (çalışanın JWT'si + tek kullanımlık kod; gerekçe §8.2) |
 | `warehouse.barcode.devices.update` | 1 | DL-1 | ad / depo / not düzenle |
 | `warehouse.barcode.devices.activate` | 2 | DL-1 | onayla (Pending → Active), yeniden etkinleştir (yeni anahtar) |
 | `warehouse.barcode.devices.deactivate` | 2 | DL-1 | engelle (gerekçe) |
@@ -876,7 +1034,8 @@ Manifest yalnız `warehouse.barcode.*` bildirir; 0178'in `warehouse.*` anahtarla
 - **0178 Gateway testinin uç sayısı (r3, F-1 — r2'nin "değişmez" yazımı yanlıştı):** `Mod0178WarehouseRouteTests` bütün `api/warehouse`
   controller'larını tarar ve `Assert.Equal(<n>, endpoints.Count)` ile sayıyı sabitler; 0182 uçları ilk dilimde (DL-1) bu satırı kırmızı yapar.
   Uç ekleyen her dilim (DL-1, DL-4, DL-6, DL-7) satırı dilim başında ölçülen sayı + kendi uçlarıyla, uçlarıyla aynı commit'te günceller
-  (integration-agent) — X-12, **sahip onayı bekliyor (XMC-001)**; AC-65 0178 sayı vakası, S-65c. `ocelot.json` yine değişmez.
+  (integration-agent) — X-12, **sahip onaylı (XMC-001, `ad1100158`, her artış dahil — r4)**; AC-65 0178 sayı vakası, S-65c. `ocelot.json` yine
+  değişmez. r4 (F-2): `POST /barcode/devices/pair` aynı `/api/warehouse/{everything}` rotasına eşleşir; DL-1 sayısı 16.
 - İletilen başlıklar: `Authorization`, `X-Legal-Entity-Id`, `X-Correlation-Id`, `Idempotency-Key`, `If-Match`, `Accept-Language`,
   `X-Scan-Device-Id`, `X-Scan-Device-Key`. Dev dilimi `ocelot.json`'a yazmaz.
 
@@ -893,19 +1052,33 @@ almayı yazar.
 
 - [ ] AC-1 (zorunlu) — `docs/analysis/contracts/drafts/scan-bundle-v1-proposal.md` yazıldı: §3'teki DL-1 uçları (operationId, istek / cevap şeması,
   §8.3 okutma sonucu kodları, §8.15 hata kodları, başlıklar), sürüm `1.0.0-draft`; sözleşme testi controller cevaplarını taslağa karşı kapalı
-  şemayla doğrular. S-1: bir cevaptan zorunlu alanı kaldır → sözleşme testi kırmızı.
-- [ ] AC-2 (zorunlu) — `POST /barcode/devices` 201; `Status = Pending` (Q-8 = A, karar 03 — kendiliğinden `Active` doğan kayıt yok), `Number` `{ŞİRKET}-DVC-` + 6 hane; cevap cihaz anahtarını **bir
-  kez** taşır; `GET` uçları, liste, merkezi kayıt, olay verisi ve log anahtarı ya da özetini taşımaz; depoda yalnız SHA-256 özeti var. S-2a: GET
+  şemayla doğrular; r4: taslak QR eşleştirme akışını (`POST /barcode/devices/pair`, `keyDelivery`, `pairing`, `pairingCodeNotice`) ve şirket
+  başına cihaz kaydı / anahtar / Web onayı kuralını (§8.2, F-2, F-8) yazar. S-1: bir cevaptan zorunlu alanı kaldır → sözleşme testi kırmızı.
+- [ ] AC-2 (zorunlu) — `POST /barcode/devices` 201; `Status = Pending` (Q-8 = A, karar 03 — kendiliğinden `Active` doğan kayıt yok), `Number` `{ŞİRKET}-DVC-` + 6 hane; cevap (`keyDelivery = Direct`, mobil) cihaz anahtarını **bir
+  kez** taşır (r4: `Pairing` için AC-3); `GET` uçları, liste, merkezi kayıt, olay verisi ve log anahtarı ya da özetini taşımaz; depoda yalnız SHA-256 özeti var. S-2a: GET
   DTO'suna `KeyHash` ekle → kırmızı; S-2b: anahtarı düz metin sakla → kırmızı. **r3 (F-4) — replay vakası:** aynı `Idempotency-Key` + aynı
   gövdeyle ikinci `POST /barcode/devices` ve ikinci yeniden etkinleştirme → ilk durum kodu ve gövde, `deviceKey` **yok**, `deviceKeyNotice =
   BARCODE_DEVICE_KEY_NOT_REPLAYED`; idempotency deposundaki belge anahtarı ve özetini taşımaz (depo taraması). S-2c: idempotency kaydına ilk
   cevabı anahtarıyla yaz (replay anahtarı döndürsün) → replay vakası ve depo taraması kırmızı.
 - [ ] AC-3 (zorunlu) — Cihaz durum makinesi §8.2 tam: geçerli geçişler 200, geçersizler 409 `BARCODE_INVALID_STATE`; engelleme ve yeniden
-  etkinleştirme gerekçesiz 400; yeniden etkinleştirme yeni anahtar üretir, eski anahtar 403 alır; silme ucu yok. S-3: yeniden etkinleştirmede
-  anahtar yenilemeyi kaldır → eski anahtar vakası kırmızı.
+  etkinleştirme gerekçesiz 400; yeniden etkinleştirme eski anahtarı geçersiz kılar (eski anahtar 403) ve yeni anahtar yalnız QR eşleştirmesiyle
+  gelir; silme ucu yok. S-3: yeniden etkinleştirmede `KeyHash`'i geçersiz kılmayı kaldır → eski anahtar vakası kırmızı. **r4 (F-2) — QR ile
+  anahtar teslimi (sahip kararı `4168e7a90`):** Web kaydı (`keyDelivery = Pairing`) ve yeniden etkinleştirme cevabında `deviceKey` **yok**,
+  `pairing.code` + `pairing.qrPng` + `pairing.expiresAt` (= şimdi + 10 dk, sahte saatle) var; depoda yalnız `PairingCodeHash` (kodun kendisi hiçbir
+  koleksiyonda, logda ve merkezi kayıtta yok — depo taraması); yalnız `devices.create` taşıyan çalışanın JWT'siyle `POST /barcode/devices/pair`
+  (doğru kod + aynı `InstallationId`) → 200, anahtar bir kez; bu anahtarla okutma kabul edilir (cihaz `Active` ise); **aynı kod ikinci kez →
+  404**, yeni anahtar yok, `KeyHash` ilk eşleştirmedeki; eşzamanlı iki eşleştirmeden (görevli kanca) tam biri 200; sahte saatle 10 dk + 1 sn
+  sonra → 422 `BARCODE_PAIRING_EXPIRED`, anahtar üretilmez; başka şirketin / kiracının kodu 404; farklı `InstallationId` 422
+  `BARCODE_PAIRING_INVALID`; `devices.create` olmadan 403; eşleştirme replay'i anahtarsız (`deviceKeyNotice`); yeniden etkinleştirme replay'i
+  kodsuz (`pairingCodeNotice`), yeni kod üretmez. S-3b: tüketim filtresinden tek kullanım koşulunu (`PairingCodeHash` null'lama ya da
+  filtredeki özet eşleşmesi) kaldır → ikinci kullanım vakası (ve eşzamanlılık vakası) kırmızı; S-3c: `PairingExpiresAt > şimdi` koşulunu
+  kaldır → süresi dolmuş kod vakası kırmızı; S-3d: kodu düz metin sakla (ya da idempotency `ResponseBody`'sine kodlu DTO'yu yaz) → depo
+  taraması kırmızı.
 - [ ] AC-4 (zorunlu) — Kiracı / şirket izolasyonu: başka kiracıdan her uç (cihaz, okutma, aşım, olaylar, ayar, PIN) ve başka kiracının bağlamına
-  okutma 404; aynı kiracıda başka şirketten 404; listeler yalnız kendi şirketi. S-4a: `TenantId` yüklemini düşür → kırmızı; S-4b:
-  `LegalEntityId` yüklemini düşür → kırmızı.
+  okutma 404; aynı kiracıda başka şirketten 404; listeler yalnız kendi şirketi. **r4 (F-8):** aynı `InstallationId` iki şirkette iki ayrı
+  kayıt (ayrı `Number`, ayrı anahtar, her biri `Pending` ve ayrı onay); A şirketinin cihaz kimliği + anahtarıyla B şirketi bağlamında okutma →
+  403 `BARCODE_DEVICE_KEY_INVALID`, 0 olay. S-4a: `TenantId` yüklemini düşür → kırmızı; S-4b: `LegalEntityId` yüklemini düşür → kırmızı
+  (şirketler arası anahtar vakası dahil).
 - [ ] AC-5 (zorunlu) — Gövde ya da sorguda `tenantId` / `legalEntityId` → 400. S-5: denetimi kaldır → kırmızı.
 - [ ] AC-6 (zorunlu) — Her eylem `[HasPermission(BarcodePermissions.*)]`; manifest yalnız uygulanan `warehouse.barcode.*` anahtarlarını bildirir;
   0178'in manifestinde `warehouse.barcode.` önekli anahtar yok ve 0182 manifestinde `warehouse.barcode.` dışı anahtar yok; `AuthorizationGuardTests`
@@ -927,7 +1100,13 @@ almayı yazar.
   olayı bulunan `SessionId`'yle okutma → 422 `BARCODE_SESSION_INVALID`, olay yazılmaz; S-9c: oturum sahipliği denetimini kaldır → kırmızı.
   (F-11) okutma A `Accepted` yazılır, cihaz engellenir, A aynı anahtar + gövdeyle tekrarlanır → ilk cevap aynen, yeni olay (ve
   `DEVICE_BLOCKED` olayı) yok; S-9d: idempotency aramasını cihaz durumu değerlendirmesinden sonraya taşı → yeni `DEVICE_BLOCKED` olayı yazılır,
-  kırmızı.
+  kırmızı. **r4 (F-4) — komut idempotency deposu:** okutma dışındaki her yazma komutu (en az: cihaz kaydı, düzenleme, engelleme, eşleştirme,
+  aşım, PIN, ayar; DL-4 / DL-6 / DL-7'de şablon, basım, tarama, dışa aktarım) aynı anahtar + aynı gövdeyle ikinci kez → ilk durum kodu ve gövde,
+  ikinci yazım / merkezi kayıt / numara yok; kayıt `wms_barcode_command_requests`'te, komutun işleminde (başarısız komut sonrası aynı anahtarla
+  yeniden deneme yeniden çalışır); başarılı düzenlemenin replay'i eski `If-Match`'le 409 değil ilk cevap; **başarılı aşımın replay'i 409
+  `BARCODE_ALREADY_OVERRIDDEN` değil ilk cevap** (201), PIN değerlendirilmez, sayaç ve deneme izi değişmez. S-9e: aşımda replay aramasını
+  tekillik denetiminden sonraya taşı → aşım replay vakası 409 alır, kırmızı; S-9f: `UpdateScanDeviceCommand`'da idempotency kaydını yazmayı
+  kaldır → düzenleme replay vakası (409 `BARCODE_CONFLICT` ya da ikinci merkezi kayıt) kırmızı.
 - [ ] AC-10 (zorunlu) — Ayrıştırma MOD-0174 `Gs1CodeParser`'ıyla: ham FNC1 / GS biçimi, sembol tanıtıcılı biçim ve köşeli biçim aynı alanları verir;
   ham değer değiştirilmeden saklanır (GS dahil); okunamayan → 201 `Rejected` `UNREADABLE`; 0182 kaynak ağacında GS1 AI tablosu yok (mimari
   test: `"01"` / `"17"` / `"10"` AI sabitleri 0182 dosyalarında bulunmaz). S-10a: ham değeri `Trim` + GS silerek sakla → kırmızı; S-10b: 0182'ye
@@ -936,7 +1115,11 @@ almayı yazar.
   `overridable = true` (v1'in aşılabilir tek durumu — Q-3 = A); görevin lotundan farklı lot → `Rejected` `DIFFERENT_LOT` `overridable = false`
   ve geçerli PIN'le aşım 422 `BARCODE_OVERRIDE_NOT_ALLOWED`, `ScanOverride` yazılmaz (Q-3 teyidi `7f584f546`, r3 F-7); FG satış kutusu GTIN'i uyuşmaz → `Rejected` `WRONG_PRODUCT`; SKU `gtin` boş → `Warning` `PRODUCT_NOT_VERIFIABLE`
   `overridable = false`. S-11: bin karşılaştırmasını kaldır → kırmızı; S-11b (r3, F-7): aşılabilirlik matrisinde `Putaway` × `DIFFERENT_LOT`'u
-  `true` yap → farklı lot vakası (`overridable` ve 422) kırmızı.
+  `true` yap → farklı lot vakası (`overridable` ve 422) kırmızı. **r4 (CT kararı) — önerisi olmayan görev:** `ToLocationId` null görevde 0178
+  kurallarından geçen bin → `Accepted`; kilitli, karantina, mal kabul / sevkiyat hazırlık rolündeki, başka depodaki ya da saklama koşulu
+  uyumsuz bin → `Rejected` `WRONG_LOCATION`, `overridable = false`, geçerli PIN'le aşım 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; öneri varken
+  0178 kurallarından geçmeyen bin de aşılamaz `Rejected`. S-11c: öneri yokken 0178 hedef denetimini atlayıp her bin'i `Accepted` dön → kilitli
+  bin vakası kırmızı.
 - [ ] AC-12 (zorunlu) — `Pick` bağlamı (Q-3 = A, karar 03 — kararlar 02'nin PIN aşımı kuralı toplama için daraltıldı, §8.5): kaynak bin ≠ → `Rejected` `WRONG_LOCATION`, lot ≠ →
   `Rejected` `DIFFERENT_LOT` (Outcome r3, F-7), ikisi de `overridable = false`; ikisinde de geçerli PIN'le aşım 422 `BARCODE_OVERRIDE_NOT_ALLOWED`, `ScanOverride` ve merkezi
   kayıt yazılmaz. S-12: `Pick`'te `Overridable`'ı `true` yap → kırmızı.
@@ -963,10 +1146,25 @@ almayı yazar.
   kırmızı; S-18e: olay sahipliği denetimini kaldır → başkasının okutması vakası kırmızı. (F-10) `PinMaxAttempts = 10` ayarıyla 9 eşzamanlı yanlış PIN
   denemesi (görevli kanca) → `FailedAttempts = 9` (kayıp artış yok), 10'uncu yanlış deneme kilidi kurar (423); 422'den sonra sayaç kalıcı. S-18f:
   atomik `$inc`'i oku-yaz ile değiştir → eşzamanlılık vakası kırmızı; S-18g: sayaç yazımını aşım işleminin içine taşı → 422 sonrası sayaç 0,
-  kırmızı.
+  kırmızı. **r4 (F-5) — denetim sırası ve iz:** §8.5 sırası tablo vakasıyla ölçülür — (i) aşılamaz nedenli olayda (ör. `LOT_EXPIRED`) **yanlış**
+  PIN → 422 `BARCODE_OVERRIDE_NOT_ALLOWED`, `FailedAttempts` değişmez, iz yok; (ii) öz-aşımda yanlış PIN → 422 `BARCODE_OVERRIDE_SELF`, sayaç
+  değişmez; (iii) aşılmış olayda yanlış PIN → 409, sayaç değişmez; (iv) başkasının olayında → 404, sayaç değişmez; (v) kilitliyken doğru PIN →
+  423. Her yanlış PIN bir `ScanOverrideAttempt` (`PinInvalid`; sınırı aşan denemede `LockSet`), kilitliyken her deneme `Locked` izi yazar
+  (422 / 423'e rağmen kalıcı; PIN ve türevi yok); iz `GET /barcode/scan-events/{scanId}` ayrıntısında ve `GET /barcode/devices` ("PIN kilidi"
+  rozeti alanı) cevabında görünür; merkezi kayıt 0. S-18h: PIN doğrulamasını aşılamaz neden denetiminden önceye taşı → (i) vakasında sayaç
+  artar, kırmızı; S-18i: yanlış PIN izinin yazımını kaldır → iz vakası kırmızı. **r4 (CT kararı) — 423 gövdesi:** 423 `BARCODE_PIN_LOCKED`
+  gövdesi `details.lockedUntil` (UTC) taşır ve değer `SupervisorPin.LockedUntil`'e eşittir; 422 `BARCODE_PIN_INVALID` ve 423 gövdelerinde
+  deneme sayısı / kalan hak alanı (`failedAttempts`, `remainingAttempts` ya da eşdeğeri) yoktur (gövde anahtarları kapalı listeyle ölçülür).
+  S-18j: 422 / 423 gövdesine `remainingAttempts` ekle → kapalı anahtar listesi vakası kırmızı.
 - [ ] AC-19 (zorunlu) — PIN saklama: PBKDF2-SHA256 ≥ 100.000 tur, tuzlu; PIN ve özeti hiçbir cevapta, logda (test log toplayıcısı), OTel'de ve
   merkezi kayıtta yok; PIN'i yalnız kişi kendisi belirler; `scan-overrides.approve` olmadan 403. S-19a: tur sayısını 1 yap → kırmızı; S-19b: PIN'i
-  log satırına yaz → kırmızı.
+  log satırına yaz → kırmızı. **r4 (F-3) — idempotency ve PIN:** (a) aynı `Idempotency-Key`, yalnız `pin`'i farklı iki aşım gövdesi (ilk başarılı)
+  → ikincisi replay (ilk cevap), 400 `IDEMPOTENCY_KEY_REUSED` **değil**; aynısı `POST /barcode/supervisor-pin` için; (b) **depo taraması:** aşım
+  (doğru ve yanlış PIN) ve PIN belirleme sonrası `wms_barcode_command_requests`, `wms_barcode_override_attempts`, `wms_barcode_scan_overrides`,
+  `wms_barcode_scan_events` belgelerinin hiçbir alanında PIN düz metni, SHA-256'sı (hex / base64) ya da PBKDF2 özeti yok (PBKDF2 özeti yalnız
+  `wms_barcode_supervisor_pins`'te); (c) parmak izi alan listesinde `pin` adlı alan yok (üretim parmak izi kurucusunun alan adları okunarak).
+  S-19c: `pin`'i aşım parmak izi alanlarına ekle → (a) vakası 400 alır, (c) kırmızı; S-19d: idempotency `ResponseBody`'si yerine istek gövdesini
+  (PIN dahil) sakla → (b) depo taraması kırmızı.
 - [ ] AC-20 (zorunlu) — Nabız ve okutma `LastSeenAt` / `LastUser*` / `AppVersion` / pil alanlarını yazar, `Version`'ı artırmaz; nabız merkezi kayıt
   doğurmaz; nabızdan sonra eski `If-Match` ile düzenleme 200. S-20: nabızda `Version`'ı artır → kırmızı. **r3 (F-10):** nabız `If-Match`
   olmadan 200 (§12 muafiyeti); nabız ile eşzamanlı Web düzenlemesi ikisini de korur (düzenlenen ad ve nabzın `LastSeenAt`'i birlikte kalır).
@@ -976,9 +1174,16 @@ almayı yazar.
 - [ ] AC-22 (zorunlu) — Ayar: `GET` / `POST /barcode/settings/update` If-Match ile; §4.4 aralıkları; `settings.configure` olmadan 403 (`read` ve
   `devices.*` taşıyan kullanıcıda dahi). S-22: aralık denetimini kaldır → kırmızı.
 - [ ] AC-23 (zorunlu) — Merkezi denetim §21: her yazma komutu başarıda tam 1 kayıt (`SourceModule = BARCODE-RFID`), replay 0, başarısız 0,
-  nabız 0; `CentralAuditDeclarationTests` sayısı dilim başı ölçümü + dilimin komutları — **DL-1 +9, DL-4 +5, DL-6 +1, DL-7 +1** (toplam 16;
-  nabız dahil, çünkü testin `:54` satırı her yazma komutunda işaret ister — r3, F-6; X-6); DL-1'de kayıtlı modül listesine `BARCODE-RFID`. S-23: bir komuttan `ICentralAuditDeclaration`'ı kaldır →
-  kırmızı.
+  nabız 0; `CentralAuditDeclarationTests` sayısı dilim başı ölçümü + dilimin komutları — **DL-1 +10, DL-4 +5, DL-6 +1, DL-7 +1** (toplam 17;
+  nabız dahil, çünkü testin `:54` satırı her yazma komutunda işaret ister — r3, F-6; r4, F-2 eşleştirme komutu; X-6); DL-1'de kayıtlı modül
+  listesine `BARCODE-RFID`. S-23: bir komuttan `ICentralAuditDeclaration`'ı kaldır → kırmızı. **r4 (F-1) — işlem çağrı yeri vakası (X-6 (b),
+  sahip onayı `4168e7a90`):** `Every_transaction_a_command_can_run_in_enlists_the_central_audit_event` dilim başında ölçülen sayı + dilimin
+  0182 Persistence'a eklediği `WithTransactionAsync(` çağrı yerleriyle yeşil (öneri tek ortak yardımcı: DL-1 +1, sonraki dilimler +0); 0182'nin
+  her çağrı yeri geri çağrısında `CentralAuditTransaction.EnlistAsync(s…)` taşır; satır güncellemesi çağrı yeriyle aynı commit'te, yorumda dilim
+  adıyla; kabul kaydı önce → sonra ve `Assert.Equal(<n>, seen)` satırına atıf. Vaka, işlem çağrı yeri ekleyen sonraki dilimde de koşar.
+  S-23b: 0182 işlem yardımcısının geri çağrısından `CentralAuditTransaction.EnlistAsync(s…)` çağrısını kaldır (enlist etmeyen 0182 işlemi) →
+  test `failures` ile kırmızı; S-23c: 0182 Persistence'a enlist eden ikinci bir geçici `WithTransactionAsync(` çağrı yeri ekle → sayı satırı
+  kırmızı (güncellenmiş değerden bir fazla); ikisi de geri alınır, commit'e girmez.
 - [ ] AC-24 (zorunlu) — `DVC` kodu MOD-0178 geçici sayacından (`IWarehouseRecordCodeAllocator`), biçim `{ŞİRKET}-DVC-{000001}`, kiracıda tekil,
   0182 kendi sayacını yazmaz. S-24: `TypePrefixes`'ten `DVC`'yi çıkar → kırmızı.
 - [ ] AC-25 (zorunlu) — 0182'de PUT / DELETE ucu yok; `LedgerImmutabilityArchitectureTests` değişmeden yeşil. S-25: bir `[HttpPut]` ekle → kırmızı.
@@ -1008,7 +1213,8 @@ almayı yazar.
 - [ ] AC-35 (zorunlu) — Okutma olayları: depo zorunlu, tarih aralığı ≤ 31 gün (fazlası 400), süzgeçler §8.14; KPI kartları okuma anında; ekranda
   GUID yok (raf kodu, lot no, SKU, kişi ve cihaz adı); "çevrimdışı bekleyen" kartı yok (S-1). S-35: 31 gün sınırını kaldır → kırmızı.
 - [ ] AC-36 (zorunlu) — Cihazlar ekranı: Sil yok; Engelle gerekçe ister; sağlık rozetleri ikon + metin (yalnız renk değil); anahtar ekranda
-  görünmez (Web kaydında anahtar bir kez gösterilir ve kopyalanır, sonra yok). S-36: anahtarı liste DTO'suna ekle → kırmızı.
+  görünmez — r4 (F-2): Web kaydında ve yeniden etkinleştirmede anahtar **hiç** gösterilmez; yerine eşleştirme QR'ı + kod + kalan süre bir kez
+  gösterilir (panel kapanınca yok; Web proxy her zaman `keyDelivery = Pairing` gönderir). S-36: anahtarı liste DTO'suna ekle → kırmızı.
 - [ ] AC-37 (zorunlu) — Ayar ve PIN sayfaları: ayar formu `If-Match` ile; PIN sayfası yalnız kendi PIN'i, PIN alanı `autocomplete="off"` ve
   proxy PIN gövdesini loglamaz. S-37: proxy'de istek gövdesi loglamasını aç → Web testi kırmızı.
 - [ ] AC-38 (zorunlu) — 375 px'te her sayfa okunur, yatay sayfa kaydırması yok; boş / yükleniyor / hata / yetkisiz durumları çizilir (tarayıcı ölçümü).
@@ -1018,7 +1224,8 @@ almayı yazar.
 
 **DL-3 — WMS işlemlerine bağlama (`scanRef` kapısı)**
 
-- [ ] AC-41 (zorunlu) — Depo `ScanRequiredWarehouseIds`'te değilse 0178 yerleştirme / toplama onayı ve 0181 sayım girişi bugünkü gibidir; dilim
+- [ ] AC-41 (zorunlu) — Depo `ScanRequiredWarehouseIds`'te değilse ve `scanRef` `scan-session:` önekli değilse (r4) 0178 yerleştirme / toplama
+  onayı ve 0181 sayım girişi bugünkü gibidir; dilim
   kabulünde `git diff --stat` 0178 / 0181 test dizinlerinde boş ve o testler yeşil. S-41: kapıyı ayardan bağımsız her depoda çalıştır →
   0178 testleri kırmızı.
 - [ ] AC-42 (zorunlu) — Okutma zorunlu depoda: `scanRef`'siz onay 422 `BARCODE_SESSION_REQUIRED`; gerekli adımları `Accepted` / aşılmış oturumla
@@ -1064,13 +1271,21 @@ almayı yazar.
   0178 `HandlingUnit` değişmez. S-56: koli tekilliğini kaldır → kırmızı. **Q-11 alıcı alanları (r3, MOD-0178-FU01 kararları 01 eki Q-10,
   `a7c1d32b8`):** SSCC etiketinin insan okunur alanlarında alıcıdan yalnız şehir + ilçe; posta kodu yalnız outbound `ShipTo.PostalCode` doluysa;
   `ShipTo.Name`, `Line1`, `Line2` etikette ve PDF metninde yok (PDF metni çıkarılarak ölçülür); ilçe boşsa boş satır / yer tutucu basılmaz.
-  S-56b: izinli kümeye `ShipTo.Name`'i ekle → alıcı alanları vakası kırmızı.
+  S-56b: izinli kümeye `ShipTo.Name`'i ekle → alıcı alanları vakası kırmızı. **r4 (F-6) — ilçe zamanlaması:** DL-5 MOD-0178-FU01'i
+  beklemez; FU01 DL-2 `main`'de değilken DL-5 vakası ilçesizdir (etikette ilçe satırı yok; 0182 kodunda `District` başvurusu yok) ve posta
+  kodu boş `ShipTo`'da posta kodu satırı yoktur (CRM ana adresi bugün boş gelir). **İlçe vakası** — `ShipTo.District` dolu → etikette basılı,
+  boş → basılmaz — ilçe okumasını ekleyen dilimin kabulünde koşar (FU01 DL-2 `main`'e geldikten sonraki ilk 0182 dilimi: DL-5, DL-6 ya da
+  DL-7; yoksa FU-0182-DISTRICT). S-56c (ilçe okumasını ekleyen dilimde): ilçe okumasını kaldır → `District` dolu vakası kırmızı.
 - [ ] AC-57 (zorunlu) — Lot / koli etiketi: GS1 DataMatrix ve GS1-128 içeriği (01)(17)(10); PDF'ten çözülen değer `Gs1CodeParser`'la ayrıştırılınca
   kaynak GTIN / SKT / lotu verir. S-57: (17) alanını atla → çözüm testi kırmızı.
 - [ ] AC-58 (zorunlu) — (00) SSCC okutması koliyi / paleti çözer (X-1; MOD-0174 testleri değişmeden yeşil). S-58: `Gs1Code.Sscc` atamasını kaldır →
   kırmızı. **r3 (F-12):** ham biçimde (37), (3103), (240) taşıyan koli / palet etiketi okunur (bu alanlar yok sayılır, GTIN / lot / SSCC
   çözülür); liste dışı AI (ör. `99`) taşıyan dizge `UNREADABLE` kalır; yalnız toleranslı AI'lardan oluşan dizge okunmaz. S-58b: kapalı listeyi
-  "bilinmeyen her AI'yı atla" ile değiştir → liste dışı AI vakası (ve MOD-0174 `TraceDomainRulesTests.cs:147` `"99ABC"`) kırmızı.
+  "bilinmeyen her AI'yı atla" ile değiştir → liste dışı AI vakası (ve MOD-0174 `TraceDomainRulesTests.cs:147` `"99ABC"`) kırmızı. **r4 (F-7):**
+  ham biçimde (00) + (02) + (37) + (10) taşıyan lojistik etiket `Putaway` / `Pick` / `Pack` bağlamlarının `Product` adımında → 201 `Rejected`
+  `PRODUCT_NOT_VERIFIABLE`, `overridable = false` — (10) lotu beklenen lotla aynı olsa da **asla `Accepted` değil**; aynı etiket `Pack`'in
+  `Package` adımında ve `Query`'de (00) ile koliyi çözer; yalnız (00) taşıyan dizge okunur (X-1'in `:40` değişikliği), yalnız (02) + (37) taşıyan
+  dizge `UNREADABLE`. S-58c: `Product` adımında (01) yokken lot eşleşmesiyle `Accepted` dön → lojistik etiket vakası kırmızı.
 
 **DL-6 — RFID toplu okuma (kapı: DL-5 + RFID okuyucu donanım seçimi — Q-7 = A, model TBD)**
 
@@ -1098,7 +1313,7 @@ almayı yazar.
   üretim `ocelot.json`'u ve üretim controller kaynağını okur; her 0182 ucu Gateway rotasıyla kapsanır; cihaz başlıkları iletilir; `ocelot.json`
   değişmez. S-65a: `ocelot.json`'da `/api/warehouse/{everything}` rotasını geçici boz → kırmızı (geri alınır); S-65b: başlık iletimini engelleyen
   ayar ekle → kırmızı (geri alınır). **0178 sayı vakası (r3, F-1 — r2'nin "`Mod0178WarehouseRouteTests` değişmeden yeşil" yazımı yanlıştı; X-12,
-  XMC-001, sahip onayı bekliyor):** 0178 testi 0182 controller'larını da tarar ve `Assert.Equal(<n>, endpoints.Count)` ile sayıyı sabitler. Uç
+  XMC-001, sahip onaylı `ad1100158` — r4; r4'te DL-1 16 uç):** 0178 testi 0182 controller'larını da tarar ve `Assert.Equal(<n>, endpoints.Count)` ile sayıyı sabitler. Uç
   ekleyen her dilimin (DL-1, DL-4, DL-6, DL-7) kabulünde Gateway test projesi koşar ve
   `Every_endpoint_of_the_InventoryService_warehouse_controllers_is_served_by_exactly_the_warehouse_route` **dilim başında ölçülen sayı + dilimin
   eklediği 0182 uç sayısı** ile yeşildir; taban dilimin başlangıç commit'inde ölçülür, önce → sonra kabul kaydına yazılır ve kayıt satır
@@ -1129,6 +1344,11 @@ almayı yazar.
 - **r3 ek mimari / entegrasyon:** X-15 dışlamasıyla `InventoryLedgerManifestCompletenessTests` yeşil + 0182 kendi bütünlük vakası (AC-6, S-6d);
   replay anahtar vakaları (AC-2, AC-9); oturum sahipliği ve replay sırası (AC-9, AC-44); PIN sayacı eşzamanlılığı (AC-18, görevli kanca); kör
   sayım toplamı ve izi (AC-16, AC-62); kapalı AI listesi (AC-58).
+- **r4 ek mimari / entegrasyon:** `CentralAuditDeclarationTests` işlem çağrı yeri sayısı ve enlist denetimi (AC-23, S-23b, S-23c); QR
+  eşleştirme — tek kullanım, süre (sahte saat), eşzamanlı iki kullanım (görevli kanca), şirket / kiracı 404, depo taraması (AC-3); şirketler
+  arası cihaz anahtarı (AC-4); komut idempotency deposu ve aşım replay sırası (AC-9); aşım denetim sırası ve yanlış PIN / kilit yerel izi
+  (AC-18); PIN'siz parmak izi ve idempotency depo taraması (AC-19); lojistik etiket ürün adımı (AC-58); ilçe vakası ilçe okumasını ekleyen
+  dilimde (AC-56). Yeni koleksiyonlar `BarcodeCollections.All`'da (AC-26, X-5).
 - **Sözleşme:** SCAN-BUNDLE taslağına karşı sözleşme testi (AC-1); DL-3'te WMS-BUNDLE / WMS-COUNT-BUNDLE eklemeli sürümleri (AC-46).
 
 ## 18. Ready-for-dev Checklist
@@ -1158,13 +1378,20 @@ almayı yazar.
 - [ ] **`.antigravity/**` kapısı — paket onayından ÖNCE:** PKS-001 §4 `warehouse.barcode.*` satırı + `:92` cümlesi + `:105` eki (Q-1 = A,
   karar 03), RCS-001 §3 `DVC` / `LBL`, aynı adımda X-8 (`RecordCodeTypeCatalogTests`) ve X-9 (MOD-0178 §14.1 notu — 0178'in yeni sürümü ayrıca
   incelenir ve onaylanır) (§6). CT hazırlar, Beste onaylar; bu paket `.antigravity/**`'a yazmaz
-- [ ] XMC-001 satırları X-1…X-15 sahiplerinden onay aldı (§5.1); **r3 ile sahip onayı bekleyen:** X-12 (`Mod0178WarehouseRouteTests` uç
-  sayısı, uç ekleyen her dilim — DL-1 öncesi), X-15 (`InventoryLedgerManifestCompletenessTests` `Controllers.Barcode` dışlaması — DL-1 öncesi);
-  X-1'in genişleyen kapsamı (kapalı listeli AI toleransı — DL-5 öncesi)
+- [x] **XMC-001 sahip onayları (r4, F-9):** X-15 (`InventoryLedgerManifestCompletenessTests` `Controllers.Barcode` dışlaması), X-12
+  (`Mod0178WarehouseRouteTests` uç sayısı, uç ekleyen her dilim, her artış dahil), X-1 (Sscc + kapalı AI listesi + gs1-check yan etkisi) —
+  kararlar 03 eki `ad1100158`; X-6 genişletmesi (`CentralAuditDeclarationTests` işlem çağrı yeri sayısı `:130`) — kararlar 03 eki `4168e7a90`
+- [ ] Diğer XMC-001 satırları (X-2…X-5, X-7…X-11, X-13, X-14 ve X-6'nın `:53` / `:60-69` kısmı) sahiplerinden onay aldı (§5.1) — ilgili
+  dilim başlamadan
+- [ ] **CT işi (r4, F-8 + F-2):** SCAN-BUNDLE taslağına (DL-1, AC-1) ve paket onayından sonra yazılacak mobil sözleşme notuna — şirket başına
+  bir cihaz kaydı (ayrı `DeviceId`, ayrı anahtar, `InstallationId` tekilliği şirket kapsamında), Web onayının şirket başına ayrı olduğu, mobilin
+  anahtarı (kiracı, şirket) başına saklaması, başka şirketin anahtarıyla 403; QR eşleştirme akışı (`POST /barcode/devices/pair`, 10 dk, tek
+  kullanım, `devices.create`). Q-13 ile bağlantılı. Bu paket mobil nota dokunmaz
 - [ ] SCAN-BUNDLE taslağı yazıldı (DL-1 ilk adımı, AC-1); dondurma ayrı CT adımı; mobil sözleşme notu paket onayından sonra
 - [ ] MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü — **DL-5 başlamadan önce** (§24)
 - [x] r2 bağımsız inceleme (CT-APR-02) — `docs/records/reviews/MOD-0182/2026-11-13-7ce2f1cb.md`, KOŞULLU; F-1…F-12 r3'te kapandı (§19.6)
-- [ ] r3 bağımsız yeniden inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **onaylayan Ali (GitHub `GMG-ERP`)**; yazan ≠ onaylayan
+- [x] r3 bağımsız inceleme (CT-APR-02) — `docs/records/reviews/MOD-0182/2026-11-13-11585181.md`, KOŞULLU; F-1…F-9 r4'te kapandı (§19.7)
+- [ ] r4 bağımsız yeniden inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **onaylayan Ali (GitHub `GMG-ERP`)**; yazan ≠ onaylayan
 
 ## 19. Implementation Notes
 
@@ -1190,6 +1417,15 @@ almayı yazar.
   ile `docs/records/decisions/2026-11/mod0180-wave-planning-owner-decisions-03.md` X-14 ekleri; MOD-0181 paketi `:1376`, `:1392`; mobil not `:27`,
   `:40`, `:46`, `:106` ve mobil brief `:67`, `:75` (commit `bf7bd7852` sonrası); Q-11 güncellemesi:
   `docs/records/decisions/2026-11/mod0178-fu01-outbound-form-v2-owner-decisions-01.md` son ek (Q-10, commit `a7c1d32b8`) ve MOD-0178-FU01 paketi `:139-151`.
+- **r4 girdileri:** bağımsız inceleme r3 `docs/records/reviews/MOD-0182/2026-11-13-11585181.md` (tamamı); kararlar 03'ün son iki eki (XMC-001
+  onayları `ad1100158`; r3 incelemesi sonrası sahip kararları `4168e7a90`); `docs/records/decisions/2026-11/mod0178-fu01-outbound-form-v2-owner-decisions-01.md`
+  ekleri ("sahip cevapları", CRM sorusu 5, "Q-10 düzeltmesi" — `cb612efc9`); MOD-0178-FU01 paketi r2 §4.1a `:156-172` ve `:336-341`;
+  çağıran CT'nin iki ek kararı (mobil ekip soruları 2026-11-13: önerisi olmayan yerleştirme görevi, 423 `details.lockedUntil`; SCAN-BUNDLE
+  açıklamaları — `DIFFERENT_LOT`, sunucu `deviationReason`, `scanRef` / `sessionId` bağı). Kod (salt okuma, HEAD `db70c9f37`):
+  `CentralAuditDeclarationTests.cs:45-69`, `:96-132`; `CentralAuditRecorder.cs:150-170`; `CentralAuditOptions.cs:37-46`;
+  `CycleCountSupport.cs:115-150`; `CycleCountRepository.cs` (tek `WithTransactionAsync(` çağrı yeri) ve `CycleCountIndexConfiguration.cs:36-95`;
+  `Gs1CodeParser.cs:18-45`, `Gs1Code.cs:1-8`; `ConfirmPutawayTaskHandler.cs:25-95`; `PutawayChecks.cs:51-100`; `InventoryLedgerManifestCompletenessTests.cs:209-226`;
+  `Mod0178WarehouseRouteTests.cs:93-97`, `:226-230`.
 - **Okunmayan (kısmi inceleme):** mockup v2 HTML dosyaları (`Barkod RFID Prototip v2`, `Mobil Okutma Prototip`) depoda değil; içerikleri yalnız
   kararlar 02'deki CT incelemesi özetinden biliniyor. Mobil ekiplerin D-1…D-5 cevapları (cihaz, kütüphane, RFID SDK) okunmadı — E-7 dışında
   kayıtlı cevap bulunamadı. AuthService `legal_entities` claim'i ölçülmedi (Q-13). Ocelot'un özel başlık iletimi ölçülmedi (§15).
@@ -1217,6 +1453,17 @@ HEAD `90f6a1da8`, salt okuma.
   (117), `:54` (her yazma komutunda işaret), `:60-69` (modül listesi); `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.CentralAudit.Abstractions/ICentralAuditDeclaration.cs:32-36`
   (enlist edilmeyen komut kayıt bırakmaz); `Gs1CodeParser.cs:22-27` (bilinen AI'lar), `:40`, `:92`, `:131`, `:133-136`; `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Trace/TraceDomainRulesTests.cs:143-148`
   (okunamayan vakalar, `"99ABC"`); §3 API listesinde dilim başına servis ucu 15 / 11 / 2 / 4.
+- **r4 ölçümleri (HEAD `db70c9f37`, salt okuma; `4168e7a90` → `db70c9f37` arasında yalnız inceleme kayıtları değişti):**
+  `CentralAuditDeclarationTests.cs:130` `Assert.Equal(14, seen)`, yorum `:127-129` ("9 + RecallDrillRepository … + CycleCountRepository.InTransactionAsync
+  (MOD-0181 DL-1, XMC-001)"); sayım Persistence'taki `WithTransactionAsync(` çağrı yerlerini sayar, süpürücü dosyaları (`:96-99`) hariç, her çağrı
+  yerinin ilk 1.200 karakterinde `CentralAuditTransaction.EnlistAsync(s` ister; `:51-52` MOD-0181'in 16. komutunun aynı çağrı yerini kullandığını
+  yazar ("the callback count below is unchanged"); `CycleCountRepository.cs`'te tek çağrı yeri. `CentralAuditRecorder.cs:160-162`
+  (`_requireEnlistment && !pending.OutsideTransaction` → kayıt yok). `CycleCountSupport.cs:132-136` düz SHA-256 parmak izi (adlı alanlar).
+  Inventory idempotency deseni: anahtar, işin kendi belgesinde ya da olay belgesinde (`RequestOp` + `IdempotencyKey` tekil index —
+  `CycleCountIndexConfiguration.cs:74-77`). `Gs1CodeParser.cs:24` (00) 18, (02) 14 sabit; `:40` en az biri (01) / (21) / (10) / (17);
+  `Gs1Code.cs:8` dört alan. `ConfirmPutawayTaskHandler.cs:64` plan ≠ hedef ise gerekçe; `PutawayChecks.cs:51-70` hedef kuralları (etkin, stok
+  tutabilen bin / saklama yeri, aynı depo, kaynak değil, `Receiving` / `Staging` değil), `:78` saklama koşulu. Depoda QR / barkod kütüphanesi
+  yok (csproj taraması: 0). `scan-session:` öneki depoda kullanılmıyor (0 eşleşme; 0178 testleri `"SCAN-0001"`).
 
 ### 19.3 Çıkarımlar
 - "RFID tek uç" (2026-11-06) yalnız el okuyucu, kapı / portal okuyucu yok anlamında okundu (brief "RFID kapı okuyucuları ilk sürümde yok") — Q-12;
@@ -1243,7 +1490,7 @@ HEAD `90f6a1da8`, salt okuma.
 | Q-8 | Yeni cihaz kaydı onay beklesin mi? (MS-2) | **A** evet — `Pending`, Web'den onay | A · B kendiliğinden etkin | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
 | Q-9 | "Okutmadan onay verilemez" kuralı nasıl açılsın? | depo başına ayar, varsayılan kapalı; pilot depoda açılır | A öneri · B şirket geneli · C her zaman açık | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
 | Q-10 | SSCC nelere verilsin? | 0178 kolisine bir SSCC + içeriksiz serbest palet etiketi; koli → palet birleştirmesi MOD-0246'ya; uzantı hanesi 0 | A öneri · B palet içeriği de 0182'de (kapsam büyür) | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
-| Q-11 | SSCC etiketinde alıcı bilgisi | yalnız şehir ve posta kodu; kişi / müşteri adı yok (mobil brief öneri) | A öneri · B tam sevk adresi | Beste | **kararlaştı — A** (karar 03, 2026-11-13); **r3 güncellemesi** (MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; Beste 2026-11-13): posta kodu CRM'den boş gelebilir → alıcıdan **şehir + ilçe**, posta kodu yalnız sevkiyat kopyasında varsa; kişi / müşteri adı ve açık adres yine yok (§8.9, AC-56, S-56b) |
+| Q-11 | SSCC etiketinde alıcı bilgisi | yalnız şehir ve posta kodu; kişi / müşteri adı yok (mobil brief öneri) | A öneri · B tam sevk adresi | Beste | **kararlaştı — A** (karar 03, 2026-11-13); **r3 güncellemesi** (MOD-0178-FU01 kararları 01 eki Q-10, `a7c1d32b8`; Beste 2026-11-13): posta kodu CRM'den boş gelebilir → alıcıdan **şehir + ilçe**, posta kodu yalnız sevkiyat kopyasında varsa; kişi / müşteri adı ve açık adres yine yok (§8.9, AC-56, S-56b); **r4 hizalaması** (`cb612efc9`): CRM ana adrese posta kodu ekliyor, eklenene kadar boş; adres listesi + `customerAddressId`; DL-5 FU01'i beklemez, ilçe FU01 DL-2'den sonra (S-56c) |
 | Q-12 | "RFID tek uç" ne demek? | yalnız el okuyucu; kapı / portal okuyucu yok | teyit | Beste | **kararlaştı — teyit** (karar 03, 2026-11-13) |
 | Q-13 | Mobilde şirket bağlamı `legal_entities` claim + `X-Legal-Entity-Id` ile mi? | evet (E-7); Auth teyidi | teyit | Ali | açık |
 | Q-14 | Rol şablonları (§14) | Depo çalışanı, Vardiya sorumlusu, Cihaz sorumlusu, Etiket sorumlusu, Kalite / denetçi | ayrı WP | Ali | açık |
@@ -1277,12 +1524,12 @@ Açık kalan (r2 kapatmaz): Q-6, Q-13, Q-14 (Ali); Q-16 (CT); Q-7 donanım seçi
 ### 19.6 r2 → r3 kapanış tablosu
 
 Girdi: bağımsız inceleme r2 `docs/records/reviews/MOD-0182/2026-11-13-7ce2f1cb.md` (KOŞULLU; hedef r2 LF sha256 `7ce2f1cb…`) ve kararlar 03'ün iki eki
-(`7f584f546`, `bea6662d9`). Seçimler CT önerisidir; sahibe yeni soru açılmadı. Sahip onayı bekleyen: X-12, X-15 (XMC-001) ve X-1'in genişleyen kapsamı.
+(`7f584f546`, `bea6662d9`). Seçimler CT önerisidir; sahibe yeni soru açılmadı. Sahip onayı bekleyen: X-12, X-15 (XMC-001) ve X-1'in genişleyen kapsamı (r4: üçü de onaylandı — `ad1100158`).
 
 | # | Bulgu (özet) | r3 değişikliği | Bölüm |
 |---|---|---|---|
-| F-1 | X-12 / AC-65 0178 Gateway testinin değişmediğini söylüyor; `:97` sayıyı 73'e sabitliyor, DL-1 ile kırmızı (ORTA) | X-12 **XMC-001 satırı** oldu (MOD-0180 X-14 deseni): yalnız `Assert.Equal(<n>, endpoints.Count)` satırı ve yorumu; uç ekleyen her dilim (§3'ten doğrulandı: DL-1 15, DL-4 11, DL-6 2, DL-7 4; DL-2, DL-3, DL-5, DL-8 0) dilim başında ölçülen sayı + kendi uçlarıyla, uçlarıyla aynı commit'te; kabul kaydı önce → sonra, `Assert.Equal` satırına atıf; integration-agent; MOD-0180 ile sıra: hangisi önce gelirse dilim başında ölçülen sayıdan devam; **sahip onayı bekliyor**. AC-65'e 0178 sayı vakası + S-65c; §15 paragrafı; §17 Build | §3, §5.1 X-12, §6, §7, §15, §16 AC-65, §17, §18, §24 |
-| F-2 | `InventoryLedgerManifestCompletenessTests` dışlama listesi X listesinde yok (ORTA) | Yeni **X-15** (MOD-0173, DL-1; ölçüm `:209-225`, dışlamalar `:213-223`; MOD-0181 `:223` emsali, 0181 paketi `:1392`); karşılığında AC-6'ya 0182 kendi bütünlük vakası + S-6d; **sahip onayı bekliyor** | §3, §5.1 X-15, §16 AC-6, §17, §18, §24 |
+| F-1 | X-12 / AC-65 0178 Gateway testinin değişmediğini söylüyor; `:97` sayıyı 73'e sabitliyor, DL-1 ile kırmızı (ORTA) | X-12 **XMC-001 satırı** oldu (MOD-0180 X-14 deseni): yalnız `Assert.Equal(<n>, endpoints.Count)` satırı ve yorumu; uç ekleyen her dilim (§3'ten doğrulandı: DL-1 15, DL-4 11, DL-6 2, DL-7 4; DL-2, DL-3, DL-5, DL-8 0) dilim başında ölçülen sayı + kendi uçlarıyla, uçlarıyla aynı commit'te; kabul kaydı önce → sonra, `Assert.Equal` satırına atıf; integration-agent; MOD-0180 ile sıra: hangisi önce gelirse dilim başında ölçülen sayıdan devam; **sahip onayı bekliyordu — r4: onaylandı `ad1100158`du — r4: onaylandı `ad1100158`**. AC-65'e 0178 sayı vakası + S-65c; §15 paragrafı; §17 Build | §3, §5.1 X-12, §6, §7, §15, §16 AC-65, §17, §18, §24 |
+| F-2 | `InventoryLedgerManifestCompletenessTests` dışlama listesi X listesinde yok (ORTA) | Yeni **X-15** (MOD-0173, DL-1; ölçüm `:209-225`, dışlamalar `:213-223`; MOD-0181 `:223` emsali, 0181 paketi `:1392`); karşılığında AC-6'ya 0182 kendi bütünlük vakası + S-6d; **sahip onayı bekliyordu — r4: onaylandı `ad1100158`du — r4: onaylandı `ad1100158`** | §3, §5.1 X-15, §16 AC-6, §17, §18, §24 |
 | F-3 | Aşım ucunun `HasPermission` anahtarı yazılmamış (ORTA) | Uç `warehouse.barcode.scans.create` ister (çalışanın JWT'si; sorumlunun yetkisi PIN kaydından; `approve` seçilseydi çalışan 403 alırdı; ayrı anahtar güvenlik kazancı olmadan manifest / köprü işi açardı); olay çağıranın değilse 404. AC-18'e vaka + S-18d, S-18e | §3, §8.5, §13, §14, §16 AC-18 |
 | F-4 | Cihaz anahtarı ile idempotency replay çelişkisi (ORTA) | Idempotency kaydı anahtarsız cevabı saklar; replay ilk cevabı `deviceKey`'siz + `deviceKeyNotice = BARCODE_DEVICE_KEY_NOT_REPLAYED` döner, yeni anahtar üretmez; kurtarma var olan geçişlerle (yeni geçiş yok). AC-2 (S-2c) ve AC-9 (S-9b) | §4.1, §8.2, §8.15, §13, §16 AC-2 / AC-9 |
 | F-5 | Kör sayım lot / SKU toplamlarına ve ize uygulanmıyor (ORTA) | §2.3 kural 4'e (a) toplam **bütünüyle** gizlenir (kör bin dışlanıp kalan gösterilmez — fark sızdırır), (b) iz adımı görünür, miktarı gizli; kanıt paketi aynı derleyiciyle; (c) sayım kapanana kadar, kullanıcıya göre ayrılmaz. AC-16 (S-16b), AC-62 (S-62b) | §2.3, §8.4, §8.11, §8.15, §13, §16 AC-16 / AC-62 |
@@ -1299,6 +1546,33 @@ AC sayısı 65 (AC-1…AC-65, numaralar değişmedi). Yazma komutu 16. Yeni sabo
 S-18f, S-18g, S-20b, S-56b, S-58b, S-62b, S-65c (§16 ve §24 iki yönde). Açık kalan: Q-13, Q-14 (Ali); Q-16 (CT); Q-7 donanım seçimi (Beste);
 `.antigravity` kapısı (onaydan önce); XMC-001 X-1…X-15 onayları; MDM MOD-0290-FU07 (DL-5 kapısı); r3 bağımsız yeniden inceleme.
 
+### 19.7 r3 → r4 kapanış tablosu
+
+Girdi: bağımsız inceleme r3 `docs/records/reviews/MOD-0182/2026-11-13-11585181.md` (KOŞULLU; hedef r3 LF sha256 `11585181…`), kararlar 03'ün
+son iki eki (`ad1100158`, `4168e7a90`) ve MOD-0178-FU01 kararları 01 "Q-10 düzeltmesi" eki (`cb612efc9`). Seçimler CT önerisidir; sahibe yeni
+soru açılmadı.
+
+| # | Bulgu (özet) | r4 değişikliği | Bölüm |
+|---|---|---|---|
+| F-1 | `CentralAuditDeclarationTests.cs:130` işlem sayısı X-6'da yok (ORTA) | X-6'ya (b) işlem çağrı yeri sayısı: dilim başında ölçülen + dilimin yeni `WithTransactionAsync(` çağrı yerleri, aynı commit, `:127-129` yorumunda dilim adı, kabul kaydı önce → sonra, `Assert.Equal(<n>, seen)` atfı; işlem içinde yazan dilimler §3 / §21'den doğrulandı (DL-1, DL-4, DL-5, DL-6, DL-7; DL-2 / DL-3 / DL-8 açmaz; nabız, PIN sayacı ve deneme izi işlem açmaz); öneri tek ortak yardımcı (MOD-0181 emsali) → beklenen DL-1 +1, sonra 0; MOD-0180 X-10 ile sıra; sahip onayı `4168e7a90`. AC-23'e vaka + **S-23b** (enlist etmeyen 0182 işlemi) ve **S-23c** (sayı) | §5.1 X-6, §8.5, §16 AC-23, §17, §21, §24 |
+| F-2 | Yeniden etkinleştirilen / Web'den kaydedilen cihazın anahtarı telefona ulaşmıyor (ORTA) | Sahip kararı (`4168e7a90`): Web kaydı (`keyDelivery = Pairing`) ve yeniden etkinleştirme anahtar üretmez, `KeyHash` null (eski anahtar 403), 32 baytlık tek kullanımlık eşleştirme kodu (10 dk) + QR (ZXing.Net, DL-1'e çekildi); `POST /barcode/devices/pair` (çalışanın JWT'si + `devices.create` + kod + aynı `InstallationId`) atomik tüketimle anahtarı bir kez döner; kod ve anahtar yalnız özet; kullanılmış / bilinmeyen / başka şirket 404, süresi dolmuş 422 `BARCODE_PAIRING_EXPIRED`, uyuşmazlık 422 `BARCODE_PAIRING_INVALID`; replay anahtarsız / kodsuz; ayrı "yeni kod" ucu yok (FU-0182-PAIR-REISSUE). İzin gerekçesi §8.2. Yeni komut `PairScanDeviceCommand` → yazma komutu 17 (DL-1 10); DL-1 uç 16, toplam 33 (X-12: 73 → 89 → 100 → 102 → 106, çıkarım; onay "her artış dahil"). AC-3'e vaka + **S-3b** (iki kez kullanım), **S-3c** (süre), **S-3d** (düz metin); AC-36 metni | künye, §3, §4.1, §4.10, §5.1 X-6 / X-12, §7, §8.2, §8.12, §8.14, §8.15, §11, §12, §13, §14, §15, §16 AC-1 / AC-3 / AC-23 / AC-36 / AC-65, §21, §24, §25 |
+| F-3 | PIN idempotency parmak izine girebiliyor (ORTA) | PIN taşıyan gövdelerde (`OverrideScanCommand`, `SetSupervisorPinCommand`) `pin` parmak izi alan listesinde yok (yer tutucu da yok); idempotency deposunda PIN ya da türevi yok; saklanan cevap sırsız DTO tipi; aynı anahtar + yalnız PIN'i farklı gövde = replay. AC-19'a vaka + depo taraması + **S-19c**, **S-19d** | §4.3, §8.1, §12, §13, §16 AC-19 |
+| F-4 | Okutma dışı komutların idempotency deposu yazılı değil; aşım replay'i 409 alabilir (DÜŞÜK) | `wms_barcode_command_requests` (`BarcodeCommandRequest`, §4.11; tekil `(TenantId, LegalEntityId, ActorUserId, RequestOp, IdempotencyKey)`; komutun işleminde; `BarcodeCollections.All` — X-5); replay araması varlık, `If-Match`, durum ve tekillik denetimlerinden önce; nabız adlı muafiyet. AC-9'a **S-9e** (aşım replay sırası), **S-9f** (kayıt yazımı) | §3, §4.10, §4.11, §5.1 X-5, §8.1, §8.2, §8.5, §12, §13, §16 AC-9 |
+| F-5 | Aşım denetim sırası yok; yanlış PIN / kilit iz bırakmıyor (DÜŞÜK) | Sıra: 403 → 400 → replay → 404 sahiplik → 422 aşılamaz → 422 öz-aşım → 409 aşılmış → 422 PIN yok → 423 kilit → PIN; PIN yalnız çağıranın aşılabilir, aşılmamış olayında denenir. Yerel iz `ScanOverrideAttempt` (`wms_barcode_override_attempts`; `PinInvalid` / `LockSet` / `Locked`), işlem dışı; ScanEvents ayrıntısı, Device Health "PIN kilidi" rozeti ve ayrıntısı, PIN sayfasında son kilit; merkezi kayıt yok (FU-0182-PIN-AUDIT, Q-16). AC-18'e vaka + **S-18h** (sıra), **S-18i** (iz) | §3, §4.3, §4.10, §8.5, §8.12, §8.14, §11, §13, §16 AC-18, §21 |
+| F-6 | İlçe kaynağı FU01'e bağlı; posta kodu ifadesi kayıtla farklı (DÜŞÜK) | DL-5 FU01'i beklemez; FU01 DL-2 `main`'de değilken `District`'e başvurulmaz, ilçe basılmaz; ilçe okuması FU01 DL-2 sonrası ilk 0182 dilimine (DL-5 / DL-6 / DL-7; yoksa FU-0182-DISTRICT); ilçe vakası o dilimde (**S-56c**); posta kodu ifadesi `cb612efc9` ekiyle hizalandı (CRM ana adrese alan ekliyor, eklenene kadar boş; adres listesi, `customerAddressId`); FU01 atıfları r2'ye (`:156-172`) | §7, §8.9, §16 AC-56, §19.4, §20, §24 |
+| F-7 | (00)+(02)+(37)+(10) lojistik etiketin ürün adımı tanımsız (DÜŞÜK) | `Product` adımında (01) yoksa her bağlamda `Rejected` `PRODUCT_NOT_VERIFIABLE`, aşılamaz, lot eşleşse de asla `Accepted`; `PRODUCT_NOT_VERIFIABLE` iki sonuçla gelebilir (`Outcome` belirler); X-1'in `:40` etkisi açık: yalnız (00) kümeye eklenir, (02) ve toleranslı AI'lar eklenmez. AC-58'e vaka + **S-58c** | §5.1 X-1, §8.4, §8.15, §16 AC-58, §24 |
+| F-8 | Şirket değiştiren mobil kullanıcı tanımsız (DÜŞÜK) | §8.2'ye şirket başına kayıt / anahtar / Web onayı kuralı; başka şirketin anahtarı 403; AC-4'e vaka (S-4b kapsar); SCAN-BUNDLE (AC-1) ve mobil sözleşme notu CT işi olarak §18'de; mobil nota dokunulmadı | §8.2, §13, §16 AC-1 / AC-4, §18 |
+| F-9 | Kaydedilen sahip onayları işlenmemiş; nabız atfı dolaylı; 5.1 ölçüm HEAD tutarsız (DÜŞÜK) | X-1 / X-12 / X-15 (`ad1100158`) ve X-6 (b) (`4168e7a90`) onaylı olarak işlendi; "sahip onayı bekliyor" ifadeleri kaldırıldı ya da "bekliyordu — r4: onaylandı" yapıldı; §8.12 atfı `CentralAuditRecorder.cs:160-162` + `CentralAuditOptions.cs:39-46`; §5.1 başlığı ölçüm HEAD'lerini ayrı ayrı yazar (r4 `db70c9f37`) | künye, §5.1, §6, §7, §8.12, §15, §16 AC-65, §18, §19.6, §24 |
+| CT ek 1 (inceleme dışı) | Mobil ekip sorusu: önerisi olmayan yerleştirme görevi | Öneri yoksa okunan bin 0178 hedef kurallarından geçerse `Accepted`, geçmezse aşılamaz `Rejected` `WRONG_LOCATION`; aşılabilir `Warning` yalnız öneri varken. AC-11'e vaka + **S-11c** | §8.4, §8.16, §16 AC-11 |
+| CT ek 2 (inceleme dışı) | Mobil ekip sorusu: kilit süresi | 423 gövdesi `details.lockedUntil` (UTC); deneme sayısı / kalan hak hiçbir gövdede yok. AC-18'e vaka + **S-18j** | §8.15, §8.16, §13, §16 AC-18 |
+| CT ek 3 (inceleme dışı) | SCAN-BUNDLE açıklamaları | `DIFFERENT_LOT` = `Rejected`, aşılamaz; yerleştirmede PIN aşımından sonra 0178 `deviationReason`'ı sunucu "Sorumlu onayı — {sorumlu}, {zaman}" olarak yazar, kullanıcıdan gerekçe istenmez; bağ `scanRef = scan-session:{sessionId}`; kapı `scan-session:` önekli `scanRef`'te depo ayarından bağımsız da çalışır (AC-41 metni buna göre) | §8.7, §8.16, §16 AC-41 |
+
+AC sayısı 65 (AC-1…AC-65, numaralar değişmedi). Yazma komutu 17 (DL-1 10, DL-4 5, DL-6 1, DL-7 1). DL-1 servis ucu 16 (toplam 33). Yeni
+sabotajlar: S-3b, S-3c, S-3d, S-9e, S-9f, S-11c, S-18h, S-18i, S-18j, S-19c, S-19d, S-23b, S-23c, S-56c, S-58c (§16 ve §24 iki yönde). Yeni
+koleksiyonlar: `wms_barcode_command_requests`, `wms_barcode_override_attempts`. Açık kalan: Q-13, Q-14 (Ali); Q-16 (CT); Q-7 donanım seçimi
+(Beste); `.antigravity` kapısı (onaydan önce); XMC-001 X-2…X-5, X-7…X-11, X-13, X-14 ve X-6 (a) onayları; MDM MOD-0290-FU07 (DL-5 kapısı);
+MOD-0178-FU01 DL-2 (ilçe — kapı değil); CT işi F-8 (SCAN-BUNDLE + mobil sözleşme notu); r4 bağımsız yeniden inceleme.
+
 ## 20. Follow-up Items
 - **FU-0182-OFFLINE** — çevrimdışı okutma kuyruğu ve yeniden oynatma (Blueprint SCAN-BUNDLE; S-1 v1 dışı).
 - **FU-0182-RCS** — `DVC` / `LBL`'nin MOD-0040-FU02 ortak servisine geçişi (FU-0178-RCS-01 ile).
@@ -1311,6 +1585,11 @@ S-18f, S-18g, S-20b, S-56b, S-58b, S-62b, S-65c (§16 ve §24 iki yönde). Açı
 - **FU-0182-AI** — Blueprint AI Assist. **FU-0182-EA** — Blueprint Build/Buy düzeltmesi (Q-15).
 - **FU-0182-GS1AI** (r3, F-12) — ayrıştırıcının "okunur, kullanılmaz" AI listesinin (37), (310n), (240) ötesine genişletilmesi (ör. (02), (400),
   (410)-(417)); MOD-0174 sahibiyle.
+- **FU-0182-PAIR-REISSUE** (r4, F-2) — süresi dolan / kaybolan eşleştirme kodu için engelle → yeniden etkinleştir yerine doğrudan "yeni kod"
+  eylemi (yeni komut ve uç; X-6, X-12 sayılarına etkisiyle).
+- **FU-0182-PIN-AUDIT** (r4, F-5) — yanlış PIN kilidinin merkezi denetime taşınması (Q-16 ile birlikte CT kararı).
+- **FU-0182-DISTRICT** (r4, F-6) — FU01 DL-2 `main`'e 0182'nin son dilimi bittikten sonra gelirse SSCC etiketine ilçe okumasının eklenmesi
+  (AC-56 ilçe vakası, S-56c).
 - **FU-0178-SERIAL-01** (MOD-0178'in) ve **FU-0181-BARCODE** (MOD-0181'in) — DL-3 bu iki FU'nun okutma tarafını karşılar; seri kısmi yerleştirme
   0178'de kalır.
 - **FU-0178-LOTSWAP** (Q-3 = A, karar 03) — toplamada lot / bin değişimi (tahsis değişimi); gelene kadar toplamada farklı lot / yanlış raf
@@ -1325,11 +1604,12 @@ kapalı-başarısızdır: kayıt yazılamazsa işlem durur (K2 sınıfı komutla
 
 | Komut | Olay adı | Nesne (tür) | Yol | Önceki/sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
 |---|---|---|---|---|---|
-| RegisterScanDeviceCommand | RegisterScanDeviceCommand + Create | ScanDevice | b | Sonraki: Number, Name, Type, Platform, WarehouseId, Status (anahtar ve özeti **yok**) | — |
+| RegisterScanDeviceCommand | RegisterScanDeviceCommand + Create | ScanDevice | b | Sonraki: Number, Name, Type, Platform, WarehouseId, Status, `keyDelivery` (anahtar, eşleştirme kodu ve özetleri **yok**) | — |
 | UpdateScanDeviceCommand | UpdateScanDeviceCommand + Update | ScanDevice | b | Önceki / sonraki: Name, WarehouseId, Note | — |
-| ActivateScanDeviceCommand | ActivateScanDeviceCommand + LifecycleTransition | ScanDevice | b | önceki / sonraki Status, gerekçe (yeniden etkinleştirmede), "anahtar yenilendi" bayrağı | — |
+| ActivateScanDeviceCommand | ActivateScanDeviceCommand + LifecycleTransition | ScanDevice | b | önceki / sonraki Status, gerekçe (yeniden etkinleştirmede), "anahtar geçersiz kılındı + eşleştirme kodu üretildi" bayrağı ve kodun son geçerliliği (r4; kod ve özeti **yok**) | — |
+| PairScanDeviceCommand | PairScanDeviceCommand + Update | ScanDevice | b | r4 (F-2): "anahtar eşleştirildi" bayrağı, `PairedAt`, eşleştiren kullanıcı (JWT), `InstallationId` (anahtar, kod ve özetleri **yok**) | — |
 | DeactivateScanDeviceCommand | DeactivateScanDeviceCommand + LifecycleTransition | ScanDevice | b | önceki / sonraki Status, **gerekçe** | — |
-| RecordDeviceHeartbeatCommand | — | — | — | yalnız LastSeenAt, AppVersion, BatteryPercent | İ2 — teknik sinyal: cihazın iş kaydını (ad, depo, durum, anahtar) değiştirmez, `Version`'ı artırmaz; yalnız son görülme / sürüm / pil alanlarını yazar. r3 (F-6): `CentralAuditDeclarationTests.cs:54` gereği `ICentralAuditDeclaration` **taşır** (16'ya dahil); kayıt doğurmaz çünkü işlem açmaz ve enlist etmez (`RequireEnlistment`, §8.12) — AC-20 / AC-23 "nabız 0" |
+| RecordDeviceHeartbeatCommand | — | — | — | yalnız LastSeenAt, AppVersion, BatteryPercent | İ2 — teknik sinyal: cihazın iş kaydını (ad, depo, durum, anahtar) değiştirmez, `Version`'ı artırmaz; yalnız son görülme / sürüm / pil alanlarını yazar. r3 (F-6): `CentralAuditDeclarationTests.cs:54` gereği `ICentralAuditDeclaration` **taşır** (17'ye dahil — r4); kayıt doğurmaz çünkü işlem açmaz ve enlist etmez (`RequireEnlistment`, §8.12) — AC-20 / AC-23 "nabız 0" |
 | RecordScanCommand | RecordScanCommand + Create | ScanEvent | b | Sonraki: DeviceNumber, WarehouseId, Source, Context, Outcome, ReasonCode, Parsed özeti, Manual gerekçesi (ham değer olay kaydında) — hacim Q-16 | — |
 | OverrideScanCommand | OverrideScanCommand + Execute | ScanOverride (+ ScanEvent) | b | aşılan neden, sorumlu kullanıcı, not (PIN **yok**) | — |
 | SetSupervisorPinCommand | SetSupervisorPinCommand + Update | SupervisorPin | b | SetAt, ExpiresAt (PIN ve özeti **yok**) | — |
@@ -1341,6 +1621,10 @@ kapalı-başarısızdır: kayıt yazılamazsa işlem durur (K2 sınıfı komutla
 | CreateLabelPrintJobCommand | CreateLabelPrintJobCommand + Create | LabelPrintJob (+ SsccAssignment) | b | Number, LabelType, TemplateId / Version, kaynak sayısı, LabelCount, IsReprint + gerekçe, atanan SSCC'ler, FileSha256 | — |
 | RecordRfidSweepCommand | RecordRfidSweepCommand + Create | RfidSweep | b | WarehouseId, LocationId, EPC sayısı, fark özeti | — |
 | CreateScanTraceExportCommand | CreateScanTraceExportCommand + Create | ScanTraceExport | b | sorgu anahtarı, biçim, dil, satır sayısı, FileSha256 | — |
+
+**r4 (F-5) — komut olmayan yerel iz:** yanlış PIN, kilit kuruldu ve kilitliyken deneme `ScanOverrideAttempt` yerel izidir (insert-only,
+`/Warehouse/ScanEvents` ve `/Warehouse/ScanDevices`'ta gösterilir); başarısız aşım komutu merkezi kayıt doğurmaz (0); kilidin merkezi kayda
+taşınması Q-16 ile CT kararı (FU-0182-PIN-AUDIT). PIN sayacı ve iz yazımı işlem açmaz (X-6 işlem sayısına girmez).
 
 **DL-3 kapısı:** `ScanSessionBinding` 0182 komutu değildir; 0178 / 0181 onay komutunun işleminde yazılır ve o komutun merkezi kaydına enlist olur
 (MOD-0180 port deseni). **Yazma olmayan:** önizleme (`PreviewLabelQuery`), iz okuması ve dosya indirmeleri okumadır (AUD-001 §7 okuma denetimi v1
@@ -1379,31 +1663,33 @@ Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kay
 **Onaydan önce kapanan kapı (r3'te hâlâ açık):** `.antigravity/**` satırları (Q-1 = A, karar 03: PKS-001 §4 `warehouse.barcode.*` + `:92` / `:105`;
 RCS-001 §3 `DVC` / `LBL`) + aynı adımda X-8 (`RecordCodeTypeCatalogTests`) ve X-9 (MOD-0178 §14.1 notu ve 0178'in yeni sürümünün incelemesi +
 onayı) (§6).
-**Dilim başlamadan sahip onayı bekleyen XMC-001 satırları (r3):** X-12 (DL-1, DL-4, DL-6, DL-7), X-15 (DL-1), X-1'in genişleyen kapsamı (DL-5).
+**XMC-001 sahip onayları (r4, F-9):** X-12 (DL-1, DL-4, DL-6, DL-7; her artış dahil), X-15 (DL-1), X-1 (DL-5) — `ad1100158`; X-6 (b) işlem
+çağrı yeri sayısı — `4168e7a90`. Dilim başlamadan sahibinden onay bekleyen: X-2…X-5, X-7…X-11, X-13, X-14 ve X-6 (a).
 
 | Dilim | Başlamadan kapanması gereken kararlar | Seam'ler (XMC-001) | AC | Sabotajlar |
 |---|---|---|---|---|
-| DL-1 | Q-16 (CT); Q-1, Q-2, Q-3, Q-4, Q-8, Q-15 kapandı (karar 03); X-12 ve X-15 sahip onayı (r3); ilk adım SCAN-BUNDLE taslağı | X-4 (`DVC`), X-5, X-6 (+9, modül listesi), X-7, X-12 (+15), X-15 | AC-1…AC-30; AC-65 0178 sayı vakası (r3) | S-1, S-2a, S-2b, S-2c, S-3, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-6d, S-7a, S-7b, S-8, S-9, S-9b, S-9c, S-9d, S-10a, S-10b, S-11, S-11b, S-12, S-13a, S-13b, S-14, S-15, S-16, S-16b, S-17, S-18a, S-18b, S-18c, S-18d, S-18e, S-18f, S-18g, S-19a, S-19b, S-20, S-20b, S-21, S-22, S-23, S-24, S-25, S-26a, S-26b, S-27, S-28, S-29, S-30, S-65c |
+| DL-1 | Q-16 (CT); Q-1, Q-2, Q-3, Q-4, Q-8, Q-15 kapandı (karar 03); X-12, X-15 (`ad1100158`) ve X-6 (b) (`4168e7a90`) sahip onaylı (r4); ilk adım SCAN-BUNDLE taslağı (QR eşleştirme ve şirket başına kayıt kuralı dahil — r4) + ZXing.Net NuGet ekleme ve güvenlik açığı taraması (r4: QR çizimi için DL-4'ten çekildi) | X-4 (`DVC`), X-5 (r4: iki yeni koleksiyon dahil), X-6 (a) +10 ve modül listesi, X-6 (b) işlem çağrı yerleri (öneri +1), X-7, X-12 (+16), X-15 | AC-1…AC-30; AC-65 0178 sayı vakası (r3) | S-1, S-2a, S-2b, S-2c, S-3, S-3b, S-3c, S-3d, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-6d, S-7a, S-7b, S-8, S-9, S-9b, S-9c, S-9d, S-9e, S-9f, S-10a, S-10b, S-11, S-11b, S-11c, S-12, S-13a, S-13b, S-14, S-15, S-16, S-16b, S-17, S-18a, S-18b, S-18c, S-18d, S-18e, S-18f, S-18g, S-18h, S-18i, S-18j, S-19a, S-19b, S-19c, S-19d, S-20, S-20b, S-21, S-22, S-23, S-23b, S-23c, S-24, S-25, S-26a, S-26b, S-27, S-28, S-29, S-30, S-65c |
 | DL-2 | Q-14 rol şablonu (Ali) — kabul kapısı | X-10 | AC-31…AC-40 | S-31, S-33, S-34, S-35, S-36, S-37, S-39, S-40 |
 | DL-3 | Q-9 kapandı (karar 03); **CT adımı: WMS-BUNDLE ve WMS-COUNT-BUNDLE eklemeli sürümleri (X-14) DL-3 başlamadan önce yazılır ve dondurulur**; öneri: DL-5'ten sonra (ürün doğrulaması GTIN'le anlamlı olsun) | X-2, X-3, X-14 (DL-3 0182 komutu ve servis ucu eklemez — X-6, X-12 sayıları değişmez) | AC-41…AC-46 | S-41, S-42a, S-42b, S-43, S-44, S-45, S-46 |
-| DL-4 | Q-5, Q-17 kapandı (karar 03); **Q-6 = ZXing.Net kapandı** (karar 03 eki `bea6662d9`, r3) — ilk adım NuGet ekleme + güvenlik açığı taraması | X-4 (`LBL`), X-6 (+5), X-10, X-12 (+11) | AC-47…AC-52; AC-31…AC-34, AC-39 yeni sayfalar için; AC-65 0178 sayı vakası (r3) | S-47, S-48, S-49, S-50, S-51, S-52, S-65c |
-| DL-5 | **MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü** (`identifiers/{gtin}`, `gs1-company-prefixes`); Q-10, Q-11 kapandı (karar 03; Q-11 r3 güncellemesi — şehir + ilçe, `a7c1d32b8`); X-1'in genişleyen kapsamının sahip onayı (r3) | X-1 (Sscc + kapalı AI listesi), X-13 (DL-5 0182 komutu ve servis ucu eklemez — X-6, X-12 sayıları değişmez; bir uç eklerse X-12 kuralı uygulanır) | AC-53…AC-58 | S-53a, S-53b, S-54, S-55a, S-55b, S-55c, S-56, S-56b, S-57, S-58, S-58b |
-| DL-6 | DL-5 kabulü; **RFID okuyucu donanım seçimi** (Q-7 = A'nın kalanı — TBD, Beste); Q-7 yönü ve Q-12 kapandı (karar 03) | X-6 (+1), X-12 (+2) | AC-59…AC-61; AC-65 0178 sayı vakası (r3) | S-59a, S-59b, S-60, S-61, S-65c |
-| DL-7 | — | X-6 (+1), X-10, X-12 (+4) | AC-62…AC-64; AC-31…AC-34, AC-39 `ScanTrace` için; AC-65 0178 sayı vakası (r3) | S-62, S-62b, S-63, S-64, S-65c |
+| DL-4 | Q-5, Q-17 kapandı (karar 03); **Q-6 = ZXing.Net kapandı** (karar 03 eki `bea6662d9`, r3) — NuGet DL-1'de eklendi (r4); DL-4'te yalnız Code 128 / GS1-128 / DataMatrix çizimi | X-4 (`LBL`), X-6 (a) +5 (b: yeni çağrı yeri açarsa), X-10, X-12 (+11) | AC-47…AC-52; AC-31…AC-34, AC-39 yeni sayfalar için; AC-65 0178 sayı vakası (r3) | S-47, S-48, S-49, S-50, S-51, S-52, S-65c |
+| DL-5 | **MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü** (`identifiers/{gtin}`, `gs1-company-prefixes`); Q-10, Q-11 kapandı (karar 03; Q-11 r3 güncellemesi — şehir + ilçe, `a7c1d32b8`, `cb612efc9`); X-1 sahip onaylı (`ad1100158`); **MOD-0178-FU01'i beklemez** (r4, F-6 — FU01 DL-2 yoksa ilçe basılmaz) | X-1 (Sscc + kapalı AI listesi + `:40`'a (00)), X-13 (DL-5 0182 komutu ve servis ucu eklemez — X-6 (a), X-12 sayıları değişmez; bir uç eklerse X-12 kuralı, yeni işlem çağrı yeri açarsa X-6 (b) kuralı uygulanır) | AC-53…AC-58 | S-53a, S-53b, S-54, S-55a, S-55b, S-55c, S-56, S-56b, S-56c (ilçe okumasını ekleyen dilimde — DL-5, DL-6 ya da DL-7), S-57, S-58, S-58b, S-58c |
+| DL-6 | DL-5 kabulü; **RFID okuyucu donanım seçimi** (Q-7 = A'nın kalanı — TBD, Beste); Q-7 yönü ve Q-12 kapandı (karar 03) | X-6 (a) +1 (b: yeni çağrı yeri açarsa), X-12 (+2) | AC-59…AC-61; AC-65 0178 sayı vakası (r3) | S-59a, S-59b, S-60, S-61, S-65c |
+| DL-7 | — | X-6 (a) +1 (b: yeni çağrı yeri açarsa), X-10, X-12 (+4) | AC-62…AC-64; AC-31…AC-34, AC-39 `ScanTrace` için; AC-65 0178 sayı vakası (r3) | S-62, S-62b, S-63, S-64, S-65c |
 | DL-8 | DL-1 kabulü | gateway test projesi (integration-agent); `ocelot.json` değişmez, sabotajda geçici bozulur ve geri alınır; `Mod0178WarehouseRouteTests` DL-8'de değişmez (sayı satırı uç ekleyen dilimlerde — X-12) | AC-65 kapsama testi | S-65a, S-65b |
 
 Sıra: DL-1 → DL-2 ve DL-4 (paralel) → DL-5 (FU07 kapısı) → DL-3 → DL-6 → DL-7; DL-8 DL-1'den sonra her an. Mobil ekipler DL-1 taslağıyla mock
 veriden gerçek uca geçer. MOD-0178 / 0181 bekçi testleri her dilimde değişmeden yeşil (AC-41'in `git diff` kanıtı her dilim kabulünde tekrarlanır).
-**Tek istisnalar (r3):** X-12 (Gateway'deki `Mod0178WarehouseRouteTests` uç sayısı satırı ve yorumu, uç ekleyen dilimde, integration-agent) ve X-15
-(`InventoryLedgerManifestCompletenessTests` `Controllers.Barcode` dışlaması, DL-1) — ikisi de `INVT/Warehouse/**` / `INVT/CycleCount/**` dışındadır
-ve sahip onayı bekler (XMC-001).
+**Tek istisnalar (r3; r4):** X-12 (Gateway'deki `Mod0178WarehouseRouteTests` uç sayısı satırı ve yorumu, uç ekleyen dilimde, integration-agent), X-15
+(`InventoryLedgerManifestCompletenessTests` `Controllers.Barcode` dışlaması, DL-1) ve X-6 (`CentralAuditDeclarationTests` sayı satırları) — üçü de
+`INVT/Warehouse/**` / `INVT/CycleCount/**` dışındadır ve sahip onaylıdır (XMC-001; `ad1100158`, `4168e7a90`; X-6 (a) için ayrıca dilim başında).
 
 ## 25. Page Help (UXH-001)
 - `SCANEVENTS` → `Help.SCANEVENTS.Purpose`, `.Audience`, `.Step1Title`/`.Step1` … `.Step3` (1: depoyu ve tarihi seç — en çok 31 gün, 2: sonuca ya
   da cihaza göre süz, 3: satırı açıp okunan değeri ve bağlı görevi incele); `.Immediate` ("Okutma kayıtları değiştirilemez; aşımlar sorumlunun
   adıyla görünür"); `Related.SCANDEVICES`, `Related.SCANTRACE`.
 - `SCANDEVICES` → `Purpose`, `Audience`, `Step1..3` (bekleyen cihazı onayla, sessiz ya da düşük pilli cihazı kontrol et, kayıp cihazı gerekçeyle
-  engelle); `.Immediate` ("Engellenen cihazdan okutma reddedilir; yeniden etkinleştirmede cihaz yeni anahtar alır").
+  engelle); `.Immediate` ("Engellenen cihazdan okutma reddedilir; yeniden etkinleştirmede telefon yeni anahtarı ekrandaki QR kodu 10 dakika
+  içinde okutarak bir kez alır" — r4).
 - `BARCODESETTINGS` → `Purpose`, `Audience`, `Step1..2` (eşikleri ayarla, okutma zorunlu depoları seç).
 - `SUPERVISORPIN` → `Purpose`, `Audience`, `Step1..2` (PIN'ini belirle — 4–8 hane, kolay tahmin edilen PIN kabul edilmez; süresi dolunca yenile);
   `.Immediate` ("PIN'inizi kimseyle paylaşmayın; aşımlar sizin adınızla kaydedilir").
