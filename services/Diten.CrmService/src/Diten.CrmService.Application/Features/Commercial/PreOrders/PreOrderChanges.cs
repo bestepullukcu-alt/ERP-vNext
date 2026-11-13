@@ -16,6 +16,7 @@ public static class PreOrderChanges
     public const string Note = "note";
     public const string Date = "date";
     public const string Pharmacy = "pharmacy";
+    public const string Visit = "visit";
     public const string Code = "code";
     public const string BinaryRef = "binaryRef";
     public const string SignerName = "signerName";
@@ -23,12 +24,15 @@ public static class PreOrderChanges
     public const string OldSuffix = ".old";
     public const string NewSuffix = ".new";
 
-    /// <summary>The editable part of a draft that §21 names (Lines, Depot, Note, Date), as invariant text.</summary>
-    public sealed record DraftSnapshot(string? Lines, string? Depot, string? Note, string? Date)
+    /// <summary>The editable part of a draft as invariant text: what §21 names (Lines, Depot, Note, Date) and — CT decision
+    /// K-3, 2026-11-13 — the pharmacy and the visit the update can also replace. Pharmacy, depot and visit are IDS only
+    /// (no name, address or person data): a changed pharmacy clears the signature, so who changed it must be traceable.</summary>
+    public sealed record DraftSnapshot(string? Lines, string? Depot, string? Note, string? Date, string? Pharmacy, string? Visit)
     {
         public static DraftSnapshot Of(PreOrder order)
             => new(LinesText(order.Lines), order.Depot?.AccountId.ToString("D"), Empty(order.Note),
-                order.RequestedDeliveryDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                order.RequestedDeliveryDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                order.Pharmacy.AccountId == Guid.Empty ? null : order.Pharmacy.AccountId.ToString("D"), order.VisitId?.ToString("D"));
     }
 
     /// <summary>The <c>updated</c> event's payload: <c>{field}.old</c> / <c>{field}.new</c> for the fields whose value
@@ -40,6 +44,8 @@ public static class PreOrderChanges
         Add(payload, Depot, before.Depot, after.Depot);
         Add(payload, Note, before.Note, after.Note);
         Add(payload, Date, before.Date, after.Date);
+        Add(payload, Pharmacy, before.Pharmacy, after.Pharmacy);
+        Add(payload, Visit, before.Visit, after.Visit);
         return payload;
     }
 

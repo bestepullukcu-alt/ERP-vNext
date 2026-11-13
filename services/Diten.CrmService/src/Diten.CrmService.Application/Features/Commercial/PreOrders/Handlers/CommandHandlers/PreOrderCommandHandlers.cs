@@ -266,7 +266,7 @@ public sealed class PreOrderCommandHandlers :
             PreOrderStateMachine.Append(order, PreOrderEventTypes.SignatureCleared, _c.CallerText, _c.Now, cleared);
         }
 
-        // B0a (MOD-0168 §21 "Before/After: Lines, Depot, Note, Date"): only the fields that changed, old → new
+        // B0a (MOD-0168 §21 "Before/After: Lines, Depot, Note, Date" + K-3: pharmacy, visit ids): only the fields that changed, old → new
         PreOrderStateMachine.Append(order, PreOrderEventTypes.Updated, _c.CallerText, _c.Now,
             PreOrderChanges.UpdatedPayload(draftBefore, PreOrderChanges.DraftSnapshot.Of(order)));
         return await _c.SaveAsync(order, expected, ct) ? Response<PreOrderDto>.Success(_c.Dto(order, visibility!)) : PreOrderResults.Stale<PreOrderDto>();

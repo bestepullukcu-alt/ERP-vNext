@@ -42,6 +42,16 @@ public sealed class PreOrderB0aHistoryTests : PreOrderTestBase
         Assert.Equal((PreOrderWorld.Depot.ToString("D"), PreOrderWorld.DepotNoEmail.ToString("D")), (second["depot.old"], second["depot.new"]));
         Assert.Equal(("Kasım siparişi", "Aralık siparişi"), (second["note.old"], second["note.new"]));
 
+        // K-3 (CT 2026-11-13): the pharmacy and the visit the update replaces — ids only, old → new; nothing else in the row
+        var visit = Guid.NewGuid();
+        var moved = Ok(await W.Send(new UpdatePreOrderCommand(draft.Id,
+            new PreOrderInput(PreOrderWorld.Pharmacy2, PreOrderWorld.DepotNoEmail, date, "Aralık siparişi", visit, [Line("TUT", 30, (10, 2), 5m), Line("ALM", 10)]))));
+        var third = moved.Events.Last(e => e.Type == PreOrderEventTypes.Updated).Payload;
+        Assert.Equal(new[] { "pharmacy.new", "pharmacy.old", "visit.new", "visit.old" }, third.Keys.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.Equal((PreOrderWorld.Pharmacy.ToString("D"), PreOrderWorld.Pharmacy2.ToString("D")), (third["pharmacy.old"], third["pharmacy.new"]));
+        Assert.Equal(((string?)null, visit.ToString("D")), (third["visit.old"], third["visit.new"]));
+        Assert.DoesNotContain("Eczane", System.Text.Json.JsonSerializer.Serialize(third), StringComparison.Ordinal); // no name, only the id
+
         // the first update's row is still there, unchanged (append only)
         Assert.Equal("LS-TUT q=20 mf=10+2 d=5", W.Stored(draft.Id).Events.First(e => e.Type == PreOrderEventTypes.Updated).Payload["lines.old"]);
     }
