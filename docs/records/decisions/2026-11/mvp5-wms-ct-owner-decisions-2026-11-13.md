@@ -11,3 +11,6 @@
 - **Ali'ye bağlı işler (geliştirmeyi bekletmez, unutulmaz):** Auth AC-76 (MOD-0018-FU31; MOD-0178 canlıya çıkışı), sayım rol şablonu
   (MOD-0181 DL-4 ACCEPTED), MDM kısa kod kilidi (MOD-0040-FU02 DL-2 canlıya alma), sır kasası teknik soruları (MOD-0012-FU01 Q-1…Q-5,
   Q-13). Geliştirme bunları beklemeden sürer; her biri ilgili kabul ya da canlıya alma kapısında kontrol edilir.
+- **MOD-0049-FU01 `.antigravity` kapısı ("yaz", Beste):** RCS-001 §3'e `BPT` (İş Ortağı, OTOMATİK, grup önekli, ortak servisten) satırı
+  yazıldı; aynı adımda X-6: Platform `RecordCodeTypeCatalogTests` `RuleAheadOfCatalogue["BPT"] = "MOD-0049-FU01 DL-1"` — 17/17 yeşil,
+  satır silinince AC16 kırmızı, geri alındı. Bu onay öneki `BPT` olarak seçer (Q-1). Q-2…Q-7 açık.
