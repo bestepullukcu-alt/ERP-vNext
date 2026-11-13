@@ -61,3 +61,14 @@ kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
 - **2026-11-13 — `.antigravity` kapısı onaylandı** (sahip sohbet cevabı, Beste 2026-11-13, "ikisine de evet"): PKS-001 :92 adlı alt ad alanı cümlesi,
   `warehouse.*` satırı ve yeni `warehouse.barcode.*` satırı; RCS-001 §3 `DVC` ve `LBL` satırları; aynı adımda X-8 (`RecordCodeTypeCatalogTests`
   `DVC` / `LBL`); X-9 (MOD-0178 §14.1 notu) MOD-0178 r30 ile.
+
+- **2026-11-13 — X-4, X-5, X-6 (a), X-7 (XMC-001 sahip onayı)** (WP-0182-DL1 taslağının bulgusu: paket §5.1 "dilim başlamadan sahibinden" der,
+  kayıt yoktu; kaynak: sahip sohbet cevabı, Beste 2026-11-13, "Evet, 0182 için de" — MOD-0180'in X-6 / X-9 / X-10 / X-11 onayıyla aynı emsal):
+  MOD-0182 yalnız eklemeli yazar — X-4 MOD-0178 `WarehouseRecordCodeRules.cs` `DVC` (DL-1) ve `LBL` (DL-4); X-5 MOD-0173
+  `SingleSystemOfRecordArchitectureTests.cs` `BarcodeCollections.All`; X-6 (a) MOD-0173 `CentralAuditDeclarationTests.cs` yazma komutu
+  sayısı (dilim başı ölçülen + dilimin komutları) ve sağlayıcı listesi; X-7 MOD-0173 `Program.cs` `BarcodeRfidManifestProvider` + `AddBarcode()`.
+  Var olan satırlar değişmez.
+- **2026-11-13 — Q-16 = yol b (CT — MVP-5 CT; paket "CT (+ Ali)" yazar, r1 önerisiyle aynı):** her okutma olayı merkezi denetime gider;
+  hacim ölçülünce yol c (okutma olayı defteri) yeniden değerlendirilir. Ali'nin payı: yol c'ye geçiş kararı gelirse Ali'ye sorulur.
+- **2026-11-13 — dilim sırası (sahip, Beste, "Önce 0180, sonra 0182"):** MOD-0182 DL-1, MOD-0180 DL-1'in CT doğrulamasından sonra başlar
+  (aynı sayaçlar ve tek çalışma dalı); sayılar o anki değerden ölçülür, `TypePrefixes`'te `WAV` o zaman vardır.

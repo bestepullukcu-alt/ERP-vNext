@@ -47,3 +47,12 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   `ActionVerb_*`, `perm-label.js` `ACTION_FAMILIES` ve `SharedResource.{7}.resx` `Perm.Entity.*`. DL-1: satır adları (`settings.configure`
   dahil, fiil `configure` zaten var); DL-3: yeni fiil `recall` (aile önerisi `secondary`) + satır; DL-5: satır. Var olan satırlar
   değişmez; fiil defteri tavanı paketteki gibi ölçülür (role-assignments-label-ledger vitest). MOD-0181 emsali `65b968b64`.
+- **2026-11-13 — X-6, X-9, X-10, X-11 (XMC-001 sahip onayı)** (WP-0180-DL1 taslağının bulgusu: paket §5.1 bu dört satırı yazar, satıra
+  özgü dokunma onayı kayıtta yoktu; kaynak: sahip sohbet cevabı, Beste 2026-11-13, "Evet, dördü de"): MOD-0180 DL-1 yalnız eklemeli yazar —
+  X-6 MOD-0178 `WarehouseRecordCodeRules.cs` `Wave = "WAV"` + `TypePrefixes`; X-9 MOD-0173 `SingleSystemOfRecordArchitectureTests.cs`
+  `WaveCollections.All` bildirimi; X-10 MOD-0173 `CentralAuditDeclarationTests.cs` yazma komutu sayısı (dilim başı ölçülen + dilimin
+  komutları), sağlayıcı listesi ve `seen`; X-11 MOD-0173 `Program.cs` `WavePlanningManifestProvider` + `AddWavePlanning()`. Var olan satırlar
+  değişmez; MOD-0181 emsali. Sonraki dilimlerdeki aynı satır artışları (DL-2 X-10 +1, DL-3 X-9) bu onayın içindedir.
+- **2026-11-13 — dilim sırası (sahip, Beste, "Önce 0180, sonra 0182"):** MOD-0180 DL-1 ile MOD-0182 DL-1 aynı sayaçları (Gateway uç sayısı,
+  merkezi denetim komut sayısı, kayıt kodu önek listesi) ve tek çalışma dalını paylaşır; önce MOD-0180 DL-1 yürür, MOD-0182 DL-1 MOD-0180
+  DL-1'in CT doğrulamasından sonra başlar ve sayıları o anki değerden ölçer.
