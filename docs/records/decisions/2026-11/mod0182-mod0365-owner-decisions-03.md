@@ -45,3 +45,11 @@ kapanacak iştir; `.antigravity/**` değişikliği ayrı sahip onayı ister.
     hangisi önce gelirse ölçülen sayıdan devam; kabul kaydı önce → sonra yazar; dosyayı integration-agent değiştirir — onaylandı (her artış dahil).
   - **X-1:** MOD-0174 `Gs1CodeParser`'a kapalı "okunur, kullanılmaz" AI listesi (37), (310n), (240); liste dışı AI'lar reddedilmeye devam eder;
     MOD-0174 gs1-check ucunun da bu AI'ları kabul etmesi yan etkisi kabul — onaylandı (DL-5 öncesi).
+
+- **2026-11-13 — r3 incelemesi sonrası sahip kararları** (kaynak: sahip sohbet cevabı, Beste 2026-11-13, "ikisine de evet"):
+  - **X-6 genişletmesi (XMC-001):** `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/CentralAudit/CentralAuditDeclarationTests.cs`
+    `Every_transaction_a_command_can_run_in_enlists_the_central_audit_event` işlem sayısı satırı (bugün `Assert.Equal(14, seen)`, yorum
+    `:127-129`) işlem açan her MOD-0182 dilimi tarafından dilim başında ölçülen sayı + dilimin yeni `WithTransactionAsync` çağrıları ile, aynı
+    commit'te güncellenir; yorum satırına dilim adı yazılır; kabul kaydı önce → sonra yazar (MOD-0181 DL-1 ve MOD-0180 X-10 emsali) — onaylandı.
+  - **Cihaz anahtarının telefona teslimi:** Web'den kayıt ya da yeniden etkinleştirmede üretilen anahtar telefona **QR kod** ile verilir;
+    QR tek kullanımlık ve kısa ömürlüdür, anahtar sunucuda yalnız özetiyle tutulur — onaylandı (ayrıntı paket r4'te, SCAN-BUNDLE'da).
