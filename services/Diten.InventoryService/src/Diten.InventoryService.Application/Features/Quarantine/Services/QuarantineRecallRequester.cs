@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Features.Recall.Ports;
 using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
+using Diten.InventoryService.Domain.Quarantine.Rules;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Services;
@@ -56,7 +57,7 @@ public sealed class QuarantineRecallRequester : IRecallQuarantineRequester
     public async Task<IReadOnlyList<RecallHoldView>> OpenHoldsOfLotAsync(string lotId, CancellationToken cancellationToken = default)
     {
         var page = await _repository.ListHoldsAsync(new HoldQuery(null, null, null, null, null, null, lotId, null, 1, 500), cancellationToken);
-        return page.Items.Where(h => h.Status != HoldStatus.Decided).Select(View).ToList();
+        return page.Items.Where(h => QuarantineRecordStates.IsOpen(h.Status)).Select(View).ToList();
     }
 
     // WP-0177-R7b owner step (MOD-0175, read only): the existing intake-idempotency lookup by source movement — no new write, index or method

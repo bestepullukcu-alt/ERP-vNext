@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>使用键盘</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>此页面显示单个退货：摘要、包含产品和批次的行，以及收货时生成的隔离记录。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>退货与仓库人员</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>查看摘要</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>摘要显示状态、发货（链接到其页面）、客户、原因和退货创建时间。在退货记录客户之前创建的退货标记为“Old record”。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>核对行</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>每行显示产品 / SKU、批次、数量和单位，以及收货时库存的过账方式。未过账的行会显示原因。</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>打开隔离记录</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>如有隔离记录的访问权限，每条已收货行会显示其 KRN 编号；点击即可打开隔离记录。没有该权限时不显示该列。</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>按仓库、库位、批次和库存状态查看每个产品的库存数量。此列表只读：库存只能通过库存移动发生变化。</value>
@@ -1028,7 +1052,7 @@
     <value>打开记录</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>在未关闭的记录上点击“作出决定”，放行、拒收或冻结库存。只有决定获批后库存才会移动。</value>
+    <value>在未关闭的记录上点击“作出决定”，放行、拒收或冻结库存。只有决定获批后库存才会移动。标记为“已作废 · 来源已冲销”的行因其来源库存移动已被冲销而关闭：无需作出决定。</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>作出决定</value>
@@ -1043,7 +1067,7 @@
     <value>保存分析备注</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>核对顶部信息、“质量信息”卡片以及该记录产生的库存移动；超过等待目标时会显示黄色提示。</value>
+    <value>核对顶部信息、“质量信息”卡片以及该记录产生的库存移动；超过等待目标时会显示黄色提示。“已作废”横幅：来源移动已被冲销，记录已关闭。“来源已冲销 · 不一致”：库存在此记录之外发生了变化；由质量保证检查。带此标记的记录若仍未关闭，则保持未关闭，并以全部数量计入未关闭统计（KPI、批次质量状态、召回）；记录上没有关闭操作 — 质量保证在库存一侧进行更正。在已作废记录上，该标记表示其决定的一行在关闭后过账；库存从另一记录的库位中流出。批次变更标记：记录关闭前，决定的批次变更（状态和/或复检日期）已应用；批次未还原 — 由质量保证检查批次状态。</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>阅读记录</value>
@@ -1142,7 +1166,7 @@
     <value>“冻结库存”→“冻结”：所选库存立即变为冻结，不经过审批流程</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择冻结原因、“仅显示待处置”或“状态”，然后点击“应用”。</value>
+    <value>在搜索框中输入，或点击筛选按钮（“筛选”），选择冻结原因、“仅显示待处置”或“状态”，然后点击“应用”。“状态”中的“已作废 · 来源已冲销”列出因来源库存移动被冲销而关闭的记录。标记为“来源已冲销 · 不一致”的未关闭冻结记录保持未关闭，并以全部数量计入未关闭统计；记录上没有关闭操作 — 质量保证在库存一侧进行更正。</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>缩小列表</value>
@@ -1670,7 +1694,7 @@
     <value>隔离库存</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>在“客户与发货”中使用“标记为已通知”和“添加消耗声明”。在“退回”中，“录入客户退货”会打开库存移动表单；然后在候选项上点击“关联退货”。</value>
+    <value>在“客户与发货”中使用“标记为已通知”和“添加消耗声明”。在“退回”中，“录入客户退货”会打开库存移动表单；然后在候选项上点击“关联退货”。“旧记录”或“无 CRM 标识”徽标表示没有 CRM 标识的客户；此类行绝不会与 CRM 客户合并。无法连接 CRM 时，或您无权查看 CRM 客户名称（“缺少权限”）时，该客户的通知、消耗声明和退货关联均不可用。客户名称每页显示 25 个客户；其他客户请使用翻页按钮。</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>跟进客户和退货</value>
@@ -2697,6 +2721,168 @@
   </data>
   <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
     <value>订单使用当日或之前的最新汇率；若无汇率则不显示本币等值。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>将收货库位的库存移至其货位并确认；确认后库存在库存台账中移动。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>仓库操作员（确认）和仓库主管（创建、分配、对账）。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>选择库存</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>点击“新建任务”，在“待上架库存”中选择一行。锁定的行会显示原因及阻止它的单据，不能选择。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>货位和负责人</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>在“目标货位”中输入或扫描货位代码，只接受完全一致的代码。在“负责人”中选择操作员。建议货位只有点击“应用”才会采用。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>点击“确认”，检查数量（−/+）和实际货位。允许部分数量；货位不同需填写原因。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>重试等待中的确认</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>如果标记显示“等待确认”，说明库存答复未到达；打开任务并点击“重试”。处理完成前其他操作均不可用。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>确认会立即移动库存；撤销需在库存移动中做冲销。</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>用于标记收货库位和储存条件</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>查看确认所移动的库存</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>标记哪些库位是收货区或发货暂存区，以及节点接受哪些储存条件；下级节点继承这些设置。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>仓库主管。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>选择库位</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>点击“新建角色”，在“库位节点”中选择节点。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>设置角色和条件</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>勾选“收货区”或“发货暂存区”以及接受的储存条件；只设条件、不设角色也有效。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>检查收货库位</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>上架任务只能从收货库位开始；请确认每个仓库都有收货库位。继承的条件集会显示“来自上级节点”标记。</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>用于上架已收货库存</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>将库存发出仓库：创建带明细行的出库单，跟踪拣货和包装，设为待发运并记录发运。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>发运计划员和仓库主管。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>仓库与暂存</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>点击“新建出库单”并选择仓库。仅当仓库有多个暂存位置时才选择暂存位置。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>明细行与预览</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>填写每一行（产品、SKU、数量、订单行），然后点击“预览分配”：将显示按 FEFO 排序的批次和可分配数量。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>更换批次</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>如有需要，在“更换批次”中选择其他批次；非 FEFO 首选的批次需按公司 FEFO 规则填写原因。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>跟踪拣货</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>保存后将分配库存并生成拣货任务；在详情页跟踪，直到出库单变为已拣货。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>待发运与发运</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>包装完成后点击“设为待发运”；货物发出后点击“核对发运”。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>设为待发运的出库单不能再修改或取消。</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>拣取已分配的库存</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>查看卡住、需要处理的事项</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>将已分配库存从库位移至暂存位置，并确认每次移动。</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>仓库操作员（确认）和仓库主管（分配、对账）。</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>认领任务</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>从行菜单打开未分配的任务并点击“认领”。</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>移动并确认</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>将库存从库位搬至暂存位置，点击“确认”并核对数量（−/+）。库位和目标不能更改。</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>包装</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>出库单拣货完成后，任务上会出现“去包装”链接；点击打开包装作业页面。</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>包装已拣库存</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>将出库单的已拣库存装入包裹。</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>仓库操作员和仓库主管。</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>开启包裹</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>点击“新建包裹”；仅在出库单已拣货时可用。</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>内容、重量、尺寸</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>填写每个分配装入包裹的数量（−/+）、重量（千克）和尺寸（厘米，40x30x20）。</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>关闭包裹</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>点击“关闭包裹”。所有分配装箱后，出库单变为“已包装”。</value>
   </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>此页面用于打开产能计划：为所选公司创建计划，或按 ID 打开现有计划。</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>产能与供应计划员</value></data>

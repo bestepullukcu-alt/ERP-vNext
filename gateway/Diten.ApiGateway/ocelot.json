@@ -1179,6 +1179,44 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/warehouse",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5067
+        }
+      ],
+      "UpstreamPathTemplate": "/api/warehouse",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/warehouse/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5067
+        }
+      ],
+      "UpstreamPathTemplate": "/api/warehouse/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/personalization/views",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
@@ -6631,7 +6669,23 @@
         ],
         "UpstreamScheme": "http"
       },
-    {
+      {
+        "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
+        "DownstreamScheme": "http",
+        "DownstreamHostAndPorts": [
+          {
+            "Host": "localhost",
+            "Port": 5066
+          }
+        ],
+        "UpstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}",
+        "UpstreamHttpMethod": [
+          "GET",
+          "OPTIONS"
+        ],
+        "UpstreamScheme": "http"
+      },
+      {
         "DownstreamPathTemplate": "/api/shipment-bundle/returns/{returnId}/transition",
         "DownstreamScheme": "http",
         "DownstreamHostAndPorts": [

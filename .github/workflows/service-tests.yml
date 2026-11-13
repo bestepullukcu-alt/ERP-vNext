@@ -4,7 +4,8 @@ name: service-tests
 # none of their tests ran in CI, so Linux-only behaviour (BL-570: the Auth operator commands' Unix secret channel and
 # lock) was never measured. Guide: docs/guides/operations/ci-service-tests.md.
 #
-# Triggers (Control Tower decision, to save Actions minutes): pull requests, pushes to main, and by hand. A branch
+# Triggers (Control Tower decision, to save Actions minutes): pull requests, the merge queue's merge groups (EES MQ-01:
+# the required check must be reported on the group or the queue cannot merge), pushes to main, and by hand. A branch
 # push does NOT run these; phase1-gates.yml keeps its own triggers.
 #
 # The architecture guard CiServiceTestsGuardTests reads this file: the matrix must name every service test project
@@ -13,6 +14,8 @@ name: service-tests
 
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
   workflow_dispatch:
@@ -204,7 +207,7 @@ jobs:
       # as `-u rabbitmq`, the cookie's owner; (3) a container that has exited fails at once with its log. No cookie value
       # is written anywhere (the server generates its own; nothing here is a secret). Budget back to 120 s.
       - name: Start RabbitMQ (Eventing)
-        if: matrix.suite == 'platform-eventing'
+        if: matrix.suite == 'platform-eventing' || matrix.suite == 'planning-tests'
         env:
           RABBITMQ_PORT: "5672"
         run: |
@@ -238,6 +241,11 @@ jobs:
           echo "Eventing__RabbitMq__IntegrationTestsEnabled=true" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Host=127.0.0.1" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Port=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+          if [ "$SUITE" = "planning-tests" ]; then
+            echo "MOD0188_TEST_RABBITMQ_ENABLED=true" >> "$GITHUB_ENV"
+            echo "MOD0188_TEST_RABBITMQ_HOST=127.0.0.1" >> "$GITHUB_ENV"
+            echo "MOD0188_TEST_RABBITMQ_PORT=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+          fi
 
       # WP-LANE-MAIN-SYNC-02 M1: Inventory's PrismMockFixture reads @stoplight/prism-cli 4.10.5 from the npx cache; a
       # one-shot `--version` puts exactly that version there and exits (no server). Pinned version, Inventory row only.
@@ -264,6 +272,9 @@ jobs:
         run: |
           dotnet test "$PROJECT" -c Debug --blame-hang --blame-hang-timeout 20m \
             --logger "trx;LogFileName=$SUITE.trx" --results-directory "$RUNNER_TEMP/test-results"
+          if [ "$SUITE" = "planning-tests" ]; then
+            cat "$RUNNER_TEMP/test-results/mod0188-rabbitmq-delivery-proof.json"
+          fi
 
       # dotnet test exits 0 when tests are skipped. Runs even after a red test step, so both are reported. FIX1: the only
       # accepted skips are the repository allow-list's codes for THIS suite (scripts/ci-skip-allowlist.tsv).
@@ -273,7 +284,11 @@ jobs:
 
       - name: Stop owned Mongo (Planning)
         if: always() && matrix.suite == 'planning-tests'
-        run: bash scripts/test-env/mod0188-ci-mongo.sh stop
+        run: |
+          bash scripts/test-env/mod0188-ci-mongo.sh stop
+          if docker inspect rabbitmq >/dev/null 2>&1; then
+            docker rm -f rabbitmq
+          fi
 
       - name: Stop owned Mongo (SupplyChain)
         if: always() && matrix.suite == 'supplychain-tests'

@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Warehouse.WarehouseLocationRoles
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseLocationRolesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // SERVER data through the proxy profile (pack §11.2): /Warehouse/LocationRoles/api translates paging and filters for listLocationRoles.
+    // The selection column feeds the bulk delete bar, which only warehouse.location-roles.manage gets (Index.cshtml).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-warehouselocationroles",
+        DataMode = "server",
+        Slug = "warehouselocationroles",
+        HasSelection = true,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColLocation"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColLocationType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRoles"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColConditions"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColNote"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

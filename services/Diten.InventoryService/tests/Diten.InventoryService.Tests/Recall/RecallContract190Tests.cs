@@ -37,7 +37,7 @@ public sealed class RecallContract190Tests
     public void The_1_9_0_change_names_the_drill_and_return_link_people_only_optional()
     {
         var before = Load(FixtureV180Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(RecallContract1100Tests.FixtureV190Path);
         Assert.Equal(("1.8.0", "1.9.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
         var oldLog = Strings(before["info"]!["x-changelog"]);
         var newLog = Strings(after["info"]!["x-changelog"]);

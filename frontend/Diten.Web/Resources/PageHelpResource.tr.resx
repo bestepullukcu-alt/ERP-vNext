@@ -414,6 +414,30 @@
   <data name="Help.ITEMS.Step5Title" xml:space="preserve">
     <value>Klavyeyi kullanın</value>
   </data>
+  <data name="Help.RETURNDETAILS.Purpose" xml:space="preserve">
+    <value>Bu sayfa tek bir iadeyi gösterir: özetini, ürün ve lotuyla satırlarını ve teslim alınırken oluşan karantina kayıtlarını.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Audience" xml:space="preserve">
+    <value>İade ve depo personeli</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1Title" xml:space="preserve">
+    <value>Özeti okuyun</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step1" xml:space="preserve">
+    <value>Özet durumu, sevkiyatı (kendi sayfasına bağlantı), müşteriyi, gerekçeyi ve iadenin ne zaman oluşturulduğunu gösterir. Müşterinin iadeye kaydedilmesinden önce oluşturulmuş bir iade “Old record” olarak işaretlenir.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2Title" xml:space="preserve">
+    <value>Satırları kontrol edin</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step2" xml:space="preserve">
+    <value>Her satır ürünü / SKU'yu, lotu, miktarı ve birimi ve teslim alınırken stokunun nasıl kaydedildiğini gösterir. Kaydedilmemiş bir satır nedenini gösterir.</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3Title" xml:space="preserve">
+    <value>Karantina kaydını açın</value>
+  </data>
+  <data name="Help.RETURNDETAILS.Step3" xml:space="preserve">
+    <value>Karantina kayıtlarına erişiminiz varsa, teslim alınan her satır KRN numarasını gösterir; karantina kaydını açmak için tıklayın. Bu erişim yoksa sütun gösterilmez.</value>
+  </data>
   <!-- WP-MVP1-FU-CLEAN2 (UXH-001): the MVP-1 pages — Inventory, Traceability, Quarantine, Expiry / FEFO, Recall, e-Signature -->
   <data name="Help.STOCKLEDGER.Purpose" xml:space="preserve">
     <value>Her üründen ne kadar stokunuz olduğunu depo, lokasyon, lot ve stok durumuna göre görün. Liste salt okunurdur: stok yalnız hareketlerle değişir.</value>
@@ -1028,7 +1052,7 @@
     <value>Kaydı açın</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5" xml:space="preserve">
-    <value>Açık bir kayıtta “Karar Ver”e tıklayıp stoğu serbest bırakın, reddedin ya da bloke edin. Stok ancak karar onaylandıktan sonra hareket eder.</value>
+    <value>Açık bir kayıtta “Karar Ver”e tıklayıp stoğu serbest bırakın, reddedin ya da bloke edin. Stok ancak karar onaylandıktan sonra hareket eder. “Geçersiz · Kaynak geri alındı” rozetli satırda kaynak stok hareketi geri alındığı için kayıt kapandı; karar gerekmez ve “Karar Ver” görünmez.</value>
   </data>
   <data name="Help.QUARANTINEQUEUE.Step5Title" xml:space="preserve">
     <value>Karar verin</value>
@@ -1043,7 +1067,7 @@
     <value>Analiz notunun kaydedilmesi</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1" xml:space="preserve">
-    <value>Üstteki bilgileri, “Kalite bilgileri” kartını ve kaydın oluşturduğu stok hareketlerini kontrol edin; bekleme hedefi aşıldıysa sarı bir uyarı görünür.</value>
+    <value>Üstteki bilgileri, “Kalite bilgileri” kartını ve kaydın oluşturduğu stok hareketlerini kontrol edin; bekleme hedefi aşıldıysa sarı bir uyarı görünür. “Geçersiz” afişi: kaynak hareket geri alındı, kayıt kapandı. “Kaynak geri alındı · uyuşmazlık”: stok bu kaydın dışında değişti; QA kontrol eder. Uyuşmazlık işaretli kayıt açıksa açık kalır ve açık sayımlarda (KPI, lot kalite durumu, recall) tam miktarıyla görünür; kayıt üzerinde kapatma eylemi yoktur — QA düzeltmeyi stok tarafında yapar. Geçersiz kayıtta işaret: kararına ait bir satır kapanıştan sonra postlandı; stok başka bir kaydın kovasından çıktı. Lot değişikliği işareti: kayıt kapanmadan önce kararın lot değişikliği (durum ve / veya yeniden test tarihi) uygulanmıştı; lot geri alınmadı — lot durumunu QA kontrol eder.</value>
   </data>
   <data name="Help.QUARANTINEDETAILS.Step1Title" xml:space="preserve">
     <value>Kaydı okuyun</value>
@@ -1142,7 +1166,7 @@
     <value>“Stoğu bloke et” → “Bloke et”: seçilen stok onay akışı olmadan hemen Bloke olur</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1" xml:space="preserve">
-    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp bloke nedeni, “Yalnız disposition bekleyenler” veya “Durum” seçin ve “Uygula”ya tıklayın.</value>
+    <value>Arama kutusuna yazın ya da filtre düğmesine (“Filtrele”) tıklayıp bloke nedeni, “Yalnız disposition bekleyenler” veya “Durum” seçin ve “Uygula”ya tıklayın. “Durum” süzgecindeki “Geçersiz · Kaynak geri alındı”, kaynak stok hareketi geri alındığı için kapanan kayıtları gösterir. “Kaynak geri alındı · uyuşmazlık” işaretli açık bloke kayıt açık kalır ve açık sayımlarda tam miktarıyla görünür; kayıt üzerinde kapatma eylemi yoktur — QA düzeltmeyi stok tarafında yapar.</value>
   </data>
   <data name="Help.BLOCKEDSTOCK.Step1Title" xml:space="preserve">
     <value>Listeyi daraltın</value>
@@ -1670,7 +1694,7 @@
     <value>Stoğu karantinaya alın</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve">
-    <value>“Müşteriler ve sevkiyatlar” sekmesinde “Bilgilendirildi olarak kaydet” ve “Tüketim beyanı ekle”yi kullanın. “Geri dönüşler” sekmesinde “Müşteri iadesi gir” stok hareketi formunu açar; ardından adaydaki “İadeyi bağla”ya tıklayın.</value>
+    <value>“Müşteriler ve sevkiyatlar” sekmesinde “Bilgilendirildi olarak kaydet” ve “Tüketim beyanı ekle”yi kullanın. “Geri dönüşler” sekmesinde “Müşteri iadesi gir” stok hareketi formunu açar; ardından adaydaki “İadeyi bağla”ya tıklayın. “Eski kayıt” ya da “CRM kimliği yok” rozeti CRM kimliği olmayan müşteriyi işaretler; böyle bir satır CRM müşterisiyle birleştirilmez. CRM’e ulaşılamadığında ya da CRM müşteri adlarını görme izniniz yokken (“İzin eksik”) o müşteri için bildirim, tüketim beyanı ve iade bağlama kapalıdır. Müşteri adları 25’er müşterilik sayfalarla gösterilir; ötekiler için sayfa düğmelerini kullanın.</value>
   </data>
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve">
     <value>Müşterileri ve iadeleri izleyin</value>
@@ -2697,6 +2721,168 @@
   </data>
   <data name="Help.COMFXRATELIST.Step4" xml:space="preserve">
     <value>Sipariş kendi günü ya da öncesindeki en son kuru kullanır; kur yoksa yerel karşılık gösterilmez.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Purpose" xml:space="preserve">
+    <value>Mal kabul lokasyonundaki stoğu rafına taşıyın ve onaylayın; onay stoğu stok defterinde taşır.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Audience" xml:space="preserve">
+    <value>Depo operatörleri (onay) ve depo sorumluları (görev açma, atama, uzlaştırma).</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1Title" xml:space="preserve">
+    <value>Stoğu seçin</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step1" xml:space="preserve">
+    <value>“Yeni Görev”e basın ve “Yerleştirilecek stok” alanından bir satır seçin. Kilitli satır nedenini ve engelleyen belgeyi gösterir; seçilemez.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2Title" xml:space="preserve">
+    <value>Hedef raf ve atanan</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step2" xml:space="preserve">
+    <value>“Hedef raf” alanına raf kodunu yazın ya da okutun; yalnız tam kod kabul edilir. “Atanan” alanından operatörü seçin. Önerilen raf yalnız “Uygula” ile alınır.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3Title" xml:space="preserve">
+    <value>Onaylayın</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step3" xml:space="preserve">
+    <value>“Onayla”ya basın, miktarı (−/+) ve gerçek rafı kontrol edin. Kısmi miktar olabilir; farklı raf gerekçe ister.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4Title" xml:space="preserve">
+    <value>Bekleyen onayı yeniden deneyin</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Step4" xml:space="preserve">
+    <value>Rozet “Onay bekliyor” diyorsa stok cevabı gelmedi; görevi açıp “Yeniden Dene”ye basın. Sonuçlanana kadar başka işlem çalışmaz.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Immediate" xml:space="preserve">
+    <value>Onay stoğu hemen taşır; geri alma Stok Hareketleri'nde ters kayıttır.</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.WAREHOUSELOCATIONROLES" xml:space="preserve">
+    <value>Mal kabul lokasyonlarını ve saklama koşullarını işaretlemek için</value>
+  </data>
+  <data name="Help.PUTAWAYTASKS.Related.STOCKLEDGER" xml:space="preserve">
+    <value>Onayların taşıdığı stoğu görmek için</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Purpose" xml:space="preserve">
+    <value>Hangi lokasyonların mal kabul ya da sevkiyat hazırlık alanı olduğunu ve bir düğümün hangi saklama koşullarını kabul ettiğini işaretleyin; alt düğümler bunları devralır.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Audience" xml:space="preserve">
+    <value>Depo sorumluları.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1Title" xml:space="preserve">
+    <value>Lokasyonu seçin</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step1" xml:space="preserve">
+    <value>“Yeni Rol”e basın ve “Lokasyon düğümü” alanından düğümü seçin.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2Title" xml:space="preserve">
+    <value>Rol ve koşul verin</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step2" xml:space="preserve">
+    <value>“Mal Kabul” ya da “Sevkiyat Hazırlık”ı ve kabul edilen saklama koşullarını işaretleyin; rolsüz, yalnız koşul girmek geçerlidir.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3Title" xml:space="preserve">
+    <value>Mal kabul lokasyonlarını doğrulayın</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Step3" xml:space="preserve">
+    <value>Yerleştirme görevleri yalnız mal kabul lokasyonlarından başlar; her deponun bir mal kabul lokasyonu olduğunu doğrulayın. Devralınan küme “üst düğümden” rozetini taşır.</value>
+  </data>
+  <data name="Help.WAREHOUSELOCATIONROLES.Related.PUTAWAYTASKS" xml:space="preserve">
+    <value>Mal kabul edilen stoğu yerleştirmek için</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
+    <value>Stoğu depodan sevk edin: satırlarıyla bir outbound açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
+    <value>Sevkiyat planlayıcıları ve depo sorumluları.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1Title" xml:space="preserve">
+    <value>Depo ve sevkiyat hazırlık</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
+    <value>“Yeni Outbound”a basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
+    <value>Satırlar ve önizleme</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
+    <value>Her satırı girin (ürün, SKU, miktar, sipariş satırı) ve “Tahsisi Önizle”ye basın: FEFO sırasındaki lotlar ve tahsis edilebilecek miktar görünür.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
+    <value>Lot değişimi</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
+    <value>Gerekirse “Lot değişimi” alanından başka bir lot seçin; FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
+    <value>Toplamayı izleyin</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
+    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; outbound Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
+    <value>Sevke hazır ve sevk</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
+    <value>Paketlenince “Sevke Hazır”a basın; mal çıktıktan sonra “Sevkiyatı Kontrol Et”e basın.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
+    <value>Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez.</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
+    <value>Tahsis edilen stoğu toplamak için</value>
+  </data>
+  <data name="Help.OUTBOUNDSHIPMENTS.Related.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Takılan ve ilgi bekleyen işleri görmek için</value>
+  </data>
+  <data name="Help.PICKTASKS.Purpose" xml:space="preserve">
+    <value>Tahsis edilen stoğu rafından sevkiyat hazırlık lokasyonuna taşıyın ve her taşımayı onaylayın.</value>
+  </data>
+  <data name="Help.PICKTASKS.Audience" xml:space="preserve">
+    <value>Depo operatörleri (onay) ve depo sorumluları (atama, uzlaştırma).</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1Title" xml:space="preserve">
+    <value>Görevi üstlenin</value>
+  </data>
+  <data name="Help.PICKTASKS.Step1" xml:space="preserve">
+    <value>Atanmamış bir görevi satır menüsünden açın ve “Üstlen”e basın.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2Title" xml:space="preserve">
+    <value>Taşıyın ve onaylayın</value>
+  </data>
+  <data name="Help.PICKTASKS.Step2" xml:space="preserve">
+    <value>Stoğu raftan sevkiyat hazırlık lokasyonuna götürün, “Onayla”ya basın ve miktarı (−/+) kontrol edin. Raf ve hedef değiştirilemez.</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3Title" xml:space="preserve">
+    <value>Paketleyin</value>
+  </data>
+  <data name="Help.PICKTASKS.Step3" xml:space="preserve">
+    <value>Outbound toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
+  </data>
+  <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
+    <value>Toplanan stoğu paketlemek için</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
+    <value>Bir outbound'un toplanan stoğunu kolilere paketleyin.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
+    <value>Depo operatörleri ve depo sorumluları.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1Title" xml:space="preserve">
+    <value>Koli açın</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
+    <value>“Yeni Koli”ye basın; yalnız outbound toplandığında mümkündür.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
+    <value>İçerik, ağırlık, ölçü</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step2" xml:space="preserve">
+    <value>Her tahsisten koliye ne kadar girdiğini (−/+), ağırlığı kg ve ölçüyü cm olarak (40x30x20) girin.</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3Title" xml:space="preserve">
+    <value>Koliyi kapatın</value>
+  </data>
+  <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
+    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince outbound “Paketlendi” olur.</value>
   </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Bu sayfa kapasite planlarını açar: seçili şirket için plan oluşturun ya da var olan bir planı kimliğiyle açın.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Kapasite ve tedarik planlamacıları</value></data>

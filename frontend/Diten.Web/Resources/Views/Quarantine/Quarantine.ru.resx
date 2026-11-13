@@ -455,4 +455,17 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Подтвердите с обоснованием</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>Подтверждение требует обоснования не короче 10 символов; затем запись ожидает решения в очереди.</value></data>
   <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
+  <data name="Quarantine.HoldState.Voided" xml:space="preserve"><value>Аннулировано · Источник сторнирован</value></data>
+  <data name="Quarantine.Blocked.Status.Voided" xml:space="preserve"><value>Аннулировано · Источник сторнирован</value></data>
+  <data name="Quarantine.Workflow.Voided" xml:space="preserve"><value>Аннулировано</value></data>
+  <data name="Quarantine.History.SourceReversed" xml:space="preserve"><value>Источник сторнирован — запись аннулирована</value></data>
+  <data name="Quarantine.History.SourceReversalConflict" xml:space="preserve"><value>Источник сторнирован · расхождение</value></data>
+  <data name="Quarantine.Details.VoidedBanner" xml:space="preserve"><value>Запись аннулирована: исходное движение сторнировано документом {0} {1}, пользователь {2}.</value></data>
+  <data name="Quarantine.Details.ConflictBanner" xml:space="preserve"><value>Исходное движение сторнировано документом {0} {1}, пользователь {2}.</value></data>
+  <data name="Quarantine.Common.ConflictBadge" xml:space="preserve"><value>Источник сторнирован · расхождение</value></data>
+  <data name="Quarantine.Conflict.Cause.Decided" xml:space="preserve"><value>По записи уже было принято решение; остаток изменился вне этой записи — требуется проверка QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.LinesPosted" xml:space="preserve"><value>Строка решения была проведена; остаток изменился вне этой записи — требуется проверка QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.QuantityChanged" xml:space="preserve"><value>Количество записи меньше исходного движения; остаток изменился вне этой записи — требуется проверка QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.OwnMovementReversed" xml:space="preserve"><value>Собственное движение карантина этой записи было сторнировано; остаток изменился вне этой записи — требуется проверка QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.LotChanged" xml:space="preserve"><value>Изменение партии по решению уже было применено; партия не возвращена — статус партии проверяет QA.</value></data>
 </root>

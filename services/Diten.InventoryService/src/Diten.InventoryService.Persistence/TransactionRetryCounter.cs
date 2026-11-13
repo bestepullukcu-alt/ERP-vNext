@@ -12,6 +12,9 @@ public sealed class TransactionRetryCounter
     public const string Posting = "posting";
     public const string Location = "location";
 
+    /// <summary>MOD-0173-FU03 §8.2: the reservation repository's create / release / batch transactions.</summary>
+    public const string Reservation = "reservation";
+
     private readonly ConcurrentDictionary<string, long> _retries = new(StringComparer.Ordinal);
 
     public void Retried(string kind) => _retries.AddOrUpdate(kind, 1, (_, n) => n + 1);

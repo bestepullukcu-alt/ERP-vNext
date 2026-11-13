@@ -21,6 +21,13 @@ public static class PageHelpCatalog
             ["ROLES"] = [new("ROLEPERMISSIONS", "bx-key"), new("USERROLES", "bx-shield-quarter")],
             ["ROLEPERMISSIONS"] = [new("ROLES", "bx-id-card"), new("USERROLES", "bx-shield-quarter")],
             ["USERROLES"] = [new("USERS", "bx-user"), new("ROLES", "bx-id-card")],
+            // MOD-0178 DL-3 (pack §24): the two S1 warehouse screens point at each other; putaway also at the stock ledger it moves
+            ["PUTAWAYTASKS"] = [new("WAREHOUSELOCATIONROLES", "bx-map-pin"), new("STOCKLEDGER", "bx-book-content")],
+            ["WAREHOUSELOCATIONROLES"] = [new("PUTAWAYTASKS", "bx-package")],
+            // MOD-0178 DL-6 (pack §24): the S2 screens — a link is drawn only once its page is in the reader's menu (WAREHOUSEEXCEPTIONS comes with
+            // DL-7; PACKINGSTATION is not a menu page, it opens from a pick task or an outbound)
+            ["OUTBOUNDSHIPMENTS"] = [new("PICKTASKS", "bx-cart-download"), new("WAREHOUSEEXCEPTIONS", "bx-error-alt")],
+            ["PICKTASKS"] = [new("PACKINGSTATION", "bx-package")],
         };
 
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> StepIcons =
@@ -102,6 +109,13 @@ public static class PageHelpCatalog
             ["ESIGNPOLICY"] = ["bx-buildings", "bx-git-branch", "bx-list-check", "bx-key", "bx-save"],
             ["ESIGNMEANINGS"] = ["bx-filter-alt", "bx-plus", "bx-edit", "bx-toggle-right"],
             ["ESIGNSAMPLEAPPROVALS"] = ["bx-filter-alt", "bx-zoom-in", "bx-check", "bx-x", "bx-lock-alt"],
+            // MOD-0178 DL-3 (pack §24, UXH-001): no tour — the two S1 warehouse screens
+            ["PUTAWAYTASKS"] = ["bx-package", "bx-barcode-reader", "bx-check-circle", "bx-refresh"],
+            ["WAREHOUSELOCATIONROLES"] = ["bx-map-pin", "bx-purchase-tag-alt", "bx-check-shield"],
+            // MOD-0178 DL-6 (pack §24, UXH-001): no tour — the S2 screens
+            ["OUTBOUNDSHIPMENTS"] = ["bx-buildings", "bx-list-check", "bx-sort-up", "bx-cart-download", "bx-send"],
+            ["PICKTASKS"] = ["bx-user-plus", "bx-transfer", "bx-package"],
+            ["PACKINGSTATION"] = ["bx-box", "bx-ruler", "bx-lock-alt"],
         };
 
     /// <summary>The icon of step <paramref name="step"/> (1-based) of a page, or <see cref="DefaultStepIcon"/>.</summary>

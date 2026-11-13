@@ -110,7 +110,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
                     x.TenantId == tenant && x.LegalEntityId == legalEntity &&
                     x.RevisionId == revision.Id));
         }
-        Assert.Equal(2, await context.Outbox.CountDocumentsAsync(x =>
+        Assert.Equal(3, await context.Outbox.CountDocumentsAsync(x =>
             x.TenantId == tenant && x.LegalEntityId == legalEntity));
     }
 
@@ -174,7 +174,7 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
             Assert.Equal(0, (await drafts.ReadAsync(tenant, legalEntity,
                 revision.Id, default))!.Version);
         }
-        Assert.Equal(2, await context.Outbox.CountDocumentsAsync(x =>
+        Assert.Equal(3, await context.Outbox.CountDocumentsAsync(x =>
             x.TenantId == tenant && x.LegalEntityId == legalEntity));
     }
 }

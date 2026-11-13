@@ -46,4 +46,10 @@ public sealed record PostMovementCommand : IRequest<Response<MovementResponseDto
 
     /// <summary>INVENTORY 1.3.0 (MOD-0176 KF-B): the reason of an issue that is not from the first eligible FEFO lot (10–1000).</summary>
     public string? FefoBypassReason { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (MOD-0173-FU03 §8.3): the reservation this issue consumes (or a LOCATION_TRANSFER moves); raw text.</summary>
+    public string? ReservationId { get; init; }
+
+    /// <summary>INVENTORY 1.7.0 (§8.3.1, CT-08 r3 boundary): REVERSAL only — give the consumed quantity back to its reservation. Absent = false.</summary>
+    public bool? RestoreReservation { get; init; }
 }

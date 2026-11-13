@@ -1,10 +1,14 @@
 name: phase1-gates
 
 # Owner decision 2026-11-02: a pushed branch is checked through its pull request; main is checked after every merge.
+# EES merge queue (MQ-01): merge_group runs the same gates on the queue's merge group (main + the PRs ahead + this one) —
+# a required check whose workflow does not listen to merge_group is never reported there and the queue cannot merge.
 on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 # WP-CI-SERVICE-TESTS-03 (CT decision): the same rule as service-tests.yml — read-only token, no secret, and every action
 # one of the allowed ones pinned to a COMMIT SHA (a tag can be moved). The SHAs are what the floating @v4 tags resolved
@@ -28,4 +32,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Run Phase 1 Gates
+        # merge_group: GITHUB_BASE_REF is set only for pull_request events; the gates compare with the group's parent
+        # commit instead (run_phase1_gates.sh reads this variable only on a merge_group run, and fails without it).
+        env:
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
         run: ./scripts/run_phase1_gates.sh

@@ -68,6 +68,45 @@ public sealed class QuarantineHold : EntityBase
     public DateTimeOffset? DecidedAtUtc { get; set; }
 
     public DateTimeOffset? RetestDateAtIntake { get; set; }
+
+    /// <summary>MOD-0175-FU01: set once, only while <see cref="Status"/> is <see cref="HoldStatus.Voided"/>.</summary>
+    public RecordVoid? Voided { get; set; }
+
+    /// <summary>MOD-0175-FU01: "Kaynak geri alındı · uyuşmazlık" — written once (the first cause stays); the status does not change.</summary>
+    public SourceReversalMark? SourceReversalConflict { get; set; }
+}
+
+/// <summary>MOD-0175-FU01 (pack §4.1): the reversal that closed a hold / blocked record.</summary>
+public sealed class RecordVoid
+{
+    public DateTimeOffset AtUtc { get; set; }
+
+    public VoidReason Reason { get; set; }
+
+    /// <summary>The REVERSAL's transaction id (UUID, D format).</summary>
+    public string ReversalTransactionId { get; set; } = string.Empty;
+
+    public string ReversalTransactionNumber { get; set; } = string.Empty;
+
+    /// <summary>Who posted the REVERSAL (<c>InventoryTransaction.CreatedBy</c>).</summary>
+    public Guid ReversedByUserId { get; set; }
+
+    /// <summary>The active decision voided with the record, if any.</summary>
+    public Guid? DecisionId { get; set; }
+}
+
+/// <summary>MOD-0175-FU01 (pack §4.1, §8.3): a source reversal that could not close the record.</summary>
+public sealed class SourceReversalMark
+{
+    public DateTimeOffset AtUtc { get; set; }
+
+    public string ReversalTransactionId { get; set; } = string.Empty;
+
+    public string ReversalTransactionNumber { get; set; } = string.Empty;
+
+    public Guid ReversedByUserId { get; set; }
+
+    public SourceReversalCause Cause { get; set; }
 }
 
 public sealed class HoldSourceDocument
@@ -280,6 +319,12 @@ public sealed class BlockedStock : EntityBase
     public BlockedStatus Status { get; set; } = BlockedStatus.Open;
 
     public Guid? ActiveDecisionId { get; set; }
+
+    /// <summary>MOD-0175-FU01: set once, only while <see cref="Status"/> is <see cref="BlockedStatus.Voided"/>.</summary>
+    public RecordVoid? Voided { get; set; }
+
+    /// <summary>MOD-0175-FU01: the source-reversal mark (written once; the status does not change).</summary>
+    public SourceReversalMark? SourceReversalConflict { get; set; }
 }
 
 /// <summary>"Karar geçmişi" row of a hold or a blocked record; insert-only.</summary>
@@ -305,6 +350,9 @@ public sealed class QuarantineHistoryEntry : EntityBase
 
     /// <summary>QUARANTINE 1.2.0: set on a <c>NoteUpdated</c> row only — the sizes before / after, not the text (that is in the audit row).</summary>
     public HistoryNoteChange? NoteChange { get; set; }
+
+    /// <summary>MOD-0175-FU01: on a <c>SourceReversed</c> / <c>SourceReversalConflict</c> row only — the REVERSAL's transaction id.</summary>
+    public string? ReversalTransactionId { get; set; }
 
     public Guid CorrelationId { get; set; }
 

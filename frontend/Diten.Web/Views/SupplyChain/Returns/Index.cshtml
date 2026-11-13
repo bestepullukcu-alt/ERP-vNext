@@ -107,15 +107,16 @@
                                 <label for="transitionToWarehouseId" class="form-label fw-medium">@Localizer["ToWarehouseId"] <span class="text-danger">*</span></label>
                                 <div class="diten-field">
                                     <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
-                                    <input type="text" id="transitionToWarehouseId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-required="true" />
+                                    <select id="transitionToWarehouseId" class="form-select" data-placeholder="@Localizer["WarehouseSelect"]" aria-required="true"></select>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <label for="transitionToLocationId" class="form-label fw-medium">@Localizer["ToLocationId"] <span class="text-danger">*</span></label>
                                 <div class="diten-field">
                                     <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
-                                    <input type="text" id="transitionToLocationId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-required="true" />
+                                    <select id="transitionToLocationId" class="form-select" data-placeholder="@Localizer["LocationSelect"]" aria-required="true" disabled></select>
                                 </div>
+                                <div id="transitionLocationHelp" class="form-text">@Localizer["WarehouseFirst"]</div>
                             </div>
                         </div>
                     </div>
@@ -168,7 +169,7 @@
 }
 
 @* Display decision only (UAS-001 §4); the backend [ReturnPermission] gate stays the authority. *@
-<script id="returns-permissions" type="application/json">@Json.Serialize(new { canCreate = permissions.CanCreate, canAuthorize = permissions.CanAuthorize, canTransit = permissions.CanTransit, canCancel = permissions.CanCancel, canReceive = permissions.CanReceive, canDisposition = permissions.CanDisposition, canClose = permissions.CanClose })</script>
+<script id="returns-permissions" type="application/json">@Json.Serialize(new { canCreate = permissions.CanCreate, canAuthorize = permissions.CanAuthorize, canTransit = permissions.CanTransit, canCancel = permissions.CanCancel, canReceive = permissions.CanReceive, canDisposition = permissions.CanDisposition, canClose = permissions.CanClose, canReadCustomers = Perms.Has(Diten.Web.Controllers.SupplyChainReturnsController.CrmAccountRead), canReadHolds = Perms.Has(Diten.Web.Controllers.SupplyChainReturnsController.QuarantineHoldsRead) })</script>
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@

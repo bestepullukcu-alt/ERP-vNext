@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.Json;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Features.Recall.Ports;
+using Diten.InventoryService.Domain.Recall.Rules;
 using Diten.InventoryService.Domain.Recall.Trace;
 using Microsoft.Extensions.Logging;
 
@@ -17,6 +18,12 @@ namespace Diten.InventoryService.Infrastructure.Recall;
 /// </summary>
 public sealed class ShipmentBundleHttpReader : IShipmentReader
 {
+    /// <summary>
+    /// MOD-0177-FU01 (pack §8.2, D-1 / Q-2) — the SHIPMENT-BUNDLE 3.5.0 field that carries the CRM account id (MOD-0149 Account.Id, "D").
+    /// The name is the MVP-6 draft's, to be confirmed when 3.5.0 freezes; this is the only place it is written.
+    /// </summary>
+    public const string CustomerRefField = "customerRef";
+
     public const int MaxParallel = 8;
     public static readonly TimeSpan PerReadTimeout = TimeSpan.FromSeconds(2);
 
@@ -65,9 +72,11 @@ public sealed class ShipmentBundleHttpReader : IShipmentReader
                     using (var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token)))
                     {
                         var root = document.RootElement;
+                        var shipTo = Text(root, "shipToReference");
+                        if (RecallCustomerKeyRules.IsDShaped(shipTo)) _logger.LogInformation("recall.shipment.ship_to_guid_shaped {ShipmentId}", shipmentId);
                         return new TraceShipmentInfo(ShipmentReadOutcome.Ok, Text(root, "status"),
                             Text(root, "actualDeliverAt") is { } at && DateTimeOffset.TryParse(at, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var when) ? when : null,
-                            Text(root, "shipToReference"));
+                            shipTo, CustomerAccount(root, shipmentId));
                     }
                 case HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden:
                     return new TraceShipmentInfo(ShipmentReadOutcome.Forbidden, null, null, null);
@@ -85,6 +94,87 @@ public sealed class ShipmentBundleHttpReader : IShipmentReader
         }
     }
 
+    /// <summary>
+    /// The CRM account of the shipment (pack §8.2): a string in the "D" form, not Guid.Empty; anything else (absent, empty, not a GUID, not a
+    /// string) is no account — the key falls back to shipToReference / DOC. An unusable value is logged WITHOUT the value.
+    /// </summary>
+    private Guid? CustomerAccount(JsonElement root, string shipmentId)
+    {
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty(CustomerRefField, out var value) || value.ValueKind == JsonValueKind.Null) return null;
+        if (value.ValueKind == JsonValueKind.String && Guid.TryParseExact(value.GetString(), "D", out var account) && account != Guid.Empty) return account;
+        _logger.LogInformation("recall.shipment.customer_ref_invalid {ShipmentId}", shipmentId);
+        return null;
+    }
+
     private static string? Text(JsonElement root, string name)
         => root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    // ── MOD-0178 DL-5 (additive, XMC-001 seam — pack §5): the dispatch sync's two reads, the SAME client, header forwarding, 2 s bound and
+    // outcome rule as ReadOneAsync (200 Ok, 401 / 403 Forbidden, 404 NotFound, any other answer / timeout / no answer / unreadable body
+    // Unavailable; the caller's own cancellation is rethrown). ReadAsync above is unchanged. ──
+
+    public async Task<ShipmentQueryResult> QueryBySourceDocumentAsync(string sourceDocumentId, CancellationToken cancellationToken = default)
+    {
+        var (outcome, root) = await GetAsync($"api/shipment-bundle/shipments?sourceDocumentId={Uri.EscapeDataString(sourceDocumentId)}&pageSize=200", cancellationToken);
+        if (outcome != ShipmentReadOutcome.Ok) return new ShipmentQueryResult(outcome, []);
+        if (root is not { ValueKind: JsonValueKind.Object } body || !body.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+            return new ShipmentQueryResult(ShipmentReadOutcome.Unavailable, []);
+        var list = new List<ShipmentQueryItem>();
+        foreach (var item in items.EnumerateArray())
+        {
+            if (Text(item, "shipmentId") is not { } id) return new ShipmentQueryResult(ShipmentReadOutcome.Unavailable, []);
+            list.Add(new ShipmentQueryItem(id, Text(item, "shipmentNumber")));
+        }
+
+        return new ShipmentQueryResult(ShipmentReadOutcome.Ok, list);
+    }
+
+    public async Task<ShipmentDetailResult> ReadDetailAsync(string shipmentId, CancellationToken cancellationToken = default)
+    {
+        if (!Guid.TryParseExact(shipmentId, "D", out var id)) return new ShipmentDetailResult(ShipmentReadOutcome.NotFound, shipmentId, null, null, null, null, null, []);
+        var (outcome, root) = await GetAsync($"api/shipment-bundle/shipments/{id:D}", cancellationToken);
+        if (outcome != ShipmentReadOutcome.Ok || root is not { ValueKind: JsonValueKind.Object } body)
+            return new ShipmentDetailResult(outcome == ShipmentReadOutcome.Ok ? ShipmentReadOutcome.Unavailable : outcome, shipmentId, null, null, null, null, null, []);
+        var lines = new List<ShipmentDetailLine>();
+        if (body.TryGetProperty("lines", out var raw) && raw.ValueKind == JsonValueKind.Array)
+        {
+            lines.AddRange(raw.EnumerateArray().Select(l => new ShipmentDetailLine(Text(l, "skuId"), Text(l, "lotId"), Text(l, "fromLocationId"), Text(l, "quantity"))));
+        }
+
+        bool? stockIssued = body.TryGetProperty("stockIssued", out var issued) && issued.ValueKind is JsonValueKind.True or JsonValueKind.False ? issued.GetBoolean() : null;
+        return new ShipmentDetailResult(ShipmentReadOutcome.Ok, Text(body, "shipmentId") ?? shipmentId, Text(body, "shipmentNumber"), Text(body, "sourceModule"),
+            Text(body, "sourceType"), Text(body, "status"), stockIssued, lines);
+    }
+
+    private async Task<(ShipmentReadOutcome Outcome, JsonElement? Root)> GetAsync(string path, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(PerReadTimeout);
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, path);
+            request.Headers.TryAddWithoutValidation("X-Legal-Entity-Id", _tenant.LegalEntityId.ToString("D"));
+            using var response = await _http.SendAsync(request, timeout.Token);
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    using (var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(timeout.Token)))
+                    {
+                        return (ShipmentReadOutcome.Ok, document.RootElement.Clone());
+                    }
+                case HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden:
+                    return (ShipmentReadOutcome.Forbidden, null);
+                case HttpStatusCode.NotFound:
+                    return (ShipmentReadOutcome.NotFound, null);
+                default:
+                    return (ShipmentReadOutcome.Unavailable, null);
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException or JsonException
+                                   && !cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("wms.dispatch.read_unavailable {Path}: {Reason}", path.Split('?')[0], ex.GetType().Name);
+            return (ShipmentReadOutcome.Unavailable, null);
+        }
+    }
 }

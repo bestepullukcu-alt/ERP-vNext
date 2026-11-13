@@ -47,6 +47,12 @@ public static class RecallErrorCodes
     /// <summary>WP-0177-R7b (RECALL 1.7.0) — getEvidenceFile of an unknown export.</summary>
     public const string EvidenceExportNotFound = "RECALL_EVIDENCE_EXPORT_NOT_FOUND";
 
+    /// <summary>MOD-0177-FU01 (RECALL 1.10.0) — 503: the CRM name of a CRM-keyed customer could not be resolved now; nothing is written.</summary>
+    public const string CustomerDirectoryUnavailable = "RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE";
+
+    /// <summary>MOD-0177-FU01 (RECALL 1.10.0) — 403: the caller may not read a CRM customer of the subject (CRM 401 / 403); nothing is written.</summary>
+    public const string CustomerDirectoryForbidden = "RECALL_CUSTOMER_DIRECTORY_FORBIDDEN";
+
     // shared (INVENTORY names)
     public const string ReasonRequired = "REASON_REQUIRED";
     public const string UnknownLot = "UNKNOWN_LOT";
