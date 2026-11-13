@@ -1280,4 +1280,7 @@
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>Configuración de olas</value>
   </data>
+  <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
+    <value>Planificación de olas</value>
+  </data>
 </root>

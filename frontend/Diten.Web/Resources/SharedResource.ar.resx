@@ -1279,4 +1279,7 @@
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>إعدادات الموجات</value>
   </data>
+  <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
+    <value>تخطيط الموجات</value>
+  </data>
 </root>
