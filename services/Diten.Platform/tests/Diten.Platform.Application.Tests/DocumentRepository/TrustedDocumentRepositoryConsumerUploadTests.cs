@@ -8,6 +8,7 @@ using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Application.Features.DocumentRepository.Commands;
 using Diten.Platform.Application.Features.DocumentRepository.Handlers.QueryHandlers;
 using Diten.Platform.Domain.Entities.DocumentRepository;
+using Diten.Platform.Application.Tests.Audit;
 using Diten.Platform.Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -90,6 +91,7 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
 
         var common = new[] { "audience", "callerService", "consumerModule", "operation", "scope", "serviceClientId" };
         var store = records.Single(r => r.RequestType == nameof(StoreTrustedRepositoryObjectCommand));
+        Assert.Equal(contentId, store.EntityId); // MOD-0262-FU08 AC-1
         Assert.Equal(common, Keys(store));
         Assert.Equal("store", store.Metadata["operation"]?.ToString());
         Assert.Equal(AuditOperation.Create, store.Operation);
@@ -274,7 +276,7 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
 
     public static TheoryData<string> BrokenForms => new()
     {
-        "field-after-file", "missing-companyId", "empty-owningItemId", "repeated-scope", "unknown-field", "two-files",
+        "missing-field-before-file-then-field", "missing-companyId", "empty-owningItemId", "repeated-scope", "unknown-field", "two-files",
         "no-boundary", "scope-documents", "scope-0", "scope-space", "guid-N", "guid-blank"
     };
 
@@ -288,7 +290,7 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
         (string, object) Field(string name, string value) => (name, value);
         HttpContent content = fixture switch
         {
-            "field-after-file" => Form.Parts(fields.Take(3).Append(file).Append(fields[3]).ToArray()),
+            "missing-field-before-file-then-field" => Form.Parts(fields.Take(3).Append(file).Append(fields[3]).ToArray()),
             "missing-companyId" => Form.Parts(fields.Where(f => f.Name != "companyId").Append(file).ToArray()),
             "empty-owningItemId" => Form.Parts(fields.Select(f => f.Name == "owningItemId" ? Field(f.Name, Guid.Empty.ToString("D")) : f).Append(file).ToArray()),
             "repeated-scope" => Form.Parts(fields.Append(Field("scope", "Documents")).Append(file).ToArray()),
@@ -429,6 +431,8 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
         Assert.Equal(nameof(StoreTrustedRepositoryObjectCommand), record.RequestType);
         Assert.Equal(AuditOutcome.Failed, record.Outcome);
         Assert.Equal("413", record.Metadata["ResponseStatusCode"]?.ToString());
+        Assert.Null(record.EntityId);   // MOD-0262-FU08 AC-4
+        Assert.Null(record.AfterState);
     }
 
     [Fact]
@@ -457,6 +461,8 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
         var record = Assert.Single(host.Records());
         Assert.Equal(nameof(StoreTrustedRepositoryObjectCommand), record.RequestType);
         Assert.Equal("400", record.Metadata["ResponseStatusCode"]?.ToString());
+        Assert.Null(record.EntityId);   // MOD-0262-FU08 AC-4
+        Assert.Null(record.AfterState);
     }
 
     [Fact]
@@ -500,6 +506,102 @@ public sealed class TrustedDocumentRepositoryConsumerUploadTests
         {
             Assert.Equal(1, host.Logs.Count(Microsoft.Extensions.Logging.LogLevel.Error, "Unhandled exception for request"));
         }
+    }
+
+    // ── MOD-0262-FU08 — the upload record names the stored object (AC-1, AC-8); a part after a COMPLETE file (AC-11, AC-12).
+
+    [Fact]
+    public async Task A_trusted_upload_record_carries_the_content_id_and_the_after_state()
+    {
+        await using var host = await StartAsync();
+
+        using var response = await host.UploadAsync(Token(), Form.Valid(Encoding.UTF8.GetBytes("after-state body")));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var contentId = await Host.ContentIdAsync(response);
+        var row = Assert.Single(host.Options.Store.Rows);
+        var record = Assert.Single(host.Records(), r => r.RequestType == nameof(StoreTrustedRepositoryObjectCommand));
+        Assert.Equal(AuditOutcome.Succeeded, record.Outcome);
+        Assert.Equal(contentId, record.EntityId);
+        Assert.Equal(
+            new[] { "ByteSize", "Checksum", "ContentId", "OwningItemId", "OwningVersionId", "Scope", "TrustedConsumerModule" },
+            record.AfterState!.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(contentId.ToString("D"), record.AfterState["ContentId"]?.ToString());
+        Assert.Equal("Documents", record.AfterState["Scope"]?.ToString());
+        Assert.Equal(row.OwningItemId.ToString("D"), record.AfterState["OwningItemId"]?.ToString());
+        Assert.Equal(row.OwningVersionId.ToString("D"), record.AfterState["OwningVersionId"]?.ToString());
+        Assert.Equal(row.ByteSize, Convert.ToInt64(record.AfterState["ByteSize"]));
+        Assert.Equal(row.Checksum, record.AfterState["Checksum"]?.ToString());
+        Assert.Equal("MOD-0217", record.AfterState["TrustedConsumerModule"]?.ToString());
+        var written = System.Text.Json.JsonSerializer.Serialize(new { record.AfterState, record.Metadata });
+        foreach (var forbidden in new[] { row.ObjectKey, row.FileName, row.MediaType, row.StorageProvider, row.CreatedBy, "after-state body" })
+        {
+            Assert.DoesNotContain(forbidden, written, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task Two_tenants_uploads_each_record_names_its_own_tenants_content_id()
+    {
+        await using var host = await StartAsync();
+
+        using var a = await host.UploadAsync(Token(TenantA), Form.Valid(Encoding.UTF8.GetBytes("tenant A")));
+        using var b = await host.UploadAsync(Token(TenantB), Form.Valid(Encoding.UTF8.GetBytes("tenant B")));
+        var contentA = await Host.ContentIdAsync(a);
+        var contentB = await Host.ContentIdAsync(b);
+
+        var writes = host.Audit.Writes.Where(w => w.RequestType == nameof(StoreTrustedRepositoryObjectCommand)).ToList();
+        Assert.Equal(2, writes.Count);
+        var writeA = Assert.Single(writes, w => w.TenantId == TenantA);
+        var writeB = Assert.Single(writes, w => w.TenantId == TenantB);
+        Assert.Equal(contentA, InMemoryAuditOutbox.ToAuditEvent(writeA).EntityId);
+        Assert.Equal(contentB, InMemoryAuditOutbox.ToAuditEvent(writeB).EntityId);
+        Assert.Equal(contentA, host.Options.Store.Rows.Single(r => r.TenantId == TenantA).ContentId);
+        Assert.Equal(contentB, host.Options.Store.Rows.Single(r => r.TenantId == TenantB).ContentId);
+        Assert.DoesNotContain(contentA.ToString("D"), System.Text.Json.JsonSerializer.Serialize(writeB.Payload), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData("four-fields-file-then-unknown-field")]
+    [InlineData("four-fields-file-then-repeated-scope")]
+    public async Task A_field_after_a_complete_file_is_400_with_one_AuditBehavior_record_and_nothing_left(string fixture)
+    {
+        await using var host = await StartAsync();
+        (string, object) after = fixture == "four-fields-file-then-unknown-field" ? ("note", "x") : ("scope", "Documents");
+
+        using var response = await host.UploadAsync(Token(),
+            Form.Parts(Form.Fields().Append(Form.File(Encoding.UTF8.GetBytes("complete file"))).Append(after).ToArray()));
+
+        await AssertTrailingPartRefusedAsync(host, response);
+    }
+
+    [Fact]
+    public async Task Two_file_sections_is_400_with_one_AuditBehavior_record()
+    {
+        await using var host = await StartAsync();
+
+        using var response = await host.UploadAsync(Token(), Form.Parts(Form.Fields()
+            .Append(Form.File(Encoding.UTF8.GetBytes("first"), "first.pdf"))
+            .Append(Form.File(Encoding.UTF8.GetBytes("second"), "second.pdf")).ToArray()));
+
+        await AssertTrailingPartRefusedAsync(host, response);
+    }
+
+    private static async Task AssertTrailingPartRefusedAsync(Host host, HttpResponseMessage response)
+    {
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(DocumentRepositoryReasonCodes.ValidationFailed, await Host.ReasonCodeAsync(response));
+        Assert.Equal(1, host.Storage.StoreCalls); // the fixture passed the whole file before the trailing part
+        Assert.Empty(host.Options.Store.Rows);
+        Assert.Empty(Directory.Exists(host.Root) ? Directory.GetFiles(host.Root, "*", SearchOption.AllDirectories) : []);
+        var record = Assert.Single(host.Records());
+        Assert.Equal(nameof(StoreTrustedRepositoryObjectCommand), record.RequestType);
+        Assert.Equal(AuditOutcome.Failed, record.Outcome);
+        Assert.Equal(AuditOperation.Create, record.Operation);
+        Assert.Equal("400", record.Metadata["ResponseStatusCode"]?.ToString());
+        Assert.Null(record.EntityId);
+        Assert.Null(record.AfterState);
+        Assert.DoesNotContain(host.Records(), r => r.RequestType == TrustedDocumentRepositoryRefusalAudit.DeniedRequestType);
     }
 
     // ── AC-30 — compensation only.

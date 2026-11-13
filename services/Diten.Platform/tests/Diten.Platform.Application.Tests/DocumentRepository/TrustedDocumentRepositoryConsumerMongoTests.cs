@@ -242,6 +242,84 @@ public sealed class TrustedDocumentRepositoryConsumerMongoTests : IAsyncLifetime
         Assert.Equal(_harness.TenantId, own.TenantId);
     }
 
+    // ── MOD-0262-FU08 — the upload record's EntityId / AfterState on the PRODUCTION outbox (AC-9) and the idempotency-key
+    //    effect of a retry with the same correlation (AC-16, §8 item 5).
+
+    private async Task<List<Diten.Platform.Infrastructure.Persistence.Models.AuditOutboxMessage>> UploadRecordsAsync() =>
+        await _harness.Database.GetCollection<Diten.Platform.Infrastructure.Persistence.Models.AuditOutboxMessage>("audit_outbox")
+            .Find(m => m.TenantId == _harness.TenantId && m.RequestType == nameof(StoreTrustedRepositoryObjectCommand))
+            .ToListAsync();
+
+    private static Diten.Platform.Domain.Entities.Audit.AuditEvent Delivered(Diten.Platform.Infrastructure.Persistence.Models.AuditOutboxMessage m) =>
+        Diten.Platform.Application.Tests.Audit.TransactionOwnedAuditSourceServiceTests.Deliver(new AuditOutboxWriteRequest
+        {
+            TenantId = m.TenantId,
+            CorrelationId = m.CorrelationId,
+            IdempotencyKey = m.IdempotencyKey,
+            RequestType = m.RequestType,
+            Operation = m.Operation,
+            EntityType = m.EntityType,
+            EntityId = m.EntityId,
+            Payload = m.Payload
+        });
+
+    [Fact]
+    public async Task An_upload_record_with_after_state_round_trips_on_the_production_outbox()
+    {
+        await using var host = await StartAsync(sp => new AuditOutboxRepository(_harness.DbContext));
+
+        var contentId = await host.UploadOkAsync(Token(), "round trip body");
+
+        var message = Assert.Single(await UploadRecordsAsync());
+        Assert.Equal(contentId, message.EntityId);
+        var record = Delivered(message);
+        var row = await Rows.Find(r => r.TenantId == _harness.TenantId && r.ContentId == contentId).SingleAsync();
+        Assert.Equal(contentId, record.EntityId);
+        Assert.Equal(
+            new[] { "ByteSize", "Checksum", "ContentId", "OwningItemId", "OwningVersionId", "Scope", "TrustedConsumerModule" },
+            record.AfterState!.Keys.Order(StringComparer.Ordinal));
+        Assert.Equal(contentId.ToString("D"), record.AfterState["ContentId"]?.ToString());
+        Assert.Equal(row.OwningItemId.ToString("D"), record.AfterState["OwningItemId"]?.ToString());
+        Assert.Equal(row.OwningVersionId.ToString("D"), record.AfterState["OwningVersionId"]?.ToString());
+        Assert.Equal(row.ByteSize, Convert.ToInt64(record.AfterState["ByteSize"]));
+        Assert.Equal(row.Checksum, record.AfterState["Checksum"]?.ToString());
+        Assert.Equal("Documents", record.AfterState["Scope"]?.ToString());
+        Assert.Equal("MOD-0217", record.AfterState["TrustedConsumerModule"]?.ToString());
+    }
+
+    [Fact]
+    public async Task A_retry_with_the_same_correlation_after_a_503_keeps_both_upload_records()
+    {
+        await using var host = await StartAsync(sp => new AuditOutboxRepository(_harness.DbContext));
+        var correlation = Guid.NewGuid().ToString("D");
+        void Correlate(HttpRequestMessage r) => r.Headers.TryAddWithoutValidation("X-Correlation-Id", correlation);
+        var large = new byte[3 * 1024 * 1024];
+
+        using (var first = await host.UploadAsync(Token(), Form.Valid(large), r =>
+               {
+                   Correlate(r);
+                   r.Headers.TryAddWithoutValidation(TestBodyFaults.Header, "io");
+               }))
+        {
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, first.StatusCode);
+        }
+
+        using var second = await host.UploadAsync(Token(), Form.Valid(Encoding.UTF8.GetBytes("retry body")), Correlate);
+        Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+        var contentId = await Host.ContentIdAsync(second);
+
+        var messages = await UploadRecordsAsync();
+        _output.WriteLine($"AC-16 production writer, same correlation 503 then 201: {messages.Count} upload record(s)");
+        Assert.Equal(2, messages.Count);
+        Assert.Equal(2, messages.Select(m => m.IdempotencyKey).Distinct(StringComparer.Ordinal).Count());
+        var records = messages.Select(Delivered).ToList();
+        var failed = Assert.Single(records, r => r.Outcome == Diten.Platform.Domain.Enums.AuditOutcome.Failed);
+        var succeeded = Assert.Single(records, r => r.Outcome == Diten.Platform.Domain.Enums.AuditOutcome.Succeeded);
+        Assert.Null(failed.EntityId);
+        Assert.Equal(contentId, succeeded.EntityId);
+        Assert.All(messages, m => Assert.Equal(Guid.Parse(correlation), m.CorrelationId));
+    }
+
     private static void Signal(HttpRequestMessage request) =>
         request.Headers.TryAddWithoutValidation(TestBodyFaults.SignalHeader, "1");
 
