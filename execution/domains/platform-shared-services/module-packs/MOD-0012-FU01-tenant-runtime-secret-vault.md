@@ -9,7 +9,7 @@ golden_reference: none
 entity_base: BaseEntity
 status: ready-for-dev
 approval_status: pending
-revision: "r2 (2026-11-13) — bağımsız inceleme r1 (docs/records/reviews/MOD-0012-FU01/2026-11-13-754b2c86.md, KOŞULLU, F-1…F-3 orta, F-4…F-8 düşük) ve sahip kararları (kararlar 01 :55-59 — Q-6…Q-9, Q-14, Q-15) işlendi; F-1…F-8 kapandı (kapanış tablosu §19.5). Başlıca değişiklikler: bu FU MOD-0179 v1.0'ın kapısı değil, FU-0179-VAULT'un kapısıdır (F-1); admin ekranı, DL-4, AC-24…AC-26 (kimlikleri korunarak), platform.tenant-secrets.* izinleri ve X-4 v1 dışı — künye shell none / golden_reference none / form_field_count 0 (Q-7); geçiş penceresi zorunlu (Q-6, AC-22); S-2b, S-3, S-4 yalıtılmış vakalarla yeniden yazıldı (F-3); tüketici girişi MOD-0179 r3'e daraltıldı (F-4); kasaya özgü KEK doğrulayıcısı (F-5); işlem içi liste yolu ve temsilî kullanıcı şeması (F-6); kripto belirtimi ve test vektörleri (F-7); hata kodları (F-8). Künye status ready-for-dev (çağıran CT talimatı, S-49); approval_status pending. r1 (2026-11-13) — ilk taslak (commit 243841c70, LF sha256 754b2c86…)."
+revision: "r3 (2026-11-13, dar tur) — bağımsız inceleme r2 (docs/records/reviews/MOD-0012-FU01/2026-11-13-9da835eb.md, KOŞULLU, F-1…F-4 düşük) işlendi; yalnız bu maddelerin bölümleri değişti (kapanış tablosu §19.6): F-1 resolve ucuyla ölçülen bacaklar (AC-3 (b) / (d), AC-7 resolve) DL-2 kabulüne, DL-3 DL-2 kabulünü de bekler; F-2 ITenantSecretCipher iç yüzeyi KEK'i açık parametre alır (UnwrapDek(tenantKek, wrapped, wrapContext)), S-4 (b) buna bağlı; F-3 barındırılan işin kurucusunda yalnız ISender, S-20b yansıma + LoggingBehavior izi ile ölçülür, S-10a kırmızısı teslim ve defter testlerinden, TenantSecretAuditIntent statik niyet sınıfı ve işleyici ITransactionalAuditOutboxWriter tutar (S-10c); F-4 §8.1 TenantScope atfı ölçülen satırlara. Künye ready-for-dev / pending değişmedi. r2 (2026-11-13) — bağımsız inceleme r1 (docs/records/reviews/MOD-0012-FU01/2026-11-13-754b2c86.md, KOŞULLU, F-1…F-3 orta, F-4…F-8 düşük) ve sahip kararları (kararlar 01 :55-59 — Q-6…Q-9, Q-14, Q-15) işlendi; F-1…F-8 kapandı (kapanış tablosu §19.5). Başlıca değişiklikler: bu FU MOD-0179 v1.0'ın kapısı değil, FU-0179-VAULT'un kapısıdır (F-1); admin ekranı, DL-4, AC-24…AC-26 (kimlikleri korunarak), platform.tenant-secrets.* izinleri ve X-4 v1 dışı — künye shell none / golden_reference none / form_field_count 0 (Q-7); geçiş penceresi zorunlu (Q-6, AC-22); S-2b, S-3, S-4 yalıtılmış vakalarla yeniden yazıldı (F-3); tüketici girişi MOD-0179 r3'e daraltıldı (F-4); kasaya özgü KEK doğrulayıcısı (F-5); işlem içi liste yolu ve temsilî kullanıcı şeması (F-6); kripto belirtimi ve test vektörleri (F-7); hata kodları (F-8). Künye status ready-for-dev (çağıran CT talimatı, S-49); approval_status pending. r1 (2026-11-13) — ilk taslak (commit 243841c70, LF sha256 754b2c86…)."
 status_note: "ready-for-dev r2 — approval_status pending; kod izni yok. Paket onayı için: r2 fark incelemesi (CT-APR-02) + onay satırı (CT-APR-01, onaylayan Ali / GitHub GMG-ERP; yazan ≠ onaylayan; yüksek risk). Onaydan önce AÇIK: Ali — Q-1 (KEK yeri / erişimi), Q-2 (yedek / kurtarma), Q-13 (FU onayı ana paketi bekler mi); CT — Q-5 (işlem içi denetim listesi ve defter), Q-12 (domain-config Vault satırı). Dilim kapıları (paket onayını bekletmez): Q-3 Inventory servis istemcisi + X-1 izni (DL-5), Q-4 servisler arası TLS (DL-2 canlı kullanım)."
 owner: platform-shared-services / merkez (Beste)
 approver: Ali (GitHub GMG-ERP)
@@ -23,6 +23,9 @@ dependencies: [MOD-0012 (ISecretsProvider — KEK okuması; ana paket status rev
 
 # MOD-0012-FU01 — Tenant Runtime Secret Vault (Kiracı Sır Kasası)
 
+> **r3 (2026-11-13, dar tur).** Bağımsız inceleme r2 (`docs/records/reviews/MOD-0012-FU01/2026-11-13-9da835eb.md`, KOŞULLU, dört düşük)
+> işlendi; F-1…F-4 kapandı (§19.6). Registry `:70` notu ve Q-10 karar kaydı CT işidir; bu paket onlara dokunmaz.
+>
 > **r2 (2026-11-13).** Bağımsız inceleme r1 (`docs/records/reviews/MOD-0012-FU01/2026-11-13-754b2c86.md`, KOŞULLU) ve sahip kararları
 > (kararlar 01 :55-59) işlendi; bulgular F-1…F-8 kapandı (§19.5). Künye `status: ready-for-dev` (çağıran CT talimatı, S-49),
 > `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız bağımsız inceleme kaydı (CT-APR-02) + onay satırı
@@ -127,8 +130,9 @@ var (`execution/registries/module-id-registry.md:70`, Q-11 kapandı).
 
 **Portlar / servisler:** `ITenantSecretCipher` (zarf şifreleme), `IKeyEncryptionKeyProvider` (KEK; v1 uygulaması `ISecretsProvider` üzerinden
 ortam değişkeni), `TenantSecretVaultOptions` + `TenantSecretVaultOptionsValidator` (F-5), `ITenantSecretRepository`, `TenantSecretAuditIntent`
-(işlem içi denetim yazıcısı), `TrustedSecretVaultConsumerRequestExecutor`, `TrustedSecretVaultConsumerAuthorizationOptions` + doğrulayıcısı,
-`TenantSecretMaintenanceJob` (DL-3 barındırılan iş).
+(işlem içi denetim **niyet sınıfı**: statik, DI'ya kayıtlı bir servis değildir — `RecordCodeAuditIntent` emsali; her yazma işleyicisi
+`ITransactionalAuditOutboxWriter`'ı kendi kurucusunda tutar ve niyet metoduna parametre olarak verir, §10), `TrustedSecretVaultConsumerRequestExecutor`, `TrustedSecretVaultConsumerAuthorizationOptions` + doğrulayıcısı,
+`TenantSecretMaintenanceJob` (DL-3 barındırılan iş; kurucusunda yalnız `ISender`, `TimeProvider`, seçenekler ve logger — §8.6).
 
 **API uçları (Platform 5057, iç — Gateway rotası yok):**
 
@@ -263,7 +267,8 @@ Her satır, sahibinin açık izni olmadan dokunulmaz (XMC-001). İzin bu pakete 
 
 - Servis `Diten.Platform` (port 5057). İç uçlar yalnız servisler arasıdır; Web (5001) bu uçları çağırmaz.
 - Her okuma ve yazma `TenantId` ile sınırlıdır; kiracı `TenantScope` jetondaki `tenant_id` ile açılır (trusted executor emsali,
-  `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedWorkflowConsumerRequestExecutor.cs:188`).
+  `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedWorkflowConsumerRequestExecutor.cs:130` — yalnız servis jetonlu yol (resolve,
+  meta); `:208` — temsilî kullanıcılı yol (yaz, döndür, iptal)).
 - Soft delete zorunlu; fiziksel silme yok.
 - `GlobalEntity` kullanılmaz: kayıt kiracıya aittir.
 
@@ -358,8 +363,10 @@ Her satır, sahibinin açık izni olmadan dokunulmaz (XMC-001). İzin bu pakete 
 ### 8.6 KEK yaşam döngüsü ve kurtarma
 
 - **Döndürme.** Yeni KEK `Current`, eski KEK `Previous:{id}` olarak verilir; Platform iki KEK ile açar. `TenantSecretMaintenanceJob`
-  (barındırılan iş, `Diten.Platform.MOD-0012-FU01.TenantSecretMaintenanceJob`) `RewrapTenantSecretsCommand`'ı **`IMediator.Send` ile** gönderir
-  (F-6: komut pipeline'dan, `ITransactionOwnedAuditCommand` denetiminden geçer; aktör `System`). Komut eski `KekId`'li kayıtların **yalnız DEK'ini**
+  (barındırılan iş, `Diten.Platform.MOD-0012-FU01.TenantSecretMaintenanceJob`) `RewrapTenantSecretsCommand`'ı **`ISender.Send` ile** gönderir
+  (F-6: komut pipeline'dan, `ITransactionOwnedAuditCommand` denetiminden geçer; aktör `System`). İşin kurucusunda yalnız `ISender`,
+  `TimeProvider`, `IOptions<TenantSecretVaultOptions>` ve `ILogger` bulunur; hiçbir `IRequestHandler<,>` uygulaması, işleyici türü ya da
+  `ITenantSecretRepository` bulunmaz (r3, F-3 — AC-20 S-20b bunu ölçer). Komut eski `KekId`'li kayıtların **yalnız DEK'ini**
   yeni kiracı KEK'iyle yeniden sarar; şifreli metin, `SecretVersion` ve `SetAt` değişmez; 100'lük toplu işlerde, kiracı başına bir denetim satırı (§21).
   Kalan eski KEK'li kayıt sayısı log ve sağlık bilgisinde raporlanır.
 - **`Previous` ne zaman kaldırılır.** Kalan eski KEK'li kayıt sıfır **ve** son yeniden sarmadan sonra en az 24 saat geçti (idempotency TTL'i — eski
@@ -444,12 +451,22 @@ services/Diten.Platform/src/Diten.Platform.Application/Features/TenantSecrets/
 
 - Handler'da `Command` / `Query` soneki yok; validator'da `Command` soneki yok.
 - Handler şifreleme yapmaz; `ITenantSecretCipher` portunu çağırır (kripto Infrastructure'dadır).
-- `ITenantSecretCipher` test edilebilir iç yüzeyler sunar: `DeriveTenantKek`, `WrapDek` / `UnwrapDek(wrapped, wrapContext)`,
-  `EncryptValue` / `DecryptValue(envelope, valueContext)`; testler yalnızca bu üretim sınıfını çağırır (§17).
+- `AesGcmTenantSecretCipher` test edilebilir iç yüzeyler sunar (`internal`, test projesine `InternalsVisibleTo`); KEK hiçbir iç yüzeyde
+  bağlamdan türetilmez, **açık parametredir** (r3, F-2):
+  - `byte[] DeriveTenantKek(ReadOnlySpan<byte> masterKek, Guid tenantId)`
+  - `WrappedDek WrapDek(ReadOnlySpan<byte> tenantKek, ReadOnlySpan<byte> dek, WrapContext wrapContext)`
+  - `byte[] UnwrapDek(ReadOnlySpan<byte> tenantKek, WrappedDek wrapped, WrapContext wrapContext)` — etiket tutmazsa `CryptographicException`
+  - `ValueCipher EncryptValue(ReadOnlySpan<byte> dek, ReadOnlySpan<byte> plaintext, ValueContext valueContext)`
+  - `byte[] DecryptValue(ReadOnlySpan<byte> dek, ValueCipher cipher, ValueContext valueContext)`
+  Port metotları (`Seal` / `Open`) bunları birleştirir: KEK'i `IKeyEncryptionKeyProvider` + `DeriveTenantKek` ile kaydın kiracısından bulur.
+  Testler yalnızca bu üretim sınıfını çağırır (§17).
 - Cevaplar `Response<T>` zarfıyla; iç uçların hata gövdesi de aynı zarf.
 - Beş yazma komutu `ITransactionOwnedAuditCommand` taşır, `TransactionOwnedAuditCommands.Authorized` kümesindedir (X-3) ve
-  `TenantSecretAuditIntent` üzerinden işlem içi denetim yazar (Q-5).
-- DL-3 komutları barındırılan işten `IMediator.Send` ile gönderilir (pipeline atlanmaz).
+  `TenantSecretAuditIntent` üzerinden işlem içi denetim yazar (Q-5). `TenantSecretAuditIntent` statik niyet sınıfıdır (`RecordCodeAuditIntent`
+  emsali: `EnqueueAsync(ITransactionalAuditOutboxWriter writer, IPlatformTransactionSession session, …)`); her işleyici
+  `ITransactionalAuditOutboxWriter`'ı **kendi kurucusunda** tutar — `TransactionOwnedAuditCommandGuardTests` işaretli komutun işleyicisinde bu
+  kapı türünü arar (niyet sınıfını servis olarak enjekte etmek guard testini kırmızı yapar).
+- DL-3 komutları barındırılan işten `ISender.Send` ile gönderilir (pipeline atlanmaz); işin kurucusunda işleyici türü yok (§8.6).
 
 ## 11. Frontend File Contract
 
@@ -522,14 +539,14 @@ Karar: Gateway değişikliği **gereksiz ve yasak**.
 **DL-1 — çekirdek: kayıt, şifreleme, yazma uçları, denetim**
 - [ ] AC-1 (zorunlu) — KEK başlangıç doğrulaması `TenantSecretVaultOptionsValidator` ile (§8.2): `Current` yok, boş, geçersiz base64, çözülmüş uzunluğu 32 bayttan farklı, bilinen yer tutucu ya da 32 sıfır bayt; `CurrentId` biçim dışı; `Previous` kimliği yinelenmiş ya da `CurrentId`'ye eşit; bir `Previous` çözülmüş baytları `Current`'a eşit → Platform başlamaz; hata metninde anahtar adı ve kural var, değer yok. S-1: `TenantSecretVaultOptionsValidator` kaydını (`ValidateOnStart`) kaldır → başlangıç testinin her vakası kırmızı.
 - [ ] AC-2 (zorunlu) — Şifresiz yazım yok ve nonce tekrar etmez: yazmadan sonra `platform_tenant_secrets` belgesinin ham BSON baytlarında nöbetçi değer (UTF-8 ve base64) yok; aynı değer iki kayda yazılınca `ValueNonce`'lar ve `DekNonce`'lar **açıkça** farklı; birim vakada aynı DEK ve aynı düz metinle `EncryptValue` iki kez çağrılınca nonce'lar ve şifreli metinler farklı. S-2a: `ITenantSecretCipher.EncryptValue`'yu düz metni döndüren bir uygulamayla değiştir → bayt taraması kırmızı; S-2b: nonce üreticisini sabit 12 bayta bağla → nonce eşitsizliği vakaları (Mongo ve birim) kırmızı.
-- [ ] AC-3 (zorunlu) — AAD bağlama, her AAD ayrı ölçülür. (a) Bilinen cevap testi: `TenantSecretCipherVectors.json`'daki vektörler için AAD baytları, türetilmiş KEK, sarılı DEK, şifreli metin ve etiketler bayt-eşit. (b) Değer AAD'si: aynı kayıtta yalnız değer AAD'sine giren bir meta alanı (`Name`, `ScopeRef` ya da `SecretVersion`) Mongo'da doğrudan değiştirilince resolve 500 `SECRET_INTEGRITY_FAILED` (sarma AAD'si bu alanları içermez, DEK açılır — vaka yalnız değer AAD'sini ölçer). (c) Sarma AAD'si: birim vakada aynı kiracı ve aynı KEK altında X kaydının `WrappedDek`'i Y kaydının sarma bağlamıyla (`Id` farklı) `UnwrapDek`'e verilince açılmaz. (d) Bütünleşik vaka: X'in `Cipher` zarfı aynı kiracıda Y'ye kopyalanınca resolve 500, değer yok. S-3a: değer AAD'sini boş geçir → (a) ve (b) kırmızı; S-3b: sarma AAD'sini boş geçir → (a) ve (c) kırmızı.
-- [ ] AC-4 (zorunlu) — Kiracı başına KEK, AAD'den bağımsız ölçülür: (a) `DeriveTenantKek(master, A)` ≠ `DeriveTenantKek(master, B)` ve vektör dosyasındaki beklenen türetilmiş KEK'e bayt-eşit; (b) birim vakada A'nın sarılı DEK'i **A'nın sarma bağlamıyla (aynı AAD)** ama B'nin türetilmiş KEK'iyle `UnwrapDek`'e verilince açılmaz. S-4: HKDF tuzunu sabit değere bağla → (a) eşitsizlik ve vektör vakaları kırmızı, (b) DEK açılır, kırmızı.
+- [ ] AC-3 (zorunlu) — AAD bağlama, her AAD ayrı ölçülür. (a) Bilinen cevap testi: `TenantSecretCipherVectors.json`'daki vektörler için AAD baytları, türetilmiş KEK, sarılı DEK, şifreli metin ve etiketler bayt-eşit. (b) Değer AAD'si: aynı kayıtta yalnız değer AAD'sine giren bir meta alanı (`Name`, `ScopeRef` ya da `SecretVersion`) Mongo'da doğrudan değiştirilince resolve 500 `SECRET_INTEGRITY_FAILED` (sarma AAD'si bu alanları içermez, DEK açılır — vaka yalnız değer AAD'sini ölçer). (c) Sarma AAD'si: birim vakada aynı kiracı ve aynı KEK altında X kaydının `WrappedDek`'i Y kaydının sarma bağlamıyla (`Id` farklı) `UnwrapDek`'e verilince açılmaz. (d) Bütünleşik vaka: X'in `Cipher` zarfı aynı kiracıda Y'ye kopyalanınca resolve 500, değer yok. **Dilim:** (a) ve (c) birim düzeyindedir, DL-1 kabulünde; (b) ve (d) resolve ucuyla ölçülür, **DL-2 kabulünde** (r3, F-1). S-3a: değer AAD'sini boş geçir → (a) kırmızı (DL-1), (b) kırmızı (DL-2); S-3b: sarma AAD'sini boş geçir → (a) ve (c) kırmızı.
+- [ ] AC-4 (zorunlu) — Kiracı başına KEK, AAD'den bağımsız ölçülür: (a) `DeriveTenantKek(master, A)` ≠ `DeriveTenantKek(master, B)` ve vektör dosyasındaki beklenen türetilmiş KEK'e bayt-eşit; (b) birim vakada `kekA = DeriveTenantKek(master, A)`, `kekB = DeriveTenantKek(master, B)`; `wrappedA = WrapDek(kekA, dek, ctxA)`; `UnwrapDek(kekB, wrappedA, ctxA)` — aynı sarma bağlamı (aynı AAD), yalnız KEK farklı — `CryptographicException` atar (§10 imzaları, r3 F-2). S-4: HKDF tuzunu sabit değere bağla → (a) eşitsizlik ve vektör vakaları kırmızı; (b) `kekA == kekB` olur, `UnwrapDek(kekB, wrappedA, ctxA)` DEK'i açar, vaka kırmızı.
 - [ ] AC-5 (zorunlu) — Yaz: listedeki servis kimliği + aynı kiracıdan temsilî kullanıcı + girişteki izin → 201 `{ vaultRef, secretVersion: 1, setAt, expiresAt }`; cevapta değer ve zarf alanı yok; aynı anahtarda ikinci yazma 409 `SECRET_ALREADY_EXISTS`. S-5: tekil kısmi indeksi ve ön kontrolü kaldır → çift kayıt vakası kırmızı.
 - [ ] AC-6 (zorunlu) — Döndür (geçiş penceresi verilmeden): `SecretVersion` +1, `SetAt` yenilenir, önceki zarf aynı yazımda canlı belgeden kaldırılır (ham BSON'da eski şifreli metin yok); yanlış `expectedSecretVersion` 409. S-6: kaldırma adımını atla → "eski zarf canlı belgede yok" vakası kırmızı.
-- [ ] AC-7 (zorunlu) — İptal soft'tur: `State = Revoked`, `IsDeleted = true`, `DeletedAt` dolu, zarflar `null`, belge koleksiyonda durur; resolve 409 `SECRET_REVOKED`, değer yok. S-7: iptali `DeleteOne` ile yap → "kayıt duruyor" vakası kırmızı.
+- [ ] AC-7 (zorunlu) — İptal soft'tur: `State = Revoked`, `IsDeleted = true`, `DeletedAt` dolu, zarflar `null`, belge koleksiyonda durur; meta sorgusu `state: Revoked` döner (DL-1 kabulü); resolve 409 `SECRET_REVOKED`, değer yok (**DL-2 kabulü**, r3 F-1). S-7: iptali `DeleteOne` ile yap → "kayıt duruyor" vakası kırmızı.
 - [ ] AC-8 (zorunlu) — Yetkisiz yazma ve **sıfır yazım** (sır, idempotency kaydı yok): kimliği doğrulanamayan çağrı (jeton yok, yanlış audience, insan jetonu) → 401; geçerli servis jetonu ama liste dışı servis adı ya da istemci → 403 `SECRET_CONSUMER_NOT_ALLOWED`; başka kiracıdaki temsilî kullanıcı → 403 `SECRET_DELEGATED_TENANT_MISMATCH`; izni olmayan temsilî kullanıcı → 403 `SECRET_DELEGATED_PERMISSION_MISSING`; girişte olmayan ad → 422 `SECRET_NAME_NOT_ALLOWED`; 403 ve 422'de ret denetim satırı. S-8a: liste denetimini kaldır → liste dışı istemci vakası kırmızı; S-8b: temsilî kiracı eşitliğini kaldır → kırmızı.
 - [ ] AC-9 (zorunlu) — Kiracı sızıntısı yok: B kiracısı jetonuyla A'nın `vaultRef`'i için meta, döndür, iptal (ve DL-2'de resolve) → 404 `SECRET_NOT_FOUND`, gövde var olmayan `vaultRef` cevabıyla bayt-eşit. Aynı kiracıda başka tüketici modül: v1 listesinde tek giriş olduğundan test, yabancı `OwnerModule`'lü (ör. `MOD-9999-TEST`) bir belgeyi doğrudan Mongo'ya tohumlar; MOD-0179 jetonuyla bu belgeye her uç 404 (aynı gövde). S-9a: depodaki `TenantId` süzgecini kaldır → kiracı vakası kırmızı; S-9b: `OwnerModule` süzgecini kaldır → tohumlanmış belge vakası kırmızı.
-- [ ] AC-10 (zorunlu) — Denetim işlem içidir: yaz, döndür, iptal tam bir `audit_outbox` satırını iş verisiyle aynı işlemde yazar (platform-islem-ici), üretimdeki `AuditOutboxProcessor` onu `audit_events`'e taşır; aktör temsilî kullanıcı, `SourceService` servis adı, olay adları §21; outbox yazımı başarısızsa 503 `SECRET_AUDIT_UNAVAILABLE` ve sır kaydı değişmez; `TransactionOwnedAuditCommandGuardTests` beş komutu kümede ve işlem içi yazıcıya ulaşır görür. S-10a: `TenantSecretAuditIntent.EnqueueAsync` çağrısını kaldır → teslim testi ve guard testi kırmızı; S-10b: denetim yazımını işlem dışına al → "kayıt yoksa işlem yok" vakası kırmızı.
+- [ ] AC-10 (zorunlu) — Denetim işlem içidir: yaz, döndür, iptal tam bir `audit_outbox` satırını iş verisiyle aynı işlemde yazar (platform-islem-ici), üretimdeki `AuditOutboxProcessor` onu `audit_events`'e taşır; aktör temsilî kullanıcı, `SourceService` servis adı, olay adları §21; outbox yazımı başarısızsa 503 `SECRET_AUDIT_UNAVAILABLE` ve sır kaydı değişmez; `TransactionOwnedAuditCommandGuardTests` beş komutu kümede ve işleyicilerinin kurucusunda `ITransactionalAuditOutboxWriter` görür; denetim defteri mimari testi (`tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs`) her işleyicinin `TenantSecretAuditIntent.EnqueueAsync` çağrısını (platform-islem-ici belirteci, X-2) bulur. S-10a: `TenantSecretAuditIntent.EnqueueAsync` çağrısını kaldır (yazıcı kurucuda kalır) → teslim testi ve defter testi kırmızı (guard testi bu sabotajı görmez — yalnız kurucu türüne bakar); S-10b: denetim yazımını işlem dışına al → "kayıt yoksa işlem yok" vakası kırmızı; S-10c: bir işleyicinin kurucusundan `ITransactionalAuditOutboxWriter`'ı çıkarıp yazıcıyı başka yoldan al → guard testi kırmızı.
 - [ ] AC-11 (zorunlu) — Değer sızıntısı yok (yazma yolu): rastgele 48 karakterlik nöbetçi değerle yaz + döndür + iptal + hata yolları (400, 409, enjekte 500) sonrası nöbetçi şu yerlerin hiçbirinde yok: HTTP cevapları, test log havuzu (tüm seviyeler), `audit_outbox`, `audit_events`, idempotency deposu, tüm Mongo koleksiyonlarının ham dökümü, istisna metinleri. S-11a: komut kaydında `PrintMembers` maskesini kaldır ve isteği logla → log taraması kırmızı; S-11b: doğrulama mesajına `{PropertyValue}` ekle → cevap taraması kırmızı.
 - [ ] AC-12 (zorunlu) — Idempotency: aynı anahtar + aynı değer → aynı cevap, ikinci kayıt ve ikinci denetim satırı yok; aynı anahtar + farklı değer → 409 `IDEMPOTENCY_KEY_REUSED`; parmak izi düz değerin özetini taşımaz (yalnız kiracıya bağlı `K_idem` ile HMAC); KEK döndürüldükten sonra (eski KEK `Previous`'ta) aynı anahtar + aynı değer → ilk cevap, 409 yok; `FingerprintKekId` yapılandırmada yoksa 503 `SECRET_KEY_UNAVAILABLE`. S-12a: HMAC'i parmak izinden çıkar → farklı değer vakası kırmızı; S-12b: tekrar karşılaştırmasında `FingerprintKekId` yerine her zaman `Current`'ı kullan → döndürme sonrası vaka kırmızı (yanlış 409).
 - [ ] AC-13 (zorunlu) — Tüketici listesi kodda sabittir: yapılandırmada bilinmeyen modül, kümede olmayan ad (ör. `SftpPassword` v1'de), ikinci giriş, boş istemci kimliği ya da 16'dan fazla giriş → Platform başlamaz. S-13: doğrulayıcı kaydını kaldır → başlangıç testi kırmızı.
@@ -543,7 +560,7 @@ Karar: Gateway değişikliği **gereksiz ve yasak**.
 - [ ] AC-19 (zorunlu) — Sözleşme testi: `tenant-secret-vault.openapi.yaml` içindeki beş uç, alan adları, hata kodları ve başlıklar üretim controller'ı ve DTO'larıyla eşleşir. S-19: bir cevap alanının adını değiştir → sözleşme testi kırmızı.
 
 **DL-3 — anahtar yaşam döngüsü ve geçiş penceresi**
-- [ ] AC-20 (zorunlu) — KEK döndürme: yeni `Current` + eski `Previous` ile her iki KEK'li kayıt okunur; `TenantSecretMaintenanceJob` `RewrapTenantSecretsCommand`'ı `IMediator.Send` ile gönderir; sonrasında eski `KekId`'li kayıt kalmaz, şifreli metin ve `SecretVersion` değişmez, resolve aynı değeri döner; `Previous` erken kaldırılırsa o kayıtlar 503 `SECRET_KEY_UNAVAILABLE`. S-20a: komutta DEK'i yeniden sarmadan yalnız `KekId`'yi güncelle → resolve vakası kırmızı; S-20b: işte `IMediator.Send` yerine işleyiciyi doğrudan çağır → guard testi ve denetim satırı vakası kırmızı.
+- [ ] AC-20 (zorunlu) — KEK döndürme: yeni `Current` + eski `Previous` ile her iki KEK'li kayıt okunur; `TenantSecretMaintenanceJob` `RewrapTenantSecretsCommand`'ı `ISender.Send` ile gönderir; sonrasında eski `KekId`'li kayıt kalmaz, şifreli metin ve `SecretVersion` değişmez, resolve aynı değeri döner; `Previous` erken kaldırılırsa o kayıtlar 503 `SECRET_KEY_UNAVAILABLE`. S-20a: komutta DEK'i yeniden sarmadan yalnız `KekId`'yi güncelle → resolve vakası kırmızı; Pipeline'dan geçiş iki yolla ölçülür: (i) yansıma vakası — işin kurucu parametreleri arasında `IRequestHandler<,>` uygulayan hiçbir tür ve `ITenantSecretRepository` yok, `ISender` var; (ii) gözlenebilir etki — iş koştuktan sonra test log havuzunda `LoggingBehavior`'ın `Starting RewrapTenantSecretsCommand` ve `Completed RewrapTenantSecretsCommand` satırları var (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Behaviors/LoggingBehavior.cs:22-37`; işleyici doğrudan çağrılırsa bu satırlar oluşmaz). S-20b: işin kurucusuna `RewrapTenantSecretsHandler`'ı ekleyip `Handle`'ı doğrudan çağır → (i) yansıma vakası ve (ii) log satırı vakası kırmızı. Ölçüm DL-2 kabulünden sonradır (resolve, r3 F-1).
 - [ ] AC-21 (zorunlu) — Son kullanma ve iptal edilmiş anahtara yeniden yazma: `ExpiresAt` sahte saatle geçince meta `Expired`, resolve 409; iptal edilen anahtara yazma yeni `vaultRef` açar, eski kayıt `Revoked` kalır. S-21: tekil indeksten `IsDeleted` koşulunu kaldır → yeniden yazma vakası kırmızı.
 - [ ] AC-22 (zorunlu) — Doğrulama geçiş penceresi (sahip kararı Q-6): `InboundSigningSecret` döndürmesinde `previousValidForHours` (1..72) verilirse resolve `use = Verify` önceki değeri pencere içinde `previous` olarak döner, `use = Use` döndürmez; pencere bittiğinde (sahte saat) `previous` dönmez ve `PurgeExpiredPreviousSecretsCommand` önceki zarfı canlı belgeden kaldırır (denetim satırı §21); `ApiKey` için `previousValidForHours > 0` → 422 `SECRET_GRACE_NOT_ALLOWED`; 72'den büyük → 400. S-22a: okuma anındaki pencere sonu denetimini kaldır → sahte saat vakası kırmızı; S-22b: `VerificationGraceNames` denetimini kaldır → `ApiKey` vakası kırmızı.
 - [ ] AC-23 (zorunlu) — Yedek ve geri yükleme: Mongo dökümü + aynı KEK (aynı `KekId`, aynı bayt) ile geri yüklenen veritabanında resolve aynı değeri döner; aynı `KekId` altında farklı KEK baytlarıyla 500 `SECRET_INTEGRITY_FAILED`; dökümdeki `KekId` yapılandırmada yoksa 503 `SECRET_KEY_UNAVAILABLE`; hiçbirinde değer yok; runbook dosyası adımları, `Previous` kaldırma koşulunu, "kaldırma" notunu (§8.5) ve tatbikat komutlarını yazar. S-23: `UnwrapDek` GCM hatasını yutup boş DEK'le devam etsin → "farklı KEK" vakası kırmızı.
@@ -580,14 +597,14 @@ Karar: Gateway değişikliği **gereksiz ve yasak**.
 |---|---|---|
 | AC-1 | `TenantSecretVaultOptionsValidatorTests` + `TenantSecretVaultStartupTests.InvalidKek_StopsPlatform` | S-1 |
 | AC-2 | `TenantSecretCipherMongoTests.StoredDocument_HasNoPlaintext_AndDistinctNonces`, `TenantSecretCipherTests.SameDekSamePlaintext_DistinctNonceAndCiphertext` | S-2a, S-2b |
-| AC-3 | `TenantSecretCipherVectorTests` (a), `TenantSecretsInternalHttpMongoTests.ValueAadFieldTampered_FailsIntegrity` (b), `TenantSecretCipherTests.WrapContextOfOtherRecord_CannotUnwrap` (c), `TenantSecretsInternalHttpMongoTests.TransplantedEnvelope_FailsIntegrity` (d) | S-3a, S-3b |
-| AC-4 | `TenantSecretCipherTests.DerivedKeks_DifferPerTenant_AndMatchVectors`, `TenantSecretCipherTests.OtherTenantKek_SameAad_CannotUnwrap` | S-4 |
+| AC-3 | DL-1: `TenantSecretCipherVectorTests` (a), `TenantSecretCipherTests.WrapContextOfOtherRecord_CannotUnwrap` (c); DL-2: `TenantSecretsResolveHttpMongoTests.ValueAadFieldTampered_FailsIntegrity` (b), `TenantSecretsResolveHttpMongoTests.TransplantedEnvelope_FailsIntegrity` (d) | S-3a, S-3b |
+| AC-4 | `TenantSecretCipherTests.DerivedKeks_DifferPerTenant_AndMatchVectors`, `TenantSecretCipherTests.UnwrapDek_OtherTenantKek_SameWrapContext_Throws` | S-4 |
 | AC-5 | `TenantSecretsInternalHttpMongoTests.Write_Returns201_WithoutValue_AndDuplicate409` | S-5 |
 | AC-6 | `TenantSecretsInternalHttpMongoTests.Rotate_RemovesPreviousEnvelopeFromLiveDocument` | S-6 |
-| AC-7 | `TenantSecretsInternalHttpMongoTests.Revoke_IsSoft_AndResolveRefuses` | S-7 |
+| AC-7 | DL-1: `TenantSecretsInternalHttpMongoTests.Revoke_IsSoft_MetadataRevoked`; DL-2: `TenantSecretsResolveHttpMongoTests.Revoked_Resolve409` | S-7 |
 | AC-8 | `TenantSecretsInternalHttpMongoTests.UnauthorizedWriters_ZeroWrites` | S-8a, S-8b |
 | AC-9 | `TenantSecretsInternalHttpMongoTests.CrossTenant_And_SeededForeignOwner_404_ByteEqual` | S-9a, S-9b |
-| AC-10 | `TenantSecretAuditDeliveryMongoTests.WriteRotateRevoke_OneRowInTransaction_FailClosed` + `TransactionOwnedAuditCommandGuardTests` | S-10a, S-10b |
+| AC-10 | `TenantSecretAuditDeliveryMongoTests.WriteRotateRevoke_OneRowInTransaction_FailClosed` + `AuditTrailStandardTests` (defter) + `TransactionOwnedAuditCommandGuardTests` | S-10a, S-10b, S-10c |
 | AC-11 | `TenantSecretLeakScanTests.WritePath_SentinelAbsentEverywhere` | S-11a, S-11b |
 | AC-12 | `TenantSecretsInternalHttpMongoTests.Idempotency_SameKeyDifferentValue_409_AndAfterKekRotation` | S-12a, S-12b |
 | AC-13 | `TrustedSecretVaultConsumerAuthorizationOptionsValidatorTests` | S-13 |
@@ -597,7 +614,7 @@ Karar: Gateway değişikliği **gereksiz ve yasak**.
 | AC-17 | `TenantSecretsResolveHttpMongoTests.UnauthorizedReaders_Refused` | S-17a, S-17b |
 | AC-18 | `TenantSecretLeakScanTests.ReadPath_SentinelAbsentFromLogsSpansAudit` | S-18 |
 | AC-19 | `TenantSecretVaultContractTests` | S-19 |
-| AC-20 | `TenantSecretMaintenanceJobMongoTests.Rewrap_KeepsCiphertext_AndRetiresOldKek` | S-20a, S-20b |
+| AC-20 | `TenantSecretMaintenanceJobMongoTests.Rewrap_KeepsCiphertext_AndRetiresOldKek`, `TenantSecretMaintenanceJobTests.Constructor_HoldsOnlySender`, `TenantSecretMaintenanceJobMongoTests.Rewrap_GoesThroughPipeline_LoggingBehaviorLines` | S-20a, S-20b |
 | AC-21 | `TenantSecretsLifecycleMongoTests.Expiry_And_RewriteAfterRevoke` | S-21 |
 | AC-22 | `TenantSecretsLifecycleMongoTests.VerificationGrace_EndsAndPurges_OnlyForListedNames` | S-22a, S-22b |
 | AC-23 | `TenantSecretBackupRestoreTests.SameKek_Resolves_DifferentKek500_UnknownKekId503` | S-23 |
@@ -715,6 +732,15 @@ Karar: Gateway değişikliği **gereksiz ve yasak**.
 | F-7 | (a) "kripto-imha" yerine canlı belgeden kaldırma + yedek / oplog notu; (b) tuz bayt sırası, AAD kodlaması, null kodlaması, test vektörü; (c) `K_idem` info, kiracı bağı, `FingerprintKekId`, `Previous` kaldırma koşulu | §2.3, §4.2, §8.2, §8.5, §8.6, AC-3, AC-12 |
 | F-8 | 401 (kimlik doğrulanamadı) / 403 (liste dışı geçerli servis) ayrımı tutarlı; AC-23 aynı `KekId` farklı bayt 500, bilinmeyen `KekId` 503; AC-9 yabancı `OwnerModule` belgesi Mongo'ya tohumlanır | §8.7, §13, AC-8, AC-9, AC-17, AC-23 |
 
+### 19.6 r2 inceleme bulguları — kapanış tablosu
+
+| Bulgu | Düzeltme (r3) | Bölüm |
+|---|---|---|
+| F-1 | AC-3 (b) / (d) ve AC-7'nin resolve bacağı DL-2 kabulünde ölçülür; AC-20 ölçümü DL-2'den sonra; §24'te DL-3 satırı DL-2 kabulünü bekler | AC-3, AC-7, AC-20, §17.1, §24 |
+| F-2 | `AesGcmTenantSecretCipher` iç yüzeyi KEK'i açık parametre alır (`UnwrapDek(tenantKek, wrapped, wrapContext)` vb.); AC-4 (b) ve S-4 (b) bu imzaya bağlı | §10, AC-4, §17.1 |
+| F-3 | İşin kurucusunda yalnız `ISender` (işleyici türü ve depo yok); S-20b yansıma + `LoggingBehavior` satırlarıyla ölçülür; S-10a kırmızısı teslim ve defter testlerinden, guard testi için ayrı S-10c; `TenantSecretAuditIntent` statik niyet sınıfı, işleyici `ITransactionalAuditOutboxWriter`'ı kurucusunda tutar | §3, §8.6, §10, AC-10, AC-20, §17.1 |
+| F-4 | §8.1 TenantScope atfı ölçülen satırlara: `:130` (servis jetonlu yol), `:208` (temsilî kullanıcılı yol). Registry `:70` notu ve Q-10 karar kaydı CT işidir — bu paket dokunmaz | §8.1 |
+
 ## 20. Follow-up Items
 
 - **ADMIN-UI** — platform-admin meta ekranı ve iptal (Q-7 = v1'de yok). Açılırsa MOD kimliği DCP-002 `--parent MOD-0012` ile alınır (uydurulmaz).
@@ -765,8 +791,8 @@ kullanılmaz, DL-5 numarasını korur. AC-24…AC-26 kimlikleri §16'da "v1 dı�
 | Dilim | Başlamadan önce | Bitince açtığı |
 |---|---|---|
 | DL-1 | paket onayı (Q-1, Q-2, Q-13 Ali; Q-5, Q-12 CT kapanmış) | DL-2, DL-3 |
-| DL-2 | DL-1 kabulü | FU-0179-VAULT (DL-5 ile birlikte) |
-| DL-3 | DL-1 kabulü | — |
+| DL-2 | DL-1 kabulü | FU-0179-VAULT (DL-5 ile birlikte); DL-3; AC-3 (b) / (d), AC-7 resolve bacağı ve AC-9 resolve vakası bu dilimin kabulünde ölçülür |
+| DL-3 | DL-1 kabulü + **DL-2 kabulü** (AC-20…AC-23 resolve ucuyla ölçülür — r3, F-1) | — |
 | DL-5 | X-1 izni ve provisioning (Q-3) | Inventory'nin kasa jetonu alabilmesi |
 
 **FU-0179-VAULT'un kapısı (MOD-0179 v1.0 kapısı değil)** = bu paketin DL-1 + DL-2 + DL-5'i tamam + `TENANT-SECRET-VAULT 1.0.0` dondurulmuş +
