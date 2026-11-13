@@ -29,6 +29,7 @@
 
 - Bugün: önizleme her satırı `lotId: ''` ile gönderiyor (`form.js` :198); kullanıcı "Lot değişimi"nden FEFO 2 lotunu (G1-20261020) seçse de önizleme yine FEFO 1 lotunu (AMX-2604) gösteriyor. Kullanıcı seçiminin işe yaramadığını düşünüyor (sahip turu, 2026-11-13; önizleme 200 döndü, ölçüldü).
 - Ayrıca seçilen sevkiyat hazırlık lokasyonu Sevkiyat Hazırlık rolünde değilse ilk önizleme 422 `WMS_TARGET_NOT_ALLOWED` dönüyor; uyarının ekranda göründüğü ve hangi alanı işaret ettiği kontrol edilir.
+- CT ölçümü (MOD-0178-FU01 r1 yazarı, 2026-11-13): servis önizlemesi lot değişimini **zaten kabul ediyor** ve sapmayı ret yerine `deviation` olarak bildiriyor (`OutboundAllocationPlanner.cs:233-236`, `:431-458`; önizleme gövdesi oluşturma gövdesiyle aynı ve `lotOverride` taşıyor, `wms-bundle.openapi.yaml:1990-2001`). Hata yalnız Web'de; sözleşme değişikliği gerekmez — satırın seçili lotunu önizlemeye gönder ve `deviation`'ı satırda göster.
 - Beklenen (en dar yol): seçilen lot önizlemede gösterilir — servis önizlemesi lot değişimini kabul ediyorsa `lotId` gönderilir; etmiyorsa önizleme satırında "seçtiğiniz lot (G1-20261020) kayıtta uygulanır; FEFO sapma gerekçesi gerekir" notu çizilir ve FEFO önerisi ayrıca gösterilir. Hangisinin mümkün olduğu MOD-0178 §8.17 / önizleme sözleşmesinden doğrulanır; sözleşme değişikliği gerekiyorsa bu iş durur ve CT'ye sorulur.
 
 ## Kabul
