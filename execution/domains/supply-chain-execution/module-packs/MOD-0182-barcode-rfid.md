@@ -18,21 +18,32 @@ screens:
 entity_base: EntityBase
 status: draft
 approval_status: pending
-revision: "r1 (2026-11-13) — ilk taslak. Girdiler: sahip kararları 01 (S-2, S-3, S-5, S-6) ve 02 (S-7…S-12, E-1…E-7; mockup v2 kabul), Web ve mobil mockup brief'leri, mobil ekip notu (§3A dondurulmuş uçlar, §3B menü ve Görev Merkezi), Görev Merkezi analizi ve sahip kararı (2026-11-13: Görev Merkezi bağlantısı MVP-5 sonrası), MOD-0290-FU07 (GTIN) paketi, MOD-0178 / MOD-0180 / MOD-0181 paketleri. Kimlik ön kontrolü bu oturumda yeniden koşuldu (§0). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) yok."
-status_note: "draft r1 — kod izni yok. Onaylayan Ali (GitHub GMG-ERP); satırları yazan Beste'nin hesabı (yazan ≠ onaylayan). Sahibe sorulacaklar (Beste): Q-1 izin ad alanı warehouse.barcode.* (adlı alt ad alanı) + RCS-001 DVC / LBL satırları (.antigravity kapısı, onaydan önce), Q-2 cihaz kaydının sahibi (MOD-0182 öneri; mobil not :106 düzeltilir), Q-3 PIN aşımının toplamadaki etkisi, Q-4 sorumlu PIN modeli, Q-5 etiketin yazıcıya ulaşma yolu, Q-7 RFID donanımı (el terminali alınmayacak — E-7), Q-8 cihaz kaydı onay bekler mi, Q-9 okutma zorunluluğu ayarı, Q-10 SSCC kapsamı, Q-11 SSCC etiketinde alıcı bilgisi, Q-12 'RFID tek uç' yorumu, Q-15 Build / Buy, Q-17 etiket boyutları. Ali'ye: Q-6 barkod çizim kütüphanesi, Q-13 şirket bağlamı (legal_entities claim + X-Legal-Entity-Id), Q-14 rol şablonları. CT'ye: Q-16 okutma olayının merkezi denetim yolu. Başka ekip: MDM (MOD-0290-FU07 DL-1'in main tarihi — DL-5 kapısı), mobil ekipler (D-1…D-5 cevapları; SCAN-BUNDLE sözleşme notu paket onayından sonra). target: TBD — sahip tarihi yok, plan satırı verilmedi."
+revision: "r2 (2026-11-13) — sahip kararları 03 (`docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md`; Beste 2026-11-13 sohbet cevabı, 'hepsi öneri gibi') işlendi: Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (kapanış tablosu §19.5). Davranış daralması yalnız Q-3: S-7'nin PIN aşımı toplamada geçmez — v1'de aşılabilir tek durum yerleştirmedeki `WRONG_LOCATION`; `DIFFERENT_LOT` hiçbir bağlamda aşılamaz (§2.1, §4.2, §8.4, §8.5, §13, AC-12, §17). Q-7'nin donanım seçimi açık (TBD, Beste — DL-6 kapısı). Q-2'ye bağlı CT işi: mobil not `:106` düzeltilir (paket dokunmaz). `.antigravity` kapısı (Q-1 = A satırları) onaydan önce açık. AC 65, yazma komutu 18, sabotaj adları — değişmedi. Kimlik ön kontrolü yeniden koşulmadı (kimlik ve ad değişmedi). r1 (2026-11-13) — ilk taslak. Girdiler: sahip kararları 01 (S-2, S-3, S-5, S-6) ve 02 (S-7…S-12, E-1…E-7; mockup v2 kabul), Web ve mobil mockup brief'leri, mobil ekip notu (§3A dondurulmuş uçlar, §3B menü ve Görev Merkezi), Görev Merkezi analizi ve sahip kararı (2026-11-13: Görev Merkezi bağlantısı MVP-5 sonrası), MOD-0290-FU07 (GTIN) paketi, MOD-0178 / MOD-0180 / MOD-0181 paketleri. Kimlik ön kontrolü bu oturumda yeniden koşuldu (§0). Bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) yok."
+status_note: "draft r2 — kod izni yok. Onaylayan Ali (GitHub GMG-ERP); satırları yazan Beste'nin hesabı (yazan ≠ onaylayan). Sahip kararları 03 (Beste 2026-11-13, 'hepsi öneri gibi') ile Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 kapandı (§19.5). Onaydan önce kapanacak: .antigravity kapısı (Q-1 = A: PKS-001 §4 warehouse.barcode.* satırı + :92 / :105, RCS-001 §3 DVC / LBL, aynı adımda X-8 RecordCodeTypeCatalogTests ve X-9 MOD-0178 §14.1 notu — CT hazırlar, Beste onaylar; bu paket .antigravity'ye yazmaz); r2 bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01, Ali). CT işi: mobil not :106 'Cihaz kaydı ve engelleme MOD-0365' Q-2 = A'ya göre düzeltilecek. Beste'ye kalan: RFID okuyucu donanım seçimi (Q-7'nin kalanı, TBD — DL-6 kapısı, onayı bekletmez). Ali'ye: Q-6 barkod çizim kütüphanesi, Q-13 şirket bağlamı (legal_entities claim + X-Legal-Entity-Id), Q-14 rol şablonları. CT'ye: Q-16 okutma olayının merkezi denetim yolu. Başka ekip: MDM (MOD-0290-FU07 DL-1'in main tarihi — DL-5 kapısı), mobil ekipler (D-1…D-5 cevapları; SCAN-BUNDLE sözleşme notu paket onayından sonra). target: TBD — sahip tarihi yok, plan satırı verilmedi."
 owner: supply-chain-execution / merkez (Beste) — MVP-5 WMS CT
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-13
 target: TBD
 form_field_count: 8
-dependencies: [MOD-0178 (görev bağlamı okuması; DL-3 scanRef kapısı — XMC-001), MOD-0181 (sayım bağlamı okuması, kör sayım; DL-3 scanRef kapısı — XMC-001), MOD-0174 (GS1 ayrıştırıcı, lot ve seri kaydı), MOD-0175 (stok statüsü), MOD-0176 (son kullanma kuralı), MOD-0177 (geri çağırma kapısı), MOD-0173 / MOD-0173-FU02 (LOCATION, bin kodu, defter okuması), MOD-0290 (PRODUCT-MASTER, FG satış kutusu gtin'i), MOD-0290-FU07 (GTIN çözümleme + GS1 şirket önekleri — DL-5 kapısı; onaylı, kodu main'de yok), MOD-0365 (dış sağlayıcı — v1'de yalnız sınır, Q-5 / Q-7'ye bağlı), MOD-0040-FU02 (RCS-001 ortak servis; ara üretici MOD-0178 geçici sayacı), MOD-0018 (RBAC), BL-501 (merkezi denetim), SCAN-BUNDLE (taslak yok — bu paketin sözleşmesi), WMS-BUNDLE 1.1.0, WMS-COUNT-BUNDLE 1.0.0, LOCATION, TRACE, DEV-0000]
+dependencies: [MOD-0178 (görev bağlamı okuması; DL-3 scanRef kapısı — XMC-001), MOD-0181 (sayım bağlamı okuması, kör sayım; DL-3 scanRef kapısı — XMC-001), MOD-0174 (GS1 ayrıştırıcı, lot ve seri kaydı), MOD-0175 (stok statüsü), MOD-0176 (son kullanma kuralı), MOD-0177 (geri çağırma kapısı), MOD-0173 / MOD-0173-FU02 (LOCATION, bin kodu, defter okuması), MOD-0290 (PRODUCT-MASTER, FG satış kutusu gtin'i), MOD-0290-FU07 (GTIN çözümleme + GS1 şirket önekleri — DL-5 kapısı; onaylı, kodu main'de yok), MOD-0365 (dış sağlayıcı — v1'de yalnız sınır; Q-5 = A ile yazdırma ajanı yok, RFID okuyucu ara yazılımı donanım seçimine bağlı — Q-7), MOD-0040-FU02 (RCS-001 ortak servis; ara üretici MOD-0178 geçici sayacı), MOD-0018 (RBAC), BL-501 (merkezi denetim), SCAN-BUNDLE (taslak yok — bu paketin sözleşmesi), WMS-BUNDLE 1.1.0, WMS-COUNT-BUNDLE 1.0.0, LOCATION, TRACE, DEV-0000]
 ---
 
 # MOD-0182 — Barcode/RFID (Barkod / RFID)
 
-> **draft (r1, 2026-11-13).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
+> **draft (r2, 2026-11-13).** `status: draft`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
 > `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**)
 > ile yazılır (AGENTS.md Çekirdek madde 7). Bu sürüm kod, commit, push, PR ya da onay izni değildir.
+>
+> **r2 revizyon notu (2026-11-13).** Girdi: sahip kararları 03 `docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md` (Beste
+> 2026-11-13 sohbet cevabı, "hepsi öneri gibi"; hedef r1 commit `dbbb8dd04`, LF sha256 `26b4b4a2…`). Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9,
+> Q-10, Q-11, Q-12, Q-15, Q-17 r1'deki önerileriyle kapandı; her kararın değişikliği ve bölümü §19.5 "r1 → r2 kapanış tablosu"ndadır.
+> **Tek davranış daralması Q-3'tür:** kararlar 02'nin S-7'si "farklı lot ve yanlış raf PIN'le aşılabilir" diyordu; Q-3 = A bunu toplama için
+> kapatır — v1'de PIN aşımı yalnız **yerleştirmedeki `WRONG_LOCATION`** için geçerlidir, toplamada `WRONG_LOCATION` ve `DIFFERENT_LOT` geçerli
+> PIN'le bile aşılamaz (422 `BARCODE_OVERRIDE_NOT_ALLOWED`), `DIFFERENT_LOT` hiçbir bağlamda aşılamaz; lot / bin değişimi FU-0178-LOTSWAP
+> (§2.1, §4.2, §8.4, §8.5, §13, AC-12, §17). Diğer kararlar r1'in yazdığı varsayılanları teyit eder (metinde "öneri" → "karar 03"). **Açık
+> kalanlar:** Ali'ye Q-6, Q-13, Q-14; CT'ye Q-16; Q-7'nin donanım seçimi (TBD, Beste — DL-6 kapısı); Q-1'e bağlı `.antigravity` kapısı **paket
+> onayından önce** (§6; bu paket `.antigravity/**`'a yazmaz); Q-2'ye bağlı CT işi: mobil not `:106` düzeltilir (bu paket mobil nota dokunmaz).
+> AC numaraları (AC-1…AC-65), yazma komutu sayısı (18) ve sabotaj adları **değişmedi**.
 >
 > **Kısa özet.** MOD-0182, depoda okutmayı (barkod, GS1 DataMatrix karekod, RFID) **sunucuda doğrulanan, değişmez bir okutma olayı**na
 > çevirir; okutmayı MOD-0178 / MOD-0181 işlemlerine opak `scanRef` kapısından bağlar; cihazları kaydeder ve sağlığını izler; lokasyon,
@@ -74,7 +85,7 @@ registrations (if included)` · SoR Primary Object `scan events` · Build/Buy `B
 `Device scan / read events`, Soft Pages `External System Profile; Integration/Contract Profile`.
 
 **Blueprint sapmaları (adıyla):**
-- **W-0182-01 — Build/Buy.** Blueprint `Buy/Partner` der. **Öneri: Build** (Q-15, sahip). Gerekçe: okutma doğrulaması MOD-0178 görevine,
+- **W-0182-01 — Build/Buy.** Blueprint `Buy/Partner` der. **Karar: Build** (Q-15, sahip — karar 03, 2026-11-13). Gerekçe: okutma doğrulaması MOD-0178 görevine,
   MOD-0181 sayımına, MOD-0174 lotuna ve MOD-0177 geri çağırma kapısına süreç içi bağlıdır; 2026-11-06 kararı "v1 sağlayıcıdan bağımsız".
   Emsal: MOD-0178, MOD-0180, MOD-0181 Blueprint'te `Buy/Partner`, sahip kararıyla Build. Blueprint düzeltmesi EA'ya açık iş (FU-0182-EA).
 - **W-0182-02 — çevrimdışı tampon / yeniden oynatma.** Blueprint SCAN-BUNDLE "offline buffer/replay" içerir. **Sahip kararı S-1 (2026-11-06,
@@ -114,9 +125,10 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 ## 2. Ownership and Boundaries
 
 ### 2.1 Kapsam
-- Okutma olayı (`ScanEvent`) ve sunucu doğrulaması; elle giriş (gerekçeli, S-10); vardiya sorumlusu PIN aşımı (`ScanOverride`, S-7);
-  sorumlu PIN'i (`SupervisorPin`).
-- Cihaz kaydı ve yaşam döngüsü (`ScanDevice`: kayıt, onay, engelleme, yeniden etkinleştirme, nabız; sağlık görünümü — S-3, S-11).
+- Okutma olayı (`ScanEvent`) ve sunucu doğrulaması; elle giriş (gerekçeli, S-10); vardiya sorumlusu PIN aşımı (`ScanOverride`, S-7 —
+  toplamada Q-3 = A ile daraltıldı: v1'de yalnız yerleştirmedeki yanlış raf aşılır, §8.5); sorumlu PIN'i (`SupervisorPin`, Q-4).
+- Cihaz kaydı ve yaşam döngüsü (`ScanDevice`: kayıt, onay, engelleme, yeniden etkinleştirme, nabız; sağlık görünümü — S-3, S-11; sahibi
+  MOD-0182 — Q-2 = A, karar 03; yeni kayıt onay bekler — Q-8 = A).
 - Şirket ayarı (`BarcodeSettings`: sessiz cihaz 24 saat, düşük pil %20 — S-11; PIN deneme sınırı; okutma zorunluluğu; SSCC öneki).
 - WMS işlemlerine bağlama: MOD-0178 yerleştirme / toplama onayı ve MOD-0181 sayım girişi için `scanRef` kapısı (DL-3, `ScanSessionBinding`).
 - Etiket şablonu ve basımı: lokasyon (raf), lot / koli (GTIN + lot + SKT), SSCC (koli / palet) etiketleri; basmadan önce önizleme (E-1);
@@ -130,19 +142,19 @@ modülüdür (`_LayoutTenantShell`, 7 dil).
 | Şey | Sahibi | 0182 nasıl dokunur |
 |---|---|---|
 | Mobil okutma ekranları, ses / titreşim ayarı, kamera, tarayıcı entegrasyonu | Mobil ekipler (iOS / Android) | yalnız SCAN-BUNDLE sözleşmesi ve sözleşme notu; ses / titreşim ayarı cihazda yereldir, sunucuya yazılmaz |
-| Dış cihaz / RFID ara yazılımı sağlayıcı profili, sahada yazdırma ajanı | MOD-0365 (platform-shared-services, merkez — S-5) | yazmaz; Q-5 = B ya da Q-7 bir ara yazılım gerektirirse ayrı paket |
+| Dış cihaz / RFID ara yazılımı sağlayıcı profili, sahada yazdırma ajanı | MOD-0365 (platform-shared-services, merkez — S-5) | yazmaz; Q-5 = A (karar 03) ile v1'de sahada yazdırma ajanı yok; seçilecek RFID okuyucu (Q-7, donanım TBD) bir ara yazılım gerektirirse ayrı paket |
 | Stok bakiyesi, hareket, rezervasyon | MOD-0173 / FU03 | yalnız **okur** (`Find`); yazmaz |
 | Görev, onay, koli, outbound | MOD-0178 | görev / koli okur; onaya yalnız DL-3 kapısıyla (XMC-001) dokunur |
 | Sayım, sayım satırı, kör sayım | MOD-0181 | sayım / satır / bin talebi okur; DL-3 kapısı (XMC-001); RFID "Sayım başlat" **0181'in kendi ucunu** çağırır |
 | Lot, seri kaydı, GS1 ayrıştırıcı | MOD-0174 | okur; ayrıştırıcıyı yeniden yazmaz (X-1 eklemeli SSCC üyesi) |
 | Karantina / statü, son kullanma, geri çağırma kararı | MOD-0175 / MOD-0176 / MOD-0177 | karar vermez; kararı okur ve okutmayı reddeder |
 | GTIN defteri, GS1 şirket öneki | MOD-0290-FU07 (MDM) | yalnız okuma sözleşmesi (`identifiers/{gtin}`, `gs1-company-prefixes`) |
-| Paletleme / birleştirme (koli → palet içeriği), seri doğrulama | MOD-0246 Aggregation / Verification (Blueprint; registry'de yok) | yok; SSCC palet etiketi içeriksiz basılır (Q-10) |
+| Paletleme / birleştirme (koli → palet içeriği), seri doğrulama | MOD-0246 Aggregation / Verification (Blueprint; registry'de yok) | yok; SSCC palet etiketi içeriksiz basılır (Q-10 = A, karar 03) |
 | Türkiye İTS bildirimi | ayrı modül (S-6; MOD-0247 çıkarımı, araştırılacak) | yok; 0182 yalnız okutulan serileri tutar |
-| Mal kabul akışı | MVP-6 / tedarik (mobil not soru 6) | v1'de mal kabul bağlamı yok; palet etiketi serbest SSCC basımıyla (Q-10) |
+| Mal kabul akışı | MVP-6 / tedarik (mobil not soru 6) | v1'de mal kabul bağlamı yok; palet etiketi serbest SSCC basımıyla (Q-10 = A) |
 | Görev Merkezi sağlayıcısı, mobil "benim menüm" ucu | merkez, MVP-5 sonrası (2026-11-13 kararı) / CT (E-5) | yok |
 | Çevrimdışı okutma kuyruğu | — | v1 yok (S-1); FU-0182-OFFLINE |
-| Kapı / portal RFID okuyucuları, RFID etikete yazma (kodlama) | — | v1 yok (Q-12, Q-5) |
+| Kapı / portal RFID okuyucuları, RFID etikete yazma (kodlama) | — | v1 yok (Q-12: yalnız el okuyucu; Q-5 = A: RFID etikete yazma yok — karar 03) |
 | AI Assist | Blueprint AI kapıları | v1 yok; FU-0182-AI |
 
 ### 2.3 Sınır kuralları
@@ -232,7 +244,7 @@ Kullanıcı alanı `EntityBase`'de yoktur; gereken varlık kendi alanını taş�
 |---|---|---|
 | `Number` | string | `{ŞİRKET}-DVC-{000001}` (§8.13); bir kez yazılır |
 | `Name` | string | trim, 2..80; şirkette etkin cihazlar arasında tekil |
-| `Type` | enum | `PhoneCamera` \| `HandheldScanner` \| `RfidReader` (E-7: v1'de el terminali alınmaz; tür sağlayıcıdan bağımsızlık için durur) |
+| `Type` | enum | `PhoneCamera` \| `HandheldScanner` \| `RfidReader` (E-7: v1'de el terminali alınmaz; tür sağlayıcıdan bağımsızlık için durur; `RfidReader` = Android telefona bağlı el okuyucu — Q-7 = A, Q-12, karar 03; model TBD) |
 | `Platform` | enum | `Android` \| `iOS` \| `Other` |
 | `InstallationId` | string | istemcinin kalıcı kurulum kimliği, 8..100; şirkette tekil (aynı telefon iki kez kaydolmaz) |
 | `WarehouseId` | uuid \| null | doluysa okutma yalnız o depoda; boşsa şirketin her deposu (çok depolu çalışan — mobil brief §1) |
@@ -257,7 +269,7 @@ Kullanıcı alanı `EntityBase`'de yoktur; gereken varlık kendi alanını taş�
 | `Context` | nesne | `{ kind: Putaway \| Pick \| Count \| Pack \| Query, refId?, lineRef?, step: Location \| Product \| Lot \| Serial \| Package }` |
 | `Outcome` | enum | `Accepted` \| `Warning` \| `Rejected` |
 | `ReasonCode` | string \| null | §8.15 okutma sonucu kodları; `Accepted`'da null |
-| `Overridable` | bool | yalnız S-7 nedenlerinde ve Q-3'ün izin verdiği bağlamda `true` |
+| `Overridable` | bool | v1'de yalnız `Putaway` bağlamında `WRONG_LOCATION` için `true` (S-7, toplama için Q-3 = A ile daraltıldı — §8.5); başka her nedende ve bağlamda `false` |
 | `Manual` | nesne \| null | `{ reasonCode, note? }` — `Source = Manual` iken zorunlu (S-10) |
 | `ReceivedAt` | UTC | sunucu zamanı; tek geçerli zaman |
 | `CapturedAt` | UTC \| null | istemci zamanı, yalnız bilgi (çevrimdışı yeniden oynatma FU'su için yer) |
@@ -269,27 +281,27 @@ Okutma sonucunun "Aşıldı" (Overridden) hali `ScanEvent`'e yazılmaz; okumada 
 `ScanOverride`: `ScanId` (tekil), `OverriddenReasonCode`, `SupervisorUserId`, `SupervisorName`, `DeviceId`, `ApprovedAt`, `Note?` (≤ 500).
 `SupervisorPin`: `UserId` (şirkette tekil), `PinHash` + `Salt` + `Iterations` (PBKDF2-SHA256, ≥ 100.000 tur, .NET `Rfc2898DeriveBytes.Pbkdf2`),
 `SetAt`, `ExpiresAt` (`SetAt` + `PinValidityDays`), `FailedAttempts`, `LockedUntil`, `Version`. PIN 4..8 hane; PIN ve özeti hiçbir cevapta,
-logda, OTel'de ya da denetim kaydında yer almaz (Q-4).
+logda, OTel'de ya da denetim kaydında yer almaz (Q-4 = A, karar 03).
 
 ### 4.4 BarcodeSettings
 | Alan | Tip | Varsayılan | Kural |
 |---|---|---|---|
 | `SilentDeviceHours` | int | 24 (S-11) | 1..720 |
 | `LowBatteryPercent` | int | 20 (S-11) | 1..90 |
-| `PinMaxAttempts` | int | 3 (MS-4 önerisi, Q-4) | 1..10 |
-| `PinLockMinutes` | int | 5 (Q-4) | 1..1440 |
-| `PinValidityDays` | int | 90 (Q-4) | 1..365 |
+| `PinMaxAttempts` | int | 3 (MS-4; Q-4 = A, karar 03) | 1..10 |
+| `PinLockMinutes` | int | 5 (Q-4 = A, karar 03) | 1..1440 |
+| `PinValidityDays` | int | 90 (Q-4 = A, karar 03) | 1..365 |
 | `ScanSessionMaxMinutes` | int | 30 | 1..480 — oturumun DL-3 onayında geçerli kaldığı süre |
-| `ScanRequiredWarehouseIds` | uuid[] | boş (Q-9) | DL-3; her biri şirketin deposu |
+| `ScanRequiredWarehouseIds` | uuid[] | boş (Q-9 = A, karar 03: depo başına, varsayılan kapalı) | DL-3; her biri şirketin deposu |
 | `SsccCompanyPrefix` | string \| null | null | DL-5; MOD-0290-FU07 etkin önek listesinde olmalı |
-| `SsccExtensionDigit` | int | 0 | DL-5; 0..9 (Q-10) |
+| `SsccExtensionDigit` | int | 0 (Q-10 = A, karar 03) | DL-5; 0..9 |
 
 ### 4.5 ScanSessionBinding
 `SessionId` (tekil), `Module` (`MOD-0178` \| `MOD-0181`), `TargetKind` (`PutawayConfirmation` \| `PickConfirmation` \| `CountEntry` \|
 `CountFoundLine`), `TargetId`, `LineRef`, `ScanIds[]` (oturumdan sayılan olaylar), `ConsumedAt`, `ConsumedBy`. Onay işleminin içinde yazılır (§8.7).
 
 ### 4.6 LabelTemplate ve LabelPrintJob
-`LabelTemplate`: `Name` (2..80, şirkette tekil), `LabelType` (`Location` \| `LotCase` \| `Sscc`), `Size` (sabit liste — Q-17 önerisi `100x150`,
+`LabelTemplate`: `Name` (2..80, şirkette tekil), `LabelType` (`Location` \| `LotCase` \| `Sscc`), `Size` (sabit liste — Q-17, karar 03: `100x150`,
 `100x50`, `50x25` mm), `HumanReadableFields[]` (türün izinli alan kümesinden, §8.9), `IsDefault` (tür başına tek etkin varsayılan),
 `Status` (`Active` \| `Inactive`), `Note?`, `Version`.
 `LabelPrintJob`: `Number` (`{ŞİRKET}-LBL-{000001}`), `LabelType`, `TemplateId` + `TemplateVersion` (anlık), `Sources[]` (lokasyon kimlikleri
@@ -357,7 +369,7 @@ Her satır dokunmadan önce sahibine **tek tek** sorulur; yalnız eklemeli. Öl�
 | X-6 | `INVT/CentralAudit/CentralAuditDeclarationTests.cs` | yazma komutu sayısı sabit | sayı = dilim başındaki ölçülen sayı + dilimin 0182 komutları (§21) | MOD-0173 (merkez) | her yazma dilimi |
 | X-7 | `INV/Api/Program.cs` | manifest kayıtları | `BarcodeRfidManifestProvider` + `AddBarcode()` (kompozisyon kökü) | MOD-0173 (merkez) | DL-1 |
 | X-8 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs` `RuleAheadOfCatalogue` | `CNT`, `WAV` satırları | RCS-001 §3'e `DVC` / `LBL` yazıldığı **aynı adımda** `["DVC"]`, `["LBL"]` = "MOD-0040-FU02 DL-8" | Platform (merkez) | `.antigravity` kapısı (§6) |
-| X-9 | `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` §14.1 | Q-08 notu: "0182 kendi namespace'ini açar (önerilen `barcode.*`)" (`:2131-2132`); `warehouse.waves.*` istisna notu | Q-1 = A ise not: "`warehouse.barcode.*` adlı alt ad alanı MOD-0182'nindir; MOD-0178 bu alt ad alanında anahtar tanımlamaz" — 0178 paket revizyonu (yalnız not), ayrı inceleme + Ali onayı | MOD-0178 (merkez) | `.antigravity` kapısı (§6) |
+| X-9 | `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` §14.1 | Q-08 notu: "0182 kendi namespace'ini açar (önerilen `barcode.*`)" (`:2131-2132`); `warehouse.waves.*` istisna notu | Q-1 = A (karar 03) olduğu için not: "`warehouse.barcode.*` adlı alt ad alanı MOD-0182'nindir; MOD-0178 bu alt ad alanında anahtar tanımlamaz" — 0178 paket revizyonu (yalnız not), ayrı inceleme + Ali onayı | MOD-0178 (merkez) | `.antigravity` kapısı (§6) |
 | X-10 | Governance Rol İzinleri köprüsü (`frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml`, `SharedResource.*.resx` `Perm.Entity.*`) | fiiller `activate` `:188`, `approve` `:192`, `configure` `:239`, `deactivate` `:243`, `export` `:179` var | **yeni fiil yok**; yalnız varlık satır adları (`Perm.Entity.SCANS`, `.SCANEVENTS`, `.SCANOVERRIDES`, `.DEVICES`, `.SETTINGS`, `.LABELTEMPLATES`, `.LABELPRINTS`, `.TRACE` — kesin adlar DL-2 ölçümü) 7 dilde | Web ortak (merkez) | DL-2, DL-4, DL-7 |
 | X-11 | `services/Diten.AuthService/**` rol şablonu | — | §14 rol önerisi (Q-14) | Ali (Auth) | ayrı WP |
 | X-12 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` | `api/warehouse` controller'larını özyineli tarar (MOD-0180 X-14 ölçümü) | **değişmez**; 0182 uçları onun ölçümüne girer ve değişmeden yeşil kalır | MOD-0178 / integration-agent | DL-8 |
@@ -372,11 +384,11 @@ boş (AC-41).
 ## 6. Protected Paths
 - `.antigravity/**` — kullanıcı onayı ister (Çekirdek md. 6). **Kapı — paket onayından ÖNCE, sahip onayıyla (MOD-0180 emsali):**
   (1) PKS-001 §4 `warehouse.barcode.*` satırı ve `:105` `warehouse.*` satırına "`warehouse.barcode.*` hariç — MOD-0182" eki; `:92` istisna
-  cümlesindeki "today only `warehouse.waves.*`" ifadesinin iki alt ad alanını sayacak biçimde güncellenmesi (Q-1 = A ise; Q-1 = B ise `barcode.*`
-  satırı); (2) RCS-001 §3 `DVC` (cihaz) ve `LBL` (etiket basım işi) satırları; (3) aynı adımda X-8 ve X-9. **Hazırlayan:** CT; **onaylayan:**
+  cümlesindeki "today only `warehouse.waves.*`" ifadesinin iki alt ad alanını sayacak biçimde güncellenmesi (Q-1 = A, karar 03 — r2; B
+  seçeneği `barcode.*` seçilmedi); (2) RCS-001 §3 `DVC` (cihaz) ve `LBL` (etiket basım işi) satırları; (3) aynı adımda X-8 ve X-9. **Hazırlayan:** CT; **onaylayan:**
   Beste. Bu paket ve geliştirme dilimleri `.antigravity/**`'a **yazmaz**. Kapı kapanmadan paket `approved` / `ready-for-dev` olmaz (§18, §24).
   Önerilen PKS-001 satırı: `` | `warehouse.barcode.*` | `Diten.InventoryService` — MOD-0182 Barcode/RFID (okutma olayları, cihazlar, sorumlu
-  aşımı, etiket şablonları ve basımı, RFID taraması, uyum izi; owner decision Q-1 — `warehouse.*` altında MOD-0182'ye ayrılmış adlı alt ad
+  aşımı, etiket şablonları ve basımı, RFID taraması, uyum izi; owner decision Q-1 (MOD-0182 owner decisions 03, 2026-11-13) — `warehouse.*` altında MOD-0182'ye ayrılmış adlı alt ad
   alanı; MOD-0182 pack §14; base path `/api/warehouse/barcode`) | MOD-0182 (Barcode/RFID) | ``
 - `gateway/Diten.ApiGateway/**/ocelot.json` — yalnız integration-agent; bu paket değişiklik **istemez** (§15).
 - `services/Diten.Building.Blocks/**` (BL-501 olduğu gibi).
@@ -398,7 +410,7 @@ boş (AC-41).
 | MOD-0173-FU02 LOCATION | HARD (okuma) | bin kodu; 0178 okutulan raf kodunu tam kod eşleşmesiyle bulur | lokasyon çözümü, lokasyon etiketi | yok | merkez |
 | MOD-0290 PRODUCT-MASTER | HARD (okuma) | SKU `gtin` yalnız FG satış kutusunda dolu; LSKU / kalem null (MOD-0290-FU07 §16) | DL-1 ürün karşılaştırması (FG), SKU adı / kodu | yok | MDM |
 | MOD-0290-FU07 GTIN defteri + GS1 önekleri | **HARD — DL-5 kapısı** | paket `ready-for-dev`, onaylı (`execution/approvals/approvals.tsv:82`, 2026-11-11); `identifiers/{gtin}` ve `gs1-company-prefixes` okumaları tanımlı (`execution/domains/master-data-management/module-packs/MOD-0290-FU07-product-identifiers-gtin.md:316`, `:318`); **kodu HEAD'de ve `origin/main`'de yok** (`git grep ProductIdentifier` MdmService: 0) | koli / palet / LSKU GTIN'inden ürün, "Bu nedir?", SSCC öneki, lot / koli etiketindeki GTIN | X-13 | MDM (Ali) |
-| MOD-0365 Device / Edge Integration | SOFT (v1'de kullanılmaz) | registry'de planned, paket yok | Q-5 = B (sahada yazdırma ajanı) ya da Q-7 bir RFID ara yazılımı gerektirirse | yok | merkez (S-5) |
+| MOD-0365 Device / Edge Integration | SOFT (v1'de kullanılmaz) | registry'de planned, paket yok | Q-5 = A (karar 03) ile sahada yazdırma ajanı yok; yalnız seçilecek RFID okuyucu (Q-7, donanım TBD) bir ara yazılım gerektirirse | yok | merkez (S-5) |
 | MOD-0040-FU02 RCS-001 | SOFT (hedef üretici) | Inventory bağlantısı DL-8'de; ara üretici MOD-0178 geçici sayacı (`IWarehouseRecordCodeAllocator`) | `DVC`, `LBL` | X-4 | merkez |
 | MOD-0018 RBAC + Auth rol şablonu | HARD | `[HasPermission]` + manifest | izinler | rol şablonu ayrı WP (X-11, Q-14) | Ali (Auth) |
 | Auth şirket bağlamı | HARD (mobil) | `legal_entities` claim + `X-Legal-Entity-Id` (E-7; teyit Ali) | mobil şirket seçimi | yok (teyit — Q-13) | Ali (Auth) |
@@ -425,7 +437,8 @@ boş (AC-41).
   cevap **bir kez** rastgele 32 baytlık cihaz anahtarını döner (base64url). Sunucu yalnız SHA-256 özetini saklar. Aynı `InstallationId` ikinci
   kez → 409 `BARCODE_DEVICE_ALREADY_REGISTERED` (anahtar yenileme yalnız Web'den "yeniden etkinleştir" ile — yeni anahtar, eskisi geçersiz).
 - **Durum makinesi:** `Pending` —(activate, `devices.activate`)→ `Active` —(deactivate + gerekçe, `devices.deactivate`)→ `Blocked`
-  —(activate + gerekçe)→ `Active` (yeni anahtar). Q-8 = B seçilirse kayıt doğrudan `Active` doğar. Geçersiz geçiş 409 `BARCODE_INVALID_STATE`.
+  —(activate + gerekçe)→ `Active` (yeni anahtar). Q-8 = A (karar 03): yeni kayıt **her zaman** `Pending` doğar, Web'den onaylanır; kendiliğinden
+  etkin kayıt yoktur. Geçersiz geçiş 409 `BARCODE_INVALID_STATE`.
 - **Okutma kapısı:** başlıktaki cihaz yoksa ya da anahtar özeti uyuşmazsa → **403 `BARCODE_DEVICE_KEY_INVALID`, hiçbir şey yazılmaz.** Cihaz
   geçerli ama `Pending` / `Blocked` ise okutma **olay olarak yazılır**, `Outcome = Rejected`, `ReasonCode = DEVICE_PENDING` / `DEVICE_BLOCKED`
   (iz için — brief §6 "engellenmiş cihazdan gelen okutma reddedilir ve nedeni gösterilir"). Cihazın deposu doluysa ve okutma başka depodaysa
@@ -459,8 +472,8 @@ boş (AC-41).
 ### 8.4 Bağlam kuralları
 | Bağlam | Adımlar | Beklenen (kaynak) | Karşılaştırma ve sonuç |
 |---|---|---|---|
-| `Putaway` (MOD-0178 görevi) | `Product` → `Location` | görevin SKU + lotu, önerilen hedef bin | ürün / lot: §8.3; hedef bin ≠ okunan → `Warning` `WRONG_LOCATION`, **aşılabilir** (0178 sapma gerekçesi yolu var); kilitli / karantina rolündeki bin 0178 kuralıyla `Rejected` |
-| `Pick` (MOD-0178 görevi) | `Location` → `Product` (→ `Serial`) | tahsisin kaynak bin'i ve lotu | bin ≠ → `WRONG_LOCATION`; lot ≠ → `DIFFERENT_LOT`. **Aşılabilirlik Q-3'e bağlı** (öneri A: v1'de toplamada aşılamaz — 0178 onayı kaynak / lot almaz) |
+| `Putaway` (MOD-0178 görevi) | `Product` → `Location` | görevin SKU + lotu, önerilen hedef bin | ürün / lot: §8.3; görevin lotundan farklı lot → `DIFFERENT_LOT`, **aşılamaz** (Q-3 = A: v1'de farklı lot aşımı yok); hedef bin ≠ okunan → `Warning` `WRONG_LOCATION`, **aşılabilir** — v1'in aşılabilir tek durumu (0178 sapma gerekçesi yolu var); kilitli / karantina rolündeki bin 0178 kuralıyla `Rejected` |
+| `Pick` (MOD-0178 görevi) | `Location` → `Product` (→ `Serial`) | tahsisin kaynak bin'i ve lotu | bin ≠ → `WRONG_LOCATION`; lot ≠ → `DIFFERENT_LOT`. **İkisi de aşılamaz — geçerli PIN'le bile** (Q-3 = A, karar 03; S-7 toplama için daraltıldı): 0178 toplama onayı kaynak / lot almaz; cevap `overridable = false`, kullanıcıya "Sorumluya başvurun — tahsis değişmeli" (7 dil, §8.16); lot / bin değişimi FU-0178-LOTSWAP |
 | `Count` (MOD-0181 sayımı) | `Location` → `Product` | sayımın bin'leri ve satır anahtarları | bin sayım kapsamında değil → `WRONG_LOCATION` (aşılamaz); satırda olmayan SKU / lot → `Accepted` + `foundStock: true` (istemci 0181 "bulunan stok" yoluna gider); **kör sayımda beklenen miktar ve bin stoğu cevapta yok** |
 | `Pack` (MOD-0178 outbound) | `Product` (→ `Package`) | outbound'un toplanmış tahsisleri | outbound'da olmayan SKU / lot → `WRONG_PRODUCT` / `DIFFERENT_LOT` (aşılamaz); koli bağlaması v1'de yalnız kayıt (0178 koli uçları `scanRef` almaz) |
 | `Query` ("Bu nedir?") | tek okutma | — | çözülen nesnenin özeti; lot için SKT, geri çağırma uyarısı, depodaki statü kovaları (kullanılabilir / karantina / bloke) ve miktarlar; **açık kör sayımın bin'inde miktarlar gizlenir** (`quantitiesHidden: true`) |
@@ -472,13 +485,16 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 - **Elle giriş (S-10):** `source = Manual` iken `manual.reasonCode` zorunlu, sabit liste: `ScannerFault` (okuyucu arızalı), `DamagedBarcode`
   (barkod hasarlı), `NoLabel` (etiket yok), `NoCameraPermission` (kamera izni yok), `Other` (açıklama 10..500 zorunlu). Olay "elle girildi"
   olarak işaretlenir ve listede rozetle görünür; doğrulama aynıdır.
-- **Aşım (S-7):** yalnız `DIFFERENT_LOT` ve `WRONG_LOCATION` ve yalnız §8.4'te aşılabilir yazılan bağlamda. `POST /barcode/scans/{scanId}/override`
+- **Aşım (S-7, Q-3 = A ile daraltılmış — karar 03):** S-7 farklı lot ve yanlış rafı aşılabilir sayar; Q-3 = A toplamada ikisini de kapatır ve
+  farklı lot aşımını tahsis değişimi (FU-0178-LOTSWAP) gelene kadar hiçbir bağlamda açmaz. **v1'de aşılabilir tek durum: `Putaway` bağlamında
+  `WRONG_LOCATION`** (§8.4). `Pick`'te `WRONG_LOCATION` / `DIFFERENT_LOT`, her bağlamda `DIFFERENT_LOT`, `LOT_EXPIRED` ve `LOT_RECALLED` geçerli
+  PIN'le bile 422 `BARCODE_OVERRIDE_NOT_ALLOWED` alır. `POST /barcode/scans/{scanId}/override`
   gövdesi `{ supervisorUserId, pin, note? }`; cihaz başlıkları zorunlu. Kurallar: sorumlu ≠ okutan kullanıcı (422 `BARCODE_OVERRIDE_SELF`);
   sorumlunun geçerli PIN'i var (yoksa / süresi dolduysa 422 `BARCODE_PIN_NOT_SET`); yanlış PIN 422 `BARCODE_PIN_INVALID` ve deneme sayacı
   artar; `PinMaxAttempts`'e ulaşınca `PinLockMinutes` kilit, 423 `BARCODE_PIN_LOCKED`; aşılamaz neden 422 `BARCODE_OVERRIDE_NOT_ALLOWED`
   (geçerli PIN'le bile); olay başına tek aşım (ikinci 409 `BARCODE_ALREADY_OVERRIDDEN`). Başarılı aşım `ScanOverride` + merkezi kayıt;
   olayın görünen sonucu "Aşıldı — {sorumlu adı}".
-- **PIN (Q-4 önerisi):** kullanıcı kendi PIN'ini Web'de `/Warehouse/SupervisorPin` sayfasından belirler; ucu çağırmak için JWT'sinde
+- **PIN (Q-4 = A, karar 03 — 90 gün geçerli, 3 yanlışta 5 dk kilit; §4.4 varsayılanları):** kullanıcı kendi PIN'ini Web'de `/Warehouse/SupervisorPin` sayfasından belirler; ucu çağırmak için JWT'sinde
   `warehouse.barcode.scan-overrides.approve` olmalıdır. Yetki PIN belirlenirken ölçülür; sonradan geri alınan yetki PIN süresi
   (`PinValidityDays`) dolana kadar geçerli kalır — **bilinen sınır**: canlı yetki denetimi AuthService'ten başka kullanıcının izinlerini okumayı
   ister (FU-0182-PIN-LIVE). Yönetici kullanıcının PIN'ini sıfırlayamaz (yalnız kendisi).
@@ -492,7 +508,7 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 ### 8.7 WMS işlemlerine bağlama
 - **Bugün:** 0178 yerleştirme / toplama onayı ve 0181 sayım girişi opak `scanRef` (≤ 200) alır, doğrulamaz (MOD-0178 `:360`, MOD-0181 `:469`,
   AC-46). MOD-0182 bu kapıyı doldurur: `scanRef` = `scan-session:{SessionId}`.
-- **DL-3 (XMC X-2, X-3):** depo `ScanRequiredWarehouseIds`'te ise (Q-9; varsayılan boş), 0178 / 0181 onay işlemi **kendi işleminin içinde**
+- **DL-3 (XMC X-2, X-3):** depo `ScanRequiredWarehouseIds`'te ise (Q-9 = A, karar 03: depo başına, varsayılan kapalı), 0178 / 0181 onay işlemi **kendi işleminin içinde**
   `IScanSessionGate.ConsumeAsync(sessionId, target, user)` çağırır. Kapı şunları ister: oturumdaki olaylar aynı kiracı + şirket + kullanıcı +
   bağlam (`refId`, `lineRef`); gerekli adımların her biri için son olay `Accepted` ya da aşılmış (`Putaway`: `Product` + `Location`; `Pick`:
   `Location` + `Product`; `Count`: `Location` + `Product`); son olay `ScanSessionMaxMinutes` içinde; oturum harcanmamış. Uygunsa
@@ -513,7 +529,7 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
   GS1 mod-10 kontrol hanesi = 18 hane. Seri referansı `SsccCounter`'dan atomik; kapasite (`10^(16 − önek uzunluğu)`) dolarsa 422
   `SSCC_CAPACITY_EXHAUSTED`. SSCC RCS-001 biçiminde değildir — GS1 tanımlayıcısıdır (FU07 §3'teki GTIN gerekçesiyle aynı). Önek ayarda yoksa
   ya da FU07 etkin listesinde değilse 422 `SSCC_PREFIX_NOT_SET`.
-- **SSCC kapsamı (Q-10 önerisi):** MOD-0178 kolisine (`HandlingUnit`) bir SSCC (kolide tekil — yeniden basım aynı SSCC'yi kullanır) ve içeriksiz
+- **SSCC kapsamı (Q-10 = A, karar 03):** MOD-0178 kolisine (`HandlingUnit`) bir SSCC (kolide tekil — yeniden basım aynı SSCC'yi kullanır) ve içeriksiz
   "serbest palet" SSCC'si (mal kabul / paletleme için). Koli → palet birleştirmesi MOD-0246'nındır.
 - (00) okutması (DL-5, X-1) koli / paleti çözer; `Pack` ve `Query` bağlamında kullanılır.
 
@@ -522,13 +538,13 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 |---|---|---|---|---|
 | `Location` (raf) | Code 128 — bin kodu (0178'in tam kod eşleşmesiyle aynı dizge) | bin kodu, depo / bölge yolu, rol | LOCATION bin'leri (tek tek ya da bölge altındaki hepsi, ≤ 500) | DL-4 |
 | `LotCase` (lot / koli) | GS1 DataMatrix + GS1-128: (01) GTIN + (17) SKT + (10) lot | ürün adı, SKU kodu, GTIN, lot, SKT | `{skuId, lotId}` + ambalaj düzeyi (GTIN FU07'den) | DL-5 |
-| `Sscc` (koli / palet) | GS1-128: (00) SSCC | SSCC, gönderen şirket, koli no (PKG), outbound no (OUT), alıcı şehri / posta kodu (Q-11) | 0178 kolisi ya da serbest palet adedi | DL-5 |
+| `Sscc` (koli / palet) | GS1-128: (00) SSCC | SSCC, gönderen şirket, koli no (PKG), outbound no (OUT), alıcı şehri / posta kodu (Q-11 = A, karar 03: alıcıdan yalnız şehir ve posta kodu; kişi / müşteri adı ve açık adres izinli kümede **yok**) | 0178 kolisi ya da serbest palet adedi | DL-5 |
 
 - **Önizleme (E-1):** `POST /barcode/label-previews` seçilen şablon + kaynakla ilk etiketin PNG görüntüsünü ve alan listesini döner; **hiçbir
   şey yazmaz** (iş, SSCC sayacı, merkezi kayıt yok). SSCC önizlemesi örnek "000000000000000000" değil, `(00)` alanını "basımda atanır" diye
   gösterir.
 - **Basım:** `POST /barcode/label-prints` işi yazar, etiketleri PDF olarak (etiket boyutunda sayfa) üretir, dosyayı ve sha256'sını saklar,
-  `Number` (LBL) döner. **Yazıcıya ulaşma Q-5'e bağlı — öneri A:** sunucu yazıcıya bağlanmaz; Web PDF'i tarayıcının yazdırma penceresinde,
+  `Number` (LBL) döner. **Yazıcıya ulaşma — Q-5 = A (karar 03):** sunucu yazıcıya bağlanmaz; Web PDF'i tarayıcının yazdırma penceresinde,
   mobil Android yazdırma hizmetiyle açar (yazıcı her basımda işletim sistemi penceresinden seçilir). Sunucuda ağ / soket çağrısı yoktur (AC-51).
 - **Yeniden basım (S-10):** `isReprint = true` + `reprintOfJobId` + gerekçe sabit listesi: `Damaged` (etiket hasarlı), `Lost` (kayboldu),
   `PrinterError` (yazıcı hatası / eksik basım), `Relabel` (yeniden etiketleme), `Other` (açıklama 10..500). SSCC yeniden basımı **aynı**
@@ -536,7 +552,9 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 - Etiket dili işin `Language`'ıdır (varsayılan isteğin dili); GS1 alanları AI numarasıyla da yazılır.
 
 ### 8.10 RFID toplu okuma
-- **Kapı:** DL-5 (GTIN çözümleme) ve Q-7 (donanım — E-7 "el terminali alınmayacak"; RFID okuyucunun hangi cihazla okunacağı açık).
+- **Kapı:** DL-5 (GTIN çözümleme) ve RFID okuyucu donanımı. Q-7 = A (karar 03): RFID **Android telefona bağlı el okuyucuyla** (ör. Bluetooth)
+  okunur (E-7 "el terminali alınmayacak"; Q-12: kapı / portal okuyucu yok). **Hangi okuyucu — açık, TBD, sahibi Beste** (mobil ekiple); donanım
+  kararı gelene kadar DL-6 başlamaz.
 - `POST /barcode/rfid-sweeps` `{ warehouseId, locationId, epcs[] (≤ 5.000), repeatOfSweepId? }`: EPC'ler SGTIN-96 / SSCC-96 olarak çözülür
   (GS1 EPC Tag Data Standard); çözülemeyen `Unknown` listelenir, taramayı düşürmez. Beklenen tarama anında defterden okunur (GTIN / SKU / lot
   başına miktar; seri kontrollü SKU'da MOD-0174 seri listesi). Cevap: beklenen / okunan sayıları ve fark listesi (`Missing`, `Unexpected`,
@@ -565,7 +583,8 @@ Kapanmış görev / sayım → `Rejected` `CONTEXT_CLOSED`. Bağlam kaydı yoksa
 - `ScanDevice.Number` = `{ŞİRKET}-DVC-{000001}`; `LabelPrintJob.Number` = `{ŞİRKET}-LBL-{000001}` (RCS-001 biçimi). Ara üretici MOD-0178'in
   geçici sayacı (`IWarehouseRecordCodeAllocator`) — `TypePrefixes`'e ekleme X-4; ortak servise geçiş MOD-0040-FU02 DL-8 ile (FU-0182-RCS).
 - Okutma olayı, aşım, şablon, tarama ve dışa aktarım görünen kod **taşımaz** (§22). SSCC GS1 tanımlayıcısıdır (§8.8).
-- `DVC` / `LBL` RCS-001 §3'te yoktur (ölçüldü: tabloda CNT, OUT, PCK, PKG, PUT, WAV var) — satırlar korunan yol değişikliğidir (§6, Q-1).
+- `DVC` / `LBL` RCS-001 §3'te yoktur (ölçüldü: tabloda CNT, OUT, PCK, PKG, PUT, WAV var) — satırlar korunan yol değişikliğidir (§6 kapısı,
+  paket onayından önce; Q-1 = A ile aynı adım).
 
 ### 8.14 Ekranlar ve Blueprint soft pages
 | Blueprint soft page | Ekran | Sayfa kodu | Veri |
@@ -604,7 +623,7 @@ Okutma **sonucu** kodları HTTP değildir (§8.3). Kullanıcı metni kodun 7 dil
 - v1 platform: Android kamera ile okutma (`CAMERA` izni, uygulama içi sürekli okutma); iOS yalnız kamera ile "Bu nedir?" (E-7). Sunucu
   platforma göre davranış değiştirmez; `Platform` yalnız kayıt bilgisidir.
 - Tam ekran geri bildirim (S-12: kabul 1 sn'de kendiliğinden, ret dokunuşla kapanır) ve ses / titreşim mobilin işidir; sunucu yalnız
-  `outcome` + `reasonCode` + `overridable` verir. `overridable = false` iken mobil PIN düğmesi göstermez (S-7).
+  `outcome` + `reasonCode` + `overridable` verir. `overridable = false` iken mobil PIN düğmesi göstermez (S-7; toplamada hiç gösterilmez — Q-3 = A).
 
 ### 8.17 AI Assist
 Blueprint AI Tier `Assist` (Summarize; Extract; Recommend; Route). v1'de **yok** (FU-0182-AI); AI kapıları (Prompt Registry, HITL, …) yok.
@@ -715,6 +734,8 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 - **Bilinmeyen cihaz / yanlış anahtar** — Expected: 403 `BARCODE_DEVICE_KEY_INVALID`, hiçbir şey yazılmaz.
 - **Engelli / onay bekleyen cihaz** — Expected: 201, `Rejected` `DEVICE_BLOCKED` / `DEVICE_PENDING`, olay yazılır.
 - **Geri çağrılmış lot ya da SKT geçmiş + geçerli PIN'le aşım** — Expected: 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; aşım yazılmaz.
+- **Toplamada yanlış raf ya da farklı lot + geçerli PIN'le aşım (Q-3 = A)** — Expected: 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; aşım yazılmaz; olay
+  `overridable = false` kalır.
 - **Sorumlu kendi okutmasını aşar** — Expected: 422 `BARCODE_OVERRIDE_SELF`.
 - **Yanlış PIN art arda** — Expected: `PinMaxAttempts`'e kadar 422 `BARCODE_PIN_INVALID`, sonra 423 `BARCODE_PIN_LOCKED` `PinLockMinutes` boyunca.
 - **Kör sayım bin'inde "Bu nedir?" / sayım okutması / RFID** — Expected: miktar ve beklenen yok (`quantitiesHidden` / `expectedHidden`).
@@ -731,11 +752,11 @@ Nav anahtarları: `Nav.Module.BARCODERFID`, `Nav.Page.SCANEVENTS`, `Nav.Page.SCA
 
 ## 14. Authorization Convention
 
-**Namespace (Q-1, sahip — öneri A):** `warehouse.barcode.*` — PKS-001 `warehouse.*` ad alanı altında MOD-0182'ye ayrılmış **adlı alt ad alanı**
-(`.antigravity/rules/permission-key-standard.md:92` istisna kuralı; bugün tek örnek `warehouse.waves.*` → MOD-0180, `:106`). Kural gereği alt ad
-alanı ancak **iki paketin de kaydettiği** bir sahip kararıyla açılır: bu paket (§14) + MOD-0178 §14.1 notu (X-9). **B seçeneği:** MOD-0178
-Q-08'deki önerilen ad `barcode.*` (MOD-0181'in `cycle-count.*` deseni) — PKS-001 §4'e yeni ilk segment satırı. Her iki seçenekte de
-`.antigravity` kapısı onaydan öncedir (§6). Depoda `warehouse.barcode.` anahtarı yok (MOD-0178'in `warehouse.*` anahtarları ölçüldü: `activity`,
+**Namespace (Q-1 = A — sahip kararı, karar 03, 2026-11-13):** `warehouse.barcode.*` — PKS-001 `warehouse.*` ad alanı altında MOD-0182'ye ayrılmış
+**adlı alt ad alanı** (`.antigravity/rules/permission-key-standard.md:92` istisna kuralı; bugün tek örnek `warehouse.waves.*` → MOD-0180, `:106`).
+Kural gereği alt ad alanı ancak **iki paketin de kaydettiği** bir sahip kararıyla açılır: bu paket (§14, karar 03) + MOD-0178 §14.1 notu (X-9 —
+henüz yazılmadı). B seçeneği (`barcode.*`, MOD-0178 Q-08'deki önerilen ad) **seçilmedi**. PKS-001 / RCS-001 satırlarının yazımı (`.antigravity`
+kapısı) **paket onayından önce** kapanır ve hâlâ açıktır (§6). Depoda `warehouse.barcode.` anahtarı yok (MOD-0178'in `warehouse.*` anahtarları ölçüldü: `activity`,
 `exceptions`, `integration-monitor`, `location-roles`, `outbound-shipments`, `packages`, `pick-tasks`, `putaway-tasks` — çakışma yok).
 
 **Fiiller:** yalnız Tier-1 (`read`, `create`, `update`) ve Tier-2 (`activate`, `deactivate`, `approve`, `export`) ile Tier-3 `configure` (Rol
@@ -759,7 +780,7 @@ Q-08'deki önerilen ad `barcode.*` (MOD-0181'in `cycle-count.*` deseni) — PKS-
 
 **Politika ve aktör:** `[Authorize]` (tenant shell) + her eylemde `[HasPermission(BarcodePermissions.X)]`; `AuthorizationGuardTests` yeni
 controller'ları da ölçer. Aktör `tenant_user`. Cihaz başlıkları yetki değildir — **ek** bir kimlik kapısıdır (JWT + izin + cihaz).
-Aşımda sorumlunun izni JWT'den değil PIN kaydından gelir (§8.5, Q-4).
+Aşımda sorumlunun izni JWT'den değil PIN kaydından gelir (§8.5, Q-4 = A).
 **Rol şablonu önerisi** (yalnız yeni kiracılar; X-11, Q-14 — Ali): **Depo çalışanı** = `scans.create` + `devices.create` + `label-prints.read` /
 `.create`; **Vardiya sorumlusu** = çalışan + `scan-events.read` + `scan-overrides.approve` + `devices.read`; **Cihaz sorumlusu** = `devices.*` +
 `settings.*`; **Etiket sorumlusu** = `label-templates.*` + `label-prints.*`; **Kalite / denetçi** = `scan-events.read` + `trace.*`. Rol adları öneri.
@@ -794,7 +815,7 @@ almayı yazar.
 - [ ] AC-1 (zorunlu) — `docs/analysis/contracts/drafts/scan-bundle-v1-proposal.md` yazıldı: §3'teki DL-1 uçları (operationId, istek / cevap şeması,
   §8.3 okutma sonucu kodları, §8.15 hata kodları, başlıklar), sürüm `1.0.0-draft`; sözleşme testi controller cevaplarını taslağa karşı kapalı
   şemayla doğrular. S-1: bir cevaptan zorunlu alanı kaldır → sözleşme testi kırmızı.
-- [ ] AC-2 (zorunlu) — `POST /barcode/devices` 201; `Status = Pending` (Q-8 = A), `Number` `{ŞİRKET}-DVC-` + 6 hane; cevap cihaz anahtarını **bir
+- [ ] AC-2 (zorunlu) — `POST /barcode/devices` 201; `Status = Pending` (Q-8 = A, karar 03 — kendiliğinden `Active` doğan kayıt yok), `Number` `{ŞİRKET}-DVC-` + 6 hane; cevap cihaz anahtarını **bir
   kez** taşır; `GET` uçları, liste, merkezi kayıt, olay verisi ve log anahtarı ya da özetini taşımaz; depoda yalnız SHA-256 özeti var. S-2a: GET
   DTO'suna `KeyHash` ekle → kırmızı; S-2b: anahtarı düz metin sakla → kırmızı.
 - [ ] AC-3 (zorunlu) — Cihaz durum makinesi §8.2 tam: geçerli geçişler 200, geçersizler 409 `BARCODE_INVALID_STATE`; engelleme ve yeniden
@@ -820,10 +841,11 @@ almayı yazar.
   test: `"01"` / `"17"` / `"10"` AI sabitleri 0182 dosyalarında bulunmaz). S-10a: ham değeri `Trim` + GS silerek sakla → kırmızı; S-10b: 0182'ye
   kendi AI sözlüğünü ekle → mimari test kırmızı.
 - [ ] AC-11 (zorunlu) — `Putaway` bağlamı: doğru ürün / lot / hedef bin `Accepted`; hedef ≠ okunan bin → `Warning` `WRONG_LOCATION`
-  `overridable = true`; FG satış kutusu GTIN'i uyuşmaz → `Rejected` `WRONG_PRODUCT`; SKU `gtin` boş → `Warning` `PRODUCT_NOT_VERIFIABLE`
+  `overridable = true` (v1'in aşılabilir tek durumu — Q-3 = A); görevin lotundan farklı lot → `DIFFERENT_LOT` `overridable = false`; FG satış kutusu GTIN'i uyuşmaz → `Rejected` `WRONG_PRODUCT`; SKU `gtin` boş → `Warning` `PRODUCT_NOT_VERIFIABLE`
   `overridable = false`. S-11: bin karşılaştırmasını kaldır → kırmızı.
-- [ ] AC-12 (zorunlu) — `Pick` bağlamı (Q-3 öneri A'ya göre): kaynak bin ≠ → `WRONG_LOCATION`, lot ≠ → `DIFFERENT_LOT`, ikisi de
-  `overridable = false`; Q-3 = B seçilirse bu madde paket revizyonuyla değişir. S-12: `Pick`'te `Overridable`'ı `true` yap → kırmızı.
+- [ ] AC-12 (zorunlu) — `Pick` bağlamı (Q-3 = A, karar 03 — kararlar 02'nin PIN aşımı kuralı toplama için daraltıldı, §8.5): kaynak bin ≠ → `WRONG_LOCATION`, lot ≠ →
+  `DIFFERENT_LOT`, ikisi de `overridable = false`; ikisinde de geçerli PIN'le aşım 422 `BARCODE_OVERRIDE_NOT_ALLOWED`, `ScanOverride` ve merkezi
+  kayıt yazılmaz. S-12: `Pick`'te `Overridable`'ı `true` yap → kırmızı.
 - [ ] AC-13 (zorunlu) — Geri çağrılmış lot → `Rejected` `LOT_RECALLED`; SKT geçmiş → `Rejected` `LOT_EXPIRED`; ikisinde de `overridable = false`
   ve geçerli PIN'le aşım 422 `BARCODE_OVERRIDE_NOT_ALLOWED`, `ScanOverride` yazılmaz. S-13a: geri çağırma denetimini kaldır → kırmızı; S-13b:
   aşılabilir neden listesine `LOT_EXPIRED` ekle → kırmızı.
@@ -915,7 +937,7 @@ almayı yazar.
   kütüphanenin okuyucusuyla çözülünce bin kodunu verir. S-49: barkod içeriğine bin adını yaz → çözüm testi kırmızı.
 - [ ] AC-50 (zorunlu) — Yeniden basım: gerekçesiz 422 `LABEL_REPRINT_REASON_REQUIRED`; `Other` açıklamasız 400; `reprintOfJobId` aynı şirket ve aynı
   tür; iş listesinde "yeniden basım" rozeti. S-50: gerekçe denetimini kaldır → kırmızı.
-- [ ] AC-51 (zorunlu) — Sunucu yazıcıya bağlanmaz (Q-5 = A): 0182 üretim kodunda `Socket`, `TcpClient` ya da yazıcıya `HttpClient` çağrısı yok
+- [ ] AC-51 (zorunlu) — Sunucu yazıcıya bağlanmaz (Q-5 = A, karar 03): 0182 üretim kodunda `Socket`, `TcpClient` ya da yazıcıya `HttpClient` çağrısı yok
   (mimari tarama). S-51: etiket servisine `TcpClient` ekle → kırmızı.
 - [ ] AC-52 (zorunlu) — Web "Yeni basım" formunda "Bas" düğmesi önizleme yüklenmeden etkin değildir (E-1); önizleme hatasında basılamaz.
   S-52: düğmeyi her zaman etkin yap → JS testi (vitest) kırmızı.
@@ -937,7 +959,7 @@ almayı yazar.
 - [ ] AC-58 (zorunlu) — (00) SSCC okutması koliyi / paleti çözer (X-1; MOD-0174 testleri değişmeden yeşil). S-58: `Gs1Code.Sscc` atamasını kaldır →
   kırmızı.
 
-**DL-6 — RFID toplu okuma (kapı: DL-5 + Q-7)**
+**DL-6 — RFID toplu okuma (kapı: DL-5 + RFID okuyucu donanım seçimi — Q-7 = A, model TBD)**
 
 - [ ] AC-59 (zorunlu) — RFID taraması: SGTIN-96 / SSCC-96 çözülür; beklenen tarama anında defterden; fark listesi; tarama öncesi ve sonrası defter
   hareket sayısı ve bakiyeler aynı; kör sayım bin'inde beklenen yok (`expectedHidden`). S-59a: tarama içinde bir hareket yaz → kırmızı; S-59b:
@@ -961,7 +983,7 @@ almayı yazar.
   `/api/warehouse/{everything}` rotasını geçici boz → kırmızı (geri alınır); S-65b: başlık iletimini engelleyen ayar ekle → kırmızı (geri alınır).
 
 ## 17. Test Expectations
-- **Birim (Domain, saf):** cihaz durum makinesi; bağlam karşılaştırma tablosu (§8.4 her satır); aşılabilirlik matrisi (S-7 + Q-3); SSCC kontrol
+- **Birim (Domain, saf):** cihaz durum makinesi; bağlam karşılaştırma tablosu (§8.4 her satır); aşılabilirlik matrisi (S-7, Q-3 = A ile daraltılmış: yalnız `Putaway` × `WRONG_LOCATION` `true`, matrisin geri kalanı `false`); SSCC kontrol
   hanesi ve kapasite; EPC çözümü (SGTIN-96 / SSCC-96, GS1 örnek vektörleri); PIN zayıflık kuralları; sağlık hesabı.
 - **Entegrasyon (Mongo replika seti):** InventoryService test paketi `INVENTORY_TEST_MONGO` yoksa kendi replika setini başlatır; AC-1…AC-30 gerçek
   MOD-0178 / 0181 / 0174 koduyla (görev, sayım, lot, geri çağırma kurulur, sonra okutulur); DL-3 vakaları gerçek 0178 / 0181 onay işleyicileriyle;
@@ -991,22 +1013,29 @@ almayı yazar.
 - [x] Acceptance criteria test edilebilir; her bekçi sabotajlı, bekçi olmayanlar adıyla işaretli (§16)
 - [x] Audited Events tablosu her yazma komutunu tam bir kez içeriyor (§21)
 - [x] Sayfa yardım metni her sayfa için yazılı (§25); tur yok
-- [ ] Sahip kararları: Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 (§19.4)
+- [x] Sahip kararları: Q-1, Q-2, Q-3, Q-4, Q-5, Q-7, Q-8, Q-9, Q-10, Q-11, Q-12, Q-15, Q-17 — kararlar 03
+  (`docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md`, Beste 2026-11-13, "hepsi öneri gibi"; r2, §19.5)
+- [ ] RFID okuyucu donanım seçimi (Q-7 = A'nın kalanı; TBD, Beste — **DL-6 kapısı**, paket onayını bekletmez)
 - [ ] Ali kararları: Q-6 (barkod kütüphanesi), Q-13 (şirket bağlamı teyidi), Q-14 (rol şablonu — DL-2 kabul kapısı)
 - [ ] CT kararı: Q-16 (okutma olayının merkezi denetim yolu)
-- [ ] **`.antigravity/**` kapısı — paket onayından ÖNCE:** PKS-001 §4 satırı + `:92` cümlesi + `:105` eki (Q-1), RCS-001 §3 `DVC` / `LBL`,
-  aynı adımda X-8 ve X-9 (MOD-0178 §14.1 notu — 0178'in yeni sürümü ayrıca incelenir ve onaylanır) (§6)
+- [ ] **CT işi (Q-2 = A):** mobil not
+  `execution/domains/supply-chain-execution/work-packs/mobile/2026-11-12-barcode-scanning/MOBILE-NOTE-2026-11-12-barcode-scanning.md:106`
+  ("Cihaz kaydı ve engelleme MOD-0365") cihaz kaydını MOD-0182'ye yazacak biçimde düzeltilir; bu paket mobil nota dokunmaz
+- [ ] **`.antigravity/**` kapısı — paket onayından ÖNCE:** PKS-001 §4 `warehouse.barcode.*` satırı + `:92` cümlesi + `:105` eki (Q-1 = A,
+  karar 03), RCS-001 §3 `DVC` / `LBL`, aynı adımda X-8 (`RecordCodeTypeCatalogTests`) ve X-9 (MOD-0178 §14.1 notu — 0178'in yeni sürümü ayrıca
+  incelenir ve onaylanır) (§6). CT hazırlar, Beste onaylar; bu paket `.antigravity/**`'a yazmaz
 - [ ] XMC-001 satırları X-1…X-14 sahiplerinden onay aldı (§5.1)
 - [ ] SCAN-BUNDLE taslağı yazıldı (DL-1 ilk adımı, AC-1); dondurma ayrı CT adımı; mobil sözleşme notu paket onayından sonra
 - [ ] MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü — **DL-5 başlamadan önce** (§24)
-- [ ] r1 bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **onaylayan Ali (GitHub `GMG-ERP`)**; yazan ≠ onaylayan
+- [ ] r2 bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01) — **onaylayan Ali (GitHub `GMG-ERP`)**; yazan ≠ onaylayan
 
 ## 19. Implementation Notes
 
 ### 19.1 Okunan kaynaklar
 - Sahip kararları: `docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-01.md` (tamamı; S-2 `:10`, S-3 `:11`, S-5 `:12`, S-6 `:13`; S-1'in
   2026-11-06 kapanışı `:5`) ve `docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-02.md` (tamamı; S-7 `:8` … S-12 `:13`, E-1 `:14`,
-  E-2 `:15`, mockup v2 kabulü `:24`, E-3 `:21`, E-4 `:22`, E-5 `:25`, E-6 `:26`, E-7 `:27`).
+  E-2 `:15`, mockup v2 kabulü `:24`, E-3 `:21`, E-4 `:22`, E-5 `:25`, E-6 `:26`, E-7 `:27`). r2: kararlar 03
+  `docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md` (tamamı; Beste 2026-11-13 sohbet cevabı "hepsi öneri gibi").
 - Brief'ler: `execution/domains/supply-chain-execution/work-packs/mockups/barcode-scanning/BRIEF-MOD-0182-MOD-0365-barcode-devices.md` ve
   `execution/domains/supply-chain-execution/work-packs/mockups/barcode-scanning/BRIEF-MOD-0182-mobile-scanning.md` (tamamı).
 - Mobil not: `execution/domains/supply-chain-execution/work-packs/mobile/2026-11-12-barcode-scanning/MOBILE-NOTE-2026-11-12-barcode-scanning.md`
@@ -1041,39 +1070,66 @@ HEAD `90f6a1da8`, salt okuma.
 - Gateway `/api/warehouse` ve `/api/warehouse/{everything}` rotaları (`gateway/Diten.ApiGateway/ocelot.json:1134-1142`, `:1153-1161`).
 
 ### 19.3 Çıkarımlar
-- "RFID tek uç" (2026-11-06) yalnız el okuyucu, kapı / portal okuyucu yok anlamında okundu (brief "RFID kapı okuyucuları ilk sürümde yok") — Q-12.
-- E-7 (el terminali alınmayacak) ile S-2 (RFID v1'de) birlikte: RFID okumak için telefona bağlı bir okuyucu (ör. Bluetooth) gerekir; donanım kararı
-  yok — Q-7. Bu yüzden RFID ayrı dilim (DL-6) ve kapılı.
+- "RFID tek uç" (2026-11-06) yalnız el okuyucu, kapı / portal okuyucu yok anlamında okundu (brief "RFID kapı okuyucuları ilk sürümde yok") — Q-12;
+  **r2: sahip teyit etti (karar 03).**
+- E-7 (el terminali alınmayacak) ile S-2 (RFID v1'de) birlikte: RFID okumak için telefona bağlı bir okuyucu (ör. Bluetooth) gerekir — Q-7;
+  **r2: yön sahip kararı (karar 03, Q-7 = A); donanım seçimi hâlâ yok (TBD, Beste).** Bu yüzden RFID ayrı dilim (DL-6) ve kapılı.
 - Mobil notun "Cihaz kaydı ve engelleme MOD-0365" cümlesi (`:106`) Blueprint'in MOD-0182 SoR'u ("device registrations (if included)") ve brief §4
-  (`/Warehouse/Devices` eylemleri) ile çelişir; paket cihaz kaydını MOD-0182'ye yazar — Q-2.
+  (`/Warehouse/Devices` eylemleri) ile çelişir; paket cihaz kaydını MOD-0182'ye yazar — Q-2; **r2: sahip kararı (karar 03, Q-2 = A); mobil not
+  CT işiyle düzeltilir (§18), bu paket dokunmaz.**
 - İTS'nin MOD-0247'ye girmesi kararlar 01'de çıkarım olarak yazılı; bu paket İTS'ye dokunmaz.
 
-### 19.4 Açık sorular
+### 19.4 Kararlar ve açık sorular (karar 03 sonrası durum, r2)
+"Öneri" sütunu r1'in metnidir; kapanan satırlarda karar bu öneridir (kararlar 03, Beste 2026-11-13, "hepsi öneri gibi").
+
 | # | Soru (sade) | Öneri | Seçenekler | Kim | Durum |
 |---|---|---|---|---|---|
-| Q-1 | İzin anahtarları hangi ad alanında olsun? | **A** `warehouse.barcode.*` — `warehouse.*` altında MOD-0182'ye ayrılmış alt ad alanı (MOD-0180'in `warehouse.waves.*` deseni; taban yol `/api/warehouse/barcode`) | A · B `barcode.*` (MOD-0181'in `cycle-count.*` deseni, MOD-0178 Q-08 önerisi) | Beste | açık — `.antigravity` kapısı (§6) bu cevaba bağlı |
-| Q-2 | Cihaz kaydı (kayıt, onay, engelleme, sağlık) hangi modülün? | **MOD-0182** (Blueprint SoR "device registrations"); MOD-0365 yalnız dış sağlayıcı profili; mobil not `:106` düzeltilir | A 0182 · B 0365 (Platform'da cihaz kaydı, 0182 okur) | Beste | açık |
-| Q-3 | Toplamada "farklı lot" ya da "yanlış raf" PIN'le aşılınca ne olsun? 0178 toplama onayı bugün yalnız tahsis edilen bin ve lotu kabul eder | **A** v1'de toplamada bu ikisi aşılamaz ("Sorumluya başvurun — tahsis değişmeli"); PIN aşımı yerleştirmedeki yanlış raf için geçerli (0178'in sapma yolu var); farklı lot aşımı tahsis değişimi gelene kadar yok | A · B 0178'e lot / bin değiştirme eklenir (XMC, büyük iş, FU-0178) | Beste | açık |
-| Q-4 | Sorumlu PIN'i nasıl çalışsın? | PIN 0182'de özetiyle; kişi kendisi belirler (izni varken); 90 gün geçerli; 3 yanlışta 5 dk kilit; yetki geri alınırsa PIN süresi dolana kadar geçerli kalır (bilinen sınır) | A öneri · B sorumlu kendi cihazından / oturumundan onaylar (PIN yok) | Beste | açık |
-| Q-5 | Etiket yazıcıya nasıl ulaşsın? | **A** sunucu PDF üretir; Web tarayıcının, mobil Android'in yazdırma penceresiyle basar (yazıcı her basımda seçilir); RFID etikete yazma v1'de yok | A · B sahada küçük yazdırma ajanı (MOD-0365) — ağ yazıcısına ZPL · C sunucudan doğrudan ağ yazıcısına (bulutta çalışmaz) | Beste | açık |
+| Q-1 | İzin anahtarları hangi ad alanında olsun? | **A** `warehouse.barcode.*` — `warehouse.*` altında MOD-0182'ye ayrılmış alt ad alanı (MOD-0180'in `warehouse.waves.*` deseni; taban yol `/api/warehouse/barcode`) | A · B `barcode.*` (MOD-0181'in `cycle-count.*` deseni, MOD-0178 Q-08 önerisi) | Beste | **kararlaştı — A** (karar 03, 2026-11-13); `.antigravity` kapısı (§6) paket onayından önce **açık** |
+| Q-2 | Cihaz kaydı (kayıt, onay, engelleme, sağlık) hangi modülün? | **MOD-0182** (Blueprint SoR "device registrations"); MOD-0365 yalnız dış sağlayıcı profili; mobil not `:106` düzeltilir | A 0182 · B 0365 (Platform'da cihaz kaydı, 0182 okur) | Beste | **kararlaştı — A, MOD-0182** (karar 03, 2026-11-13); mobil not `:106` düzeltmesi CT işi (§18) |
+| Q-3 | Toplamada "farklı lot" ya da "yanlış raf" PIN'le aşılınca ne olsun? 0178 toplama onayı bugün yalnız tahsis edilen bin ve lotu kabul eder | **A** v1'de toplamada bu ikisi aşılamaz ("Sorumluya başvurun — tahsis değişmeli"); PIN aşımı yerleştirmedeki yanlış raf için geçerli (0178'in sapma yolu var); farklı lot aşımı tahsis değişimi gelene kadar yok | A · B 0178'e lot / bin değiştirme eklenir (XMC, büyük iş, FU-0178) | Beste | **kararlaştı — A** (karar 03, 2026-11-13); S-7 toplama için daraltıldı (§8.4, §8.5, AC-12); FU-0178-LOTSWAP |
+| Q-4 | Sorumlu PIN'i nasıl çalışsın? | PIN 0182'de özetiyle; kişi kendisi belirler (izni varken); 90 gün geçerli; 3 yanlışta 5 dk kilit; yetki geri alınırsa PIN süresi dolana kadar geçerli kalır (bilinen sınır) | A öneri · B sorumlu kendi cihazından / oturumundan onaylar (PIN yok) | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
+| Q-5 | Etiket yazıcıya nasıl ulaşsın? | **A** sunucu PDF üretir; Web tarayıcının, mobil Android'in yazdırma penceresiyle basar (yazıcı her basımda seçilir); RFID etikete yazma v1'de yok | A · B sahada küçük yazdırma ajanı (MOD-0365) — ağ yazıcısına ZPL · C sunucudan doğrudan ağ yazıcısına (bulutta çalışmaz) | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
 | Q-6 | Barkod çizim kütüphanesi | ZXing.Net (Apache-2.0) — Code 128, GS1-128, DataMatrix; lisans ve güvenlik taraması DL-4 öncesi | ZXing.Net · başka kütüphane · kendi kodlayıcımız | Ali | açık |
-| Q-7 | RFID'yi hangi cihazla okuyacağız? (el terminali alınmayacak) | Android telefona bağlı RFID okuyucu (ör. Bluetooth) — cihaz seçimi mobil ekiple; karar gelene kadar DL-6 başlamaz | A telefon + bağlı okuyucu · B RFID v1'den çıkar (FU) | Beste + mobil ekip | açık |
-| Q-8 | Yeni cihaz kaydı onay beklesin mi? (MS-2) | **A** evet — `Pending`, Web'den onay | A · B kendiliğinden etkin | Beste | açık |
-| Q-9 | "Okutmadan onay verilemez" kuralı nasıl açılsın? | depo başına ayar, varsayılan kapalı; pilot depoda açılır | A öneri · B şirket geneli · C her zaman açık | Beste | açık |
-| Q-10 | SSCC nelere verilsin? | 0178 kolisine bir SSCC + içeriksiz serbest palet etiketi; koli → palet birleştirmesi MOD-0246'ya; uzantı hanesi 0 | A öneri · B palet içeriği de 0182'de (kapsam büyür) | Beste | açık |
-| Q-11 | SSCC etiketinde alıcı bilgisi | yalnız şehir ve posta kodu; kişi / müşteri adı yok (mobil brief öneri) | A öneri · B tam sevk adresi | Beste | açık |
-| Q-12 | "RFID tek uç" ne demek? | yalnız el okuyucu; kapı / portal okuyucu yok | teyit | Beste | açık |
+| Q-7 | RFID'yi hangi cihazla okuyacağız? (el terminali alınmayacak) | Android telefona bağlı RFID okuyucu (ör. Bluetooth) — cihaz seçimi mobil ekiple; karar gelene kadar DL-6 başlamaz | A telefon + bağlı okuyucu · B RFID v1'den çıkar (FU) | Beste + mobil ekip | **yön kararlaştı — A** (karar 03, 2026-11-13); **donanım seçimi açık — TBD, sahibi Beste** (DL-6 kapısı) |
+| Q-8 | Yeni cihaz kaydı onay beklesin mi? (MS-2) | **A** evet — `Pending`, Web'den onay | A · B kendiliğinden etkin | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
+| Q-9 | "Okutmadan onay verilemez" kuralı nasıl açılsın? | depo başına ayar, varsayılan kapalı; pilot depoda açılır | A öneri · B şirket geneli · C her zaman açık | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
+| Q-10 | SSCC nelere verilsin? | 0178 kolisine bir SSCC + içeriksiz serbest palet etiketi; koli → palet birleştirmesi MOD-0246'ya; uzantı hanesi 0 | A öneri · B palet içeriği de 0182'de (kapsam büyür) | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
+| Q-11 | SSCC etiketinde alıcı bilgisi | yalnız şehir ve posta kodu; kişi / müşteri adı yok (mobil brief öneri) | A öneri · B tam sevk adresi | Beste | **kararlaştı — A** (karar 03, 2026-11-13) |
+| Q-12 | "RFID tek uç" ne demek? | yalnız el okuyucu; kapı / portal okuyucu yok | teyit | Beste | **kararlaştı — teyit** (karar 03, 2026-11-13) |
 | Q-13 | Mobilde şirket bağlamı `legal_entities` claim + `X-Legal-Entity-Id` ile mi? | evet (E-7); Auth teyidi | teyit | Ali | açık |
 | Q-14 | Rol şablonları (§14) | Depo çalışanı, Vardiya sorumlusu, Cihaz sorumlusu, Etiket sorumlusu, Kalite / denetçi | ayrı WP | Ali | açık |
-| Q-15 | Build mi, Buy mı? (Blueprint `Buy/Partner`) | **Build** (2026-11-06 "sağlayıcıdan bağımsız"; 0178 / 0180 / 0181 emsali) | Build · Buy | Beste | açık |
+| Q-15 | Build mi, Buy mı? (Blueprint `Buy/Partner`) | **Build** (2026-11-06 "sağlayıcıdan bağımsız"; 0178 / 0180 / 0181 emsali) | Build · Buy | Beste | **kararlaştı — Build** (karar 03, 2026-11-13) |
 | Q-16 | Her okutma merkezi denetime gitsin mi? | r1: evet (yol b); hacim ölçülünce yol c (okutma olayı defteri) değerlendirilir | b · c | CT (+ Ali) | açık |
-| Q-17 | Etiket boyutları | 100×150, 100×50, 50×25 mm sabit liste | liste | Beste | açık |
+| Q-17 | Etiket boyutları | 100×150, 100×50, 50×25 mm sabit liste | liste | Beste | **kararlaştı — liste** (karar 03, 2026-11-13) |
+
+### 19.5 r1 → r2 kapanış tablosu
+
+Girdi: kararlar 03 (`docs/records/decisions/2026-11/mod0182-mod0365-owner-decisions-03.md`). Hedef: r1, commit `dbbb8dd04`, LF sha256 `26b4b4a2…`.
+
+| # | Karar | r2 değişikliği | Bölüm |
+|---|---|---|---|
+| Q-1 | A — `warehouse.barcode.*` | "öneri A" → karar; B seçeneği "seçilmedi"; PKS-001 önerilen satırına karar kaydı; `.antigravity` kapısı ve X-8 / X-9 **onaydan önce açık** kaldı | künye, §5.1 X-9, §6, §8.13, §14, §18, §22, §24 |
+| Q-2 | A — cihaz kaydı MOD-0182'de | kapsam satırına karar; mobil not `:106` düzeltmesi CT işi olarak §18'e (paket mobil nota dokunmaz) | künye, §2.1, §18, §19.3 |
+| Q-3 | A — toplamada farklı lot / yanlış raf PIN'le de aşılamaz; lot değişimi FU | **S-7 daraltıldı:** v1'de aşılabilir tek durum `Putaway` × `WRONG_LOCATION`; `Pick`'te iki neden ve her bağlamda `DIFFERENT_LOT` geçerli PIN'le 422 `BARCODE_OVERRIDE_NOT_ALLOWED`; `Putaway` farklı lot satırı açıkça yazıldı; AC-12'ye 422 vakası, AC-11'e `Putaway` farklı lot vakası (sabotaj adları aynı: S-11, S-12); yeni hata yolu satırı; FU-0178-LOTSWAP koşulsuz | künye, §2.1, §4.2, §8.4, §8.5, §8.16, §13, §16 AC-11 / AC-12, §17, §20 |
+| Q-4 | A — 90 gün, 3 yanlışta 5 dk kilit | varsayılanlar karar olarak işaretlendi; bilinen sınır ve FU-0182-PIN-LIVE değişmedi | §4.3, §4.4, §8.5, §14 |
+| Q-5 | A — sunucu PDF, Web tarayıcı / Android yazdırma penceresi | "öneri A" → karar; MOD-0365 sınırında yazdırma ajanı v1 dışı; FU-0182-PRINT-AGENT yeniden yazıldı | künye `dependencies`, §2.2, §7, §8.9, AC-51, §20 |
+| Q-7 | A — telefona bağlı okuyucu; donanım kararı gelene kadar DL-6 yok | DL-6 kapısı "donanım seçimi (TBD, Beste)" olarak yazıldı; donanım seçimi **açık** kaldı | künye, §4.1, §8.10, §16 DL-6 başlığı, §18, §19.3, §23, §24 |
+| Q-8 | A — yeni cihaz onay bekler | "Q-8 = B seçilirse" cümlesi kaldırıldı; kayıt her zaman `Pending` | §2.1, §8.2, AC-2 |
+| Q-9 | A — depo başına, varsayılan kapalı | karar olarak işaretlendi | §4.4, §8.7, §24 |
+| Q-10 | A — 0178 kolisi + içeriksiz palet etiketi; birleştirme MOD-0246 | karar olarak işaretlendi | §2.2, §4.4, §8.8, §24 |
+| Q-11 | A — alıcıdan yalnız şehir ve posta kodu | izinli kümede kişi / müşteri adı ve açık adres olmadığı yazıldı | §8.9 |
+| Q-12 | teyit — yalnız el okuyucu | çıkarım teyitli olarak işaretlendi | §2.2, §4.1, §8.10, §19.3 |
+| Q-15 | Build | W-0182-01 "Öneri" → "Karar"; FU-0182-EA (Blueprint düzeltmesi) kaldı | §0, §20 |
+| Q-17 | 100×150, 100×50, 50×25 mm | "Q-17 önerisi" → karar | §4.6 |
+
+Açık kalan (r2 kapatmaz): Q-6, Q-13, Q-14 (Ali); Q-16 (CT); Q-7 donanım seçimi (Beste); `.antigravity` kapısı (onaydan önce); mobil not `:106`
+(CT işi); XMC-001 X-1…X-14 onayları; MDM MOD-0290-FU07 (DL-5 kapısı). AC sayısı 65, yazma komutu 18, sabotaj listesi değişmedi.
 
 ## 20. Follow-up Items
 - **FU-0182-OFFLINE** — çevrimdışı okutma kuyruğu ve yeniden oynatma (Blueprint SCAN-BUNDLE; S-1 v1 dışı).
 - **FU-0182-RCS** — `DVC` / `LBL`'nin MOD-0040-FU02 ortak servisine geçişi (FU-0178-RCS-01 ile).
 - **FU-0182-PIN-LIVE** — aşımda sorumlunun yetkisinin AuthService'ten canlı okunması (Q-4 sınırı).
-- **FU-0182-PRINT-AGENT** — sahada yazdırma ajanı ve ZPL (Q-5 = B gelirse; MOD-0365 ile).
+- **FU-0182-PRINT-AGENT** — sahada yazdırma ajanı ve ZPL (Q-5 = A ile v1 dışı; ağ yazıcısına doğrudan basım ihtiyacı doğarsa MOD-0365 ile).
 - **FU-0182-RFID-ENCODE** — RFID etikete yazma (kodlama).
 - **FU-0182-PORTAL** — kapı / portal RFID okuyucuları.
 - **FU-0182-WORKCENTER** — Görev Merkezi bağlantısı (MVP-5 sonrası, 2026-11-13 kararı; 0182 tüketici).
@@ -1081,7 +1137,8 @@ HEAD `90f6a1da8`, salt okuma.
 - **FU-0182-AI** — Blueprint AI Assist. **FU-0182-EA** — Blueprint Build/Buy düzeltmesi (Q-15).
 - **FU-0178-SERIAL-01** (MOD-0178'in) ve **FU-0181-BARCODE** (MOD-0181'in) — DL-3 bu iki FU'nun okutma tarafını karşılar; seri kısmi yerleştirme
   0178'de kalır.
-- **FU-0178-LOTSWAP** (Q-3 = A ise) — toplamada lot / bin değişimi.
+- **FU-0178-LOTSWAP** (Q-3 = A, karar 03) — toplamada lot / bin değişimi (tahsis değişimi); gelene kadar toplamada farklı lot / yanlış raf
+  PIN'le de aşılamaz. MOD-0178'in FU'su olarak sahibine önerilir; MOD-0178 paketine bu paket yazmaz.
 
 ## 21. Audited Events
 
@@ -1117,8 +1174,8 @@ dışı). **Kayda yazılmayacak alanlar:** PIN, PIN özeti, tuz, cihaz anahtarı
 
 | Kayıt türü | Sınıf | TÜR öneki | Üretici | Gerekçe |
 |---|---|---|---|---|
-| Cihaz (`ScanDevice.Number`) | OTOMATİK | `DVC` (öneri, Q-1 kapısı) | hedef MOD-0040-FU02; ara MOD-0178 geçici sayacı | engelleme, iz ve destekte anılır; kullanıcı değiştirmez |
-| Etiket basım işi (`LabelPrintJob.Number`) | OTOMATİK | `LBL` (öneri, Q-1 kapısı) | aynı | yeniden basım ve iz bu numarayla anılır |
+| Cihaz (`ScanDevice.Number`) | OTOMATİK | `DVC` (öneri; RCS-001 satırı `.antigravity` kapısında — §6) | hedef MOD-0040-FU02; ara MOD-0178 geçici sayacı | engelleme, iz ve destekte anılır; kullanıcı değiştirmez |
+| Etiket basım işi (`LabelPrintJob.Number`) | OTOMATİK | `LBL` (öneri; RCS-001 satırı `.antigravity` kapısında — §6) | aynı | yeniden basım ve iz bu numarayla anılır |
 | Okutma olayı | — | kod yok | — | yüksek hacim; zaman + kullanıcı + cihaz ile anılır |
 | Etiket şablonu | — | kod yok | — | ad şirkette tekil |
 | SSCC | GS1 tanımlayıcısı | — | 0182 SSCC sayacı (§8.8) | RCS-001 dışında: biçimi GS1 tanımlar (MOD-0290-FU07 §3'teki GTIN gerekçesi) |
@@ -1136,24 +1193,25 @@ RCS-001 §3 tablosuna yazılması korunan yol değişikliğidir (§6 kapısı, X
 | DL-3 | WMS işlemlerine bağlama: MOD-0178 yerleştirme / toplama onayı ve MOD-0181 sayım girişi için `scanRef` kapısı, okutma zorunluluğu ayarı | WMS işlemlerine bağlama, ScanSessionBinding, XMC-001 — başka modülün dosyalarına dokunuşlar, Hata kodları, Failure Path to Verify, Audited Events | L3 + E5 | plan kimliği yok | plan satırı yok |
 | DL-4 | etiket şablonu + basım çekirdeği (önizleme, PDF, yeniden basım) + lokasyon etiketi + Web ekranları | Etiket şablonu ve basımı, LabelTemplate ve LabelPrintJob, Frontend File Contract, Ekranlar ve Blueprint soft pages, Audited Events, Record Codes | E4 | plan kimliği yok | plan satırı yok |
 | DL-5 | GTIN çözümleme + "Bu nedir?" GTIN yolu + SSCC + lot / koli ve SSCC etiketleri (kapı: MOD-0290-FU07 DL-1 main'de) | GTIN çözümleme ve SSCC, SsccAssignment ve SsccCounter, Etiket şablonu ve basımı, Bağlam kuralları, Hata kodları, Audited Events | E4 | plan kimliği yok | plan satırı yok |
-| DL-6 | RFID toplu okuma: beklenen / okunan farkı, yeniden tarama, sayım başlatma bağlantısı (kapı: DL-5 + Q-7) | RFID toplu okuma, RfidSweep, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-6 | RFID toplu okuma: beklenen / okunan farkı, yeniden tarama, sayım başlatma bağlantısı (kapı: DL-5 + RFID okuyucu donanım seçimi — Q-7) | RFID toplu okuma, RfidSweep, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 | DL-7 | uyum izi + kanıt paketi (PDF / CSV) + Web ekranı | Uyum izi ve kanıt paketi, ScanTraceExport, Frontend File Contract, Ekranlar ve Blueprint soft pages, Audited Events | E4 | plan kimliği yok | plan satırı yok |
 | DL-8 | yalnız Gateway kapsama testi (integration-agent; DL-1'den sonra; `ocelot.json` değişmez) | Gateway / API Routing Decision | E3 | plan kimliği yok | plan satırı yok |
 
 ## 24. Dilim kapıları ve bağlı kararlar
 
 Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 inceleme kaydı + CT-APR-01 onay satırı, onaylayan Ali) hiçbir dilim başlamaz.
-**Onaydan önce kapanan kapı:** `.antigravity/**` satırları (Q-1'e göre PKS-001 §4 + `:92` / `:105`; RCS-001 §3 `DVC` / `LBL`) + aynı adımda X-8 ve
-X-9 (MOD-0178 §14.1 notu ve 0178'in yeni sürümünün incelemesi + onayı) (§6).
+**Onaydan önce kapanan kapı (r2'de hâlâ açık):** `.antigravity/**` satırları (Q-1 = A, karar 03: PKS-001 §4 `warehouse.barcode.*` + `:92` / `:105`;
+RCS-001 §3 `DVC` / `LBL`) + aynı adımda X-8 (`RecordCodeTypeCatalogTests`) ve X-9 (MOD-0178 §14.1 notu ve 0178'in yeni sürümünün incelemesi +
+onayı) (§6).
 
 | Dilim | Başlamadan kapanması gereken kararlar | Seam'ler (XMC-001) | AC | Sabotajlar |
 |---|---|---|---|---|
-| DL-1 | Q-1, Q-2, Q-3, Q-4, Q-8, Q-15, Q-16; ilk adım SCAN-BUNDLE taslağı | X-4 (`DVC`), X-5, X-6, X-7 | AC-1…AC-30 | S-1, S-2a, S-2b, S-3, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-7a, S-7b, S-8, S-9, S-10a, S-10b, S-11, S-12, S-13a, S-13b, S-14, S-15, S-16, S-17, S-18a, S-18b, S-18c, S-19a, S-19b, S-20, S-21, S-22, S-23, S-24, S-25, S-26a, S-26b, S-27, S-28, S-29, S-30 |
+| DL-1 | Q-16 (CT); Q-1, Q-2, Q-3, Q-4, Q-8, Q-15 kapandı (karar 03); ilk adım SCAN-BUNDLE taslağı | X-4 (`DVC`), X-5, X-6, X-7 | AC-1…AC-30 | S-1, S-2a, S-2b, S-3, S-4a, S-4b, S-5, S-6a, S-6b, S-6c, S-7a, S-7b, S-8, S-9, S-10a, S-10b, S-11, S-12, S-13a, S-13b, S-14, S-15, S-16, S-17, S-18a, S-18b, S-18c, S-19a, S-19b, S-20, S-21, S-22, S-23, S-24, S-25, S-26a, S-26b, S-27, S-28, S-29, S-30 |
 | DL-2 | Q-14 rol şablonu (Ali) — kabul kapısı | X-10 | AC-31…AC-40 | S-31, S-33, S-34, S-35, S-36, S-37, S-39, S-40 |
-| DL-3 | Q-9; **CT adımı: WMS-BUNDLE ve WMS-COUNT-BUNDLE eklemeli sürümleri (X-14) DL-3 başlamadan önce yazılır ve dondurulur**; öneri: DL-5'ten sonra (ürün doğrulaması GTIN'le anlamlı olsun) | X-2, X-3, X-6, X-14 | AC-41…AC-46 | S-41, S-42a, S-42b, S-43, S-44, S-45, S-46 |
-| DL-4 | Q-5, Q-6, Q-17 | X-4 (`LBL`), X-6, X-10 | AC-47…AC-52; AC-31…AC-34, AC-39 yeni sayfalar için | S-47, S-48, S-49, S-50, S-51, S-52 |
-| DL-5 | **MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü** (`identifiers/{gtin}`, `gs1-company-prefixes`); Q-10, Q-11 | X-1, X-13, X-6 | AC-53…AC-58 | S-53a, S-53b, S-54, S-55a, S-55b, S-55c, S-56, S-57, S-58 |
-| DL-6 | DL-5 kabulü; Q-7 (donanım); Q-12 | X-6 | AC-59…AC-61 | S-59a, S-59b, S-60, S-61 |
+| DL-3 | Q-9 kapandı (karar 03); **CT adımı: WMS-BUNDLE ve WMS-COUNT-BUNDLE eklemeli sürümleri (X-14) DL-3 başlamadan önce yazılır ve dondurulur**; öneri: DL-5'ten sonra (ürün doğrulaması GTIN'le anlamlı olsun) | X-2, X-3, X-6, X-14 | AC-41…AC-46 | S-41, S-42a, S-42b, S-43, S-44, S-45, S-46 |
+| DL-4 | Q-6 (Ali); Q-5, Q-17 kapandı (karar 03) | X-4 (`LBL`), X-6, X-10 | AC-47…AC-52; AC-31…AC-34, AC-39 yeni sayfalar için | S-47, S-48, S-49, S-50, S-51, S-52 |
+| DL-5 | **MOD-0290-FU07 DL-1 `main`'de ve pilotta ölçüldü** (`identifiers/{gtin}`, `gs1-company-prefixes`); Q-10, Q-11 kapandı (karar 03) | X-1, X-13, X-6 | AC-53…AC-58 | S-53a, S-53b, S-54, S-55a, S-55b, S-55c, S-56, S-57, S-58 |
+| DL-6 | DL-5 kabulü; **RFID okuyucu donanım seçimi** (Q-7 = A'nın kalanı — TBD, Beste); Q-7 yönü ve Q-12 kapandı (karar 03) | X-6 | AC-59…AC-61 | S-59a, S-59b, S-60, S-61 |
 | DL-7 | — | X-6, X-10 | AC-62…AC-64; AC-31…AC-34, AC-39 `ScanTrace` için | S-62, S-63, S-64 |
 | DL-8 | DL-1 kabulü | gateway test projesi (integration-agent); `ocelot.json` değişmez, sabotajda geçici bozulur ve geri alınır | AC-65 | S-65a, S-65b |
 
