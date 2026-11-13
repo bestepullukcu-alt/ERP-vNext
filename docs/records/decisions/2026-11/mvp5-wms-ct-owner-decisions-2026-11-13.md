@@ -35,3 +35,10 @@
 - **CT kararı — MOD-0040-FU02 r15 inceleme F-1 (kilit filtresi):** LockIfUnlockedAsync filtresine ön okunan kod eklenir (Code eşit);
   eşleşmezse satır yeniden okunur ve 409 RECORD_CODE_CONFLICT döner — çağıranın görmediği yeni kod kilitlenmez. DL-3 WP'si bunu adıyla
   taşır; AC-70 / AC-72 metni paketin bir sonraki revizyonunda hizalanır (r15 onayı geçersiz olmasın diye).
+- **EES 2.14 eki — onay geçmişi başlangıç noktası (Beste, "Başlangıcı taşı", PR #424):** `scripts/pack_approval.py` `HISTORY_BASELINE`
+  7e8aa77d8'den (PR #397 merge'ü) MVP-1 hattının GitHub'daki a1aba4066 commit'ine taşındı; altındaki iki sıra-değiştiren merge (11c37f79d,
+  727d99414; CT zinciri ↔ hat birleştirmeleri) `BASELINE_REORDERS`'a eklendi. Ölçüm: `history --base origin/main` yalnız bu ikisini
+  adlandırıyordu (reviews.tsv; satır kaybı yok, eklenen yok); `git blame` iki defterde de bu merge'lere 0 satır veriyor; değişiklikten sonra
+  aynı komut "yalnız ekleme — bozulma yok", çıkış 0. a1aba4066'dan sonraki her ihlal yine ihlaldir. Neden: append-only zorunlu kontrol;
+  ortak dalda geçmiş yeniden yazılmaz, istisna dosyası yalnız kayıp satırı affeder. Ders: CT zinciri ↔ hat birleştirmelerinde defterler
+  hattın sırasıyla yazılır (ana satırlar önce, sonra hattın satırları hattın sırasıyla).
