@@ -37,3 +37,18 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   (FU-0179-ADJUST); Q-5 rotalar `/Warehouse/ThirdParty*`; Q-6 varsayılan eşikler sevk onayı 120 dk, giriş onayı 240 dk, stok raporu 26 sa,
   hata hedefi %1; Q-7 askıdayken bekletilenler işlenmez, önce etkinleştirilir; Q-8 giriş ön bildirimi v1 elle (FU-0179-AUTOADVICE); Q-9
   3PL deposunda depo başına tek stoklanabilir lokasyon (MOD-0173-FU02 ile). Açık kalanlar: Q-10…Q-13 (Ali), Q-14…Q-17 (CT), Q-18, Q-19.
+- **2026-11-13 — r1 incelemesi sahip kararları (Beste, "hepsi öneri gibi"; inceleme `docs/records/reviews/MOD-0179/2026-11-13-aca86685.md`):**
+  F-11 — **v1.0 yalnız API kanalı** (DL-1…DL-7 + DL-10); SFTP dosya kanalı (DL-8) ve EDI kanalı (DL-9) **v1.1**'e alınır (T-1'in EDI kapsamı
+  v1.1'de karşılanır); DL-1, DL-1a (sözleşme taslağı, ortak, kanal, eşleme, eşik) ve DL-1b (mesaj defteri, istisna kutusu, bekletilenler)
+  olarak bölünür. F-8 — ekranlarda ücret için **"v2 · planlı" notu bulunur** (mockup tur 2 kararıyla aynı). F-5 — ham mesaj içeriğinde
+  kişisel veri **90 gün** sonra kaldırılır (içerik kişisel verisiz yeniden yazılır; sha256 ve kanonik özet kalır); aynı kural MDM iş ortağı
+  Contacts için ayrıca değerlendirilir. F-10 — sır kasası FU'su gelene kadar **ara çözüm**: kanal kaydı yalnız sır referansı tutar, değeri
+  işletim yerleştirir (Platform `TenantMessagingSettings.CredentialSecretRef` + `SecretReferenceResolver` emsali); ekran yalnız "ayarlı"
+  bilgisini gösterir; DL-4 kasa FU'sunu beklemez.
+- **2026-11-13 — Q-10 MDM iş ortağı kimliği (Beste, "tamam"; Ali'ye bilgi verilecek):** MDM iş ortağı ana verisi **MOD-0049-FU01
+  "Business Partner Master Foundation"** (domain master-data-management, servis Diten.MdmService; ebeveyn Blueprint MOD-0049 Master Data
+  Management, SoR "golden entities"). Ön kontrol: `verify_module_id.py --check-id MOD-0049-FU01 --name "Business Partner Master Foundation"
+  --parent MOD-0049` OK. MOD-0179 köprüdür (Blueprint "Not SoR"), iş ortağını yalnız okur. Kapsam dar: taraf kaydı ve roller (v1 rolü
+  ThirdPartyLogistics); eşleştirme / birleştirme, tedarikçi ve müşteri SoR'u kapsam dışı. Ayrı paket gerekir; MOD-0179 DL-3 bu FU'ya
+  bağımlılık olarak yeniden yazılır (r2). Kimlik kaydına MOD-0049 ve MOD-0049-FU01 satırları eklenir. Aynı firmanın tedarikçi (SUP-),
+  3PL ve CRM müşterisi kayıtlarının bağlanması backlog BL-665.

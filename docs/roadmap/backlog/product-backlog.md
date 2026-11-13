@@ -10961,3 +10961,22 @@ parmak izi) — Platform sahibiyle.
 
     git grep -n "S-85\|S-87" -- docs/guides/operations/control-tower-operating-card.md
 
+
+### BL-665
+
+**Aynı firmanın tedarikçi, 3PL iş ortağı ve CRM müşterisi kayıtlarının birbirine bağlanması**
+
+DURUM: ERTELENDİ · SAHİP: Beste (merkez) · KARAR: sahip, 2026-11-13 ("mantıklı o yüzden bunu backlog'a ekle") · KAYIT: 2026-11-13
+
+**Ne:** Aynı tüzel kişi bugün üç ayrı kayıtta yaşayabilir: tedarikçi (MOD-0140, `SUP-` kodu; DC-03 bağı MOD-0360-FU01), 3PL iş ortağı
+(MOD-0049-FU01 Business Partner Master Foundation, MDM) ve CRM müşterisi (MOD-0149 Account). Bunların "aynı firma" olarak bağlanması
+(eşleştirme kuralı, tekil taraf kimliği ya da çapraz referans, birleştirme / ayırma, kimin altın kayıt olduğu) yapılmadı.
+**Neden ertelendi:** MOD-0049-FU01 v1 kapsamı bilerek dar tutuldu (taraf kaydı ve roller); eşleştirme / survivorship ve tedarikçi /
+müşteri SoR'u kapsam dışı (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md`, Q-10 kararı). Blueprint MOD-0049
+SoR'u "golden entities, match rules, survivorship" — bu iş o modülün ileri FU'sudur.
+**Yapım tetikleyicisi:** aynı firmanın iki rolde ilk kez canlıda kaydı açıldığında ya da raporlama "firma bazında" toplam istediğinde.
+**Gelecek regresyon riski:** 🟡 — çift kayıtta adres / iletişim bilgisi ayrı güncellenir ve tutarsızlaşır; firma bazlı rapor yanlış toplar.
+
+**Ölçüm komutu:**
+
+    git grep -n "MOD-0049-FU01\|BL-665" -- docs execution

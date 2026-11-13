@@ -21,3 +21,7 @@
   yeniden sunulur (bağlayıcı kayıt bu dosyaya yazılır).
 - **Kiracı modeli (CT açıklaması, sahip sorusu üzerine):** tedarikçi kendi kiracısını açmaz; hizmet verdiği firmanın kiracısında (ör. GMG)
   `supplier_user` hesabıdır; başka bir kiracıda ayrı hesap (DC-03 C4 "kiracı başına e-posta başına tek hesap").
+- **2026-11-13 — r1 incelemesi sahip kararları (Beste, "hepsi öneri gibi"; inceleme `docs/records/reviews/MOD-0360-FU01/2026-11-13-ce91314f.md`):**
+  F-2 — erişim anahtarının bitişi oturum bitişini **asla geçmez**: exp = min(nbf + 15 dk, oturum sonu); oturum tam 8 saatte biter.
+  F-5 — bağlamada `eligibleForTransactions` yanında tedarikçinin **onay durumu (onboardingStatus) ve satın almaya açıklığı
+  (purchasingEnabled)** da denetlenir; reddedilmiş ya da satın almaya kapalı tedarikçiye portal açılmaz.
