@@ -21,3 +21,9 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   :92 istisna cümlesi `.antigravity` kapısı onayına dahil.
 - **Q-17 = 24 Kasım 2026** (Beste, 2026-11-12). **"Hemen" teyidi** (r3 incelemesi (c) 3; Beste "evet hemen sayılır", 2026-11-13): kapatma
   isteğinde ilk tur (en çok 200 sipariş / 2.000 görev), kalanı en geç bir bakım turu (60 sn) içinde açılır — Y-1'in "hemen"i budur.
+- **2026-11-13 — Q-23 = A (evet)** (r5 incelemesi `2026-11-13-0517db83` F-1; kaynak: sahip sohbet cevabı, Beste 2026-11-13): bir depoda
+  10.200'den fazla bekleyen sipariş varsa fazlası sonraki bakım turunda açılır; bu "hemen" sayılır. İlk tur ≤ 200 sipariş / 2.000 görev ve
+  bakım turunda **depo başına** tur başına en çok 50 parti sınırı kabul (MOD-0180 r6 §8.19, §19.4 Q-23).
+- **2026-11-13 — X-16 bekçisi onaylandı** (MOD-0178 r29 incelemesi F-1; kaynak: sahip sohbet cevabı, Beste 2026-11-13): MOD-0178'in
+  `warehouse.waves.*` izinlerini kullanmadığını ölçen test (AC-5 alt ad alanı sahipliği vakası, sabotajlar S-5c / S-5d) MOD-0180'in ilk
+  dilimine (DL-1) konur — **sahip onayladı 2026-11-13** (MOD-0180 r6 §14, §16 AC-5, §18, §24).
