@@ -62,35 +62,66 @@
                             <small class="text-muted">@Localizer["FieldStagingHint"]</small>
                             <div class="invalid-feedback d-block" id="StagingLocationIdError"></div>
                         </div>
+                        @* FU01 §8.6 (D-3): the order reference is free text in v1, alone in its .diten-field — no "pick from an order" button, hint or empty picker *@
                         <div class="col-12">
                             <label asp-for="OrderRef" class="form-label fw-medium">@Localizer["FieldOrderRef"]</label>
-                            <input asp-for="OrderRef" class="form-control" maxlength="100" autocomplete="off" />
+                            <div class="diten-field">
+                                <i class="bx bx-receipt diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="OrderRef" class="form-control" maxlength="100" autocomplete="off" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
+            @*
+                MOD-0178-FU01 DL-1 (pack §8.2, D-1): the lines are a DataTable v2 table in CLIENT mode — its source is the page's in-memory line array
+                (unsaved lines are not on the server), at most 100 rows (WMS-BUNDLE lines maxItems 100). No export / print / bulk / filter / page size:
+                meaningless for unsaved lines (G-FU01-01, Q-8). Create adds and edits a line in the side panel (_LineOffcanvas); Edit draws the same table
+                READ-ONLY (no toolbar, no row menu) from the saved outbound — the lines and their allocation never change (§8.17).
+            *@
             <section class="card mb-4">
                 <div class="card-body p-4">
-                    <h6 class="card-section-title mb-4"><i class="bx bx-list-ol"></i>@Localizer["SectionLines"]</h6>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-list-ol"></i>@Localizer["SectionLines"]</h6>
+                        @if (!isEdit)
+                        {
+                            <div class="d-flex flex-wrap gap-2" id="outbound-lines-toolbar">
+                                <button type="button" class="btn btn-label-secondary wh-touch" id="btnAddLine" aria-describedby="outbound-lines-limit"><i class="bx bx-plus me-1"></i>@Localizer["LineAdd"]</button>
+                                <button type="button" class="btn btn-label-primary wh-touch" id="btnPreview"><i class="bx bx-search-alt me-1"></i>@Localizer["Warehouse.Outbound.Action.Preview"]</button>
+                            </div>
+                        }
+                    </div>
                     @if (isEdit)
                     {
                         <p class="text-muted mb-3">@Localizer["LinesLockedHint"]</p>
-                        <div id="outbound-lines-readonly"></div>
                     }
                     else
                     {
-                        <div id="outbound-lines" class="d-flex flex-column gap-3"></div>
-                        <div class="invalid-feedback d-block" id="LinesError"></div>
-                        <div class="d-flex flex-wrap gap-2 mt-3">
-                            <button type="button" class="btn btn-label-secondary wh-touch" id="btnAddLine"><i class="bx bx-plus me-1"></i>@Localizer["LineAdd"]</button>
-                            <button type="button" class="btn btn-label-primary wh-touch" id="btnPreview"><i class="bx bx-search-alt me-1"></i>@Localizer["Warehouse.Outbound.Action.Preview"]</button>
-                        </div>
-                        <div id="outbound-preview" class="mt-3 d-none">
-                            <p class="text-muted small mb-2">@Localizer["PreviewNotReservation"]</p>
-                            <div id="outbound-preview-lines" class="d-flex flex-column gap-2"></div>
-                        </div>
+                        <p class="text-muted small mb-2">@Localizer["PreviewNotReservation"]</p>
+                        <small class="d-block text-warning mb-2 d-none" id="outbound-lines-limit">@Localizer["LineLimitReached"]</small>
                     }
+                    <div class="table-responsive">
+                        <table id="outbound-lines-table" data-dt-standard="v2" data-dt-data-mode="client" class="table table-sm border-top mb-0" data-readonly="@(isEdit ? "true" : "false")">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["LineOrderLine"]</th>
+                                    <th scope="col">@Localizer["LineProduct"]</th>
+                                    <th scope="col">@Localizer["LineSku"]</th>
+                                    <th scope="col" class="text-end">@Localizer["LineQuantity"]</th>
+                                    <th scope="col">@Localizer["LinesTable.Lot"]</th>
+                                    <th scope="col" class="text-end">@(isEdit ? Localizer["AllocQuantity"] : Localizer["LinesTable.Allocatable"])</th>
+                                    <th scope="col">@(isEdit ? Localizer["AllocRelease"] : Localizer["LinesTable.Status"])</th>
+                                    @if (!isEdit)
+                                    {
+                                        <th scope="col" class="cell-fit text-end">@Localizer["Actions"]</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody id="outbound-lines-body"></tbody>
+                        </table>
+                    </div>
+                    <div class="invalid-feedback d-block" id="LinesError"></div>
                 </div>
             </section>
         </div>
@@ -139,3 +170,8 @@
         </div>
     </div>
 </form>
+
+@if (!isEdit)
+{
+    <partial name="~/Views/Warehouse/OutboundShipments/_LineOffcanvas.cshtml" />
+}

@@ -2135,31 +2135,31 @@
     <value>“Yeni Çıkış Sevkiyatı”na basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Satırlar ve önizleme</value>
+    <value>Satırlar yan panelde</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Her satırı girin (ürün, SKU, miktar, sipariş satırı) ve “Tahsisi Önizle”ye basın: FEFO sırasındaki lotlar ve tahsis edilebilecek miktar görünür.</value>
+    <value>“Satır Ekle”ye basın: yan panelde ürünü, SKU'yu ve miktarı girin (sipariş satırı numarası doldurulur) ve “Satırı Kaydet”e basın; satır tabloda görünür.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Lot değişimi</value>
+    <value>Önizleme ve lot değişimi</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>Gerekirse “Lot değişimi” alanından başka bir lot seçin; FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
+    <value>Her satırın lotlarını ve durumunu görmek için “Tahsisi Önizle”ye basın; başka bir lot için satır menüsünde “Lot Değiştir”i kullanın — FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Toplamayı izleyin</value>
+    <value>Alıcı</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; çıkış sevkiyatı Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
+    <value>Alıcının adını, ülkesini ve adresini elle yazın.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Sevke hazır ve sevk</value>
+    <value>Kaydet</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Paketlenince “Sevke Hazır”a basın; mal çıktıktan sonra “Sevkiyatı Kontrol Et”e basın.</value>
+    <value>“Kaydet”e basın: tahsis bütün satırlarla yeniden hesaplanır; artık karşılanamayan satır tabloda işaretlenir ve hiçbir şey kaydedilmez.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Sevke hazır yapılan çıkış sevkiyatı değiştirilemez ve iptal edilemez.</value>
+    <value>Önizleme stok ayırmaz; kayıt anında stok değişmişse satır karşılanamaz olarak işaretlenir.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Tahsis edilen stoğu toplamak için</value>

@@ -55,17 +55,19 @@ const OutboundShipmentDetails = (function () {
     let current = null; // { outbound, etag }
 
     // ─── Render ──────────────────────────────────────────────────────────────
+    // MOD-0178-FU01 DL-1 (r3, CT observation of FIX-01): the FEFO deviation reason is its OWN column after "Rezervasyon" ("-" when there is none);
+    // the "Rezervasyon" cell carries the reservation state only
     const renderLines = (lines) => {
         byId('d-lines').innerHTML = (lines || []).map((l) => {
             const allocations = (l.allocations || []).map((a) => `<tr data-alloc-seq="${esc(a.allocSeq)}"><td>${esc(a.allocSeq)}</td><td>${esc(a.lotNumber || '-')}</td>`
                 + `<td>${esc(a.fefoRank ?? '-')}</td><td class="text-end">${esc(qty(a.quantity))}</td><td class="text-end">${esc(qty(a.picked ?? '0'))}</td><td class="text-end">${esc(qty(a.packed ?? '0'))}</td>`
                 + `<td><small>${esc((a.bins || []).map((b) => `${b.location} (${qty(b.quantity)})`).join(', '))}</small></td>`
-                + `<td><small>${esc(W(`Warehouse.Outbound.ReleaseState.${a.reservationReleaseState || 'None'}`))}</small>`
-                + (a.fefoBypassReason ? `<small class="d-block text-muted text-break">${esc(a.fefoBypassReason)}</small>` : '') + '</td></tr>').join('');
+                + `<td data-alloc-release><small>${esc(W(`Warehouse.Outbound.ReleaseState.${a.reservationReleaseState || 'None'}`))}</small></td>`
+                + `<td data-alloc-fefo-reason><small class="text-break">${esc(a.fefoBypassReason || '-')}</small></td></tr>`).join('');
             return `<div class="border rounded p-3" data-line-seq="${esc(l.lineSeq)}"><div class="d-flex flex-wrap justify-content-between gap-2 mb-2">`
                 + `<strong>${esc(l.orderLineId)} · ${esc(l.sku)}</strong><span>${esc(qty(l.quantity))} ${esc(l.uom)}</span></div>`
                 + '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr>'
-                + ['AllocSeq', 'AllocLot', 'AllocFefoRank', 'AllocQuantity', 'AllocPicked', 'AllocPacked', 'AllocBins', 'AllocRelease'].map((k) => `<th scope="col">${esc(W(k))}</th>`).join('')
+                + ['AllocSeq', 'AllocLot', 'AllocFefoRank', 'AllocQuantity', 'AllocPicked', 'AllocPacked', 'AllocBins', 'AllocRelease', 'AllocFefoReason'].map((k) => `<th scope="col">${esc(W(k))}</th>`).join('')
                 + `</tr></thead><tbody>${allocations}</tbody></table></div></div>`;
         }).join('');
     };

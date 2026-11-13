@@ -2135,31 +2135,31 @@
     <value>اضغط «صادر جديد» واختر المستودع. اختر موقع التجهيز فقط إذا كان للمستودع عدة مواقع.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>الأسطر والمعاينة</value>
+    <value>الأسطر في اللوحة الجانبية</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>أدخل كل سطر (المنتج، SKU، الكمية، سطر الطلب) واضغط «معاينة التخصيص»: تظهر التشغيلات بترتيب FEFO والكمية القابلة للتخصيص.</value>
+    <value>اضغط «إضافة سطر»: أدخل في اللوحة الجانبية المنتج ووحدة التخزين والكمية (يُملأ رقم سطر الطلب) ثم اضغط «حفظ السطر»؛ يظهر السطر في الجدول.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>تغيير التشغيلة</value>
+    <value>المعاينة وتغيير التشغيلة</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>عند الحاجة اختر تشغيلة أخرى في «تغيير التشغيلة»؛ التشغيلة التي ليست الأولى في ترتيب FEFO تتطلب سببًا حسب قاعدة FEFO لشركتك.</value>
+    <value>اضغط «معاينة التخصيص» لترى تشغيلات كل سطر وحالته؛ ولاختيار تشغيلة أخرى استخدم «تغيير التشغيلة» من قائمة السطر — التشغيلة التي ليست الأولى في ترتيب FEFO تطلب سببًا وفق قاعدة FEFO في شركتك.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>متابعة الانتقاء</value>
+    <value>المستلم</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>يؤدي الحفظ إلى تخصيص المخزون وفتح مهام الانتقاء؛ تابعها في صفحة التفاصيل حتى يصبح الصادر منتقى.</value>
+    <value>اكتب اسم المستلم وبلده وعنوانه يدويًا.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>الجاهزية للشحن والإرسال</value>
+    <value>الحفظ</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>بعد التغليف اضغط «جاهز للشحن»؛ وبعد خروج البضاعة اضغط «التحقق من الشحنة».</value>
+    <value>اضغط «حفظ»: يُعاد حساب التخصيص مع جميع الأسطر؛ ويُعلَّم في الجدول السطر الذي لم يعد يمكن تلبيته ولا يُحفظ شيء.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>لا يمكن تغيير الصادر الجاهز للشحن أو إلغاؤه.</value>
+    <value>المعاينة لا تحجز المخزون؛ إذا تغيّر المخزون عند الحفظ يُعلَّم السطر بأنه لا يمكن تلبيته.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>لانتقاء المخزون المخصّص</value>

@@ -223,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>Annulée</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>Stock libre insuffisant</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>Stock insuffisant dans les emplacements de prélèvement</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>Aucune ligne pour l'instant — utilisez Ajouter une Ligne.</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (suggéré : {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>Motif FEFO :</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>La ligne {0} est retirée de ce formulaire. Rien d'enregistré n'est supprimé.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>Ligne {0} : {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>Non prévisualisée</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>Aperçu périmé</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>Réalisable</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>Non réalisable</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>Écart FEFO — motif requis</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>Écart FEFO — motif fourni</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>Écart FEFO — non autorisé (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>Ajouter une Ligne</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>Modifier la Ligne</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>Unité de base : {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>Selon FEFO (suggéré : {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>Prévisualiser la Ligne</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>Enregistrer la Ligne</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>Abandonner</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>Aperçu d'une seule ligne — à l'enregistrement, l'allocation est recalculée avec toutes les lignes.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>Suggestion FEFO : lot {0} (péremption {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>Mode FEFO de votre société : {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>un écart est refusé (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>un motif est obligatoire (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>avertissement seul (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>Ce numéro de ligne de commande est déjà utilisé par une autre ligne.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>L'aperçu est périmé ; prévisualisez à nouveau la ligne avant d'enregistrer un changement de lot.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>Changer de Lot</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>Une expédition sortante contient au plus 100 lignes ; aucune ligne ne peut plus être ajoutée.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>Le lot choisi n'est plus éligible.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>Motif FEFO</value></data>
 </root>

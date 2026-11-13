@@ -223,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>Отменена</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>Недостаточно свободного запаса</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>Недостаточно запаса в ячейках сборки</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>Доступно</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>Строк пока нет — используйте «Добавить Строку».</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (предложено: {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>Причина FEFO:</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>Строка {0} удаляется из этой формы. Ничего сохранённого не удаляется.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>Строка {0}: {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>Не просмотрено</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>Предпросмотр устарел</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>Можно выполнить</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>Нельзя выполнить</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>Отклонение от FEFO — нужна причина</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>Отклонение от FEFO — причина указана</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>Отклонение от FEFO — не разрешено (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>Добавить Строку</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>Изменить Строку</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>Базовая единица: {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>По FEFO (предложено: {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>Предпросмотр Строки</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>Сохранить Строку</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>Не Сохранять</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>Предпросмотр одной строки — при сохранении распределение пересчитывается по всем строкам.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>Предложение FEFO: партия {0} (срок {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>Режим FEFO вашей компании: {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>отклонение запрещено (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>причина обязательна (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>только предупреждение (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>Этот номер строки заказа уже используется в другой строке.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>Предпросмотр устарел; повторите предпросмотр строки, прежде чем сохранять смену партии.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>Сменить Партию</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>Отгрузка содержит не более 100 строк; добавить строки нельзя.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>Выбранная партия больше не подходит.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>Причина FEFO</value></data>
 </root>
