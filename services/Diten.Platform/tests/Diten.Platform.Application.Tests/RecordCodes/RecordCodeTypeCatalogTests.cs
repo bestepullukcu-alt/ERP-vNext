@@ -30,6 +30,7 @@ public sealed class RecordCodeTypeCatalogTests
         ["WAV"] = "MOD-0040-FU02 DL-8",
         ["DVC"] = "MOD-0040-FU02 DL-8",
         ["LBL"] = "MOD-0040-FU02 DL-8",
+        ["TPX"] = "MOD-0040-FU02 DL-8",
         ["PUT"] = "MOD-0040-FU02 DL-8",
         ["PCK"] = "MOD-0040-FU02 DL-8",
         ["OUT"] = "MOD-0040-FU02 DL-8",

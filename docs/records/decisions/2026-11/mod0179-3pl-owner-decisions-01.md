@@ -57,3 +57,8 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   Q-8 resolve okumaları denetim kaydına yazılmaz, yalnız sayaç; Q-9 meta sorgusu kalır; Q-14 LegalEntityId kasada ayrıca doğrulanmaz
   (çağıran servis doğrular); Q-15 SMTP sırrının taşınması ayrı FU. Ali'ye kalan: Q-1 KEK yeri / erişimi, Q-2 yedek / kurtarma, Q-3
   Inventory servis istemcisi, Q-4 servisler arası TLS, Q-13 FU onayının ana paket durumunu bekleyip beklemediği.
+- **2026-11-13 — `.antigravity` kapısı onayı (Beste, "evet iki satırı yaz"):** PKS-001 §4 `warehouse.third-party-logistics.*` adlı alt ad
+  alanı satırı (MOD-0179; :92 istisna cümlesi ve `warehouse.*` satırında "hariç" eki) ve RCS-001 §3 `TPX` (3PL istisnası) satırı yazıldı;
+  X-18 aynı adımda: Platform `RecordCodeTypeCatalogTests` `["TPX"]` — 17/17 yeşil, satır silinince AC16 kırmızı, geri alındı. X-17
+  (MOD-0178 paketi §14.1 notu) MOD-0178'in bir sonraki içerik revizyonuna bırakıldı (r30 onayı geçersiz olmasın diye); kural PKS-001
+  satırıyla zaten bağlayıcı.
