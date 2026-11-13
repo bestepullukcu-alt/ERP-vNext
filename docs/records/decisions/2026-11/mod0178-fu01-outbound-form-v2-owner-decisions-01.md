@@ -71,3 +71,6 @@ Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-looku
 - **C-11 — posta kodu:** hem ek teslimat adreslerinde hem account'un ana adresinde olacak; ana adrese alan eklenene kadar boş gelir, biçim değişmez.
 - **CRM'in sorusu 5:** aktif olmayan account — WMS kararı yukarıda (yeni sevkiyatta yalnız active; sonradan pasifleşende uyarı, akış sürer).
 - **Açık (CT → CRM):** cevaba eklemeli `status` alanı (Q-13) ve MOD-0178'in CRM-ACCOUNT-LOOKUP tüketici tablosuna (5a) eklenmesi (r2 incelemesi F-3).
+
+- **2026-11-13 — Q-8 = kabul (Ali, GMG-ERP; kaynak: Ali'nin yazılı cevabı, Beste'nin sohbete aktarımı):** Golden Reference sapması G-FU01-01 kabul —
+  Compact sayfada satırlar sayfa içi (istemci modu) DataTable ve yan panelde düzenlenir; bu yerel tabloda dışa aktarma ve toplu silme yoktur.
