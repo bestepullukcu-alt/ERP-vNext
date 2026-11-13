@@ -191,7 +191,7 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
 |---|---|---|---|
 | K-12 | Tasarım: 1.1 içinde ayrı uç | commercial-suite (Beste) | **KARAR 2026-11-13** |
 | K-13 | Anahtar `crm.account-ship-to.read` | commercial-suite (Beste) | **KARAR 2026-11-13** |
-| K-14 | Aktif olmayan hesaba sevkiyat | tüketici (MOD-0178 / MOD-0183) | AÇIK — CRM durumu verir, kural tüketicide |
+| K-14 | Aktif olmayan hesaba sevkiyat | tüketici (MOD-0178 / MOD-0183) | **TÜKETİCİ KARARI (WMS, 2026-11-13):** yeni sevkiyatta yalnız `active` hesap seçilebilir; seçimden sonra pasifleşen hesapta mevcut sevkiyat sürer; WMS kayıt ve "sevke hazır" adımında U-4'ü yeniden okur, durum `active` değilse uyarır. CRM'den istenen yalnız `status` alanı (§2.2) — sözleşmeye ek kural gelmez |
 | K-15 | Görünen adı kim çözer | commercial-suite | ÖNERİ: tüketici, Reference Data'dan (dile bağlı, kaynak Reference Data) |
 | K-16 | Ana adreste posta kodu | commercial-suite (Beste) | **KARAR 2026-11-13: eklenecek.** `Account.PostalCode` K-18 FU'su içinde (veri + hesap formu + 7 dil); U-4 `primary.postalCode` o zamana kadar null, sonra dolu — biçim değişmez |
 | K-17 | Kod kümesi doğrulaması (yazmada doğrulama yok) | commercial-suite | AÇIK — U-4 saklananı döner; yazma doğrulaması ayrı iş |
@@ -206,3 +206,5 @@ Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kural
   `defaultAddressId`; ana adres `addressId = "primary"`; `postalCode` öğe alanı (ana adreste null).
 - 1.1.0 taslak r3 (2026-11-13) — K-16 kararı: ana adrese `Account.PostalCode` eklenecek (K-18 FU'su içinde);
   K-18 ekranı mockup'sız, mevcut sekme yapısında standart liste + form.
+- 1.1.0 taslak r4 (2026-11-13) — K-14 WMS kararı kaydedildi (yalnız `active` seçilir; kayıt ve "sevke hazır"da yeniden
+  okuma + uyarı); sözleşme biçimi değişmedi.
