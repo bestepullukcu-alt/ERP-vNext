@@ -24,8 +24,8 @@ screens:
 entity_base: EntityBase
 status: ready-for-dev
 approval_status: pending
-revision: "r2 (2026-11-13) — bağımsız inceleme r1 (docs/records/reviews/MOD-0179/2026-11-13-aca86685.md, KOŞULLU, F-1…F-5 orta, F-6…F-12 düşük) ve sahip kararları 01'in son üç maddesi (Q-1…Q-9 öneri kabul; r1 inceleme kararları F-11 / F-8 / F-5 / F-10; Q-10 = MOD-0049-FU01) işlendi; F-1…F-12 kapandı (kapanış tablosu §19.6). Başlıca değişiklikler: v1.0 yalnız API kanalı, SFTP ve EDI v1.1 (F-11); DL-1 ikiye bölündü ve dilimler yeniden numaralandı (r1 → r2 eşlemesi §23); 3PL dış depo çıkışı tek model — dış release Allocated → ReadyToShip + outbox + talimat, sevk onayı → MOD-0183 dispatch → Shipped (F-1); Gateway kiracı ara katmanı seam'i X-19 ve bypass kapalı ölçüm (F-2); bekçi değerleri r2 HEAD'inde yeniden ölçüldü (F-3); Q-1…Q-9 karar olarak yazıldı, AS2 çıktı (F-4); ham içerikte kişisel veri 90 gün sonra kaldırılır (F-5); tek stoklanabilir lokasyon kuralı (F-6); dilim kapıları (F-7); ekranda 'v2 · planlı' ücret notu (F-8); sır akışı ve sabit süreli imza karşılaştırması (F-9); sır referansı ara çözümü — kasa FU'su sonraki adım (F-10); sınıf düzeyi HasPermission yasağı ve ara katman sabotajı (F-12); MDM iş ortağı MOD-0049-FU01'de, MOD-0179 yalnız okur (Q-10). Künye status ready-for-dev (çağıran CT talimatı, S-49); approval_status pending. r1 (2026-11-13) — ilk taslak (commit 241659850, LF sha256 aca86685…)."
-status_note: "ready-for-dev r2 — approval_status pending; kod izni yok. Paket onayı için: r2 bağımsız yeniden inceleme (CT-APR-02) + onay satırı (CT-APR-01, onaylayan Ali / GitHub GMG-ERP; yazan ≠ onaylayan). Onaydan önce AÇIK kalan kapı: .antigravity satırları — PKS-001 warehouse.third-party-logistics.* (Q-1) ve RCS-001 TPX; aynı adımda X-17 (MOD-0178 §14.1 notu) ve X-18 (RecordCodeTypeCatalogTests). Bu paket .antigravity/**'a yazmaz. Dilim kapıları (paket onayını bekletmez): MOD-0049-FU01 API'si main'de (DL-4), MOD-0183 sahibi Q-18 (DL-6), procurement Q-19 (DL-7), servis kimliği Q-12 (DL-6, DL-7). v1.1 (DL-10 SFTP, DL-11 EDI) v1.0 kabulünden sonra. Ücret mutabakatı v2 (T-2); Treasury notu CT işi."
+revision: "r3 (2026-11-13, dar tur) — bağımsız inceleme r2 (docs/records/reviews/MOD-0179/2026-11-13-073e8ffb.md, KOŞULLU, F-13 orta, F-14…F-17 düşük) işlendi; yalnız bu maddelerin bölümleri değişti (kapanış tablosu §19.7): F-13 sır referansı sunucuda ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName} olarak üretilir, istemci referans vermez, çözücü referansı kiracı + kanaldan yeniden kurar (AC-39 + S-39c); F-14 gelen yol IsNonTenantPath'e alınır (bypass ve başlık yazımı yok; X-19, AC-63 bypass açık / kapalı); F-15 dış release ön denetimleri tahsislerden (X-10 (2), AC-43 + S-43d); F-16 AC-34 seçim kısmı DL-4 kabulüne, DL-3 Web testinde sahte proxy (yeni uç yok); F-17 atıf kalıntıları (registry :70 notu, :160-161, AC-20 / AC-25 dilim sütunları). Künye ready-for-dev / pending değişmedi. r2 (2026-11-13) — bağımsız inceleme r1 (docs/records/reviews/MOD-0179/2026-11-13-aca86685.md, KOŞULLU, F-1…F-5 orta, F-6…F-12 düşük) ve sahip kararları 01'in son üç maddesi (Q-1…Q-9 öneri kabul; r1 inceleme kararları F-11 / F-8 / F-5 / F-10; Q-10 = MOD-0049-FU01) işlendi; F-1…F-12 kapandı (kapanış tablosu §19.6). Başlıca değişiklikler: v1.0 yalnız API kanalı, SFTP ve EDI v1.1 (F-11); DL-1 ikiye bölündü ve dilimler yeniden numaralandı (r1 → r2 eşlemesi §23); 3PL dış depo çıkışı tek model — dış release Allocated → ReadyToShip + outbox + talimat, sevk onayı → MOD-0183 dispatch → Shipped (F-1); Gateway kiracı ara katmanı seam'i X-19 ve bypass kapalı ölçüm (F-2); bekçi değerleri r2 HEAD'inde yeniden ölçüldü (F-3); Q-1…Q-9 karar olarak yazıldı, AS2 çıktı (F-4); ham içerikte kişisel veri 90 gün sonra kaldırılır (F-5); tek stoklanabilir lokasyon kuralı (F-6); dilim kapıları (F-7); ekranda 'v2 · planlı' ücret notu (F-8); sır akışı ve sabit süreli imza karşılaştırması (F-9); sır referansı ara çözümü — kasa FU'su sonraki adım (F-10); sınıf düzeyi HasPermission yasağı ve ara katman sabotajı (F-12); MDM iş ortağı MOD-0049-FU01'de, MOD-0179 yalnız okur (Q-10). Künye status ready-for-dev (çağıran CT talimatı, S-49); approval_status pending. r1 (2026-11-13) — ilk taslak (commit 241659850, LF sha256 aca86685…)."
+status_note: "ready-for-dev r3 — approval_status pending; kod izni yok. Paket onayı için: r3 fark incelemesi (CT-APR-02) + onay satırı (CT-APR-01, onaylayan Ali / GitHub GMG-ERP; yazan ≠ onaylayan). Onaydan önce AÇIK kalan kapı: .antigravity satırları — PKS-001 warehouse.third-party-logistics.* (Q-1) ve RCS-001 TPX; aynı adımda X-17 (MOD-0178 §14.1 notu) ve X-18 (RecordCodeTypeCatalogTests). Bu paket .antigravity/**'a yazmaz. Dilim kapıları (paket onayını bekletmez): MOD-0049-FU01 API'si main'de (DL-4), MOD-0183 sahibi Q-18 (DL-6), procurement Q-19 (DL-7), servis kimliği Q-12 (DL-6, DL-7). v1.1 (DL-10 SFTP, DL-11 EDI) v1.0 kabulünden sonra. Ücret mutabakatı v2 (T-2); Treasury notu CT işi."
 owner: supply-chain-execution / merkez (Beste) — MVP-5 WMS CT
 approver: Ali (GitHub GMG-ERP)
 risk: "HIGH — (1) internete açık, imzayla korunan bir giriş ucu (Gateway kiracı ara katmanında adlı muafiyet — X-19) ve dış sisteme giden çağrılar; (2) kanal sırları (v1.0 referans ara çözümü, kasa FU'su sonraki adım); (3) stok etkisi: 3PL onayları MOD-0183 dispatch ve MOD-0142 GRN yoluyla deftere yansır; (4) 4 servis, 4 domain ve 2 MVP hattında seam (MDM okuması, MOD-0178, MOD-0183, MOD-0142, Gateway); (5) Blueprint SLO Tier 1; (6) ham mesajlarda kişisel veri (90 gün kuralı)."
@@ -38,10 +38,18 @@ dependencies: [MOD-0049-FU01 Business Partner Master Foundation (MDM iş ortağ�
 
 # MOD-0179 — 3PL Integration (3PL Entegrasyonu)
 
-> **ready-for-dev (r2, 2026-11-13).** `status: ready-for-dev`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
+> **ready-for-dev (r3, 2026-11-13).** `status: ready-for-dev`, `approval_status: pending`. **Paket onaylanmadan geliştirme başlamaz:** kod yalnız
 > `approved` / `ready-for-dev` künye + bağımsız inceleme kaydı (CT-APR-02) + onay satırı (CT-APR-01, **onaylayan Ali / GitHub `GMG-ERP`**) ile
 > yazılır (AGENTS.md Çekirdek madde 7). **Onaydan önce açık kapı:** `.antigravity` satırları (PKS-001 `warehouse.third-party-logistics.*`, RCS-001 `TPX`,
 > aynı adımda X-17, X-18) — §6. Bu sürüm kod, commit, push, PR ya da onay izni değildir.
+>
+> **r3 revizyon notu (2026-11-13, dar tur).** Girdi: bağımsız inceleme r2 `docs/records/reviews/MOD-0179/2026-11-13-073e8ffb.md` (KOŞULLU; 1 orta,
+> 4 düşük; hedef r2 LF sha256 `073e8ffb…`). Yalnız F-13…F-17'nin bölümleri değişti; kapanış §19.7. **F-13:** sır referansı sunucuda
+> `ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName}` olarak üretilir; istemci referans göndermez; çözücü referansı her okumada kiracı + kanaldan
+> yeniden kurar (AC-39, S-39c). **F-14:** gelen yol `IsNonTenantPath`'e alınır — Development bypass'ı ve `X-Tenant-Id` yazımı o yolda çalışmaz (X-19,
+> AC-63 bypass açık ve kapalı). **F-15:** dış release'in ön denetimleri (geri çağırma, lot durumu, SKT / yeniden test, FEFO) tahsislerden (X-10 (2), AC-43,
+> S-43d). **F-16:** AC-34'ün seçim kısmı DL-4 kabulünde; DL-3 Web testinde sahte proxy; yeni uç yok. **F-17:** atıf kalıntıları düzeltildi. Komut 26,
+> uç 42, AC-1…AC-63 değişmedi; yeni sabotajlar S-34b, S-39c, S-43d, S-63b.
 >
 > **r2 revizyon notu (2026-11-13).** Girdiler: bağımsız inceleme r1 `docs/records/reviews/MOD-0179/2026-11-13-aca86685.md` (KOŞULLU; 5 orta, 7 düşük;
 > hedef r1 LF sha256 `aca86685…`) ve sahip kararları 01'in son üç maddesi (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md:33-55`,
@@ -71,7 +79,7 @@ dependencies: [MOD-0049-FU01 Business Partner Master Foundation (MDM iş ortağ�
 |---|---|
 | r2: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --check-id MOD-0179 --name "3PL Integration"` | kimlik ve ad değişmedi; r1 sonucu geçerli (çıkış 0, `OK  MOD-0179: proven against Blueprint/registry.`); r1 incelemesi aynı komutu çıkış 0 ile yeniden koştu |
 | r1: `PYTHONUTF8=1 python .antigravity/scripts/verify_module_id.py . --discover "3PL integration"` | çıkış 3 ("inceleme gerekli"); `ÖZET bulgular: blueprint 1 · sor 0 · registry 1 · paket 1 · gateway 0 · görev 1`; 611 satır, rapor sha256 `4eac4d87eabad2048d11231e14fa88cb907beecf505d68afa8d538e1fdccc28a`; 572 ref |
-| Q-10 (sahip kararı, kararlar 01 `:48-55`): `verify_module_id.py --check-id MOD-0049-FU01 --name "Business Partner Master Foundation" --parent MOD-0049` | OK (karar kaydındaki sonuç); registry satırları `execution/registries/module-id-registry.md:159` (MOD-0049) ve `:160` (MOD-0049-FU01) |
+| Q-10 (sahip kararı, kararlar 01 `:48-55`): `verify_module_id.py --check-id MOD-0049-FU01 --name "Business Partner Master Foundation" --parent MOD-0049` | OK (karar kaydındaki sonuç); registry satırları `execution/registries/module-id-registry.md:160` (MOD-0049) ve `:161` (MOD-0049-FU01) (r3, F-17 (b)) |
 
 **Keşif bulgularının her birine karar:**
 
@@ -276,7 +284,7 @@ Tüm 0179 varlıkları InventoryService `EntityBase`'inden türer: `Id`, `Tenant
 | `Api` | nesne \| null | `Type = Api` iken zorunlu: `OutboundBaseUrl` (yalnız `https://`), `AuthType` (`ApiKey` \| `OAuthClientCredentials`), `InboundKeyId` (sunucu üretir, 26 karakter, değişmez), `TimeoutSeconds` 5..120 |
 | `File` | nesne \| null | v1.1: `Host`, `Port`, `Username`, `HostKeyFingerprint` (zorunlu), `InboundFolder`, `OutboundFolder`, `ArchiveFolder`, `FilePattern`, `Format` (`Csv` \| `Xml`), `PollMinutes` |
 | `Edi` | nesne \| null | v1.1: `Standard` (`Edifact` \| `X12`), `SyntaxVersion` (sabit liste), `OurId` + `OurQualifier`, `PartnerId` + `PartnerQualifier`, `OutboundMessages[]`, `InboundMessages[]` (§8.3); **taşıma yalnız SFTP** (Q-2) — `File` alanlarıyla aynı bağlantı ayarları |
-| `SecretRefs[]` | `{ Name, Ref, RefSetAt, RefSetBy }` | `Name` türe göre: `ApiKey`, `OAuthClientSecret`, `InboundSigningSecret` (API); `SftpPassword` \| `SftpPrivateKey` (v1.1). `Ref` yapılandırma anahtarı adıdır (§8.5); **değer yoktur** |
+| `SecretRefs[]` | `{ Name, Ref, RefSetAt, RefSetBy }` | `Name` türe göre: `ApiKey`, `OAuthClientSecret`, `InboundSigningSecret` (API); `SftpPassword` \| `SftpPrivateKey` (v1.1). `Ref` **sunucunun ürettiği** yapılandırma anahtarı adıdır: `ThirdPartyLogistics:{TenantId}:{ChannelId}:{Name}` (r3, F-13; §8.5); istemci vermez; **değer yoktur** |
 | `LastSuccessAt`, `LastErrorAt`, `LastErrorCode`, `LastTestAt`, `LastTestResult` | UTC / string | teknik sinyal alanları; `Version`'ı artırmaz |
 
 ### 4.3 ThirdPartyMapping
@@ -394,16 +402,16 @@ başlamadan sahibinden onay ister (paket onayını bekletmez).
 | X-7 | `services/Diten.InventoryService/src/Diten.InventoryService.Domain/Warehouse/Rules/WarehouseRecordCodeRules.cs:31` `TypePrefixes` | altı önek (PUT, PCK, OUT, PKG, CNT, WAV — `Wave` `:29`) | `TPX` sabiti ve listeye ekleme | MOD-0178 (merkez) | DL-2 |
 | X-8 | `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs:103` — yalnız `Assert.Equal(<n>, endpoints.Count)` ve üstündeki yorum | `Assert.Equal(87, endpoints.Count)` | uç ekleyen her dilim: dilim başı + **DL-1 17, DL-2 11, DL-5 3, DL-6 2, DL-7 1, DL-8 8**; aynı commit; kabul kaydı önce → sonra | integration-agent | DL-1, DL-2, DL-5…DL-8 |
 | X-9 | `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Api/InventoryLedgerManifestCompletenessTests.cs:213-225` dışlama listesi | yedi satır (Traceability, Quarantine, Expiry, Recall, Warehouse, CycleCounting, WavePlanning) | `.Where(t => t.Namespace?.EndsWith(".Controllers.ThirdPartyLogistics", StringComparison.Ordinal) != true)` + yorum; karşılığı 0179'un kendi bütünlük vakası (AC-7); MOD-0182 `Controllers.Barcode` önce gelirse satır kayar — dilim başında ölçülür | MOD-0173 (merkez) | DL-1 |
-| X-10 | MOD-0178: `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/OutboundShipments/Services/OutboundAllocationService.cs:259` (toplama görevi yaratımı), `…/OutboundShipments/Handlers/CommandHandlers/OutboundFlowHandlers.cs:247` (`ReleaseOutboundShipmentHandler`; `:281` yalnız `Packed` kabul; `:378-382` tek işlemde `ReadyToShip`; `:394-411` `OutboundShipmentReady` outbox satırı), `:447` (`SyncOutboundDispatchHandler`; `:477` `ReadyToShip` ön koşulu; `:509-511` kısa sevk planı toplama görevlerinden), `…/PutawayTasks/Handlers/CommandHandlers/CreatePutawayTaskHandler.cs:28` | 0178 depo `OperatingMode`'unu okumaz; `ConfirmationChannel.External` var ama kullanılmaz (`services/Diten.InventoryService/src/Diten.InventoryService.Domain/Warehouse/Enums/WarehouseTaskEnums.cs:84`) | **Tek model (F-1, §8.8):** (1) `external-integrated` depoda allocation toplama görevi **açmaz**; (2) **dış release:** aynı `POST …/{outboundId}/release` ucu, depo `external-integrated` ise `Allocated` outbound'u kabul eder (iç depoda `Packed` kuralı aynen); FEFO gerekçe denetimi aynen; **tek işlemde** `ReadyToShip` + `OutboundShipmentReady` outbox satırı + `IExternalFulfilmentGate.InstructAsync` (talimat + giden mesaj `Pending`) — biri başarısızsa hiçbiri yazılmaz; ortak askıda / kanal kapalıysa release yine olur, mesaj `NotSent` + istisna; (3) sync-dispatch dış outbound'da kısa sevk planını toplama görevleri yerine **tahsisler** üzerinden kurar (toplama görevi yoktur); `Shipped` geçişi ve kuralları aynen; (4) `external-integrated` depoda yerleştirme görevi açma 422 `WMS_EXTERNAL_WAREHOUSE`. İç depoda davranış **değişmez** (0178 testleri değişmeden yeşil) | MOD-0178 (merkez, Beste) | DL-6 |
+| X-10 | MOD-0178: `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/OutboundShipments/Services/OutboundAllocationService.cs:259` (toplama görevi yaratımı), `…/OutboundShipments/Handlers/CommandHandlers/OutboundFlowHandlers.cs:247` (`ReleaseOutboundShipmentHandler`; `:281` yalnız `Packed` kabul; `:378-382` tek işlemde `ReadyToShip`; `:394-411` `OutboundShipmentReady` outbox satırı), `:447` (`SyncOutboundDispatchHandler`; `:477` `ReadyToShip` ön koşulu; `:509-511` kısa sevk planı toplama görevlerinden), `…/PutawayTasks/Handlers/CommandHandlers/CreatePutawayTaskHandler.cs:28` | 0178 depo `OperatingMode`'unu okumaz; `ConfirmationChannel.External` var ama kullanılmaz (`services/Diten.InventoryService/src/Diten.InventoryService.Domain/Warehouse/Enums/WarehouseTaskEnums.cs:84`) | **Tek model (F-1, §8.8):** (1) `external-integrated` depoda allocation toplama görevi **açmaz**; (2) **dış release:** aynı `POST …/{outboundId}/release` ucu, depo `external-integrated` ise `Allocated` outbound'u kabul eder (iç depoda `Packed` kuralı aynen); **ön denetimler tahsislerden (r3, F-15):** release bugün geri çağırma, lot durumu (Blocked / Expired), SKT / yeniden test ve FEFO denetimlerini toplama görevlerinden hesaplanan `picked` kümesi üzerinden yapar (`OutboundFlowHandlers.cs:294-295` küme, `:298-342` denetimler); dış depoda görev olmadığından küme boştur ve denetimler sessizce atlanırdı — dış release'te kümenin yerine outbound'un **tahsisleri** konur, denetimler ve hata kodları (ör. 422 `LOT_UNDER_RECALL`) aynen uygulanır; FEFO gerekçe denetimi aynen; **tek işlemde** `ReadyToShip` + `OutboundShipmentReady` outbox satırı + `IExternalFulfilmentGate.InstructAsync` (talimat + giden mesaj `Pending`) — biri başarısızsa hiçbiri yazılmaz; ortak askıda / kanal kapalıysa release yine olur, mesaj `NotSent` + istisna; (3) sync-dispatch dış outbound'da kısa sevk planını toplama görevleri yerine **tahsisler** üzerinden kurar (toplama görevi yoktur); `Shipped` geçişi ve kuralları aynen; (4) `external-integrated` depoda yerleştirme görevi açma 422 `WMS_EXTERNAL_WAREHOUSE`. İç depoda davranış **değişmez** (0178 testleri değişmeden yeşil) | MOD-0178 (merkez, Beste) | DL-6 |
 | X-11 | `docs/analysis/contracts/wms-bundle.openapi.yaml` (1.1.0) | dış kapı yalnız alan olarak (taslak §14) | eklemeli yeni sürüm — CT adımı, **DL-6 başlamadan**: dış depoda görev üretilmemesi, `Allocated` → dış release, `WMS_EXTERNAL_WAREHOUSE` | MOD-0178 + CT | DL-6 |
 | X-12 | MOD-0183 (`Diten.SupplyChainService`) dispatch | `GOODS_ISSUE_SALES` tek yazıcı, `Dispatched`'de (`execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:52`); `supplychain.shipments.dispatch` (`:83`); `SourceSystem` / `ExternalRef` (`:97`) | 3PL deposunun sevkiyatı 3PL'in sevk onayıyla dispatch edilir: 0179 servis kimliğiyle MOD-0183 dispatch ucunu çağırır (`sourceSystem` = ortak kodu, `externalRef` = mesaj kimliği, satırlar = 3PL'in onayladığı lot / miktar) — ya da MOD-0183 sahibinin seçtiği yol (Q-18) | MOD-0183 sahibi (MVP-6) | DL-6 |
 | X-13 | MOD-0142 GRN — `services/Diten.ProcurementService/src/Diten.ProcurementService.Api/Controllers/GrnController.cs:58-59` | GRN `SourceSystem` / `ExternalRef` alanı var (`execution/domains/procurement/module-packs/MOD-0142-receiving-grn.md:63`); başlık `warehouseId` + `locationId` ister (`:68`) | 3PL teslim onayı → servis kimliğiyle `POST /api/grn` (`locationId` = deponun tek stoklanabilir lokasyonu — Q-9), `sourceSystem`, `externalRef`, Idempotency-Key = mesaj kimliği — ya da procurement sahibinin seçtiği yol (Q-19) | procurement sahibi | DL-7 |
-| X-14 | Platform kiracı sır kasası — **MOD-0012-FU01 Tenant Runtime Secret Vault** (registry `execution/registries/module-id-registry.md:70`, paket taslak) | `ISecretsProvider` yalnız okur (`services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretsProvider.cs:3-7`) | **Sonraki adım (F-10)** — v1.0'ı bekletmez; FU gelince `SetThirdPartyChannelSecretRefCommand` değer kabul eden yazmaya eklemeli genişler (§8.5). Registry notu FU01'i "gate of MOD-0179 DL-4" (r1 numarası) diye anar; r2'de F-10 sahip kararı gereği **kapı değildir** — kayıt notunun düzeltilmesi CT işi (Q-16) | Platform (merkez / Beste) | DL-5 sonrası FU |
+| X-14 | Platform kiracı sır kasası — **MOD-0012-FU01 Tenant Runtime Secret Vault** (registry `execution/registries/module-id-registry.md:70`, paket taslak) | `ISecretsProvider` yalnız okur (`services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretsProvider.cs:3-7`) | **Sonraki adım (F-10)** — v1.0'ı bekletmez; FU gelince `SetThirdPartyChannelSecretRefCommand` değer kabul eden yazmaya eklemeli genişler (§8.5). Registry notu (`:70`) FU01'i "not a gate (F-10 interim secret reference)" olarak yazar — paketle tutarlı (r3, F-17 (a)) | Platform (merkez / Beste) | DL-5 sonrası FU |
 | X-15 | Governance Rol İzinleri köprüsü (`frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml`, `SharedResource.*.resx` `Perm.Entity.*`) | fiiller var | **yeni fiil yok**; yalnız varlık satır adları 7 dilde | Web ortak (merkez) | DL-3, DL-8 |
 | X-16 | `services/Diten.AuthService/**` rol şablonu ve servis kimliği izinleri | — | §14 rol önerisi (Q-13); Inventory servis kimliğine `supplychain.shipments.dispatch` (Q-18) ve `procurement.grn.create` (Q-19) | Ali (Auth) | ayrı WP; DL-6 / DL-7 kapısı |
 | X-17 | `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` §14.1 | `warehouse.waves.*`, `warehouse.barcode.*` notları | not: "`warehouse.third-party-logistics.*` MOD-0179'undur; MOD-0178 orada anahtar tanımlamaz" (`.antigravity/rules/permission-key-standard.md:92`) | MOD-0178 (merkez) | `.antigravity` kapısı (§6) |
 | X-18 | `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/RecordCodeTypeCatalogTests.cs` `RuleAheadOfCatalogue` | `CNT`, `WAV`, `DVC`, `LBL` | RCS-001 §3'e `TPX` yazıldığı aynı adımda `["TPX"]` satırı | Platform (merkez) | `.antigravity` kapısı (§6) |
-| X-19 | `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` — `IsPublicEndpoint` (`:438-449`) | Program.cs `:186` her isteğe uygular; kiracı sinyali yoksa ve yol public değilse 400 "Missing Tenant" (`:213-226`); gelen yol public listede yok; Development'ta `TryGetDevelopmentBypassTenant` (`:595`) eksik kiracıyı gizler; çözülen kiracı `X-Tenant-Id` olarak servise yazılır (`:238`) | **Adlı muafiyet (F-2):** `IsPublicEndpoint`'e yalnız `/api/warehouse/third-party-logistics/inbound` öneki (yorumla: "MOD-0179 gelen uç — kiracı kanal anahtarından servis tarafında çözülür"); başka hiçbir 0179 yolu public olmaz. Servis kuralı (§8.4): gelen uçta `X-Tenant-Id` kiracıyı belirlemez; gelirse ve anahtarın kiracısından farklıysa 401, yazım yok. Ölçüm bypass **kapalı** (AC-63, S-63) | integration-agent (Gateway, MOD-0032) | DL-5 |
+| X-19 | `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` — `IsNonTenantPath` (`:430-436`; çağrı yeri `:35`) | Program.cs `:186` her isteğe uygular; kiracı sinyali yoksa ve yol public değilse 400 "Missing Tenant" (`:213-226`); gelen yol public listede yok; Development'ta `TryGetDevelopmentBypassTenant` (`:595`) eksik kiracıyı gizler; çözülen kiracı `X-Tenant-Id` olarak servise yazılır (`:238`) | **Adlı muafiyet (F-2; r3, F-14):** `IsNonTenantPath`'e yalnız `/api/warehouse/third-party-logistics/inbound` öneki (yorumla: "MOD-0179 gelen uç — kiracı kanal anahtarından servis tarafında çözülür"). `:35`'teki erken dönüş kiracı çözümünden, Development bypass'ından (`:203-211`) ve `X-Tenant-Id` yazımından (`:238`) **önce** çalışır; bu yolda Gateway başlık yazmaz ve 3PL'in gönderdiği başlığa dokunmaz. `IsPublicEndpoint` kullanılmaz (r2'nin seçimi bypass açıkken sabit kiracıyı başlığa yazıyordu). Başka hiçbir 0179 yolu muaf olmaz. Servis kuralı (§8.4): gelen uçta `X-Tenant-Id` kiracıyı belirlemez; gelirse ve anahtarın kiracısından farklıysa 401, yazım yok. Ölçüm bypass **kapalı ve açık** (AC-63, S-63, S-63b) | integration-agent (Gateway, MOD-0032) | DL-5 |
 
 **0178 / 0181 / 0182 bekçi testleri değişmez (bağlayıcı):** `INVT/Warehouse/**`, `INVT/CycleCount/**` ve `INVT/Barcode/**` dosyaları **hiçbir satırı değişmeden**
 yeşil kalır (X-5 / X-6 / X-9 ve Gateway X-8 bu dizinlerde değildir; yalnız adlı satırları değişir). DL-6'nın 0178 davranışı `INVT/ThirdPartyLogistics/`
@@ -439,7 +447,7 @@ boş (AC-43).
 | MOD-0173 defter, MOD-0174 lot, MOD-0290 SKU | HARD (okuma) | `Find` | mutabakat, lot / SKT karşılaştırması, görüntü | yok | merkez / MDM |
 | Sır sağlayıcısı (MOD-0012) | HARD (DL-5) | Inventory `Diten.BuildingBlocks.Security.Secrets`'a başvuruyor (`services/Diten.InventoryService/src/Diten.InventoryService.Api/Program.cs:3`); emsal Platform `SecretReferenceResolver` (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/Notifications/SecretReferenceResolver.cs:22-55`) | referans çözümü (F-10) | yok | — |
 | Kiracı sır kasası (MOD-0012 FU'su) | SOFT — sonraki adım | yok | değer yazımı ekranı | X-14 | merkez (Beste) |
-| Gateway kiracı ara katmanı | HARD (DL-5) | gelen yol public değil (`TenantResolutionMiddleware.cs:438-449`) | tokensız gelen uç | X-19 | integration-agent |
+| Gateway kiracı ara katmanı | HARD (DL-5) | gelen yol kiracısız yol listesinde değil (`TenantResolutionMiddleware.cs:430-436`; r3, F-14) | tokensız gelen uç | X-19 | integration-agent |
 | Servis kimliği (MOD-0033-FU02) | HARD (DL-6, DL-7) | registry'de review / local integration | MOD-0183 dispatch, MOD-0142 GRN çağrıları | X-16 | Ali (Auth) |
 | MOD-0040-FU02 RCS-001 | SOFT | ara üretici MOD-0178 geçici sayacı | `TPX` | X-7 | merkez |
 | MOD-0018 RBAC, BL-501 | HARD | `[HasPermission]` + manifest; InventoryService yol b (`tests/architecture/audit-ledger/Diten.InventoryService.md:12`) | izin, denetim | X-16 | Ali / korunan yol |
@@ -500,11 +508,15 @@ düzleştirilmiş biçimidir (3PL-BUNDLE). Eşleme yoksa `UnknownProductMapping`
 - **Ortak:** kanal yalnız `WarehouseIds`'indeki depolar için mesaj üretir / kabul eder; başka depo `Format` istisnası.
 
 ### 8.5 Kanal sırları — referans ara çözümü (F-10) ve kasa FU'su
-- **v1.0 (sahip kararı F-10):** kanal kaydı yalnız **sır referansı** tutar (`SecretRefs[].Ref` — yapılandırma anahtarı adı, ör.
-  `ThirdPartyLogistics:{tenant}:{channel}:InboundSigningSecret`); **değeri işletim yerleştirir** (InventoryService ortam / yapılandırma sağlayıcısı). Emsal
+- **v1.0 (sahip kararı F-10):** kanal kaydı yalnız **sır referansı** tutar (`SecretRefs[].Ref` — yapılandırma anahtarı adı,
+  `ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName}`); **değeri işletim yerleştirir** (InventoryService ortam / yapılandırma sağlayıcısı). Emsal
   Platform `TenantMessagingSettings.CredentialSecretRef` + `SecretReferenceResolver` (yalnız referans saklanır, değer salt okunur `ISecretsProvider`'dan).
-  `SetThirdPartyChannelSecretRefCommand` yalnız referans adı kabul eder: `^ThirdPartyLogistics:[A-Za-z0-9:_.-]{3,200}$`; ham sıra benzeyen değer (boşluk, `=`,
-  PEM başı, JWT biçimi, 32+ karakter base64 / hex yığını) 400 (Platform `NotificationParsing.LooksLikeRawSecret` emsali, 0179'da kendi kuralı).
+  **Referans sunucuda üretilir (r3, F-13):** `SetThirdPartyChannelSecretRefCommand` yalnız `secretName` alır (türe göre izinli ad, §4.2); referansı sunucu
+  isteğin kiracısı (`TenantId`, JWT'den) ve kanalın kimliğinden `ThirdPartyLogistics:{TenantId:D}:{ChannelId:D}:{SecretName}` olarak kurar ve `RefSetAt` /
+  `RefSetBy` yazar. Gövdede `ref` (ya da herhangi bir referans / değer alanı) gelirse 400 — istemci referans seçemez, başka kiracının anahtarını gösteremez.
+  **Çözücü saklanan dizgeye güvenmez:** `IThirdPartySecretResolver` her okumada referansı kanal kaydının `TenantId` + `Id` + `Name`'inden yeniden kurar;
+  saklanan `Ref` bundan farklıysa çözmez (`TPL_SECRET_UNRESOLVED`, "Ayarlı değil", değer hiçbir yere gönderilmez) — kiracılar arası sır okuması ve "ayarlı"
+  bilgisiyle varlık sızdırma kapanır.
 - **Ekran:** yalnız "Ayarlı" (referans çözülüyor) ya da "Ayarlı değil" + referansın son değişim tarihi; değer ve referansın çözdüğü içerik hiçbir ekranda
   yok. Yardımda bir cümle: "Sırlar ekranda görünmez; kanal yalnız sır referansını tutar, değeri işletim ekibi yerleştirir."
 - **Sırrı okuyan yerler (F-9 (c)):** (1) gönderici işçi (giden çağrı kimlik bilgisi), (2) gelen uç imza süzgeci (`InboundSigningSecret`), (3) bağlantıyı sına.
@@ -692,7 +704,7 @@ Liste ekranına dokunan görev `verify_datatable_page.py --area Warehouse --modu
 | Eşikler | Evet | §4.1.1 | — | — |
 | Kanal `name` / `type` / `warehouseIds` | Evet | 2..80 / v1.0 yalnız `Api` / ortağın depoları | tekil (ortak, ad) | — |
 | API `outboundBaseUrl` | `Api` ise evet | `https://`; özel / yerel ağ adresi reddedilir (SSRF) | — | gönderimde DNS denetimi |
-| Sır referansı `secretName` / `ref` | Evet | türe göre izinli ad / §8.5 deseni, ham sır benzeri değer 400 | — | çözüm denetimi (yalnız "ayarlı" bilgisi) |
+| Sır referansı `secretName` | Evet | türe göre izinli ad; `ref` / değer alanı gönderilirse 400 — referans sunucuda `ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName}` (r3, F-13) | — | çözüm denetimi (yalnız "ayarlı" bilgisi; çözücü referansı yeniden kurar) |
 | Eşleme `kind` / `ourRef` / `partnerValue` | Evet | enum / geçerli kimlik / 1..64 | tekil kısmi | SKU / LOCATION okuması |
 | Gelen mesaj | Evet | ≤ 5 MB; 3PL-BUNDLE şeması; imza; `X-Tenant-Id` kuralı | `DedupKey` tekil | imza (401) |
 | Toplu yeniden işleme `exceptionIds` | Evet | 1..200; aynı ortak + aynı tür | — | `TPL_BULK_LIMIT`, `TPL_BULK_MIXED` |
@@ -725,7 +737,7 @@ Liste ekranına dokunan görev `verify_datatable_page.py --area Warehouse --modu
 - **Ortak askıdayken dış release** — Expected: release yazılır; talimat mesajı `NotSent`; istisna.
 - **90 günü geçmiş yük** — Expected: kişisel veri kalıcı kaldırılır; `OriginalSha256`, kanonik özet ve zarf aynı.
 - **v1.0'da dosya / EDI kanalı yaratma** — Expected: 422 `TPL_CHANNEL_TYPE_NOT_ENABLED`.
-- **Ham sır benzeri referans** — Expected: 400; kayıt yok.
+- **Gövdede `ref` ya da değer alanı; saklanan referans başka kiracıyı gösteriyor (r3, F-13)** — Expected: 400, kayıt yok / çözülmez, "Ayarlı değil", değer gönderilmez.
 - **Özel ağ adresine giden URL** — Expected: 400 ve gönderimde ret.
 - **Fazladan PUT / DELETE** — Expected: `LedgerImmutabilityArchitectureTests` kırmızı.
 
@@ -772,8 +784,8 @@ yöneticisi = `partners.read` + `messages.read` + `exceptions.read` + `reconcili
 - **Kiracı ara katmanı (F-2 — r1'in "JWT'siz istek Gateway'den geçer" iddiası yalnız `ocelot.json`'a dayanıyordu ve yanlıştı):** `TenantResolutionMiddleware`
   (Program.cs `:186`) kiracı sinyali olmayan, public olmayan isteğe 400 "Missing Tenant" döner (`TenantResolutionMiddleware.cs:213-226`); gelen yol public
   listede değildir (`:438-449`); yerelde Development bypass'ı (`:595`) bunu gizler. **Karar:** X-19 — yalnız `/api/warehouse/third-party-logistics/inbound`
-  öneki `IsPublicEndpoint`'e eklenir (integration-agent). Kiracı servis tarafında kanal anahtarından çözülür; `X-Tenant-Id` kuralı §8.4. Ölçüm **bypass
-  kapalıyken** (AC-63).
+  öneki `IsNonTenantPath`'e eklenir (`:430-436`, erken dönüş `:35` — bypass ve başlık yazımından önce; r3, F-14; integration-agent). Kiracı servis tarafında
+  kanal anahtarından çözülür; `X-Tenant-Id` kuralı §8.4. Ölçüm **bypass kapalı ve açıkken** (AC-63).
 - **0178 Gateway testinin uç sayısı (X-8):** bugün 87 (`Mod0178WarehouseRouteTests.cs:103`); uç ekleyen her dilim aynı commit'te günceller.
 - **0179 uç kapsama testi** `gateway/Diten.ApiGateway.Tests/Mod0179ThirdPartyRouteTests.cs` (DL-9; muafiyet vakası DL-5'te): üretim `ocelot.json`'u ve controller
   kaynağını okur; gelen ucun `Authorization` olmadan iletildiğini, `X-TPL-*` başlıklarının ulaştığını, başka 0179 yolunun public olmadığını ölçer.
@@ -811,10 +823,10 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 - [ ] AC-16 (zorunlu) — Lot / SKT farkı `LotExpiryMismatch`; MOD-0174 koleksiyonlarında yazım yok; deftere yansımaz. S-16: 3PL SKT'sini lot kaydına yazan dal ekle → kırmızı.
 - [ ] AC-17 (zorunlu) — `UnknownProductMapping`, `UnknownLot`, `QuantityMismatch`, `LateConfirmation`, `Format`, `Unsupported` ayrı vakalarla; metin 7 dilde koddan. S-17: miktar karşılaştırmasını kaldır → kırmızı.
 - [ ] AC-18 (zorunlu) — Sağlık ve KPI §8.11 (sahte saat, eşik sınırında iki yön). S-18: rapor yaşı karşılaştırmasını ters çevir → kırmızı.
-- [ ] AC-20 (zorunlu; her dilimde) — Merkezi denetim: başarılı ve yazan komut 1 kayıt, replay 0, başarısız 0; X-6 sayıları aynı commit'te. S-20a: komuttan işareti kaldır → `CentralAuditDeclarationTests` kırmızı; S-20b: replay'de kayıt yazdır → kırmızı.
+- [ ] AC-20 (zorunlu; komut ekleyen her dilimde — DL-1, DL-2, DL-5, DL-7, DL-8; r3, F-17 (c)) — Merkezi denetim: başarılı ve yazan komut 1 kayıt, replay 0, başarısız 0; X-6 sayıları aynı commit'te. S-20a: komuttan işareti kaldır → `CentralAuditDeclarationTests` kırmızı; S-20b: replay'de kayıt yazdır → kırmızı.
 - [ ] AC-21 (zorunlu) — İstisna numarası `{ŞİRKET}-TPX-` + 6 hane; değişmez; eşzamanlı ikisi farklı. S-21: `TPX`'i `TypePrefixes`'ten çıkar → kırmızı.
 - [ ] AC-24 (zorunlu) — Ham içerik `raw-messages.read` ister; okuma maskesi; imza / sır alanı yok. S-24a: izni `messages.read`'e düşür → kırmızı; S-24b: maskeyi kaldır → kırmızı.
-- [ ] AC-25 (zorunlu; uç ekleyen her dilimde) — `Mod0178WarehouseRouteTests` sayı satırı dilimin uçlarıyla aynı commit'te (X-8). S-25: sayıyı eski değere döndür → kırmızı.
+- [ ] AC-25 (zorunlu; uç ekleyen her dilimde — DL-1, DL-2, DL-5…DL-8; r3, F-17 (c)) — `Mod0178WarehouseRouteTests` sayı satırı dilimin uçlarıyla aynı commit'te (X-8). S-25: sayıyı eski değere döndür → kırmızı.
 - [ ] AC-60 (zorunlu, F-5) — 90 gün (sahte saat): 89. günde yük değişmez; 90. günde süpürücü kişisel veri alanlarını kalıcı kaldırır, `PiiPurgedAt` + `CurrentSha256` yazılır, `OriginalSha256` / kanonik özet / zarf aynı kalır; ikinci koşu yazmaz; temizlenmiş mesaj yeniden işlenebilir; merkezi kayıt kişisel veri taşımaz. S-60a: süreyi 900 gün yap → 90. gün vakası kırmızı; S-60b: temizlemede kanonik özeti de sil → kırmızı; S-60c: temizlemeyi yalnız okuma maskesine bırak (depoya yazma) → depo taraması kırmızı.
 
 **DL-3 — Web ekranları (sağlık, ortak ayrıntısı, kanallar, eşlemeler, mesajlar, bekletilenler, istisna kutusu, ayarlar; r1 DL-2)**
@@ -826,7 +838,7 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 - [ ] AC-31 (zorunlu) — Toplu seçim > 200 uyarı + ilk 200; karışık seçimde düğme devre dışı. S-31: JS sınırını kaldır → vitest kırmızı.
 - [ ] AC-32 (zorunlu) — Sayfa yardımı her sayfada; tur yok; sır cümlesi `TPLCHANNELS`'da. S-32: yardım anahtarını kaldır → kırmızı.
 - [ ] AC-33 — 375 px, durumlar, RTL (bekçi değil).
-- [ ] AC-34 (zorunlu) — Ortak formunda ad / adres / iletişim girdisi yok; seçim yalnız FU01 3PL rollü etkin ortaklar; bilgi salt okunur. S-34: forma ad girdisi ekle → kırmızı.
+- [ ] AC-34 (zorunlu) — (a) **DL-3:** ortak formunda ad / adres / iletişim girdisi yok; ayrıntıdaki iş ortağı bilgisi salt okunur — Web testi FU01 okuma ucunu **sahte proxy** ile taklit eder (proxy controller'ın Gateway istemcisi test kurulumunda sahte HTTP işleyiciyle değiştirilir; yeni uç yok); (b) **DL-4 kabulünde (r3, F-16):** seçim listesi yalnız FU01'in 3PL rollü etkin ortaklarını gösterir — gerçek FU01 ucuyla. S-34: forma ad girdisi ekle → (a) kırmızı; S-34b: proxy'de rol / durum süzgecini kaldır → (b) kırmızı.
 - [ ] AC-62 (zorunlu, F-8) — "Ücret mutabakatı — v2 · planlı" notu ortak ayrıntısı Genel sekmesinde ve sağlık şeridinde 7 dilde; ücret için bağlantı, düğme, menü öğesi ve izin yok. S-62a: notu kaldır → view testi kırmızı; S-62b: nota bağlantı ekle → view testi kırmızı.
 
 **DL-4 — iş ortağı okuma bağlantısı (MOD-0049-FU01 istemcisi; kapı: FU01 API'si `main`'de)**
@@ -836,14 +848,14 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 - [ ] AC-38 (zorunlu) — MOD-0179 MdmService'e hiçbir yazma isteği göndermez (istemci tipinde yalnız GET; mimari tarama). S-38: istemciye POST metodu ekle → tarama kırmızı.
 
 **DL-5 — API kanalı + sır referansı (kasa FU'sunu beklemez — F-10) + Gateway muafiyeti**
-- [ ] AC-39 (zorunlu) — `SetThirdPartyChannelSecretRefCommand` yalnız §8.5 desenini kabul eder, ham sır benzeri değer 400; "ayarlı" bilgisi çözümden; nöbetçi değer taraması (gerçek `ISecretsProvider`). S-39a: desen denetimini kaldır → ham değer vakası kırmızı; S-39b: çözülen değeri kanala yaz → tarama kırmızı.
+- [ ] AC-39 (zorunlu) — `SetThirdPartyChannelSecretRefCommand` yalnız `secretName` alır, referansı sunucu `ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName}` olarak üretir; gövdede `ref` / değer alanı 400; "ayarlı" bilgisi çözümden; nöbetçi değer taraması (gerçek `ISecretsProvider`). **r3 (F-13) — başka kiracı referansı vakası:** B kiracısının kanalına ait anahtar yapılandırmada dolu iken (a) A kiracısının isteğinde `ref = ThirdPartyLogistics:{B}:{kanalB}:ApiKey` gönderilir → 400, kayıt yok; (b) A kiracısının kanal kaydına bu referans depoya doğrudan yazılır (test kurulumu) → çözücü çözmez, ekran "Ayarlı değil", gönderici A'nın `OutboundBaseUrl`'ine hiçbir kimlik bilgisi göndermez (sahte HTTP işleyicide B'nin nöbetçi değeri yok). S-39a: gövdede `ref` alanı kabul eden dalı ekle → (a) vakası kırmızı; S-39b: çözülen değeri kanala yaz → tarama kırmızı; S-39c: çözücüyü saklanan `Ref` dizgesini doğrudan kullanacak hale getir (yeniden kurmayı kaldır) → (b) vakası kırmızı.
 - [ ] AC-40 (zorunlu) — Gelen uç: doğru imza 202 + mesaj; yanlış imza, bilinmeyen anahtar, ± 5 dk dışı, **A kiracısının `keyId`'si + B kiracısının sırrıyla imza**, anahtarın kiracısından farklı `X-Tenant-Id` → 401 ve sıfır yazım; aynı `X-TPL-Message-Id` → `Duplicate`. S-40a: imza karşılaştırmasını kaldır → kırmızı; S-40b: zaman penceresini kaldır → kırmızı; S-40c: imza hatasında mesaj kaydı yaz → kırmızı; S-40d: `FixedTimeEquals`'ı `SequenceEqual` ile değiştir → kaynak bekçisi kırmızı (F-9 (b)); S-40e: kiracıyı `X-Tenant-Id`'den seç → uyuşmazlık vakası kırmızı.
 - [ ] AC-41 (zorunlu) — Gönderici: 5 deneme, üstel bekleme, sonra `Failed` + `ConnectionAuth`; askı / kapalı kanal `NotSent`; özel ağ adresine ret. S-41a: askı denetimini kaldır → kırmızı; S-41b: SSRF denetimini kaldır → kırmızı.
 - [ ] AC-42 (zorunlu) — "Bağlantıyı sına" sonucu sır içermez; teknik alanlar `Version`'ı artırmaz. S-42: sonuca yanıt gövdesini ekle → tarama kırmızı.
-- [ ] AC-63 (zorunlu, F-2) — Gateway: **Development bypass kapalıyken** (`TenantResolution:DevBypassEnabled = false`) tokensız, `X-Tenant-Id`'siz geçerli imzalı istek servise ulaşır ve 202 alır; aynı istek başka bir 0179 yoluna (ör. `…/partners`) 400 "Missing Tenant" alır; yönetim yolları public değil. S-63: X-19 önekini `IsPublicEndpoint`'ten çıkar → bypass kapalı vaka 400, kırmızı (geri alınır).
+- [ ] AC-63 (zorunlu, F-2; r3, F-14) — Gateway: (a) **Development bypass kapalıyken** (`TenantResolution:DevBypassEnabled = false`) tokensız, `X-Tenant-Id`'siz geçerli imzalı istek servise ulaşır ve 202 alır; aynı istek başka bir 0179 yoluna (ör. `…/partners`) 400 "Missing Tenant" alır; (b) **bypass açıkken** (`DevBypassEnabled = true`, `DevBypassTenantId` dolu) gelen yola giden istekte servise ulaşan `X-Tenant-Id` yoktur (Gateway yazmaz) ve istek 202 alır; 3PL'in gönderdiği `X-Tenant-Id` değiştirilmeden iletilir. S-63: X-19 önekini `IsNonTenantPath`'ten çıkar → (a) 400, kırmızı; S-63b: öneki `IsNonTenantPath` yerine `IsPublicEndpoint`'e koy → (b) vakasında başlığa bypass kiracısı yazılır, servis 401, kırmızı (ikisi de geri alınır).
 
 **DL-6 — çıkış akışı, tek model (MOD-0178 / MOD-0183; F-1)**
-- [ ] AC-43 (zorunlu) — Dış depoda allocation toplama görevi açmaz, outbound `Allocated` kalır; **dış release** `Allocated` outbound'u kabul eder ve tek işlemde `ReadyToShip` + `OutboundShipmentReady` outbox + talimat + giden mesaj yazar (talimat yazımı başarısızsa hiçbiri yok); iç depoda release yalnız `Packed` (bugünkü davranış); yerleştirme 422 `WMS_EXTERNAL_WAREHOUSE`; `INVT/Warehouse/**` ve `INVT/CycleCount/**` diff'i boş. S-43a: depo modu denetimini kaldır → toplama görevi açılır, kırmızı; S-43b: talimatı işlem dışına al → geri alma vakası kırmızı; S-43c: iç depoda da `Allocated` release'e izin ver → iç depo vakası kırmızı.
+- [ ] AC-43 (zorunlu) — Dış depoda allocation toplama görevi açmaz, outbound `Allocated` kalır; **dış release** `Allocated` outbound'u kabul eder ve tek işlemde `ReadyToShip` + `OutboundShipmentReady` outbox + talimat + giden mesaj yazar (talimat yazımı başarısızsa hiçbiri yok); iç depoda release yalnız `Packed` (bugünkü davranış); **r3 (F-15):** tahsisli lotu geri çağrılmış dış outbound'un release'i 422 `LOT_UNDER_RECALL` (ayrıntıda `allocSeq`, `lotNumber`), `ReadyToShip` / outbox / talimat / mesaj yazılmaz; aynı vaka Blocked ve Expired lotla; yerleştirme 422 `WMS_EXTERNAL_WAREHOUSE`; `INVT/Warehouse/**` ve `INVT/CycleCount/**` diff'i boş. S-43a: depo modu denetimini kaldır → toplama görevi açılır, kırmızı; S-43b: talimatı işlem dışına al → geri alma vakası kırmızı; S-43c: iç depoda da `Allocated` release'e izin ver → iç depo vakası kırmızı; S-43d: dış release'te ön denetimleri `picked` kümesinde bırak (tahsislere geçmeyi kaldır) → geri çağrılmış lot vakası 200 döner, kırmızı.
 - [ ] AC-44 (zorunlu) — Sevk onayı (outbound `ReadyToShip`) → X-12 yolu (MOD-0183 dispatch, satırlar = 3PL lot / miktarı; sahte istemci + pilotta gerçek) → MOD-0183 `GOODS_ISSUE_SALES` → 0178 sync-dispatch `Shipped`; dış outbound'da kısa sevk planı tahsislerden; tahsis lotundan farklı lot `LotExpiryMismatch`, dispatch yok; 0179 hiçbir hareket yazmaz (tarama). S-44a: lot karşılaştırmasını kaldır → kırmızı; S-44b: 0179'dan `GOODS_ISSUE_SALES` post et → tarama kırmızı; S-44c: sync-dispatch'te dış outbound için de toplama görevi tabanını kullan → kısa sevk vakası kırmızı.
 - [ ] AC-45 (zorunlu) — Fazla onay `QuantityMismatch`; outbound `ReadyToShip` değilken ya da talimat kapanmışken onay `LateConfirmation`; ikisinde dispatch yok. S-45: durum denetimini kaldır → kırmızı.
 
@@ -881,7 +893,7 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
   InventoryService paketi koşar.
 - **Gateway:** AC-63 (bypass kapalı muafiyet), AC-59, AC-25 (X-8).
 - **MOD-0178 davranışı:** X-10'un ölçümü 0179 test ağacında; 0178 test dosyaları değişmez (AC-43).
-- **Frontend:** AC-26…AC-34, AC-62; tarayıcı smoke (E3) **iki aşamada (F-7):** DL-3 kabulünde sahte iş ortağı + sahte mesajla (ortak bağla → kanal tanımla →
+- **Frontend:** AC-26…AC-34 (AC-34 (b) DL-4'te — r3, F-16), AC-62; Web testlerinde FU01 okuma ucu sahte proxy ile; tarayıcı smoke (E3) **iki aşamada (F-7):** DL-3 kabulünde sahte iş ortağı + sahte mesajla (ortak bağla → kanal tanımla →
   istisna kutusu → eşleme ekle ve yeniden işle); DL-5 kabulünde gerçek imzalı gelen mesajla tekrar.
 - **Build:** `Diten.InventoryService`, `Diten.Web`; Gateway test projesi uç ekleyen her dilimde, DL-5 ve DL-9'da.
 - **Sözleşme:** 3PL-BUNDLE (AC-1), FU01 okuma sözleşmesi (AC-35), WMS-BUNDLE eklemeli sürümü (X-11), v1.1 EDI örnek değişimleri.
@@ -922,16 +934,16 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 | AC-31 | vitest | S-31 |
 | AC-32 | Web testi | S-32 |
 | AC-33 | tarayıcı (bekçi değil; sabotaj yok) | — |
-| AC-34 | view testi | S-34 |
+| AC-34 | view testi (a, sahte proxy) + entegrasyon (b, DL-4) | S-34, S-34b |
 | AC-35 | sözleşme + entegrasyon | S-35a, S-35b |
 | AC-36 | entegrasyon | S-36 |
 | AC-37 | entegrasyon | S-37 |
 | AC-38 | mimari | S-38 |
-| AC-39 | entegrasyon (gerçek sağlayıcı) | S-39a, S-39b |
+| AC-39 | entegrasyon (gerçek sağlayıcı, iki kiracı) | S-39a, S-39b, S-39c |
 | AC-40 | entegrasyon (sahte saat) + kaynak bekçisi | S-40a, S-40b, S-40c, S-40d, S-40e |
 | AC-41 | entegrasyon (sahte saat) | S-41a, S-41b |
 | AC-42 | entegrasyon | S-42 |
-| AC-43 | entegrasyon (gerçek 0178) + `git diff` | S-43a, S-43b, S-43c |
+| AC-43 | entegrasyon (gerçek 0178) + `git diff` | S-43a, S-43b, S-43c, S-43d |
 | AC-44 | entegrasyon (gerçek 0178) + tarama | S-44a, S-44b, S-44c |
 | AC-45 | entegrasyon | S-45 |
 | AC-46 | entegrasyon | S-46 |
@@ -951,7 +963,7 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 | AC-60 | entegrasyon (sahte saat, depo taraması) | S-60a, S-60b, S-60c |
 | AC-61 | entegrasyon | S-61 |
 | AC-62 | view testi | S-62a, S-62b |
-| AC-63 | Gateway testi (bypass kapalı) | S-63 |
+| AC-63 | Gateway testi (bypass kapalı ve açık) | S-63, S-63b |
 
 ## 18. Ready-for-dev Checklist
 - [x] Golden Reference Slim; sapmalar G-0179-01 / G-0179-02 (CT kabulü Q-17)
@@ -983,7 +995,7 @@ AC → test → sabotaj eşlemesi §17.1. **Bekçi olmayan:** AC-27 (araç çık
 - İnceleme r1: `docs/records/reviews/MOD-0179/2026-11-13-aca86685.md` (tamamı).
 - Brief: `execution/domains/supply-chain-execution/work-packs/mockups/3pl-integration/BRIEF-MOD-0179-3pl-integration.md`.
 - Mockup tur 1: depoda değil (Beste'nin indirmeler klasöründe; 2 194 123 bayt; sha256 `cee456d114387fe742837610cdbc24140e1ca40c86af1031b0b38c5a7e2ce0d8`).
-- Registry: `execution/registries/module-id-registry.md:159-160` (MOD-0049, MOD-0049-FU01).
+- Registry: `execution/registries/module-id-registry.md:160-161` (MOD-0049, MOD-0049-FU01; r3, F-17 (b)) ve `:70` (MOD-0012-FU01).
 - Kod (r2 ölçümü, HEAD `70cb6ca01`): `OutboundFlowHandlers.cs` (`:247`, `:281`, `:378-411`, `:447`, `:477`, `:509-511`, `:525`), `OutboundAllocationService.cs:259`,
   `TenantResolutionMiddleware.cs` (`:213-226`, `:238`, `:438-449`, `:595`), gateway `Program.cs:186`, `InventoryScopeResolutionMiddleware.cs:76-81`,
   `SecretReferenceResolver.cs:22-55`, `Mod0178WarehouseRouteTests.cs:103`, `CentralAuditDeclarationTests.cs:55`, `:134`, `WarehouseRecordCodeRules.cs:29-31`,
@@ -1018,7 +1030,7 @@ Q-6 eşikler 120 dk / 240 dk / 26 sa / %1; Q-7 askıdayken işlenmez; Q-8 ön bi
 
 **Açık — Ali:** Q-12 servis kimliği (Inventory → SupplyChain dispatch, → Procurement GRN); Q-13 rol şablonları.
 **Açık — CT:** Q-14 mesaj komutlarının denetim yolu (b / c); Q-15 Blueprint sapmaları ve `BRIDGE-BASE`; Q-16 kiracı sır kasası FU'su — kimliği artık
-MOD-0012-FU01 (registry `:70`, paket taslak); sonraki adım, v1.0 kapısı değil (F-10); registry notundaki "gate of MOD-0179 DL-4" ifadesinin düzeltilmesi; Q-17 Golden sapmaları.
+MOD-0012-FU01 (registry `:70`, paket taslak); sonraki adım, v1.0 kapısı değil (F-10; registry notu da öyle — r3, F-17 (a)); Q-17 Golden sapmaları.
 **Açık — başka ekip:** Q-18 MOD-0183 sahibi (dispatch yolu); Q-19 procurement (GRN yolu, miktar farkında GRN açılmaması).
 
 ### 19.5 Mockup v1 → paket farkları
@@ -1052,6 +1064,15 @@ MOD-0012-FU01 (registry `:70`, paket taslak); sonraki adım, v1.0 kapısı deği
 | F-11 (düşük) | v1.0 yalnız API (DL-1…DL-9); SFTP DL-10, EDI DL-11 v1.1; r1 DL-1 → DL-1 (1a) + DL-2 (1b) | §2.1, §23, §24 |
 | F-12 (düşük) | Sınıf düzeyi izin yasağı + S-7d; ara katman muafiyeti S-63 (S-59 yalnız `ocelot.json`) | §3, §14, AC-7, AC-59, AC-63 |
 | Q-10 (sahip) | MDM iş ortağı MOD-0049-FU01; X-1…X-3 taşındı; DL-4 okuma istemcisi, AC-35…AC-38 yeniden yazıldı | §0, §4.10, §5.1, §7, DL-4 |
+
+### 19.7 r2 → r3 kapanış tablosu
+| Bulgu | Kapanış | Bölüm / AC |
+|---|---|---|
+| F-13 (orta) | Referans sunucuda `ThirdPartyLogistics:{TenantId}:{ChannelId}:{SecretName}`; istemci referans vermez (gövdede `ref` 400); çözücü her okumada referansı kiracı + kanaldan yeniden kurar, saklanan dizge farklıysa çözmez | §4.2, §8.5, §12, §13, AC-39 (S-39a yeniden tanımlandı, S-39c yeni) |
+| F-14 (düşük) | X-19 `IsPublicEndpoint` yerine `IsNonTenantPath` (`TenantResolutionMiddleware.cs:430-436`, erken dönüş `:35`): bypass ve `X-Tenant-Id` yazımı bu yolda çalışmaz; bypass açık vaka | §5.1 X-19, §7, §15, AC-63 (S-63b yeni) |
+| F-15 (düşük) | Dış release ön denetimleri `picked` kümesi yerine tahsislerden (`OutboundFlowHandlers.cs:294-295`, `:298-342`); geri çağrılmış / Blocked / Expired lotlu dış release 422 | §5.1 X-10 (2), AC-43 (S-43d yeni) |
+| F-16 (düşük) | AC-34 (a) DL-3'te sahte proxy ile, (b) seçim kısmı DL-4 kabulünde; yeni uç yok | AC-34 (S-34b yeni), §17, §17.1, §24 |
+| F-17 (düşük) | (a) X-14 ve Q-16: registry `:70` notu "not a gate" — tutarlı; (b) MOD-0049 / FU01 registry `:160-161`; (c) AC-20 / AC-25 dilim sütunlarına DL-5, DL-6 (yalnız AC-25), DL-7, DL-8 eklendi | §0, §5.1 X-14, §16, §19.1, §19.4, §24 |
 
 ## 20. Follow-up Items
 - **FU-0179-TREASURY-NOTE** (CT işi) — Treasury'ye bilgi notu (fatura kaynağı, kalemler — mockup M-10, satır bazı M-12, itiraz kanalı M-14, finans bağlantısı).
@@ -1138,12 +1159,12 @@ Paket onaylanmadan (künye `approved` / `ready-for-dev` + CT-APR-02 + CT-APR-01,
 |---|---|---|---|---|
 | DL-1 | ilk adım 3PL-BUNDLE taslağı | X-4, X-5, X-6 (a) +12 ve modül listesi, X-6 (b) (öneri +1), X-8 (+17), X-9 | AC-1…AC-9, AC-11, AC-19, AC-20, AC-22, AC-23, AC-25, AC-61 | S-1, S-2a, S-2b, S-3a, S-3b, S-4a, S-4b, S-5a, S-5b, S-6, S-7a, S-7b, S-7c, S-7d, S-8a, S-8b, S-9a, S-9b, S-11, S-19, S-20a, S-20b, S-22a, S-22b, S-23, S-25, S-61 |
 | DL-2 | DL-1 kabulü; Q-14 (CT) | X-6 (a) +7, X-7, X-8 (+11) | AC-10, AC-12…AC-18, AC-20, AC-21, AC-24, AC-25, AC-60 | S-10, S-12, S-13a, S-13b, S-14, S-15a, S-15b, S-15c, S-16, S-17, S-18, S-20a, S-20b, S-21, S-24a, S-24b, S-25, S-60a, S-60b, S-60c |
-| DL-3 | DL-2 kabulü; Q-17 (CT); Q-13 rol şablonu (Ali) — kabul kapısı; kabul **sahte iş ortağı portuyla** (F-7) | X-15 | AC-26…AC-34, AC-62 | S-26, S-28, S-29, S-30, S-31, S-32, S-34, S-62a, S-62b |
-| DL-4 | **MOD-0049-FU01 paketi onaylı ve okuma API'si `main`'de**; DL-1 kabulü | — (MDM'ye yazım yok) | AC-35…AC-38 | S-35a, S-35b, S-36, S-37, S-38 |
-| DL-5 | DL-2 kabulü; 3PL-BUNDLE `1.0.0` dondurulmuş; X-19 sahip onayı (integration-agent) | X-6 (a) +3, X-8 (+3), X-19 | AC-39…AC-42, AC-63 | S-39a, S-39b, S-40a, S-40b, S-40c, S-40d, S-40e, S-41a, S-41b, S-42, S-63 |
-| DL-6 | **DL-5 kabulü** (F-7); **Q-18 (MOD-0183 sahibi)**; Q-12 (servis kimliği); X-10 / X-11 sahip onayı; WMS-BUNDLE eklemeli sürüm dondurulmuş | X-8 (+2), X-10, X-11, X-12, X-16 | AC-43…AC-45 | S-43a, S-43b, S-43c, S-44a, S-44b, S-44c, S-45 |
-| DL-7 | **DL-5 kabulü** (F-7); **Q-19 (procurement)**; Q-12 | X-6 (a) +1, X-8 (+1), X-13, X-16 | AC-46, AC-47 | S-46, S-47a, S-47b |
-| DL-8 | DL-6 ya da DL-7 kabulü; defter "an itibarıyla" okuması ölçüldü | X-6 (a) +3, X-8 (+8), X-15 | AC-48…AC-52 | S-48a, S-48b, S-49a, S-49b, S-50, S-51, S-52 |
+| DL-3 | DL-2 kabulü; Q-17 (CT); Q-13 rol şablonu (Ali) — kabul kapısı; kabul **sahte iş ortağı portuyla**, Web testlerinde FU01 okuma ucu **sahte proxy** ile (F-7; r3, F-16) | X-15 | AC-26…AC-33, AC-34 (a), AC-62 | S-26, S-28, S-29, S-30, S-31, S-32, S-34, S-62a, S-62b |
+| DL-4 | **MOD-0049-FU01 paketi onaylı ve okuma API'si `main`'de**; DL-1 kabulü | — (MDM'ye yazım yok) | AC-35…AC-38, AC-34 (b) (r3, F-16) | S-35a, S-35b, S-36, S-37, S-38, S-34b |
+| DL-5 | DL-2 kabulü; 3PL-BUNDLE `1.0.0` dondurulmuş; X-19 sahip onayı (integration-agent) | X-6 (a) +3, X-8 (+3), X-19 | AC-39…AC-42, AC-63, AC-20, AC-25 (r3, F-17 (c)) | S-39a, S-39b, S-39c, S-40a, S-40b, S-40c, S-40d, S-40e, S-41a, S-41b, S-42, S-63, S-63b, S-20a, S-20b, S-25 |
+| DL-6 | **DL-5 kabulü** (F-7); **Q-18 (MOD-0183 sahibi)**; Q-12 (servis kimliği); X-10 / X-11 sahip onayı; WMS-BUNDLE eklemeli sürüm dondurulmuş | X-8 (+2), X-10, X-11, X-12, X-16 | AC-43…AC-45, AC-25 (r3, F-17 (c)) | S-43a, S-43b, S-43c, S-43d, S-44a, S-44b, S-44c, S-45, S-25 |
+| DL-7 | **DL-5 kabulü** (F-7); **Q-19 (procurement)**; Q-12 | X-6 (a) +1, X-8 (+1), X-13, X-16 | AC-46, AC-47, AC-20, AC-25 (r3, F-17 (c)) | S-46, S-47a, S-47b, S-20a, S-20b, S-25 |
+| DL-8 | DL-6 ya da DL-7 kabulü; defter "an itibarıyla" okuması ölçüldü | X-6 (a) +3, X-8 (+8), X-15 | AC-48…AC-52, AC-20, AC-25 (r3, F-17 (c)) | S-48a, S-48b, S-49a, S-49b, S-50, S-51, S-52, S-20a, S-20b, S-25 |
 | DL-9 | DL-5 kabulü | gateway test projesi; `ocelot.json` sabotajda geçici bozulur, geri alınır | AC-59 | S-59 |
 | DL-10 | **v1.0 kabulü** (DL-1…DL-9); SFTP NuGet + güvenlik taraması | — | AC-53…AC-55 | S-53a, S-53b, S-54, S-55 |
 | DL-11 | DL-10 kabulü | — | AC-56…AC-58 | S-56, S-57, S-58 |
