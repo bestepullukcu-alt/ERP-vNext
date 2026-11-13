@@ -56,3 +56,17 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
 - **2026-11-13 — dilim sırası (sahip, Beste, "Önce 0180, sonra 0182"):** MOD-0180 DL-1 ile MOD-0182 DL-1 aynı sayaçları (Gateway uç sayısı,
   merkezi denetim komut sayısı, kayıt kodu önek listesi) ve tek çalışma dalını paylaşır; önce MOD-0180 DL-1 yürür, MOD-0182 DL-1 MOD-0180
   DL-1'in CT doğrulamasından sonra başlar ve sayıları o anki değerden ölçer.
+- **2026-11-13 — WMS-WAVE-BUNDLE taslağı CT kararları (CT — MVP-5 CT; girdi: geliştiricinin taslağı `438d4930c`, CT incelemesi alt ajan
+  abcdb7eb0a857c0c2; paket r11 "kesin liste / yol ve ad sözleşme taslağında kesinleşir" yetkisi, §3 `:280`, §8.17 `:876`):**
+  (1) `WAVE_RESPONSIBLE_INVALID` 422 ve `WAVE_RESPONSIBLE_DIRECTORY_UNAVAILABLE` 503 eklenir; fail-closed (dizin cevap vermezse yazım yok;
+  §12 `:1309`; emsal WMS-COUNT-BUNDLE `COUNT_ASSIGNEE_*`). (2) Sipariş ekleme hepsi ya da hiçbiri (§8.2 kural 3, AC-11); satır sonuçları
+  `error.details.orders[]`; başarısız satırların hepsi `InOtherWave` ise 409 `WAVE_ORDER_IN_OTHER_WAVE`, başka nedenli satır varsa 422 bütün
+  satır kodlarıyla; bu dalgada zaten etkin sipariş için satır kodu `AlreadyInWave` (422). (3) Depo ayarının ilk yazımı `If-Match: W/"0"`
+  (§12 `:1318`; emsal WMS-COUNT-BUNDLE kural 6). (8) `UNKNOWN_LOCATION` aynı kod: yoldaki `{warehouseId}` için 404, gövdede 422; yeni kod
+  yok (servisteki mevcut iki kullanım; `x-reused-error-codes`). (9) `WaveOrder.version` yalnız okunur üye; v1'de hiçbir işlemin If-Match
+  hedefi değil; üyelik kapanışları depoda `State` + `Version` koşullu yazılır (§8.12). Taslak düzeltmeleri: A-1 eşzamanlı özdeş istek —
+  her yazma ucunda çarpışmada anahtar yeniden aranır, aynı anahtar 200 replay, farklı anahtar 409; A-2 `updateWave` ve `addWaveOrders`
+  gövdelerine `reason?` (§8.13 `:838`); A-4 `cutoffAmbiguousResolved` kalıcı alan olarak varlığa eklenir; A-5 "null = kabloda yok" notu
+  (AC-15 (g) `stopReason`); geçersiz `{waveId}` / `{warehouseId}` rota cevabı tanımlanır. **Dondurma zamanı:** DL-1 kabulünde dondurma
+  yok; 1.0.0 DL-5 kabulünden sonra, DL-6'dan önce `wms-wave-bundle.openapi.yaml` olarak FROZEN (emsal WMS-COUNT-BUNDLE `abaa7b8c7`);
+  AC-55'in "taslak" ifadesi sonraki paket revizyonunda düzeltilir. Paket §8.17'ye iki yeni kod sonraki revizyonda yazılır.
