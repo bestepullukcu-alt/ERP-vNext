@@ -83,10 +83,32 @@ const PickRules = (function () {
 
     const isQuantity = (text) => /^\d{1,12}([.,]\d{1,6})?$/.test(String(text ?? '').trim()) && Number.parseFloat(String(text).replace(',', '.')) > 0;
 
-    /** The confirmation body the screen sends: the quantity ONLY — never a target nor a source (§8.19, AC-27 400). */
-    const confirmBody = (key, etag, quantity) => ({ idempotencyKey: key, ifMatch: etag, quantity: String(quantity).trim() });
+    /**
+     * The confirmation body the screen sends: the quantity ONLY — never a target nor a source (§8.19, AC-27 400). The quantity is the dot-decimal
+     * wire string whatever the reader typed ("1,5" → "1.5", E3-FIX-01).
+     */
+    const confirmBody = (key, etag, quantity) => ({ idempotencyKey: key, ifMatch: etag, quantity: String(quantity).trim().replace(',', '.') });
 
-    return { ActionKeys, PackKey, ActionWord, RowMenu, QuickViewMenu, actionState, menu, statusBadge, flagBadge, reasonWord, packLink, originWord, step, isQuantity, confirmBody };
+    /**
+     * E3-FIX-01 (G-1) — a service decimal ("2.000", "1.500") as the reader writes numbers: the user's culture, no trailing zeros (tr "2", "1,5";
+     * en "2", "1.5"), Latin digits. Display only. Anything that is not a plain decimal is shown as given. `grouping` false = the form an input can
+     * take back (no thousands separator).
+     */
+    const quantityText = (value, culture, grouping = true) => {
+        if (value === null || value === undefined || value === '') return '';
+        const text = String(value).trim();
+        if (!/^-?\d+(\.\d+)?$/.test(text)) return text;
+        try {
+            return new Intl.NumberFormat(culture || undefined, { maximumFractionDigits: 6, useGrouping: grouping, numberingSystem: 'latn' }).format(text);
+        } catch (error) {
+            return text;
+        }
+    };
+
+    return {
+        ActionKeys, PackKey, ActionWord, RowMenu, QuickViewMenu, actionState, menu, statusBadge, flagBadge, reasonWord, packLink, originWord, step, isQuantity,
+        confirmBody, quantityText
+    };
 })();
 
 if (typeof window !== 'undefined') window.PickRules = PickRules;

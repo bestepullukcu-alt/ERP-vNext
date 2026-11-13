@@ -2123,7 +2123,7 @@
     <value>Mal kabul edilen stoğu yerleştirmek için</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
-    <value>Stoğu depodan sevk edin: satırlarıyla bir outbound açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
+    <value>Stoğu depodan sevk edin: satırlarıyla bir çıkış sevkiyatı açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
     <value>Sevkiyat planlayıcıları ve depo sorumluları.</value>
@@ -2132,7 +2132,7 @@
     <value>Depo ve sevkiyat hazırlık</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
-    <value>“Yeni Outbound”a basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
+    <value>“Yeni Çıkış Sevkiyatı”na basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
     <value>Satırlar ve önizleme</value>
@@ -2150,7 +2150,7 @@
     <value>Toplamayı izleyin</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; outbound Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
+    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; çıkış sevkiyatı Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
     <value>Sevke hazır ve sevk</value>
@@ -2159,7 +2159,7 @@
     <value>Paketlenince “Sevke Hazır”a basın; mal çıktıktan sonra “Sevkiyatı Kontrol Et”e basın.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez.</value>
+    <value>Sevke hazır yapılan çıkış sevkiyatı değiştirilemez ve iptal edilemez.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Tahsis edilen stoğu toplamak için</value>
@@ -2189,13 +2189,13 @@
     <value>Paketleyin</value>
   </data>
   <data name="Help.PICKTASKS.Step3" xml:space="preserve">
-    <value>Outbound toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
+    <value>Çıkış sevkiyatı toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
   </data>
   <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
     <value>Toplanan stoğu paketlemek için</value>
   </data>
   <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
-    <value>Bir outbound'un toplanan stoğunu kolilere paketleyin.</value>
+    <value>Bir çıkış sevkiyatının toplanan stoğunu kolilere paketleyin.</value>
   </data>
   <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
     <value>Depo operatörleri ve depo sorumluları.</value>
@@ -2204,7 +2204,7 @@
     <value>Koli açın</value>
   </data>
   <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
-    <value>“Yeni Koli”ye basın; yalnız outbound toplandığında mümkündür.</value>
+    <value>“Yeni Koli”ye basın; yalnız çıkış sevkiyatı toplandığında mümkündür.</value>
   </data>
   <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
     <value>İçerik, ağırlık, ölçü</value>
@@ -2216,7 +2216,7 @@
     <value>Koliyi kapatın</value>
   </data>
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
-    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince outbound “Paketlendi” olur.</value>
+    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince çıkış sevkiyatı “Paketlendi” olur.</value>
   </data>
   <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
     <value>Depo akışında birinin ilgilenmesi gereken sorunları görün ve onları düzeltecek kayda gidin.</value>
@@ -2234,10 +2234,10 @@
     <value>Kayda gidin</value>
   </data>
   <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
-    <value>Satırdan görevi ya da outbound'u açın ve orada işlem yapın; nedeni ortadan kalkınca kayıt listeden kendiliğinden düşer.</value>
+    <value>Satırdan görevi ya da çıkış sevkiyatını açın ve orada işlem yapın; nedeni ortadan kalkınca kayıt listeden kendiliğinden düşer.</value>
   </data>
   <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
-    <value>Depo akışında olanları izleyin — görev ve outbound geçmişi ile yaptıkları stok hareketleri.</value>
+    <value>Depo akışında olanları izleyin — görev ve çıkış sevkiyatı geçmişi ile yaptıkları stok hareketleri.</value>
   </data>
   <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
     <value>Depo sorumluları, sevkiyat planlayıcıları ve denetçiler.</value>
@@ -2252,7 +2252,7 @@
     <value>Kayda gidin</value>
   </data>
   <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
-    <value>Bir satırı açıp verisini görün ya da oradan göreve, outbound'a veya stok hareketlerine gidin.</value>
+    <value>Bir satırı açıp verisini görün ya da oradan göreve, çıkış sevkiyatına veya stok hareketlerine gidin.</value>
   </data>
   <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
     <value>Depo ile sevkiyat tarafının uyum içinde olup olmadığını bir bakışta görün.</value>

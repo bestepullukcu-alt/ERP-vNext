@@ -23,8 +23,10 @@ const OutboundShipmentDetails = (function () {
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     }));
     const token = () => document.querySelector('#outboundActionToken input[name="__RequestVerificationToken"]')?.value || '';
-    const modal = (id) => (byId(id) ? window.bootstrap?.Modal.getOrCreateInstance(byId(id)) : null);
-    const format = (template, ...values) => values.reduce((text, value, i) => text.replace(`{${i}}`, value ?? ''), template || '');
+    // E3-FIX-01 (G-1): every quantity / weight / dimension the page shows is in the reader's culture (tr "2", "1,5"); what it sends is unchanged
+    const culture = () => window.CurrentLanguage || document.documentElement.lang || undefined;
+    const qty = (value) => rules.quantityText(value, culture());
+    const format =(template, ...values) => values.reduce((text, value, i) => text.replace(`{${i}}`, value ?? ''), template || '');
     const fmtDate = (value) => {
         if (!value) return '';
         const date = new Date(value);
@@ -56,12 +58,12 @@ const OutboundShipmentDetails = (function () {
     const renderLines = (lines) => {
         byId('d-lines').innerHTML = (lines || []).map((l) => {
             const allocations = (l.allocations || []).map((a) => `<tr data-alloc-seq="${esc(a.allocSeq)}"><td>${esc(a.allocSeq)}</td><td>${esc(a.lotNumber || '-')}</td>`
-                + `<td>${esc(a.fefoRank ?? '-')}</td><td class="text-end">${esc(a.quantity)}</td><td class="text-end">${esc(a.picked ?? '0')}</td><td class="text-end">${esc(a.packed ?? '0')}</td>`
-                + `<td><small>${esc((a.bins || []).map((b) => `${b.location} (${b.quantity})`).join(', '))}</small></td>`
+                + `<td>${esc(a.fefoRank ?? '-')}</td><td class="text-end">${esc(qty(a.quantity))}</td><td class="text-end">${esc(qty(a.picked ?? '0'))}</td><td class="text-end">${esc(qty(a.packed ?? '0'))}</td>`
+                + `<td><small>${esc((a.bins || []).map((b) => `${b.location} (${qty(b.quantity)})`).join(', '))}</small></td>`
                 + `<td><small>${esc(W(`Warehouse.Outbound.ReleaseState.${a.reservationReleaseState || 'None'}`))}</small>`
                 + (a.fefoBypassReason ? `<small class="d-block text-muted text-break">${esc(a.fefoBypassReason)}</small>` : '') + '</td></tr>').join('');
             return `<div class="border rounded p-3" data-line-seq="${esc(l.lineSeq)}"><div class="d-flex flex-wrap justify-content-between gap-2 mb-2">`
-                + `<strong>${esc(l.orderLineId)} · ${esc(l.sku)}</strong><span>${esc(l.quantity)} ${esc(l.uom)}</span></div>`
+                + `<strong>${esc(l.orderLineId)} · ${esc(l.sku)}</strong><span>${esc(qty(l.quantity))} ${esc(l.uom)}</span></div>`
                 + '<div class="table-responsive"><table class="table table-sm mb-0"><thead><tr>'
                 + ['AllocSeq', 'AllocLot', 'AllocFefoRank', 'AllocQuantity', 'AllocPicked', 'AllocPacked', 'AllocBins', 'AllocRelease'].map((k) => `<th scope="col">${esc(W(k))}</th>`).join('')
                 + `</tr></thead><tbody>${allocations}</tbody></table></div></div>`;
@@ -72,15 +74,15 @@ const OutboundShipmentDetails = (function () {
         const canPick = can('warehouse.pick-tasks.read');
         byId('d-pick-tasks').innerHTML = (tasks || []).map((t) => `<div class="d-flex flex-wrap justify-content-between gap-2 small" data-pick-task="${esc(t.id)}">`
             + `<span class="font-monospace">${canPick ? `<a href="/Warehouse/PickTasks">${esc(t.number)}</a>` : esc(t.number)}</span>`
-            + `<span>${esc(t.from)} · ${esc(t.lotNumber || '-')}</span><span>${esc(t.confirmed)} / ${esc(t.planned)}</span>`
+            + `<span>${esc(t.from)} · ${esc(t.lotNumber || '-')}</span><span>${esc(qty(t.confirmed))} / ${esc(qty(t.planned))}</span>`
             + `<span class="badge bg-label-secondary">${esc(W(`Warehouse.Status.${t.status}`))}</span></div>`).join('');
         byId('d-pick-tasks-empty').classList.toggle('d-none', (tasks || []).length > 0);
     };
 
     const renderPackages = (packages) => {
         byId('d-packages').innerHTML = (packages || []).map((p) => `<div class="d-flex flex-wrap justify-content-between gap-2 small" data-package="${esc(p.id)}">`
-            + `<span class="font-monospace">${esc(p.number)}</span><span>${esc((p.contents || []).map((c) => format(W('PackageContentLine'), c.allocSeq, c.quantity)).join(', '))}</span>`
-            + `<span>${esc([p.weightKg ? `${p.weightKg} kg` : '', p.dimensionsCm || ''].filter(Boolean).join(' · '))}</span>`
+            + `<span class="font-monospace">${esc(p.number)}</span><span>${esc((p.contents || []).map((c) => format(W('PackageContentLine'), c.allocSeq, qty(c.quantity))).join(', '))}</span>`
+            + `<span>${esc([p.weightKg ? `${qty(p.weightKg)} kg` : '', rules.dimensionsText(p.dimensionsCm, culture())].filter(Boolean).join(' · '))}</span>`
             + `<span class="badge bg-label-secondary">${esc(W(`Warehouse.Package.Status.${p.status}`))}</span></div>`).join('');
         byId('d-packages-empty').classList.toggle('d-none', (packages || []).length > 0);
     };
@@ -91,7 +93,7 @@ const OutboundShipmentDetails = (function () {
         card.classList.toggle('d-none', !has);
         if (!has) return;
         byId('d-shipment').innerHTML = o.shipment ? `<div class="small">${esc(format(W('ShipmentLine'), o.shipment.number, o.shipment.status, fmtDate(o.shipment.observedAt)))}</div>` : '';
-        byId('d-short-dispatch').innerHTML = (o.shortDispatch || []).map((s) => `<div class="small text-warning">${esc(format(W('ShortDispatchLine'), s.sku, s.expected, s.issued, s.reason))}</div>`).join('');
+        byId('d-short-dispatch').innerHTML = (o.shortDispatch || []).map((s) => `<div class="small text-warning">${esc(format(W('ShortDispatchLine'), s.sku, qty(s.expected), qty(s.issued), s.reason))}</div>`).join('');
     };
 
     const renderTimeline = (timeline, available) => {
@@ -164,58 +166,73 @@ const OutboundShipmentDetails = (function () {
     };
 
     // ─── Dialogs ─────────────────────────────────────────────────────────────
-    let cancelKey = null;
-    let release = null; // { key, rows }
+    // E3-FIX-01 (item 1): "Sevke hazır", its FEFO reasons and "İptal" are the product's ONE confirm (window.showConfirm, MOD-0013) — the same shape
+    // as "Sevkiyatı kontrol et" below and Packing's "Koliyi kapat": the icon ring, the record's number, the theme's buttons. The flow and the
+    // idempotency keys are unchanged: one key per opened dialog; the FEFO reasons are a new body, so a new key.
+    const reasonValidator = (value) => (String(value ?? '').trim().length < 10 ? W('ReasonRequired') : null);
 
     const openCancel = () => {
-        if (!byId('modalOutboundCancel')) return;
-        cancelKey = newKey();
-        byId('outboundCancelReason').value = '';
-        showAlert('cancel-alert', '');
-        modal('modalOutboundCancel')?.show();
+        const key = newKey();
+        window.showConfirm?.(W('Warehouse.Outbound.Action.Cancel.Confirm') || L().AreYouSure, async (reason) => {
+            const answer = await post(`/Warehouse/OutboundShipments/cancel/${encodeURIComponent(outboundId)}`,
+                { idempotencyKey: key, ifMatch: current.etag, reason: String(reason ?? '').trim() });
+            if (!answer.ok) { window.showToast?.(failure(answer), 'error'); return; }
+            window.showToast?.(answer.json?.message || '', 'success');
+            await load();
+        }, {
+            type: 'danger',
+            icon: 'bx-x-circle',
+            entityName: current.outbound.number,
+            confirmButtonText: W('Warehouse.Outbound.Action.Cancel'),
+            cancelButtonText: L().Close, // the confirm button is already "İptal": the way out must not read the same
+            showInput: true,
+            inputType: 'textarea',
+            inputLabel: W('FieldReason'),
+            inputPlaceholder: W('ReasonHint'),
+            inputAttributes: { maxlength: 1000 },
+            inputValidator: reasonValidator
+        });
     };
 
-    const submitCancel = async () => {
-        const reason = byId('outboundCancelReason').value.trim();
-        if (reason.length < 10) { showAlert('cancel-alert', W('ReasonRequired')); return; }
-        const answer = await post(`/Warehouse/OutboundShipments/cancel/${encodeURIComponent(outboundId)}`, { idempotencyKey: cancelKey, ifMatch: current.etag, reason });
-        if (!answer.ok) { showAlert('cancel-alert', failure(answer)); return; }
-        modal('modalOutboundCancel')?.hide();
-        window.showToast?.(answer.json?.message || '', 'success');
-        await load();
+    const sendRelease = async (key, rows) => {
+        const answer = await post(`/Warehouse/OutboundShipments/release/${encodeURIComponent(outboundId)}`, rules.releaseBody(key, current.etag, rows));
+        if (answer.ok) {
+            window.showToast?.(answer.json?.message || '', 'success');
+            await load();
+            return;
+        }
+        // r22: a 422 FEFO_BYPASS_REASON_REQUIRED comes back with its deviations — a reason is asked for each, then ONE request sends them all
+        const deviations = answer.json?.error?.code === 'FEFO_BYPASS_REASON_REQUIRED' && !rows.length ? rules.deviations(answer.json.error, current.outbound) : [];
+        if (deviations.length) { askReasons(deviations, [], newKey()); return; } // a new body is a new request (the old key carried no reasons)
+        window.showToast?.(failure(answer), 'error');
+    };
+
+    // One standard dialog per deviating allocation (the shared confirm takes one field); closing any of them sends nothing.
+    const askReasons = (deviations, written, key) => {
+        const row = deviations[written.length];
+        if (!row) { sendRelease(key, written); return; }
+        window.showConfirm?.(W('ReleaseReasonsIntro') || L().AreYouSure, (reason) => {
+            askReasons(deviations, written.concat({ allocSeq: row.allocSeq, reason: String(reason ?? '').trim() }), key);
+        }, {
+            icon: 'bx-error',
+            entityName: current.outbound.number,
+            subtext: '',
+            confirmButtonText: W('Warehouse.Outbound.Action.Release'),
+            showInput: true,
+            inputType: 'textarea',
+            inputLabel: format(W('ReleaseReasonLabel'), row.allocSeq, row.lotNumber, row.firstEligibleExpiry || '-'),
+            inputAttributes: { maxlength: 1000 },
+            inputValidator: reasonValidator
+        });
     };
 
     const openRelease = () => {
-        if (!byId('modalOutboundRelease')) return;
-        release = { key: newKey(), rows: [] };
-        byId('release-reasons').classList.add('d-none');
-        byId('release-reason-rows').innerHTML = '';
-        showAlert('release-alert', '');
-        modal('modalOutboundRelease')?.show();
-    };
-
-    // r22: a 422 FEFO_BYPASS_REASON_REQUIRED comes back with its deviations — the same dialog asks a reason for each, then sends them all
-    const askReasons = (answer) => {
-        release.rows = rules.deviations(answer.json?.error, current.outbound);
-        release.key = newKey(); // a new body is a new request (the old key carried no reasons)
-        byId('release-reason-rows').innerHTML = release.rows.map((r) => `<div><label class="form-label small mb-1" for="releaseReason${esc(r.allocSeq)}">`
-            + `${esc(format(W('ReleaseReasonLabel'), r.allocSeq, r.lotNumber, r.firstEligibleExpiry || '-'))}</label>`
-            + `<textarea id="releaseReason${esc(r.allocSeq)}" class="form-control" rows="2" minlength="10" maxlength="1000" data-release-seq="${esc(r.allocSeq)}"></textarea></div>`).join('');
-        byId('release-reasons').classList.remove('d-none');
-    };
-
-    const submitRelease = async () => {
-        const rows = Array.from(document.querySelectorAll('[data-release-seq]')).map((t) => ({ allocSeq: t.dataset.releaseSeq, reason: t.value }));
-        if (rows.some((r) => String(r.reason).trim().length < 10)) { showAlert('release-alert', W('ReasonRequired')); return; }
-        const answer = await post(`/Warehouse/OutboundShipments/release/${encodeURIComponent(outboundId)}`, rules.releaseBody(release.key, current.etag, rows));
-        if (!answer.ok) {
-            if (answer.json?.error?.code === 'FEFO_BYPASS_REASON_REQUIRED' && !rows.length) { askReasons(answer); showAlert('release-alert', failure(answer)); return; }
-            showAlert('release-alert', failure(answer));
-            return;
-        }
-        modal('modalOutboundRelease')?.hide();
-        window.showToast?.(answer.json?.message || '', 'success');
-        await load();
+        const key = newKey();
+        window.showConfirm?.(W('Warehouse.Outbound.Action.Release.Confirm') || L().AreYouSure, () => sendRelease(key, []), {
+            icon: 'bx-send',
+            entityName: current.outbound.number,
+            confirmButtonText: W('Warehouse.Outbound.Action.Release')
+        });
     };
 
     const sync = () => {
@@ -242,8 +259,6 @@ const OutboundShipmentDetails = (function () {
             const button = event.target.closest('button[data-d-action]');
             if (button && !button.disabled) open(button.dataset.dAction);
         });
-        byId('btnOutboundCancel')?.addEventListener('click', submitCancel);
-        byId('btnOutboundRelease')?.addEventListener('click', submitRelease);
         if (await load()) {
             const hash = (window.location.hash || '').replace('#', '');
             if (hash) open(hash);

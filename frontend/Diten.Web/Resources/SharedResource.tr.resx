@@ -1285,7 +1285,7 @@
     <value>Depo Lokasyon Rolleri</value>
   </data>
   <data name="Nav.Page.OUTBOUNDSHIPMENTS" xml:space="preserve">
-    <value>Outbound Sevkiyatlar</value>
+    <value>Çıkış Sevkiyatları</value>
   </data>
   <data name="Nav.Page.PICKTASKS" xml:space="preserve">
     <value>Toplama Görevleri</value>

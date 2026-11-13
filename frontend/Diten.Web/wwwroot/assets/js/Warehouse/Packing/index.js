@@ -24,6 +24,11 @@ const PackingPage = (function () {
     const token = () => document.querySelector('#packingActionToken input[name="__RequestVerificationToken"]')?.value || '';
     const offcanvas = (id) => (byId(id) ? window.bootstrap?.Offcanvas.getOrCreateInstance(byId(id)) : null);
     const format = (template, ...values) => values.reduce((text, value, i) => text.replace(`{${i}}`, value ?? ''), template || '');
+    // E3-FIX-01 (G-1): quantities, weight and dimensions on screen are in the reader's culture (tr "2", "1,5"); an input shows the same number
+    // without grouping and takes "1,5" back; the package body keeps the dot-decimal wire strings (rules.contentsBody / weight / dimensions)
+    const culture = () => window.CurrentLanguage || document.documentElement.lang || undefined;
+    const qty = (value) => rules.quantityText(value, culture());
+    const inputQty = (value) => rules.quantityText(value, culture(), false);
 
     const getJson = async (url) => {
         const res = await fetch(url, { credentials: 'same-origin', headers: getAuthHeaders() });
@@ -63,14 +68,14 @@ const PackingPage = (function () {
 
         const left = rules.remaining(allocations, packages);
         byId('packing-allocations').querySelector('tbody').innerHTML = allocations.map((a) => `<tr data-alloc-seq="${esc(a.allocSeq)}">`
-            + `<td>${esc(a.allocSeq)}</td><td>${esc(a.sku)}</td><td>${esc(a.lotNumber)}</td><td class="text-end">${esc(a.picked)}</td>`
-            + `<td class="text-end">${esc(a.packed)}</td><td class="text-end">${esc(left[a.allocSeq])}</td></tr>`).join('');
+            + `<td>${esc(a.allocSeq)}</td><td>${esc(a.sku)}</td><td>${esc(a.lotNumber)}</td><td class="text-end">${esc(qty(a.picked))}</td>`
+            + `<td class="text-end">${esc(qty(a.packed))}</td><td class="text-end">${esc(qty(left[a.allocSeq]))}</td></tr>`).join('');
 
         const host = byId('packing-packages');
         host.innerHTML = packages.map((p) => {
             const badge = rules.statusBadge(p.status);
-            const contents = (p.contents || []).map((c) => `<div class="small">${esc(format(W('PackageContentLine'), c.allocSeq, c.quantity))}</div>`).join('');
-            const facts = [p.weightKg ? `${esc(W('FieldWeight'))}: ${esc(p.weightKg)}` : '', p.dimensionsCm ? `${esc(W('FieldDimensions'))}: ${esc(p.dimensionsCm)}` : '']
+            const contents = (p.contents || []).map((c) => `<div class="small">${esc(format(W('PackageContentLine'), c.allocSeq, qty(c.quantity)))}</div>`).join('');
+            const facts = [p.weightKg ? `${esc(W('FieldWeight'))}: ${esc(qty(p.weightKg))}` : '', p.dimensionsCm ? `${esc(W('FieldDimensions'))}: ${esc(rules.dimensionsText(p.dimensionsCm, culture()))}` : '']
                 .filter(Boolean).map((f) => `<div class="small text-muted">${f}</div>`).join('');
             const actions = rules.packageActions(p, can).map((a) => `<button type="button" class="btn ${a === 'Close' ? 'btn-primary' : 'btn-label-secondary'} wh-touch"`
                 + ` data-package-action="${a}" data-package-id="${esc(p.id)}">${esc(W(`Warehouse.Package.Action.${a}`))}</button>`).join('');
@@ -108,14 +113,14 @@ const PackingPage = (function () {
             return `<div data-content-seq="${esc(a.allocSeq)}"><label for="${id}" class="form-label small mb-1">${esc(format(W('PackageContentLine'), a.allocSeq, `${a.sku ?? ''} ${a.lotNumber ?? ''}`.trim()))}</label>`
                 + '<div class="input-group wh-stepper">'
                 + `<button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="-1" data-wh-for="${id}" aria-label="${esc(W('QuantityDecrease'))}"><i class="bx bx-minus"></i></button>`
-                + `<input type="text" inputmode="decimal" id="${id}" class="form-control text-center wh-touch" data-alloc-seq="${esc(a.allocSeq)}" data-max="${esc(max)}" value="${esc(own[a.allocSeq] ?? '')}" autocomplete="off" />`
+                + `<input type="text" inputmode="decimal" id="${id}" class="form-control text-center wh-touch" data-alloc-seq="${esc(a.allocSeq)}" data-max="${esc(max)}" value="${esc(inputQty(own[a.allocSeq] ?? ''))}" autocomplete="off" />`
                 + `<button type="button" class="btn btn-outline-secondary wh-touch" data-wh-step="1" data-wh-for="${id}" aria-label="${esc(W('QuantityIncrease'))}"><i class="bx bx-plus"></i></button>`
-                + `</div><small class="text-muted">${esc(format(W('PackageLeftHint'), max))}</small></div>`;
+                + `</div><small class="text-muted">${esc(format(W('PackageLeftHint'), qty(max)))}</small></div>`;
         }).join('');
         byId('packageContentsError').textContent = '';
         byId('packageDimensionsError').textContent = '';
-        byId('packageWeight').value = pkg?.weightKg || '';
-        byId('packageDimensions').value = pkg?.dimensionsCm || '';
+        byId('packageWeight').value = inputQty(pkg?.weightKg || '');
+        byId('packageDimensions').value = rules.dimensionsText(pkg?.dimensionsCm || '', culture());
         offcanvas('offcanvasPackage')?.show();
     };
 
@@ -129,7 +134,7 @@ const PackingPage = (function () {
         const dims = byId('packageDimensions').value;
         if (!rules.isDimensions(dims)) { byId('packageDimensionsError').textContent = W('ValidationDimensions'); return; }
         byId('packageDimensionsError').textContent = '';
-        const body = { idempotencyKey: formState.key, contents, weightKg: byId('packageWeight').value.trim() || null, dimensionsCm: dims.trim() ? rules.dimensions(dims) : null };
+        const body = { idempotencyKey: formState.key, contents, weightKg: rules.weight(byId('packageWeight').value), dimensionsCm: dims.trim() ? rules.dimensions(dims) : null };
         const button = byId('btnPackageSave');
         button.disabled = true;
         try {
@@ -169,7 +174,7 @@ const PackingPage = (function () {
             const button = event.target.closest('[data-wh-step]');
             if (!button) return;
             const input = byId(button.dataset.whFor);
-            if (input) input.value = rules.step(input.value, Number(button.dataset.whStep), input.dataset.max);
+            if (input) input.value = inputQty(rules.step(input.value, Number(button.dataset.whStep), input.dataset.max));
         });
     };
 

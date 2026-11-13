@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>Строка {0}: {1} (запрошено {2}, можно распределить {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>Эта партия не первая по FEFO; укажите причину длиной 10–1000 символов.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>Эта партия не первая по FEFO; причина необязательна.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>Выбранная партия применяется при сохранении; она не первая по FEFO — FEFO предлагает партию {0} (годен до {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>Выбранная ячейка не является зоной подготовки этого склада; выберите ячейку с ролью «Подготовка» или оставьте поле пустым.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>Ваша компания не допускает партию вне порядка FEFO; сохраните порядок FEFO.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>Не удалось прочитать базовую единицу SKU; повторите попытку позже.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Выберите склад.</value></data>

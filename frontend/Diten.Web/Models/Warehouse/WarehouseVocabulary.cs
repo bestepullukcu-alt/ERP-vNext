@@ -107,7 +107,11 @@ public static class WarehouseVocabulary
          "AllocSeq", "AllocLot", "AllocFefoRank", "AllocQuantity", "AllocPicked", "AllocPacked", "AllocBins", "AllocRelease",
          "LineOrderLine", "LineProduct", "LineSku", "LineQuantity", "LineLot", "LineReason", "LineRemove", "LineFefoFirst", "LineAllocatable", "LotOption",
          "PreviewAllocation", "AllocationLineFailed", "DeviationNeedsReason", "DeviationOptional", "DeviationBlocked", "SkuUnitUnavailable", "ValidationWarehouse",
-         "ValidationShipTo", "ValidationLines", "ValidationLine"];
+         "ValidationShipTo", "ValidationLines", "ValidationLine",
+         // WP-0178-E3-FIX-01: the Details dialogs are window.showConfirm now (their words come from the script), the preview names the chosen lot,
+         // a Staging refusal points at its field
+         "FieldReason", "ReasonHint", "ReleaseReasonsIntro", "Warehouse.Outbound.Action.Cancel.Confirm", "Warehouse.Outbound.Action.Release.Confirm",
+         "PreviewChosenLot", "StagingNotAllowed"];
 
     private static readonly string[] PackingPageWords =
         ["FormTitleCreate", "FormTitleEdit", "NotPicked", "PackedDone", "ValidationContents", "ValidationDimensions", "PackageContentLine", "PackageLeftHint",

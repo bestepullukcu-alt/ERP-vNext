@@ -52,7 +52,7 @@
   <data name="Warehouse.Outbound.Event.ReservationReleaseFailed" xml:space="preserve"><value>Rezervasyon bırakılamadı — yeniden denenecek</value></data>
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
   <data name="ActivityTitle" xml:space="preserve"><value>Etkinlik İzi</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Seçilen tarih aralığında depo akışında olan her şey: görev ve outbound zaman çizelgesi satırları ile yerleştirme ve toplamanın stok hareketleri, en yeni önce. En çok 31 günlük bir aralık seçin.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Seçilen tarih aralığında depo akışında olan her şey: görev ve çıkış sevkiyatı zaman çizelgesi satırları ile yerleştirme ve toplamanın stok hareketleri, en yeni önce. En çok 31 günlük bir aralık seçin.</value></data>
   <data name="ColTime" xml:space="preserve"><value>Zaman</value></data>
   <data name="ColSource" xml:space="preserve"><value>Kaynak</value></data>
   <data name="ColEvent" xml:space="preserve"><value>Olay</value></data>
@@ -76,7 +76,7 @@
   <data name="FieldSeq" xml:space="preserve"><value>Sıra</value></data>
   <data name="Warehouse.Activity.Source.PutawayTask" xml:space="preserve"><value>Yerleştirme görevi</value></data>
   <data name="Warehouse.Activity.Source.PickTask" xml:space="preserve"><value>Toplama görevi</value></data>
-  <data name="Warehouse.Activity.Source.Outbound" xml:space="preserve"><value>Outbound sevkiyat</value></data>
+  <data name="Warehouse.Activity.Source.Outbound" xml:space="preserve"><value>Çıkış sevkiyatı</value></data>
   <data name="Warehouse.Activity.Source.Movement" xml:space="preserve"><value>Stok hareketi</value></data>
   <data name="Warehouse.Activity.Movement.LOCATION_TRANSFER" xml:space="preserve"><value>Lokasyon transferi</value></data>
   <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine ulaşılamıyor; atanan kontrol edilemedi ve hiçbir şey kaydedilmedi. Birazdan yeniden deneyin.</value></data>
@@ -128,19 +128,19 @@
   <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>İstek kabul edilmedi; değerleri kontrol edip yeniden deneyin.</value></data>
   <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu; yeniden deneyin.</value></data>
   <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Dışa aktarmak için çok fazla satır var; filtreleri daraltın.</value></data>
-  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Outbound bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Çıkış sevkiyatı bulunamadı; listeyi yenileyin.</value></data>
   <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>Her satır için stok tahsis edilemedi; hiçbir şey kaydedilmedi.</value></data>
-  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Bir outbound en fazla 100 satır içerebilir.</value></data>
-  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Bu outbound'a birden çok sevkiyat bağlı; sevkiyat ekibinden kontrol isteyin.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Bir çıkış sevkiyatı en fazla 100 satır içerebilir.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Bu çıkış sevkiyatına birden çok sevkiyat bağlı; sevkiyat ekibinden kontrol isteyin.</value></data>
   <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>Sevkiyatları okuma yetkiniz yok; sevkiyat okuma yetkisi isteyin.</value></data>
   <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>Sevkiyat servisine ulaşılamıyor; hiçbir şey değişmedi. Birazdan yeniden deneyin.</value></data>
-  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Kalem düzeyindeki outbound, sevkiyat tarafı desteklenene kadar sevke hazır yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Kalem düzeyindeki çıkış sevkiyatı, sevkiyat tarafı desteklenene kadar sevke hazır yapılamaz.</value></data>
   <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>Kalem satırı stoklanabilir bir SKU'ya çözümlenemedi; ürünü kontrol edin.</value></data>
   <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>Seçilen lot tahsis edilemez; önizlemedeki bir lotu seçin.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Bu outbound'un tahsisi hâlâ tamamlanıyor; biraz sonra yenileyin.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Sevke hazır ya da sevk edilmiş bir outbound iptal edilemez.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Outbound sevke hazır; artık değiştirilemez.</value></data>
-  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Bir outbound'da kalem satırları ile SKU satırları karışamaz.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Bu çıkış sevkiyatının tahsisi hâlâ tamamlanıyor; biraz sonra yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Sevke hazır ya da sevk edilmiş bir çıkış sevkiyatı iptal edilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Çıkış sevkiyatı sevke hazır; artık değiştirilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Bir çıkış sevkiyatında kalem satırları ile SKU satırları karışamaz.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Koliyi kapatmadan önce en az bir içerik satırı girin.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>Koliler bir tahsiste toplanandan fazlasını içerecek.</value></data>
   <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Koli bulunamadı; sayfayı yenileyin.</value></data>

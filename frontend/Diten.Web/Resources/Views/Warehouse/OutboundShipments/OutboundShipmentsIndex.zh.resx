@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>第 {0} 行：{1}（需求 {2}，可分配 {3}）。</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>该批次不是 FEFO 首选批次；请填写 10–1000 个字符的原因。</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>该批次不是 FEFO 首选批次；原因可选填。</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>所选批次将在保存时使用；它不是 FEFO 顺序中的首选批次 — FEFO 建议批次 {0}（到期 {1}）。</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>所选位置不是该仓库的暂存位置；请选择具有暂存角色的位置，或将此字段留空。</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>贵公司拒绝不按 FEFO 顺序的批次；请保持 FEFO 顺序。</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>无法读取 SKU 的基本单位；请稍后重试。</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>请选择仓库。</value></data>

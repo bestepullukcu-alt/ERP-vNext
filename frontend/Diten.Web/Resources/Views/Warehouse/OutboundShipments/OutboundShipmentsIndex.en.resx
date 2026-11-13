@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>Line {0}: {1} (requested {2}, allocatable {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>This lot is not the first FEFO lot; write a reason of 10–1000 characters.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>This lot is not the first FEFO lot; a reason is optional.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>Your chosen lot is applied on save; it is not first in FEFO order — FEFO suggests lot {0} (exp. {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>The chosen location is not a staging location of this warehouse; choose one with the Staging role, or leave the field empty.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>Your company refuses a lot out of FEFO order; keep the FEFO order.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>The SKU's base unit could not be read; try again shortly.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Choose a warehouse.</value></data>
