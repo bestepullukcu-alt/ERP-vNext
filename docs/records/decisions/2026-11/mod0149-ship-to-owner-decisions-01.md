@@ -2,8 +2,8 @@
 status: taslak — sahip (Beste) okuması bekliyor (CT-APR-01 onayıyla birlikte); bu belge yeni bir karar vermez, alınmış kararları kayda geçirir
 decided: 2026-11-13 (K-12, K-13, K-16, K-18, K-19; Q-DEPOT-SOR), 2026-11-13 (K-14, tüketici WMS)
 module: MOD-0149
-work_packages: MOD-0149 sevkiyat adresi eki (pack §32, DL-3; DL-4 taslağı §32.10), CRM-ACCOUNT-LOOKUP 1.1.0 taslağı
-decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (açık → DL-4), K-18, K-19 (CT önerisi; Beste kabul 2026-11-13)
+work_packages: MOD-0149 sevkiyat adresi eki (pack §32, DL-3) ve teslimat adresleri eki (pack §33, DL-4), CRM-ACCOUNT-LOOKUP 1.1.0 taslağı
+decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (DL-4, K-23 kuralıyla), K-18, K-19 (CT önerisi; Beste kabul 2026-11-13), K-20 (açık), K-21, K-22, K-23, K-24 (açık)
 ---
 
 # MOD-0149 sevkiyat adresi eki — sahip kararları K-12…K-19
@@ -35,7 +35,12 @@ decision_ids: K-12, K-13, K-14, K-15 (öneri), K-16, K-17 (açık → DL-4), K-1
 | K-14 | Aktif olmayan hesaba sevkiyat | Yeni sevkiyatta yalnız `active` hesap seçilir; seçimden sonra pasifleşen hesapta mevcut sevkiyat sürer; WMS kayıt ve "sevke hazır" adımında U-4'ü yeniden okur ve uyarır. CRM'den yalnız `status` istenir | 2026-11-13, WMS ekibi (tüketici) |
 | K-15 | Görünen ad | Öneri: U-4 kod döner; tüketici Reference Data'dan (`country`, `city`, `district`) çözer | öneri (karar değil) |
 | K-16 | Ana adrese posta kodu | Eklenecek (`Account.PostalCode`), DL-4 içinde | 2026-11-13, Beste |
-| K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | Açık → DL-4'te yeni ve değişen adreslerde Reference Data doğrulaması | açık |
+| K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | DL-4'te Reference Data doğrulaması, yalnız yeni / değişen alan (K-23) | 2026-11-13, Beste |
 | K-18 | Çoklu teslimat adresi | Yapılacak (DL-4); ekran mockup'sız, hesap detayının mevcut sekme yapısında standart liste + form; sözleşme gövdesi bugünden liste | 2026-11-13, Beste |
 | K-19 | Yeni anahtarı alan CRM rolleri | CRM Admin alır; öteki CRM rolleri almaz | KAPANDI (Beste, 2026-11-13; CT önerisi, sahip "uygun" dedi). Pack §32.8 "ÖNERİ (CT) — CT-APR-01 onayıyla kesinleşir" yazar; pack sürümü (8749bc2a) incelendiği hâliyle kalsın diye değiştirilmedi, CT-APR-01 onay satırıyla karşılanır |
 | Q-DEPOT-SOR | Ecza depoları ve dağıtıcılar | Ecza depoları (toptancı) CRM Account, tip `wholesaler`; ürünümüzü bir pazarda bizim adımıza dağıtan firma `distributor` (Blueprint 8.8: Customer (Account) SoR = MOD-0149; partner katmanı MOD-0282). Kendi depolarımız (warehouse) CRM'de değil | 2026-11-13, Beste |
+| K-21 | Teslimat adresi yazma izni | `crm.account.update` (okuma `crm.account.read`); yeni anahtar yok | 2026-11-13, Beste |
+| K-22 | Posta kodu zorunlu mu | İsteğe bağlı — ana adres ve teslimat adresi | 2026-11-13, Beste |
+| K-23 | Mevcut geçersiz kodlu hesaplarda doğrulama | Yalnız yeni ya da değişen alan doğrulanır | 2026-11-13, Beste |
+| K-20 | Saklanan adres kodlarının biçimi (ör. `TR-34-ISTANBUL` ↔ Reference Data `istanbul`) | Açık — ölçüm raporu → sahip kararı → tek seferlik düzeltme önerisi (pack §33.9) | açık |
+| K-24 | Mobil hesap oluşturmanın gönderdiği adres kodları | Açık — DL-4 kodundan önce ölçülür (pack §33.9) | açık |

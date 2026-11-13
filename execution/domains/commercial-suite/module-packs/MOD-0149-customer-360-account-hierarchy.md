@@ -11,7 +11,7 @@ owner: module-pack-author
 branch: feature/crm/mod-0149-customer-360-account-hierarchy
 started: 2026-07-14
 target: 2026-08-29
-form_field_count: 17
+form_field_count: 18
 runtime_code_allowed: true
 runtime_code_scope: account-foundation-only (Account/WorkPlace master + hierarchy + 360 + attribute/external-ref surface; NO Contact/Consent/Territory/Visit/Lead/Opportunity/Campaign/Segment)
 ready_for_dev_by: user (ready-for-dev status gate 2026-07-14)
@@ -252,7 +252,7 @@ Base form 17 alan olarak kalır.
 
 ## 11. Form Field Count + Golden Reference Decision
 
-- **form_field_count: 17** (create/edit formundaki kullanıcı alanları). 8'den fazla → **`golden_reference: compact`**.
+- **form_field_count: 18** (create/edit formundaki kullanıcı alanları; DL-4 ana adrese posta kodu ekler, §33.2). 8'den fazla → **`golden_reference: compact`**.
 - MVP'de küçültme yapılmadı; geo (lat/lon) ve responsible-person alanları workplace profil zenginliği için MVP'de tutuldu.
   İleride bir phase-2 sadeleştirmesi istenirse pack güncellenir, ama 8 altına inmesi beklenmez → compact kararı sabittir.
 - Dynamic attribute yüzeyi (§10.2) ve çoklu `AccountExternalReference` yönetimi (§10.1b) ayrı surface olduğundan sayıma dahil değildir.
@@ -385,7 +385,7 @@ Tenant isolation zorunlu · soft delete · cross-tenant 404 · Gateway üzerinde
 | Marketing Manager | read | Tenant |
 | Read-only CRM Viewer | read | Tenant |
 | AR kullanıcısı (MOD-0120; atama MOD-0018-FU27) | yalnız `lookup-validation` — `read` **almaz** (K-1) | Tenant |
-| Sevkiyat kullanıcısı (aday tüketiciler, istek: MOD-0178, MOD-0183 / MOD-0186; atama tüketici + MOD-0018) | `lookup-validation` (U-3 arama) + `account-ship-to.read` (U-4) — `read` **almaz** (K-13) | Tenant |
+| Sevkiyat kullanıcısı (aday tüketiciler, istek: MOD-0178-FU01, MOD-0183 / MOD-0186; atama tüketici + MOD-0018) | `lookup-validation` (U-3 arama) + `account-ship-to.read` (U-4) — `read` **almaz** (K-13) | Tenant |
 
 ## 17. Gateway / API Routing Decision
 
@@ -805,10 +805,11 @@ birlikte kayda geçer); K-7 = D112/2 (`docs/records/decisions/2026-10/treasury-i
 | DL-1 | Treasury AR müşteri doğrulama ve seçici arama uçları (U-1 lookup-validation ve U-3 lookup) | Kapsam, Uçlar ve sözleşme, İzin anahtarı, Permission / Authorization Convention, Gateway, Kabul ölçütleri — DL-1 (U-1 ve U-3), Sabotaj beklentileri — DL-1, Test beklentileri — DL-1 |
 | DL-2 | Dış referans çözümleme ucu (U-2 external-references/resolve) — ERTELENDİ: MOD-0120 O-10 ile (K-7) | Uçlar ve sözleşme, İzin anahtarı, Gateway, Kabul ölçütleri — DL-2 (U-2 ertelendi), Sabotaj beklentileri — DL-2, Test beklentileri — DL-2 |
 | DL-3 | Sevkiyat adresi okuma ucu (U-4 ship-to, yalnız ana adres) — §32 | Sevkiyat adresi — kapsam, Sevkiyat adresi — uç ve sözleşme, Sevkiyat adresi — izin anahtarı, Permission / Authorization Convention, Sevkiyat adresi — gateway, Kabul ölçütleri — DL-3 (U-4), Sabotaj beklentileri — DL-3, Test beklentileri — DL-3 |
+| DL-4 | Teslimat adresleri, ana adrese posta kodu ve adres kodu doğrulaması — §33 | Teslimat adresleri — kapsam, Teslimat adresleri — veri modeli, Teslimat adresleri — uçlar, Teslimat adresleri — ekran, Teslimat adresleri — U-4 genişlemesi, Kabul ölçütleri — DL-4, Sabotaj beklentileri — DL-4, Test beklentileri — DL-4 |
 
 ## 32. Sevkiyat adresi okuma (U-4) — ek (2026-11-13)
 
-> **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§31'de yalnız §16 izin tablosu ve rol eşlemesi
+> **ONAYLANDI** — CT-APR-01 2026-11-13 (sürüm `8749bc2a…`, onaylayan GMG-ERP); DL-4 eki §33. Bu bölüm yalnız eklemedir; §1–§31'de yalnız §16 izin tablosu ve rol eşlemesi
 > K-13 anahtarıyla genişler, §31'e DL-3 satırı eklenir. Mevcut AC'ler (§21, §30.5), `status` ve `runtime_code_scope`
 > değişmez — **tek istisna AC-AR-15'in filtre kümesidir:** DL-3 ile K-11 filtresi U-4'e de konur, AC-AR-15'teki
 > "yalnız U-1 ve U-3" kümesi {U-1, U-3, U-4} olur (§32.2; inceleme 2026-11-13-0a9fd4ef F-1). Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi (`execution/approvals/reviews.tsv`) ve
@@ -817,9 +818,9 @@ birlikte kayda geçer); K-7 = D112/2 (`docs/records/decisions/2026-10/treasury-i
 
 ### 32.1 Sevkiyat adresi — kapsam
 
-- Sevkiyat tüketicileri — hepsi **aday (istek)**: MOD-0178 (WMS ekibinin "çıkış sevkiyatı formu v2" isteği,
-  2026-11-13; MOD-0178 paketi bugün `customerRef` / adres okuması içermez — paket sözleşmeye hizalanınca tüketici olur,
-  sahip SCE), MOD-0183 / MOD-0186 (MVP-6) — alıcıyı CRM hesabından seçer ve
+- Sevkiyat tüketicileri — hepsi **aday (istek)**: MOD-0178-FU01 — çıkış sevkiyatı formu v2 (WMS ekibinin isteği ve
+  teyidi 2026-11-13: alanlar tasarımlarıyla birebir; FU01 paket dosyası repoda henüz yok — repoya girip sözleşmeye
+  hizalanınca tüketici olur, sahip SCE), MOD-0183 / MOD-0186 (MVP-6) — alıcıyı CRM hesabından seçer ve
   hesabın kimliğini (`customerRef` = `Account.Id`) ve adres kopyasını tutar. Adresi **yalnız sözleşmeyle** okurlar:
   `crm.account.read` almazlar, tam hesap kaydını (`GET /api/crm/accounts/{id}`) okumazlar.
 - Bu ek tek bir **salt-okuma** ucu (U-4) ve bir izin anahtarı ekler. Account modeline alan, yeni koleksiyon, yeni yazma
@@ -847,7 +848,7 @@ Sözleşme: [CRM-ACCOUNT-LOOKUP 1.1.0 taslağı](../../../../docs/analysis/contr
   güncellenenler: DL-1 yansıma testi (`AccountLookupApiTests.cs`, `AC_AR_15_K11_filter_is_on_u1_and_u3_only_and_never_global`)
   beklenen kümesi ve adı; `Api/Filters/RequireTokenTenantAttribute.cs` açıklaması. Filtre yine denetleyici ya da genel
   düzeyde **değildir**; AC-AR-15'in öteki koşulları (400 durumları, ortak ara katman değişmez, öteki uçlar sabitlenmez)
-  aynı kalır. §30.2, §30.7 (sabotaj satırı) ve §30.8'deki "yalnız U-1 ve U-3" / "iki eylem" ifadeleri DL-3'ten sonra
+  aynı kalır. §30.2, §30.7 (sabotaj satırı) ve §30.9'daki "yalnız U-1 ve U-3" / "iki eylem" ifadeleri DL-3'ten sonra
   {U-1, U-3, U-4} okunur; §30 metni değiştirilmez (inceleme 2026-11-13-dadab82e F-1).
 - DTO: `AccountShipToDto` ve `AccountShipToAddressDto` `AccountModels.cs` içinde (tek dosya kuralı); U-4 sabitleri
   (`contractVersion = "crm-account-lookup/1.1"`, `"primary"`) `AccountLookupContract.cs`'te. U-1 / U-3 gövdeleri ve
@@ -948,10 +949,10 @@ değişmez (teyit integration-agent'ın, yalnız not; §17 ve §30.4 değişmez)
 | K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanmaması | **AÇIK → DL-4**: yeni ve değişen adreslerde Reference Data doğrulaması DL-4'te; U-4 saklananı döner |
 | K-18 | Çoklu teslimat adresi | **KAPANDI** (Beste, 2026-11-13): yapılacak — DL-4; ekran mockup'sız, hesap detayının mevcut sekme yapısında standart liste + form |
 | K-9 | MVP-6 adres yüzeyi (sözleşme 1.0 §11) | DL-3 kabulü + 1.1 donmasıyla kapanır; MVP-6'nın U-4'e geçişi kendi işi |
-| K-19 | Yeni anahtarı alan CRM rolleri (inceleme F-2) | **ÖNERİ (CT) — CT-APR-01 onayıyla kesinleşir**: CRM Admin alır; öteki CRM rolleri (Manager, Sales, Marketing, Viewer) almaz (§16) |
+| K-19 | Yeni anahtarı alan CRM rolleri (inceleme F-2) | **KAPANDI** (Beste, 2026-11-13; CT önerisi, CT-APR-01 onayıyla): CRM Admin alır; öteki CRM rolleri (Manager, Sales, Marketing, Viewer) almaz (§16) |
 
-Kayıt: K-12…K-19 ve WMS isteği / K-14 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md` (durum: taslak —
-sahip okuması CT-APR-01 onayıyla birlikte kayda geçer).
+Kayıt: K-12…K-19 ve WMS isteği / K-14 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md` (K-19
+dahil sahip kararları; CT-APR-01 onayı 2026-11-13).
 
 ### 32.9 Teslim sırası
 
@@ -960,7 +961,7 @@ sahip okuması CT-APR-01 onayıyla birlikte kayda geçer).
 3. Sözleşme 1.1 donması (DL-3 CT K13 kabulünde).
 4. DL-4 (§32.10) ayrı ek + inceleme + kod.
 
-### 32.10 Sonraki dilim — DL-4 teslimat adresleri (bu ekte AC yok)
+### 32.10 Sonraki dilim — DL-4 teslimat adresleri (bu ekte AC yok; bağlayıcı metin §33)
 
 Ayrı ek olarak yazılır ve ayrıca onaylanır. Kapsam taslağı (bağlayıcı değil):
 
@@ -972,3 +973,187 @@ Ayrı ek olarak yazılır ve ayrıca onaylanır. Kapsam taslağı (bağlayıcı 
 - U-4: liste ek adreslerle büyür (`kind = "delivery"`, `addressId` UUID); biçim ve sürüm değişmez.
 - Yazma komutları merkezi denetim işaretini taşır (`ICentralAuditDeclaration`); yazma izni ayrı karar (öneri
   `crm.account.update`).
+
+## 33. Teslimat adresleri, ana adrese posta kodu ve adres kodu doğrulaması (DL-4) — ek (2026-11-13)
+
+> **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir. §1–§32'de yalnız şunlar değişir: künyede
+> `form_field_count` 17 → 18 (ana adrese posta kodu) ve §31'e DL-4 satırı. §32'nin U-4 biçimi ve `contractVersion`
+> (`crm-account-lookup/1.1`) değişmez; U-4 listesi yalnız ek adreslerle büyür (§33.5). Kod yazılmadan önce bu pack
+> sürümünün CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay satırı gerekir. Kaynak: commercial-suite sahibi kararları
+> K-16, K-17, K-18 (Beste, 2026-11-13; §32.8) ve bu ekin kararları K-21…K-23 (Beste, 2026-11-13; §33.9).
+
+### 33.1 Teslimat adresleri — kapsam
+
+- Bir hesaba ana adresinden ayrı **ek teslimat adresleri** (K-18): adlı, ülke / şehir / ilçe kodlu, posta kodlu, varsayılan
+  işaretlenebilir, pasifleştirilebilir; silme yalnız soft delete.
+- Hesabın **ana adresine posta kodu** (`Account.PostalCode`, K-16) — isteğe bağlı (K-22).
+- **Adres kodu doğrulaması** (K-17): ana adreste ve teslimat adreslerinde ülke / şehir / ilçe kodları yazmada Reference Data
+  setleriyle (`country`, `city`, `district`) doğrulanır — **yalnız yeni ya da değişen alanda** (K-23).
+- U-4 (§32) yeni ve değişen veriyi taşır: ana adresin `postalCode`'u dolar, aktif teslimat adresleri `kind = "delivery"`
+  öğeleri olarak listeye girer (§33.5). Sözleşme biçimi ve sürüm değişmez.
+- **Kapsam dışı:** mevcut hesapların saklanan adres kodlarının düzeltilmesi (K-20, açık); tüketicilerin kodu (WMS / MVP-6);
+  mobil uygulamanın ekranı (mobil hesap API'si §33.2 kuralıyla bozulmaz); harita / konum; teslim saati, alıcı adı ya da
+  telefonu (kişisel veri — ayrı karar); toplu içe aktarma ve dışa aktarmaya teslimat adresi eklenmesi.
+- `runtime_code_scope` değişmez: teslimat adresleri Account master'ın parçasıdır.
+
+### 33.2 Teslimat adresleri — veri modeli
+
+**Ana adres — `Account.PostalCode`:**
+- `string?`, en çok 20 karakter, `Trim()`; boş → null. İsteğe bağlı (K-22). Biçim doğrulaması yok (ülkeye göre değişir).
+- Create / Update komutları, DTO'lar (detay, liste değil), Web formu ve detay ekranı alanı taşır.
+- **Mobil uyum (CRM-ACC-EDIT):** `UpdateAccountCommand`'da alan **gönderilmezse saklanan değer korunur** (logo emsali:
+  "an omitted logo is kept"); boş dize gönderilirse temizlenir. Bugünkü mobil istemci alanı göndermediği için verisi silinmez.
+
+**Teslimat adresi — yeni varlık `AccountDeliveryAddress`** (`EntityBase`: `TenantId`, `IsDeleted`, `DeletedAt`, sürüm):
+
+| Alan | Kural |
+|---|---|
+| `AccountId` | zorunlu; aynı kiracıda var olan, silinmemiş hesap |
+| `Label` (ad) | zorunlu, ≤ 100, `Trim()`; aynı hesabın silinmemiş adresleri arasında büyük-küçük harf duyarsız tekil |
+| `CountryRef` | zorunlu, Reference Data `country` |
+| `CityRef` | zorunlu, Reference Data `city` |
+| `DistrictRef` | isteğe bağlı, Reference Data `district` |
+| `PostalCode` | isteğe bağlı, ≤ 20, `Trim()` (K-22) |
+| `AddressLine` | zorunlu, ≤ 500, `Trim()`, kesilmez |
+| `IsDefault` | bool; kural aşağıda |
+| `IsActive` | bool, varsayılan `true` |
+
+- Koleksiyon `crm_account_delivery_addresses`; indeks (`TenantId`, `AccountId`, `IsDeleted`). Her sorgu kiracı ve
+  `IsDeleted = false` ile sınırlıdır (depo düzeyinde).
+- Hesap başına en çok **50** silinmemiş adres (aşımda 400, makine kodu).
+- **Tek varsayılan:** bir hesabın aktif ve silinmemiş adresleri arasında en çok bir `IsDefault = true`. Yeni varsayılan
+  atanınca öncekinin işareti kalkar (aynı işlemde; eşzamanlı iki atamada sonuç yine tek varsayılan — depo düzeyinde koşullu
+  güncelleme ya da işlem). Pasif adres varsayılan yapılamaz (400). Varsayılan adres pasifleşir ya da silinirse işaret kalkar
+  ve varsayılan ana adrese döner (§33.5).
+- Güncellemede iyimser eşzamanlılık: `ExpectedVersion` zorunlu, eski sürüme 409 (CRM-ACC-EDIT emsali).
+- Hesap silinirse (soft) adresleri erişilemez olur (hesap 404); adreslerin kendisi silinmez.
+
+**Adres kodu doğrulaması (K-17, K-23):**
+- `IReferenceDataValidator` ile setler `country`, `city`, `district` (Web formunun bugün kullandığı setler,
+  `frontend/Diten.Web/Controllers/CRM/AccountsController.cs:56-58`). Hata makine kodlu (`AccountErrors` emsali); set
+  yayımlanmamışsa kontrollü hata (`ReferenceSetMissing`), sessiz geçiş yok.
+- **Yalnız yeni ya da değişen alan** doğrulanır: hesap oluşturmada ve adres oluşturmada dolu her kod; güncellemede yalnız
+  saklanan değerden farklı gelen kod. Değişmeyen eski kod (ör. içe aktarılmış `TR-34-ISTANBUL` biçimi) kaydı engellemez.
+- İl–ilçe hiyerarşi kontrolü yok (Reference Data'da üst kod yayımlanmıyorsa); varsa ayrı karar.
+
+### 33.3 Teslimat adresleri — uçlar
+
+Yeni denetleyici `Controllers/CRM/AccountDeliveryAddressController.cs` (`AccountRelationshipController` emsali); Golden
+Compact dosya düzeni (§13) — `Features/AccountDeliveryAddress/` altında Commands, Queries, Handlers, Validators, Models.
+
+| Uç | İzin | Not |
+|---|---|---|
+| `GET /api/crm/accounts/{accountId:guid}/delivery-addresses` | `crm.account.read` | aktif + pasif, silinmemiş; sıra: varsayılan, sonra ad |
+| `GET /api/crm/accounts/{accountId:guid}/delivery-addresses/{addressId:guid}` | `crm.account.read` | |
+| `POST /api/crm/accounts/{accountId:guid}/delivery-addresses` | `crm.account.update` | oluştur |
+| `PUT /api/crm/accounts/{accountId:guid}/delivery-addresses/{addressId:guid}` | `crm.account.update` | güncelle (`ExpectedVersion`) |
+| `POST …/{addressId:guid}/set-default` | `crm.account.update` | varsayılan yap |
+| `POST …/{addressId:guid}/deactivate` · `POST …/{addressId:guid}/activate` | `crm.account.update` | pasifleştir / etkinleştir |
+| `DELETE …/{addressId:guid}` | `crm.account.update` | soft delete |
+
+- İzinler K-21 (Beste, 2026-11-13): yeni anahtar yok; yazma `crm.account.update`, okuma `crm.account.read`. Silme de
+  `crm.account.update`'tir (adres defteri hesabın düzenlenmesidir; hesabın kendisinin silinmesi `crm.account.delete` kalır).
+- Kiracı: başka kiracının hesabı ya da adresi, silinmiş hesap ya da adres, başka hesaba ait adres kimliği → 404 (aynı gövde).
+- Gateway: mevcut `/api/crm/accounts/{everything}` rotası GET / POST / PUT / DELETE taşır; yeni rota yok, `ocelot.json`
+  değişmez (teyit integration-agent'ın, yalnız not).
+- Denetim: her yazma komutu `ICentralAuditDeclaration` taşır, varlık türü `AccountDeliveryAddress`:
+  oluştur `CrmCentralAudit.Create`, güncelle ve varsayılan yap `Update`, pasifleştir `Deactivate`, etkinleştir `Lifecycle`,
+  sil `Delete` (yardımcıya `Delete` eklenir — Platform `AuditOperation.Delete = 3`). Kayda adres metni kopyalanmaz (AUD-001
+  §3). `Account.PostalCode` mevcut `UpdateAccountCommand` / `CreateAccountCommand` bildirimiyle denetlenir.
+- Mimari defter: yeni yazma komutları `AuditTrailStandardTests` kapsamına girer; CRM borç sayısı artmaz.
+
+### 33.4 Teslimat adresleri — ekran
+
+- **Yer (K-18, mockup yok):** hesap detayı (`Views/CRM/Accounts/Details.cshtml`) bugün sekmeli değil; bölümleri alt alta
+  DataTable parçalarıdır (Bölge kapsamı, İlgili kişiler, İlgili hesaplar). "Teslimat adresleri" aynı desenle yeni bir
+  bölümdür: `_DeliveryAddressesDataTable.cshtml` (Golden DataTable v2) + `_DeliveryAddressOffcanvas.cshtml` (Golden Slim
+  oluştur / düzenle) + onay penceresi (pasifleştir, sil). Emsal: İlgili kişiler (`_RelatedContactsDataTable.cshtml`,
+  `_ContactLinkOffcanvas.cshtml`, `_ContactLinkEndOffcanvas.cshtml`).
+- Sütunlar: Ad, Adres, İlçe, Şehir, Ülke (görünen ad Reference Data'dan, kullanıcının dilinde; kod kümede yoksa kodun
+  kendisi), Posta kodu, Varsayılan, Durum. Satır eylemleri: Düzenle, Varsayılan yap, Pasifleştir / Etkinleştir, Sil.
+- Görünürlük: bölüm `crm.account.read` ile; eylem düğmeleri `crm.account.update` yoksa çizilmez (`Perms.Has` yalnız UX;
+  zorlama backend'de).
+- Ülke / şehir / ilçe seçicileri hesap formundakilerle aynı (Reference Data, bağlı seçim). Posta kodu serbest metin.
+- **Hesap formu** (`_Form.cshtml`): ana adres bloğuna isteğe bağlı "Posta kodu" alanı; detay ekranında gösterilir.
+- Web vekil uçları: `Controllers/CRM/AccountsController.cs` içinde İlgili kişiler emsaliyle (`{accountId}/DeliveryAddresses/…`).
+- Dil: kiracı modülü **7 dil** (en, tr, fr, es, zh, ar, ru) — sayfa kaynakları `Resources/Views/CRM/Accounts/AccountIndex.*.resx`
+  ve `details.l10n.js`; hardcoded metin yok. Doğrulama hatalarının makine kodları kullanıcı metnine 7 dilde eşlenir.
+- Yardım (UXH-001): hesap detayı yardım adımlarına teslimat adresleri adımı, 7 dil (`PageHelpResource.*.resx`).
+- 375 px genişlikte kullanılabilir (liste yatay kaydırma, form tek sütun).
+
+### 33.5 Teslimat adresleri — U-4 genişlemesi
+
+- `addresses` sırası: önce `primary` (ana adresin dört alanından ya da `PostalCode`'dan en az biri doluysa), sonra aktif ve
+  silinmemiş teslimat adresleri (varsayılan önce, sonra ad).
+- Teslimat öğesi: `addressId` = adres kimliği (UUID, `D` biçimi), `kind = "delivery"`, `label` = ad, `isDefault`,
+  `countryRef`, `cityRef`, `districtRef`, `postalCode`, `addressLine`. Ana adres öğesinde `postalCode` = `Account.PostalCode`.
+- `defaultAddressId`: varsayılan teslimat adresi varsa onun kimliği; yoksa `primary` öğe varsa `"primary"`; liste boşsa null.
+  Liste boş değilse tam bir öğede `isDefault = true`.
+- Pasif ya da silinmiş teslimat adresi U-4'te yoktur (tüketici yeni sevkiyat için seçer; eski sevkiyatın kopyası
+  tüketicidedir, K-14).
+- İki okuma (hesap + adresler), ikisi de kiracı ve `IsDeleted` filtreli; biri okunamazsa 503 (§32.2 yolu).
+- Biçim, alan listesi (AC-ST-5) ve `contractVersion` aynen. AC-ST-1'in "ek teslimat adresi ve `Account.PostalCode` verisi
+  yokken" koşulu DL-4'ten sonra da geçerlidir.
+
+### 33.6 Kabul ölçütleri — DL-4
+
+- [ ] **AC-DA-1** Teslimat adresi oluştur / güncelle / varsayılan yap / pasifleştir / etkinleştir / sil uçları §33.3'teki gibi çalışır; liste ve tekil okuma aktif + pasif, silinmemiş adresleri döner.
+- [ ] **AC-DA-2** Zorunlu alanlar (ad, ülke, şehir, adres satırı) boşken 400 ve makine kodu; uzunluk sınırları; aynı hesapta aynı ad (büyük-küçük harf duyarsız) 400; hesap başına 51. adres 400.
+- [ ] **AC-DA-3** Tek varsayılan: yeni varsayılan öncekinin işaretini kaldırır; eşzamanlı iki "varsayılan yap" çağrısından sonra tam bir varsayılan kalır; pasif adres varsayılan yapılamaz (400); varsayılan adres pasifleşince ya da silinince işaret kalkar.
+- [ ] **AC-DA-4** Kiracı ve sahiplik: başka kiracının hesabı / adresi, silinmiş hesap / adres, başka hesabın adres kimliği → 404, gövdeler aynı; depo sorguları kiracı + `IsDeleted` filtreli.
+- [ ] **AC-DA-5** İzin: okuma uçları `crm.account.read` ister; yazma uçları `crm.account.update` ister; yalnız `crm.account.read` ile yazma 403; `crm.account-ship-to.read` bu uçlara yetmez (403).
+- [ ] **AC-DA-6** Eşzamanlılık: eski `ExpectedVersion` ile güncelleme 409, veri değişmez.
+- [ ] **AC-DA-7** Doğrulama (K-17, K-23): yeni adreste ve yeni hesapta kümede olmayan ülke / şehir / ilçe kodu 400; güncellemede yalnız değişen kod doğrulanır — saklanan geçersiz kod değişmeden gelirse kayıt kabul edilir, değişen geçersiz kod 400; set yayımlanmamışsa kontrollü hata.
+- [ ] **AC-DA-8** `Account.PostalCode`: oluştur ve güncelle taşır, kırpılır, boş → null, ≤ 20; `UpdateAccountCommand`'da alan gönderilmezse saklanan korunur, boş dize temizler.
+- [ ] **AC-DA-9** U-4 (§33.5): ana adres + iki aktif teslimat adresi (biri varsayılan) + bir pasif + bir silinmiş adresli hesapta liste sırası, `kind`, `addressId`, `label`, `postalCode`, `isDefault` ve `defaultAddressId` doğru; pasif ve silinmiş yok; varsayılan teslimat yokken `defaultAddressId = "primary"`; yalnız teslimat adresi olan (ana adres boş) hesapta `primary` öğe yok. AC-ST-1…10 aynen yeşil.
+- [ ] **AC-DA-10** Denetim: her yazma komutu §33.3'teki işlem ve `AccountDeliveryAddress` varlık türüyle merkezi denetim bildirimi taşır; kayıtta adres metni yok; mimari AuditTrail testleri yeşil, CRM borcu artmaz.
+- [ ] **AC-DA-11** Ekran: hesap detayında Teslimat adresleri bölümü (liste + form + onay); izinsiz kullanıcıya eylem düğmesi çizilmez; hesap formunda posta kodu; 7 dilde tüm metinler (eksik anahtar 0); yardım adımı 7 dil; 375 px.
+- [ ] **AC-DA-12** Değişmezlik: U-1 / U-3 gövdeleri ve testleri, hesap listesi / detay / içe aktarma testleri tabanla aynı; mobil hesap güncelleme sözleşmesi (CRM-ACC-EDIT) testleri yeşil; `dotnet build` PASS.
+
+### 33.7 Sabotaj beklentileri — DL-4
+
+| Sabotaj | Kırmızıya dönmesi gereken |
+|---|---|
+| Adres deposundan kiracı filtresini kaldır | AC-DA-4 |
+| Adres deposundan `IsDeleted` filtresini kaldır | AC-DA-4 / AC-DA-9 |
+| Adres okumasında `AccountId` eşleşmesini kaldır (başka hesabın adresi okunur) | AC-DA-4 |
+| Yeni varsayılan atanınca öncekinin işaretini kaldırmayı sil | AC-DA-3 |
+| Pasif adresi varsayılan yapmaya izin ver | AC-DA-3 |
+| Yazma ucunun izni `crm.account.read` yap | AC-DA-5 |
+| `ExpectedVersion` kontrolünü kaldır | AC-DA-6 |
+| Güncellemede değişmeyen kodu da doğrula | AC-DA-7 |
+| Yeni adreste kod doğrulamasını atla | AC-DA-7 |
+| `UpdateAccountCommand`'da gönderilmeyen `PostalCode`'u null'a yaz | AC-DA-8 |
+| U-4'te pasif adresi listeye kat | AC-DA-9 |
+| U-4'te `defaultAddressId`'yi varsayılan teslimat varken `"primary"` bırak | AC-DA-9 |
+| Bir yazma komutundan `ICentralAuditDeclaration`'ı kaldır | AC-DA-10 |
+| Bir dilde (ör. `ar`) bir teslimat adresi anahtarını sil | AC-DA-11 |
+
+### 33.8 Test beklentileri — DL-4
+
+- **Application (xUnit):** komut / sorgu işleyicileri — zorunlu alan, uzunluk, tekil ad, 50 sınırı, tek varsayılan,
+  pasif-varsayılan, eşzamanlılık, değişen-alan doğrulaması (saklanan geçersiz kod + değişmeyen → kabul; değişen → 400), set
+  yok, `PostalCode` gönderilmedi / boş / dolu, U-4 genişleme durumları (AC-DA-9).
+- **Depo (gerçek mongod, `DisposableCrmMongod`; 27017'ye bağlanılmaz):** kiracı, `IsDeleted`, `AccountId` filtreleri;
+  eşzamanlı iki "varsayılan yap" sonrası tek varsayılan (AC-DA-3).
+- **Api / yetki:** her uçta `[HasPermission]` anahtarı (yansıma) ve 403 durumları (AC-DA-5); 404 gövde eşitliği.
+- **Denetim:** F8-b kapsam testi emsaliyle yeni komutların bildirim tablosu ("for each" — işaret silinirse kırmızı).
+- **Web.Tests (xUnit):** vekil uçlar, izinsiz kullanıcıya eylem çizilmemesi, 7 dil anahtar eşitliği (`resx-check` emsali).
+  Web vitest bu makinede koşmaz → CI.
+- **Değişmezlik:** `AccountLookup*Tests`, `AccountEditTests` (CRM-ACC-EDIT), hesap testleri tabanla karşılaştırılır.
+- **Build:** CrmService Api, Platform.sln (yardımcı / manifest değişirse), Web.
+
+### 33.9 Teslimat adresleri — kararlar ve açık sorular
+
+| # | Karar | Durum |
+|---|---|---|
+| K-16 | Ana adrese posta kodu | **KAPANDI** (Beste, 2026-11-13) — §33.2 |
+| K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanması | **KAPANDI** (Beste, 2026-11-13) — DL-4'te, K-23 kuralıyla |
+| K-18 | Çoklu teslimat adresi, mockup'sız standart liste + form | **KAPANDI** (Beste, 2026-11-13) — §33.4: detay sayfası sekmeli olmadığı için mevcut bölüm deseni |
+| K-21 | Teslimat adresi yazma izni | **KAPANDI** (Beste, 2026-11-13): `crm.account.update`; okuma `crm.account.read`; yeni anahtar yok |
+| K-22 | Posta kodu zorunlu mu | **KAPANDI** (Beste, 2026-11-13): isteğe bağlı (ana adres ve teslimat adresi) |
+| K-23 | Mevcut geçersiz kodlu hesaplarda doğrulama | **KAPANDI** (Beste, 2026-11-13): yalnız yeni / değişen alan doğrulanır |
+| K-20 | Mevcut hesapların saklanan adres kodları Reference Data kodlarıyla aynı biçimde değil (ölçülen örnek: içe aktarılmış `CityRef = "TR-34-ISTANBUL"`, Reference Data şehir kodu `istanbul` — WP-VW-W3E-CITY, `CityRefMatcher.cs`); U-4 saklananı döner, tüketici Reference Data'dan çözemez (K-15) | **AÇIK** — öneri: ayrı küçük iş (DL-4 dışında): salt-okuma ölçüm raporu (kod biçimi dağılımı, eşleşmeyen sayısı) → sahip kararı → tek seferlik düzeltme (önce kuru çalıştırma). Karar verilene kadar tüketicilere bildirilir |
+| K-24 | Mobil uygulamanın hesap oluşturmada gönderdiği adres kodları | **AÇIK (ölçüm)** — DL-4 kodundan önce ölçülür: mobil istemci Reference Data kodu göndermiyorsa K-23 hesap oluşturmayı kırar → DUR, sahip kararı |
+
+Kayıt: K-21…K-24 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md`'ye eklenir (K-12…K-19 ile aynı kayıt).
