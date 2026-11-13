@@ -1,4 +1,4 @@
-using Diten.BuildingBlocks.Auditing;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Domain.Entities.Commercial;
@@ -39,12 +39,11 @@ public static class PreOrderTransmissionRetry
 
 /// <summary>The scheduler's retry of ONE due transmission, in that order's tenant (the scheduler pins it). Audited as the
 /// system (no user behind it); a row that is no longer due answers false and changes nothing.</summary>
-public sealed record RunPreOrderTransmissionRetryCommand(Guid Id) : IRequest<Response<bool>>, IAuditableCommand, IAuditDetailsProvider
+public sealed record RunPreOrderTransmissionRetryCommand(Guid Id) : IRequest<Response<bool>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PreOrderAudit.Describe(AuditOperation.Execute, PreOrderAudit.PreOrderEntity, Id);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-        => details.Set("channel", "scheduler").Set("ran", (response as Response<bool>)?.Data);
+    // No caller behind it: CrmCentralAuditScope files it as the System actor in the order's own tenant (B0b).
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Execute(PreOrderAudit.PreOrderEntity);
+    public Guid? CentralAuditEntityId(object? response) => Id;
 }
 
 public sealed class RunPreOrderTransmissionRetryHandler : IRequestHandler<RunPreOrderTransmissionRetryCommand, Response<bool>>

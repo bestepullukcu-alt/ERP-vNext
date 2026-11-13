@@ -314,18 +314,23 @@ public sealed class PriceListLifecycleTests : IDisposable
     }
 
     [Fact]
-    public async Task L11_every_write_command_is_audited_once_and_a_read_not_at_all()
+    public async Task L11_every_succeeded_write_command_is_audited_once_and_a_read_or_a_refused_command_not_at_all()
     {
         var draft = await Draft(_w.Today.AddDays(2));                                                    // 1 create
         await _w.Send(new UpdatePriceListCommand(draft.Id, new PriceListInput("renamed", null, null, null, null, null)), PricingWorld.Marketing); // 2
         await _w.Send(new GetPriceListByIdQuery(draft.Id));                                              // a read: none
         await _w.Send(new SubmitPriceListCommand(draft.Id, null), PricingWorld.Marketing);              // 3
-        await _w.Send(new DecidePriceListCommand(draft.Id, new PriceListDecisionInput("publish", null)), PricingWorld.Marketing); // 4 (refused: still audited)
-        await _w.Send(new DecidePriceListCommand(draft.Id, new PriceListDecisionInput("publish", null)), PricingWorld.SalesOps);  // 5
+        await _w.Send(new DecidePriceListCommand(draft.Id, new PriceListDecisionInput("publish", null)), PricingWorld.Marketing); // refused (the maker cannot publish): NO central record
+        await _w.Send(new DecidePriceListCommand(draft.Id, new PriceListDecisionInput("publish", null)), PricingWorld.SalesOps);  // 4
 
-        Assert.Equal(5, _w.Audit.Bodies.Count);
-        Assert.Equal(new[] { "CreatePriceListCommand", "UpdatePriceListCommand", "SubmitPriceListCommand", "DecidePriceListCommand", "DecidePriceListCommand" },
+        // F8-b (BL-501 contract, CT 2026-11-13): only a SUCCEEDED command leaves a central record — the refused decision
+        // (F8-a wrote it as "Failed", 5 records) writes none; the refusal is the caller's 4xx answer.
+        Assert.Equal(4, _w.Audit.Bodies.Count);
+        Assert.Equal(new[] { "CreatePriceListCommand", "UpdatePriceListCommand", "SubmitPriceListCommand", "DecidePriceListCommand" },
             _w.Audit.Bodies.Select(b => System.Text.Json.JsonDocument.Parse(b).RootElement.GetProperty("requestType").GetString()));
-        Assert.All(_w.Audit.Bodies, b => Assert.Contains("MOD-0156", b));
+        // source module CRM (CT decision D-3; was MOD-0156), one entity, its own id on every row
+        Assert.Equal(new[] { "Create", "Update", "LifecycleTransition", "LifecycleTransition" }, _w.Audit.Rows.Select(r => r.Operation));
+        Assert.All(_w.Audit.Rows, r => Assert.Equal(("Crm", "CRM", "PriceList", (Guid?)draft.Id), (r.Category, r.SourceModule, r.EntityType, r.EntityId)));
+        Assert.All(_w.Audit.Bodies, b => Assert.DoesNotContain("MOD-0156", b));
     }
 }

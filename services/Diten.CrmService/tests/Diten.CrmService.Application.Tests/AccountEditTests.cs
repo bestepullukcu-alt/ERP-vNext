@@ -11,7 +11,7 @@ using Diten.CrmService.Application.Features.Account.Queries;
 using Diten.CrmService.Application.Tests.Commercial.Pricing;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
-using Diten.CrmService.Infrastructure.Audit;
+using Diten.CrmService.Application.Tests.CentralAudit;
 using Diten.CrmService.Infrastructure.Authorization;
 using Diten.CrmService.Persistence.Repositories;
 using FluentValidation;
@@ -39,7 +39,7 @@ public sealed class AccountEditTests : IDisposable
 
     private readonly CopyingAccounts _accounts = new();
     private readonly MemoryExternalRefs _externalRefs = new();
-    private readonly CapturingAuditPlatform _audit = new();
+    private readonly CapturedCentralAudit _audit = new();
     private readonly ServiceProvider _provider;
 
     public AccountEditTests()
@@ -51,8 +51,7 @@ public sealed class AccountEditTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddApplication();
-        services.AddCrmAuditForwarding(configuration);
-        services.AddHttpClient(Diten.BuildingBlocks.Auditing.PlatformAuditForwarder.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => _audit);
+        _audit.Register(services, configuration); // F8-b: the shared CentralAudit recorder (innermost) over an in-memory outbox
         services.AddSingleton<ITenantContext>(TerritoryFakes.TenantFactory.Tenant(Tenant));
         services.AddSingleton<IActorContext>(new SwitchActor("user-editor"));
         services.AddSingleton<IAccountRepository>(_accounts);
@@ -294,20 +293,24 @@ public sealed class AccountEditTests : IDisposable
     // ── audit + permission ───────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task A1_create_and_update_are_audited_once_each_with_MOD_0149_and_no_logo_bytes()
+    public async Task A1_create_and_update_are_audited_once_each_as_crm_account_records_with_their_id_and_no_logo_bytes()
     {
         var account = Seed();
         await Send(Edit(account.Id, 0, logo: Logo));
         await Send(new GetAccountByIdQuery(account.Id));
-        await Send(new CreateAccountCommand("Yeni", null, "pharmacy", null, null, "active", null, null, null, null, null, null, null, null, null, null, null,
+        var created = await Send(new CreateAccountCommand("Yeni", null, "pharmacy", null, null, "active", null, null, null, null, null, null, null, null, null, null, null,
             Logo));
 
         Assert.Equal(new[] { "UpdateAccountCommand", "CreateAccountCommand" },
             _audit.Bodies.Select(b => JsonDocument.Parse(b).RootElement.GetProperty("requestType").GetString()));
+        // F8-b (CT decision D-3, 2026-11-13): the source module is the code Platform's CRM manifest registers (was MOD-0149)
+        Assert.Equal(new[] { ("Update", "Account", "CRM", (Guid?)account.Id), ("Create", "Account", "CRM", (Guid?)created.Data) },
+            _audit.Rows.Select(r => (r.Operation, r.EntityType, r.SourceModule, r.EntityId)));
         Assert.All(_audit.Bodies, b =>
         {
-            Assert.Contains("MOD-0149", b);
+            Assert.DoesNotContain("MOD-0149", b);
             Assert.DoesNotContain("iVBORw0KGgo", b);
+            Assert.DoesNotContain("Yeni", b); // the record names the entity, never its data (AUD-001 §3)
         });
     }
 

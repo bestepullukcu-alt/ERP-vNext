@@ -300,9 +300,19 @@ public sealed class PreOrderApprovalTests : PreOrderTestBase
         var types = W.Audit.Bodies.Select(b => JsonDocument.Parse(b).RootElement.GetProperty("requestType").GetString()).ToList();
         Assert.Equal(new[] { "CreatePreOrderCommand", "UpdatePreOrderCommand", "CapturePreOrderSignatureCommand", "SubmitPreOrderCommand",
             "DecidePreOrderCommand", "CopyPreOrderCommand", "DiscardPreOrderCommand", "UpdatePreOrderSettingsCommand" }, types);
+        // F8-b (CT decision D-3, 2026-11-13): source module CRM (was MOD-0168); Platform operation + entity per command
+        Assert.Equal(new[]
+            {
+                ("Create", "PreOrder", (Guid?)draft.Id), ("Update", "PreOrder", draft.Id), ("Update", "PreOrder", draft.Id),
+                ("LifecycleTransition", "PreOrder", draft.Id), ("LifecycleTransition", "PreOrder", draft.Id), ("Create", "PreOrder", copy.Id),
+                ("LifecycleTransition", "PreOrder", copy.Id), ("Update", "PreOrderSettings", null)
+            },
+            W.Audit.Rows.Select(r => (r.Operation, r.EntityType, r.EntityId)));
+        Assert.All(W.Audit.Rows, r => Assert.Equal(("Crm", "CRM", "Diten.CrmService"), (r.Category, r.SourceModule, r.SourceService)));
         Assert.All(W.Audit.Bodies, b =>
         {
-            Assert.Contains("MOD-0168", b);
+            Assert.DoesNotContain("MOD-0168", b);
+            Assert.DoesNotContain("Kasım siparişi", b); // the note: what changed is the order's own history (B0a), not the record
             Assert.DoesNotContain(token, b);
             Assert.DoesNotContain(PreOrderApprovalService.HashToken(token), b);
             Assert.DoesNotContain(Png[..20], b);

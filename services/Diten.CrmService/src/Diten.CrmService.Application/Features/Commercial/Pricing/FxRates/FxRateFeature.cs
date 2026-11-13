@@ -1,4 +1,4 @@
-using Diten.BuildingBlocks.Auditing;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Domain.Entities.Commercial;
@@ -26,42 +26,24 @@ public sealed record FxRatePageDto(IReadOnlyList<FxRateDto> Items, long Total, i
 
 public sealed record FxRateImportResultDto(int Created, int Updated, int Unchanged, DateOnly? FromDate, DateOnly? ToDate);
 
-public sealed record CreateFxRateCommand(FxRateInput Input) : IRequest<Response<FxRateDto>>, IAuditableCommand, IAuditDetailsProvider
+public sealed record CreateFxRateCommand(FxRateInput Input) : IRequest<Response<FxRateDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.Create, PricingAudit.FxRateEntity, null);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-    {
-        var dto = (response as Response<FxRateDto>)?.Data;
-        details.EntityId = dto?.Id;
-        details.ObjectVersion = dto?.Version;
-        details.Set("legalEntityId", Input?.LegalEntityId).Set("pair", $"{Input?.FromCurrency}/{Input?.ToCurrency}")
-            .Set("rateDate", Input?.RateDate?.ToString("yyyy-MM-dd")).Set("rate", Input?.Rate).Set("source", Input?.Source);
-    }
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create(PricingAudit.FxRateEntity);
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<FxRateDto>(response, dto => dto.Id);
 }
 
-public sealed record UpdateFxRateCommand(Guid Id, FxRateInput Input) : IRequest<Response<FxRateDto>>, IAuditableCommand, IAuditDetailsProvider
+public sealed record UpdateFxRateCommand(Guid Id, FxRateInput Input) : IRequest<Response<FxRateDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.Update, PricingAudit.FxRateEntity, Id);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-    {
-        details.ObjectVersion = (response as Response<FxRateDto>)?.Data?.Version;
-        details.Set("rate", Input?.Rate).Set("source", Input?.Source);
-    }
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update(PricingAudit.FxRateEntity);
+    public Guid? CentralAuditEntityId(object? response) => Id;
 }
 
 public sealed record ImportFxRatesCommand(FxRateImportInput Input)
-    : IRequest<Response<FxRateImportResultDto>>, IAuditableCommand, IAuditDetailsProvider
+    : IRequest<Response<FxRateImportResultDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.Create, PricingAudit.FxRateEntity, null);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-    {
-        var dto = (response as Response<FxRateImportResultDto>)?.Data;
-        details.Set("rows", Input?.Rows?.Count ?? 0).Set("created", dto?.Created).Set("updated", dto?.Updated)
-            .Set("from", dto?.FromDate?.ToString("yyyy-MM-dd")).Set("to", dto?.ToDate?.ToString("yyyy-MM-dd"));
-    }
+    // One record for the whole import (no single entity id).
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create(PricingAudit.FxRateEntity);
+    public Guid? CentralAuditEntityId(object? response) => null;
 }
 
 public sealed record GetFxRateListQuery(Guid? LegalEntityId, string? FromCurrency, string? ToCurrency, DateOnly? From, DateOnly? To, int? Page, int? PageSize)

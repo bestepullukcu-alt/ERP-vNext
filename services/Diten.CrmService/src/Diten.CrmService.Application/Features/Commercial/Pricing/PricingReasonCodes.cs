@@ -1,4 +1,3 @@
-using Diten.BuildingBlocks.Auditing;
 
 namespace Diten.CrmService.Application.Features.Commercial.Pricing;
 
@@ -62,7 +61,7 @@ public static class PricingErrors
     public const string Stale = "pricing_stale_version";
 }
 
-/// <summary>WP-VW-W6 W6-BE-b — every write command of MOD-0156 is audited (F8-a shared forwarder; category Crm, source
+/// <summary>WP-VW-W6 W6-BE-b — every write command of MOD-0156 is audited (F8-b: <c>CrmCentralAudit</c>; category Crm, approval-task
 /// module MOD-0156; §20.3 AÇIK-2 "denetim kayıtlarını yapalım").</summary>
 public static class PricingAudit
 {
@@ -71,7 +70,4 @@ public static class PricingAudit
     public const string PriceListImportEntity = "PriceListImport";
     public const string PricingRuleEntity = "PricingRule";
     public const string FxRateEntity = "FxRate";
-
-    public static AuditDescriptor Describe(AuditOperation operation, string entityType, Guid? id)
-        => new(AuditCategory.Crm, operation, entityType, SourceModule, id is { } value && value != Guid.Empty ? value : null);
 }

@@ -1,4 +1,5 @@
-using Diten.BuildingBlocks.Auditing;
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using MediatR;
 
@@ -28,14 +29,8 @@ public sealed record UpdateAccountCommand(
     string? Notes,
     string? LogoDataUri = null,
     int? ExpectedVersion = null,
-    bool RemoveLogo = false) : IRequest<Response<bool>>, IAuditableCommand, IAuditDetailsProvider
+    bool RemoveLogo = false) : IRequest<Response<bool>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => AccountAudit.Describe(AuditOperation.Update, Id);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-    {
-        details.ObjectVersion = ExpectedVersion is { } v && (response as Response<bool>)?.IsSuccessful == true ? v + 1 : null;
-        details.Set("expectedVersion", ExpectedVersion).Set("accountType", AccountType).Set("status", Status)
-            .Set("logo", RemoveLogo ? "removed" : string.IsNullOrWhiteSpace(LogoDataUri) ? "kept" : "replaced");
-    }
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update(AccountAudit.Entity);
+    public Guid? CentralAuditEntityId(object? response) => Id;
 }

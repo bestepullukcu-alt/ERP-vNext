@@ -16,7 +16,7 @@ using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Entities.Commercial;
 using Diten.CrmService.Domain.Repositories;
 using Diten.CrmService.Domain.Repositories.Commercial;
-using Diten.CrmService.Infrastructure.Audit;
+using Diten.CrmService.Application.Tests.CentralAudit;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +25,7 @@ namespace Diten.CrmService.Application.Tests.Commercial.PreOrders;
 
 /// <summary>
 /// WP-VW-W6 W6-BE-a — MOD-0168 on CRM's REAL pipeline (<c>AddApplication</c>: the handlers, the four MediatR behaviours,
-/// the F8-a audit forwarder) consuming the REAL MOD-0156 evaluator / resolver / FX reader over in-memory pricing stores.
+/// the shared central-audit recorder — F8-b) consuming the REAL MOD-0156 evaluator / resolver / FX reader over in-memory pricing stores.
 /// In memory (deep-copied on every read and write, like a database): the pre-order stores; faked: the seat reader, the
 /// line managers, MDM, the accounts, MOD-0023, MOD-0262, the team scope, the notifier and the transmitter. The clock is
 /// injected; the caller is switchable (user + keys).
@@ -85,7 +85,7 @@ internal sealed class PreOrderWorld : IDisposable
     public readonly FakeDecisionClient Decisions;
     public readonly RecordingNotifier Notifier = new();
     public readonly ScriptedTransmitter Transmitter = new();
-    public readonly CapturingAuditPlatform Audit = new();
+    public readonly CapturedCentralAudit Audit = new();
     public readonly PreOrderCaller Caller = new();
 
     private readonly ServiceProvider _provider;
@@ -143,8 +143,7 @@ internal sealed class PreOrderWorld : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddApplication();
-        services.AddCrmAuditForwarding(configuration);
-        services.AddHttpClient(Diten.BuildingBlocks.Auditing.PlatformAuditForwarder.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => Audit);
+        Audit.Register(services, configuration); // F8-b: the shared CentralAudit recorder (innermost) over an in-memory outbox
         services.AddSingleton<ITenantContext>(TenantFactory.Tenant(Tenant));
         services.AddSingleton<ICallerScope>(Caller);
         services.AddSingleton<IActorContext>(Caller);

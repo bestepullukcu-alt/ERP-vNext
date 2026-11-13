@@ -1,4 +1,3 @@
-using Diten.BuildingBlocks.Auditing;
 using Diten.CrmService.Application.Common.Models;
 
 namespace Diten.CrmService.Application.Features.Account;
@@ -52,12 +51,9 @@ public static class AccountErrors
         => Response<T>.Fail(problems.SelectMany(p => new[] { p.Message, p.Code }).ToList(), status);
 }
 
-/// <summary>The AUD-001 descriptor of the account writes this work made audited (F8-a path b; Create + Update).</summary>
+/// <summary>The entity name of the audited account writes (Create + Update) in the central record
+/// (<c>CrmCentralAudit</c>, AUD-001 path b; F8-b).</summary>
 public static class AccountAudit
 {
-    public const string SourceModule = "MOD-0149";
     public const string Entity = "Account";
-
-    public static AuditDescriptor Describe(AuditOperation operation, Guid? id)
-        => new(AuditCategory.Crm, operation, Entity, SourceModule, id is { } value && value != Guid.Empty ? value : null);
 }

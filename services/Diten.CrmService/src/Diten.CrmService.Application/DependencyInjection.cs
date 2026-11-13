@@ -1,4 +1,3 @@
-using Diten.BuildingBlocks.Auditing;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +11,8 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
-        // WP-VW-W6 F8-a (AUD-001 K4, path b) — the shared Building.Blocks forwarder: every IAuditableCommand writes one
-        // central audit record (succeeded / refused / threw). OUTERMOST, so a validation refusal is recorded too. The
-        // forwarder's address and key are Infrastructure's (AddCrmAuditForwarding); unset = a warning per record, not silence.
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditForwardingBehavior<,>));
-        services.AddPlatformAuditForwarding();
+        // F8-b (WP-CRM-SYNC-S0B): the central audit record of a marked command (ICentralAuditDeclaration) is written by the
+        // shared CentralAuditBehavior, registered by the host AFTER this call (Program.cs: AddCentralAudit — innermost).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionHandlingBehavior<,>));

@@ -1,4 +1,3 @@
-using Diten.BuildingBlocks.Auditing;
 using Diten.CrmService.Application.Common.Models;
 
 namespace Diten.CrmService.Application.Features.Commercial.PreOrders;
@@ -60,15 +59,14 @@ public static class PreOrderLimits
     public const int PharmacyHistoryMax = 200;
 }
 
-/// <summary>The AUD-001 descriptor of every MOD-0168 write (F8-a; §20.3 AÇIK-6: audited, not Faz 8 debt).</summary>
+/// <summary>The entity names of every MOD-0168 write in the central record (<c>CrmCentralAudit</c>, AUD-001 path b; F8-b —
+/// §20.3 AÇIK-6: audited, not Faz 8 debt). <see cref="SourceModule"/> is the module code shown on the approval task; the
+/// central record's source module is <c>CrmCentralAudit.SourceModule</c> (CRM).</summary>
 public static class PreOrderAudit
 {
     public const string SourceModule = "MOD-0168";
     public const string PreOrderEntity = "PreOrder";
     public const string SettingsEntity = "PreOrderSettings";
-
-    public static AuditDescriptor Describe(AuditOperation operation, string entityType, Guid? id)
-        => new(AuditCategory.Crm, operation, entityType, SourceModule, id is { } value && value != Guid.Empty ? value : null);
 }
 
 internal static class PreOrderResults

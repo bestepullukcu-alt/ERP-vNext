@@ -1,4 +1,5 @@
-using Diten.BuildingBlocks.Auditing;
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Commercial.Pricing.PriceLists;
 using MediatR;
@@ -8,34 +9,22 @@ namespace Diten.CrmService.Application.Features.Commercial.Pricing.PriceListImpo
 // WP-VW-W6 W6-BE-b — MOD-0156 §4.2 import commands; every one audited (the file's CONTENT is never recorded, §21).
 
 public sealed record UploadPriceListImportCommand(PriceListImportUpload Upload)
-    : IRequest<Response<PriceListImportDto>>, IAuditableCommand, IAuditDetailsProvider
+    : IRequest<Response<PriceListImportDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.Create, PricingAudit.PriceListImportEntity, null);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-    {
-        var dto = (response as Response<PriceListImportDto>)?.Data;
-        details.EntityId = dto?.Id;
-        details.ObjectVersion = dto?.Version;
-        details.Set("fileName", Upload?.FileName).Set("fileSha256", dto?.FileSha256).Set("rows", dto?.TotalRows).Set("matched", dto?.Matched)
-            .Set("unmatched", dto?.Unmatched).Set("retired", dto?.Retired);
-    }
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create(PricingAudit.PriceListImportEntity);
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<PriceListImportDto>(response, dto => dto.Id);
 }
 
 public sealed record ConvertPriceListImportCommand(Guid Id)
-    : IRequest<Response<PriceListDto>>, IAuditableCommand, IAuditDetailsProvider
+    : IRequest<Response<PriceListDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.LifecycleTransition, PricingAudit.PriceListImportEntity, Id);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-        => details.Set("priceListId", (response as Response<PriceListDto>)?.Data?.Id);
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle(PricingAudit.PriceListImportEntity);
+    public Guid? CentralAuditEntityId(object? response) => Id;
 }
 
 public sealed record DiscardPriceListImportCommand(Guid Id)
-    : IRequest<Response<PriceListImportDto>>, IAuditableCommand, IAuditDetailsProvider
+    : IRequest<Response<PriceListImportDto>>, ICentralAuditDeclaration
 {
-    public AuditDescriptor DescribeAudit() => PricingAudit.Describe(AuditOperation.LifecycleTransition, PricingAudit.PriceListImportEntity, Id);
-
-    public void DescribeAuditDetails(AuditDetails details, object? response)
-        => details.Set("status", (response as Response<PriceListImportDto>)?.Data?.Status);
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle(PricingAudit.PriceListImportEntity);
+    public Guid? CentralAuditEntityId(object? response) => Id;
 }

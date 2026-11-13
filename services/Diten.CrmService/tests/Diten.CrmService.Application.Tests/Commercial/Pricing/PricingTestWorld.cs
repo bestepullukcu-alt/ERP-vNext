@@ -10,7 +10,7 @@ using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Entities.Commercial;
 using Diten.CrmService.Domain.Repositories;
 using Diten.CrmService.Domain.Repositories.Commercial;
-using Diten.CrmService.Infrastructure.Audit;
+using Diten.CrmService.Application.Tests.CentralAudit;
 using Diten.CrmService.Infrastructure.Commercial;
 using Diten.CrmService.Application.Tests.Territory;
 using MediatR;
@@ -21,7 +21,7 @@ namespace Diten.CrmService.Application.Tests.Commercial.Pricing;
 
 /// <summary>
 /// WP-VW-W6 W6-BE-b — MOD-0156 on CRM's REAL pipeline (<c>AddApplication</c>: the handlers, the four MediatR behaviours,
-/// the F8-a audit forwarder with CRM's settings) and the REAL file parser; in memory: the stores (tenant scoped,
+/// the shared central-audit recorder with CRM's scope — F8-b) and the REAL file parser; in memory: the stores (tenant scoped,
 /// optimistic Version — the Mongo stores' contract), MDM (SKUs, legal entities), MOD-0023 (start / tasks / decisions);
 /// captured: the Platform audit append. The clock is injected.
 /// </summary>
@@ -46,7 +46,7 @@ internal sealed class PricingWorld : IDisposable
     public readonly FakeLegalEntities LegalEntities = new();
     public readonly FakeClaimWorkflowClient Workflow = new();
     public readonly FakeDecisionClient Decisions;
-    public readonly CapturingAuditPlatform Audit = new();
+    public readonly CapturedCentralAudit Audit = new();
     public readonly SwitchActor Actor = new(Marketing);
     public readonly CountingUserNames Names = new();
     public readonly TenantContext TenantContext = TenantFactory.Tenant(Tenant);
@@ -73,8 +73,7 @@ internal sealed class PricingWorld : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddApplication();
-        services.AddCrmAuditForwarding(configuration);
-        services.AddHttpClient(Diten.BuildingBlocks.Auditing.PlatformAuditForwarder.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => Audit);
+        Audit.Register(services, configuration); // F8-b: the shared CentralAudit recorder (innermost) over an in-memory outbox
         services.AddSingleton<ITenantContext>(TenantContext);
         services.AddSingleton<IActorContext>(Actor);
         services.AddSingleton<IUserDisplayNameResolver>(Names);
@@ -228,18 +227,6 @@ internal sealed class FakeDecisionClient(FakeClaimWorkflowClient workflow) : IWo
 
     public Task<IReadOnlyList<WorkflowHistoryEntry>?> GetInstanceHistoryAsync(Guid workflowInstanceId, CancellationToken ct)
         => Task.FromResult<IReadOnlyList<WorkflowHistoryEntry>?>(null);
-}
-
-/// <summary>Platform's audit append, captured (one call per audited command).</summary>
-internal sealed class CapturingAuditPlatform : HttpMessageHandler
-{
-    public List<string> Bodies { get; } = new();
-
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
-    {
-        Bodies.Add(request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(ct));
-        return new HttpResponseMessage(HttpStatusCode.Accepted) { Content = new StringContent("{\"status\":\"Queued\"}") };
-    }
 }
 
 internal sealed class FakeSkus : IPricingSkuDirectory

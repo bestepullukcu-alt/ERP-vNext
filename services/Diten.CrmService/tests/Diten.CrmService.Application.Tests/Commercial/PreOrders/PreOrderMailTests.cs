@@ -197,6 +197,10 @@ public sealed class PreOrderMailTests : PreOrderTestBase
         Assert.Equal(new[] { "failed", "failed", "sent" }, sent.Transmission.Attempts.Select(a => a.Status));
         // the scheduler's runs are audited as their own command
         Assert.Equal(3, W.Audit.Bodies.Count(b => JsonDocument.Parse(b).RootElement.GetProperty("requestType").GetString() == nameof(RunPreOrderTransmissionRetryCommand)));
+        // F8-b B0b (CT decision D-2): no caller behind the scheduler — the System actor, no user, the order's own tenant
+        Assert.All(W.Audit.Rows.Where(r => r.RequestType == nameof(RunPreOrderTransmissionRetryCommand)), r =>
+            Assert.Equal((Diten.BuildingBlocks.CentralAudit.CentralAuditActorTypes.System, (Guid?)null, PreOrderWorld.Tenant, "Execute", (Guid?)failed.Id),
+                (r.ActorType, r.ActorId, r.TenantId, r.Operation, r.EntityId)));
     }
 
     [Fact]
