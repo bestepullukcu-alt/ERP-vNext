@@ -102,9 +102,15 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
             {
                 var receipt = Assert.Single(receipts, x => x.EventId == message.EventId);
                 Assert.Equal(receipt.CorrelationId, message.CorrelationId);
+                Assert.Equal(correlationId, message.CorrelationId);
                 Assert.Equal("Published", receipt.DeliveryState);
                 Assert.NotNull(receipt.DispatchedAt);
                 Assert.NotEqual("{}", receipt.Payload);
+                using var payload = JsonDocument.Parse(message.PayloadJson);
+                Assert.Equal(receipt.RevisionId,
+                    payload.RootElement.GetProperty("revisionId").GetGuid());
+                if (message.EventName == "demand.revision.superseded.v2")
+                    Assert.Equal(first.Id, receipt.RevisionId);
             }
 
             // CI uploads this proof alongside its TRX only after the real consumer and Mongo receipt agree.
