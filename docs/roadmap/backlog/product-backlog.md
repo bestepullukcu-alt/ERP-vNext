@@ -10961,3 +10961,49 @@ parmak izi) — Platform sahibiyle.
 
     git grep -n "S-85\|S-87" -- docs/guides/operations/control-tower-operating-card.md
 
+
+### BL-665
+
+**Aynı firmanın tedarikçi, 3PL iş ortağı ve CRM müşterisi kayıtlarının birbirine bağlanması**
+
+DURUM: ERTELENDİ · SAHİP: Beste (merkez) · KARAR: sahip, 2026-11-13 ("mantıklı o yüzden bunu backlog'a ekle") · KAYIT: 2026-11-13
+
+**Ne:** Aynı tüzel kişi bugün üç ayrı kayıtta yaşayabilir: tedarikçi (MOD-0140, `SUP-` kodu; DC-03 bağı MOD-0360-FU01), 3PL iş ortağı
+(MOD-0049-FU01 Business Partner Master Foundation, MDM) ve CRM müşterisi (MOD-0149 Account). Bunların "aynı firma" olarak bağlanması
+(eşleştirme kuralı, tekil taraf kimliği ya da çapraz referans, birleştirme / ayırma, kimin altın kayıt olduğu) yapılmadı.
+**Neden ertelendi:** MOD-0049-FU01 v1 kapsamı bilerek dar tutuldu (taraf kaydı ve roller); eşleştirme / survivorship ve tedarikçi /
+müşteri SoR'u kapsam dışı (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md`, Q-10 kararı). Blueprint MOD-0049
+SoR'u "golden entities, match rules, survivorship" — bu iş o modülün ileri FU'sudur.
+**Yapım tetikleyicisi:** aynı firmanın iki rolde ilk kez canlıda kaydı açıldığında ya da raporlama "firma bazında" toplam istediğinde.
+**Gelecek regresyon riski:** 🟡 — çift kayıtta adres / iletişim bilgisi ayrı güncellenir ve tutarsızlaşır; firma bazlı rapor yanlış toplar.
+
+**Ölçüm komutu:**
+
+    git grep -n "MOD-0049-FU01\|BL-665" -- docs execution
+
+### BL-666
+
+**Bağımlılık güvenlik açıkları: MongoDB.Driver yükseltmesi ve yama ile kapanan paketler**
+
+DURUM: ERTELENDİ · SAHİP: Beste (merkez) · KARAR: sahip, 2026-11-13 ("bunları not alalım en son yaparız") · KAYIT: 2026-11-13
+
+**Ne:** `dotnet list package --vulnerable --include-transitive` taraması (MOD-0182 DL-1 sırasında Inventory'de görüldü, sonra bütün
+çözümlerde ölçüldü, salt okunur):
+- MongoDB.Driver 2.27.0 → Snappier 1.0.0 (High, GHSA-pggp-6c3x-2xmx) ve SharpCompress 0.30.1 (Moderate, GHSA-6c8g-7p36-r338); Mongo kullanan
+  her serviste ve BB.CentralAudit'te. Düzeltme: MongoDB.Driver 3.9.0 (CT kararı; 2.x hattında düzeltme yok). Kırıcı noktalar:
+  `BsonDefaults.GuidRepresentationMode` (Ppm, Planning), testlerde `MongoDB.Driver.Core.*` (Auth, Platform, Mdm, SupplyChain). MG ve
+  SafetyStock kod değişikliği istemez (ölçüldü). Bugün tetiklenmez: repoda `compressors` ayarı yok.
+- System.Text.Encodings.Web 4.5.0 — CRITICAL (yalnız Auth Application test projesi; Platform.Common'daki
+  Microsoft.AspNetCore.Http.Abstractions 2.2.0 yerine FrameworkReference).
+- Yama ile kapananlar (kırıcı değil): System.Text.Json → 8.0.5+ (Auth, Platform, Ppm, Platform.Common; Mdm / SupplyChain testleri),
+  System.Security.Cryptography.Pkcs → 8.0.2 (Auth, Platform; MailKit), Newtonsoft.Json → 13.0.3 (Auth, Platform; Hangfire),
+  System.IO.Packaging → 6.0.1 (Auth, Mdm, DevEnablement, Manufacturing, Crm, BB.ListExport; ClosedXML), EnterpriseStrategy test
+  projesinde xunit → 2.9.2 (System.Net.Http / RegularExpressions 4.3.0).
+**Neden ertelendi:** sahip kararı — MVP işleri bittikten sonra, en son. ~20 servise dokunur; korunan yollar (Building.Blocks,
+Platform.Common), domain başına XMC-001 ve ayrı dal onayı gerekir. Plan ve ölçümler araştırma oturumu raporlarında (2026-11-13).
+**Yapım tetikleyicisi:** MVP-1…MVP-6 işleri kapanınca; ya da biri Mongo `compressors` ayarını açmak isterse (o zaman önce bu iş).
+**Gelecek regresyon riski:** 🟡 — tarama raporları kırmızı kalır; sıkıştırma açılırsa Snappier açığı canlı yola girer.
+
+**Ölçüm komutu:**
+
+    dotnet list services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj package --vulnerable --include-transitive

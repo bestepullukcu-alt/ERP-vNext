@@ -32,6 +32,17 @@ public sealed class RepositoryObjectRepository
                 Builders<RepositoryObject>.Filter.Eq(x => x.ContentId, contentId)))
             .FirstOrDefaultAsync(ct);
 
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 — the tenant filter is kept; only the <c>IsDeleted == false</c> condition of the execution filter
+    /// is left out, so a compensated row of THIS tenant is returned (trusted compensation repeat, §8.1).
+    /// </summary>
+    public async Task<RepositoryObject?> GetByContentIdIncludingCompensatedAsync(Guid contentId, CancellationToken ct = default) =>
+        await Collection
+            .Find(Builders<RepositoryObject>.Filter.And(
+                Builders<RepositoryObject>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+                Builders<RepositoryObject>.Filter.Eq(x => x.ContentId, contentId)))
+            .FirstOrDefaultAsync(ct);
+
     public async Task<IReadOnlyList<RepositoryObject>> GetByOwningItemAsync(Guid owningItemId, CancellationToken ct = default) =>
         await Collection
             .Find(Builders<RepositoryObject>.Filter.And(

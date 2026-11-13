@@ -8,18 +8,22 @@ namespace Diten.Platform.Domain.Features.RecordCodes;
 /// KALSIN types, the İKİSİ DE types, the old <c>CTR</c>, WMS types not yet in §3 — is unknown (422).
 ///
 /// <para><see cref="RecordCodeTypeDefinition.AllowedCaller"/> is the audit source-service name of the only consumer that
-/// may ask for the type; <c>ORG</c>, <c>POS</c> and <c>PLN</c> have none in DL-1 (403), and the allowed scopes of
-/// <c>ORG</c> / <c>POS</c> are deliberately EMPTY until decision A-8 (DL-2).</para>
+/// may ask for the type. <c>ORG</c> / <c>POS</c> (DL-2, A-8 = LegalEntity, K-15) are asked for by <c>Diten.Platform</c>
+/// itself through the in-process port only: no HTTP credential binding carries them, so the internal endpoint still
+/// answers 403 (contract 1.0.0 §6). <c>PLN</c> has no caller (403) until DL-4.</para>
 /// </summary>
 public static class RecordCodeTypeCatalog
 {
     private const string FinanceTreasury = "Diten.FinanceTreasuryService";
     private const string Mdm = "Diten.MdmService";
+    private const string Platform = "Diten.Platform";
 
     public static IReadOnlyList<RecordCodeTypeDefinition> All { get; } =
     [
-        new("ORG", "Organizasyon Birimi", "OTOMATİK", "MOD-0288", [], null, null),
-        new("POS", "Pozisyon (kadro)", "OTOMATİK", "MOD-0288", [], null, null),
+        new("ORG", "Organizasyon Birimi", "OTOMATİK", "MOD-0288", [RecordCodePrefixScope.LegalEntity], Platform,
+            "platform.organization-units.create"),
+        new("POS", "Pozisyon (kadro)", "OTOMATİK", "MOD-0288", [RecordCodePrefixScope.LegalEntity], Platform,
+            "platform.positions.create"),
         new("PAY", "Ödeme Partisi", "OTOMATİK", "MOD-0126", [RecordCodePrefixScope.LegalEntity], FinanceTreasury,
             "finance-treasury.payment-batches.create"),
         new("APD", "AP Belgesi", "OTOMATİK", "MOD-0119", [RecordCodePrefixScope.LegalEntity], FinanceTreasury,

@@ -1,0 +1,77 @@
+@using Diten.Web.Views.Warehouse.WarehouseExceptions
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseExceptionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["ExceptionsTitle"].Value;
+    ViewData["PageCode"] = "WAREHOUSEEXCEPTIONS"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-7 — İstisna Kutusu (Golden Reference Slim, server mode, proxy profile — pack §8.23, §11.1, §11.5). READ-ONLY: the records are derived by
+    the service at read time; no acknowledge / resolve in v1 (FU-0178-S3-ACT). Bilinçli sapma (§11.5): no create / edit offcanvas. The QuickView is
+    read-only (the record's details and the Staging difference) and a row links to the record's own screen when the reader holds that screen's key.
+
+    UAS-001 — nothing below is drawn without warehouse.exceptions.read: no heading, no filter, no empty table, no button. No redirect.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.ExceptionsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["ExceptionsTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/WarehouseExceptions/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ExceptionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="exceptions-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-warehouseexceptions" data-dt-standard="v2"> *@
+    <div class="wh-list">
+        <partial name="~/Views/Warehouse/WarehouseExceptions/_DataTable.cshtml" />
+    </div>
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" (read-only) *@
+    <partial name="~/Views/Warehouse/WarehouseExceptions/_DetailsQuickView.cshtml" />
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/WarehouseExceptions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/WarehouseExceptions/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/WarehouseExceptions/index.js" asp-append-version="true"></script>
+    }
+}

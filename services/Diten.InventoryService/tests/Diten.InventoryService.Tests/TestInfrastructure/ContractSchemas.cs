@@ -154,6 +154,55 @@ public static class ContractSchemas
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named RECALL-BUNDLE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateRecall(string schemaName, string body) => Recall.Validate(schemaName, body);
 
+    // WMS-BUNDLE (MOD-0178, frozen by the CT single-writer step — pack §19.7, AC-60). Every response body an operation declares is lifted
+    // as "{operationId}.{status}" (a components/responses $ref resolved), so the operation table itself comes from the frozen file.
+    private static readonly Contract Wms = new("wms-bundle.openapi.yaml", "wms-bundle", WmsResponses);
+
+    public static string WmsContractPath => RepoPaths.Contract("wms-bundle.openapi.yaml");
+
+    /// <summary>The lifted name of the body <paramref name="operationId"/> declares for <paramref name="status"/>.</summary>
+    public static string WmsResponse(string operationId, int status) => $"{operationId}.{status}";
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named WMS-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateWms(string schemaName, string body) => Wms.Validate(schemaName, body);
+
+    // WMS-COUNT-BUNDLE (MOD-0181, frozen 1.0.0 by the CT single-writer step — the MOD-0178 §19.7 pattern). Lifted like WMS-BUNDLE:
+    // every declared response body as "{operationId}.{status}".
+    private static readonly Contract WmsCount = new("wms-count-bundle.openapi.yaml", "wms-count-bundle", WmsResponses);
+
+    public static string WmsCountContractPath => RepoPaths.Contract("wms-count-bundle.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named WMS-COUNT-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateWmsCount(string schemaName, string body) => WmsCount.Validate(schemaName, body);
+
+    private static IDictionary<string, JsonNode> WmsResponses(JsonObject doc)
+    {
+        var lifted = new Dictionary<string, JsonNode>(StringComparer.Ordinal);
+        foreach (var (_, item) in doc["paths"]!.AsObject())
+        {
+            foreach (var (method, operation) in item!.AsObject())
+            {
+                if (method is not ("get" or "post" or "put" or "delete" or "patch")) continue;
+                foreach (var (status, declared) in operation!["responses"]!.AsObject())
+                {
+                    var response = declared!;
+                    if (response["$ref"] is JsonValue reference)
+                    {
+                        response = doc["components"]!["responses"]![reference.GetValue<string>()["#/components/responses/".Length..]]!;
+                    }
+
+                    if (response["content"]?["application/json"]?["schema"] is { } schema)
+                    {
+                        lifted[WmsResponse(operation["operationId"]!.GetValue<string>(), int.Parse(status, System.Globalization.CultureInfo.InvariantCulture))] =
+                            schema.DeepClone();
+                    }
+                }
+            }
+        }
+
+        return lifted;
+    }
+
     private sealed class Contract
     {
         private readonly string _file;
@@ -246,9 +295,15 @@ public static class ContractSchemas
                 defs[key] = value;
             }
 
-            foreach (var (_, schema) in defs)
+            // a component that a composed schema extends ($ref + unevaluatedProperties: false — WMS-BUNDLE §3.9) is closed BY that composer: closing
+            // the base itself would refuse the composer's own members (only the base's top level is left open; everything below is closed as usual)
+            var composedBases = defs.Select(d => d.Value).OfType<JsonObject>()
+                .Where(s => s.ContainsKey("unevaluatedProperties") && s["$ref"] is JsonValue)
+                .Select(s => s["$ref"]!.GetValue<string>().Split('/')[^1]).ToHashSet(StringComparer.Ordinal);
+
+            foreach (var (name, schema) in defs)
             {
-                Normalise(schema!);
+                Normalise(schema!, closeTop: !composedBases.Contains(name));
                 if (_openEnums) RemoveEnums(schema!);
             }
 
@@ -325,7 +380,7 @@ public static class ContractSchemas
         }
     }
 
-    private static void Normalise(JsonNode node)
+    private static void Normalise(JsonNode node, bool closeTop = true)
     {
         switch (node)
         {
@@ -345,7 +400,9 @@ public static class ContractSchemas
                     }
                 }
 
-                if (obj["properties"] is JsonObject && !obj.ContainsKey("additionalProperties"))
+                // a composed schema that closes itself with unevaluatedProperties (WMS-BUNDLE §3.9: WarehouseTask + confirmationSeq) is left
+                // as written — an additionalProperties: false next to it would refuse the members its $ref brings in
+                if (closeTop && obj["properties"] is JsonObject && !obj.ContainsKey("additionalProperties") && !obj.ContainsKey("unevaluatedProperties"))
                 {
                     obj["additionalProperties"] = false;
                 }

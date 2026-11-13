@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CountPdf.AdjustmentStatus" xml:space="preserve"><value>Статус корректировки</value></data>
+  <data name="CountPdf.At" xml:space="preserve"><value>Время</value></data>
+  <data name="CountPdf.Bin" xml:space="preserve"><value>Ячейка</value></data>
+  <data name="CountPdf.Blind" xml:space="preserve"><value>Подсчёт вслепую</value></data>
+  <data name="CountPdf.By" xml:space="preserve"><value>Кем решено</value></data>
+  <data name="CountPdf.ClosedAt" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="CountPdf.Company" xml:space="preserve"><value>Компания</value></data>
+  <data name="CountPdf.Count" xml:space="preserve"><value>Инвентаризация</value></data>
+  <data name="CountPdf.Counted" xml:space="preserve"><value>Подсчитано</value></data>
+  <data name="CountPdf.Decision" xml:space="preserve"><value>Решение</value></data>
+  <data name="CountPdf.Decisions" xml:space="preserve"><value>Решения и корректировки журнала</value></data>
+  <data name="CountPdf.DeclaredSource" xml:space="preserve"><value>Указанный источник</value></data>
+  <data name="CountPdf.EnglishFallback" xml:space="preserve"><value>Запрошенный язык нельзя отобразить шрифтом документа; этот PDF на английском.</value></data>
+  <data name="CountPdf.Event" xml:space="preserve"><value>Событие</value></data>
+  <data name="CountPdf.Expected" xml:space="preserve"><value>Ожидалось на снимке</value></data>
+  <data name="CountPdf.ExpectedAtCount" xml:space="preserve"><value>Ожидалось при подсчёте</value></data>
+  <data name="CountPdf.Flag" xml:space="preserve"><value>Отметка</value></data>
+  <data name="CountPdf.Generated" xml:space="preserve"><value>Сформировано</value></data>
+  <data name="CountPdf.LedgerNumber" xml:space="preserve"><value>№ движения журнала</value></data>
+  <data name="CountPdf.LineStatus" xml:space="preserve"><value>Статус строки</value></data>
+  <data name="CountPdf.Lines" xml:space="preserve"><value>Строки инвентаризации</value></data>
+  <data name="CountPdf.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="CountPdf.Manual" xml:space="preserve"><value>Ручные движения COUNT по ячейкам области</value></data>
+  <data name="CountPdf.ManualWindow" xml:space="preserve"><value>Период ручных движений</value></data>
+  <data name="CountPdf.MovementType" xml:space="preserve"><value>Тип движения</value></data>
+  <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>Движения после снимка</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>Не удалось прочитать название</value></data>
+  <data name="CountPdf.No" xml:space="preserve"><value>Нет</value></data>
+  <data name="CountPdf.None" xml:space="preserve"><value>Нет данных</value></data>
+  <data name="CountPdf.NotClosed" xml:space="preserve"><value>Ещё не закрыта</value></data>
+  <data name="CountPdf.Origin" xml:space="preserve"><value>Происхождение</value></data>
+  <data name="CountPdf.Origin.Found" xml:space="preserve"><value>Найденный остаток</value></data>
+  <data name="CountPdf.Origin.Recount" xml:space="preserve"><value>Пересчёт</value></data>
+  <data name="CountPdf.Origin.Snapshot" xml:space="preserve"><value>Снимок</value></data>
+  <data name="CountPdf.Page" xml:space="preserve"><value>Страница</value></data>
+  <data name="CountPdf.PlannedDate" xml:space="preserve"><value>Плановая дата</value></data>
+  <data name="CountPdf.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="CountPdf.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="CountPdf.RequestedLanguage" xml:space="preserve"><value>Запрошенный язык: {0}</value></data>
+  <data name="CountPdf.ScopeBins" xml:space="preserve"><value>Ячейки области</value></data>
+  <data name="CountPdf.Seq" xml:space="preserve"><value>№</value></data>
+  <data name="CountPdf.Sku" xml:space="preserve"><value>Артикул (SKU)</value></data>
+  <data name="CountPdf.SnapshotAt" xml:space="preserve"><value>Снимок сделан</value></data>
+  <data name="CountPdf.Source" xml:space="preserve"><value>Источник решения</value></data>
+  <data name="CountPdf.SourceMismatch" xml:space="preserve"><value>Источник указан неверно</value></data>
+  <data name="CountPdf.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="CountPdf.Timeline" xml:space="preserve"><value>Хронология</value></data>
+  <data name="CountPdf.Title" xml:space="preserve"><value>Пакет доказательств инвентаризации</value></data>
+  <data name="CountPdf.Type" xml:space="preserve"><value>Тип инвентаризации</value></data>
+  <data name="CountPdf.User" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="CountPdf.Variance" xml:space="preserve"><value>Расхождение</value></data>
+  <data name="CountPdf.Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="CountPdf.Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>Ошибка целостности</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>Проведено</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>Пересчёт</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>в пределах допуска</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>пользователем</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>Ошибка целостности корректировки</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>Корректировка ожидает</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>Корректировка проведена</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>Корректировка отклонена</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>Расхождение утверждено</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>Создана</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>Целостность восстановлена</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>Добавлен найденный остаток</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>Строка подсчитана</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>Запрошен пересчёт</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>Расхождение отклонено</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>Запущена</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>Изменена</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>Расхождение рассчитано</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Ожидает утверждения</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Подсчитано</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Без расхождения</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Не подсчитано</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Отправлено на пересчёт</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Идёт подсчёт</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Запущена</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>Циклическая инвентаризация</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>Полная инвентаризация</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>Излишек по инвентаризации</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>Недостача по инвентаризации</value></data>
+</root>

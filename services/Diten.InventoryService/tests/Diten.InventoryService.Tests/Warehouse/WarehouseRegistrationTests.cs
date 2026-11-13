@@ -119,7 +119,7 @@ public sealed class WarehouseRegistrationTests
                 ("PACKINGSTATION", "/Warehouse/Packing/{outboundId}", WarehousePermissions.PackagesRead, false)
             },
             s2.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission, p.IsNavigationVisible)));
-        Assert.Equal(5, manifest.Pages.Count);
+        Assert.Equal(8, manifest.Pages.Count);                                             // DL-7 added the three S3 pages (AC36_… below)
         Assert.All(s2, p =>
         {
             Assert.DoesNotContain("/Platform/", p.RoutePath, StringComparison.OrdinalIgnoreCase);
@@ -147,6 +147,46 @@ public sealed class WarehouseRegistrationTests
             ["PACKAGE_UPDATE"] = (WarehousePermissions.PackagesUpdate, false),
             ["PACKAGE_CLOSE"] = (WarehousePermissions.PackagesUpdate, false)
         }, actions);
+    }
+
+    /// <summary>
+    /// AC-36 (pack §11.1, §14.4; DL-7): the three S3 pages under <c>/Warehouse/</c> (never <c>/Platform/</c>), all in the menu, each with its own read key —
+    /// WAREHOUSEEXCEPTIONS and WAREHOUSEACTIVITY lists, WAREHOUSEINTEGRATION the four cards (not a DataTable, r23) — and NO action ("S3'te eylem yok");
+    /// the S3 controller keys each GET with exactly that page key.
+    /// </summary>
+    [Fact]
+    public void AC36_the_manifest_declares_the_three_S3_pages_without_an_action()
+    {
+        var manifest = new PutawayPickingPackingManifestProvider().GetManifest();
+
+        var s3 = manifest.Pages.Where(p => p.PageCode is "WAREHOUSEEXCEPTIONS" or "WAREHOUSEACTIVITY" or "WAREHOUSEINTEGRATION").ToList();
+        Assert.Equal(new[]
+            {
+                ("WAREHOUSEEXCEPTIONS", "/Warehouse/Exceptions", WarehousePermissions.ExceptionsRead, "List"),
+                ("WAREHOUSEACTIVITY", "/Warehouse/Activity", WarehousePermissions.ActivityRead, "List"),
+                ("WAREHOUSEINTEGRATION", "/Warehouse/Integration", WarehousePermissions.IntegrationMonitorRead, "Dashboard")
+            },
+            s3.Select(p => (p.PageCode, p.RoutePath, p.RequiredPermission, p.PageType)));
+        Assert.All(s3, p =>
+        {
+            Assert.True(p.IsNavigationVisible);
+            Assert.Null(p.ParentPageCode);
+            Assert.Empty(p.Actions);
+            Assert.DoesNotContain("/Platform/", p.RoutePath, StringComparison.OrdinalIgnoreCase);
+        });
+        Assert.Equal(WarehousePermissions.Dl7.Order(StringComparer.Ordinal), s3.Select(p => p.RequiredPermission).Order(StringComparer.Ordinal));
+
+        var routes = typeof(WarehouseMonitoringController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => m.GetCustomAttributes<HttpMethodAttribute>().Any())
+            .ToDictionary(m => m.GetCustomAttribute<HttpMethodAttribute>()!.HttpMethods.Single() + " " + m.GetCustomAttribute<HttpMethodAttribute>()!.Template,
+                m => m.GetCustomAttribute<HasPermissionAttribute>()?.Policy?.Replace("Permission:", string.Empty));
+        Assert.Equal(new Dictionary<string, string?>
+        {
+            ["GET exceptions"] = WarehousePermissions.ExceptionsRead,
+            ["GET activity"] = WarehousePermissions.ActivityRead,
+            ["GET integration/status"] = WarehousePermissions.IntegrationMonitorRead
+        }, routes);
+        Assert.Equal("api/warehouse", typeof(WarehouseMonitoringController).GetCustomAttribute<RouteAttribute>()!.Template);
     }
 
     [Fact]
@@ -177,7 +217,7 @@ public sealed class WarehouseRegistrationTests
     public void The_warehouse_code_names_no_ledger_store_no_stock_total_and_no_sales_issue()
     {
         var warehouse = SourceScan.Production()
-            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks|OutboundShipments|PickTasks|HandlingUnits)/")) // DL-4 / DL-5: the S2 folders too
+            .Where(f => Regex.IsMatch(f.RelativePath, @"/(Warehouse|WarehouseLocationRoles|PutawayTasks|OutboundShipments|PickTasks|HandlingUnits|WarehouseMonitoring)/")) // DL-4 / DL-5: the S2 folders; DL-7: S3
             .ToList();
         Assert.True(warehouse.Count >= 15, $"vacuous scan: {warehouse.Count} files");
 

@@ -6,8 +6,11 @@ namespace Diten.Platform.Application.Contracts.Audit;
 /// <summary>
 /// BL-409 — THE ONE PLACE a token's <c>actor_type</c> becomes an <see cref="AuditActorType"/>.
 ///
-/// <para><b>⚠ ONE VOCABULARY, TWO POLICIES.</b> AuthService mints exactly three actor types
-/// (TokenService: <c>tenant_user</c>, <c>platform_admin</c>, <c>partner_admin</c>). What differs between the
+/// <para><b>⚠ ONE VOCABULARY, TWO POLICIES.</b> AuthService mints three PERSON actor types
+/// (TokenService: <c>tenant_user</c>, <c>platform_admin</c>, <c>partner_admin</c>) and one SERVICE actor type — the signed
+/// service identity token (MOD-0033-FU02, <c>actor_type = service</c>), recorded as <see cref="AuditActorType.Service"/>
+/// (MOD-0262-FU01 K-B, owner decision A, Beste 2026-11-02). A data export is always a person: the service actor is refused
+/// there (<see cref="ForDataExport"/>). What differs between the
 /// callers is only what "no authenticated principal" means: for an audited command it is a background job, an
 /// event consumer or a startup task — the system itself (<see cref="ForCommand"/>); for a data export it means
 /// nobody can be named and the export is refused (<see cref="ForDataExport"/>). The claim mapping itself is
@@ -32,6 +35,7 @@ public static class AuditActorTypeResolver
             "tenant_user" => AuditActorType.TenantUser,
             "platform_admin" => AuditActorType.PlatformAdministrator,
             "partner_admin" => AuditActorType.PartnerAdministrator,
+            "service" => AuditActorType.Service,
             _ => AuditActorType.Unknown
         };
     }
@@ -52,14 +56,19 @@ public static class AuditActorTypeResolver
 
     /// <summary>
     /// The actor of a data export (<c>DataExportAuditWriter</c>). An export is always a person taking data out,
-    /// so no authenticated principal is <see cref="AuditActorType.Unknown"/> — and the writer refuses it.
+    /// so no authenticated principal is <see cref="AuditActorType.Unknown"/> — and the writer refuses it. A service
+    /// principal is not a person either: <see cref="AuditActorType.Service"/> becomes Unknown here (MOD-0262-FU01 K-B).
     /// </summary>
     public static AuditActorType ForDataExport(ITenantAuthorizationContext principal)
     {
         ArgumentNullException.ThrowIfNull(principal);
 
-        return principal.IsAuthenticated
-            ? FromActorTypeClaim(principal.ActorType)
-            : AuditActorType.Unknown;
+        if (!principal.IsAuthenticated)
+        {
+            return AuditActorType.Unknown;
+        }
+
+        var actorType = FromActorTypeClaim(principal.ActorType);
+        return actorType == AuditActorType.Service ? AuditActorType.Unknown : actorType;
     }
 }

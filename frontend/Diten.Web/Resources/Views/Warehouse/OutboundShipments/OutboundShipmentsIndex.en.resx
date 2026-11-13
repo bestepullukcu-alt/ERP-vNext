@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>Line {0}: {1} (requested {2}, allocatable {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>This lot is not the first FEFO lot; write a reason of 10–1000 characters.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>This lot is not the first FEFO lot; a reason is optional.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>Your chosen lot is applied on save; it is not first in FEFO order — FEFO suggests lot {0} (exp. {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>The chosen location is not a staging location of this warehouse; choose one with the Staging role, or leave the field empty.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>Your company refuses a lot out of FEFO order; keep the FEFO order.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>The SKU's base unit could not be read; try again shortly.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Choose a warehouse.</value></data>
@@ -221,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>Not enough free stock</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>Not enough stock in the pick bins</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>Allocatable</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>No lines yet — use Add Line.</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (suggested: {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>FEFO reason:</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>Line {0} is removed from this form. Nothing saved is deleted.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>Line {0}: {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>Not previewed</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>Preview out of date</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>Can be fulfilled</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>Cannot be fulfilled</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>FEFO deviation — reason required</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>FEFO deviation — reason given</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>FEFO deviation — not allowed (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>Add Line</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>Edit Line</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>Base unit: {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>By FEFO (suggested: {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>Preview Line</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>Save Line</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>Discard</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>Single-line preview — on save the allocation is computed again with all lines.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>FEFO suggestion: lot {0} (exp. {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>Your company's FEFO mode: {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>a deviation is refused (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>a reason is required (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>warning only (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>This order line number is already used by another line.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>The preview is out of date; preview the line again before saving a lot change.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>Change Lot</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>An outbound shipment holds at most 100 lines; no more lines can be added.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>The chosen lot is no longer eligible.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>FEFO reason</value></data>
 </root>

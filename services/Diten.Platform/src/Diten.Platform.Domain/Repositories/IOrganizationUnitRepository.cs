@@ -65,3 +65,14 @@ public interface IOrganizationReportingGraphRepository
     /// </summary>
     Task<bool> TryAdvanceStructureTokenAsync(long expectedToken, CancellationToken ct = default);
 }
+
+/// <summary>
+/// MOD-0040-FU02 DL-2 (§8.15) — the code search that ALSO sees soft-deleted units: an automatic code is never given to a
+/// second record, not even over a deleted one (RCS-001 §5.8). A separate one-method contract for the reason
+/// <see cref="IOrganizationReportingGraphRepository"/> is one: widening <see cref="IOrganizationUnitRepository"/> would make
+/// every existing test double grow a stub. Only the create handler asks for it.
+/// </summary>
+public interface IOrganizationUnitCodeHistoryRepository
+{
+    Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default);
+}

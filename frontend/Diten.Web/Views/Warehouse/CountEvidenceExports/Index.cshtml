@@ -1,0 +1,86 @@
+@using Diten.Web.Views.Warehouse.CountEvidenceExports
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountEvidenceExportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["CountEvidenceTitle"].Value;
+    ViewData["PageCode"] = "COUNTEVIDENCE"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0181 DL-5 — Kanıt Paketi / Evidence Pack (Golden Reference Slim, server mode, proxy profile — pack §4.5, §8.13, §11; AC-43, AC-44, AC-50).
+
+    UAS-001 — nothing below is drawn without cycle-count.evidence.read: no heading, no filter, no empty table, no button. No redirect.
+
+    The file's language is this page's language (the proxy sends it as Accept-Language — pack §4.5); a zh / ar PDF is drawn in English with a note,
+    the CSV in the page's language. Each export is a new, insert-only record whose SHA-256 is shown and checked on download.
+*@
+@if (!Perms.Has(CycleCountPermissionKeys.EvidenceRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["CountEvidenceTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canExport = Perms.Has(CycleCountPermissionKeys.EvidenceExport);
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/CountEvidenceExports/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CountEvidenceTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="alert alert-info d-flex flex-column gap-1" role="note">
+        <span>@Localizer["Band.Language"]</span>
+        <span>@Localizer["Band.InsertOnly"]</span>
+    </div>
+
+    <div id="ce-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-countevidenceexports" data-dt-standard="v2"> *@
+    <partial name="~/Views/Warehouse/CountEvidenceExports/_DataTable.cshtml" />
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+    <partial name="~/Views/Warehouse/CountEvidenceExports/_DetailsQuickView.cshtml" />
+
+    @if (canExport)
+    {
+        <partial name="~/Views/Warehouse/CountEvidenceExports/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/CountEvidenceExports/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/CountEvidenceExports/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/CountEvidenceExports/index.js" asp-append-version="true"></script>
+    }
+}

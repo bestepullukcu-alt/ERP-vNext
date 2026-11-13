@@ -26,6 +26,8 @@ public sealed record CycleCountDto
     public required string CreatedBy { get; init; }
     public required string CreatedAt { get; init; }
     public string? UpdatedAt { get; init; }
+    public string? SubmittedBy { get; init; }
+    public string? SubmittedAt { get; init; }
     public string? CancelledBy { get; init; }
     public string? CancelledAt { get; init; }
     public string? CancelReason { get; init; }
@@ -35,7 +37,11 @@ public sealed record CycleCountDto
 
 public sealed record CycleCountItemRefDto(string ItemId, string SkuId, string SkuLevel);
 
-/// <summary>Draft §3.2 <c>CycleCountLine</c> — <see cref="ExpectedQuantity"/> is absent on a blind count before submit (Q-1 = A).</summary>
+/// <summary>
+/// Draft §3.2 <c>CycleCountLine</c> — on a blind count <see cref="ExpectedQuantity"/>, <see cref="MovementsSinceSnapshot"/>,
+/// <see cref="ExpectedAtCount"/> and <see cref="VarianceQuantity"/> are absent before submit, and after it for a caller without
+/// <c>cycle-count.variances.read</c> (Q-1 = A; r5 SB1/F-6).
+/// </summary>
 public sealed record CycleCountLineDto
 {
     public required string LineId { get; init; }
@@ -50,6 +56,21 @@ public sealed record CycleCountLineDto
     public required bool SerialControlled { get; init; }
     public string? ExpectedQuantity { get; init; }
     public string? CountedQuantity { get; init; }
+    public string? CountedBy { get; init; }
+    public string? CountedAt { get; init; }
+    public string? MovementsSinceSnapshot { get; init; }
+    public string? ExpectedAtCount { get; init; }
+    public string? VarianceQuantity { get; init; }
+    public bool? MovementDuringCount { get; init; }
+    public bool? SnapshotDrift { get; init; }
+    public string? RecountOfLineId { get; init; }
+    public int? RecountDepth { get; init; }
+
+    /// <summary>DL-3 (draft §3.6–§3.7, additive): the decision, the ledger correction and the integrity resolution.</summary>
+    public CountVariances.CycleCountDecisionDto? Decision { get; init; }
+    public CountVariances.CycleCountAdjustmentDto? Adjustment { get; init; }
+    public CountVariances.CycleCountIntegrityResolutionDto? IntegrityResolution { get; init; }
+    public string? ScanRef { get; init; }
     public required string Status { get; init; }
     public required int Version { get; init; }
 }
@@ -76,6 +97,25 @@ public sealed record CycleCountLinePageDto(IReadOnlyList<CycleCountLineDto> Item
 public sealed record CycleCountEventPageDto(IReadOnlyList<CycleCountEventDto> Items, long Total, int Page, int PageSize,
     string ContractVersion = CycleCountContract.ContractVersion);
 
+/// <summary>
+/// Draft §3.10 <c>CycleCountDashboard</c> (DL-4, pack §8.13, AC-40): counted at read time, never stored. <c>accuracyPercent</c> = exact lines / counted
+/// lines × 100 of the period (absent when nothing was counted); <c>manualCountMovements</c> only for one warehouse (pack §2.4 rule).
+/// </summary>
+public sealed record CycleCountDashboardDto
+{
+    public string? WarehouseId { get; init; }
+    public required int PeriodDays { get; init; }
+    public required string PeriodStart { get; init; }
+    public required long OpenCounts { get; init; }
+    public required long AwaitingApprovalLines { get; init; }
+    public required long RefusedAdjustments { get; init; }
+    public required long CountedLines { get; init; }
+    public required long ExactLines { get; init; }
+    public string? AccuracyPercent { get; init; }
+    public int? ManualCountMovements { get; init; }
+    public string ContractVersion { get; init; } = CycleCountContract.ContractVersion;
+}
+
 /// <summary>Draft §3.5 — one row of <c>bulkDeleteCycleCounts</c>.</summary>
 public sealed record CycleCountBulkRowDto(string CountId, string Outcome, int? Version = null);
 
@@ -87,3 +127,9 @@ public sealed record CycleCountFormInput(Guid WarehouseId, string CountType, boo
 
 /// <summary>One row of the bulk delete body.</summary>
 public sealed record CycleCountBulkItemInput(Guid CountId, int Version);
+
+/// <summary>DL-2 <c>recordCycleCountLine</c> body without the key: the counted quantity as sent (a decimal string) and the opaque scan reference.</summary>
+public sealed record CycleCountEntryInput(string? CountedQuantity, string? ScanRef);
+
+/// <summary>DL-2 <c>addCycleCountLine</c> body without the key: the found key (bin, SKU, lot — status is AVAILABLE in v1, Q-8 = A) and its quantity.</summary>
+public sealed record CycleCountFoundLineInput(Guid LocationId, Guid ItemId, Guid SkuId, string SkuLevel, string? LotId, string? CountedQuantity, string? ScanRef);

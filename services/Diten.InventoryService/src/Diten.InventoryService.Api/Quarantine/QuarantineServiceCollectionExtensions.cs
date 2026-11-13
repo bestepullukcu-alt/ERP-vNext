@@ -61,6 +61,8 @@ public static class QuarantineServiceCollectionExtensions
 
         // MOD-0175-FU01 §8.2: a reversed source closes / marks its record — the post-commit observer (fast path) + the record-based sweep.
         services.AddScoped<QuarantineSourceReversal>();
+        // MOD-0175-FU01 DL-3 (pack §8.8): the ledger guard — InternalMovementPostingService asks it before building a REVERSAL
+        services.AddScoped<Application.Features.Inventory.Ports.IReversalPrecondition, QuarantineReversalPrecondition>();
         services.AddScoped<IPostedMovementObserver, QuarantineSourceReversalObserver>();
         services.AddScoped<QuarantineSourceReversalFeed>();
         services.AddScoped<QuarantineReversalReads>();

@@ -1,0 +1,1083 @@
+openapi: 3.1.0
+info:
+  title: WMS-COUNT-BUNDLE
+  description: >-
+    MOD-0181 Cycle Counting (Sayım, MVP-5) — the count contract of Diten.InventoryService. Frozen by the Control Tower single-writer step
+    (the MOD-0178 pack §19.7 pattern) from the binding parts of the proposal docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md
+    (wire shape: §1, §2, §3, §4.1 DL-1, §4.2 DL-2, §4.3 DL-3 and the DL-4 row of §4.4, §5, §6, §7) and the module pack
+    execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md r8 (behaviour authority; sha256
+    f943ab48c0bcdcab512cc1fd21dd80e0710649b29bb520fb90bae2f840eaa856, approver Ali / GMG-ERP «onayla» 2026-11-12). 1.0.0 = what the code
+    serves after DL-1…DL-4: 22 operations under /api/warehouse (CycleCountsController 13, CountVariancesController 9). The DL-5 rows of
+    proposal §4.4 (Evidence Pack — createCountEvidenceExport, listCountEvidenceExports, getCountEvidenceExportFile; permissions
+    cycle-count.evidence.export / .read) are NOT in 1.0.0: they stay a pre-draft in the proposal and arrive in their own additive version
+    with DL-5. After the freeze only additive changes (K16).
+
+    RULES (proposal §1).
+    (1) Server /api/warehouse (Gateway -> Diten.InventoryService 5067, the existing /api/warehouse/{everything} route; ocelot.json does not
+    change — Q-15 = A). Tenant shell users (actor_type = tenant_user).
+    (2) TenantId from the token, the company from X-Legal-Entity-Id, resolved by the service's scope middleware. Another tenant's or
+    company's record, or an unknown / non-UUID id -> 404. tenantId / legalEntityId in a body -> 400 INVALID_REQUEST (request reader), in the
+    query -> 400 INVALID_REQUEST (scope middleware). Service-wide: 403 CROSS_LE_FORBIDDEN (header / token / membership mismatch) and 503
+    LEGAL_ENTITY_MASTER_UNAVAILABLE come from the scope middleware before any count code, on every operation.
+    (3) Envelope: the success body is the schema itself (unwrapped); an error is CountError = { error { code, message, details?,
+    correlationId }, contractVersion: "v1" } (the INVENTORY Error; WMS-BUNDLE rule 3). 401 / 403 of the service-wide auth and scope
+    middleware and an unexpected 500 of the exception handler answer AuthError (code may be absent).
+    (4) An empty optional member is NOT written — no JSON null anywhere (WMS-BUNDLE rule 4); in a request a null optional member counts as
+    absent. No schema of this contract admits null (the proposal §3.10 words "null" for CycleCountDashboard.accuracyPercent /
+    manualCountMovements: on the wire the member is absent).
+    (5) Every write takes an Idempotency-Key header equal to the body's idempotencyKey (8-100). Same key + same body -> 200 replay (the
+    record's current state; a 201 is not repeated), another body -> 400 IDEMPOTENCY_KEY_REUSED. The key is kept per requesting user +
+    operation (operationId) + target record and is looked up BEFORE If-Match and every business rule. Fingerprint = operation + target
+    (countId / lineId) + normalised body; headers excluded. Of two concurrent identical requests the loser gets the 200 replay. A request
+    refused before any write leaves no key.
+    (6) Mutable records need If-Match W/"<version>" on change — the count (update, release, cancel, submit, recount), the LINE (count entry,
+    approve, reject, retry, resolve-integrity) or the settings record (W/"0" while the defaults hold): missing -> 400 INVALID_REQUEST, stale
+    -> 409 COUNT_CONFLICT; the answer carries ETag W/"<version>" of that record. Staleness is judged after the key check of rule 5.
+    (7) This contract holds no stock balance (pack §2.3). expectedQuantity is snapshot evidence, written once. A stock difference is written
+    only by DL-3, through INVENTORY postMovement's in-process path as COUNT_GAIN / COUNT_LOSS (sourceModule MOD-0181, sourceType
+    CYCLE_COUNT, key cycle-count:{lineId}). No new stock status and no new movement type.
+    (8) No PUT / DELETE (F-1 = A): update, cancel and bulk delete are POST commands. The ONE named exception is PUT /count-settings
+    (CountVariancesController:count-settings, pack §5 / AC-51).
+    (9) Dates: date = UTC calendar day (yyyy-MM-dd), date-time = UTC instant.
+    (10) Quantities: decimal strings (^-?\d+(\.\d{1,6})?$) in the SKU's base unit (baseUomId).
+    (11) Correlation: X-Correlation-Id (UUID) on every answer.
+    (12) Blind count (Q-1 = A, pack §8.2 rule 5; r5 SB1/F-6): on a blind count expectedQuantity, movementsSinceSnapshot, expectedAtCount,
+    varianceQuantity and adjustment.quantity are absent from every answer before submit, and after it for a caller without
+    cycle-count.variances.read; the same rule applies to the same-named members of an event's data (the stored event is unchanged).
+    Labels are localisation keys, never the stored value: CycleCount.Status.{Status}, CycleCount.LineStatus.{Status},
+    CycleCount.Decision.{Kind}, CycleCount.Decision.Source.{Source}.
+
+    Objects are closed (additionalProperties: false) and every enum is the proposal's list. E-signature: none.
+
+    CT FREEZE — the code is the truth where the proposal's operation table and the service differ (no conflict with the pack r8):
+    (a) x-error-codes of every write list INVALID_REQUEST (the controller answers 400 for a missing If-Match, a malformed body and a key
+    header / body mismatch; the proposal omitted it on release, submit, approve, reject and retry); (b) bulkDeleteCycleCounts lists
+    COUNT_CONFLICT (409 when the counts change while they are deleted); (c) getCycleCountDashboard lists COUNT_INVENTORY_UNAVAILABLE (503 when
+    the ledger cannot be read for manualCountMovements); (d) CountVariance is written as oneOf two closed rows (Count: countNumber?, line,
+    ledgerTransactionId?, ledgerTransactionNumber?; Manual: movement) — the service never writes the Count members on a Manual row; (e) the
+    error catalogue below is exactly CycleCountErrorCodes (25 codes; the proposal §5.1 list, including its three "ek" codes).
+
+    1.1.0 (CT single-writer step, additive over 1.0.0 — MOD-0181 DL-5 after WP-0181-DL5-FIX-01): the DL-5 Evidence Pack joins — three
+    operations (CountEvidenceExportsController 3; 25 operations in all), CountEvidenceExport (closed, no null, 13 required members), its
+    page, the request {idempotencyKey, format}, the format / status / language enums, the ExportId and Accept-Language parameters, the file
+    answer and two codes: COUNT_EVIDENCE_NOT_FOUND (404) and COUNT_EVIDENCE_INTEGRITY (500 — the one catalogue code that is a 500: the stored
+    bytes do not hash to the recorded sha256 and the file is not served). The catalogue is exactly CycleCountErrorCodes again (27 codes).
+    The 1.0.0 text above is kept as written; where it says DL-5 is not in the contract, 1.1.0 supersedes it. Nothing of 1.0.0 was changed or
+    removed except info.version, x-not-in-this-version (DL-5 is now in x-implemented-by-slice) and this appended paragraph.
+    Language rule (code truth, CT DÜŞÜK-3): the Accept-Language tags are ordered by their q value (highest first; no q = 1; equal q keeps the
+    header order); the first one's primary subtag (before - or _), lower-cased, is requestedLanguage when it is one of en, tr, fr, es, zh, ar,
+    ru — else (or without the header) en. language = the language the file is drawn in: requestedLanguage for a CSV; for a PDF
+    requestedLanguage when it is en | tr | fr | es | ru, else en (an English note at the top names the requested code). Codes in the file
+    (status, decision, source, event, adjustment, movement type) are translated with the service resx (CycleCountEvidenceText_{lang}); a name,
+    SKU or lot that cannot be read is the localized "could not be read" word, never an id (FIX-01). Insert-only: an export and its bytes are
+    written once and never changed; a download is a read (service log), not an event.
+  version: 1.1.0
+  x-status: FROZEN
+  x-owner: MOD-0181
+  x-owner-service: Diten.InventoryService
+  x-authored-by: control-tower
+  x-source-proposal: docs/analysis/contracts/drafts/wms-count-bundle-v1-proposal.md
+  x-source-pack: "execution/domains/supply-chain-execution/module-packs/MOD-0181-cycle-counting.md r8 (sha256 f943ab48c0bcdcab512cc1fd21dd80e0710649b29bb520fb90bae2f840eaa856)"
+  x-consumes: [INVENTORY-BUNDLE, LOCATION, TRACE-BUNDLE, PRODUCT-MASTER]
+  x-implemented-by-slice:
+    DL-1: [listCycleCounts, createCycleCount, getCycleCount, updateCycleCount, bulkDeleteCycleCounts, releaseCycleCount, cancelCycleCount, listCycleCountLines, listCycleCountEvents]
+    DL-2: [recordCycleCountLine, addCycleCountLine, submitCycleCount]
+    DL-3: [listCountVariances, getCountVariance, approveCountVariance, rejectCountVariance, requestCountRecount, retryCountAdjustment, resolveCountAdjustmentIntegrity, getCycleCountSettings, updateCycleCountSettings]
+    DL-4: [getCycleCountDashboard]
+    DL-5: [createCountEvidenceExport, listCountEvidenceExports, getCountEvidenceExportFile]
+  x-changelog:
+    - "1.0.0 — CT freeze of DL-1…DL-4 (MOD-0181 pack r8; proposal §1 rules, §3 schemas, §4.1–§4.3 operations and the DL-4 row of §4.4, §5 error codes, §6 state machine). 22 operations, 25 COUNT_* codes. The DL-5 rows of §4.4 (Evidence Pack) are not frozen — they come in their own additive version. Code-truth notes (a)–(e) in the description."
+    - "1.1.0 — additive (MOD-0181 DL-5 Evidence Pack, CT single-writer step after WP-0181-DL5-FIX-01 VERIFIED): proposal §3.11, the DL-5 rows of §4.4 and §5.3 — createCountEvidenceExport (POST /cycle-counts/{countId}/evidence-exports, cycle-count.evidence.export), listCountEvidenceExports (GET /count-evidence-exports) and getCountEvidenceExportFile (GET /count-evidence-exports/{exportId}/file, both cycle-count.evidence.read); CountEvidenceExport (closed, no null, 13 required members), CountEvidenceExportPage, CreateCountEvidenceExportRequest {idempotencyKey, format}, CountEvidenceFormat, CountEvidenceStatus, CountEvidenceLanguage; COUNT_EVIDENCE_NOT_FOUND (404), COUNT_EVIDENCE_INTEGRITY (500). Language rule written as the code does it (q-ordered Accept-Language, primary subtag, else en; CT DÜŞÜK-3). x-not-in-this-version removed. No existing path, parameter, property, type, required list, status code or enum value of 1.0.0 changed or was removed."
+  x-state-machines:
+    cycleCount:
+      - "— -> Draft: createCycleCount"
+      - "Draft -> Released: releaseCycleCount (snapshot + bin claims, pack §8.2)"
+      - "Draft -> Cancelled + soft delete: cancelCycleCount / bulkDeleteCycleCounts (reason required)"
+      - "Released -> Counting: the first recordCycleCountLine / addCycleCountLine"
+      - "Released / Counting -> Submitted: submitCycleCount"
+      - "Released / Counting -> Closed: submitCycleCount when every line is NoVariance (bin claims open = false)"
+      - "Released / Counting -> Cancelled (not deleted; bin claims open = false): cancelCycleCount (reason required; no posting)"
+      - "Submitted -> Closed: system — the last line reaches its final state (approve / reject / posting result / resolve / recount)"
+      - "Closed / Cancelled: final — every write 409 COUNT_INVALID_STATE"
+      - "— -> Released (recount count, recountOfId): requestCountRecount (201)"
+    cycleCountLine:
+      - "— -> Open: release (origin Snapshot) / recount (origin Recount)"
+      - "— -> Counted: addCycleCountLine (origin Found, expected 0)"
+      - "Open / Counted -> Counted: recordCycleCountLine (until submit)"
+      - "Counted -> NoVariance | AwaitingApproval: submitCycleCount (variance 0 and no flag -> NoVariance; within tolerance -> Approved, source Tolerance)"
+      - "AwaitingApproval -> Approved (+ adjustment Pending -> Posted | Refused | IntegrityError): approveCountVariance"
+      - "AwaitingApproval / Approved + Refused -> Rejected: rejectCountVariance"
+      - "AwaitingApproval -> Recounted: requestCountRecount"
+      - "Approved + Pending / Refused -> Approved + Posted | Refused | IntegrityError: retryCountAdjustment (key first)"
+      - "Approved + IntegrityError -> Approved + Posted (AcceptHolder: the holder equals the correction — type, SKU, item, quantity, bin, lot, status, SourceLineId; pack r8) | Rejected (Reject): resolveCountAdjustmentIntegrity"
+servers: [{ url: /api/warehouse }]
+security: [{ bearerAuth: [] }]
+paths:
+  # ── §4.1 DL-1 ──
+  /cycle-counts:
+    get:
+      operationId: listCycleCounts
+      summary: Count list (no deleted counts; newest first)
+      x-permission: cycle-count.counts.read
+      x-error-codes: [INVALID_REQUEST]
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: array, items: { $ref: '#/components/schemas/CycleCountStatus' } }, style: form, explode: true }
+        - { name: warehouseId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: q, in: query, required: false, description: count number, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Count page (§3.4)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountPage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+    post:
+      operationId: createCycleCount
+      summary: Open a Draft count. number, status and the server members are NOT request members (400, AC-12). Order (SB3/F-1) — body shape, key, business rules, number (interim counter, outside the transaction; a number taken but not written is skipped), one transaction.
+      x-permission: cycle-count.counts.create
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, COUNT_SCOPE_NODE_INVALID, COUNT_ASSIGNEE_INVALID, COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE, COUNT_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, COUNT_RECORD_CODE_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountFormRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Count' }
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/bulk-delete:
+    post:
+      operationId: bulkDeleteCycleCounts
+      summary: Soft delete Draft counts (1-200 distinct countIds with their version); one outcome per row (§3.5). A replay re-evaluates the unwritten rows.
+      x-permission: cycle-count.counts.bulk-delete
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_REASON_REQUIRED, COUNT_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/BulkDeleteCycleCountsRequest' } } }
+      responses:
+        '200':
+          description: Row outcomes
+          content: { application/json: { schema: { $ref: '#/components/schemas/BulkDeleteCycleCountsResult' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/dashboard:
+    get:
+      operationId: getCycleCountDashboard
+      summary: DL-4 (AC-40) — the KPI cards, counted at read time (no stored totals); another company's counts are not counted. The literal segment matches before {countId}.
+      x-permission: cycle-count.counts.read
+      x-error-codes: [INVALID_REQUEST, COUNT_INVENTORY_UNAVAILABLE]
+      parameters:
+        - { name: warehouseId, in: query, required: false, description: a canonical UUID (else 400 INVALID_REQUEST), schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Dashboard (§3.10)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountDashboard' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}:
+    get:
+      operationId: getCycleCount
+      summary: The count (ETag)
+      x-permission: cycle-count.counts.read
+      x-error-codes: [COUNT_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/CountId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Count' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/update:
+    post:
+      operationId: updateCycleCount
+      summary: The whole Draft form (an absent optional member is cleared); Draft only
+      x-permission: cycle-count.counts.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, UNKNOWN_LOCATION, COUNT_SCOPE_NODE_INVALID, COUNT_ASSIGNEE_INVALID, COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountFormRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/release:
+    post:
+      operationId: releaseCycleCount
+      summary: Draft -> Released in one snapshot transaction (pack §8.2) — scopeBinIds, one Snapshot line per AVAILABLE bucket with OnHand > 0, a bin claim for EVERY scope bin; ledger movements are never blocked (Q-6 = B)
+      x-permission: cycle-count.counts.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_SCOPE_EMPTY, COUNT_SCOPE_TOO_LARGE, COUNT_SCOPE_OVERLAP, COUNT_INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/cancel:
+    post:
+      operationId: cancelCycleCount
+      summary: Draft -> soft delete (IsDeleted, DeletedAt, status Cancelled; GET 404 afterwards); Released / Counting -> Cancelled (not deleted, bin claims open = false)
+      x-permission: cycle-count.counts.cancel
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_REASON_REQUIRED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/lines:
+    get:
+      operationId: listCycleCountLines
+      summary: The count's lines (order bin, SKU, lot); blind rule 12
+      x-permission: cycle-count.counts.read
+      x-error-codes: [COUNT_NOT_FOUND, INVALID_REQUEST]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200':
+          description: Line page (§3.4)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountLinePage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+    # ── §4.2 DL-2 ──
+    post:
+      operationId: addCycleCountLine
+      summary: A found line (origin Found, expected 0, Counted; v1 AVAILABLE only — Q-8 = A); no If-Match (a new line). The bin must be in scopeBinIds, the SKU in a non-empty scopeSkuIds, the key not in RecountExcludedKeys.
+      x-permission: cycle-count.counts.record
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_QUANTITY_INVALID, COUNT_NOT_FOUND, COUNT_INVALID_STATE, COUNT_LINE_OUT_OF_SCOPE, COUNT_LOT_REQUIRED, COUNT_LOT_UNKNOWN, LOT_NOT_ALLOWED, COUNT_LINE_DUPLICATE, UNKNOWN_ITEM, SKU_ITEM_MISMATCH, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, COUNT_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AddCycleCountLineRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Line' }
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/events:
+    get:
+      operationId: listCycleCountEvents
+      summary: The count's timeline (order seq); blind rule 12 on data
+      x-permission: cycle-count.counts.read
+      x-error-codes: [COUNT_NOT_FOUND, INVALID_REQUEST]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200':
+          description: Event page (§3.4)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountEventPage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/lines/{lineId}/count:
+    post:
+      operationId: recordCycleCountLine
+      summary: The counted quantity (decimal string >= 0, <= 6 decimals, an integer on a serial-controlled line); countedBy / countedAt from the server. Count Released / Counting, line Open / Counted; the first entry moves the count to Counting. If-Match = the LINE's version.
+      x-permission: cycle-count.counts.record
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_QUANTITY_INVALID, COUNT_NOT_FOUND, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/LineId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/RecordCycleCountLineRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /cycle-counts/{countId}/submit:
+    post:
+      operationId: submitCycleCount
+      summary: Released / Counting -> Submitted (or Closed when every line is NoVariance); every Snapshot and Recount line counted; the variance of pack §8.4 in one snapshot transaction; tolerance approval (DL-3) posts after the commit
+      x-permission: cycle-count.counts.record
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_LINES_UNCOUNTED, COUNT_INVENTORY_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  # ── §4.3 DL-3 ──
+  /cycle-counts/{countId}/recount:
+    post:
+      operationId: requestCountRecount
+      summary: A recount of selected lines (1-200) as a new Released count (recountOfId; lines origin Recount, depth + 1); blind, countType and the scope are NOT request members (400). If-Match = the source count's version.
+      x-permission: cycle-count.variances.recount
+      x-error-codes: [INVALID_REQUEST, COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_RECOUNT_LIMIT, COUNT_ASSIGNEE_INVALID, COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE, COUNT_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, COUNT_RECORD_CODE_UNAVAILABLE, COUNT_SCOPE_OVERLAP, COUNT_INVENTORY_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/RequestCountRecountRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/Count' }
+        '200': { $ref: '#/components/responses/Count' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /count-variances:
+    get:
+      operationId: listCountVariances
+      summary: Variance Trace (newest first). source count (default) | manual | all; manual / all need warehouseId + from < to <= 31 days; status filters Count rows only
+      x-permission: cycle-count.variances.read
+      x-error-codes: [INVALID_REQUEST, COUNT_INVENTORY_UNAVAILABLE]
+      parameters:
+        - { name: source, in: query, required: false, schema: { type: string, enum: [count, manual, all], default: count } }
+        - { name: warehouseId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: from, in: query, required: false, description: yyyy-MM-dd or a UTC instant, schema: { type: string } }
+        - { name: to, in: query, required: false, description: yyyy-MM-dd or a UTC instant, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { type: array, items: { $ref: '#/components/schemas/CycleCountLineStatus' } }, style: form, explode: true }
+        - { name: skuId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: lotId, in: query, required: false, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Variance Trace page (§3.8)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CountVariancePage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /count-variances/{lineId}:
+    get:
+      operationId: getCountVariance
+      summary: One Variance Trace row (a line before submit does not exist here)
+      x-permission: cycle-count.variances.read
+      x-error-codes: [COUNT_LINE_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/LineId' }]
+      responses:
+        '200':
+          description: Variance Trace row (§3.8)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CountVariance' } } }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+  /count-variances/{lineId}/approve:
+    post:
+      operationId: approveCountVariance
+      summary: Count Submitted, line AwaitingApproval; four eyes (the counter / submitter -> 403 COUNT_SELF_APPROVAL_FORBIDDEN); drift -> 409; serial -> 422. Transaction 1 (Approved + Pending correction) -> one posting -> transaction 2. 200 with the correction Posted, or Refused with the ledger code + details as they came; outcome unknown -> 503 (line Pending); key reused / holder reversed -> 409.
+      x-permission: cycle-count.variances.approve
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_SELF_APPROVAL_FORBIDDEN, COUNT_SNAPSHOT_DRIFT, COUNT_SERIAL_NOT_POSTABLE, COUNT_INVENTORY_UNAVAILABLE, COUNT_ADJUSTMENT_INTEGRITY]
+      parameters: [{ $ref: '#/components/parameters/LineId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '422': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /count-variances/{lineId}/reject:
+    post:
+      operationId: rejectCountVariance
+      summary: Line AwaitingApproval | (Approved + Refused) -> Rejected; reason 1-500
+      x-permission: cycle-count.variances.reject
+      x-error-codes: [INVALID_REQUEST, COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE]
+      parameters: [{ $ref: '#/components/parameters/LineId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /count-variances/{lineId}/retry:
+    post:
+      operationId: retryCountAdjustment
+      summary: Approved + correction Pending or Refused (INSUFFICIENT_STOCK); the ledger key first (Committed -> Posted, no second movement), else the same request under the same key. The approve answer mapping.
+      x-permission: cycle-count.variances.post
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_INVENTORY_UNAVAILABLE, COUNT_ADJUSTMENT_INTEGRITY]
+      parameters: [{ $ref: '#/components/parameters/LineId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+        '503': { $ref: '#/components/responses/CountError' }
+  /count-variances/{lineId}/resolve-integrity:
+    post:
+      operationId: resolveCountAdjustmentIntegrity
+      summary: IntegrityError -> AcceptHolder (only when the holder movement equals the line's correction — type, SKU, item, quantity, bin, lot, status, SourceLineId (pack r8, ORTA-2) — and is not reversed; Posted with the holder's transaction) | Reject (line Rejected); reason required
+      x-permission: cycle-count.variances.resolve
+      x-error-codes: [INVALID_REQUEST, COUNT_REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, COUNT_LINE_NOT_FOUND, COUNT_CONFLICT, COUNT_INVALID_STATE, COUNT_ADJUSTMENT_INTEGRITY]
+      parameters: [{ $ref: '#/components/parameters/LineId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ResolveCountAdjustmentIntegrityRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Line' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /count-settings:
+    get:
+      operationId: getCycleCountSettings
+      summary: The company's count settings (defaults with isDefault, version 0, ETag W/"0" while no record exists); an API permission without a screen (F-11)
+      x-permission: cycle-count.settings.read
+      x-error-codes: []
+      responses:
+        '200': { $ref: '#/components/responses/Settings' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+    put:
+      operationId: updateCycleCountSettings
+      summary: THE ONE PUT of this contract (rule 8, AC-51) — the four values; INVALID_REQUEST carries details.field
+      x-permission: cycle-count.settings.configure
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateCycleCountSettingsRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Settings' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  # ── §4.4 DL-5 Evidence Pack (1.1.0, additive) ──
+  /cycle-counts/{countId}/evidence-exports:
+    post:
+      operationId: createCountEvidenceExport
+      summary: Draw and store an Evidence Pack file (PDF or CSV, same content) of a Submitted | Closed count; insert-only; the language from Accept-Language (description, 1.1.0). Order — count id (not a UUID -> 404 COUNT_NOT_FOUND), body shape, key header = body key, format Pdf | Csv, the key (replay 200, no new file), the count (404), its state (409).
+      x-permission: cycle-count.evidence.export
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, COUNT_NOT_FOUND, COUNT_INVALID_STATE]
+      parameters: [{ $ref: '#/components/parameters/CountId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/AcceptLanguage' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateCountEvidenceExportRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/EvidenceExport' }
+        '200': { $ref: '#/components/responses/EvidenceExport' }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '409': { $ref: '#/components/responses/CountError' }
+  /count-evidence-exports:
+    get:
+      operationId: listCountEvidenceExports
+      summary: The company's Evidence Pack export log, newest first (requestedAt descending); countId narrows it
+      x-permission: cycle-count.evidence.read
+      x-error-codes: [INVALID_REQUEST]
+      parameters:
+        - { name: countId, in: query, required: false, description: a UUID (else 400 INVALID_REQUEST), schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Export page (§3.11)
+          content: { application/json: { schema: { $ref: '#/components/schemas/CountEvidenceExportPage' } } }
+        '400': { $ref: '#/components/responses/CountError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+  /count-evidence-exports/{exportId}/file:
+    get:
+      operationId: getCountEvidenceExportFile
+      summary: The STORED bytes of an export of the caller's tenant + company; re-hashed before they leave — bytes that do not hash to the recorded sha256 are never served (500 COUNT_EVIDENCE_INTEGRITY, no byte of the file in the body). The download is logged by the service (a read, not an event).
+      x-permission: cycle-count.evidence.read
+      x-error-codes: [COUNT_EVIDENCE_NOT_FOUND, COUNT_EVIDENCE_INTEGRITY]
+      parameters: [{ $ref: '#/components/parameters/ExportId' }]
+      responses:
+        '200':
+          description: "The stored file: application/pdf, or text/csv; charset=utf-8 (Content-Disposition attachment with the export's fileName)"
+          headers:
+            X-Content-SHA256: { required: true, description: "the record's sha256 = the SHA-256 of these bytes", schema: { type: string, pattern: '^[0-9a-f]{64}$' } }
+            Content-Disposition: { required: true, description: "attachment; filename=<fileName>", schema: { type: string } }
+          content:
+            application/pdf: { schema: { type: string, contentMediaType: application/pdf } }
+            text/csv: { schema: { type: string, contentMediaType: text/csv } }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/CountError' }
+        '500': { $ref: '#/components/responses/CountError' }
+
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    Page: { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 25 } }
+    CountId: { name: countId, in: path, required: true, description: a canonical UUID (else 404 COUNT_NOT_FOUND), schema: { type: string, format: uuid } }
+    LineId: { name: lineId, in: path, required: true, description: a canonical UUID (else 404 COUNT_LINE_NOT_FOUND), schema: { type: string, format: uuid } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, description: equals the body's idempotencyKey (rule 5), schema: { type: string, minLength: 8, maxLength: 100 } }
+    ExportId: { name: exportId, in: path, required: true, description: a canonical UUID (else 404 COUNT_EVIDENCE_NOT_FOUND), schema: { type: string, format: uuid } }
+    AcceptLanguage: { name: Accept-Language, in: header, required: false, description: "the file's language (description, 1.1.0 language rule): q-ordered, the first tag's primary subtag if one of the 7, else en", schema: { type: string } }
+    IfMatch: { name: If-Match, in: header, required: true, description: 'W/"<version>" of the count, the line or the settings record (rule 6); missing -> 400 INVALID_REQUEST, stale -> 409 COUNT_CONFLICT', schema: { type: string } }
+  headers:
+    ETag: { description: 'W/"<version>"', schema: { type: string } }
+  responses:
+    CountError:
+      description: The count error envelope (rule 3)
+      content: { application/json: { schema: { $ref: '#/components/schemas/CountError' } } }
+    AuthError:
+      description: 401 / 403 of the service-wide auth and scope middleware, 500 of the exception handler (rule 3)
+      content: { application/json: { schema: { $ref: '#/components/schemas/AuthError' } } }
+    Count:
+      description: The count (ETag)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/CycleCount' } } }
+    Line:
+      description: The line (ETag of the line)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountLine' } } }
+    Settings:
+      description: The company settings (ETag)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/CycleCountSettings' } } }
+    EvidenceExport:
+      description: The Evidence Pack export record (1.1.0)
+      content: { application/json: { schema: { $ref: '#/components/schemas/CountEvidenceExport' } } }
+  schemas:
+    # ── primitives ──
+    Uuid: { type: string, format: uuid }
+    Text: { type: string, minLength: 1 }
+    Date: { type: string, format: date, pattern: '^\d{4}-\d{2}-\d{2}$' }
+    DateTime: { type: string, format: date-time }
+    Quantity: { type: string, pattern: '^-?\d+(\.\d{1,6})?$' }
+    ContractVersion: { type: string, const: v1 }
+    CountNumber: { type: string, pattern: '^[A-Z]{2,5}-CNT-\d{6,}$', description: "{COMPANY}-CNT-{000001} (pack §8.12; MOD-0178 interim counter, type CNT — Q-7 = B)" }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
+    ItemRef:
+      type: object
+      additionalProperties: false
+      required: [itemId, skuId, skuLevel]
+      properties:
+        itemId: { $ref: '#/components/schemas/Uuid' }
+        skuId: { $ref: '#/components/schemas/Uuid' }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+    # ── envelopes (rule 3) ──
+    CountError:
+      type: object
+      additionalProperties: false
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, correlationId]
+          properties:
+            code: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
+            message: { type: string }
+            details: { type: object }
+            correlationId: { $ref: '#/components/schemas/Uuid' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    AuthError:
+      type: object
+      additionalProperties: false
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            correlationId: { $ref: '#/components/schemas/Uuid' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.1 CycleCount ──
+    CycleCountType: { type: string, enum: [Cycle, Full] }
+    CycleCountStatus: { type: string, enum: [Draft, Released, Counting, Submitted, Closed, Cancelled], description: "label key CycleCount.Status.{Status}" }
+    CycleCount:
+      type: object
+      additionalProperties: false
+      description: scopeBinIds and snapshotAt are written at release and never change ([] / absent in Draft); snapshotTransactionIds is NOT a wire member (internal evidence)
+      required: [countId, number, warehouseId, countType, blind, scopeLocationIds, scopeSkuIds, plannedDate, status, scopeBinIds, lineCount, createdBy, createdAt, version, contractVersion]
+      properties:
+        countId: { $ref: '#/components/schemas/Uuid' }
+        number: { $ref: '#/components/schemas/CountNumber' }
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        countType: { $ref: '#/components/schemas/CycleCountType' }
+        blind: { type: boolean }
+        scopeLocationIds: { type: array, items: { $ref: '#/components/schemas/Uuid' } }
+        scopeSkuIds: { type: array, items: { $ref: '#/components/schemas/Uuid' } }
+        plannedDate: { $ref: '#/components/schemas/Date' }
+        assignedTo: { $ref: '#/components/schemas/Uuid' }
+        note: { $ref: '#/components/schemas/Text' }
+        status: { $ref: '#/components/schemas/CycleCountStatus' }
+        snapshotAt: { $ref: '#/components/schemas/DateTime' }
+        scopeBinIds: { type: array, items: { $ref: '#/components/schemas/Uuid' } }
+        lineCount: { type: integer, minimum: 0 }
+        recountOfId: { $ref: '#/components/schemas/Uuid' }
+        createdBy: { $ref: '#/components/schemas/Uuid' }
+        createdAt: { $ref: '#/components/schemas/DateTime' }
+        updatedAt: { $ref: '#/components/schemas/DateTime' }
+        submittedBy: { $ref: '#/components/schemas/Uuid' }
+        submittedAt: { $ref: '#/components/schemas/DateTime' }
+        cancelledBy: { $ref: '#/components/schemas/Uuid' }
+        cancelledAt: { $ref: '#/components/schemas/DateTime' }
+        cancelReason: { $ref: '#/components/schemas/Text' }
+        version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.2 CycleCountLine ──
+    CycleCountLineOrigin: { type: string, enum: [Snapshot, Found, Recount] }
+    CycleCountLineStatus: { type: string, enum: [Open, Counted, NoVariance, AwaitingApproval, Approved, Rejected, Recounted], description: "label key CycleCount.LineStatus.{Status}" }
+    CycleCountLine:
+      type: object
+      additionalProperties: false
+      description: "Blind rule 12 on expectedQuantity, movementsSinceSnapshot, expectedAtCount, varianceQuantity (and adjustment.quantity). snapshotDrift / movementDuringCount are written after submit only; recountOfLineId / recountDepth only on an origin Recount line."
+      required: [lineId, countId, warehouseId, locationId, item, stockStatus, baseUomId, origin, serialControlled, status, version]
+      properties:
+        lineId: { $ref: '#/components/schemas/Uuid' }
+        countId: { $ref: '#/components/schemas/Uuid' }
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        locationId: { $ref: '#/components/schemas/Uuid' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lotId: { $ref: '#/components/schemas/Text' }
+        stockStatus: { type: string, const: AVAILABLE, description: "v1 AVAILABLE only (Q-8 = A)" }
+        baseUomId: { $ref: '#/components/schemas/Text' }
+        origin: { $ref: '#/components/schemas/CycleCountLineOrigin' }
+        serialControlled: { type: boolean }
+        expectedQuantity: { $ref: '#/components/schemas/Quantity' }
+        countedQuantity: { $ref: '#/components/schemas/Quantity' }
+        countedBy: { $ref: '#/components/schemas/Uuid' }
+        countedAt: { $ref: '#/components/schemas/DateTime' }
+        movementsSinceSnapshot: { $ref: '#/components/schemas/Quantity' }
+        expectedAtCount: { $ref: '#/components/schemas/Quantity' }
+        varianceQuantity: { $ref: '#/components/schemas/Quantity' }
+        movementDuringCount: { type: boolean }
+        snapshotDrift: { type: boolean }
+        scanRef: { type: string, minLength: 1, maxLength: 200, description: "opaque (Q-12 = A)" }
+        recountOfLineId: { $ref: '#/components/schemas/Uuid' }
+        recountDepth: { type: integer, minimum: 1 }
+        decision: { $ref: '#/components/schemas/CycleCountDecision' }
+        adjustment: { $ref: '#/components/schemas/CycleCountAdjustment' }
+        integrityResolution: { $ref: '#/components/schemas/CycleCountIntegrityResolution' }
+        status: { $ref: '#/components/schemas/CycleCountLineStatus' }
+        version: { type: integer, minimum: 1 }
+    # ── §3.6 / §3.7 (DL-3) ──
+    CycleCountDecision:
+      type: object
+      additionalProperties: false
+      description: "Tolerance approval: source Tolerance, no by. Labels CycleCount.Decision.{kind} / CycleCount.Decision.Source.{source}."
+      required: [kind, source, at]
+      properties:
+        kind: { type: string, enum: [Approved, Rejected, Recount] }
+        source: { type: string, enum: [User, Tolerance] }
+        by: { $ref: '#/components/schemas/Uuid' }
+        at: { $ref: '#/components/schemas/DateTime' }
+        reason: { $ref: '#/components/schemas/Text' }
+    CycleCountAdjustment:
+      type: object
+      additionalProperties: false
+      description: "transactionDate = the line's countedAt (to the second), postingDate = the first attempt's UTC day; both written at the first attempt and sent unchanged on every attempt. refusalDetails = the ledger's details object as it answered."
+      required: [movementType, idempotencyKey, status, transactionDate, postingDate, attempts, firstAttemptAt, lastAttemptAt]
+      properties:
+        movementType: { type: string, enum: [COUNT_GAIN, COUNT_LOSS] }
+        quantity: { $ref: '#/components/schemas/Quantity' }
+        idempotencyKey: { type: string, pattern: '^cycle-count:[0-9a-f-]{36}$' }
+        status: { type: string, enum: [Pending, Posted, Refused, IntegrityError] }
+        transactionId: { $ref: '#/components/schemas/Uuid' }
+        transactionNumber: { $ref: '#/components/schemas/Text' }
+        refusalCode: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
+        refusalDetails: { type: object }
+        refusalStatus: { type: integer, minimum: 400, maximum: 499 }
+        integrityReason: { type: string, enum: [KeyReused, HolderReversed] }
+        holderTransactionId: { $ref: '#/components/schemas/Uuid' }
+        transactionDate: { $ref: '#/components/schemas/DateTime' }
+        postingDate: { $ref: '#/components/schemas/DateTime' }
+        attempts: { type: integer, minimum: 1 }
+        firstAttemptAt: { $ref: '#/components/schemas/DateTime' }
+        lastAttemptAt: { $ref: '#/components/schemas/DateTime' }
+    CycleCountIntegrityResolution:
+      type: object
+      additionalProperties: false
+      required: [kind, by, at, reason]
+      properties:
+        kind: { type: string, enum: [AcceptHolder, Reject] }
+        by: { $ref: '#/components/schemas/Uuid' }
+        at: { $ref: '#/components/schemas/DateTime' }
+        reason: { $ref: '#/components/schemas/Text' }
+        holderTransactionId: { $ref: '#/components/schemas/Uuid' }
+    # ── §3.8 CountVariance (DL-3) ──
+    CountManualMovement:
+      type: object
+      additionalProperties: false
+      description: "A COUNT_* ledger movement that the pack §2.4 two-way rule matches to no line; sourceMismatch = it declares MOD-0181 but matches no line"
+      required: [transactionId, transactionNumber, movementType, item, quantity, uomId, sourceModule, sourceType, createdBy, createdAt, transactionDate, postingDate, sourceMismatch]
+      properties:
+        transactionId: { $ref: '#/components/schemas/Uuid' }
+        transactionNumber: { $ref: '#/components/schemas/Text' }
+        movementType: { type: string, enum: [COUNT_GAIN, COUNT_LOSS] }
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        locationId: { $ref: '#/components/schemas/Uuid' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lotId: { $ref: '#/components/schemas/Text' }
+        stockStatus: { $ref: '#/components/schemas/Text' }
+        quantity: { $ref: '#/components/schemas/Quantity' }
+        uomId: { $ref: '#/components/schemas/Text' }
+        sourceModule: { $ref: '#/components/schemas/Text' }
+        sourceType: { $ref: '#/components/schemas/Text' }
+        sourceDocumentId: { $ref: '#/components/schemas/Text' }
+        sourceLineId: { $ref: '#/components/schemas/Text' }
+        createdBy: { $ref: '#/components/schemas/Uuid' }
+        createdAt: { $ref: '#/components/schemas/DateTime' }
+        transactionDate: { $ref: '#/components/schemas/DateTime' }
+        postingDate: { $ref: '#/components/schemas/DateTime' }
+        sourceMismatch: { type: boolean }
+    CountVarianceCountRow:
+      type: object
+      additionalProperties: false
+      description: "ledgerTransactionId = the correction movement found by the pack §2.4 two-way rule (Posted -> the line's transactionId; Pending -> key + source declaration + createdAt >= firstAttemptAt)"
+      required: [source, line, contractVersion]
+      properties:
+        source: { type: string, const: Count }
+        countNumber: { $ref: '#/components/schemas/CountNumber' }
+        line: { $ref: '#/components/schemas/CycleCountLine' }
+        ledgerTransactionId: { $ref: '#/components/schemas/Uuid' }
+        ledgerTransactionNumber: { $ref: '#/components/schemas/Text' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CountVarianceManualRow:
+      type: object
+      additionalProperties: false
+      required: [source, movement, contractVersion]
+      properties:
+        source: { type: string, const: Manual }
+        movement: { $ref: '#/components/schemas/CountManualMovement' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CountVariance:
+      description: One Variance Trace row — source Count (a 0181 line) or Manual (a manual COUNT_* movement)
+      oneOf:
+        - { $ref: '#/components/schemas/CountVarianceCountRow' }
+        - { $ref: '#/components/schemas/CountVarianceManualRow' }
+      discriminator:
+        propertyName: source
+        mapping: { Count: '#/components/schemas/CountVarianceCountRow', Manual: '#/components/schemas/CountVarianceManualRow' }
+    # ── §3.9 CycleCountSettings (DL-3) ──
+    CycleCountSettings:
+      type: object
+      additionalProperties: false
+      description: "No record -> the defaults (isDefault true, version 0, ETag W/\"0\"): toleranceAbsolute 0, tolerancePercent 0, maxRecounts 2, maxLinesPerCount 2000"
+      required: [toleranceAbsolute, tolerancePercent, maxRecounts, maxLinesPerCount, isDefault, version, contractVersion]
+      properties:
+        toleranceAbsolute: { $ref: '#/components/schemas/Quantity' }
+        tolerancePercent: { $ref: '#/components/schemas/Quantity' }
+        maxRecounts: { type: integer, minimum: 0, maximum: 10 }
+        maxLinesPerCount: { type: integer, minimum: 1, maximum: 5000 }
+        isDefault: { type: boolean }
+        updatedBy: { $ref: '#/components/schemas/Uuid' }
+        updatedAt: { $ref: '#/components/schemas/DateTime' }
+        version: { type: integer, minimum: 0 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.10 CycleCountDashboard (DL-4) ──
+    CycleCountDashboard:
+      type: object
+      additionalProperties: false
+      description: "Counted at read time. openCounts = Released | Counting | Submitted; awaitingApprovalLines = AwaitingApproval lines; refusedAdjustments = Approved + correction Refused; the period = the last periodDays (31) days: countedLines = variance computed and countedAt >= periodStart, exactLines = of these variance 0, accuracyPercent = exactLines / countedLines x 100 with one decimal (ABSENT when no line was counted); manualCountMovements = the manual COUNT_* movements of the period in the selected warehouse — only when warehouseId is given, else ABSENT (rule 4)."
+      required: [periodDays, periodStart, openCounts, awaitingApprovalLines, refusedAdjustments, countedLines, exactLines, contractVersion]
+      properties:
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        periodDays: { type: integer, const: 31 }
+        periodStart: { $ref: '#/components/schemas/DateTime' }
+        openCounts: { type: integer, minimum: 0 }
+        awaitingApprovalLines: { type: integer, minimum: 0 }
+        refusedAdjustments: { type: integer, minimum: 0 }
+        countedLines: { type: integer, minimum: 0 }
+        exactLines: { type: integer, minimum: 0 }
+        accuracyPercent: { type: string, pattern: '^\d{1,3}\.\d$' }
+        manualCountMovements: { type: integer, minimum: 0 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.3 CycleCountEvent ──
+    CycleCountEventKind:
+      type: string
+      enum: [Created, Updated, Released, Cancelled, LineCounted, LineAdded, Submitted, VarianceComputed, Approved, Rejected, RecountRequested, AdjustmentPending, AdjustmentPosted, AdjustmentRefused, AdjustmentIntegrityError, IntegrityResolved, Closed]
+    CycleCountEvent:
+      type: object
+      additionalProperties: false
+      description: "Insert-only, written in the business write's transaction. data values are strings (proposal §3.3 lists the members per kind); Released.data carries counts only — no per-line expected quantity on any count (F-13); a draft cancel / bulk delete is Cancelled with data.softDeleted (+ data.bulk), there is no Deleted kind. The settings trail is in the same collection (countId = the settings record id, kind Updated)."
+      required: [eventId, countId, seq, kind, atUtc, data]
+      properties:
+        eventId: { $ref: '#/components/schemas/Uuid' }
+        countId: { $ref: '#/components/schemas/Uuid' }
+        lineId: { $ref: '#/components/schemas/Uuid' }
+        seq: { type: integer, minimum: 1 }
+        kind: { $ref: '#/components/schemas/CycleCountEventKind' }
+        actorUserId: { $ref: '#/components/schemas/Uuid' }
+        atUtc: { $ref: '#/components/schemas/DateTime' }
+        data: { type: object, additionalProperties: { type: string } }
+    # ── §3.5 BulkDeleteCycleCountsResult ──
+    BulkDeleteCycleCountsResult:
+      type: object
+      additionalProperties: false
+      required: [results, contractVersion]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            description: "Deleted (Draft soft delete; version = the written version), Conflict (stale version), NotFound (absent / deleted / another company), InvalidState (not Draft — not deleted, AC-10)"
+            required: [countId, outcome]
+            properties:
+              countId: { $ref: '#/components/schemas/Uuid' }
+              outcome: { type: string, enum: [Deleted, Conflict, NotFound, InvalidState] }
+              version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.4 pages ──
+    CycleCountPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CycleCount' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CycleCountLinePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CycleCountLine' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CycleCountEventPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CycleCountEvent' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CountVariancePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CountVariance' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── §3.11 CountEvidenceExport (DL-5, 1.1.0) ──
+    CountEvidenceFormat: { type: string, enum: [Pdf, Csv], description: "Q-18 = A — the two formats carry the same content" }
+    CountEvidenceStatus: { type: string, enum: [Ready, Failed], description: "v1 writes only Ready (the record is written after the file is drawn and stored); Failed is named by the pack and reserved" }
+    CountEvidenceLanguage: { type: string, enum: [en, tr, fr, es, zh, ar, ru] }
+    CountEvidenceExport:
+      type: object
+      additionalProperties: false
+      description: "Insert-only (wms_count_evidence_exports + the bytes in wms_count_evidence_files): written once, never changed or deleted; another language or format is a new export"
+      required: [exportId, countId, countNumber, format, language, requestedLanguage, requestedBy, requestedAt, fileName, sha256, sizeBytes, status, contractVersion]
+      properties:
+        exportId: { $ref: '#/components/schemas/Uuid' }
+        countId: { $ref: '#/components/schemas/Uuid' }
+        countNumber: { $ref: '#/components/schemas/CountNumber' }
+        format: { $ref: '#/components/schemas/CountEvidenceFormat' }
+        language: { $ref: '#/components/schemas/CountEvidenceLanguage' }
+        requestedLanguage: { $ref: '#/components/schemas/CountEvidenceLanguage' }
+        requestedBy: { $ref: '#/components/schemas/Uuid' }
+        requestedAt: { $ref: '#/components/schemas/DateTime' }
+        fileName: { type: string, pattern: '^count-evidence-[A-Z]{2,5}-CNT-\d{6,}-(en|tr|fr|es|zh|ar|ru)-\d{14}\.(pdf|csv)$' }
+        sha256: { type: string, pattern: '^[0-9a-f]{64}$', description: lower-case hex SHA-256 of the stored bytes }
+        sizeBytes: { type: integer, minimum: 1, description: the stored byte count }
+        status: { $ref: '#/components/schemas/CountEvidenceStatus' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CountEvidenceExportPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CountEvidenceExport' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    # ── requests (the members the service's request reader accepts; an unknown member -> 400) ──
+    CycleCountFormRequest:
+      type: object
+      additionalProperties: false
+      description: "createCycleCount / updateCycleCount — the whole Draft form. scopeLocationIds 1-200 nodes (StorageLocation | Zone | Bin) for Cycle, 0 for Full; scopeSkuIds 0-200 distinct; note <= 500 (trimmed; empty = none)"
+      required: [idempotencyKey, warehouseId, countType, blind, scopeLocationIds, scopeSkuIds, plannedDate]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        countType: { $ref: '#/components/schemas/CycleCountType' }
+        blind: { type: boolean }
+        scopeLocationIds: { type: array, maxItems: 200, items: { $ref: '#/components/schemas/Uuid' } }
+        scopeSkuIds: { type: array, maxItems: 200, items: { $ref: '#/components/schemas/Uuid' } }
+        plannedDate: { $ref: '#/components/schemas/Date' }
+        assignedTo: { $ref: '#/components/schemas/Uuid' }
+        note: { type: string, maxLength: 500 }
+    BulkDeleteCycleCountsRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, reason, items]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        items:
+          type: array
+          minItems: 1
+          maxItems: 200
+          items:
+            type: object
+            additionalProperties: false
+            required: [countId, version]
+            properties:
+              countId: { $ref: '#/components/schemas/Uuid' }
+              version: { type: integer, minimum: 1 }
+    KeyRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    ReasonRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, reason]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    RecordCycleCountLineRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, countedQuantity]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        countedQuantity: { $ref: '#/components/schemas/Quantity' }
+        scanRef: { type: string, minLength: 1, maxLength: 200 }
+    AddCycleCountLineRequest:
+      type: object
+      additionalProperties: false
+      description: no stock status member (v1 AVAILABLE, Q-8 = A)
+      required: [idempotencyKey, locationId, item, countedQuantity]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        locationId: { $ref: '#/components/schemas/Uuid' }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lotId: { $ref: '#/components/schemas/Text' }
+        countedQuantity: { $ref: '#/components/schemas/Quantity' }
+        scanRef: { type: string, minLength: 1, maxLength: 200 }
+    RequestCountRecountRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, lineIds, reason]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        lineIds: { type: array, minItems: 1, maxItems: 200, items: { $ref: '#/components/schemas/Uuid' } }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        assignedTo: { $ref: '#/components/schemas/Uuid' }
+        plannedDate: { $ref: '#/components/schemas/Date' }
+        note: { type: string, maxLength: 500 }
+    ResolveCountAdjustmentIntegrityRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, decision, reason]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        decision: { type: string, enum: [AcceptHolder, Reject] }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    UpdateCycleCountSettingsRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, toleranceAbsolute, tolerancePercent, maxRecounts, maxLinesPerCount]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        toleranceAbsolute: { $ref: '#/components/schemas/Quantity' }
+        tolerancePercent: { $ref: '#/components/schemas/Quantity' }
+        maxRecounts: { type: integer, minimum: 0, maximum: 10 }
+        maxLinesPerCount: { type: integer, minimum: 1, maximum: 5000 }
+    CreateCountEvidenceExportRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, format]
+      properties:
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+        format: { $ref: '#/components/schemas/CountEvidenceFormat' }
+
+  # ── §5.1 the contract's own codes (pack §8.14's proposal fixed in the proposal §5.1; the code's CycleCountErrorCodes) ──
+  x-error-codes:
+    COUNT_NOT_FOUND: { status: 404, meaning: "the count does not exist, is deleted, or belongs to another tenant / company" }
+    COUNT_LINE_NOT_FOUND: { status: 404, meaning: "the line does not exist or belongs to another count (getCountVariance: a line before submit)" }
+    COUNT_CONFLICT: { status: 409, meaning: "stale If-Match; or the record kept changing while the command wrote (retry)" }
+    COUNT_INVALID_STATE: { status: 409, meaning: "the command is not allowed in the count's / line's state (e.g. update / release outside Draft, cancel on Submitted and later)" }
+    COUNT_SCOPE_EMPTY: { status: 422, meaning: "release: no stockable Active node in the scope" }
+    COUNT_SCOPE_TOO_LARGE: { status: 422, meaning: "release: bins or lines exceed MaxLinesPerCount" }
+    COUNT_SCOPE_OVERLAP: { status: 409, meaning: "a bin is in another open count, or a concurrent release / recount lost" }
+    COUNT_SCOPE_NODE_INVALID: { status: 422, meaning: "a scope node is not StorageLocation | Zone | Bin, not Active or not on the warehouse's path (details.locationId) — proposal §5.1 'ek' code" }
+    COUNT_ASSIGNEE_INVALID: { status: 422, meaning: "assignedTo is not an active user of the tenant — proposal §5.1 'ek' code" }
+    COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE: { status: 503, meaning: "the user directory did not answer; nothing written — proposal §5.1 'ek' code" }
+    COUNT_SNAPSHOT_DRIFT: { status: 409, meaning: "approval of a SnapshotDrift line" }
+    COUNT_LINES_UNCOUNTED: { status: 422, meaning: "submit with an uncounted Snapshot / Recount line" }
+    COUNT_QUANTITY_INVALID: { status: 400, meaning: "negative, more than 6 decimals, not a number (a fraction on a serial-controlled line)" }
+    COUNT_SELF_APPROVAL_FORBIDDEN: { status: 403, meaning: "four eyes (Q-5 = A): the counter / submitter approves" }
+    COUNT_LOT_UNKNOWN: { status: 422, meaning: "a found line's lot is not registered for the SKU (MOD-0174)" }
+    COUNT_LOT_REQUIRED: { status: 400, meaning: "a found line without a lot on a lot-controlled SKU" }
+    COUNT_SERIAL_NOT_POSTABLE: { status: 422, meaning: "approval of a serial-controlled line (not posted in v1, Q-10 = A)" }
+    COUNT_REASON_REQUIRED: { status: 400, meaning: "reject / cancel / bulk delete / resolve-integrity / recount without a reason (1-500)" }
+    COUNT_RECOUNT_LIMIT: { status: 409, meaning: "the recount chain exceeds MaxRecounts (the whole request is refused)" }
+    COUNT_COMPANY_CODE_INVALID: { status: 422, meaning: "the MDM company Code is not ^[A-Z]{2,5}$ (details.companyCode)" }
+    COUNT_RECORD_CODE_UNAVAILABLE: { status: 503, meaning: "the counter could not be written / the type was refused / the record could not be stored; no count is opened" }
+    COUNT_INVENTORY_UNAVAILABLE: { status: 503, meaning: "the ledger read could not be opened / the posting outcome is unknown (the correction stays Pending)" }
+    COUNT_ADJUSTMENT_INTEGRITY: { status: 409, meaning: "the posting key holds another content / the holder movement is reversed / AcceptHolder on a holder that is not this correction" }
+    COUNT_LINE_OUT_OF_SCOPE: { status: 422, meaning: "a found line outside scopeBinIds / a non-empty scopeSkuIds, or its key in RecountExcludedKeys" }
+    COUNT_LINE_DUPLICATE: { status: 409, meaning: "a found line's key is already in the count" }
+    COUNT_EVIDENCE_NOT_FOUND: { status: 404, meaning: "1.1.0 (DL-5): the export or its file is not in the caller's tenant + company (another tenant / company, an unknown or non-UUID id)" }
+    COUNT_EVIDENCE_INTEGRITY: { status: 500, meaning: "1.1.0 (DL-5): the stored file's SHA-256 is not the recorded sha256 — the file is not served (the one 500 of the catalogue)" }
+  # ── §5.2 codes used, not redefined (InventoryErrorCodes). Ledger refusals (INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, SERIAL_COUNT_MISMATCH, …) are
+  #    not an answer code: they are the line's adjustment.refusalCode / refusalDetails (approve / retry answer 200). Exception: a posting 400
+  #    IDEMPOTENCY_KEY_REUSED is not a refusal — IntegrityError + 409 COUNT_ADJUSTMENT_INTEGRITY (pack §8.6, r5 SB1/F-4). ──
+  x-reused-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, CROSS_LE_FORBIDDEN, UNKNOWN_ITEM, SKU_ITEM_MISMATCH, SKU_LEVEL_NOT_STOCKABLE, LOT_NOT_ALLOWED]

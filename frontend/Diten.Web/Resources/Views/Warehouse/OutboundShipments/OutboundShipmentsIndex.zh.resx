@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>第 {0} 行：{1}（需求 {2}，可分配 {3}）。</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>该批次不是 FEFO 首选批次；请填写 10–1000 个字符的原因。</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>该批次不是 FEFO 首选批次；原因可选填。</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>所选批次将在保存时使用；它不是 FEFO 顺序中的首选批次 — FEFO 建议批次 {0}（到期 {1}）。</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>所选位置不是该仓库的暂存位置；请选择具有暂存角色的位置，或将此字段留空。</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>贵公司拒绝不按 FEFO 顺序的批次；请保持 FEFO 顺序。</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>无法读取 SKU 的基本单位；请稍后重试。</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>请选择仓库。</value></data>
@@ -221,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>已取消</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>可用库存不足</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>拣货库位库存不足</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>可分配</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>尚无明细行 — 请使用“添加行”。</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO（建议：{0}）</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>FEFO 原因：</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>第 {0} 行将从此表单中移除。不会删除任何已保存的内容。</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>第 {0} 行：{1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>未预览</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>预览已过时</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>可满足</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>无法满足</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>FEFO 偏差 — 需要原因</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>FEFO 偏差 — 已填写原因</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>FEFO 偏差 — 不允许（Block）</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>添加行</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>编辑行</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>基本单位：{0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>按 FEFO（建议：{0}）</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>预览此行</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>保存此行</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>放弃</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>单行预览 — 保存时将按所有明细行重新计算分配。</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>FEFO 建议：批次 {0}（有效期 {1}）。</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>贵公司的 FEFO 模式：{0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>拒绝偏差（Block）</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>必须填写原因（RequireReason）</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>仅警告（Warn）</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>此订单行号已被另一行使用。</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>预览已过时；保存批次更改前请重新预览此行。</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>更换批次</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>一个出库单最多包含 100 行；无法再添加行。</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>所选批次已不再符合条件。</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>FEFO 原因</value></data>
 </root>

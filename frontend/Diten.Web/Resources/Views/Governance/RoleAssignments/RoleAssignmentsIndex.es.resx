@@ -138,6 +138,8 @@
   <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Ver resumen</value></data>
   <data name="ActionVerb_Rebase" xml:space="preserve"><value>Realinear</value></data>
   <data name="ActionVerb_Recover" xml:space="preserve"><value>Recuperar</value></data>
+  <data name="ActionVerb_Post" xml:space="preserve"><value>Contabilizar</value></data>
+  <data name="ActionVerb_Recount" xml:space="preserve"><value>Recontar</value></data>
   <data name="ActionVerb_Release" xml:space="preserve"><value>Liberar</value></data>
   <data name="ActionVerb_Reopen" xml:space="preserve"><value>Reabrir</value></data>
   <data name="ActionVerb_Replace" xml:space="preserve"><value>Reemplazar</value></data>

@@ -138,6 +138,8 @@
   <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>查看汇总</value></data>
   <data name="ActionVerb_Rebase" xml:space="preserve"><value>基于新版本更新</value></data>
   <data name="ActionVerb_Recover" xml:space="preserve"><value>恢复</value></data>
+  <data name="ActionVerb_Post" xml:space="preserve"><value>过账</value></data>
+  <data name="ActionVerb_Recount" xml:space="preserve"><value>重新盘点</value></data>
   <data name="ActionVerb_Release" xml:space="preserve"><value>放行</value></data>
   <data name="ActionVerb_Reopen" xml:space="preserve"><value>重新打开</value></data>
   <data name="ActionVerb_Replace" xml:space="preserve"><value>替换</value></data>

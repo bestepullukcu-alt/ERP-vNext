@@ -1,3 +1,4 @@
+using Diten.InventoryService.Application.Features.CountVariances.Handlers.QueryHandlers;
 using Diten.InventoryService.Application.Features.CycleCounting.Ports;
 using Diten.InventoryService.Application.Features.CycleCounting.Services;
 using Diten.InventoryService.Domain.CycleCounting.Repositories;
@@ -19,11 +20,27 @@ public static class CycleCountServiceCollectionExtensions
     {
         services.TryAddSingleton(new CycleCountTime(TimeProvider.System));
         services.TryAddScoped<ICycleCountReleaseProbe, NoopCycleCountReleaseProbe>();
+        services.TryAddScoped<ICycleCountSubmitProbe, NoopCycleCountSubmitProbe>();
         services.AddScoped<CycleCountSupport>();
         services.AddScoped<ICycleCountRepository, CycleCountRepository>();
         services.AddScoped<ICycleCountAssigneeDirectory, CycleCountAssigneeDirectory>();
         services.AddScoped<CycleCountChecks>();
         services.AddScoped<CycleCountProductFlags>();
+
+        // DL-3: the ONE stock door (pack §8.6, AC-29), the posting engine and the line writer, the Variance Trace reads, the sweeper (it only sends
+        // the reconcile command; F-18). IPostingKeyLookup is MOD-0173's additive port, registered once by AddWarehouse (TryAdd there).
+        services.TryAddScoped<ICycleCountMovementPoster, CycleCountMovementPoster>();
+        services.AddScoped<CycleCountLineWriter>();
+        services.AddScoped<CycleCountPostingEngine>();
+        services.AddScoped<CountVarianceReads>();
+        services.AddScoped<ICycleCountPendingScan, CycleCountPendingScan>();
+        services.AddOptions<CycleCountReconcilerOptions>().BindConfiguration(CycleCountReconcilerOptions.Section);
+        services.AddSingleton<CycleCountReconciler>();
+        services.AddHostedService<PendingCountAdjustmentReconcilerHostedService>();
+
+        // DL-5 (pack §4.5): the Evidence Pack document (one source for PDF and CSV) and the PDF renderer (MOD-0176's embedded font resolver).
+        services.AddScoped<Application.Features.CountEvidenceExports.CountEvidenceDocumentBuilder>();
+        services.AddSingleton<ICycleCountEvidencePdfRenderer, CycleCountEvidencePdfRenderer>();
 
         // Index gate (fail-closed): the unique indexes carry the number, the request keys and "one open count per bin" (F-6).
         services.AddHostedService<CycleCountIndexInitializerHostedService>();

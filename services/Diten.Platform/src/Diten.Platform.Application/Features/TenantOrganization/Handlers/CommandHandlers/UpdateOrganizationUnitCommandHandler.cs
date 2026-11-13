@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Domain.Repositories;
@@ -46,15 +47,16 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
             return Response<NoContent>.Fail("Archived Organization Unit cannot be mutated.", 409);
         }
 
-        var canonicalCode = OrganizationCodeNormalizer.Normalize(request.Request.Code);
-        if (string.IsNullOrWhiteSpace(canonicalCode))
+        /*
+         * MOD-0040-FU02 DL-2 (Q-2 A, RCS-001 §6) — NO code changes on update, old hand-typed codes included. Blank keeps the
+         * stored code; one EQUAL to it (ordinal — nothing trimmed, upper-cased or normalized) is accepted, because the forms
+         * and the drag-and-drop re-link send the whole record back; anything else is 409 and nothing is written.
+         */
+        if (!string.IsNullOrWhiteSpace(request.Request.Code)
+            && !string.Equals(request.Request.Code, entity.Code, StringComparison.Ordinal))
         {
-            return Response<NoContent>.Fail("Organization Unit code is required.", 400);
-        }
-
-        if (await _repository.ExistsByCodeAsync(canonicalCode, request.Id, ct))
-        {
-            return Response<NoContent>.Fail("Organization Unit code already exists.", 409);
+            return Response<NoContent>.Fail(
+                "The Organization Unit code cannot be changed.", 409, RecordCodeReasonCodes.Immutable);
         }
 
         var legalEntity = await _legalEntityValidator.ValidateAsync(request.Request.LegalEntityId, ct);
@@ -142,7 +144,6 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
                 409);
         }
 
-        entity.Code = canonicalCode;
         entity.Name = request.Request.Name.Trim();
         entity.LegalEntityId = request.Request.LegalEntityId;
         entity.ParentOrganizationUnitId = functionalParent;

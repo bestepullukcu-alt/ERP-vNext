@@ -863,6 +863,8 @@
   <data name="Perm.Entity.TRACE" xml:space="preserve"><value>Traçage</value></data>
   <data name="Perm.Entity.LOCATIONROLES" xml:space="preserve"><value>Rôles d'emplacement</value></data>
   <data name="Perm.Entity.PACKAGES" xml:space="preserve"><value>Colis</value></data>
+  <data name="Perm.Entity.ACTIVITY" xml:space="preserve"><value>Journal d'activité</value></data>
+  <data name="Perm.Entity.INTEGRATIONMONITOR" xml:space="preserve"><value>Suivi de l'intégration</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Produits</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Compte</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campagne</value></data>
@@ -1233,6 +1235,15 @@
   <data name="Nav.Page.PACKINGSTATION" xml:space="preserve">
     <value>Emballage</value>
   </data>
+  <data name="Nav.Page.WAREHOUSEEXCEPTIONS" xml:space="preserve">
+    <value>Boîte des exceptions</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEACTIVITY" xml:space="preserve">
+    <value>Journal d'activité</value>
+  </data>
+  <data name="Nav.Page.WAREHOUSEINTEGRATION" xml:space="preserve">
+    <value>Suivi de l'intégration</value>
+  </data>
   <data name="Perm.Entity.CAPACITYPLANSSCENARIO" xml:space="preserve">
     <value>Scénarios de plan de capacité</value>
   </data>
@@ -1247,5 +1258,29 @@
   </data>
   <data name="Perm.Entity.COUNTS" xml:space="preserve">
     <value>Inventaires</value>
+  </data>
+  <data name="Perm.Entity.VARIANCES" xml:space="preserve">
+    <value>Écarts d'inventaire</value>
+  </data>
+  <data name="Nav.Page.CYCLECOUNTS" xml:space="preserve">
+    <value>Comptages</value>
+  </data>
+  <data name="Nav.Page.COUNTSHEET" xml:space="preserve">
+    <value>Feuille de comptage</value>
+  </data>
+  <data name="Nav.Page.COUNTVARIANCES" xml:space="preserve">
+    <value>Écarts d'inventaire</value>
+  </data>
+  <data name="Nav.Page.COUNTEVIDENCE" xml:space="preserve">
+    <value>Preuves d'inventaire</value>
+  </data>
+  <data name="Perm.Entity.WAVES" xml:space="preserve">
+    <value>Vagues</value>
+  </data>
+  <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
+    <value>Paramètres des vagues</value>
+  </data>
+  <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
+    <value>Planification des vagues</value>
   </data>
 </root>

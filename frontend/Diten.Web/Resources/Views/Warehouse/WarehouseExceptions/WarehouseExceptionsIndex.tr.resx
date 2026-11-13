@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Çalıştığınız deponun şirketini seçin. Şirket seçilene kadar hiçbir veri gösterilmez.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi şu an okunamıyor; birazdan yeniden deneyin.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Bakış</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sonuç yok</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Bazı ürün ya da lokasyon adları okunamadı; yerlerine kimlikler gösteriliyor.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Lot no</value></data>
+  <data name="ColDiffLot" xml:space="preserve"><value>Lot no</value></data>
+  <data name="Warehouse.Outbound.Status.Allocated" xml:space="preserve"><value>Tahsis edildi</value></data>
+  <data name="Warehouse.Outbound.Status.Picked" xml:space="preserve"><value>Toplandı</value></data>
+  <data name="Warehouse.Outbound.Status.Packed" xml:space="preserve"><value>Paketlendi</value></data>
+  <data name="Warehouse.Outbound.Status.ReadyToShip" xml:space="preserve"><value>Sevke hazır</value></data>
+  <data name="Warehouse.Outbound.Status.Shipped" xml:space="preserve"><value>Sevk edildi</value></data>
+  <data name="Warehouse.Outbound.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>İstisna Kutusu</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Depo akışında ilgi bekleyen sorunlar: reddedilen ya da uzun süredir bekleyen onaylar, sevki görülmeyen çıkış sevkiyatları, bırakılmayan rezervasyonlar, çözülemeyen eksik sevkler ve geri çağırmadaki ayrılmış lotlar. Salt okunur — nedeni ortadan kalkan kayıt listeden düşer.</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColRecord" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ColDetail" xml:space="preserve"><value>Ayrıntı</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Hata</value></data>
+  <data name="ColOpened" xml:space="preserve"><value>Açıldı</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="ActionOpen" xml:space="preserve"><value>Kayda Git</value></data>
+  <data name="SectionDetails" xml:space="preserve"><value>Ayrıntılar</value></data>
+  <data name="SectionStagingDifference" xml:space="preserve"><value>Sevkiyat hazırlık farkı</value></data>
+  <data name="FieldKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="FieldRecord" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="FieldOpened" xml:space="preserve"><value>Açıldı</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Hata</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Neden</value></data>
+  <data name="FieldExpected" xml:space="preserve"><value>Toplanan (beklenen)</value></data>
+  <data name="FieldIssued" xml:space="preserve"><value>Çıkan</value></data>
+  <data name="FieldAllocSeq" xml:space="preserve"><value>Tahsis</value></data>
+  <data name="FieldPendingReleases" xml:space="preserve"><value>Bırakılmayan</value></data>
+  <data name="FieldReservationKeys" xml:space="preserve"><value>Rezervasyon anahtarları</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="FieldSeq" xml:space="preserve"><value>Onay</value></data>
+  <data name="FieldReadyAt" xml:space="preserve"><value>Sevke hazır olduğu an</value></data>
+  <data name="FieldCreatedAt" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="FieldOutboundStatus" xml:space="preserve"><value>Çıkış sevkiyatı durumu</value></data>
+  <data name="FieldDeferredBy" xml:space="preserve"><value>Hesaplanmama nedeni</value></data>
+  <data name="ColDiffOnHand" xml:space="preserve"><value>Eldeki</value></data>
+  <data name="ColDiffBound" xml:space="preserve"><value>Bağlı</value></data>
+  <data name="ColDiffDifference" xml:space="preserve"><value>Fark</value></data>
+  <data name="NoLot" xml:space="preserve"><value>Lot yok</value></data>
+  <data name="SummaryPosting" xml:space="preserve"><value>Onay {0} · {1}</value></data>
+  <data name="SummaryReady" xml:space="preserve"><value>{0} tarihinden beri sevke hazır</value></data>
+  <data name="SummaryStuck" xml:space="preserve"><value>{0} tarihinden beri tahsis ediliyor</value></data>
+  <data name="SummaryRelease" xml:space="preserve"><value>Tahsis {0} · rezervasyon bırakılmadı</value></data>
+  <data name="SummaryOrphan" xml:space="preserve"><value>{0} rezervasyon bırakılmadı</value></data>
+  <data name="SummaryRecall" xml:space="preserve"><value>Tahsis {0} · {1} lotu geri çağırmada</value></data>
+  <data name="SummaryShort" xml:space="preserve"><value>{0} · toplanan {1}, çıkan {2}</value></data>
+  <data name="SummaryDeferred" xml:space="preserve"><value>Fark hesaplanmadı: {0}</value></data>
+  <data name="Warehouse.Exception.Status.Open" xml:space="preserve"><value>Açık</value></data>
+  <data name="Warehouse.Exception.DeferredBy.PendingConfirmation" xml:space="preserve"><value>bu düğüme giren ya da çıkan bir onay hâlâ bekliyor</value></data>
+  <data name="Warehouse.Exception.DeferredBy.UnsyncedReadyToShip" xml:space="preserve"><value>bu düğümün sevke hazır bir çıkış sevkiyatı henüz eşitlenmedi</value></data>
+  <data name="Warehouse.Exception.Reason.LotMissing" xml:space="preserve"><value>Sevkiyat satırında lot yok</value></data>
+  <data name="Warehouse.Exception.Reason.NotFromStaging" xml:space="preserve"><value>Sevkiyat hazırlık lokasyonundan çıkmadı</value></data>
+  <data name="Warehouse.Exception.Reason.OverIssued" xml:space="preserve"><value>Toplanandan fazla çıktı</value></data>
+  <data name="Warehouse.Exception.TaskKind.Putaway" xml:space="preserve"><value>Yerleştirme görevi</value></data>
+  <data name="Warehouse.Exception.TaskKind.Pick" xml:space="preserve"><value>Toplama görevi</value></data>
+  <data name="Warehouse.Exception.Kind.PostingRefused" xml:space="preserve"><value>Kayıt reddedildi</value></data>
+  <data name="Warehouse.Exception.Kind.PostingPendingLong" xml:space="preserve"><value>Kayıt uzun süredir bekliyor</value></data>
+  <data name="Warehouse.Exception.Kind.PostingIntegrityError" xml:space="preserve"><value>Kayıt bütünlük hatası</value></data>
+  <data name="Warehouse.Exception.Kind.DispatchNotSeen" xml:space="preserve"><value>Sevk görülmedi</value></data>
+  <data name="Warehouse.Exception.Kind.ReservationReleasePending" xml:space="preserve"><value>Rezervasyon bırakma bekliyor</value></data>
+  <data name="Warehouse.Exception.Kind.ShortDispatchUnresolved" xml:space="preserve"><value>Çözülemeyen eksik sevk</value></data>
+  <data name="Warehouse.Exception.Kind.AllocationOrphanSuspected" xml:space="preserve"><value>Sahipsiz rezervasyon şüphesi</value></data>
+  <data name="Warehouse.Exception.Kind.ReservedLotUnderRecall" xml:space="preserve"><value>Ayrılmış lot geri çağırmada</value></data>
+  <data name="Warehouse.Exception.Kind.AllocationStuck" xml:space="preserve"><value>Tahsis takıldı</value></data>
+  <data name="Warehouse.Exception.Hint.PostingRefused" xml:space="preserve"><value>Stok bu onayı reddetti ve onay henüz kapatılmadı. Görevi açın: yeniden deneyin, geri taşındı olarak işaretleyin ya da yeniden onaylayın.</value></data>
+  <data name="Warehouse.Exception.Hint.PostingPendingLong" xml:space="preserve"><value>Stok bu onaya bekleme sınırından uzun süredir cevap vermedi. Görevi açın ve yeniden deneyin.</value></data>
+  <data name="Warehouse.Exception.Hint.PostingIntegrityError" xml:space="preserve"><value>Bu onay için bulunan hareket onayla uyuşmuyor. Sorumlu görev üzerinde uzlaştırır.</value></data>
+  <data name="Warehouse.Exception.Hint.DispatchNotSeen" xml:space="preserve"><value>Çıkış sevkiyatı sevk sınırından uzun süredir sevke hazır ve sevk görülmedi. Çıkış sevkiyatı üzerinde sevkiyatı kontrol edin.</value></data>
+  <data name="Warehouse.Exception.Hint.ReservationReleasePending" xml:space="preserve"><value>Çıkış sevkiyatı sevk edildi ya da iptal edildi ama bu tahsisin rezervasyonu henüz bırakılmadı. Bakım servisi yeniden dener.</value></data>
+  <data name="Warehouse.Exception.Hint.ShortDispatchUnresolved" xml:space="preserve"><value>Toplanandan az çıkış yapıldı ve kalan kendiliğinden geri yerleştirilemedi. Sevkiyat hazırlık stoğu tutmadıkça kayıt listede kalır; bir stok hareketi ya da sayımla düzeltin.</value></data>
+  <data name="Warehouse.Exception.Hint.AllocationOrphanSuspected" xml:space="preserve"><value>Tahsis, bazı rezervasyonlar açıldıktan sonra başarısız oldu. Bakım servisi onları anahtarla bırakır; hepsi bırakılınca kayıt listeden düşer.</value></data>
+  <data name="Warehouse.Exception.Hint.ReservedLotUnderRecall" xml:space="preserve"><value>Bu tahsisin lotu geri çağırmada; ayrılmış kaldıkça geri çağırma karantinası engellenir. Çıkış sevkiyatını iptal edin, ardından Geri Çağırma'da karantinayı yeniden deneyin.</value></data>
+  <data name="Warehouse.Exception.Hint.AllocationStuck" xml:space="preserve"><value>Tahsis iki bakım süresinden uzun zamandır tamamlanmadı. Bakım servisi denemeye devam eder; kayıt kalıyorsa servisi kontrol edin.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine ulaşılamıyor; atanan kontrol edilemedi ve hiçbir şey kaydedilmedi. Birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Atanan olarak şirketinizin etkin bir kullanıcısını seçin.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>Şirket kodu görev numarası için geçerli değil; önce şirket kodunu düzeltin.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>Onay işlenirken stok değişti; onay bekliyor — “Yeniden Dene”yi kullanın.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Bu onay şu anda işleniyor; biraz bekleyip sayfayı yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Yalnız bütünlük hatası olan bir onay uzlaştırılabilir.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Yalnız bekleyen bir onay yeniden denenebilir.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Bu görevin bir onayı stok cevabını bekliyor; sonuçlanana kadar yalnız “Yeniden Dene” çalışır.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Bu kayıt bu arada başka biri tarafından değiştirildi; yenileyip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Bu işlem görevin şu anki durumunda yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>Lokasyonda açık yerleştirme görevleri var; önce onları kapatın ya da iptal edin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Bir lokasyon aynı anda hem Mal Kabul hem Sevkiyat Hazırlık olamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>Bu lokasyonun zaten bir rol kaydı var; onu düzenleyin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Üst ya da alt bir düğüm zaten karşıt rolü taşıyor; Mal Kabul ve Sevkiyat Hazırlık aynı yolda buluşamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>Rol kaydı bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Rol yalnız depo, depolama yeri, bölge ya da rafa verilebilir.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Bunu yalnız atanan operatör ya da bir sorumlu yapabilir.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>Stok defterinde bu onayın anahtarıyla farklı bir hareket var; bir sorumlunun uzlaştırması gerekir.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>Planlanan miktar onaylanan ve bekleyen miktarın altına inemez.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>Miktar bu satırda hâlâ açık olan stoktan fazla.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>Miktar toplanacak kalandan fazla.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Görev numarası verilemedi; birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Kaynaktaki seri numaraları değişti; bu görevi iptal edip yenisini açın.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Aynı lokasyonda bu lotun kalite bekleyen parçası var; önce kalite kararını tamamlayın.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Seri takipli ürün yalnız tam miktar toplanır; kısmi onay yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>Kaynak lokasyon bir mal kabul lokasyonu değil.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>Seçilen satırda stok bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>Stok karantinaya girdi ya da tutuldu; yerleştirilemez.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Saklama koşulu bilinmiyor — ürün kartında tamamlanmalı (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Saklama koşulları geçerli değil: en fazla bir sıcaklık koşulu seçin.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>Sevkiyat hazırlık lokasyonu bu ürünün saklama koşulunu kabul etmiyor.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>Hedef, aynı depoda etkin, stok tutabilen ve mal kabul ya da sevkiyat hazırlık olmayan bir raf olmalı.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>Görevin zaten bir atananı var.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>Görev bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı içerikle zaten gönderildi; pencereyi kapatıp yeniden başlayın.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>En az 10 karakterlik bir gerekçe yazın.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Kaynakta bu miktar için yeterli stok yok.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>Lot geri çağırma altında; toplanamaz.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Stok servisine ulaşılamıyor; hiçbir şey kaydedilmedi. Birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Bazı değerler geçerli değil; formu kontrol edin.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi; yeniden oturum açın.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>Depo servisine şu an ulaşılamıyor; birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>Kayıt bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>Kayıt bu arada değişti; yenileyip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>İstek kabul edilmedi; değerleri kontrol edip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu; yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Dışa aktarmak için çok fazla satır var; filtreleri daraltın.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Çıkış sevkiyatı bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>Her satır için stok tahsis edilemedi; hiçbir şey kaydedilmedi.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>Bir çıkış sevkiyatı en fazla 100 satır içerebilir.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>Bu çıkış sevkiyatına birden çok sevkiyat bağlı; sevkiyat ekibinden kontrol isteyin.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>Sevkiyatları okuma yetkiniz yok; sevkiyat okuma yetkisi isteyin.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>Sevkiyat servisine ulaşılamıyor; hiçbir şey değişmedi. Birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>Kalem düzeyindeki çıkış sevkiyatı, sevkiyat tarafı desteklenene kadar sevke hazır yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>Kalem satırı stoklanabilir bir SKU'ya çözümlenemedi; ürünü kontrol edin.</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>Seçilen lot tahsis edilemez; önizlemedeki bir lotu seçin.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>Bu çıkış sevkiyatının tahsisi hâlâ tamamlanıyor; biraz sonra yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>Sevke hazır ya da sevk edilmiş bir çıkış sevkiyatı iptal edilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>Çıkış sevkiyatı sevke hazır; artık değiştirilemez.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Bir çıkış sevkiyatında kalem satırları ile SKU satırları karışamaz.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Koliyi kapatmadan önce en az bir içerik satırı girin.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>Koliler bir tahsiste toplanandan fazlasını içerecek.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Koli bulunamadı; sayfayı yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>Depoda sevkiyat hazırlık lokasyonu yok; önce bir lokasyonuna Sevkiyat Hazırlık rolünü verin.</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>Satırın birimi SKU'nun temel birimi olmalı.</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>Bir lot ilk FEFO lotu değil; gerekçe yazın (en az 10 karakter).</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>Şirketiniz lotları yalnız FEFO sırasıyla çıkarır; ilk uygun lotu seçin.</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>Lotun son kullanma tarihi geçti; çıkarılamaz.</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>Lot bloke; çıkarılamaz.</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>Lotun yeniden test tarihi geldi; test edilene kadar çıkarılamaz.</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>Bu stoğun rezervasyonu artık etkin değil; onay reddedildi.</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>Stok rezervasyonuyla eşleşmiyor; onay reddedildi.</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>Rezervasyon bu arada değişti; yenileyip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Depo ya da lokasyon seçili şirkette yok ya da etkin değil.</value></data>
+</root>

@@ -82,6 +82,9 @@ public static class WarehouseServiceCollectionExtensions
         services.AddSingleton<OutboundMaintenance>();
         services.AddHostedService<OutboundMaintenanceHostedService>();
 
+        // DL-7 — the S3 monitoring reads (pack §8.23): read-only, company-scoped; the exceptions are derived at read time (nothing stored).
+        services.AddScoped<IWarehouseMonitoringReads, WarehouseMonitoringReads>();
+
         // Index gate (fail-closed): the unique indexes carry "one record per node", the request keys, the counter, the task number and the
         // serial slot.
         services.AddHostedService<WarehouseIndexInitializerHostedService>();

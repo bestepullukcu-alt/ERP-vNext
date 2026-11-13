@@ -1,11 +1,14 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Contracts.RecordCodes;
+using Diten.Platform.Application.Features.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TenantOrganization.Handlers.CommandHandlers;
 
@@ -15,31 +18,41 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
     private readonly IOrganizationReportingGraphRepository _graph;
     private readonly ILegalEntityReferenceValidator _legalEntityValidator;
     private readonly ITenantContext _tenantContext;
+    private readonly IInProcessRecordCodeAllocator _recordCodes;
+    private readonly IOrganizationUnitCodeHistoryRepository _codeHistory;
+    private readonly ILogger<CreateOrganizationUnitCommandHandler> _logger;
 
     public CreateOrganizationUnitCommandHandler(
         IOrganizationUnitRepository repository,
         IOrganizationReportingGraphRepository graph,
         ILegalEntityReferenceValidator legalEntityValidator,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IInProcessRecordCodeAllocator recordCodes,
+        IOrganizationUnitCodeHistoryRepository codeHistory,
+        ILogger<CreateOrganizationUnitCommandHandler> logger)
     {
         _repository = repository;
         _graph = graph;
         _legalEntityValidator = legalEntityValidator;
         _tenantContext = tenantContext;
+        _recordCodes = recordCodes;
+        _codeHistory = codeHistory;
+        _logger = logger;
     }
 
     public async Task<Response<Guid>> Handle(CreateOrganizationUnitCommand request, CancellationToken ct)
     {
         var tenantId = TenantGuard.RequireTenant(_tenantContext);
-        var canonicalCode = OrganizationCodeNormalizer.Normalize(request.Request.Code);
-        if (string.IsNullOrWhiteSpace(canonicalCode))
-        {
-            return Response<Guid>.Fail("Organization Unit code is required.", 400);
-        }
 
-        if (await _repository.ExistsByCodeAsync(canonicalCode, null, ct))
+        /*
+         * MOD-0040-FU02 DL-2 (§8.15) — the code is SYSTEM-ASSIGNED. A filled one is refused here, in the handler, so the
+         * answer is the envelope with its reason_code and the central audit row says Failed; ignoring it silently would lose
+         * what the user typed without a trace. Blank (absent, empty, whitespace only) means "assign one".
+         */
+        if (!string.IsNullOrWhiteSpace(request.Request.Code))
         {
-            return Response<Guid>.Fail("Organization Unit code already exists.", 409);
+            return Response<Guid>.Fail(
+                "The Organization Unit code is assigned by the system; send no code.", 400, RecordCodeReasonCodes.SystemAssigned);
         }
 
         var legalEntity = await _legalEntityValidator.ValidateAsync(request.Request.LegalEntityId, ct);
@@ -73,10 +86,25 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
             }
         }
 
+        /*
+         * MOD-0040-FU02 DL-2 (§8.14) — validation first (a refused create spends no number), then the allocation, then the
+         * record. The record id is made BEFORE the allocation: it is the allocation's idempotency key, so the ledger row and
+         * its audit row point at this record. A refused allocation answers as it was answered — no record, no fallback code.
+         */
+        var id = Guid.NewGuid();
+        var allocation = await InProcessRecordCodeCollisionSkip.AllocateAsync(
+            _recordCodes, "ORG", request.Request.LegalEntityId, id, _codeHistory.ExistsByCodeIncludingDeletedAsync, _logger, ct);
+        if (!allocation.IsAllocated)
+        {
+            return Response<Guid>.Fail(
+                "The Organization Unit code could not be assigned.", allocation.StatusCode, allocation.ReasonCode);
+        }
+
         var entity = new OrganizationUnit
         {
+            Id = id,
             TenantId = tenantId,
-            Code = canonicalCode,
+            Code = allocation.Code!,
             Name = request.Request.Name.Trim(),
             LegalEntityId = request.Request.LegalEntityId,
             ParentOrganizationUnitId = request.Request.ParentOrganizationUnitId,
@@ -84,7 +112,20 @@ public sealed class CreateOrganizationUnitCommandHandler : IRequestHandler<Creat
         };
         TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
-        await _repository.CreateAsync(entity, ct);
+        // A write that fails after the allocation leaves the code a gap (RCS-001 §5.8): logged, and rethrown unchanged.
+        try
+        {
+            await _repository.CreateAsync(entity, ct);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                exception,
+                "Record code {Code} was allocated for {RecordId} in tenant {TenantId} but the record was not written; the number stays a gap.",
+                entity.Code, entity.Id, tenantId);
+            throw;
+        }
+
         return Response<Guid>.Success(entity.Id, 201);
     }
 

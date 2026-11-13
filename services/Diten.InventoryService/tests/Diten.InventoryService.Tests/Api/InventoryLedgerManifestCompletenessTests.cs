@@ -221,6 +221,8 @@ public sealed class InventoryLedgerManifestCompletenessTests
             .Where(t => t.Namespace?.EndsWith(".Controllers.Warehouse", StringComparison.Ordinal) != true)
             // MOD-0181: the cycle-count controllers belong to CYCLE-COUNTING (own completeness test, CycleCountArchitectureTests AC-7; XMC-001 Beste 2026-11-09).
             .Where(t => t.Namespace?.EndsWith(".Controllers.CycleCounting", StringComparison.Ordinal) != true)
+            // MOD-0180: the wave controllers belong to WAVE-PLANNING (own completeness test, MOD-0180 AC-5; XMC-001 Beste 2026-11-13).
+            .Where(t => t.Namespace?.EndsWith(".Controllers.WavePlanning", StringComparison.Ordinal) != true)
             .SelectMany(t => t.GetCustomAttributes<HasPermissionAttribute>(inherit: true)
                 .Concat(t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                     .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true))))

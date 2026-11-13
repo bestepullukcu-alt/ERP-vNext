@@ -86,8 +86,21 @@ public sealed class Mod0178WarehouseRouteTests
         // GET /pick-tasks/{taskId}/events (45). DL-7 adds its 3 S3 reads here (48).
         // MOD-0181 DL-1 (Q-15 = A: the count endpoints live under /api/warehouse; XMC-001 Beste 2026-11-09): + 9 — GET + POST /cycle-counts,
         // POST /cycle-counts/bulk-delete, GET /cycle-counts/{countId}, POST /cycle-counts/{countId}/update | /release | /cancel,
-        // GET /cycle-counts/{countId}/lines | /events (54). Their own coverage test is DL-6's Mod0181CycleCountRouteTests.
-        Assert.Equal(54, endpoints.Count);
+        // GET /cycle-counts/{countId}/lines | /events (54). MOD-0181 DL-2 (XMC-001, Beste 2026-11-10): + 3 — POST /cycle-counts/{countId}/lines,
+        // POST /cycle-counts/{countId}/lines/{lineId}/count, POST /cycle-counts/{countId}/submit (57). Their own coverage test is DL-6's
+        // Mod0181CycleCountRouteTests. MOD-0178 DL-7 (pack AC-74, WMS draft §9): + 3 S3 reads — GET /exceptions, GET /activity,
+        // GET /integration/status (60). MOD-0181 DL-3 (XMC-001, owner's OK Beste 2026-11-10 "69 yap"): + 9 — GET /count-variances,
+        // GET /count-variances/{lineId}, POST /count-variances/{lineId}/approve | /reject | /retry | /resolve-integrity,
+        // POST /cycle-counts/{countId}/recount, GET + PUT /count-settings (69). MOD-0181 DL-4 (XMC-001, owner's OK Beste 2026-11-11 "70 yap"):
+        // + 1 — GET /cycle-counts/dashboard (70). MOD-0181 DL-5 (XMC-001, owner's OK Beste 2026-11-12 "73 yap"): + 3 — POST
+        // /cycle-counts/{countId}/evidence-exports, GET /count-evidence-exports, GET /count-evidence-exports/{exportId}/file (73).
+        // MOD-0180 DL-1 (pack §5.1 X-14, XMC-001 Beste 2026-11-13; measured 73 at 4a64b9119): + 14 — the endpoints of WavesController
+        // (Controllers/WavePlanning/, [Route("api/warehouse")]): GET + POST /waves, GET /waves/{waveId}, POST /waves/{waveId}/update,
+        // GET + POST /waves/{waveId}/orders, POST /waves/{waveId}/orders/remove, GET /waves/{waveId}/suggestions, POST /waves/{waveId}/cancel,
+        // GET /waves/candidates, GET /waves/{waveId}/load, GET /waves/{waveId}/events, GET /waves/settings/{warehouseId},
+        // POST /waves/settings/{warehouseId}/update (87). All GET / POST, every one served by the single /api/warehouse/{everything} route;
+        // ocelot.json unchanged.
+        Assert.Equal(87, endpoints.Count);
         Assert.All(endpoints, ep =>
         {
             var route = Assert.Single(Matching(ep.Path));
@@ -151,6 +164,10 @@ public sealed class Mod0178WarehouseRouteTests
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/confirmations/1/resolve-integrity", "POST")]
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/close-short", "POST")]
     [InlineData("/api/warehouse/pick-tasks/3f2b5a1e-0000-4000-8000-000000000005/events", "GET")]
+    // DL-7 (S3 monitoring reads, WMS draft §9)
+    [InlineData("/api/warehouse/exceptions?kind=DispatchNotSeen", "GET")]
+    [InlineData("/api/warehouse/activity?from=2026-11-01T00:00:00Z&to=2026-11-10T00:00:00Z", "GET")]
+    [InlineData("/api/warehouse/integration/status", "GET")]
     public void Named_operations_reach_the_warehouse_route_with_their_method(string path, string method)
     {
         var route = Assert.Single(Matching(path));

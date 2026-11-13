@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CountPdf.AdjustmentStatus" xml:space="preserve"><value>更正状态</value></data>
+  <data name="CountPdf.At" xml:space="preserve"><value>时间</value></data>
+  <data name="CountPdf.Bin" xml:space="preserve"><value>库位</value></data>
+  <data name="CountPdf.Blind" xml:space="preserve"><value>盲盘</value></data>
+  <data name="CountPdf.By" xml:space="preserve"><value>决定人</value></data>
+  <data name="CountPdf.ClosedAt" xml:space="preserve"><value>关闭时间</value></data>
+  <data name="CountPdf.Company" xml:space="preserve"><value>公司</value></data>
+  <data name="CountPdf.Count" xml:space="preserve"><value>盘点</value></data>
+  <data name="CountPdf.Counted" xml:space="preserve"><value>实盘</value></data>
+  <data name="CountPdf.Decision" xml:space="preserve"><value>决定</value></data>
+  <data name="CountPdf.Decisions" xml:space="preserve"><value>决定与台账更正</value></data>
+  <data name="CountPdf.DeclaredSource" xml:space="preserve"><value>声明的来源</value></data>
+  <data name="CountPdf.EnglishFallback" xml:space="preserve"><value>文档字体无法绘制所请求的语言；此 PDF 为英文。</value></data>
+  <data name="CountPdf.Event" xml:space="preserve"><value>事件</value></data>
+  <data name="CountPdf.Expected" xml:space="preserve"><value>快照预期</value></data>
+  <data name="CountPdf.ExpectedAtCount" xml:space="preserve"><value>盘点时预期</value></data>
+  <data name="CountPdf.Flag" xml:space="preserve"><value>标记</value></data>
+  <data name="CountPdf.Generated" xml:space="preserve"><value>生成时间</value></data>
+  <data name="CountPdf.LedgerNumber" xml:space="preserve"><value>台账移动编号</value></data>
+  <data name="CountPdf.LineStatus" xml:space="preserve"><value>行状态</value></data>
+  <data name="CountPdf.Lines" xml:space="preserve"><value>盘点行</value></data>
+  <data name="CountPdf.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="CountPdf.Manual" xml:space="preserve"><value>范围库位上的手工 COUNT 移动</value></data>
+  <data name="CountPdf.ManualWindow" xml:space="preserve"><value>手工移动时间范围</value></data>
+  <data name="CountPdf.MovementType" xml:space="preserve"><value>移动类型</value></data>
+  <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>快照后移动</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>无法读取名称</value></data>
+  <data name="CountPdf.No" xml:space="preserve"><value>否</value></data>
+  <data name="CountPdf.None" xml:space="preserve"><value>无</value></data>
+  <data name="CountPdf.NotClosed" xml:space="preserve"><value>尚未关闭</value></data>
+  <data name="CountPdf.Origin" xml:space="preserve"><value>来源</value></data>
+  <data name="CountPdf.Origin.Found" xml:space="preserve"><value>发现的库存</value></data>
+  <data name="CountPdf.Origin.Recount" xml:space="preserve"><value>复盘</value></data>
+  <data name="CountPdf.Origin.Snapshot" xml:space="preserve"><value>快照</value></data>
+  <data name="CountPdf.Page" xml:space="preserve"><value>页</value></data>
+  <data name="CountPdf.PlannedDate" xml:space="preserve"><value>计划日期</value></data>
+  <data name="CountPdf.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="CountPdf.Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="CountPdf.RequestedLanguage" xml:space="preserve"><value>请求的语言：{0}</value></data>
+  <data name="CountPdf.ScopeBins" xml:space="preserve"><value>范围库位</value></data>
+  <data name="CountPdf.Seq" xml:space="preserve"><value>序号</value></data>
+  <data name="CountPdf.Sku" xml:space="preserve"><value>SKU 编码</value></data>
+  <data name="CountPdf.SnapshotAt" xml:space="preserve"><value>快照时间</value></data>
+  <data name="CountPdf.Source" xml:space="preserve"><value>决定来源</value></data>
+  <data name="CountPdf.SourceMismatch" xml:space="preserve"><value>来源声明不一致</value></data>
+  <data name="CountPdf.Status" xml:space="preserve"><value>状态</value></data>
+  <data name="CountPdf.Timeline" xml:space="preserve"><value>时间线</value></data>
+  <data name="CountPdf.Title" xml:space="preserve"><value>盘点证据包</value></data>
+  <data name="CountPdf.Type" xml:space="preserve"><value>盘点类型</value></data>
+  <data name="CountPdf.User" xml:space="preserve"><value>用户</value></data>
+  <data name="CountPdf.Variance" xml:space="preserve"><value>差异</value></data>
+  <data name="CountPdf.Warehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="CountPdf.Yes" xml:space="preserve"><value>是</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>完整性错误</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>待处理</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>已过账</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>被拒绝</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>已审批</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>复盘</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>已驳回</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>在容差范围内</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>由用户</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>更正完整性错误</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>更正待处理</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>更正已过账</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>更正被拒绝</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>差异已审批</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>已创建</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>完整性问题已解决</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>已添加发现的库存</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>行已盘点</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>已申请复盘</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>差异已驳回</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>已下达</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>已更新</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>已计算差异</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>已审批</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>待审批</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>已盘点</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>无差异</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>未盘点</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>已送复盘</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>已驳回</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>盘点中</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>已下达</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>循环盘点</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>全面盘点</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>盘盈</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>盘亏</value></data>
+</root>

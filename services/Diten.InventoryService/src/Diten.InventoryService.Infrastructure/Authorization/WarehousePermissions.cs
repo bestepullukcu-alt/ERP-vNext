@@ -52,6 +52,15 @@ public static class WarehousePermissions
 
     public const string PackagesUpdate = "warehouse.packages.update";
 
+    /// <summary>S3 (DL-7) — the exception box <c>GET /exceptions</c> (read-only, pack §8.23).</summary>
+    public const string ExceptionsRead = "warehouse.exceptions.read";
+
+    /// <summary>S3 (DL-7) — the activity trace <c>GET /activity</c>.</summary>
+    public const string ActivityRead = "warehouse.activity.read";
+
+    /// <summary>S3 (DL-7) — the integration monitor <c>GET /integration/status</c>.</summary>
+    public const string IntegrationMonitorRead = "warehouse.integration-monitor.read";
+
     /// <summary>Pack §14.2 — the S1 keys of the namespace.</summary>
     public static readonly IReadOnlyList<string> S1 =
     [
@@ -72,9 +81,12 @@ public static class WarehousePermissions
         PackagesUpdate
     ];
 
+    /// <summary>DL-7 — the three S3 monitoring read keys (pack §14.2; Tier 1, no action keys — S3 has no button).</summary>
+    public static readonly IReadOnlyList<string> Dl7 = [ExceptionsRead, ActivityRead, IntegrationMonitorRead];
+
     /// <summary>
     /// The keys the controllers enforce so far — exactly what the manifest declares (DL-1 location roles; DL-2 putaway tasks + the frozen outbound
-    /// GETs; DL-4 the outbound create / update keys).
+    /// GETs; DL-4 the outbound create / update keys; DL-5 the S2 keys; DL-7 the three S3 read keys).
     /// </summary>
-    public static readonly IReadOnlyList<string> Implemented = [.. S1, .. Dl4, .. Dl5];
+    public static readonly IReadOnlyList<string> Implemented = [.. S1, .. Dl4, .. Dl5, .. Dl7];
 }

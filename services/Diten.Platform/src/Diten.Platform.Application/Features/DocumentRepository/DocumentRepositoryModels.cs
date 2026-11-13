@@ -82,3 +82,83 @@ public sealed record RepositoryObjectContentHandle(
     string MediaType,
     string FileName,
     long ByteSize);
+
+/// <summary>
+/// MOD-0262-FU01 DL-2 — the trusted consumer a request was verified as: the service token's subject and the ONE closed-list
+/// entry that admitted it. <see cref="ConsumerModule"/> and <see cref="Scopes"/> decide visibility; <see cref="ClientId"/>
+/// is trace and audit only (r4, F-2).
+/// </summary>
+public sealed record TrustedRepositoryConsumer(
+    Guid ClientId,
+    string ServiceName,
+    string Audience,
+    string ConsumerModule,
+    IReadOnlyList<string> Scopes);
+
+/// <summary>
+/// MOD-0262-FU01 DL-2 — input of a trusted consumer upload. Same stream contract as <see cref="StoreRepositoryObjectInput"/>
+/// (AD-4: no <c>byte[]</c>); <c>CompanyId</c> is mandatory on this path (§12).
+/// </summary>
+public sealed record StoreTrustedRepositoryObjectInput(
+    ContentStorageScope Scope,
+    Guid CompanyId,
+    Guid OwningItemId,
+    Guid OwningVersionId,
+    string FileName,
+    string? MediaType,
+    Stream Content);
+
+/// <summary>MOD-0262-FU01 DL-2 — an opened trusted read: the stream and the row it belongs to (for the read's audit record).</summary>
+public sealed record TrustedRepositoryObjectContent(
+    RepositoryObjectContentHandle Content,
+    RepositoryObjectModel Object);
+
+/// <summary>
+/// MOD-0262-FU01 DL-2 — the §21 common metadata keys of the three trusted success records (r6, SB F-3). One builder so
+/// the upload, compensation and content-read sets cannot drift apart.
+/// </summary>
+internal static class TrustedRepositoryAuditMetadata
+{
+    public static Dictionary<string, object?> For(TrustedRepositoryConsumer consumer, string scope, string operation) => new()
+    {
+        ["callerService"] = consumer.ServiceName,
+        ["consumerModule"] = consumer.ConsumerModule,
+        ["audience"] = consumer.Audience,
+        ["serviceClientId"] = consumer.ClientId.ToString("D"),
+        ["scope"] = scope,
+        ["operation"] = operation
+    };
+}
+
+/// <summary>
+/// MOD-0262-FU08 — the ONE after-state list of the two upload records (pack §4): <c>ContentId</c>, <c>Scope</c>,
+/// <c>OwningItemId</c>, <c>OwningVersionId</c>, <c>ByteSize</c>, <c>Checksum</c>, and on the trusted path
+/// <c>TrustedConsumerModule</c>. Guids are written as <c>"D"</c> text. Never written: <c>ObjectKey</c>, the file name, the
+/// media type, the provider name, the creator, the content.
+/// </summary>
+internal static class RepositoryObjectAuditState
+{
+    public static Contracts.Audit.AuditResponseState? For(RepositoryObjectModel? model, string? trustedConsumerModule)
+    {
+        if (model is null || model.ContentId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var afterState = new Dictionary<string, object?>
+        {
+            ["ContentId"] = model.ContentId.ToString("D"),
+            ["Scope"] = model.Scope,
+            ["OwningItemId"] = model.OwningItemId.ToString("D"),
+            ["OwningVersionId"] = model.OwningVersionId.ToString("D"),
+            ["ByteSize"] = model.ByteSize,
+            ["Checksum"] = model.Checksum
+        };
+        if (trustedConsumerModule is not null)
+        {
+            afterState["TrustedConsumerModule"] = trustedConsumerModule;
+        }
+
+        return new Contracts.Audit.AuditResponseState(model.ContentId, afterState);
+    }
+}

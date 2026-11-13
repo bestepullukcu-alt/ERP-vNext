@@ -69,4 +69,19 @@
   <data name="FtePlaceholder" xml:space="preserve">
     <value>örn. 1.0</value>
   </data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>Kod, kayıt kaydedildiğinde sistem tarafından verilir.</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>Kod değiştirilemez.</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>Kodu sistem verir; bu alanı boş bırakın.</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>Sıradaki kodlar kullanımda olduğu için kod verilemedi. Lütfen yöneticinize başvurun.</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>Şirketin kısa kodu kullanıldıktan sonra değişmiş. Lütfen MDM yöneticisine başvurun.</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>Şirketin geçerli bir kısa kodu yok (2 ile 5 arası büyük harf). Lütfen MDM yöneticisine başvurun.</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>Şirket bulunamadı ya da aktif değil.</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>Şirket henüz kullanım için onaylanmamış.</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>Kodun verilmesi için gereken şirket kayıtlarını okuma izniniz yok.</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>Bu kaydı oluşturma izniniz yok.</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>Kuruluşunuzun hesabı aktif değil; kod verilemez.</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>Kod servisine şu anda ulaşılamıyor. Lütfen daha sonra tekrar deneyin.</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>Şirket bilgisi şu anda okunamıyor. Lütfen daha sonra tekrar deneyin.</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>Bu istek için kayıt kodu verilmesine izin verilmiyor.</value></data>
 </root>

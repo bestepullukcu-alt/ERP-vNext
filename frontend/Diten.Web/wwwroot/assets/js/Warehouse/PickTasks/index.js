@@ -62,7 +62,10 @@ const PickTasksList = (function () {
     const fieldError = (id, text) => { const el = byId(id); if (el) el.textContent = text || ''; };
     const reload = () => list?.dt?.ajax?.reload(null, false);
     const person = (p) => (p ? (p.name || W('UnknownUser')) : '');
-    const quantity = (row) => `${row.confirmed ?? '0'} / ${row.planned ?? '0'} ${row.uom ?? ''}`.trim();
+    // E3-FIX-01 (G-1): quantities on screen are in the reader's culture (tr "2", "1,5"); the confirmation sends the dot-decimal wire string
+    const culture = () => window.CurrentLanguage || document.documentElement.lang || undefined;
+    const qtyText = (value) => rules.quantityText(value, culture());
+    const quantity = (row) => `${qtyText(row.confirmed ?? '0')} / ${qtyText(row.planned ?? '0')} ${row.uom ?? ''}`.trim();
     const fmtDate = (value) => {
         if (!value) return '';
         const date = new Date(value);
@@ -192,10 +195,10 @@ const PickTasksList = (function () {
         setText('oc-warehouse', task.warehouse);
         setText('oc-from', task.fromLocation);
         setText('oc-to', task.toLocation);
-        setText('oc-planned', `${task.planned ?? ''} ${task.uom ?? ''}`.trim());
-        setText('oc-confirmed', task.confirmed);
-        setText('oc-pending', task.pending);
-        setText('oc-remaining', task.remaining);
+        setText('oc-planned', `${qtyText(task.planned)} ${task.uom ?? ''}`.trim());
+        setText('oc-confirmed', qtyText(task.confirmed));
+        setText('oc-pending', qtyText(task.pending));
+        setText('oc-remaining', qtyText(task.remaining));
         setText('oc-assignee', person(task.assignee));
         const link = rules.packLink(task, can);
         const pack = byId('oc-pack-link');
@@ -215,7 +218,7 @@ const PickTasksList = (function () {
             const status = inFlight ? W('Warehouse.Status.InFlight') : W(`Warehouse.ConfirmationStatus.${c.status}`);
             const resolution = ResolutionWord[c.integrityResolution] || ResolutionWord[c.resolution];
             const lines = [
-                `${esc(c.quantity)} → ${esc(c.toLocation)}`,
+                `${esc(qtyText(c.quantity))} → ${esc(c.toLocation)}`,
                 c.transactionNumber ? esc(format(W('ConfirmationMovement'), c.transactionNumber)) : '',
                 c.status === 'Pending' ? esc(format(W('ConfirmationAttempts'), c.attempts)) : '',
                 c.status === 'Pending' && c.lastAttemptAtUtc ? esc(format(W('ConfirmationLastAttempt'), fmtDate(c.lastAttemptAtUtc))) : '',
@@ -275,7 +278,7 @@ const PickTasksList = (function () {
             button.addEventListener('click', () => {
                 const target = byId('confirmQuantity');
                 if (!target) return;
-                target.value = rules.step(target.value, Number(button.dataset.whStep), target.dataset.max);
+                target.value = rules.quantityText(rules.step(target.value, Number(button.dataset.whStep), target.dataset.max), culture(), false);
                 target.dispatchEvent(new Event('input'));
             });
         });
@@ -292,11 +295,11 @@ const PickTasksList = (function () {
         setText('confirm-from', task.fromLocation);
         setText('confirm-to', task.toLocation);
         const qty = byId('confirmQuantity');
-        qty.value = task.remaining || '';
+        qty.value = rules.quantityText(task.remaining, culture(), false); // "1,5" in tr — an input takes it back (no grouping)
         qty.dataset.max = task.remaining || '';
         qty.readOnly = !!task.serialControlled; // a serial SKU is whole quantity only (§8.16)
         byId('formConfirm')?.querySelectorAll('[data-wh-step]').forEach((b) => { b.disabled = !!task.serialControlled; });
-        setText('confirm-remaining', format(W('RemainingHint'), task.remaining, task.uom));
+        setText('confirm-remaining', format(W('RemainingHint'), qtyText(task.remaining), task.uom));
         fieldError('confirmQuantityError', '');
         const retry = rules.actionState(task, 'Retry', can);
         byId('btnConfirmRetry')?.classList.toggle('d-none', !(retry.visible && retry.enabled && task.pendingSeq));

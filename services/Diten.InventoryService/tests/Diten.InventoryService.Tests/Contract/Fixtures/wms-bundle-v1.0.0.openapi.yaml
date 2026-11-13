@@ -1,0 +1,1132 @@
+openapi: 3.1.0
+info:
+  title: WMS-BUNDLE
+  description: >-
+    MOD-0178 Putaway / Picking / Packing (MVP-5) — the warehouse task contract of Diten.InventoryService. Frozen by the Control
+    Tower single-writer step (pack §19.7, AC-60) from the CT-accepted proposal docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md
+    (wire shape) and the module pack execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md
+    (behaviour authority). 1.0.0 = S1 (warehouse task schema: putaway tasks, putaway candidates, location roles) + the frozen
+    WAREHOUSE-OUTBOUND 1.0.0 surface, copied unchanged (superset rule, decision Q-06: separate file; warehouse-outbound.openapi.yaml
+    stays the MVP-6 subset and is not changed). After the freeze only additive changes (K16).
+
+    RULES (proposal §1).
+    (1) Server /api/warehouse (Gateway -> Diten.InventoryService 5067); tenant shell users (actor_type = tenant_user).
+    (2) TenantId from the token; the company per W-0173-02 (claim, else X-Legal-Entity-Id + MDM check). 403 CROSS_LE_FORBIDDEN only
+    for a header / token / membership mismatch; another company's or tenant's record by id, or an unknown id -> 404. Every read and
+    write is tenant + company scoped. tenantId / legalEntityId in a body or query -> 400.
+    (3) Envelope: the success body is the schema itself (unwrapped); an error is WmsError = { error { code, message, details?,
+    correlationId }, contractVersion: "v1" } (the INVENTORY Error). The WAREHOUSE-OUTBOUND Error (no details) is its subset; the
+    outbound endpoints send no details. 401 / 403 from the service-wide auth middleware answer AuthError (code may be absent).
+    (4) An empty optional member is NOT written — no JSON null anywhere (OAS 3.1: nullable does not admit null; the MVP-6 reader
+    refuses null, FrozenReadSchema.cs:8, GAP-0183-03). No schema of the WMS part allows null. A list never writes nextCursor at its end.
+    (5) Every write takes an Idempotency-Key header equal to the body's idempotencyKey (8-100). Same key + same body -> 200 replay
+    (the record's current state; a confirmation also carries the request's own confirmationSeq), no write; another body -> 400
+    IDEMPOTENCY_KEY_REUSED. The key is kept per requesting user + operation (operationId) + target record and is looked up BEFORE
+    If-Match and every business rule. Fingerprint = operation + target + normalised body (headers excluded). Of two concurrent
+    identical requests the loser gets the 200 replay, not 409. A bulk replay answers the written rows with their result, the unwritten
+    as Conflict (NotFound). A request refused before any write leaves no key. The client makes a new key per user action.
+    (6) Mutable records (task, location role) need If-Match W/"<version>" on change: missing -> 400 INVALID_REQUEST, stale -> 409
+    WMS_CONFLICT; answers carry ETag W/"<version>". Staleness is judged after the key check of rule 5.
+    (7) This contract holds no stock balance and changes no stock: every physical move is an INVENTORY postMovement LOCATION_TRANSFER
+    on the same in-process path (sourceModule MOD-0178). GOODS_ISSUE_SALES is not this module's (W-4, MOD-0183).
+    (8) Correlation (E-1): X-Correlation-Id is created at the Gateway, read and forwarded by the service; UUID in event payloads.
+    (9) Dates (E-6): date = UTC calendar day, date-time = UTC instant.
+    (10) Quantities: decimal strings (^-?\d+(\.\d+)?$, at most 6 fraction digits) in the SKU's base unit (baseUomId); different SKUs
+    or units are never added up.
+    (11) No new stock status and no new movement type.
+
+    Objects of the WMS part are closed (additionalProperties: false; a composed schema closes with unevaluatedProperties: false) and
+    every enum is the proposal's list. The two members TaskConfirmation.error.reason and BulkAssignResult.contractVersion /
+    BulkDeleteLocationRolesResult.contractVersion are the DL-2 additions proposed for this freeze (pack §8.3; the v1 marker of every
+    other S1 body). E-signature: none (M-1) — no signable action and no signature member.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0178
+  x-owner-service: Diten.InventoryService
+  x-authored-by: control-tower
+  x-source-proposal: docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md
+  x-superset-of: warehouse-outbound.openapi.yaml 1.0.0
+  x-consumes: [INVENTORY-BUNDLE, LOCATION, TRACE-BUNDLE, QUARANTINE-BUNDLE, FEFO-BUNDLE, RECALL-BUNDLE, PRODUCT-MASTER]
+  x-changelog:
+    - "1.0.0 — CT freeze of S1 (MOD-0178 pack §19.7, AC-60): proposal §1 rules, §2 WAREHOUSE-OUTBOUND 1.0.0 paths and schemas unchanged, §3 S1 schemas, §4 S1 operations, §5 S1 error codes, §6.1 state machine. No S1 event is published (pack §8.9; WarehouseTaskCompleted is internal, not a contract). Additions over the proposal: TaskConfirmation.error.reason, BulkAssignResult.contractVersion, BulkDeleteLocationRolesResult.contractVersion."
+  x-state-machines:
+    putawayTask:
+      - "— -> Open: createPutawayTask (§4 rules)"
+      - "Open -> InProgress: first Posted confirmation, remaining > 0"
+      - "Open / InProgress -> Completed: Posted confirmation with remaining = 0"
+      - "Open / InProgress -> Completed: closePutawayTaskShort (>= 1 Posted, no Pending, reason)"
+      - "Open / InProgress -> Cancelled: cancelPutawayTask (no Posted, no Pending, reason; with a Posted one only closePutawayTaskShort)"
+    confirmation:
+      - "— -> Pending: confirmPutawayTask transaction 1 (pre-checks passed; in-flight lock taken)"
+      - "Pending -> Posted: transaction 2 (2xx) / retry or reconciler (ledger Committed); AttemptId + Confirmed + q <= Planned"
+      - "Pending -> Refused: transaction 2 (4xx) / retry pre-check refusal"
+      - "Pending -> IntegrityError: IDEMPOTENCY_KEY_REUSED, or Confirmed + q > Planned (defence), or retry / reconciler finds the holder reversed (HolderReversed)"
+      - "Refused -> IntegrityError: 0-row (D) — this attempt got Posted / replay while another attempt wrote Refused (StatusDiverged; resolution -> priorResolution); already IntegrityError -> no write, 409"
+      - "Refused (refusalSource PreCheck / Ledger4xx, refusedOnRetry, last 30 min) -> IntegrityError: defensive sweep finds ledger Committed (StatusDiverged)"
+      - "Refused -> IntegrityError (+ 409 to the command): new confirmation / markPutawayConfirmationReturned / cancelPutawayTask / closePutawayTaskShort pre-lookup finds Committed (StatusDiverged)"
+      - "IntegrityError -> Posted: resolvePutawayIntegrity (a) — the key holder is this confirmation's own movement; ledger values written; deviation event if confirmed > planned"
+      - "IntegrityError -> Refused (unresolved): resolvePutawayIntegrity (b) — holder foreign, not committed or reversed; the task stays open"
+      - "IntegrityError (task terminal) -> Posted / Refused: resolvePutawayIntegrity — only the confirmation record is corrected; the task is not reopened"
+      - "Refused -> Refused + resolution: new Posted confirmation (SupersededByNewConfirmation) / markPutawayConfirmationReturned (ReturnedToSource)"
+servers: [{ url: /api/warehouse }]
+security: [{ bearerAuth: [] }]
+paths:
+  # ── §2 WAREHOUSE-OUTBOUND 1.0.0 — copied unchanged (superset rule; equality measured by a contract test) ──
+  /outbound-shipments:
+    get:
+      operationId: listOutboundShipments
+      summary: Sevke hazır (veya duruma göre) outbound shipment listesi — event'e alternatif polling
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/OutboundStatus' } }
+        - { name: warehouseId, in: query, required: false, schema: { type: string } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Outbound shipment sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/OutboundShipment' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+              example:
+                items:
+                  - outboundId: OUT-9001
+                    warehouseId: wh-01
+                    orderRef: SO-7788
+                    status: ReadyToShip
+                    shipTo: { name: "Acme Pharma Depo", country: tr, city: Istanbul, postalCode: "34000", line1: "Org. San. Böl. 5" }
+                    lines:
+                      - { orderLineId: "1", itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, lotNumber: "L2026-0455", quantity: "100.000", uomId: BOX }
+                    packages:
+                      - { packageId: PKG-1, weightKg: "12.500", dimensionsCm: "40x30x20" }
+                    readyAt: "2026-09-15T08:00:00Z"
+                nextCursor: null
+                contractVersion: v1
+  /outbound-shipments/{outboundId}:
+    get:
+      operationId: getOutboundShipment
+      summary: Tek outbound shipment detayı (0183 Shipment bunu okuyup Shipment yaratır)
+      parameters:
+        - { name: outboundId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Outbound shipment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutboundShipment' }
+        '404': { $ref: '#/components/responses/UnknownOutbound' }
+
+  # ── §4 S1 operations — putaway candidates and tasks ──
+  /putaway-candidates:
+    get:
+      operationId: listPutawayCandidates
+      summary: Putaway candidates — computed from the INVENTORY balance at read time, never stored (§3.3)
+      x-permission: warehouse.putaway-tasks.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: warehouseId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: lotId, in: query, required: false, schema: { type: string } }
+        - { name: eligible, in: query, required: false, schema: { type: boolean } }
+        - { name: q, in: query, required: false, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Candidate page (§3.8)
+          content: { application/json: { schema: { $ref: '#/components/schemas/PutawayCandidatePage' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+  /putaway-tasks:
+    get:
+      operationId: listPutawayTasks
+      summary: Putaway task list
+      x-permission: warehouse.putaway-tasks.read
+      x-error-codes: [INVALID_REQUEST, CROSS_LE_FORBIDDEN]
+      parameters:
+        - { name: status, in: query, required: false, schema: { type: array, items: { $ref: '#/components/schemas/WarehouseTaskStatus' } }, style: form, explode: true }
+        - { name: warehouseId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: assigneeUserId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: priority, in: query, required: false, schema: { $ref: '#/components/schemas/WarehouseTaskPriority' } }
+        - { name: q, in: query, required: false, description: task number or lot number, schema: { type: string } }
+        - { name: orderBy, in: query, required: false, schema: { type: string, enum: [createdAt, -createdAt] } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Task page (§3.8)
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTaskPage' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+    post:
+      operationId: createPutawayTask
+      summary: Open a putaway task on a source bucket (candidateKey, or the explicit source members)
+      x-permission: warehouse.putaway-tasks.create
+      x-error-codes: [WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_COMPANY_CODE_INVALID, LEGAL_ENTITY_MASTER_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_SOURCE_STOCK_NOT_FOUND, WMS_SOURCE_NOT_RECEIVING, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_QUANTITY_EXCEEDS_OPEN, WMS_TARGET_NOT_ALLOWED, WMS_ASSIGNEE_INVALID, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_RECORD_CODE_UNAVAILABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_DATA_INCOMPLETE]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreatePutawayTaskRequest' } } }
+      responses:
+        '201':
+          description: Task opened (ETag)
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTask' } } }
+        '200':
+          description: Replay (rule 5)
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTask' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/bulk-assign:
+    post:
+      operationId: bulkAssignPutawayTasks
+      summary: Assign up to 100 tasks; one outcome per row, partial success marked
+      x-permission: warehouse.putaway-tasks.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_ASSIGNEE_INVALID, WMS_CONFIRMATION_PENDING]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/BulkAssignRequest' } } }
+      responses:
+        '200':
+          description: Row results (a task with a Pending confirmation is not assigned — PendingConfirmation); replay 200 (rule 5)
+          content: { application/json: { schema: { $ref: '#/components/schemas/BulkAssignResult' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}:
+    get:
+      operationId: getPutawayTask
+      x-permission: warehouse.putaway-tasks.read
+      x-error-codes: [WMS_TASK_NOT_FOUND, CROSS_LE_FORBIDDEN]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }]
+      responses:
+        '200':
+          description: The task (ETag)
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTask' } } }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+    put:
+      operationId: updatePutawayTask
+      summary: Change planned quantity / target / assignee / priority / note — the source bucket members are not accepted (400); planned >= confirmed + pending
+      x-permission: warehouse.putaway-tasks.update
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_QUANTITY_EXCEEDS_OPEN, WMS_QUANTITY_BELOW_CONFIRMED, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, LOT_UNDER_RECALL, WMS_TASK_NOT_FOUND, WMS_POSTING_INTEGRITY_ERROR]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdatePutawayTaskRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/events:
+    get:
+      operationId: getPutawayTaskEvents
+      x-permission: warehouse.putaway-tasks.read
+      x-error-codes: [WMS_TASK_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200':
+          description: The task's timeline (§3.4)
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTaskEventPage' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/claim:
+    post:
+      operationId: claimPutawayTask
+      summary: Assign an unassigned task to oneself
+      x-permission: warehouse.putaway-tasks.confirm
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, WMS_TASK_ALREADY_ASSIGNED, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_CONFLICT, WMS_POSTING_INTEGRITY_ERROR]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/confirmations:
+    post:
+      operationId: confirmPutawayTask
+      summary: >-
+        Confirm a quantity to a target. 201 = confirmation Posted; 422 = Refused (the INVENTORY code unchanged, details.task + details.seq);
+        503 = Pending (details.task + details.seq); replay 200 (the current task + the request's own confirmationSeq; before If-Match).
+        Serials are never taken from the client (F-1).
+      x-permission: warehouse.putaway-tasks.confirm
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, INVALID_REQUEST, REASON_REQUIRED, WMS_CONFLICT, WMS_NOT_ASSIGNEE, WMS_CONFIRMATION_PENDING, WMS_INVALID_TRANSITION, WMS_QUANTITY_EXCEEDS_REMAINING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_SERIAL_BUCKET_CHANGED, WMS_TARGET_NOT_ALLOWED, UNKNOWN_LOCATION, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL, CROSS_LE_FORBIDDEN, WMS_SERIAL_BUCKET_MIXED_STATUS, WMS_POSTING_INTEGRITY_ERROR, INSUFFICIENT_STOCK, LOT_RETEST_DUE, SERIAL_NOT_AVAILABLE, ITEM_NOT_ACTIVE, INVENTORY_UNAVAILABLE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE, WMS_CONFIRMATION_CONFLICT_RETRY, WMS_CONFIRMATION_IN_FLIGHT]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ConfirmPutawayTaskRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/ConfirmResult' }
+        '200': { $ref: '#/components/responses/ConfirmResult' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/confirmations/{seq}/retry:
+    post:
+      operationId: retryPutawayConfirmation
+      summary: >-
+        Retry a Pending confirmation (same postingKey, dates and serials; no attempt limit). Order: (i) ledger lookup of the postingKey
+        (processed and not reversed -> Posted, no pre-check; reversed -> IntegrityError HolderReversed; other fingerprint -> IntegrityError);
+        (ii) only when not processed the 0178 pre-checks, then the posting. The result write is conditional (status == Pending).
+      x-permission: warehouse.putaway-tasks.confirm
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, WMS_CONFIRMATION_IN_FLIGHT, WMS_POSTING_INTEGRITY_ERROR, WMS_NOT_ASSIGNEE, WMS_CONFIRMATION_NOT_RETRYABLE, WMS_SERIAL_BUCKET_MIXED_STATUS, LOT_UNDER_RECALL, WMS_STOCK_NOT_PUTAWAY_ELIGIBLE, WMS_STORAGE_CONDITION_MISMATCH, WMS_STORAGE_CONDITIONS_UNKNOWN, WMS_SERIAL_BUCKET_CHANGED, WMS_CONFLICT, INVENTORY_UNAVAILABLE, WMS_CONFIRMATION_CONFLICT_RETRY]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/Seq' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/ConfirmResult' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/confirmations/{seq}/returned:
+    post:
+      operationId: markPutawayConfirmationReturned
+      summary: "\"Geri taşındı\" — the goods of an unresolved Refused confirmation went back to the source; no movement (F-4)"
+      x-permission: warehouse.putaway-tasks.confirm
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_NOT_ASSIGNEE, WMS_POSTING_INTEGRITY_ERROR, WMS_CONFIRMATION_PENDING]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/Seq' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/confirmations/{seq}/resolve-integrity:
+    post:
+      operationId: resolvePutawayIntegrity
+      summary: >-
+        "Uzlaştır" — the ledger is read again and the key holder returned (holderMovement): this confirmation's own movement -> Posted
+        (ledger values written, deviation event on a difference); foreign, not committed or reversed -> unresolved Refused
+        (refusalSource Resolve). An open task stays open, a terminal task stays terminal; no automatic close, no upstream call.
+      x-permission: warehouse.putaway-tasks.resolve
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, REASON_REQUIRED, WMS_CONFLICT, WMS_CONFIRMATION_NOT_RESOLVABLE, WMS_CONFIRMATION_PENDING, WMS_CONFIRMATION_IN_FLIGHT, WMS_TASK_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/Seq' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/close-short:
+    post:
+      operationId: closePutawayTaskShort
+      summary: Close the remainder (at least one Posted confirmation; never for a serial SKU)
+      x-permission: warehouse.putaway-tasks.confirm
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_SERIAL_PARTIAL_NOT_SUPPORTED, WMS_POSTING_INTEGRITY_ERROR, WMS_NOT_ASSIGNEE]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+  /putaway-tasks/{taskId}/cancel:
+    post:
+      operationId: cancelPutawayTask
+      summary: Cancel a task (only while no confirmation is Posted)
+      x-permission: warehouse.putaway-tasks.cancel
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, REASON_REQUIRED, WMS_CONFLICT, WMS_INVALID_TRANSITION, WMS_CONFIRMATION_PENDING, WMS_POSTING_INTEGRITY_ERROR]
+      parameters: [{ $ref: '#/components/parameters/TaskId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Task' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+
+  # ── §4 S1 operations — location roles (§3.5 / §3.6) ──
+  /location-roles:
+    get:
+      operationId: listLocationRoles
+      x-permission: warehouse.location-roles.read
+      x-error-codes: [INVALID_REQUEST]
+      parameters:
+        - { name: warehouseId, in: query, required: false, schema: { type: string, format: uuid } }
+        - { name: role, in: query, required: false, schema: { $ref: '#/components/schemas/WarehouseRole' } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200':
+          description: Location-role page (§3.8)
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseLocationRolePage' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+    post:
+      operationId: createLocationRole
+      summary: >-
+        One record per node. Replay 200 — the same key + body never gets 409 WMS_LOCATION_ROLE_EXISTS; of two concurrent identical
+        creates the loser also gets the 200 replay, whichever unique index (key or locationId) the duplicate came from.
+      x-permission: warehouse.location-roles.manage
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, WMS_LOCATION_ROLE_EXISTS, WMS_LOCATION_ROLE_CONFLICT, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_TYPE_NOT_ALLOWED, WMS_STORAGE_CONDITION_INVALID]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateLocationRoleRequest' } } }
+      responses:
+        '201':
+          description: Created (ETag)
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseLocationRole' } } }
+        '200': { $ref: '#/components/responses/Role' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+  /location-roles/bulk-delete:
+    post:
+      operationId: bulkDeleteLocationRoles
+      summary: Soft delete per row; replay 200 — a deleted row deleted, the others Conflict / NotFound (the key is looked up only among bulkDeleteLocationRoles writes)
+      x-permission: warehouse.location-roles.manage
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/BulkDeleteLocationRolesRequest' } } }
+      responses:
+        '200':
+          description: Row results
+          content: { application/json: { schema: { $ref: '#/components/schemas/BulkDeleteLocationRolesResult' } } }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+  /location-roles/{roleId}:
+    get:
+      operationId: getLocationRole
+      x-permission: warehouse.location-roles.read
+      x-error-codes: [WMS_LOCATION_ROLE_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/RoleId' }]
+      responses:
+        '200': { $ref: '#/components/responses/Role' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+    put:
+      operationId: updateLocationRole
+      x-permission: warehouse.location-roles.manage
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, WMS_CONFLICT, WMS_LOCATION_ROLE_CONFLICT, WMS_STORAGE_CONDITION_INVALID, WMS_LOCATION_ROLE_INHERITED_CONFLICT, WMS_LOCATION_HAS_OPEN_TASKS]
+      parameters: [{ $ref: '#/components/parameters/RoleId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateLocationRoleRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/Role' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+        '422': { $ref: '#/components/responses/WmsError' }
+        '503': { $ref: '#/components/responses/WmsError' }
+    delete:
+      operationId: deleteLocationRole
+      summary: Soft delete (IsDeleted, DeletedAt); the answer is the deleted record; replay 200
+      x-permission: warehouse.location-roles.manage
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, WMS_CONFLICT, WMS_LOCATION_ROLE_NOT_FOUND, WMS_LOCATION_HAS_OPEN_TASKS]
+      parameters: [{ $ref: '#/components/parameters/RoleId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
+      responses:
+        '200': { $ref: '#/components/responses/Role' }
+        '400': { $ref: '#/components/responses/WmsError' }
+        '401': { $ref: '#/components/responses/AuthError' }
+        '403': { $ref: '#/components/responses/AuthError' }
+        '404': { $ref: '#/components/responses/WmsError' }
+        '409': { $ref: '#/components/responses/WmsError' }
+
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    Page: { name: page, in: query, required: false, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 25 } }
+    TaskId: { name: taskId, in: path, required: true, schema: { type: string, format: uuid } }
+    Seq: { name: seq, in: path, required: true, schema: { type: integer, minimum: 1 } }
+    RoleId: { name: roleId, in: path, required: true, schema: { type: string, format: uuid } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, description: equals the body's idempotencyKey (rule 5), schema: { type: string, minLength: 8, maxLength: 100 } }
+    IfMatch: { name: If-Match, in: header, required: true, description: 'W/"<version>" (rule 6); missing -> 400 INVALID_REQUEST, stale -> 409 WMS_CONFLICT', schema: { type: string } }
+  headers:
+    ETag: { description: 'W/"<version>"', schema: { type: string } }
+  responses:
+    UnknownOutbound:
+      description: Outbound shipment bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_OUTBOUND, message: "outbound shipment bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    WmsError:
+      description: The WMS error envelope (rule 3)
+      content: { application/json: { schema: { $ref: '#/components/schemas/WmsError' } } }
+    AuthError:
+      description: 401 / 403 of the service-wide auth and scope middleware (rule 3)
+      content: { application/json: { schema: { $ref: '#/components/schemas/AuthError' } } }
+    Task:
+      description: The task (ETag)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseTask' } } }
+    ConfirmResult:
+      description: The task + the request's own confirmationSeq (§3.9; ETag)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/ConfirmPutawayTaskResult' } } }
+    Role:
+      description: The location role (ETag)
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/WarehouseLocationRole' } } }
+  schemas:
+    # ── §2 WAREHOUSE-OUTBOUND 1.0.0 — copied unchanged ──
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    OutboundStatus:
+      type: string
+      description: "Allocated→Picked→Packed→ReadyToShip = MVP-6 tetiği; Shipped/Cancelled = terminal (MVP-6 yazmaz)"
+      enum: [Allocated, Picked, Packed, ReadyToShip, Shipped, Cancelled]
+    Address:
+      type: object
+      required: [name, country]
+      properties:
+        name: { type: string }
+        country: { type: string, description: "lowercase country code (Territory ile uyumlu)" }
+        city: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        line1: { type: string, nullable: true }
+        line2: { type: string, nullable: true }
+    OutboundLine:
+      type: object
+      required: [itemId, skuId, skuLevel, quantity, uomId]
+      properties:
+        orderLineId: { type: string, nullable: true }
+        itemId: { type: string, format: uuid, description: "PRODUCT-MASTER GlobalProduct" }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotNumber: { type: string, nullable: true }
+        serialIds: { type: array, items: { type: string }, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+    Package:
+      type: object
+      required: [packageId]
+      properties:
+        packageId: { type: string }
+        weightKg: { $ref: '#/components/schemas/Decimal' }
+        dimensionsCm: { type: string, nullable: true, description: "LxWxH" }
+    OutboundShipment:
+      type: object
+      required: [outboundId, warehouseId, status, shipTo, lines]
+      properties:
+        outboundId: { type: string }
+        warehouseId: { type: string, description: "LOCATION master" }
+        orderRef: { type: string, nullable: true, description: "kaynak sipariş referansı (SoR MVP-6 dışı)" }
+        status: { $ref: '#/components/schemas/OutboundStatus' }
+        shipTo: { $ref: '#/components/schemas/Address' }
+        lines: { type: array, items: { $ref: '#/components/schemas/OutboundLine' } }
+        packages: { type: array, items: { $ref: '#/components/schemas/Package' }, nullable: true }
+        readyAt: { type: string, format: date-time, nullable: true }
+        contractVersion: { type: string }
+    OutboundShipmentReadyEvent:
+      description: "Event — MOD-0183 Shipment dinler; status=ReadyToShip'e geçince yayınlanır. correlationId shipment lifecycle boyunca taşınır."
+      type: object
+      required: [outboundId, warehouseId, readyAt]
+      properties:
+        outboundId: { type: string }
+        warehouseId: { type: string }
+        orderRef: { type: string, nullable: true }
+        readyAt: { type: string, format: date-time }
+        correlationId: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+
+    # ── WMS common (rules 3, 4, 9, 10) ──
+    Uuid: { type: string, format: uuid }
+    DateTime: { type: string, format: date-time }
+    Quantity:
+      type: string
+      description: Decimal string in the SKU's base unit, at most 6 fraction digits (rule 10)
+      pattern: '^-?\d+(\.\d{1,6})?$'
+    ContractVersion: { type: string, const: v1 }
+    ItemSkuLevel:
+      type: string
+      description: The SKU level of a WMS record's item (INVENTORY SkuLevel incl. Item — FEFO / RECALL R-12 shape). The frozen outbound SkuLevel above stays three values.
+      enum: [Gsku, Lsku, FinishedGood, Item]
+    StockStatus: { type: string, enum: [AVAILABLE, QUARANTINE, QUALITY_INSPECTION, BLOCKED, RESERVED, IN_TRANSIT] }
+    WmsError:
+      type: object
+      additionalProperties: false
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, correlationId]
+          properties:
+            code: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
+            message: { type: string }
+            details: { type: object, description: 'Open object (code-specific: details.task, details.seq, details.reason …)' }
+            correlationId: { $ref: '#/components/schemas/Uuid' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    AuthError:
+      type: object
+      additionalProperties: false
+      description: 401 / 403 from the service-wide auth middleware, before any 0178 code — the INVENTORY Error, whose code may be absent (inventory-bundle.openapi.yaml Error).
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [message, correlationId]
+          properties:
+            code: { type: string, pattern: '^[A-Z][A-Z0-9_]+$' }
+            message: { type: string }
+            correlationId: { $ref: '#/components/schemas/Uuid' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    Item:
+      type: object
+      additionalProperties: false
+      required: [itemId, skuId, skuLevel]
+      properties:
+        itemId: { $ref: '#/components/schemas/Uuid' }
+        skuId: { $ref: '#/components/schemas/Uuid' }
+        skuLevel: { $ref: '#/components/schemas/ItemSkuLevel' }
+    Person:
+      type: object
+      additionalProperties: false
+      description: name = the actor's name at the time (RECALL 1.8.0 rule); absent when unknown
+      required: [userId]
+      properties:
+        userId: { $ref: '#/components/schemas/Uuid' }
+        name: { type: string }
+    Stamp:
+      type: object
+      additionalProperties: false
+      required: [userId, atUtc]
+      properties:
+        userId: { $ref: '#/components/schemas/Uuid' }
+        name: { type: string }
+        atUtc: { $ref: '#/components/schemas/DateTime' }
+
+    # ── §3 S1 schemas ──
+    WarehouseTaskKind: { type: string, enum: [Putaway] }
+    WarehouseTaskStatus: { type: string, enum: [Open, InProgress, Completed, Cancelled] }
+    WarehouseTaskOrigin:
+      type: string
+      description: Manual … External are S1; Outbound (pick only) and ShortDispatch (short-dispatch put-back) come from S2 (r24, pack §4.1)
+      enum: [Manual, Receipt, Production, Cancellation, External, Outbound, ShortDispatch]
+    WarehouseTaskPriority: { type: string, enum: [Low, Normal, High] }
+    WarehouseTaskAction: { type: string, enum: [Confirm, Claim, Update, Cancel, CloseShort, Retry, MarkReturned, ResolveIntegrity] }
+    IntegrationFlag:
+      type: string
+      description: One value per task, derived (not stored); priority PostingIntegrityError > PostingPendingLong > PostingPending > PostingRefused > None. PostingRefused only from an unresolved Refused confirmation.
+      enum: [None, PostingPending, PostingPendingLong, PostingRefused, PostingIntegrityError]
+    ConfirmationStatus: { type: string, enum: [Pending, Posted, Refused, IntegrityError] }
+    ConfirmationResolution: { type: string, enum: [SupersededByNewConfirmation, ReturnedToSource] }
+    WarehouseRole: { type: string, description: "Receiving (S1), Staging (S2); never both on one node", enum: [Receiving, Staging] }
+    StorageConditionCode:
+      type: string
+      description: PRODUCT-MASTER v1.1 StorageConditionCode (product-master-bundle.openapi.yaml)
+      enum: [AMBIENT_15_25, COOL_2_8, FROZEN_BELOW_MINUS_20, PROTECT_FROM_LIGHT, PROTECT_FROM_MOISTURE]
+    SourceRef:
+      type: object
+      additionalProperties: false
+      required: [sourceModule]
+      properties:
+        sourceModule: { type: string }
+        sourceType: { type: string }
+        sourceDocumentId: { type: string }
+        sourceLineId: { type: string }
+        transactionId: { type: string }
+    HolderMovement:
+      type: object
+      additionalProperties: false
+      description: The movement that holds the confirmation's postingKey in the ledger (resolvePutawayIntegrity)
+      required: [transactionId, transactionNumber, sourceModule, sourceType, quantity, uomId, baseQuantity, postingDate]
+      properties:
+        transactionId: { type: string }
+        transactionNumber: { type: string }
+        sourceModule: { type: string }
+        sourceType: { type: string }
+        sourceDocumentId: { type: string }
+        sourceLineId: { type: string }
+        quantity: { $ref: '#/components/schemas/Quantity' }
+        uomId: { type: string }
+        baseQuantity: { $ref: '#/components/schemas/Quantity' }
+        fromWarehouseId: { type: string }
+        fromLocationId: { type: string }
+        toWarehouseId: { type: string }
+        toLocationId: { type: string }
+        postingDate: { $ref: '#/components/schemas/DateTime' }
+        lotId: { type: string }
+        serialIds: { type: array, items: { type: string } }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        reversedByTransactionId: { type: string }
+    ConfirmationError:
+      type: object
+      additionalProperties: false
+      description: >-
+        The stored refusal / integrity error of a confirmation (INVENTORY code unchanged; status = the HTTP status of the refusal).
+        reason (DL-2 addition, pack §8.3): KeyReused / HolderReversed / StatusDiverged / OverPlanned.
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object }
+        status: { type: integer, minimum: 100, maximum: 599 }
+        reason: { type: string }
+    TaskConfirmation:
+      type: object
+      additionalProperties: false
+      description: >-
+        §3.2. transactionDate / postingDate are written once in transaction 1 and sent unchanged on every attempt. serialIds only for a
+        serial SKU (read by the system, never sent by the client). resolution only on a Refused confirmation; an IntegrityError moves it to
+        priorResolution.
+      required: [seq, quantity, toLocationId, status, postingKey, transactionDate, postingDate, channel, confirmedBy, confirmedAtUtc, attempts]
+      properties:
+        seq: { type: integer, minimum: 1 }
+        quantity: { $ref: '#/components/schemas/Quantity' }
+        toLocationId: { type: string }
+        deviationReason: { type: string }
+        status: { $ref: '#/components/schemas/ConfirmationStatus' }
+        postingKey: { type: string, pattern: '^wms:put:[0-9a-f-]{36}:[1-9][0-9]*$' }
+        transactionDate: { $ref: '#/components/schemas/DateTime' }
+        postingDate: { $ref: '#/components/schemas/DateTime' }
+        serialIds: { type: array, items: { type: string } }
+        transactionId: { type: string }
+        transactionNumber: { type: string }
+        error: { $ref: '#/components/schemas/ConfirmationError' }
+        resolution: { $ref: '#/components/schemas/ConfirmationResolution' }
+        priorResolution: { $ref: '#/components/schemas/ConfirmationResolution' }
+        resolutionReason: { type: string }
+        channel: { type: string, enum: [Ui, Api, External] }
+        scanRef: { type: string, maxLength: 200 }
+        confirmedBy: { $ref: '#/components/schemas/Person' }
+        confirmedAtUtc: { $ref: '#/components/schemas/DateTime' }
+        attempts: { type: integer, minimum: 1 }
+        lastAttemptAtUtc: { $ref: '#/components/schemas/DateTime' }
+        refusalSource: { type: string, enum: [PreCheck, Ledger4xx, Resolve] }
+        refusedOnRetry: { type: boolean }
+        refusedAtUtc: { $ref: '#/components/schemas/DateTime' }
+        inFlightUntilUtc: { $ref: '#/components/schemas/DateTime' }
+        integrityResolution: { type: string, enum: [ResolvedOwnMovement, ReturnedToRefused] }
+        resolveReason: { type: string }
+        holderMovement: { $ref: '#/components/schemas/HolderMovement' }
+    DisabledAction:
+      type: object
+      additionalProperties: false
+      required: [action, reasonCode]
+      properties:
+        action: { $ref: '#/components/schemas/WarehouseTaskAction' }
+        reasonCode: { type: string }
+    WarehouseTaskMembers:
+      type: object
+      description: >-
+        The members of §3.1 WarehouseTask — the shape WarehouseTask and ConfirmPutawayTaskResult share (proposal §3.9 "allOf"). Not an
+        answer by itself and left without additionalProperties only so that it can be composed: each answer schema that uses it closes
+        it with unevaluatedProperties: false.
+      required: [taskId, number, companyCodePrefix, kind, status, origin, legalEntityId, warehouseId, item, stockStatus, fromLocationId, targetSource, plannedQuantity, confirmedQuantity, pendingQuantity, remainingQuantity, baseUomId, priority, serialControlled, confirmations, integrationFlag, allowedActions, disabledActions, created, version, contractVersion]
+      properties:
+        taskId: { $ref: '#/components/schemas/Uuid' }
+        number: { type: string, description: '{companyCodePrefix}-PUT-{000001} (M-2; 7 digits after 999999)', pattern: '^[A-Z]{2,5}-PUT-\d{6,}$' }
+        companyCodePrefix: { type: string, pattern: '^[A-Z]{2,5}$' }
+        warehouseCode: { type: string }
+        kind: { $ref: '#/components/schemas/WarehouseTaskKind' }
+        status: { $ref: '#/components/schemas/WarehouseTaskStatus' }
+        origin: { $ref: '#/components/schemas/WarehouseTaskOrigin' }
+        sourceRef: { $ref: '#/components/schemas/SourceRef' }
+        sourceSystem: { type: string }
+        externalRef: { type: string }
+        legalEntityId: { $ref: '#/components/schemas/Uuid' }
+        warehouseId: { type: string }
+        item: { $ref: '#/components/schemas/Item' }
+        lotId: { type: string }
+        lotNumber: { type: string }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        fromLocationId: { type: string }
+        toLocationId: { type: string }
+        suggestedToLocationId: { type: string }
+        targetSource: { type: string, enum: [Manual, SuggestionApplied] }
+        plannedQuantity: { $ref: '#/components/schemas/Quantity' }
+        confirmedQuantity: { $ref: '#/components/schemas/Quantity' }
+        pendingQuantity: { $ref: '#/components/schemas/Quantity' }
+        remainingQuantity: { $ref: '#/components/schemas/Quantity' }
+        baseUomId: { type: string }
+        assignee: { $ref: '#/components/schemas/Person' }
+        priority: { $ref: '#/components/schemas/WarehouseTaskPriority' }
+        note: { type: string }
+        serialControlled: { type: boolean }
+        confirmations: { type: array, items: { $ref: '#/components/schemas/TaskConfirmation' } }
+        integrationFlag: { $ref: '#/components/schemas/IntegrationFlag' }
+        allowedActions: { type: array, items: { $ref: '#/components/schemas/WarehouseTaskAction' } }
+        disabledActions: { type: array, items: { $ref: '#/components/schemas/DisabledAction' } }
+        shortCloseReason: { type: string }
+        cancelReason: { type: string }
+        created: { $ref: '#/components/schemas/Stamp' }
+        updated: { $ref: '#/components/schemas/Stamp' }
+        version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    WarehouseTask:
+      description: §3.1 — closed (no member besides WarehouseTaskMembers)
+      $ref: '#/components/schemas/WarehouseTaskMembers'
+      unevaluatedProperties: false
+    ConfirmPutawayTaskResult:
+      description: >-
+        §3.9 — WarehouseTask + confirmationSeq: the request's own confirmation (confirmation: the one transaction 1 opened; retry: the
+        path's seq; replay: read from the key event). Error answers carry the same value as error.details.seq.
+      $ref: '#/components/schemas/WarehouseTaskMembers'
+      required: [confirmationSeq]
+      properties:
+        confirmationSeq: { type: integer, minimum: 1 }
+      unevaluatedProperties: false
+    WarehouseTaskPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/WarehouseTask' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    BlockingDocument:
+      type: object
+      additionalProperties: false
+      required: [kind, id]
+      properties:
+        kind: { type: string, enum: [QuarantineHold, BlockedStock, RecallCase, LotStatus] }
+        id: { type: string }
+        number: { type: string }
+    PutawayCandidate:
+      type: object
+      additionalProperties: false
+      description: >-
+        §3.3 — openQuantity = onHand − Σ (open tasks' planned − confirmed), at read time. Not eligible rows stay listed (eligible false +
+        reason + blocking document number — M-4). storageConditions = PRODUCT-MASTER v1.1 getSku.storageConditions (display only; absent =
+        unknown, empty = no condition).
+      required: [candidateKey, warehouseId, locationId, item, stockStatus, onHand, openTaskQuantity, openQuantity, baseUomId, eligible]
+      properties:
+        candidateKey: { type: string, description: '{warehouseId}|{locationId}|{skuId}|{skuLevel}|{lotId}|{stockStatus}', pattern: '^[^|]+\|[^|]+\|[^|]+\|[^|]+\|[^|]*\|[^|]+$' }
+        warehouseId: { type: string }
+        locationId: { type: string }
+        locationCode: { type: string }
+        item: { $ref: '#/components/schemas/Item' }
+        lotId: { type: string }
+        lotNumber: { type: string }
+        lotStatus: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        onHand: { $ref: '#/components/schemas/Quantity' }
+        openTaskQuantity: { $ref: '#/components/schemas/Quantity' }
+        openQuantity: { $ref: '#/components/schemas/Quantity' }
+        baseUomId: { type: string }
+        eligible: { type: boolean }
+        notEligibleReason: { type: string, enum: [StockHeld, LotBlocked, LotExpired, LotUnderRecall] }
+        blockingDocument: { $ref: '#/components/schemas/BlockingDocument' }
+        storageConditions: { type: array, items: { type: string } }
+        lastPostingDate: { $ref: '#/components/schemas/DateTime' }
+    PutawayCandidatePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/PutawayCandidate' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    WarehouseTaskEventKind:
+      type: string
+      enum: [Created, Updated, Assigned, Claimed, SuggestionApplied, ConfirmationRecorded, ConfirmationPosted, ConfirmationRefused, ConfirmationRetried, ConfirmationReconciled, ConfirmationIntegrityError, IntegrityResolved, ConfirmationDeviation, ConfirmationSuperseded, ConfirmationReturned, ClosedShort, Completed, Cancelled]
+    WarehouseTaskEvent:
+      type: object
+      additionalProperties: false
+      description: §3.4 — the request key, operation (RequestOp) and fingerprint of a key event are stored, never written here
+      required: [seq, kind, system, atUtc, data, correlationId]
+      properties:
+        seq: { type: integer, minimum: 1 }
+        kind: { $ref: '#/components/schemas/WarehouseTaskEventKind' }
+        actor: { $ref: '#/components/schemas/Person' }
+        system: { type: boolean }
+        atUtc: { $ref: '#/components/schemas/DateTime' }
+        data: { type: object, additionalProperties: { type: string } }
+        correlationId: { $ref: '#/components/schemas/Uuid' }
+    WarehouseTaskEventPage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/WarehouseTaskEvent' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    BulkAssignResult:
+      type: object
+      additionalProperties: false
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [taskId, outcome]
+            properties:
+              taskId: { type: string }
+              outcome: { type: string, enum: [Assigned, Conflict, NotFound, InvalidTransition, PendingConfirmation] }
+              version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    EffectiveStorageConditions:
+      type: object
+      additionalProperties: false
+      description: §3.6 — the accepted set in force (own tags, or the nearest tagged ancestor's — "üst düğümden")
+      required: [codes]
+      properties:
+        codes: { type: array, items: { type: string } }
+        inheritedFromLocationId: { type: string }
+        inheritedFromLocationCode: { type: string }
+    WarehouseLocationRole:
+      type: object
+      additionalProperties: false
+      description: >-
+        §3.5 — one record per node (pack §4.4): roles 0..n (Receiving + Staging never together), acceptedStorageConditions 0..n (at most one
+        temperature code), at least one of the two filled. Applies to the node's stockable subtree; no LOCATION node is created (Q-04).
+      required: [roleId, legalEntityId, warehouseId, locationId, roles, acceptedStorageConditions, version, contractVersion]
+      properties:
+        roleId: { $ref: '#/components/schemas/Uuid' }
+        legalEntityId: { $ref: '#/components/schemas/Uuid' }
+        warehouseId: { type: string }
+        locationId: { type: string }
+        locationCode: { type: string }
+        locationType: { type: string, enum: [StorageLocation, Zone, Bin] }
+        roles: { type: array, items: { $ref: '#/components/schemas/WarehouseRole' } }
+        acceptedStorageConditions: { type: array, items: { $ref: '#/components/schemas/StorageConditionCode' } }
+        effectiveStorageConditions: { $ref: '#/components/schemas/EffectiveStorageConditions' }
+        note: { type: string }
+        version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    WarehouseLocationRolePage:
+      type: object
+      additionalProperties: false
+      required: [items, total, page, pageSize, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/WarehouseLocationRole' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    BulkDeleteLocationRolesResult:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [roleId, result]
+            properties:
+              roleId: { type: string }
+              result: { type: string, enum: [Deleted, Conflict, NotFound] }
+              version: { type: integer, minimum: 1 }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+
+    # ── §4 S1 request bodies (closed; tenantId / legalEntityId never accepted — rule 2) ──
+    IdempotencyKeyValue: { type: string, minLength: 8, maxLength: 100 }
+    KeyRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+    ReasonRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, reason]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+    CreatePutawayTaskRequest:
+      type: object
+      additionalProperties: false
+      description: The source bucket is candidateKey OR (warehouseId, fromLocationId, item, lotId?, stockStatus) — not both (400).
+      required: [idempotencyKey, plannedQuantity]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        candidateKey: { type: string }
+        warehouseId: { $ref: '#/components/schemas/Uuid' }
+        fromLocationId: { $ref: '#/components/schemas/Uuid' }
+        item: { $ref: '#/components/schemas/Item' }
+        lotId: { type: string }
+        stockStatus: { $ref: '#/components/schemas/StockStatus' }
+        plannedQuantity: { $ref: '#/components/schemas/Quantity' }
+        toLocationId: { $ref: '#/components/schemas/Uuid' }
+        targetSource: { type: string, enum: [Manual, SuggestionApplied] }
+        assigneeUserId: { $ref: '#/components/schemas/Uuid' }
+        priority: { $ref: '#/components/schemas/WarehouseTaskPriority' }
+        note: { type: string }
+    UpdatePutawayTaskRequest:
+      type: object
+      additionalProperties: false
+      description: The source bucket members are not accepted (400); planned >= confirmed + pending.
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        plannedQuantity: { $ref: '#/components/schemas/Quantity' }
+        toLocationId: { $ref: '#/components/schemas/Uuid' }
+        targetSource: { type: string, enum: [Manual, SuggestionApplied] }
+        assigneeUserId: { $ref: '#/components/schemas/Uuid' }
+        priority: { $ref: '#/components/schemas/WarehouseTaskPriority' }
+        note: { type: string }
+    BulkAssignRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, assigneeUserId, items]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        assigneeUserId: { $ref: '#/components/schemas/Uuid' }
+        items:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required: [taskId, version]
+            properties:
+              taskId: { $ref: '#/components/schemas/Uuid' }
+              version: { type: integer, minimum: 1 }
+    ConfirmPutawayTaskRequest:
+      type: object
+      additionalProperties: false
+      description: No serials from the client (F-1).
+      required: [idempotencyKey, quantity, toLocationId]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        quantity: { $ref: '#/components/schemas/Quantity' }
+        toLocationId: { $ref: '#/components/schemas/Uuid' }
+        deviationReason: { type: string }
+        channel: { type: string, enum: [Ui, Api, External] }
+        scanRef: { type: string, maxLength: 200 }
+    CreateLocationRoleRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, locationId, roles, acceptedStorageConditions]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        locationId: { $ref: '#/components/schemas/Uuid' }
+        roles: { type: array, items: { $ref: '#/components/schemas/WarehouseRole' } }
+        acceptedStorageConditions: { type: array, items: { type: string }, description: 'a code outside StorageConditionCode, a repeat or two temperature codes -> 400 WMS_STORAGE_CONDITION_INVALID' }
+        note: { type: string }
+    UpdateLocationRoleRequest:
+      type: object
+      additionalProperties: false
+      description: The node (locationId) never changes and is not a member.
+      required: [idempotencyKey]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        roles: { type: array, items: { $ref: '#/components/schemas/WarehouseRole' } }
+        acceptedStorageConditions: { type: array, items: { type: string } }
+        note: { type: string }
+    BulkDeleteLocationRolesRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, items]
+      properties:
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKeyValue' }
+        items:
+          type: array
+          maxItems: 200
+          items:
+            type: object
+            additionalProperties: false
+            required: [roleId, version]
+            properties:
+              roleId: { $ref: '#/components/schemas/Uuid' }
+              version: { type: integer, minimum: 1 }
+
+  # ── §5 S1 error codes (WMS_* are defined here only — Q-06; the code's WarehouseErrorCodes) ──
+  x-error-codes:
+    WMS_TASK_NOT_FOUND: { status: 404, meaning: task does not exist / another tenant or company }
+    WMS_LOCATION_ROLE_NOT_FOUND: { status: 404, meaning: location role does not exist }
+    WMS_CONFLICT: { status: 409, meaning: "stale If-Match; or the 0-row rule's (C2) / (E) branch — the record changed independently of this attempt, no write, details.task = the current task; on the confirm / retry endpoint after transaction 1 details.seq" }
+    WMS_INVALID_TRANSITION: { status: 409, meaning: state transition not allowed }
+    WMS_CONFIRMATION_PENDING: { status: 409, meaning: "a Pending confirmation locks the task: new confirmation / update / claim / close short / cancel / another confirmation's resolve / returned / bulk assignment (row outcome PendingConfirmation)" }
+    WMS_CONFIRMATION_CONFLICT_RETRY: { status: 503, meaning: "the confirmation write lost the CAS 3 times in the 0-row rule's (A) branch; confirmation Pending, lock kept; details.seq" }
+    WMS_CONFIRMATION_NOT_RETRYABLE: { status: 409, meaning: a Posted / Refused confirmation cannot be retried }
+    WMS_SOURCE_STOCK_NOT_FOUND: { status: 422, meaning: source bucket not in the company / OnHand 0 }
+    WMS_SOURCE_NOT_RECEIVING: { status: 422, meaning: source is not under the Receiving role }
+    WMS_STOCK_NOT_PUTAWAY_ELIGIBLE: { status: 422, meaning: "bucket is not AVAILABLE (held stock) — at create and at confirmation" }
+    WMS_QUANTITY_EXCEEDS_OPEN: { status: 422, meaning: planned > open quantity (details.openQuantity) }
+    WMS_QUANTITY_EXCEEDS_REMAINING: { status: 422, meaning: confirmation > remaining (details.remainingQuantity) }
+    WMS_TARGET_NOT_ALLOWED: { status: 422, meaning: "target bin rule (details.rule: NotStockable / OtherWarehouse / SameAsSource / RoleLocation / Inactive)" }
+    WMS_ASSIGNEE_INVALID: { status: 422, meaning: assignee is not valid }
+    WMS_LOCATION_ROLE_EXISTS: { status: 409, meaning: the node already has a record (one record per node) }
+    WMS_LOCATION_ROLE_CONFLICT: { status: 409, meaning: the same node both Receiving and Staging }
+    WMS_LOCATION_TYPE_NOT_ALLOWED: { status: 422, meaning: type Site / Warehouse for a role }
+    WMS_RECORD_CODE_UNAVAILABLE: { status: 503, meaning: "the interim RCS counter could not be written (pack Q-07 B)" }
+    WMS_COMPANY_CODE_INVALID: { status: 422, meaning: "the MDM legal-entity Code is not ^[A-Z]{2,5}$ (M-2; details.companyCode)" }
+    WMS_STORAGE_CONDITION_MISMATCH: { status: 422, meaning: "the target's effective accepted set does not cover the product's conditions (§3.6; details: productConditions, locationConditions, inheritedFromLocationId)" }
+    WMS_STORAGE_CONDITIONS_UNKNOWN: { status: 422, meaning: "the product's storageConditions member is absent in PRODUCT-MASTER (unknown, not empty)" }
+    WMS_STORAGE_CONDITION_INVALID: { status: 400, meaning: tag code not in the contract / repeated / more than one temperature code }
+    WMS_LOCATION_HAS_OPEN_TASKS: { status: 409, meaning: removing Receiving from / deleting the record of a node with open tasks }
+    WMS_NOT_ASSIGNEE: { status: 403, meaning: the confirming user is neither the assignee nor a supervisor }
+    WMS_TASK_ALREADY_ASSIGNED: { status: 409, meaning: an assigned task cannot be claimed }
+    WMS_QUANTITY_BELOW_CONFIRMED: { status: 422, meaning: planned < confirmed + pending }
+    WMS_SERIAL_PARTIAL_NOT_SUPPORTED: { status: 422, meaning: "partial confirmation / close short / quantity change on a serial SKU (S1 full quantity only, F-1)" }
+    WMS_SERIAL_BUCKET_CHANGED: { status: 422, meaning: "the serials in the bucket differ from the task quantity at confirmation / retry (details.expected, details.found)" }
+    WMS_CONFIRMATION_NOT_RESOLVABLE: { status: 409, meaning: "\"Geri taşındı\" only on an unresolved Refused confirmation; \"Uzlaştır\" only on an IntegrityError one" }
+    WMS_LOCATION_ROLE_INHERITED_CONFLICT: { status: 409, meaning: "Receiving / Staging cannot be given to a node whose ancestor / subtree carries the other role (F-13)" }
+    WMS_POSTING_INTEGRITY_ERROR: { status: 409, meaning: "the ledger processed another movement under the same postingKey (IDEMPOTENCY_KEY_REUSED), or 0-row (D) StatusDiverged, or OverPlanned (defence), or HolderReversed, or a closing command's pre-lookup / the defensive sweep found a late commit; confirmation IntegrityError, task locked; the only exit is resolvePutawayIntegrity; details.seq on the confirm / retry / resolve endpoint" }
+    WMS_CONFIRMATION_IN_FLIGHT: { status: 409, meaning: "the confirmation's in-flight lock holds (details.inFlightUntilUtc, details.seq)" }
+    WMS_SERIAL_BUCKET_MIXED_STATUS: { status: 422, meaning: "the same location holds non-AVAILABLE stock of the same lot + SKU — no serial task in S1" }
+    reused:
+      - "INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, REASON_REQUIRED, CROSS_LE_FORBIDDEN, UNKNOWN_LOCATION, LOT_BLOCKED, LOT_EXPIRED, LOT_UNDER_RECALL (INVENTORY 1.4.0 shape; details.movementType LOCATION_TRANSFER), LOT_RETEST_DUE, INSUFFICIENT_STOCK, SERIAL_NOT_AVAILABLE, SERIAL_COUNT_MISMATCH, ITEM_NOT_ACTIVE, SKU_LEVEL_NOT_STOCKABLE, PRODUCT_MASTER_DATA_INCOMPLETE, PRODUCT_MASTER_UNAVAILABLE, LOCATION_MASTER_UNAVAILABLE, LEGAL_ENTITY_MASTER_UNAVAILABLE, INVENTORY_UNAVAILABLE — forwarded unchanged from INVENTORY. Only exception: INVENTORY 500 / 502 / 504, a cancelled posting call or an unexpected exception answer the confirm / retry endpoint 503 INVENTORY_UNAVAILABLE + details.reason = OutcomeUnknown (commit result unknown, confirmation Pending)."

@@ -1,0 +1,90 @@
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCountsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    QuickView: the count's summary, its state line, its scope and its timeline (a blind count's numbers are projected out by the service), with the
+    actions its state allows — each only for the key that uses it: "Sayım formuna git", "Başlat" (Draft, counts.update), "İptal" (Draft / Released /
+    Counting, counts.cancel; a reason is required). The reason dialog also serves "Toplu sil".
+*@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-list-check fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="offcanvasDetailsPreviewLabel" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <div id="oc-readonly" class="alert alert-secondary d-none mb-0" role="status"></div>
+            <section class="card backbone-preview-section p-4">
+                <dl class="row g-3 mb-0">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColWarehouse"]</dt><dd class="col-7 mb-0" id="oc-warehouse">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColType"]</dt><dd class="col-7 mb-0" id="oc-type">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldScope"]</dt><dd class="col-7 mb-0 text-break" id="oc-scope">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColPlannedDate"]</dt><dd class="col-7 mb-0" id="oc-planned">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColAssignee"]</dt><dd class="col-7 mb-0" id="oc-assignee">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["SnapshotAt"]</dt><dd class="col-7 mb-0" id="oc-snapshot">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ColLines"]</dt><dd class="col-7 mb-0" id="oc-lines">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["RecountOf"]</dt><dd class="col-7 mb-0" id="oc-recountof">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldNote"]</dt><dd class="col-7 mb-0 text-break" id="oc-note">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["CancelReason"]</dt><dd class="col-7 mb-0 text-break" id="oc-cancel">-</dd>
+                </dl>
+            </section>
+            <section class="card backbone-preview-section p-4">
+                <h6 class="mb-3">@Localizer["Timeline"]</h6>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2" id="oc-timeline"></ul>
+            </section>
+        </div>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex flex-wrap justify-content-between gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <div class="d-flex flex-wrap gap-2">
+            <a id="oc-btn-sheet" class="btn btn-label-primary d-none" href="#">@Localizer["CycleCount.Action.OpenSheet"]</a>
+            @if (Perms.Has(CycleCountPermissionKeys.CountsCancel))
+            {
+                <button type="button" id="oc-btn-cancel" class="btn btn-label-danger d-none">@Localizer["CycleCount.Action.Cancel"]</button>
+            }
+            @if (Perms.Has(CycleCountPermissionKeys.CountsUpdate))
+            {
+                <button type="button" id="oc-btn-edit" class="btn btn-label-primary d-none" data-bs-dismiss="offcanvas">@Localizer["CycleCount.Action.Edit"]</button>
+                <button type="button" id="oc-btn-release" class="btn btn-primary d-none">@Localizer["CycleCount.Action.Release"]</button>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Perms.Has(CycleCountPermissionKeys.CountsCancel) || Perms.Has(CycleCountPermissionKeys.CountsBulkDelete))
+{
+    @* The reason of "İptal" / "Toplu sil" (pack §12: 1..500 after trim — the service owns COUNT_REASON_REQUIRED). *@
+    <div class="modal fade" id="ccReasonModal" tabindex="-1" aria-labelledby="ccReasonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ccReasonModalLabel">-</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ccReasonAlert" class="alert alert-danger d-none" role="alert"></div>
+                    <label for="ccReason" class="form-label fw-medium">@Localizer["FieldReason"] <span class="text-danger">*</span></label>
+                    <textarea id="ccReason" class="form-control" rows="3" maxlength="500"></textarea>
+                    <small class="text-muted d-block mt-1" id="ccReasonHint">@Localizer["ReasonHint"]</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-danger" id="ccReasonConfirm">@Localizer["CycleCount.Action.Confirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

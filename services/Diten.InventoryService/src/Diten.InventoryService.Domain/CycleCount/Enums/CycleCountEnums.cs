@@ -18,7 +18,7 @@ public enum CycleCountStatus
     Cancelled
 }
 
-/// <summary>A line's state (pack §8.3 "Satır"). DL-1 writes <see cref="Open"/> only (the snapshot lines); the rest come with DL-2 / DL-3.</summary>
+/// <summary>A line's state (pack §8.3 "Satır"). DL-1 writes Open, DL-2 Counted / NoVariance / AwaitingApproval, DL-3 the decisions.</summary>
 public enum CycleCountLineStatus
 {
     Open,
@@ -38,7 +38,10 @@ public enum CycleCountLineOrigin
     Recount
 }
 
-/// <summary>The kinds of the insert-only count timeline (pack §4.3). DL-1 writes Created, Updated, Released and Cancelled.</summary>
+/// <summary>
+/// The kinds of the insert-only count timeline (pack §4.3). DL-1 writes Created, Updated, Released and Cancelled; DL-2 LineCounted, LineAdded,
+/// Submitted, VarianceComputed and Closed (a submit whose every line is final).
+/// </summary>
 public enum CycleCountEventKind
 {
     Created,
@@ -58,4 +61,35 @@ public enum CycleCountEventKind
     AdjustmentIntegrityError,
     IntegrityResolved,
     Closed
+}
+
+/// <summary>Pack §4.2 <c>Decision.Kind</c> (DL-3).</summary>
+public enum CycleCountDecisionKind
+{
+    Approved,
+    Rejected,
+    Recount
+}
+
+/// <summary>Pack §4.2 <c>Decision.Source</c>: a user, or the company tolerance at submit (§8.5).</summary>
+public enum CycleCountDecisionSource
+{
+    User,
+    Tolerance
+}
+
+/// <summary>Pack §4.2 <c>Adjustment.Status</c> (§8.6): Pending → Posted | Refused | IntegrityError.</summary>
+public enum CycleCountAdjustmentStatus
+{
+    Pending,
+    Posted,
+    Refused,
+    IntegrityError
+}
+
+/// <summary>Pack §8.3 (F-12): the <c>resolve-integrity</c> decision.</summary>
+public enum CycleCountIntegrityDecision
+{
+    AcceptHolder,
+    Reject
 }

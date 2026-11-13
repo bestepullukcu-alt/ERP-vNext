@@ -11,6 +11,20 @@
     var payload = new
     {
         RequiredField = Localizer["RequiredField"].Value,
+        // MOD-0040-FU02 DL-2 — the record-code answers, shown instead of the service's English errors[] (pack §11).
+        RecordCodeImmutable = Localizer["RecordCodeImmutable"].Value,
+        RecordCodeSystemAssigned = Localizer["RecordCodeSystemAssigned"].Value,
+        RecordCodeCollision = Localizer["RecordCodeCollision"].Value,
+        RecordCodeShortCodeChanged = Localizer["RecordCodeShortCodeChanged"].Value,
+        RecordCodeShortCodeMissing = Localizer["RecordCodeShortCodeMissing"].Value,
+        RecordCodeLegalEntityNotFound = Localizer["RecordCodeLegalEntityNotFound"].Value,
+        RecordCodeLegalEntityNotEligible = Localizer["RecordCodeLegalEntityNotEligible"].Value,
+        RecordCodeLegalEntityReadPermissionMissing = Localizer["RecordCodeLegalEntityReadPermissionMissing"].Value,
+        RecordCodePermissionMissing = Localizer["RecordCodePermissionMissing"].Value,
+        RecordCodeTenantNotActive = Localizer["RecordCodeTenantNotActive"].Value,
+        RecordCodeUnavailable = Localizer["RecordCodeUnavailable"].Value,
+        RecordCodeLegalEntitySourceUnavailable = Localizer["RecordCodeLegalEntitySourceUnavailable"].Value,
+        RecordCodeForbidden = Localizer["RecordCodeForbidden"].Value,
         // WCN-FIX-04 — a typed date the shared guard refused: the save stops and says why (SharedResource, 7 languages).
         DateNotRecognized = SharedLocalizer["DateNotRecognized"].Value,
         DateFormat = Diten.Web.Services.Localization.FlatpickrDateFormat.ForCurrentCulture(),

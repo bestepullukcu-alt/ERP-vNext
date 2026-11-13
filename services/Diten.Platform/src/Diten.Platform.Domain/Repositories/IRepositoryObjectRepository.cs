@@ -20,4 +20,14 @@ public interface IRepositoryObjectRepository
 
     /// <summary>Soft-marks the row after a failed metadata commit; never removes the physical object.</summary>
     Task<bool> MarkCompensatedAsync(Guid contentId, CancellationToken ct = default);
+
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 — the ONE read that also returns a compensated row, still tenant-scoped (another tenant's row is
+    /// null). Only the trusted consumer's compensation uses it, so a repeated compensation answers 204 instead of 404 (§8.1
+    /// "Telafi tekrarı"). The default body refuses: an in-memory double written before DL-2 never reaches this path; the
+    /// Mongo repository implements it.
+    /// </summary>
+    Task<RepositoryObject?> GetByContentIdIncludingCompensatedAsync(Guid contentId, CancellationToken ct = default) =>
+        throw new NotSupportedException(
+            "GetByContentIdIncludingCompensatedAsync is implemented by the Mongo repository only (MOD-0262-FU01 DL-2).");
 }

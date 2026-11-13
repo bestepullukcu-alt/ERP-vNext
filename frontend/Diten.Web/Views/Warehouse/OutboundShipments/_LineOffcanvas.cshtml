@@ -1,0 +1,99 @@
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    MOD-0178-FU01 DL-1 (pack §8.3, D-1, D-4) — the line panel of the outbound Create page: the Golden Slim _CreateEditOffcanvas pattern (6 fields ≤ 8,
+    each a .diten-field with its icon) inside the Compact page. Named _LineOffcanvas, not _CreateEditOffcanvas: it is the form of a LINE, the outbound
+    itself stays the full-page Create (G-FU01-01, Q-8). "Satırı kaydet" only changes the page's in-memory lines (local, undoable — Enter is its key,
+    page-help-and-keyboard §3); nothing is written to the server here. "Satırı önizle" previews THIS line alone with its chosen lot.
+*@
+<div class="offcanvas offcanvas-end wh-confirm-panel" tabindex="-1" id="offcanvasOutboundLine" aria-labelledby="offcanvasOutboundLineLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasOutboundLineLabel" class="offcanvas-title" data-title-add="@Localizer["LinePanel.TitleAdd"]" data-title-edit="@Localizer["LinePanel.TitleEdit"]">@Localizer["LinePanel.TitleAdd"]</h5>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="lineAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formOutboundLine" class="pt-0" novalidate>
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="lineProduct" class="form-label fw-medium">@Localizer["LineProduct"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                        <select id="lineProduct" class="form-select" data-placeholder="@Localizer["LineProduct"]" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="lineSku" class="form-label fw-medium">@Localizer["LineSku"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i>
+                        <select id="lineSku" class="form-select" data-placeholder="@Localizer["LineSku"]" required>
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="lineQuantity" class="form-label fw-medium">@Localizer["LineQuantity"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-calculator diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="lineQuantity" class="form-control wh-touch" inputmode="decimal" autocomplete="off" required />
+                    </div>
+                    <small class="form-text text-muted d-block" id="lineUom" data-template="@Localizer["LinePanel.Unit"].Value">-</small>
+                </div>
+
+                <div class="col-12">
+                    <label for="lineOrderLine" class="form-label fw-medium">@Localizer["LineOrderLine"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="lineOrderLine" class="form-control" maxlength="100" autocomplete="off" required />
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="lineLot" class="form-label fw-medium">@Localizer["LineLot"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-layer diten-field-icon" aria-hidden="true"></i>
+                        <select id="lineLot" class="form-select">
+                            <option value="">@Localizer["LineFefoFirst"]</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-12 d-none" id="lineReasonBlock">
+                    <label for="lineReason" class="form-label fw-medium">@Localizer["LineReason"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-comment-detail diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="lineReason" class="form-control" rows="3" maxlength="1000"></textarea>
+                    </div>
+                    <small class="form-text text-muted d-block" id="lineReasonHint"></small>
+                </div>
+            </div>
+        </form>
+
+        <div id="linePreview" class="mt-4 d-none" aria-live="polite">
+            <p class="text-muted small mb-2">@Localizer["LinePanel.PreviewNote"]</p>
+            <div id="linePreviewBody" class="border rounded p-3 d-flex flex-column gap-1"></div>
+        </div>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex flex-wrap justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary wh-touch" data-bs-dismiss="offcanvas">
+            @Localizer["LinePanel.Discard"]
+        </button>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" id="btnLinePreview" class="btn btn-label-primary wh-touch">
+                <i class="bx bx-search-alt me-1"></i>@Localizer["LinePanel.Preview"]
+            </button>
+            <button data-dt-primary="enter" type="button" id="btnLineSave" class="btn btn-primary wh-touch">
+                @Localizer["LinePanel.Save"]
+            </button>
+        </div>
+    </div>
+</div>

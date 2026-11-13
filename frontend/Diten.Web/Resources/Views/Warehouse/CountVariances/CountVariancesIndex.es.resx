@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Band.FourEyes" xml:space="preserve"><value>Doble control: quien contó o envió no puede aprobar.</value></data>
+  <data name="Band.Immediate" xml:space="preserve"><value>Aprobar una diferencia corrige el stock al instante con un movimiento de sobrante o faltante.</value></data>
+  <data name="Band.Tolerance" xml:space="preserve"><value>Las diferencias dentro de la tolerancia de la empresa se aprueban automáticamente.</value></data>
+  <data name="ColAdjustment" xml:space="preserve"><value>Corrección del libro</value></data>
+  <data name="ColBin" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="ColCount" xml:space="preserve"><value>Recuento / movimiento</value></data>
+  <data name="ColCounted" xml:space="preserve"><value>Contado</value></data>
+  <data name="ColExpectedAtCount" xml:space="preserve"><value>Esperado</value></data>
+  <data name="ColFlags" xml:space="preserve"><value>Indicadores</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColVariance" xml:space="preserve"><value>Diferencia</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyo stock cuenta.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pueden cargar las empresas ahora.</value></data>
+  <data name="CountVariancesTitle" xml:space="preserve"><value>Diferencias de recuento</value></data>
+  <data name="CountedAt" xml:space="preserve"><value>Contado el</value></data>
+  <data name="CycleCount.Action.AcceptHolder" xml:space="preserve"><value>Aceptar Movimiento Existente</value></data>
+  <data name="CycleCount.Action.Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="CycleCount.Action.Decide" xml:space="preserve"><value>Decidir</value></data>
+  <data name="CycleCount.Action.Recount" xml:space="preserve"><value>Recontar</value></data>
+  <data name="CycleCount.Action.Reject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="CycleCount.Action.RejectHolder" xml:space="preserve"><value>Rechazar Corrección</value></data>
+  <data name="CycleCount.Action.Retry" xml:space="preserve"><value>Reintentar Registro</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>Error de integridad</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>Registrado</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>Recuento</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>dentro de la tolerancia</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>por un usuario</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>La clave de la corrección la tiene otro movimiento. Resuelva el problema de integridad.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>El directorio de usuarios no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>No se puede asignar a la persona seleccionada.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>El código de la empresa no se puede usar para el número de recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Otra persona modificó este registro. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Esta acción no está permitida en el estado actual del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>El libro de stock no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Algunas líneas aún no se han contado.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Esta ubicación, producto y lote ya tienen una línea.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>No se encontró la línea del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>La ubicación o el producto está fuera del alcance del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Este producto se controla por lote. Introduzca el lote.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Este lote no es conocido para el producto.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>No se encontró el recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Introduzca una cantidad válida (cero o más).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Introduzca un motivo.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>El servicio de numeración no está disponible. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Una línea seleccionada alcanzó el límite de recuentos.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>El alcance no tiene ubicaciones que contar.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Una ubicación seleccionada no pertenece a este almacén o no está activa.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Otro recuento abierto ya cubre algunas de estas ubicaciones.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>El alcance es demasiado grande para un recuento. Redúzcalo o divídalo.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>No puede aprobar una diferencia que usted contó o envió.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>El stock con número de serie no se puede corregir desde un recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>El stock cambió mientras se tomaba la instantánea. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>El registro cambió mientras tanto. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otros datos. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>No hay stock suficiente para registrar esta pérdida.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>La solicitud no es válida.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>No se pudo aceptar la solicitud. Revise los campos.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos de la empresa no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>El lote está bloqueado.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>El lote ha caducado.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Este producto no se controla por lote. Deje el lote vacío.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>No se encontró el registro.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Los datos del producto están incompletos (por ejemplo, su unidad base).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos del producto no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>El número de series no coincide con la cantidad.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>El SKU no pertenece al producto seleccionado.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Este nivel de SKU no se mantiene en stock.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>El servicio no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>El producto no es conocido.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>La ubicación no es conocida.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Faltan algunos campos o no son válidos.</value></data>
+  <data name="CycleCount.Integrity.AcceptHolder" xml:space="preserve"><value>Movimiento existente aceptado</value></data>
+  <data name="CycleCount.Integrity.Reject" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Pendiente de aprobación</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Contado</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Sin diferencia</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Sin contar</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Enviado a recontar</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="CycleCount.Saved.Approved" xml:space="preserve"><value>Se aprobó la diferencia; la corrección de stock está registrada.</value></data>
+  <data name="CycleCount.Saved.Recounted" xml:space="preserve"><value>Se creó un recuento nuevo.</value></data>
+  <data name="CycleCount.Saved.Rejected" xml:space="preserve"><value>Se rechazó la diferencia; el stock no cambia.</value></data>
+  <data name="CycleCount.Saved.Resolved" xml:space="preserve"><value>Se resolvió el problema de integridad.</value></data>
+  <data name="CycleCount.Saved.Retried" xml:space="preserve"><value>Se reintentó el registro.</value></data>
+  <data name="CycleCount.Source.All" xml:space="preserve"><value>Todos</value></data>
+  <data name="CycleCount.Source.Count" xml:space="preserve"><value>Recuento</value></data>
+  <data name="CycleCount.Source.Manual" xml:space="preserve"><value>Movimiento manual</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Decidido el</value></data>
+  <data name="DecisionSummary" xml:space="preserve"><value>{0} · {1} · {2} · diferencia {3}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Decisión sobre la diferencia</value></data>
+  <data name="FieldDecision" xml:space="preserve"><value>Decisión</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>Desde</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="FilterSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>Hasta</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="Flag.Found" xml:space="preserve"><value>Stock encontrado</value></data>
+  <data name="Flag.MovementDuringCount" xml:space="preserve"><value>Movimiento durante el recuento</value></data>
+  <data name="Flag.Recount" xml:space="preserve"><value>Recuento repetido</value></data>
+  <data name="Flag.SnapshotDrift" xml:space="preserve"><value>Desviación de la instantánea</value></data>
+  <data name="Flag.SourceMismatch" xml:space="preserve"><value>Declaración de origen no coincide</value></data>
+  <data name="Flag.SourceMismatchNote" xml:space="preserve"><value>Este movimiento declara un recuento como origen, pero ningún recuento lo creó.</value></data>
+  <data name="IntegrityResolution" xml:space="preserve"><value>Resolución de integridad</value></data>
+  <data name="ManualReadOnlyNote" xml:space="preserve"><value>Los movimientos manuales se muestran solo para trazabilidad; las decisiones se toman en las líneas de recuento.</value></data>
+  <data name="MovementType" xml:space="preserve"><value>Tipo de movimiento</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>Sobrante de recuento</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>Faltante de recuento</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="OpenLedger" xml:space="preserve"><value>Abrir en movimientos de stock</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Rastree cada diferencia de recuento hasta su movimiento en el libro y decida sobre las líneas pendientes.</value></data>
+  <data name="PostedAt" xml:space="preserve"><value>Registrado el</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="ReadOnlyManual" xml:space="preserve"><value>Solo lectura</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>Hasta 500 caracteres; se guarda en el historial del recuento.</value></data>
+  <data name="RecountCreated" xml:space="preserve"><value>Nuevo recuento: {0}.</value></data>
+  <data name="RefusalCode" xml:space="preserve"><value>Código de rechazo</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="SelfApprovalNote" xml:space="preserve"><value>Usted contó o envió esta línea; otra persona debe aprobarla.</value></data>
+  <data name="SourceDeclared" xml:space="preserve"><value>Origen declarado</value></data>
+  <data name="ValidationDecision" xml:space="preserve"><value>Elija una decisión.</value></data>
+  <data name="WindowHint" xml:space="preserve"><value>Movimiento manual y Todos requieren un almacén y 31 días como máximo.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>No se pudo leer el nombre</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>No se pudo leer el número de lote</value></data>
+</root>

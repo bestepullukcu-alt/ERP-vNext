@@ -35,6 +35,12 @@ public sealed class CycleCountsController : CustomBaseController
         [FromQuery] string? pageSize, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new GetCycleCountListQuery(status ?? [], warehouseId, q, page, pageSize), ct));
 
+    /// <summary>DL-4 (pack §8.13, AC-40): the dashboard's KPI cards, counted at read time.</summary>
+    [HttpGet("cycle-counts/dashboard")]
+    [HasPermission(CycleCountPermissions.CountsRead)]
+    public async Task<IActionResult> Dashboard([FromQuery] string? warehouseId, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetCycleCountDashboardQuery(warehouseId), ct));
+
     [HttpGet("cycle-counts/{countId}")]
     [HasPermission(CycleCountPermissions.CountsRead)]
     public async Task<IActionResult> Get(string countId, CancellationToken ct)
@@ -51,7 +57,7 @@ public sealed class CycleCountsController : CustomBaseController
     [HasPermission(CycleCountPermissions.CountsRead)]
     public async Task<IActionResult> Events(string countId, [FromQuery] string? page, [FromQuery] string? pageSize, CancellationToken ct)
         => CycleCountSupport.TryParseId(countId, out var id)
-            ? CreateActionResultInstance(await _mediator.Send(new GetCycleCountEventListQuery(id, page, pageSize), ct))
+            ? CreateActionResultInstance(await _mediator.Send(new GetCycleCountEventListQuery(id, page, pageSize, Holds(CycleCountPermissions.VariancesRead)), ct))
             : NotFound();
 
     // ── writes ───────────────────────────────────────────────────────────────────────────────────────────
@@ -116,6 +122,47 @@ public sealed class CycleCountsController : CustomBaseController
         return WithETag(await _mediator.Send(new CancelCycleCountCommand(id, body.Reason, key, version), ct));
     }
 
+    // ── DL-2: entry, found stock, submit (draft §4.2; pack §8.3, §8.4) ─────────────────────────────────────
+
+    [HttpPost("cycle-counts/{countId}/lines")]
+    [HasPermission(CycleCountPermissions.CountsRecord)]
+    public async Task<IActionResult> AddLine(string countId, CancellationToken ct)
+    {
+        if (!CycleCountSupport.TryParseId(countId, out var id)) return NotFound();
+        var read = await CycleCountRequestReader.ReadAsync(Request.Body, CycleCountRequestReader.FoundLineMembers,
+            b => new FoundLineBody(b.FoundLine(), b.String("idempotencyKey")), ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return WithLineETag(await _mediator.Send(new AddCountLineCommand(id, body.Line, key), ct));
+    }
+
+    [HttpPost("cycle-counts/{countId}/lines/{lineId}/count")]
+    [HasPermission(CycleCountPermissions.CountsRecord)]
+    public async Task<IActionResult> RecordLine(string countId, string lineId, CancellationToken ct)
+    {
+        if (!CycleCountSupport.TryParseId(countId, out var id)) return NotFound();
+        if (!CycleCountSupport.TryParseId(lineId, out var line))
+            return ContractFailure(StatusCodes.Status404NotFound, CycleCountErrorCodes.LineNotFound, "Cycle count line not found.");
+        var read = await CycleCountRequestReader.ReadAsync(Request.Body, CycleCountRequestReader.EntryMembers,
+            b => new EntryBody(b.Entry(), b.String("idempotencyKey")), ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required (the ETag of the line).");
+        return WithLineETag(await _mediator.Send(new RecordCountLineCommand(id, line, body.Entry, key, version), ct));
+    }
+
+    [HttpPost("cycle-counts/{countId}/submit")]
+    [HasPermission(CycleCountPermissions.CountsRecord)]
+    public async Task<IActionResult> Submit(string countId, CancellationToken ct)
+    {
+        if (!CycleCountSupport.TryParseId(countId, out var id)) return NotFound();
+        var read = await CycleCountRequestReader.ReadAsync(Request.Body, CycleCountRequestReader.KeyMembers, b => new KeyBody(b.String("idempotencyKey")), ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        return WithETag(await _mediator.Send(new SubmitCycleCountCommand(id, key, version), ct));
+    }
+
     // ── plumbing ──────────────────────────────────────────────────────────────────────────────────────────
 
     private sealed record FormBody(CycleCountFormInput Form, string? Key);
@@ -126,11 +173,21 @@ public sealed class CycleCountsController : CustomBaseController
 
     private sealed record ReasonBody(string? Reason, string? Key);
 
+    private sealed record EntryBody(CycleCountEntryInput Entry, string? Key);
+
+    private sealed record FoundLineBody(CycleCountFoundLineInput Line, string? Key);
+
     /// <summary>A key the signed token carries (the blind rule's "variances.read holder", pack §8.2 rule 5) — never read from the body.</summary>
     private bool Holds(string permission)
         => User.Claims.Any(c => c.Type == "permission" && string.Equals(c.Value, permission, StringComparison.OrdinalIgnoreCase));
 
     private IActionResult WithETag(Response<CycleCountDto> response)
+    {
+        if (response.IsSuccessful && response.Data is not null) Response.Headers.ETag = $"W/\"{response.Data.Version}\"";
+        return CreateActionResultInstance(response);
+    }
+
+    private IActionResult WithLineETag(Response<CycleCountLineDto> response)
     {
         if (response.IsSuccessful && response.Data is not null) Response.Headers.ETag = $"W/\"{response.Data.Version}\"";
         return CreateActionResultInstance(response);

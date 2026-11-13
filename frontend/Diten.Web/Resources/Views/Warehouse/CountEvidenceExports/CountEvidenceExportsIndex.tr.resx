@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Band.InsertOnly" xml:space="preserve"><value>Bir dışa aktarım hiç değiştirilmez ya da silinmez; başka dil veya biçim, kendi SHA-256 özetiyle yeni bir dışa aktarımdır.</value></data>
+  <data name="Band.Language" xml:space="preserve"><value>Dosya bu sayfanın dilinde yazılır; Çince ve Arapça PDF'ler not ile İngilizce çizilir (CSV dili korur).</value></data>
+  <data name="ColCount" xml:space="preserve"><value>Sayım no.</value></data>
+  <data name="ColFileName" xml:space="preserve"><value>Dosya adı</value></data>
+  <data name="ColFormat" xml:space="preserve"><value>Biçim</value></data>
+  <data name="ColLanguage" xml:space="preserve"><value>Dosya dili</value></data>
+  <data name="ColRequestedAt" xml:space="preserve"><value>İstenme zamanı</value></data>
+  <data name="ColRequestedBy" xml:space="preserve"><value>İsteyen</value></data>
+  <data name="ColRequestedLanguage" xml:space="preserve"><value>İstenen dil</value></data>
+  <data name="ColSha256" xml:space="preserve"><value>SHA-256 özeti</value></data>
+  <data name="ColSize" xml:space="preserve"><value>Boyut</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Sayımlarını dışa aktardığınız şirketi seçin.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirketler şu anda yüklenemiyor.</value></data>
+  <data name="CountEvidence.Action.Download" xml:space="preserve"><value>İndir</value></data>
+  <data name="CountEvidence.Action.Export" xml:space="preserve"><value>Dışa Aktar</value></data>
+  <data name="CountEvidence.Action.New" xml:space="preserve"><value>Yeni Dışa Aktarım</value></data>
+  <data name="CountEvidence.Format.Csv" xml:space="preserve"><value>CSV tablosu</value></data>
+  <data name="CountEvidence.Format.Pdf" xml:space="preserve"><value>PDF belgesi</value></data>
+  <data name="CountEvidence.Language.ar" xml:space="preserve"><value>Arapça</value></data>
+  <data name="CountEvidence.Language.en" xml:space="preserve"><value>İngilizce</value></data>
+  <data name="CountEvidence.Language.es" xml:space="preserve"><value>İspanyolca</value></data>
+  <data name="CountEvidence.Language.fr" xml:space="preserve"><value>Fransızca</value></data>
+  <data name="CountEvidence.Language.ru" xml:space="preserve"><value>Rusça</value></data>
+  <data name="CountEvidence.Language.tr" xml:space="preserve"><value>Türkçe</value></data>
+  <data name="CountEvidence.Language.zh" xml:space="preserve"><value>Çince</value></data>
+  <data name="CountEvidence.Saved.Created" xml:space="preserve"><value>Kanıt dosyası oluşturuldu ve saklandı.</value></data>
+  <data name="CountEvidence.Status.Failed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="CountEvidence.Status.Ready" xml:space="preserve"><value>Hazır</value></data>
+  <data name="CountEvidenceTitle" xml:space="preserve"><value>Sayım Kanıtları</value></data>
+  <data name="CountHint" xml:space="preserve"><value>Yalnız farkları oluşmuş (gönderilmiş ya da kapanmış) sayımların kanıtı vardır.</value></data>
+  <data name="CountPlaceholder" xml:space="preserve"><value>Gönderilmiş ya da kapanmış sayım arayın</value></data>
+  <data name="CountUnavailable" xml:space="preserve"><value>Erişiminizle sayımlar listelenemiyor.</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>Düzeltmenin anahtarı başka bir harekette. Bütünlük sorununu çözün.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>Seçilen kişi atanamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>Şirket kodu sayım numarası için kullanılamıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Bu kaydı başka biri değiştirdi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Saklanan kanıt dosyası kayıtlı özetiyle uyuşmuyor; dosya verilmez.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Kanıt dışa aktarımı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Bu işlem sayımın mevcut durumunda yapılamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Stok defterine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Bazı satırlar henüz sayılmadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Bu raf gözü, ürün ve lot için zaten bir satır var.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>Sayım satırı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>Raf gözü ya da ürün sayımın kapsamı dışında.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Bu ürün lot takipli. Lotu girin.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Bu lot ürün için tanımlı değil.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>Sayım bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Geçerli bir miktar girin (sıfır ya da daha fazla).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Bir gerekçe girin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Sayım numarası servisine ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Seçilen bir satır yeniden sayım sınırına ulaştı.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>Kapsamda sayılacak raf gözü yok.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Seçilen bir konum bu depoda değil ya da etkin değil.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Bu raf gözlerinin bir kısmını açık başka bir sayım zaten kapsıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>Kapsam tek bir sayım için çok büyük. Daraltın ya da bölün.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Saydığınız ya da gönderdiğiniz bir farkı onaylayamazsınız.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Seri takipli stok sayımdan düzeltilemez.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Anlık görüntü alınırken stok değişti. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>Kayıt bu arada değişti. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı verilerle zaten gönderildi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Bu eksiği işlemek için yeterli stok yok.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>İstek geçerli değil.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>İstek kabul edilemedi. Alanları kontrol edin.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Şirket verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>Lot bloke.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>Lotun son kullanma tarihi geçti.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Bu ürün lot takipli değil. Lotu boş bırakın.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>Bu işlem için erişiminiz yok.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Ürünün verisi eksik (örneğin temel birimi).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>Seri numarası adedi miktarla uyuşmuyor.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>SKU seçilen ürüne ait değil.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Bu SKU seviyesi stokta tutulmuyor.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>Servise şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapın.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>Ürün tanımlı değil.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Konum tanımlı değil.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Bazı alanlar eksik ya da geçersiz.</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Sayılıyor</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="ExportTitle" xml:space="preserve"><value>Kanıt dışa aktar</value></data>
+  <data name="FallbackNote" xml:space="preserve"><value>İstenen dil PDF'te çizilemiyor; bu dosya İngilizcedir.</value></data>
+  <data name="FieldCount" xml:space="preserve"><value>Sayım</value></data>
+  <data name="FieldFormat" xml:space="preserve"><value>Biçim</value></data>
+  <data name="FilterCount" xml:space="preserve"><value>Sayım</value></data>
+  <data name="LanguageNote" xml:space="preserve"><value>Dosya bu sayfanın dilinde yazılır.</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sonuç yok</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Gönderilmiş ya da kapanmış bir sayımı PDF veya CSV kanıt paketi olarak dışa aktarın; her dosya SHA-256 özetiyle saklanır ve hiç değişmez.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
+  <data name="RequestedLanguageShort" xml:space="preserve"><value>istenen</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="ValidationCount" xml:space="preserve"><value>Bir sayım seçin.</value></data>
+</root>

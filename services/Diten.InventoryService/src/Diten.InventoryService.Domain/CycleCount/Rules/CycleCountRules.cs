@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Diten.InventoryService.Domain.CycleCounting.Entities;
 using Diten.InventoryService.Domain.CycleCounting.Enums;
 using Diten.InventoryService.Domain.Enums;
@@ -51,4 +53,41 @@ public static class CycleCountRules
 
     /// <summary>The window start of the snapshot's movement-id read.</summary>
     public static DateTimeOffset WindowStart(DateTimeOffset snapshotAt) => snapshotAt - SnapshotWindow;
+
+    // ── DL-2 (pack §8.3, §12) ────────────────────────────────────────────────────────────────────────────
+
+    private static readonly Regex CountedPattern = new(@"^\d{1,20}(\.\d{1,6})?$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    /// <summary>Pack §8.3: quantities are entered, found lines added and the count submitted only while it is Released or Counting.</summary>
+    public static bool IsCounting(CycleCount count) => count.Status is CycleCountStatus.Released or CycleCountStatus.Counting;
+
+    /// <summary>Pack §8.3: a line takes an entry while it is Open or Counted (re-entry until submit).</summary>
+    public static bool TakesEntry(CycleCountLine line) => line.Status is CycleCountLineStatus.Open or CycleCountLineStatus.Counted;
+
+    /// <summary>
+    /// Pack §8.3 (r6, SB2/F-1): the lines a submit needs counted — every <c>Snapshot</c> AND every <c>Recount</c> line; a <c>Found</c> line is born
+    /// counted.
+    /// </summary>
+    public static bool MustBeCounted(CycleCountLine line) => line.Origin is CycleCountLineOrigin.Snapshot or CycleCountLineOrigin.Recount;
+
+    public static bool IsUncounted(CycleCountLine line) => MustBeCounted(line) && line.CountedQuantity is null;
+
+    /// <summary>Pack §8.3: a line in its last state — the count closes when every line is (DL-3: <see cref="CycleCountDecisionRules.IsFinal"/>).</summary>
+    public static bool IsFinal(CycleCountLine line) => CycleCountDecisionRules.IsFinal(line);
+
+    /// <summary>Pack §8.3: decisions are taken only on a Submitted count (a Closed / Cancelled count takes no write — AC-33).</summary>
+    public static bool TakesDecisions(CycleCount count) => count.Status == CycleCountStatus.Submitted;
+
+    /// <summary>
+    /// Pack §12 <c>CountedQuantity</c>: a decimal string ≥ 0 with at most 6 fraction digits (no sign, exponent or spaces); a serial-controlled
+    /// SKU's quantity is whole (Q-10 = A). Anything else is 400 <c>COUNT_QUANTITY_INVALID</c>.
+    /// </summary>
+    public static bool TryParseCounted(string? raw, out decimal value)
+    {
+        value = 0m;
+        return raw is not null && CountedPattern.IsMatch(raw)
+               && decimal.TryParse(raw, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out value);
+    }
+
+    public static bool IsWhole(decimal value) => decimal.Truncate(value) == value;
 }
