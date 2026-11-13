@@ -31,3 +31,8 @@ Kaynak: bağımsız inceleme `docs/records/reviews/MOD-0180/2026-11-12-c7c774c6.
   "tamam" — MOD-0181'deki "70'ten 73'e çıkar" kararıyla aynı yol): `gateway/Diten.ApiGateway.Tests/Mod0178WarehouseRouteTests.cs` :97
   `api/warehouse` uç sayısını 73'e sabitler; MOD-0180'in ilk Gateway dilimi kendi uçlarını eklerken bu sayıyı yeni toplama günceller.
   Rota (`ocelot.json`) ve bu test değişikliği integration-agent'ındır. MOD-0180 X-14 ve AC-55 buna göre yazılır.
+- **2026-11-13 — X-14 kapsam teyidi** (MOD-0180 r8 incelemesi `2026-11-13-e2666ea4` F-2; kaynak: sahip sohbet cevabı, Beste 2026-11-13,
+  "evet"): yukarıdaki X-14 onayı uç ekleyen **her** MOD-0180 dilimini kapsar — DL-1, DL-2, DL-3 ve DL-5 her biri
+  `Mod0178WarehouseRouteTests.cs` uç sayısı onayını (bugün `Assert.Equal(73, endpoints.Count)`) dilim başında ölçülen sayı + kendi eklediği
+  uç sayısıyla, uçlarıyla aynı commit'te günceller (beklenen 73 → 87 → 89 → 94 → 96). Her artışın önce / sonra değeri dilimin kabul kaydına
+  yazılır; ayrı sahip onayı gerekmez.
