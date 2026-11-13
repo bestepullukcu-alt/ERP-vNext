@@ -608,6 +608,80 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
     }
 
     [ManualDraftMongoFact]
+    public async Task Publish_SupersededAuditFailure_RollsBackBothRevisionsAndOutbox()
+    {
+        var (drafts, published, context) = Open();
+        var tenant = Guid.NewGuid(); var legalEntity = Guid.NewGuid();
+        var creator = Guid.NewGuid(); var reviewer = Guid.NewGuid();
+        var previous = Draft(tenant, legalEntity, creator, FirstWeek);
+        var replacement = Draft(tenant, legalEntity, creator, FirstWeek, quantity: 7m);
+        await Approve(drafts, previous, creator, reviewer);
+        Assert.Equal(PublishOutcome.Published,
+            (await Publish(published, previous, reviewer)).Outcome);
+        await Approve(drafts, replacement, creator, reviewer);
+        var oldManual = await context.ManualDraftManifests.Find(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.Id == previous.Id).SingleAsync();
+        var oldPublished = await context.PublishedRevisionManifests.Find(x =>
+            x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+            x.RevisionId == previous.Id).SingleAsync();
+        var filter = Builders<DemandAuditEntry>.Filter;
+        await context.AuditEntries.Indexes.CreateOneAsync(
+            new CreateIndexModel<DemandAuditEntry>(
+                Builders<DemandAuditEntry>.IndexKeys.Ascending(x => x.Action),
+                new CreateIndexOptions<DemandAuditEntry>
+                {
+                    Unique = true, Name = "mod0188_test_supersede_audit_failure",
+                    PartialFilterExpression = filter.And(
+                        filter.Eq(x => x.TenantId, tenant),
+                        filter.Eq(x => x.Action, "Superseded"))
+                }));
+        try
+        {
+            await context.AuditEntries.InsertOneAsync(new DemandAuditEntry
+            {
+                TenantId = tenant, LegalEntityId = legalEntity,
+                ActorId = creator, Action = "Superseded",
+                EvidenceReference = "test-blocker", OccurredAt = Now
+            });
+            Assert.Equal(PublishOutcome.Conflict,
+                (await Publish(published, replacement, reviewer)).Outcome);
+            var persistedOldManual = await context.ManualDraftManifests.Find(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.Id == previous.Id).SingleAsync();
+            var persistedOldPublished = await context.PublishedRevisionManifests.Find(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.RevisionId == previous.Id).SingleAsync();
+            Assert.Equal(DemandRevisionState.Published, persistedOldManual.State);
+            Assert.Equal(oldManual.StateVersion, persistedOldManual.StateVersion);
+            Assert.Equal(DemandRevisionState.Published, persistedOldPublished.State);
+            Assert.Equal(oldPublished.StateVersion, persistedOldPublished.StateVersion);
+            Assert.Equal(DemandRevisionState.Approved,
+                (await drafts.ReadAsync(tenant, legalEntity, replacement.Id, default))?.State);
+            Assert.Equal(0, await context.ManualDraftPublicationAudit.CountDocumentsAsync(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.RevisionId == previous.Id && x.NewState == DemandRevisionState.Superseded));
+            Assert.Equal(0, await context.AuditEntries.CountDocumentsAsync(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.Action == "Superseded" && x.EvidenceReference == previous.Id.ToString("D")));
+            Assert.Equal(0, await context.PublishedRevisionManifests.CountDocumentsAsync(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.RevisionId == replacement.Id));
+            Assert.Equal(0, await context.PublishedRevisionParts.CountDocumentsAsync(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.RevisionId == replacement.Id));
+            Assert.Equal(0, await context.Outbox.CountDocumentsAsync(x =>
+                x.TenantId == tenant && x.LegalEntityId == legalEntity &&
+                x.RevisionId == replacement.Id));
+        }
+        finally
+        {
+            await context.AuditEntries.Indexes.DropOneAsync(
+                "mod0188_test_supersede_audit_failure");
+        }
+    }
+
+    [ManualDraftMongoFact]
     public async Task Publish_AuditFailure_RollsBackStateSnapshotSlotAndOutbox()
     {
         var (drafts, published, context) = Open();
