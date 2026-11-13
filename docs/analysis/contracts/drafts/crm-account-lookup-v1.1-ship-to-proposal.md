@@ -9,7 +9,8 @@
     x-consumers    : MOD-0178 çıkış sevkiyatı formu v2 (WMS isteği 2026-11-13); MOD-0183 Shipment Tracking / MOD-0186 Reverse
                      Logistics (MVP-6; bugün sözleşmesiz `GET /api/crm/accounts/{id}` + `crm.account.read`, §0)
     x-decisions    : K-12 tasarım (1.1 içinde ayrı uç), K-13 izin anahtarı `crm.account-ship-to.read` — commercial-suite
-                     sahibi Beste, 2026-11-13. K-9 (MVP-6 adres yüzeyi) bu ekle kapanır (donmada).
+                     sahibi Beste, 2026-11-13. K-18 çoklu teslimat adresi yapılacak (Beste, 2026-11-13); gövde bugünden
+                     listedir (§2.2). K-9 (MVP-6 adres yüzeyi) bu ekle kapanır (donmada).
                      Q-DEPOT-SOR kapandı (Beste, 2026-11-13): ecza depoları CRM Account (`wholesaler`), kendi depolarımız
                      (warehouse) CRM'de değil.
     x-measured-at  : origin/main 5a099cadc (2026-11-13)
@@ -48,7 +49,7 @@
 
 | # | Uç | Amaç |
 |---|---|---|
-| U-4 | `GET /api/crm/accounts/{accountId:guid}/ship-to` | hesabın kimliği, kodu, adı, durumu ve tek adresi (sevkiyat alıcısı kopyası için) |
+| U-4 | `GET /api/crm/accounts/{accountId:guid}/ship-to` | hesabın kimliği, kodu, adı, durumu ve teslimat adresleri listesi (sevkiyat alıcısı kopyası için) |
 
 ### 2.1 Ortak kurallar (1.0'dan, değişmeden)
 
@@ -69,26 +70,43 @@
 | `code` | string, boş değil | `Account.AccountCode` |
 | `name` | string, boş değil | `Account.AccountName` |
 | `status` | string, boş değil | `Account.Status` (MOD-0048 `account-status` değer kodu, 1.0 §4) |
-| `address` | nesne, her zaman var | aşağıda |
-| `address.countryRef` | string \| null | `Account.CountryRef`, kırpılmış; boşsa null. Küme: Reference Data `country` |
-| `address.cityRef` | string \| null | `Account.CityRef`, kırpılmış; boşsa null. Küme: `city` |
-| `address.districtRef` | string \| null | `Account.DistrictRef`, kırpılmış; boşsa null. Küme: `district` |
-| `address.addressLine` | string \| null | `Account.AddressLine`, kırpılmış; boşsa null; kesilmez |
+| `defaultAddressId` | string \| null | listede varsayılan teslimat adresinin `addressId`'si; liste boşsa null |
+| `addresses` | dizi, her zaman var (boş olabilir) | teslimat adresleri; öğe alanları aşağıda. Sıra: varsayılan önce, sonra `label`, sonra `addressId` |
+| `addresses[].addressId` | string, boş değil | adresin kalıcı kimliği. Hesabın ana adresi için sabit `"primary"`; ek teslimat adresleri (K-18) için UUID |
+| `addresses[].kind` | string | `primary` (hesabın ana adresi) \| `delivery` (ek teslimat adresi, K-18) |
+| `addresses[].label` | string \| null | kullanıcının verdiği ad (ör. "İstanbul şube"); `primary` için null |
+| `addresses[].isDefault` | bool | tam bir öğe `true` (liste boş değilse) |
+| `addresses[].countryRef` | string \| null | kırpılmış; boşsa null. Küme: Reference Data `country` |
+| `addresses[].cityRef` | string \| null | kırpılmış; boşsa null. Küme: `city` |
+| `addresses[].districtRef` | string \| null | kırpılmış; boşsa null. Küme: `district` |
+| `addresses[].postalCode` | string \| null | `primary` için bugün her zaman null (hesapta alan yok, K-16); `delivery` adreste dolu olabilir |
+| `addresses[].addressLine` | string \| null | kırpılmış; boşsa null; kesilmez |
 | `contractVersion` | string | `crm-account-lookup/1.1` |
+
+- **`primary` öğesi:** `Account.CountryRef`, `CityRef`, `DistrictRef`, `AddressLine`'dan kurulur. Dört alan da boşsa
+  `primary` öğesi **listeye girmez**.
+- **İlk dilim (DL-3):** hesapta yalnız ana adres olduğundan liste en çok bir öğe (`primary`, `isDefault = true`) taşır.
+  Ek teslimat adresleri K-18 ile geldiğinde liste büyür; gövde biçimi değişmez (yeni sürüm gerekmez).
+- **Silinmiş / pasif ek adres** listede yer almaz.
 
 Gövde **taşımaz:** sorumlu kişi (ad / telefon / e-posta), notlar, üst hesap, dış referanslar, öznitelikler, logo,
 konum (enlem/boylam), `isBillable`. Görünen ad (ülke / şehir / ilçe adı) dönmez (K-15).
 
-Adres alanlarının dördü de null olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kuralını uygular (MVP-6'da
+Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kuralını uygular (MVP-6'da
 `CUSTOMER_ADDRESS_MISSING`, `ShipmentViewModels.cs:68`).
 
-Örnek (200):
+Örnek (200, K-18 sonrası; ilk dilimde yalnız `primary` öğesi olur):
 
 ```json
 { "data": { "accountId": "3c9a1f2e-7b4d-4e61-9a2c-5d8e0f1a2b3c", "code": "ACC-2026-000042",
-            "name": "Example Ecza Deposu", "status": "active",
-            "address": { "countryRef": "tr", "cityRef": "ist", "districtRef": "kadikoy",
-                         "addressLine": "Örnek Mah. Örnek Cad. No: 1" },
+            "name": "Example Ecza Deposu", "status": "active", "defaultAddressId": "primary",
+            "addresses": [
+              { "addressId": "primary", "kind": "primary", "label": null, "isDefault": true,
+                "countryRef": "tr", "cityRef": "ist", "districtRef": "kadikoy", "postalCode": null,
+                "addressLine": "Örnek Mah. Örnek Cad. No: 1" },
+              { "addressId": "9b1e4c7a-2d3f-4a5b-8c6d-7e8f9a0b1c2d", "kind": "delivery", "label": "Ankara şube",
+                "isDefault": false, "countryRef": "tr", "cityRef": "ank", "districtRef": "cankaya",
+                "postalCode": "06000", "addressLine": "Örnek Sok. No: 5" } ],
             "contractVersion": "crm-account-lookup/1.1" },
   "errors": null, "statusCode": 200, "isSuccessful": true }
 ```
@@ -116,8 +134,9 @@ Adres alanlarının dördü de null olabilir (adres girilmemiş hesap): 200 dön
 
 | CRM cevabı | Tüketici |
 |---|---|
-| 200, `accountId` istenen, `contractVersion` `crm-account-lookup/1.` ile başlar, `name` dolu | kopyayı al: `customerRef` = `accountId`, ad, kod, dört adres alanı (kod) + kendi çözdüğü görünen adlar |
-| 200, adresin dördü null | tüketicinin "adres eksik" kuralı (elle giriş ya da hata) |
+| 200, `accountId` istenen, `contractVersion` `crm-account-lookup/1.` ile başlar, `name` dolu | kullanıcı listeden adres seçer (varsayılan önceden seçili); kopyayı al: `customerRef` = `accountId`, `addressId`, ad, kod, adres alanları (kod) + kendi çözdüğü görünen adlar |
+| 200, `addresses` boş | tüketicinin "adres eksik" kuralı (elle giriş ya da hata) |
+| 200, birden çok `isDefault = true` ya da `defaultAddressId` listede yok | geçersiz gövde → "alınamadı" |
 | 404 | "müşteri bulunamadı" (tüketicinin kodu) |
 | 400, 401, 403, 5xx, zaman aşımı, geçersiz gövde | "müşteri bilgisi alınamadı" — tüketicinin 503 karşılığı; kopya yazılmaz |
 
@@ -132,17 +151,21 @@ Adres alanlarının dördü de null olabilir (adres girilmemiş hesap): 200 dön
 
 - Yeni uç + yeni anahtar = ekleme → 1.1. U-1/U-3 gövdeleri değişmez; `contractVersion` değerleri `crm-account-lookup/1.0`
   olarak kalır (tüketiciler `1.` önekine bakar).
-- İleride ekleme olarak gelebilecekler (1.x): `address.postalCode` (K-16, önce hesapta alan gerekir), birden çok teslimat
-  adresi (`deliveryAddresses[]` + isteğe bağlı `?addressId=`; ör. toptancı şubeleri), görünen adlar. Bunlar gelirse U-4'ün
-  bugünkü `address` nesnesi "hesabın ana adresi" anlamını korur.
-- Büyük sürüm sayılır: `address` nesnesini kaldırmak / yeniden adlandırmak, 404 kararına durumu katmak.
+- Çoklu adres (K-18) ve ek adreslerde posta kodu bu biçimle **aynı sürümde** gelir: yalnız listeye öğe eklenir.
+  Tüketici ilk günden listeyle çalışır; tek öğeli liste özel durum değildir.
+- İleride 1.x ekleme olabilir: görünen adlar, adres başına ek alanlar (ör. teslim saatleri, alıcı adı — kişisel veri
+  değerlendirmesiyle).
+- Büyük sürüm sayılır: `addresses` ya da öğe alanlarını kaldırmak / yeniden adlandırmak, `"primary"` kimliğinin anlamını
+  değiştirmek, 404 kararına durumu katmak.
 
 ## 6. Uyum fikstürleri (DL-3)
 
 | Fikstür | Durum | Beklenen |
 |---|---|---|
-| S-OK | aktif hesap, dört alan dolu | 200, alanlar kırpılmış, `contractVersion` 1.1 |
-| S-EMPTY | adres alanları boş / yalnız boşluk | 200, dördü null |
+| S-OK | aktif hesap, dört alan dolu | 200, tek öğe `primary`, `isDefault`, `defaultAddressId = "primary"`, alanlar kırpılmış, `postalCode` null, `contractVersion` 1.1 |
+| S-EMPTY | adres alanları boş / yalnız boşluk | 200, `addresses = []`, `defaultAddressId = null` |
+| S-PART | yalnız `CityRef` dolu | 200, tek öğe `primary`, öteki alanlar null |
+| S-MULTI (K-18) | ana adres + iki ek adres, biri varsayılan, biri silinmiş | 200, iki öğe (silinen yok), tam bir `isDefault`, sıra kuralı | 
 | S-ST-x | `status ∈ {inactive, suspended, archived, draft}` | 200, `status` saklandığı gibi |
 | S-404 | yok / silinmiş / başka kiracı | 404, üç gövde bayt bayt aynı |
 | S-K11 | `tenant_id`'siz token | 400, `data` yok |
@@ -173,8 +196,11 @@ Adres alanlarının dördü de null olabilir (adres girilmemiş hesap): 200 dön
 | K-16 | Posta kodu | commercial-suite + tüketici | AÇIK — hesapta alan yok; gerekiyorsa ayrı CRM işi (form + 7 dil + veri), sonra 1.x ekleme |
 | K-17 | Kod kümesi doğrulaması (yazmada doğrulama yok) | commercial-suite | AÇIK — U-4 saklananı döner; yazma doğrulaması ayrı iş |
 | K-9 | MVP-6 adres yüzeyi | commercial-suite | Bu ekle kapanır (donmada); MVP-6 `GET /api/crm/accounts/{id}`'den U-4'e geçer |
+| K-18 | Çoklu teslimat adresi | commercial-suite (Beste) | **KARAR 2026-11-13: yapılacak.** Hesaba ek teslimat adresleri (ad, ülke / şehir / ilçe, posta kodu, adres satırı, varsayılan, pasif) — ayrı MOD-0149 FU (veri + hesap ekranı + 7 dil + yazmada Reference Data doğrulaması, K-17'yi yeni adreslerde kapatır). Sözleşme biçimi §2.2 bunu bugünden taşır |
 
 ## 9. Değişiklik geçmişi
 
 - 1.1.0 taslak (2026-11-13) — U-4 `ship-to`, anahtar `crm.account-ship-to.read`; WMS (MOD-0178) isteği ve K-9. CT
   commercial-suite.
+- 1.1.0 taslak r2 (2026-11-13) — K-18 (çoklu teslimat adresi, Beste): gövde tek `address` yerine `addresses[]` +
+  `defaultAddressId`; ana adres `addressId = "primary"`; `postalCode` öğe alanı (ana adreste null).
