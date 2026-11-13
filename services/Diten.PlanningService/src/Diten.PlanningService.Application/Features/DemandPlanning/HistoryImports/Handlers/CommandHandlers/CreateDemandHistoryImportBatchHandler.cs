@@ -181,8 +181,11 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             .Where(x => x.SkuId is not null && !string.IsNullOrWhiteSpace(x.WarehouseId) &&
                         !string.IsNullOrWhiteSpace(x.OriginalUomId))
             .GroupBy(x => (x.SkuId, x.WarehouseId))
-            .Where(x => x.Select(row => row.OriginalUomId)
-                .Distinct(StringComparer.Ordinal).Skip(1).Any()))
+            .Where(x => x.Select(row => row.UnitVerificationPending ? row.OriginalUomId :
+                    row.BaseUomId ?? row.OriginalUomId)
+                .Distinct(StringComparer.Ordinal).Skip(1).Any() ||
+                (x.Select(row => row.OriginalUomId).Distinct(StringComparer.Ordinal).Skip(1).Any() &&
+                 x.Any(row => row.Issues.Any(issue => issue.Code == "CoverageRowConflict")))))
         {
             foreach (var row in series)
                 AddIssue(row, "MixedUnitsForSeries", ImportIssueSeverity.Blocking,
@@ -331,7 +334,8 @@ public sealed class CreateDemandHistoryImportBatchHandler :
                 "Accepted history unit could not be checked.");
             return row;
         }
-        if (acceptedUnits.Any(unit => unit != row.OriginalUomId))
+        var targetUnit = reference.UnitVerificationPending ? row.OriginalUomId : reference.BaseUomId;
+        if (acceptedUnits.Any(unit => unit != targetUnit))
         {
             AddIssue(row, "UnitConflictsWithAcceptedHistory", ImportIssueSeverity.Blocking,
                 "Unit differs from the already accepted SKU and warehouse history.");
@@ -350,9 +354,24 @@ public sealed class CreateDemandHistoryImportBatchHandler :
         {
             row.BaseUomId = reference.BaseUomId;
             row.ConversionFactor = reference.ConversionFactor;
+            row.ConversionNumerator = reference.ConversionNumerator;
+            row.ConversionDenominator = reference.ConversionDenominator;
             row.ConversionContractId = reference.ConversionContractId;
             row.ConversionContractVersion = reference.ConversionContractVersion;
-            row.BaseQuantity = checked(row.OriginalQuantity!.Value * reference.ConversionFactor!.Value);
+            row.BaseQuantity = row.OriginalUomId == reference.BaseUomId ?
+                row.OriginalQuantity!.Value :
+                reference.ConversionNumerator is > 0 &&
+                reference.ConversionDenominator is > 0 ?
+                HistoryUnitConversion.ToBaseQuantity(row.OriginalQuantity!.Value,
+                    reference.ConversionNumerator.Value,
+                    reference.ConversionDenominator.Value) :
+                checked(row.OriginalQuantity!.Value * reference.ConversionFactor!.Value);
+            if (row.BaseQuantity <= 0)
+            {
+                AddIssue(row, "ConversionBelowPrecision", ImportIssueSeverity.Blocking,
+                    "Converted quantity is zero at approved precision.");
+                return row;
+            }
         }
         catch (OverflowException)
         {
