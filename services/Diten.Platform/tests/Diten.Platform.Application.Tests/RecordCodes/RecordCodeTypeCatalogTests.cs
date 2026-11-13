@@ -16,6 +16,12 @@ public sealed class RecordCodeTypeCatalogTests
     /// <summary>The one named difference from §3 (K-7): MOD-0217 is AGR, §3 still says CTR until DL-7 (A-3).</summary>
     private static readonly (string Rule, string Catalog) NamedException = ("CTR", "AGR");
 
+    /// <summary>The second named difference (SYNC S1, CT decision 2026-11-13, K-1) — the types §3 lists as automatic that
+    /// the catalogue DELIBERATELY does not hold; a closed set, only <c>ORD</c>. RCS-001 §3 ORD (MOD-0168, kullanıcı onayı
+    /// 2026-10-20): ortak üretici gelene kadar CRM kendi sayacıyla üretir; MOD-0040-FU02 §4.4 / AC-16 listesinde yok —
+    /// FU-0040-FU02-ORD (paket revizyonu + CRM geçişi) ile kalkar.</summary>
+    private static readonly string[] InTheRuleButNotInTheCatalogue = ["ORD"];
+
     [Fact]
     public void AC16_the_catalogue_holds_every_automatic_row_of_RCS001_section_3_and_PLN_and_nothing_else()
     {
@@ -23,6 +29,12 @@ public sealed class RecordCodeTypeCatalogTests
 
         Assert.Contains(NamedException.Rule, automatic); // §3 changed: remove the named exception from this test (DL-7)
         Assert.DoesNotContain(NamedException.Catalog, automatic);
+        Assert.All(InTheRuleButNotInTheCatalogue, type =>
+        {
+            Assert.Contains(type, automatic); // the §3 row is gone: remove the type from the named set too
+            Assert.False(RecordCodeTypeCatalog.TryGet(type, out _), $"{type} joined the catalogue: remove it from the named set (FU-0040-FU02-ORD).");
+        });
+        automatic = automatic.Except(InTheRuleButNotInTheCatalogue, StringComparer.Ordinal).ToArray();
         var expected = automatic.Select(type => type == NamedException.Rule ? NamedException.Catalog : type).Append("PLN")
             .OrderBy(type => type, StringComparer.Ordinal).ToArray();
         Assert.Equal(expected, RecordCodeTypeCatalog.All.Select(d => d.RecordType).OrderBy(type => type, StringComparer.Ordinal).ToArray());
@@ -39,6 +51,7 @@ public sealed class RecordCodeTypeCatalogTests
     [InlineData("TTY")]
     [InlineData("PUT")]
     [InlineData("CTR")]
+    [InlineData("ORD")]
     [InlineData("XYZ")]
     public void AC14_kalsin_ikisi_de_old_and_unknown_types_are_not_in_the_catalogue(string recordType) =>
         Assert.False(RecordCodeTypeCatalog.TryGet(recordType, out _));
