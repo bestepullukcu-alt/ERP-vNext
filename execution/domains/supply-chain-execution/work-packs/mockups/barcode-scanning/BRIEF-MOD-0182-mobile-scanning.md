@@ -72,7 +72,7 @@
 - **Kamera ile okut:** kamera görüntüsü, çerçeve, "Karekodu çerçeveye hizalayın", fener düğmesi; izin yoksa "Kamera izni gerekli" + "Elle gir".
 - **Elle giriş:** barkod / ürün kodu, lot, seri (varsa), **gerekçe zorunlu** (sabit liste: okuyucu arızalı, barkod hasarlı, etiket yok, kamera
   izni yok, Diğer + açıklama — S-10). Kayıt "elle girildi" olarak işaretlenir; kullanıcıya bu söylenir.
-- **Sorumlu PIN:** sorumlu kendi PIN'ini girer (cihaz sorumluya verilir); onay sorumlunun adıyla kaydedilir. Yanlış PIN, deneme sınırı (öneri — MS-4).
+- **Sorumlu PIN:** sorumlu kendi PIN'ini girer (cihaz sorumluya verilir); onay sorumlunun adıyla kaydedilir. Yanlış PIN: 3 deneme, sonra 5 dk kilit (MOD-0182 karar 03, Q-4, 2026-11-13).
 - **"Bu nedir?" sorgusu:** okut → ürün adı, SKU, GTIN, lot, SKT, raf, stok durumu (kullanılabilir / karantina / bloke), geri çağırma uyarısı.
 - **RFID raf taraması:** raf okut → "Taramayı başlat" → okunan sayısı canlı artar → **beklenen / okunan**; fark varsa fark listesi +
   **"Yeniden tara"** + **"Sayım başlat"** (S-8). Stok bu ekranda değişmez.
