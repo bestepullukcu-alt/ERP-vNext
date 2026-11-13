@@ -47,3 +47,7 @@ posta kodu alan işi mi açılır?
 - **2026-11-13 — CRM sorusu 5 (aktif olmayan account), sahip "evet":** yeni sevkiyatta yalnız `active` account seçilir (Q-2). Seçimden sonra
   pasif / askıda / arşiv olan account'ta mevcut sevkiyat sürer; WMS kayıt ve "sevke hazır" adımında durumu ship-to ucundan yeniden okur ve
   kullanıcıyı uyarır, akışı durdurmaz.
+- **2026-11-13 — Q-10 düzeltmesi (CRM güncellemesi, Beste):** posta kodu hem ek teslimat adreslerinde hem account'un ana adresinde olacak;
+  CRM ana adrese alan ekliyor (tarih CRM'de), eklenene kadar boş gelir, sözleşme biçimi değişmez. Yukarıdaki "account'a posta kodu alanı CRM'de
+  ayrı ve sonraki bir iştir" ifadesi bu ekle değişir. CRM cevabı ilk günden adres listesidir (addresses[] + defaultAddressId; ilk sürümde
+  addressId = "primary"); WMS customerRef + customerAddressId + adres kopyası tutar.
