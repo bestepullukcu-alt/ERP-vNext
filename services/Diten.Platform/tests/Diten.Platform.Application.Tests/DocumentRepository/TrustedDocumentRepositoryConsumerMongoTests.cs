@@ -155,6 +155,93 @@ public sealed class TrustedDocumentRepositoryConsumerMongoTests : IAsyncLifetime
         Assert.Equal(1, await Rows.CountDocumentsAsync(r => r.TenantId == _harness.TenantId));
     }
 
+    // ── DL-2 FIX-01 (CT acceptance ORTA-1) — the tenant predicate of the PRODUCTION repository on a real Mongo, two
+    //    tenants. The in-memory double of the host tests copies the rule; these two run the shipped query.
+
+    [Fact]
+    public async Task FIX01_another_tenant_cannot_compensate_or_read_tenant_As_objects_through_the_production_repository()
+    {
+        await using var tenantB = await MongoIntegrationHarness.CreateAsync(SchemaProfile.DocumentManagement, SchemaProfile.AccessGovernance);
+        await using var host = await StartAsync();
+        var tokenA = Token();
+        var tokenB = Host.ServiceToken(Client, tenantB.TenantId);
+
+        var compensated = await host.UploadOkAsync(tokenA, "compensated by A", "a-compensated.pdf");
+        using (var first = await host.CompensateAsync(tokenA, compensated)) { Assert.Equal(HttpStatusCode.NoContent, first.StatusCode); }
+        var live = await host.UploadOkAsync(tokenA, "live object of A", "a-live.pdf");
+        var compensatedBefore = await Rows.Find(r => r.TenantId == _harness.TenantId && r.ContentId == compensated).SingleAsync();
+        var liveBefore = await Rows.Find(r => r.TenantId == _harness.TenantId && r.ContentId == live).SingleAsync();
+        var deletesBefore = host.Storage.DeleteTokens.Count;
+        var liveFile = Path.Combine(host.Root, liveBefore.ObjectKey.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(liveFile));
+
+        // Tenant B, same consumer module, same content ids: compensation (the DL-2 read that also sees compensated rows),
+        // metadata and content — every one 404, the non-leakage answer.
+        foreach (var contentId in new[] { compensated, live })
+        {
+            using (var compensate = await host.CompensateAsync(tokenB, contentId))
+            {
+                Assert.Equal(HttpStatusCode.NotFound, compensate.StatusCode);
+                Assert.Equal("NOT_FOUND_NON_LEAKAGE", await Host.ReasonCodeAsync(compensate));
+            }
+
+            using (var meta = await host.GetAsync(tokenB, contentId)) { Assert.Equal(HttpStatusCode.NotFound, meta.StatusCode); }
+            using (var content = await host.ContentAsync(tokenB, contentId)) { Assert.Equal(HttpStatusCode.NotFound, content.StatusCode); }
+        }
+
+        // A's rows, binary and the provider are untouched; tenant B owns nothing.
+        var compensatedAfter = await Rows.Find(r => r.TenantId == _harness.TenantId && r.ContentId == compensated).SingleAsync();
+        var liveAfter = await Rows.Find(r => r.TenantId == _harness.TenantId && r.ContentId == live).SingleAsync();
+        Assert.True(compensatedAfter.IsDeleted);
+        Assert.Equal(compensatedBefore.UpdatedAt, compensatedAfter.UpdatedAt);
+        Assert.False(liveAfter.IsDeleted);
+        Assert.Equal(liveBefore.UpdatedAt, liveAfter.UpdatedAt);
+        Assert.Equal(liveBefore.Checksum, liveAfter.Checksum);
+        Assert.Equal(deletesBefore, host.Storage.DeleteTokens.Count);
+        Assert.True(File.Exists(liveFile));
+        Assert.Equal(0, await Rows.CountDocumentsAsync(r => r.TenantId == tenantB.TenantId));
+        var writesB = host.Audit.Writes.Where(w => w.TenantId == tenantB.TenantId).ToList();
+        Assert.DoesNotContain(writesB, w => w.RequestType == nameof(CompensateTrustedRepositoryObjectCommand)); // refused at the pre-read
+        Assert.Equal(6, writesB.Count(w => w.RequestType == "document-repository.trusted-consumer.denied")); // one per call
+
+        using var stillThere = await host.ContentAsync(tokenA, live);
+        Assert.Equal("live object of A", await stillThere.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task FIX01_the_production_read_that_includes_compensated_rows_is_bound_to_the_ambient_tenant()
+    {
+        await using var tenantB = await MongoIntegrationHarness.CreateAsync(SchemaProfile.DocumentManagement, SchemaProfile.AccessGovernance);
+        var contentId = Guid.NewGuid();
+        var tenantA = new TenantContext();
+        tenantA.SetTenant(_harness.TenantId);
+        var repositoryA = new RepositoryObjectRepository(_harness.DbContext, tenantA);
+        await repositoryA.CreateAsync(new RepositoryObject
+        {
+            TenantId = _harness.TenantId,
+            ContentId = contentId,
+            StorageProvider = "local-filesystem",
+            ObjectKey = $"fix01/{contentId:N}",
+            Scope = "Documents",
+            FileName = "a.pdf",
+            MediaType = "application/pdf",
+            Checksum = "00",
+            TrustedConsumerModule = "MOD-0217",
+            TrustedConsumerClientId = Client
+        });
+        Assert.True(await repositoryA.MarkCompensatedAsync(contentId));
+
+        var contextB = new TenantContext();
+        contextB.SetTenant(tenantB.TenantId);
+        var repositoryB = new RepositoryObjectRepository(_harness.DbContext, contextB);
+
+        Assert.Null(await repositoryB.GetByContentIdIncludingCompensatedAsync(contentId));
+        var own = await repositoryA.GetByContentIdIncludingCompensatedAsync(contentId);
+        Assert.NotNull(own);
+        Assert.True(own!.IsDeleted);
+        Assert.Equal(_harness.TenantId, own.TenantId);
+    }
+
     private static void Signal(HttpRequestMessage request) =>
         request.Headers.TryAddWithoutValidation(TestBodyFaults.SignalHeader, "1");
 
