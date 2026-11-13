@@ -51,3 +51,23 @@ posta kodu alan işi mi açılır?
   CRM ana adrese alan ekliyor (tarih CRM'de), eklenene kadar boş gelir, sözleşme biçimi değişmez. Yukarıdaki "account'a posta kodu alanı CRM'de
   ayrı ve sonraki bir iştir" ifadesi bu ekle değişir. CRM cevabı ilk günden adres listesidir (addresses[] + defaultAddressId; ilk sürümde
   addressId = "primary"); WMS customerRef + customerAddressId + adres kopyası tutar.
+
+## Ek — 2026-11-13: CRM güncel önerisi (C-6…C-11) — kaynak: CRM oturumunun cevabı, Beste'nin sohbete yapıştırdığı metin
+
+Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md`, dal
+`docs/crm/crm-account-lookup-v1.1-ship-to`; bu depoda henüz yok, PR bağlantısı ayrıca gelecek). Metin özetle:
+
+- **C-6 — uç:** CRM-ACCOUNT-LOOKUP 1.1, yalnız ekleme: `GET /api/crm/accounts/{id}/ship-to`; kiracı sınırı, 404 (yok / silinmiş / başka kiracı
+  aynı cevap), tenant_id'siz token 400, 5xx 503 — 1.0 kurallarıyla aynı. Adres U-1 / U-3'e eklenmez.
+- **C-7 — kodlar:** ülke / şehir / ilçe kod döner (Reference Data kümeleri `country`, `city`, `district`); görünen ad kullanıcının dilinde Reference
+  Data'dan çözülür, kopyaya kod + ad yazılır.
+- **C-8 — adres listesi:** cevap ilk günden liste: `addresses[]` (`addressId`, `kind`, `label`, `isDefault`, `countryRef`, `cityRef`, `districtRef`,
+  `postalCode`, `addressLine`) + `defaultAddressId`; ilk sürümde tek eleman (`addressId = "primary"`); ek teslimat adresleri sonra, biçim ve sürüm
+  değişmez; WMS kullanıcıya adres seçtirir (varsayılan önceden seçili), sevkiyatta customerRef + addressId + kopya tutar; liste boşsa "adres yok" kuralı WMS'in.
+- **C-9 — izin:** yeni okuma anahtarı `crm.account-ship-to.read` (`crm.account.read` değil); müşteri araması mevcut U-3 (`crm.account.lookup-validation`);
+  sevkiyat rollerine iki anahtar birden gerekir; çağrı sunucudan, Gateway üzerinden, kullanıcının token'ıyla; anahtar CRM manifestine CRM'ce eklenir,
+  WMS rollerine atama Auth ile.
+- **C-10 — tarih (tahmin):** uç (yalnız ana adres) ~2 hafta; çoklu teslimat adresi +2–3 hafta.
+- **C-11 — posta kodu:** hem ek teslimat adreslerinde hem account'un ana adresinde olacak; ana adrese alan eklenene kadar boş gelir, biçim değişmez.
+- **CRM'in sorusu 5:** aktif olmayan account — WMS kararı yukarıda (yeni sevkiyatta yalnız active; sonradan pasifleşende uyarı, akış sürer).
+- **Açık (CT → CRM):** cevaba eklemeli `status` alanı (Q-13) ve MOD-0178'in CRM-ACCOUNT-LOOKUP tüketici tablosuna (5a) eklenmesi (r2 incelemesi F-3).
