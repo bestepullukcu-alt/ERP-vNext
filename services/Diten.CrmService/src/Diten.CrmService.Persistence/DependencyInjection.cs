@@ -303,6 +303,7 @@ public static class DependencyInjection
         // WP-VW-W6 W6-BE-a — MOD-0168 pre-order stores (orders, settings, approval links, the ORD counter).
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderRepository, Repositories.Commercial.PreOrderRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderSettingsRepository, Repositories.Commercial.PreOrderSettingsRepository>();
+        services.AddScoped<Domain.Repositories.Commercial.IPreOrderSettingsHistoryRepository, Repositories.Commercial.PreOrderSettingsHistoryRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderApprovalLinkRepository, Repositories.Commercial.PreOrderApprovalLinkRepository>();
         services.AddScoped<Domain.Repositories.Commercial.IPreOrderCodeSequenceRepository, Repositories.Commercial.PreOrderCodeSequenceRepository>();
 
@@ -1567,6 +1568,8 @@ public static class DependencyInjection
         Map<Domain.Entities.Commercial.PreOrderPartialLine>(_ => { });
         Map<Domain.Entities.Commercial.PreOrderEvent>(_ => { });
         Map<Domain.Entities.Commercial.PreOrderSettings>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettingsChange>(_ => { });
+        Map<Domain.Entities.Commercial.PreOrderSettingsFieldChange>(_ => { });
         Map<Domain.Entities.Commercial.PreOrderCountryTier>(_ => { });
         Map<Domain.Entities.Commercial.PreOrderCompanyPrefix>(map => map.GetMemberMap(p => p.LegalEntityId).SetSerializer(stringGuid));
         Map<Domain.Entities.Commercial.PreOrderApprovalLink>(map =>
@@ -2454,6 +2457,11 @@ public static class DependencyInjection
             preOrderSettings.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettings>(
                 Builders<Domain.Entities.Commercial.PreOrderSettings>.IndexKeys.Ascending(s => s.TenantId),
                 new CreateIndexOptions { Name = "ux_commercial_pre_order_settings_tenant", Unique = true }));
+            // WP-CRM-SYNC-S0B B0a — MOD-0168 §21: the settings change history, read per tenant newest first. No partial filter.
+            var preOrderSettingsHistory = database.GetCollection<Domain.Entities.Commercial.PreOrderSettingsChange>(Repositories.Commercial.PreOrderSettingsHistoryRepository.CollectionName);
+            preOrderSettingsHistory.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderSettingsChange>(
+                Builders<Domain.Entities.Commercial.PreOrderSettingsChange>.IndexKeys.Ascending(c => c.TenantId).Descending(c => c.At),
+                new CreateIndexOptions { Name = "ix_commercial_pre_order_settings_history_tenant_at" }));
             var preOrderLinks = database.GetCollection<Domain.Entities.Commercial.PreOrderApprovalLink>(Repositories.Commercial.PreOrderApprovalLinkRepository.CollectionName);
             preOrderLinks.Indexes.CreateOne(new CreateIndexModel<Domain.Entities.Commercial.PreOrderApprovalLink>(
                 Builders<Domain.Entities.Commercial.PreOrderApprovalLink>.IndexKeys.Ascending(l => l.TenantId).Ascending(l => l.TokenHash),

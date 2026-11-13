@@ -164,6 +164,25 @@ public sealed class PreOrderSettingsRepository : IPreOrderSettingsRepository
     }
 }
 
+/// <summary>WP-CRM-SYNC-S0B B0a — MOD-0168 §21: the settings change history. Insert and tenant-scoped read only.</summary>
+public sealed class PreOrderSettingsHistoryRepository : IPreOrderSettingsHistoryRepository
+{
+    public const string CollectionName = "commercial_pre_order_settings_history";
+
+    private readonly IMongoCollection<PreOrderSettingsChange> _collection;
+
+    public PreOrderSettingsHistoryRepository(IMongoDatabase database) => _collection = database.GetCollection<PreOrderSettingsChange>(CollectionName);
+
+    public Task AppendAsync(PreOrderSettingsChange change, CancellationToken cancellationToken)
+        => _collection.InsertOneAsync(change, cancellationToken: cancellationToken);
+
+    public async Task<IReadOnlyList<PreOrderSettingsChange>> ListAsync(Guid tenantId, int take, CancellationToken cancellationToken)
+        => await _collection.Find(PricingFilters.Live<PreOrderSettingsChange>(tenantId))
+            .Sort(Builders<PreOrderSettingsChange>.Sort.Descending(c => c.At))
+            .Limit(Math.Clamp(take, 1, 500))
+            .ToListAsync(cancellationToken);
+}
+
 public sealed class PreOrderApprovalLinkRepository : IPreOrderApprovalLinkRepository
 {
     public const string CollectionName = "commercial_pre_order_approval_links";

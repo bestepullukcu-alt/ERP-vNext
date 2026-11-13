@@ -210,8 +210,10 @@ public sealed class PreOrderApprovalService
             order.Approval.Channel = channel;
             if (decision == PreOrderDecisions.RequestChanges && order.Signature is not null)
             {
+                // B0a (MOD-0168 §21): which signature was removed (content id + the signer's name, never the image)
+                var cleared = PreOrderChanges.SignatureClearedPayload(order.Signature);
                 order.Signature = null; // D2: the pharmacist signs the changed order again
-                PreOrderStateMachine.Append(order, PreOrderEventTypes.SignatureCleared, by, at);
+                PreOrderStateMachine.Append(order, PreOrderEventTypes.SignatureCleared, by, at, cleared);
             }
 
             if (await _c.SaveAsync(order, expected, ct))

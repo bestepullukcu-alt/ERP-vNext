@@ -46,6 +46,16 @@ public interface IPreOrderSettingsRepository
     Task<bool> SaveAsync(PreOrderSettings settings, int? expectedVersion, CancellationToken cancellationToken);
 }
 
+/// <summary>WP-CRM-SYNC-S0B B0a — the settings change history (MOD-0168 §21). APPEND ONLY: a row is added and read in its
+/// tenant; there is no update and no delete here on purpose (a test pins the member list).</summary>
+public interface IPreOrderSettingsHistoryRepository
+{
+    Task AppendAsync(PreOrderSettingsChange change, CancellationToken cancellationToken);
+
+    /// <summary>The tenant's rows, newest first.</summary>
+    Task<IReadOnlyList<PreOrderSettingsChange>> ListAsync(Guid tenantId, int take, CancellationToken cancellationToken);
+}
+
 public interface IPreOrderApprovalLinkRepository
 {
     Task InsertAsync(PreOrderApprovalLink link, CancellationToken cancellationToken);

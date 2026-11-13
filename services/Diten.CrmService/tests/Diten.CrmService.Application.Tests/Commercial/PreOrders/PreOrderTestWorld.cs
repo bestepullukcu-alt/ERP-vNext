@@ -67,6 +67,7 @@ internal sealed class PreOrderWorld : IDisposable
     public readonly PricingClock Clock = new(new DateTimeOffset(2026, 10, 21, 9, 0, 0, TimeSpan.Zero));
     public readonly MemoryPreOrders Orders = new();
     public readonly MemoryPreOrderSettings Settings = new();
+    public readonly MemoryPreOrderSettingsHistory SettingsHistory = new();
     public readonly MemoryPreOrderLinks Links = new();
     public readonly MemoryPreOrderSequences Sequences = new();
     public readonly MemoryPriceLists PriceLists = new();
@@ -150,6 +151,7 @@ internal sealed class PreOrderWorld : IDisposable
         services.AddSingleton<TimeProvider>(Clock);
         services.AddSingleton<IPreOrderRepository>(Orders);
         services.AddSingleton<IPreOrderSettingsRepository>(Settings);
+        services.AddSingleton<IPreOrderSettingsHistoryRepository>(SettingsHistory);
         services.AddSingleton<IPreOrderApprovalLinkRepository>(Links);
         services.AddSingleton<IPreOrderCodeSequenceRepository>(Sequences);
         services.AddSingleton<IPriceListRepository>(PriceLists);
@@ -389,6 +391,15 @@ internal sealed class MemoryPreOrderSettings : CopyingStore<PreOrderSettings>, I
         await Add(settings);
         return true;
     }
+}
+
+/// <summary>WP-CRM-SYNC-S0B B0a — the settings change history in memory: append + the tenant's rows, newest first.</summary>
+internal sealed class MemoryPreOrderSettingsHistory : CopyingStore<PreOrderSettingsChange>, IPreOrderSettingsHistoryRepository
+{
+    public Task AppendAsync(PreOrderSettingsChange change, CancellationToken cancellationToken) => Add(change);
+
+    public Task<IReadOnlyList<PreOrderSettingsChange>> ListAsync(Guid tenantId, int take, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyList<PreOrderSettingsChange>>(Live(tenantId).OrderByDescending(c => c.At).Take(take).ToList());
 }
 
 internal sealed class MemoryPreOrderLinks : CopyingStore<PreOrderApprovalLink>, IPreOrderApprovalLinkRepository

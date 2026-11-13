@@ -161,10 +161,13 @@ public sealed class PreOrderCommandHandlers :
     private readonly IPreOrderNotifier _notifier;
     private readonly IPreOrderCodeSequenceRepository _sequences;
     private readonly IVisitEvidenceStore _evidence;
+    private readonly IPreOrderSettingsHistoryRepository _settingsHistory;
 
     public PreOrderCommandHandlers(PreOrderContext context, PreOrderParts parts, PreOrderPricing pricing, PreOrderApprovalService approval,
-        PreOrderTransmissionService transmission, IPreOrderNotifier notifier, IPreOrderCodeSequenceRepository sequences, IVisitEvidenceStore evidence)
+        PreOrderTransmissionService transmission, IPreOrderNotifier notifier, IPreOrderCodeSequenceRepository sequences, IVisitEvidenceStore evidence,
+        IPreOrderSettingsHistoryRepository settingsHistory)
     {
+        _settingsHistory = settingsHistory;
         _c = context;
         _parts = parts;
         _pricing = pricing;
@@ -220,7 +223,8 @@ public sealed class PreOrderCommandHandlers :
             PositionCode = seller.PositionCode
         };
         order.Code = $"{seller.Prefix}-ORD-{await _sequences.NextAsync(tenantId, seller.Prefix, ct):000000}";
-        PreOrderStateMachine.Append(order, PreOrderEventTypes.Created, _c.CallerText, _c.Now, new Dictionary<string, string?> { ["code"] = order.Code });
+        // B0a (MOD-0168 §21): the first lines / depot stay in the history even after a later update replaces them
+        PreOrderStateMachine.Append(order, PreOrderEventTypes.Created, _c.CallerText, _c.Now, PreOrderChanges.CreatedPayload(order));
         await _c.Orders.InsertAsync(order, ct);
         return Response<PreOrderDto>.Success(_c.Dto(order, await _c.VisibilityAsync(tenantId, ct)), 201);
     }
@@ -247,6 +251,7 @@ public sealed class PreOrderCommandHandlers :
         var expected = order.Version;
         var before = order.Lines.ToList();
         var pharmacyBefore = order.Pharmacy.AccountId;
+        var draftBefore = PreOrderChanges.DraftSnapshot.Of(order);
         PreOrderParts.Letterhead(order.Seller, legalEntity!);
         if (await FillAsync(order, request.Input!, legalEntity!, order.TenantId, ct) is { } fillError)
         {
@@ -255,11 +260,15 @@ public sealed class PreOrderCommandHandlers :
 
         if (order.Signature is not null && (!PreOrderParts.SameLines(before, order.Lines) || pharmacyBefore != order.Pharmacy.AccountId))
         {
+            // B0a (MOD-0168 §21): which signature was removed (content id + the signer's name, never the image)
+            var cleared = PreOrderChanges.SignatureClearedPayload(order.Signature);
             order.Signature = null; // the pharmacist signed other lines
-            PreOrderStateMachine.Append(order, PreOrderEventTypes.SignatureCleared, _c.CallerText, _c.Now);
+            PreOrderStateMachine.Append(order, PreOrderEventTypes.SignatureCleared, _c.CallerText, _c.Now, cleared);
         }
 
-        PreOrderStateMachine.Append(order, PreOrderEventTypes.Updated, _c.CallerText, _c.Now);
+        // B0a (MOD-0168 §21 "Before/After: Lines, Depot, Note, Date"): only the fields that changed, old → new
+        PreOrderStateMachine.Append(order, PreOrderEventTypes.Updated, _c.CallerText, _c.Now,
+            PreOrderChanges.UpdatedPayload(draftBefore, PreOrderChanges.DraftSnapshot.Of(order)));
         return await _c.SaveAsync(order, expected, ct) ? Response<PreOrderDto>.Success(_c.Dto(order, visibility!)) : PreOrderResults.Stale<PreOrderDto>();
     }
 
@@ -770,6 +779,7 @@ public sealed class PreOrderCommandHandlers :
 
         var stored = await _c.Settings.GetAsync(tenantId, ct);
         var settings = stored ?? new PreOrderSettings { TenantId = tenantId, CreatedAt = _c.Now };
+        var fieldsBefore = PreOrderChanges.SettingsFields(settings);
         if (request.Input.ExpectedVersion is { } expectedVersion && expectedVersion != settings.Version)
         {
             return PreOrderResults.Stale<PreOrderSettingsDto>();
@@ -816,9 +826,18 @@ public sealed class PreOrderCommandHandlers :
 
         settings.UpdatedAt = _c.Now;
         settings.UpdatedBy = _c.Actor.ActorName;
-        return await _c.Settings.SaveAsync(settings, stored is null ? null : stored.Version, ct)
-            ? Response<PreOrderSettingsDto>.Success(PreOrderMapping.ToDto(settings, false))
-            : PreOrderResults.Stale<PreOrderSettingsDto>();
+        if (!await _c.Settings.SaveAsync(settings, stored is null ? null : stored.Version, ct))
+        {
+            return PreOrderResults.Stale<PreOrderSettingsDto>();
+        }
+
+        // B0a (MOD-0168 §21 "Before/After: every field"): one append-only row per successful save — who, when, old → new
+        await _settingsHistory.AppendAsync(new PreOrderSettingsChange
+        {
+            TenantId = tenantId, SettingsVersion = settings.Version, ByUserId = _c.CallerText, At = _c.Now, CreatedAt = _c.Now,
+            Changes = PreOrderChanges.SettingsDiff(fieldsBefore, PreOrderChanges.SettingsFields(settings))
+        }, ct);
+        return Response<PreOrderSettingsDto>.Success(PreOrderMapping.ToDto(settings, false));
     }
 
     /// <summary>The caller's own draft (404 when not seen, 403 when seen but not theirs, 409 when no longer a draft or stale).</summary>
