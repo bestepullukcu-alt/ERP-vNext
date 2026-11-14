@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>N° d'exception</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>Oui</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>Non</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>La demande est incomplète ou contient des valeurs non valides. Vérifiez les champs et réessayez.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>Un montant de ligne n'est pas égal à quantité × prix unitaire. Les montants de ligne sont nets (hors taxes).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>Le fournisseur, le bon de commande ou l'article est introuvable.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>La devise de la facture ne correspond pas à celle du bon de commande.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>Une facture portant ce numéro existe déjà pour ce fournisseur.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>Cette action n'est pas autorisée dans le statut actuel de la facture.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>La facture ou l'exception est introuvable.</value></data>
 </root>

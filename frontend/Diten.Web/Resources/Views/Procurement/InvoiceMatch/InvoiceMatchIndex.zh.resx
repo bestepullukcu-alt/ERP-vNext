@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>异常编号</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>是</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>否</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>请求不完整或包含无效值。请检查字段后重试。</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>某行金额不等于数量 × 单价。行金额为净额（不含税）。</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>找不到供应商、采购订单或项目。</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>发票币种与采购订单币种不一致。</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>该供应商已存在相同号码的发票。</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>发票当前状态下不允许执行此操作。</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>找不到发票或异常。</value></data>
 </root>
