@@ -156,6 +156,8 @@
   <data name="AllocationLineFailed" xml:space="preserve"><value>Línea {0}: {1} (solicitado {2}, asignable {3}).</value></data>
   <data name="DeviationNeedsReason" xml:space="preserve"><value>Este lote no es el primer lote FEFO; escriba un motivo de 10 a 1000 caracteres.</value></data>
   <data name="DeviationOptional" xml:space="preserve"><value>Este lote no es el primer lote FEFO; el motivo es opcional.</value></data>
+  <data name="PreviewChosenLot" xml:space="preserve"><value>El lote elegido se aplica al guardar; no es el primero en el orden FEFO: FEFO sugiere el lote {0} (cad. {1}).</value></data>
+  <data name="StagingNotAllowed" xml:space="preserve"><value>La ubicación elegida no es una zona de preparación de este almacén; elija una con el rol de Preparación o deje el campo vacío.</value></data>
   <data name="DeviationBlocked" xml:space="preserve"><value>Su empresa rechaza un lote fuera del orden FEFO; mantenga el orden FEFO.</value></data>
   <data name="SkuUnitUnavailable" xml:space="preserve"><value>No se pudo leer la unidad base del SKU; vuelva a intentarlo en breve.</value></data>
   <data name="ValidationWarehouse" xml:space="preserve"><value>Elija un almacén.</value></data>
@@ -221,4 +223,39 @@
   <data name="Warehouse.Outbound.Event.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
   <data name="Warehouse.Outbound.LineFailure.InsufficientQuantity" xml:space="preserve"><value>Stock libre insuficiente</value></data>
   <data name="Warehouse.Outbound.LineFailure.BinCapacityShort" xml:space="preserve"><value>Stock insuficiente en las ubicaciones de preparación</value></data>
+  <data name="LinesTable.Lot" xml:space="preserve"><value>Lote</value></data>
+  <data name="LinesTable.Allocatable" xml:space="preserve"><value>Asignable</value></data>
+  <data name="LinesTable.Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="LinesTable.Empty" xml:space="preserve"><value>Aún no hay líneas — use Añadir Línea.</value></data>
+  <data name="LinesTable.LotFefo" xml:space="preserve"><value>FEFO (sugerido: {0})</value></data>
+  <data name="LinesTable.FefoReasonLabel" xml:space="preserve"><value>Motivo FEFO:</value></data>
+  <data name="LinesTable.Delete" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="LinesTable.DeleteConfirm" xml:space="preserve"><value>La línea {0} se quita de este formulario. No se elimina nada guardado.</value></data>
+  <data name="LinesTable.LineError" xml:space="preserve"><value>Línea {0}: {1}</value></data>
+  <data name="LineStatus.NotPreviewed" xml:space="preserve"><value>Sin vista previa</value></data>
+  <data name="LineStatus.Stale" xml:space="preserve"><value>Vista previa obsoleta</value></data>
+  <data name="LineStatus.Fulfillable" xml:space="preserve"><value>Se puede cumplir</value></data>
+  <data name="LineStatus.Unfulfillable" xml:space="preserve"><value>No se puede cumplir</value></data>
+  <data name="LineStatus.DeviationReasonRequired" xml:space="preserve"><value>Desviación FEFO — motivo obligatorio</value></data>
+  <data name="LineStatus.DeviationReasonGiven" xml:space="preserve"><value>Desviación FEFO — motivo indicado</value></data>
+  <data name="LineStatus.DeviationBlocked" xml:space="preserve"><value>Desviación FEFO — no permitida (Block)</value></data>
+  <data name="LinePanel.TitleAdd" xml:space="preserve"><value>Añadir Línea</value></data>
+  <data name="LinePanel.TitleEdit" xml:space="preserve"><value>Editar Línea</value></data>
+  <data name="LinePanel.Unit" xml:space="preserve"><value>Unidad base: {0}</value></data>
+  <data name="LinePanel.LotFefo" xml:space="preserve"><value>Según FEFO (sugerido: {0})</value></data>
+  <data name="LinePanel.Preview" xml:space="preserve"><value>Previsualizar Línea</value></data>
+  <data name="LinePanel.Save" xml:space="preserve"><value>Guardar Línea</value></data>
+  <data name="LinePanel.Discard" xml:space="preserve"><value>Descartar</value></data>
+  <data name="LinePanel.PreviewNote" xml:space="preserve"><value>Vista previa de una sola línea — al guardar, la asignación se recalcula con todas las líneas.</value></data>
+  <data name="LinePanel.FefoSuggestion" xml:space="preserve"><value>Sugerencia FEFO: lote {0} (cad. {1}).</value></data>
+  <data name="LinePanel.ModeLabel" xml:space="preserve"><value>Modo FEFO de su empresa: {0}</value></data>
+  <data name="LinePanel.Mode.Block" xml:space="preserve"><value>la desviación se rechaza (Block)</value></data>
+  <data name="LinePanel.Mode.RequireReason" xml:space="preserve"><value>el motivo es obligatorio (RequireReason)</value></data>
+  <data name="LinePanel.Mode.Warn" xml:space="preserve"><value>solo aviso (Warn)</value></data>
+  <data name="LinePanel.OrderLineTaken" xml:space="preserve"><value>Este número de línea de pedido ya lo usa otra línea.</value></data>
+  <data name="LinePanel.PreviewAgain" xml:space="preserve"><value>La vista previa está obsoleta; vuelva a previsualizar la línea antes de guardar un cambio de lote.</value></data>
+  <data name="LinePanel.ChangeLot" xml:space="preserve"><value>Cambiar Lote</value></data>
+  <data name="LineLimitReached" xml:space="preserve"><value>Un envío de salida admite como máximo 100 líneas; no se pueden añadir más líneas.</value></data>
+  <data name="LotNoLongerEligible" xml:space="preserve"><value>El lote elegido ya no es apto.</value></data>
+  <data name="AllocFefoReason" xml:space="preserve"><value>Motivo FEFO</value></data>
 </root>

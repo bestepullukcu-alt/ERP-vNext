@@ -10,7 +10,8 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 // independently resolved before the transaction touches a revision.
 public sealed class InvalidationMongoStore(DemandPlanningMongoContext context,
     ManualDraftMongoStore drafts, PublishedRevisionMongoStore published,
-    IInternalInvalidationAuthority authority, TimeProvider clock)
+    IInternalInvalidationAuthority authority, TimeProvider clock,
+    IOutboxCorrelationReader? correlation = null)
     : IInternalRevisionInvalidator
 {
     public async Task<InvalidationResult> InvalidateAsync(Guid tenantId,
@@ -193,6 +194,7 @@ public sealed class InvalidationMongoStore(DemandPlanningMongoContext context,
             {
                 TenantId = tenantId, LegalEntityId = legalEntityId,
                 RevisionId = revisionId, EventId = eventId,
+                CorrelationId = correlation?.CurrentId ?? Guid.Empty,
                 EventType = "demand.revision.invalidated.v2",
                 StateVersion = nextStateVersion,
                 Payload = DemandRevisionOutboxPayload.Invalidated(manifest, eventId,

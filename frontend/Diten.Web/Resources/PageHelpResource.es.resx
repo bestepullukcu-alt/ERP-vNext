@@ -2135,31 +2135,31 @@
     <value>Pulse «Nueva Salida» y elija el almacén. Elija una zona de preparación solo si el almacén tiene varias.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Líneas y vista previa</value>
+    <value>Líneas en el panel lateral</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Introduzca cada línea (producto, SKU, cantidad, línea de pedido) y pulse «Vista Previa de Asignación»: aparecen los lotes en orden FEFO y la cantidad asignable.</value>
+    <value>Pulse «Añadir Línea»: en el panel lateral introduzca el producto, el SKU y la cantidad (el número de línea de pedido se rellena) y pulse «Guardar Línea»; la línea aparece en la tabla.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Cambio de lote</value>
+    <value>Vista previa y cambio de lote</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>Si hace falta, elija otro lote en «Cambio de lote»; un lote que no es el primero en orden FEFO pide un motivo según la regla FEFO de su empresa.</value>
+    <value>Pulse «Vista Previa de Asignación» para ver los lotes y el estado de cada línea; para otro lote use «Cambiar Lote» en el menú de la línea — un lote que no es el primero en orden FEFO pide un motivo según la regla FEFO de su empresa.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Seguir la preparación</value>
+    <value>Destinatario</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Al guardar se asigna el stock y se abren las tareas de preparación; sígalas en la página Detalles hasta que la salida esté Preparada.</value>
+    <value>Escriba a mano el nombre, el país y la dirección del destinatario.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Lista para enviar y despacho</value>
+    <value>Guardar</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Cuando esté embalada pulse «Lista para Enviar»; cuando salga la mercancía pulse «Comprobar el Envío».</value>
+    <value>Pulse «Guardar»: la asignación se recalcula con todas las líneas; una línea que ya no se puede cumplir se marca en la tabla y no se guarda nada.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Una salida lista para enviar no se puede modificar ni cancelar.</value>
+    <value>Una vista previa no reserva stock; si el stock ha cambiado al guardar, la línea se marca como no se puede cumplir.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Para preparar el stock asignado</value>
@@ -2218,6 +2218,54 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>Pulse «Cerrar el Bulto». Cuando todas las asignaciones estén embaladas, la salida pasa a «Embalada».</value>
   </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Vea los problemas del flujo de almacén que requieren atención y vaya al registro que los corrige.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Supervisores de almacén y planificadores de envíos.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Filtre por tipo</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Elija un tipo o un almacén en el filtro; cada registro indica en una frase qué ocurrió y qué hacer.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Vaya al registro</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Abra la tarea o la salida desde la fila y actúe allí; el registro sale solo de la lista cuando desaparece su causa.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>Siga lo ocurrido en el flujo de almacén: el historial de tareas y salidas y los movimientos de stock que generaron.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>Supervisores de almacén, planificadores de envíos y auditores.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>Elija un intervalo de fechas</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>Elija un intervalo de 31 días como máximo (vacío = últimos 7 días) y acótelo por origen o almacén.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>Vaya al registro</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>Abra una fila para ver sus datos o vaya desde ella a la tarea, la salida o los movimientos de stock.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>Compruebe de un vistazo si el almacén y el área de envíos van al mismo ritmo.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>Supervisores de almacén, planificadores de envíos y el equipo de soporte de integración.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>Lea las cuatro tarjetas</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>Cola de eventos, pendiente de despacho, última sincronización y confirmaciones pendientes: un número que crece o una hora antigua indica dónde mirar; actualice para volver a leerlas.</value>
+  </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Esta página abre los planes de capacidad: cree un plan para la empresa seleccionada o abra uno existente por su ID.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Planificadores de capacidad y suministro</value></data>
   <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>
@@ -2250,4 +2298,124 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Haga clic en «Record sign-off», elija la instantánea, su rol y la decisión, añada un comentario si hace falta y confirme. Las aprobaciones solo se registran mientras el plan está en revisión.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Sepa qué es definitivo</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Una aprobación registrada es definitiva: no se puede cambiar ni eliminar, y se rechaza una segunda aprobación para el mismo rol e instantánea.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Planifique recuentos cíclicos y completos, libérelos y sígalos hasta decidir sus diferencias.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Supervisores de almacén (planificar, liberar, cancelar) y contadores (abrir la hoja de recuento).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Elegir el almacén y el alcance</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>Pulse « Nuevo Recuento », elija el almacén, el tipo y las ubicaciones; deje los productos vacíos para contar todo.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Liberar el recuento</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Abra el recuento y pulse « Liberar »: se toma la instantánea del stock y se crean las líneas por ubicación.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Introducir las cantidades</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>Pulse « Abrir Hoja de Recuento » e introduzca lo que hay en cada ubicación.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Enviar y seguir las diferencias</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>Tras « Enviar Recuento », las diferencias aparecen en Diferencias de recuento; las tarjetas muestran el trabajo pendiente.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>El alcance de un recuento liberado no cambia; cancelar exige un motivo.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Para decidir sobre las diferencias de los recuentos enviados</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Cuente un recuento liberado ubicación por ubicación e introduzca lo que encuentre.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Los contadores, en un teléfono o terminal.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Contar ubicación por ubicación</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Escriba la cantidad o use −/+ y pulse « Confirmar » en cada línea. En un recuento a ciegas la cantidad esperada no se muestra hasta enviarlo.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Añadir el stock encontrado</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Para stock sin línea: pulse « Añadir Stock Encontrado », elija la ubicación, el producto y su referencia, el lote si hace falta y la cantidad.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Enviar</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Cuando todas las líneas estén contadas pulse « Enviar Recuento »; después no se pueden cambiar las cantidades.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>En un recuento a ciegas la cantidad esperada no se muestra antes del envío.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Rastree cada diferencia hasta su movimiento en el libro y decida sobre las líneas pendientes de aprobación.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Controladores de inventario y jefes de almacén que aprueban las correcciones.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Revisar la diferencia</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Filtre por almacén, producto, lote o fecha y abra una fila. Las filas « Movimiento manual » son correcciones introducidas en movimientos de stock; son de solo lectura y quedan fuera de la aprobación y del doble control.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Aprobar, rechazar o recontar</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>Pulse « Decidir » y elija « Aprobar », « Rechazar » o « Recontar »; rechazar y recontar exigen un motivo. Quien contó o envió no puede aprobar.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Reintentar una corrección rechazada</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Si una reserva bloqueó el faltante, la corrección muestra « Rechazado »; libere el stock y elija « Reintentar Registro ».</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Ir al movimiento del libro</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Haga clic en el número de movimiento en « Corrección del libro » para abrirlo en movimientos de stock.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>La aprobación corrige el stock al instante; deshacerla es una reversión en movimientos de stock.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>Las filas « Movimiento manual » son correcciones introducidas en movimientos de stock; quedan fuera de la aprobación y del doble control. Esta pantalla es la vía principal para corregir una diferencia.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Para planificar y liberar recuentos</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Exporte un recuento enviado o cerrado como expediente de evidencia PDF o CSV para auditorías; cada archivo se guarda con su SHA-256 y nunca cambia.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Controladores de inventario, jefes de almacén y auditores de calidad.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Elegir el recuento y exportar</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Pulse « Nueva Exportación », elija un recuento enviado o cerrado en « Recuento » y el formato, y pulse « Exportar ». El archivo se escribe en el idioma de esta página.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Descargar el archivo</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Abra la fila y pulse « Descargar »; compare el SHA-256 del archivo con el mostrado para probar que es la evidencia guardada.</value>
+  </data>
 </root>

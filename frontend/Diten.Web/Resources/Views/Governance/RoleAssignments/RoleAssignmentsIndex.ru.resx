@@ -138,6 +138,8 @@
   <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>Просмотр сводки</value></data>
   <data name="ActionVerb_Rebase" xml:space="preserve"><value>Перенос на новую версию</value></data>
   <data name="ActionVerb_Recover" xml:space="preserve"><value>Восстановление</value></data>
+  <data name="ActionVerb_Post" xml:space="preserve"><value>Провести</value></data>
+  <data name="ActionVerb_Recount" xml:space="preserve"><value>Пересчитать</value></data>
   <data name="ActionVerb_Release" xml:space="preserve"><value>Выпуск</value></data>
   <data name="ActionVerb_Reopen" xml:space="preserve"><value>Повторное открытие</value></data>
   <data name="ActionVerb_Replace" xml:space="preserve"><value>Замена</value></data>

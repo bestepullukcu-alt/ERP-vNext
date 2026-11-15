@@ -330,6 +330,9 @@ public static class DependencyInjection
         services.AddScoped<ITransactionalAuditOutboxWriter, CanonicalTransactionalAuditOutboxWriter>();
         // MOD-0040-FU02 (K-10) — the same door for a refused request's record, in its own short transaction.
         services.AddScoped<ITransactionalAuditRefusalWriter, CanonicalTransactionalAuditOutboxWriter>();
+        // MOD-0040-FU02 DL-2 — the in-process record-code port (ORG / POS).
+        services.AddScoped<Diten.Platform.Application.Contracts.RecordCodes.IInProcessRecordCodeAllocator,
+            Diten.Platform.Application.Features.RecordCodes.InProcessRecordCodeAllocator>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
         // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
         services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();

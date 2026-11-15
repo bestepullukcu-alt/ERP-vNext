@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="AddNewCycleCount" xml:space="preserve"><value>Nuevo Recuento</value></data>
+  <data name="AssigneePlaceholder" xml:space="preserve"><value>Buscar personas</value></data>
+  <data name="BlindBadge" xml:space="preserve"><value>A ciegas</value></data>
+  <data name="BlindHint" xml:space="preserve"><value>El contador no ve la cantidad esperada hasta enviar el recuento.</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>Se eliminaron {0} de {1} recuentos en borrador.</value></data>
+  <data name="BulkDeleteTitle" xml:space="preserve"><value>Eliminar {0} recuentos en borrador</value></data>
+  <data name="CancelReason" xml:space="preserve"><value>Motivo de cancelación</value></data>
+  <data name="CancelTitle" xml:space="preserve"><value>Cancelar el recuento {0}</value></data>
+  <data name="ColAssignee" xml:space="preserve"><value>Contador</value></data>
+  <data name="ColCreated" xml:space="preserve"><value>Creación</value></data>
+  <data name="ColLines" xml:space="preserve"><value>Líneas</value></data>
+  <data name="ColNumber" xml:space="preserve"><value>N.º de recuento</value></data>
+  <data name="ColPlannedDate" xml:space="preserve"><value>Fecha prevista</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyo stock cuenta.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pueden cargar las empresas ahora.</value></data>
+  <data name="CycleCount.Action.BulkDelete" xml:space="preserve"><value>Eliminación Masiva</value></data>
+  <data name="CycleCount.Action.Cancel" xml:space="preserve"><value>Cancelar Recuento</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="CycleCount.Action.Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="CycleCount.Action.OpenSheet" xml:space="preserve"><value>Abrir Hoja de Recuento</value></data>
+  <data name="CycleCount.Action.Release" xml:space="preserve"><value>Liberar</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>La clave de la corrección la tiene otro movimiento. Resuelva el problema de integridad.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>El directorio de usuarios no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>No se puede asignar a la persona seleccionada.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>El código de la empresa no se puede usar para el número de recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Otra persona modificó este registro. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Esta acción no está permitida en el estado actual del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>El libro de stock no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Algunas líneas aún no se han contado.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Esta ubicación, producto y lote ya tienen una línea.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>No se encontró la línea del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>La ubicación o el producto está fuera del alcance del recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Este producto se controla por lote. Introduzca el lote.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Este lote no es conocido para el producto.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>No se encontró el recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Introduzca una cantidad válida (cero o más).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Introduzca un motivo.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>El servicio de numeración no está disponible. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Una línea seleccionada alcanzó el límite de recuentos.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>El alcance no tiene ubicaciones que contar.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Una ubicación seleccionada no pertenece a este almacén o no está activa.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Otro recuento abierto ya cubre algunas de estas ubicaciones.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>El alcance es demasiado grande para un recuento. Redúzcalo o divídalo.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>No puede aprobar una diferencia que usted contó o envió.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>El stock con número de serie no se puede corregir desde un recuento.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>El stock cambió mientras se tomaba la instantánea. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>El registro cambió mientras tanto. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otros datos. Recargue e inténtelo de nuevo.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>No hay stock suficiente para registrar esta pérdida.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>La solicitud no es válida.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>No se pudo aceptar la solicitud. Revise los campos.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos de la empresa no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>El lote está bloqueado.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>El lote ha caducado.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Este producto no se controla por lote. Deje el lote vacío.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>No se encontró el registro.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Los datos del producto están incompletos (por ejemplo, su unidad base).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Los datos del producto no están disponibles ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>El número de series no coincide con la cantidad.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>El SKU no pertenece al producto seleccionado.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Este nivel de SKU no se mantiene en stock.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>El servicio no está disponible ahora. Inténtelo más tarde.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>El producto no es conocido.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>La ubicación no es conocida.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Faltan algunos campos o no son válidos.</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>Error de integridad de la corrección</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>Corrección pendiente</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>Corrección registrada</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>Corrección rechazada</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>Diferencia aprobada</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>Creado</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>Integridad resuelta</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>Stock encontrado añadido</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>Línea contada</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>Recuento solicitado</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>Diferencia rechazada</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>Liberado</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>Diferencia calculada</value></data>
+  <data name="CycleCount.Saved.Cancelled" xml:space="preserve"><value>Se canceló el recuento.</value></data>
+  <data name="CycleCount.Saved.Counted" xml:space="preserve"><value>Se guardó la cantidad.</value></data>
+  <data name="CycleCount.Saved.Created" xml:space="preserve"><value>Se creó el recuento.</value></data>
+  <data name="CycleCount.Saved.Released" xml:space="preserve"><value>Se liberó el recuento y se tomó su instantánea.</value></data>
+  <data name="CycleCount.Saved.Submitted" xml:space="preserve"><value>Se envió el recuento.</value></data>
+  <data name="CycleCount.Saved.Updated" xml:space="preserve"><value>Se actualizó el recuento.</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>En recuento</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Liberado</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>Recuento cíclico</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>Recuento completo</value></data>
+  <data name="CycleCountsTitle" xml:space="preserve"><value>Recuentos</value></data>
+  <data name="FieldAssignee" xml:space="preserve"><value>Contador</value></data>
+  <data name="FieldBlind" xml:space="preserve"><value>Recuento a ciegas</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>Nota</value></data>
+  <data name="FieldPlannedDate" xml:space="preserve"><value>Fecha prevista</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="FieldScope" xml:space="preserve"><value>Ubicaciones</value></data>
+  <data name="FieldSkus" xml:space="preserve"><value>Productos (opcional)</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Tipo de recuento</value></data>
+  <data name="FieldWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo recuento</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar recuento</value></data>
+  <data name="Kpi.Accuracy" xml:space="preserve"><value>Exactitud del recuento</value></data>
+  <data name="Kpi.AccuracyHint" xml:space="preserve"><value>Líneas sin diferencia en los últimos 31 días</value></data>
+  <data name="Kpi.AwaitingApproval" xml:space="preserve"><value>Líneas pendientes de aprobación</value></data>
+  <data name="Kpi.ManualCount" xml:space="preserve"><value>Movimientos de recuento manuales</value></data>
+  <data name="Kpi.ManualCountHint" xml:space="preserve"><value>Movimientos de recuento del libro que no vienen de un recuento, últimos 31 días</value></data>
+  <data name="Kpi.OpenCounts" xml:space="preserve"><value>Recuentos abiertos</value></data>
+  <data name="Kpi.PercentValue" xml:space="preserve"><value>{0} %</value></data>
+  <data name="Kpi.Refused" xml:space="preserve"><value>Correcciones rechazadas</value></data>
+  <data name="Kpi.SelectWarehouse" xml:space="preserve"><value>Elija un almacén</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Planifique, libere y siga los recuentos cíclicos y completos; el servicio calcula las tarjetas al abrir la página.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>Este recuento está cancelado. Solo se puede ver.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>Este recuento está cerrado. Solo se puede ver.</value></data>
+  <data name="ReasonHint" xml:space="preserve"><value>Hasta 500 caracteres; se guarda en el historial del recuento.</value></data>
+  <data name="RecountOf" xml:space="preserve"><value>Recuento repetido</value></data>
+  <data name="RecountOfYes" xml:space="preserve"><value>Sí — recuento de un recuento anterior</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>¿Liberar el recuento? La instantánea del stock se toma ahora y el alcance ya no podrá cambiar.</value></data>
+  <data name="ScopeFull" xml:space="preserve"><value>Todo el almacén</value></data>
+  <data name="ScopeHint" xml:space="preserve"><value>Zonas, pasillos o ubicaciones; se cuentan las ubicaciones que contienen.</value></data>
+  <data name="ScopePlaceholder" xml:space="preserve"><value>Buscar ubicaciones</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="SkusHint" xml:space="preserve"><value>Déjelo vacío para contar todos los productos del alcance.</value></data>
+  <data name="SkusPlaceholder" xml:space="preserve"><value>Buscar productos</value></data>
+  <data name="SnapshotAt" xml:space="preserve"><value>Instantánea tomada</value></data>
+  <data name="Timeline" xml:space="preserve"><value>Historial</value></data>
+  <data name="TimelineUnavailable" xml:space="preserve"><value>No se puede cargar el historial ahora.</value></data>
+  <data name="ValidationPlannedDate" xml:space="preserve"><value>Introduzca la fecha prevista.</value></data>
+  <data name="ValidationScope" xml:space="preserve"><value>Seleccione al menos una ubicación para un recuento cíclico.</value></data>
+  <data name="ValidationWarehouse" xml:space="preserve"><value>Seleccione un almacén.</value></data>
+  <data name="WarehousePlaceholder" xml:space="preserve"><value>Elija un almacén</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación de evidencia.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>El archivo de evidencia almacenado no coincide con su huella registrada; no se entrega.</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>No se pudo leer el nombre</value></data>
+</root>

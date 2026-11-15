@@ -6,10 +6,10 @@ using static Diten.InventoryService.Tests.Warehouse.WarehouseScenario;
 namespace Diten.InventoryService.Tests.Warehouse;
 
 /// <summary>
-/// MOD-0178 AC-19 — the S1 answers against the schema derived from the WMS draft (<see cref="WmsDraftContract"/>): one scenario drives EVERY
-/// S1 operation through <see cref="WmsDraftContractHandler"/> (a violation throws), then the coverage table must hold each operation's
-/// success; and the validator itself is shown to refuse what the draft forbids (an unnamed member, a JSON null, an unknown enum value, a
-/// non-decimal quantity) — a validator that cannot say "no" is no guard.
+/// MOD-0178 AC-19 re-run as AC-60 (pack §19.7) — the S1 answers against the FROZEN <c>wms-bundle.openapi.yaml</c> (<see cref="WmsContract"/>):
+/// one scenario drives EVERY S1 operation through <see cref="WmsContractHandler"/> (a violation throws), then the coverage table must hold each
+/// operation's success; and the validator itself is shown to refuse what the contract forbids (an unnamed member, a JSON null, an unknown enum
+/// value, a non-decimal quantity) — a validator that cannot say "no" is no guard.
 /// </summary>
 public sealed class PutawayContractTests : IClassFixture<WarehouseApiFactory>
 {
@@ -18,7 +18,7 @@ public sealed class PutawayContractTests : IClassFixture<WarehouseApiFactory>
     public PutawayContractTests(WarehouseApiFactory factory) => _factory = factory;
 
     [Fact]
-    public async Task AC19_every_S1_operation_answers_the_draft_schema()
+    public async Task AC60_every_S1_operation_answers_the_frozen_contract()
     {
         var s = await new PutawayScenario(_factory).ReadyAsync();
         await s.ReceiveAsync(100);
@@ -66,16 +66,16 @@ public sealed class PutawayContractTests : IClassFixture<WarehouseApiFactory>
 
         string[] expected =
         [
-            "GET putaway-candidates 200", "GET putaway-tasks 200", "POST putaway-tasks 201", "POST putaway-tasks/bulk-assign 200",
-            "GET putaway-tasks/{id} 200", "PUT putaway-tasks/{id} 200", "GET putaway-tasks/{id}/events 200", "POST putaway-tasks/{id}/claim 200",
-            "POST putaway-tasks/{id}/confirmations 201", "POST putaway-tasks/{id}/confirmations 503", "POST putaway-tasks/{id}/confirmations 422",
-            "POST putaway-tasks/{id}/confirmations 409", "POST putaway-tasks/{id}/confirmations/{id}/retry 200",
-            "POST putaway-tasks/{id}/confirmations/{id}/returned 200", "POST putaway-tasks/{id}/confirmations/{id}/resolve-integrity 200",
-            "POST putaway-tasks/{id}/close-short 200", "POST putaway-tasks/{id}/cancel 200",
-            "GET location-roles 200", "POST location-roles 201", "GET location-roles/{id} 200", "PUT location-roles/{id} 200",
-            "DELETE location-roles/{id} 200", "POST location-roles/bulk-delete 200"
+            "listPutawayCandidates 200", "listPutawayTasks 200", "createPutawayTask 201", "bulkAssignPutawayTasks 200",
+            "getPutawayTask 200", "updatePutawayTask 200", "getPutawayTaskEvents 200", "claimPutawayTask 200",
+            "confirmPutawayTask 201", "confirmPutawayTask 503", "confirmPutawayTask 422",
+            "confirmPutawayTask 409", "retryPutawayConfirmation 200",
+            "markPutawayConfirmationReturned 200", "resolvePutawayIntegrity 200",
+            "closePutawayTaskShort 200", "cancelPutawayTask 200",
+            "listLocationRoles 200", "createLocationRole 201", "getLocationRole 200", "updateLocationRole 200",
+            "deleteLocationRole 200", "bulkDeleteLocationRoles 200"
         ];
-        Assert.All(expected, key => Assert.True(WmsDraftContract.Validated.ContainsKey(key), $"not validated: {key}"));
+        Assert.All(expected, key => Assert.True(WmsContract.Validated.ContainsKey(key), $"not validated: {key}"));
     }
 
     private static JsonObject ValidTask()
@@ -95,31 +95,49 @@ public sealed class PutawayContractTests : IClassFixture<WarehouseApiFactory>
     }
 
     [Fact]
-    public void AC19_the_derived_schema_accepts_a_draft_task_and_refuses_what_the_draft_forbids()
+    public void AC60_the_frozen_schema_accepts_a_task_and_refuses_what_the_contract_forbids()
     {
-        Assert.Empty(WmsDraftContract.Validate(WmsDraftContract.Task, ValidTask().ToJsonString()));
+        Assert.Empty(WmsContract.Validate(WmsContract.Task, ValidTask().ToJsonString()));
 
         var extra = ValidTask();
         extra["debug"] = "x";
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Task, extra.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, extra.ToJsonString()));
 
         var nullMember = ValidTask();
         nullMember["note"] = null;
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Task, nullMember.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, nullMember.ToJsonString()));
 
         var badEnum = ValidTask();
         badEnum["integrationFlag"] = "Stuck";
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Task, badEnum.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, badEnum.ToJsonString()));
 
         var badQuantity = ValidTask();
         badQuantity["plannedQuantity"] = "60,5";
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Task, badQuantity.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, badQuantity.ToJsonString()));
+
+        var sevenDigits = ValidTask();
+        sevenDigits["plannedQuantity"] = "60.0000001";
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, sevenDigits.ToJsonString()));
 
         var missing = ValidTask();
         missing.Remove("integrationFlag");
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Task, missing.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, missing.ToJsonString()));
 
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.ConfirmResult, ValidTask().ToJsonString())); // no confirmationSeq
-        Assert.NotEmpty(WmsDraftContract.Validate(WmsDraftContract.Error, """{"error":{"message":"m","correlationId":"6f1c2c5e-0d7b-4b0e-9f6a-1c2d3e4f5a6b"},"contractVersion":"v1"}"""));
+        var badUuid = ValidTask();
+        badUuid["taskId"] = "task-1";
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, badUuid.ToJsonString()));
+
+        var badTime = ValidTask();
+        badTime["created"]!["atUtc"] = "yesterday";
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, badTime.ToJsonString()));
+
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.ConfirmResult, ValidTask().ToJsonString())); // no confirmationSeq
+        var result = ValidTask();
+        result["confirmationSeq"] = 1;
+        Assert.Empty(WmsContract.Validate(WmsContract.ConfirmResult, result.ToJsonString()));
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Task, result.ToJsonString())); // a task never carries confirmationSeq
+        result["debug"] = "x";
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.ConfirmResult, result.ToJsonString())); // the composed schema stays closed
+        Assert.NotEmpty(WmsContract.Validate(WmsContract.Error, """{"error":{"message":"m","correlationId":"6f1c2c5e-0d7b-4b0e-9f6a-1c2d3e4f5a6b"},"contractVersion":"v1"}"""));
     }
 }

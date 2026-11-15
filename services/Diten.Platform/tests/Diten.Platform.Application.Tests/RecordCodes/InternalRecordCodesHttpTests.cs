@@ -51,6 +51,34 @@ public sealed class InternalRecordCodesHttpTests : IClassFixture<ReplicaSetClass
         Assert.Equal(0, await host.CountAsync("record_code_allocations"));
     }
 
+    // ── AC-49 (DL-2) — the HTTP surface does not change: ORG / POS stay 403 over the internal endpoint ──────
+
+    [Theory]
+    [InlineData("ORG")]
+    [InlineData("POS")]
+    public async Task AC49_org_and_pos_stay_forbidden_over_http_after_dl2(string recordType)
+    {
+        using var host = await HostAsync();
+        var token = RecordCodeHttpHost.TenantUserToken(TenantA, User,
+            "platform.organization-units.create", "platform.positions.create", "mdm.legal-entities.read");
+
+        var finance = await RecordCodeHttpHost.ReadAsync(await host.AllocateAsync(token,
+            RecordCodeHttpHost.Body(recordType, "LegalEntity", Myg, $"k-{recordType}-finance")));
+        var mdm = await RecordCodeHttpHost.ReadAsync(await host.AllocateAsMdmAsync(token,
+            RecordCodeHttpHost.Body(recordType, "LegalEntity", Myg, $"k-{recordType}-mdm")));
+
+        Assert.Equal((403, "RECORD_CODE_FORBIDDEN"), (finance.Status, finance.Reason));
+        Assert.Equal((403, "RECORD_CODE_FORBIDDEN"), (mdm.Status, mdm.Reason));
+        await AssertNothingIssuedAsync(host);
+        var refusals = (await host.DeliveredAuditEventsAsync()).Where(e => e.RequestType == "AllocateRecordCodeCommand").ToList();
+        Assert.Equal(2, refusals.Count);
+        Assert.All(refusals, refusal =>
+        {
+            Assert.Equal(AuditOutcome.Denied, refusal.Outcome);
+            Assert.Equal(7, Convert.ToInt32(refusal.Metadata["EvaluationStep"]));
+        });
+    }
+
     // ── AC-1 ────────────────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]

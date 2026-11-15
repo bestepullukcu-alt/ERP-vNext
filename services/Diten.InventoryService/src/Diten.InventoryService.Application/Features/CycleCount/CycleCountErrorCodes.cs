@@ -32,4 +32,10 @@ public static class CycleCountErrorCodes
     public const string AdjustmentIntegrity = "COUNT_ADJUSTMENT_INTEGRITY";
     public const string LineOutOfScope = "COUNT_LINE_OUT_OF_SCOPE";
     public const string LineDuplicate = "COUNT_LINE_DUPLICATE";
+
+    /// <summary>DL-5 (draft §4.4): the Evidence Pack export (or its file) is not the caller's company's — 404 (WMS-COUNT-BUNDLE 1.1.0, additive).</summary>
+    public const string EvidenceNotFound = "COUNT_EVIDENCE_NOT_FOUND";
+
+    /// <summary>DL-5: the stored evidence file does not hash to its recorded SHA-256 — never served (500).</summary>
+    public const string EvidenceIntegrity = "COUNT_EVIDENCE_INTEGRITY";
 }

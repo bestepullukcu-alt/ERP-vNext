@@ -12,6 +12,7 @@ public static class InventoryErrorMessages
         // parent pack §12 / §13 codes
         ["INSUFFICIENT_STOCK"] = "ErrInsufficientStock",
         ["ALREADY_REVERSED"] = "ErrAlreadyReversed",
+        ["REVERSAL_QUALITY_RECORD_LOCKED"] = "ErrReversalQualityRecordLocked", // INVENTORY 1.8.0 (MOD-0175-FU01 DL-3, AC-38)
         ["PRODUCT_MASTER_UNAVAILABLE"] = "ErrMasterUnavailable",
         ["LOCATION_MASTER_UNAVAILABLE"] = "ErrMasterUnavailable",
         ["CROSS_LE_FORBIDDEN"] = "ErrCrossLegalEntity",
