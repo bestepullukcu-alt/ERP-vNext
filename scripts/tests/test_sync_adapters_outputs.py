@@ -225,6 +225,97 @@ class RealGenerator(unittest.TestCase):
         finally:
             sa.tier_fields = real
 
+    # --- blind check 4: new variants against the same two properties ---------------------------------------------
+    def test_n1_a_non_ascii_look_alike_ees_path_is_refused(self):
+        # 'ſ' (U+017F) folds to 's' on a case-insensitive APFS volume
+        def change(d):
+            self.item(d, "localization-standard")["compose"] = [".ee\u017f/kartlar/cekirdek.md"]
+        self.manifest(change)
+        self.refused("not a canonical repository path")
+
+    def test_n1d_n13_n14_the_managed_folders_are_fixed(self):
+        for extra in (".claude/rule\u017f", ".agents/workflows", ".cursor/rules"):
+            with self.subTest(extra=extra):
+                self.manifest(lambda d: d["managed_dirs"].append(extra))
+                self.refused("managed_dirs must be exactly")
+                self.manifest(lambda d: d["managed_dirs"].remove(extra))
+
+    def test_n2_a_target_that_is_a_hard_link_is_refused(self):
+        target = self.root / ".claude" / "agents" / "ees-isci.md"
+        target.unlink()
+        try:
+            os.link(self.root / ".claude" / "rules" / "agents-core.md", target)
+        except (OSError, NotImplementedError):
+            self.skipTest("hard links are not available here")
+        self.refused("hard link")
+
+    def test_n3_a_source_that_is_a_hard_link_is_refused(self):
+        probe = self.root / ".antigravity" / "rules" / "probe.md"
+        try:
+            os.link(self.root / ".ees" / "kartlar" / "cekirdek.md", probe)
+        except (OSError, NotImplementedError):
+            self.skipTest("hard links are not available here")
+        self.manifest(lambda d: d["items"].append(
+            {"id": "probe", "kind": "rule", "source": ".antigravity/rules/probe.md",
+             "targets": [{"tool": "claude-code", "format": "markdown", "path": ".claude/rules/probe.md"}]}))
+        self.refused("hard link")
+
+    def test_n4_a_target_that_is_a_directory_is_refused(self):
+        target = self.root / ".claude" / "agents" / "ees-isci.md"
+        target.unlink()
+        target.mkdir()
+        self.refused("is not a file")
+
+    def test_n6_an_unknown_or_misplaced_tool_label_is_refused(self):
+        for tool in ("Claude-Code", "claude", "codex"):
+            with self.subTest(tool=tool):
+                self.manifest(lambda d: self.item(d, "ees-isci")["targets"][0].update(tool=tool))
+                self.refused("is unknown or does not write there")
+                self.manifest(lambda d: self.item(d, "ees-isci")["targets"][0].update(tool="claude-code"))
+
+    def test_n7_one_name_per_tool_whatever_the_kind(self):
+        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].update(name="ees-isci"))
+        self.refused("is used by")
+
+    def test_n8_n9_a_toml_key_that_is_not_a_plain_name_is_refused(self):
+        for key in ('"name"', "zz = 1\n[t]\nyy", '"model"', "model "):
+            with self.subTest(key=key):
+                self.manifest(lambda d: self.item(d, "ees-l10n-agent")["targets"][1]["fields"].update({key: "x"}))
+                self.refused("is not a plain name")
+                self.manifest(lambda d: self.item(d, "ees-l10n-agent")["targets"][1]["fields"].pop(key))
+
+    def test_n10_n11_a_yaml_key_or_value_that_could_hide_a_field_is_refused(self):
+        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].update({"model ": "haiku"}))
+        self.refused("is not a plain name")
+        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].pop("model "))
+        self.manifest(lambda d: self.item(d, "ees-l10n-agent")["targets"][0]["frontmatter"].update(
+            zz='"open\nclose"\n"name": l10n-agent'))
+        self.refused("without line breaks")
+
+    def test_an_unreadable_generated_header_line_is_refused(self):
+        # bypass the manifest check: the output reader alone must refuse a header line it cannot read
+        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].update({"model ": "haiku"}))
+        real = sa.validate_manifest
+        sa.validate_manifest = lambda data: None
+        try:
+            self.refused("unreadable frontmatter line")
+        finally:
+            sa.validate_manifest = real
+
+    def test_n12_a_source_with_a_byte_order_mark_is_refused(self):
+        p = self.root / ".ees" / "ajanlar" / "isci.md"
+        p.write_bytes(b"\xef\xbb\xbf" + p.read_bytes())
+        self.refused("byte order mark")
+
+    def test_n15_a_stray_file_stops_the_run_before_any_write(self):
+        (self.root / ".claude" / "agents" / "stray.md").write_text("x\n", encoding="utf-8")
+        self.source(".ees/kartlar/isci.md", "# İşçi kartı", "# İşçi kartı (değişti)")
+        before = self.snapshot()
+        code, out = self.run_main()
+        self.assertEqual(code, 1, out)
+        self.assertIn("nothing written", out)
+        self.assertEqual(self.snapshot(), before)
+
 
 if __name__ == "__main__":
     unittest.main()

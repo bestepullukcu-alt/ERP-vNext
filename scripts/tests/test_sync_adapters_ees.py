@@ -115,10 +115,10 @@ class PilotBoundary(unittest.TestCase):
 
     def test_codex_and_codex_antigravity_share_one_name_space(self):
         def change(d):
-            # the old control-tower skill is generated for 'codex+antigravity'; a plain 'codex' skill of the same name clashes
-            d["items"].append({"id": "y", "kind": "skill", "source": ".antigravity/agents/integration-agent.md",
-                               "targets": [{"tool": "codex", "format": "markdown", "path": ".agents/skills/y/SKILL.md",
-                                            "frontmatter": {"name": "control-tower", "description": "d"}}]})
+            # the old control-tower skill is generated for 'codex+antigravity'; a 'codex' agent of the same name clashes
+            d["items"].append({"id": "y", "kind": "agent", "source": ".antigravity/agents/integration-agent.md",
+                               "targets": [{"tool": "codex", "format": "codex-agent-toml", "path": ".codex/agents/y.toml",
+                                            "fields": {"name": "control-tower", "description": "d"}}]})
         self.refused(change, "is used by")
 
     def test_no_adapter_is_named_like_a_file_tools_load(self):

@@ -176,3 +176,22 @@ metin) çifti, ilk yazmadan önce (ve `--check`'te de) denetlenir; biri uymazsa 
 Bozma: çıktı doğrulaması çağrılmayınca 5 test, sembolik bağ denetimi kaldırılınca 2 test, üretilmiş ad denetimi
 kaldırılınca 1 test kırmızı; hepsi geri alındı. Sembolik bağ denetimi kaldırılsa bile yazma, çözülmüş yol denetiminde
 durur (iki katman). Eski 13 kopya yeni doğrulamadan geçer ve bayt bayt aynı üretilir (`test_the_old_outputs_are_generated_byte_identical`).
+
+## 11. Kör kontrol 4 (son bağımsız bakış; Opus, yüksek efor) ve düzeltme
+
+Codex'in iki turdaki ölçülmüş 9 senaryosunun hepsi (a–i) korundu: çıkış 2, hiçbir dosya değişmedi; eski 13 kopya yeni
+doğrulamadan geçti, bayt bayt aynı. Yeni çeşitlerden 8 delik çıktı; hepsi aynı ilkeyle (okunamayan reddedilir, izin
+listeleri üreticide sabit, her şey ilk yazmadan önce) kapatıldı:
+
+| Çeşit | Delik | Ne yapıldı | Test (`test_sync_adapters_outputs.py`) |
+|---|---|---|---|
+| N8, N11 (engel), N9, N10 | Üretilmiş başlıkta okunamayan satır atlanıyordu; tırnaklı/boşluklu anahtar ya da satır sonlu değerle ad ve model gizlenebiliyordu | `generated_header`: anlaşılmayan her satır hata; `validate_manifest`: başlık anahtarı düz ad, değer satır sonu ve denetim karakteri içermez | `n8_n9`, `n10_n11`, `an_unreadable_generated_header_line` |
+| N1, N1d | ASCII olmayan benzer harf (ſ) APFS'te `.ees`/`.claude/rules`'a katlanıyordu | yollar yalnız ASCII; yönetilen klasörler üreticide sabit liste | `n1`, `n1d_n13_n14` |
+| N2, N3 | Sert bağ hedefi ya da kaynağı | sert bağ hedef ve kaynak reddi; yazma geçici adla + `os.replace` | `n2`, `n3` |
+| N4, N15 | Dizin hedef, tanımsız dosya: yarım yazma | dizin hedef reddi; tanımsız dosya taraması ilk yazmadan önce ("nothing written") | `n4`, `n15` |
+| N6 | `tool` etiketi denetlenmiyordu (eşleme düşüyor, ad alanı ayrılıyor) | `tool` sabit dört değer ve her biri yalnız kendi klasörüne yazar | `n6` |
+| N7 | Aynı ad farklı türde | ad tekliği araç başına, türden bağımsız | `n7` |
+| N12 | BOM künyeyi gizliyordu | BOM'lu kaynak reddi | `n12` |
+| N13, N14 | Yönetilen klasör listeye eklenebiliyordu | sabit liste | `n1d_n13_n14` |
+
+Bozma: sekiz yeni denetimin her biri tek tek kaldırıldı, her seferinde en az bir test kırmızı; hepsi geri alındı.

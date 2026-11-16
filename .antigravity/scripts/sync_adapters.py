@@ -103,6 +103,12 @@ Rules this script enforces (İ5-A pilot):
   folders, forbidden places judged after resolution), the generated name (read back from the frontmatter or TOML), and
   the generated model fields against the seviye; a target may not carry the field set its format does not use; an EES
   frontmatter key mentioned anywhere in any form other than the one exact line is an error.
+  Blind check 4: every generated header line must be understood (a line the reader cannot read is an error, never
+  skipped); header keys are plain names and values carry no line break or control character; paths are ASCII; the
+  managed folders and the tool labels are fixed in this file (a tool writes only under its own folder); a source or a
+  target that is a hard link, a source with a byte order mark and a target that is a directory are refused; one name
+  per tool whatever the kind; stray files are found before the first write; each file is written to a temporary name
+  and moved into place.
   A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
   says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
@@ -130,6 +136,12 @@ TIER_MAP: dict = {}                     # load_manifest replaces it with the man
 # EES-BAGLAMA-01 (Codex round 1): the pilot boundary is checked by validate_manifest before anything is written.
 PILOT_PREFIX = "ees-"
 KINDS = ("core-block", "agent", "skill", "rule")
+# blind check 4: the managed folders and the tool labels are fixed here, not read from the manifest alone
+MANAGED_DIRS = (".claude/agents", ".claude/skills", ".claude/rules", ".codex/agents", ".agents/skills", ".agents/rules")
+TOOL_PREFIXES = {"claude-code": (".claude/",), "codex": (".codex/agents/",), "codex+antigravity": (".agents/skills/",),
+                 "antigravity": (".agents/rules/",)}
+HEADER_KEY = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*")
+CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f\u2028\u2029\ufeff]")
 AUTO_LOADED_PREFIXES = (".claude/rules/", ".agents/rules/")   # every session loads these by itself
 AUTO_LOADED_FILES = ("agents.md", "claude.md")                 # compared in lower case (case-insensitive file systems)
 IMPLICIT_SKILL_PREFIXES = (".agents/skills/",)                  # Codex / Antigravity may call these skills by themselves
@@ -155,7 +167,12 @@ def read_text(path: str) -> str:
             raise ConfigError(f"source path {path} goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
     if not p.is_file():
         raise ConfigError(f"source not found: {path}")
-    return p.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if p.stat().st_nlink > 1:
+        raise ConfigError(f"source {path} is a hard link (another name for the same file)")
+    text = p.read_text(encoding="utf-8")
+    if text.startswith("\ufeff"):
+        raise ConfigError(f"source {path} starts with a byte order mark; save it as UTF-8 without BOM")
+    return text.replace("\r\n", "\n")
 
 
 # İ5B-FIX-03 (V4A-F1): the link and import grammar of the instruction files
@@ -1303,8 +1320,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
 
 def canonical(path, where: str) -> str:
     """A repository path in its one written form: no './', '..', '//', trailing '/', backslash or absolute path."""
-    if (not isinstance(path, str) or not path or "\\" in path or path.startswith("/") or re.match(r"^[A-Za-z]:", path)
-            or posixpath.normpath(path) != path or path.split("/")[0] == ".."):
+    if (not isinstance(path, str) or not path or not path.isascii() or CONTROL_CHARS.search(path) or "\\" in path
+            or path.startswith("/") or re.match(r"^[A-Za-z]:", path) or posixpath.normpath(path) != path
+            or path.split("/")[0] == ".."):
         raise ConfigError(f"{MANIFEST}: {where} {path!r} is not a canonical repository path")
     return path
 
@@ -1327,6 +1345,8 @@ def target_name(item: dict, target: dict) -> str | None:
 
 def validate_manifest(data: dict) -> None:
     """Everything that must hold before a single adapter is written (EES-BAGLAMA-01 adds the pilot boundary)."""
+    if tuple(data.get("managed_dirs", ())) != MANAGED_DIRS:
+        raise ConfigError(f"{MANIFEST}: managed_dirs must be exactly {list(MANAGED_DIRS)} (fixed in the generator)")
     paths = [t["path"] for i in data["items"] for t in i["targets"]]
     if len(paths) != len(set(paths)):
         raise ConfigError(f"{MANIFEST}: two targets share one path")
@@ -1348,6 +1368,20 @@ def validate_manifest(data: dict) -> None:
             raise ConfigError(f"{MANIFEST}: pilot boundary — the always-loaded core block may not come from .ees/")
         for t in item["targets"]:
             path = canonical(t["path"], f"item {item.get('id')} target")
+            prefixes = TOOL_PREFIXES.get(t.get("tool"))
+            if not prefixes or not path.startswith(prefixes):
+                raise ConfigError(f"{MANIFEST}: {path}: tool {t.get('tool')!r} is unknown or does not write there "
+                                  f"(allowed: {TOOL_PREFIXES})")
+            for field in ("frontmatter", "fields"):
+                values = t.get(field)
+                if isinstance(values, dict):
+                    for k, v in values.items():
+                        if not HEADER_KEY.fullmatch(str(k)):
+                            raise ConfigError(f"{MANIFEST}: {path}: {field} key {k!r} is not a plain name")
+                        for x in (v if isinstance(v, list) else [v]):
+                            if not isinstance(x, (str, bool)) or (isinstance(x, str) and CONTROL_CHARS.search(x)):
+                                raise ConfigError(f"{MANIFEST}: {path}: {field}.{k} must be text without line breaks or "
+                                                  "control characters (or true / false)")
             unused = {"markdown": "fields", "codex-agent-toml": "frontmatter"}.get(t.get("format"))
             if unused and unused in t:
                 raise ConfigError(f"{MANIFEST}: {path}: format {t['format']} does not use '{unused}' — remove it")
@@ -1374,7 +1408,7 @@ def validate_manifest(data: dict) -> None:
                                       f"name ({name!r}) and path")
             if name:
                 for tool in t["tool"].split("+"):   # 'codex+antigravity' shares the name space of 'codex'
-                    key = (tool, item["kind"], name)
+                    key = (tool, name)                # one name per tool, whatever the kind
                     if key in names and names[key] != item.get("id"):
                         raise ConfigError(f"{MANIFEST}: name {name!r} ({tool} {item['kind']}) is used by {names[key]} and "
                                           f"{item.get('id')}")
@@ -1387,7 +1421,12 @@ def generated_header(content: str, fmt: str) -> dict:
     keys: dict = {}
     if fmt == "codex-agent-toml":
         head = content.split("developer_instructions = " + "'" * 3, 1)[0]
-        for m in re.finditer(r'(?m)^([A-Za-z_][\w-]*) = "((?:[^"\\]|\\.)*)"$', head):
+        for line in head.split("\n"):
+            if not line or line.startswith("# "):
+                continue
+            m = re.fullmatch(r'([A-Za-z_][A-Za-z0-9_-]*) = "((?:[^"\\]|\\.)*)"', line)
+            if not m:
+                raise ConfigError(f"unreadable TOML header line {line!r}")
             if m.group(1) in keys:
                 raise ConfigError(f"key {m.group(1)!r} written twice")
             keys[m.group(1)] = m.group(2).replace('\\"', '"').replace("\\\\", "\\")
@@ -1396,10 +1435,12 @@ def generated_header(content: str, fmt: str) -> dict:
         return keys
     block = content[4:content.find("\n---\n", 4)]
     for line in block.split("\n"):
-        m = re.match(r"^([A-Za-z_][\w-]*):[ \t]*(.*)$", line)
+        if re.fullmatch(r"  - \S.*", line):
+            continue                      # an item of the list key above (paths of a rule)
+        m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):(?: (.*))?", line)
         if not m:
-            continue
-        value = m.group(2).strip()
+            raise ConfigError(f"unreadable frontmatter line {line!r}")
+        value = (m.group(2) or "").strip()
         if len(value) >= 2 and value[0] == value[-1] == '"':
             value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
         if m.group(1) in keys:
@@ -1424,7 +1465,12 @@ def validate_outputs(manifest: dict, planned: list) -> None:
             probe = probe / part
             if probe.is_symlink():
                 raise ConfigError(f"{path}: the target goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
-        real = Path(os.path.realpath(ROOT.joinpath(*path.split("/"))))
+        full = ROOT.joinpath(*path.split("/"))
+        if full.exists() and not full.is_file():
+            raise ConfigError(f"{path}: the target exists and is not a file")
+        if full.is_file() and full.stat().st_nlink > 1:
+            raise ConfigError(f"{path}: the target is a hard link (another name for the same file)")
+        real = Path(os.path.realpath(full))
         try:
             real_rel = real.relative_to(root_real).as_posix()
         except ValueError:
@@ -1447,10 +1493,9 @@ def validate_outputs(manifest: dict, planned: list) -> None:
             raise ConfigError(f"{path}: the generated name {name!r} lacks the '{PILOT_PREFIX}' prefix of a pilot entry point")
         if name:
             for tool in target["tool"].split("+"):
-                key = (tool, item["kind"], name)
+                key = (tool, name)
                 if key in names and names[key] != item.get("id"):
-                    raise ConfigError(f"{path}: the generated name {name!r} ({tool} {item['kind']}) is also used by "
-                                      f"{names[key]}")
+                    raise ConfigError(f"{path}: the generated name {name!r} ({tool}) is also used by {names[key]}")
                 names[key] = item.get("id")
         block = split_frontmatter(read_text(item["source"]))[0] if item.get("extract") != "core" else None
         tier = source_tier(block, item["source"])
@@ -1504,6 +1549,20 @@ def main() -> int:
         print(f"FAIL {len(budget_problems)} instruction budget problem(s); nothing written")
         return 1
     problems: list[str] = []
+    # blind check 4: stray files are found before the first write, so a refused run writes nothing
+    for managed in manifest["managed_dirs"]:
+        base = rel(managed)
+        if not base.is_dir():
+            continue
+        for f in sorted(p for p in base.rglob("*") if p.is_file() or p.is_symlink()):
+            r = f.relative_to(ROOT).as_posix()
+            if r not in expected:
+                problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
+    if problems and not args.check:
+        for line in problems:
+            print(line)
+        print(f"FAIL {len(problems)} adapter problem(s); nothing written")
+        return 1
     for path, (source, content) in expected.items():
         target = rel(path)
         if args.check:
@@ -1513,18 +1572,11 @@ def main() -> int:
                 problems.append(f"DRIFT {path} differs from source {source}; run {REGENERATE}")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            with open(target, "w", encoding="utf-8", newline="\n") as fh:
+            tmp = target.with_name(target.name + ".sync-tmp")
+            with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(content)
+            os.replace(tmp, target)   # a new file: never written through a link that appeared after the check
             print(f"wrote {path}")
-
-    for managed in manifest["managed_dirs"]:
-        base = rel(managed)
-        if not base.is_dir():
-            continue
-        for f in sorted(p for p in base.rglob("*") if p.is_file()):
-            r = f.relative_to(ROOT).as_posix()
-            if r not in expected:
-                problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
 
     problems += budget_problems
     for line in budget_warnings:
