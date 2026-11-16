@@ -6,9 +6,11 @@ name: agent-adapters
 # Windows (the Windows runner checks out with core.autocrlf=true; no symlinks are used). It reads no secret.
 # Written to the CiServiceTestsGuardTests rules: one read-only token, actions pinned to a commit, no shell override.
 
+# EES CI-ISRAF-01: like phase1-gates (owner decision 2026-11-02), a pushed branch is checked through its pull request and
+# main after every merge; a branch push used to run the same two jobs a second time.
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "AGENTS.md"
       - "CLAUDE.md"
@@ -33,6 +35,14 @@ on:
 
 permissions:
   contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow, whose result
+# nobody reads any more. A push to main, a merge group and a manual run each get a group of their own (the run id), so
+# they are never cancelled and never wait for another run. A re-run (run_attempt 2 or more) also gets a group of its own:
+# re-running an older commit's run can never cancel the newest commit's run (Codex round 1, CI-ISRAF-01).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   adapters:

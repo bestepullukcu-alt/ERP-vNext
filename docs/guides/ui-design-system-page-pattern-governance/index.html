@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOD-0286 ne görülür</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --text: #1d2430;
+    --muted: #5a6577;
+    --border: #d9dee7;
+    --accent: #2f5fd0;
+    --ok-bg: #e4f4e8;
+    --ok-text: #14602b;
+    --bad-bg: #fbe6e6;
+    --bad-text: #8a1f1f;
+    --warn-bg: #fff2d9;
+    --warn-text: #7a5200;
+    --code-bg: #eef1f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b;
+      --surface: #1b2029;
+      --text: #e6e9ef;
+      --muted: #9aa5b8;
+      --border: #2e3644;
+      --accent: #7ea2ff;
+      --ok-bg: #16311f;
+      --ok-text: #8fdca6;
+      --bad-bg: #3a1d1d;
+      --bad-text: #ffb4b4;
+      --warn-bg: #3a2e12;
+      --warn-text: #f2cf85;
+      --code-bg: #232a36;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  main { max-width: 52rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+  h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.2rem; margin: 2rem 0 .5rem; }
+  p.lead { color: var(--muted); margin: 0 0 1rem; }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  section h2:first-child { margin-top: 0; }
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: .9em;
+    background: var(--code-bg);
+    border-radius: 4px;
+  }
+  code { padding: .1em .35em; }
+  pre { padding: .75rem 1rem; overflow-x: auto; margin: .5rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: .5rem 0; }
+  th, td { text-align: left; vertical-align: top; padding: .5rem .6rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: .85rem; }
+  .tag { display: inline-block; padding: .05em .5em; border-radius: 999px; font-weight: 600; font-size: .85rem; }
+  .ok { background: var(--ok-bg); color: var(--ok-text); }
+  .bad { background: var(--bad-bg); color: var(--bad-text); }
+  .warn { background: var(--warn-bg); color: var(--warn-text); }
+  .note { color: var(--muted); font-size: .9rem; }
+  ol li, ul li { margin: .25rem 0; }
+  @media (max-width: 40rem) {
+    table, thead, tbody, tr, th, td { display: block; }
+    thead { display: none; }
+    td { border-bottom: none; padding: .2rem 0; }
+    tr { border-bottom: 1px solid var(--border); padding: .5rem 0; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>MOD-0286 UI Tasarım Sistemi ve Sayfa Deseni Yönetişimi: ne görülür</h1>
+  <p class="lead">Kullanım kılavuzu yerine geçen kısa not. Son kullanıcı için değil, bir pull request (PR) açan geliştirici için.</p>
+
+  <section>
+    <h2>Neden kılavuz yok</h2>
+    <p>
+      Bu modül kullanıcıya ekran getirmez. Servisi, uç noktası, menüsü ve izni yoktur; çıktısı bir depo aracı, bir taban dosyası,
+      bir CI işi ve belgelerdir. Anlatılacak bir ekran ya da adım adım iş akışı olmadığı için kılavuz ve ekran görüntüsü yazılmadı.
+      Bu not, görülen tek şeyi anlatır: PR'da çıkan <code>ui-compliance</code> kontrolü.
+    </p>
+  </section>
+
+  <section>
+    <h2>Ne görürsünüz</h2>
+    <p>
+      Bir pull request açtığınızda, diğer kontrollerin yanında <code>ui-compliance</code> adlı bir kontrol çalışır.
+      PR'ınız hangi sayfalara dokunduysa (görünüm, o sayfanın JavaScript'i, çeviri dosyaları, yardım ve arama kaydı) araç yalnız
+      o sayfaları denetler; bütün sayfaları denetlemez. Hiçbir sayfaya dokunmayan PR'da kontrol bir saniyeden kısa sürede biter ve yeşildir.
+    </p>
+    <p>Kontrol, aracı çalıştırır ve çıktısını saklar; çıktıdaki her satır bir denetimin sonucudur:</p>
+    <table>
+      <thead><tr><th>Satır başı</th><th>Anlamı</th></tr></thead>
+      <tbody>
+        <tr><td><code>PASS</code></td><td>Denetim geçti.</td></tr>
+        <tr><td><code>TABAN</code></td><td>Eski bir kırmızı; kayıtlı, sayısı artmadı, durdurmaz. Satırda borcun kimlik numarası yazar.</td></tr>
+        <tr><td><code>YENİ KIRMIZI</code></td><td>Kayıtlı olmayan ya da kayıttan fazla bir ihlal. Kontrolü kırmızı yapar.</td></tr>
+        <tr><td><code>ölçülmedi</code></td><td>O denetim koşmadı; sebebi satırda yazar. Kırmızı yapmaz.</td></tr>
+        <tr><td><code>kapandı</code></td><td>Taban satırındaki bir ihlal artık yok; satır silinmeli ya da düşürülmeli. Kırmızı yapmaz.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Yeşil ve kırmızı ne demek</h2>
+    <p>Kontrol, aracın çıkış koduna bakar. <strong>Yalnız 0 yeşildir.</strong></p>
+    <table>
+      <thead><tr><th>Çıkış</th><th>Anlamı</th><th>Kontrol</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>Taban dışında kırmızı yok.</td><td><span class="tag ok">yeşil</span></td></tr>
+        <tr><td>1</td><td>En az bir <code>YENİ KIRMIZI</code> var: yeni bir ihlal eklediniz.</td><td><span class="tag bad">kırmızı</span></td></tr>
+        <tr><td>2</td><td>Araç hatası: git hatası, bozuk taban dosyası, okunamayan arama kaydı gibi. Araç hatası "değişen sayfa yok" diye okunmaz.</td><td><span class="tag bad">kırmızı</span></td></tr>
+        <tr><td>Başka bir sayı ya da boş</td><td>Beklenmeyen çıkış (örneğin komut bulunamadı ya da süreç öldürüldü).</td><td><span class="tag bad">kırmızı</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Kırmızı olunca ne yapılır</h2>
+    <ol>
+      <li>Kontrolün çıktısında <code>YENİ KIRMIZI</code> ile başlayan satırı bulun. Satırda sayfa, kontrol numarası (CI-1 ile CI-15 arası), dosya ve kayıttan fazla olan sayı yazar; örnek biçim:
+        <pre>YENİ KIRMIZI Ar/ListA CI-5 wwwroot/assets/js/Ar/ListA/index.js 2 +1</pre>
+        Bu örnek, bir dosyada ham DataTable çağrısı sayısının kayıttan bir fazla olduğunu söyler.</li>
+      <li>Kendi sayfanızdaki ihlali düzeltin ve PR'a yeni bir commit ekleyin. Kontrol yeniden çalışır.</li>
+      <li>Çıkış 2 ise ihlal sizin değil aracın ya da tabanın hatasıdır; çıktının <code>HATA</code> satırını okuyup sorumluya iletin.</li>
+      <li>Eski borç <code>TABAN</code> satırıdır ve <code>tests/ui-compliance-baseline.tsv</code> dosyasında yazılıdır. Her satırın bir sahibi (domain) ve bir karar adı vardır.
+        <strong>Başkasının sayfasındaki eski borcu düzeltmeden önce sayfanın sahibine sorun.</strong> Taban satırı eklemek ya da bir satırın sayısını artırmak,
+        kendi başına bir sahip kararı ister; bunu PR içinde "kırmızıyı sustur" diye yapmayın.</li>
+      <li>Bir sayfa klasörünü yeniden adlandırırsanız eski taban satırları yeni ada taşınmaz; yeni adın ihlalleri <code>YENİ KIRMIZI</code> görünür. Bu bilinen bir sınırdır.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Yerelde nasıl çalıştırılır</h2>
+    <p>Depo kökünden, yalnız Python 3 ve git yeterlidir; başka bir şey kurulmaz.</p>
+    <pre>python3 scripts/uic_changed_pages.py --base origin/main</pre>
+    <p>PR'ınızın dokunduğu sayfaları denetler; CI ile aynı komuttur (taban olarak PR'ın tabanı verilir).</p>
+    <pre>python3 scripts/uic_changed_pages.py --self-test</pre>
+    <p>Aracın kendi testidir; geçici bir depoda çalışır, deponuza yazmaz.</p>
+    <pre>python3 scripts/uic_changed_pages.py --check-baseline</pre>
+    <p>Taban dosyasını biçim kurallarıyla okur ve kontrol başına satır ile eşleşme sayısını yazar.</p>
+    <p class="note">
+      Uyarı: <code>frontend/Diten.Web</code> altında kaydedilmemiş değişiklik varsa araç çıkış 2 ile durur (sayfaları HEAD'den okur).
+      Önce commit edin. Dört kip (<code>--base</code>, <code>--self-test</code>, <code>--check-baseline</code>, <code>--draft-baseline</code>) birbirini dışlar;
+      kip vermezseniz de çıkış 2'dir. <code>--draft-baseline</code> yalnız ilk taban içindir ve CI'da koşmaz.
+    </p>
+  </section>
+
+  <section>
+    <h2>Kontrol neye bakar</h2>
+    <p>
+      Kontrol, UI Uyum Kontrol Listesi'nin otomatik maddelerini (CI-1 ile CI-15) sayfa düzeyinde uygular: açık yerleşim seçimi, spinner yasağı,
+      eski tablo fabrikası, ham DataTable, satır içi CSS, ortak onay ve bildirim, tarayıcı JS'inde belirteç yasağı, Kayıtlı Görünüm bağlantısı,
+      sütun sıralama, çeviri dosyası dil kümesi ve yardım anahtarları gibi. Maddelerin tam listesi ve her birinin kaynağı kontrol listesinde yazılıdır.
+    </p>
+    <ul>
+      <li>Şartname: <code>docs/reference/modules/platform/ui-design-system-page-pattern-governance/spec.md</code></li>
+      <li>Kontrol listesi: <code>docs/reference/modules/platform/ui-design-system-page-pattern-governance/compliance-checklist.md</code></li>
+      <li>Karar kaydı ve sürüm notu: <code>docs/records/decisions/2026-11/pss-mod0286-adr-01.md</code>, <code>docs/records/releases/2026-11-16-mod-0286-release-note.md</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Bilinen sınırlar</h2>
+    <ul>
+      <li>Aynı dosyada bir ihlal kapanıp aynı kontrolde başka bir ihlal eklenirse sayı değişmez ve araç <code>TABAN</code> yazar.</li>
+      <li>Tek seviyeli liste sayfasının (şimdilik toplantılar ana sayfası) tablo doğrulayıcısı koşmaz; <code>ölçülmedi</code> satırı yazar.</li>
+      <li>Yalnız ortak (<code>Shared</code>) görünümün yüklediği JS dosyaları kırmızıya gidemez; bugün bu dosyalarda kayıtlı borç yoktur.</li>
+    </ul>
+    <p class="note">Ayrıntı ve her sınırın kimliği sürüm notunun "Bilinen açıklar" bölümündedir.</p>
+  </section>
+</main>
+</body>
+</html>
