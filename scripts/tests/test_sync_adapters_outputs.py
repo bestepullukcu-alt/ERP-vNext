@@ -294,7 +294,7 @@ class RealGenerator(unittest.TestCase):
 
     def test_an_unreadable_generated_header_line_is_refused(self):
         # bypass the manifest check: the output reader alone must refuse a header line it cannot read
-        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].update({"model ": "haiku"}))
+        self.manifest(lambda d: self.item(d, "ees-hat")["targets"][0]["frontmatter"].update({"zz ": "x"}))
         real = sa.validate_manifest
         sa.validate_manifest = lambda data: None
         try:
@@ -315,6 +315,43 @@ class RealGenerator(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("nothing written", out)
         self.assertEqual(self.snapshot(), before)
+
+    # --- blind check 4, re-check: small gaps --------------------------------------------------------------------
+    def test_x6_x12_names_and_keys_ignore_letter_case(self):
+        self.manifest(lambda d: self.item(d, "ees-belge-ajani")["targets"][0]["frontmatter"].update(name="ees-Isci"))
+        self.refused("is used by")
+        self.manifest(lambda d: self.item(d, "ees-belge-ajani")["targets"][0]["frontmatter"].update(name="ees-belge-ajani"))
+        self.manifest(lambda d: self.item(d, "ees-l10n-agent")["targets"][0]["frontmatter"].update(NAME="l10n-agent"))
+        self.refused("differ only in letter case")
+
+    def test_the_output_check_alone_compares_names_without_letter_case(self):
+        self.manifest(lambda d: self.item(d, "ees-belge-ajani")["targets"][0]["frontmatter"].update(name="ees-Isci"))
+        real = sa.validate_manifest
+        sa.validate_manifest = lambda data: None
+        try:
+            self.refused("is also used by")
+        finally:
+            sa.validate_manifest = real
+
+    def test_x5b_profile_counts_as_a_model_field(self):
+        self.manifest(lambda d: self.item(d, "ees-isci")["targets"][1]["fields"].update(profile="fast"))
+        self.refused("writes profile itself")
+
+    def test_x3_a_sync_tmp_target_is_reserved(self):
+        self.manifest(lambda d: self.item(d, "l10n-agent")["targets"][0].update(path=".claude/agents/l10n-agent.md.sync-tmp"))
+        self.refused("reserved for the generator")
+
+    def test_x2_x13_a_squatted_temporary_name_does_not_matter(self):
+        # the old fixed '<target>.sync-tmp' name is occupied by a folder; the generator uses a fresh name instead
+        (self.root / ".claude" / "agents" / "ees-isci.md.sync-tmp").mkdir()
+        self.source(".ees/kartlar/isci.md", "# İşçi kartı", "# İşçi kartı (değişti)")
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)          # no crash, no half write: every output is written in full
+        self.assertTrue((self.root / ".claude" / "agents" / "ees-isci.md.sync-tmp").is_dir())
+        self.assertIn("(değişti)", (self.root / ".claude" / "agents" / "ees-isci.md").read_text(encoding="utf-8"))
+        self.assertEqual(self.run_main("--check")[0], 0)
+        self.assertEqual(list((self.root / ".claude").rglob("*.sync-tmp")),
+                         [self.root / ".claude" / "agents" / "ees-isci.md.sync-tmp"])   # no temporary file left
 
 
 if __name__ == "__main__":

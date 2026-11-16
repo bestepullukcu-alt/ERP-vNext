@@ -195,3 +195,10 @@ listeleri üreticide sabit, her şey ilk yazmadan önce) kapatıldı:
 | N13, N14 | Yönetilen klasör listeye eklenebiliyordu | sabit liste | `n1d_n13_n14` |
 
 Bozma: sekiz yeni denetimin her biri tek tek kaldırıldı, her seferinde en az bir test kırmızı; hepsi geri alındı.
+
+**Yeniden denetim (aynı alt ajan, HEAD 5ea6d253f):** P1 ve P2 için temiz — Codex'in a–i senaryoları ve N1–N20'nin hepsi
+reddedildi ya da değişiklik olmadı; eski 13 kopya 13/13 bayt bayt aynı. Kalan küçük açıklar ve kapanışı (son commit):
+geçici dosya adı sabitti (X2, X13, X3b) → `tempfile.mkstemp` (O_EXCL) ve `.sync-tmp` hedefleri rezerve; Codex `profile`
+alanı (X5b) → `profile` ve `model` ile başlayan her anahtar model alanı; ad ve anahtar büyük-küçük harf (X6, X12) → ad
+tekliği ve yinelenen anahtar denetimi harf duyarsız. Testler: `test_x6_x12…`, `test_the_output_check_alone_compares…`,
+`test_x5b…`, `test_x3…`, `test_x2_x13…`; dört bozmanın her biri bir testi kırdı.

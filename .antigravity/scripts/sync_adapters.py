@@ -108,7 +108,8 @@ Rules this script enforces (İ5-A pilot):
   managed folders and the tool labels are fixed in this file (a tool writes only under its own folder); a source or a
   target that is a hard link, a source with a byte order mark and a target that is a directory are refused; one name
   per tool whatever the kind; stray files are found before the first write; each file is written to a temporary name
-  and moved into place.
+  and moved into place (a fresh, exclusive temporary name; '.sync-tmp' targets are reserved). Re-check: names and
+  header keys are compared without letter case; 'profile' and any 'model*' key count as model fields.
   A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
   says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
@@ -117,6 +118,7 @@ Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or sourc
 from __future__ import annotations
 
 import argparse
+import tempfile
 import bisect
 import hashlib
 import json
@@ -145,7 +147,13 @@ CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f\u2028\u2029\ufeff]")
 AUTO_LOADED_PREFIXES = (".claude/rules/", ".agents/rules/")   # every session loads these by itself
 AUTO_LOADED_FILES = ("agents.md", "claude.md")                 # compared in lower case (case-insensitive file systems)
 IMPLICIT_SKILL_PREFIXES = (".agents/skills/",)                  # Codex / Antigravity may call these skills by themselves
-MODEL_KEYS = frozenset({"model", "effort", "model_reasoning_effort", "reasoning_effort", "model_provider"})
+MODEL_KEYS = frozenset({"model", "effort", "model_reasoning_effort", "reasoning_effort", "model_provider", "profile"})
+
+
+def is_model_key(key: str) -> bool:
+    """Blind check 4, re-check: any key that can choose a model — the listed ones, and any key starting with 'model'."""
+    low = key.lower()
+    return low in MODEL_KEYS or low.startswith("model")
 
 
 class ConfigError(Exception):
@@ -1137,7 +1145,7 @@ def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
         return {}
     fields = ((TIER_MAP.get(tool) or {}).get(tier) or {}) if tool else {}
     # Codex round 1: the target may not write a model field itself, whether or not the tool has a mapping
-    clash = sorted(k for k in own if k in fields or k.lower() in MODEL_KEYS)
+    clash = sorted(k for k in own if k in fields or is_model_key(k))
     if clash:
         raise ConfigError(f"{where}: writes {', '.join(clash)} itself although the source has a seviye (tier_map decides)")
     return dict(fields)
@@ -1372,8 +1380,12 @@ def validate_manifest(data: dict) -> None:
             if not prefixes or not path.startswith(prefixes):
                 raise ConfigError(f"{MANIFEST}: {path}: tool {t.get('tool')!r} is unknown or does not write there "
                                   f"(allowed: {TOOL_PREFIXES})")
+            if path.endswith(".sync-tmp"):
+                raise ConfigError(f"{MANIFEST}: {path}: the '.sync-tmp' ending is reserved for the generator")
             for field in ("frontmatter", "fields"):
                 values = t.get(field)
+                if isinstance(values, dict) and len({str(k).lower() for k in values}) != len(values):
+                    raise ConfigError(f"{MANIFEST}: {path}: {field} has two keys that differ only in letter case")
                 if isinstance(values, dict):
                     for k, v in values.items():
                         if not HEADER_KEY.fullmatch(str(k)):
@@ -1408,7 +1420,7 @@ def validate_manifest(data: dict) -> None:
                                       f"name ({name!r}) and path")
             if name:
                 for tool in t["tool"].split("+"):   # 'codex+antigravity' shares the name space of 'codex'
-                    key = (tool, name)                # one name per tool, whatever the kind
+                    key = (tool, str(name).lower())   # one name per tool, whatever the kind or letter case
                     if key in names and names[key] != item.get("id"):
                         raise ConfigError(f"{MANIFEST}: name {name!r} ({tool} {item['kind']}) is used by {names[key]} and "
                                           f"{item.get('id')}")
@@ -1427,8 +1439,8 @@ def generated_header(content: str, fmt: str) -> dict:
             m = re.fullmatch(r'([A-Za-z_][A-Za-z0-9_-]*) = "((?:[^"\\]|\\.)*)"', line)
             if not m:
                 raise ConfigError(f"unreadable TOML header line {line!r}")
-            if m.group(1) in keys:
-                raise ConfigError(f"key {m.group(1)!r} written twice")
+            if m.group(1).lower() in {k.lower() for k in keys}:
+                raise ConfigError(f"key {m.group(1)!r} written twice (case-insensitive)")
             keys[m.group(1)] = m.group(2).replace('\\"', '"').replace("\\\\", "\\")
         return keys
     if not content.startswith("---\n"):
@@ -1443,8 +1455,8 @@ def generated_header(content: str, fmt: str) -> dict:
         value = (m.group(2) or "").strip()
         if len(value) >= 2 and value[0] == value[-1] == '"':
             value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
-        if m.group(1) in keys:
-            raise ConfigError(f"key {m.group(1)!r} written twice")
+        if m.group(1).lower() in {k.lower() for k in keys}:
+            raise ConfigError(f"key {m.group(1)!r} written twice (case-insensitive)")
         keys[m.group(1)] = value
     return keys
 
@@ -1488,12 +1500,12 @@ def validate_outputs(manifest: dict, planned: list) -> None:
             header = generated_header(content, target.get("format", ""))
         except ConfigError as e:
             raise ConfigError(f"{path}: {e}") from None
-        name = header.get("name")
+        name = next((v for k, v in header.items() if k.lower() == "name"), None)
         if ees and not str(name or "").startswith(PILOT_PREFIX):
             raise ConfigError(f"{path}: the generated name {name!r} lacks the '{PILOT_PREFIX}' prefix of a pilot entry point")
         if name:
             for tool in target["tool"].split("+"):
-                key = (tool, name)
+                key = (tool, name.lower())
                 if key in names and names[key] != item.get("id"):
                     raise ConfigError(f"{path}: the generated name {name!r} ({tool}) is also used by {names[key]}")
                 names[key] = item.get("id")
@@ -1501,7 +1513,7 @@ def validate_outputs(manifest: dict, planned: list) -> None:
         tier = source_tier(block, item["source"])
         if tier is not None:
             want = ((TIER_MAP.get(target["tool"]) or {}).get(tier) or {}) if item["kind"] == "agent" else {}
-            have = {k: v for k, v in header.items() if k.lower() in MODEL_KEYS}
+            have = {k: v for k, v in header.items() if is_model_key(k)}
             if have != {k: str(v) for k, v in want.items()}:
                 raise ConfigError(f"{path}: model fields {have} differ from what seviye '{tier}' gives ({want})")
 
@@ -1572,10 +1584,15 @@ def main() -> int:
                 problems.append(f"DRIFT {path} differs from source {source}; run {REGENERATE}")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            tmp = target.with_name(target.name + ".sync-tmp")
-            with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(content)
-            os.replace(tmp, target)   # a new file: never written through a link that appeared after the check
+            fd, tmp = tempfile.mkstemp(dir=target.parent, prefix=".", suffix=".sync-tmp")   # O_EXCL: a fresh name
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(content)
+                os.replace(tmp, target)   # a new file: never written through a link that appeared after the check
+            except BaseException:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+                raise
             print(f"wrote {path}")
 
     problems += budget_problems
