@@ -18,5 +18,6 @@ seviye: standart
 
 ## Kurallar
 - Ekran görüntüsü yalnız yerel geliştirme ortamındaki örnek veriden; canlı veri, kişi adı, müşteri verisi yok.
-- Yalnız birleşmiş kodda var olanı anlat; planlanan özellik "henüz yok" diye bile yazılmaz.
+- Yalnız birleşmiş kodda ya da teslim edilen PR'ın doğrulanmış commit'inde var olanı anlat (son dilimin ekranı dahil);
+  planlanan özellik "henüz yok" diye bile yazılmaz.
 - Kılavuz metni modülün dillerinde gerekiyorsa brifte yazar; yazmıyorsa hatta sor.

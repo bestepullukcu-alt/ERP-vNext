@@ -18,62 +18,107 @@ SPEC = importlib.util.spec_from_file_location("sync_adapters", REPO / ".antigrav
 sa = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(sa)
 
-# What a session loads by itself, with no skill or agent invoked: the pilot boundary says no .ees source reaches these.
-AUTO_LOADED_DIRS = (".claude/rules/", ".agents/rules/")
-# Codex and Antigravity may call a skill under .agents/skills by themselves and no switch for that is verified yet, so no
-# EES skill goes there until the pilot measures it (blind check 2, finding 3).
-IMPLICIT_SKILL_DIRS = (".agents/skills/",)
-AUTO_LOADED_FILES = ("AGENTS.md", "CLAUDE.md")
 CARD_LIMITS = {"cekirdek": 70, "kule": 90, "hat": 110, "isci": 60, "denetci": 50}   # owner decision 2026-11-16
+OLD_ITEMS = {"agents-core", "l10n-agent", "security-agent", "module-pack-author", "resx-check", "control-tower",
+             "localization-standard"}   # the 13 adapters from before the wiring
 
 
 def from_ees(item: dict) -> bool:
-    return item["source"].startswith(".ees/") or any(p.startswith(".ees/") for p in item.get("compose", []))
-
-
-def pilot_boundary_problems(manifest: dict) -> list[str]:
-    bad = []
-    for item in manifest["items"]:
-        if not from_ees(item):
-            continue
-        for t in item["targets"]:
-            if (t["path"].startswith(AUTO_LOADED_DIRS) or t["path"] in AUTO_LOADED_FILES
-                    or (item["kind"] == "skill" and t["path"].startswith(IMPLICIT_SKILL_DIRS))):
-                bad.append(f"{item['id']} -> {t['path']}")
-    if any(i.get("extract") == "core" and i["source"].startswith(".ees/") for i in manifest["items"]):
-        bad.append("the always-loaded core block is generated from .ees/")
-    return bad
+    return sa.is_ees(item["source"]) or any(sa.is_ees(p) for p in item.get("compose", []))
 
 
 class PilotBoundary(unittest.TestCase):
+    """Codex round 1, finding 1: every case runs the generator's own pre-write validation, not a helper of this file."""
+
     def setUp(self):
         self.manifest = sa.load_manifest()
+
+    def broken(self, change) -> dict:
+        data = json.loads(json.dumps(self.manifest))
+        change(data)
+        return data
+
+    def item(self, data: dict, name: str) -> dict:
+        return next(i for i in data["items"] if i["id"] == name)
+
+    def refused(self, change, needle: str):
+        with self.assertRaises(sa.ConfigError) as ctx:
+            sa.validate_manifest(self.broken(change))
+        self.assertIn(needle, str(ctx.exception))
 
     def test_the_manifest_lives_in_ees(self):
         self.assertEqual(sa.MANIFEST, ".ees/adapters.json")
         self.assertFalse((REPO / ".antigravity" / "adapters.json").exists(), "two manifests would disagree")
 
-    def test_no_ees_source_reaches_a_file_every_session_loads(self):
-        self.assertEqual(pilot_boundary_problems(self.manifest), [])
+    def test_the_real_manifest_passes_the_validation(self):
+        sa.validate_manifest(self.manifest)
 
-    def test_the_boundary_check_fires_on_a_rules_target(self):
-        broken = json.loads(json.dumps(self.manifest))
-        isci = next(i for i in broken["items"] if i["id"] == "ees-isci")
-        isci["targets"].append({"tool": "claude-code", "format": "markdown", "path": ".claude/rules/ees-cekirdek.md"})
-        self.assertEqual(pilot_boundary_problems(broken), ["ees-isci -> .claude/rules/ees-cekirdek.md"])
+    def test_a_rules_target_from_ees_is_refused(self):
+        self.refused(lambda d: self.item(d, "ees-isci")["targets"].append(
+            {"tool": "claude-code", "format": "markdown", "path": ".claude/rules/ees-cekirdek.md"}), "pilot boundary")
 
-    def test_the_boundary_check_fires_on_a_codex_skill_target(self):
-        broken = json.loads(json.dumps(self.manifest))
-        hat = next(i for i in broken["items"] if i["id"] == "ees-hat")
-        hat["targets"].append({"tool": "codex+antigravity", "format": "markdown", "path": ".agents/skills/ees-hat/SKILL.md"})
-        self.assertEqual(pilot_boundary_problems(broken), ["ees-hat -> .agents/skills/ees-hat/SKILL.md"])
+    def test_a_dot_slash_source_is_refused(self):
+        # Codex: './.ees/kartlar/cekirdek.md' passed the old text-prefix test and was written to .claude/rules
+        def change(d):
+            d["items"].append({"id": "ees-probe", "kind": "rule", "source": "./.ees/kartlar/cekirdek.md",
+                               "targets": [{"tool": "claude-code", "format": "markdown", "path": ".claude/rules/ees-probe.md"}]})
+        self.refused(change, "not a canonical repository path")
 
-    def test_every_pilot_entry_point_has_the_ees_prefix(self):
-        for item in self.manifest["items"]:
-            if from_ees(item):
-                self.assertTrue(item["id"].startswith("ees-"), item["id"])
-                for t in item["targets"]:
-                    self.assertIn("/ees-", t["path"], t["path"])
+    def test_a_card_hidden_in_compose_still_counts_as_ees(self):
+        def change(d):
+            d["items"].append({"id": "probe", "kind": "rule", "source": ".antigravity/rules/localization-standard.md",
+                               "compose": [".ees/kartlar/cekirdek.md"],
+                               "targets": [{"tool": "claude-code", "format": "markdown", "path": ".claude/rules/probe.md"}]})
+        self.refused(change, "pilot boundary")
+
+    def test_a_codex_skill_target_is_refused(self):
+        self.refused(lambda d: self.item(d, "ees-hat")["targets"].append(
+            {"tool": "codex+antigravity", "format": "markdown", "path": ".agents/skills/ees-hat/SKILL.md",
+             "frontmatter": {"name": "ees-hat", "description": "d"}}), "pilot boundary")
+
+    def test_a_pilot_name_without_the_prefix_is_refused(self):
+        # Codex: id and paths kept, the real name fields set to the old agent's name
+        def change(d):
+            for t in self.item(d, "ees-l10n-agent")["targets"]:
+                (t.get("frontmatter") or t.get("fields"))["name"] = "l10n-agent"
+        self.refused(change, "prefix")
+
+    def test_a_name_used_twice_for_one_tool_is_refused(self):
+        def change(d):
+            for t in self.item(d, "ees-belge-ajani")["targets"]:
+                (t.get("frontmatter") or t.get("fields"))["name"] = "ees-isci"
+        self.refused(change, "is used by")
+
+    def test_a_pilot_skill_open_to_the_model_is_refused(self):
+        def change(d):
+            self.item(d, "ees-kule")["targets"][0]["frontmatter"]["disable-model-invocation"] = False
+        self.refused(change, "disable-model-invocation")
+
+    def test_a_refused_manifest_writes_nothing(self):
+        import contextlib
+        import io
+        import sys
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        bad = Path(tmp.name) / "adapters.json"
+        data = self.broken(lambda d: self.item(d, "ees-isci")["targets"].append(
+            {"tool": "claude-code", "format": "markdown", "path": ".claude/rules/ees-cekirdek.md"}))
+        bad.write_text(json.dumps(data), encoding="utf-8")
+        out = Path(tmp.name) / "out"
+        targets = {t["path"] for i in data["items"] for t in i["targets"]}
+        real = sa.rel
+        sa.rel = lambda p: bad if p == sa.MANIFEST else (out / p if p in targets else real(p))
+        argv, sys.argv = sys.argv, ["sync_adapters.py"]
+        try:
+            with contextlib.redirect_stdout(io.StringIO()) as buf:
+                code = sa.main()
+        finally:
+            sys.argv = argv
+            sa.rel = real
+            sa.load_manifest()
+        self.assertEqual(code, 2, buf.getvalue())
+        self.assertIn("pilot boundary", buf.getvalue())
+        self.assertFalse(out.exists() and any(out.rglob("*")), "an adapter was written despite a refused manifest")
 
     def test_old_sources_carry_no_seviye(self):
         # a seviye in an old source would change an old adapter's model field on the next regeneration
@@ -83,20 +128,10 @@ class PilotBoundary(unittest.TestCase):
                 self.assertIsNone(sa.source_tier(block, item["source"]), item["id"])
 
     def test_old_adapters_keep_their_old_source(self):
-        # the 13 adapters from before the wiring: same source, no card, no tier — so their bytes cannot change
-        old = {"agents-core", "l10n-agent", "security-agent", "module-pack-author", "resx-check", "control-tower",
-               "localization-standard"}
         items = {i["id"]: i for i in self.manifest["items"]}
-        self.assertTrue(old <= set(items))
-        for name in old:
+        self.assertTrue(OLD_ITEMS <= set(items))
+        for name in OLD_ITEMS:
             self.assertFalse(from_ees(items[name]), name)
-
-    def test_new_skills_are_never_invoked_by_the_model_in_claude(self):
-        for item in self.manifest["items"]:
-            if item["kind"] == "skill" and from_ees(item):
-                claude = [t for t in item["targets"] if t["tool"] == "claude-code"]
-                self.assertTrue(claude and all(t["frontmatter"].get("disable-model-invocation") is True for t in claude),
-                                item["id"])
 
     def test_every_card_has_the_owner_line_limit(self):
         files = {f["path"]: f for f in self.manifest["instruction_budget"]["files"]}
@@ -167,6 +202,24 @@ class Features(unittest.TestCase):
         codex = sa.render(item, {"tool": "codex", "format": "codex-agent-toml", "path": ".codex/agents/x.toml",
                                  "fields": {"name": "x", "description": "d"}})
         self.assertNotIn("model", codex.split("developer_instructions")[0])   # no verified Codex mapping: no field
+
+    def test_a_commented_seviye_or_kart_line_fails(self):
+        # Codex: 'seviye: cok-ust # typo', 'kart: denetci # selected role' and 'seviye: standart # note' were skipped
+        for front in ("seviye: cok-ust # typo", "seviye: standart # note", "kart: denetci # selected role",
+                      "Seviye: ust", "  seviye: ust", 'seviye: "ust"', "seviye: ust\nseviye: hafif"):
+            self.files(c1="# Kart\n", src=f"---\n{front}\n---\nGövde\n")
+            with self.assertRaises(sa.ConfigError, msg=front):
+                sa.render({"id": "x", "kind": "agent", "source": "src", "compose": ["c1"]},
+                          {"tool": "other", "format": "markdown", "path": "p"})
+
+    def test_an_unmapped_tool_target_may_not_write_its_own_model(self):
+        # Codex: Codex has no mapping, so model = "test-model" in fields went into the TOML unchecked
+        self.files(src="---\nseviye: standart\n---\nGövde\n")
+        sa.TIER_MAP = {"claude-code": {"standart": {"model": "sonnet"}}}
+        with self.assertRaises(sa.ConfigError):
+            sa.render({"id": "x", "kind": "agent", "source": "src"},
+                      {"tool": "codex", "format": "codex-agent-toml", "path": "p",
+                       "fields": {"name": "x", "description": "d", "model": "test-model"}})
 
     def test_a_target_that_writes_its_own_model_beside_a_seviye_fails(self):
         self.files(src="---\nseviye: ust\n---\nGövde\n")

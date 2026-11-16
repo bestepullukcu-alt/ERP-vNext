@@ -17,7 +17,8 @@ girmez (çekirdek Ç21). JSON şeması araçla birlikte yazılır (`calistirma-k
 | `istisnalar[]` | {tür, karar, karar türü M1/M2/M3, kim onayladı (rol), bitiş tarihi} — istisna kabul değildir; sahibi ve bitişi olmayan istisna kaydedilmez | §6 karar türleri |
 | `durdurma` | varsa: kim (rol), ne zaman, ne kaldı | §6 durdurma |
 | `sure_dk`, `token_girdi`, `token_cikti`, `maliyet_tahmini` | maliyet | §6 durum ve maliyet |
-| `insan_dokunuslari[]` | {tür: paket onayı / teslim onayı / birleştirme / cevaplanan soru, zaman} | pilot hedefi ≤3 |
+| `baslangic_onayi` | kişinin başlangıç cümlesi aynen ve zamanı; yoksa "yok" (o durumda her commit, push, PR ayrıca soruldu) | açık onay (kök kural 8) |
+| `insan_dokunuslari[]` | {tür: paket onayı / dilim onayı ve birleştirme (tek oturuş) / cevaplanan soru / başlangıç cümlesi, zaman} | pilot hedefi ≤3 |
 | `ci_ilk_deneme_yesil` | evet / hayır | pilot hedefi |
 | `ornek_gorevler` | kart değiştiyse: koşulan örnek görevler ve sonuçları | §6 kanıt (örnek görevler) |
 

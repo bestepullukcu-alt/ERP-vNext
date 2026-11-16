@@ -102,3 +102,26 @@ CRLF benzetiminde `--check` aynı. Kendi 6 bellek-içi bozmasında her biri bir 
 | 16 | ≤3 dokunuş hedefi soru sayımıyla belirsiz | H2: üç zorunlu dokunuş; hedef kodlamada hiç soru olmaması |
 
 Düzeltmeler ikinci bir kör turla denetlenmedi (kalite hatası bir kez düzeltilir).
+
+## 8. Codex turu 1 (UYGUN DEĞİL: 2 engel, 7 önemli) ve sahibin 16 Kasım kararları — tek düzeltme turu
+
+| No | Codex bulgusu | Ne yapıldı | Kanıt |
+|---|---|---|---|
+| 1 ENGEL | Yasak hedefe üretim engellenmiyor; `./.ees/…` testi atlatıyor | Üreticide `validate_manifest`: yazmadan önce yol kanonik mi, `.ees` kaynağı (ya da kartı) her oturumun yüklediği / kendiliğinden çağırdığı yere gidiyor mu; testler bu gerçek doğrulamayı koşuyor; yazmadan durduğu uçtan uca test | S5, S11, S13, S18; `test_a_refused_manifest_writes_nothing` |
+| 2 ENGEL | Paket yazarı ilk paketi hazırlayamıyor | İ1: onaylı paket şartı yalnız üretim koduna; plan, iş süreci ve paket taslağı onaydan önce (iş analisti, paket yazarı) | kart metni |
+| 3 | H8 ↔ Ç6 | Ç6: ajan PR birleştirmez ve onaylamaz, ana dala ya da başkasının dalına birleştirmez; hattın kendi işçi dallarını kendi dilim dalına yerelde alması bu yasağa girmez (H8'de de yazılı) | kart metni |
+| 4 | Yorumlu `seviye:` / `kart:` sessizce atlanıyor | Anahtar varsa yazım tam olmalı, yoksa hata | S14, S15; `test_a_commented_seviye_or_kart_line_fails` |
+| 5 | Eşlemesiz araçta hedefin kendi model alanı kabul ediliyor | Seviyeli kaynakta hedef hiçbir model alanı yazamaz | S16; `test_an_unmapped_tool_target_may_not_write_its_own_model` |
+| 6 | `ees-` denetimi gerçek `name` alanını görmüyor | Üretici id, gerçek `name` ve yolda öneki ve araç + tür başına ad tekliğini denetler; ajan açıklamalarında "/hat" → "/ees-hat" (16 yer) | S12, S17; iki test |
+| 7 | Yerel commit izni pilotta çözülmemiş | `ees-kule` / `ees-hat` ilk commit ya da yüklemeden önce kişiden tek başlangıç cümlesini ister ve aynen kaydeder; yoksa kök kural 8 her adımda | beceri gövdeleri, İ1, Ç23, H13 |
+| 8 | Son dilimin kılavuzu birleşmemiş kodu anlatamıyor | Kılavuz teslim edilen PR'ın doğrulanmış commit'indeki işlevleri anlatabilir (H23, belge ajanı, kılavuz becerisi) | kart metni |
+| 9 | Belge ajanının işi Ç29'a takılıyor | Ç29: yasak elle operasyon kaydı/raporu; paketin ya da modül sonu listesinin istediği ürün belgeleri teslimattır | kart metni |
+
+Sahip kararları (16 Kasım, dokuz karara "Evet, hepsi"): B-1 dilim başına PR, tek oturuşta incele + onayla + birleştir, iki
+küçük dilim tek PR → H25, H16, şablonlar; B-2 paket taslağı onaydan önce taslak PR → Ç23, H4, PR şablonu; B-3 paket onayı
+("paketi onaylıyorum") paket sürümünün bütün dilimleri için kod yazma izni, paket değişikliği PR'la → H5; B-4 kişi başı tek
+hesap, asıl + yedek onaylayıcı → K14, H5; B-5 `business_process:` / `plan_row:`, süreç sayfası ilk paketle, kısa takip paketi
+→ H4, paket yazarı ve iş analisti kaynakları (`.ees/standartlar/…` ve `.ees/sablonlar/paket.md`, `is-sureci.md` yalnız atıf;
+onları başka parça yazıyor).
+
+Bozma betiği bu turda 18 durum koştu (S1–S18); hepsi kırmızı, hepsi geri alındı, son durum `OK 33`.

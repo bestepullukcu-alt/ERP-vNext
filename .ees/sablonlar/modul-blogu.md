@@ -17,7 +17,7 @@ Denetim: <UYGUN | KOŞULLU | UYGUN DEĞİL> · tur <1|2> · açık bulgu: <sayı
 
 ```
 Haftalık zaman çizelgesi (MOD-0280-FU01) · dilim 2/4 · teslim onayında
-Sizden istenen: PR'ı inceleyip onayınıza "kabulü onaylıyorum" yazın → <PR bağlantısı>
+Sizden istenen: PR'ı tek oturuşta inceleyin, onayınıza "kabulü onaylıyorum" yazın, onaylayıp birleştirin → <PR bağlantısı>
 PR: <bağlantı> · CI ilk denemede yeşil
 Testler: kabul ölçütü 7/7 teste bağlı · test 112/112
 Belgeler: 4/6 (modül sonunda tamamlanacaklar: kullanıcı kılavuzu, sürüm notu)

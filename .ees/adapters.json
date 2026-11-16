@@ -405,7 +405,7 @@
           "path": ".claude/agents/ees-isci.md",
           "frontmatter": {
             "name": "ees-isci",
-            "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -415,7 +415,7 @@
           "path": ".codex/agents/ees-isci.toml",
           "fields": {
             "name": "ees-isci",
-            "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -435,7 +435,7 @@
           "path": ".claude/agents/ees-denetci.md",
           "frontmatter": {
             "name": "ees-denetci",
-            "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash",
             "disallowedTools": "Edit, Write, NotebookEdit"
           }
@@ -446,7 +446,7 @@
           "path": ".codex/agents/ees-denetci.toml",
           "fields": {
             "name": "ees-denetci",
-            "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -466,7 +466,7 @@
           "path": ".claude/agents/ees-module-pack-author.md",
           "frontmatter": {
             "name": "ees-module-pack-author",
-            "description": "EES paket yazarı (Step Operator, pilot sürümü): kod yazmadan modül paketi ya da DCP yazar; onaylamaz, commit/push yapmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES paket yazarı (Step Operator, pilot sürümü): kod yazmadan modül paketi ya da DCP yazar; onaylamaz, commit/push yapmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -476,7 +476,7 @@
           "path": ".codex/agents/ees-module-pack-author.toml",
           "fields": {
             "name": "ees-module-pack-author",
-            "description": "EES paket yazarı (Step Operator, pilot sürümü): kod yazmadan modül paketi ya da DCP yazar; onaylamaz, commit/push yapmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES paket yazarı (Step Operator, pilot sürümü): kod yazmadan modül paketi ya da DCP yazar; onaylamaz, commit/push yapmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -496,7 +496,7 @@
           "path": ".claude/agents/ees-l10n-agent.md",
           "frontmatter": {
             "name": "ees-l10n-agent",
-            "description": "EES çeviri ajanı (Step Operator, pilot sürümü): görünen metin için .resx dosyalarını yazar (platform 2 dil, kiracı 7 dil). YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES çeviri ajanı (Step Operator, pilot sürümü): görünen metin için .resx dosyalarını yazar (platform 2 dil, kiracı 7 dil). YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -506,7 +506,7 @@
           "path": ".codex/agents/ees-l10n-agent.toml",
           "fields": {
             "name": "ees-l10n-agent",
-            "description": "EES çeviri ajanı (Step Operator, pilot sürümü): görünen metin için .resx dosyalarını yazar (platform 2 dil, kiracı 7 dil). YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES çeviri ajanı (Step Operator, pilot sürümü): görünen metin için .resx dosyalarını yazar (platform 2 dil, kiracı 7 dil). YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -526,7 +526,7 @@
           "path": ".claude/agents/ees-security-agent.md",
           "frontmatter": {
             "name": "ees-security-agent",
-            "description": "EES güvenlik denetçisi (Quality Checker, pilot sürümü, salt-okunur): kiracı, yetki, denetim kaydı ve sızıntı denetimi; dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES güvenlik denetçisi (Quality Checker, pilot sürümü, salt-okunur): kiracı, yetki, denetim kaydı ve sızıntı denetimi; dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash",
             "disallowedTools": "Edit, Write, NotebookEdit"
           }
@@ -537,7 +537,7 @@
           "path": ".codex/agents/ees-security-agent.toml",
           "fields": {
             "name": "ees-security-agent",
-            "description": "EES güvenlik denetçisi (Quality Checker, pilot sürümü, salt-okunur): kiracı, yetki, denetim kaydı ve sızıntı denetimi; dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES güvenlik denetçisi (Quality Checker, pilot sürümü, salt-okunur): kiracı, yetki, denetim kaydı ve sızıntı denetimi; dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -557,7 +557,7 @@
           "path": ".claude/agents/ees-integration-agent.md",
           "frontmatter": {
             "name": "ees-integration-agent",
-            "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -567,7 +567,7 @@
           "path": ".codex/agents/ees-integration-agent.toml",
           "fields": {
             "name": "ees-integration-agent",
-            "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -587,7 +587,7 @@
           "path": ".claude/agents/ees-belge-ajani.md",
           "frontmatter": {
             "name": "ees-belge-ajani",
-            "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -597,7 +597,7 @@
           "path": ".codex/agents/ees-belge-ajani.toml",
           "fields": {
             "name": "ees-belge-ajani",
-            "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
@@ -617,7 +617,7 @@
           "path": ".claude/agents/ees-is-analisti.md",
           "frontmatter": {
             "name": "ees-is-analisti",
-            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -627,7 +627,7 @@
           "path": ".codex/agents/ees-is-analisti.toml",
           "fields": {
             "name": "ees-is-analisti",
-            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]

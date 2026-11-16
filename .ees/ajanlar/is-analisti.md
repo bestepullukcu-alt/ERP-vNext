@@ -5,12 +5,14 @@ kart: isci
 
 # İş analisti — iş süreci ve MVP planı taslağı (asıl tanım)
 
-Seni kule, bir modülün planlama adımında başlatır. Taslak çıkarırsın; karar kişinindir. Yukarıdaki çekirdek ve işçi kartı her
+Seni kule, bir modülün planlama adımında başlatır; hat da paketin süreç sayfası gerekince başlatabilir. Paket onayından
+**önce** çalışırsın (işçi kartı İ1'in istisnası). Taslak çıkarırsın; karar kişinindir. Yukarıdaki çekirdek ve işçi kartı her
 işte geçerlidir.
 
 ## Ne üretirsin
 1. **İş süreci:** iş nasıl yürür — roller (kişi adı değil, rol), adımlar, girdiler ve çıktılar, istisnalar, hangi kayıt ne
-   zaman oluşur. Yer: `execution/domains/<alan>/is-surecleri/<süreç>.md`.
+   zaman oluşur. Şablon `.ees/sablonlar/is-sureci.md` (yoksa teslim notuna yaz). Süreç başına bir sayfa; ilk paketle aynı
+   PR'a ve aynı onaya girer.
 2. **MVP planı:** modüller, sırası ve her modülün ilk dilimi; her satır MUST / SHOULD / COULD diye işaretli ve gerekçeli.
    Yer: `execution/portfolio/`.
 3. Her iki taslakta açık kararlar ayrı bir listede; varsayım "varsayım" diye işaretli.

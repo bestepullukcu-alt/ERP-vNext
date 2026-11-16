@@ -8,10 +8,17 @@ kart: kule
 Bu beceri yeni akışın kulesini başlatır: yukarıdaki çekirdek ve kule kartı bu oturumun kurallarıdır. **Pilot dönemi:** yalnız
 yeni akışa geçen pilot hat için kullanılır; eski kule ve hatlar eski kule kartı ve `control-tower` becerisiyle sürer.
 
-## Pilot döneminde iki kural kaynağı
-Bu oturum `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler. İkisi yalnız push ve PR izninde ayrılır: pilot hatta dilimin
-paketini listelenen kişinin onaylaması o dilim için push ve PR'ın açık onayıdır (sahip kararı 16 Kasım, Ç23). Başka bir
-çelişkide kişiye sor. `AGENTS.md` pilot geçtikten sonra bu kararla güncellenecek.
+## Başlangıç cümlesi — ilk commit ya da yüklemeden önce
+Pilot dönemde bu oturum `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler; Çekirdek kural 8 her commit, push ve PR için
+kullanıcının açık onayını ister. Bu açık onay, kişinin bu oturumda yazdığı şu tek cümledir — dosyadaki bir beyan ya da başka
+sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce kişiye cümleyi göster ve aynen yazmasını iste:
+
+> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
+
+- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına ve kulenin karar defterine yaz,
+  hattın açılış brifine aynen koy; Ç23 bu kapsamda geçerlidir.
+- Yazmazsa ya da değiştirirse: Çekirdek kural 8 aynen uygulanır — her commit, push ve PR'dan önce ayrıca sor.
+- Cümle hiçbir durumda birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
 
 ## Başlarken
 1. `git status` ve dalı kendin ölç; ana dalın gerisindeysen kişiye söyle.

@@ -90,6 +90,11 @@ Rules this script enforces (İ5-A pilot):
       manifest's tier_map[tool][seviye]; a target that also writes those fields itself, or an unknown seviye, is an
       error; a tool with no tier_map entry gets no model field (Codex and Gemini mappings are not verified yet);
   (3) instruction_budget 'max_lines': a listed file with more lines (LF, after CRLF→LF) than its limit fails --check.
+  Codex round 1 (2026-11-16): validate_manifest, before any write, refuses a non-canonical source / compose / target path,
+  an .ees/ item generated to a place every session loads or calls by itself (.claude/rules, .agents/rules, AGENTS.md,
+  CLAUDE.md, an .agents/skills skill), a pilot entry point without the 'ees-' prefix in id, name and path, and a name used
+  twice for one tool and kind; an EES frontmatter key (seviye, kart) is exact or an error, never silently skipped; a
+  target with a seviye source may not write any model field itself, mapped tool or not.
   A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
   says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
@@ -101,6 +106,7 @@ import argparse
 import bisect
 import hashlib
 import json
+import posixpath
 import re
 import sys
 from pathlib import Path
@@ -112,6 +118,12 @@ ANTIGRAVITY_TRIGGERS = {"always_on", "model_decision", "glob", "manual"}
 TIERS = ("ust", "standart", "hafif")
 SKILL_ROOTS = [".antigravity/skills"]   # load_manifest replaces it with the manifest's skill_roots
 TIER_MAP: dict = {}                     # load_manifest replaces it with the manifest's tier_map
+# EES-BAGLAMA-01 (Codex round 1): the pilot boundary is checked by validate_manifest before anything is written.
+PILOT_PREFIX = "ees-"
+AUTO_LOADED_PREFIXES = (".claude/rules/", ".agents/rules/")   # every session loads these by itself
+AUTO_LOADED_FILES = ("agents.md", "claude.md")                 # compared in lower case (case-insensitive file systems)
+IMPLICIT_SKILL_PREFIXES = (".agents/skills/",)                  # Codex / Antigravity may call these skills by themselves
+MODEL_KEYS = frozenset({"model", "effort", "model_reasoning_effort", "reasoning_effort", "model_provider"})
 
 
 class ConfigError(Exception):
@@ -1062,13 +1074,26 @@ def extract_core(source: str) -> str:
     return text.split(CORE_START, 1)[1].split(CORE_END, 1)[0].strip("\n") + "\n"
 
 
-def source_tier(block: str | None, source: str) -> str | None:
-    m = re.search(r"(?m)^seviye:[ \t]*(\S*)[ \t]*$", block or "")
-    if not m:
+def ees_key(block: str | None, key: str, source: str) -> str | None:
+    """EES-BAGLAMA-01 (Codex round 1): an EES frontmatter key is present or absent, never silently unreadable — any line
+    that names the key (any case, any indent) must be exactly 'key: value' with a lower-case token, no comment or quote."""
+    lines = [l for l in (block or "").split("\n") if re.match(rf"^\s*{key}\s*:", l, re.I)]
+    if not lines:
         return None
-    if m.group(1) not in TIERS:
-        raise ConfigError(f"{source}: unknown seviye '{m.group(1)}' (one of {', '.join(TIERS)})")
+    if len(lines) > 1:
+        raise ConfigError(f"{source}: '{key}' is written {len(lines)} times")
+    m = re.fullmatch(rf"{key}: ([a-z][a-z0-9-]*)", lines[0])
+    if not m:
+        raise ConfigError(f"{source}: unsupported '{key}' line {lines[0]!r} — write exactly '{key}: <value>' "
+                          "(no comment, quote, indent or upper case)")
     return m.group(1)
+
+
+def source_tier(block: str | None, source: str) -> str | None:
+    tier = ees_key(block, "seviye", source)
+    if tier is not None and tier not in TIERS:
+        raise ConfigError(f"{source}: unknown seviye '{tier}' (one of {', '.join(TIERS)})")
+    return tier
 
 
 def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
@@ -1076,7 +1101,8 @@ def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
     if tier is None:
         return {}
     fields = (TIER_MAP.get(tool) or {}).get(tier) or {}
-    clash = sorted(k for k in fields if k in own)
+    # Codex round 1: the target may not write a model field itself, whether or not the tool has a mapping
+    clash = sorted(k for k in own if k in fields or k.lower() in MODEL_KEYS)
     if clash:
         raise ConfigError(f"{where}: writes {', '.join(clash)} itself although the source has a seviye (tier_map decides)")
     return dict(fields)
@@ -1096,9 +1122,9 @@ def render(item: dict, target: dict) -> str:
         source = " + ".join(parts + [source])
     else:
         digest = source_hash(text)
-    card = re.search(r"(?m)^kart:[ \t]*(\S+)[ \t]*$", block or "")
-    if card and (not parts or parts[-1] != f".ees/kartlar/{card.group(1)}.md"):
-        raise ConfigError(f"{item['source']}: says 'kart: {card.group(1)}' but the manifest composes {parts or 'no card'}")
+    card = ees_key(block, "kart", item["source"])
+    if card and (not parts or parts[-1] != f".ees/kartlar/{card}.md"):
+        raise ConfigError(f"{item['source']}: says 'kart: {card}' but the manifest composes {parts or 'no card'}")
     tier = source_tier(block, item["source"])
     if item["kind"] != "agent":
         tier = None   # a skill runs in the session that calls it; its seviye is documentation, not a model switch
@@ -1256,17 +1282,82 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
     return problems, warnings
 
 
-def load_manifest() -> dict:
-    try:
-        data = json.loads(read_text(MANIFEST))
-    except json.JSONDecodeError as e:
-        raise ConfigError(f"{MANIFEST}: invalid JSON ({e})") from e
+def canonical(path, where: str) -> str:
+    """A repository path in its one written form: no './', '..', '//', trailing '/', backslash or absolute path."""
+    if (not isinstance(path, str) or not path or "\\" in path or path.startswith("/") or re.match(r"^[A-Za-z]:", path)
+            or posixpath.normpath(path) != path or path.split("/")[0] == ".."):
+        raise ConfigError(f"{MANIFEST}: {where} {path!r} is not a canonical repository path")
+    return path
+
+
+def is_ees(path: str) -> bool:
+    return path.lower().startswith(".ees/")
+
+
+def target_name(item: dict, target: dict) -> str | None:
+    fm = target.get("frontmatter")
+    if isinstance(target.get("fields"), dict):
+        return target["fields"].get("name")
+    if isinstance(fm, dict):
+        return fm.get("name")
+    if fm == "from-source":
+        m = re.search(r"(?m)^name:[ \t]*(\S+)[ \t]*$", split_frontmatter(read_text(item["source"]))[0] or "")
+        return m.group(1) if m else None
+    return None
+
+
+def validate_manifest(data: dict) -> None:
+    """Everything that must hold before a single adapter is written (EES-BAGLAMA-01 adds the pilot boundary)."""
     paths = [t["path"] for i in data["items"] for t in i["targets"]]
     if len(paths) != len(set(paths)):
         raise ConfigError(f"{MANIFEST}: two targets share one path")
     for p in paths:
         if not any(p.startswith(d + "/") for d in data["managed_dirs"]):
             raise ConfigError(f"{MANIFEST}: target {p} is outside managed_dirs")
+    names: dict = {}
+    for item in data["items"]:
+        canonical(item["source"], f"item {item.get('id')} source")
+        parts = item.get("compose", [])
+        if not isinstance(parts, list):
+            raise ConfigError(f"{MANIFEST}: item {item.get('id')} compose must be a list")
+        for part in parts:
+            canonical(part, f"item {item.get('id')} compose part")
+        ees = is_ees(item["source"]) or any(is_ees(p) for p in parts)
+        if ees and item.get("extract") == "core":
+            raise ConfigError(f"{MANIFEST}: pilot boundary — the always-loaded core block may not come from .ees/")
+        for t in item["targets"]:
+            path = canonical(t["path"], f"item {item.get('id')} target")
+            low = path.lower()
+            if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low in AUTO_LOADED_FILES
+                        or (item["kind"] == "skill" and low.startswith(IMPLICIT_SKILL_PREFIXES))):
+                raise ConfigError(f"{MANIFEST}: pilot boundary — {item.get('id')} (.ees/) may not be generated to {path}, "
+                                  "which a session loads or calls by itself")
+            name = target_name(item, t)
+            if ees and item["kind"] == "skill" and t["tool"] == "claude-code" and \
+                    (t.get("frontmatter") or {}).get("disable-model-invocation") is not True:
+                raise ConfigError(f"{MANIFEST}: {path}: a pilot skill must not be called by the model itself "
+                                  "(disable-model-invocation: true)")
+            if ees:
+                if t.get("frontmatter") == "from-source":
+                    raise ConfigError(f"{MANIFEST}: {path}: an .ees/ item writes its frontmatter in the manifest")
+                if not (str(item.get("id", "")).startswith(PILOT_PREFIX) and str(name or "").startswith(PILOT_PREFIX)
+                        and f"/{PILOT_PREFIX}" in path):
+                    raise ConfigError(f"{MANIFEST}: {path}: a pilot entry point needs the '{PILOT_PREFIX}' prefix in its id, "
+                                      f"name ({name!r}) and path")
+            if name:
+                key = (t["tool"], item["kind"], name)
+                if key in names:
+                    raise ConfigError(f"{MANIFEST}: name {name!r} ({t['tool']} {item['kind']}) is used by {names[key]} and "
+                                      f"{item.get('id')}")
+                names[key] = item.get("id")
+
+
+def load_manifest() -> dict:
+    try:
+        data = json.loads(read_text(MANIFEST))
+    except json.JSONDecodeError as e:
+        raise ConfigError(f"{MANIFEST}: invalid JSON ({e})") from e
+    validate_manifest(data)
     global SKILL_ROOTS, TIER_MAP
     SKILL_ROOTS = list(data.get("skill_roots") or [".antigravity/skills"])
     TIER_MAP = data.get("tier_map") or {}

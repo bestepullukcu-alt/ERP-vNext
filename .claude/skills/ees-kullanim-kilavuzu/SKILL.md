@@ -4,7 +4,7 @@ description: "EES kullanıcı kılavuzu adımları: modülün tek dosya HTML kı
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/beceriler/kullanim-kilavuzu/SKILL.md` · kaynak özeti: `sha256:a71b218df6cd` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/beceriler/kullanim-kilavuzu/SKILL.md` · kaynak özeti: `sha256:d57731558add` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Kullanım kılavuzu — modülün kullanıcı kılavuzunu yazma (asıl tanım)
 
@@ -22,5 +22,6 @@ disable-model-invocation: true
 
 ## Kurallar
 - Ekran görüntüsü yalnız yerel geliştirme ortamındaki örnek veriden; canlı veri, kişi adı, müşteri verisi yok.
-- Yalnız birleşmiş kodda var olanı anlat; planlanan özellik "henüz yok" diye bile yazılmaz.
+- Yalnız birleşmiş kodda ya da teslim edilen PR'ın doğrulanmış commit'inde var olanı anlat (son dilimin ekranı dahil);
+  planlanan özellik "henüz yok" diye bile yazılmaz.
 - Kılavuz metni modülün dillerinde gerekiyorsa brifte yazar; yazmıyorsa hatta sor.

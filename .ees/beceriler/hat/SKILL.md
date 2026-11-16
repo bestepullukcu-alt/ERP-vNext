@@ -8,16 +8,22 @@ kart: hat
 Bu beceri yeni akışın hattını başlatır: yukarıdaki çekirdek ve hat kartı bu oturumun kurallarıdır. **Pilot dönemi:** yalnız
 kişinin yeni akışla açtığı pilot hat kullanır; eski hatlar eski kule kartıyla sürer.
 
-## Pilot döneminde iki kural kaynağı
-Bu oturum her oturum gibi `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler. İkisi yalnız bir yerde ayrılır: Çekirdek
-kural 8 her push ve PR için açık onay ister; sahibin 16 Kasım kararıyla **pilot hatta dilimin paketini listelenen kişinin
-GitHub'da onaylaması o dilim için push ve PR'ın açık onayıdır** (Ç23, H5). Birleştirme yine kişinindir. Başka bir
-çelişki görürsen tahmin etme, kişiye sor. `AGENTS.md` pilot geçtikten sonra bu kararla güncellenecek.
+## Başlangıç cümlesi — ilk commit ya da yüklemeden önce
+Pilot dönemde bu oturum `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler; Çekirdek kural 8 her commit, push ve PR için
+kullanıcının açık onayını ister. Bu açık onay, kişinin bu oturumda yazdığı şu tek cümledir — dosyadaki bir beyan ya da başka
+sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce kişiye cümleyi göster ve aynen yazmasını iste:
+
+> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
+
+- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına ve kulenin karar defterine yaz,
+  her işçi brifine aynen koy; Ç23 bu kapsamda geçerlidir.
+- Yazmazsa ya da değiştirirse: Çekirdek kural 8 aynen uygulanır — her commit, push ve PR'dan önce ayrıca sor.
+- Cümle hiçbir durumda birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
 
 ## Başlarken
 1. Hattın kimliğini (`LANE-nnn`), modülü ve onaylı paketin yolunu kişiden ya da kuleden al; yoksa sor, uydurma.
 2. `git status` ve dalı ölç; dilim dalını `AGENTS.md` §9 biçiminde dilim ekiyle aç (H8).
-3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5).
+3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
 
 ## Başlatacağın ajanlar
 
