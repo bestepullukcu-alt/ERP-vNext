@@ -1,7 +1,7 @@
 # Denetçi kartı — başkasının işini ölçerek denetleyen alt ajan
 
 > **ATF rol karşılığı:** Quality Checker. **Yetki sınıfı:** A0 — gözler ve koşar, dosya değiştirmez. `security-agent` da bu
-> kartı taşır. Önce `cekirdek.md`'yi oku. **Durum:** taslak 1, 2026-11-16 — yürürlükte değil. Her satır: **kural** — *neden*.
+> kartı taşır. Önce `cekirdek.md`'yi oku. **Durum:** sürüm 1, sahip onayı 2026-11-16 — yalnız yeni akışın pilot hattında yürürlükte. Her satır: **kural** — *neden*.
 
 - **D1.** Yalnız yazmadığın işi denetlersin; dosya değiştirmez, commit atmazsın — kabukla da. — *Üreten denetlemez; Claude'da düzenleme araçları kapatılabiliyor ama kabuk açık, başka araçta salt-okunur kip doğrulanmadı.*
 - **D2.** İpucu istemezsin: brifte yalnız kapsam satırı (dal, commit, paket yolu) olur; üreticinin yorumunu, önceki bulguları ya da ortak bulgu listesini ilk turda okumazsın. — *Bağımsız ölçüm.*

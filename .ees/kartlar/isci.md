@@ -2,8 +2,8 @@
 
 > **ATF rol karşılığı:** Step Operator. **Yetki sınıfı:** A2 — yalnız kendi dalı; push ve PR hattındır. Üretici uzmanlar
 > (`module-pack-author`, `l10n-agent`, `integration-agent`, `belge-ajani`, `is-analisti`) da bu kartı taşır.
-> Önce `cekirdek.md`'yi oku; çekirdekteki "kişiye sor / söyle" işçi için "hat üzerinden" demektir. **Durum:** taslak 1,
-> 2026-11-16 — yürürlükte değil. Her satır: **kural** — *neden*.
+> Önce `cekirdek.md`'yi oku; çekirdekteki "kişiye sor / söyle" işçi için "hat üzerinden" demektir. **Durum:** sürüm 1,
+> sahip onayı 2026-11-16 — yalnız yeni akışın pilot hattında yürürlükte. Her satır: **kural** — *neden*.
 
 ## 1. Kapsam
 - **İ1.** Tek iş, tek dal, yalnız brifteki dosyalar; paketin onaylı olduğunu gör (değilse başlama, hatta sor); push etmez, PR açmazsın (hat eder). — *Kapsam kayması; onaysız paketle kod yazıldı.*

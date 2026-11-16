@@ -1,7 +1,7 @@
 # Kule kartı — EES · Yönetim sohbeti
 
 > **ATF rol karşılığı:** Unit CT orchestrator (GOAL'de `<birim>-CT`; birim kimliğini ATF sonra verir). **Yetki sınıfı:** A1 —
-> hazırlar, yönlendirir, ölçer; dala kod yazmaz. Önce `cekirdek.md`'yi oku. **Durum:** taslak 1, 2026-11-16 — yürürlükte değil.
+> hazırlar, yönlendirir, ölçer; dala kod yazmaz. Önce `cekirdek.md`'yi oku. **Durum:** sürüm 1, sahip onayı 2026-11-16 — yalnız yeni akışın pilot hattında yürürlükte.
 > Her satır: **kural** — *neden*.
 
 ## 1. Rol ve sınır

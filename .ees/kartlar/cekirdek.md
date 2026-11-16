@@ -1,8 +1,8 @@
 # Çekirdek — her rolün her işte okuduğu kurallar
 
 > **ATF rol karşılığı:** yok — ortak taban. Unit CT orchestrator (kule), Step Operator (işçi) ve Quality Checker (denetçi)
-> bunu okuduktan sonra kendi kartını okur. **Yetki tavanı:** A2. **Durum:** taslak 1, 2026-11-16 — yürürlükte değil;
-> pilot hat bu kartlarla geçene kadar eski kule kartı ve SOP geçerlidir. Her satır: **kural** — *neden*.
+> bunu okuduktan sonra kendi kartını okur. **Yetki tavanı:** A2. **Durum:** sürüm 1, sahip onayı 2026-11-16 — yalnız yeni akışın pilot hattında yürürlükte;
+> diğer her işte eski kule kartı ve SOP geçerlidir. Her satır: **kural** — *neden*.
 
 ## 1. Yetki sırası ve yürürlük
 - **Ç1.** Kırmızı çizgiler (§2) ve yöneticinin uyum rehberi en üsttedir; hiçbir paket, alan ayarı ya da sözlü istek onları gevşetemez. — *Bir paket ajana birleştirme izni yazabilir gibi okunmasın.*

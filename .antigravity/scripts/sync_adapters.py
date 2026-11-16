@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Generate tool adapters (Claude Code, Codex, Antigravity) from the single source in .antigravity/.
+Generate tool adapters (Claude Code, Codex, Antigravity) from their sources in .antigravity/ (old) and .ees/ (new).
 
-    python3 .antigravity/scripts/sync_adapters.py           # write every adapter listed in .antigravity/adapters.json
+    python3 .antigravity/scripts/sync_adapters.py           # write every adapter listed in .ees/adapters.json
     python3 .antigravity/scripts/sync_adapters.py --check   # write nothing; exit 1 if any adapter differs from its source
 
 Rules this script enforces (İ5-A pilot):
-- .antigravity/ stays the only place a human edits. Every adapter carries a visible "generated" line with the
+- The sources (.antigravity/ and .ees/) stay the only place a human edits. Every adapter carries a visible "generated" line with the
   source path and the source hash; editing an adapter by hand is drift and fails --check.
 - Only what adapters.json lists may live in the managed adapter folders. Any other file there fails --check, so no
   agent, skill or rule enters a tool's automatic discovery without passing through the manifest.
-- An agent source may only name skills that exist under .antigravity/skills/ (the 4/4 missing-skill case on
-  security-agent must not come back).
+- An agent source may only name skills that exist under one of the manifest's skill_roots (default
+  .antigravity/skills/; the 4/4 missing-skill case on security-agent must not come back).
 - Output is LF and UTF-8 on every platform; --check compares after turning CRLF into LF, so a Windows checkout
   with core.autocrlf=true is not drift. No symlinks are used anywhere.
 - İ5-B: the "Çekirdek" block of AGENTS.md (between <!-- core:start --> and <!-- core:end -->) is copied to
@@ -80,6 +80,18 @@ Rules this script enforces (İ5-A pilot):
   complete open or closing tag in CommonMark's grammar, then only SPACE or TAB; an opening tag not pre / script /
   style / textarea.
 
+- EES-BAGLAMA-01 (2026-11-16, EES owner approval in the lane-cards chat): the manifest lives in .ees/adapters.json; the
+  script itself stays here, so REGENERATE and every existing adapter stay byte-identical. Three new manifest features,
+  each a no-op for an item that does not use it:
+  (1) "compose": a list of files (the EES role cards) placed before the source body, in order; the generated line names
+      every part ("a + b + c") and the source hash covers all of them, so a card change is drift in every adapter that
+      carries it;
+  (2) tier: an agent source whose frontmatter says 'seviye: ust | standart | hafif' gets the tool's model fields from the
+      manifest's tier_map[tool][seviye]; a target that also writes those fields itself, or an unknown seviye, is an
+      error; a tool with no tier_map entry gets no model field (Codex and Gemini mappings are not verified yet);
+  (3) instruction_budget 'max_lines': a listed file with more lines (LF, after CRLF→LF) than its limit fails --check.
+  A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation).
+
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
 from __future__ import annotations
@@ -93,9 +105,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ".antigravity/adapters.json"
+MANIFEST = ".ees/adapters.json"
 REGENERATE = "python3 .antigravity/scripts/sync_adapters.py"
 ANTIGRAVITY_TRIGGERS = {"always_on", "model_decision", "glob", "manual"}
+TIERS = ("ust", "standart", "hafif")
+SKILL_ROOTS = [".antigravity/skills"]   # load_manifest replaces it with the manifest's skill_roots
+TIER_MAP: dict = {}                     # load_manifest replaces it with the manifest's tier_map
 
 
 class ConfigError(Exception):
@@ -838,7 +853,9 @@ def yaml_scalar(value: str) -> str:
 def emit_frontmatter(fields: dict) -> str:
     lines = ["---"]
     for key, value in fields.items():
-        if isinstance(value, list):
+        if isinstance(value, bool):
+            lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, list):
             lines.append(f"{key}:")
             lines.extend(f"  - {yaml_scalar(str(v))}" for v in value)
         else:
@@ -1044,21 +1061,55 @@ def extract_core(source: str) -> str:
     return text.split(CORE_START, 1)[1].split(CORE_END, 1)[0].strip("\n") + "\n"
 
 
+def source_tier(block: str | None, source: str) -> str | None:
+    m = re.search(r"(?m)^seviye:[ \t]*(\S*)[ \t]*$", block or "")
+    if not m:
+        return None
+    if m.group(1) not in TIERS:
+        raise ConfigError(f"{source}: unknown seviye '{m.group(1)}' (one of {', '.join(TIERS)})")
+    return m.group(1)
+
+
+def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
+    """EES-BAGLAMA-01: the tool's model fields for the source's seviye; nothing when the tool has no mapping."""
+    if tier is None:
+        return {}
+    fields = (TIER_MAP.get(tool) or {}).get(tier) or {}
+    clash = sorted(k for k in fields if k in own)
+    if clash:
+        raise ConfigError(f"{where}: writes {', '.join(clash)} itself although the source has a seviye (tier_map decides)")
+    return dict(fields)
+
+
 def render(item: dict, target: dict) -> str:
     source = item["source"]
     text = extract_core(source) if item.get("extract") == "core" else read_text(source)
-    digest = source_hash(text)
     block, body = split_frontmatter(text)
     body = body.lstrip("\n")
+    parts = item.get("compose") or []
+    if parts:
+        # EES-BAGLAMA-01: the role cards first, then the source body; the hash covers every part
+        cards = [read_text(p) for p in parts]
+        body = "\n".join(c.rstrip("\n") + "\n" for c in cards) + "\n" + body
+        digest = source_hash("".join(cards) + text)
+        source = " + ".join(parts + [source])
+    else:
+        digest = source_hash(text)
+    tier = source_tier(block, item["source"])
+    if item["kind"] != "agent":
+        tier = None   # a skill runs in the session that calls it; its seviye is documentation, not a model switch
     fmt = target.get("format")
 
     if item["kind"] == "agent":
-        missing = [s for s in frontmatter_list(block, "skills") if not rel(f".antigravity/skills/{s}/SKILL.md").is_file()]
+        missing = [s for s in frontmatter_list(block, "skills")
+                   if not any(rel(f"{r}/{s}/SKILL.md").is_file() for r in SKILL_ROOTS)]
         if missing:
-            raise ConfigError(f"{source} names skills that do not exist under .antigravity/skills/: {', '.join(missing)}")
+            raise ConfigError(f"{source} names skills that do not exist under {' or '.join(r + '/' for r in SKILL_ROOTS)}: "
+                              f"{', '.join(missing)}")
 
     if fmt == "codex-agent-toml":
-        fields = target.get("fields") or {}
+        fields = dict(target.get("fields") or {})
+        fields.update(tier_fields(target["tool"], tier, fields, target["path"]))
         for key in ("name", "description"):
             if not str(fields.get(key, "")).strip():
                 raise ConfigError(f"{target['path']}: codex agent needs a non-empty '{key}'")
@@ -1077,6 +1128,10 @@ def render(item: dict, target: dict) -> str:
         raise ConfigError(f"{target['path']}: unknown format '{fmt}'")
 
     fm = target.get("frontmatter")
+    if isinstance(fm, dict):
+        fm = {**fm, **tier_fields(target["tool"], tier, fm, target["path"])}
+    elif tier is not None and fm == "from-source":
+        raise ConfigError(f"{target['path']}: a source with a seviye needs a frontmatter dict in the manifest")
     if fm == "from-source":
         if block is None:
             raise ConfigError(f"{source}: target asks for the source frontmatter but the source has none")
@@ -1112,6 +1167,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         raw = p.read_bytes().replace(b"\r\n", b"\n")
         text = raw.decode("utf-8")
         size = len(raw)
+        lines = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
+        if lines > spec.get("max_lines", 10 ** 9):
+            problems.append(f"OVERLINES {path} has {lines} lines; limit {spec['max_lines']}")
         if size > spec.get("max_bytes", 10 ** 9):
             note = " (Antigravity truncates AGENTS.md at 24000)" if path == "AGENTS.md" else ""
             problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']}{note}")
@@ -1205,13 +1263,22 @@ def load_manifest() -> dict:
     for p in paths:
         if not any(p.startswith(d + "/") for d in data["managed_dirs"]):
             raise ConfigError(f"{MANIFEST}: target {p} is outside managed_dirs")
+    global SKILL_ROOTS, TIER_MAP
+    SKILL_ROOTS = list(data.get("skill_roots") or [".antigravity/skills"])
+    TIER_MAP = data.get("tier_map") or {}
+    for tool, tiers in TIER_MAP.items():
+        if tool == "about":
+            continue
+        unknown = sorted(set(tiers) - set(TIERS))
+        if unknown:
+            raise ConfigError(f"{MANIFEST}: tier_map.{tool} has unknown seviye {', '.join(unknown)}")
     return data
 
 
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    parser = argparse.ArgumentParser(description="Generate or check tool adapters from .antigravity/")
+    parser = argparse.ArgumentParser(description="Generate or check tool adapters listed in .ees/adapters.json")
     parser.add_argument("--check", action="store_true", help="write nothing; exit 1 on any difference")
     args = parser.parse_args()
 
