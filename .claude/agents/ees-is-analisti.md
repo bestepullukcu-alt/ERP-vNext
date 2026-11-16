@@ -6,7 +6,7 @@ model: sonnet
 effort: medium
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/is-analisti.md` · kaynak özeti: `sha256:23d07a63bbf9` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/is-analisti.md` · kaynak özeti: `sha256:684f3bf4f566` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -90,7 +90,7 @@ işte geçerlidir.
 
 ## Ne üretirsin
 1. **İş süreci:** iş nasıl yürür — roller (kişi adı değil, rol), adımlar, girdiler ve çıktılar, istisnalar, hangi kayıt ne
-   zaman oluşur. Şablon `.ees/sablonlar/is-sureci.md` (yoksa teslim notuna yaz). Süreç başına bir sayfa; ilk paketle aynı
+   zaman oluşur. Şablon `.ees/sablonlar/is-sureci.md`; boyut ve kurallar `.ees/standartlar/paket-standardi.md` KP12. Süreç başına bir sayfa; ilk paketle aynı
    PR'a ve aynı onaya girer.
 2. **MVP planı:** modüller, sırası ve her modülün ilk dilimi; her satır MUST / SHOULD / COULD diye işaretli ve gerekçeli.
    Yer: `execution/portfolio/`.

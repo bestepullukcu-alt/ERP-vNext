@@ -11,7 +11,7 @@ işte geçerlidir.
 
 ## Ne üretirsin
 1. **İş süreci:** iş nasıl yürür — roller (kişi adı değil, rol), adımlar, girdiler ve çıktılar, istisnalar, hangi kayıt ne
-   zaman oluşur. Şablon `.ees/sablonlar/is-sureci.md` (yoksa teslim notuna yaz). Süreç başına bir sayfa; ilk paketle aynı
+   zaman oluşur. Şablon `.ees/sablonlar/is-sureci.md`; boyut ve kurallar `.ees/standartlar/paket-standardi.md` KP12. Süreç başına bir sayfa; ilk paketle aynı
    PR'a ve aynı onaya girer.
 2. **MVP planı:** modüller, sırası ve her modülün ilk dilimi; her satır MUST / SHOULD / COULD diye işaretli ve gerekçeli.
    Yer: `execution/portfolio/`.

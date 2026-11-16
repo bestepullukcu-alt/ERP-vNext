@@ -6,7 +6,7 @@ model: opus
 effort: high
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/module-pack-author.md` · kaynak özeti: `sha256:f4466d546064` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/module-pack-author.md` · kaynak özeti: `sha256:37f5d91227fc` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -90,9 +90,11 @@ listelenen onaylayıcısı PR'da "paketi onaylıyorum" der. Yukarıdaki çekirde
 ve işçi kartı her işte geçerlidir.
 
 ## Nasıl çalışırsın
-1. Biçim: `.ees/standartlar/paket-standardi.md`, koşullu bölümler `.ees/standartlar/kosullu-bolumler.md`, şablon
-   `.ees/sablonlar/paket.md`. Bu dosyalar henüz yoksa `.antigravity/rules/module-pack-standard.md`'yi oku ve bunu teslim
-   notuna yaz. Çok modüllü işte `capability-pack-standard.md`'yi de.
+1. Biçim: yeni paket (künyede `pack_standard: kisa-v1`) ve onun takip paketleri için `.ees/standartlar/paket-standardi.md`,
+   açılan koşullu bölümler için `.ees/standartlar/kosullu-bolumler.md`, şablon `.ees/sablonlar/paket.md`. Bu alanı taşımayan
+   eski pakette eski standart geçerlidir: `.antigravity/rules/module-pack-standard.md`. Çok modüllü işte
+   `capability-pack-standard.md`'yi de oku. Taslağı `status: draft` yaz; künyedeki tek `branch` alanı hattın dal önekidir.
+   Bitince `python3 scripts/pack_contract_check.py <paket>` koş ve uyarıları teslim notuna yaz (yalnız uyarır).
    Kural haritasında "Yeni modül / pack açıyorsan" satırındaki standartları aç (denetlenen olaylar, kayıt kodu, manifest).
 2. Modül kimliğini `python3 .antigravity/scripts/verify_module_id.py` ile denetle; kimlik uydurma.
 3. Paket bağlı olduğu iş sürecini (`business_process:`) ve plan satırını (`plan_row:`) gösterir; dilim tablosunu plan

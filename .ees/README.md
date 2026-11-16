@@ -2,17 +2,19 @@
 
 **Durum: sürüm 1, sahip onayı 2026-11-16 — yalnız yeni akışın pilot hattında yürürlükte.** Pilot hat bu kartlarla geçene
 kadar her başka işte eski kule kartı (`docs/guides/operations/control-tower-operating-card.md`), SOP ve `AGENTS.md`
-geçerlidir. Kartlar yalnız yeni giriş noktalarından yüklenir: `/kule` ve `/hat` becerileri ile yeni ajanlar (`isci`,
-`denetci`, `ees-module-pack-author`, `ees-l10n-agent`, `ees-security-agent`, `integration-agent`, `belge-ajani`,
-`is-analisti`). Her oturumun kendiliğinden yüklediği dosyalara (`CLAUDE.md`, kökteki `AGENTS.md`, `.claude/rules/`) girmez.
+geçerlidir. Kartlar yalnız `ees-` önekli pilot giriş noktalarından yüklenir: `/ees-kule` ve `/ees-hat` becerileri ile 8 ajan
+(`ees-isci`, `ees-denetci`, `ees-module-pack-author`, `ees-l10n-agent`, `ees-security-agent`, `ees-integration-agent`,
+`ees-belge-ajani`, `ees-is-analisti`). Her oturumun kendiliğinden yüklediği ya da çağırdığı yerlere (`CLAUDE.md`, kökteki
+`AGENTS.md`, `.claude/rules/`, `.agents/`) girmez; bunu üretici yazmadan önce denetler.
 
 | Yol | Ne | Kim değiştirir |
 |---|---|---|
 | `kartlar/` | Beş rol kartı: `cekirdek` (herkes), `kule` (Unit CT orchestrator), `hat` (Reporter + tek hat), `isci` (Step Operator), `denetci` (Quality Checker) | EES sahibinin onayladığı PR |
 | `ajanlar/` | 8 ajanın asıl tanımı (araçtan bağımsız; `seviye:` alanı) | aynı |
-| `beceriler/` | 4 yeni becerinin asıl tanımı (`kule`, `hat`, `modul-arastir`, `kullanim-kilavuzu`) | aynı |
+| `beceriler/` | 4 yeni becerinin asıl tanımı (`kule`, `hat`, `modul-arastir`, `kullanim-kilavuzu`; kopyaları `ees-` önekli) | aynı |
 | `adapters.json` | Üretim listesi: hangi kaynaktan hangi araç kopyası üretilir, seviye eşlemesi, kart sınırları | aynı |
-| `sablonlar/` | Teslim notu, modül bloğu, özet satırı, PR açıklaması, çalıştırma kaydı alanları, sahibe soru | aynı |
+| `standartlar/` | Kısa paket standardı (`paket-standardi.md`, `pack_standard: kisa-v1`) ve koşullu bölümler (`kosullu-bolumler.md`); denetimi `scripts/pack_contract_check.py` (yalnız uyarır) | aynı |
+| `sablonlar/` | Paket ve iş süreci şablonları, teslim notu, modül bloğu, özet satırı, PR açıklaması, çalıştırma kaydı alanları, sahibe soru | aynı |
 | `model-seviyeleri.md` | Üst / standart / hafif seviye ve araç başına eşleme | aynı |
 | `gecis/` | Geçiş belgeleri: eski 667 kuralın akıbeti, rehber eşlemesi, kör kontroller, uygulama planı | geçiş bitince arşive |
 

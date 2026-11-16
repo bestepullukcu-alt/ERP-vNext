@@ -4,7 +4,7 @@ description: "EES yeni akışın hattı: bir modülün dilimlerini onaylı paket
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:ed120c865e17` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:0b0eb8dfef32` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -69,12 +69,12 @@ disable-model-invocation: true
 
 ## 2. Başlama ve paket
 - **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar (`.ees/standartlar/paket-standardi.md`; paket `business_process:` ve `plan_row:` gösterir; süreç sayfası süreç başına bir kez ilk paketle aynı PR'da; eski büyük pakete yeni dilim gerekirse kısa takip paketi). Hat yazmaz; taslağı işi yazmayan denetçiye verir, sonra taslak PR açar (Ç23). — *Üreten denetlemez; onay PR'da verilir.*
-- **H5.** Kod yalnız hattın listelenen onaylayıcısının (asıl ya da yedek, envanter satırında rol adıyla) PR'da "paketi onaylıyorum" dediği (yazarı açılış brifindeki hesapla eşleşen) paket sürümüyle başlar; bu onay o sürümün bütün dilimleri için kod yazma, dal yükleme ve PR iznidir (Ç23), birleştirme izni değildir. Paket değişirse değişiklik PR'la gelir; o PR'ın onayı yeniden onaydır. — *Sahibin 16 Kasım kararları; ≤3 dokunuş hedefi.*
+- **H5.** Kod yalnız hattın listelenen onaylayıcısının (asıl ya da yedek, envanter satırında rol adıyla) PR'da "paketi onaylıyorum" dediği (yazarı açılış brifindeki hesapla eşleşen) paket sürümüyle başlar; bu onay o sürümün bütün dilimleri için kod yazma, dal yükleme ve PR iznidir (Ç23), birleştirme izni değildir. Paket değişirse değişiklik PR'la gelir; o PR'ın onayı yeniden onaydır. Onaydan sonra hat aynı PR'da dilim işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil). — *Sahibin 16 Kasım kararları; kök kural 7 onaylı durumu arar.*
 - **H6.** Modülün alan klasörü yoksa şablondan açılır (`.ees/sablonlar/modul-yeri/`, iş 6'da yazılacak); gelecek modüllere önceden klasör açılmaz. — *Boş klasör yığını.*
 - **H7.** Dilim tablosu MVP planının satırlarıyla karşılaştırılır; fark varsa yazılır ve kişiye sorulur, plan "Kullanır" dediği modülü başka modül sayar (H16). — *Plan ile paket ayrı değişir (Ç3).*
 
 ## 3. Dal ve çalışma ağacı
-- **H8.** Uzakta dilim başına tek dal: `feature/<alan-kısa>/<mod-kimliği>-dl<N>-<kısa-ad>` (`AGENTS.md` §9 biçimi + dilim). İşçi dalları yerel kalır; hat onları kendi dilim dalına yerelde alır ve birleşik hâlde testleri koşar — bu Ç6'nın yasakladığı birleştirme değildir; ana dala ya da başkasının dalına bir şey ulaştırmaz. — *Üç ayrı dal adı şeması vardı; birleşik hâl test edilmeden PR açıldı; iş bir araya gelmeden test edilemez.*
+- **H8.** Uzakta dilim başına tek dal. Künyedeki tek `branch` alanı hattın dal önekidir; dilim dalları `<önek>-dl<n>` (önek `AGENTS.md` §9 biçiminde, ör. `feature/<alan-kısa>/<mod-kimliği>-<kısa-ad>`). İşçi dalları yerel kalır; hat onları kendi dilim dalına yerelde alır ve birleşik hâlde testleri koşar — bu Ç6'nın yasakladığı birleştirme değildir; ana dala ya da başkasının dalına bir şey ulaştırmaz. — *Üç ayrı dal adı şeması vardı; birleşik hâl test edilmeden PR açıldı; iş bir araya gelmeden test edilemez.*
 - **H9.** Uygulamayı, geliştirme sunucusunu ya da canlı testi aynı anda tek iş çalıştırır; başka oturum çalıştırıyorsa önce sorar. — *Aynı porta iki sunucu yanlış kırmızı verdi.*
 - **H10.** Makine yükü yüksekse (Mac yük ortalaması 12, Windows işlemci %80 üstü) yeni işi bekletir. — *Sahibin yük kuralı; yük altında testler yanlış kırmızı verdi.*
 - **H11.** Dilim birleşince kendi yerel işçi dallarını, temiz çalışma ağacını, süreçleri ve portları kaldırır (uzak dal silmek kişinindir, Ç5), yokluğunu ölçer; kirli ağaç ya da itilmemiş commit varsa kişiye sorar. — *Artık klasör ve süreçler makineyi yordu.*
@@ -134,13 +134,14 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
 
 ## Paket onayından dilim 1'e
-1. Hattın listelenen onaylayıcısı paket PR'ında "paketi onaylıyorum" der, PR'ı onaylar ve birleştirir (tek oturuş; ajan
-   birleştirmez). Onaylı paket sürümü, paketin ana dala birleştiği commit'tir.
-2. Paketteki durum alanını ajan "onaylı" yapmaz (Ç6). Paket standardı (`.ees/standartlar/paket-standardi.md`) bunu
-   tanımlayana dek, durum alanı değişecekse onu kişi onay PR'ında değiştirir; belirsizse sor.
-3. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz; onay PR'daki kişi onayıdır.
-4. Dilim 1 dalı ana daldan, paketin birleştiği commit'ten açılır (H8). Kod bu sürüme göre yazılır; paket değişirse önce
-   paket değişikliği PR'ı ve onayı (H5).
+1. Paket taslağı ilk dilim dalında (`<önek>-dl1`; önek paketin `branch` alanı) yazılır. Yüklemeden önce
+   `python3 scripts/pack_contract_check.py <paket>` koş, uyarıları PR açıklamasına yaz (yalnız uyarır); PR taslak açılır.
+2. Listelenen onaylayıcı PR'da "paketi onaylıyorum" der (yazarı açılış brifindeki hesapla eşleşmeli). Hat aynı PR'da dilim 1
+   işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil; H5); dilim 1
+   kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
+3. Dilim 1 bitince onaylayıcı aynı PR'ı tek oturuşta inceler, "kabulü onaylıyorum" der, onaylar ve birleştirir; PR o kişinin
+   hesabıyla açıldıysa yedek onaylayıcı onaylar (H25). Sonraki dilimler ana daldan `<önek>-dl<n>` dalında; paket değişirse
+   önce paket değişikliği PR'ı ve onayı (H5).
 
 ## Başlatacağın ajanlar
 

@@ -7,15 +7,14 @@
 
 ## 1. İlke
 Paket bir **sözleşmedir**: neyin yapılacağını, sınırını ve neyle kabul edileceğini söyler. Nasıl yapılacağını (katman, dosya
-düzeni, korunan yollar) standartlar, altın referans ve mimari testler söyler.Geçmiş ayrı dosyadadır, onayı etkilemez.
+düzeni, korunan yollar) standartlar, altın referans ve mimari testler söyler.
 
 ## 2. Kurallar
 - **KP1. İki dosya:** `<ID>-<kısa-ad>.md` (sözleşme) ve `kararlar/<ID>-<kısa-ad>.karar.md` (kararlar, revizyon geçmişi,
   inceleme cevapları, kayıtlı sapmalar; `module-packs/` altında `kararlar/` klasöründe). Onay yalnız sözleşmeye bağlıdır; işçi
-  karar dosyasını okumaz, denetçi ilk turda okumaz. — *Eski paketlerde geçmiş %19'a varıyor; incelemelerin %64'ü ilk onaydan
-  sonraki yeniden inceleme. Klasör ayrı: araçlar `module-packs/*.md` desenini tarıyor, kardeş dosya paket sayılırdı.*
-- **KP2. Yedi çekirdek bölüm, sırası sabit** (§4); başka bölüm yalnız koşullu bölümdür. — *Serbest başlıklar aracın aradığını
-  bulamamasına yol açıyor.*
+  karar dosyasını okumaz, denetçi ilk turda okumaz. — *Eski paketlerde geçmiş %19'a varıyor; araçlar `module-packs/*.md`'yi
+  tarıyor, kardeş dosya paket sayılırdı.*
+- **KP2. Yedi çekirdek bölüm, sırası sabit** (§4); başka bölüm yalnız koşullu bölümdür. — *Araç başlığı arıyor.*
 - **KP3. Türetilebilen yazılmaz:** katman, dosya ve Razor düzeni, genel korunan yollar, varsayılan testler (§7), izin anahtarı
   biçimi. Modüle özgü dokunmama sınırı bölüm 3 "girmeyen" sütununa yazılır. — *Aynı bilgi başka yerde duruyor.*
 - **KP4. Kabul ölçütü bugünkü makinece okunan biçimde yazılır, satırında dilimini ve planlanan testin türünü taşır** (§4.5).
@@ -26,8 +25,7 @@ düzeni, korunan yollar) standartlar, altın referans ve mimari testler söyler.
   yazılan davranış çelişiyor.*
 - **KP6. Koşullu bölüm yalnız işin türü gerektiriyorsa açılır** (künyede `conditional:`); açılmayan yazılmaz; açılan soruları tek tek cevaplar. — *En büyük eski engel nedeni "eksik alan kuralı".*
 - **KP7. Açık karar onaydan önce kapanır ya da bir dilim kapısına bağlanır.** Sözleşmenin herhangi bir yerindeki `TBD` (koşullu
-  bölüm dahil) bölüm 7'de bir satırdır; satırı olmayan `TBD` onaya gitmez. Teslim edilmiş kodla eski paket çelişiyorsa fark da bölüm 7'ye yazılır. — *Hat kartı H3: belirsizlik paket aşamasında çözülür;
-  işçi karar dosyasını okumaz.*
+  bölüm dahil) bölüm 7'de bir satırdır; satırı olmayan `TBD` onaya gitmez. Teslim edilmiş kodla eski paket çelişiyorsa fark da bölüm 7'ye yazılır. — *Belirsizlik paket aşamasında çözülür (H3).*
 - **KP8. Boyut sınırı dilim başınadır, uyarıdır** (§5). — *Tek toplam sayı büyük modülü haksız uyarır.*
 - **KP9. Büyük artış takip paketidir:** onaylı pakete yeni MVP yeteneği ya da yeni süreç getiren dilim eklenmez, `MOD-nnnn-FUxx`
   açılır (numara klasöre ve `verify_module_id.py` ön kontrolüne bakılarak verilir, Ç27). Eski (büyük) pakete yeni dilim
@@ -38,7 +36,10 @@ düzeni, korunan yollar) standartlar, altın referans ve mimari testler söyler.
 - **KP12. İş süreci süreç başına bir kez yazılır:** bir iş sürecinin ilk paketinden önce tek sayfalık süreç hazırlanır;
   ilk paketle **aynı PR'da ve aynı onayla** gelir, ayrı kapı yoktur. Süreç varsa paket yalnız atıf yapar. Teknik modül ve
   üst paketinin süreci olan takip paketi muaftır; üst paketin süreci yoksa takip paketi o sürecin ilk paketidir ve süreci yazar.
-  İlk dönemde yalnız uyarı. Ayrıntı: `is-sureci.md` şablonu. — *Eksik iş kuralı ve iç çelişki eski engellerin çoğunun kökü.*
+  İlk dönemde yalnız uyarı. Ayrıntı: `is-sureci.md` şablonu. — *Eski engellerin çoğunun kökü eksik iş kuralı.*
+- **KP13. Durum ve dal:** taslak `status: draft`; onaylayıcı PR'da "paketi onaylıyorum" deyince hat aynı PR'da
+  dilim işinin ilk commit'iyle `ready-for-dev` yapar (ek dokunuş değil). Künyedeki tek `branch` alanı hattın dal
+  önekidir; dilim dalları `<önek>-dl<n>` (H8). — *Kök kural 7 onaylı durumu arar.*
 
 ## 3. Künye
 Bugünkü alanlar (`id`, `name`, `domain`, `service`, `shell`, `golden_reference`, `data_mode`, `entity_base`, `status`, `owner`,
@@ -53,8 +54,7 @@ Bugünkü alanlar (`id`, `name`, `domain`, `service`, `shell`, `golden_reference
 
 `owner` rol adı olabilir (depoya kişi adı yazılmaz). Künyedeki `TBD` (dal, tarih) açık karar sayılmaz; KP7 gövdeyi kapsar. Plan depoda değildir: bağ yalnız
 **biçim** olarak denetlenir; plana üç alan istenir: öncelik, bağlı süreç, sahip rol. Süreç kimliği
-`SUR-<ALAN>-<nn>`; alan kısa adı `AGENTS.md` §9'dadır, orada olmayan alan için önerilen kısa ad PR'da sorulur (listeye şimdi
-eklenmez).
+`SUR-<ALAN>-<nn>`; alan kısa adı `AGENTS.md` §9'dadır, orada olmayan alanın kısa adı PR'da sorulur.
 
 ## 4. Bölümler — tam bu başlıklar, bu sırayla
 İkinci düzey başlıklar tam bunlardır; koşullu bölümler 7'den sonra `## K-<ad>. <Ad>` olarak, `conditional:` sırasıyla gelir.
@@ -72,7 +72,7 @@ eklenmez).
    denetlenen olaylar (komut — sistemin kendiliğinden yazması dahil, kullanıcı "sistem" · işlem adı · yol ya da istisna sınıfı +
    gerekçe · dilim; AUD-001). Varsa beşinci: yayımlanan olaylar ve bildirimler (kod · ne zaman · kime · alanlar · dilim). Ürün
    değişmezleri (kiracı, soft delete, ağ geçidi, dil) yazılmaz, yalnız istisnası. `AC-n` bu bölümde tablo satırı olmaz.
-5. **`## 5. Acceptance Criteria`** (başlık İngilizce; okuyucu bunu arar): bugünkü biçim aynen, sonuna dilim ve test eki:
+5. **`## 5. Acceptance Criteria`** (başlık İngilizce): bugünkü biçim aynen, sonuna dilim ve test eki:
    `- [ ] AC-<n> (zorunlu|isteğe bağlı) — <gözlenebilir davranış> · dilim: DL-<n> · test: <tür>`.
    Bölümde yalnız bu biçimde madde olur (başka madde, tablo ya da `AC-` geçen başka satır paketi okunamaz yapar); `AC-`
    ardından yalnız sayı; kimlik tekil, silinmez, yeniden numaralanmaz; en az bir zorunlu; belirsiz söz yok. Test türleri: birim, entegrasyon,
@@ -92,7 +92,7 @@ eklenmez).
 - **Dilim başına** (o dilimin bölüm 4 satırları + ölçütleri + koşullu bölüm satırları): hedef ≤ 6 KB, uyarı > 10 KB.
 - **Dilim sayısı > 8:** takip paketine böl. **İş süreci:** ≤ 9 KB, ≤ 90 satır.
 - Karar dosyası sınırsız. İşçinin okuduğu (ortak kısım + kendi dilimi) hedef ≤ 14 KB.
-- Uyarı engel değildir: yazar bölmeyi önerir ya da karar dosyasına "neden bölünmedi" yazar. Sayılar deneme hattıyla bir kez düzeltilir.
+- Uyarı engel değildir: yazar böler ya da karar dosyasına nedenini yazar. Sayılar denemede bir kez düzeltilir.
 
 ## 6. Koşullu bölümler — ne zaman açılır (soruları ve en az içerik: `kosullu-bolumler.md`)
 `para` tutar, fiyat, kur, vergi · `zaman` görünen tarih, gün, hafta, süre · `veri-degisikligi` şema, referans veri ya da var olan

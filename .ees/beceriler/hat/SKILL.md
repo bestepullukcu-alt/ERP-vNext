@@ -31,13 +31,14 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
 
 ## Paket onayından dilim 1'e
-1. Hattın listelenen onaylayıcısı paket PR'ında "paketi onaylıyorum" der, PR'ı onaylar ve birleştirir (tek oturuş; ajan
-   birleştirmez). Onaylı paket sürümü, paketin ana dala birleştiği commit'tir.
-2. Paketteki durum alanını ajan "onaylı" yapmaz (Ç6). Paket standardı (`.ees/standartlar/paket-standardi.md`) bunu
-   tanımlayana dek, durum alanı değişecekse onu kişi onay PR'ında değiştirir; belirsizse sor.
-3. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz; onay PR'daki kişi onayıdır.
-4. Dilim 1 dalı ana daldan, paketin birleştiği commit'ten açılır (H8). Kod bu sürüme göre yazılır; paket değişirse önce
-   paket değişikliği PR'ı ve onayı (H5).
+1. Paket taslağı ilk dilim dalında (`<önek>-dl1`; önek paketin `branch` alanı) yazılır. Yüklemeden önce
+   `python3 scripts/pack_contract_check.py <paket>` koş, uyarıları PR açıklamasına yaz (yalnız uyarır); PR taslak açılır.
+2. Listelenen onaylayıcı PR'da "paketi onaylıyorum" der (yazarı açılış brifindeki hesapla eşleşmeli). Hat aynı PR'da dilim 1
+   işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil; H5); dilim 1
+   kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
+3. Dilim 1 bitince onaylayıcı aynı PR'ı tek oturuşta inceler, "kabulü onaylıyorum" der, onaylar ve birleştirir; PR o kişinin
+   hesabıyla açıldıysa yedek onaylayıcı onaylar (H25). Sonraki dilimler ana daldan `<önek>-dl<n>` dalında; paket değişirse
+   önce paket değişikliği PR'ı ve onayı (H5).
 
 ## Başlatacağın ajanlar
 
