@@ -1,0 +1,1 @@
+HATA: taban satır 2155: FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor
