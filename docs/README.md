@@ -25,7 +25,7 @@ klasör açmak Control Tower kararıdır.
 | :--- | :--- | :--- |
 | `reference/` | mimari · modül belgeleri (`platform/` ve `tenant/`) · Blueprint · entegrasyon sözleşmeleri · referans veri | **evet** — gerçek değişince güncellenir |
 | `guides/` | kullanım kılavuzları · dev ortam · Control Tower SOP · üst kaynak SOP | evet |
-| `records/` | denetimler (`audits/<yyyy-mm>/`) · analizler · kabul raporları · sürüm notları | **hayır** — yazıldığı gibi kalır |
+| `records/` | denetimler (`audits/<yyyy-mm>/`) · analizler · kabul raporları · sürüm notları | **hayır** — ana dalda yazıldığı gibi kalır; arşive alınabilir, git geçmişinde saklanır |
 | `roadmap/` | planlar · `backlog/product-backlog.md` | evet |
 | `vendor/` | dışarıdan gelen teslimatlar, geldiği adla | **hayır** — düzenlenmez |
 
