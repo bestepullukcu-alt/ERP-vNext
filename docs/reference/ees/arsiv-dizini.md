@@ -1245,6 +1245,8 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 
 **Neden:** kimsenin çağırmadığı tek seferlik doğrulama/smoke betikleri, `.antigravity` altında `ARCHITECTURE.md`'nin "legacy" dediği dört betik ve `mcp_config.json`, sözleşme dışı eski analizler, eski iş paketi rehberleri, sürüm/yetenek taslakları; CI, phase1, hook ve bağdaştırıcılar okumuyor.
 
+**Korumalı `.antigravity` dosyaları:** kalkan dört dosya `.antigravity/scripts/auto_preview.py`, `.antigravity/scripts/checklist.py`, `.antigravity/scripts/session_manager.py`, `.antigravity/mcp_config.json`. `.antigravity/scripts/verify_all.py` bilerek kaldı: PVG iş paketi `execution/domains/pharmacovigilance/work-packs/WP-0230-07-tenant-ui.md` onu anıyor.
+
 <details>
 <summary>Yerinde bırakılanlar (22 dosya, 22 klasör) ve nedeni</summary>
 
@@ -1329,3 +1331,13 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `scripts/verify-mod0029-fu37c-manual-link-scope-guardrails.ps1` | 1 | 0.00 |
 
 </details>
+
+## Bayatlayan atıflar
+
+Arşivden sonra artık var olmayan dosyaları anan, ama okumayan belgeler. Bu belgeler değiştirilmedi; geri okuma için
+yukarıdaki komutlar kullanılır.
+
+- `.antigravity/ARCHITECTURE.md:109` — `auto_preview.py`, `checklist.py` ve `session_manager.py` betiklerinin "legacy
+  olarak kalacağını" söylüyor; üçü parti 6 ile arşive gitti. Belge eski düzenin belgesi, ileride arşive gidecek.
+- Modül paketleri, istemler ve kayıt raporları kanıt olarak `docs/records/…` dosyalarını `yol@commit` biçiminde ya da
+  düz metinle anar; düz metin atıfları arşivlenen dosyaları gösteriyorsa dosya arşiv öncesi hâlde okunur.
