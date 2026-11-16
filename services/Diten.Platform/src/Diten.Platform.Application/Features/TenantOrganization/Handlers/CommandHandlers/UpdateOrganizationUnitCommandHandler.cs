@@ -164,11 +164,13 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
         }
         catch (OrganizationUnitWriteConflictException)
         {
-            return StructureChanged();
+            return Response<NoContent>.Fail(
+                "The Organization Unit changed while it was being updated. Re-read it and try again.", 409);
         }
         catch (PlatformTransactionUnavailableException)
         {
-            // No replica set (or the commit result could not be established): nothing was written, say so.
+            // No replica set (the line was not written), or the commit result could not be established (it may
+            // have been): either way the caller cannot be told it landed. Re-reading the unit shows which.
             return Response<NoContent>.Fail(
                 "The reporting line could not be saved now. Try again later.",
                 PlatformTransactionUnavailableException.ServiceUnavailableStatusCode);

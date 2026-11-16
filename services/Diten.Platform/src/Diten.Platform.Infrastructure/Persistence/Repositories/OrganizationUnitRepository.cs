@@ -25,8 +25,12 @@ public sealed class OrganizationUnitRepository
         : base(dbContext.Database, tenantContext, PlatformCollections.OrganizationUnits)
     {
         _dbContext = dbContext;
+        // ⚠ PRIMARY, WHATEVER THE CONNECTION STRING SAYS. The guard reads the token and walks the graph outside the
+        // transaction; a token from an up-to-date member and a graph from a lagging one would validate against a
+        // graph without the edge the token already stands for.
         _structureTokens = dbContext.Database
-            .GetCollection<BsonDocument>(PlatformCollections.OrganizationStructureTokens);
+            .GetCollection<BsonDocument>(PlatformCollections.OrganizationStructureTokens)
+            .WithReadPreference(ReadPreference.Primary);
 
         // ⚠ The REAL executor, built here rather than resolved: a test host that swaps IPlatformTransactionExecutor for a
         // sequential stand-in must not quietly turn this atomic step back into two separate writes.
@@ -44,6 +48,7 @@ public sealed class OrganizationUnitRepository
         }
 
         return await Collection
+            .WithReadPreference(ReadPreference.Primary) // see the constructor: same reason as the token
             .Find(Builders<OrganizationUnit>.Filter.And(
                 ExecutionFilter,
                 Builders<OrganizationUnit>.Filter.In(x => x.Id, ids)))
@@ -110,7 +115,7 @@ public sealed class OrganizationUnitRepository
                 var replaced = await Collection.ReplaceOneAsync(handle, UnitFilter(unit.Id), unit, cancellationToken: txCt);
                 if (replaced.MatchedCount != 1)
                 {
-                    throw new ReportingLineChangeLostException(); // deleted under us: the advance is rolled back with it
+                    throw new ReportingLineChangeLostException(); // deleted/archived under us: the advance rolls back too
                 }
 
                 return true;
@@ -145,8 +150,13 @@ public sealed class OrganizationUnitRepository
 
     private const int WriteConflictCode = 112;
 
+    // Not archived as well: both writers here replace a unit read as live, and an archive that landed after that read
+    // must not be undone by writing the stale copy back.
     private FilterDefinition<OrganizationUnit> UnitFilter(Guid id) =>
-        Builders<OrganizationUnit>.Filter.And(ExecutionFilter, Builders<OrganizationUnit>.Filter.Eq(x => x.Id, id));
+        Builders<OrganizationUnit>.Filter.And(
+            ExecutionFilter,
+            Builders<OrganizationUnit>.Filter.Eq(x => x.Id, id),
+            Builders<OrganizationUnit>.Filter.Eq(x => x.IsArchived, false));
 
     private sealed class ReportingLineChangeLostException : Exception;
 

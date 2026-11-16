@@ -73,9 +73,9 @@ public interface IOrganizationReportingGraphRepository
     /// <summary>
     /// Advances the token from <paramref name="expectedToken"/> AND replaces <paramref name="unit"/>, atomically:
     /// both land or neither does. Returns <c>false</c> when another writer got there first, or is mid-way through
-    /// its own advance, or the unit is gone; that is an ordinary race outcome, and the caller answers 409.
+    /// its own advance, or the unit is gone or archived; that is an ordinary race outcome, and the caller answers 409.
     /// Throws <see cref="PlatformTransactionUnavailableException"/> when the database cannot run the atomic step
-    /// (no replica set); nothing is written then.
+    /// (no replica set — the unit is not written) or its commit result could not be established.
     /// </summary>
     Task<bool> TryAdvanceStructureTokenAndUpdateAsync(
         long expectedToken,
@@ -86,7 +86,7 @@ public interface IOrganizationReportingGraphRepository
 /// <summary>
 /// MOD-0288 — <see cref="IOrganizationUnitRepository.UpdateAsync"/> found the unit's stored reporting lines no longer
 /// equal to the ones on the entity it was given (a re-parenting landed after the caller read the unit), or the unit
-/// gone. Nothing was written: a plain update never changes a reporting line, so it must not write back a stale one.
+/// gone or archived. Nothing was written: a plain update never changes a reporting line, so it must not write back a stale one.
 /// </summary>
 public sealed class OrganizationUnitWriteConflictException : Exception
 {

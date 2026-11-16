@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.TenantOrganization;
@@ -24,18 +25,26 @@ namespace Diten.Platform.Application.Tests.TenantOrganization;
 [Trait("Category", "Mongo")]
 public sealed class OrganizationReparentingRaceTests
 {
-    [Fact]
-    public async Task A_writer_held_before_its_commit_cannot_let_a_second_writer_close_a_cycle()
+    /*
+     * ⚠ TWO HOLD POINTS, BECAUSE ONE IS NOT ENOUGH. Held BEFORE the commit, the second writer meets the first one's
+     * uncommitted token. Held AFTER it, the second writer reads the committed token — and a fix that committed the
+     * token without the unit write (the original bug, only moved) would let it validate against a graph without
+     * the edge and close the cycle there. Each hold point catches a weakening the other one misses.
+     */
+    [Theory]
+    [InlineData(HoldPoint.BeforeCommit)]
+    [InlineData(HoldPoint.AfterCommit)]
+    public async Task A_held_writer_cannot_let_a_second_writer_close_a_cycle(HoldPoint point)
     {
         await using var harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.Organization);
-        var hold = new HoldFirstCommit();
+        var hold = new HoldFirstCommit(point);
         var heldRepository = new OrganizationUnitRepository(harness.DbContext, harness.TenantContext, hold);
         var repository = new OrganizationUnitRepository(harness.DbContext, harness.TenantContext);
         var legalEntityId = Guid.NewGuid();
 
         /*
-         * ⚠ TWO ROUNDS, ONE PER BRANCH OF THE TOKEN. Round 0 is the tenant's first parent mutation and races on the
-         * token document's INSERT; round 1 races on the conditional `$inc` every later mutation takes.
+         * ⚠ TWO ROUNDS. Round 0 is the tenant's first parent mutation (no token document yet: it is created holding
+         * zero before the transaction); round 1 is every later mutation, racing on an existing document.
          */
         for (var round = 0; round < 2; round++)
         {
@@ -43,7 +52,7 @@ public sealed class OrganizationReparentingRaceTests
             var b = await CreateAsync(repository, harness.TenantId, $"HOLD-B{round}", legalEntityId);
             hold.Arm();
 
-            // Writer 1 has won the token and written A→B, and is stopped before its commit.
+            // Writer 1 has won the token and written A→B, and is stopped at the hold point.
             var writer1 = Task.Factory.StartNew(
                 () => Handler(heldRepository).Handle(Reparent(a, b, legalEntityId), CancellationToken.None),
                 CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
@@ -60,7 +69,7 @@ public sealed class OrganizationReparentingRaceTests
                 storedA!.ParentOrganizationUnitId == b.Id && storedB!.ParentOrganizationUnitId == a.Id,
                 $"round {round}: both edges are stored (writer 1 {first.StatusCode}, writer 2 {second.StatusCode}) — the graph is cyclic");
             Assert.Equal(204, first.StatusCode);
-            Assert.Equal(409, second.StatusCode);
+            Assert.Equal(409, second.StatusCode); // the CAS (before commit) or the cycle check (after commit)
             Assert.Equal(b.Id, storedA.ParentOrganizationUnitId);
             Assert.Null(storedB!.ParentOrganizationUnitId);
         }
@@ -103,6 +112,34 @@ public sealed class OrganizationReparentingRaceTests
         var stored = await repository.GetByIdAsync(unit.Id);
         Assert.Equal(moved.Id, stored!.ParentOrganizationUnitId);
         Assert.False(stored.IsArchived);
+    }
+
+    [Fact]
+    public async Task A_rename_that_read_the_unit_before_an_archive_cannot_bring_it_back()
+    {
+        await using var harness = await MongoIntegrationHarness.CreateAsync(SchemaProfile.Organization);
+        var repository = new OrganizationUnitRepository(harness.DbContext, harness.TenantContext);
+        var legalEntityId = Guid.NewGuid();
+        var unit = await CreateAsync(repository, harness.TenantId, "REVIVE-U", legalEntityId);
+
+        var paused = new PauseAfterFirstRead(repository, unit.Id);
+        var rename = Task.Factory.StartNew(
+            () => Handler(paused).Handle(
+                new UpdateOrganizationUnitCommand(
+                    unit.Id, new OrganizationUnitRequest(unit.Code, "Renamed", legalEntityId, null), AllowReportingLineChange: false),
+                CancellationToken.None),
+            CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
+        await paused.Read.Task.WaitAsync(TimeSpan.FromSeconds(30));
+
+        var archive = await new ArchiveOrganizationUnitCommandHandler(repository)
+            .Handle(new ArchiveOrganizationUnitCommand(unit.Id), CancellationToken.None);
+        Assert.Equal(204, archive.StatusCode);
+
+        paused.Release.TrySetResult();
+        Assert.Equal(409, (await rename).StatusCode);
+        var stored = await Collection(harness).Find(x => x.Id == unit.Id).SingleAsync();
+        Assert.True(stored.IsArchived);
+        Assert.Equal("REVIVE-U", stored.Name);
     }
 
     [Fact]
@@ -174,8 +211,13 @@ public sealed class OrganizationReparentingRaceTests
         return await stale;
     }
 
-    /// <summary>Holds the first transaction that reaches its commit, once per <see cref="Arm"/>.</summary>
-    private sealed class HoldFirstCommit : IPlatformTransactionFaultProbe
+    private static IMongoCollection<OrganizationUnit> Collection(MongoIntegrationHarness harness) =>
+        harness.DbContext.Database.GetCollection<OrganizationUnit>(PlatformCollections.OrganizationUnits);
+
+    public enum HoldPoint { BeforeCommit, AfterCommit }
+
+    /// <summary>Holds the first transaction that reaches the hold point, once per <see cref="Arm"/>.</summary>
+    private sealed class HoldFirstCommit(HoldPoint point) : IPlatformTransactionFaultProbe
     {
         private TaskCompletionSource _held = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -192,7 +234,13 @@ public sealed class OrganizationReparentingRaceTests
 
         public void Release() => _release.TrySetResult();
 
-        public async Task BeforeCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct)
+        public Task BeforeCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct) =>
+            point == HoldPoint.BeforeCommit ? HoldOnceAsync(ct) : Task.CompletedTask;
+
+        public Task AfterCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct) =>
+            point == HoldPoint.AfterCommit ? HoldOnceAsync(ct) : Task.CompletedTask;
+
+        private async Task HoldOnceAsync(CancellationToken ct)
         {
             if (Interlocked.Exchange(ref _armed, 0) == 1)
             {
@@ -200,9 +248,6 @@ public sealed class OrganizationReparentingRaceTests
                 await _release.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
             }
         }
-
-        public Task AfterCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct) =>
-            Task.CompletedTask;
     }
 
     /// <summary>Lets the first read of one unit through, then stops its caller until released.</summary>
