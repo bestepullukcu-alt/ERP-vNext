@@ -39,10 +39,10 @@ Sığ klon (`--depth`) arşivi göremez; önce `git fetch --unshallow`.
 | Parti | Ne kalktı | Dosya | MiB | Yerinde bırakılan | Durum |
 |---|---|---|---|---|---|
 | 1 | `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv) | 4786 | 250.8 | 852 | bu dalda |
-| 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | planlı |
-| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1389 | 10.3 | 190 | planlı |
-| 3 | `docs/roadmap/plans` + kök `plans/` | 817 | 5.7 | 147 | planlı |
-| 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 48 | 0.4 | 21 | planlı |
+| 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | bu dalda |
+| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | planlı |
+| 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | planlı |
+| 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | planlı |
 | 5 | son 30 günde dokunulmayan iş paketleri + kapanmış iş listesi | 297 | 3.9 | — | planlı; açık PR #425 birleşince |
 
 ## Parti 1 — `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv)
@@ -560,5 +560,83 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `docs/records/audits/2026-10/settings-hygiene-01` | 2 | 0.01 |
 | `docs/records/audits/2026-11/mod-0178-dl3-375px` | 2 | 0.03 |
 | `docs/records/audits/2026-11/treasury-wp0289-dl1-dispatch-01` | 3 | 0.12 |
+
+</details>
+
+## Parti 4 — `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri
+
+**Neden:** `logs/` ve `.logs/` eski koşu çıktıları, hiçbir betik bu klasörlere yazmıyor ya da okumuyor; kökteki üç artık yanlışlıkla eklenmiş çıktı; Blueprint 8.1/8.7 ve değişiklik notları — kimlik kapısı (`verify_module_id.py:29`) yalnız 8.8 tablosunu okur, o yerinde.
+
+<details>
+<summary>Kalkan dosyalar (66 satır, 100 dosya, 13.0 MiB)</summary>
+
+| Klasör / dosya | Kalkan dosya | MiB |
+|---|---|---|
+| `.logs/AuthService.err.log` | 1 | 0.00 |
+| `.logs/AuthService.out.log` | 1 | 0.01 |
+| `.logs/DevEnablementService.err.log` | 1 | 0.00 |
+| `.logs/DevEnablementService.out.log` | 1 | 0.00 |
+| `.logs/EnterpriseStrategyService.err.log` | 1 | 0.00 |
+| `.logs/EnterpriseStrategyService.out.log` | 1 | 0.00 |
+| `.logs/Frontend.err.log` | 1 | 0.00 |
+| `.logs/Frontend.out.log` | 1 | 0.02 |
+| `.logs/Gateway.err.log` | 1 | 0.00 |
+| `.logs/Gateway.out.log` | 1 | 0.19 |
+| `.logs/PlatformService.err.log` | 1 | 0.13 |
+| `.logs/PlatformService.out.log` | 1 | 0.16 |
+| `.logs/restart-services` | 12 | 1.50 |
+| `.logs/watch-auth.err.log` | 1 | 0.00 |
+| `.logs/watch-auth.out.log` | 1 | 0.00 |
+| `.logs/watch-devenablement.err.log` | 1 | 0.00 |
+| `.logs/watch-devenablement.out.log` | 1 | 0.00 |
+| `.logs/watch-frontend.err.log` | 1 | 0.00 |
+| `.logs/watch-frontend.out.log` | 1 | 0.00 |
+| `.logs/watch-gateway.err.log` | 1 | 0.00 |
+| `.logs/watch-gateway.out.log` | 1 | 0.00 |
+| `.logs/watch-platform.err.log` | 1 | 0.00 |
+| `.logs/watch-platform.out.log` | 1 | 0.14 |
+| `docs/reference` | 4 | 2.76 |
+| `exit=0,` | 1 | 0.00 |
+| `fleet-detached.log` | 1 | 2.48 |
+| `grep.exe.stackdump` | 1 | 0.00 |
+| `logs/Auth-err.log` | 1 | 0.00 |
+| `logs/Auth-out.log` | 1 | 0.03 |
+| `logs/Auth-restart-out.log` | 1 | 0.03 |
+| `logs/Auth-watch-err.log` | 1 | 0.00 |
+| `logs/Auth-watch-out.log` | 1 | 0.65 |
+| `logs/Crm-fu07-err.log` | 1 | 0.00 |
+| `logs/Crm-fu07-out.log` | 1 | 0.04 |
+| `logs/Crm-watch-err.log` | 1 | 0.00 |
+| `logs/Crm-watch-out.log` | 1 | 0.00 |
+| `logs/DevEnablement-err.log` | 1 | 0.00 |
+| `logs/DevEnablement-out.log` | 1 | 0.02 |
+| `logs/DevEnablement-watch-err.log` | 1 | 0.00 |
+| `logs/DevEnablement-watch-out.log` | 1 | 0.02 |
+| `logs/Gateway-err.log` | 1 | 0.00 |
+| `logs/Gateway-out.log` | 1 | 0.04 |
+| `logs/Gateway-watch-err.log` | 1 | 0.00 |
+| `logs/Gateway-watch-out.log` | 1 | 0.30 |
+| `logs/Hcm-watch-err.log` | 1 | 0.00 |
+| `logs/Hcm-watch-out.log` | 1 | 0.00 |
+| `logs/Mdm-err.log` | 1 | 0.00 |
+| `logs/Mdm-out.log` | 1 | 0.03 |
+| `logs/Mdm-watch-err.log` | 1 | 0.00 |
+| `logs/Mdm-watch-out.log` | 1 | 0.00 |
+| `logs/Platform-err.log` | 1 | 0.01 |
+| `logs/Platform-manual.log` | 1 | 0.00 |
+| `logs/Platform-out.log` | 1 | 0.15 |
+| `logs/Platform-watch-err.log` | 1 | 0.00 |
+| `logs/Platform-watch-out.log` | 1 | 2.27 |
+| `logs/Web-err.log` | 1 | 0.01 |
+| `logs/Web-fu07-err.log` | 1 | 0.00 |
+| `logs/Web-fu07-out.log` | 1 | 0.00 |
+| `logs/Web-out.log` | 1 | 0.03 |
+| `logs/Web-watch-err.log` | 1 | 0.01 |
+| `logs/Web-watch-out.log` | 1 | 0.08 |
+| `logs/dotnet-watch` | 21 | 1.58 |
+| `logs/platform-manual.err.log` | 1 | 0.00 |
+| `logs/platform-manual.out.log` | 1 | 0.02 |
+| `logs/watch-suite-launcher.err.log` | 1 | 0.00 |
+| `logs/watch-suite-launcher.log` | 1 | 0.28 |
 
 </details>
