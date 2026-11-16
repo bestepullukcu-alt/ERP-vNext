@@ -7,7 +7,7 @@ shell: none
 golden_reference: none
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); every gate in §0.0 'Still gates for v1 code' still binds (no start-on-mock path); v1 scope revision 2026-10-22, D2 eligibility, service identity gate and RCS-001 added 2026-10-26 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and every gate in §0.0 'Still gates for v1 code' is met (incl. DC-03 binding, MOD-0140 DL-3 with the live Gateway proof, service identity MOD-0140 1.4.0 DL-7 / BL-652, PR #198, permissions, replay receipt). Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a). Text revision 2026-11-15 (Natig, DC-03 consumer decisions on MOD-0360-FU01 r2: fixed portal permission set, portal re-checks amr, binding_rev call before create and submit, catalog keys from this manifest before MOD-0360-FU01 DL-2 — §0.0 'DC-03 consumer rules'): the CT-APR-01 row of 2026-10-28 is bound to the previous version, so this revision needs its own CT-APR-02 and CT-APR-01."
+status_note: "ready-for-dev by the module owner (Natig, 2026-10-27, CT card S-49: the CT-APR-01 row is written on the ready-for-dev version); every gate in §0.0 'Still gates for v1 code' still binds (no start-on-mock path); v1 scope revision 2026-10-22, D2 eligibility, service identity gate and RCS-001 added 2026-10-26 (§0.0): MOD-0148 started (Natig) — v1 = the supplier's own submissions, internal only. No runtime code authority until this revision has CT-APR-02 and CT-APR-01 and every gate in §0.0 'Still gates for v1 code' is met (incl. DC-03 binding, MOD-0140 DL-3 with the live Gateway proof, service identity MOD-0140 1.4.0 DL-7 / BL-652, PR #198, permissions, replay receipt). Placement CONCURRED (DC-01, 2026-10-18). SUPPLIER-BASE frozen (supplier.openapi.yaml v1.2.0, 780f8368a). Text revision 2026-11-15 (Natig, DC-03 consumer decisions on MOD-0360-FU01 r2: fixed portal permission set, portal re-checks amr, binding_rev call before create and submit, catalog keys from this manifest before MOD-0360-FU01 DL-2 — §0.0 'DC-03 consumer rules'): the CT-APR-01 row of 2026-10-28 is bound to the previous version, so this revision needs its own CT-APR-02 and CT-APR-01. The catalog step P4 is exempt only from the other §0.0 gates, never from this revision's CT-APR-02 and CT-APR-01 (review 2026-11-15 F-1; owner answers 2026-11-16)."
 owner: supply-chain-execution / control-tower
 branch: feature/sce/mod-0148-supplier-portal
 started: 2026-09-15
@@ -27,7 +27,9 @@ form_field_count: 0
 > **Text revision 2026-11-15 (Natig, module owner):** the DC-03 consumer decisions — answers to MOD-0360-FU01 r2 SQ-7, SQ-8,
 > SQ-11 and SQ-14 — are written in §0.0 "DC-03 consumer rules" (record
 > `docs/records/decisions/2026-11/mod0148-dc03-consumer-owner-decisions-2026-11-15.md`). Where this revision and an older line
-> of §0.0 disagree, this revision wins. The only code it allows ahead of the other gates is the catalog step (P4).
+> of §0.0 disagree, this revision wins. The catalog step (P4) needs this revision's CT-APR-02 and CT-APR-01 like everything
+> else; it is exempt only from the other §0.0 gates. Owner answers to the review of 2026-11-15 (F-2, F-3, F-4) are dated
+> 2026-11-16 in the same record.
 >
 > **Placement (CONCURRED, DC-01 2026-10-18):** MOD-0148 is a Blueprint Procurement Suite (P2P) module placed in
 > `supply-chain-execution` / `Diten.SupplyChainService` for delivery (`docs/records/decisions/2026-10/mvp6-supplier-dc01-approved-01.md`). MOD-0140 remains the Supplier
@@ -66,9 +68,9 @@ proven by a live run through the Gateway with the service token that shows a rea
 real refusal of an unaccepted token (Natig P2, 2026-10-26); the **service identity for the eligibility read**: MOD-0140 1.4.0 DL-7
 with BL-652 Option 2, SupplyChain's `service_name` on the accepted list (MOD-0140 S-5, Auth owner) and Procurement's own
 MDM service identity (MOD-0140 §7 / S-2); PR #198 on `main`; this revision's CT-APR-02 + CT-APR-01; the
-permission/composition single writer (§14); the replay receipt (§0.1, needs DC-03's issuer/subject); and the DC-03
-consumer rules below (P2, P3) with their tests. The catalog step (P4) is the only part of this pack that may be built before
-these gates.
+permission/composition single writer (the MVP-6 CT, §14); the replay receipt (§0.1, needs DC-03's issuer/subject); and the
+DC-03 consumer rules below (P2, P3) with their tests. **The catalog step (P4) needs this revision's CT-APR-02 and CT-APR-01**;
+it is exempt only from the other gates of this list.
 
 **DC-03 consumer rules (Natig, module owner, 2026-11-15; answers MOD-0360-FU01 r2 SQ-7, SQ-8, SQ-11, SQ-14; record
 `docs/records/decisions/2026-11/mod0148-dc03-consumer-owner-decisions-2026-11-15.md`).** The binding itself is Auth's: a
@@ -79,46 +81,69 @@ request it keeps its own D2 mapping below (which does not use `eligibleForTransa
 - **P1 — fixed permission set (SQ-7).** The `supplier_user` token carries exactly `supplychain.supplier-portal.read` and
   `supplychain.supplier-portal.submit`, as a fixed set issued by Auth, with **no tenant role** and no role claim
   (MOD-0360-FU01 §14, AC-12; a tenant role cannot be assigned to a supplier account, AC-26). The portal does not depend on any
-  role: `[HasPermission]` checks the two keys and the service checks `actor_type = supplier_user` (above). A company user who
-  holds `.read` or `.submit` through a role — e.g. through Auth's automatic grants when the keys enter the catalog (P4) — is
-  still refused by the `actor_type` check (403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` on status / list / create, 404 on own get /
-  submit). The key definitions stay this module's (§14); Auth issues them into the token.
+  role: `[HasPermission]` checks the two keys and the service checks `actor_type = supplier_user` (above). **For company users
+  the 2026-10-26 D2 grant rule stays** (`docs/records/decisions/2026-10/mvp6-owner-decisions-2026-10-26.md` D2; Natig
+  2026-11-16, review F-2): the keys are tenant-assignable and given only through Roles → Permissions, **never** through the
+  default role template, the full-catalog / SuperAdmin grant or the module-entitlement sync. Auth has these automatic paths
+  (`services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`); keeping the two
+  keys out of them is Auth's change — **requested from the Auth owner (Ali) before P4 is pushed** (XMC-001; this pack writes no
+  Auth file). The portal therefore has two layers: no automatic grant, and the `actor_type` check. A company user who still
+  holds `.read` or `.submit` (given by hand) is refused by the `actor_type` check (403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` on
+  status / list / create, 404 on own get / submit). The key definitions stay this module's (§14); Auth issues them into the
+  token.
 - **P2 — the portal re-checks the e-mail-code step (SQ-8).** Auth enforces the e-mail code at every supplier login
   (MOD-0360-FU01 AC-11) and writes `amr = ["pwd","otp"]` (§14, AC-12). The portal also checks, on **every** portal operation
   and right after the `actor_type` check: the token's `amr` contains both `pwd` and `otp`. Missing claim, empty claim or no
-  `otp` → **403** `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` with `details.code = PORTAL_MFA_REQUIRED`, no outgoing call, no write.
-  On own get and submit this 403 is undeclared in the frozen wire (see "Undeclared statuses"); it reveals nothing about other
-  records, because the caller is refused before any read. The `details.code` names are this pack's; the contract successor
-  declares them.
+  `otp` → refused, no outgoing call, no write: **403** `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` with
+  `details.code = PORTAL_MFA_REQUIRED` on status, own list and create; **404** on own get and submit, which declare no 403 —
+  the same rule as for an unmapped caller (Natig 2026-11-16, review F-3). The 404 body is the frozen `UnknownSubmission`; the
+  reason (`PORTAL_MFA_REQUIRED`) is written only to the structured log with the correlation id. The `details.code` names
+  (`PORTAL_MFA_REQUIRED`, `PORTAL_BINDING_STALE`) are this pack's; the contract successor declares them with the other
+  undeclared statuses.
 - **P3 — binding revision with Auth before create and submit (SQ-11).** Before `createOwnPortalSubmission` and
   `submitOwnPortalSubmission` — after the `actor_type`, `amr` and LE checks and before the eligibility read and any write — the
   service calls Auth's S2S endpoint `GET /api/internal/supplier-bindings/{bindingId}/revision` (MOD-0360-FU01 §3, AC-19) with the
   token's `binding_id`, directly on Auth (5056, AGENTS.md §3; this S2S path does not go through the Gateway, MOD-0360-FU01
-  §15), with `X-Tenant-Id` = the token's tenant and a trusted service token whose `service_name` is **`Diten.SupplyChain`**
+  §15; the base address is read from configuration, never written in code), with `X-Tenant-Id` = the token's tenant and a trusted service token whose `service_name` is **`Diten.SupplyChain`**
   and whose audience is **`TRUSTED_SUPPLIER_BINDING_CONSUMER`** (SQ-3, decided by Beste 2026-11-13). The answer
   `{active, revision, supplierCode, legalEntityId}` is compared with the token:
-  - **match** — `active = true`, `revision` = token `binding_rev`, `supplierCode` = token `supplier_id` (exact, canonical
-    `SUP-`), `legalEntityId` = token `legal_entity_id` → continue;
-  - **mismatch → 403** `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` with `details.code = PORTAL_BINDING_STALE`, no write — any field
-    differs, `active` is not `true`, or Auth answers 404 (no such binding in the token's tenant);
-  - **Auth not usable → 503, fail-closed**, no write — Auth unreachable, timeout, 5xx, a malformed or incomplete answer, or
-    Auth refusing the service token (401 / 403: a SupplyChain configuration fault, never the supplier's).
+  - **match** — `active = true` (JSON boolean); `revision` = token `binding_rev` (both parsed as integers; a claim that does
+    not parse is a mismatch); `supplierCode` = token `supplier_id` (ordinal, case-sensitive, exact — canonical `SUP-`);
+    `legalEntityId` = token `legal_entity_id` (both parsed as GUIDs and compared by value) → continue;
+  - **mismatch → refused, no write:** 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` with `details.code = PORTAL_BINDING_STALE` on
+    create; **404** on submit, which declares no 403 (Natig 2026-11-16, review F-3; reason only in the log). Mismatch is: any
+    field differs, `active` is not `true`, or Auth answers **the AC-19 "binding not in this tenant" 404** — recognised only by
+    the error code Auth's endpoint puts in that 404 body (the code is to be named in MOD-0360-FU01 by its owner; until it is,
+    no 404 is treated as a mismatch);
+  - **Auth not usable → 503, fail-closed**, no write — Auth unreachable, timeout, 5xx, any other 404 (no body, another code,
+    a route 404), a malformed or incomplete answer, or Auth refusing the service token (401 / 403: a SupplyChain configuration
+    fault, never the supplier's).
   The answer is **never cached** and there is no fallback to the token's own claims, so a revoked or corrected binding takes
   effect on the next create or submit, not at the end of the token's life (≤ 15 min). Reads (status, own list, own get) do not
   call the endpoint; for them a revocation takes effect when the access token expires (≤ 15 min) or at refresh
   (MOD-0360-FU01 AC-14). A revocation that lands between this check and the commit of the same request is accepted (one
-  request wide). The call runs under the same deadline as the request (§0.0 contention: deadline → 503).
+  request wide). The call runs under the same deadline as the request (§0.0 contention: deadline → 503). A replayed create
+  or submit (§0.1, same receipt) also runs P3 first and returns the stored result only after it passes (review F-9).
 - **P4 — catalog keys from this module's manifest before MOD-0360-FU01 DL-2 (SQ-14).** The single writer of
   `supplychain.supplier-portal.read` and `.submit` into the Auth catalog is **MOD-0148's module manifest**
   (`IModuleManifestProvider` in `Diten.SupplyChainService`, `module-self-registration-standard` §2d `ApiPermissions`, scope
-  `Tenant` — v1 has no page or button). It must be on `main` and pushed **before MOD-0360-FU01 DL-2 starts** (that slice
-  measures the keys in the catalog, MOD-0360-FU01 §7, §22). It is therefore allowed ahead of the other v1 gates, limited to: one
-  manifest provider under `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/`, its
-  registration in the service's composition (through the permission/composition single writer, §14), the two permission
-  constants and the manifest completeness test. No controller, handler, route or `.review` key comes with it. **Recorded
-  exception to §2d** ("do not invent a key no controller enforces"): for this step the keys are enforced by no controller yet;
-  DL-1 adds the `[HasPermission]` endpoints and the completeness test then covers both directions. The keys are permanent once
-  pushed (Auth never deletes a key on prune; scope cannot be lowered — `Tenant` must be right the first time).
+  `Tenant` — v1 has no page or button). Manifest values: `ModuleCode = "supplier-portal"` (the module-ID registry slug),
+  `IsTenantAssignable = true`, `Pages` empty, `ApiPermissions` = the two keys (emsal: the page-less
+  `MrpManifestProvider.cs`). It must be on `main` and pushed **before MOD-0360-FU01 DL-2 starts** (that slice measures the keys
+  in the catalog, MOD-0360-FU01 §7, §22). **Timing change to 2026-10-26 D2** ("keys written with the first code slice (DL-1),
+  after CT-APR-01"): the keys now come before DL-1 — still after this revision's CT-APR-02 and CT-APR-01 — and only after the
+  Auth owner has kept them out of the automatic grant paths (P1). P4 is limited to: one manifest provider under
+  `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/`, its registration in the service's
+  composition (by the single writer, the MVP-6 CT, §14), the two permission constants and the manifest completeness test. No
+  controller, handler, route or `.review` key comes with it. **Exception to `module-self-registration-standard` §2d, accepted by
+  the module owner (Natig 2026-11-16, review F-4)** — "do not invent a key no controller enforces": the keys are defined in
+  §14 and enforced from DL-1, but no controller enforces them during P4. Bounds: only these two keys, scope `Tenant`; reason:
+  the MOD-0360-FU01 DL-2 gate. **Evidence:** besides T-0148-V1-CAT-01 (a unit test), a record from the environment where
+  MOD-0360-FU01 DL-2 measures the catalog showing both keys with scope `Tenant` and no automatic grant. With DL-1's first
+  `[HasPermission]` endpoint the completeness test's reverse direction runs with a sabotage (CAT-01). If DL-1 never comes, the
+  two keys stay in the catalog as orphans: harmless, because no company role gets them automatically and the portal has no
+  endpoint. The keys are permanent once pushed (Auth never deletes a key on prune; scope cannot be lowered — `Tenant` must be
+  right the first time).
 
 **Open-draft cap (Natig, 2026-10-22, revised after review round 2):** the cap counts **only `DRAFT` records** — at most
 **200 open drafts per supplier + LE**; a create that would make the 201st draft → 422 `BUSINESS_RULE_VIOLATION` with
@@ -161,11 +186,15 @@ list.
 | `getSupplierPortalStatus` | 200, 403, 503 | 401, 500 |
 | `listOwnPortalSubmissions` | 200, 403 | 400 (invalid `status` / `submissionType` query value), 401, 503 (SUPPLIER-BASE / eligibility read unavailable, deadline), 500 |
 | `createOwnPortalSubmission` | 201, 200, 403, 422 | 400 (body over 1 MiB, malformed JSON, scope override AC-12), 401, 503 (eligibility read unavailable, Auth `binding_rev` unavailable — P3, deadline), 500 |
-| `getOwnPortalSubmission` | 200, 404 | 401, 403 (no e-mail-code step in `amr` — P2), 503 (eligibility read unavailable), 500 |
-| `submitOwnPortalSubmission` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403 (no e-mail-code step in `amr` — P2; binding revision mismatch — P3), 503 (eligibility read unavailable, Auth `binding_rev` unavailable — P3, deadline), 500 |
+| `getOwnPortalSubmission` | 200, 404 | 401, 403 (`[HasPermission]` key missing), 503 (eligibility read unavailable), 500 |
+| `submitOwnPortalSubmission` | 200, 404, 409, 422 | 400 (malformed JSON), 401, 403 (`[HasPermission]` key missing), 503 (eligibility read unavailable, Auth `binding_rev` unavailable — P3, deadline), 500 |
 
 The 403 of P2 / P3 on status, own list and create uses the declared `PortalIdentityUnresolved` response; only its
-`details.code` is new (2026-11-15).
+`details.code` is new (2026-11-15). On own get and submit P2 / P3 answer the declared 404 (review F-3). **`[HasPermission]`
+403 (review F-3):** the SupplyChain filter (`Infrastructure/Authorization/HasPermissionAttribute.cs`) answers a missing key
+with 403 `INVALID_REQUEST` on every operation, before the service's own checks. On status, list and create this is the
+declared 403 status with another body code; on own get and submit it is undeclared. A `supplier_user` never meets it (P1
+fixed set); a company user without the key does. The contract successor declares it.
 
 **Supplier eligibility — DC-02 D2 (Natig 2026-10-23 / 2026-10-26; Cihan's MOD-0140 Revision 2,
 `origin/feature/mvp2/supplier-tenant-01` @ `7f937c812`, §3.1 `SupplierEligibility`).** On every portal operation the service
@@ -238,22 +267,31 @@ DC-03 consumer test IDs (2026-11-15; each with a sabotage that must turn it red 
 
 - **T-0148-V1-PERMSET-01** (P1) — a `supplier_user` token with exactly the two keys and no role claim passes `[HasPermission]`
   on all five operations (`.read` on status / list / get, `.submit` on create / submit); a `tenant_user` token holding both keys through a role → 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` on status / list /
-  create and 404 on get / submit. Sabotage: dropping the `actor_type = supplier_user` check → the `tenant_user` case is red.
+  create and 404 on get / submit; a `tenant_user` token without the keys → 403 `INVALID_REQUEST` from `[HasPermission]` on all
+  five. Sabotage: dropping the `actor_type = supplier_user` check → the `tenant_user`-with-keys case is red. The "no automatic
+  grant" half of P1 is Auth's test (requested with P1); the P4 evidence record shows it.
 - **T-0148-V1-AMR-01** (P2) — on each of the five operations: `amr = ["pwd","otp"]` → passes; `amr` missing, empty,
-  `["pwd"]` only or `["otp"]` only → 403 `details.code = PORTAL_MFA_REQUIRED`, zero writes, and the Auth and Procurement mocks
-  receive no call. Sabotage: removing the `amr` check (trusting Auth) → the `["pwd"]` case is red.
+  `["pwd"]` only or `["otp"]` only → 403 `details.code = PORTAL_MFA_REQUIRED` on status / list / create and the frozen 404 on
+  get / submit (reason in the log), zero writes, and the Auth and Procurement mocks receive no call; `["pwd"]` with a malformed
+  JSON body on create → 403, not 400 (order, §14). Sabotage: removing the `amr` check (trusting Auth) → the `["pwd"]` case is
+  red.
 - **T-0148-V1-BREV-01** (P3) — on create and on submit, with an Auth mock: a matching answer → proceeds; `revision` differs,
-  `active = false`, `supplierCode` differs, `legalEntityId` differs, or Auth 404 → 403 `details.code = PORTAL_BINDING_STALE`,
-  zero writes, no Procurement call; Auth unreachable, timeout, 500, malformed body, or 401 / 403 to the service token → 503, zero
-  writes; the outgoing request carries the token's `binding_id`, `X-Tenant-Id`, a service token with `service_name =
+  `active = false`, `supplierCode` differs (also by case only), `legalEntityId` differs, `binding_rev` claim not an integer, or
+  Auth's AC-19 not-in-tenant 404 (once its code is named) → 403 `details.code = PORTAL_BINDING_STALE` on create and the frozen
+  404 on submit, zero writes, no Procurement call; Auth unreachable, timeout, 500, malformed body, a 404 without that code, or
+  401 / 403 to the service token → 503, zero writes; order cases (§14): stale binding + malformed JSON → 403 (create) / 404
+  (submit), not 400; stale binding + stale `If-Match` on submit → 404, not 409; Auth down + malformed JSON → 503; a replayed
+  create with a stale binding → refused like a new one, the stored result is not returned; the outgoing request carries the token's `binding_id`, `X-Tenant-Id`, a service token with `service_name =
   Diten.SupplyChain` and audience `TRUSTED_SUPPLIER_BINDING_CONSUMER`, never the supplier's token; two creates in a row each
   call Auth (no cache); a revocation between two creates → the second is 403; status / list / get make no Auth call.
   Sabotage 1: skipping the call on submit → the revoked-binding submit case is red. Sabotage 2: on Auth unreachable,
   continuing with the token's own `binding_rev` (fail-open) → the 503 case is red. Sabotage 3: forwarding the supplier's token
   to Auth → the outgoing-token assertion is red. Sabotage 4: caching the answer → the revocation-between-creates case is red.
 - **T-0148-V1-CAT-01** (P4) — the manifest's `ApiPermissions` holds exactly `supplychain.supplier-portal.read` and `.submit`,
-  scope `Tenant`, and no `.review`; every `[HasPermission]` key of the portal controllers (none before DL-1) is reachable from
-  the manifest. Sabotage: removing `.submit` from `ApiPermissions` or declaring scope `PlatformAdmin` → red.
+  scope `Tenant`, and no `.review`; `ModuleCode = supplier-portal`, `IsTenantAssignable = true`, no pages. Sabotage: removing
+  `.submit` from `ApiPermissions` or declaring scope `PlatformAdmin` → red. **Reverse direction from DL-1's first endpoint:**
+  every `[HasPermission]` key of the portal controllers is reachable from the manifest; sabotage: removing that endpoint's key
+  from the manifest → red. Before DL-1 the reverse direction has no endpoint to check (the §2d exception, P4).
 
 ## 0. Requirement status and traceability (review 2026-10-19)
 
@@ -302,7 +340,8 @@ Test IDs added in r2 (MOD-0148) — the behaviours are proposed (§0.2, §0.3); 
 - Same tuple + fingerprint → 200 with the original result, no growth. Same tuple, different fingerprint → proposed 409
   `IDEMPOTENCY_KEY_REUSED` (**not declared in v1** — contract successor). Concurrent identical requests → one commit, one replay.
 - Remap S1→S2 or another actor/LE → separate receipt scope; a later binding revision may read an old receipt only after
-  current authorization and eligibility pass. Retention follows the business record; expiry cannot reopen a duplicate create.
+  current authorization and eligibility pass. A replay runs the DC-03 consumer rules first — `actor_type`, `amr` (P2) and the
+  `binding_rev` call (P3) — and returns the stored result only when they pass (2026-11-16, review F-9). Retention follows the business record; expiry cannot reopen a duplicate create.
 - `validatedIssuer` and `subject` come from the DC-03 binding, which does not exist yet — hence BLOKE.
 
 ### 0.2 Payload — contradiction with the frozen contract (resolved for v1 in §0.0: no validation, 1 MiB limit)
@@ -384,7 +423,7 @@ After all ready-for-dev gates pass, the proposed Phase B slice may write only:
 - `services/Diten.SupplyChainService/src/**/Features/SupplierPortal/**`.
 - `services/Diten.SupplyChainService/tests/**/SupplierPortal/**`.
 - Module-specific API reference/audit evidence paths explicitly assigned by the implementation WP.
-- Catalog step P4 (§0.0, allowed before the other gates): one new manifest provider file under
+- Catalog step P4 (§0.0; after this revision's CT-APR-02 and CT-APR-01, before the other gates): one new manifest provider file under
   `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/`, its one-line registration in the
   service composition (written by the permission/composition single writer, §14), the two permission constants and the
   manifest completeness test under `services/Diten.SupplyChainService/tests/**`.
@@ -461,8 +500,9 @@ shell, actor journey, exact fields, DataTable choice, golden reference, denied s
 - Stale `If-Match` returns 409 and never overwrites a concurrent update.
 - Invalid payload or lifecycle transition returns the frozen 400/422 error with UUID correlation.
 - SUPPLIER-BASE/auth mapping outage fails closed and does not grant portal access.
-- A token without the e-mail-code step in `amr` → 403 `PORTAL_MFA_REQUIRED`; a binding revision that no longer matches Auth →
-  403 `PORTAL_BINDING_STALE` on create / submit; Auth `binding_rev` not usable → 503; none of them writes (§0.0 P2, P3).
+- A token without the e-mail-code step in `amr` → 403 `PORTAL_MFA_REQUIRED` (status / list / create) or 404 (own get /
+  submit); a binding revision that no longer matches Auth → 403 `PORTAL_BINDING_STALE` on create, 404 on submit; Auth
+  `binding_rev` not usable → 503; none of them writes (§0.0 P2, P3).
 
 ## 14. Authorization Convention
 
@@ -476,10 +516,30 @@ permissions:
 - `supplychain.supplier-portal.review` (later review command)
 
 Permission definition and supplier actor mapping (2026-11-15, §0.0 "DC-03 consumer rules"): the two v1 keys are defined by
-this module and enter the Auth catalog only from MOD-0148's manifest (P4, single writer, before MOD-0360-FU01 DL-2); Auth puts
-them into the `supplier_user` token as a fixed set without a tenant role (P1). No role seed for portal keys is written by
-this pack. Beyond the `[HasPermission]` check the service checks, in this order: `actor_type = supplier_user`, the token's
-`amr` (P2), the LE of the binding, then — for create and submit — the binding revision with Auth (P3), then eligibility (D2).
+this module and enter the Auth catalog only from MOD-0148's manifest (P4, before MOD-0360-FU01 DL-2); Auth puts them into
+the `supplier_user` token as a fixed set without a tenant role (P1). No role seed for portal keys is written by this pack,
+and company roles never get them automatically (P1, D2).
+
+**Single writer (review F-1):** the permission/composition single writer named in §0.0, §5 and P4 is **the MVP-6 CT**
+(owner decision 2026-10-26 D2, `docs/records/decisions/2026-10/mvp6-owner-decisions-2026-10-26.md`): it alone writes the
+SupplyChain manifests and their registration in the service composition.
+
+**Check order (review F-5)** — the first failing step answers; later steps do not run, and nothing is written:
+
+1. Framework: request body over 1 MiB → 400; no or invalid token → 401; `[HasPermission]` key missing → 403 `INVALID_REQUEST`.
+2. `actor_type = supplier_user` → else 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (status / list / create) / 404 (get / submit).
+3. `amr` has `pwd` and `otp` (P2) → same answers, `details.code = PORTAL_MFA_REQUIRED`.
+4. The request's LE is the binding's LE → same answers.
+5. Create and submit only: `binding_rev` with Auth (P3) → 403 / 404 `PORTAL_BINDING_STALE`, or 503.
+6. Eligibility (D2 table) → 403 / 404 / 422 `PORTAL_SUPPLIER_PENDING` / 503.
+7. Body and query validation → 400 (malformed JSON, scope override, invalid query value).
+8. Record lookup (own get / submit) → 404; `If-Match` → 409.
+9. Business rules → 422 (`PORTAL_DRAFT_LIMIT`, status transition).
+
+Steps 2–4 run before the request body is bound (an authorization step, not the handler), so a malformed body never answers
+before them. **Deviation from MOD-0360-FU01 D8 (recorded):** D8 orders 401 → 403 → 403 → 400 → 503; here a 503 from Auth
+(step 5) or Procurement (step 6) comes before the 400 of step 7, because the 403 of steps 5–6 cannot be decided without that
+answer, and the 1 MiB 400 comes first because the framework enforces it while reading the body.
 
 ## 15. Gateway / API Routing Decision
 
@@ -499,13 +559,15 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
 - [ ] **DC-03 consumer rules (2026-11-15, §0.0; each test has a sabotage that turns it red):**
   - [ ] P1 — only `actor_type = supplier_user` with the fixed two-key set reaches portal behaviour; a company user holding the
     keys through a role is refused (T-0148-V1-PERMSET-01; sabotage: drop the `actor_type` check).
-  - [ ] P2 — a token without both `pwd` and `otp` in `amr` → 403 `PORTAL_MFA_REQUIRED` on every operation, no call, no write
-    (T-0148-V1-AMR-01; sabotage: remove the `amr` check).
-  - [ ] P3 — create and submit call Auth `binding_rev` first: mismatch → 403 `PORTAL_BINDING_STALE`, Auth not usable → 503,
+  - [ ] P2 — a token without both `pwd` and `otp` in `amr` → 403 `PORTAL_MFA_REQUIRED` on status / list / create, 404 on own
+    get / submit, no call, no write (T-0148-V1-AMR-01; sabotage: remove the `amr` check).
+  - [ ] P3 — create and submit call Auth `binding_rev` first: mismatch → 403 `PORTAL_BINDING_STALE` (create) / 404 (submit),
+    Auth not usable → 503, check order of §14 holds,
     no write, no cache, service identity `Diten.SupplyChain` / `TRUSTED_SUPPLIER_BINDING_CONSUMER` (T-0148-V1-BREV-01;
     sabotages: skip the call on submit, fail open on Auth down, forward the supplier token, cache the answer).
-  - [ ] P4 — the manifest declares exactly the two keys, scope `Tenant`, and is on `main` before MOD-0360-FU01 DL-2
-    (T-0148-V1-CAT-01; sabotage: drop `.submit` or change the scope).
+  - [ ] P4 — the manifest declares exactly the two keys, scope `Tenant`, and is on `main` after this revision's CT-APR-01 and
+    before MOD-0360-FU01 DL-2; the catalog record shows both keys and no automatic grant (T-0148-V1-CAT-01; sabotage: drop
+    `.submit` or change the scope; from DL-1, drop an endpoint's key).
 - [ ] No Supplier master/KYC/credential replica exists locally.
 - [ ] **Later slice (with MOD-0147's risk part):** a `SUBMITTED` portal record is resolvable as a same-scope `PORTAL_SUBMISSION` source for MOD-0147 (AC-25; BLOKE on the resolver).
 - [ ] Later slice (not the first): G5 evidence links **accepted** portal feedback to MOD-0147 — requires the review operation (not in v1) or an approved external producer; `ACCEPTED` is never counted done without it.
@@ -530,7 +592,8 @@ tenant/legal-entity context, correlation and idempotency headers. This draft gra
       (`8086bf9a…`) is ready-for-dev with its CT-APR-01 row (approver Ali, 2026-11-13). Its build is still a gate (below, §0.0).
 - [x] DC-03 consumer choices written (Natig, 2026-11-15): P1 fixed set, P2 `amr` re-check, P3 `binding_rev` call, P4 catalog
       from this manifest (§0.0). Their tests are open with DL-1 / DL-2.
-- [ ] Catalog step P4 on `main` before MOD-0360-FU01 DL-2 starts.
+- [ ] Auth owner (Ali) keeps the two portal keys out of the automatic grant paths (P1; XMC-001 request) — before P4 is pushed.
+- [ ] Catalog step P4 on `main` after this revision's CT-APR-01 and before MOD-0360-FU01 DL-2 starts, with the catalog record.
 - [x] Placement: DC-01 CONCURRED 2026-10-18; domain-config / DCP-009 / registry aligned 2026-10-19.
 - [ ] Supplier base identity/status + Tenant/LE eligibility (DC-02) — MOD-0140 owner; build seam, not built.
 - [ ] Actor binding + authorization (DC-03) — Platform/Auth security owner: one active Supplier per actor/Tenant/LE,
@@ -596,8 +659,9 @@ DL-1: durum, kendi listesi ve kaydı, oluşturma, D2 uygunluk eşlemesi ve servi
 gönderim (submit) ve değişmezlik, denetim (§21).
 
 DC-03 tüketici kuralları (2026-11-15, §0.0): P1 ve P2 her iki dilimde; P3 oluşturmada DL-1'de, gönderimde DL-2'de; P4 (katalog
-adımı) DL-1'in ilk parçasıdır ve DL-1'in öteki kapılarından önce, MOD-0360-FU01 DL-2 başlamadan main'de olmalıdır.
+adımı) DL-1'in ilk parçasıdır: bu revizyonun CT-APR-02 ve CT-APR-01'inden sonra, DL-1'in öteki kapılarından önce,
+MOD-0360-FU01 DL-2 başlamadan main'de olmalıdır. CT-APR-01 satırının not alanı: "yalnız DL-1, DL-2; P4 öteki §0.0
+kapılarından muaf".
 
 DC-03 bağlaması (Beste, ayrı Auth/Platform paketi), iç inceleme komutu (sözleşme halefi) ve tedarikçi ekranı (portal alt
 alanı, 7 dil) bu paketin dilimi **değildir**: ilki dış kapıdır, diğer ikisi ayrı bir paket revizyonu ve onayıyla gelir.
-CT-APR-01 satırının not alanı: "yalnız DL-1, DL-2".
