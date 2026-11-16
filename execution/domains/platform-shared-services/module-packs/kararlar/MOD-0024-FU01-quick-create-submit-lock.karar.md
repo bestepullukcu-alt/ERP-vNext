@@ -7,6 +7,7 @@
 | Sürüm | Tarih | Ne değişti |
 |---|---|---|
 | r1 | 2026-11-16 | ilk taslak (`status: draft`), taban main `c3547081a` |
+| r2 | 2026-11-16 | denetçi KOŞULLU, tek düzeltme turu: B1 — AC-1/AC-4 sabotajı kilidin iki parçası birlikte, AC-2 yalnız bayrak, AC-3 yalnız pasifleştirme; B3 — §4 `submit` satırına "`TASK_FIELD_VALUE_INVALID` uyarısı beklenirken kilit tutulur". Ölçüt numaraları değişmedi. DL-1 6632 bayt (hedef 6 KB aşıldı, uyarı sınırı 10 KB'ın altında; sabotaj tarifi ölçüt metninde durmalı, bölünmedi) |
 
 ## Ölçümler (main `c3547081a`, paket yazarı kendisi okudu)
 - `WorkCenterNext/quick-create.js` (209 satır): `submit` (84–140) içinde çift gönderim koruması yok; 158. satırda
@@ -54,4 +55,4 @@
 10. **"Detaylı form" düğmesi kilitlenmez** (varsayılan): kişinin koyduğu kapsam tek düğmedir; artık risk bölüm 7, karar 3.
 
 ## Boyut (pack_contract_check okuyucularıyla, r1)
-Ortak kısım 5754 bayt (hedef ≤ 8 KB) · DL-1 5884 bayt (hedef ≤ 6 KB) · tek dilim.
+Ortak kısım 5754 bayt (hedef ≤ 8 KB) · DL-1 5884 bayt (hedef ≤ 6 KB); r2'de 6632 bayt · tek dilim.

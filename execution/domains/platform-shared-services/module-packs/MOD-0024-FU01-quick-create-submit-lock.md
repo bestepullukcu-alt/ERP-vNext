@@ -60,7 +60,7 @@ Nesneler ve uç noktalar
 
 | Nesne | Tür | Açıklama | Dilim |
 |---|---|---|---|
-| `WcnQuickCreate.submit` | dışa açık arayüz | bir gönderim sürerken yeni çağrı istek göndermez, pencere açmaz, `null` döner; gönderim sürerken `#quickSubmit` pasiftir; gönderim bitince (başarı, hata, devir, istisna) kilit kalkar; imza ve başarı dönüşü değişmez | DL-1 |
+| `WcnQuickCreate.submit` | dışa açık arayüz | bir gönderim sürerken yeni çağrı istek göndermez, pencere açmaz, `null` döner; gönderim sürerken `#quickSubmit` pasiftir; kilit iki parçadır (`submit` içindeki gönderim bayrağı ve düğmenin pasifleştirilmesi); kilit `submit` bitene dek tutulur — `TASK_FIELD_VALUE_INVALID` uyarısı beklenirken de — ve bitince (başarı, hata, devir, istisna) kalkar; imza ve başarı dönüşü değişmez | DL-1 |
 | `POST api/v1/tasks` (ön yüz `/Tasks/api/*` vekili üzerinden) | uç nokta | değişmez; yalnız çağrı sayısı ölçülür | DL-1 |
 
 Alanlar
@@ -83,10 +83,10 @@ Denetlenen olaylar
 
 ## 5. Acceptance Criteria
 
-- [ ] AC-1 (zorunlu) — İlk istek yanıt dönmeden `#quickSubmit` iki kez tıklanınca `TasksApi.create` bir kez çağrılır, bir `wcn:task-created` olayı yayılır ve panel bir kez kapanır; test yanıtı kendisi bitirene kadar bekleyen bir istekle ölçer ve `submit`'teki kilit geri alınınca iki çağrı sayarak kırmızıya döner · dilim: DL-1 · test: birim
-- [ ] AC-2 (zorunlu) — Düğmeye basılmadan `WcnQuickCreate.submit()` ilk istek sürerken ikinci kez çağrılınca ikinci çağrı istek göndermez, hiçbir pencere açmaz ve `null` döner; kilit yalnız düğmenin pasifliğine dayanırsa test kırmızıya döner · dilim: DL-1 · test: birim
-- [ ] AC-3 (zorunlu) — İstek sürerken `#quickSubmit` `disabled` durumundadır; başarılı yanıttan sonra düğme yeniden açıktır; panel `open()` ile yeniden açılıp (tarih bugüne döner) yeni başlık yazılınca ikinci basış ikinci isteği gönderir (kilit sonraki görevi engellemez) · dilim: DL-1 · test: birim
-- [ ] AC-4 (zorunlu) — Panel açıkken başlık alanında Enter'a basılınca gönderim başlar; ilk istek sürerken, Enter kuralının kendi 800 ms bastırma süresi geçtikten sonra Enter'a yeniden basılınca ikinci istek gitmez (gerçek `shared/diten-enter-primary.js` yüklenir); `submit`'teki kilit geri alınınca test kırmızıya döner · dilim: DL-1 · test: birim
+- [ ] AC-1 (zorunlu) — İlk istek yanıt dönmeden `#quickSubmit` iki kez tıklanınca `TasksApi.create` bir kez çağrılır, bir `wcn:task-created` olayı yayılır ve panel bir kez kapanır; test yanıtı kendisi bitirene kadar bekleyen bir istekle ölçer ve kilidin iki parçası (`submit`'teki bayrak ve düğmenin pasifleştirilmesi) birlikte geri alınınca iki çağrı sayarak kırmızıya döner (tek parça geri alınınca öteki tıklamayı durdurduğu için yeşil kalabilir; tek parçaları AC-2 ve AC-3 ölçer) · dilim: DL-1 · test: birim
+- [ ] AC-2 (zorunlu) — Düğmeye basılmadan `WcnQuickCreate.submit()` ilk istek sürerken ikinci kez çağrılınca ikinci çağrı istek göndermez, hiçbir pencere açmaz ve `null` döner; yalnız `submit`'teki bayrak geri alınınca (düğmenin pasifleştirilmesi yerinde kalsa da) test iki çağrı sayarak kırmızıya döner · dilim: DL-1 · test: birim
+- [ ] AC-3 (zorunlu) — İstek sürerken `#quickSubmit` `disabled` durumundadır; başarılı yanıttan sonra düğme yeniden açıktır; panel `open()` ile yeniden açılıp (tarih bugüne döner) yeni başlık yazılınca ikinci basış ikinci isteği gönderir (kilit sonraki görevi engellemez); yalnız düğmenin pasifleştirilmesi geri alınınca (bayrak yerinde kalsa da) test `disabled` beklentisinden kırmızıya döner · dilim: DL-1 · test: birim
+- [ ] AC-4 (zorunlu) — Panel açıkken başlık alanında Enter'a basılınca gönderim başlar; ilk istek sürerken, Enter kuralının kendi 800 ms bastırma süresi geçtikten sonra Enter'a yeniden basılınca ikinci istek gitmez (gerçek `shared/diten-enter-primary.js` yüklenir); kilidin iki parçası (`submit`'teki bayrak ve düğmenin pasifleştirilmesi) birlikte geri alınınca test iki çağrı sayarak kırmızıya döner (Enter kuralı pasif düğmeye basmadığı için yalnız bayrağı geri almak yeşil kalabilir) · dilim: DL-1 · test: birim
 - [ ] AC-5 (zorunlu) — Sunucu hata dönünce (ör. 403 ya da 500, `ok:false`) hata penceresi bugünkü gibi bir kez açılır, `submit` bittiğinde `#quickSubmit` yeniden açıktır ve yeniden basış yeni bir istek gönderir; hata yolunda kilit açılmazsa test kırmızıya döner · dilim: DL-1 · test: birim
 - [ ] AC-6 (zorunlu) — Ağ hatasında (gerçek `Tasks/api.js` ile, `fetch` hata atınca `reasonCode: UNAVAILABLE`) hata penceresi açılır ve `#quickSubmit` yeniden açıktır · dilim: DL-1 · test: birim
 - [ ] AC-7 (zorunlu) — `TasksApi.create` istisna atarsa `submit`'in sözü bugünkü gibi reddedilir (istisna yutulmaz) ve `#quickSubmit` yeniden açıktır · dilim: DL-1 · test: birim
