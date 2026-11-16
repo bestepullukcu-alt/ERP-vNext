@@ -68,7 +68,8 @@ internal sealed class InMemoryOrganizationUnitRepository
      * ⚠ THIS FAKE IS NOT THE CONCURRENCY PROOF, AND IT MUST NOT BE MISTAKEN FOR ONE. It reproduces the CAS
      * contract so the handler tests can exercise the loser's path; it runs in one process and proves nothing
      * about two. The guarantee is demonstrated against a real Mongo, with two genuinely concurrent writers,
-     * in OrganizationMatrixReportingTests.Two_concurrent_reparentings_cannot_both_land.
+     * in OrganizationMatrixReportingTests.Two_concurrent_reparentings_cannot_both_land and, with the
+     * interleaving held deterministically, in OrganizationReparentingRaceTests.
      */
     public Task<long> ReadStructureTokenAsync(CancellationToken ct = default)
     {
@@ -91,7 +92,10 @@ internal sealed class InMemoryOrganizationUnitRepository
     /// <summary>Arms one simulated concurrent parent mutation, landing between the next read and its write.</summary>
     public bool RaceOnNextRead { get; set; }
 
-    public Task<bool> TryAdvanceStructureTokenAsync(long expectedToken, CancellationToken ct = default)
+    public Task<bool> TryAdvanceStructureTokenAndUpdateAsync(
+        long expectedToken,
+        OrganizationUnit unit,
+        CancellationToken ct = default)
     {
         if (_structureToken != expectedToken)
         {
@@ -99,6 +103,7 @@ internal sealed class InMemoryOrganizationUnitRepository
         }
 
         _structureToken++;
+        unit.UpdatedAt = DateTimeOffset.UtcNow;
         return Task.FromResult(true);
     }
 
