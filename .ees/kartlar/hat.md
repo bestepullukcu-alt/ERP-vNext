@@ -6,11 +6,11 @@
 
 ## 1. Rol ve hedef
 - **H1.** Hat bir modülün dilimlerini paketten PR'a götürür: işi böler, işçi ve denetçi başlatır, dala yazar, test koşar, push eder, PR açar; birleştirmez. — *Rehberin A2 tavanı.*
-- **H2.** Pilot hedefleri her dilimde ölçülür: ≤5 iş günü, ≤3 insan dokunuşu, CI ilk denemede yeşil. Dokunuş = kişinin bu dilim için verdiği her onay, birleştirme ve cevapladığı her soru. — *Yönetici hedefi; sorular da insan zamanıdır.*
+- **H2.** Pilot hedefleri her dilimde ölçülür: ≤5 iş günü, ≤3 insan dokunuşu, CI ilk denemede yeşil. Dokunuş = kişinin bu dilim için verdiği her onay, birleştirme ve cevapladığı her soru; paket onayı, teslim onayı ve birleştirme zorunlu üç dokunuştur, yani hedef kodlama sırasında hiç soru sorulmamasıdır. — *Yönetici hedefi; sorular da insan zamanıdır.*
 - **H3.** Belirsizlik paket aşamasında çözülür; kodlama sırasındaki sorular biriktirilip tek mesajda sorulur. — *Her soru bir dokunuştur.*
 
 ## 2. Başlama ve paket
-- **H4.** Hat açılınca paket taslağını `module-pack-author` yazar; hat yazmaz, taslağı işi yazmayan denetçiye verir. — *Üreten denetlemez.*
+- **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar; hat yazmaz, taslağı işi yazmayan denetçiye verir. — *Üreten denetlemez.*
 - **H5.** Kod yalnız listelenen kişinin GitHub'da onayladığı paketle başlar; bu onay o dilim için dal, push ve PR iznidir (Ç23), birleştirme izni değildir. — *Sahibin 16 Kasım kararı; ≤3 dokunuş hedefi.*
 - **H6.** Modülün alan klasörü yoksa şablondan açılır (`.ees/sablonlar/modul-yeri/`, iş 6'da yazılacak); gelecek modüllere önceden klasör açılmaz. — *Boş klasör yığını.*
 - **H7.** Dilim tablosu MVP planının satırlarıyla karşılaştırılır; fark varsa yazılır ve kişiye sorulur, plan "Kullanır" dediği modülü başka modül sayar (H16). — *Plan ile paket ayrı değişir (Ç3).*
@@ -25,21 +25,21 @@
 - **H12.** Başlamış ve birleşmemiş iş en çok 3; işlerin dosya, sözleşme ve göç çakışması ölçülür, çakışan iş paralel başlamaz; her işin tek işçisi var. — *Aynı dosyaya iki yazıcı çakıştı.*
 - **H13.** Brif: hedef, sınırlar (dokunulmaz yollar, paketin ilgili bölümü), çıkış ölçütü (hangi testler yeşil olacak), canlı denemeyi kimin yapacağı — adım listesi değil; brif kartlarla çelişmez (ortak klasör, paylaşılan dal yok). — *Amaç, korkuluk, çıkış; eski brifler kartla çelişen çalışma düzeni yazıyordu.*
 - **H14.** İşçiye yalnız kendi dilimi, paketin ilgili bölümü ve kural haritasındaki satırı verilir. — *İşçi işe başlamadan 95–155 bin token okuyordu.*
-- **H15.** Seviye ve eforu kulenin kuralından alır (K16). Görünen metin ve çeviri `l10n-agent`'a, ağ geçidi rotası `integration-agent`'a, belge `belge-ajani`'na gider. — *Korunan yol ve uzman iş ayrı ajanda.*
+- **H15.** Seviye ve eforu kulenin verdiği brifteki değerden alır. Görünen metin ve çeviri `ees-l10n-agent`'a, ağ geçidi rotası `ees-integration-agent`'a, belge `ees-belge-ajani`'na gider. — *Korunan yol ve uzman iş ayrı ajanda.*
 - **H16.** Başka sahibin modülüne dokunan değişiklik: önce o sahibin yazılı onayı (bağlantısı PR'da), en küçük ekleyici değişiklik, o modülün sahibi inceler ve onaylar, başka kişi birleştirir; yeni yetenekse önce sahibiyle konuşulur. (XMC-001) — *Başka modül sessizce değişti.*
 - **H17.** Birden çok modüle dokunan iş: her modülün değişikliği kendi paketiyle; paylaşılan sözleşme donmadan tüketici iş başlamaz; "bitti" yalnız hepsi ana dala birleşip uçtan uca test ana dalda geçince. — *Ayrı dallarda geçen testler birleşince kırıldı.*
 
 ## 5. Denetim
-- **H18.** Her işi, işi yazmayan denetçi (`denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı. Güvenlik / kiracı / yetki işinde `security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
-- **H19.** Engel ya da önemli bulgu: bir düzeltme turu; ikinci turda hâlâ varsa iş bulgu özeti ve seçeneklerle kişiye gider (M2). Yalnız küçük bulgu kalırsa tur kapanır, bulgular PR'a yazılır. — *Sahibin 16 Kasım kararı.*
+- **H18.** Her işi, işi yazmayan denetçi (`ees-denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı. Güvenlik / kiracı / yetki işinde `ees-security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
+- **H19.** Engel ya da önemli bulgu: bir düzeltme turu; ikinci turda hâlâ varsa iş bulgu özeti ve seçeneklerle kişiye gider; adı belli kişi karar verir. Yalnız küçük bulgu kalırsa tur kapanır, bulgular PR'a yazılır. — *Sahibin 16 Kasım kararı.*
 - **H20.** Denetçi bulgusunu körü körüne uygulamaz: pakete ve koda karşı doğrular, itirazını PR'a yazar. — *Yanlış bulgu kodu bozabilir.*
-- **H21.** Yüksek etkili değişiklikte kulenin yolunu izler: ikinci araçla bağımsız inceleme ve kişi onayı (K18). — *Rehber O-27.*
+- **H21.** Yüksek etkili değişiklikte (onay akışı, komut freni, birleştirmeyi durduran kontrol, güvenlik) kör denetimden sonra ikinci bir araçla bağımsız inceleme ve kişi onayı. — *Rehber O-27.*
 
 ## 6. Teslim ve kabul
 - **H22.** Teslim = testler yeşil + her kabul ölçütü bir teste bağlı + modülün son diliminde modül sonu belgeleri; biri eksikse PR teslim onayına gönderilmez. — *Akışın otomatik kontroller adımı.*
 - **H23.** Modül sonu belgelerini `belge-ajani` yazar; hangilerinin zorunlu olduğu açık karardır (bugünkü sahip kararı: altı belge). — *Bugüne dek hiçbir modülün kullanıcı kılavuzu üretilmedi.*
 - **H24.** Modül bitti = son dilim birleşti, zorunlu kabul ölçütlerinin hepsi teste bağlı ve yeşil, modül sonu belgeleri var, açık engel yok. — *İki farklı "bitti" tanımı vardı.*
-- **H25.** PR açıklaması `.ees/sablonlar/pr-aciklamasi.md`'den. Listelenen kişi PR onayında "kabulü onaylıyorum" yazar; başka kişi birleştirir. — *D-12: kabulü adı belli kişi verir; üç dokunuş.*
+- **H25.** PR açıklaması `.ees/sablonlar/pr-aciklamasi.md`'den. Listelenen kişi PR onayında "kabulü onaylıyorum" yazar; başka kişi birleştirir. — *DİTEN kararı D-12: kabulü adı belli kişi verir; üç dokunuş.*
 - **H26.** Push'tan önce eklenen satırlarda sır taraması yapar; push dilim dalına, commit kimliğiyle. — *Depo herkese açık; zorunlu sır kontrolü henüz yok.*
 
 ## 7. Raporlama ve kayıt (Reporter)

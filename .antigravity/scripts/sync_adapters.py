@@ -90,7 +90,8 @@ Rules this script enforces (İ5-A pilot):
       manifest's tier_map[tool][seviye]; a target that also writes those fields itself, or an unknown seviye, is an
       error; a tool with no tier_map entry gets no model field (Codex and Gemini mappings are not verified yet);
   (3) instruction_budget 'max_lines': a listed file with more lines (LF, after CRLF→LF) than its limit fails --check.
-  A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation).
+  A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
+  says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
@@ -1095,6 +1096,9 @@ def render(item: dict, target: dict) -> str:
         source = " + ".join(parts + [source])
     else:
         digest = source_hash(text)
+    card = re.search(r"(?m)^kart:[ \t]*(\S+)[ \t]*$", block or "")
+    if card and (not parts or parts[-1] != f".ees/kartlar/{card.group(1)}.md"):
+        raise ConfigError(f"{item['source']}: says 'kart: {card.group(1)}' but the manifest composes {parts or 'no card'}")
     tier = source_tier(block, item["source"])
     if item["kind"] != "agent":
         tier = None   # a skill runs in the session that calls it; its seviye is documentation, not a model switch
@@ -1284,7 +1288,8 @@ def main() -> int:
 
     try:
         manifest = load_manifest()
-        expected = {t["path"]: (item["source"], render(item, t)) for item in manifest["items"] for t in item["targets"]}
+        expected = {t["path"]: (" + ".join(item.get("compose", []) + [item["source"]]), render(item, t))
+                    for item in manifest["items"] for t in item["targets"]}
     except (ConfigError, KeyError) as e:
         print(f"ERROR {e}")
         return 2

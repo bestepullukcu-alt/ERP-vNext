@@ -1,4 +1,8 @@
-# Uygulama planı — kartları bağlama (sonraki adım; bu adımda YAPILMADI)
+# Uygulama planı — kartları bağlama
+
+> **Durum (2026-11-16):** A1–A5 ve A7–A9 yapıldı (EES-BAGLAMA-01, kanıt `baglama-kaniti.md`); A6, A10, A11, B1, B2 pilot
+> geçtikten sonraki ayrı adımda. A3'te eski adlarla çakışan üç ajan pilotta `ees-` önekiyle bağlandı; A5'te çekirdek her
+> yeni gövdenin başında (kendiliğinden yükleme ölçülmedi, gerek kalmadı). Aşağıdaki metin planın ilk hâlidir.
 
 Dayanak: tasarım belgesi "`.ees/` klasör düzeni ve yerleşim kuralı" (12 Kasım, iş 4 adım 1) ve sahibin 16 Kasım onayı
 (karar 3: yeni ev `.ees/`, 8 ajan + 6 beceri bağlanır, 35 tanım arşive). Ölçümler `origin/main` @ `6ef2c884b`, 2026-11-16.

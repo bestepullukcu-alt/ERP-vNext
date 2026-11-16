@@ -1,0 +1,104 @@
+# Bağlama (EES-BAGLAMA-01) — kanıt
+
+Tarih 2026-11-16. Kapsam: uygulama planı A1–A5, A7–A9. Yapılmayanlar: A6 (kökteki `AGENTS.md`'nin çekirdekten üretilmesi,
+`git-safety` ve paket standardı değişiklikleri), A10 (35 tanımın arşivi), A11 (eski kart ve SOP'un arşivi), B1 (üretici
+betiğin yeri), B2 (i18n betikleri). `.antigravity/**` değişikliği için sahibin onayı bu sohbette kendi sözüyle alındı.
+
+## 1. Ne bağlandı
+
+| Giriş noktası | Kaynak | Taşıdığı kartlar | Claude | Codex / Antigravity |
+|---|---|---|---|---|
+| `/ees-kule` becerisi | `.ees/beceriler/kule/SKILL.md` | çekirdek + kule | `.claude/skills/ees-kule/` (modele kapalı) | — |
+| `/ees-hat` becerisi | `.ees/beceriler/hat/SKILL.md` | çekirdek + hat | `.claude/skills/ees-hat/` (modele kapalı) | — |
+| `ees-modul-arastir`, `ees-kullanim-kilavuzu` | `.ees/beceriler/…` | — | `.claude/skills/…` (modele kapalı) | — |
+| `ees-isci`, `ees-integration-agent`, `ees-belge-ajani`, `ees-is-analisti`, `ees-module-pack-author`, `ees-l10n-agent` | `.ees/ajanlar/…` | çekirdek + işçi | `.claude/agents/…` (model/efor seviyeden) | `.codex/agents/….toml` (model alanı yok: Codex eşlemesi doğrulanmadı) |
+| `ees-denetci`, `ees-security-agent` | `.ees/ajanlar/…` | çekirdek + denetçi | `.claude/agents/…` (yazma araçları kapalı) | `.codex/agents/….toml` (salt-okunur kip alanı doğrulanmadı; salt-okunurluk yalnız metinde) |
+
+Pilotun her ajanı ve becerisi `ees-` öneklidir (önek geçişte kalkar): eski kural metni `isci`, `integration-agent`,
+`module-pack-author` gibi adları anıyor, eski bir oturum öneksiz yeni bir ajanı kendi seçebilirdi (ikinci kör kontrol, bulgu
+1–2). Yeni beceriler Codex/Antigravity beceri klasörüne (`.agents/skills/`) konmadı: orada modelin kendiliğinden çağırmasını
+kapatan bir ayar doğrulanmadı (bulgu 3); pilot Claude'da koşar. `resx-check` eski kaynağından kullanılır. Alt ajanın çekirdeği kendiliğinden yükleyip yüklemediği **ölçülmedi**; ölçüm gerekmedi, çünkü yeni çekirdek bu
+adımda kendiliğinden yüklenen bir yere (`.claude/rules/`) konamaz — mevcut oturumları etkilerdi. Bu yüzden çekirdek her yeni
+ajan ve becerinin gövdesinin başında.
+
+## 2. Mevcut oturumlar etkilenmiyor (ölçüm)
+
+- Bağlamadan önce alınan sha256 tabanı (16 dosya: eski 13 bağdaştırıcı + `AGENTS.md`, `CLAUDE.md`, `.claude/settings.json`)
+  commit'ten sonra `shasum -a 256 -c` ile 16/16 OK.
+- `git diff 6359464e6..5d49bdf02` bu 16 dosyada ve `.claude/rules/`, `.agents/rules/` klasörlerinde boş. Kendiliğinden
+  yüklenen kural klasörlerinin içeriği aynı: `.claude/rules/` = `agents-core.md`, `localization-standard.md`;
+  `.agents/rules/` = `localization-standard.md`.
+- Bekçi testi: hiçbir `.ees/` kaynağı (ya da kartı) `.claude/rules/`, `.agents/rules/`, `AGENTS.md`, `CLAUDE.md`'ye üretilemez;
+  eski 7 öğe eski kaynağında kalır (`test_sync_adapters_ees.PilotBoundary`).
+- **Değişen tek şey (dosya değil, liste):** eski bir Claude oturumunun ajan listesinde 8 yeni ad ve açıklaması görünür; Codex
+  oturumunun ajan listesi de büyür (beceri listesi büyümez). Ajan adları `ees-` önekli ve açıklamaları "YALNIZ yeni akışın
+  pilot hattı başlatır; eski kule ve hatlar KULLANMAZ" der. Yeni beceriler Claude'da `disable-model-invocation: true` taşır,
+  yani yalnız kişi `/ees-kule` ya da `/ees-hat` yazınca açılır. Ajanların listeden gizlenmesinin araçta bir yolu bilinmiyor; eski bir kulenin bir yeni ajanı kendi
+  seçmesi açıklama sayesinde düşük olasılıklıdır ama sıfır değildir (**ölçülmedi**).
+
+## 3. Testler
+
+| Komut | Sonuç |
+|---|---|
+| `python3 .antigravity/scripts/sync_adapters.py --check` | `OK 33 adapter(s) match their sources` |
+| `python3 -m unittest scripts/tests/test_sync_adapters_ees.py` (yeni, 18 test) | OK |
+| `python3 -m unittest scripts/tests/test_sync_adapters_budget.py` (59 test) | OK (133 sn) |
+| `dotnet test tests/architecture/…ArchitectureTests.csproj` (belge yolu bekçisi `.ees/adapters.json`'u da tarar) | 231/231 |
+
+## 4. Bozma kanıtları (her biri geri alındı, sha256 ile ölçüldü; son durum `OK 33`)
+
+| # | Bozma | Sonuç |
+|---|---|---|
+| S1 | İşçi kartı 63 satır (sınır 60) | `--check` çıkış 1: `OVERLINES .ees/kartlar/isci.md has 63 lines; limit 60` (+ kartı taşıyan bağdaştırıcılarda DRIFT) |
+| S2 | Üretilmiş `.claude/agents/ees-isci.md` elle düzenlendi | çıkış 1: `DRIFT .claude/agents/ees-isci.md` |
+| S3 | Çekirdek kart değişti, yeniden üretilmedi | çıkış 1: çekirdeği taşıyan 18 bağdaştırıcının hepsi DRIFT |
+| S4 | Ajan kaynağında `seviye: orta` | çıkış 2: `unknown seviye 'orta'` |
+| S5 | `.ees` kaynağı `.claude/rules/`'a hedeflendi | pilot sınırı testi kırmızı: `ees-isci -> .claude/rules/ees-cekirdek.md` |
+| S6 | Üreticiden satır sınırı denetimi silindi | `test_too_many_lines_in_a_card_fails` kırmızı |
+| S7 | Üretici kartları gövdeye eklemiyor | `--check` çıkış 1, bütün kartlı bağdaştırıcılar DRIFT |
+| S8 | Eski `control-tower` öğesinin kaynağı `.ees`'e çevrildi | `test_old_adapters_keep_their_old_source` kırmızı |
+| S9 | Yeni bir beceri modele açıldı | `test_new_skills_are_never_invoked_by_the_model_in_claude` kırmızı |
+| S10 | Kaynakta `kart: denetci`, listede işçi kartı | `--check` çıkış 2: kart alanı listeyle çelişiyor |
+| S11 | `ees-hat` becerisi `.agents/skills/`'e hedeflendi | pilot sınırı testi kırmızı: `ees-hat -> .agents/skills/ees-hat/SKILL.md` |
+| S12 | Pilot ajanı öneksiz adla (`.claude/agents/isci.md`) bağlandı | `test_every_pilot_entry_point_has_the_ees_prefix` kırmızı |
+
+Betik: `bozma.py` (çalışma klasöründe, depoya girmedi); her bozmayı uygular, sınar, dosyayı yedeğinden geri koyar.
+
+## 5. Windows
+
+agent-adapters CI Windows'ta `python …sync_adapters.py --check` koşuyor. Yeni kod satır sonlarını okurken CRLF'yi LF'ye
+çeviriyor (kart birleştirme `read_text`, satır sınırı `read_bytes().replace(b"\r\n", b"\n")`); bunun testi
+`test_line_count_ignores_windows_line_ends`. Windows'ta koşturulmadı (bu makinede Windows yok); CI ilk koşusunda görülecek.
+
+## 6. Bilinen eskimiş atıf
+
+`AGENTS.md` §6.1 hâlâ `.antigravity/adapters.json` diyor (bağlantı değil, kod metni; ölü bağlantı denetimi etkilenmez).
+`AGENTS.md` bu adımda değişmedi (mevcut oturumları etkilemesin); A6'da düzeltilecek.
+
+## 7. Kör kontroller
+
+**Kör kontrol 1** (kartlar, ilk adım): `kor-kontrol.md`.
+
+**Kör kontrol 2** (bu bağlama; Opus, yüksek efor; fark 6359464e6..5d49bdf02): mevcut oturumlar etkilenmiyor (16 dosya üç
+noktada aynı, kendi sha256 ölçümü), yeni giriş noktaları doğru kartı doğru sırada yüklüyor, model alanları seviyeye uygun,
+CRLF benzetiminde `--check` aynı. Kendi 6 bellek-içi bozmasında her biri bir testi kırdı. 9 önemli, 7 küçük bulgu:
+
+| No | Bulgu | Ne yapıldı |
+|---|---|---|
+| 1–2 | `integration-agent` ve `isci` eski kural metnindeki adlarla aynı; eski oturum seçebilir | pilotun bütün ajan ve becerileri `ees-` önekli; bekçi testi |
+| 3 | Codex/Antigravity yeni becerileri kendiliğinden çağırabilir | `.agents/skills/`'e konmadı; bekçi testi |
+| 4 | Kartlar eski ajan adlarını kullanıyordu | kartlarda `ees-` adları (yalnız ad; kural metni değişmedi) |
+| 5 | Giriş noktasının yüklemediği satır kimliklerine atıf (K16, K18, M2, H19, H3, K11; D-12/D-25 açıklamasız) | atıflar yerinde yazıldı; D-12/D-25 "DİTEN kararı" diye açıklandı; her giriş noktasında çözümsüz atıf kalmadığı betikle ölçüldü |
+| 6 | Pilot oturum `AGENTS.md` Çekirdeğini de yüklüyor: kural 8 (her push/PR açık onay) ↔ Ç23 | `ees-kule` ve `ees-hat` gövdesinde açık hüküm: pilotta dilimin paket onayı o dilim için push/PR'ın açık onayıdır (sahip kararı); başka çelişkide sor. `AGENTS.md` A6'da |
+| 7 | "En üst seviye" M2 ile "yüksek riskte bir üst" belirsiz | K5: "Üst+, seviye tablosunun üstü" |
+| 8 | Güvenlik ajanı standart seviyede | `seviye: ust` |
+| 9 | Belge ajanı kılavuz becerisini çağıramaz (modele kapalı) | gövdeye kaynak dosyanın yolu |
+| 10 | Codex salt-okunur kip alanı yok | doğrulanmalı; yukarıdaki tabloda yazılı |
+| 11 | İ4 gerekçesi eskidi (`.ees/` artık kod sahibi listesinde) | düzeltildi |
+| 12 | `AGENTS.md` §6.1 ve model dosyası eski manifest yolunu anıyor | model dosyası düzeltildi; `AGENTS.md` A6'da |
+| 13 | DRIFT iletisi bileşik kaynağı adlandırmıyor | ileti artık "kart + kart + kaynak" der |
+| 14 | Kaynaktaki `kart:` alanı denetlenmiyor | üretici çelişkide hata verir; test + S10 |
+| 15 | Eski kaynağa `seviye:` eklenirse eski kopya değişir; kanıt dosyası commit'te yoktu | `test_old_sources_carry_no_seviye`; bu dosya commit'lendi |
+| 16 | ≤3 dokunuş hedefi soru sayımıyla belirsiz | H2: üç zorunlu dokunuş; hedef kodlamada hiç soru olmaması |
+
+Düzeltmeler ikinci bir kör turla denetlenmedi (kalite hatası bir kez düzeltilir).

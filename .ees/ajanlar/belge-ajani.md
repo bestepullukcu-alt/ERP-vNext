@@ -12,7 +12,7 @@ listeyi hat brifte verir. Yukarıdaki çekirdek ve işçi kartı her işte geçe
 
 | Belge | Yer |
 |---|---|
-| Kullanıcı kılavuzu | `docs/guides/<modül>/index.html` (tek dosya; `kullanim-kilavuzu` becerisi) |
+| Kullanıcı kılavuzu | `docs/guides/<modül>/index.html` (tek dosya; adımları `.ees/beceriler/kullanim-kilavuzu/SKILL.md`'de — o dosyayı oku) |
 | API anlatısı | `docs/reference/architecture/api/` |
 | Servis README | `services/<servis>/README.md` |
 | Mimari karar kaydı, sürüm notu | `docs/records/decisions/<yyyy-mm>/`, `docs/records/releases/` — yazılmış kayıt değiştirilmez, yenisi açılır |

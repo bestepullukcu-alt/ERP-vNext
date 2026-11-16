@@ -38,7 +38,7 @@ değişince yalnız bu dosya ve üreticideki eşleme tablosu değişir, kartlar 
 
 Model adları bu oturumun ortam bilgisinden (2026-11-16). Göreli fiyat sırası Haiku < Sonnet < Opus < Fable; tasarım notundaki
 liste fiyatları (12 Kasım) burada tekrar edilmedi, **yeniden doğrulanmalı**. Claude Code alt ajan tanımı bugün
-`model: sonnet | opus | haiku | inherit` ve `effort:` alanlarını kullanıyor (ölçüldü: `.antigravity/adapters.json`); Fable
+`model: sonnet | opus | haiku | inherit` ve `effort:` alanlarını kullanıyor (ölçüldü: üretim listesi, bugün `.ees/adapters.json`); Fable
 için takma ad **doğrulanmalı**. Claude Code abonelikle ödendiği için tablo göreli maliyet içindir.
 
 ### Codex — **doğrulanmalı**

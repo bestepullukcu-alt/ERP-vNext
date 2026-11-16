@@ -1,13 +1,14 @@
 ---
-name: modul-arastir
+name: ees-modul-arastir
 description: "EES modül araştırması (salt-okunur): adı verilen yeni modül ya da kapsam için Blueprint, kimlik keşfi, paket ve geçmiş kararlar; dört parçalı yanıt. Yeni akışın kulesi kullanır."
+disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/beceriler/modul-arastir/SKILL.md` · kaynak özeti: `sha256:a18d8cd3f969` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/beceriler/modul-arastir/SKILL.md` · kaynak özeti: `sha256:077e7a7fd0a5` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Modül araştırması — adı verilen yeni modül ya da kapsam için salt-okunur keşif (asıl tanım)
 
-Kule kartı K11'in adımlarıdır. Salt-okunur: hiçbir dosya yazmaz (geçici dosya dahil), dal değiştirmez, kod ya da paket izni
+Yeni akışın kulesinin modül talebi adımlarıdır. Salt-okunur: hiçbir dosya yazmaz (geçici dosya dahil), dal değiştirmez, kod ya da paket izni
 vermez. Eski `control-tower` becerisinin araştırma bölümünden sadeleştirildi; eski beceri eski hatlar için yerinde durur.
 
 ## Adımlar

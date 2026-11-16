@@ -1,6 +1,7 @@
 ---
-name: kullanim-kilavuzu
+name: ees-kullanim-kilavuzu
 description: "EES kullanıcı kılavuzu adımları: modülün tek dosya HTML kılavuzunu yazar. Yeni akışın belge ajanı kullanır."
+disable-model-invocation: true
 ---
 
 > **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/beceriler/kullanim-kilavuzu/SKILL.md` · kaynak özeti: `sha256:a71b218df6cd` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`

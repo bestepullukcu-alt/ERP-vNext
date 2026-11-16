@@ -4,7 +4,7 @@ seviye: standart
 
 # Modül araştırması — adı verilen yeni modül ya da kapsam için salt-okunur keşif (asıl tanım)
 
-Kule kartı K11'in adımlarıdır. Salt-okunur: hiçbir dosya yazmaz (geçici dosya dahil), dal değiştirmez, kod ya da paket izni
+Yeni akışın kulesinin modül talebi adımlarıdır. Salt-okunur: hiçbir dosya yazmaz (geçici dosya dahil), dal değiştirmez, kod ya da paket izni
 vermez. Eski `control-tower` becerisinin araştırma bölümünden sadeleştirildi; eski beceri eski hatlar için yerinde durur.
 
 ## Adımlar

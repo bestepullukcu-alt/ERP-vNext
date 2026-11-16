@@ -1,5 +1,5 @@
 ---
-seviye: standart
+seviye: ust
 kart: denetci
 ---
 

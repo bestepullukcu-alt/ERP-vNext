@@ -391,7 +391,7 @@
       ]
     },
     {
-      "id": "isci",
+      "id": "ees-isci",
       "kind": "agent",
       "source": ".ees/ajanlar/isci.md",
       "compose": [
@@ -402,9 +402,9 @@
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/agents/isci.md",
+          "path": ".claude/agents/ees-isci.md",
           "frontmatter": {
-            "name": "isci",
+            "name": "ees-isci",
             "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
@@ -412,16 +412,16 @@
         {
           "tool": "codex",
           "format": "codex-agent-toml",
-          "path": ".codex/agents/isci.toml",
+          "path": ".codex/agents/ees-isci.toml",
           "fields": {
-            "name": "isci",
+            "name": "ees-isci",
             "description": "EES işçi (Step Operator): hattın brifindeki tek işi kendi dalında yazar, testler, beş satırlık teslim notu verir; push ve PR açmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
     },
     {
-      "id": "denetci",
+      "id": "ees-denetci",
       "kind": "agent",
       "source": ".ees/ajanlar/denetci.md",
       "compose": [
@@ -432,9 +432,9 @@
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/agents/denetci.md",
+          "path": ".claude/agents/ees-denetci.md",
           "frontmatter": {
-            "name": "denetci",
+            "name": "ees-denetci",
             "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash",
             "disallowedTools": "Edit, Write, NotebookEdit"
@@ -443,9 +443,9 @@
         {
           "tool": "codex",
           "format": "codex-agent-toml",
-          "path": ".codex/agents/denetci.toml",
+          "path": ".codex/agents/ees-denetci.toml",
           "fields": {
-            "name": "denetci",
+            "name": "ees-denetci",
             "description": "EES denetçi (Quality Checker, salt-okunur): yazmadığı işi ipucusuz, ölçerek denetler; bulgu ve UYGUN/KOŞULLU/UYGUN DEĞİL sonucu verir, dosya değiştirmez. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
@@ -543,7 +543,7 @@
       ]
     },
     {
-      "id": "integration-agent",
+      "id": "ees-integration-agent",
       "kind": "agent",
       "source": ".ees/ajanlar/integration-agent.md",
       "compose": [
@@ -554,9 +554,9 @@
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/agents/integration-agent.md",
+          "path": ".claude/agents/ees-integration-agent.md",
           "frontmatter": {
-            "name": "integration-agent",
+            "name": "ees-integration-agent",
             "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
@@ -564,16 +564,16 @@
         {
           "tool": "codex",
           "format": "codex-agent-toml",
-          "path": ".codex/agents/integration-agent.toml",
+          "path": ".codex/agents/ees-integration-agent.toml",
           "fields": {
-            "name": "integration-agent",
+            "name": "ees-integration-agent",
             "description": "EES entegrasyon ajanı (Step Operator): ocelot.json ağ geçidi rotalarının tek yazarı; port uydurmaz. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
     },
     {
-      "id": "belge-ajani",
+      "id": "ees-belge-ajani",
       "kind": "agent",
       "source": ".ees/ajanlar/belge-ajani.md",
       "compose": [
@@ -584,9 +584,9 @@
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/agents/belge-ajani.md",
+          "path": ".claude/agents/ees-belge-ajani.md",
           "frontmatter": {
-            "name": "belge-ajani",
+            "name": "ees-belge-ajani",
             "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
@@ -594,16 +594,16 @@
         {
           "tool": "codex",
           "format": "codex-agent-toml",
-          "path": ".codex/agents/belge-ajani.toml",
+          "path": ".codex/agents/ees-belge-ajani.toml",
           "fields": {
-            "name": "belge-ajani",
+            "name": "ees-belge-ajani",
             "description": "EES belge ajanı (Step Operator): modül sonu belgelerini (kullanıcı kılavuzu, API anlatısı, README, karar kaydı) yazar. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
     },
     {
-      "id": "is-analisti",
+      "id": "ees-is-analisti",
       "kind": "agent",
       "source": ".ees/ajanlar/is-analisti.md",
       "compose": [
@@ -614,9 +614,9 @@
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/agents/is-analisti.md",
+          "path": ".claude/agents/ees-is-analisti.md",
           "frontmatter": {
-            "name": "is-analisti",
+            "name": "ees-is-analisti",
             "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
@@ -624,36 +624,27 @@
         {
           "tool": "codex",
           "format": "codex-agent-toml",
-          "path": ".codex/agents/is-analisti.toml",
+          "path": ".codex/agents/ees-is-analisti.toml",
           "fields": {
-            "name": "is-analisti",
+            "name": "ees-is-analisti",
             "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/hat becerisi); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]
     },
     {
-      "id": "kule",
+      "id": "ees-kule",
       "kind": "skill",
       "source": ".ees/beceriler/kule/SKILL.md",
       "targets": [
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/skills/kule/SKILL.md",
+          "path": ".claude/skills/ees-kule/SKILL.md",
           "frontmatter": {
-            "name": "kule",
+            "name": "ees-kule",
             "description": "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbetini yeni kartlarla başlatır. YALNIZ pilot hat için kişi çağırır; eski kule oturumları control-tower becerisini kullanır.",
             "disable-model-invocation": true
-          }
-        },
-        {
-          "tool": "codex+antigravity",
-          "format": "markdown",
-          "path": ".agents/skills/kule/SKILL.md",
-          "frontmatter": {
-            "name": "kule",
-            "description": "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbetini yeni kartlarla başlatır. YALNIZ pilot hat için kişi çağırır; eski kule oturumları control-tower becerisini kullanır."
           }
         }
       ],
@@ -663,27 +654,18 @@
       ]
     },
     {
-      "id": "hat",
+      "id": "ees-hat",
       "kind": "skill",
       "source": ".ees/beceriler/hat/SKILL.md",
       "targets": [
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/skills/hat/SKILL.md",
+          "path": ".claude/skills/ees-hat/SKILL.md",
           "frontmatter": {
-            "name": "hat",
+            "name": "ees-hat",
             "description": "EES yeni akışın hattı: bir modülün dilimlerini onaylı paketten PR'a götüren oturumu yeni kartlarla başlatır. YALNIZ kişinin açtığı pilot hat çağırır.",
             "disable-model-invocation": true
-          }
-        },
-        {
-          "tool": "codex+antigravity",
-          "format": "markdown",
-          "path": ".agents/skills/hat/SKILL.md",
-          "frontmatter": {
-            "name": "hat",
-            "description": "EES yeni akışın hattı: bir modülün dilimlerini onaylı paketten PR'a götüren oturumu yeni kartlarla başlatır. YALNIZ kişinin açtığı pilot hat çağırır."
           }
         }
       ],
@@ -693,53 +675,35 @@
       ]
     },
     {
-      "id": "modul-arastir",
+      "id": "ees-modul-arastir",
       "kind": "skill",
       "source": ".ees/beceriler/modul-arastir/SKILL.md",
       "targets": [
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/skills/modul-arastir/SKILL.md",
+          "path": ".claude/skills/ees-modul-arastir/SKILL.md",
           "frontmatter": {
-            "name": "modul-arastir",
+            "name": "ees-modul-arastir",
             "description": "EES modül araştırması (salt-okunur): adı verilen yeni modül ya da kapsam için Blueprint, kimlik keşfi, paket ve geçmiş kararlar; dört parçalı yanıt. Yeni akışın kulesi kullanır.",
             "disable-model-invocation": true
-          }
-        },
-        {
-          "tool": "codex+antigravity",
-          "format": "markdown",
-          "path": ".agents/skills/modul-arastir/SKILL.md",
-          "frontmatter": {
-            "name": "modul-arastir",
-            "description": "EES modül araştırması (salt-okunur): adı verilen yeni modül ya da kapsam için Blueprint, kimlik keşfi, paket ve geçmiş kararlar; dört parçalı yanıt. Yeni akışın kulesi kullanır."
           }
         }
       ]
     },
     {
-      "id": "kullanim-kilavuzu",
+      "id": "ees-kullanim-kilavuzu",
       "kind": "skill",
       "source": ".ees/beceriler/kullanim-kilavuzu/SKILL.md",
       "targets": [
         {
           "tool": "claude-code",
           "format": "markdown",
-          "path": ".claude/skills/kullanim-kilavuzu/SKILL.md",
+          "path": ".claude/skills/ees-kullanim-kilavuzu/SKILL.md",
           "frontmatter": {
-            "name": "kullanim-kilavuzu",
+            "name": "ees-kullanim-kilavuzu",
             "description": "EES kullanıcı kılavuzu adımları: modülün tek dosya HTML kılavuzunu yazar. Yeni akışın belge ajanı kullanır.",
             "disable-model-invocation": true
-          }
-        },
-        {
-          "tool": "codex+antigravity",
-          "format": "markdown",
-          "path": ".agents/skills/kullanim-kilavuzu/SKILL.md",
-          "frontmatter": {
-            "name": "kullanim-kilavuzu",
-            "description": "EES kullanıcı kılavuzu adımları: modülün tek dosya HTML kılavuzunu yazar. Yeni akışın belge ajanı kullanır."
           }
         }
       ]

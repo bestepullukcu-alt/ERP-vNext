@@ -20,6 +20,9 @@ SPEC.loader.exec_module(sa)
 
 # What a session loads by itself, with no skill or agent invoked: the pilot boundary says no .ees source reaches these.
 AUTO_LOADED_DIRS = (".claude/rules/", ".agents/rules/")
+# Codex and Antigravity may call a skill under .agents/skills by themselves and no switch for that is verified yet, so no
+# EES skill goes there until the pilot measures it (blind check 2, finding 3).
+IMPLICIT_SKILL_DIRS = (".agents/skills/",)
 AUTO_LOADED_FILES = ("AGENTS.md", "CLAUDE.md")
 CARD_LIMITS = {"cekirdek": 70, "kule": 90, "hat": 110, "isci": 60, "denetci": 50}   # owner decision 2026-11-16
 
@@ -34,7 +37,8 @@ def pilot_boundary_problems(manifest: dict) -> list[str]:
         if not from_ees(item):
             continue
         for t in item["targets"]:
-            if t["path"].startswith(AUTO_LOADED_DIRS) or t["path"] in AUTO_LOADED_FILES:
+            if (t["path"].startswith(AUTO_LOADED_DIRS) or t["path"] in AUTO_LOADED_FILES
+                    or (item["kind"] == "skill" and t["path"].startswith(IMPLICIT_SKILL_DIRS))):
                 bad.append(f"{item['id']} -> {t['path']}")
     if any(i.get("extract") == "core" and i["source"].startswith(".ees/") for i in manifest["items"]):
         bad.append("the always-loaded core block is generated from .ees/")
@@ -54,9 +58,29 @@ class PilotBoundary(unittest.TestCase):
 
     def test_the_boundary_check_fires_on_a_rules_target(self):
         broken = json.loads(json.dumps(self.manifest))
-        isci = next(i for i in broken["items"] if i["id"] == "isci")
+        isci = next(i for i in broken["items"] if i["id"] == "ees-isci")
         isci["targets"].append({"tool": "claude-code", "format": "markdown", "path": ".claude/rules/ees-cekirdek.md"})
-        self.assertEqual(pilot_boundary_problems(broken), ["isci -> .claude/rules/ees-cekirdek.md"])
+        self.assertEqual(pilot_boundary_problems(broken), ["ees-isci -> .claude/rules/ees-cekirdek.md"])
+
+    def test_the_boundary_check_fires_on_a_codex_skill_target(self):
+        broken = json.loads(json.dumps(self.manifest))
+        hat = next(i for i in broken["items"] if i["id"] == "ees-hat")
+        hat["targets"].append({"tool": "codex+antigravity", "format": "markdown", "path": ".agents/skills/ees-hat/SKILL.md"})
+        self.assertEqual(pilot_boundary_problems(broken), ["ees-hat -> .agents/skills/ees-hat/SKILL.md"])
+
+    def test_every_pilot_entry_point_has_the_ees_prefix(self):
+        for item in self.manifest["items"]:
+            if from_ees(item):
+                self.assertTrue(item["id"].startswith("ees-"), item["id"])
+                for t in item["targets"]:
+                    self.assertIn("/ees-", t["path"], t["path"])
+
+    def test_old_sources_carry_no_seviye(self):
+        # a seviye in an old source would change an old adapter's model field on the next regeneration
+        for item in self.manifest["items"]:
+            if not from_ees(item):
+                block, _ = sa.split_frontmatter(sa.read_text(item["source"]) if item.get("extract") != "core" else "")
+                self.assertIsNone(sa.source_tier(block, item["source"]), item["id"])
 
     def test_old_adapters_keep_their_old_source(self):
         # the 13 adapters from before the wiring: same source, no card, no tier — so their bytes cannot change
@@ -151,6 +175,12 @@ class Features(unittest.TestCase):
             sa.render({"id": "x", "kind": "agent", "source": "src"},
                       {"tool": "claude-code", "format": "markdown", "path": "p",
                        "frontmatter": {"name": "x", "description": "d", "model": "haiku"}})
+
+    def test_a_kart_field_that_disagrees_with_the_manifest_fails(self):
+        self.files(**{"c1": "# Kart\n", "src": "---\nkart: denetci\n---\nGövde\n"})
+        with self.assertRaises(sa.ConfigError):
+            sa.render({"id": "x", "kind": "agent", "source": "src", "compose": ["c1"]},
+                      {"tool": "other", "format": "markdown", "path": "p"})
 
     def test_an_unknown_seviye_fails(self):
         self.files(src="---\nseviye: cok-ust\n---\nGövde\n")

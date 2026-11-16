@@ -1,10 +1,10 @@
 ---
-name: hat
+name: ees-hat
 description: "EES yeni akışın hattı: bir modülün dilimlerini onaylı paketten PR'a götüren oturumu yeni kartlarla başlatır. YALNIZ kişinin açtığı pilot hat çağırır."
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:c9cbf4a589fb` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:430a3bc619e8` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -64,11 +64,11 @@ disable-model-invocation: true
 
 ## 1. Rol ve hedef
 - **H1.** Hat bir modülün dilimlerini paketten PR'a götürür: işi böler, işçi ve denetçi başlatır, dala yazar, test koşar, push eder, PR açar; birleştirmez. — *Rehberin A2 tavanı.*
-- **H2.** Pilot hedefleri her dilimde ölçülür: ≤5 iş günü, ≤3 insan dokunuşu, CI ilk denemede yeşil. Dokunuş = kişinin bu dilim için verdiği her onay, birleştirme ve cevapladığı her soru. — *Yönetici hedefi; sorular da insan zamanıdır.*
+- **H2.** Pilot hedefleri her dilimde ölçülür: ≤5 iş günü, ≤3 insan dokunuşu, CI ilk denemede yeşil. Dokunuş = kişinin bu dilim için verdiği her onay, birleştirme ve cevapladığı her soru; paket onayı, teslim onayı ve birleştirme zorunlu üç dokunuştur, yani hedef kodlama sırasında hiç soru sorulmamasıdır. — *Yönetici hedefi; sorular da insan zamanıdır.*
 - **H3.** Belirsizlik paket aşamasında çözülür; kodlama sırasındaki sorular biriktirilip tek mesajda sorulur. — *Her soru bir dokunuştur.*
 
 ## 2. Başlama ve paket
-- **H4.** Hat açılınca paket taslağını `module-pack-author` yazar; hat yazmaz, taslağı işi yazmayan denetçiye verir. — *Üreten denetlemez.*
+- **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar; hat yazmaz, taslağı işi yazmayan denetçiye verir. — *Üreten denetlemez.*
 - **H5.** Kod yalnız listelenen kişinin GitHub'da onayladığı paketle başlar; bu onay o dilim için dal, push ve PR iznidir (Ç23), birleştirme izni değildir. — *Sahibin 16 Kasım kararı; ≤3 dokunuş hedefi.*
 - **H6.** Modülün alan klasörü yoksa şablondan açılır (`.ees/sablonlar/modul-yeri/`, iş 6'da yazılacak); gelecek modüllere önceden klasör açılmaz. — *Boş klasör yığını.*
 - **H7.** Dilim tablosu MVP planının satırlarıyla karşılaştırılır; fark varsa yazılır ve kişiye sorulur, plan "Kullanır" dediği modülü başka modül sayar (H16). — *Plan ile paket ayrı değişir (Ç3).*
@@ -83,21 +83,21 @@ disable-model-invocation: true
 - **H12.** Başlamış ve birleşmemiş iş en çok 3; işlerin dosya, sözleşme ve göç çakışması ölçülür, çakışan iş paralel başlamaz; her işin tek işçisi var. — *Aynı dosyaya iki yazıcı çakıştı.*
 - **H13.** Brif: hedef, sınırlar (dokunulmaz yollar, paketin ilgili bölümü), çıkış ölçütü (hangi testler yeşil olacak), canlı denemeyi kimin yapacağı — adım listesi değil; brif kartlarla çelişmez (ortak klasör, paylaşılan dal yok). — *Amaç, korkuluk, çıkış; eski brifler kartla çelişen çalışma düzeni yazıyordu.*
 - **H14.** İşçiye yalnız kendi dilimi, paketin ilgili bölümü ve kural haritasındaki satırı verilir. — *İşçi işe başlamadan 95–155 bin token okuyordu.*
-- **H15.** Seviye ve eforu kulenin kuralından alır (K16). Görünen metin ve çeviri `l10n-agent`'a, ağ geçidi rotası `integration-agent`'a, belge `belge-ajani`'na gider. — *Korunan yol ve uzman iş ayrı ajanda.*
+- **H15.** Seviye ve eforu kulenin verdiği brifteki değerden alır. Görünen metin ve çeviri `ees-l10n-agent`'a, ağ geçidi rotası `ees-integration-agent`'a, belge `ees-belge-ajani`'na gider. — *Korunan yol ve uzman iş ayrı ajanda.*
 - **H16.** Başka sahibin modülüne dokunan değişiklik: önce o sahibin yazılı onayı (bağlantısı PR'da), en küçük ekleyici değişiklik, o modülün sahibi inceler ve onaylar, başka kişi birleştirir; yeni yetenekse önce sahibiyle konuşulur. (XMC-001) — *Başka modül sessizce değişti.*
 - **H17.** Birden çok modüle dokunan iş: her modülün değişikliği kendi paketiyle; paylaşılan sözleşme donmadan tüketici iş başlamaz; "bitti" yalnız hepsi ana dala birleşip uçtan uca test ana dalda geçince. — *Ayrı dallarda geçen testler birleşince kırıldı.*
 
 ## 5. Denetim
-- **H18.** Her işi, işi yazmayan denetçi (`denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı. Güvenlik / kiracı / yetki işinde `security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
-- **H19.** Engel ya da önemli bulgu: bir düzeltme turu; ikinci turda hâlâ varsa iş bulgu özeti ve seçeneklerle kişiye gider (M2). Yalnız küçük bulgu kalırsa tur kapanır, bulgular PR'a yazılır. — *Sahibin 16 Kasım kararı.*
+- **H18.** Her işi, işi yazmayan denetçi (`ees-denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı. Güvenlik / kiracı / yetki işinde `ees-security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
+- **H19.** Engel ya da önemli bulgu: bir düzeltme turu; ikinci turda hâlâ varsa iş bulgu özeti ve seçeneklerle kişiye gider; adı belli kişi karar verir. Yalnız küçük bulgu kalırsa tur kapanır, bulgular PR'a yazılır. — *Sahibin 16 Kasım kararı.*
 - **H20.** Denetçi bulgusunu körü körüne uygulamaz: pakete ve koda karşı doğrular, itirazını PR'a yazar. — *Yanlış bulgu kodu bozabilir.*
-- **H21.** Yüksek etkili değişiklikte kulenin yolunu izler: ikinci araçla bağımsız inceleme ve kişi onayı (K18). — *Rehber O-27.*
+- **H21.** Yüksek etkili değişiklikte (onay akışı, komut freni, birleştirmeyi durduran kontrol, güvenlik) kör denetimden sonra ikinci bir araçla bağımsız inceleme ve kişi onayı. — *Rehber O-27.*
 
 ## 6. Teslim ve kabul
 - **H22.** Teslim = testler yeşil + her kabul ölçütü bir teste bağlı + modülün son diliminde modül sonu belgeleri; biri eksikse PR teslim onayına gönderilmez. — *Akışın otomatik kontroller adımı.*
 - **H23.** Modül sonu belgelerini `belge-ajani` yazar; hangilerinin zorunlu olduğu açık karardır (bugünkü sahip kararı: altı belge). — *Bugüne dek hiçbir modülün kullanıcı kılavuzu üretilmedi.*
 - **H24.** Modül bitti = son dilim birleşti, zorunlu kabul ölçütlerinin hepsi teste bağlı ve yeşil, modül sonu belgeleri var, açık engel yok. — *İki farklı "bitti" tanımı vardı.*
-- **H25.** PR açıklaması `.ees/sablonlar/pr-aciklamasi.md`'den. Listelenen kişi PR onayında "kabulü onaylıyorum" yazar; başka kişi birleştirir. — *D-12: kabulü adı belli kişi verir; üç dokunuş.*
+- **H25.** PR açıklaması `.ees/sablonlar/pr-aciklamasi.md`'den. Listelenen kişi PR onayında "kabulü onaylıyorum" yazar; başka kişi birleştirir. — *DİTEN kararı D-12: kabulü adı belli kişi verir; üç dokunuş.*
 - **H26.** Push'tan önce eklenen satırlarda sır taraması yapar; push dilim dalına, commit kimliğiyle. — *Depo herkese açık; zorunlu sır kontrolü henüz yok.*
 
 ## 7. Raporlama ve kayıt (Reporter)
@@ -111,22 +111,30 @@ disable-model-invocation: true
 Bu beceri yeni akışın hattını başlatır: yukarıdaki çekirdek ve hat kartı bu oturumun kurallarıdır. **Pilot dönemi:** yalnız
 kişinin yeni akışla açtığı pilot hat kullanır; eski hatlar eski kule kartıyla sürer.
 
+## Pilot döneminde iki kural kaynağı
+Bu oturum her oturum gibi `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler. İkisi yalnız bir yerde ayrılır: Çekirdek
+kural 8 her push ve PR için açık onay ister; sahibin 16 Kasım kararıyla **pilot hatta dilimin paketini listelenen kişinin
+GitHub'da onaylaması o dilim için push ve PR'ın açık onayıdır** (Ç23, H5). Birleştirme yine kişinindir. Başka bir
+çelişki görürsen tahmin etme, kişiye sor. `AGENTS.md` pilot geçtikten sonra bu kararla güncellenecek.
+
 ## Başlarken
 1. Hattın kimliğini (`LANE-nnn`), modülü ve onaylı paketin yolunu kişiden ya da kuleden al; yoksa sor, uydurma.
 2. `git status` ve dalı ölç; dilim dalını `AGENTS.md` §9 biçiminde dilim ekiyle aç (H8).
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5).
 
-## Başlatacağın ajanlar (pilot dönemi adları)
+## Başlatacağın ajanlar
 
 | İş | Ajan |
 |---|---|
-| Kod ve test | `isci` |
-| Kör denetim | `denetci` |
+| Kod ve test | `ees-isci` |
+| Kör denetim | `ees-denetci` |
 | Paket | `ees-module-pack-author` |
 | Görünen metin ve çeviri | `ees-l10n-agent` (+ `resx-check` becerisi) |
 | Güvenlik, kiracı, yetki denetimi | `ees-security-agent` |
-| Ağ geçidi rotası | `integration-agent` |
-| Modül sonu belgeleri | `belge-ajani` (+ `.ees/beceriler/kullanim-kilavuzu/SKILL.md`) |
+| Ağ geçidi rotası | `ees-integration-agent` |
+| Modül sonu belgeleri | `ees-belge-ajani` (adımları `.ees/beceriler/kullanim-kilavuzu/SKILL.md`) |
 
-Önek `ees-` eski hatların kullandığı aynı adlı ajanlarla karışmasın diye pilot boyunca vardır; geçişte kalkar.
+`ees-` öneki eski hatların kullandığı aynı ya da benzer adlı ajanlarla karışmasın diye pilot boyunca vardır; geçişte kalkar.
+Öneksiz eski adla (`module-pack-author`, `l10n-agent`, `security-agent`, `integration-agent`) ajan
+başlatma: onlar kartsızdır.
 Raporlar: işçiden teslim notu, kişiye modül bloğu, PR açıklaması şablondan (`.ees/sablonlar/`).

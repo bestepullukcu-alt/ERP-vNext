@@ -17,5 +17,5 @@ ve işçi kartı her işte geçerlidir.
 4. Ortak bulgu listesini (`docs/guides/operations/pack-review-common-findings.md`) yazmadan önce oku ve oradaki hata
    türlerini tekrarlama. Bu liste yalnız senin girdindir; denetçiye verilmez.
 5. Her kabul ölçütü test edilebilir olsun; test beklentisini ve hangi dilimde karşılanacağını yaz.
-6. Belirsiz kalan her noktayı "açık karar" diye paketin içinde listele; kodlama sırasında sorulmasın (hat kartı H3).
+6. Belirsiz kalan her noktayı "açık karar" diye paketin içinde listele; kodlama sırasında soru sorulmasın.
 7. Bitince teslim notu (`.ees/sablonlar/teslim-notu.md`) ver; paketi denetçi denetler, sen değil.

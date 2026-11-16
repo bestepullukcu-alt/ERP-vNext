@@ -11,17 +11,17 @@
 
 ## 2. Karar türleri (rehber §6)
 - **K4.** **M1** — kurala göre, geri alınabilir rutin: sıralama, yönlendirme, hatırlatma, durum; her iş için model seviyesi ve efor; tablo içinde bir üst seviyeye çıkış. — *Rehberin M1 tanımı.*
-- **K5.** **M2** — adı belli kişi onaylar: öncelik çatışması, kapasite kaydırma, istisna, en üst seviye model, "yüksek etkili mi" anlaşmazlığı, denetimde ikinci başarısızlık. — *Rehberin M2 tanımı.*
+- **K5.** **M2** — adı belli kişi onaylar: öncelik çatışması, kapasite kaydırma, istisna, en üst seviye model (Üst+, seviye tablosunun üstü), "yüksek etkili mi" anlaşmazlığı, denetimde ikinci başarısızlık. — *Rehberin M2 tanımı.*
 - **K6.** **M3** — yalnız kişi: hat açma ve kapama, kapsam, sahiplik, yeni araç, geri alınamaz her şey. Listede olmayan karar M3'tür. — *Rehberin M3 tanımı.*
 - **K7.** Her M1 kararı durum sayfasına yazılır, sahip geri alabilir. Sahibin her kararı aynı gün durum sayfasının karar defterine girer; karar ve durum sohbette kalmaz. — *Uzun sohbetler kararları unuttu; her sohbet dakikalar içinde değiştirilebilmeli.*
 
 ## 3. Onay yolları (rehber §1, §9)
-- **K8.** EES değişikliğini (kart, ajan, beceri, araç) EES sahibi onaylar (D-25); IMS kuralı etkileniyorsa IMS Yöneticisi; GOAL kuralına dokunuyorsa CEO'ya sorulur. Kod sahibi listesindeki başka birinin onayı EES sahibinin onayı yerine geçmez. — *Kod sahibi listesi dört hesabı eşit sayıyor.*
-- **K9.** Kabul, adı belli kişinin onayıyla IMS kaydı olur (D-12); kule ya da ajan "kabul edildi" yazmaz. — *Rehber §1.*
+- **K8.** EES değişikliğini (kart, ajan, beceri, araç) EES sahibi onaylar (DİTEN kararı D-25); IMS kuralı etkileniyorsa IMS Yöneticisi; GOAL kuralına dokunuyorsa CEO'ya sorulur. Kod sahibi listesindeki başka birinin onayı EES sahibinin onayı yerine geçmez. — *Kod sahibi listesi dört hesabı eşit sayıyor.*
+- **K9.** Kabul, adı belli kişinin onayıyla IMS kaydı olur (DİTEN kararı D-12); kule ya da ajan "kabul edildi" yazmaz. — *Rehber §1.*
 - **K10.** Sahibin onayını başka sohbete aktarmaz; onay, sahibin o sohbetteki kendi sözüdür. — *Aktarılan onay yanlış kapsamla uygulandı.*
 
 ## 4. Modül talebi ve hat
-- **K11.** Adı verilen yeni modül ya da kapsamda önce salt-okunur araştırma yaptırır (`modul-arastir` becerisi: Blueprint, `verify_module_id.py --discover`, paket, alan ayarı, geçmiş sahip kararları). Yanıt dört parça: okunan kaynaklar, eksik keşif ("kısmi inceleme"), adaylar ve gerekçeli tek kapsam önerisi, açık kararlar. — *Mükerrer ve uydurma modüller açıldı.*
+- **K11.** Adı verilen yeni modül ya da kapsamda önce salt-okunur araştırma yaptırır (`ees-modul-arastir` becerisi: Blueprint, `verify_module_id.py --discover`, paket, alan ayarı, geçmiş sahip kararları). Yanıt dört parça: okunan kaynaklar, eksik keşif ("kısmi inceleme"), adaylar ve gerekçeli tek kapsam önerisi, açık kararlar. — *Mükerrer ve uydurma modüller açıldı.*
 - **K12.** Araştırma yanıtı kod, commit ya da dağıtım izni değildir. Hattı yalnız kişi açar (M3); hattın açılması paket taslağı iznidir, kod izni değildir. — *Yönetici kuralı; kapsam önerisi, taslak ve kod ayrı yetkilerdir.*
 - **K13.** Yeni akışta aynı anda tek hat; hatta başlamış ve birleşmemiş iş en çok 3. — *Rehber "işteki iş sınırı" (Lean 3); yönetici kararı tek hat.*
 - **K14.** Hat açılırken envanter satırını hazırlar (rehber §7: kimlik ve ad, süreç, araç, talimat dosyası ve sürümü, yetki sınıfı, sahip rolü, erişim, kim durdurur, örnek görevler, son değişiklik ve onaylayan); ad içerdiği için depo dışında tutulur. — *Rehber §7.*
