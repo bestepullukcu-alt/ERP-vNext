@@ -36,6 +36,11 @@ public static class WarehousePermissionKeys
     public const string PackagesRead = "warehouse.packages.read";
     public const string PackagesCreate = "warehouse.packages.create";
     public const string PackagesUpdate = "warehouse.packages.update";
+
+    // DL-7 — the S3 monitoring screens (pack §11.1 / §14.2): read-only, one key per screen, no action key
+    public const string ExceptionsRead = "warehouse.exceptions.read";
+    public const string ActivityRead = "warehouse.activity.read";
+    public const string IntegrationMonitorRead = "warehouse.integration-monitor.read";
 }
 
 /// <summary>

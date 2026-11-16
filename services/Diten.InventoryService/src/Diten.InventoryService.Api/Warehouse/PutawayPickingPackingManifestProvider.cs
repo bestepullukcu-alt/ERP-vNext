@@ -18,6 +18,9 @@ namespace Diten.InventoryService.Api.Warehouse;
 /// <c>warehouse.packages.read</c>, never the outbound read: the operator packs without seeing the ship-to, Q-10a / AC-34) — with one action per
 /// real §11.3 S2 button. Every S2 key is now a page or action key, so nothing is left API-only: the frozen outbound read MVP-6 uses is the
 /// OUTBOUNDSHIPMENTS page key (same key, same Tenant scope). "Paketle" on a pick task is a link (navigation), not an action (§11.3).</para>
+/// <para><b>DL-7:</b> the three S3 monitoring screens (pack §11.1, §14.4) — <c>WAREHOUSEEXCEPTIONS</c>, <c>WAREHOUSEACTIVITY</c> (Slim lists) and
+/// <c>WAREHOUSEINTEGRATION</c> (four cards, not a DataTable — r23), all in the menu, each with its own read key and NO action (§14.4 "S3'te eylem
+/// yok").</para>
 /// </summary>
 public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvider
 {
@@ -127,7 +130,38 @@ public sealed class PutawayPickingPackingManifestProvider : IModuleManifestProvi
                         new ModuleManifestAction("PACKAGE_CREATE", "New package", WarehousePermissions.PackagesCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("PACKAGE_UPDATE", "Edit package", WarehousePermissions.PackagesUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("PACKAGE_CLOSE", "Close package", WarehousePermissions.PackagesUpdate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
-                    ])
+                    ]),
+                // DL-7 — S3 monitoring (pack §11.1 / §14.4): read-only, no action (S3 has no button — "Kabul et / Çözüldü" is FU-0178-S3-ACT)
+                new ModuleManifestPage(
+                    PageCode: "WAREHOUSEEXCEPTIONS",
+                    DisplayName: "Warehouse exceptions",
+                    RoutePath: "/Warehouse/Exceptions",
+                    RequiredPermission: WarehousePermissions.ExceptionsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 60,
+                    Actions: []),
+                new ModuleManifestPage(
+                    PageCode: "WAREHOUSEACTIVITY",
+                    DisplayName: "Warehouse activity",
+                    RoutePath: "/Warehouse/Activity",
+                    RequiredPermission: WarehousePermissions.ActivityRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 70,
+                    Actions: []),
+                new ModuleManifestPage(
+                    PageCode: "WAREHOUSEINTEGRATION",
+                    DisplayName: "Warehouse integration",
+                    RoutePath: "/Warehouse/Integration",
+                    RequiredPermission: WarehousePermissions.IntegrationMonitorRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "Dashboard",
+                    SortOrder: 80,
+                    Actions: [])
             ],
             Icon: "bx-package",
             // DL-6: every key is a page or an action key now (the frozen outbound read is the OUTBOUNDSHIPMENTS page key) — none is API-only

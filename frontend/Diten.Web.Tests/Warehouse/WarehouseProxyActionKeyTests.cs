@@ -9,6 +9,9 @@ using Diten.Web.Views.Warehouse.OutboundShipments;
 using Diten.Web.Views.Warehouse.Packing;
 using Diten.Web.Views.Warehouse.PickTasks;
 using Diten.Web.Views.Warehouse.PutawayTasks;
+using Diten.Web.Views.Warehouse.WarehouseActivity;
+using Diten.Web.Views.Warehouse.WarehouseExceptions;
+using Diten.Web.Views.Warehouse.WarehouseIntegration;
 using Diten.Web.Views.Warehouse.WarehouseLocationRoles;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +30,8 @@ namespace Diten.Web.Tests.Warehouse;
 /// the key check is passed (never the 403 refusal). Display / proxy decisions — InventoryService's [HasPermission] stays the authority (UAS-001 §4).
 /// <para>DL-6 (AC-34 / AC-73, sabotage (cv)): the three S2 proxies (OutboundShipments, PickTasks, Packing) are in the same reflection — every data action
 /// of theirs is in the map; the pages themselves (Index, CreatePage, EditPage, DetailsPage) are the views' UAS-001 (WarehouseS2ScreensTests).</para>
+/// <para>DL-7 (AC-36 / AC-73, sabotage (1) Web side): the three S3 proxies (WarehouseExceptions, WarehouseActivity, WarehouseIntegration) are read-only; every
+/// data action of theirs needs its screen's own read key (WarehouseS3ScreensTests holds the pages' UAS-001).</para>
 /// </summary>
 public sealed class WarehouseProxyActionKeyTests
 {
@@ -103,7 +108,15 @@ public sealed class WarehouseProxyActionKeyTests
         ["Packing.Packages"] = WarehousePermissionKeys.PackagesRead,
         ["Packing.Create"] = WarehousePermissionKeys.PackagesCreate,
         ["Packing.Edit"] = WarehousePermissionKeys.PackagesUpdate,
-        ["Packing.Close"] = WarehousePermissionKeys.PackagesUpdate
+        ["Packing.Close"] = WarehousePermissionKeys.PackagesUpdate,
+        // DL-7 — S3 (pack §11.1, §14.2): read-only, one key per screen
+        ["WarehouseExceptions.List"] = WarehousePermissionKeys.ExceptionsRead,
+        ["WarehouseExceptions.Export"] = WarehousePermissionKeys.ExceptionsRead,
+        ["WarehouseExceptions.Warehouses"] = WarehousePermissionKeys.ExceptionsRead,
+        ["WarehouseActivity.List"] = WarehousePermissionKeys.ActivityRead,
+        ["WarehouseActivity.Export"] = WarehousePermissionKeys.ActivityRead,
+        ["WarehouseActivity.Warehouses"] = WarehousePermissionKeys.ActivityRead,
+        ["WarehouseIntegration.Status"] = WarehousePermissionKeys.IntegrationMonitorRead
     };
 
     /// <summary>The page actions: each view draws its own UAS-001 (no data, no Gateway call from the action).</summary>
@@ -112,7 +125,7 @@ public sealed class WarehouseProxyActionKeyTests
     private static readonly Type[] Controllers =
     [
         typeof(PutawayTasksController), typeof(WarehouseLocationRolesController), typeof(OutboundShipmentsController), typeof(PickTasksController),
-        typeof(PackingController)
+        typeof(PackingController), typeof(WarehouseExceptionsController), typeof(WarehouseActivityController), typeof(WarehouseIntegrationController)
     ];
 
     /// <summary>Every HTTP action of the two controllers but the page itself.</summary>
@@ -179,6 +192,9 @@ public sealed class WarehouseProxyActionKeyTests
             nameof(WarehouseLocationRolesController) => new WarehouseLocationRolesController(http, Configuration(), keys, new KeyLocalizer<WarehouseLocationRolesIndex>(), NullLogger<WarehouseLocationRolesController>.Instance),
             nameof(OutboundShipmentsController) => new OutboundShipmentsController(http, Configuration(), keys, new KeyLocalizer<OutboundShipmentsIndex>(), NullLogger<OutboundShipmentsController>.Instance),
             nameof(PickTasksController) => new PickTasksController(http, Configuration(), keys, new KeyLocalizer<PickTasksIndex>(), NullLogger<PickTasksController>.Instance),
+            nameof(WarehouseExceptionsController) => new WarehouseExceptionsController(http, Configuration(), keys, new KeyLocalizer<WarehouseExceptionsIndex>(), NullLogger<WarehouseExceptionsController>.Instance),
+            nameof(WarehouseActivityController) => new WarehouseActivityController(http, Configuration(), keys, new KeyLocalizer<WarehouseActivityIndex>(), NullLogger<WarehouseActivityController>.Instance),
+            nameof(WarehouseIntegrationController) => new WarehouseIntegrationController(http, Configuration(), keys, new KeyLocalizer<WarehouseIntegrationIndex>(), NullLogger<WarehouseIntegrationController>.Instance),
             _ => new PackingController(http, Configuration(), keys, new KeyLocalizer<PackingIndex>(), NullLogger<PackingController>.Instance)
         };
         controller.ControllerContext = Context();

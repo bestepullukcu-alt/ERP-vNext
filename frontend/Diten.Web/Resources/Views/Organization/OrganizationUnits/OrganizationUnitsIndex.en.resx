@@ -97,4 +97,19 @@
   <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Enter a value</value></data>
   <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Enter a number</value></data>
   <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Select a date</value></data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>The code is assigned by the system when the record is saved.</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>The code cannot be changed.</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>The code is assigned by the system; leave it empty.</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>No code could be assigned because the next codes are already in use. Please contact your administrator.</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>The company's short code changed after it was used. Please contact the MDM administrator.</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>The company has no valid short code (2 to 5 capital letters). Please contact the MDM administrator.</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>The company was not found or is not active.</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>The company is not approved for use yet.</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>You do not have permission to read company records, which is needed to assign the code.</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>You do not have permission to create this record.</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>Your organization's account is not active, so no code can be assigned.</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>The code service is not available right now. Please try again later.</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>Company information cannot be read right now. Please try again later.</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>This request is not allowed to receive a record code.</value></data>
 </root>

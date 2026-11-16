@@ -1,0 +1,117 @@
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Diten.Web.Models.DataTable
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCountsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["CycleCountsTitle"].Value;
+    ViewData["PageCode"] = "CYCLECOUNTS"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0181 DL-4 — Sayımlar Panosu / Cycle Count Dashboard (Golden Reference Slim, server mode, proxy profile — pack §8.13, §9, §11).
+
+    UAS-001 — nothing below is drawn without cycle-count.counts.read: no heading, no KPI card, no filter, no empty table, no button. No redirect.
+
+    ⚠ Display only. InventoryService's [HasPermission] and its state rules stay the authority (UAS-001 §4): a control whose key the reader lacks is
+    ABSENT (not disabled). The Draft row action is "İptal" (counts.cancel; a Draft cancel is a soft delete) — there is no "Sil" (G-0181-01).
+*@
+@if (!Perms.Has(CycleCountPermissionKeys.CountsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["CycleCountsTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canCreate = Perms.Has(CycleCountPermissionKeys.CountsCreate);
+    var canUpdate = Perms.Has(CycleCountPermissionKeys.CountsUpdate);
+    var canBulkDelete = Perms.Has(CycleCountPermissionKeys.CountsBulkDelete);
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel { Key = "delete", Text = Localizer["CycleCount.Action.BulkDelete"].Value, Icon = "bx bx-trash", ButtonClass = "btn btn-label-danger" }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/CycleCounts/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CycleCountsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    @* AC-40 — the KPI cards: counted at read time by the service (GET /cycle-counts/dashboard), never stored; the manual COUNT_* card needs a warehouse. *@
+    <div class="row g-3 mb-4" id="cc-kpis" aria-live="polite">
+        <div class="col-6 col-md-4 col-xl"><section class="card h-100" data-cc-kpi="openCounts"><div class="card-body">
+            <small class="text-muted d-block">@Localizer["Kpi.OpenCounts"]</small><span class="h4 mb-0" data-cc-value>–</span></div></section></div>
+        <div class="col-6 col-md-4 col-xl"><section class="card h-100" data-cc-kpi="awaitingApprovalLines"><div class="card-body">
+            <small class="text-muted d-block">@Localizer["Kpi.AwaitingApproval"]</small><span class="h4 mb-0" data-cc-value>–</span></div></section></div>
+        <div class="col-6 col-md-4 col-xl"><section class="card h-100" data-cc-kpi="refusedAdjustments"><div class="card-body">
+            <small class="text-muted d-block">@Localizer["Kpi.Refused"]</small><span class="h4 mb-0" data-cc-value>–</span></div></section></div>
+        <div class="col-6 col-md-6 col-xl"><section class="card h-100" data-cc-kpi="accuracyPercent"><div class="card-body">
+            <small class="text-muted d-block">@Localizer["Kpi.Accuracy"]</small><span class="h4 mb-0" data-cc-value>–</span>
+            <small class="text-muted d-block" data-cc-hint>@Localizer["Kpi.AccuracyHint"]</small></div></section></div>
+        <div class="col-12 col-md-6 col-xl"><section class="card h-100" data-cc-kpi="manualCountMovements"><div class="card-body">
+            <small class="text-muted d-block">@Localizer["Kpi.ManualCount"]</small><span class="h4 mb-0" data-cc-value>–</span>
+            <small class="text-muted d-block" data-cc-hint>@Localizer["Kpi.ManualCountHint"]</small></div></section></div>
+    </div>
+
+    @* The list's own failure surface (index.js writes the localized sentence). *@
+    <div id="cc-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @if (canBulkDelete)
+    {
+        @* "Toplu sil" — Draft counts only (G-0181-01: a bulk soft delete with a reason); only for cycle-count.counts.bulk-delete. *@
+        <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+    }
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-cyclecounts" data-dt-standard="v2"> *@
+    <partial name="~/Views/Warehouse/CycleCounts/_DataTable.cshtml" />
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" (+ the reason dialog of "İptal" / "Toplu sil") *@
+    <partial name="~/Views/Warehouse/CycleCounts/_DetailsQuickView.cshtml" />
+
+    @if (canCreate || canUpdate)
+    {
+        <partial name="~/Views/Warehouse/CycleCounts/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/CycleCounts/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/CycleCounts/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/CycleCounts/index.js" asp-append-version="true"></script>
+    }
+}

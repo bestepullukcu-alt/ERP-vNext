@@ -36,6 +36,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
     private readonly IMongoCollection<LotReleaseClaim> _claims;
     private readonly IMongoCollection<BsonDocument> _sequences;
     private readonly IMongoCollection<QuarantineHoldUpdateAuditRecord> _audit;
+    private readonly IMongoCollection<QuarantineReversalRefusalAuditRecord> _refusals;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<QuarantineRepository> _logger;
     private readonly Guid _tenantId;
@@ -55,6 +56,7 @@ public sealed class QuarantineRepository : IQuarantineRepository
         _claims = database.GetCollection<LotReleaseClaim>(QuarantineCollections.LotReleaseClaims);
         _sequences = database.GetCollection<BsonDocument>(QuarantineCollections.Sequences);
         _audit = database.GetCollection<QuarantineHoldUpdateAuditRecord>(InventoryCollections.Audit);
+        _refusals = database.GetCollection<QuarantineReversalRefusalAuditRecord>(InventoryCollections.Audit);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -120,6 +122,24 @@ public sealed class QuarantineRepository : IQuarantineRepository
 
     public async Task<BlockedStock?> FindBlockedAsync(Guid blockedId, CancellationToken cancellationToken = default)
         => await _blocked.Find(Scope<BlockedStock>() & Builders<BlockedStock>.Filter.Eq(x => x.Id, blockedId)).FirstOrDefaultAsync(cancellationToken);
+
+    /// <summary>MOD-0175-FU01 DL-3: the ledger guard's read — the same scoped filters as the two lookups above, in one call.</summary>
+    public async Task<(QuarantineHold? Hold, BlockedStock? Blocked)> FindSourceRecordAsync(string transactionId, CancellationToken cancellationToken = default)
+    {
+        var hold = await _holds.Find(Scope<QuarantineHold>() & Builders<QuarantineHold>.Filter.Eq(x => x.SourceMovementId, transactionId))
+            .FirstOrDefaultAsync(cancellationToken);
+        var blocked = await _blocked.Find(Scope<BlockedStock>() & Builders<BlockedStock>.Filter.Eq(x => x.SourceMovementId, transactionId))
+            .FirstOrDefaultAsync(cancellationToken);
+        return (hold, blocked);
+    }
+
+    /// <summary>MOD-0175-FU01 DL-3: the refusal row of the REVERSAL precondition, stamped with this repository's tenant + company.</summary>
+    public Task InsertReversalRefusalAuditAsync(QuarantineReversalRefusalAuditRecord record, CancellationToken cancellationToken = default)
+    {
+        record.TenantId = _tenantId;
+        record.LegalEntityId = _legalEntityId;
+        return _refusals.InsertOneAsync(record, cancellationToken: cancellationToken);
+    }
 
     public async Task<BlockedStock?> FindBlockedBySourceMovementAsync(string transactionId, CancellationToken cancellationToken = default)
         => await _blocked.Find(Scope<BlockedStock>() & Builders<BlockedStock>.Filter.Eq(x => x.SourceMovementId, transactionId)).FirstOrDefaultAsync(cancellationToken);

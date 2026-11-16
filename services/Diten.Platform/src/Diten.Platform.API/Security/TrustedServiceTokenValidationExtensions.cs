@@ -21,6 +21,13 @@ public static class TrustedServiceTokenValidationExtensions
     public const string WorkflowRequiredAudience = "TRUSTED_WORKFLOW_CONSUMER";
     public const string ReferenceDataAuthenticationScheme = "TrustedReferenceDataConsumerService";
     public const string ReferenceDataRequiredAudience = "TRUSTED_REFERENCE_DATA_CONSUMER";
+
+    /// <summary>
+    /// MOD-0262-FU01 DL-2 — the fifth JWT scheme / fourth service audience. Not bound to a controller by attribute: the
+    /// trusted document repository executor calls it with <c>AuthenticateAsync</c> (r4, F-1).
+    /// </summary>
+    public const string DocumentRepositoryAuthenticationScheme = "TrustedDocumentRepositoryConsumerService";
+    public const string DocumentRepositoryRequiredAudience = "TRUSTED_DOCUMENT_REPOSITORY_CONSUMER";
     public const string DelegatedAuthorizationHeader = "X-Delegated-Authorization";
 
     private static readonly HashSet<string> RequiredClaimTypes = new(StringComparer.Ordinal)
@@ -113,6 +120,30 @@ public static class TrustedServiceTokenValidationExtensions
                             || !HasExactReferenceDataServiceClaims(context.SecurityToken, validationOptions.Issuer))
                         {
                             context.Fail("The trusted reference-data service identity token claim contract is invalid.");
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            })
+            .AddJwtBearer(DocumentRepositoryAuthenticationScheme, options =>
+            {
+                options.MapInboundClaims = false;
+                var validationOptions = configuration
+                    .GetSection(TrustedServiceTokenValidationOptions.SectionName)
+                    .Get<TrustedServiceTokenValidationOptions>() ?? new TrustedServiceTokenValidationOptions();
+                options.TokenValidationParameters = CreateTokenValidationParameters(
+                    validationOptions,
+                    clock,
+                    DocumentRepositoryRequiredAudience);
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        if (context.Principal?.Identity?.IsAuthenticated != true
+                            || !HasExactDocumentRepositoryServiceClaims(context.SecurityToken, validationOptions.Issuer))
+                        {
+                            context.Fail("The trusted document repository service identity token claim contract is invalid.");
                         }
 
                         return Task.CompletedTask;
@@ -235,6 +266,9 @@ public static class TrustedServiceTokenValidationExtensions
 
     public static bool HasExactReferenceDataServiceClaims(SecurityToken? securityToken, string issuer)
         => HasExactServiceClaims(securityToken, issuer, ReferenceDataRequiredAudience);
+
+    public static bool HasExactDocumentRepositoryServiceClaims(SecurityToken? securityToken, string issuer)
+        => HasExactServiceClaims(securityToken, issuer, DocumentRepositoryRequiredAudience);
 
     private static bool HasExactServiceClaims(
         SecurityToken? securityToken,

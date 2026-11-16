@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CountPdf.AdjustmentStatus" xml:space="preserve"><value>Correction status</value></data>
+  <data name="CountPdf.At" xml:space="preserve"><value>Time</value></data>
+  <data name="CountPdf.Bin" xml:space="preserve"><value>Bin</value></data>
+  <data name="CountPdf.Blind" xml:space="preserve"><value>Blind count</value></data>
+  <data name="CountPdf.By" xml:space="preserve"><value>Decided by</value></data>
+  <data name="CountPdf.ClosedAt" xml:space="preserve"><value>Closed</value></data>
+  <data name="CountPdf.Company" xml:space="preserve"><value>Company</value></data>
+  <data name="CountPdf.Count" xml:space="preserve"><value>Count</value></data>
+  <data name="CountPdf.Counted" xml:space="preserve"><value>Counted</value></data>
+  <data name="CountPdf.Decision" xml:space="preserve"><value>Decision</value></data>
+  <data name="CountPdf.Decisions" xml:space="preserve"><value>Decisions and ledger corrections</value></data>
+  <data name="CountPdf.DeclaredSource" xml:space="preserve"><value>Declared source</value></data>
+  <data name="CountPdf.EnglishFallback" xml:space="preserve"><value>The requested language cannot be drawn with the document font; this PDF is in English.</value></data>
+  <data name="CountPdf.Event" xml:space="preserve"><value>Event</value></data>
+  <data name="CountPdf.Expected" xml:space="preserve"><value>Expected at snapshot</value></data>
+  <data name="CountPdf.ExpectedAtCount" xml:space="preserve"><value>Expected at count</value></data>
+  <data name="CountPdf.Flag" xml:space="preserve"><value>Flag</value></data>
+  <data name="CountPdf.Generated" xml:space="preserve"><value>Generated</value></data>
+  <data name="CountPdf.LedgerNumber" xml:space="preserve"><value>Ledger movement no.</value></data>
+  <data name="CountPdf.LineStatus" xml:space="preserve"><value>Line status</value></data>
+  <data name="CountPdf.Lines" xml:space="preserve"><value>Count lines</value></data>
+  <data name="CountPdf.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="CountPdf.Manual" xml:space="preserve"><value>Manual COUNT movements on the scope bins</value></data>
+  <data name="CountPdf.ManualWindow" xml:space="preserve"><value>Manual movement window</value></data>
+  <data name="CountPdf.MovementType" xml:space="preserve"><value>Movement type</value></data>
+  <data name="CountPdf.MovementsSinceSnapshot" xml:space="preserve"><value>Movements since snapshot</value></data>
+  <data name="CountPdf.NameUnreadable" xml:space="preserve"><value>Name could not be read</value></data>
+  <data name="CountPdf.No" xml:space="preserve"><value>No</value></data>
+  <data name="CountPdf.None" xml:space="preserve"><value>None</value></data>
+  <data name="CountPdf.NotClosed" xml:space="preserve"><value>Not closed yet</value></data>
+  <data name="CountPdf.Origin" xml:space="preserve"><value>Origin</value></data>
+  <data name="CountPdf.Origin.Found" xml:space="preserve"><value>Found stock</value></data>
+  <data name="CountPdf.Origin.Recount" xml:space="preserve"><value>Recount</value></data>
+  <data name="CountPdf.Origin.Snapshot" xml:space="preserve"><value>Snapshot</value></data>
+  <data name="CountPdf.Page" xml:space="preserve"><value>Page</value></data>
+  <data name="CountPdf.PlannedDate" xml:space="preserve"><value>Planned date</value></data>
+  <data name="CountPdf.Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="CountPdf.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="CountPdf.RequestedLanguage" xml:space="preserve"><value>Requested language: {0}</value></data>
+  <data name="CountPdf.ScopeBins" xml:space="preserve"><value>Scope bins</value></data>
+  <data name="CountPdf.Seq" xml:space="preserve"><value>No.</value></data>
+  <data name="CountPdf.Sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="CountPdf.SnapshotAt" xml:space="preserve"><value>Snapshot taken</value></data>
+  <data name="CountPdf.Source" xml:space="preserve"><value>Decided by rule</value></data>
+  <data name="CountPdf.SourceMismatch" xml:space="preserve"><value>Source declaration mismatch</value></data>
+  <data name="CountPdf.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="CountPdf.Timeline" xml:space="preserve"><value>Timeline</value></data>
+  <data name="CountPdf.Title" xml:space="preserve"><value>Cycle count evidence</value></data>
+  <data name="CountPdf.Type" xml:space="preserve"><value>Count type</value></data>
+  <data name="CountPdf.User" xml:space="preserve"><value>User</value></data>
+  <data name="CountPdf.Variance" xml:space="preserve"><value>Variance</value></data>
+  <data name="CountPdf.Warehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="CountPdf.Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="CycleCount.Adjustment.IntegrityError" xml:space="preserve"><value>Integrity error</value></data>
+  <data name="CycleCount.Adjustment.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="CycleCount.Adjustment.Posted" xml:space="preserve"><value>Posted</value></data>
+  <data name="CycleCount.Adjustment.Refused" xml:space="preserve"><value>Refused</value></data>
+  <data name="CycleCount.Decision.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="CycleCount.Decision.Recount" xml:space="preserve"><value>Recount</value></data>
+  <data name="CycleCount.Decision.Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CycleCount.Decision.Source.Tolerance" xml:space="preserve"><value>within tolerance</value></data>
+  <data name="CycleCount.Decision.Source.User" xml:space="preserve"><value>by a user</value></data>
+  <data name="CycleCount.Event.AdjustmentIntegrityError" xml:space="preserve"><value>Correction integrity error</value></data>
+  <data name="CycleCount.Event.AdjustmentPending" xml:space="preserve"><value>Correction pending</value></data>
+  <data name="CycleCount.Event.AdjustmentPosted" xml:space="preserve"><value>Correction posted</value></data>
+  <data name="CycleCount.Event.AdjustmentRefused" xml:space="preserve"><value>Correction refused</value></data>
+  <data name="CycleCount.Event.Approved" xml:space="preserve"><value>Variance approved</value></data>
+  <data name="CycleCount.Event.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CycleCount.Event.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="CycleCount.Event.Created" xml:space="preserve"><value>Created</value></data>
+  <data name="CycleCount.Event.IntegrityResolved" xml:space="preserve"><value>Integrity resolved</value></data>
+  <data name="CycleCount.Event.LineAdded" xml:space="preserve"><value>Found stock added</value></data>
+  <data name="CycleCount.Event.LineCounted" xml:space="preserve"><value>Line counted</value></data>
+  <data name="CycleCount.Event.RecountRequested" xml:space="preserve"><value>Recount requested</value></data>
+  <data name="CycleCount.Event.Rejected" xml:space="preserve"><value>Variance rejected</value></data>
+  <data name="CycleCount.Event.Released" xml:space="preserve"><value>Released</value></data>
+  <data name="CycleCount.Event.Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="CycleCount.Event.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="CycleCount.Event.VarianceComputed" xml:space="preserve"><value>Variance computed</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Counted</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>No variance</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Not counted</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Sent to recount</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Counting</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Released</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="CycleCount.Type.Cycle" xml:space="preserve"><value>Cycle count</value></data>
+  <data name="CycleCount.Type.Full" xml:space="preserve"><value>Full count</value></data>
+  <data name="MovementType.COUNT_GAIN" xml:space="preserve"><value>Count gain</value></data>
+  <data name="MovementType.COUNT_LOSS" xml:space="preserve"><value>Count loss</value></data>
+</root>

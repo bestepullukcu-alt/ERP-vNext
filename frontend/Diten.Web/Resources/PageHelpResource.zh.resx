@@ -2135,31 +2135,31 @@
     <value>点击“新建出库单”并选择仓库。仅当仓库有多个暂存位置时才选择暂存位置。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>明细行与预览</value>
+    <value>侧边面板中的明细行</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>填写每一行（产品、SKU、数量、订单行），然后点击“预览分配”：将显示按 FEFO 排序的批次和可分配数量。</value>
+    <value>点击“添加行”：在侧边面板中输入产品、SKU 和数量（订单行号会自动填写），然后点击“保存此行”；该行会出现在表格中。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>更换批次</value>
+    <value>预览与更换批次</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>如有需要，在“更换批次”中选择其他批次；非 FEFO 首选的批次需按公司 FEFO 规则填写原因。</value>
+    <value>点击“预览分配”查看每行的批次和状态；如需其他批次，请使用行菜单中的“更换批次” — 不是 FEFO 顺序第一的批次需按贵公司的 FEFO 规则填写原因。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>跟踪拣货</value>
+    <value>收货人</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>保存后将分配库存并生成拣货任务；在详情页跟踪，直到出库单变为已拣货。</value>
+    <value>手动填写收货人的名称、国家和地址。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>待发运与发运</value>
+    <value>保存</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>包装完成后点击“设为待发运”；货物发出后点击“核对发运”。</value>
+    <value>点击“保存”：将按所有明细行重新计算分配；已无法满足的行会在表格中标出，且不会保存任何内容。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>设为待发运的出库单不能再修改或取消。</value>
+    <value>预览不会预留库存；如果保存时库存已变化，该行会被标记为无法满足。</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>拣取已分配的库存</value>
@@ -2218,6 +2218,54 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>点击“关闭包裹”。所有分配装箱后，出库单变为“已包装”。</value>
   </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>查看仓库流程中需要有人处理的问题，并前往可解决问题的记录。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>仓库主管和发运计划员。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>按类型筛选</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>在筛选器中选择类型或仓库；每条记录都会用一句话说明发生了什么以及该怎么做。</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>前往记录</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>从该行打开任务或出库单并在其中处理；原因消除后记录会自动离开列表。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>跟踪仓库流程中发生的情况——任务和出库单的历史及其产生的库存移动。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>仓库主管、发运计划员和审计人员。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>选择日期范围</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>选择不超过 31 天的范围（为空 = 最近 7 天），并按来源或仓库缩小范围。</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>前往记录</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>打开一行查看其数据，或从该行前往任务、出库单或库存移动。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>一眼查看仓库与发运方是否步调一致。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>仓库主管、发运计划员和集成支持团队。</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>查看四张卡片</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>事件队列、待发运、最近同步和待处理确认——数字增长或时间过旧说明需要关注的地方；刷新即可重新读取。</value>
+  </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>此页面用于打开产能计划：为所选公司创建计划，或按 ID 打开现有计划。</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>产能与供应计划员</value></data>
   <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>选择公司</value></data>
@@ -2250,4 +2298,124 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>点击“Record sign-off”，选择快照、您的角色和决定，必要时添加备注并确认。只有在计划处于审核中时才能记录签核。</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>了解哪些内容不可更改</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>已记录的签核为最终结果：不能更改或删除，同一角色和快照的第二次签核会被拒绝。</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>计划循环盘点和全面盘点，下达并跟踪，直到其差异得到处理。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>仓库主管（计划、下达、取消）和盘点人员（打开盘点单）。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>选择仓库和范围</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>点击“新建盘点”，选择仓库、盘点类型和位置；产品留空则盘点全部产品。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>下达盘点</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>打开盘点并点击“下达”：将生成库存快照，并按库位创建行。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>录入数量</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>点击“打开盘点单”，录入每个库位的实盘数量。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>提交并跟踪差异</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>点击“提交盘点”后，差异会出现在盘点差异中；卡片显示未完成的工作。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>已下达盘点的范围不可更改；取消需要填写原因。</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>对已提交盘点的差异作出决定</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>按库位逐个盘点已下达的盘点并录入实盘数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>盘点人员，使用手机或手持终端。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>逐个库位盘点</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>输入数量或使用 −/+，并在每行点击“确认”。盲盘时，提交前不显示预期数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>添加发现的库存</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>对没有行的库存：点击“添加发现的库存”，选择库位、产品及其 SKU，如需要再填写批次和数量。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>提交</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>所有行盘点完成后点击“提交盘点”；之后数量不可更改。</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>盲盘时，提交前不显示预期数量。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>将每个盘点差异追溯到台账移动，并对待审批行作出决定。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>审批盘点更正的库存控制员和仓库经理。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>查看差异</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>按仓库、产品、批次或日期筛选并打开一行。“手工”行是在库存移动中录入的盘点更正；只读，不经过审批和四眼原则。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>审批、驳回或复盘</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>点击“决定”，选择“审批”“驳回”或“复盘”；驳回和复盘需要原因。盘点人或提交人不能审批。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>重试被拒绝的更正</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>如果预留阻止了盘亏，更正显示“被拒绝”；释放库存后选择“重试过账”。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>转到台账移动</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>点击“台账更正”中的移动编号，在库存移动中打开。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>审批会立即更正库存；撤销需在库存移动中做冲销。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>“手工”行是在库存移动中录入的盘点更正，不经过审批和四眼原则。此页面是更正盘点差异的主要途径。</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>计划和下达盘点</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>将已提交或已关闭的盘点导出为 PDF 或 CSV 证据包以供审计；每个文件连同 SHA-256 一起保存，且不会更改。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>库存控制员、仓库经理和质量审计员。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>选择盘点并导出</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>点击“新建导出”，在“盘点”中选择已提交或已关闭的盘点及格式，然后点击“导出”。文件使用本页面的语言。</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>下载文件</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>打开该行并点击“下载”；将文件的 SHA-256 与显示的值比较，以证明它就是保存的证据。</value>
+  </data>
 </root>

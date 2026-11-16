@@ -560,7 +560,12 @@ def today_problems(ctx: "Ctx", i: int) -> list[str]:
 # none added (measured) — and every reading has refused every approval since. A commit that is this commit or one of
 # its ancestors is not checked again; ancestry is fixed by the hashes, so no later commit can ever fall under it, and
 # every break after it is still a break. A repository without this commit (a self-test) checks its whole history.
-HISTORY_BASELINE = "7e8aa77d87ff1f7fc30cc6a8fc35a11b6f057fcc"
+# EES 2.14 addendum (owner decision 2026-11-13, PR #424): moved to the MVP-1 line commit a1aba4066 (pushed 2026-11-13; it
+# descends from 7e8aa77d8, the earlier baseline). Two merges under it (11c37f79d, 727d99414; CT-chain <-> line merges of
+# 2026-11-12/13) only REORDERED reviews.tsv rows — no row lost, none added (measured: `history --base origin/main` names
+# only these two; `git blame` credits 0 rows of either ledger to them at 5591b1213's descendants). Every break after
+# a1aba4066 is still a break.
+HISTORY_BASELINE = "a1aba4066cef02cac1a3801ab606049385aa2004"
 # The seven reorder merges under it. git blame credits a row such a merge MOVED to the merge itself, but the merge added
 # no row; so a row credited to one of them has no measurable human step (main_merge refuses it) — never the human step
 # of the pull request that carried the merge (review: 36 reviews.tsv rows are credited to 7bd1d0bae on main; their real
@@ -569,7 +574,9 @@ BASELINE_REORDERS = frozenset({
     "2f02161a34163810f6311fdb8b29a132c53acfb3", "81546c373ed93f7f3837f511d690388184e7a4fc",
     "7bd1d0bae30853df5fa3f06310f02e637a09311c", "25e06fe0851490d55f02fe45998f1ec8340e9675",
     "48d217a22b0b20568a0729748fb34cca68708cea", "1936c9ba34fb19dae15cb9be292778a19710ff3c",
-    "8f9027ad87763927fb7377e9450986142a9bf3eb"})
+    "8f9027ad87763927fb7377e9450986142a9bf3eb",
+    # EES 2.14 addendum (2026-11-13): the two reorder merges under the moved baseline
+    "11c37f79d9629898e13c06dffc8365c08d1920ce", "727d99414a65ba5f991762390b0dffc0aefd5d7f"})
 
 
 @cached(1)
