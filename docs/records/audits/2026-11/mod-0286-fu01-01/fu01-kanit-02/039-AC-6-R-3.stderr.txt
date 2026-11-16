@@ -1,0 +1,1 @@
+HATA: taban satır 2177: FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil

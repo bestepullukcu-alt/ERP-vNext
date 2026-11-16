@@ -1,0 +1,119 @@
+PASS HCM/Employees CI-1 Views/HCM/Employees/Create.cshtml
+PASS HCM/Employees CI-1 Views/HCM/Employees/Details.cshtml
+PASS HCM/Employees CI-1 Views/HCM/Employees/Index.cshtml
+PASS HCM/Employees CI-2 Views/HCM/Employees/Create.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/Details.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/Index.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DataTable.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DetailEmploymentRecords.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DetailHeader.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DetailL10n.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DetailLegalProfile.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftActionBar.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftCreateL10n.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftEmploymentCard.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftProfileCard.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftReferenceReviewCard.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_DraftStatePanel.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_Filter.cshtml 0
+PASS HCM/Employees CI-2 Views/HCM/Employees/_IndexL10n.cshtml 0
+TABAN FU-14 HCM/Employees CI-3 Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)
+TABAN FU-14 HCM/Employees CI-3 Index.cshtml has #offcanvasDetailsPreview
+TABAN FU-14 HCM/Employees CI-3 Selection column ↔ bulk JS
+TABAN FU-14 HCM/Employees CI-3 Selection column ↔ bulk bar
+TABAN FU-14 HCM/Employees CI-3 Shaped placeholder: shared _TableSkeleton partial
+TABAN FU-14 HCM/Employees CI-3 direct-gateway profile uses window.API service base
+TABAN FU-14 HCM/Employees CI-3 index.js calls bulk endpoint (.../bulk)
+TABAN FU-14 HCM/Employees CI-3 index.js includes .js-quick-view selector
+TABAN FU-14 HCM/Employees CI-3 index.js uses DtDefaults.exportButtons(...)
+TABAN FU-14 HCM/Employees CI-3 index.js uses event delegation (closest('.js-quick-view'))
+TABAN FU-14 HCM/Employees CI-3 index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+TABAN FU-14 HCM/Employees CI-3 index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+TABAN FU-14 HCM/Employees CI-3 index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+TABAN FU-14 HCM/Employees CI-3 index.js wires clear-selection (clearSelectionSelector or clearSelection())
+TABAN FU-4 HCM/Employees CI-3 personalizationClient sends tenant header only for tenant users
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-4 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/Create.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/Details.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/Index.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DataTable.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DetailEmploymentRecords.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DetailHeader.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DetailL10n.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DetailLegalProfile.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftActionBar.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftCreateL10n.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftEmploymentCard.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftProfileCard.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftReferenceReviewCard.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_DraftStatePanel.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_Filter.cshtml 0
+PASS HCM/Employees CI-5 Views/HCM/Employees/_IndexL10n.cshtml 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-5 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/Create.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/Details.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/Index.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DataTable.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DetailEmploymentRecords.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DetailHeader.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DetailL10n.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DetailLegalProfile.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftActionBar.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftCreateL10n.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftEmploymentCard.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftProfileCard.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftReferenceReviewCard.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_DraftStatePanel.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_Filter.cshtml 0
+PASS HCM/Employees CI-6 Views/HCM/Employees/_IndexL10n.cshtml 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-6 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-7 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+YENİ KIRMIZI HCM/Employees CI-7 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 1 +1
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-8 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+TABAN FU-14 HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/index.js:yok:savedView
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/index.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-9 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+PASS HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/create-draft.js 0
+PASS HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/create-draft.l10n.js 0
+PASS HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/details.js 0
+PASS HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/details.l10n.js 0
+TABAN FU-14 HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/index.js 3
+PASS HCM/Employees CI-10 wwwroot/assets/js/HCM/Employees/index.l10n.js 0
+PASS HCM/Employees CI-10 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 0
+başvuru taraması: HEAD 1530 görünüm, taban 1530 görünüm, 0.2 s
+okunan görünüm metni: HEAD 1530, taban 1530
+süre: 0.5 s
