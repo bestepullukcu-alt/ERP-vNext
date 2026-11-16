@@ -1,4 +1,0 @@
-.antigravity/agents/frontend-ui-ux.md
-.antigravity/workflows/dispatch-wp.md
-.antigravity/workflows/test.md
-docs/guides/operations/control-tower-sop.md
