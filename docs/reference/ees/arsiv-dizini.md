@@ -11,24 +11,24 @@ git geçmişinde aynen duruyor. Bu dosya her arşiv partisinde güncellenir (ins
   değiştirilmez, arşive alınabilir (`.antigravity/rules/docs-organization.md` K4).
 - **Yeni ham kanıt:** depoya yeni ham kanıt eklenmesini engelleyecek kontrol ertelendi; eski akış kapanınca ölçüme
   göre karar verilecek. Bugünkü kanıt kuralları ve kabul araçları değişmedi.
-- **Kaynak commit (dosyaların arşivden önceki hali):** `6ef2c884b177c85f9f2d0caab78b4f63e4b0fa52` (main, 2026-11-16; bütün partilerin dosyaları bu
-  commit'te aynen duruyor).
-- **Etiket:** `ees-arsiv-oncesi-2026-11` — ilk arşiv PR'ı birleşmeden önce depo sahibi koyar ve korur. Etiket konana
-  kadar aşağıdaki komutlarda etiket yerine kaynak commit kullanılır.
+- **Arşiv öncesi hâl:** `c1c0f93cc2ca6150c63fa4890b362ff11819b9bc` (main; parti 1'i getiren #430 birleştirmesinin ilk ebeveyni). Bütün partilerin
+  dosyaları bu commit'te aynen duruyor.
+- **Etiket:** `ees-arsiv-oncesi-2026-11` bu commit'e depo sahibince konacak ve korunacak. Etiket konana kadar aşağıdaki
+  komutlarda commit kullanılır.
 - **Ne kalmadı, ne kaldı:** bir dosya ancak şu okuyuculardan hiçbiri onu, klasörünü ya da üst klasörünü (doğrudan ya da
   bir değişkene atayarak) çalışma ağacından anmıyorsa kalktı: depoda kalan herhangi bir çalıştırılabilir dosya (`.sh`,
   `.py`, `.ps1`, `.js`, `.cs` …; `docs/records` altındakiler dahil) ya da `docs/reference/`, `docs/guides/`,
-  `execution/` altındaki bir belge. `yol@commit` biçimindeki atıf geçmişten okunduğu için engel değildir. Son 30 günde
-  commit almış, açık bir PR'ın ya da çalışma dalının dokunduğu klasörlerde, kendi klasörünü okuyan betiğin girdileri
-  de kaldı.
+  `execution/` altındaki bir belge (bu dizin hariç). `yol@commit` biçimindeki atıf geçmişten okunduğu için engel
+  değildir. Son 30 günde commit almış, açık bir PR'ın ya da çalışma dalının dokunduğu klasörlerde, kendi klasörünü
+  okuyan betiğin girdileri de kaldı.
 
 ## Geri okuma
 
 ```bash
-git show 6ef2c884b177:<yol>                                   # tek dosyayı oku
-git ls-tree -r --name-only 6ef2c884b177 -- <klasör>           # klasörde ne vardı
-git grep -n <kalıp> 6ef2c884b177 -- <klasör>                  # arşivde ara
-git restore --source=6ef2c884b177 --worktree -- <klasör>      # çalışma ağacına geri getir (stage etmez; commit etme)
+git show c1c0f93cc2ca:<yol>                                   # tek dosyayı oku
+git ls-tree -r --name-only c1c0f93cc2ca -- <klasör>           # klasörde ne vardı
+git grep -n <kalıp> c1c0f93cc2ca -- <klasör>                  # arşivde ara
+git restore --source=c1c0f93cc2ca --worktree -- <klasör>      # çalışma ağacına geri getir (stage etmez; commit etme)
 git log --oneline --follow -- <yol>                   # dosyanın tarihçesi
 ```
 
@@ -38,9 +38,9 @@ Sığ klon (`--depth`) arşivi göremez; önce `git fetch --unshallow`.
 
 | Parti | Ne kalktı | Dosya | MiB | Yerinde bırakılan | Durum |
 |---|---|---|---|---|---|
-| 1 | `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv) | 4786 | 250.8 | 852 | bu dalda |
+| 1 | `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv) | 4786 | 250.8 | 852 | ana dalda (#430) |
 | 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | bu dalda |
-| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | bu dalda |
+| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1370 | 9.9 | 209 | bu dalda |
 | 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | bu dalda |
 | 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | bu dalda |
 | 5 | son 30 günde dokunulmayan iş paketleri + kapanmış iş listesi | 297 | 3.9 | — | planlı; açık PR #425 birleşince |
@@ -646,7 +646,7 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 **Neden:** parti 1'den sonra kayıt klasörlerinde kalan ham olmayan dosyalar ve `records/{analysis,tests}` belgeleri; hiçbir CI adımı, test ya da araç çalışma ağacından okumuyor. Kabul aracının okuduğu koşu klasörleri (`run-record-v1.json`), mühürlü yollar ve araç şablonlarının gösterdiği dosyalar bu partide yok.
 
 <details>
-<summary>Yerinde bırakılanlar (200 dosya, 48 klasör) ve nedeni</summary>
+<summary>Yerinde bırakılanlar (209 dosya, 48 klasör) ve nedeni</summary>
 
 | Klasör / dosya | Dosya | Neden (örnek) |
 |---|---|---|
@@ -685,7 +685,7 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `docs/records/audits/2026-10/mod-0173-k1-evidence` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-inventory-ledger-valuation.md |
 | `docs/records/audits/2026-10/mod-0173-le1-evidence` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-inventory-ledger-valuation.md |
 | `docs/records/audits/2026-10/mod-0173-pm0-evidence` | 5 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md |
-| `docs/records/audits/2026-10/mod-0286-fu01-01` | 2 | anan: execution/domains/platform-shared-services/module-packs/MOD-0286-FU01-page-js-reference-mapping.md |
+| `docs/records/audits/2026-10/mod-0286-fu01-01` | 11 | anan: execution/domains/platform-shared-services/work-packs/prompts/PSS-UI-FU01-01-v1.0.md (yaşayan arayüz hattı, 16 Kasım) |
 | `docs/records/audits/2026-10/mod-0286-uic-baseline-01` | 8 | anan: docs/reference/modules/platform/ui-design-system-page-pattern-governance/compliance-checklist.md, docs/reference/modules/platform/ui-design-system-page-pa |
 | `docs/records/audits/2026-10/mod-0286-uic-ci-01` | 10 | anan: execution/domains/platform-shared-services/work-packs/prompts/PSS-UI-P1-03-v1.1.md, execution/domains/platform-shared-services/work-packs/prompts/PSS-UI-P |
 | `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0193-bom-routings.md, execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-invento |
@@ -702,7 +702,7 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 </details>
 
 <details>
-<summary>Kalkan dosyalar (354 satır, 1379 dosya, 10.0 MiB)</summary>
+<summary>Kalkan dosyalar (353 satır, 1370 dosya, 9.9 MiB)</summary>
 
 | Klasör / dosya | Kalkan dosya | MiB |
 |---|---|---|
@@ -974,7 +974,6 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `docs/records/audits/2026-10/mod-0173-int1-evidence` | 2 | 0.02 |
 | `docs/records/audits/2026-10/mod-0173-int2-evidence` | 2 | 0.02 |
 | `docs/records/audits/2026-10/mod-0220-dual-implementation-01` | 2 | 0.00 |
-| `docs/records/audits/2026-10/mod-0286-fu01-01` | 9 | 0.04 |
 | `docs/records/audits/2026-10/mvp6-0192-row202-evidence-01` | 1 | 0.00 |
 | `docs/records/audits/2026-10/mvp6-c03-gateway-route-01` | 1 | 0.00 |
 | `docs/records/audits/2026-10/mvp6-c13-q358-retraction-01` | 4 | 0.00 |
