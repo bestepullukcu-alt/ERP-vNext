@@ -1,0 +1,4 @@
+çapa	wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js	113
+çapa	wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js	113
+çapa	wwwroot/assets/js/pages/enterprise-strategy/goals.js	3372
+kırmızı	SB-1=1 SB-2=5 SB-3=2 SB-4=1 SB-8=2 SB-9=4

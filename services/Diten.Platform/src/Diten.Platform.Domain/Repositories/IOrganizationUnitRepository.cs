@@ -8,6 +8,11 @@ public interface IOrganizationUnitRepository
     Task<OrganizationUnit?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<OrganizationUnit>> GetAllAsync(CancellationToken ct = default);
     Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default);
+    /// <summary>
+    /// Replaces the unit WITHOUT changing its reporting lines — those change only through
+    /// <see cref="IOrganizationReportingGraphRepository.TryAdvanceStructureTokenAndUpdateAsync"/>. Throws
+    /// <see cref="OrganizationUnitWriteConflictException"/> when the stored lines differ from the entity's.
+    /// </summary>
     Task UpdateAsync(OrganizationUnit organizationUnit, CancellationToken ct = default);
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
@@ -51,6 +56,12 @@ public interface IOrganizationReportingGraphRepository
      * before it writes. Two racing re-parentings read the same token, and exactly one CAS succeeds; the loser
      * gets 409 and re-reads a graph that now contains the winner's edge.
      *
+     * ⚠ THE ADVANCE AND THE UNIT WRITE ARE ONE ATOMIC STEP. When they were two writes, a second writer could
+     * read the ALREADY-ADVANCED token in the gap between them, validate against a graph that did not yet hold
+     * the first writer's edge, win the next advance and write — both edges landed, the graph was cyclic
+     * (MOD-0288 race, CI "both re-parentings landed"). A reader now sees either the old token (and loses the
+     * CAS) or the new token together with the edge it stands for — never the token without the edge.
+     *
      * ⚠ CREATE IS DELIBERATELY NOT GUARDED, AND THE PROOF IS SHORT: a brand-new unit's id is unknown to every
      * other writer, so nothing can point AT it, so no path can return to it. A create cannot close a cycle.
      * Guarding it would serialize a fifty-unit import into fifty 409s to buy nothing.
@@ -60,10 +71,29 @@ public interface IOrganizationReportingGraphRepository
     Task<long> ReadStructureTokenAsync(CancellationToken ct = default);
 
     /// <summary>
-    /// Advances the token from <paramref name="expectedToken"/>. Returns <c>false</c> — never throws — when
-    /// another writer got there first; that is an ordinary race outcome, and the caller answers 409.
+    /// Advances the token from <paramref name="expectedToken"/> AND replaces <paramref name="unit"/>, atomically:
+    /// both land or neither does. Returns <c>false</c> when another writer got there first, or is mid-way through
+    /// its own advance, or the unit is gone or archived; that is an ordinary race outcome, and the caller answers 409.
+    /// Throws <see cref="PlatformTransactionUnavailableException"/> when the database cannot run the atomic step
+    /// (no replica set — the unit is not written) or its commit result could not be established.
     /// </summary>
-    Task<bool> TryAdvanceStructureTokenAsync(long expectedToken, CancellationToken ct = default);
+    Task<bool> TryAdvanceStructureTokenAndUpdateAsync(
+        long expectedToken,
+        OrganizationUnit unit,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// MOD-0288 — <see cref="IOrganizationUnitRepository.UpdateAsync"/> found the unit's stored reporting lines no longer
+/// equal to the ones on the entity it was given (a re-parenting landed after the caller read the unit), or the unit
+/// gone or archived. Nothing was written: a plain update never changes a reporting line, so it must not write back a stale one.
+/// </summary>
+public sealed class OrganizationUnitWriteConflictException : Exception
+{
+    public OrganizationUnitWriteConflictException(Guid organizationUnitId)
+        : base($"Organization Unit {organizationUnitId} changed since it was read.")
+    {
+    }
 }
 
 /// <summary>
