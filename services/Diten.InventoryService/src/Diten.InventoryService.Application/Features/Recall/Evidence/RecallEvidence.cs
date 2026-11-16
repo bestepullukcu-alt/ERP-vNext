@@ -136,11 +136,13 @@ public sealed class RecallEvidenceBuilder
     private readonly IProductMasterClient _products;
     private readonly ILegalEntityMasterClient _companies;
     private readonly ILocationRepository _locations;
+    private readonly RecallCustomerDisplay _customers;
 
     public RecallEvidenceBuilder(IRecallRepository repository, IRecallDrillRepository drills, IRecallTraceSource ledger, IRecallQuarantineRequester quarantine,
         IRecallESignClient esign, RecallSubjectFacts facts, RecallSupport support, Common.IAuditActorNames auditNames, IProductMasterClient products,
-        ILegalEntityMasterClient companies, ILocationRepository locations)
+        ILegalEntityMasterClient companies, ILocationRepository locations, RecallCustomerDisplay customers)
     {
+        _customers = customers;
         _repository = repository;
         _drills = drills;
         _ledger = ledger;
@@ -170,7 +172,11 @@ public sealed class RecallEvidenceBuilder
         {
             if (!RecallSupport.TryParseId(caseId, out var id) || await _repository.FindCaseAsync(id, ct) is not { } c)
                 return (null, RecallErrorCodes.CaseNotFound, "Recall case not found.", 404);
-            document = await CaseAsync(c, lang, ct);
+            // MOD-0177-FU01 (§8.10): a CRM customer the caller may not read refuses the pack — no "İzin eksik" ever enters a stored file
+            if (await CaseAsync(c, lang, ct) is not { } built)
+                return (null, RecallErrorCodes.CustomerDirectoryForbidden,
+                    "You may not read a CRM customer of this case (crm.account.lookup-validation); no file is produced.", 403);
+            document = built;
         }
         else if (!string.IsNullOrWhiteSpace(runId))
         {
@@ -196,12 +202,20 @@ public sealed class RecallEvidenceBuilder
 
     // ── a recall case: the seven sections ────────────────────────────────────────────────────────────────
 
-    private async Task<RecallEvidenceDocument> CaseAsync(RecallCase c, string lang, CancellationToken ct)
+    private async Task<RecallEvidenceDocument?> CaseAsync(RecallCase c, string lang, CancellationToken ct)
     {
         var now = _support.Now();
         var snapshotId = c.ApprovedSnapshotId ?? c.SubmittedSnapshotId;
         var snapshot = snapshotId is { } sid ? await _repository.FindSnapshotAsync(sid, ct) : null;
         var items = await _repository.ScopeItemsAsync(c.Id, c.ApprovedScope?.Revision ?? c.ScopeRevision, ct);
+
+        // MOD-0177-FU01 (§8.10): every CRM customer of the case, ONCE, Export mode (no total budget, breaker) — the names are the snapshot of
+        // this export; a Forbidden one refuses the pack (null)
+        var facts = RecallCustomerDisplay.Facts(items);
+        var names = await _customers.ExportAsync(facts.Values, ct);
+        if (names.HasForbidden) return null;
+        var cells = await CustomerCellsAsync(items, facts, names, lang, ct);
+        string CustomerCell(string key) => cells.TryGetValue(key, out var cell) ? cell : key;
         var events = await _repository.AllEventsAsync(c.Id, ct);
 
         // ── signatures first: their signer names serve the summary too ──
@@ -269,6 +283,7 @@ public sealed class RecallEvidenceBuilder
             F("cancelledBy", Person(c.CancelledBy, null, RecallCaseEventKind.Cancelled)), F("cancelledById", c.CancelledBy?.ToString("D")),
             F("cancelReason", c.CancelReason)
         };
+        if (facts.Values.Any(f => f.IsCrm)) summary.Add(F("customerNames", RecallEvidenceText.Word("customerNamesSnapshot", lang)));
 
         var requests = await _repository.QuarantineRequestsAsync(c.Id, ct);
         var holds = (await _quarantine.HoldsAsync(requests.SelectMany(r => r.HoldIds).Distinct(StringComparer.Ordinal).ToList(), ct))
@@ -284,7 +299,8 @@ public sealed class RecallEvidenceBuilder
             .Select(customer =>
             {
                 var n = notifications.Where(x => x.CustomerRef == customer && !superseded.Contains(x.Id)).OrderBy(x => x.RecordedAtUtc).LastOrDefault();
-                return Row(customer, n is null ? null : RecallSupport.WireDate(n.NotifiedOn), n is null ? null : V("Recall.Channel.", n.Channel.ToString(), lang), n?.Note);
+                return Row(CustomerCell(customer), n is null ? null : RecallSupport.WireDate(n.NotifiedOn), n is null ? null : V("Recall.Channel.", n.Channel.ToString(), lang),
+                    n?.Note);
             }).ToList();
 
         var links = await _repository.ReturnLinksAsync(c.Id, ct);
@@ -292,7 +308,7 @@ public sealed class RecallEvidenceBuilder
         foreach (var link in links)
         {
             var hold = await _quarantine.HoldOfMovementAsync(link.TransactionId, ct);
-            returns.Add(Row(link.TransactionNumber ?? link.TransactionId, link.CustomerRef, link.LotNumber, D(link.Quantity), link.BaseUomId, hold?.HoldNumber,
+            returns.Add(Row(link.TransactionNumber ?? link.TransactionId, CustomerCell(link.CustomerRef), link.LotNumber, D(link.Quantity), link.BaseUomId, hold?.HoldNumber,
                 RecallSupport.Wire(link.PostedAtUtc)));
         }
 
@@ -305,7 +321,7 @@ public sealed class RecallEvidenceBuilder
         var sections = new List<RecallEvidenceSection>
         {
             new(RecallEvidenceSections.Summary, true, [new("summary", ["field", "value"], summary)]),
-            await TraceSectionAsync(snapshot, items, places, lang, ct),
+            await TraceSectionAsync(snapshot, items, places, lang, ct, CustomerCell),
             new(RecallEvidenceSections.Quarantine, true,
                 [new("requests", ["lot", "warehouse", "location", "status", "reason", "held", "unit", "holds", "warehouseId", "locationId"], quarantine,
                     ["warehouseId", "locationId"])]),
@@ -418,7 +434,7 @@ public sealed class RecallEvidenceBuilder
     /// The node kind (and a gap's reason) is worded; a stock node's place is its warehouse / location "code · name" (ids in hidden columns).
     /// </summary>
     private async Task<RecallEvidenceSection> TraceSectionAsync(RecallTraceSnapshot? snapshot, IReadOnlyList<RecallScopeItem> items,
-        IReadOnlyDictionary<string, Location> places, string lang, CancellationToken ct)
+        IReadOnlyDictionary<string, Location> places, string lang, CancellationToken ct, Func<string, string>? customerCell = null)
     {
         if (snapshot is null) return new RecallEvidenceSection(RecallEvidenceSections.Trace, true, [new("trace", TraceColumns, [], TraceHidden)], "notSealed");
         using var json = JsonDocument.Parse(snapshot.Canonical);
@@ -438,12 +454,41 @@ public sealed class RecallEvidenceBuilder
                 .Select(t => (DateTimeOffset?)t.PostingDate).Min();
             var (warehouse, location) = (S(n, "warehouseId"), S(n, "locationId"));
             var place = customers.TryGetValue(key, out var customer)
-                ? customer
+                ? customerCell?.Invoke(customer) ?? customer
                 : string.Join(" · ", new[] { Place(places, warehouse, lang), Place(places, location, lang) }.Where(v => !string.IsNullOrEmpty(v)));
             return Row(gap is null ? kind : $"{kind}: {V("Recall.Gap.", gap, lang)}", S(n, "lotNumber"), place, S(n, "quantity"), S(n, "baseUomId"), document,
                 date is { } d ? RecallSupport.Wire(d) : null, warehouse, location);
         }).ToList();
         return new RecallEvidenceSection(RecallEvidenceSections.Trace, true, [new("trace", TraceColumns, rows, TraceHidden)]);
+    }
+
+    /// <summary>
+    /// MOD-0177-FU01 (§8.8, §8.10) — each customer key's cell, built ONCE per key (the same text in every section). A CRM customer that is not
+    /// Resolved is distinguished by its first shipment movement number — a separate company-bound sales-issue read, only when such a customer
+    /// exists (the builder reads no MVP-6, so no ship-to here). Keys without a CRM id are marked only when the case holds a CRM customer.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, string>> CustomerCellsAsync(IReadOnlyList<RecallScopeItem> items,
+        IReadOnlyDictionary<string, RecallCustomerDisplay.KeyFacts> facts, RecallCustomerDisplay.Resolution names, string lang, CancellationToken ct)
+    {
+        var cells = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (!facts.Values.Any(f => f.IsCrm)) return cells; // no CRM customer: every cell is the stored key, as before FU01
+        var unresolved = facts.Values.Where(f => f.IsCrm && names.Names.TryGetValue(f.Key, out var n) && n.Outcome != RecallCustomerOutcome.Resolved)
+            .Select(f => f.Key).ToHashSet(StringComparer.Ordinal);
+        var shipments = RecallReads.Shipments(items);
+        var behind = unresolved.Count == 0
+            ? []
+            : await _ledger.SalesIssuesOfLotsAsync(shipments.Where(s => unresolved.Contains(s.CustomerRef!)).Select(s => s.LotId).Distinct(StringComparer.Ordinal).ToList(), ct);
+        foreach (var f in facts.Values)
+        {
+            var number = unresolved.Contains(f.Key)
+                ? shipments.Where(s => s.CustomerRef == f.Key).OrderBy(s => s.NodeKey, StringComparer.Ordinal)
+                    .SelectMany(s => RecallReads.MovementsBehind(s, behind).OrderBy(m => m.PostingDate).ThenBy(m => m.TransactionId, StringComparer.Ordinal))
+                    .Select(m => m.Number).FirstOrDefault(n => RecallCustomerDisplay.Visible(n) is not null)
+                : null;
+            cells[f.Key] = RecallEvidenceText.CustomerCell(RecallCustomerDisplay.Display(f, names, f.Key, shipmentNumber: number), lang, marked: true);
+        }
+
+        return cells;
     }
 
     private static readonly IReadOnlyList<string> TraceColumns = ["nodeKind", "lot", "place", "quantity", "unit", "document", "date", "warehouseId", "locationId"];

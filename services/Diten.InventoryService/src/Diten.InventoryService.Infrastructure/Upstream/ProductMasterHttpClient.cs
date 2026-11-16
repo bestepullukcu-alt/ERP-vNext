@@ -79,7 +79,9 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                 NullableDays(root, "retestDays"),
                 NullableDays(root, "minRemainingShelfLifeDays"),
                 // WP-MVP1-FIX-LIVE2: the SKU code for display (evidence packs); absent stays null.
-                UpstreamHttp.OptionalString(root, "canonicalCode")),
+                UpstreamHttp.OptionalString(root, "canonicalCode"),
+                // MOD-0178 DL-1 (pack §5, §8.12): the storage conditions — absent / not a list of codes stays null (unknown), never [].
+                StorageConditions(root)),
             Unavailable,
             cancellationToken);
 
@@ -92,6 +94,24 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
         => element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var days) && days >= 0
             ? days
             : null;
+
+    /// <summary>
+    /// MOD-0178 DL-1: <c>SkuRef.storageConditions</c> (v1.1 <c>StorageConditionCode[]</c>, open enum) — an array of non-empty strings, else
+    /// null. Absent, <c>null</c>, not an array or an entry that is not a code is "not stated" (PRODUCT-MASTER O-1): MOD-0178 then refuses with
+    /// <c>WMS_STORAGE_CONDITIONS_UNKNOWN</c> instead of reading it as "no conditions" (pack §8.12, fail-closed). An empty array is "no conditions".
+    /// </summary>
+    internal static IReadOnlyList<string>? StorageConditions(JsonElement element)
+    {
+        if (!element.TryGetProperty("storageConditions", out var value) || value.ValueKind != JsonValueKind.Array) return null;
+        var codes = new List<string>();
+        foreach (var entry in value.EnumerateArray())
+        {
+            if (entry.ValueKind != JsonValueKind.String || entry.GetString() is not { Length: > 0 } code) return null;
+            codes.Add(code);
+        }
+
+        return codes;
+    }
 
     /// <summary>
     /// The contract declares no 404 for <c>getSkuUom</c>; a 404 is still read as "no conversion data" (→ 422

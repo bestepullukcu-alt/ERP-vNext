@@ -1,0 +1,175 @@
+@using Diten.Web.Views.Warehouse.Packing
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PackingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["PackingTitle"].Value;
+    ViewData["PageCode"] = "PACKINGSTATION"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-6 — Paketleme (PACKINGSTATION, pack §11.1 / §8.20): detail + package form — NOT a DataTable (§11.5 bilinçli sapma).
+
+    UAS-001 — nothing below is drawn without warehouse.packages.read (the page key — NEVER warehouse.outbound-shipments.read: the operator packs
+    without the ship-to, Q-10a / AC-34). No heading, no card, no button, no redirect.
+
+    The page reads ONE thing: GET /outbound-shipments/{outboundId}/packages (outbound number + status, the allocations' picked / packed, the packages).
+    "Yeni koli" needs warehouse.packages.create, "Koliyi düzenle" / "Koliyi kapat" warehouse.packages.update — absent without the key; the service
+    stays the authority (Picked only, Σ ≤ picked, at least one content line).
+*@
+@if (!Perms.Has(WarehousePermissionKeys.PackagesRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["PackingTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canCreate = Perms.Has(WarehousePermissionKeys.PackagesCreate);
+    var canUpdate = Perms.Has(WarehousePermissionKeys.PackagesUpdate);
+    var outboundId = ViewData["OutboundId"] as string;
+}
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div class="min-w-0">
+        <h5 class="mb-0">@Localizer["PackingTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        @if (Perms.Has(WarehousePermissionKeys.PickTasksRead))
+        {
+            <a href="/Warehouse/PickTasks" class="btn btn-label-secondary wh-touch">@Localizer["LinkPickTasks"]</a>
+        }
+        @if (Perms.Has(WarehousePermissionKeys.OutboundShipmentsRead) && outboundId is not null)
+        {
+            <a href="/Warehouse/OutboundShipments/Details/@outboundId" class="btn btn-label-secondary wh-touch">@Localizer["LinkOutbound"]</a>
+        }
+    </div>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="packing-root" data-outbound-id="@outboundId">
+        <div id="packing-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <div class="card mb-4">
+            <div class="card-body p-4 d-flex flex-wrap align-items-center gap-3">
+                <div class="min-w-0">
+                    <div class="text-muted small">@Localizer["SectionOutbound"]</div>
+                    <div class="fw-medium text-heading font-monospace" id="packing-outbound">-</div>
+                </div>
+                <span id="packing-status" class="badge bg-label-secondary">-</span>
+                <small id="packing-state" class="text-muted d-none"></small>
+                @if (canCreate)
+                {
+                    <button type="button" class="btn btn-primary wh-touch ms-auto" id="btnNewPackage" disabled>
+                        <i class="bx bx-plus me-1"></i>@Localizer["Warehouse.Package.Action.Create"]
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionAllocations"]</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0" id="packing-allocations">
+                        <thead>
+                            <tr>
+                                <th scope="col">@Localizer["ColAllocSeq"]</th>
+                                <th scope="col">@Localizer["ColProduct"]</th>
+                                <th scope="col">@Localizer["ColLot"]</th>
+                                <th scope="col" class="text-end">@Localizer["ColPicked"]</th>
+                                <th scope="col" class="text-end">@Localizer["ColPacked"]</th>
+                                <th scope="col" class="text-end">@Localizer["ColRemaining"]</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionPackages"]</h6>
+                <div id="packing-packages" class="d-flex flex-column gap-3"></div>
+                <p id="packing-packages-empty" class="text-muted mb-0 d-none">@Localizer["NoPackages"]</p>
+            </div>
+        </div>
+    </div>
+
+    @if (canCreate || canUpdate)
+    {
+        <form id="packingActionToken" class="d-none">@Html.AntiForgeryToken()</form>
+
+        @* The package panel (§8.20, AC-45): measured at 375 px — touch targets ≥ 48 px (the close × too — DL-3 CT F-7), −/+ per content line, a fixed
+           bottom action bar. Contents per allocation (Σ open + closed ≤ picked — the service answers 422 WMS_PACKAGE_EXCEEDS_PICKED otherwise),
+           weight in kg and dimensions LxWxH in cm by hand (Q-MDM-1). *@
+        <div class="offcanvas offcanvas-end wh-confirm-panel" tabindex="-1" id="offcanvasPackage" aria-labelledby="offcanvasPackageLabel">
+            <div class="offcanvas-header p-4">
+                <div class="min-w-0">
+                    <h5 id="offcanvasPackageLabel" class="offcanvas-title mb-0">-</h5>
+                    <small id="package-subtitle" class="text-muted d-block text-truncate">-</small>
+                </div>
+                <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="offcanvas-body border-top p-4">
+                <div id="package-alert" class="alert alert-danger d-none" role="alert"></div>
+                <form id="formPackage" novalidate>
+                    <fieldset class="mb-4">
+                        <legend class="form-label fw-medium fs-6">@Localizer["FieldContents"] <span class="text-danger">*</span></legend>
+                        <div id="package-contents" class="d-flex flex-column gap-3"></div>
+                        <div class="invalid-feedback d-block" id="packageContentsError"></div>
+                    </fieldset>
+                    <div class="mb-4">
+                        <label for="packageWeight" class="form-label fw-medium">@Localizer["FieldWeight"]</label>
+                        <input type="text" inputmode="decimal" id="packageWeight" class="form-control wh-touch" autocomplete="off" />
+                    </div>
+                    <div class="mb-4">
+                        <label for="packageDimensions" class="form-label fw-medium">@Localizer["FieldDimensions"]</label>
+                        <input type="text" id="packageDimensions" class="form-control wh-touch" autocomplete="off" placeholder="@Localizer["DimensionsPlaceholder"]" />
+                        <div class="invalid-feedback d-block" id="packageDimensionsError"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="wh-action-bar border-top p-3 d-flex gap-2 bg-white">
+                <button type="button" class="btn btn-label-secondary wh-touch flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary wh-touch flex-grow-1" id="btnPackageSave" data-dt-primary="enter">@SharedLocalizer["Save"]</button>
+            </div>
+        </div>
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <script id="packing-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            AreYouSure = SharedLocalizer["AreYouSure"].Value,
+            Words = WarehouseVocabulary.PackingKeys.Distinct().ToDictionary(k => k, k => Localizer[k].Value)
+        })
+    </script>
+    <script src="~/assets/js/Warehouse/Packing/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/Packing/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/Packing/index.js" asp-append-version="true"></script>
+    }
+}

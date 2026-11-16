@@ -51,4 +51,28 @@ public static class RecallEvidenceText
 
     /// <summary>An evidence word — a section, table, column or summary-field key (<c>Recall.Ev.W.{key}</c>).</summary>
     public static string Word(string key, string language) => Of("Recall.Ev.W." + key, language);
+
+    /// <summary>
+    /// MOD-0177-FU01 (pack §8.8, §8.10) — a customer cell of a file (evidence CSV / PDF, trace CSV): "{name} · {code}"; "Çözülemedi ({ship-to ·
+    /// shipment no})" / "Bulunamadı (…)" (the bare word without a distinguisher); a key without a CRM id is its label, marked "(Eski kayıt)" /
+    /// "(CRM kimliği yok)" when <paramref name="marked"/> (the file holds a CRM customer too). Never a CRM key.
+    /// </summary>
+    public static string CustomerCell(Application.Features.Recall.RecallCustomerDisplayDto d, string language, bool marked)
+    {
+        string? With(string word)
+        {
+            var parts = new[] { d.ShipTo, d.ShipmentNumber }.Where(p => !string.IsNullOrEmpty(p)).ToList();
+            var distinguisher = parts.Count == 2 ? Format("Recall.Customer.Distinguisher", language, parts[0], parts[1]) : parts.FirstOrDefault();
+            return distinguisher is null ? Of("Recall.Customer." + word, language) : Format("Recall.Customer." + word + "With", language, distinguisher);
+        }
+
+        return d.State switch
+        {
+            "Resolved" => Format("Recall.Customer.NameCode", language, d.Name, d.Code),
+            "NotFound" => With("NotFound")!,
+            "Legacy" => marked ? Format("Recall.Customer.LegacyMarked", language, d.Label) : d.Label ?? string.Empty,
+            "NoCrm" => marked ? Format("Recall.Customer.NoCrmMarked", language, d.Label) : d.Label ?? string.Empty,
+            _ => With("Unresolved")!
+        };
+    }
 }

@@ -1,0 +1,161 @@
+@model Diten.Web.Models.Warehouse.OutboundShipmentFormViewModel
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    ViewData["PageCode"] = "OUTBOUNDSHIPMENTS";
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0178 DL-6 — the outbound's Details (Compact): the same four sections as the form (warehouse, lines, ship-to, note — verify_datatable_page
+    section parity) with the allocation of each line (lot, FEFO rank, quantity, picked, packed, bins), then the pick tasks, the packages, the
+    MVP-6 shipment, the short dispatch rows and the timeline. The action bar is the §8.18 status menu (details.js + rules.js): "Düzenle"
+    (Allocated / Picked / Packed), "Paketle" (Picked → the Packing page), "Sevke hazır" (Packed; an Item outbound draws it DISABLED with its reason —
+    §8.24, AC-33 (vi)), "Sevkiyatı kontrol et" (ReadyToShip), "İptal" (Allocated / Picked / Packed). UAS-001: without the outbound read only the
+    access explanation is drawn.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.OutboundShipmentsRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["OutboundShipmentsTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+<div class="wh-outbound-details" id="outbound-details" data-outbound-id="@Model.Id">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div class="min-w-0">
+            <h5 class="mb-0 d-flex flex-wrap align-items-center gap-2">
+                <span class="font-monospace" id="d-number">-</span>
+                <span id="d-status" class="badge bg-label-secondary">-</span>
+                <span id="d-item-level" class="badge bg-label-info d-none">@Localizer["ItemLevelBadge"]</span>
+            </h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/Warehouse/OutboundShipments">@Localizer["OutboundShipmentsTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="/Warehouse/OutboundShipments" class="btn btn-label-secondary wh-touch">@SharedLocalizer["Back"]</a>
+            <a href="#" class="btn btn-label-primary wh-touch d-none" id="d-edit">@Localizer["Warehouse.Outbound.Action.Edit"]</a>
+        </div>
+    </div>
+
+    <div id="d-error" class="alert alert-danger d-none" role="alert"></div>
+    <div id="d-nothing-picked" class="alert alert-warning d-none" role="status">@Localizer["NothingPicked"]</div>
+    <div id="d-names" class="alert alert-warning d-none" role="status">@Localizer["NamesUnavailable"]</div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionWarehouse"]</h6>
+                <dl class="row g-3 mb-0 wh-fields">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldWarehouse"]</dt><dd class="col-7 mb-0" id="d-warehouse">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldStaging"]</dt><dd class="col-7 mb-0" id="d-staging">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldOrderRef"]</dt><dd class="col-7 mb-0" id="d-order-ref">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["CreatedAt"]</dt><dd class="col-7 mb-0" id="d-created">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["ReadyAt"]</dt><dd class="col-7 mb-0" id="d-ready">-</dd>
+                </dl>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionLines"]</h6>
+                <div id="d-lines" class="d-flex flex-column gap-3"></div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionShipTo"]</h6>
+                <dl class="row g-3 mb-0 wh-fields">
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldShipToName"]</dt><dd class="col-7 mb-0 text-break" id="d-shipto-name">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldCountry"]</dt><dd class="col-7 mb-0" id="d-shipto-country">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldCity"]</dt><dd class="col-7 mb-0" id="d-shipto-city">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldPostalCode"]</dt><dd class="col-7 mb-0" id="d-shipto-postal">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldLine1"]</dt><dd class="col-7 mb-0 text-break" id="d-shipto-line1">-</dd>
+                    <dt class="col-5 text-muted fw-normal">@Localizer["FieldLine2"]</dt><dd class="col-7 mb-0 text-break" id="d-shipto-line2">-</dd>
+                </dl>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionNote"]</h6>
+                <div class="text-break" id="d-note">-</div>
+                <div class="text-break text-danger mt-2 d-none" id="d-cancel-reason"></div>
+            </section>
+        </div>
+    </div>
+
+    @* Not form sections (the parity map is the four above): what the outbound produced. *@
+    <div class="row g-4 mt-0">
+        <div class="col-12 col-lg-6">
+            <div class="card backbone-preview-section p-4 h-100">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CardPickTasks"]</h6>
+                <div id="d-pick-tasks" class="d-flex flex-column gap-2"></div>
+                <p id="d-pick-tasks-empty" class="text-muted mb-0 d-none">@Localizer["NoPickTasks"]</p>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card backbone-preview-section p-4 h-100">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CardPackages"]</h6>
+                <div id="d-packages" class="d-flex flex-column gap-2"></div>
+                <p id="d-packages-empty" class="text-muted mb-0 d-none">@Localizer["NoPackages"]</p>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 d-none" id="d-shipment-card">
+            <div class="card backbone-preview-section p-4 h-100">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CardShipment"]</h6>
+                <div id="d-shipment"></div>
+                <div id="d-short-dispatch" class="mt-2"></div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card backbone-preview-section p-4 h-100">
+                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionTimeline"]</h6>
+                <ul id="d-timeline" class="timeline mb-0"></ul>
+                <p id="d-timeline-unavailable" class="text-muted mb-0 d-none">@Localizer["TimelineUnavailable"]</p>
+            </div>
+        </div>
+    </div>
+
+    @* The §8.18 status menu — after the content, a sticky bottom bar (AC-45: 375 px, touch targets ≥ 48 px). *@
+    <div id="d-actions" class="wh-action-bar wh-details-actions d-flex flex-wrap gap-2 p-3 bg-white border rounded"></div>
+</div>
+
+<partial name="~/Views/Warehouse/OutboundShipments/_ActionDialogs.cshtml" />
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Warehouse/OutboundShipments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/OutboundShipments/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/OutboundShipments/rules.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Warehouse/OutboundShipments/details.js" asp-append-version="true"></script>
+    }
+}

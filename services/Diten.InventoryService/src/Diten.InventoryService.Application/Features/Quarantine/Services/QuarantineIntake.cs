@@ -5,6 +5,7 @@ using Diten.InventoryService.Domain.Quarantine.Entities;
 using Diten.InventoryService.Domain.Quarantine.Enums;
 using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
+using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
 using Microsoft.Extensions.Logging;
 
@@ -21,12 +22,15 @@ public sealed class QuarantineIntakeService
 {
     private readonly IQuarantineRepository _repository;
     private readonly QuarantineSupport _support;
+    private readonly IInventoryLedgerRepository _ledger;
     private readonly ILogger<QuarantineIntakeService> _logger;
 
-    public QuarantineIntakeService(IQuarantineRepository repository, QuarantineSupport support, ILogger<QuarantineIntakeService> logger)
+    public QuarantineIntakeService(
+        IQuarantineRepository repository, QuarantineSupport support, IInventoryLedgerRepository ledger, ILogger<QuarantineIntakeService> logger)
     {
         _repository = repository;
         _support = support;
+        _ledger = ledger;
         _logger = logger;
     }
 
@@ -78,6 +82,13 @@ public sealed class QuarantineIntakeService
                 ? await _repository.FindHoldBySourceMovementAsync(movementId, ct) is not null
                 : await _repository.FindBlockedBySourceMovementAsync(movementId, ct) is not null)
         {
+            return false;
+        }
+
+        // MOD-0175-FU01 §8.4 (Q-09 = A): a late intake of a movement already reversed opens no record
+        if (await _ledger.IsReversedAsync(transaction.Id, ct))
+        {
+            _logger.LogInformation("quarantine.intake.source_already_reversed Transaction={TransactionId}; no record opened.", movementId);
             return false;
         }
 

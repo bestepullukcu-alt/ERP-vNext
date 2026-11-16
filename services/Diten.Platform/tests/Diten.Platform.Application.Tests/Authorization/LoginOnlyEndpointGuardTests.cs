@@ -117,6 +117,19 @@ public sealed class LoginOnlyEndpointGuardTests
          */
         "InternalLegalEntityScopeResolutionController",
         "InternalTrustedSourceAuditIntentController",
+        /*
+         * MOD-0262-FU01 DL-2 — api/internal/v1/document-repository/trusted-consumer (Store, Get, Content, Compensate). Caller:
+         * MDM (MOD-0217 CLM) with its own Auth-signed service token, never a user token (KARAR D56/2). Gate, all inside
+         * TrustedDocumentRepositoryConsumerRequestExecutor: Content-Length ≤ 53 477 376 → exactly one Authorization, no
+         * X-Tenant-Id / X-Delegated-Authorization → exact Bearer → AuthenticateAsync with the TrustedDocumentRepositoryConsumerService
+         * scheme (audience TRUSTED_DOCUMENT_REPOSITORY_CONSUMER, exact ten-claim contract) → closed consumer list → tenant
+         * from the token only → scope → visibility bound to the consumer module. Proof on the real host (each branch removed
+         * in turn goes red on a named test): TrustedDocumentRepositoryConsumerGateTests (header 413 / 403 / 401, scheme 401
+         * incl. claim contract, 503, closed list 403, scope 403), TrustedDocumentRepositoryConsumerUploadTests (module bound
+         * 404). The claim defence branch the real scheme cannot reach: TrustedDocumentRepositoryConsumerUnitTests
+         * (Claim_defence_…). Not in TrustedServiceSchemeControllers: it carries no scheme-named [Authorize].
+         */
+        "InternalTrustedDocumentRepositoryConsumerController",
         "InternalVerifiedMarketReferenceDataController",
         /*
          * WP-PLT-ITEM-LISTS-01 (MOD-0048-FU01 item lists). Anonymous to the framework, gated by the SAME verified-reference
@@ -125,7 +138,18 @@ public sealed class LoginOnlyEndpointGuardTests
          * credential, no token, both tokens — the strict mediator is never called) and
          * A_body_outside_the_contract_is_400_before_dispatch. Sabotage (executor bypassed) red on the first.
          */
-        "InternalItemUniversalReferenceDataController"
+        "InternalItemUniversalReferenceDataController",
+        /*
+         * MOD-0040-FU02 (RCS-001 shared record-code service) — POST api/internal/record-codes/allocate. Caller: a consumer
+         * service (FinanceTreasury, MDM) on behalf of the user whose token it forwards; not routed by the Gateway. Anonymous to
+         * the framework, gated by TrustedRecordCodeRequestExecutor: body ≤ 4 KB → three credential headers exactly once → the
+         * consumer credential (closed binding list) → no X-Tenant-Id → the forwarded token validated under the JWT bearer
+         * scheme → a tenant_user with one tenant_id and one sub. Proof, each refusal a named test with the handler never
+         * reached: TrustedRecordCodeRequestExecutorRefusalTests (size, missing / duplicated header, unknown identifier, wrong
+         * secret, revoked, wrong audience, wrong consumer, invalid configuration, no / invalid token, X-Tenant-Id, no tenant /
+         * subject, actor type not tenant_user). The later steps' refusals arrive with those steps (pack AC-41).
+         */
+        "InternalRecordCodesController"
     };
 
     /// <summary>

@@ -641,7 +641,34 @@ public sealed class Recall
         "Recall.Scope.ApprovedSeal",
         "Recall.Scope.SealDiffers",
         "Recall.Link.NoCustomers",
-        "Recall.Ret.EnterReturn"
+        "Recall.Ret.EnterReturn",
+        // MOD-0177-FU01 — the CRM customer display (pack §11)
+        "Recall.Customer.NameCode",
+        "Recall.Customer.Unresolved",
+        "Recall.Customer.NotFound",
+        "Recall.Customer.Distinguisher",
+        "Recall.Customer.UnresolvedWith",
+        "Recall.Customer.NotFoundWith",
+        "Recall.Customer.LegacyMarked",
+        "Recall.Customer.NoCrmMarked",
+        "Recall.Ev.W.customerNames",
+        "Recall.Ev.W.customerNamesSnapshot",
+        "Recall.Customer.LegacyBadge",
+        "Recall.Customer.NoCrmBadge",
+        "Recall.Customer.LegacyHint",
+        "Recall.Customer.NoCrmHint",
+        "Recall.Customer.ManualHint",
+        "Recall.Customer.CrmUnavailable",
+        "Recall.Errors.RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE",
+        "Recall.Customer.CrmForbidden",
+        "Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN",
+        "Recall.Customer.Deferred",
+        "Recall.Customer.NamesPage",
+        "Recall.Customer.PagePrev",
+        "Recall.Customer.PageNext",
+        "Recall.Customer.Forbidden",
+        "Recall.Customer.ForbiddenWith",
+        "Recall.Customer.ExportForbidden"
     ];
 
     /// <summary>WP-0177-R7c — the sentences of the bands on 0173 / 0174 / 0175 (Views/Shared/Recall/_RecallBandAssets.cshtml → recall-bands.js).</summary>

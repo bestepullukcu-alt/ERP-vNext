@@ -80,6 +80,7 @@ const page = async ({ openCount = 2 } = {}) => {
         clearFieldErrors: () => { seen.fieldErrors = {}; },
         fieldError: (scope, name, text) => { seen.fieldErrors[name] = text; },
         can: () => true, api: (x) => x, productCell: () => '', lotLink: () => '', whereCell: () => '',
+        conflictBadge: () => '', // MOD-0175-FU01 DL-2: the badge column (blocked.js :336) — its own test is Quarantine/quarantine-source-reversal.test.mjs
         signAndSubmit: async () => ({ ok: true }), announceSent: async () => {}
     };
     let created = null;

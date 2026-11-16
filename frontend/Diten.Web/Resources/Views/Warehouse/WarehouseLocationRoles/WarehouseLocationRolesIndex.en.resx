@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="Searching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>No results</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Choose the company whose warehouse you work in. Nothing is shown until a company is chosen.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>The company list cannot be read right now; try again shortly.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>Changed meanwhile — refresh</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>Not found</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>The user directory cannot be reached; the assignee was not checked and nothing was saved. Try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Choose an active user of your company as the assignee.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>The company code is not valid for task numbers; correct the company code first.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>The stock changed while the confirmation was posting; the confirmation is waiting — use “Retry”.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>This confirmation is being processed right now; wait a moment and refresh.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Only a confirmation with an integrity error can be reconciled.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Only a waiting confirmation can be retried.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>A confirmation of this task is waiting for the stock answer; only “Retry” works until it is settled.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Someone changed this record meanwhile; refresh and try again.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>This action is not possible in the task’s current state.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>The location has open putaway tasks; close or cancel them first.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>A location cannot be Receiving and Staging at once.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>This location already has a role record; edit that one.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>An upper or lower node already carries the opposite role; Receiving and Staging cannot meet on one path.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>The role record was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>A role can be given to a warehouse, storage location, zone or bin only.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Only the assigned operator or a supervisor can do this.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>The stock ledger already holds a different movement under this confirmation’s key; a supervisor must reconcile it.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>The planned quantity cannot be below what is already confirmed or waiting.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>The quantity is more than the stock still open in this row.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>The quantity is more than what remains to put away.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>A task number could not be issued; try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>The serial numbers at the source changed; cancel this task and open a new one.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Part of this lot at the same location is awaiting quality; complete the quality decision first.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>A serial-controlled product is put away in full only; partial confirmation and closing the remainder are not possible.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>The source location is not a receiving location.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>No stock was found in the selected row; refresh the list.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>The stock went into quarantine or is held; it cannot be put away.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Storage condition unknown — complete it on the product card (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>The storage conditions are not valid: choose at most one temperature condition.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>The target bin does not accept this product’s storage condition.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>The target must be an active, stockable bin of the same warehouse that is not a receiving or staging location.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>The task already has an assignee.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>The task was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with different content; close the dialog and start again.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Write a reason of at least 10 characters.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>There is not enough stock at the source for this quantity.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>The lot is under recall; it cannot be put away.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>The stock service cannot be reached; nothing was saved. Try again shortly.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Some values are not valid; check the form.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>You do not have access to this action.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Your session has ended; sign in again.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>The warehouse service cannot be reached right now; try again shortly.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>The record was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>The record changed meanwhile; refresh and try again.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>The request was not accepted; check the values and try again.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Something went wrong; try again.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Too many rows to export; narrow the filters.</value></data>
+  <data name="WarehouseLocationRolesTitle" xml:space="preserve"><value>Warehouse Location Roles</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Mark receiving and staging locations and the storage conditions a node accepts; lower nodes inherit them.</value></data>
+  <data name="AddNewWarehouseLocationRole" xml:space="preserve"><value>New Role</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="ColLocationType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="ColRoles" xml:space="preserve"><value>Roles</value></data>
+  <data name="ColConditions" xml:space="preserve"><value>Storage conditions in force</value></data>
+  <data name="ColNote" xml:space="preserve"><value>Note</value></data>
+  <data name="FilterRole" xml:space="preserve"><value>Role</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Location node</value></data>
+  <data name="FieldRoles" xml:space="preserve"><value>Roles (optional)</value></data>
+  <data name="FieldConditions" xml:space="preserve"><value>Accepted storage conditions</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Search by code or name</value></data>
+  <data name="RolesHint" xml:space="preserve"><value>No role is needed to set storage conditions alone.</value></data>
+  <data name="ConditionsHint" xml:space="preserve"><value>Lower nodes inherit these unless they have their own; at most one temperature condition.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New location role</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit location role</value></data>
+  <data name="ValidationLocation" xml:space="preserve"><value>Choose a location.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete this location role?</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete {0} location roles?</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>{0} of {1} deleted</value></data>
+  <data name="InheritedBadge" xml:space="preserve"><value>from upper node</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Inherited from {0}</value></data>
+  <data name="NoConditions" xml:space="preserve"><value>No storage condition</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>No role</value></data>
+  <data name="Warehouse.Role.Receiving" xml:space="preserve"><value>Receiving</value></data>
+  <data name="Warehouse.Role.Staging" xml:space="preserve"><value>Staging</value></data>
+  <data name="Warehouse.StorageCondition.AMBIENT_15_25" xml:space="preserve"><value>Ambient 15–25 °C</value></data>
+  <data name="Warehouse.StorageCondition.COOL_2_8" xml:space="preserve"><value>Cool 2–8 °C</value></data>
+  <data name="Warehouse.StorageCondition.FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Frozen below −20 °C</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_LIGHT" xml:space="preserve"><value>Protect from light</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Protect from moisture</value></data>
+  <data name="Warehouse.LocationType.Warehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="Warehouse.LocationType.StorageLocation" xml:space="preserve"><value>Storage location</value></data>
+  <data name="Warehouse.LocationType.Zone" xml:space="preserve"><value>Zone</value></data>
+  <data name="Warehouse.LocationType.Bin" xml:space="preserve"><value>Bin</value></data>
+  <data name="Warehouse.Action.EditRole" xml:space="preserve"><value>Edit</value></data>
+  <data name="Warehouse.Action.DeleteRole" xml:space="preserve"><value>Delete</value></data>
+  <data name="Warehouse.Action.BulkDelete" xml:space="preserve"><value>Delete Selected</value></data>
+  <data name="Warehouse.Saved.RoleCreated" xml:space="preserve"><value>Location role created.</value></data>
+  <data name="Warehouse.Saved.RoleUpdated" xml:space="preserve"><value>Location role saved.</value></data>
+  <data name="Warehouse.Saved.RoleDeleted" xml:space="preserve"><value>Location role deleted.</value></data>
+  <data name="Warehouse.BulkOutcome.Deleted" xml:space="preserve"><value>Deleted</value></data>
+</root>

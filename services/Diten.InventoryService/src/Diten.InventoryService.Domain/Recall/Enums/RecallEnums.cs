@@ -124,6 +124,19 @@ public enum RecallScopeItemOrigin
     Trace
 }
 
+/// <summary>
+/// MOD-0177-FU01 (pack §4.1, §8.2) — where a Shipment item's customer key came from: the MVP-6 <c>customerRef</c> (a CRM account id), the
+/// shipment's <c>shipToReference</c>, the <c>DOC:</c> document key, or a hand entry. A row written before FU01 has none (null = legacy, sticky).
+/// Values are only ever appended.
+/// </summary>
+public enum RecallCustomerRefSource
+{
+    Crm,
+    ShipTo,
+    Document,
+    Manual
+}
+
 /// <summary>Why a trace snapshot was stored (pack §4.4).</summary>
 public enum RecallSnapshotPurpose
 {

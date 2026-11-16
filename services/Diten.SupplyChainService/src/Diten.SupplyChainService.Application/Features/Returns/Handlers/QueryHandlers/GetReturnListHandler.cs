@@ -8,7 +8,7 @@ public sealed class GetReturnListHandler(IReturnRepository repository,ReturnRequ
  public async Task<Response<ReturnListResponse>> Handle(GetReturnListQuery request,CancellationToken ct)
  {
   if(request.Status is not null&&!Enum.IsDefined(request.Status.Value))return Response<ReturnListResponse>.Fail("INVALID_REQUEST",400);
-  try {var rows=await repository.QueryAsync(context.Scope,request.Status,request.ShipmentId,ct);return Response<ReturnListResponse>.Success(new(rows.Select(r=>new ReturnSummary(r.Id,r.RmaNumber,r.ShipmentId,r.Status.ToString())).ToArray(),rows.Count));}
+  try {var rows=await repository.QueryAsync(context.Scope,request.Status,request.ShipmentId,ct);return Response<ReturnListResponse>.Success(new(rows.Select(r=>new ReturnSummary(r.Id,r.RmaNumber,r.ShipmentId,r.Status.ToString(),r.CustomerRef)).ToArray(),rows.Count));}
   catch(ReturnFailureException e){return Response<ReturnListResponse>.Fail(e.Code,e.Status);}
  }
 }

@@ -395,10 +395,30 @@ public sealed class SampleCommandHandlers :
         }
         catch (PlatformTransactionUnavailableException)
         {
+            // Under contention a loser can exhaust the executor's write-conflict retries. If another decision has landed
+            // meanwhile, the honest answer is 409 (decided meanwhile), not 503; only a still-pending sample is a 503.
+            if (await DecidedMeanwhileAsync(actor.TenantId, sample.Id, ct))
+            {
+                return ESignResponses.Fail<SampleDto>(ESignCodes.SampleNotPending, 409, "The sample was decided meanwhile.");
+            }
+
             return ESignResponses.Fail<SampleDto>(ESignCodes.ReauthUnavailable, 503, "The decision could not be recorded now.");
         }
 
         return Response<SampleDto>.Success((await _book.ToDtosAsync(actor.TenantId, [sample], ct))[0]);
+    }
+
+    private async Task<bool> DecidedMeanwhileAsync(Guid tenantId, Guid sampleId, CancellationToken ct)
+    {
+        try
+        {
+            var events = await _events.ListBySampleAsync(tenantId, sampleId, null, ct);
+            return ESignatureSampleRules.Project(events) != ESignatureSampleStatus.Pending;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return false; // the read itself failed: stay with 503
+        }
     }
 
     public Task<Response<SampleDto>> Handle(DeactivateSampleCommand request, CancellationToken ct) =>

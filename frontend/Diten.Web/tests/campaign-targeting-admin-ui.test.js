@@ -2,7 +2,19 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '../../..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
+const readRepo = relative => fs.readFileSync(path.join(repoRoot, relative), 'utf8');
+// The slice of `source` from `start` up to (not including) `end`; fails loudly if either marker is gone.
+const between = (source, start, end) => {
+  const from = source.indexOf(start);
+  expect(from).toBeGreaterThan(-1);
+  const to = source.indexOf(end, from);
+  expect(to).toBeGreaterThan(from);
+  return source.slice(from, to);
+};
+// Paging parameters a server-paged list would send; the Campaign list fetches every row and searches client-side.
+const PAGING_PARAM = /\b(page|pageSize|pageNumber|pageIndex|skip|take|offset|limit|start|length|draw)\b/i;
 const controller = read('Controllers/CRM/CampaignsController.cs');
 const models = read('Models/CRM/CampaignViewModels.cs');
 const indexView = read('Views/CRM/Campaigns/Index.cshtml');
@@ -16,7 +28,21 @@ const formView = read('Views/CRM/Campaigns/_Form.cshtml');
 const indexJs = read('wwwroot/assets/js/CRM/Campaigns/index.js');
 const detailsJs = read('wwwroot/assets/js/CRM/Campaigns/details.js');
 const formJs = read('wwwroot/assets/js/CRM/Campaigns/form.js');
-const layout = read('Views/Shared/_LayoutTenantShell.cshtml');
+// Navigation is manifest-driven: the CRM menu comes from the Platform self-registration manifest, not the layout.
+const crmManifest = readRepo('services/Diten.Platform/src/Diten.Platform.Application/Features/Crm/SelfRegistration/CrmManifestProvider.cs');
+// The server half of FU11: what the manual target canvas no longer asks for, the CRM write path fills in.
+const targetHandlers = readRepo('services/Diten.CrmService/src/Diten.CrmService.Application/Features/Campaign/Handlers/CampaignTargetCommandHandlers.cs');
+
+// Resolves a manifest page by key -> { route, permission } (the permission may be a const name or a literal).
+const manifestPage = (manifest, key) => {
+  const match = manifest.match(new RegExp(`new ModuleManifestPage\\(\\s*"${key}"\\s*,\\s*"[^"]*"\\s*,\\s*"([^"]+)"\\s*,\\s*("[^"]+"|\\w+)`));
+  expect(match).toBeTruthy();
+  const [, route, permissionRef] = match;
+  const literal = permissionRef.startsWith('"')
+    ? permissionRef.slice(1, -1)
+    : (manifest.match(new RegExp(`\\b${permissionRef}\\s*=\\s*"([^"]+)"`)) || [])[1];
+  return { route, permission: literal };
+};
 
 describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
   it('renders the Campaigns deep-link route with the tenant shell', () => {
@@ -25,7 +51,8 @@ describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
   });
 
   it('loads the contract through the same-origin Gateway proxy and fails closed', () => {
-    expect(indexJs).toContain("fetch('/CRM/Campaigns/api/contract'");
+    expect(indexJs).toContain("const endpoint = '/CRM/Campaigns/api'");
+    expect(indexJs).toContain('fetch(`${endpoint}/contract`');
     expect(controller).toContain('"/api/crm/campaigns/contract"');
     expect(indexJs).toContain('CampaignContractUnavailable');
   });
@@ -38,21 +65,38 @@ describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
 
   it('renders Golden DataTable v2 list and supported filters', () => {
     expect(tableView).toContain('data-dt-standard="v2"');
-    ['filterCampaignStatus','filterCampaignType','filterBrandId','filterProductId','filterSubjectId','filterIncludeArchived'].forEach(id => expect(filterView).toContain(`id="${id}"`));
+    ['filterCampaignStatus','filterCampaignType','filterTargetingMode','filterIncludeArchived'].forEach(id => expect(filterView).toContain(`id="${id}"`));
+    // MOD-0165 FU10 deprecated the brand/product/subject anchors on Campaign: no filter for them, none sent.
+    ['filterBrandId','filterProductId','filterSubjectId'].forEach(id => expect(filterView).not.toContain(`id="${id}"`));
+    expect(between(indexJs, 'const query = () => {', 'return params.toString();')).not.toMatch(/brandId|productId|subjectId/i);
     expect(indexJs).toContain("colReorder: { columns: ':gt(0):not(:last-child)' }");
     expect(indexJs).toContain("column-reorder.dt columns-reordered.dt");
   });
 
-  it('documents unsupported filters without a fake client filter', () => {
+  it('documents unsupported filters; search runs client-side over the whole list and is kept in the saved view', () => {
     expect(filterView).toContain('UnsupportedFiltersNote');
-    expect(indexJs).toContain('searching: false');
     expect(controller).not.toContain('objectiveType = Request.Query');
+    // The list fetches every row (no paging) and hands them to DataTables; search therefore covers the whole list.
+    // If the list ever becomes server-paged, client search would only see one page - this test must then go red.
+    const query = between(indexJs, 'const query = () => {', 'return params.toString();');
+    expect(query).not.toMatch(PAGING_PARAM);
+    expect(query).not.toMatch(/\bsearch\b/i);
+    expect(indexJs).toMatch(/fetch\(`\$\{endpoint\}\?\$\{query\(\)\}`,/);
+    expect(indexJs).toContain('data: rows,');
+    expect(indexJs).not.toMatch(/serverSide\s*:\s*true/);
+    // The search term is part of the saved view (Save View), not a server filter.
+    expect(indexJs).toMatch(/search:\s*norm\(api\.search\(\)\)/);
   });
 
-  it('uses Compact create/edit/detail pages with matching four sections', () => {
+  it('uses Compact create/edit/detail pages with matching four sections in the same order', () => {
     ['Create.cshtml','Edit.cshtml','Details.cshtml','_Form.cshtml'].forEach(file => expect(fs.existsSync(path.join(root,'Views/CRM/Campaigns',file))).toBe(true));
-    ['SummarySection','ReferencesSection','ConsentContextSection','ExternalReferencesSection'].forEach(key => {
-      expect(formView).toContain(key); expect(detailsView).toContain(key);
+    const sections = ['SummarySection','TargetingSection','ConsentContextSection','ScopeSection'];
+    [formView, detailsView].forEach(view => {
+      const positions = sections.map(key => view.indexOf(`["${key}"]`));
+      positions.forEach(p => expect(p).toBeGreaterThan(-1));
+      positions.slice(1).forEach((p, i) => expect(p).toBeGreaterThan(positions[i]));
+      // FU10 removed the References / External References sections from both pages.
+      ['ReferencesSection','ExternalReferencesSection'].forEach(key => expect(view).not.toContain(key));
     });
   });
 
@@ -86,8 +130,8 @@ describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
     expect(detailsJs).not.toMatch(/method\s*:\s*['"]DELETE['"]/i);
   });
 
-  it('renders reference IDs without master lookup calls', () => {
-    ['BrandId','ProductId','SubjectId','TopicId','DefaultKnowledgePathId','DefaultKnowledgeContentId'].forEach(key => expect(detailsView).toContain(key));
+  it('no longer renders the FU10-deprecated reference IDs and makes no master lookup calls', () => {
+    ['BrandId','ProductId','SubjectId','TopicId','DefaultKnowledgePathId','DefaultKnowledgeContentId'].forEach(key => expect(detailsView).not.toContain(key));
     expect(controller).not.toMatch(/brand.*lookup|product.*lookup|knowledge.*lookup/i);
   });
 
@@ -109,10 +153,20 @@ describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
     expect(detailsJs).toContain("filter(x => x !== 'campaign-target')");
   });
 
-  it('requires SelectionReason, ReasonCodes and conditional ExclusionReason', () => {
-    expect(targetCanvas).toContain('id="selectionReason"');
-    expect(detailsJs).toContain("csv('targetReasonCodes').length === 0");
-    expect(detailsJs).toContain("value('targetStatus') === 'excluded'");
+  it('FU11: the manual target canvas asks no reason; the server writes the reason/source defaults', () => {
+    // The canvas no longer collects reason, reason codes, source or exclusion reason...
+    ['selectionReason','targetReasonCodes','targetSource','exclusionReason'].forEach(id => expect(targetCanvas).not.toContain(`id="${id}"`));
+    expect(targetCanvas).toContain('ManualTargetDefaultsHint');
+    // ...and the payload does not send them (omitted on update = keep what the target already says).
+    const payload = between(detailsJs, 'const targetPayload', 'const validateTarget');
+    expect(payload).not.toMatch(/selectionReason|reasonCodes|targetSource|exclusionReason/);
+    // The FU04 invariant (every target states why it exists) now lives on the server: the CRM write path resolves the
+    // missing fields in CampaignTargetWrite.ResolveManualDefaults on create AND update, then validates the result.
+    const targetWrite = between(targetHandlers, 'internal static class CampaignTargetWrite', 'public static string BuildSelectionReason');
+    expect(targetWrite).toMatch(/ResolveManualDefaults\(\s*string\? targetSource,\s*string\? selectionReason/);
+    expect(targetWrite).toContain('BuildSelectionReason(actorName, now)');
+    expect(targetHandlers.split('CampaignTargetWrite.ResolveManualDefaults(').length - 1).toBeGreaterThan(1);
+    expect(targetHandlers).toMatch(/CampaignTargetWrite\.Validate\(\s*defaults\.TargetSource,\s*defaults\.SelectionReason/);
   });
 
   it('provides lightweight snapshot rows and JSON paste fallback', () => {
@@ -157,7 +211,8 @@ describe('MOD-0165-FU05 Campaign / Targeting Admin UI', () => {
   });
 
   it('permission-controls menu and actions', () => {
-    expect(layout).toContain('Perms.Has("crm.campaign.read")');
+    // The menu entry is the CRM manifest's CAMPAIGNS page, gated by crm.campaign.read.
+    expect(manifestPage(crmManifest, 'CAMPAIGNS')).toEqual({ route: '/CRM/Campaigns', permission: 'crm.campaign.read' });
     expect(indexView).toContain('crm.campaign.manage');
     expect(controller).toContain('RequirePage(ReadPermission, ReadFallback)');
     expect(detailsView).toContain('Model.CanCreateSnapshot');

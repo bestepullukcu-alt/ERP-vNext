@@ -36,6 +36,7 @@ public sealed class CreateShipmentHandler(IShipmentRepository repository, Reques
                 SourceDocumentId = normalized.SourceDocumentId,
                 WarehouseReferenceId = normalized.WarehouseReferenceId,
                 ShipToReference = normalized.ShipToReference,
+                CustomerRef = b.CustomerRef,
                 PlannedShipAt = b.PlannedShipAt,
                 PlannedDeliverAt = b.PlannedDeliverAt,
                 Status = ShipmentStatus.Draft,

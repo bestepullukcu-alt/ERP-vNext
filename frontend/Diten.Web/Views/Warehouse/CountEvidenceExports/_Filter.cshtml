@@ -1,0 +1,32 @@
+@using Diten.Web.Views.Warehouse.CountEvidenceExports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountEvidenceExportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filter = the listCountEvidenceExports parameter (draft §4.4): one count (the company's Submitted / Closed counts, searched by number).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-count">
+                        <select id="filterCount" class="form-select form-select-sm" data-placeholder="@Localizer["FilterCount"]" aria-label="@Localizer["FilterCount"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

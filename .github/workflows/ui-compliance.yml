@@ -6,11 +6,22 @@ name: ui-compliance
 # Every pull request starts it (owner decision 2026-11-02), so branch protection can require it: a required check whose
 # workflow is path-filtered never reports on other PRs and they wait forever. The selector itself picks the touched pages;
 # a PR that touches none ends with exit 0 in under a second (measured on 1ae33452d..6b3bf573a).
+# EES merge queue (MQ-01): merge_group too, with the group's parent commit as the base (no pull_request payload there).
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow, whose result
+# nobody reads any more. A push to main, a merge group and a manual run each get a group of their own (the run id), so
+# they are never cancelled and never wait for another run. A re-run (run_attempt 2 or more) also gets a group of its own:
+# re-running an older commit's run can never cancel the newest commit's run (Codex round 1, CI-ISRAF-01).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ui-compliance:
@@ -25,9 +36,13 @@ jobs:
         id: selector
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
         run: |
           start=$(date +%s)
-          if python3 scripts/uic_changed_pages.py --base "$BASE_SHA" > uic-selector-stdout.txt; then code=0; else code=$?; fi
+          # The event is told apart in the shell (no if:); an empty base is the selector's tool error (exit 2), red.
+          base="$BASE_SHA"
+          if [ "$GITHUB_EVENT_NAME" = "merge_group" ]; then base="$GROUP_BASE_SHA"; fi
+          if python3 scripts/uic_changed_pages.py --base "$base" > uic-selector-stdout.txt; then code=0; else code=$?; fi
           cat uic-selector-stdout.txt
           echo "SHA-256 (stdout): $(sha256sum uic-selector-stdout.txt | cut -d' ' -f1)"
           echo "Süre: $(( $(date +%s) - start )) s (yalnız değişen sayfalar; CI'da tüm-sayfa kipi yok)"

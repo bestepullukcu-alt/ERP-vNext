@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Diten.Web.Models.SupplyChain.Returns;
 using Diten.Web.Security;
@@ -14,8 +15,9 @@ namespace Diten.Web.Controllers;
 // overlay v2 by R-2 (2026-10-04) against MODULE-RECIPE.md.
 //
 // Browser → this controller → Gateway (GatewayUrl) → SupplyChain 5061. The browser never calls the Gateway or holds a token.
-// Bound operations only: queryReturns, createReturn, transitionReturn, and Shipment-owned getShipment read-only.
-// No by-ID Return GET, no detail page, no edit/delete/bulk/import/export route.
+// Bound operations: queryReturns, createReturn, transitionReturn, getReturn (3.5.0, MOD-0186 r10 DL-4), and read-only
+// getShipment / queryShipments, CRM account, LOCATION, PRODUCT-MASTER, TRACE and QUARANTINE reads (r10 §35.2–35.5).
+// No edit/delete/bulk/import/export route.
 //
 // Header policy (pack §32.4; backend ReturnContextMiddleware.cs:48-100 in the accepted source normal-source.tar.gz
 // edb759a0…5a21):
@@ -90,6 +92,16 @@ public sealed class SupplyChainReturnsController : Controller
     [HttpGet("")]
     public IActionResult Index() => View("~/Views/SupplyChain/Returns/Index.cshtml");
 
+    // MOD-0186 r10 §35.5 (DL-4): the details page (manifest page RETURN_DETAILS, parent RETURNS, not navigation-visible).
+    // The page's reads need the company scope, which arrives on the URL from the list; parsed with the adapter's rule.
+    [HttpGet("Details/{returnId:guid}")]
+    public IActionResult Details(Guid returnId)
+    {
+        ViewBag.ReturnId = returnId;
+        ViewBag.LegalEntityId = LegalEntityScopeRequest.TryResolve(Request, out var legalEntityId) ? legalEntityId.ToString("D") : string.Empty;
+        return View("~/Views/SupplyChain/Returns/Details.cshtml");
+    }
+
     // ── List adapter: GET /SupplyChain/Returns/api?shipmentId=&status= → GET /api/shipment-bundle/returns ─────────
     [HttpGet("api")]
     [JsonAdapterEndpoint]
@@ -114,9 +126,19 @@ public sealed class SupplyChainReturnsController : Controller
             // R-2 (MODULE-RECIPE 2.3): every gateway answer is logged with the id the Gateway and the service log too.
             _logger.LogInformation("Returns gateway answered {StatusCode} for GET {TargetUrl}. Trace {Trace}.",
                 (int)response.StatusCode, target, scope.Trace);
-            return (int)response.StatusCode >= 400
-                ? await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken)
-                : await PassThroughAsync(response, cancellationToken);
+            if ((int)response.StatusCode >= 400) return await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken);
+            // r10 §35.5 (RB-25): the customer column comes from the return's own customerRef only; customerRef never reaches
+            // the browser. Without crm.account.read nothing is asked of CRM and the column is not drawn.
+            var listBody = JsonNode.Parse(await response.Content.ReadAsStringAsync(cancellationToken)) as JsonObject;
+            if (listBody?["items"] is not JsonArray rows) return ContractFailure(StatusCodes.Status503ServiceUnavailable, "PERSISTENCE_UNAVAILABLE");
+            var names = new ReturnNames(this, scope);
+            await Task.WhenAll(rows.OfType<JsonObject>().Select(async row =>
+            {
+                var customerRef = Str(row, "customerRef");
+                row.Remove("customerRef");
+                if (HasPermission(CrmAccountRead)) row["customer"] = (await names.CustomerAsync(customerRef, cancellationToken)).DeepClone();
+            }));
+            return JsonOk(listBody.ToJsonString(), "application/json");
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
@@ -145,8 +167,159 @@ public sealed class SupplyChainReturnsController : Controller
         if (lookup.Failure is not null) return lookup.Failure;
 
         Response.Headers[CorrelationHeader] = scope.Trace.ToString("D");
-        return new JsonResult(ReturnShipmentProjection.From(lookup.Detail), _jsonOptions);
+        // r10 §35.2 (RB-1, RB-2): product / SKU name and code (one bulk read) and lot number per line, read at display time;
+        // a failed or denied read keeps the row and says "name unavailable" in the page.
+        var names = new ReturnNames(this, scope);
+        var skuIds = ReturnShipmentProjection.SkuIds(lookup.Detail);
+        var skus = await names.SkusAsync(skuIds, cancellationToken);
+        var lots = new Dictionary<string, JsonObject>(StringComparer.Ordinal);
+        foreach (var lotId in ReturnShipmentProjection.LotIds(lookup.Detail)) lots[lotId] = await names.LotAsync(lotId, cancellationToken);
+        return new JsonResult(ReturnShipmentProjection.From(lookup.Detail, skus, lots), _jsonOptions);
     }
+
+    // ── r10 §35.3 eligible-shipment picker: GET api/eligible-shipments?search=&page=&any= → queryShipments 3.5.0 ──────────
+    // Create (any=false): Delivered and Closed only. List filter (any=true): every status. Rows carry the id (option value),
+    // number, date and the customer name and code resolved from ShipmentSummary.customerRef (old record without one); no
+    // per-row getShipment. Without crm.account.read the row has number and date only.
+    [HttpGet("api/eligible-shipments")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> EligibleShipments([FromQuery] string? search, [FromQuery] int page = 1, [FromQuery] bool any = false,
+        CancellationToken cancellationToken = default)
+    {
+        var allowed = any ? HasPermission(ReturnUiPermissions.Read) : HasPermission(ReturnUiPermissions.Create);
+        if (!allowed || !HasPermission(ReturnUiPermissions.ShipmentRead)) return ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        if (page is < 1 or > 50 || (search?.Length ?? 0) > 100) return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+        if (!TryGetScope(out var scope, out var failure)) return failure!;
+        var filter = string.IsNullOrWhiteSpace(search) ? string.Empty : "&search=" + Uri.EscapeDataString(search.Trim());
+        var statuses = any ? new string?[] { null } : ReturnUiLifecycle.EligibleShipmentStatuses.ToArray<string?>();
+        var items = new List<JsonObject>(); var more = false;
+        foreach (var status in statuses)
+        {
+            var query = $"page={page}&pageSize={PickerPageSize}&orderBy=plannedShipAt&orderDir=desc" + (status is null ? string.Empty : "&status=" + status) + filter;
+            var reply = await GatewayGetAsync($"{ShipmentsPath}?{query}", scope, cancellationToken);
+            if (reply.Status != StatusCodes.Status200OK) return PickerFailure(reply.Status);
+            if (JsonNode.Parse(reply.Body) is not JsonObject body || body["items"] is not JsonArray rows) return ContractFailure(StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE");
+            items.AddRange(rows.OfType<JsonObject>());
+            more |= (long)page * PickerPageSize < (body["filteredTotal"]?.GetValue<long>() ?? body["total"]?.GetValue<long>() ?? 0);
+        }
+        var names = new ReturnNames(this, scope);
+        var canCrm = HasPermission(CrmAccountRead);
+        var answer = await Task.WhenAll(items.Select(async row => new JsonObject
+        {
+            ["id"] = Str(row, "shipmentId"), ["number"] = Str(row, "shipmentNumber"),
+            ["date"] = Str(row, "plannedDeliverAt") ?? Str(row, "plannedShipAt"), ["status"] = Str(row, "status"),
+            ["customer"] = canCrm ? (await names.CustomerAsync(Str(row, "customerRef"), cancellationToken)).DeepClone() : null
+        }));
+        return JsonOk(new JsonObject { ["items"] = new JsonArray(answer.Where(r => ReturnWireUuid(Str(r, "id"))).ToArray<JsonNode?>()), ["hasMore"] = more }.ToJsonString(), "application/json");
+    }
+
+    // ── r10 §35.3 receiving pickers: warehouse (Active), and the location tree one layer at a time, WITHOUT isStockable ───
+    [HttpGet("api/warehouses")]
+    [JsonAdapterEndpoint]
+    public Task<IActionResult> Warehouses([FromQuery] string? search, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(ReturnUiPermissions.Receive)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST"));
+        if ((search?.Length ?? 0) > 100) return Task.FromResult(ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST"));
+        return LocationLayerAsync($"type=Warehouse&status=Active&page=1&pageSize={PickerPageSize}" + Search(search), cancellationToken);
+    }
+
+    [HttpGet("api/locations")]
+    [JsonAdapterEndpoint]
+    public Task<IActionResult> Locations([FromQuery] string? parentId, [FromQuery] string? search, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(ReturnUiPermissions.Receive)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST"));
+        if (!Guid.TryParse(parentId, out var parent) || (search?.Length ?? 0) > 100) return Task.FromResult(ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST"));
+        return LocationLayerAsync($"parentId={parent:D}&status=Active&page=1&pageSize={LocationLayerPageSize}" + Search(search), cancellationToken);
+    }
+
+    // ── r10 §35.3 (RB-7): RETURN_RECEIPT_IN_PROGRESS fills the pickers by name — the label of a stored place id ─────────────
+    [HttpGet("api/places/{locationId}")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Place(string locationId, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(ReturnUiPermissions.Receive)) return ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        if (string.IsNullOrWhiteSpace(locationId) || locationId.Length > 100) return ContractFailure(StatusCodes.Status400BadRequest, "INVALID_REQUEST");
+        if (!TryGetScope(out var scope, out var failure)) return failure!;
+        return JsonOk((await new ReturnNames(this, scope).LocationAsync(locationId, cancellationToken)).ToJsonString(), "application/json");
+    }
+
+    // ── r10 §35.5 / §35.6 details adapter: GET api/{returnId} → getReturn 3.5.0, with names (RB-8, RB-9, RB-24, RB-25) ────
+    // The summary shows the return's OWN customerRef only (single rule): without one it is "old record", and the shipment's
+    // customerRef is never a fallback. Lines get product / SKU and lot names from the shipment the return names.
+    [HttpGet("api/{returnId:guid}")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Detail(Guid returnId, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(ReturnUiPermissions.Read)) return ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        if (!TryGetScope(out var scope, out var failure)) return failure!;
+        var read = await ReadReturnAsync(returnId, scope, cancellationToken);
+        if (read.Failure is not null) return read.Failure;
+        var detail = read.Detail!;
+        var names = new ReturnNames(this, scope);
+        var customerRef = Str(detail, "customerRef");
+        detail.Remove("customerRef");
+        detail["customer"] = HasPermission(CrmAccountRead) ? (await names.CustomerAsync(customerRef, cancellationToken)).DeepClone() : null;
+        var shipment = Guid.TryParse(Str(detail, "shipmentId"), out var shipmentId) && HasPermission(ReturnUiPermissions.ShipmentRead)
+            ? await LookupShipmentAsync(shipmentId, scope, "SHIPMENT_NOT_FOUND", cancellationToken) : null;
+        var source = shipment?.Failure is null && shipment is not null ? shipment.Detail : default;
+        detail["shipmentNumber"] = source.ValueKind == JsonValueKind.Object && source.TryGetProperty("shipmentNumber", out var number) && number.ValueKind == JsonValueKind.String ? number.GetString() : null;
+        var sourceLines = ReturnShipmentProjection.LinesByNumber(source);
+        var skus = await names.SkusAsync(sourceLines.Values.Select(l => l.SkuId).Where(x => x is not null).Select(x => x!).Distinct().ToList(), cancellationToken);
+        foreach (var line in (detail["lines"] as JsonArray)?.OfType<JsonObject>() ?? [])
+        {
+            sourceLines.TryGetValue(Str(line, "shipmentLineNumber") ?? string.Empty, out var origin);
+            line["sku"] = origin?.SkuId is { } sku ? (skus.TryGetValue(sku, out var label) ? Resolved(label) : Unavailable(null)).DeepClone() : Unavailable(null).DeepClone();
+            line["lot"] = string.IsNullOrWhiteSpace(origin?.LotId) ? null : (await names.LotAsync(origin!.LotId!, cancellationToken)).DeepClone();
+            line.Remove("inventoryTransactionReferenceId");
+        }
+        Response.Headers[CorrelationHeader] = scope.Trace.ToString("D");
+        return JsonOk(detail.ToJsonString(), "application/json");
+    }
+
+    // ── r10 §35.5 quarantine link: GET api/{returnId}/holds → MOD-0175 listHoldsBySource(MOD-0186, returnId) (RB-10) ───────
+    // Gate: read + quarantine.holds.read, checked before any request. Holds are matched to return lines by the shipment line's
+    // skuId and lotId (server-side; no id reaches a label); a hold that matches no line is listed apart.
+    [HttpGet("api/{returnId:guid}/holds")]
+    [JsonAdapterEndpoint]
+    public async Task<IActionResult> Holds(Guid returnId, CancellationToken cancellationToken)
+    {
+        if (!HasPermission(ReturnUiPermissions.Read) || !HasPermission(QuarantineHoldsRead)) return ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        if (!TryGetScope(out var scope, out var failure)) return failure!;
+        var read = await ReadReturnAsync(returnId, scope, cancellationToken);
+        if (read.Failure is not null) return read.Failure;
+        var holdsReply = await GatewayGetAsync($"/api/quarantine/holds/by-source?sourceModule=MOD-0186&sourceDocumentId={returnId:D}", scope, cancellationToken);
+        if (holdsReply.Status != StatusCodes.Status200OK) return PickerFailure(holdsReply.Status);
+        if (JsonNode.Parse(holdsReply.Body) is not JsonArray holds) return ContractFailure(StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE");
+        var source = Guid.TryParse(Str(read.Detail!, "shipmentId"), out var shipmentId) && HasPermission(ReturnUiPermissions.ShipmentRead)
+            ? await LookupShipmentAsync(shipmentId, scope, "SHIPMENT_NOT_FOUND", cancellationToken) : null;
+        var sourceLines = ReturnShipmentProjection.LinesByNumber(source?.Failure is null && source is not null ? source.Detail : default);
+        // VER F-4: a hold goes to a line only when exactly one Posted line has its SKU and lot; an ambiguous or unmatched hold,
+        // and every hold when the shipment could not be read, is listed apart. A NotPosted line never receives a hold.
+        var returnLines = (read.Detail!["lines"] as JsonArray)?.OfType<JsonObject>().ToList() ?? [];
+        string Key(ReturnSourceLineIds? ids) => ids?.SkuId is null ? string.Empty : ids.SkuId.ToLowerInvariant() + "|" + (ids.LotId ?? string.Empty);
+        var postedKeys = returnLines.Where(l => Str(l, "inventoryPosting") == "Posted")
+            .Select(l => sourceLines.TryGetValue(Str(l, "shipmentLineNumber") ?? string.Empty, out var ids) ? Key(ids) : string.Empty)
+            .Where(k => k.Length > 0).GroupBy(k => k).Where(g => g.Count() == 1).Select(g => g.Key).ToHashSet(StringComparer.Ordinal);
+        string HoldKey(JsonObject h) => (Str(h["item"] as JsonObject ?? [], "skuId") ?? string.Empty).ToLowerInvariant() + "|" + (Str(h["lot"] as JsonObject ?? [], "lotId") ?? string.Empty);
+        var used = new HashSet<JsonObject>();
+        var lines = new JsonArray();
+        foreach (var line in returnLines)
+        {
+            var number = Str(line, "shipmentLineNumber") ?? string.Empty;
+            sourceLines.TryGetValue(number, out var origin);
+            var key = Key(origin);
+            var matched = Str(line, "inventoryPosting") == "Posted" && postedKeys.Contains(key)
+                ? holds.OfType<JsonObject>().Where(h => HoldKey(h) == key).ToList() : [];
+            used.UnionWith(matched);
+            lines.Add(new JsonObject { ["shipmentLineNumber"] = number, ["inventoryPosting"] = Str(line, "inventoryPosting"),
+                ["inventoryPostingReason"] = Str(line, "inventoryPostingReason"), ["holds"] = new JsonArray(matched.Select(HoldLink).ToArray<JsonNode?>()) });
+        }
+        var other = new JsonArray(holds.OfType<JsonObject>().Where(h => !used.Contains(h)).Select(HoldLink).ToArray<JsonNode?>());
+        return JsonOk(new JsonObject { ["lines"] = lines, ["other"] = other, ["linesMatched"] = sourceLines.Count > 0 }.ToJsonString(), "application/json");
+    }
+
+    private static JsonObject HoldLink(JsonObject hold) => new()
+    { ["holdId"] = Str(hold, "holdId"), ["holdNumber"] = Str(hold, "holdNumber"), ["status"] = Str(hold, "status") };
 
     // ── Create adapter: POST /SupplyChain/Returns/api → root via getShipment → POST /api/shipment-bundle/returns ──
     [HttpPost("api")]
@@ -211,6 +384,162 @@ public sealed class SupplyChainReturnsController : Controller
             $"{_gatewayUrl}{ReturnsPath}/{returnId:D}/transition", body, "RETURN_NOT_FOUND", cancellationToken);
     }
 
+    // ── r10 read helpers ─────────────────────────────────────────────────────────────────────────────────────────
+    internal const string CrmAccountRead = "crm.account.read";
+    internal const string QuarantineHoldsRead = "quarantine.holds.read";
+    internal const int PickerPageSize = 20;
+    internal const int LocationLayerPageSize = 200;
+    internal static readonly string[] ReasonCodes = ["DAMAGED", "WRONG_ITEM", "WRONG_QUANTITY", "EXPIRED", "QUALITY_COMPLAINT", "CUSTOMER_REFUSED", "OTHER"];
+
+    private sealed record GatewayReply(int Status, string Body);
+    private sealed record ReturnRead(JsonObject? Detail, IActionResult? Failure);
+
+    /// <summary>A read through the Gateway with the Returns header policy (caller's token, tenant and chosen company; the
+    /// browser trace). Status 0 = unreachable. Only the status is logged, never the body (RB-26).</summary>
+    private async Task<GatewayReply> GatewayGetAsync(string pathAndQuery, Scope scope, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, _gatewayUrl + pathAndQuery);
+        AddReturnsHeaders(request, scope, scope.Trace);
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogInformation("Returns read answered {StatusCode}. Trace {Trace}.", (int)response.StatusCode, scope.Trace);
+            return new((int)response.StatusCode, body);
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested) { _logger.LogWarning("Returns read timed out. Trace {Trace}.", scope.Trace); }
+        catch (HttpRequestException) { _logger.LogWarning("Returns read failed: Gateway unreachable. Trace {Trace}.", scope.Trace); }
+        return new(0, string.Empty);
+    }
+
+    private async Task<ReturnRead> ReadReturnAsync(Guid returnId, Scope scope, CancellationToken cancellationToken)
+    {
+        var reply = await GatewayGetAsync($"{ReturnsPath}/{returnId:D}", scope, cancellationToken);
+        if (reply.Status == StatusCodes.Status200OK)
+            return JsonNode.Parse(reply.Body) is JsonObject detail ? new(detail, null) : new(null, ContractFailure(StatusCodes.Status503ServiceUnavailable, "PERSISTENCE_UNAVAILABLE"));
+        return new(null, reply.Status switch
+        {
+            StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden or StatusCodes.Status400BadRequest => ContractFailure(reply.Status, "INVALID_REQUEST"),
+            StatusCodes.Status404NotFound => ContractFailure(StatusCodes.Status404NotFound, "RETURN_NOT_FOUND"),
+            _ => ContractFailure(StatusCodes.Status503ServiceUnavailable, "PERSISTENCE_UNAVAILABLE")
+        });
+    }
+
+    private IActionResult PickerFailure(int status) => status switch
+    {
+        StatusCodes.Status401Unauthorized or StatusCodes.Status403Forbidden => ContractFailure(status, "INVALID_REQUEST"),
+        _ => ContractFailure(StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE")
+    };
+
+    private async Task<IActionResult> LocationLayerAsync(string query, CancellationToken cancellationToken)
+    {
+        var gateway = Diten.Web.Models.Inventory.InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (gateway is null) return ContractFailure(StatusCodes.Status403Forbidden, "INVALID_REQUEST");
+        var reply = await gateway.GetAsync("/api/locations/search?" + query, cancellationToken);
+        if (!reply.IsSuccess) return PickerFailure(reply.StatusCode);
+        if (JsonNode.Parse(reply.Body) is not JsonObject body || body["items"] is not JsonArray rows) return ContractFailure(StatusCodes.Status503ServiceUnavailable, "DEPENDENCY_UNAVAILABLE");
+        var items = rows.OfType<JsonObject>().Where(i => !string.IsNullOrWhiteSpace(Str(i, "locationId"))).Select(i => (JsonNode?)new JsonObject
+        {
+            ["id"] = Str(i, "locationId"), ["code"] = Str(i, "code"), ["name"] = Str(i, "name"), ["type"] = Str(i, "type"),
+            ["isStockable"] = i["isStockable"]?.GetValueKind() == JsonValueKind.True
+        }).ToArray();
+        return JsonOk(new JsonObject { ["items"] = new JsonArray(items) }.ToJsonString(), "application/json");
+    }
+
+    private static ContentResult JsonOk(string json, string contentType = "application/json") =>
+        new() { StatusCode = StatusCodes.Status200OK, ContentType = contentType, Content = json };
+    private static string Search(string? search) => string.IsNullOrWhiteSpace(search) ? string.Empty : "&search=" + Uri.EscapeDataString(search.Trim());
+    private static string? Str(JsonObject node, string name) => node[name]?.GetValueKind() == JsonValueKind.String ? node[name]!.GetValue<string>() : null;
+    private static bool ReturnWireUuid(string? value) => Guid.TryParseExact(value, "D", out _);
+    private static JsonObject Resolved(string label) => new() { ["state"] = "resolved", ["label"] = label };
+    private static JsonObject Unavailable(string? reference) => new() { ["state"] = "unavailable", ["reference"] = reference };
+
+    /// <summary>
+    /// r10 §35.2 / §35.5 read-time names for one request: per-request de-duplication, at most four concurrent reads, no cache
+    /// across requests or tenants, the caller's token on every read. A failed or denied read never fails the page. The customer
+    /// is resolved from a customerRef only: none → "old record", not a lower-case Guid → "not found" with no CRM call, CRM 404 →
+    /// "not found", anything else → "unavailable"; never an id. Nothing read from CRM is logged (RB-26).
+    /// </summary>
+    private sealed class ReturnNames(SupplyChainReturnsController owner, Scope scope)
+    {
+        private readonly SemaphoreSlim _gate = new(4);
+        private readonly Dictionary<string, Task<JsonObject>> _cache = new(StringComparer.Ordinal);
+        private readonly object _sync = new();
+
+        public Task<JsonObject> CustomerAsync(string? customerRef, CancellationToken ct)
+        {
+            if (string.IsNullOrEmpty(customerRef)) return Task.FromResult(new JsonObject { ["state"] = "oldRecord" });
+            if (!Diten.Web.Models.SupplyChain.Shipments.ShipmentCustomer.IsCustomerRef(customerRef)) return Task.FromResult(new JsonObject { ["state"] = "notFound" });
+            return Once("c:" + customerRef, null, async () =>
+            {
+                var reply = await owner.GatewayGetAsync($"/api/crm/accounts/{customerRef}", scope, ct);
+                if (reply.Status == StatusCodes.Status404NotFound) return new JsonObject { ["state"] = "notFound" };
+                var account = reply.Status == StatusCodes.Status200OK ? Diten.Web.Models.SupplyChain.Shipments.ShipmentCustomer.ReadDetail(reply.Body) : null;
+                return account is null ? new JsonObject { ["state"] = "unavailable" } : new JsonObject { ["state"] = "resolved", ["name"] = account.Name, ["code"] = account.Code };
+            });
+        }
+
+        public Task<JsonObject> LocationAsync(string locationId, CancellationToken ct) => Once("l:" + locationId, locationId, async () =>
+        {
+            var gateway = Diten.Web.Models.Inventory.InventoryProxy.Gateway(owner._httpClient, owner._gatewayUrl, owner.Request, owner.User);
+            if (gateway is null) return Unavailable(locationId);
+            var reply = await gateway.GetAsync("/api/locations/" + Uri.EscapeDataString(locationId), ct);
+            var json = reply.IsSuccess ? JsonNode.Parse(reply.Body) as JsonObject : null;
+            var label = json is null ? null : Label(Str(json, "code"), Str(json, "name"));
+            return label is null ? Unavailable(locationId) : Resolved(label);
+        });
+
+        public Task<JsonObject> LotAsync(string lotId, CancellationToken ct) => Once("t:" + lotId, null, async () =>
+        {
+            var trace = Diten.Web.Models.Traceability.TraceGatewayClient.For(owner._httpClient, owner._gatewayUrl, owner.Request, owner.User);
+            if (trace is null) return Unavailable(null);
+            var reply = await trace.GetAsync("/api/trace/lots/" + Uri.EscapeDataString(lotId), ct);
+            var json = reply.IsSuccess ? JsonNode.Parse(reply.Body) as JsonObject : null;
+            var number = json is null ? null : Str(json, "lotNumber");
+            return string.IsNullOrWhiteSpace(number) ? Unavailable(null) : Resolved(number);
+        });
+
+        /// <summary>One PRODUCT-MASTER v1.1 bulk read (name + canonicalCode) for every SKU of the shipment.</summary>
+        public async Task<Dictionary<string, string>> SkusAsync(IReadOnlyList<string> skuIds, CancellationToken ct)
+        {
+            var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var gateway = Diten.Web.Models.Inventory.InventoryProxy.Gateway(owner._httpClient, owner._gatewayUrl, owner.Request, owner.User);
+            if (skuIds.Count == 0 || gateway is null) return labels;
+            try
+            {
+                var reply = await gateway.PostAsync("/api/product-master/skus/bulk-read", new { skuIds = skuIds.Take(200).ToArray() }, Guid.NewGuid().ToString("D"), ct);
+                var json = reply.IsSuccess ? JsonNode.Parse(reply.Body) as JsonObject : null;
+                foreach (var item in (json?["items"] as JsonArray)?.OfType<JsonObject>() ?? [])
+                    if (Str(item, "skuId") is { } id && Label(Str(item, "canonicalCode"), Str(item, "name")) is { } label) labels.TryAdd(id, label);
+            }
+            catch (JsonException) { }
+            return labels;
+        }
+
+        private Task<JsonObject> Once(string key, string? reference, Func<Task<JsonObject>> read)
+        {
+            lock (_sync)
+            {
+                if (_cache.TryGetValue(key, out var existing)) return existing;
+                var task = Gate(read, reference);
+                _cache[key] = task;
+                return task;
+            }
+        }
+
+        private async Task<JsonObject> Gate(Func<Task<JsonObject>> read, string? reference)
+        {
+            await _gate.WaitAsync();
+            try { return await read(); }
+            catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException) { return Unavailable(reference); }
+            finally { _gate.Release(); }
+        }
+
+        private static string? Label(string? code, string? name) =>
+            string.IsNullOrWhiteSpace(code) ? (string.IsNullOrWhiteSpace(name) ? null : name)
+            : string.IsNullOrWhiteSpace(name) || string.Equals(code, name, StringComparison.OrdinalIgnoreCase) ? code : $"{code} · {name}";
+    }
+
     // ── Proxy helpers ───────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -254,7 +583,7 @@ public sealed class SupplyChainReturnsController : Controller
                 (int)response.StatusCode, targetUrl, scope.Trace, root.Root);
             return (int)response.StatusCode >= 400
                 ? await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken)
-                : await PassThroughAsync(response, cancellationToken);
+                : await PassThroughWithoutCustomerAsync(response, cancellationToken);
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
@@ -337,6 +666,17 @@ public sealed class SupplyChainReturnsController : Controller
         request.Headers.TryAddWithoutValidation(TenantHeader, scope.TenantId.ToString("D"));
         request.Headers.TryAddWithoutValidation(LegalEntityHeader, scope.LegalEntityId.ToString("D"));
         request.Headers.TryAddWithoutValidation(CorrelationHeader, correlation.ToString("D"));
+    }
+
+    /// <summary>VER F-2: the create and transition answers (ReturnResponse 3.5.0) carry customerRef; it is removed before the
+    /// body reaches the browser. Any other success body passes through unchanged.</summary>
+    private static async Task<IActionResult> PassThroughWithoutCustomerAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+        JsonNode? node = null;
+        try { node = JsonNode.Parse(text); } catch (JsonException) { }
+        if (node is JsonObject body && body.Remove("customerRef")) text = body.ToJsonString();
+        return new ContentResult { StatusCode = (int)response.StatusCode, ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json", Content = text };
     }
 
     private static async Task<IActionResult> PassThroughAsync(HttpResponseMessage response,

@@ -182,7 +182,10 @@ public sealed class GetRecallCaseScopeHandler : IRequestHandler<GetRecallCaseSco
     public GetRecallCaseScopeHandler(RecallReads reads) => _reads = reads;
 
     public Task<Response<RecallScopeViewDto>> Handle(GetRecallCaseScopeQuery request, CancellationToken ct)
-        => RecallSupport.TryParseId(request.CaseId, out var id) ? _reads.CurrentScopeAsync(id, ct) : Task.FromResult(RecallSupport.CaseNotFound<RecallScopeViewDto>());
+    {
+        if (!RecallCustomerDisplay.TryPage(request.CustomerPage, out var page)) return Task.FromResult(RecallSupport.Invalid<RecallScopeViewDto>(RecallCustomerDisplay.PageError));
+        return RecallSupport.TryParseId(request.CaseId, out var id) ? _reads.CurrentScopeAsync(id, page, ct) : Task.FromResult(RecallSupport.CaseNotFound<RecallScopeViewDto>());
+    }
 }
 
 /// <summary>§4.12 getCaseTimeline — the insert-only events, oldest first, 1-based positions.</summary>

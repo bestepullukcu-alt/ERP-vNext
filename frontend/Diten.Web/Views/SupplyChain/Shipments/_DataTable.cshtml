@@ -1,4 +1,29 @@
 @using Diten.Web.Views.SupplyChain.Shipments
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ShipmentsIndex> Localizer
-<div class="card"><div id="skeleton-loader" class="p-4" style="display:none"><div class="shimmer skeleton-row" style="height:32px"></div></div><div class="card-datatable table-responsive"><table id="shipmentsTable" class="datatables-shipments table" data-dt-standard="v2"><thead><tr><th></th><th>@Localizer["ShipmentNumber"]</th><th>@Localizer["SourceDocumentId"]</th><th>@Localizer["Status"]</th><th>@Localizer["PlannedShipAt"]</th><th>@Localizer["PlannedDeliverAt"]</th><th>@Localizer["ActionsHeader"]</th></tr></thead></table></div></div>
+@{
+    // MOD-0183 r9 §24.3 Golden Compact list (DL-4): SERVER data — the MVC adapter (api) pages, searches and sorts through
+    // queryShipments 3.5.0 and answers { data: { items, total, filteredTotal } }; index.js declares the same mode. No
+    // selection column: the contract has no delete or bulk operation (declared exceptions, SB-14). No GUID column (SB-9).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "shipmentsTable",
+        DataMode = "server",
+        Slug = "shipments",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ShipmentNumber"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["SourceDocumentId"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Customer"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Warehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Status"].Value },
+            new DataTableColumnViewModel { Header = Localizer["PlannedShipAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["PlannedDeliverAt"].Value }
+        ],
+        ActionsHeader = Localizer["ActionsHeader"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

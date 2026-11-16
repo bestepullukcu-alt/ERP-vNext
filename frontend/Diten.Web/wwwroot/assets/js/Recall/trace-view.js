@@ -8,6 +8,35 @@
 
 var RecallTraceView = (function () {
     const LOT_KINDS = ['RawMaterialLot', 'FinishedGoodLot', 'Lot'];
+    const GUID = /^\s*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\s*$/i;
+    const PAGE = 25;
+
+    /**
+     * MOD-0177-FU01 (pack §8.8) — a customer as text, never its CRM key: "{name} · {code}"; Unresolved / NotFound / Forbidden with the
+     * distinguisher (ship-to · shipment no); Deferred = "the name is not on this page"; a key without a CRM id is its own label.
+     */
+    const customerText = (c, t) => {
+        if (!c) return '';
+        const base = { Unresolved: 'Recall.Customer.Unresolved', NotFound: 'Recall.Customer.NotFound', Forbidden: 'Recall.Customer.Forbidden' }[c.state];
+        if (c.state === 'Resolved') return t('Recall.Customer.NameCode', c.name, c.code);
+        if (c.state === 'Deferred') return t('Recall.Customer.Deferred');
+        if (base) {
+            const parts = [c.shipTo, c.shipmentNumber].filter((p) => p && !GUID.test(p));
+            const with_ = parts.length === 2 ? t('Recall.Customer.Distinguisher', parts[0], parts[1]) : parts[0];
+            return with_ ? t(base + 'With', with_) : t(base);
+        }
+        return GUID.test(c.label || '') ? '' : c.label || '';
+    };
+
+    /** The distinct customer keys of the trace's Shipment nodes, ordinal (the service's customer page order). */
+    const customerKeys = (trace) => [...new Set((trace?.nodes || []).filter((n) => n.kind === 'Shipment' && n.customerRef).map((n) => n.customerRef))].sort();
+
+    /** The customer page selector: shown only past 25 customers. */
+    const customerPager = (total, page) => ({ show: total > PAGE, from: Math.min((page - 1) * PAGE + 1, total), to: Math.min(page * PAGE, total), total,
+        prev: page > 1, next: page * PAGE < total });
+
+    /** A drawn Shipment node whose CRM customer the caller may not read: the CSV would be refused (403) — the link is not drawn (§8.8). */
+    const exportForbidden = (trace) => (trace?.nodes || []).some((n) => n.kind === 'Shipment' && n.customer?.state === 'Forbidden');
 
     /** One node → what both drawings print (title, sub, place, quantity, reference, date, badges). */
     const describe = (n, t) => {
@@ -29,7 +58,9 @@ var RecallTraceView = (function () {
             if (n.stockStatus) badges.push({ key: 'Recall.StockStatus.' + n.stockStatus, tone: n.stockStatus === 'AVAILABLE' ? 'info' : 'warning', raw: n.stockStatus });
         } else if (n.kind === 'Shipment') {
             title = ref || t('Recall.Kind.Shipment');
-            place = n.customerRef ? t('Recall.Shipment.Customer', n.customerRef) : t('Recall.Shipment.UnknownCustomer');
+            // MOD-0177-FU01: the customer display, never the CRM key (a bare key without a display is shown only when it is not a GUID)
+            const who = n.customer ? customerText(n.customer, t) : (n.customerRef && !GUID.test(n.customerRef) ? n.customerRef : '');
+            place = who ? t('Recall.Shipment.Customer', who) : t('Recall.Shipment.UnknownCustomer');
             sub = [product, lot].filter(Boolean).join(' · ');
             if (n.shipment && n.shipment.read && !['Ok', 'NotApplicable'].includes(n.shipment.read)) badges.push({ key: 'Recall.Shipment.Unreadable', tone: 'warning' });
         } else if (n.kind === 'Gap') {
@@ -94,7 +125,7 @@ var RecallTraceView = (function () {
     const caseHref = (caseId) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(caseId || ''))
         ? `/Recall/Cases/Details/${encodeURIComponent(caseId)}` : null);
 
-    return { describe, tableRows, treeRows, summary, isLot, caseHref };
+    return { describe, tableRows, treeRows, summary, isLot, caseHref, customerText, customerKeys, customerPager, exportForbidden };
 })();
 
 if (typeof window !== 'undefined') window.RecallTraceView = RecallTraceView;

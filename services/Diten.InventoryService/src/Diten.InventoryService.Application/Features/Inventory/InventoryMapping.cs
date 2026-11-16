@@ -23,6 +23,16 @@ public static class InventoryMapping
             BalanceSnapshot = ToBalanceView(transaction.ResultSnapshot, legalEntityId, transaction.BaseQuantity),
             ExpiryChecks = transaction.ExpiryChecks is { } checks
                 ? new ExpiryChecksDto { Fefo = checks.Fefo, MinRemaining = checks.MinRemaining, ExceptionIds = [.. checks.ExceptionIds] }
+                : null,
+            ReservationConsumption = transaction.ReservationConsumption is { } consumption
+                ? new ReservationConsumptionDto
+                {
+                    ReservationId = consumption.ReservationId.ToString(),
+                    ConsumedQuantity = InventoryQuantity.ToWire(consumption.ConsumedQuantity),
+                    RemainingQuantity = InventoryQuantity.ToWire(consumption.RemainingQuantity),
+                    Status = WireNames.ToWire(consumption.Status),
+                    ClosedReason = consumption.ClosedReason
+                }
                 : null
         };
 
@@ -63,7 +73,35 @@ public static class InventoryMapping
             Status = WireNames.ToWire(ReservationStatus.Active),
             ReservedQuantity = InventoryQuantity.ToWire(reservation.Quantity),
             AvailableAfter = InventoryQuantity.ToWire(reservation.CreatedAvailableAfter),
-            Etag = ETag(1)
+            Etag = ETag(1),
+            // INVENTORY 1.6.0 (MOD-0173-FU03): the scope and the quantity held at creation (replayed verbatim like the rest)
+            WarehouseId = reservation.WarehouseId,
+            LotId = reservation.LotId?.ToString("D"),
+            RemainingQuantity = InventoryQuantity.ToWire(reservation.Quantity)
+        };
+
+    /// <summary>INVENTORY 1.6.0 <c>ReservationView</c> — the reservation as it is now; <c>etag</c> = its current version.</summary>
+    public static ReservationViewDto ToReservationView(InventoryReservation reservation)
+        => new()
+        {
+            ReservationId = reservation.Id.ToString(),
+            Status = WireNames.ToWire(reservation.Status),
+            ClosedReason = reservation.Status == ReservationStatus.Active ? null : reservation.ClosedReason,
+            ItemId = reservation.ItemId.ToString(),
+            SkuId = reservation.SkuId.ToString(),
+            SkuLevel = WireNames.ToWire(reservation.SkuLevel),
+            WarehouseId = reservation.WarehouseId,
+            LotId = reservation.LotId?.ToString("D"),
+            Quantity = InventoryQuantity.ToWire(reservation.Quantity),
+            RemainingQuantity = InventoryQuantity.ToWire(reservation.RemainingQuantity),
+            ReservationType = reservation.ReservationType,
+            SourceModule = reservation.SourceModule,
+            SourceDocumentId = reservation.SourceDocumentId,
+            SourceLineId = reservation.SourceLineId,
+            Priority = reservation.Priority,
+            ExpiresAt = reservation.ExpiresAt.HasValue ? Utc(reservation.ExpiresAt.Value) : null,
+            CreatedAt = Utc(reservation.CreatedAt),
+            Etag = ETag(reservation.Version)
         };
 
     public static ReservationResponseDto ToReleasedReservation(InventoryReservation reservation, decimal availableAfter)
@@ -121,6 +159,7 @@ public static class InventoryMapping
             SourceDocumentId = transaction.SourceDocumentId,
             SourceLineId = transaction.SourceLineId,
             TransactionDate = Utc(transaction.TransactionDate),
-            PostingDate = Utc(transaction.PostingDate)
+            PostingDate = Utc(transaction.PostingDate),
+            ReservationId = transaction.ReservationId?.ToString()
         };
 }

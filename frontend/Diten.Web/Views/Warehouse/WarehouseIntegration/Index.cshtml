@@ -1,0 +1,179 @@
+@using System.Globalization
+@using Diten.Web.Views.Warehouse.WarehouseIntegration
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@model Diten.Web.Models.Warehouse.WarehouseIntegrationViewModel?
+@inject IHtmlLocalizer<WarehouseIntegrationIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["IntegrationTitle"].Value;
+    ViewData["PageCode"] = "WAREHOUSEINTEGRATION"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-7 — Entegrasyon İzleme (pack §8.23, §11.1, §11.5): ONLY the four summary cards, READ-ONLY — NOT a DataTable (r23, son bakış F-15: not in
+    the pack's `screens` list, verify_datatable_page does not apply; deliberate deviation). The cards are drawn HERE from the values the page action
+    read after its key check: no client fetch, no "loading" title — a failed read shows its reason and nothing else. Every value of the answer is on
+    exactly one card (r24, son bakış 02 F-9): Olay kuyruğu (Pending, Delivered, the oldest Pending's age), Sevk bekleyen (count, the oldest ReadyAt),
+    Son eşitleme (the last Shipped write), Bekleyen onaylar (putaway + pick).
+
+    UAS-001 — nothing below is drawn without warehouse.integration-monitor.read: no heading, no card, no button. No redirect.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.IntegrationMonitorRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["IntegrationTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+
+    string Time(string? utc)
+    {
+        return DateTimeOffset.TryParse(utc, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var at)
+            ? at.UtcDateTime.ToString("g", CultureInfo.CurrentCulture) + " UTC"
+            : string.Empty;
+    }
+
+    string Age(long? seconds)
+    {
+        if (seconds is not { } s) return Localizer["Warehouse.Integration.NoneWaiting"].Value;
+        var span = TimeSpan.FromSeconds(s);
+        if (span.TotalHours < 1) return string.Format(CultureInfo.CurrentCulture, Localizer["Warehouse.Integration.AgeMinutes"].Value, (int)span.TotalMinutes);
+        if (span.TotalDays < 1) return string.Format(CultureInfo.CurrentCulture, Localizer["Warehouse.Integration.AgeHours"].Value, (int)span.TotalHours, span.Minutes);
+        return string.Format(CultureInfo.CurrentCulture, Localizer["Warehouse.Integration.AgeDays"].Value, (int)span.TotalDays, span.Hours);
+    }
+
+    string N(long value) => value.ToString("N0", CultureInfo.CurrentCulture);
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["IntegrationTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready && Model is { CompanyNotSelected: false })
+{
+    @if (Model.Status is not { } status)
+    {
+        <div id="integration-error" class="alert alert-danger" role="alert">@(Model.Error ?? Localizer["Warehouse.Error.Generic"].Value)</div>
+    }
+    else
+    {
+        var queue = status.EventQueue ?? new WmsEventQueueDto();
+        var dispatch = status.AwaitingDispatch ?? new WmsAwaitingDispatchDto();
+        var sync = status.LastSync ?? new WmsLastSyncDto();
+        var confirmations = status.PendingConfirmations ?? new WmsPendingConfirmationsDto();
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <small class="text-muted" id="integration-as-of">
+                @Localizer["Warehouse.Integration.AsOf"] <time data-wh-time datetime="@status.AsOfUtc">@Time(status.AsOfUtc)</time>
+            </small>
+            <a class="btn btn-sm btn-label-primary wh-touch" href="/Warehouse/Integration" id="integration-refresh">
+                <i class="bx bx-refresh me-1"></i>@Localizer["Warehouse.Integration.Refresh"]
+            </a>
+        </div>
+
+        <div class="row g-4" id="integration-cards">
+            <div class="col-12 col-md-6 col-xl-3">
+                <section class="card h-100" data-wh-card="EventQueue">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1"><i class="bx bx-transfer-alt me-1"></i>@Localizer["Warehouse.Integration.Card.EventQueue"]</h6>
+                        <p class="text-muted small mb-3">@Localizer["Warehouse.Integration.Hint.EventQueue"]</p>
+                        <dl class="row g-2 mb-0">
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Pending"]</dt>
+                            <dd class="col-5 mb-0 text-end fw-semibold" data-wh-value="eventQueue.pending">@N(queue.Pending)</dd>
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Delivered"]</dt>
+                            <dd class="col-5 mb-0 text-end" data-wh-value="eventQueue.delivered">@N(queue.Delivered)</dd>
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.OldestPendingAge"]</dt>
+                            <dd class="col-5 mb-0 text-end" data-wh-value="eventQueue.oldestPendingAge">@Age(queue.OldestPendingAgeSeconds)</dd>
+                        </dl>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <section class="card h-100" data-wh-card="AwaitingDispatch">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1"><i class="bx bx-send me-1"></i>@Localizer["Warehouse.Integration.Card.AwaitingDispatch"]</h6>
+                        <p class="text-muted small mb-3">@Localizer["Warehouse.Integration.Hint.AwaitingDispatch"]</p>
+                        <dl class="row g-2 mb-0">
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Count"]</dt>
+                            <dd class="col-5 mb-0 text-end fw-semibold" data-wh-value="awaitingDispatch.count">@N(dispatch.Count)</dd>
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.OldestReadyAt"]</dt>
+                            <dd class="col-5 mb-0 text-end" data-wh-value="awaitingDispatch.oldestReadyAt">
+                                @if (dispatch.OldestReadyAtUtc is { } ready)
+                                {
+                                    <time data-wh-time datetime="@ready">@Time(ready)</time>
+                                }
+                                else
+                                {
+                                    @Localizer["Warehouse.Integration.NoneWaiting"]
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <section class="card h-100" data-wh-card="LastSync">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1"><i class="bx bx-check-double me-1"></i>@Localizer["Warehouse.Integration.Card.LastSync"]</h6>
+                        <p class="text-muted small mb-3">@Localizer["Warehouse.Integration.Hint.LastSync"]</p>
+                        <dl class="row g-2 mb-0">
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.LastShippedAt"]</dt>
+                            <dd class="col-5 mb-0 text-end fw-semibold" data-wh-value="lastSync.lastShippedAt">
+                                @if (sync.LastShippedAtUtc is { } shipped)
+                                {
+                                    <time data-wh-time datetime="@shipped">@Time(shipped)</time>
+                                }
+                                else
+                                {
+                                    @Localizer["Warehouse.Integration.Never"]
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </section>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <section class="card h-100" data-wh-card="PendingConfirmations">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1"><i class="bx bx-time-five me-1"></i>@Localizer["Warehouse.Integration.Card.PendingConfirmations"]</h6>
+                        <p class="text-muted small mb-3">@Localizer["Warehouse.Integration.Hint.PendingConfirmations"]</p>
+                        <dl class="row g-2 mb-0">
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Putaway"]</dt>
+                            <dd class="col-5 mb-0 text-end" data-wh-value="pendingConfirmations.putaway">@N(confirmations.Putaway)</dd>
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Pick"]</dt>
+                            <dd class="col-5 mb-0 text-end" data-wh-value="pendingConfirmations.pick">@N(confirmations.Pick)</dd>
+                            <dt class="col-7 text-muted fw-normal">@Localizer["Warehouse.Integration.Total"]</dt>
+                            <dd class="col-5 mb-0 text-end fw-semibold" data-wh-value="pendingConfirmations.total">@N(confirmations.Total)</dd>
+                        </dl>
+                    </div>
+                </section>
+            </div>
+        </div>
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/WarehouseIntegration/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/WarehouseIntegration/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Warehouse/WarehouseIntegration/index.js" asp-append-version="true"></script>
+}

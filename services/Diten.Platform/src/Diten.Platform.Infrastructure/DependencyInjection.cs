@@ -337,10 +337,12 @@ public static class DependencyInjection
         services.AddScoped<OrganizationUnitRepository>();
         services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
         services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        services.AddScoped<IOrganizationUnitCodeHistoryRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
         // MOD-0288-FU02 — tenant-defined Organization Unit field definitions and values.
         services.AddScoped<IOrganizationFieldDefinitionRepository, OrganizationFieldDefinitionRepository>();
         services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IPositionCodeHistoryRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IOrgDataScopeCandidateFactReader, OrgDataScopeCandidateFactReader>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
@@ -489,6 +491,12 @@ public static class DependencyInjection
         services.AddScoped<IExternalDocumentRegisterRepository, ExternalDocumentRegisterRepository>();
         // MOD-0031 slice 1 — evidence links (object ↔ controlled document version / external document).
         services.AddScoped<IEvidenceLinkRepository, EvidenceLinkRepository>();
+        // MOD-0040-FU02 — record-code stores (tenant-exact) and the MDM short-code reader (one 3 s budget of its own).
+        services.AddScoped<IRecordCodeCounterRepository, RecordCodeCounterRepository>();
+        services.AddScoped<IRecordCodeAllocationRepository, RecordCodeAllocationRepository>();
+        services.AddScoped<IRecordCodeGroupPrefixRepository, RecordCodeGroupPrefixRepository>();
+        services.AddHttpClient<Diten.Platform.Application.Contracts.RecordCodes.ILegalEntityShortCodeReader, MdmLegalEntityShortCodeReader>(
+            client => client.Timeout = Timeout.InfiniteTimeSpan);
         services.AddScoped<IExternalDocumentMonitoringCheckRepository, ExternalDocumentMonitoringCheckRepository>();
         services.AddScoped<IExternalDocumentImpactAssessmentRepository, ExternalDocumentImpactAssessmentRepository>();
         services.AddScoped<IExternalDocumentInternalLinkRepository, ExternalDocumentInternalLinkRepository>();

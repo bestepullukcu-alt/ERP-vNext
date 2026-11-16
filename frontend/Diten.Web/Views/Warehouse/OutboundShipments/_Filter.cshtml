@@ -1,0 +1,46 @@
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filters = the searchOutboundShipments parameters (pack §11.5): status (multi chip — the six visible statuses of §8.18), warehouse (LOCATION
+    master). The number / order reference / recipient search lives in the toolbar search box (q).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Allocated">@Localizer["Warehouse.Outbound.Status.Allocated"]</option>
+                            <option value="Picked">@Localizer["Warehouse.Outbound.Status.Picked"]</option>
+                            <option value="Packed">@Localizer["Warehouse.Outbound.Status.Packed"]</option>
+                            <option value="ReadyToShip">@Localizer["Warehouse.Outbound.Status.ReadyToShip"]</option>
+                            <option value="Shipped">@Localizer["Warehouse.Outbound.Status.Shipped"]</option>
+                            <option value="Cancelled">@Localizer["Warehouse.Outbound.Status.Cancelled"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouse" class="form-select form-select-sm" data-placeholder="@Localizer["FilterWarehouse"]" aria-label="@Localizer["FilterWarehouse"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <small id="outbound-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

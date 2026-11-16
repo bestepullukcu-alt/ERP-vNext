@@ -59,6 +59,19 @@ public static class QuarantineServiceCollectionExtensions
         services.AddSingleton<QuarantineIntakeSweeper>();
         services.AddHostedService<QuarantineIntakeSweeperHostedService>();
 
+        // MOD-0175-FU01 §8.2: a reversed source closes / marks its record — the post-commit observer (fast path) + the record-based sweep.
+        services.AddScoped<QuarantineSourceReversal>();
+        // MOD-0175-FU01 DL-3 (pack §8.8): the ledger guard — InternalMovementPostingService asks it before building a REVERSAL
+        services.AddScoped<Application.Features.Inventory.Ports.IReversalPrecondition, QuarantineReversalPrecondition>();
+        services.AddScoped<IPostedMovementObserver, QuarantineSourceReversalObserver>();
+        services.AddScoped<QuarantineSourceReversalFeed>();
+        services.AddScoped<QuarantineReversalReads>();
+        services.AddSingleton<QuarantineSourceReversalSweeper>();
+        services.AddHostedService<QuarantineSourceReversalSweeperHostedService>();
+        // Q-03 = A: the source-reversal commands' central record is filed under the System actor. Registered here, before
+        // AddCentralAudit (Program.cs), so this behavior wraps CentralAuditBehavior and the frame is open when its record begins.
+        services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(QuarantineSystemActorBehavior<,>));
+
         // Q4 (KQ-H, CT-Q16): the retest hold — sweeper (start + periodic, TimeProvider) and the one-lot refresh of a retest release.
         services.AddScoped<RetestHoldSweeper>();
         services.AddScoped<ILotRetestHold>(sp => sp.GetRequiredService<RetestHoldSweeper>());

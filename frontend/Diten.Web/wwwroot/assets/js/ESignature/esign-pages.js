@@ -62,7 +62,11 @@
 
     /**
      * The reasoned confirm: red (type danger) unless told otherwise, a textarea of 10–1000 characters, the reason or null.
-     * `lines` (optional) are shown as a list under the question (the policy save's change lines).
+     * `lines` (optional) follow the question, " · " between them (the policy save's change lines).
+     *
+     * The dialog turns `subtext` into text at the door (window.DitenText). Escaping it here as well showed the reader
+     * `&amp;`, and the `<ul><li>` list built here reached the reader as its tags — so the question and its lines go over
+     * as they are, as text (MVP-1 ortak arayüz kuralları; tests/esign-confirm-text.test.js).
      */
     function reason({ title, subtext, lines, confirmText, type, placeholder }) {
         return new Promise((resolve) => {

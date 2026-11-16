@@ -33,6 +33,8 @@ dependencies:
 > → `OK  MOD-0290-FU06: proven against Blueprint/registry.` (çıkış 0).
 > Kaynak ZIP dışı ölçümler: `git log --all -S 'MOD-0290-FU06'` ve `git log --all -- '*MOD-0290-FU06*'` 0 commit; `--discover` çıkış 3, mükerrer yok (ebeveyn MOD-0290, ad benzeri MOD-0018-FU16 / FU20 / FU22 / FU23 / FU26, içerikleri okunmadı); sağlayıcı dosyasında `git log --all -S"mdm.product-master.read"` 0 commit.
 >
+> **Değişen bölümler:** 2026-11-06: §17 AC satırlarına kabul aracının biçimi (zorunlu) eklendi; anlam değişmedi.
+>
 > Otorite sırası: **Blueprint Excel** > Module Pack > [Domain Config](../domain-config.md) > `AGENTS.md` > `.antigravity/rules/`.
 
 ## 0. Kararlar
@@ -212,15 +214,15 @@ Bilgi: manifest itmesinde Platform denetim kaydı `ActionsAdded` içinde `GLOBAL
 
 ## 17. Acceptance Criteria
 
-- [ ] AC-1 T1 yeşil: üretim sağlayıcısı anahtarı `GLOBAL_PRODUCTS` üzerinde arayüzsüz `View` eylemi olarak taşır; `ApiPermissions` boştur.
-- [ ] AC-2 T2 yeşil: sınıf düzeyi öznitelik okunur, `ProductMasterController` listededir; beyan sayısı 52 → 53, neden yalnız bu anahtar.
-- [ ] AC-3 T3 yeşil: üretim işleyicisi üretim manifestiyle koşar; Auth çağrısı `("mdm.product-master.read", "PRODUCT-ITEM-SKU-MASTER", "Tenant")`.
-- [ ] AC-4 T4-b yeşil: plan okuması anahtarı listeler ve modül sahibiyle eşitlenen küme plan listesine eşittir.
-- [ ] AC-5 §18 sabotajlarının her biri adı geçen testte kırmızı; `SABOTAJ.md` satırında çapa, kırmızı test adı ve geri alma sonrası `git status --porcelain` boş.
-- [ ] AC-6 `ModuleVersion` `1.4.0`; `Declares_exact_identity_route_and_non_baseline_flags` güncel, sayfa sayısı 8 değişmez.
-- [ ] AC-7 `git diff` yalnız §5 dosyaları ve §18 kanıt dizini; Auth, Platform, Web, Gateway boş.
-- [ ] AC-8 `CompositionRootGuardTests` yeşil, T3 ile aynı süreçte.
-- [ ] AC-9 §18 E3 **yükseltme yolu**, tek `run_record.py` koşusunun süzülmüş çıktısında, sırayla: (Y2) taban MDM ile hak satırı var, bu kiracı için `entitlement.sync.applied` görüldü ve sayaç tabanı kayıtlı, Admin ve Viewer yeni jetonda `mdm.items.read` var, `mdm.product-master.read` yok, `/api/product-master/stockable-items` 403 ve gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok; (Y3) 1.4.0 itildi, Auth kataloğunda satır var, sayaç tabandan artmadı, kiracı hâlâ anahtarsız, 403; (Y4) `PATCH` uzlaştırmasından sonra yeni jetonda Admin ve Viewer anahtarlı, 200, anahtarsız kullanıcı 403, Auth günlüğünde eşitlik hatası 0; (Y5) yeni kiracıda yeni hak satırıyla 200. Çıktıda jeton ve anahtar yok. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
+- [ ] AC-1 (zorunlu) — T1 yeşil: üretim sağlayıcısı anahtarı `GLOBAL_PRODUCTS` üzerinde arayüzsüz `View` eylemi olarak taşır; `ApiPermissions` boştur.
+- [ ] AC-2 (zorunlu) — T2 yeşil: sınıf düzeyi öznitelik okunur, `ProductMasterController` listededir; beyan sayısı 52 → 53, neden yalnız bu anahtar.
+- [ ] AC-3 (zorunlu) — T3 yeşil: üretim işleyicisi üretim manifestiyle koşar; Auth çağrısı `("mdm.product-master.read", "PRODUCT-ITEM-SKU-MASTER", "Tenant")`.
+- [ ] AC-4 (zorunlu) — T4-b yeşil: plan okuması anahtarı listeler ve modül sahibiyle eşitlenen küme plan listesine eşittir.
+- [ ] AC-5 (zorunlu) — §18 sabotajlarının her biri adı geçen testte kırmızı; `SABOTAJ.md` satırında çapa, kırmızı test adı ve geri alma sonrası `git status --porcelain` boş.
+- [ ] AC-6 (zorunlu) — `ModuleVersion` `1.4.0`; `Declares_exact_identity_route_and_non_baseline_flags` güncel, sayfa sayısı 8 değişmez.
+- [ ] AC-7 (zorunlu) — `git diff` yalnız §5 dosyaları ve §18 kanıt dizini; Auth, Platform, Web, Gateway boş.
+- [ ] AC-8 (zorunlu) — `CompositionRootGuardTests` yeşil, T3 ile aynı süreçte.
+- [ ] AC-9 (zorunlu) — §18 E3 **yükseltme yolu**, tek `run_record.py` koşusunun süzülmüş çıktısında, sırayla: (Y2) taban MDM ile hak satırı var, bu kiracı için `entitlement.sync.applied` görüldü ve sayaç tabanı kayıtlı, Admin ve Viewer yeni jetonda `mdm.items.read` var, `mdm.product-master.read` yok, `/api/product-master/stockable-items` 403 ve gövdede `LEGAL_ENTITY_SCOPE_FORBIDDEN` yok; (Y3) 1.4.0 itildi, Auth kataloğunda satır var, sayaç tabandan artmadı, kiracı hâlâ anahtarsız, 403; (Y4) `PATCH` uzlaştırmasından sonra yeni jetonda Admin ve Viewer anahtarlı, 200, anahtarsız kullanıcı 403, Auth günlüğünde eşitlik hatası 0; (Y5) yeni kiracıda yeni hak satırıyla 200. Çıktıda jeton ve anahtar yok. **Yük sınırı aşılırsa E3 bekler; DL-1 kabulü de bekler.**
 
 §23 canlı doğrulaması bu dilimin kabulü değildir.
 

@@ -212,4 +212,14 @@
   <data name="Recall.Ev.W.meaning.REVIEW" xml:space="preserve"><value>Revisión</value></data>
   <data name="Recall.Ev.W.meaning.RELEASE" xml:space="preserve"><value>Liberación</value></data>
   <data name="Recall.Ev.W.meaning.AUTHOR" xml:space="preserve"><value>Autoría</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>No resuelto</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>No encontrado</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>No resuelto ({0})</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>No encontrado ({0})</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0} (Registro antiguo)</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0} (Sin identidad CRM)</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>Nombres de clientes</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>Del CRM, en el momento de la exportación</value></data>
 </root>

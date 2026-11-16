@@ -110,7 +110,7 @@ public sealed class ShipmentDispatchTextTests
         var report = $"{output}\n{await error}";
         Assert.True(node.ExitCode == 0, report);
         // A run that found no tests also exits 0; require the six cases the file defines.
-        Assert.Matches(new Regex(@"^# pass 6$", RegexOptions.Multiline), output);
+        Assert.Matches(new Regex(@"^# pass 7$", RegexOptions.Multiline), output);
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 

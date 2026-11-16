@@ -2,12 +2,35 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(__dirname, '../../..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
+const readRepo = relative => fs.readFileSync(path.join(repoRoot, relative), 'utf8');
 const exists = relative => fs.existsSync(path.join(root, relative));
+// The slice of `source` from `start` up to (not including) `end`; fails loudly if either marker is gone.
+const between = (source, start, end) => {
+  const from = source.indexOf(start);
+  expect(from).toBeGreaterThan(-1);
+  const to = source.indexOf(end, from);
+  expect(to).toBeGreaterThan(from);
+  return source.slice(from, to);
+};
+// Paging parameters a server-paged list would send; both lists fetch every row and search client-side.
+const PAGING_PARAM = /\b(page|pageSize|pageNumber|pageIndex|skip|take|offset|limit|start|length|draw)\b/i;
 
 const controller = read('Controllers/CRM/ConsentPreferencesController.cs');
 const models = read('Models/CRM/ConsentPreferenceViewModels.cs');
-const layout = read('Views/Shared/_LayoutTenantShell.cshtml');
+// Navigation is manifest-driven: the CRM menu comes from the Platform self-registration manifest, not the layout.
+const crmManifest = readRepo('services/Diten.Platform/src/Diten.Platform.Application/Features/Crm/SelfRegistration/CrmManifestProvider.cs');
+// Resolves a manifest page by key -> { route, permission } (the permission may be a const name or a literal).
+const manifestPage = (manifest, key) => {
+  const match = manifest.match(new RegExp(`new ModuleManifestPage\\(\\s*"${key}"\\s*,\\s*"[^"]*"\\s*,\\s*"([^"]+)"\\s*,\\s*("[^"]+"|\\w+)`));
+  expect(match).toBeTruthy();
+  const [, route, permissionRef] = match;
+  const literal = permissionRef.startsWith('"')
+    ? permissionRef.slice(1, -1)
+    : (manifest.match(new RegExp(`\\b${permissionRef}\\s*=\\s*"([^"]+)"`)) || [])[1];
+  return { route, permission: literal };
+};
 const indexView = read('Views/CRM/ConsentPreferences/Index.cshtml');
 const consentFilter = read('Views/CRM/ConsentPreferences/Consents/_Filter.cshtml');
 const consentTable = read('Views/CRM/ConsentPreferences/Consents/_DataTable.cshtml');
@@ -36,9 +59,8 @@ describe('MOD-0164-FU03 Consent & Preference Admin UI', () => {
   });
 
   it('2. permission-controls the navigation entry with crm.consent.read', () => {
-    expect(layout).toContain('Perms.Has("crm.consent.read")');
-    expect(layout).toContain('/CRM/ConsentPreferences');
-    expect(layout).toContain('ConsentPreferencesMenu');
+    // The menu entry is the CRM manifest's CONSENT_PREFERENCES page on /CRM/ConsentPreferences, gated by crm.consent.read.
+    expect(manifestPage(crmManifest, 'CONSENT_PREFERENCES')).toEqual({ route: '/CRM/ConsentPreferences', permission: 'crm.consent.read' });
   });
 
   it('3. loads the contract through the same-origin Gateway proxy and fails closed', () => {
@@ -56,8 +78,15 @@ describe('MOD-0164-FU03 Consent & Preference Admin UI', () => {
 
   it('5. uses supported Consent filters via server query', () => {
     ['filterConsentSubjectType','filterConsentSubjectId','filterConsentChannel','filterConsentPurpose','filterConsentStatus','filterConsentIncludeArchived'].forEach(id => expect(consentFilter).toContain(`id="${id}"`));
-    expect(indexJs).toContain('searching: false');
     expect(indexJs).toContain('includeArchived');
+    // Both lists fetch every matching row (no paging) and hand them to DataTables, so client search covers the whole
+    // list. If either list ever becomes server-paged, client search would only see one page - this must then go red.
+    [['consentQuery', '/api/consents'], ['preferenceQuery', '/api/preferences']].forEach(([fn, api]) => {
+      expect(between(indexJs, `const ${fn} = () => {`, 'return params.toString();')).not.toMatch(PAGING_PARAM);
+      expect(indexJs).toContain('fetch(`${base}' + api + '?${' + fn + '()}`,');
+    });
+    expect(indexJs.split('data: rows,').length - 1).toBe(2);
+    expect(indexJs).not.toMatch(/serverSide\s*:\s*true/);
   });
 
   it('6. does not fake unsupported Consent filters (ScopeType/LegalBasis/Source/search)', () => {
@@ -67,7 +96,11 @@ describe('MOD-0164-FU03 Consent & Preference Admin UI', () => {
     expect(indexJs).not.toContain('filterConsentScopeType');
     expect(indexJs).not.toContain('filterConsentLegalBasis');
     expect(indexJs).not.toContain('filterConsentSource');
-    expect(indexJs).toContain('searching: false');
+    // Search is not faked as a server filter: neither query sends it; it runs client-side over the fetched rows and the
+    // term is kept in the saved view (Save View).
+    ['consentQuery', 'preferenceQuery'].forEach(fn =>
+      expect(between(indexJs, `const ${fn} = () => {`, 'return params.toString();')).not.toMatch(/\bsearch\b/i));
+    expect(indexJs).toMatch(/search:\s*api\.search\(\)/);
   });
 
   it('7. uses Compact Create/Edit/Details pages with matching section maps (consent)', () => {
@@ -118,7 +151,9 @@ describe('MOD-0164-FU03 Consent & Preference Admin UI', () => {
 
   it('13. renders consent evidence pointer/provenance without master lookup', () => {
     ['EvidenceRefType','EvidenceRefId','EvidenceSourceModule'].forEach(k => expect(consentDetails).toContain(k));
-    expect(consentDetails).toContain('EvidencePointerHelp');
+    // The pointer help is authoring guidance, so it lives on the form; Details shows the evidence section itself.
+    expect(consentForm).toContain('EvidencePointerHelp');
+    expect(consentDetails).toContain('["EvidenceSection"]');
     expect(controller).not.toMatch(/evidence.*lookup|document.*master/i);
   });
 
