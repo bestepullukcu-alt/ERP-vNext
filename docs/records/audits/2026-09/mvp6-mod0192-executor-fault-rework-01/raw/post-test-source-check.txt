@@ -1,1 +1,0 @@
-43/43 final source paths match SOURCE-MANIFEST.tsv after final targeted/full tests; only CapacityAtomicityTests.cs changed from restart-harness rework.
