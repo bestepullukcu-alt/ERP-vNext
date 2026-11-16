@@ -97,4 +97,19 @@
   <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Введите значение</value></data>
   <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Введите число</value></data>
   <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Выберите дату</value></data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>Код присваивается системой при сохранении записи.</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>Код нельзя изменить.</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>Код присваивает система; оставьте это поле пустым.</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>Не удалось присвоить код: следующие коды уже заняты. Обратитесь к администратору.</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>Краткий код компании изменился после использования. Обратитесь к администратору MDM.</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>У компании нет допустимого краткого кода (от 2 до 5 заглавных букв). Обратитесь к администратору MDM.</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>Компания не найдена или неактивна.</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>Компания ещё не утверждена.</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>У вас нет разрешения на чтение записей компаний, которое нужно для присвоения кода.</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>У вас нет разрешения на создание этой записи.</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>Учётная запись вашей организации неактивна, поэтому код не может быть присвоен.</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>Служба кодов сейчас недоступна. Повторите попытку позже.</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>Сведения о компании сейчас не удаётся прочитать. Повторите попытку позже.</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>Этому запросу не разрешено получать код записи.</value></data>
 </root>

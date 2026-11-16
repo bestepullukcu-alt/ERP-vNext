@@ -15,3 +15,12 @@ public interface IPositionRepository
     async Task<IReadOnlyList<Position>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default) =>
         (await GetAllAsync(ct)).Where(x => ids.Contains(x.Id)).ToList();
 }
+
+/// <summary>
+/// MOD-0040-FU02 DL-2 (§8.15) — the code search that ALSO sees soft-deleted positions (RCS-001 §5.8); a separate
+/// one-method contract so <see cref="IPositionRepository"/> and its test doubles stay as they are.
+/// </summary>
+public interface IPositionCodeHistoryRepository
+{
+    Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default);
+}

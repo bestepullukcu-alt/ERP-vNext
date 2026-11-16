@@ -97,4 +97,19 @@
   <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>Introduzca un valor</value></data>
   <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>Introduzca un número</value></data>
   <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>Seleccione una fecha</value></data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>El sistema asigna el código al guardar el registro.</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>El código no se puede cambiar.</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>El sistema asigna el código; deje este campo vacío.</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>No se pudo asignar un código porque los siguientes ya están en uso. Póngase en contacto con su administrador.</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>El código corto de la empresa cambió después de usarse. Póngase en contacto con el administrador de MDM.</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>La empresa no tiene un código corto válido (de 2 a 5 letras mayúsculas). Póngase en contacto con el administrador de MDM.</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>No se encontró la empresa o no está activa.</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>La empresa aún no está aprobada.</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>No tiene permiso para leer los registros de empresa necesarios para asignar el código.</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>No tiene permiso para crear este registro.</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>La cuenta de su organización no está activa, por lo que no se puede asignar un código.</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>El servicio de códigos no está disponible en este momento. Inténtelo de nuevo más tarde.</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>No se puede leer la información de la empresa en este momento. Inténtelo de nuevo más tarde.</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>Esta solicitud no puede recibir un código de registro.</value></data>
 </root>

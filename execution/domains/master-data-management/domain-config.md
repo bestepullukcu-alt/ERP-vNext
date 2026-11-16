@@ -70,6 +70,28 @@ authority rule:
 
 This exception applies to no other MDM module pack.
 
+## In-Scope Reserved Module (owner decisions T-5 / Q-10, 2026-11-13)
+
+- `MOD-0049-FU01 Business Partner Master Foundation` — child of Blueprint `MOD-0049` (registry rows MOD-0049 / MOD-0049-FU01);
+  placement owner decision Q-10 (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md`), MDM owner permission T-5
+  (Ali, 2026-11-13; central team develops); pack
+  [MOD-0049-FU01](module-packs/MOD-0049-FU01-business-partner-master-foundation.md); `Diten.MdmService`, no new service or port.
+  v1 scope: tenant-wide party record + roles (v1 role `ThirdPartyLogistics`); match / merge, survivorship and supplier / customer
+  SoR are out of scope (BL-665). Consumer: MOD-0179 (read only, `BUSINESS-PARTNER-READ`).
+
+## Frontend / Gateway Scope Exception (MOD-0049-FU01)
+
+The "frontend and gateway remain outside the first implementation slice" restriction is narrowly lifted for MOD-0049-FU01, per the
+module-pack-over-domain-config authority rule:
+
+- `frontend/Diten.Web/**` — only the `MasterData/BusinessPartners` surface (views, same-origin proxy controller, JS, resx) plus
+  additive shared keys (`Nav.Module.BUSINESSPARTNERMASTER`, `Nav.Page.BUSINESSPARTNERS`, `Perm.Entity.BUSINESSPARTNERS`,
+  `Help.BUSINESSPARTNERS.*`); `_LayoutTenantShell.cshtml` is unchanged (navigation comes from the manifest). Exact scope: pack §5 / §11.
+- `gateway/Diten.ApiGateway/ocelot.json` — only the two `/api/mdm/business-partners` route blocks, downstream `localhost:5059`,
+  no `DELETE` method (pack §15). Ownership remains with `integration-agent`.
+
+This exception applies to no other MDM module pack.
+
 ## Domain-Level Owned Boundaries
 
 > Canonicalization (DCP-002): references to "MOD-0040" in this domain config are now canonically **MOD-0288** (Organization, Person & Position Directory). They resolve via the registry deprecated alias and are left unchanged below for boundary stability.

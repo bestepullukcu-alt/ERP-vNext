@@ -2123,7 +2123,7 @@
     <value>Mal kabul edilen stoğu yerleştirmek için</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Purpose" xml:space="preserve">
-    <value>Stoğu depodan sevk edin: satırlarıyla bir outbound açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
+    <value>Stoğu depodan sevk edin: satırlarıyla bir çıkış sevkiyatı açın, toplama ve paketlemeyi izleyin, sevke hazır yapın ve sevki kaydedin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Audience" xml:space="preserve">
     <value>Sevkiyat planlayıcıları ve depo sorumluları.</value>
@@ -2132,34 +2132,34 @@
     <value>Depo ve sevkiyat hazırlık</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step1" xml:space="preserve">
-    <value>“Yeni Outbound”a basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
+    <value>“Yeni Çıkış Sevkiyatı”na basın ve depoyu seçin. Sevkiyat hazırlık lokasyonunu yalnız depoda birden çok varsa seçin.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Satırlar ve önizleme</value>
+    <value>Satırlar yan panelde</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Her satırı girin (ürün, SKU, miktar, sipariş satırı) ve “Tahsisi Önizle”ye basın: FEFO sırasındaki lotlar ve tahsis edilebilecek miktar görünür.</value>
+    <value>“Satır Ekle”ye basın: yan panelde ürünü, SKU'yu ve miktarı girin (sipariş satırı numarası doldurulur) ve “Satırı Kaydet”e basın; satır tabloda görünür.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Lot değişimi</value>
+    <value>Önizleme ve lot değişimi</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>Gerekirse “Lot değişimi” alanından başka bir lot seçin; FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
+    <value>Her satırın lotlarını ve durumunu görmek için “Tahsisi Önizle”ye basın; başka bir lot için satır menüsünde “Lot Değiştir”i kullanın — FEFO sırasında ilk olmayan lot, şirketinizin FEFO kuralına göre gerekçe ister.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Toplamayı izleyin</value>
+    <value>Alıcı</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Kaydetmek stoğu tahsis eder ve toplama görevlerini açar; outbound Toplandı olana kadar Ayrıntılar sayfasında izleyin.</value>
+    <value>Alıcının adını, ülkesini ve adresini elle yazın.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Sevke hazır ve sevk</value>
+    <value>Kaydet</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Paketlenince “Sevke Hazır”a basın; mal çıktıktan sonra “Sevkiyatı Kontrol Et”e basın.</value>
+    <value>“Kaydet”e basın: tahsis bütün satırlarla yeniden hesaplanır; artık karşılanamayan satır tabloda işaretlenir ve hiçbir şey kaydedilmez.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Sevke hazır yapılan outbound değiştirilemez ve iptal edilemez.</value>
+    <value>Önizleme stok ayırmaz; kayıt anında stok değişmişse satır karşılanamaz olarak işaretlenir.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Tahsis edilen stoğu toplamak için</value>
@@ -2189,13 +2189,13 @@
     <value>Paketleyin</value>
   </data>
   <data name="Help.PICKTASKS.Step3" xml:space="preserve">
-    <value>Outbound toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
+    <value>Çıkış sevkiyatı toplanınca görevde “Paketle” bağlantısı görünür; Paketleme sayfasını açar.</value>
   </data>
   <data name="Help.PICKTASKS.Related.PACKINGSTATION" xml:space="preserve">
     <value>Toplanan stoğu paketlemek için</value>
   </data>
   <data name="Help.PACKINGSTATION.Purpose" xml:space="preserve">
-    <value>Bir outbound'un toplanan stoğunu kolilere paketleyin.</value>
+    <value>Bir çıkış sevkiyatının toplanan stoğunu kolilere paketleyin.</value>
   </data>
   <data name="Help.PACKINGSTATION.Audience" xml:space="preserve">
     <value>Depo operatörleri ve depo sorumluları.</value>
@@ -2204,7 +2204,7 @@
     <value>Koli açın</value>
   </data>
   <data name="Help.PACKINGSTATION.Step1" xml:space="preserve">
-    <value>“Yeni Koli”ye basın; yalnız outbound toplandığında mümkündür.</value>
+    <value>“Yeni Koli”ye basın; yalnız çıkış sevkiyatı toplandığında mümkündür.</value>
   </data>
   <data name="Help.PACKINGSTATION.Step2Title" xml:space="preserve">
     <value>İçerik, ağırlık, ölçü</value>
@@ -2216,7 +2216,55 @@
     <value>Koliyi kapatın</value>
   </data>
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
-    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince outbound “Paketlendi” olur.</value>
+    <value>“Koliyi Kapat”a basın. Bütün tahsisler kolilenince çıkış sevkiyatı “Paketlendi” olur.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Depo akışında birinin ilgilenmesi gereken sorunları görün ve onları düzeltecek kayda gidin.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Depo sorumluları ve sevkiyat planlayıcıları.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Türe göre süzün</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Süzgeçte bir tür ya da depo seçin; her kayıt ne olduğunu ve ne yapılacağını tek cümleyle söyler.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Kayda gidin</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Satırdan görevi ya da çıkış sevkiyatını açın ve orada işlem yapın; nedeni ortadan kalkınca kayıt listeden kendiliğinden düşer.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>Depo akışında olanları izleyin — görev ve çıkış sevkiyatı geçmişi ile yaptıkları stok hareketleri.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>Depo sorumluları, sevkiyat planlayıcıları ve denetçiler.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>Tarih aralığı seçin</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>En çok 31 günlük bir aralık seçin (boş = son 7 gün) ve kaynağa ya da depoya göre daraltın.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>Kayda gidin</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>Bir satırı açıp verisini görün ya da oradan göreve, çıkış sevkiyatına veya stok hareketlerine gidin.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>Depo ile sevkiyat tarafının uyum içinde olup olmadığını bir bakışta görün.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>Depo sorumluları, sevkiyat planlayıcıları ve entegrasyon destek ekibi.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>Dört kartı okuyun</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>Olay kuyruğu, sevk bekleyen, son eşitleme ve bekleyen onaylar — büyüyen bir sayı ya da eski bir zaman nereye bakılacağını gösterir; yeniden okumak için yenileyin.</value>
   </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Bu sayfa kapasite planlarını açar: seçili şirket için plan oluşturun ya da var olan bir planı kimliğiyle açın.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Kapasite ve tedarik planlamacıları</value></data>
@@ -2250,4 +2298,124 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>“Record sign-off”a tıklayın; anlık görüntüyü, rolünüzü ve kararı seçin, gerekirse yorum ekleyip onaylayın. Onaylar yalnız plan incelemedeyken kaydedilir.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Neyin kesin olduğunu bilin</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Kaydedilmiş bir onay kesindir: değiştirilemez ya da silinemez; aynı rol ve anlık görüntü için ikinci onay reddedilir.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Dönemsel ve tam sayımları planlayın, başlatın ve farklarına karar verilene kadar izleyin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Depo sorumluları (planlama, başlatma, iptal) ve sayım yapanlar (sayım formunu açma).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Depoyu ve kapsamı seçin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>“Yeni Sayım”a basın; depoyu, sayım türünü ve konumları seçin; tüm ürünleri saymak için ürünleri boş bırakın.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Sayımı başlatın</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Sayımı açın ve “Başlat”a basın: stok anlık görüntüsü alınır ve satırlar raf gözü bazında oluşur.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Miktarları girin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>“Sayım Formunu Aç”a basın ve her raf gözünde bulunanı girin.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Gönderin ve farkları izleyin</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>“Sayımı Gönder”den sonra farklar Sayım Farkları ekranında görünür; kartlar açık işi gösterir.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>Başlatılan sayımın kapsamı değişmez; iptal gerekçe ister.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Gönderilen sayımların farklarına karar vermek için</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Başlatılan bir sayımı raf gözü raf gözü sayın ve bulduğunuzu girin.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Sayım yapanlar; telefon ya da el terminalinde.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Raf gözü raf gözü sayın</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Miktarı yazın ya da −/+ kullanın ve her satırda “Onayla ve Kaydet”e basın. Kör sayımda beklenen miktar, sayım gönderilene kadar gösterilmez.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Bulunan stoğu ekleyin</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Satırı olmayan stok için “Bulunan Stok Ekle”ye basın; raf gözünü, ürünü ve SKU'sunu, gerekirse lotu ve miktarı seçin.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Gönderin</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Tüm satırlar sayılınca “Sayımı Gönder”e basın; sonrasında miktarlar değiştirilemez.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>Kör sayımda beklenen miktar gönderimden önce gösterilmez.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Her sayım farkını defter hareketine kadar izleyin ve onay bekleyen satırlara karar verin.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Sayım düzeltmelerini onaylayan stok kontrolörleri ve depo yöneticileri.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Farkı inceleyin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Depo, ürün, lot ya da tarihe göre süzün ve bir satırı açın. “Elle” satırlar Stok Hareketleri'nden girilmiş sayım düzeltmeleridir; salt okunurdur, onay ve dört göz dışındadır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Onaylayın, reddedin ya da yeniden saydırın</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>“Karar Ver”e basın ve “Onayla”, “Reddet” ya da “Yeniden Say”ı seçin; ret ve yeniden sayım gerekçe ister. Sayan ya da gönderen kişi onaylayamaz.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Reddedilen düzeltmeyi yeniden deneyin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Bir rezervasyon eksiği engellediyse düzeltme “Reddedildi” görünür; stoğu serbest bırakın ve “Kaydı Yeniden Dene”yi seçin.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Defter hareketine gidin</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Stok Hareketleri'nde açmak için “Defter düzeltmesi”ndeki hareket numarasına tıklayın.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>Onay stoğu hemen düzeltir; geri alma Stok Hareketleri'nde ters kayıttır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>“Elle” satırlar Stok Hareketleri'nden girilmiş sayım düzeltmeleridir; onay ve dört göz dışındadır. Sayım farkı için asıl yol bu ekrandır.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Sayımları planlamak ve başlatmak için</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Gönderilmiş ya da kapanmış bir sayımı denetimler için PDF veya CSV kanıt paketi olarak dışa aktarın; her dosya SHA-256 özetiyle saklanır ve hiç değişmez.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Stok kontrolörleri, depo yöneticileri ve kalite denetçileri.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Sayımı seçin ve dışa aktarın</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>“Yeni Dışa Aktarım”a basın, “Sayım” alanında gönderilmiş ya da kapanmış bir sayım ve biçimi seçin, sonra “Dışa Aktar”a basın. Dosya bu sayfanın dilinde yazılır.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Dosyayı indirin</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Satırı açın ve “İndir”e basın; saklanan kanıt olduğunu göstermek için dosyanın SHA-256 özetini gösterilenle karşılaştırın.</value>
+  </data>
 </root>

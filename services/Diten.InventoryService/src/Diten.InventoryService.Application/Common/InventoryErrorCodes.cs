@@ -99,6 +99,13 @@ public static class InventoryErrorCodes
     /// <summary>The issue's base quantity is more than the reservation's remaining quantity (Q-04: the rest is not taken from free stock).</summary>
     public const string ReservationQuantityExceeded = "RESERVATION_QUANTITY_EXCEEDED";
 
+    /// <summary>
+    /// INVENTORY 1.8.0 (MOD-0175-FU01 DL-3, pack §8.8; Q-06 = A, Q-07): a REVERSAL whose original is a MOD-0175 movement, or the source of
+    /// an intake quarantine / blocked record whose quality decision is under way or done, is refused before anything is written (422;
+    /// details recordNumber, recordType, cause — OwnMovementReversed | Decided | LinesPosted | QuantityChanged | DecisionInProgress | Unmatched).
+    /// </summary>
+    public const string ReversalQualityRecordLocked = "REVERSAL_QUALITY_RECORD_LOCKED";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
@@ -109,7 +116,8 @@ public static class InventoryErrorCodes
         ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable,
         FefoBypassReasonRequired, FefoOrderViolation, LotBelowMinRemainingShelfLife,
         LotUnderRecall,
-        ReservationNotFound, ReservationNotActive, ReservationMismatch, ReservationNotApplicable, ReservationQuantityExceeded
+        ReservationNotFound, ReservationNotActive, ReservationMismatch, ReservationNotApplicable, ReservationQuantityExceeded,
+        ReversalQualityRecordLocked
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

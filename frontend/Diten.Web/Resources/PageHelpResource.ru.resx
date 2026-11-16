@@ -2135,31 +2135,31 @@
     <value>Нажмите «Новая Отгрузка» и выберите склад. Зону подготовки выбирайте, только если их на складе несколько.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2Title" xml:space="preserve">
-    <value>Строки и предпросмотр</value>
+    <value>Строки в боковой панели</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step2" xml:space="preserve">
-    <value>Заполните каждую строку (товар, SKU, количество, строка заказа) и нажмите «Предпросмотр Распределения»: появятся партии в порядке FEFO и количество, которое можно распределить.</value>
+    <value>Нажмите «Добавить Строку»: в боковой панели укажите товар, SKU и количество (номер строки заказа заполняется) и нажмите «Сохранить Строку»; строка появится в таблице.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3Title" xml:space="preserve">
-    <value>Замена партии</value>
+    <value>Предпросмотр и смена партии</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step3" xml:space="preserve">
-    <value>При необходимости выберите другую партию в поле «Замена партии»; для партии не первой по FEFO нужна причина согласно правилу FEFO вашей компании.</value>
+    <value>Нажмите «Предпросмотр Распределения», чтобы увидеть партии и статус каждой строки; для другой партии используйте «Сменить Партию» в меню строки — партия не первая в порядке FEFO требует причину по правилу FEFO вашей компании.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4Title" xml:space="preserve">
-    <value>Следите за сборкой</value>
+    <value>Получатель</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step4" xml:space="preserve">
-    <value>Сохранение распределяет запас и открывает задачи сборки; следите за ними на странице сведений, пока отгрузка не будет собрана.</value>
+    <value>Введите вручную имя, страну и адрес получателя.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5Title" xml:space="preserve">
-    <value>Готовность и отправка</value>
+    <value>Сохранение</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Step5" xml:space="preserve">
-    <value>Когда упаковано, нажмите «Готова к Отправке»; после отправки товара нажмите «Проверить Поставку».</value>
+    <value>Нажмите «Сохранить»: распределение пересчитывается по всем строкам; строка, которую больше нельзя выполнить, отмечается в таблице, и ничего не сохраняется.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Immediate" xml:space="preserve">
-    <value>Отгрузку, готовую к отправке, нельзя изменить или отменить.</value>
+    <value>Предпросмотр не резервирует запас; если к моменту сохранения запас изменился, строка отмечается как невыполнимая.</value>
   </data>
   <data name="Help.OUTBOUNDSHIPMENTS.Related.PICKTASKS" xml:space="preserve">
     <value>Чтобы собрать распределённый запас</value>
@@ -2218,6 +2218,54 @@
   <data name="Help.PACKINGSTATION.Step3" xml:space="preserve">
     <value>Нажмите «Закрыть Упаковку». Когда все распределения упакованы, отгрузка становится «Упакована».</value>
   </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Purpose" xml:space="preserve">
+    <value>Смотрите проблемы складского потока, требующие внимания, и переходите к записи, где они устраняются.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Audience" xml:space="preserve">
+    <value>Руководители склада и планировщики отгрузки.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1Title" xml:space="preserve">
+    <value>Отфильтруйте по типу</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step1" xml:space="preserve">
+    <value>Выберите тип или склад в фильтре; каждая запись одним предложением говорит, что случилось и что делать.</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2Title" xml:space="preserve">
+    <value>Перейдите к записи</value>
+  </data>
+  <data name="Help.WAREHOUSEEXCEPTIONS.Step2" xml:space="preserve">
+    <value>Откройте задачу или отгрузку из строки и действуйте там; запись сама исчезнет из списка, когда устранена её причина.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Purpose" xml:space="preserve">
+    <value>Отслеживайте, что происходило в складском потоке: историю задач и отгрузок и созданные ими движения запасов.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Audience" xml:space="preserve">
+    <value>Руководители склада, планировщики отгрузки и аудиторы.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1Title" xml:space="preserve">
+    <value>Выберите период</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step1" xml:space="preserve">
+    <value>Выберите период не длиннее 31 дня (пусто = последние 7 дней) и сузьте его по источнику или складу.</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2Title" xml:space="preserve">
+    <value>Перейдите к записи</value>
+  </data>
+  <data name="Help.WAREHOUSEACTIVITY.Step2" xml:space="preserve">
+    <value>Откройте строку, чтобы увидеть её данные, или перейдите из неё к задаче, отгрузке или движениям запасов.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Purpose" xml:space="preserve">
+    <value>С первого взгляда проверьте, идут ли склад и сторона отгрузки в ногу.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Audience" xml:space="preserve">
+    <value>Руководители склада, планировщики отгрузки и команда поддержки интеграции.</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1Title" xml:space="preserve">
+    <value>Прочитайте четыре карточки</value>
+  </data>
+  <data name="Help.WAREHOUSEINTEGRATION.Step1" xml:space="preserve">
+    <value>Очередь событий, ожидание отправки, последняя синхронизация и ожидающие подтверждения — растущее число или давнее время подсказывают, куда смотреть; обновите, чтобы прочитать их снова.</value>
+  </data>
   <data name="Help.CAPACITYPLANS.Purpose" xml:space="preserve"><value>Эта страница открывает планы мощностей: создайте план для выбранной компании или откройте существующий по его ID.</value></data>
   <data name="Help.CAPACITYPLANS.Audience" xml:space="preserve"><value>Специалисты по планированию мощностей и поставок</value></data>
   <data name="Help.CAPACITYPLANS.Step1Title" xml:space="preserve"><value>Выберите компанию</value></data>
@@ -2250,4 +2298,124 @@
   <data name="Help.SANDOPPLANDETAILS.Step2" xml:space="preserve"><value>Нажмите «Record sign-off», выберите снимок, свою роль и решение, при необходимости добавьте комментарий и подтвердите. Согласования записываются только пока план на рассмотрении.</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3Title" xml:space="preserve"><value>Знайте, что окончательно</value></data>
   <data name="Help.SANDOPPLANDETAILS.Step3" xml:space="preserve"><value>Записанное согласование окончательно: его нельзя изменить или удалить, повторное согласование для той же роли и снимка отклоняется.</value></data>
+  <data name="Help.CYCLECOUNTS.Purpose" xml:space="preserve">
+    <value>Планируйте циклические и полные инвентаризации, запускайте их и отслеживайте до решения по расхождениям.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Audience" xml:space="preserve">
+    <value>Руководители склада (планирование, запуск, отмена) и счётчики (открывают лист подсчёта).</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1Title" xml:space="preserve">
+    <value>Выберите склад и область</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step1" xml:space="preserve">
+    <value>Нажмите « Новая Инвентаризация », выберите склад, тип и места; оставьте товары пустыми, чтобы считать всё.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2Title" xml:space="preserve">
+    <value>Запустите инвентаризацию</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step2" xml:space="preserve">
+    <value>Откройте инвентаризацию и нажмите « Запустить »: делается снимок остатков и создаются строки по ячейкам.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3Title" xml:space="preserve">
+    <value>Введите количества</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step3" xml:space="preserve">
+    <value>Нажмите « Открыть Лист Подсчёта » и введите, что лежит в каждой ячейке.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4Title" xml:space="preserve">
+    <value>Отправьте и следите за расхождениями</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Step4" xml:space="preserve">
+    <value>После « Отправить Инвентаризацию » расхождения появятся в разделе расхождений; карточки показывают открытую работу.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Immediate" xml:space="preserve">
+    <value>Область запущенной инвентаризации не меняется; для отмены нужна причина.</value>
+  </data>
+  <data name="Help.CYCLECOUNTS.Related.COUNTVARIANCES" xml:space="preserve">
+    <value>Чтобы решить по расхождениям отправленных инвентаризаций</value>
+  </data>
+  <data name="Help.COUNTSHEET.Purpose" xml:space="preserve">
+    <value>Считайте запущенную инвентаризацию ячейка за ячейкой и вводите найденное.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Audience" xml:space="preserve">
+    <value>Счётчики — на телефоне или терминале.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1Title" xml:space="preserve">
+    <value>Считайте по ячейкам</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step1" xml:space="preserve">
+    <value>Введите количество или используйте −/+ и нажмите « Подтвердить » в каждой строке. При подсчёте вслепую ожидаемое количество не показывается до отправки.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2Title" xml:space="preserve">
+    <value>Добавьте найденный остаток</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step2" xml:space="preserve">
+    <value>Для остатка без строки нажмите « Добавить Найденный Остаток », выберите ячейку, товар и артикул, при необходимости партию и количество.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3Title" xml:space="preserve">
+    <value>Отправьте</value>
+  </data>
+  <data name="Help.COUNTSHEET.Step3" xml:space="preserve">
+    <value>Когда все строки подсчитаны, нажмите « Отправить Инвентаризацию »; потом количества изменить нельзя.</value>
+  </data>
+  <data name="Help.COUNTSHEET.Note.Blind" xml:space="preserve">
+    <value>При подсчёте вслепую ожидаемое количество до отправки не показывается.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Purpose" xml:space="preserve">
+    <value>Прослеживайте каждое расхождение до движения в журнале и решайте по строкам на утверждении.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Audience" xml:space="preserve">
+    <value>Контролёры запасов и руководители склада, утверждающие корректировки.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1Title" xml:space="preserve">
+    <value>Изучите расхождение</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step1" xml:space="preserve">
+    <value>Отфильтруйте по складу, товару, партии или дате и откройте строку. Строки « Вручную » — корректировки из движений запасов; они только для чтения и вне утверждения и принципа четырёх глаз.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2Title" xml:space="preserve">
+    <value>Утвердите, отклоните или пересчитайте</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step2" xml:space="preserve">
+    <value>Нажмите « Решить » и выберите « Утвердить », « Отклонить » или « Пересчитать »; для отклонения и пересчёта нужна причина. Кто считал или отправлял, утвердить не может.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3Title" xml:space="preserve">
+    <value>Повторите отклонённую корректировку</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step3" xml:space="preserve">
+    <value>Если резерв заблокировал недостачу, корректировка показывает « Отклонено »; освободите остаток и выберите « Повторить Проведение ».</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4Title" xml:space="preserve">
+    <value>Перейдите к движению в журнале</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Step4" xml:space="preserve">
+    <value>Щёлкните номер движения в « Корректировка журнала », чтобы открыть его в движениях запасов.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Immediate" xml:space="preserve">
+    <value>Утверждение сразу корректирует остатки; отмена — это сторно в движениях запасов.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Note.ManualCount" xml:space="preserve">
+    <value>Строки « Вручную » — корректировки из движений запасов; они вне утверждения и принципа четырёх глаз. Основной путь исправить расхождение — этот экран.</value>
+  </data>
+  <data name="Help.COUNTVARIANCES.Related.CYCLECOUNTS" xml:space="preserve">
+    <value>Чтобы планировать и запускать инвентаризации</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Purpose" xml:space="preserve">
+    <value>Экспортируйте отправленную или закрытую инвентаризацию в пакет доказательств PDF или CSV для аудита; каждый файл хранится с SHA-256 и не меняется.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Audience" xml:space="preserve">
+    <value>Контролёры запасов, руководители склада и аудиторы качества.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1Title" xml:space="preserve">
+    <value>Выберите инвентаризацию и экспортируйте</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step1" xml:space="preserve">
+    <value>Нажмите « Новый Экспорт », выберите отправленную или закрытую инвентаризацию в поле « Инвентаризация » и формат, затем нажмите « Экспортировать ». Файл создаётся на языке этой страницы.</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2Title" xml:space="preserve">
+    <value>Скачайте файл</value>
+  </data>
+  <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
+    <value>Откройте строку и нажмите « Скачать »; сравните SHA-256 файла с показанным, чтобы доказать, что это сохранённое доказательство.</value>
+  </data>
 </root>

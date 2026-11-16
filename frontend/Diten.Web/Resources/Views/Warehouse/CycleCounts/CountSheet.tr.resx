@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="AllCounted" xml:space="preserve"><value>Tüm satırlar sayıldı.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Sayımlara dön</value></data>
+  <data name="BinProgress" xml:space="preserve"><value>{0} / {1} sayıldı</value></data>
+  <data name="BlindNotice" xml:space="preserve"><value>Kör sayım: gördüğünüzü sayın; beklenen miktar gönderimden sonra gösterilir.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Stoğunu saydığınız şirketi seçin.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirketler şu anda yüklenemiyor.</value></data>
+  <data name="CountSheetTitle" xml:space="preserve"><value>Sayım Formu</value></data>
+  <data name="CycleCount.Action.AddFound" xml:space="preserve"><value>Bulunan Stok Ekle</value></data>
+  <data name="CycleCount.Action.Confirm" xml:space="preserve"><value>Onayla ve Kaydet</value></data>
+  <data name="CycleCount.Action.Submit" xml:space="preserve"><value>Sayımı Gönder</value></data>
+  <data name="CycleCount.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="CycleCount.Error.COUNT_ADJUSTMENT_INTEGRITY" xml:space="preserve"><value>Düzeltmenin anahtarı başka bir harekette. Bütünlük sorununu çözün.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_ASSIGNEE_INVALID" xml:space="preserve"><value>Seçilen kişi atanamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_COMPANY_CODE_INVALID" xml:space="preserve"><value>Şirket kodu sayım numarası için kullanılamıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_CONFLICT" xml:space="preserve"><value>Bu kaydı başka biri değiştirdi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_INVALID_STATE" xml:space="preserve"><value>Bu işlem sayımın mevcut durumunda yapılamaz.</value></data>
+  <data name="CycleCount.Error.COUNT_INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Stok defterine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_LINES_UNCOUNTED" xml:space="preserve"><value>Bazı satırlar henüz sayılmadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_DUPLICATE" xml:space="preserve"><value>Bu raf gözü, ürün ve lot için zaten bir satır var.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_NOT_FOUND" xml:space="preserve"><value>Sayım satırı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_LINE_OUT_OF_SCOPE" xml:space="preserve"><value>Raf gözü ya da ürün sayımın kapsamı dışında.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_REQUIRED" xml:space="preserve"><value>Bu ürün lot takipli. Lotu girin.</value></data>
+  <data name="CycleCount.Error.COUNT_LOT_UNKNOWN" xml:space="preserve"><value>Bu lot ürün için tanımlı değil.</value></data>
+  <data name="CycleCount.Error.COUNT_NOT_FOUND" xml:space="preserve"><value>Sayım bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_QUANTITY_INVALID" xml:space="preserve"><value>Geçerli bir miktar girin (sıfır ya da daha fazla).</value></data>
+  <data name="CycleCount.Error.COUNT_REASON_REQUIRED" xml:space="preserve"><value>Bir gerekçe girin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Sayım numarası servisine ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.COUNT_RECOUNT_LIMIT" xml:space="preserve"><value>Seçilen bir satır yeniden sayım sınırına ulaştı.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_EMPTY" xml:space="preserve"><value>Kapsamda sayılacak raf gözü yok.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_NODE_INVALID" xml:space="preserve"><value>Seçilen bir konum bu depoda değil ya da etkin değil.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_OVERLAP" xml:space="preserve"><value>Bu raf gözlerinin bir kısmını açık başka bir sayım zaten kapsıyor.</value></data>
+  <data name="CycleCount.Error.COUNT_SCOPE_TOO_LARGE" xml:space="preserve"><value>Kapsam tek bir sayım için çok büyük. Daraltın ya da bölün.</value></data>
+  <data name="CycleCount.Error.COUNT_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Saydığınız ya da gönderdiğiniz bir farkı onaylayamazsınız.</value></data>
+  <data name="CycleCount.Error.COUNT_SERIAL_NOT_POSTABLE" xml:space="preserve"><value>Seri takipli stok sayımdan düzeltilemez.</value></data>
+  <data name="CycleCount.Error.COUNT_SNAPSHOT_DRIFT" xml:space="preserve"><value>Anlık görüntü alınırken stok değişti. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Conflict" xml:space="preserve"><value>Kayıt bu arada değişti. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu. Tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı verilerle zaten gönderildi. Yenileyip tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Bu eksiği işlemek için yeterli stok yok.</value></data>
+  <data name="CycleCount.Error.INVALID_REQUEST" xml:space="preserve"><value>İstek geçerli değil.</value></data>
+  <data name="CycleCount.Error.Invalid" xml:space="preserve"><value>İstek kabul edilemedi. Alanları kontrol edin.</value></data>
+  <data name="CycleCount.Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve"><value>Şirket verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.LOT_BLOCKED" xml:space="preserve"><value>Lot bloke.</value></data>
+  <data name="CycleCount.Error.LOT_EXPIRED" xml:space="preserve"><value>Lotun son kullanma tarihi geçti.</value></data>
+  <data name="CycleCount.Error.LOT_NOT_ALLOWED" xml:space="preserve"><value>Bu ürün lot takipli değil. Lotu boş bırakın.</value></data>
+  <data name="CycleCount.Error.NoPermission" xml:space="preserve"><value>Bu işlem için erişiminiz yok.</value></data>
+  <data name="CycleCount.Error.NotFound" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_DATA_INCOMPLETE" xml:space="preserve"><value>Ürünün verisi eksik (örneğin temel birimi).</value></data>
+  <data name="CycleCount.Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün verisine şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SERIAL_COUNT_MISMATCH" xml:space="preserve"><value>Seri numarası adedi miktarla uyuşmuyor.</value></data>
+  <data name="CycleCount.Error.SKU_ITEM_MISMATCH" xml:space="preserve"><value>SKU seçilen ürüne ait değil.</value></data>
+  <data name="CycleCount.Error.SKU_LEVEL_NOT_STOCKABLE" xml:space="preserve"><value>Bu SKU seviyesi stokta tutulmuyor.</value></data>
+  <data name="CycleCount.Error.ServiceUnavailable" xml:space="preserve"><value>Servise şu anda ulaşılamıyor. Daha sonra tekrar deneyin.</value></data>
+  <data name="CycleCount.Error.SessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapın.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_ITEM" xml:space="preserve"><value>Ürün tanımlı değil.</value></data>
+  <data name="CycleCount.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>Konum tanımlı değil.</value></data>
+  <data name="CycleCount.Error.VALIDATION_ERROR" xml:space="preserve"><value>Bazı alanlar eksik ya da geçersiz.</value></data>
+  <data name="CycleCount.LineStatus.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="CycleCount.LineStatus.AwaitingApproval" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="CycleCount.LineStatus.Counted" xml:space="preserve"><value>Sayıldı</value></data>
+  <data name="CycleCount.LineStatus.NoVariance" xml:space="preserve"><value>Fark yok</value></data>
+  <data name="CycleCount.LineStatus.Open" xml:space="preserve"><value>Sayılmadı</value></data>
+  <data name="CycleCount.LineStatus.Recounted" xml:space="preserve"><value>Yeniden sayıma gönderildi</value></data>
+  <data name="CycleCount.LineStatus.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="CycleCount.Status.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="CycleCount.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="CycleCount.Status.Counting" xml:space="preserve"><value>Sayılıyor</value></data>
+  <data name="CycleCount.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="CycleCount.Status.Released" xml:space="preserve"><value>Başlatıldı</value></data>
+  <data name="CycleCount.Status.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="Decrease" xml:space="preserve"><value>Azalt</value></data>
+  <data name="ExpectedValue" xml:space="preserve"><value>Beklenen: {0}</value></data>
+  <data name="FieldBin" xml:space="preserve"><value>Raf gözü</value></data>
+  <data name="FieldCounted" xml:space="preserve"><value>Sayılan miktar</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Lot no.</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldScanRef" xml:space="preserve"><value>Okutma referansı (isteğe bağlı)</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>SKU (stok kodu)</value></data>
+  <data name="FoundBadge" xml:space="preserve"><value>Bulunan</value></data>
+  <data name="Increase" xml:space="preserve"><value>Artır</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="LotHint" xml:space="preserve"><value>Yalnız lot takipli ürünler için.</value></data>
+  <data name="NoLines" xml:space="preserve"><value>Bu sayımda satır yok.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Raf gözü raf gözü sayın ve bulduğunuzu girin; tüm satırlar sayılınca gönderin.</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Ürün ara</value></data>
+  <data name="ReadonlyCancelled" xml:space="preserve"><value>Bu sayım iptal edildi. Yalnız görüntülenebilir.</value></data>
+  <data name="ReadonlyClosed" xml:space="preserve"><value>Bu sayım kapandı. Yalnız görüntülenebilir.</value></data>
+  <data name="ReadonlyDraft" xml:space="preserve"><value>Bu sayım henüz başlatılmadı. Sayılamaz.</value></data>
+  <data name="ReadonlySubmitted" xml:space="preserve"><value>Bu sayım gönderildi. Miktarlar artık değiştirilemez.</value></data>
+  <data name="SkuPlaceholder" xml:space="preserve"><value>SKU seçin</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Sayım gönderilsin mi? Sonrasında miktarlar değiştirilemez.</value></data>
+  <data name="SubmitConfirmUncounted" xml:space="preserve"><value>{0} satır sayılmadı. Sayım, tüm satırlar sayılınca gönderilebilir.</value></data>
+  <data name="UncountedLines" xml:space="preserve"><value>{0} satır sayılmadı</value></data>
+  <data name="ValidationFound" xml:space="preserve"><value>Raf gözünü, ürünü ve SKU'sunu seçin.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_NOT_FOUND" xml:space="preserve"><value>Kanıt dışa aktarımı bulunamadı.</value></data>
+  <data name="CycleCount.Error.COUNT_EVIDENCE_INTEGRITY" xml:space="preserve"><value>Saklanan kanıt dosyası kayıtlı özetiyle uyuşmuyor; dosya verilmez.</value></data>
+  <data name="LotUnknown" xml:space="preserve"><value>Lot numarası okunamadı</value></data>
+  <data name="NameUnknown" xml:space="preserve"><value>Ad okunamadı</value></data>
+  <data name="LotPlaceholder" xml:space="preserve"><value>Lot numarası arayın</value></data>
+</root>

@@ -1,0 +1,93 @@
+# MOD-0178-FU01 — Çıkış sevkiyatı formu v2 — sahip kararları 01 (2026-11-13)
+
+- Sahip: Beste (`bestepullukcu-alt`, MVP-5 merkez). Kayıt: MVP-5 WMS CT alt ajanı (module-pack-author), sohbetteki sahip sözlerinden; çağıran CT'nin
+  iletisiyle. Onaylayan (paket onayı, CT-APR-01): Ali.
+- Paket: `execution/domains/supply-chain-execution/module-packs/MOD-0178-FU01-outbound-form-v2.md` (r1, taslak).
+- Ebeveyn: `execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md` (r29 onay bekliyor; r27 onaylı).
+- Kaynak gözlem: E3 canlı turu `docs/records/audits/2026-11/mod-0178-e3-live-tour-2026-11-13.md`; düzeltme işi
+  `execution/domains/supply-chain-execution/work-packs/mvp5-wms/WP-0178-E3-FIX-01-ui-l10n.md` (FIX-01 FU01'den önce gider).
+
+| # | Karar | Sahip sözü / özeti | Tarih | Pakette |
+|---|---|---|---|---|
+| D-1 | **Satırlar DataTable standardında.** Satır ekleme ve düzenleme yan panelde (offcanvas): ürün, SKU, miktar, lot değişimi, FEFO sapma gerekçesi. Tahsis önizlemesi panelde ya da tabloda görünür. | sohbet (çağıran CT'nin iletisi) | 2026-11-13 | §1, §8.2, §8.3, §11, AC-1…AC-9 |
+| D-2 | **Alıcı CRM müşteri kaydından (account)** adı ve adresiyle seçilir; kayıt yoksa elle girilir; sevkiyatta account kimliği ve adresin **o anki kopyası** tutulur. Depodaki CRM-ACCOUNT-LOOKUP 1.0 adresi bilerek vermez (U-3 / U-1 yalnız doğrulama alanları; K-9 açık) → CRM tarafında sözleşme eki gerekir; sahibi **Beste (CRM)**. Alıcı seçimi dilimi o eke kapılıdır; **elle giriş her zaman çalışır**. | sohbet | 2026-11-13 | §7, §8.4, §8.5, §19.5 Q-1, DL-3 kapısı |
+| D-3 | **Sipariş referansı şimdilik elle.** MOD-0168 Order Capture (commercial-suite, planlı, kod yok) gelince "siparişten seç, yoksa elle gir" olarak bağlanır; v1'de alan buna hazırdır, bağlama ayrı FU'dur. | sohbet | 2026-11-13 | §8.6, §20 FU-0178-FU01-ORDER |
+| D-4 | **Önizleme seçilen lotu göstermeli.** Bilinen sorun (FIX-01 madde 4): bugünkü form önizlemeye her satırı `lotId: ''` ile gönderir; v2 tasarımı seçilen lotu önizlemede gösterir. | sohbet | 2026-11-13 | §8.3, AC-5, AC-6 |
+| D-5 | **Mockup turu yok.** Bu FU için mockup brief'i yazılmaz; mevcut Golden Reference DataTable + offcanvas desenleri esas alınır. "Direkt düzeltmeyi yapabiliriz yeni FU ile." | sohbet (çağıran CT'nin iletisi) | 2026-11-13 | künye, §1, §11, §19.1 |
+
+## CRM sahibinin cevabı (Beste, CRM oturumu, 2026-11-13; çağıran CT iletti) — D-2'nin CRM eki
+
+| # | Cevap | Pakette |
+|---|---|---|
+| C-1 | CRM-ACCOUNT-LOOKUP 1.1 (yalnız ekleme): yeni uç `GET /api/crm/accounts/{id}/ship-to`. Kiracı sınırı; 404 (yok / silinmiş / başka kiracı aynı cevap); `tenant_id`'siz token → 400; 5xx → 503 — 1.0 kurallarıyla aynı. Adres U-1 / U-3'e eklenmez. | §7, §8.4, §15, AC-32 |
+| C-2 | Ülke / şehir / ilçe **kod** döner (`CountryRef`, `CityRef`, `DistrictRef`). Görünen ad WMS'te Reference Data'dan çözülür; anlık kopyaya kod + ad yazılır (ad dile bağlı). Kod kümesi sözleşmede yazılacak. Posta kodu bugün account'ta yok (yalnız ilçe); gerekiyorsa ayrı bir CRM alan işi — v1'de alıcı CRM'den seçildiğinde posta kodu boş gelir, kullanıcı elle ekleyebilir. | §4.1a, §8.4, Q-10, Q-11 |
+| C-3 | v1 tek adres (account adresi); çoklu teslimat adresi ileride 1.x eklemesi (adres listesi + isteğe bağlı adres kimliği); WMS account kimliği + adres kopyası tuttuğu için kırılma yok. | §8.4, FU-0178-FU01-MULTIADDR |
+| C-4 | İzin: ayrı okuma anahtarı `crm.account-ship-to.read` (`crm.account.read` değil). Kullanıcının kendi token'ıyla, Gateway üzerinden. Anahtarı CRM manifestine CRM ekler; WMS rollerine atama Auth ile yapılır. | §14, Q-5 |
+| C-5 | Tarih TBD (Beste). Sıra: 1.1 sözleşme taslağı → inceleme → kod → donma. Alıcı seçim dilimi bu donmaya kapılı; elle giriş her zaman çalışır. MVP-6 da aynı ucu kullanacak; `customerRef` = `Account.Id` ile uyumlu — WMS'te tutulan account kimliği de `Account.Id`. | §8.7, §24 DL-3 |
+
+**Sahip kararı bekleyen (paket Q-10):** posta kodu — v1'de CRM'den seçilen alıcıda boş gelir ve elle eklenir mi (öneri), yoksa CRM'de ayrı
+posta kodu alan işi mi açılır?
+
+## Notlar
+
+- CRM 1.1 sözleşme metni **bu kayıtla yazılmaz**; taslağı, incelemesi, kodu ve donması CRM sahibinindir (C-5). FU01 DL-3 o donmaya kapılıdır.
+- D-4'ün en dar düzeltmesi FIX-01'dedir (bugünkü formda). FU01 aynı davranışı yan panele taşır ve AC ile korur; FIX-01'in kodunu tekrar yazmaz.
+- D-5 Golden Reference'tan bilinçli sapmaları kaldırmaz: satır tablosunun yerel (kaydedilmemiş) veriyle çalışması paket §11'de G-FU01-01
+  olarak yazılıdır ve onayla birlikte kabul edilir.
+- Bu kayıt bir onay değildir; paketin onayı `execution/approvals/approvals.tsv` satırıyla (CT-APR-01, onaylayan Ali) olur.
+
+## Ek — 2026-11-13: sahip cevapları (Beste, sohbet: "hepsi öneri gibi")
+
+- **Q-2 = öneri:** CRM'den yalnız `active` durumundaki account'lar seçilebilir.
+- **Q-3 = öneri:** CRM'den gelen adres sevkiyatta düzenlenebilir; kopya düzenlenmiş değeri tutar, account kimliği kalır.
+- **Q-4 = öneri:** alan adı `customerRef` (MVP-6 SHIPMENT ile aynı; değer `Account.Id`).
+- **Q-9 = öneri:** Recall'daki CRM okuyucusuyla kod paylaşılmaz; Warehouse kendi okuyucusunu yazar.
+- **Q-10 = öneri:** v1'de CRM'den seçilen alıcıda posta kodu boş gelir ve formda elle eklenebilir; MOD-0182 SSCC etiketinde alıcıdan
+  şehir + ilçe yazılır (posta kodu varsa o da); account'a posta kodu alanı CRM'de ayrı ve sonraki bir iştir.
+- **2026-11-13 — CRM sorusu 5 (aktif olmayan account), sahip "evet":** yeni sevkiyatta yalnız `active` account seçilir (Q-2). Seçimden sonra
+  pasif / askıda / arşiv olan account'ta mevcut sevkiyat sürer; WMS kayıt ve "sevke hazır" adımında durumu ship-to ucundan yeniden okur ve
+  kullanıcıyı uyarır, akışı durdurmaz.
+- **2026-11-13 — Q-10 düzeltmesi (CRM güncellemesi, Beste):** posta kodu hem ek teslimat adreslerinde hem account'un ana adresinde olacak;
+  CRM ana adrese alan ekliyor (tarih CRM'de), eklenene kadar boş gelir, sözleşme biçimi değişmez. Yukarıdaki "account'a posta kodu alanı CRM'de
+  ayrı ve sonraki bir iştir" ifadesi bu ekle değişir. CRM cevabı ilk günden adres listesidir (addresses[] + defaultAddressId; ilk sürümde
+  addressId = "primary"); WMS customerRef + customerAddressId + adres kopyası tutar.
+
+## Ek — 2026-11-13: CRM güncel önerisi (C-6…C-11) — kaynak: CRM oturumunun cevabı, Beste'nin sohbete yapıştırdığı metin
+
+Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md`, dal
+`docs/crm/crm-account-lookup-v1.1-ship-to`; bu depoda henüz yok, PR bağlantısı ayrıca gelecek). Metin özetle:
+
+- **C-6 — uç:** CRM-ACCOUNT-LOOKUP 1.1, yalnız ekleme: `GET /api/crm/accounts/{id}/ship-to`; kiracı sınırı, 404 (yok / silinmiş / başka kiracı
+  aynı cevap), tenant_id'siz token 400, 5xx 503 — 1.0 kurallarıyla aynı. Adres U-1 / U-3'e eklenmez.
+- **C-7 — kodlar:** ülke / şehir / ilçe kod döner (Reference Data kümeleri `country`, `city`, `district`); görünen ad kullanıcının dilinde Reference
+  Data'dan çözülür, kopyaya kod + ad yazılır.
+- **C-8 — adres listesi:** cevap ilk günden liste: `addresses[]` (`addressId`, `kind`, `label`, `isDefault`, `countryRef`, `cityRef`, `districtRef`,
+  `postalCode`, `addressLine`) + `defaultAddressId`; ilk sürümde tek eleman (`addressId = "primary"`); ek teslimat adresleri sonra, biçim ve sürüm
+  değişmez; WMS kullanıcıya adres seçtirir (varsayılan önceden seçili), sevkiyatta customerRef + addressId + kopya tutar; liste boşsa "adres yok" kuralı WMS'in.
+- **C-9 — izin:** yeni okuma anahtarı `crm.account-ship-to.read` (`crm.account.read` değil); müşteri araması mevcut U-3 (`crm.account.lookup-validation`);
+  sevkiyat rollerine iki anahtar birden gerekir; çağrı sunucudan, Gateway üzerinden, kullanıcının token'ıyla; anahtar CRM manifestine CRM'ce eklenir,
+  WMS rollerine atama Auth ile.
+- **C-10 — tarih (tahmin):** uç (yalnız ana adres) ~2 hafta; çoklu teslimat adresi +2–3 hafta.
+- **C-11 — posta kodu:** hem ek teslimat adreslerinde hem account'un ana adresinde olacak; ana adrese alan eklenene kadar boş gelir, biçim değişmez.
+- **CRM'in sorusu 5:** aktif olmayan account — WMS kararı yukarıda (yeni sevkiyatta yalnız active; sonradan pasifleşende uyarı, akış sürer).
+- **Açık (CT → CRM):** cevaba eklemeli `status` alanı (Q-13) ve MOD-0178'in CRM-ACCOUNT-LOOKUP tüketici tablosuna (5a) eklenmesi (r2 incelemesi F-3).
+
+- **2026-11-13 — Q-8 = kabul (Ali, GMG-ERP; kaynak: Ali'nin yazılı cevabı, Beste'nin sohbete aktarımı):** Golden Reference sapması G-FU01-01 kabul —
+  Compact sayfada satırlar sayfa içi (istemci modu) DataTable ve yan panelde düzenlenir; bu yerel tabloda dışa aktarma ve toplu silme yoktur.
+
+- **2026-11-13 — Q-7 = öneri kabul (CT — MVP-5 CT; paket Q-7'nin sahibini "Ali / CT" yazar):** sürüm sırası — FU01 eki Item adımından
+  (WAREHOUSE-OUTBOUND 1.1.0 + WMS-BUNDLE 1.2.0) sonra yazılır; MOD-0183 r10 onayı FU01 DL-2 bitişinden sonra kalırsa CT iki eki tek adımda
+  yazar (iki dosya, tek sürüm artışı). DL-2 yayın kapısıdır; paket r4'e işlendi.
+
+- **2026-11-13 — CRM cevabı: CRM-ACCOUNT-LOOKUP 1.1 taslağı main'de (PR #421, merge `5b95e90ab`; dosya
+  `docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md`, x-status DRAFT; kaynak: CRM ekibinin mesajı, Beste'nin
+  sohbete aktarımı; CT `origin/main`'de okudu).** U-4 `GET /api/crm/accounts/{accountId:guid}/ship-to`, izin `crm.account-ship-to.read`;
+  gövde §2.2 (`accountId`, `code`, `name`, `status`, `defaultAddressId`, `addresses[]` — `addressId` (`"primary"` ya da UUID), `kind`,
+  `label`, `isDefault`, `countryRef`, `cityRef`, `districtRef`, `postalCode`, `addressLine` — `contractVersion` `crm-account-lookup/1.1`).
+  CT karşılaştırması: FU01 r4'ün beklediği alan listesiyle (§8.4, satır 385-392) birebir aynı; FU01'de içerik değişikliği gerekmez.
+  **Q-13 kapandı:** cevapta `status` var, `isBillable` yok; CRM durumu 404'e katmaz (pasif hesap 200 + `status`); kontrol tüketicide —
+  FU01'in kuralı (yeni sevkiyatta yalnız `active`; `status = "active"` ⇔ `isBillable`) geçerli (CRM K-14). **DL-3 kapısı değişmedi:** 1.1
+  donması (pack eki onayı + CRM DL-3 kabulü) ve uç CRM'de uygulanınca; CRM "uç kodlanınca haber vereceğiz" dedi. **XMC-CRM-01 açık:**
+  taslak MOD-0178'i "aday" yazar ("MOD-0178 paketi bugün bu okumayı içermez") — tüketici paket MOD-0178-FU01'dir (r4, ready-for-dev);
+  CRM'e donmada x-consumers ve §5a'ya "MOD-0178-FU01 (MOD-0178 çıkış sevkiyatı formu v2)" yazılması iletilir. Pakete işleniş: sonraki
+  içerik revizyonunda (§19 açık kalanlar, Q-13 satırı).

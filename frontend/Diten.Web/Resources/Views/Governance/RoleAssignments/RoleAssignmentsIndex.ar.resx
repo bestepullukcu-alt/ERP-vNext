@@ -138,6 +138,8 @@
   <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>عرض الملخص</value></data>
   <data name="ActionVerb_Rebase" xml:space="preserve"><value>مواءمة مع الإصدار الجديد</value></data>
   <data name="ActionVerb_Recover" xml:space="preserve"><value>استرداد</value></data>
+  <data name="ActionVerb_Post" xml:space="preserve"><value>ترحيل</value></data>
+  <data name="ActionVerb_Recount" xml:space="preserve"><value>إعادة العد</value></data>
   <data name="ActionVerb_Release" xml:space="preserve"><value>إفراج</value></data>
   <data name="ActionVerb_Reopen" xml:space="preserve"><value>إعادة فتح</value></data>
   <data name="ActionVerb_Replace" xml:space="preserve"><value>استبدال</value></data>
