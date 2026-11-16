@@ -42,7 +42,7 @@ Sığ klon (`--depth`) arşivi göremez; önce `git fetch --unshallow`.
 | 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | bu dalda |
 | 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | bu dalda |
 | 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | bu dalda |
-| 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | planlı |
+| 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | bu dalda |
 | 5 | son 30 günde dokunulmayan iş paketleri + kapanmış iş listesi | 297 | 3.9 | — | planlı; açık PR #425 birleşince |
 
 ## Parti 1 — `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv)
@@ -1239,5 +1239,94 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `plans/forward-roadmap.md` | 1 | 0.01 |
 | `plans/foundation-roadmap-2026-06-24.md` | 1 | 0.00 |
 | `plans/tenant-audit-findings.md` | 1 | 0.01 |
+
+</details>
+
+## Parti 6 — kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar
+
+**Neden:** kimsenin çağırmadığı tek seferlik doğrulama/smoke betikleri, `.antigravity` altında `ARCHITECTURE.md`'nin "legacy" dediği dört betik ve `mcp_config.json`, sözleşme dışı eski analizler, eski iş paketi rehberleri, sürüm/yetenek taslakları; CI, phase1, hook ve bağdaştırıcılar okumuyor.
+
+<details>
+<summary>Yerinde bırakılanlar (22 dosya, 22 klasör) ve nedeni</summary>
+
+| Klasör / dosya | Dosya | Neden (örnek) |
+|---|---|---|
+| `.antigravity/scripts/verify_all.py` | 1 | anan: execution/domains/pharmacovigilance/work-packs/WP-0230-07-tenant-ui.md |
+| `docs/analysis/inventory-capability-scope-and-dependency-report.md` | 1 | anan: execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md; execution/portfolio/delivery-capability-packs/DCP-010-procurement-p2p.md |
+| `docs/analysis/mod-0262-internal-document-repository-prd-and-impact-analysis.md` | 1 | anan: execution/portfolio/delivery-capability-packs/DCP-008-internal-document-repository-service.md |
+| `docs/analysis/strategy-template-targeting-model-analysis.md` | 1 | anan: execution/domains/commercial-suite/work-packs/WP-ST-SCOPE-strategy-template-scope.md |
+| `docs/analysis/workpackages/WP-MVP1-traceability-quality.md` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0176-expiry-fefo-management.md |
+| `docs/analysis/workpackages/WP-MVP5-warehouse.md` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md |
+| `docs/decisions/DEC-SCMM-01-bl316-ownership-decision-brief.md` | 1 | anan: .antigravity/rules/docs-organization.md |
+| `docs/decisions/DEC-SCMM-03-model-policy-freeze.md` | 1 | anan: .antigravity/rules/docs-organization.md |
+| `docs/decisions/DEC-SCMM-04-integration-delivery-contracts.md` | 1 | anan: .antigravity/rules/docs-organization.md |
+| `docs/decisions/DEC-SCMM-05-brand-kit-approved-asset-placement.md` | 1 | anan: .antigravity/rules/docs-organization.md |
+| `execution/delivery/checklists/work-package-checklist-template.md` | 1 | anan: execution/delivery/platform-delivery-board.md |
+| `execution/release/release-backlog/R1-ppm-mvp-backlog.md` | 1 | anan: execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md |
+| `execution/scripts/generate-dashboard.py` | 1 | anan: execution/README.md |
+| `scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md |
+| `scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0162-FU03-concept-graph-runtime-ui.md |
+| `scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0162-FU04-knowledge-path-runtime-ui.md |
+| `scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0162-FU05-content-engagement-journey-runtime-ui.md |
+| `scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0165-FU06-cycle-period.md, execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period- |
+| `scripts/smoke-mod0165-fu07-cycle-period-scope-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md |
+| `scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0167-FU02-segment-foundation-criteria-membership-target-customer.md |
+| `scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0167-FU04-strategy-template-segment-product-mix-content-playbook.md |
+| `scripts/verify-mod0165-fu07-country-equivalence.ps1` | 1 | anan: execution/domains/commercial-suite/module-packs/MOD-0165-FU07-cycle-period-scope-enrichment.md, execution/domains/commercial-suite/module-packs/MOD-0165-F |
+
+</details>
+
+<details>
+<summary>Kalkan dosyalar (47 satır, 47 dosya, 0.3 MiB)</summary>
+
+| Klasör / dosya | Kalkan dosya | MiB |
+|---|---|---|
+| `.antigravity/mcp_config.json` | 1 | 0.00 |
+| `.antigravity/scripts/auto_preview.py` | 1 | 0.00 |
+| `.antigravity/scripts/checklist.py` | 1 | 0.01 |
+| `.antigravity/scripts/session_manager.py` | 1 | 0.00 |
+| `docs/analysis/dec-inv-17-canonical-identity-reconciliation.md` | 1 | 0.01 |
+| `docs/analysis/hr-identity-and-access-architecture-analysis.md` | 1 | 0.02 |
+| `docs/analysis/inventory-bundle-contract-detailed-v0.1.md` | 1 | 0.01 |
+| `docs/analysis/wave0-contracts-product-master-and-inventory.md` | 1 | 0.01 |
+| `docs/analysis/workpackages/GETTING-STARTED-takim-uyesi.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/README.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/TEAM-PLAYBOOK-parallel-no-questions.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-0173-inventory-ledger.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-0290-product-master-hardening.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-MVP2-procurement.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-MVP3-bom.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-MVP4-planning.md` | 1 | 0.00 |
+| `docs/analysis/workpackages/WP-MVP6-logistics.md` | 1 | 0.00 |
+| `execution/capabilities/corporate-collection-controlled-document-registration-scope.md` | 1 | 0.00 |
+| `execution/delivery/checklists/code-review-checklist-template.md` | 1 | 0.00 |
+| `execution/registries/prompt-governance-registry.md` | 1 | 0.00 |
+| `execution/release/release-candidates/R1-ppm-mvp-candidates.md` | 1 | 0.00 |
+| `execution/release/release-gates/R1-ppm-mvp-release-gate.md` | 1 | 0.00 |
+| `scripts/prepare-mod0029-fu36d-fu37d-corporate-smoke-fixture.ps1` | 1 | 0.00 |
+| `scripts/smoke-mod0029-fu36d-fu37d-runtime-readiness.ps1` | 1 | 0.00 |
+| `scripts/smoke-mod0151-fu09b-frequency-provider-route-candidate.ps1` | 1 | 0.01 |
+| `scripts/smoke-mod0155-visit-planning-authenticated.ps1` | 1 | 0.00 |
+| `scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1` | 1 | 0.02 |
+| `scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1` | 1 | 0.01 |
+| `scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1` | 1 | 0.03 |
+| `scripts/smoke-mod0290-fu02-brand-product-authenticated.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0028-fu06-corporate-collection-instance-foundation.ps1` | 1 | 0.00 |
+| `scripts/verify-mod0028-fu06-mongo-index-compatibility-fix.ps1` | 1 | 0.00 |
+| `scripts/verify-mod0028-fu06-runtime-smoke-reconciliation.ps1` | 1 | 0.00 |
+| `scripts/verify-mod0029-fu24-ui.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu25-detail-governance-ui.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu26-approval-release-gates-ui.ps1` | 1 | 0.02 |
+| `scripts/verify-mod0029-fu27-training-readiness-ui.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu28-repository-controlled-copy-ui.ps1` | 1 | 0.02 |
+| `scripts/verify-mod0029-fu28a-repository-assessment-master-ui.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu29-retention-signatures-quality-events-ui.ps1` | 1 | 0.02 |
+| `scripts/verify-mod0029-fu36a-backend-orchestration-foundation.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu36b-unified-create-frontend.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu36c-reverse-navigation-legacy-bypass.ps1` | 1 | 0.00 |
+| `scripts/verify-mod0029-fu36d-fu37d-runtime-smoke-commit-separation.ps1` | 1 | 0.00 |
+| `scripts/verify-mod0029-fu37a-backend-scope-aware-registration.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu37b-frontend-scope-selector-conditional-form.ps1` | 1 | 0.01 |
+| `scripts/verify-mod0029-fu37c-manual-link-scope-guardrails.ps1` | 1 | 0.00 |
 
 </details>
