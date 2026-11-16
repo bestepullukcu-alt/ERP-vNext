@@ -41,7 +41,7 @@ Sığ klon (`--depth`) arşivi göremez; önce `git fetch --unshallow`.
 | 1 | `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv) | 4786 | 250.8 | 852 | bu dalda |
 | 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | bu dalda |
 | 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | bu dalda |
-| 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | planlı |
+| 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | bu dalda |
 | 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | planlı |
 | 5 | son 30 günde dokunulmayan iş paketleri + kapanmış iş listesi | 297 | 3.9 | — | planlı; açık PR #425 birleşince |
 
@@ -1060,5 +1060,184 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `docs/records/tests/diten-pharma-scenario.md` | 1 | 0.02 |
 | `docs/records/tests/governance-users` | 1 | 0.02 |
 | `docs/records/tests/task-center` | 1 | 0.00 |
+
+</details>
+
+## Parti 3 — `docs/roadmap/plans` + kök `plans/`
+
+**Neden:** eski yol haritası ve hazırlık klasörleri; hiçbir CI adımı, test ya da araç okumuyor. Mühürlü iki plan dosyası ve kule araçlarının okuduğu iki kuyruk (`CT-QUEUE.tsv`) bu partide yok.
+
+<details>
+<summary>Yerinde bırakılanlar (155 dosya, 33 klasör) ve nedeni</summary>
+
+| Klasör / dosya | Dosya | Neden (örnek) |
+|---|---|---|
+| `docs/roadmap/plans/ct-branch-approval-01` | 1 | anan: docs/guides/operations/control-tower-operating-card.md; docs/guides/operations/control-tower-sop.md; execution/approvals/POLICY-BRANCH-START.md; scripts/p |
+| `docs/roadmap/plans/ct-dev-readiness-approval-01` | 1 | anan: .antigravity/rules/module-pack-standard.md; execution/approvals/POLICY-BRANCH-START.md; execution/approvals/POLICY-START.md; execution/portfolio/blueprint |
+| `docs/roadmap/plans/ct-plan-alignment-01` | 2 | anan: .antigravity/rules/module-pack-standard.md; docs/guides/operations/control-tower-operating-card.md |
+| `docs/roadmap/plans/erp-finance-legal-module-intake-01` | 25 | anan: execution/portfolio/delivery-capability-packs/DCP-011-finance-treasury-intake.md |
+| `docs/roadmap/plans` | 15 | anan: execution/delivery/ct-queue-registry.tsv; execution/domains/supply-chain-execution/work-packs/mvp5-wms/CT-QUEUE.tsv |
+| `docs/roadmap/plans/mod-0186-prep-02` | 4 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md |
+| `docs/roadmap/plans/mod-0187-final-pack-delta-01` | 14 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md |
+| `docs/roadmap/plans/mod-0187-prep-02` | 6 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md |
+| `docs/roadmap/plans/mod-0187-runtime-dispatch-01` | 3 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md |
+| `docs/roadmap/plans/mod-0192-executor-exact-decisions-01` | 1 | anan: docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md; docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md |
+| `docs/roadmap/plans/mvp2-supplier-tenant-01` | 1 | anan: services/Diten.ProcurementService/src/Diten.ProcurementService.Persistence/Suppliers/SupplierMigrationPlanner.cs |
+| `docs/roadmap/plans/mvp6-0190-0192-g8-ver-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md, execution/domains/supply-chain-execution/module-packs/MOD-0192-ca |
+| `docs/roadmap/plans/mvp6-bl652-coupling-decision-01` | 1 | anan: execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md |
+| `docs/roadmap/plans/mvp6-carrier-ui-dispatch-close-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md |
+| `docs/roadmap/plans/mvp6-carrier-ui-scope-01` | 14 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md |
+| `docs/roadmap/plans/mvp6-evidence-kit-proposal-03` | 1 | anan: docs/guides/operations/mvp6-evidence-kit-v1.0.md |
+| `docs/roadmap/plans/mvp6-gateway-routes-conversion-01` | 1 | anan: gateway/Diten.ApiGateway.Tests/Mvp6ExplicitRoutesTests.cs |
+| `docs/roadmap/plans/mvp6-integration-wp-p1-01` | 5 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0178-putaway-picking-packing.md, execution/domains/supply-chain-execution/module-packs/MOD-0183- |
+| `docs/roadmap/plans/mvp6-loads-ui-scope-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md |
+| `docs/roadmap/plans/mvp6-mod0147-spec-split-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md |
+| `docs/roadmap/plans/mvp6-mod0147-v1-scorecard-01` | 2 | anan: execution/domains/procurement/module-packs/MOD-0140-supplier-onboarding.md |
+| `docs/roadmap/plans/mvp6-mod0148-spec-split-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md |
+| `docs/roadmap/plans/mvp6-mod0186-pack-patch-repair-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md |
+| `docs/roadmap/plans/mvp6-mod0190-0192-dispatch-preflight-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md |
+| `docs/roadmap/plans/mvp6-mod0190-pack-phase15-close-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md |
+| `docs/roadmap/plans/mvp6-pack-alignment-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md |
+| `docs/roadmap/plans/mvp6-pack-alignment-02-claims` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md |
+| `docs/roadmap/plans/mvp6-pack-alignment-03-returns` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md |
+| `docs/roadmap/plans/mvp6-process-pilot-01` | 18 | anan: docs/guides/operations/mvp6-development-process-v1.0.md |
+| `docs/roadmap/plans/mvp6-self-registration-prep-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md |
+| `docs/roadmap/plans/mvp6-text-patch-q83-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md |
+| `docs/roadmap/plans/mvp6-ui-pack-drafts-01` | 14 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md, execution/domains/supply-chain-execution/module-packs/MOD-0187-claims |
+| `docs/roadmap/plans/mvp6-ui-scope-190-192-01` | 8 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md, execution/domains/supply-chain-execution/module-packs/MOD-0192-ca |
+
+</details>
+
+<details>
+<summary>Kalkan dosyalar (126 satır, 809 dosya, 5.6 MiB)</summary>
+
+| Klasör / dosya | Kalkan dosya | MiB |
+|---|---|---|
+| `docs/roadmap/plans/ct-approval-shards-01` | 1 | 0.01 |
+| `docs/roadmap/plans/ct-rereview-risk-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mod-0183-root-uptake-recovery-01` | 10 | 0.02 |
+| `docs/roadmap/plans/mod-0184-dev-02-prompt-v2.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mod-0184-dev-03-evidence-rework-v1.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mod-0184-ver-02-prompt-v2.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mod-0186-runtime-dispatch-01` | 3 | 0.00 |
+| `docs/roadmap/plans/mod-0187-prep-02` | 4 | 0.02 |
+| `docs/roadmap/plans/mod-0187-runtime-dispatch-01` | 10 | 0.14 |
+| `docs/roadmap/plans/mod-0190-exact-policy-01` | 1 | 0.01 |
+| `docs/roadmap/plans/mod-0190-spec-01` | 4 | 0.02 |
+| `docs/roadmap/plans/mod-0192-exact-policy-01` | 3 | 0.01 |
+| `docs/roadmap/plans/mod-0192-executor-design-check-01` | 1 | 0.01 |
+| `docs/roadmap/plans/mod-0192-spec-01` | 9 | 0.04 |
+| `docs/roadmap/plans/mvp6-0190-0192-g7-permissions-01` | 4 | 0.01 |
+| `docs/roadmap/plans/mvp6-0190-0192-g8-ver-01` | 3 | 0.01 |
+| `docs/roadmap/plans/mvp6-0190-0192-ui-wave-01` | 7 | 0.04 |
+| `docs/roadmap/plans/mvp6-6ui-ver-handoff-01` | 3 | 0.03 |
+| `docs/roadmap/plans/mvp6-audit-and-acceleration-2026-09-20.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-bl649-timing-flake-fix-01` | 3 | 0.01 |
+| `docs/roadmap/plans/mvp6-bl650-ci-guard-decision-01` | 4 | 0.01 |
+| `docs/roadmap/plans/mvp6-bl652-coupling-decision-01` | 5 | 0.01 |
+| `docs/roadmap/plans/mvp6-carrier-ui-dispatch-close-01` | 16 | 0.06 |
+| `docs/roadmap/plans/mvp6-claude-development-handoff-01` | 13 | 0.29 |
+| `docs/roadmap/plans/mvp6-commit-plan-01` | 21 | 0.43 |
+| `docs/roadmap/plans/mvp6-contract-response-declarations-01` | 7 | 0.02 |
+| `docs/roadmap/plans/mvp6-decision-prep-01` | 7 | 0.04 |
+| `docs/roadmap/plans/mvp6-decision-prep-02` | 13 | 0.07 |
+| `docs/roadmap/plans/mvp6-development-continuation-2026-09-23.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v10.1.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v2.0.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v3.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v5.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v6.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v8.0.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.0.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.1.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.2.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.3.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.4.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.5.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.6.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.7.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.8.md` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-development-plan-v9.9.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-effort-auth-and-integration-update-04` | 16 | 0.05 |
+| `docs/roadmap/plans/mvp6-effort-baseline-01` | 5 | 0.03 |
+| `docs/roadmap/plans/mvp6-effort-baseline-reconcile-02` | 11 | 0.04 |
+| `docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05` | 17 | 0.05 |
+| `docs/roadmap/plans/mvp6-effort-progress-update-03` | 14 | 0.05 |
+| `docs/roadmap/plans/mvp6-effort-shipment-ct-update-07` | 17 | 0.06 |
+| `docs/roadmap/plans/mvp6-effort-shipment-loads-update-06` | 17 | 0.06 |
+| `docs/roadmap/plans/mvp6-effort-update-08` | 21 | 0.08 |
+| `docs/roadmap/plans/mvp6-effort-update-09` | 13 | 0.05 |
+| `docs/roadmap/plans/mvp6-effort-update-09a` | 5 | 0.03 |
+| `docs/roadmap/plans/mvp6-effort-update-09b` | 8 | 0.04 |
+| `docs/roadmap/plans/mvp6-evidence-kit-proposal-01` | 45 | 0.18 |
+| `docs/roadmap/plans/mvp6-evidence-kit-proposal-02` | 32 | 0.15 |
+| `docs/roadmap/plans/mvp6-evidence-kit-proposal-03` | 33 | 0.20 |
+| `docs/roadmap/plans/mvp6-final-pack-delta-01` | 7 | 0.02 |
+| `docs/roadmap/plans/mvp6-follow-up-drafts-01` | 5 | 0.02 |
+| `docs/roadmap/plans/mvp6-gateway-routes-conversion-01` | 3 | 0.02 |
+| `docs/roadmap/plans/mvp6-integration-baseline-selection-01` | 8 | 0.02 |
+| `docs/roadmap/plans/mvp6-integration-wp-p1-01` | 14 | 0.16 |
+| `docs/roadmap/plans/mvp6-loads-guard-binding-prep-01` | 17 | 0.09 |
+| `docs/roadmap/plans/mvp6-loads-publication-dispatch-01` | 2 | 0.01 |
+| `docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01` | 11 | 0.02 |
+| `docs/roadmap/plans/mvp6-loads-ui-scope-01` | 12 | 0.04 |
+| `docs/roadmap/plans/mvp6-loads-uptake-prep-01` | 9 | 0.03 |
+| `docs/roadmap/plans/mvp6-logistics-continuation-2026-09-16.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-logistics-development-plan.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-mod0147-spec-split-01` | 7 | 0.02 |
+| `docs/roadmap/plans/mvp6-mod0147-v1-scorecard-01` | 2 | 0.03 |
+| `docs/roadmap/plans/mvp6-mod0148-spec-split-01` | 7 | 0.01 |
+| `docs/roadmap/plans/mvp6-mod0148-v1-portal-01` | 1 | 0.02 |
+| `docs/roadmap/plans/mvp6-mod0184-runtime-write-status-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-mod0186-pack-patch-repair-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-mod0190-0192-dispatch-preflight-01` | 12 | 0.81 |
+| `docs/roadmap/plans/mvp6-mod0190-0192-phase15-gap-check-01` | 6 | 0.04 |
+| `docs/roadmap/plans/mvp6-mod0190-pack-phase15-close-01` | 10 | 0.08 |
+| `docs/roadmap/plans/mvp6-mod0192-pack-phase15-close-01` | 8 | 0.06 |
+| `docs/roadmap/plans/mvp6-module-readiness-01` | 7 | 0.05 |
+| `docs/roadmap/plans/mvp6-next-lanes-v7.0.md` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-next-wave-readiness-01` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-pack-alignment-01` | 8 | 0.08 |
+| `docs/roadmap/plans/mvp6-pack-alignment-02-claims` | 5 | 0.03 |
+| `docs/roadmap/plans/mvp6-pack-alignment-03-returns` | 5 | 0.04 |
+| `docs/roadmap/plans/mvp6-pack-heading-labels-01` | 14 | 0.04 |
+| `docs/roadmap/plans/mvp6-pack-pin-reconciliation-01` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-pr-to-main-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-q15-status-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-q151-integration-handoff-01` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-q322-status-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-q484-capacity-middleware-decision-01` | 3 | 0.01 |
+| `docs/roadmap/plans/mvp6-q496-status-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-queue-reality-readout-01` | 1 | 0.00 |
+| `docs/roadmap/plans/mvp6-readiness-rebaseline-01` | 6 | 0.05 |
+| `docs/roadmap/plans/mvp6-readiness-rebaseline-reconcile-02` | 8 | 0.06 |
+| `docs/roadmap/plans/mvp6-self-registration-patch05-rebase-01` | 4 | 0.01 |
+| `docs/roadmap/plans/mvp6-self-registration-patches-01` | 12 | 0.05 |
+| `docs/roadmap/plans/mvp6-self-registration-prep-01` | 7 | 0.02 |
+| `docs/roadmap/plans/mvp6-session-audit-resequence-2026-10-18` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01` | 25 | 0.08 |
+| `docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01` | 14 | 0.04 |
+| `docs/roadmap/plans/mvp6-shipment-r2-effort-disposition-01` | 10 | 0.02 |
+| `docs/roadmap/plans/mvp6-status-report-glob-fix-01` | 4 | 0.01 |
+| `docs/roadmap/plans/mvp6-supplier-0147-0148-readiness-01` | 3 | 0.01 |
+| `docs/roadmap/plans/mvp6-supplier-concurrence-close-prep-01` | 6 | 0.02 |
+| `docs/roadmap/plans/mvp6-supplier-exact-policy-01` | 6 | 0.03 |
+| `docs/roadmap/plans/mvp6-supplier-seam-readiness-01` | 9 | 0.02 |
+| `docs/roadmap/plans/mvp6-supplier-spec-split-01` | 7 | 0.01 |
+| `docs/roadmap/plans/mvp6-supplychain-ci-row-01` | 6 | 0.02 |
+| `docs/roadmap/plans/mvp6-supplychain-ci-row-02` | 1 | 0.01 |
+| `docs/roadmap/plans/mvp6-supplychain-l10n-consistency-01` | 4 | 0.06 |
+| `docs/roadmap/plans/mvp6-text-patch-q83-01` | 9 | 0.04 |
+| `docs/roadmap/plans/mvp6-text-patch-q90-01` | 6 | 0.02 |
+| `docs/roadmap/plans/mvp6-ui-pack-patch-190-192-01` | 5 | 0.07 |
+| `docs/roadmap/plans/mvp6-ui-pack-revisions-01` | 7 | 0.04 |
+| `docs/roadmap/plans/mvp6-ui-pack-wave-q322-01` | 5 | 0.02 |
+| `docs/roadmap/plans/post-closure-program-2026-10-12.md` | 1 | 0.02 |
+| `docs/roadmap/plans/pvg-mod0230-gmg-input-annex-2026-08-25.md` | 1 | 0.02 |
+| `docs/roadmap/plans/pvg-operational-approval-packet-draft-2026-08-24.md` | 1 | 0.01 |
+| `docs/roadmap/plans/scm-planning-analysis-01` | 14 | 0.52 |
+| `plans/forward-roadmap.md` | 1 | 0.01 |
+| `plans/foundation-roadmap-2026-06-24.md` | 1 | 0.00 |
+| `plans/tenant-audit-findings.md` | 1 | 0.01 |
 
 </details>
