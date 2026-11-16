@@ -40,7 +40,7 @@ Sığ klon (`--depth`) arşivi göremez; önce `git fetch --unshallow`.
 |---|---|---|---|---|---|
 | 1 | `docs/records/audits` ham kanıt (log, ekran görüntüsü, test çıktısı, json/tsv dökümü, arşiv) | 4786 | 250.8 | 852 | bu dalda |
 | 4 | `logs/`, `.logs/`, kök artıkları, eski Blueprint sürümleri | 100 | 13.0 | 0 | bu dalda |
-| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | planlı |
+| 2 | `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}` | 1379 | 10.0 | 200 | bu dalda |
 | 3 | `docs/roadmap/plans` + kök `plans/` | 809 | 5.6 | 155 | planlı |
 | 6 | kimsenin çağırmadığı betikler, `.antigravity` eski betikleri, küçük kalanlar | 47 | 0.3 | 22 | planlı |
 | 5 | son 30 günde dokunulmayan iş paketleri + kapanmış iş listesi | 297 | 3.9 | — | planlı; açık PR #425 birleşince |
@@ -638,5 +638,427 @@ Betik ancak klasörü yukarıdaki `restore` komutuyla geri getirildikten sonra k
 | `logs/platform-manual.out.log` | 1 | 0.02 |
 | `logs/watch-suite-launcher.err.log` | 1 | 0.00 |
 | `logs/watch-suite-launcher.log` | 1 | 0.28 |
+
+</details>
+
+## Parti 2 — `docs/records` kalan ham olmayan dosyalar (betik, yama, sha256 listesi …) + `records/{analysis,tests}`
+
+**Neden:** parti 1'den sonra kayıt klasörlerinde kalan ham olmayan dosyalar ve `records/{analysis,tests}` belgeleri; hiçbir CI adımı, test ya da araç çalışma ağacından okumuyor. Kabul aracının okuduğu koşu klasörleri (`run-record-v1.json`), mühürlü yollar ve araç şablonlarının gösterdiği dosyalar bu partide yok.
+
+<details>
+<summary>Yerinde bırakılanlar (200 dosya, 48 klasör) ve nedeni</summary>
+
+| Klasör / dosya | Dosya | Neden (örnek) |
+|---|---|---|
+| `docs/records/acceptance-reports/2026-11` | 4 | anan: execution/delivery/platform-delivery-board.md |
+| `docs/records/acceptance-reports` | 1 | anan: execution/delivery/platform-delivery-board.md |
+| `docs/records/analysis/roles` | 1 | anan: execution/domains/master-data-management/module-packs/MOD-0290-FU06-product-master-read-permission-declaration.md |
+| `docs/records/analysis/test-speed` | 12 | birleşmemiş çalışma dalı `claude/nervous-bose-3cd45e` ekliyor; birleşirse geri doğardı |
+| `docs/records/audits/2026-08` | 2 | anan: docs/analysis/contracts/crm-account-lookup.md; docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md |
+| `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1` | 5 | anan: docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py |
+| `docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0` | 3 | anan: docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py, docs/records/audits/2026-09/mod-0184-consumer-technical-eviden |
+| `docs/records/audits/2026-09/mod-0184-dev-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-ct-review-01` | 1 | anan: docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/VERIFY.py |
+| `docs/records/audits/2026-09/mvp6-carrier-ui-ver-01` | 10 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md |
+| `docs/records/audits/2026-09/mvp6-combined-final-release-pack-01` | 1 | anan: execution/domains/supply-chain-execution/work-packs/WP-0177-FU01-AC17-skip-removal.md |
+| `docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01` | 3 | anan: docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py, docs/records/audits/2026-09/mvp6-loads-root-amendment-independ |
+| `docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-02` | 4 | anan: docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py, docs/records/audits/2026-09/mvp6-loads-root-amendment-release- |
+| `docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01` | 3 | anan: docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py |
+| `docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01` | 2 | anan: docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py |
+| `docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01` | 1 | anan: yanındaki betik okuyor (alt ajan kontrolü, 16 Kasım) |
+| `docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01` | 47 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md |
+| `docs/records/audits/2026-09/mvp6-mod0192-http-process-dev-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md, execution/domains/supply-chain-execution/module-packs/MOD-0192-ca |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01` | 1 | anan: yanındaki betik okuyor (alt ajan kontrolü, 16 Kasım) |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-candidate-01` | 3 | anan: yanındaki betik okuyor (alt ajan kontrolü, 16 Kasım) |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01` | 4 | anan: docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/build_final.py, docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack |
+| `docs/records/audits/2026-09/mvp6-shipment-a12-runtime-independent-ver-02` | 8 | anan: yanındaki betik okuyor (alt ajan kontrolü, 16 Kasım) |
+| `docs/records/audits/2026-09/mvp6-shipment-integration-rework-exec-01` | 1 | anan: docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/VERIFY.py |
+| `docs/records/audits/2026-09/mvp6-shipment-integration-rework-independent-ver-01` | 1 | anan: docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/VERIFY.py |
+| `docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01` | 1 | anan: scripts/evidence-kit/k10_db_snapshot.js |
+| `docs/records/audits/2026-09/mvp6-shipment-root-r2-ct-disposition-01` | 1 | anan: docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/VERIFY.py |
+| `docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01` | 1 | anan: docs/roadmap/plans/mvp6-effort-shipment-ct-update-07/VERIFY.py |
+| `docs/records/audits/2026-10/mg-s28-inspection-01` | 1 | anan: execution/domains/management-governance/work-packs/meetings/prompts/MG-MEET-S28-P3-v0.1-taslak.md |
+| `docs/records/audits/2026-10/mod-0173-fu01-ui1-evidence` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md |
+| `docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence` | 8 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md |
+| `docs/records/audits/2026-10/mod-0173-fu02-loc1-evidence` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU02-location-storage-master.md |
+| `docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence` | 4 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU02-location-storage-master.md |
+| `docs/records/audits/2026-10/mod-0173-k1-evidence` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-inventory-ledger-valuation.md |
+| `docs/records/audits/2026-10/mod-0173-le1-evidence` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-inventory-ledger-valuation.md |
+| `docs/records/audits/2026-10/mod-0173-pm0-evidence` | 5 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md |
+| `docs/records/audits/2026-10/mod-0286-fu01-01` | 2 | anan: execution/domains/platform-shared-services/module-packs/MOD-0286-FU01-page-js-reference-mapping.md |
+| `docs/records/audits/2026-10/mod-0286-uic-baseline-01` | 8 | anan: docs/reference/modules/platform/ui-design-system-page-pattern-governance/compliance-checklist.md, docs/reference/modules/platform/ui-design-system-page-pa |
+| `docs/records/audits/2026-10/mod-0286-uic-ci-01` | 10 | anan: execution/domains/platform-shared-services/work-packs/prompts/PSS-UI-P1-03-v1.1.md, execution/domains/platform-shared-services/work-packs/prompts/PSS-UI-P |
+| `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01` | 2 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0193-bom-routings.md, execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-invento |
+| `docs/records/audits/2026-10/mvp6-g7-grant-removal-01` | 1 | anan: docs/guides/operations/auth-baseline-grant-retraction-runbook.md |
+| `docs/records/audits/2026-10/mvp6-golden-flows-http-01` | 1 | anan: services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/CarrierContractErrorMessageTests.cs |
+| `docs/records/audits/2026-10/mvp6-q281-demand-seam-01` | 1 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md, execution/domains/supply-chain-execution/module-packs/MOD-0192-ca |
+| `docs/records/audits/2026-10/mvp6-q366-scope-chain-registration-01` | 14 | anan: execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md |
+| `docs/records/audits/2026-10/mvp6-q380-contract-repin-01` | 3 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md, execution/domains/supply-chain-execution/module-packs/MOD-0187-claims |
+| `docs/records/audits/2026-10/mvp6-q450-dcp009-status-01` | 2 | anan: execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md |
+| `docs/records/audits/2026-10/mvp6-r2-returns-ui-01` | 4 | anan: execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md |
+| `docs/records/audits/2026-10/mvp6-sandop-capacity-conformance-02` | 3 | anan: services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRequestShapeTests.cs |
+| `docs/records/releases` | 2 | anan: .antigravity/agents/documentation-writer.md; .antigravity/rules/docs-organization.md |
+
+</details>
+
+<details>
+<summary>Kalkan dosyalar (354 satır, 1379 dosya, 10.0 MiB)</summary>
+
+| Klasör / dosya | Kalkan dosya | MiB |
+|---|---|---|
+| `docs/records/analysis/crm-migration` | 3 | 0.06 |
+| `docs/records/analysis/mod0188-acceptance` | 1 | 0.01 |
+| `docs/records/analysis/platform-modules` | 10 | 0.06 |
+| `docs/records/analysis/pv-migration` | 12 | 0.07 |
+| `docs/records/audits/2026-08/mod-0048-crm-consent-campaign-knowledge-reference-set-authoring-template.json` | 1 | 0.05 |
+| `docs/records/audits/2026-08/mod-0048-publish-consent-required-reference-sets.operator.js` | 1 | 0.01 |
+| `docs/records/audits/2026-09/mod-0184-consumer-technical-evidence` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mod-0184-dev-03` | 2 | 2.26 |
+| `docs/records/audits/2026-09/mod-0187-prep-02` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-approved-candidates-2026-09-17` | 2 | 0.05 |
+| `docs/records/audits/2026-09/mvp6-backlog-entries-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-base-stack-v1` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-base-stack-v2` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-bc-integration-successor-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-bc-successor-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-bc-successor-exec-02` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-bc-successor-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-browser-evidence-environment-recovery-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-candidate-reconcile-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-final-release-prep-01` | 5 | 0.09 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-final-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01` | 7 | 0.10 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01` | 3 | 0.07 |
+| `docs/records/audits/2026-09/mvp6-capacity-duplicate-publication-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-guard-single-activation-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-publication-preflight-20260923` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-ui-draft-01` | 36 | 0.34 |
+| `docs/records/audits/2026-09/mvp6-capacity-ui-draft-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-capacity-ui-draft-03` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-implement-01` | 3 | 0.46 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01` | 5 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-01` | 2 | 0.05 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-dev-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01` | 4 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-token-findings-close-01` | 2 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-dev-01` | 2 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-browser-evidence-01` | 5 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-numericdate-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-close-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-successor-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-ver-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01` | 10 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-candidate-reconstruct-r2` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-pack-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-r2-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-r2-stateful-rework-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-stateful-independent-ver-02` | 2 | 0.05 |
+| `docs/records/audits/2026-09/mvp6-claims-ui-draft-01` | 26 | 0.26 |
+| `docs/records/audits/2026-09/mvp6-claims-ui-draft-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-ui-draft-03` | 37 | 0.13 |
+| `docs/records/audits/2026-09/mvp6-claims-ui-draft-04` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-claims-v4-integration-target-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-combined-candidate-ver-01` | 3 | 0.05 |
+| `docs/records/audits/2026-09/mvp6-combined-final-release-pack-01` | 12 | 0.13 |
+| `docs/records/audits/2026-09/mvp6-combined-final-release-ver-01` | 3 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-consumer-isolation-map-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-consumer-packages-exact-recovery-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-evidence-kit-install-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-evidence-kit-v1-1-independent-review-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-evidence-kit-v1-2-recheck-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-final-publication-execution-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-guard-complete-disposition-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-guard-payload-path-disposition-r2` | 8 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-integration-baseline-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-loads-publication-guard-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-loads-r2-publication-2026-09-18` | 2 | 0.06 |
+| `docs/records/audits/2026-09/mvp6-loads-root-acquisition-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01` | 4 | 0.03 |
+| `docs/records/audits/2026-09/mvp6-loads-uptake-dev-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-loads-uptake-draft-01` | 13 | 0.06 |
+| `docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0185-evidence-recovery-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0185-r2-candidate-handoff` | 1 | 0.06 |
+| `docs/records/audits/2026-09/mvp6-mod0186-http-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0186-http-composition-01` | 4 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0186-http-composition-apply-01` | 3 | 0.07 |
+| `docs/records/audits/2026-09/mvp6-mod0186-pack-activate-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0186-patch-disposition-02` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0186-r01-rework-01` | 53 | 0.07 |
+| `docs/records/audits/2026-09/mvp6-mod0186-wp-acceptance-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-auth-05` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-auth05-independent-ver-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0187-ct-accept-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-e4-persistence-01` | 5 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-mod0187-e4-policy-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-e4-rework-scope-01` | 14 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-mod0187-http-composition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-malformed-map-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0187-normal-baseline-integration-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-normal-runtime-ver-01` | 10 | 0.06 |
+| `docs/records/audits/2026-09/mvp6-mod0187-r14-apply-01` | 23 | 0.16 |
+| `docs/records/audits/2026-09/mvp6-mod0187-r21-apply-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0187-r22-r25-evidence-02` | 7 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-mod0187-r22-r25-independent-ver-01` | 18 | 0.07 |
+| `docs/records/audits/2026-09/mvp6-mod0190-401-disposition-ct-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-core-dev-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0190-core-rever-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-core-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0190-core-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-ct-acceptance-review-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-f01-f04-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-dev-01-r1` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-dev-01` | 7 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-dev-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-di-gap-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-http-integration-prep-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-isolated-dev-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-mod0192-isolated-dispatch-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-test-oracle-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-core-dev-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0192-core-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-duplicate-name-uptake-prep-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rever-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rework-01` | 4 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-mod0192-hosted-acceptance-consolidate-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01` | 5 | 0.03 |
+| `docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01` | 4 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-mod0192-http-process-dev-01` | 7 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-mod0192-http-process-independent-ver-01` | 9 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-mod0192-production-rework-pack-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0192-restart-harness-rever-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-restart-harness-rework-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0192-x01-x07-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-x01-x07-production-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-mod0192-x01-x07-ver-handoff-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01` | 4 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-q27-q28-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-q27-q28-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-q46-q47-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-q53-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-apply-q53-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-labels-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-pack-labels-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q101-control-audit-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q101b-control-audit-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q103-accepted-base-01` | 6 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-q114-claims-pack-patch-01` | 3 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q117-test-guard-fixes-01` | 2 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-q119-ver-q117-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q121-mongo-guard-fixes-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-q121b-build-test-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q121c-supplychain-rerun-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q122-ver-claims-v3-01` | 35 | 0.27 |
+| `docs/records/audits/2026-09/mvp6-q126-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q128-ver-q126-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q129-ver-claims-v4-01` | 27 | 0.20 |
+| `docs/records/audits/2026-09/mvp6-q131a-port-uri-overlay-01` | 2 | 0.27 |
+| `docs/records/audits/2026-09/mvp6-q139-readiness-process-audit-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q141-sop-v25-patch-01` | 2 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-q142-ver-q141-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q144-ui-checklist-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-q145-ver-q144-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q152-uc01-lock-investigation-01` | 11 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-q154-q131-mac-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q162-sop-v25-r2-01` | 3 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-q163-ver-q162-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q164-ui-checklist-02` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-q165-ver-q164-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q167-sop-v25-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q168-ver-q167-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q170-ui-checklist-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q171-ver-q170-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q172-ver-sop-v2-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q173-ver-capacity-v2-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q174-ver-returns-v2-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q176-pack-layout-patch-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q177-ver-q176-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q179-pack-layout-apply-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q180-ver-q179-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q184-ver-draft-03` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-q24b-kit-validation-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-q64b-claims-build-01` | 49 | 0.16 |
+| `docs/records/audits/2026-09/mvp6-q64d-claims-runtime-01` | 23 | 0.17 |
+| `docs/records/audits/2026-09/mvp6-q65b-returns-mac-01` | 35 | 0.17 |
+| `docs/records/audits/2026-09/mvp6-q84b-sop-mac-01` | 49 | 0.19 |
+| `docs/records/audits/2026-09/mvp6-q95-ver-q93-apply` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-r2-combined-release-candidate-01` | 3 | 0.23 |
+| `docs/records/audits/2026-09/mvp6-r2-composition-ins-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-r2-release-handoff-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-readiness-remeasurement-20260924` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-returns-candidate-reconstruct-r2` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-returns-claims-dispatch-decision-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-returns-r2-independent-ver-01` | 2 | 0.04 |
+| `docs/records/audits/2026-09/mvp6-returns-ui-draft-01` | 25 | 0.29 |
+| `docs/records/audits/2026-09/mvp6-returns-ui-draft-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-exact-artifact-recovery-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-guard-fixture-rework-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-producer-dev-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-producer-ver-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-producer-ver-02` | 3 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-restart-evidence-dev-03` | 3 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-root-r2-runtime-evidence-dev-02` | 3 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01` | 2 | 0.02 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01` | 3 | 0.03 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-candidate-reconcile-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-final-authority-close-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-final-pack-01` | 4 | 0.09 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01` | 4 | 0.11 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01` | 6 | 0.03 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-publication-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-publication-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-capacity-r2-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-oas31-validator-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01` | 3 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-a08-a09-a12-ct-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-a12-runtime-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-a12-runtime-independent-ver-02` | 22 | 0.05 |
+| `docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-a12-ver02-independent-review-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-acceptance-reconcile-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-browser-real-auth-ct-handoff-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-carrier-predecessor-pin-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-integration-rework-exec-01` | 9 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-integration-rework-independent-ver-01` | 18 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01` | 9 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-iso-final-ver-lnx-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-line-accessibility-ct-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-line-accessibility-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-line-accessibility-rework-01` | 4 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01` | 4 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-port-disposition-01` | 3 | 0.11 |
+| `docs/records/audits/2026-09/mvp6-shipment-real-auth-browser-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-real-auth-http-recovery-01` | 12 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-remaining-acceptance-disposition-01` | 9 | 0.06 |
+| `docs/records/audits/2026-09/mvp6-shipment-root-binding-approval-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-root-r2-ct-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-exec-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-independent-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01` | 10 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-shared-ui-ct-disposition-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01` | 5 | 0.03 |
+| `docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-shared-ui-independent-ver-01` | 2 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-independent-ver-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-rework-01` | 2 | 0.01 |
+| `docs/records/audits/2026-09/mvp6-shipment-ui-policy-error-ver-01` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-shipment-ui-presentation-ver-01` | 4 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sop-ui-draft-01` | 36 | 0.28 |
+| `docs/records/audits/2026-09/mvp6-sop-ui-draft-02` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-sop-ui-draft-03` | 1 | 0.00 |
+| `docs/records/audits/2026-09/mvp6-three-scope-application-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/ct-discipline-and-readiness-audit-2026-10-17-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/ct-discipline-self-audit-2026-10-12-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/ct-mvp6-codex-handoff-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/ct-rule-collision-rep001-k4-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mod-0140-dual-implementation-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mod-0173-int1-evidence` | 2 | 0.02 |
+| `docs/records/audits/2026-10/mod-0173-int2-evidence` | 2 | 0.02 |
+| `docs/records/audits/2026-10/mod-0220-dual-implementation-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mod-0286-fu01-01` | 9 | 0.04 |
+| `docs/records/audits/2026-10/mvp6-0192-row202-evidence-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-c03-gateway-route-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-c13-q358-retraction-01` | 4 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-ct-self-audit-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-gateway-idempotency-replay-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-main-merge-completion-gate-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q185-sop-mac-retest-01` | 26 | 0.10 |
+| `docs/records/audits/2026-10/mvp6-q189-ver-returns-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q198-backup-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q201-integration-dryrun-01` | 2 | 0.02 |
+| `docs/records/audits/2026-10/mvp6-q202a-integration-write-01` | 2 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q205-testenv-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q208-suite-baseline-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q210-ver-0186-01` | 2 | 0.04 |
+| `docs/records/audits/2026-10/mvp6-q211-ver-0187-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q212-ver-0190-01` | 2 | 0.04 |
+| `docs/records/audits/2026-10/mvp6-q213-ver-0192-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q214-failpoint-isolation-01` | 4 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q216-baseline-variance-01` | 5 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q217-startup-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q218-contract-pin-01` | 4 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q220-sandop-registration-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q221-q209-prework-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q230-commit-plan-01` | 3 | 0.03 |
+| `docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q232-unbreak-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q235-secret-ruling-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q236-ct-verify-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q236-unbreak-v2-01` | 42 | 0.02 |
+| `docs/records/audits/2026-10/mvp6-q244-disk-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q245-ver-0183-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q246r2-worktree-rescue-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q266-testenv-01` | 3 | 0.07 |
+| `docs/records/audits/2026-10/mvp6-q313-intake-pii-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q332-mod0183-conformance-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q335-suite-baseline-01` | 3 | 0.08 |
+| `docs/records/audits/2026-10/mvp6-q339-module-registration-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q339r2-module-registration-01` | 8 | 0.08 |
+| `docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01` | 5 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q358-permission-seed-01` | 6 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q362-runtime-closure-01` | 7 | 0.02 |
+| `docs/records/audits/2026-10/mvp6-q371-ux-l10n-close-01` | 2 | 0.12 |
+| `docs/records/audits/2026-10/mvp6-q372-observability-close-01` | 6 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q374-datetime-utc-local-01` | 5 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q381-uncomposed-routes-404-01` | 2 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q382-date-tests-01` | 8 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q394-web-cross-cutting-01` | 2 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q403-intent-definition-01` | 2 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q419-shipment-intent-root-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01` | 3 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q425-vitest-baseline-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q435-merge-origin-main-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q439-supplier-gap-correction-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q446-gate-18-0-four-modules-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q446-row13-recheck-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q447-return-403-test-01` | 5 | 0.01 |
+| `docs/records/audits/2026-10/mvp6-q448-flaky-p95-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q449-scope-intent-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q453-observability-four-01` | 4 | 0.02 |
+| `docs/records/audits/2026-10/mvp6-q454-no-shell-four-01` | 2 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q484-capacity-branch-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-q88b-capacity-mac-01` | 33 | 0.15 |
+| `docs/records/audits/2026-10/mvp6-r03-r07-runtime-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-r04-pii-logs-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-r1-module-recipe-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-r3-recipe-amend-guard-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-r4a-carriers-ui-01` | 3 | 0.08 |
+| `docs/records/audits/2026-10/mvp6-r4b-loads-ui-01` | 3 | 0.03 |
+| `docs/records/audits/2026-10/mvp6-r4c-claims-ui-01` | 4 | 0.08 |
+| `docs/records/audits/2026-10/mvp6-returns-guard-01` | 2 | 0.02 |
+| `docs/records/audits/2026-10/mvp6-returns-ui-draft-03` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-sandop-capacity-conformance-01` | 3 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-gateway-contract-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-readiness-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-row1-loads-config-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-row13-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-row13-02-returns-claims` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-row5-returns-01` | 1 | 0.00 |
+| `docs/records/audits/2026-10/mvp6-stage-r-stack-up-01` | 1 | 0.00 |
+| `docs/records/audits/2026-11/mod-0183-dl4-ver-01` | 1 | 0.01 |
+| `docs/records/audits/2026-11/mod-0186-dl3-dl4-ver-01` | 1 | 0.01 |
+| `docs/records/tests/diten-pharma-scenario.md` | 1 | 0.02 |
+| `docs/records/tests/governance-users` | 1 | 0.02 |
+| `docs/records/tests/task-center` | 1 | 0.00 |
 
 </details>
