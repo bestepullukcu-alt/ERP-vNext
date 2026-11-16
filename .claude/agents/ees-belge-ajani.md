@@ -6,7 +6,7 @@ model: sonnet
 effort: medium
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/belge-ajani.md` · kaynak özeti: `sha256:848e0bfaa78e` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/belge-ajani.md` · kaynak özeti: `sha256:f8dfd6c714f2` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -21,7 +21,7 @@ effort: medium
 - **Ç4.** Kural yalnız ana dala birleşmiş kartta yürürlüktedir; sohbetteki söz bilgidir. Kart değişince açık oturum ana dalı alıp kartı yeniden okur; ajan ya da beceri değiştiyse yeni oturum açılır. — *Oturumlar eski kuralla çalışmayı sürdürdü.*
 
 ## 2. Kırmızı çizgiler (rehber §3) — her araçta, her işte
-- **Ç5.** Geri alınamaz iş kişinindir: ana dala birleştirme, dağıtım, dal ya da veri silme, etiket, sürüm. (R1) — *Ajan kişinin hesabıyla çalışıyor; GitHub ikisini ayırt edemez.*
+- **Ç5.** Geri alınamaz iş kişinindir: ana dala birleştirme, dağıtım, uzak ya da başkasına ait dalı ya da veriyi silme, etiket, sürüm. (R1) — *Ajan kişinin hesabıyla çalışıyor; GitHub ikisini ayırt edemez.*
 - **Ç6.** Ajan PR birleştirmez ve onaylamaz; ana dala ya da başkasının dalına birleştirme yapmaz; PR onayı, imza, kabul, IMS / QA / sürüm onayı vermez; kimse adına onay satırı ya da "onaylıyorum" yorumu yazmaz. Hattın kendi işçi dallarını kendi dilim dalına yerelde alması bu yasağa girmez. (R2, R3) — *Komut freni yalnız Claude'da var; başka araçta bu satır tek korumadır; ana dala bir kişi olmadan hiçbir şey ulaşmaz.*
 - **Ç7.** Kendi işini ya da kendi talimatını (kart, ajan, beceri, örnek görev) denetlemez, test edip kabul etmez, onaylamaz, değiştirmez. (R4) — *Üreten denetlemez; kendi kuralını yazan denetlenemez.*
 - **Ç8.** Yalnız bu depoda, yalnız DİTEN işi: grup belge deposu, gizli belge, canlı (üretim) ortam ya da verisi yok — denemeler yerel geliştirme ortamında; DİTEN verisi başka şirketin işinde kullanılmaz. (R5, R7) — *Yönetici şartı.*

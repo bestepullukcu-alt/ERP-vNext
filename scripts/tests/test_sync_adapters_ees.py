@@ -94,6 +94,38 @@ class PilotBoundary(unittest.TestCase):
             self.item(d, "ees-kule")["targets"][0]["frontmatter"]["disable-model-invocation"] = False
         self.refused(change, "disable-model-invocation")
 
+    def test_skill_rules_follow_the_target_path_not_the_kind(self):
+        # blind check 3, Y1: an .ees 'agent' item sent to a skills folder escaped both skill rules
+        self.refused(lambda d: self.item(d, "ees-isci")["targets"].append(
+            {"tool": "codex+antigravity", "format": "markdown", "path": ".agents/skills/ees-x/SKILL.md",
+             "frontmatter": {"name": "ees-isci", "description": "d"}}), "pilot boundary")
+        self.refused(lambda d: self.item(d, "ees-isci")["targets"].append(
+            {"tool": "claude-code", "format": "markdown", "path": ".claude/skills/ees-x/SKILL.md",
+             "frontmatter": {"name": "ees-x", "description": "d"}}), "disable-model-invocation")
+
+    def test_an_unknown_kind_is_refused(self):
+        self.refused(lambda d: self.item(d, "ees-isci").update(kind="helper"), "unknown kind")
+
+    def test_the_prefix_is_read_on_the_entry_name(self):
+        # Y4: '/ees-' anywhere in the path was enough
+        def change(d):
+            t = self.item(d, "ees-isci")["targets"][0]
+            t["path"] = ".claude/agents/ees-dir/isci.md"
+        self.refused(change, "prefix")
+
+    def test_codex_and_codex_antigravity_share_one_name_space(self):
+        def change(d):
+            # the old control-tower skill is generated for 'codex+antigravity'; a plain 'codex' skill of the same name clashes
+            d["items"].append({"id": "y", "kind": "skill", "source": ".antigravity/agents/integration-agent.md",
+                               "targets": [{"tool": "codex", "format": "markdown", "path": ".agents/skills/y/SKILL.md",
+                                            "frontmatter": {"name": "control-tower", "description": "d"}}]})
+        self.refused(change, "is used by")
+
+    def test_no_adapter_is_named_like_a_file_tools_load(self):
+        def change(d):
+            self.item(d, "l10n-agent")["targets"][0]["path"] = ".claude/agents/sub/CLAUDE.md"
+        self.refused(change, "load by itself")
+
     def test_a_refused_manifest_writes_nothing(self):
         import contextlib
         import io
@@ -211,6 +243,32 @@ class Features(unittest.TestCase):
             with self.assertRaises(sa.ConfigError, msg=front):
                 sa.render({"id": "x", "kind": "agent", "source": "src", "compose": ["c1"]},
                           {"tool": "other", "format": "markdown", "path": "p"})
+
+    def test_a_quoted_ees_key_fails(self):
+        for front in ('"seviye": ust', "'kart': denetci", "{seviye: ust}"):
+            self.files(c1="# Kart\n", src=f"---\n{front}\n---\nGövde\n")
+            with self.assertRaises(sa.ConfigError, msg=front):
+                sa.render({"id": "x", "kind": "agent", "source": "src", "compose": ["c1"]},
+                          {"tool": "other", "format": "markdown", "path": "p"})
+
+    def test_a_source_through_a_symbolic_link_fails(self):
+        import os
+        root = Path(self.tmp.name) / "repo"
+        (root / ".ees").mkdir(parents=True)
+        (root / ".ees" / "kart.md").write_text("# Kart\n", encoding="utf-8")
+        (root / "old").mkdir()
+        try:
+            os.symlink(root / ".ees" / "kart.md", root / "old" / "sneaky.md")
+        except (OSError, NotImplementedError):
+            self.skipTest("symbolic links are not available here")
+        real_root, sa.ROOT = sa.ROOT, root
+        sa.rel = lambda p: root.joinpath(*p.split("/"))
+        try:
+            with self.assertRaises(sa.ConfigError):
+                sa.read_text("old/sneaky.md")
+            self.assertEqual(sa.read_text(".ees/kart.md"), "# Kart\n")
+        finally:
+            sa.ROOT = real_root
 
     def test_an_unmapped_tool_target_may_not_write_its_own_model(self):
         # Codex: Codex has no mapping, so model = "test-model" in fields went into the TOML unchecked

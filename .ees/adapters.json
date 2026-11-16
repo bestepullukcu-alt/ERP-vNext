@@ -617,7 +617,7 @@
           "path": ".claude/agents/ees-is-analisti.md",
           "frontmatter": {
             "name": "ees-is-analisti",
-            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ.",
+            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın kulesi ya da pilot hattı başlatır (/ees-kule, /ees-hat becerileri); eski kule ve hatlar KULLANMAZ.",
             "tools": "Read, Grep, Glob, Bash, Edit, Write"
           }
         },
@@ -627,7 +627,7 @@
           "path": ".codex/agents/ees-is-analisti.toml",
           "fields": {
             "name": "ees-is-analisti",
-            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın pilot hattı başlatır (/ees-hat becerisi); eski kule ve hatlar KULLANMAZ."
+            "description": "EES iş analisti (Step Operator): iş süreci ve MVP planı taslağı çıkarır; karar kişinindir. YALNIZ yeni akışın kulesi ya da pilot hattı başlatır (/ees-kule, /ees-hat becerileri); eski kule ve hatlar KULLANMAZ."
           }
         }
       ]

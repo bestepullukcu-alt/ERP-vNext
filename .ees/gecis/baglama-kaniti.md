@@ -125,3 +125,35 @@ hesap, asıl + yedek onaylayıcı → K14, H5; B-5 `business_process:` / `plan_r
 onları başka parça yazıyor).
 
 Bozma betiği bu turda 18 durum koştu (S1–S18); hepsi kırmızı, hepsi geri alındı, son durum `OK 33`.
+
+## 9. Kör kontrol 3 (Opus, yüksek efor; Codex'in dokuz senaryosu + "paket yok, yeni hat" yürüyüşü) — tek düzeltme
+
+Sonuç: 9 Codex bulgusunun 7'si kapandı; 3 ve 7 kök kural 8 karşısında kısmen açıktı. Yeni 14 bulgu (7 önemli):
+
+| No | Bulgu | Ne yapıldı |
+|---|---|---|
+| Y1 | Beceri kuralları hedef yoluna değil `kind`'a bakıyordu | `/skills/` içeren her `.ees` hedefi modele kapalı olmalı, `.agents/skills/` her türde yasak; `kind` izin listesi; S19 + 2 test |
+| Y2 | Sembolik bağla kart eski kaynak adıyla taşınabiliyordu | `read_text` yolun hiçbir parçasında sembolik bağ kabul etmez; test |
+| Y3 | Tırnaklı anahtar sessiz geçiyordu | hata; S20 + test |
+| Y4 | Önek yolun herhangi bir yerinde; `codex` ↔ `codex+antigravity` ayrı ad alanı; iç içe `CLAUDE.md` | önek giriş adında; araç ailesi tek ad alanı; hiçbir kopya `CLAUDE.md`/`AGENTS.md` adını taşıyamaz; 3 test |
+| Y5 | İş analisti tanımı kulenin başlatmasına izin vermiyordu | açıklama: kule ya da pilot hat |
+| Y6 | "Paketi onaylıyorum"dan dilim 1'e geçiş tanımsız | `ees-hat` gövdesinde dört adım: onaylayıcı paket PR'ını onaylar ve birleştirir; durum alanını ajan değiştirmez; eski onay defteri pilotta yok; dilim 1 dalı paket commit'inden |
+| Y7 | Onaylayıcı PR'ı açan hesap olamaz | H25'e yazıldı; o durumda yedek onaylayıcı |
+| Y8 | Onay yorumunun yazarı doğrulanamıyordu | açılış brifinde onaylayıcı hesapları; yorum yazarı eşlenir (H5, `ees-hat`) |
+| Y9 | Başlangıç cümlesi yerel birleştirmeyi anmıyordu | cümleye eklendi |
+| Y10 | Başlangıç onayının ara dönem yeri ve durum sayfasının yeri yoktu | PR açıklaması "Ajan çalıştırması"; durum sayfası bağlantısını kişi verir |
+| Y11 | MVP planının PR yolu yoktu | süreç sayfası ilk paket PR'ında; plan ayrı PR, kişinin sözüyle |
+| Y12 | H11 yerel dal silme ↔ Ç5 | Ç5 "uzak ya da başkasına ait dal"; H11 kendi yerel işçi dalları |
+| Y13 | Dokunuş sayımı iki yerde farklıydı | H2 ve çalıştırma kaydı aynı tanım: dilim başına; cümle ve paket onayı ilk dilime |
+| Y14 | Cümlenin işçi brifine konması "aktarma" gibi okunuyordu | beceri gövdesi: aynı hat içinde aynı onayın kullanımı, başka sohbete taşınmaz |
+
+**Yönetime açık kalanlar (karar ya da başka parça):**
+1. Paketin `status:` alanının onaydan sonra kimce değiştirileceği — paket standardını yazan parça tanımlamalı; o güne dek kişi
+   onay PR'ında değiştirir. Kök `AGENTS.md` kural 7 "yalnız approved/ready-for-dev paket" diyor.
+2. Ajanlar kişinin GitHub hesabıyla PR açıyor; o kişi kendi PR'ını onaylayamaz. Kişi başı tek hesap (B-4) ile pilotun her PR'ını
+   yedek onaylayıcı onaylamak zorunda kalır. Kalıcı çözüm yöneticinin C3 maddesi (birleştirme yetkisi olmayan GitHub App).
+3. Hat genelinde dokunuş: dilim başına ≤3 tutuyor; hattın ilk dilimi cümle + paket onayı + dilim oturuşu ile tam 3, soruya
+   pay yok. Kule ve hat cümlesi ayrı oturumlarda iki kez istenebilir.
+4. Ç1 (rehber paketin üstünde) ile kök kural 1 (paket en üstte) farklı; yön daha sıkı, zarar yok.
+
+Bozma: 20 durum (S1–S20), hepsi kırmızı, hepsi geri alındı, son durum `OK 33`.

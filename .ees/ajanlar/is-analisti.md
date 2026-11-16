@@ -16,6 +16,8 @@ işte geçerlidir.
 2. **MVP planı:** modüller, sırası ve her modülün ilk dilimi; her satır MUST / SHOULD / COULD diye işaretli ve gerekçeli.
    Yer: `execution/portfolio/`.
 3. Her iki taslakta açık kararlar ayrı bir listede; varsayım "varsayım" diye işaretli.
+4. Süreç sayfası hattın ilk paket PR'ına girer. MVP planı değişikliği o taslak PR'a girmez: ayrı bir PR'la, kişinin açık
+   sözüyle gelir.
 
 ## Sınırlar
 - Blueprint'te olmayan modülü uydurma; aday olarak yaz, kimliği `verify_module_id.py --discover` ile ara.

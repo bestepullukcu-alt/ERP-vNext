@@ -94,7 +94,10 @@ Rules this script enforces (İ5-A pilot):
   an .ees/ item generated to a place every session loads or calls by itself (.claude/rules, .agents/rules, AGENTS.md,
   CLAUDE.md, an .agents/skills skill), a pilot entry point without the 'ees-' prefix in id, name and path, and a name used
   twice for one tool and kind; an EES frontmatter key (seviye, kart) is exact or an error, never silently skipped; a
-  target with a seviye source may not write any model field itself, mapped tool or not.
+  target with a seviye source may not write any model field itself, mapped tool or not. Codex round 2 (blind check 3):
+  the skills rules follow the target path, not the item's kind (kind is an allow-list); a source path through a symbolic
+  link is refused; a quoted EES key is an error; the prefix is read on the entry's own file or folder name; one name per
+  tool family ('codex+antigravity' counts as codex too); no adapter may be named CLAUDE.md or AGENTS.md at any depth.
   A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
   says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
@@ -120,6 +123,7 @@ SKILL_ROOTS = [".antigravity/skills"]   # load_manifest replaces it with the man
 TIER_MAP: dict = {}                     # load_manifest replaces it with the manifest's tier_map
 # EES-BAGLAMA-01 (Codex round 1): the pilot boundary is checked by validate_manifest before anything is written.
 PILOT_PREFIX = "ees-"
+KINDS = ("core-block", "agent", "skill", "rule")
 AUTO_LOADED_PREFIXES = (".claude/rules/", ".agents/rules/")   # every session loads these by itself
 AUTO_LOADED_FILES = ("agents.md", "claude.md")                 # compared in lower case (case-insensitive file systems)
 IMPLICIT_SKILL_PREFIXES = (".agents/skills/",)                  # Codex / Antigravity may call these skills by themselves
@@ -136,6 +140,13 @@ def rel(path: str) -> Path:
 
 def read_text(path: str) -> str:
     p = rel(path)
+    # Codex round 2 (Y2): "No symlinks are used anywhere" is now enforced — a link in any part of a source path could
+    # carry an .ees card into an old source's name and past the pilot boundary
+    probe = ROOT
+    for part in path.split("/"):
+        probe = probe / part
+        if probe.is_symlink():
+            raise ConfigError(f"source path {path} goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
     if not p.is_file():
         raise ConfigError(f"source not found: {path}")
     return p.read_text(encoding="utf-8").replace("\r\n", "\n")
@@ -1077,7 +1088,7 @@ def extract_core(source: str) -> str:
 def ees_key(block: str | None, key: str, source: str) -> str | None:
     """EES-BAGLAMA-01 (Codex round 1): an EES frontmatter key is present or absent, never silently unreadable — any line
     that names the key (any case, any indent) must be exactly 'key: value' with a lower-case token, no comment or quote."""
-    lines = [l for l in (block or "").split("\n") if re.match(rf"^\s*{key}\s*:", l, re.I)]
+    lines = [l for l in (block or "").split("\n") if re.match(rf"^\s*[\"'{{]?\s*{key}\s*[\"']?\s*:", l, re.I)]
     if not lines:
         return None
     if len(lines) > 1:
@@ -1316,6 +1327,8 @@ def validate_manifest(data: dict) -> None:
             raise ConfigError(f"{MANIFEST}: target {p} is outside managed_dirs")
     names: dict = {}
     for item in data["items"]:
+        if item.get("kind") not in KINDS:
+            raise ConfigError(f"{MANIFEST}: item {item.get('id')} has unknown kind {item.get('kind')!r} (one of {', '.join(KINDS)})")
         canonical(item["source"], f"item {item.get('id')} source")
         parts = item.get("compose", [])
         if not isinstance(parts, list):
@@ -1328,28 +1341,33 @@ def validate_manifest(data: dict) -> None:
         for t in item["targets"]:
             path = canonical(t["path"], f"item {item.get('id')} target")
             low = path.lower()
-            if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low in AUTO_LOADED_FILES
-                        or (item["kind"] == "skill" and low.startswith(IMPLICIT_SKILL_PREFIXES))):
+            leaf = low.rsplit("/", 1)[-1]
+            if leaf in AUTO_LOADED_FILES:
+                raise ConfigError(f"{MANIFEST}: {path}: no adapter is generated under the name of a file tools load by itself")
+            if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low.startswith(IMPLICIT_SKILL_PREFIXES)):
                 raise ConfigError(f"{MANIFEST}: pilot boundary — {item.get('id')} (.ees/) may not be generated to {path}, "
                                   "which a session loads or calls by itself")
             name = target_name(item, t)
-            if ees and item["kind"] == "skill" and t["tool"] == "claude-code" and \
-                    (t.get("frontmatter") or {}).get("disable-model-invocation") is not True:
+            if ees and "/skills/" in low and \
+                    (not isinstance(t.get("frontmatter"), dict) or t["frontmatter"].get("disable-model-invocation") is not True):
                 raise ConfigError(f"{MANIFEST}: {path}: a pilot skill must not be called by the model itself "
                                   "(disable-model-invocation: true)")
             if ees:
                 if t.get("frontmatter") == "from-source":
                     raise ConfigError(f"{MANIFEST}: {path}: an .ees/ item writes its frontmatter in the manifest")
+                segments = path.split("/")
+                entry = segments[-2] if segments[-1] == "SKILL.md" else segments[-1]
                 if not (str(item.get("id", "")).startswith(PILOT_PREFIX) and str(name or "").startswith(PILOT_PREFIX)
-                        and f"/{PILOT_PREFIX}" in path):
+                        and entry.startswith(PILOT_PREFIX)):
                     raise ConfigError(f"{MANIFEST}: {path}: a pilot entry point needs the '{PILOT_PREFIX}' prefix in its id, "
                                       f"name ({name!r}) and path")
             if name:
-                key = (t["tool"], item["kind"], name)
-                if key in names:
-                    raise ConfigError(f"{MANIFEST}: name {name!r} ({t['tool']} {item['kind']}) is used by {names[key]} and "
-                                      f"{item.get('id')}")
-                names[key] = item.get("id")
+                for tool in t["tool"].split("+"):   # 'codex+antigravity' shares the name space of 'codex'
+                    key = (tool, item["kind"], name)
+                    if key in names and names[key] != item.get("id"):
+                        raise ConfigError(f"{MANIFEST}: name {name!r} ({tool} {item['kind']}) is used by {names[key]} and "
+                                          f"{item.get('id')}")
+                    names[key] = item.get("id")
 
 
 def load_manifest() -> dict:

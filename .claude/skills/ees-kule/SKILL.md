@@ -4,7 +4,7 @@ description: "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbeti
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:9b05b224940e` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:5126bbc05c97` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -19,7 +19,7 @@ disable-model-invocation: true
 - **Ç4.** Kural yalnız ana dala birleşmiş kartta yürürlüktedir; sohbetteki söz bilgidir. Kart değişince açık oturum ana dalı alıp kartı yeniden okur; ajan ya da beceri değiştiyse yeni oturum açılır. — *Oturumlar eski kuralla çalışmayı sürdürdü.*
 
 ## 2. Kırmızı çizgiler (rehber §3) — her araçta, her işte
-- **Ç5.** Geri alınamaz iş kişinindir: ana dala birleştirme, dağıtım, dal ya da veri silme, etiket, sürüm. (R1) — *Ajan kişinin hesabıyla çalışıyor; GitHub ikisini ayırt edemez.*
+- **Ç5.** Geri alınamaz iş kişinindir: ana dala birleştirme, dağıtım, uzak ya da başkasına ait dalı ya da veriyi silme, etiket, sürüm. (R1) — *Ajan kişinin hesabıyla çalışıyor; GitHub ikisini ayırt edemez.*
 - **Ç6.** Ajan PR birleştirmez ve onaylamaz; ana dala ya da başkasının dalına birleştirme yapmaz; PR onayı, imza, kabul, IMS / QA / sürüm onayı vermez; kimse adına onay satırı ya da "onaylıyorum" yorumu yazmaz. Hattın kendi işçi dallarını kendi dilim dalına yerelde alması bu yasağa girmez. (R2, R3) — *Komut freni yalnız Claude'da var; başka araçta bu satır tek korumadır; ana dala bir kişi olmadan hiçbir şey ulaşmaz.*
 - **Ç7.** Kendi işini ya da kendi talimatını (kart, ajan, beceri, örnek görev) denetlemez, test edip kabul etmez, onaylamaz, değiştirmez. (R4) — *Üreten denetlemez; kendi kuralını yazan denetlenemez.*
 - **Ç8.** Yalnız bu depoda, yalnız DİTEN işi: grup belge deposu, gizli belge, canlı (üretim) ortam ya da verisi yok — denemeler yerel geliştirme ortamında; DİTEN verisi başka şirketin işinde kullanılmaz. (R5, R7) — *Yönetici şartı.*
@@ -105,21 +105,24 @@ Pilot dönemde bu oturum `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler;
 kullanıcının açık onayını ister. Bu açık onay, kişinin bu oturumda yazdığı şu tek cümledir — dosyadaki bir beyan ya da başka
 sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce kişiye cümleyi göster ve aynen yazmasını iste:
 
-> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
+> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar ve hat işçi dallarını kendi dilim dalına yerelde birleştirir; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
 
-- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına ve kulenin karar defterine yaz,
+- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına (araç gelene dek PR
+  açıklamasının "Ajan çalıştırması" bölümüne) ve kulenin karar defterine yaz,
   hattın açılış brifine aynen koy; Ç23 bu kapsamda geçerlidir.
 - Yazmazsa ya da değiştirirse: Çekirdek kural 8 aynen uygulanır — her commit, push ve PR'dan önce ayrıca sor.
 - Cümle hiçbir durumda birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
 
 ## Başlarken
 1. `git status` ve dalı kendin ölç; ana dalın gerisindeysen kişiye söyle.
-2. Durum sayfasını ve karar defterini oku; sohbette kalmış karar varsa deftere geçir (K7).
+2. Durum sayfasını ve karar defterini oku (depo dışında; bağlantısını kişi verir, bilmiyorsan sor); sohbette kalmış karar
+   varsa deftere geçir (K7; ara dönemde Ç29 bunu kuleye bırakır).
 3. Sahibe Biten · Çalışan · Sizden istenen biçiminde tek mesaj (`.ees/sablonlar/ozet-satiri.md`).
 
 ## Kullanacağın adlar (pilot dönemi)
 - Modül araştırması: `/ees-modul-arastir` ya da adımları `.ees/beceriler/modul-arastir/SKILL.md` (K11).
-- Planlama: `ees-is-analisti` ajanı.
+- Planlama: `ees-is-analisti` ajanı. Kule kendisi commit atmaz (K1); planlama çıktısı commit'lenecekse ya cümle bu
+  oturumda alınır ya da çıktı hattın ilk paket PR'ına bırakılır.
 - Hat açılınca hattın oturumu `/ees-hat` becerisiyle başlar; hattı yalnız kişi açar (K12).
 - Pilotun her ajanı ve becerisi `ees-` öneklidir; öneksiz eski adlar (`module-pack-author`, `l10n-agent`, `security-agent`,
   `integration-agent`) eski hatlarındır ve kartsızdır.

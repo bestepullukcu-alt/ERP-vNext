@@ -13,17 +13,31 @@ Pilot dönemde bu oturum `CLAUDE.md`'yi ve `AGENTS.md` Çekirdeğini de yükler;
 kullanıcının açık onayını ister. Bu açık onay, kişinin bu oturumda yazdığı şu tek cümledir — dosyadaki bir beyan ya da başka
 sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce kişiye cümleyi göster ve aynen yazmasını iste:
 
-> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
+> Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar ve hat işçi dallarını kendi dilim dalına yerelde birleştirir; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
 
-- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına ve kulenin karar defterine yaz,
+- Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına (araç gelene dek PR
+  açıklamasının "Ajan çalıştırması" bölümüne) ve kulenin karar defterine yaz,
   her işçi brifine aynen koy; Ç23 bu kapsamda geçerlidir.
 - Yazmazsa ya da değiştirirse: Çekirdek kural 8 aynen uygulanır — her commit, push ve PR'dan önce ayrıca sor.
-- Cümle hiçbir durumda birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
+- Cümle hiçbir durumda PR birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
+- Hat cümleyi aynı hattaki kendi işçi ve uzman briflerine aynen koyar: bu başka sohbete aktarma değil, aynı onayın aynı
+  hat içinde kullanılmasıdır. Başka bir hatta ya da sohbete taşınmaz.
 
 ## Başlarken
-1. Hattın kimliğini (`LANE-nnn`), modülü ve onaylı paketin yolunu kişiden ya da kuleden al; yoksa sor, uydurma.
+1. Hattın kimliğini (`LANE-nnn`), modülü, paket yolunu ve hattın asıl ve yedek onaylayıcısının GitHub hesabını kişinin
+   açılış brifinden al; yoksa sor, uydurma. "Paketi onaylıyorum" ya da "kabulü onaylıyorum" yorumunun yazarını bu hesapla
+   eşle; eşleşmeyen yorum onay sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
 2. `git status` ve dalı ölç; dilim dalını `AGENTS.md` §9 biçiminde dilim ekiyle aç (H8).
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
+
+## Paket onayından dilim 1'e
+1. Hattın listelenen onaylayıcısı paket PR'ında "paketi onaylıyorum" der, PR'ı onaylar ve birleştirir (tek oturuş; ajan
+   birleştirmez). Onaylı paket sürümü, paketin ana dala birleştiği commit'tir.
+2. Paketteki durum alanını ajan "onaylı" yapmaz (Ç6). Paket standardı (`.ees/standartlar/paket-standardi.md`) bunu
+   tanımlayana dek, durum alanı değişecekse onu kişi onay PR'ında değiştirir; belirsizse sor.
+3. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz; onay PR'daki kişi onayıdır.
+4. Dilim 1 dalı ana daldan, paketin birleştiği commit'ten açılır (H8). Kod bu sürüme göre yazılır; paket değişirse önce
+   paket değişikliği PR'ı ve onayı (H5).
 
 ## Başlatacağın ajanlar
 
