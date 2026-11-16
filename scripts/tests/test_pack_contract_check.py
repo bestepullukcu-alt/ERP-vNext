@@ -343,5 +343,33 @@ def PACK_RE_OLD(path: str) -> bool:
     return bool(pcc.PACK_RE.search(path)) and (REPO / path).is_file()
 
 
+class OutputSafety(unittest.TestCase):
+    """Codex turu 2 (bulgu 5, 6): yazdırma ve okuyucu yüklemesi de "çıkış 0, dosya yazmaz" sözünü bozamaz."""
+    SCRIPT = str(Path(__file__).resolve().parents[2] / "scripts" / "pack_contract_check.py")
+
+    def run_check(self, env_extra: dict, **kw) -> subprocess.CompletedProcess:
+        env = {**os.environ, **env_extra}
+        env.pop("PYTHONDONTWRITEBYTECODE", None)
+        return subprocess.run([sys.executable, self.SCRIPT, "--all"], env=env, cwd=str(Path(self.SCRIPT).parents[1]),
+                              capture_output=True, **kw)
+
+    def test_an_ascii_terminal_still_exits_zero(self):
+        self.assertEqual(self.run_check({"PYTHONIOENCODING": "ascii"}).returncode, 0)
+
+    def test_a_closed_pipe_still_exits_zero(self):
+        p = subprocess.Popen([sys.executable, self.SCRIPT, "--all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             cwd=str(Path(self.SCRIPT).parents[1]))
+        p.stdout.close()                 # the reader goes away before the first line
+        p.stderr.read()
+        self.assertEqual(p.wait(timeout=600), 0)
+
+    def test_no_bytecode_is_written(self):
+        with tempfile.TemporaryDirectory() as cache:
+            self.assertEqual(self.run_check({"PYTHONPYCACHEPREFIX": cache}).returncode, 0)
+            written = [p for p in Path(cache).rglob("*.pyc")
+                       if any(n in p.name for n in ("pack_readiness", "acceptance_record", "pack_approval", "pcc_"))]
+            self.assertEqual(written, [])
+
+
 if __name__ == "__main__":
     unittest.main()

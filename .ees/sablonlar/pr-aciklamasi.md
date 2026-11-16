@@ -1,7 +1,9 @@
 # Şablon — PR açıklaması (ajanın açtığı PR)
 
 Kim yazar: hat (hat kartı H25). Her dilim kendi PR'ıyla gelir; aynı anda hazır iki küçük dilim tek PR'da gelebilir. Paket
-taslağı da onaydan önce taslak PR olarak açılır; onun açıklamasında yalnız "Bu modül ne işe yarar", "Neden" ve "Kabul" dolar. `<!-- araç -->` işaretli bölümleri çalıştırma kaydı gelince araç doldurur; o güne dek hat
+taslağı da onaydan önce taslak PR olarak açılır; onun açıklamasında "Bu modül ne işe yarar", "Neden", "Kabul" ve "Ajan
+çalıştırması" bölümünün "Başlangıç onayı" satırı dolar (kayıt aracı gelene dek kişinin başlangıç cümlesi orada aynen tutulur);
+`pack_contract_check.py` uyarıları "Açık noktalar"a yazılır. `<!-- araç -->` işaretli bölümleri çalıştırma kaydı gelince araç doldurur; o güne dek hat
 kayıttaki değerleri yazar. Bugünkü `.github/pull_request_template.md`'nin beş başlığı korunur; ajan işi için "Neden",
 "Hangi testler", "Açık noktalar", "Ajan çalıştırması" ve "Kabul" eklenir. Uygulamada bu metin o dosyaya taşınır (iş 6).
 Okuyan: kodu görmeden PR'ın ne olduğunu anlaması gereken geliştirici. Kişi adı yazılmaz; rol adı kullanılır.
@@ -33,7 +35,7 @@ Okuyan: kodu görmeden PR'ın ne olduğunu anlaması gereken geliştirici. Kişi
 
 ## Ajan çalıştırması  <!-- araç -->
 - Hat: LANE-nnn · işler: <n> · seviye: <üst|standart|hafif> (araç: <…>, model: <…>, efor: <…>)
-- Başlangıç onayı: kişinin başlangıç cümlesi verildi mi (evet: çalıştırma kaydında aynen / hayır: her adım ayrıca soruldu)
+- Başlangıç onayı: kişinin başlangıç cümlesi aynen ve zamanı (kayıt aracı gelene dek burada; yoksa "verilmedi — her adım ayrıca soruldu")
 - Kart sürümleri: `.ees/kartlar/<kart>.md@<commit>` sha256:<…> (her kullanılan kart için)
 - Süre · token · deneme · denetçi sonucu (UYGUN / KOŞULLU) ve tur sayısı
 - Çalıştırma kaydı: <CI yapıtı bağlantısı> sha256:<…>

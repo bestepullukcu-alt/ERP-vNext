@@ -157,3 +157,22 @@ Sonuç: 9 Codex bulgusunun 7'si kapandı; 3 ve 7 kök kural 8 karşısında kıs
 4. Ç1 (rehber paketin üstünde) ile kök kural 1 (paket en üstte) farklı; yön daha sıkı, zarar yok.
 
 Bozma: 20 durum (S1–S20), hepsi kırmızı, hepsi geri alındı, son durum `OK 33`.
+
+## 10. Codex turu 2 (UYGUN DEĞİL: 2 ENGEL, ikisi üreticide) — yapısal düzeltme
+
+Ortak neden: doğrulama liste dosyasının nasıl yazıldığına bakıyordu, üreticinin gerçekte ne yazacağına değil. Düzeltme tek
+mekanizma: `sync_adapters.py` `validate_outputs` — bütün kopyalar önce bellekte üretilir; her (gerçek hedef yolu, üretilmiş
+metin) çifti, ilk yazmadan önce (ve `--check`'te de) denetlenir; biri uymazsa hiçbir dosya yazılmaz, çıkış 2.
+
+| Bulgu | Kapandığı yer | Test (gerçek `main()`, geçici depo kopyası, yazma kipinde; ret sonrası bütün dosyalar aynı) |
+|---|---|---|
+| ENGEL 1 — hedef / üst dizin sembolik bağı | `validate_outputs` (a): hedefin ve her üst parçanın sembolik bağ olmaması; çözülmüş yolun depo ve yönetilen klasör içinde olması; yasak yerlerin çözülmüş yolda denetlenmesi | `test_a_target_that_is_a_symbolic_link…`, `test_a_parent_folder_that_is_a_symbolic_link…` |
+| ENGEL 2 — denetlenen ad ≠ yazılan ad | `validate_outputs` (b): ad üretilmiş metinden (Markdown künyesi / TOML) okunur; `validate_manifest`: biçimin kullanmadığı `fields`/`frontmatter` hata | `test_a_name_masked_by_an_unused_fields_object…`, `test_the_generated_name_is_checked_not_the_manifest`, `test_a_generated_name_used_twice…` |
+| ÖNEMLİ 3 — akış biçimli künye | `ees_key`: anahtar künyenin herhangi bir yerinde geçiyorsa tek desteklenen yazım (`anahtar: değer`, kendi satırında, bir kez) zorunlu | `test_a_flow_style_frontmatter…`, `test_a_flow_style_mapping_with_other_keys…`, `test_a_commented_field…` |
+| ÖNEMLİ 4 — beceri hedefinde model | `render`: seviye her türde hedefin model alanını yasaklar, eşleme yalnız ajanda; `validate_outputs` (c): üretilmiş model alanları seviyenin verdiğiyle birebir (beceride hiç) | `test_a_skill_target_with_its_own_model…`, `test_an_unmapped_tool_target…`, `test_a_generated_model_that_differs_from_the_seviye…` |
+| DÜŞÜK 5, 6 — `pack_contract_check` çıktı ve önbellek | güvenli çıktı kodlaması, yazdırma/boşaltma hataları yakalanır, `sys.dont_write_bytecode` | `OutputSafety` (ASCII çıkış 0, kapalı boru çıkış 0, `.pyc` yok) |
+| DÜŞÜK 7 — taslak PR şablonu | `pr-aciklamasi.md`: taslak PR'da "Başlangıç onayı" satırı dolar, cümle ara dönemde orada aynen | — |
+
+Bozma: çıktı doğrulaması çağrılmayınca 5 test, sembolik bağ denetimi kaldırılınca 2 test, üretilmiş ad denetimi
+kaldırılınca 1 test kırmızı; hepsi geri alındı. Sembolik bağ denetimi kaldırılsa bile yazma, çözülmüş yol denetiminde
+durur (iki katman). Eski 13 kopya yeni doğrulamadan geçer ve bayt bayt aynı üretilir (`test_the_old_outputs_are_generated_byte_identical`).

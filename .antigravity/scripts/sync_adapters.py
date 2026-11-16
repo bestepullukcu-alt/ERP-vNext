@@ -98,6 +98,11 @@ Rules this script enforces (İ5-A pilot):
   the skills rules follow the target path, not the item's kind (kind is an allow-list); a source path through a symbolic
   link is refused; a quoted EES key is an error; the prefix is read on the entry's own file or folder name; one name per
   tool family ('codex+antigravity' counts as codex too); no adapter may be named CLAUDE.md or AGENTS.md at any depth.
+  Codex round 2 (structural): validate_outputs checks the planned outputs themselves before the first write, in --check
+  too — the real resolved path (no symbolic link in the target or its parents, inside the repository and the managed
+  folders, forbidden places judged after resolution), the generated name (read back from the frontmatter or TOML), and
+  the generated model fields against the seviye; a target may not carry the field set its format does not use; an EES
+  frontmatter key mentioned anywhere in any form other than the one exact line is an error.
   A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
   says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
 
@@ -109,6 +114,7 @@ import argparse
 import bisect
 import hashlib
 import json
+import os
 import posixpath
 import re
 import sys
@@ -1088,16 +1094,17 @@ def extract_core(source: str) -> str:
 def ees_key(block: str | None, key: str, source: str) -> str | None:
     """EES-BAGLAMA-01 (Codex round 1): an EES frontmatter key is present or absent, never silently unreadable — any line
     that names the key (any case, any indent) must be exactly 'key: value' with a lower-case token, no comment or quote."""
-    lines = [l for l in (block or "").split("\n") if re.match(rf"^\s*[\"'{{]?\s*{key}\s*[\"']?\s*:", l, re.I)]
-    if not lines:
+    # Codex round 2 (finding 3): presence is the word anywhere in the frontmatter (flow style, quotes, any case), not a
+    # line-start pattern; the one supported form is a single line 'key: value' — everything else is an error
+    text = block or ""
+    mentions = re.findall(rf"(?<![\w-]){key}(?![\w-])", text, re.I)
+    if not mentions:
         return None
-    if len(lines) > 1:
-        raise ConfigError(f"{source}: '{key}' is written {len(lines)} times")
-    m = re.fullmatch(rf"{key}: ([a-z][a-z0-9-]*)", lines[0])
-    if not m:
-        raise ConfigError(f"{source}: unsupported '{key}' line {lines[0]!r} — write exactly '{key}: <value>' "
-                          "(no comment, quote, indent or upper case)")
-    return m.group(1)
+    exact = re.findall(rf"(?m)^{key}: ([a-z][a-z0-9-]*)$", text)
+    if len(mentions) != 1 or len(exact) != 1:
+        raise ConfigError(f"{source}: unsupported '{key}' in the frontmatter — write it once, exactly '{key}: <value>' on "
+                          "its own line (no flow style, comment, quote, indent or upper case)")
+    return exact[0]
 
 
 def source_tier(block: str | None, source: str) -> str | None:
@@ -1111,7 +1118,7 @@ def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
     """EES-BAGLAMA-01: the tool's model fields for the source's seviye; nothing when the tool has no mapping."""
     if tier is None:
         return {}
-    fields = (TIER_MAP.get(tool) or {}).get(tier) or {}
+    fields = ((TIER_MAP.get(tool) or {}).get(tier) or {}) if tool else {}
     # Codex round 1: the target may not write a model field itself, whether or not the tool has a mapping
     clash = sorted(k for k in own if k in fields or k.lower() in MODEL_KEYS)
     if clash:
@@ -1137,8 +1144,9 @@ def render(item: dict, target: dict) -> str:
     if card and (not parts or parts[-1] != f".ees/kartlar/{card}.md"):
         raise ConfigError(f"{item['source']}: says 'kart: {card}' but the manifest composes {parts or 'no card'}")
     tier = source_tier(block, item["source"])
-    if item["kind"] != "agent":
-        tier = None   # a skill runs in the session that calls it; its seviye is documentation, not a model switch
+    # Codex round 2 (finding 4): a seviye forbids the target's own model fields for every kind; only an agent gets mapped
+    # fields (a skill runs in the session that calls it)
+    tool_for_map = target["tool"] if item["kind"] == "agent" else None
     fmt = target.get("format")
 
     if item["kind"] == "agent":
@@ -1150,7 +1158,7 @@ def render(item: dict, target: dict) -> str:
 
     if fmt == "codex-agent-toml":
         fields = dict(target.get("fields") or {})
-        fields.update(tier_fields(target["tool"], tier, fields, target["path"]))
+        fields.update(tier_fields(tool_for_map, tier, fields, target["path"]))
         for key in ("name", "description"):
             if not str(fields.get(key, "")).strip():
                 raise ConfigError(f"{target['path']}: codex agent needs a non-empty '{key}'")
@@ -1170,7 +1178,7 @@ def render(item: dict, target: dict) -> str:
 
     fm = target.get("frontmatter")
     if isinstance(fm, dict):
-        fm = {**fm, **tier_fields(target["tool"], tier, fm, target["path"])}
+        fm = {**fm, **tier_fields(tool_for_map, tier, fm, target["path"])}
     elif tier is not None and fm == "from-source":
         raise ConfigError(f"{target['path']}: a source with a seviye needs a frontmatter dict in the manifest")
     if fm == "from-source":
@@ -1340,6 +1348,9 @@ def validate_manifest(data: dict) -> None:
             raise ConfigError(f"{MANIFEST}: pilot boundary — the always-loaded core block may not come from .ees/")
         for t in item["targets"]:
             path = canonical(t["path"], f"item {item.get('id')} target")
+            unused = {"markdown": "fields", "codex-agent-toml": "frontmatter"}.get(t.get("format"))
+            if unused and unused in t:
+                raise ConfigError(f"{MANIFEST}: {path}: format {t['format']} does not use '{unused}' — remove it")
             low = path.lower()
             leaf = low.rsplit("/", 1)[-1]
             if leaf in AUTO_LOADED_FILES:
@@ -1370,6 +1381,86 @@ def validate_manifest(data: dict) -> None:
                     names[key] = item.get("id")
 
 
+def generated_header(content: str, fmt: str) -> dict:
+    """Codex round 2: read back the keys the generator really wrote — the Markdown frontmatter or the TOML lines before
+    developer_instructions — so the checks see what a tool will load, not what the manifest says."""
+    keys: dict = {}
+    if fmt == "codex-agent-toml":
+        head = content.split("developer_instructions = " + "'" * 3, 1)[0]
+        for m in re.finditer(r'(?m)^([A-Za-z_][\w-]*) = "((?:[^"\\]|\\.)*)"$', head):
+            if m.group(1) in keys:
+                raise ConfigError(f"key {m.group(1)!r} written twice")
+            keys[m.group(1)] = m.group(2).replace('\\"', '"').replace("\\\\", "\\")
+        return keys
+    if not content.startswith("---\n"):
+        return keys
+    block = content[4:content.find("\n---\n", 4)]
+    for line in block.split("\n"):
+        m = re.match(r"^([A-Za-z_][\w-]*):[ \t]*(.*)$", line)
+        if not m:
+            continue
+        value = m.group(2).strip()
+        if len(value) >= 2 and value[0] == value[-1] == '"':
+            value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+        if m.group(1) in keys:
+            raise ConfigError(f"key {m.group(1)!r} written twice")
+        keys[m.group(1)] = value
+    return keys
+
+
+def validate_outputs(manifest: dict, planned: list) -> None:
+    """Codex round 2 (structural): every output is checked as it will really be written, before the first write.
+    (a) the real path: no symbolic link in the target or any parent, the resolved path inside the repository and inside a
+        managed folder, and for an .ees item the forbidden places judged on the resolved path; (b) the real name: read
+        from the generated text, 'ees-' for a pilot entry point, one name per tool family and kind; (c) the model: when
+        the source has a seviye, the generated model fields are exactly the ones the seviye gives (none for a skill)."""
+    root_real = Path(os.path.realpath(ROOT))
+    managed_real = [Path(os.path.realpath(ROOT.joinpath(*d.split("/")))) for d in manifest["managed_dirs"]]
+    names: dict = {}
+    for item, target, content in planned:
+        path = target["path"]
+        probe = ROOT
+        for part in path.split("/"):
+            probe = probe / part
+            if probe.is_symlink():
+                raise ConfigError(f"{path}: the target goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
+        real = Path(os.path.realpath(ROOT.joinpath(*path.split("/"))))
+        try:
+            real_rel = real.relative_to(root_real).as_posix()
+        except ValueError:
+            raise ConfigError(f"{path}: the target resolves outside the repository ({real})") from None
+        if not any(m in real.parents for m in managed_real):
+            raise ConfigError(f"{path}: the target resolves outside the managed folders ({real_rel})")
+        low = real_rel.lower()
+        ees = is_ees(item["source"]) or any(is_ees(p) for p in item.get("compose", []))
+        if low.rsplit("/", 1)[-1] in AUTO_LOADED_FILES:
+            raise ConfigError(f"{path}: the target resolves to a file tools load by itself ({real_rel})")
+        if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low.startswith(IMPLICIT_SKILL_PREFIXES)):
+            raise ConfigError(f"pilot boundary — {item.get('id')} (.ees/) would be written to {real_rel}, which a session "
+                              "loads or calls by itself")
+        try:
+            header = generated_header(content, target.get("format", ""))
+        except ConfigError as e:
+            raise ConfigError(f"{path}: {e}") from None
+        name = header.get("name")
+        if ees and not str(name or "").startswith(PILOT_PREFIX):
+            raise ConfigError(f"{path}: the generated name {name!r} lacks the '{PILOT_PREFIX}' prefix of a pilot entry point")
+        if name:
+            for tool in target["tool"].split("+"):
+                key = (tool, item["kind"], name)
+                if key in names and names[key] != item.get("id"):
+                    raise ConfigError(f"{path}: the generated name {name!r} ({tool} {item['kind']}) is also used by "
+                                      f"{names[key]}")
+                names[key] = item.get("id")
+        block = split_frontmatter(read_text(item["source"]))[0] if item.get("extract") != "core" else None
+        tier = source_tier(block, item["source"])
+        if tier is not None:
+            want = ((TIER_MAP.get(target["tool"]) or {}).get(tier) or {}) if item["kind"] == "agent" else {}
+            have = {k: v for k, v in header.items() if k.lower() in MODEL_KEYS}
+            if have != {k: str(v) for k, v in want.items()}:
+                raise ConfigError(f"{path}: model fields {have} differ from what seviye '{tier}' gives ({want})")
+
+
 def load_manifest() -> dict:
     try:
         data = json.loads(read_text(MANIFEST))
@@ -1397,8 +1488,10 @@ def main() -> int:
 
     try:
         manifest = load_manifest()
-        expected = {t["path"]: (" + ".join(item.get("compose", []) + [item["source"]]), render(item, t))
-                    for item in manifest["items"] for t in item["targets"]}
+        planned = [(item, t, render(item, t)) for item in manifest["items"] for t in item["targets"]]
+        validate_outputs(manifest, planned)   # Codex round 2: on the real outputs, before anything is written
+        expected = {t["path"]: (" + ".join(item.get("compose", []) + [item["source"]]), content)
+                    for item, t, content in planned}
     except (ConfigError, KeyError) as e:
         print(f"ERROR {e}")
         return 2

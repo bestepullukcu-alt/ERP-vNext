@@ -76,6 +76,7 @@ class Warn:
 
 # --------------------------------------------------------------------------------------------------- yükleyiciler
 def _load(name: str, path: Path):
+    sys.dont_write_bytecode = True       # Codex turu 2 (bulgu 6): okuyucu yüklemesi önbellek dosyası yazmaz
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     sys.modules[name] = mod
@@ -494,16 +495,39 @@ def emit(w: Warn) -> str:
     return f"uyarı {w.path}:{w.line}: {w.code} {w.message}"
 
 
+def _say(line: str) -> None:
+    """Codex turu 2 (bulgu 5): yazdırma da çıkış kodunu değiştiremez — kodlanamayan karakter yerine '?', kapalı boru sessiz."""
+    try:
+        print(line)
+    except UnicodeEncodeError:
+        enc = getattr(sys.stdout, "encoding", None) or "ascii"
+        print(line.encode(enc, errors="replace").decode(enc, errors="replace"))
+
+
 def main(argv: list[str] | None = None) -> int:
+    sys.dont_write_bytecode = True
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(errors="replace")
+        except (ValueError, OSError):
+            pass
     try:
         warns, read = run(sys.argv[1:] if argv is None else argv)
     except SystemExit:
         warns, read = [], 0
     except BaseException as e:           # kontrol hiçbir koşulda kırmızı vermez
         warns, read = [Warn("-", 1, "U0", f"kontrol tamamlanamadı: {type(e).__name__}: {str(e)[:120]}")], 0
-    for w in warns:
-        print(emit(w))
-    print(f"pack_contract_check: {read} dosya okundu, {len(warns)} uyarı (yalnız uyarı; çıkış 0)")
+    try:
+        for w in warns:
+            _say(emit(w))
+        _say(f"pack_contract_check: {read} dosya okundu, {len(warns)} uyarı (yalnız uyarı; çıkış 0)")
+        sys.stdout.flush()
+    except (BrokenPipeError, OSError, ValueError):
+        try:                              # okuyan taraf kapandı: kalan çıktıyı at, çıkış yine 0
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+        except (OSError, ValueError, AttributeError):
+            pass
     return 0
 
 
