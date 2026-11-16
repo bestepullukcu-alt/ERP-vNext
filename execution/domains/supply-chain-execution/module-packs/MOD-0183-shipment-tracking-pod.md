@@ -133,7 +133,7 @@ Phase B may write only:
   `Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (§9 Localization surface). Not granted
   here: the shared shell and layout files (§6) and `SharedResource.*.resx`, whose navigation values the integration owner adds (§22).
 - The Shipment Web tests under `frontend/Diten.Web.Tests/`, and only these: `JavaScript/Shipment*Tests.cs`,
-  `Controllers/SupplyChainShipmentsControllerTests.cs`, `Forms/ShipmentFormContractTests.cs` (r11; DL-3 already wrote here, §24.9).
+  `JavaScript/Node/shipment-*.test.mjs`, `Controllers/SupplyChainShipmentsControllerTests.cs`, `Forms/ShipmentFormContractTests.cs` (r11; DL-3 already wrote here, §24.9).
 - `docs/reference/architecture/api/**` for generated MOD-0183 API reference.
 - `docs/records/audits/**` for verification evidence.
 - This module pack and applicable backlog/seam records required by closure.
@@ -1496,8 +1496,10 @@ Two more places on the Details page:
   after a failed action, and it is labelled with the localized "Support reference" text. It is never shown in a data cell.
 - **Intake shipments** (r10 DL-5): the source cell (`detailSource`, `details.js:182`) shows the localized "Warehouse outbound"
   text and `outboundNumber` when the snapshot has one, never `SourceDocumentId` (the outbound id); the ship-to cell
-  (`detailShipTo`, `:183`) shows the snapshot's address text, never `ShipToReference` (`warehouse-outbound:<id>:ship-to`,
-  `WarehouseShipmentMapper.cs:49,51`). DL-9 writes the rule; an intake shipment exists only after DL-5, which measures it (CR-6).
+  (`detailShipTo`, `:183`) shows only the localized "Address kept in Warehouse" text, never `ShipToReference`
+  (`warehouse-outbound:<id>:ship-to`, `WarehouseShipmentMapper.cs:49,51`): an intake shipment stores no address (§25.2,
+  R10-8), so none is read or shown. The "Warehouse outbound" and "Address kept in Warehouse" texts are new
+  `ShipmentsIndex.*.resx` keys in all 7 languages, written with the DL-5 screen texts. DL-9 writes the rule; an intake shipment exists only after DL-5, which measures it (CR-6).
 
 ### 26.4 Not changed
 
@@ -1536,7 +1538,7 @@ Service tests under `services/Diten.SupplyChainService/tests/**/Shipments/**` an
 | CR-3 | Every lifecycle entry and outbox event of CR-1 carries c1; the transition receipts carry their own request correlations | Writing the request correlation into the event envelope turns it red |
 | CR-4 | Replay of create, transition and POD with the same key and body and a new correlation: original result, `idempotentReplay: true`, header = the new correlation, no second write or event; a changed body → 409 `IDEMPOTENCY_KEY_REUSED` | Restoring `ShipmentRepository.cs:76` turns it red |
 | CR-5 | Through the real Gateway (lane stack), a transition and a POD on a shipment created through the Gateway succeed; `X-Client-Correlation-Id` sent by the caller changes nothing | — (E4 evidence) |
-| CR-6 | Details page: no GUID in any visible text, `title` or tooltip, 7 languages, for a manual shipment with an unknown SKU, location and lot, a carrier and a load, and (from DL-5 on) for an intake shipment with and without `outboundNumber`; the only id-like texts are the shipment number (until the SHP follow-up) and, after a failed action, the labelled support reference | Showing the reference in a failure cell, or `SourceDocumentId` / `ShipToReference` of an intake shipment, turns it red |
+| CR-6 | Details page: no GUID in any visible text, `title` or tooltip, 7 languages, for a manual shipment with an unknown SKU, location and lot, a carrier and a load, and (from DL-5 on) for an intake shipment with and without `outboundNumber` (ship-to cell: the "Address kept in Warehouse" text only); the only id-like texts are the shipment number (until the SHP follow-up) and, after a failed action, the labelled support reference | Showing the reference in a failure cell, or `SourceDocumentId` / `ShipToReference` of an intake shipment, turns it red |
 | CR-7 | `details.js` sends a fresh UUID per intent, the same one on its retries, never `lifecycleCorrelationId` | Sending the root turns it red |
 | CR-8 | 3.5.1 applied exactly (`git apply` of the patch, `info.version` 3.5.1, all contract example tests green); `ContractErrorCodeParityTests` unchanged | Any other contract byte turns it red |
 | CR-9 | Intake through the coordinator: the first call with c1 prepares the intent with root c1; a retry with the same key and c2, a resume after `COMMIT_FAILED` with c3, and a later intake of the committed outbound with c4 all succeed with root c1 and no `CONFLICTING_PERSISTED_ROOT` evidence row; a later call whose envelope correlation equals that call's own caller correlation c5 (≠ c1) still gives `CONFLICTING_PERSISTED_ROOT` (an envelope ≠ the caller gives `CONFLICTING_CORRELATION` first, `:26-28`) | Restoring the caller check at `WarehouseIntakeCoordinator.cs:55-56` turns it red |
@@ -1556,10 +1558,10 @@ The phase-1 gates (`./scripts/run_phase1_gates.sh`, `DOTNET_ROOT=$HOME/.dotnet`)
 | §13.1 "Two keys", R11-4 | replay "fingerprint, then correlation" | fingerprint only; which correlation each intake receipt stores |
 | §5 Repo Scope (§25 DL-5 exception), 25.3.1, IR-17, §25.7 DL-5 gate | 3.5.0 → 3.6.0 | 3.5.1 → 3.6.0; DL-5 waits for DL-8 |
 | §5 Repo Scope | Web tests not listed | Shipment Web test paths under `frontend/Diten.Web.Tests/` |
-| IR-14, 25.6, §25.7 DL-7 gate | version numbers | gate on content ("first versions with `Item`"), expected 1.2.0 / 1.4.0 |
+| IR-14, 25.6, §25.7 DL-7 gate, DL-7 note | WAREHOUSE-OUTBOUND 1.1.0 and WMS-BUNDLE 1.2.0 | gate on content ("first versions with `Item`"), expected WAREHOUSE-OUTBOUND 1.2.0 and WMS-BUNDLE 1.4.0 (MOD-0178 owner, 2026-11-16) |
+| Slice note (DL-5 gate summary) | r10 approved, WMS-BUNDLE 1.1.0 FROZEN | adds DL-8 / SHIPMENT-BUNDLE 3.5.1 on `main` |
 | §26 | — | new |
 | Slice table | DL-1…DL-4 (r10: DL-5…DL-7) | DL-8, DL-9 |
-| §25.6, §25.7 gate DL-7, DL-7 note | WAREHOUSE-OUTBOUND 1.1.0 and WMS-BUNDLE 1.2.0 | WAREHOUSE-OUTBOUND 1.2.0 and WMS-BUNDLE 1.4.0 (MOD-0178 owner, 2026-11-16); no other §25 text changed |
 
 Nothing else in §1–§25 changed than the rows of this table; no YAML block was edited. Owner decisions of r11: `docs/records/decisions/2026-11/mod0183-r11-owner-decisions-2026-11-16.md`.
 
@@ -1589,7 +1591,7 @@ DL-3 covers SB-1…SB-8, SB-2a, SB-11, SB-16, SB-19, SB-22…SB-25 and the creat
 DL-5 covers IR-1…IR-8 and IR-16…IR-21 (mapping, whitelist, the user-triggered intake operation, SHIPMENT-BUNDLE 3.6.0 applied in
 the same change, the Gateway route from the integration-agent lane, the intake customer state, `outboundNumber`, the `customerRef` type of 3.6.0 item 3, the Audited Events
 of 25.11, screen action and texts) and lands §8.2 obligation 3 in the same change that opens intake; it starts only when the §25.7 DL-5 gate is met (r10
-approved, WMS-BUNDLE 1.1.0 FROZEN on `main`). DL-6 covers IR-9…IR-13 (the internal `reservationId`, the five `RESERVATION_*` codes
+approved, WMS-BUNDLE 1.1.0 FROZEN on `main`; r11: DL-8 with SHIPMENT-BUNDLE 3.5.1 on `main`). DL-6 covers IR-9…IR-13 (the internal `reservationId`, the five `RESERVATION_*` codes
 and their texts, K3 `restoreReservation`) and follows DL-5 (only intake lines carry a reservation); IR-13 is measured on the joint
 MVP-1 / MVP-5 live tour. DL-7 covers IR-14 and IR-15 and starts only after the WAREHOUSE-OUTBOUND and WMS-BUNDLE versions with `Item` (expected 1.2.0 and 1.4.0) are FROZEN
 on `main` (MOD-0178's one CT step, 25.6 order). S23-1…S23-21 and SB-1…SB-26 run in all three, except SB-17 and SB-18 as 25.8 says. Not slices of r10: the SHP record code, the CRM
