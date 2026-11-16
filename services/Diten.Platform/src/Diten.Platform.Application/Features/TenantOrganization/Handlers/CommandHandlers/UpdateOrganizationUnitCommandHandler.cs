@@ -136,23 +136,54 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
                 403);
         }
 
-        if (lineChanged && !await _graph.TryAdvanceStructureTokenAsync(structureToken, ct))
-        {
-            return Response<NoContent>.Fail(
-                "The organization structure changed while this reporting line was being validated. "
-                + "Re-read the unit and try again.",
-                409);
-        }
-
         entity.Name = request.Request.Name.Trim();
         entity.LegalEntityId = request.Request.LegalEntityId;
         entity.ParentOrganizationUnitId = functionalParent;
         entity.AdministrativeParentOrganizationUnitId = administrativeParent;
         TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
-        await _repository.UpdateAsync(entity, ct);
+        /*
+         * ⚠ A LINE CHANGE IS WRITTEN IN THE SAME ATOMIC STEP THAT WINS THE TOKEN. Winning the token and then
+         * writing the unit separately left a gap in which a second writer read the advanced token without the
+         * edge it stood for, and both edges landed (MOD-0288 race). Anything else goes through the plain update,
+         * which refuses to write back lines that changed after we read the unit.
+         */
+        try
+        {
+            if (lineChanged)
+            {
+                if (!await _graph.TryAdvanceStructureTokenAndUpdateAsync(structureToken, entity, ct))
+                {
+                    return StructureChanged();
+                }
+            }
+            else
+            {
+                await _repository.UpdateAsync(entity, ct);
+            }
+        }
+        catch (OrganizationUnitWriteConflictException)
+        {
+            return Response<NoContent>.Fail(
+                "The Organization Unit changed while it was being updated. Re-read it and try again.", 409);
+        }
+        catch (PlatformTransactionUnavailableException)
+        {
+            // No replica set (the line was not written), or the commit result could not be established (it may
+            // have been): either way the caller cannot be told it landed. Re-reading the unit shows which.
+            return Response<NoContent>.Fail(
+                "The reporting line could not be saved now. Try again later.",
+                PlatformTransactionUnavailableException.ServiceUnavailableStatusCode);
+        }
+
         return Response<NoContent>.Success(204);
     }
+
+    private static Response<NoContent> StructureChanged() =>
+        Response<NoContent>.Fail(
+            "The organization structure changed while this reporting line was being validated. "
+            + "Re-read the unit and try again.",
+            409);
 
     private async Task<Response<NoContent>> ValidateParentAsync(Guid currentId, Guid parentId, Guid legalEntityId, CancellationToken ct)
     {

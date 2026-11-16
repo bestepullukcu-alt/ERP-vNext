@@ -28,7 +28,16 @@ public sealed class ArchiveOrganizationUnitCommandHandler : IRequestHandler<Arch
         }
 
         entity.IsArchived = true;
-        await _repository.UpdateAsync(entity, ct);
+        try
+        {
+            await _repository.UpdateAsync(entity, ct);
+        }
+        catch (OrganizationUnitWriteConflictException)
+        {
+            // A re-parenting (or a delete) landed after the read; writing the stale copy back would undo it.
+            return Response<NoContent>.Fail("The Organization Unit changed while it was being archived. Re-read it and try again.", 409);
+        }
+
         return Response<NoContent>.Success(204);
     }
 }
