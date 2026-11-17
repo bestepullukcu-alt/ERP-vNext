@@ -25,8 +25,8 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 
 ## Başlarken
 1. Hattın kimliğini (`LANE-nnn`), modülü, paket yolunu ve hattın asıl ve yedek onaylayıcısının GitHub hesabını kişinin
-   açılış brifinden al; yoksa sor, uydurma. "Paketi onaylıyorum" ya da "kabulü onaylıyorum" yorumunun yazarını bu hesapla
-   eşle; eşleşmeyen yorum onay sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
+   açılış brifinden al; yoksa sor, uydurma. Paket onayının (iki biçimi aşağıda) ve "kabulü onaylıyorum" yorumunun yazarını
+   bu hesapla eşle; eşleşmeyen hesabın onayı sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
 2. `git status` ve dalı ölç; paylaşılan klasördeysen önce kendi çalışma ağacını aç (Ç25), dilim dalını orada `AGENTS.md` §9
    biçiminde dilim ekiyle aç (H8).
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
@@ -34,9 +34,22 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 ## Paket onayından dilim 1'e
 1. Paket taslağı ilk dilim dalında (`<önek>-dl1`; önek paketin `branch` alanı) yazılır. Yüklemeden önce
    `python3 scripts/pack_contract_check.py <paket>` koş, uyarıları PR açıklamasına yaz (yalnız uyarır); PR taslak açılır.
-2. Listelenen onaylayıcı PR'da "paketi onaylıyorum" der (yazarı açılış brifindeki hesapla eşleşmeli). Hat aynı PR'da dilim 1
-   işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil; H5); dilim 1
-   kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
+2. Paket onayı iki biçimden biridir (H5), ikisi de yalnız açılış brifindeki asıl ya da yedek onaylayıcı hesabından:
+   (a) PR'da yorum ya da inceleme gövdesinde "paketi onaylıyorum"; (b) GitHub incelemesi, durumu `APPROVED` (gövde boş
+   olabilir), PR'da henüz kod yokken yalnız paket dosyalarını taşıyan commit'e. Koddan önce ölç:
+   `gh api repos/<sahip>/<depo>/pulls/<n>/reviews` (cümle yorumdaysa `.../issues/<n>/comments`) → `user.login` brifteki
+   hesap; (b)'de `state` `APPROVED`, `commit_id` `gh api repos/<sahip>/<depo>/pulls/<n>/commits` listesinde ve
+   `git diff --name-only $(git merge-base origin/main <commit_id>) <commit_id>` yalnız paketi, karar dosyasını, varsa süreç
+   sayfasını ve `execution/registries/module-id-registry.md`'yi gösteriyor (kayıtta tek eklenmiş satır). Biri tutmazsa —
+   başka hesap, `COMMENTED` ya da `CHANGES_REQUESTED`, commit'te başka dosya — onay sayma, tahmin etme, onaylayıcıya sor.
+   Onay paketi o commit'teki hâliyle, açık kararlara önerilen cevaplar dahil kapsar; onaylayıcı başka cevap isterse (yorum ya
+   da değişiklik isteği) paket PR'la değişir ve yeni onay ister (H5). İlk kod commit'inden önce PR açıklamasının "Ajan
+   çalıştırması" bölümündeki "Paket onayı" satırına biçimi, onaylayıcının rolünü (ad ya da hesap adı değil), zamanı ve
+   (b)'de incelemenin `commit_id`'sini, (a)'da yorumun bağlantısını yaz. Kod push'u bu incelemeyi bayatlatır (ana dal koruması bayat onayı düşürüyorsa
+   `DISMISSED` görünür); beklenen budur, kayıt PR açıklamasıdır. Paket onayı birleştirme izni ve kabul değildir: PR kod ve
+   testler hazır olana dek taslak kalır, kabul son commit'e yeni onayla gelir (H25); ajan onay vermez (Ç6).
+   Sonra hat aynı PR'da dilim 1 işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir
+   (ek dokunuş değil; H5); dilim 1 kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
 3. Dilim 1 bitince onaylayıcı aynı PR'ı tek oturuşta inceler, "kabulü onaylıyorum" der, onaylar ve birleştirir; PR o kişinin
    hesabıyla açıldıysa yedek onaylayıcı onaylar (H25). Sonraki dilimler ana daldan `<önek>-dl<n>` dalında; paket değişirse
    önce paket değişikliği PR'ı ve onayı (H5).

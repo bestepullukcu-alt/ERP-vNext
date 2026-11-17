@@ -4,7 +4,7 @@ description: "EES yeni akışın hattı: bir modülün dilimlerini onaylı paket
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:3f16738fab8c` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:edc447bb093d` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -43,7 +43,7 @@ disable-model-invocation: true
 - **Ç22.** Bir işi ertelerken gelecekteki gerileme ya da yeniden iş maliyetini tek cümleyle yaz. — *Ertelenen işlerin bedeli sonradan görüldü.*
 
 ## 5. Git ve paylaşılan klasör
-- **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket ve varsa süreç sayfası); paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
+- **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket, karar dosyası, varsa süreç sayfası ve kimlik kayıt satırı); paketin PR'daki onayı (iki biçimi H5'te) o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
 - **Ç24.** Dosyalar yalnız açık yoluyla eklenir; toplu ekleme (`git add -A`, `git add .`) ve derinlik parametreli fetch yok. — *Ortak klasörde başkasının dosyası commit'e girdi; sığ fetch ortak klonu bozdu; fren bunları durdurmuyor.*
 - **Ç25.** İlk yazmadan önce kendi çalışma ağacını (`git worktree`) aç, her yazma orada; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; başka oturumların paylaştığı klasörde dal değiştirme, stash, reset, zorla push yok; yeni dal yalnız `git worktree add` ile kendi ağacınla birlikte açılır; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; birkaç sohbet tek klasörü paylaşır, dal değiştirmek herkesin dosyasını değiştirir; ilk deneme hattı ortak klasörde açıldı; fren yalnız Claude'da ve bir kısmında soruyor.*
 
@@ -69,7 +69,7 @@ disable-model-invocation: true
 
 ## 2. Başlama ve paket
 - **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar (`.ees/standartlar/paket-standardi.md`; paket `business_process:` ve `plan_row:` gösterir; süreç sayfası süreç başına bir kez ilk paketle aynı PR'da; eski büyük pakete yeni dilim gerekirse kısa takip paketi; onaylı paket içindeki küçük hata düzeltmesi H31). Hat yazmaz; taslağı işi yazmayan denetçiye verir, sonra taslak PR açar (Ç23). — *Üreten denetlemez; onay PR'da verilir.*
-- **H5.** Kod yalnız hattın listelenen onaylayıcısının (asıl ya da yedek, envanter satırında rol adıyla) PR'da "paketi onaylıyorum" dediği (yazarı açılış brifindeki hesapla eşleşen) paket sürümüyle başlar; bu onay o sürümün bütün dilimleri için kod yazma, dal yükleme ve PR iznidir (Ç23), birleştirme izni değildir. Paket değişirse değişiklik PR'la gelir; o PR'ın onayı yeniden onaydır. Onaydan sonra hat aynı PR'da dilim işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil). — *Sahibin 16 Kasım kararları; kök kural 7 onaylı durumu arar.*
+- **H5.** Kod yalnız hattın listelenen onaylayıcısının (asıl ya da yedek, envanter satırında rol adıyla, hesabı açılış brifindeki) onayladığı paket sürümüyle başlar. Onay iki biçimden biridir: PR'da "paketi onaylıyorum" ya da GitHub'da APPROVED inceleme, PR'da henüz kod yokken yalnız Ç23'teki paket dosyalarını taşıyan commit'e. Başka hesabın incelemesi, COMMENTED ya da CHANGES_REQUESTED inceleme, paket dosyaları dışında dosya taşıyan commit'e APPROVED paket onayı değildir; hat tahmin etmez, onaylayıcıya sorar. Hat koddan önce onayı GitHub'dan doğrular, biçimini PR açıklamasına yazar (`ees-hat`). Onay paketi o commit'teki hâliyle, açık kararlara önerilen cevaplar dahil kapsar; o sürümün bütün dilimleri için kod yazma, dal yükleme ve PR iznidir (Ç23), birleştirme izni ve kabul değildir (H25). Paket değişirse değişiklik PR'la gelir; o PR'ın onayı yeniden onaydır. Onaydan sonra hat aynı PR'da dilim işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil). — *Sahibin 16 Kasım kararları; kök kural 7 onaylı durumu arar; 17 Kasım: ilk hatta onaylayıcı cümle yerine Approve'a bastı, sahip iki biçimi de geçerli saydı.*
 - **H6.** Modülün alan klasörü yoksa şablondan açılır (`.ees/sablonlar/modul-yeri/`, iş 6'da yazılacak); gelecek modüllere önceden klasör açılmaz. — *Boş klasör yığını.*
 - **H7.** Dilim tablosu MVP planının satırlarıyla karşılaştırılır; fark varsa yazılır ve kişiye sorulur, plan "Kullanır" dediği modülü başka modül sayar (H16). — *Plan ile paket ayrı değişir (Ç3).*
 - **H31.** Modülün onaylı paketinin (`status:` `approved` ya da `ready-for-dev`; değilse paket, kök kural 7) kapsamındaki hata düzeltmesi yeni takip paketi istemez, dördü birden tutuyorsa: (a) düzeltme var olan bir işlevin kusurunu giderir: işlev paketin yazdığını yapmıyor ya da açık bir kusur veriyor (çökme, veri bozulması, çift kayıt, yanlış sonuç); kullanıcının yapabildiği yeni bir şey eklemez; paketin kapsamı ve kabul ölçütleri değişmez; PR paketin ilgili satırını ya da iş listesindeki hata kaydını anar; (b) yeni sayfa, alan, izin anahtarı, uç nokta, veri şeması ya da görünen metin yok; var olan uç noktanın istek/yanıt sözleşmesi, olay sözleşmesi, ayar anahtarı ve bağımlılıklar değişmez; başka modüle dokunulmaz; (c) aynı PR'da düzeltmeyi kanıtlayan en az bir test var (önce kırmızı, sonra yeşil); (d) PR açıklaması hatayı, kök nedeni ve testi yazar. — *Kök kural 7'ye uygun: kod modülün var olan onaylı paketiyle yazılır. 17 Kasım ölçümü: son 80 birleşen PR'ın yaklaşık 20'si küçük düzeltme ya da test PR'ı (≤ 8 dosya; bir kısmı CI ve test altyapısı), hiçbirinde paket ya da kayıt dosyası yok, açılıştan birleşmeye ortanca bir saatin altında; ilk denemede tek dosyalık düzeltme için paket yazmak token'ların yaklaşık yarısını aldı.*
@@ -131,8 +131,8 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 
 ## Başlarken
 1. Hattın kimliğini (`LANE-nnn`), modülü, paket yolunu ve hattın asıl ve yedek onaylayıcısının GitHub hesabını kişinin
-   açılış brifinden al; yoksa sor, uydurma. "Paketi onaylıyorum" ya da "kabulü onaylıyorum" yorumunun yazarını bu hesapla
-   eşle; eşleşmeyen yorum onay sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
+   açılış brifinden al; yoksa sor, uydurma. Paket onayının (iki biçimi aşağıda) ve "kabulü onaylıyorum" yorumunun yazarını
+   bu hesapla eşle; eşleşmeyen hesabın onayı sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
 2. `git status` ve dalı ölç; paylaşılan klasördeysen önce kendi çalışma ağacını aç (Ç25), dilim dalını orada `AGENTS.md` §9
    biçiminde dilim ekiyle aç (H8).
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
@@ -140,9 +140,22 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 ## Paket onayından dilim 1'e
 1. Paket taslağı ilk dilim dalında (`<önek>-dl1`; önek paketin `branch` alanı) yazılır. Yüklemeden önce
    `python3 scripts/pack_contract_check.py <paket>` koş, uyarıları PR açıklamasına yaz (yalnız uyarır); PR taslak açılır.
-2. Listelenen onaylayıcı PR'da "paketi onaylıyorum" der (yazarı açılış brifindeki hesapla eşleşmeli). Hat aynı PR'da dilim 1
-   işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil; H5); dilim 1
-   kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
+2. Paket onayı iki biçimden biridir (H5), ikisi de yalnız açılış brifindeki asıl ya da yedek onaylayıcı hesabından:
+   (a) PR'da yorum ya da inceleme gövdesinde "paketi onaylıyorum"; (b) GitHub incelemesi, durumu `APPROVED` (gövde boş
+   olabilir), PR'da henüz kod yokken yalnız paket dosyalarını taşıyan commit'e. Koddan önce ölç:
+   `gh api repos/<sahip>/<depo>/pulls/<n>/reviews` (cümle yorumdaysa `.../issues/<n>/comments`) → `user.login` brifteki
+   hesap; (b)'de `state` `APPROVED`, `commit_id` `gh api repos/<sahip>/<depo>/pulls/<n>/commits` listesinde ve
+   `git diff --name-only $(git merge-base origin/main <commit_id>) <commit_id>` yalnız paketi, karar dosyasını, varsa süreç
+   sayfasını ve `execution/registries/module-id-registry.md`'yi gösteriyor (kayıtta tek eklenmiş satır). Biri tutmazsa —
+   başka hesap, `COMMENTED` ya da `CHANGES_REQUESTED`, commit'te başka dosya — onay sayma, tahmin etme, onaylayıcıya sor.
+   Onay paketi o commit'teki hâliyle, açık kararlara önerilen cevaplar dahil kapsar; onaylayıcı başka cevap isterse (yorum ya
+   da değişiklik isteği) paket PR'la değişir ve yeni onay ister (H5). İlk kod commit'inden önce PR açıklamasının "Ajan
+   çalıştırması" bölümündeki "Paket onayı" satırına biçimi, onaylayıcının rolünü (ad ya da hesap adı değil), zamanı ve
+   (b)'de incelemenin `commit_id`'sini, (a)'da yorumun bağlantısını yaz. Kod push'u bu incelemeyi bayatlatır (ana dal koruması bayat onayı düşürüyorsa
+   `DISMISSED` görünür); beklenen budur, kayıt PR açıklamasıdır. Paket onayı birleştirme izni ve kabul değildir: PR kod ve
+   testler hazır olana dek taslak kalır, kabul son commit'e yeni onayla gelir (H25); ajan onay vermez (Ç6).
+   Sonra hat aynı PR'da dilim 1 işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir
+   (ek dokunuş değil; H5); dilim 1 kodu aynı dalda sürer. Eski onay defteri (`execution/approvals/`) pilot hatta kullanılmaz.
 3. Dilim 1 bitince onaylayıcı aynı PR'ı tek oturuşta inceler, "kabulü onaylıyorum" der, onaylar ve birleştirir; PR o kişinin
    hesabıyla açıldıysa yedek onaylayıcı onaylar (H25). Sonraki dilimler ana daldan `<önek>-dl<n>` dalında; paket değişirse
    önce paket değişikliği PR'ı ve onayı (H5).
