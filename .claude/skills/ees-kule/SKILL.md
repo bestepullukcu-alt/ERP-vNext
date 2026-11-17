@@ -4,7 +4,7 @@ description: "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbeti
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:5126bbc05c97` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:1addda4c8c23` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -45,7 +45,7 @@ disable-model-invocation: true
 ## 5. Git ve paylaşılan klasör
 - **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket ve varsa süreç sayfası); paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
 - **Ç24.** Dosyalar yalnız açık yoluyla eklenir; toplu ekleme (`git add -A`, `git add .`) ve derinlik parametreli fetch yok. — *Ortak klasörde başkasının dosyası commit'e girdi; sığ fetch ortak klonu bozdu; fren bunları durdurmuyor.*
-- **Ç25.** Kendi çalışma ağacında çalış; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; ortak klasörde dal değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; fren yalnız Claude'da ve bir kısmında soruyor.*
+- **Ç25.** İlk yazmadan önce kendi çalışma ağacını (`git worktree`) aç, her yazma orada; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; başka oturumların paylaştığı klasörde dal değiştirme, stash, reset, zorla push yok; yeni dal yalnız `git worktree add` ile kendi ağacınla birlikte açılır; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; birkaç sohbet tek klasörü paylaşır, dal değiştirmek herkesin dosyasını değiştirir; ilk deneme hattı ortak klasörde açıldı; fren yalnız Claude'da ve bir kısmında soruyor.*
 
 ## 6. Adlar, kimlikler, ürün değişmezleri
 - **Ç26.** GOAL'ün ayrılmış adlarını kullanma: AT-nnn, AO-nn, `<birim>-CT-Ann`, ATF-CT, IGO-CT, EEO-CT, GMG-DEC-…, "Agent Card", "Team Charter", "Unit Charter"; PDMS kapısı "PDMS G…" yazılır; hat kimliği `LANE-nnn`. (rehber §4) — *ATF incelemesinde ad çakışması yeniden iş doğurur.*
@@ -53,7 +53,7 @@ disable-model-invocation: true
 - **Ç28.** Ürün değişmezleri her işte geçerlidir: kiracı verisi `TenantId` ile sınırlı, kiracılar arası erişim 404, silme yalnız soft delete; her eylem izin ister, yetkisize iskelet çizilmez; görünen metin kaynak dosyasında (platform modülü 2 dil, kiracı modülü 7 dil; eksik dil = iş bitmedi); servislere yalnız ağ geçidinden gidilir; port uydurulmaz (tek kaynak `AGENTS.md` §3). Ayrıntı kural haritasında. — *Paket yazarı, belge ajanı ve doğrudan araç oturumu da bunları görmeli; mimari testler yalnız bir kısmını yakalar.*
 
 ## 7. Kayıt ve model seviyesi
-- **Ç29.** Elle operasyon kaydı ya da raporu (durum, kabul, kuyruk, inceleme kaydı) yazılmaz; bunlar PR'dan, CI'dan ve çalıştırma kaydından üretilir (biçimler `.ees/sablonlar/`). Paketin ya da modül sonu listesinin istediği ürün belgeleri (kullanıcı kılavuzu, API anlatısı, README, mimari karar kaydı, sürüm notu) teslimattır, yazılır. Ara dönem (kayıt aracı gelene dek): kule durum sayfasını ve envanter satırını elle günceller. — *Birleşen PR'ların %63'ü ürün kodu içermiyordu; elle kayıt yükü.*
+- **Ç29.** Elle operasyon kaydı ya da raporu (durum, kabul, kuyruk, inceleme kaydı) yazılmaz; bunlar PR'dan, CI'dan ve çalıştırma kaydından üretilir (biçimler `.ees/sablonlar/`). Paketin ya da modül sonu listesinin istediği ürün belgeleri (kullanıcı kılavuzu, API anlatısı, README, mimari karar kaydı, sürüm notu) teslimattır, yazılır. Ara dönem (kayıt aracı gelene dek): kule (kule yoksa hattı açan kişi) durum sayfasını ve envanter satırını elle günceller. — *Birleşen PR'ların %63'ü ürün kodu içermiyordu; elle kayıt yükü.*
 - **Ç30.** Model seçimi araca değil seviyeye bağlıdır: üst / standart / hafif; en ucuz yeterli seviyeden başlanır; seçilen ve kullanılan seviye çalıştırma kaydına girer. Eşleme: `.ees/model-seviyeleri.md`. — *Sahibin 16 Kasım kararı; token maliyeti.*
 
 # Kule kartı — EES · Yönetim sohbeti
@@ -79,10 +79,10 @@ disable-model-invocation: true
 - **K10.** Sahibin onayını başka sohbete aktarmaz; onay, sahibin o sohbetteki kendi sözüdür. — *Aktarılan onay yanlış kapsamla uygulandı.*
 
 ## 4. Modül talebi ve hat
-- **K11.** Adı verilen yeni modül ya da kapsamda önce salt-okunur araştırma yaptırır (`ees-modul-arastir` becerisi: Blueprint, `verify_module_id.py --discover`, paket, alan ayarı, geçmiş sahip kararları). Yanıt dört parça: okunan kaynaklar, eksik keşif ("kısmi inceleme"), adaylar ve gerekçeli tek kapsam önerisi, açık kararlar. — *Mükerrer ve uydurma modüller açıldı.*
+- **K11.** Adı verilen yeni modül ya da kapsamda önce salt-okunur araştırma yaptırır (`ees-modul-arastir` becerisi: Blueprint, `verify_module_id.py --discover`, paket, alan ayarı, geçmiş sahip kararları). Yanıt dört parça: okunan kaynaklar, eksik keşif ("kısmi inceleme"), adaylar ve gerekçeli tek kapsam önerisi, açık kararlar. H31'i tutan küçük hata düzeltmesi yeni kapsam değildir; araştırma ve yeni paket istemez. — *Mükerrer ve uydurma modüller açıldı.*
 - **K12.** Araştırma yanıtı kod, commit ya da dağıtım izni değildir. Hattı yalnız kişi açar (M3); hattın açılması paket taslağı iznidir, kod izni değildir. — *Yönetici kuralı; kapsam önerisi, taslak ve kod ayrı yetkilerdir.*
 - **K13.** Yeni akışta aynı anda tek hat; hatta başlamış ve birleşmemiş iş en çok 3. — *Rehber "işteki iş sınırı" (Lean 3); yönetici kararı tek hat.*
-- **K14.** Hat açılırken envanter satırını hazırlar (rehber §7: kimlik ve ad, süreç, araç, talimat dosyası ve sürümü, yetki sınıfı, sahip rolü, erişim, kim durdurur, örnek görevler, son değişiklik ve onaylayan; ayrıca hattın asıl ve yedek onaylayıcısı, rol adıyla, kişi başı tek hesap); ad içerdiği için depo dışında tutulur. — *Rehber §7; sahibin 16 Kasım kararı (asıl ve yedek onaylayıcı).*
+- **K14.** Hat açılmadan önce envanter satırını hazırlar (rehber §7: kimlik ve ad, süreç, araç, talimat dosyası ve sürümü, yetki sınıfı, sahip rolü, erişim, kim durdurur, örnek görevler, son değişiklik ve onaylayan; ayrıca hattın asıl ve yedek onaylayıcısı, rol adıyla, kişi başı tek hesap) ve örnek görevleri hattı kurmayan bir kişiye (H29) yazdırır; envanter satırı ad içerdiği için depo dışında tutulur. — *Rehber §7; sahibin 16 Kasım kararı (asıl ve yedek onaylayıcı); hat bunları kendisi yazamaz (Ç7), ilk deneme hattı ikisi de olmadan açıldı.*
 - **K15.** Durdurma yolu: oturumu ve alt ajanları durdur, açık PR'ı taslağa çek, durum sayfasına "durduruldu" ve kalan işi yaz. — *Anlık durdurma şartı.*
 
 ## 5. Dağıtım ve denetim seçimi

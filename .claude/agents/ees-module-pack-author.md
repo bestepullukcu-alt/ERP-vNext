@@ -6,7 +6,7 @@ model: opus
 effort: high
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/module-pack-author.md` · kaynak özeti: `sha256:37f5d91227fc` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/module-pack-author.md` · kaynak özeti: `sha256:955d2419c61f` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -47,7 +47,7 @@ effort: high
 ## 5. Git ve paylaşılan klasör
 - **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket ve varsa süreç sayfası); paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
 - **Ç24.** Dosyalar yalnız açık yoluyla eklenir; toplu ekleme (`git add -A`, `git add .`) ve derinlik parametreli fetch yok. — *Ortak klasörde başkasının dosyası commit'e girdi; sığ fetch ortak klonu bozdu; fren bunları durdurmuyor.*
-- **Ç25.** Kendi çalışma ağacında çalış; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; ortak klasörde dal değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; fren yalnız Claude'da ve bir kısmında soruyor.*
+- **Ç25.** İlk yazmadan önce kendi çalışma ağacını (`git worktree`) aç, her yazma orada; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; başka oturumların paylaştığı klasörde dal değiştirme, stash, reset, zorla push yok; yeni dal yalnız `git worktree add` ile kendi ağacınla birlikte açılır; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; birkaç sohbet tek klasörü paylaşır, dal değiştirmek herkesin dosyasını değiştirir; ilk deneme hattı ortak klasörde açıldı; fren yalnız Claude'da ve bir kısmında soruyor.*
 
 ## 6. Adlar, kimlikler, ürün değişmezleri
 - **Ç26.** GOAL'ün ayrılmış adlarını kullanma: AT-nnn, AO-nn, `<birim>-CT-Ann`, ATF-CT, IGO-CT, EEO-CT, GMG-DEC-…, "Agent Card", "Team Charter", "Unit Charter"; PDMS kapısı "PDMS G…" yazılır; hat kimliği `LANE-nnn`. (rehber §4) — *ATF incelemesinde ad çakışması yeniden iş doğurur.*
@@ -55,7 +55,7 @@ effort: high
 - **Ç28.** Ürün değişmezleri her işte geçerlidir: kiracı verisi `TenantId` ile sınırlı, kiracılar arası erişim 404, silme yalnız soft delete; her eylem izin ister, yetkisize iskelet çizilmez; görünen metin kaynak dosyasında (platform modülü 2 dil, kiracı modülü 7 dil; eksik dil = iş bitmedi); servislere yalnız ağ geçidinden gidilir; port uydurulmaz (tek kaynak `AGENTS.md` §3). Ayrıntı kural haritasında. — *Paket yazarı, belge ajanı ve doğrudan araç oturumu da bunları görmeli; mimari testler yalnız bir kısmını yakalar.*
 
 ## 7. Kayıt ve model seviyesi
-- **Ç29.** Elle operasyon kaydı ya da raporu (durum, kabul, kuyruk, inceleme kaydı) yazılmaz; bunlar PR'dan, CI'dan ve çalıştırma kaydından üretilir (biçimler `.ees/sablonlar/`). Paketin ya da modül sonu listesinin istediği ürün belgeleri (kullanıcı kılavuzu, API anlatısı, README, mimari karar kaydı, sürüm notu) teslimattır, yazılır. Ara dönem (kayıt aracı gelene dek): kule durum sayfasını ve envanter satırını elle günceller. — *Birleşen PR'ların %63'ü ürün kodu içermiyordu; elle kayıt yükü.*
+- **Ç29.** Elle operasyon kaydı ya da raporu (durum, kabul, kuyruk, inceleme kaydı) yazılmaz; bunlar PR'dan, CI'dan ve çalıştırma kaydından üretilir (biçimler `.ees/sablonlar/`). Paketin ya da modül sonu listesinin istediği ürün belgeleri (kullanıcı kılavuzu, API anlatısı, README, mimari karar kaydı, sürüm notu) teslimattır, yazılır. Ara dönem (kayıt aracı gelene dek): kule (kule yoksa hattı açan kişi) durum sayfasını ve envanter satırını elle günceller. — *Birleşen PR'ların %63'ü ürün kodu içermiyordu; elle kayıt yükü.*
 - **Ç30.** Model seçimi araca değil seviyeye bağlıdır: üst / standart / hafif; en ucuz yeterli seviyeden başlanır; seçilen ve kullanılan seviye çalıştırma kaydına girer. Eşleme: `.ees/model-seviyeleri.md`. — *Sahibin 16 Kasım kararı; token maliyeti.*
 
 # İşçi kartı — tek işi yazan alt ajan
