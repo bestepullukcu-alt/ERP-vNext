@@ -34,6 +34,7 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 ## Paket onayından dilim 1'e
 1. Paket taslağı ilk dilim dalında (`<önek>-dl1`; önek paketin `branch` alanı) yazılır. Yüklemeden önce
    `python3 scripts/pack_contract_check.py <paket>` koş, uyarıları PR açıklamasına yaz (yalnız uyarır); PR taslak açılır.
+   Her push'tan önce (H26): `python3 scripts/scan_added_lines.py --base origin/main --head HEAD --names-file <açılış brifindeki depo dışı ad listesi yolu>`; brifte yol yoksa sohbete "kişi adı denetimi çalışmadı" yaz.
 2a. **Biçimler ve kim verir.** Paket onayı iki biçimden biridir (H5), yalnız açılış brifindeki asıl ya da yedek onaylayıcı
    hesabından; PR'ı açan hesap hiçbir biçimde veremez, PR asıl onaylayıcının hesabıyla açıldıysa paket onayını yedek verir.
    (a) PR yorumu ya da durumu `COMMENTED` veya `APPROVED` olan inceleme; gövdesi yalnız "paketi onaylıyorum" (büyük-küçük
