@@ -526,20 +526,23 @@ SupplyChain manifests and their registration in the service composition.
 
 **Check order (review F-5)** — the first failing step answers; later steps do not run, and nothing is written:
 
-1. Framework: request body over 1 MiB → 400; no or invalid token → 401; `[HasPermission]` key missing → 403 `INVALID_REQUEST`.
+1. Framework: no or invalid token → 401, then `[HasPermission]` key missing → 403 `INVALID_REQUEST` (the body is not read).
 2. `actor_type = supplier_user` → else 403 `PORTAL_SUPPLIER_IDENTITY_UNRESOLVED` (status / list / create) / 404 (get / submit).
 3. `amr` has `pwd` and `otp` (P2) → same answers, `details.code = PORTAL_MFA_REQUIRED`.
 4. The request's LE is the binding's LE → same answers.
 5. Create and submit only: `binding_rev` with Auth (P3) → 403 / 404 `PORTAL_BINDING_STALE`, or 503.
 6. Eligibility (D2 table) → 403 / 404 / 422 `PORTAL_SUPPLIER_PENDING` / 503.
-7. Body and query validation → 400 (malformed JSON, scope override, invalid query value).
+7. Body read and validation → 400 (body over 1 MiB, malformed JSON, scope override, invalid query value).
 8. Record lookup (own get / submit) → 404; `If-Match` → 409.
 9. Business rules → 422 (`PORTAL_DRAFT_LIMIT`, status transition).
 
-Steps 2–4 run before the request body is bound (an authorization step, not the handler), so a malformed body never answers
-before them. **Deviation from MOD-0360-FU01 D8 (recorded):** D8 orders 401 → 403 → 403 → 400 → 503; here a 503 from Auth
-(step 5) or Procurement (step 6) comes before the 400 of step 7, because the 403 of steps 5–6 cannot be decided without that
-answer, and the 1 MiB 400 comes first because the framework enforces it while reading the body.
+**Steps 2–6 run before the body is read or parsed** (round-2 review F-1): the portal actions take no typed `[FromBody]`
+parameter, so neither model binding nor the `[ApiController]` automatic 400 can answer first; at step 7 the body is read as
+raw bytes under the 1 MiB limit (over the limit → 400 `INVALID_REQUEST` with `details.limitBytes`) and only then parsed. A
+request that fails step 1 therefore always gets 401 / 403, whatever its body size. **Deviation from MOD-0360-FU01 D8
+(recorded):** D8 orders 401 → 403 → 403 → 400 → 503; here a 503 from Auth (step 5) or Procurement (step 6) comes before the
+400 of step 7, because the 403 of steps 5–6 cannot be decided without that answer. Tests: the compound cases in
+T-0148-V1-AMR-01 and T-0148-V1-BREV-01, plus: no token + 2 MiB body → 401; stale binding + 2 MiB body on create → 403.
 
 ## 15. Gateway / API Routing Decision
 
