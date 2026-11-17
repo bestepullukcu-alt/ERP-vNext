@@ -1,0 +1,82 @@
+başvuru kalktı CRM/CyclePeriods wwwroot/assets/js/pages/enterprise-strategy/goals.js
+PASS CRM/CyclePeriods CI-1 Views/CRM/CyclePeriods/Details.cshtml
+PASS CRM/CyclePeriods CI-1 Views/CRM/CyclePeriods/Index.cshtml
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/Details.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/Index.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_DataTable.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_Filter.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_Finder.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_IndexL10n.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_PeriodPanel.cshtml 0
+PASS CRM/CyclePeriods CI-2 Views/CRM/CyclePeriods/_Timeline.cshtml 0
+TABAN FU-14 CRM/CyclePeriods CI-3 _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)
+TABAN FU-14 CRM/CyclePeriods CI-3 direct-gateway profile uses window.API service base
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js calls bulk endpoint (.../bulk)
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js declares bulk action config (bulkOptions / bulkBarSelector)
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+TABAN FU-14 CRM/CyclePeriods CI-3 index.js wires clear-selection (clearSelectionSelector or clearSelection())
+TABAN FU-4 CRM/CyclePeriods CI-3 personalizationClient sends tenant header only for tenant users
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/cycle-dates.js 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/Details.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/Index.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_DataTable.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_Filter.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_Finder.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_IndexL10n.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_PeriodPanel.cshtml 0
+PASS CRM/CyclePeriods CI-5 Views/CRM/CyclePeriods/_Timeline.cshtml 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-5 wwwroot/assets/js/CRM/cycle-dates.js 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/Details.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/Index.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_DataTable.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_Filter.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_Finder.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_IndexL10n.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_PeriodPanel.cshtml 0
+PASS CRM/CyclePeriods CI-6 Views/CRM/CyclePeriods/_Timeline.cshtml 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-6 wwwroot/assets/js/CRM/cycle-dates.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-7 wwwroot/assets/js/CRM/cycle-dates.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-8 wwwroot/assets/js/CRM/cycle-dates.js 0
+TABAN FU-14 CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/index.js:yok:savedView
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/index.js 0
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-9 wwwroot/assets/js/CRM/cycle-dates.js 0
+PASS CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/CyclePeriods/details.js 0
+TABAN FU-14 CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/CyclePeriods/index.js 4
+PASS CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/CyclePeriods/index.l10n.js 0
+PASS CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/CyclePeriods/panel.js 0
+PASS CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/CyclePeriods/shared.js 0
+PASS CRM/CyclePeriods CI-10 wwwroot/assets/js/CRM/cycle-dates.js 0
+başvuru taraması yok
+okunan görünüm metni: HEAD 8, taban 8
+süre: 0.4 s

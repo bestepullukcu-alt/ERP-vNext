@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCountsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // SERVER data through the proxy profile (pack §11): /Warehouse/CycleCounts/api translates paging, search and filters for listCycleCounts.
+    // The selection column feeds the bulk "Toplu sil" bar (Draft only), which only cycle-count.counts.bulk-delete gets (Index.cshtml).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-cyclecounts",
+        DataMode = "server",
+        Slug = "cyclecounts",
+        HasSelection = true,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColNumber"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColPlannedDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColAssignee"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLines"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCreated"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

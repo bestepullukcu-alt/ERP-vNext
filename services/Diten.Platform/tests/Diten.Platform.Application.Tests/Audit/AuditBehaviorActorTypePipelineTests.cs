@@ -128,12 +128,27 @@ public sealed class AuditBehaviorActorTypePipelineTests
         Assert.Equal(AuditActorType.System, pipeline.StoredEvent().ActorType);
     }
 
+    // ── MOD-0262-FU01 K-B (owner decision A) — A SIGNED SERVICE IDENTITY IS RECORDED AS Service ─────────────
+
+    [Fact]
+    public async Task A_service_principal_records_the_audited_command_once_as_Service_under_its_tenant()
+    {
+        await using var pipeline = AuditPipeline.Build(Principal("service", User, tenantClaim: Tenant), platformRequest: false);
+
+        var response = await pipeline.SendAsync(new AuditActorProbeCommand(Tenant));
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(AuditActorType.Service, Assert.Single(pipeline.Audit.Requests).ActorType);
+        var write = Assert.Single(pipeline.Outbox.Writes);
+        Assert.Equal(AuditActorType.Service, InMemoryAuditOutbox.ToAuditEvent(write).ActorType);
+        Assert.Equal(Tenant, write.TenantId);
+    }
+
     // ── A PRINCIPAL THAT NAMES NOBODY: UNKNOWN, AND THE COMMAND STILL RUNS ──────────────────────────────────
 
     [Theory]
     [InlineData((string?)null)]
     [InlineData("")]
-    [InlineData("service")]
     [InlineData("system")]
     [InlineData("admin")]
     public async Task An_authenticated_principal_without_a_recognised_actor_type_is_Unknown_and_the_command_is_not_blocked(

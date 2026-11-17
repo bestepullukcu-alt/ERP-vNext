@@ -30,9 +30,9 @@ public sealed class ReverseLogisticsManifestProviderTests
     // a key every transition requires. It is now the CHANGE_STATUS action.
     private static readonly IReadOnlyDictionary<string, string> ApiOnlyAllowList = new Dictionary<string, string>(StringComparer.Ordinal);
 
-    // Frontend view-routes of SupplyChainReturnsController (pack §32.4): the list page only. The api/* adapter routes are
-    // JSON endpoints, not pages; there is no Create/Details/Edit page (QuickView and offcanvas only).
-    private static readonly HashSet<string> FrontendViewRoutes = new(StringComparer.Ordinal) { "/SupplyChain/Returns" };
+    // Frontend view-routes of SupplyChainReturnsController (pack §32.4, r10 §35.5): the list page and, from DL-4, the details
+    // page. The api/* adapter routes are JSON endpoints, not pages; there is no Create/Edit page (offcanvas only).
+    private static readonly HashSet<string> FrontendViewRoutes = new(StringComparer.Ordinal) { "/SupplyChain/Returns", "/SupplyChain/Returns/Details/{returnId:guid}" };
 
     private static readonly (string Code, string Key, string Placement, bool Dangerous, string Name)[] ExpectedActions =
     [
@@ -101,7 +101,7 @@ public sealed class ReverseLogisticsManifestProviderTests
     [Fact] // M-05
     public void M05_Actions_equal_the_pack_action_table()
     {
-        var page = Assert.Single(Manifest.Pages);
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "RETURNS");
         Assert.Equal("RETURNS", page.PageCode);
         Assert.Equal("Returns", page.DisplayName);
         Assert.Equal("supplychain.returns.read", page.RequiredPermission);
@@ -155,8 +155,8 @@ public sealed class ReverseLogisticsManifestProviderTests
     [Fact]
     public void Every_enforced_key_is_declared_so_the_permission_sync_can_carry_it()
     {
-        var page = Assert.Single(new ReverseLogisticsManifestProvider().GetManifest().Pages);
-        var declared = page.Actions.Select(a => a.PermissionKey).Append(page.RequiredPermission).ToHashSet(StringComparer.Ordinal);
+        var pages = new ReverseLogisticsManifestProvider().GetManifest().Pages;
+        var declared = pages.SelectMany(p => p.Actions.Select(a => a.PermissionKey).Append(p.RequiredPermission)).ToHashSet(StringComparer.Ordinal);
         Assert.All(EnforcedPermissions, key => Assert.True(declared.Contains(key), $"'{key}' is enforced but never declared, so no role can hold it."));
     }
 
@@ -175,5 +175,19 @@ public sealed class ReverseLogisticsManifestProviderTests
     {
         var list = values.ToList();
         Assert.Equal(list.Count, list.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    // RB-21 (DL-4): RETURN_DETAILS is a read-only Detail page under RETURNS, not in the navigation; AUTHORIZE and REJECT stay
+    // on RETURNS until DL-5 replaces them.
+    [Fact]
+    public void Rb21_ReturnDetails_page_is_added_and_the_authorize_actions_stay()
+    {
+        var details = Assert.Single(Manifest.Pages, p => p.PageCode == "RETURN_DETAILS");
+        Assert.Equal(("/SupplyChain/Returns/Details/{returnId:guid}", "supplychain.returns.read", "RETURNS", false, "Detail"),
+            (details.RoutePath, details.RequiredPermission, details.ParentPageCode, details.IsNavigationVisible, details.PageType));
+        Assert.Empty(details.Actions);
+        var list = Assert.Single(Manifest.Pages, p => p.PageCode == "RETURNS");
+        Assert.Contains(list.Actions, a => a.ActionCode == "AUTHORIZE");
+        Assert.Contains(list.Actions, a => a.ActionCode == "REJECT");
     }
 }

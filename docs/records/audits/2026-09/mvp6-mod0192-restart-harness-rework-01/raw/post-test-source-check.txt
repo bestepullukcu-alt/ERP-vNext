@@ -1,1 +1,0 @@
-43/43 source/test paths match SOURCE-MANIFEST.tsv after final tests; only CapacityRestartTests.cs differs from prior DEV manifest.

@@ -1,0 +1,219 @@
+klon: /var/folders/1x/lwl5wtmx2rqdb8srq1t66nwh0000gn/T/uic-fu01-klon-34ag38oi/klon  iş: f4950c3777bf43c52630df9b41a3ae04fe6fc0f2  taban: c412e40efe70c61f3ff74e8d0de07b15f91042d0
+== AC-1
+  AC-1 tamam: çıkış = 0
+  AC-1 tamam: YENİ KIRMIZI satırı = 0
+  AC-1 tamam: 113 (sayfa, dosya) çiftinin her birinde tam bir CI-4 PASS ya da TABAN FU-19 satırı
+  AC-1 tamam: TABAN FU-19 satırı = 22
+  AC-1 tamam: (FU-18) içeren satır = 0
+AC-1 geçti 5 denetim
+== AC-2
+  AC-2 tamam: oracle siniflar shared + yok = 4 dosya
+  AC-2 tamam: SB-11 çıkış 0 (beklenen 0)
+  AC-2 tamam: SB-11 satır: eşlenmemiş sayfa JS'i, yalnız Shared görünümü yüklüyor, sayfa kontrolü yok (MOD-0286-FU01) frontend/Diten.Web/wwwroot/assets/js/pages/enterprise-strategy/esbp-horizon-dates.js
+  AC-2 tamam: SB-11 satır: eşlenmemiş sayfa JS'i, hiçbir görünüm yüklemiyor, sayfa kontrolü yok (MOD-0286-FU01) frontend/Diten.Web/wwwroot/assets/js/pages/enterprise-strategy/project-ppm-form-init.js
+  AC-2 tamam: SB-11 satır: eşlenmemiş sayfa JS'i, yalnız Shared görünümü yüklüyor, sayfa kontrolü yok (MOD-0286-FU01) frontend/Diten.Web/wwwroot/assets/js/pages/governance/permissions.js
+  AC-2 tamam: SB-11 satır: eşlenmemiş sayfa JS'i, hiçbir görünüm yüklemiyor, sayfa kontrolü yok (MOD-0286-FU01) frontend/Diten.Web/wwwroot/assets/js/pages/systemStatus.js
+  AC-2 tamam: SB-11 'YENİ KIRMIZI ' ile başlayan satır yok
+  AC-2 tamam: 'MOD-0286-FU01' içeren satır = 4
+  AC-2 tamam: bu dosyaları bir kontrol satırında anan satır = 0
+AC-2 geçti 9 denetim
+== AC-3
+  AC-3 tamam: SB-1 (taban seçici ve taban) çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-1 (taban seçici ve taban) satır: eşlenmemiş sayfa JS'i, sayfa kontrolü yok (FU-18) frontend/Diten.Web/wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js
+  AC-3 tamam: SB-1: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-1 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-1 satır bir kez: YENİ KIRMIZI HCM/Employees CI-7 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 1 +1
+  AC-3 tamam: SB-1 YENİ KIRMIZI satırı (oracle kırmızı) = 1
+  AC-3 tamam: SB-1 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-2: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-2 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-2 satır bir kez: YENİ KIRMIZI Traceability/LotMigration CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-2 satır bir kez: YENİ KIRMIZI Traceability/LotMovements CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-2 satır bir kez: YENİ KIRMIZI Traceability/LotTrace CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-2 satır bir kez: YENİ KIRMIZI Traceability/Lots CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-2 satır bir kez: YENİ KIRMIZI Traceability/Serials CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-2 YENİ KIRMIZI satırı (oracle kırmızı) = 5
+  AC-3 tamam: SB-2 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-3: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-3 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-3 satır bir kez: YENİ KIRMIZI EnterpriseStrategyBusinessPerformance CI-6 wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js 4 +1
+  AC-3 tamam: SB-3 satır bir kez: YENİ KIRMIZI EnterpriseStrategyBusinessPerformance/Components CI-6 wwwroot/assets/js/pages/enterprise-strategy/modal-form-utils.js 4 +1
+  AC-3 tamam: SB-3 YENİ KIRMIZI satırı (oracle kırmızı) = 2
+  AC-3 tamam: SB-3 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-4: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-4 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-4 satır bir kez: YENİ KIRMIZI EnterpriseStrategyBusinessPerformance CI-6 wwwroot/assets/js/pages/enterprise-strategy/goals.js 12 +1
+  AC-3 tamam: SB-4 YENİ KIRMIZI satırı (oracle kırmızı) = 1
+  AC-3 tamam: SB-4 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-8: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-8 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-8 satır: başvuru eklendi CRM/CyclePeriods wwwroot/assets/js/pages/enterprise-strategy/goals.js
+  AC-3 tamam: SB-8 satır bir kez: YENİ KIRMIZI CRM/CyclePeriods CI-5 wwwroot/assets/js/pages/enterprise-strategy/goals.js 1 +1
+  AC-3 tamam: SB-8 satır bir kez: YENİ KIRMIZI CRM/CyclePeriods CI-6 wwwroot/assets/js/pages/enterprise-strategy/goals.js 11 +11
+  AC-3 tamam: SB-8 YENİ KIRMIZI satırı (oracle kırmızı) = 2
+  AC-3 tamam: SB-8 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: SB-9: oracle'a göre kırmızı satırı var
+  AC-3 tamam: SB-9 çıkış 1 (beklenen 1)
+  AC-3 tamam: SB-9 satır: başvuru kalktı Traceability/Serials wwwroot/assets/js/Traceability/trace-ui.js
+  AC-3 tamam: SB-9 satır bir kez: YENİ KIRMIZI Traceability/LotMigration CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-9 satır bir kez: YENİ KIRMIZI Traceability/LotMovements CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-9 satır bir kez: YENİ KIRMIZI Traceability/LotTrace CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-9 satır bir kez: YENİ KIRMIZI Traceability/Lots CI-7 wwwroot/assets/js/Traceability/trace-ui.js 1 +1
+  AC-3 tamam: SB-9 şunları birlikte içeren satır yok: (' Traceability/Serials CI-7 wwwroot/assets/js/Traceability/trace-ui.js',)
+  AC-3 tamam: SB-9 YENİ KIRMIZI satırı (oracle kırmızı) = 4
+  AC-3 tamam: SB-9 geri alma çıkış 0 (beklenen 0)
+  AC-3 tamam: çapa modal-form-utils.js (betik metinle buldu, oracle çapa) = 113
+  AC-3 tamam: çapa goals.js (betik metinle buldu, oracle çapa) = 3372
+AC-3 geçti 46 denetim
+== AC-4
+  AC-4 tamam: SB-5 çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-5 satır: TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-6 wwwroot/assets/js/pages/enterprise-strategy/goals.js 11
+  AC-4 tamam: SB-5 satır: TABAN FU-19 EnterpriseStrategyBusinessPerformance CI-5 wwwroot/assets/js/pages/enterprise-strategy/goals.js 1
+  AC-4 tamam: SB-5 'YENİ KIRMIZI' ile başlayan satır yok
+  AC-4 tamam: SB-6 çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-6 satır: başvuru kalktı DecompositionTreeBuilder wwwroot/assets/js/pages/decomposition/decompositionPage.js
+  AC-4 tamam: SB-6 satır: kapandı - satır silinmeli DecompositionTreeBuilder CI-7 wwwroot/assets/js/pages/decomposition/decompositionPage.js
+  AC-4 tamam: SB-6 satır yok: TABAN FU-19 DecompositionTreeBuilder CI-7 wwwroot/assets/js/pages/decomposition/decompositionPage.js 1
+  AC-4 tamam: SB-6 geri alma çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-6 geri alma satır: başvuru eklendi DecompositionTreeBuilder wwwroot/assets/js/pages/decomposition/decompositionPage.js
+  AC-4 tamam: SB-6 geri alma satır: TABAN FU-19 DecompositionTreeBuilder CI-7 wwwroot/assets/js/pages/decomposition/decompositionPage.js 1
+  AC-4 tamam: SB-6 sonraki commit çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-6 sonraki commit satır: kapandı - satır silinmeli DecompositionTreeBuilder CI-7 wwwroot/assets/js/pages/decomposition/decompositionPage.js
+  AC-4 tamam: SB-6 sonrası --check-baseline çıkış = 2
+  AC-4 tamam: SB-7 çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-7 satır: PASS CRM/CyclePeriods CI-4 wwwroot/assets/js/CRM/cycle-dates.js 0
+  AC-4 tamam: SB-7 'başvuru kalktı' ile başlayan satır yok
+  AC-4 tamam: SB-12 çıkış 0 (beklenen 0)
+  AC-4 tamam: SB-12 'başvuru eklendi' ile başlayan satır yok
+  AC-4 tamam: SB-12 şunları birlikte içeren satır yok: ('CRM/CyclePeriods', 'goals.js')
+  AC-4 tamam: FP-1a taban dosyası tabanda yok: çıkış = 2
+  AC-4 tamam: FP-1a hata iletisi var, '0 sayfa' sonucu değil
+  AC-4 tamam: FP-1b base bir commit değil: çıkış = 2
+  AC-4 tamam: FP-2 (Meetings/MeetingTypes -> Meetings/types) çıkış 1 (beklenen 1)
+  AC-4 tamam: FP-2 (Meetings/MeetingTypes -> Meetings/types) satır: YENİ KIRMIZI Meetings/types CI-4 wwwroot/assets/js/Meetings/types/index.js 1 +1
+  AC-4 tamam: FP-2 (Meetings/MeetingTypes -> Meetings/types) satır: kapandı - satır silinmeli Meetings/MeetingTypes CI-4 wwwroot/assets/js/Meetings/types/index.js
+AC-4 geçti 26 denetim
+== AC-5
+  AC-5 tamam: SB-10a taban çıkış = 0
+  AC-5 tamam: SB-10a iş çıkış = 0
+  AC-5 tamam: SB-10a stdout iş = taban (süre, başvuru taraması, okunan görünüm metni satırları atıldı)
+  AC-5 tamam: SB-10b çıkış 1 (beklenen 1)
+  AC-5 tamam: SB-10b satır: YENİ KIRMIZI CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/index.js 1 +1
+  AC-5 tamam: SB-10c çıkış 1 (beklenen 1)
+  AC-5 tamam: SB-10c satır: YENİ KIRMIZI Recall CI-7 wwwroot/assets/js/Recall/cases.js 1 +1
+AC-5 geçti 7 denetim
+== AC-6
+  AC-6 tamam: R-0a kabul: çıkış 0
+  AC-6 tamam: R-0b kabul: çıkış 0
+  AC-6 tamam: R-1: çıkış 2, 'HATA: taban satır 2177: CI-7 satır kontrolü instance'ı sayfanın dosya yolu değil'
+  AC-6 tamam: R-1 --base <ata>: çıkış 2, 'HATA: taban satır 2177: CI-7 satır kontrolü instance'ı sayfanın dosya yolu değil'
+  AC-6 tamam: R-2: çıkış 2, 'HATA: taban satır 2177: FU-19 satırında kontrol CI-4, 5, 6, 7, 8, 9 ya da 10 olmalı'
+  AC-6 tamam: R-3: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil'
+  AC-6 tamam: R-4a: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın kendi klasöründe'
+  AC-6 tamam: R-4b: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın kendi klasöründe'
+  AC-6 tamam: R-4c: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın kendi klasöründe'
+  AC-6 tamam: R-5: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor'
+  AC-6 tamam: R-5 --base <ata>: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor'
+  AC-6 tamam: R-6: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor'
+  AC-6 tamam: R-7: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sınıf dosyası değil'
+  AC-6 tamam: R-8: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı sınıf dosyası değil'
+  AC-6 tamam: R-9a: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil'
+  AC-6 tamam: R-9b: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil'
+  AC-6 tamam: R-10: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı HEAD'de yok'
+  AC-6 tamam: R-10 --base <ata>: çıkış 2, 'HATA: taban satır 2177: FU-19 instance'ı HEAD'de yok'
+  AC-6 tamam: R-11: çıkış 2, 'HATA: taban satır 2177: FU-19 satırında page ya da count bozuk'
+  AC-6 tamam: R-12: çıkış 2, 'HATA: taban satır 2177: FU-19 satırında page ya da count bozuk'
+  AC-6 tamam: değişmemiş taban --check-baseline çıkış = 0
+AC-6 geçti 21 denetim
+== AC-7
+  AC-7 tamam: oracle satirlar 22 satır = tabandaki FU-19 satırları 22 (iki yönlü)
+  AC-7 tamam: --draft-baseline çıkış = 0
+  AC-7 tamam: oracle satirlar = --draft-baseline FU-19 satırları 22 (iki yönlü)
+  AC-7 tamam: ekilmiş fazla satır karşılaştırmayı bozar
+  AC-7 tamam: ekilmiş düşürülmüş sayı karşılaştırmayı bozar
+AC-7 geçti 5 denetim
+== AC-8
+  AC-8 tamam: tabana eklenen satır (oracle satirlar <taban>) = 22
+  AC-8 tamam: tabandan silinen ya da değişen satır = 0
+  AC-8 tamam: FU-19 satırı = 22
+  AC-8 tamam: FU-19 satırında taban-01 / tek-seviye-borc-01 / belirsiz = 0
+  AC-8 tamam: reason'ı kararı adlandırmayan FU-19 satırı = 0
+  AC-8 tamam: owner'ı eşlemeyle (sayfa -> sahip) uyuşmayan ya da eşlemede olmayan FU-19 satırı = 0
+  AC-8 tamam: FU-19 dışındaki fu sayıları değişmedi: {'FU-14': 1953, 'FU-4': 64, 'FU-15': 1, 'FU-12': 1, 'FU-16': 134}
+AC-8 geçti 7 denetim
+== AC-9
+  AC-9 tamam: SB-10a çıkış 0 (beklenen 0)
+  AC-9 tamam: SB-10a satır: başvuru taraması yok
+  AC-9 tamam: SB-10a satır: okunan görünüm metni: HEAD 19, taban 0
+  AC-9 tamam: AC-1 koşusunda 'başvuru taraması: HEAD 1530 görünüm, taban 1530 görünüm, <s> s'
+  AC-9 tamam: AC-1 koşusunda 'süre:' satırı
+  AC-9 tamam: --base HEAD boş fark: çıkış 0, tek satır
+  AC-9 tamam: --help dört kip: ['--base', '--check-baseline', '--draft-baseline', '--self-test']
+AC-9 geçti 7 denetim
+== AC-10
+  AC-10 tamam: --self-test çıkış = 0
+  AC-10 tamam: 'FAIL ' satırı = 0
+  AC-10 tamam: FU01-01...FU01-67 her biri için en az bir 'PASS FU01-nn ' satırı
+  AC-10 tamam: self_test'te kaldırılan satırlar tam olarak tabanın FU18 tanımı ve olumlu savları (5 satır)
+  AC-10 tamam: yerine konan satırlar NO_VIEW_LINE'ı anıyor (7 satır)
+  AC-10 tamam: NO_VIEW_LINE değeri 'hiçbir görünüm' içeriyor
+  AC-10 tamam: FU18 'eşlenmemiş sayfa JS'i, ' önekine döndü
+  AC-10 tamam: tabanın hiçbir vaka adı eksik değil (93 ad)
+AC-10 geçti 8 denetim
+== AC-11
+  AC-11 tamam: iş commit'inde yalnız iki Repo Scope dosyası: ['scripts/uic_changed_pages.py', 'tests/ui-compliance-baseline.tsv']
+  AC-11 tamam: MOD-0286-ui-design-system-page-pattern-governance.md aynı blob
+  AC-11 tamam: ui-compliance.yml aynı blob
+  AC-11 tamam: taban işin atası
+AC-11 geçti 4 denetim
+== AC-12
+  AC-12 tamam: işin yerel eşdeğeri (--base <taban>) çıkış 0
+  AC-12 tamam: CI kaydı: run_id sayı
+  AC-12 tamam: CI kaydı: head_sha 40 onaltılık
+  AC-12 tamam: CI kaydı: iş commit'i PR başının atası (cf2e391c6239)
+  AC-12 tamam: CI kaydı: sonuç success, seçici çıkışı 0
+  AC-12 tamam: CI kaydı: artefakt_sha256 64 onaltılık
+  AC-12 tamam: CI kaydı: indirilen artefaktın sha256'sı kayıttakiyle aynı
+AC-12 geçti 7 denetim
+== AC-13
+  AC-13 tamam: oracle secici <iş>: 'aynı', çıkış 0
+  AC-13 tamam: SB-14a secici çıkış 1, 'farklı<TAB>STRIP'
+  AC-13 tamam: SB-14a --self-test çıkış 1 (sıfırdan farklı)
+  AC-13 tamam: SB-14a 'FAIL FU01-67 ' ile başlayan satır
+  AC-13 tamam: SB-14a 'FAIL FU01-15 ' ile başlayan satır
+  AC-13 tamam: SB-14a geri alma: 'aynı', çıkış 0
+  AC-13 tamam: SB-14b secici çıkış 1, 'farklı<TAB>SCRIPT'
+  AC-13 tamam: SB-14b --self-test çıkış 1 (sıfırdan farklı)
+  AC-13 tamam: SB-14b 'FAIL FU01-67 ' ile başlayan satır
+  AC-13 tamam: SB-14b 'FAIL FU01-13 ' ile başlayan satır
+  AC-13 tamam: SB-14b geri alma: 'aynı', çıkış 0
+  AC-13 tamam: SB-14c secici çıkış 1, 'farklı<TAB>VARIABLE'
+  AC-13 tamam: SB-14c --self-test çıkış 1 (sıfırdan farklı)
+  AC-13 tamam: SB-14c 'FAIL FU01-67 ' ile başlayan satır
+  AC-13 tamam: SB-14c 'FAIL FU01-62 ' ile başlayan satır
+  AC-13 tamam: SB-14c geri alma: 'aynı', çıkış 0
+  AC-13 tamam: SB-14d secici çıkış 1, 'farklı<TAB>VARIABLE'
+  AC-13 tamam: SB-14d --self-test çıkış 1 (sıfırdan farklı)
+  AC-13 tamam: SB-14d 'FAIL FU01-67 ' ile başlayan satır
+  AC-13 tamam: SB-14d 'FAIL FU01-19 ' ile başlayan satır
+  AC-13 tamam: SB-14d geri alma: 'aynı', çıkış 0
+  SB-14e bozuk koşu çıkışı 0 (iddia edilmez)
+  AC-13 tamam: SB-14e bozuk: satır yok: YENİ KIRMIZI HCM/Employees CI-7 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 1 +1
+  AC-13 tamam: SB-14e düzeltilmiş koşu çıkış = 1
+  AC-13 tamam: SB-14e düzeltilmiş: satır var: YENİ KIRMIZI HCM/Employees CI-7 wwwroot/assets/js/Platform/PersonReferences/person-reference-picker.js 1 +1
+AC-13 geçti 24 denetim
+== ÖZET (süre 663 s)
+AC-1 geçti 5 denetim
+AC-2 geçti 9 denetim
+AC-3 geçti 46 denetim
+AC-4 geçti 26 denetim
+AC-5 geçti 7 denetim
+AC-6 geçti 21 denetim
+AC-7 geçti 5 denetim
+AC-8 geçti 7 denetim
+AC-9 geçti 7 denetim
+AC-10 geçti 8 denetim
+AC-11 geçti 4 denetim
+AC-12 geçti 7 denetim
+AC-13 geçti 24 denetim
+zorunlu geçti 13 / 13

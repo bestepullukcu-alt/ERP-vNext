@@ -1,0 +1,1 @@
+HATA: git rev-parse --verify → çıkış 1: error: 5588a3cc59271f16445e5c69ed5e33fee73ae4f1^{commit}: expected commit type, but the object dereferences to blob type

@@ -44,6 +44,8 @@ public sealed class ReleaseCycleCountHandler : CycleCountCommandHandler, IReques
         var scope = new CycleCountScopeRequest(count.WarehouseId, count.CountType == CycleCountType.Full, count.ScopeLocationIds, count.ScopeSkuIds,
             CycleCountRules.WindowStart(snapshotAt));
         var flags = new Dictionary<(Guid ItemId, Guid SkuId, SkuLevel Level), bool>();
+        // DL-3 (Q-24 = A): the line limit is the company setting (default 2000)
+        var limit = CycleCountPolicy.Of(await Repository.FindSettingsAsync(ct)).MaxLinesPerCount;
         try
         {
             // the flags of the scope's SKUs BEFORE the snapshot transaction (no HTTP call while it is open): normally ONE snapshot attempt
@@ -61,7 +63,7 @@ public sealed class ReleaseCycleCountHandler : CycleCountCommandHandler, IReques
             Attempt result;
             try
             {
-                result = await TryReleaseAsync(count, scope, snapshotAt, flags, request.IdempotencyKey, fingerprint, ct);
+                result = await TryReleaseAsync(count, scope, snapshotAt, flags, limit, request.IdempotencyKey, fingerprint, ct);
             }
             catch (CycleCountDuplicateException ex)
             {
@@ -107,7 +109,7 @@ public sealed class ReleaseCycleCountHandler : CycleCountCommandHandler, IReques
         IReadOnlyList<(Guid ItemId, Guid SkuId, SkuLevel Level)>? MissingFlags = null);
 
     private async Task<Attempt> TryReleaseAsync(CycleCount count, CycleCountScopeRequest scope, DateTimeOffset snapshotAt,
-        IReadOnlyDictionary<(Guid ItemId, Guid SkuId, SkuLevel Level), bool> flags, string key, string fingerprint, CancellationToken ct)
+        IReadOnlyDictionary<(Guid ItemId, Guid SkuId, SkuLevel Level), bool> flags, int limit, string key, string fingerprint, CancellationToken ct)
     {
         Attempt result = new(AttemptKind.Lost);
         await Repository.InTransactionAsync(async (session, tx) =>
@@ -120,7 +122,6 @@ public sealed class ReleaseCycleCountHandler : CycleCountCommandHandler, IReques
                 return new CycleCountWriteOutcome(0, count.Id);
             }
 
-            var limit = CycleCountRules.DefaultMaxLinesPerCount;
             if (snapshot.BinIds.Count > limit || snapshot.Rows.Count > limit)
             {
                 result = new Attempt(AttemptKind.Refused, Refusal: CycleCountSupport.Fail<CycleCountDto>(CycleCountErrorCodes.ScopeTooLarge,

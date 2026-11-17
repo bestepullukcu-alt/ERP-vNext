@@ -50,11 +50,16 @@
                         <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionBasic"]</h6>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="form-label fw-medium" for="ouCode">@Localizer["Code"] <span class="text-danger">*</span></label>
+                                <label class="form-label fw-medium" for="ouCode">@Localizer["Code"]</label>
                                 <div class="diten-field">
                                     <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
-                                    <input type="text" id="ouCode" class="form-control" maxlength="80" placeholder="@Localizer["CodePlaceholder"]" data-required required />
+                                    @* MOD-0040-FU02 DL-2 — the code is system-assigned: empty on create, the stored value on edit; never typed. *@
+                                    <input type="text" id="ouCode" class="form-control" readonly aria-readonly="true" />
                                 </div>
+                                @if (!isEdit)
+                                {
+                                    <div class="form-text">@Localizer["RecordCodeAssignedOnSave"]</div>
+                                }
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium" for="ouName">@Localizer["Name"] <span class="text-danger">*</span></label>

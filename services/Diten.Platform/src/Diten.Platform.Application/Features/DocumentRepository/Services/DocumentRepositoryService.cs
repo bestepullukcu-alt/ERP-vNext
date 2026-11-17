@@ -131,8 +131,127 @@ public sealed class DocumentRepositoryService
                 "A file is required.", 400, DocumentRepositoryReasonCodes.ValidationFailed, correlationId);
         }
 
-        var actor = _currentUser.ActorName;
+        // r8 D-1: the user and in-process paths keep today's behaviour — the metadata write gets the caller's token.
+        return await StoreCoreAsync(
+            tenantId,
+            new StoreTrustedRepositoryObjectInput(
+                input.Scope, input.CompanyId, input.OwningItemId, input.OwningVersionId, input.FileName, input.MediaType, input.Content),
+            _currentUser.ActorName,
+            trustedConsumer: null,
+            correlationId,
+            ct,
+            irreversibleStepToken: ct);
+    }
 
+    // ── MOD-0262-FU01 DL-2 — the trusted consumer surface (api/internal/v1/document-repository/trusted-consumer). The
+    //    executor has verified the service token, the closed list and the scope; the tenant is the token's (TenantScope).
+    //    Visibility is the consumer MODULE's (DocumentRepositoryAccessPolicy.IsVisibleToTrustedConsumer). Only these methods
+    //    pass CancellationToken.None to the irreversible steps (r6 SB F-2 / tur 3 F-2; r8 D-1).
+
+    /// <summary>
+    /// DL-2 upload. Returns 201 (the MOD-0217 dependency expects Created; the user path keeps its 200). After the bytes
+    /// land, the metadata row is written with <see cref="CancellationToken.None"/>: a client that goes away now leaves a
+    /// consistent row + binary pair, never a row whose binary was deleted (§8.1 "Geri dönülmez adımlar").
+    /// </summary>
+    public async Task<Response<RepositoryObjectModel>> StoreForTrustedConsumerAsync(
+        StoreTrustedRepositoryObjectInput input, TrustedRepositoryConsumer consumer, string correlationId, CancellationToken ct)
+    {
+        var tenantId = TenantGuard.RequireTenant(_tenantContext);
+
+        if (!consumer.Scopes.Contains(input.Scope.ToString(), StringComparer.Ordinal))
+        {
+            // The executor refuses this before the command; kept here so the service never trusts its caller (AD-5).
+            return Response<RepositoryObjectModel>.Fail(
+                "Permission denied for this storage scope.", 403, DocumentRepositoryReasonCodes.TrustedConsumerForbidden, correlationId);
+        }
+
+        var stored = await StoreCoreAsync(
+            tenantId,
+            input,
+            $"service:{consumer.ServiceName}:{consumer.ClientId:D}",
+            consumer,
+            correlationId,
+            ct,
+            irreversibleStepToken: CancellationToken.None);
+
+        return stored.IsSuccessful && stored.Data is not null
+            ? Response<RepositoryObjectModel>.Success(stored.Data, 201, correlationId)
+            : stored;
+    }
+
+    public async Task<Response<RepositoryObjectModel>> GetForTrustedConsumerAsync(
+        Guid contentId, TrustedRepositoryConsumer consumer, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.IsVisibleToTrustedConsumer(row, consumer.ConsumerModule, consumer.Scopes))
+        {
+            return NotFound<RepositoryObjectModel>(correlationId);
+        }
+
+        return Response<RepositoryObjectModel>.Success(ToModel(row), correlationId: correlationId);
+    }
+
+    public async Task<Response<TrustedRepositoryObjectContent>> OpenReadForTrustedConsumerAsync(
+        Guid contentId, TrustedRepositoryConsumer consumer, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.IsVisibleToTrustedConsumer(row, consumer.ConsumerModule, consumer.Scopes))
+        {
+            return NotFound<TrustedRepositoryObjectContent>(correlationId);
+        }
+
+        var opened = await OpenRowAsync(row, correlationId, ct);
+        if (!opened.IsSuccessful || opened.Data is null)
+        {
+            return Response<TrustedRepositoryObjectContent>.Fail(opened.Errors, opened.StatusCode, opened.ReasonCode, correlationId);
+        }
+
+        return Response<TrustedRepositoryObjectContent>.Success(
+            new TrustedRepositoryObjectContent(opened.Data, ToModel(row)), correlationId: correlationId);
+    }
+
+    /// <summary>
+    /// ⛔ DL-2 compensation only (AD-6) — repeat-safe (§8.1 "Telafi tekrarı"). The decision read uses the request token
+    /// and also sees an already compensated row of this tenant: that answers 204 without calling the provider. After the
+    /// decision, marking and deleting run with <see cref="CancellationToken.None"/> (r6 tur 3 F-2; r8 D-1).
+    /// </summary>
+    public async Task<Response<NoContent>> CompensateForTrustedConsumerAsync(
+        Guid contentId, TrustedRepositoryConsumer consumer, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdIncludingCompensatedAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.IsVisibleToTrustedConsumer(row, consumer.ConsumerModule, consumer.Scopes))
+        {
+            return NotFound<NoContent>(correlationId);
+        }
+
+        if (row.IsDeleted)
+        {
+            return Response<NoContent>.Success(204, correlationId);
+        }
+
+        return await CompensateRowAsync(row, correlationId, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// The one store body of all three paths. <paramref name="irreversibleStepToken"/> is the token of the metadata write
+    /// after the bytes landed: the caller's token on the user and in-process paths, <see cref="CancellationToken.None"/> on
+    /// the trusted path only (r8, D-1). Public signatures do not change (AD-2).
+    /// </summary>
+    private async Task<Response<RepositoryObjectModel>> StoreCoreAsync(
+        Guid tenantId,
+        StoreTrustedRepositoryObjectInput input,
+        string actor,
+        TrustedRepositoryConsumer? trustedConsumer,
+        string correlationId,
+        CancellationToken ct,
+        CancellationToken irreversibleStepToken)
+    {
         var stored = await _storage.StoreAsync(
             new ContentStoreRequest(
                 tenantId,
@@ -173,8 +292,10 @@ public sealed class DocumentRepositoryService
                 MediaType = result.MediaType,
                 ByteSize = result.ByteSize,
                 Checksum = result.Checksum,
-                CreatedBy = actor
-            }, ct);
+                CreatedBy = actor,
+                TrustedConsumerClientId = trustedConsumer?.ClientId,
+                TrustedConsumerModule = trustedConsumer?.ConsumerModule
+            }, irreversibleStepToken);
 
             return Response<RepositoryObjectModel>.Success(ToModel(row), correlationId: correlationId);
         }
@@ -280,12 +401,26 @@ public sealed class DocumentRepositoryService
         return await CompensateRowAsync(row, correlationId, ct);
     }
 
-    private async Task<Response<NoContent>> CompensateRowAsync(RepositoryObject row, string correlationId, CancellationToken ct)
+    /// <summary>
+    /// The one compensation body of all three paths. <paramref name="irreversibleStepToken"/> is the caller's token on the
+    /// user and in-process paths and <see cref="CancellationToken.None"/> on the trusted path only (r8, D-1).
+    /// <para><b>Race rule (r5, F-3; both paths):</b> only the call that wins the atomic mark (<c>ModifiedCount &gt; 0</c>)
+    /// deletes the binary; a call that loses answers 204 and logs <c>compensation race lost</c>.</para>
+    /// </summary>
+    private async Task<Response<NoContent>> CompensateRowAsync(
+        RepositoryObject row, string correlationId, CancellationToken irreversibleStepToken)
     {
         var contentId = row.ContentId;
-        await _objects.MarkCompensatedAsync(contentId, ct);
+        if (!await _objects.MarkCompensatedAsync(contentId, irreversibleStepToken))
+        {
+            _logger.LogWarning(
+                "Repository compensation race lost for content {ContentId} (correlation {CorrelationId}); another call " +
+                "marked it first, so this call does not delete the stored object.",
+                contentId, correlationId);
+            return Response<NoContent>.Success(204, correlationId);
+        }
 
-        if (!await _storage.TryDeleteAsync(row.StorageProvider, row.ObjectKey, ct))
+        if (!await _storage.TryDeleteAsync(row.StorageProvider, row.ObjectKey, irreversibleStepToken))
         {
             _logger.LogWarning(
                 "Compensation delete failed for content {ContentId}; orphan-cleanup follow-up required (MOD-0262-FU03).",

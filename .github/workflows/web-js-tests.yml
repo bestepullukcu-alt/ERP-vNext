@@ -4,16 +4,26 @@ name: web-js-tests
 # 317 files) ran in no workflow at all — a broken one was seen by nobody. This job runs them on every pull request and on
 # main. Measured before it existed (2026-11-05, ad1d06222, local): 301 of 317 files green, 32 of 5 415 tests red in 16
 # files, each owned by a module team. So it starts as a NOT required check: it shows the reds, it stops no merge; the
-# owner adds it to the required checks once main is green. Same rule as every workflow here — read-only token, no
+# owner adds it to the required checks once main is green (it is a required check on main since EES 2.1/2.2, 2026-11). Same rule as every workflow here — read-only token, no
 # secret, actions pinned to a COMMIT SHA, nothing that turns a red test green. The JUnit report is kept as an artifact
-# (scripts/ac_coverage.py report reads it).
+# (scripts/ac_coverage.py report reads it). EES MQ-01: merge_group too, so it can be required under the merge queue.
 on:
   pull_request:
+  merge_group:
+    types: [checks_requested]
   push:
     branches: [main]
 
 permissions:
   contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow, whose result
+# nobody reads any more. A push to main, a merge group and a manual run each get a group of their own (the run id), so
+# they are never cancelled and never wait for another run. A re-run (run_attempt 2 or more) also gets a group of its own:
+# re-running an older commit's run can never cancel the newest commit's run (Codex round 1, CI-ISRAF-01).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   web-js-tests:

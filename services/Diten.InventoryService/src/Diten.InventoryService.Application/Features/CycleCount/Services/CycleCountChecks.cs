@@ -84,21 +84,20 @@ public sealed class CycleCountChecks
             }
         }
 
-        if (form.AssignedTo is { } assignee)
-        {
-            switch (await _assignees.CheckAsync(assignee, ct))
-            {
-                case CycleCountAssigneeCheck.Valid:
-                    break;
-                case CycleCountAssigneeCheck.Invalid:
-                    return CycleCountSupport.Fail<T>(CycleCountErrorCodes.AssigneeInvalid, "The assignee is not an active user of this tenant.", 422,
-                        new Dictionary<string, object?> { ["assignedTo"] = assignee.ToString("D") });
-                default:
-                    return CycleCountSupport.Fail<T>(CycleCountErrorCodes.AssigneeDirectoryUnavailable, "The assignee could not be checked; nothing was written.", 503);
-            }
-        }
+        return await AssigneeAsync<T>(form.AssignedTo, ct);
+    }
 
-        return null;
+    /// <summary>Pack §12 <c>AssignedTo</c>: an active user of this tenant (DL-1 form; DL-3 recount request). null = none or valid.</summary>
+    public async Task<Response<T>?> AssigneeAsync<T>(Guid? assignedTo, CancellationToken ct)
+    {
+        if (assignedTo is not { } assignee) return null;
+        return await _assignees.CheckAsync(assignee, ct) switch
+        {
+            CycleCountAssigneeCheck.Valid => null,
+            CycleCountAssigneeCheck.Invalid => CycleCountSupport.Fail<T>(CycleCountErrorCodes.AssigneeInvalid, "The assignee is not an active user of this tenant.", 422,
+                new Dictionary<string, object?> { ["assignedTo"] = assignee.ToString("D") }),
+            _ => CycleCountSupport.Fail<T>(CycleCountErrorCodes.AssigneeDirectoryUnavailable, "The assignee could not be checked; nothing was written.", 503)
+        };
     }
 
     /// <summary>The company prefix (MDM legal-entity <c>Code</c>, <c>^[A-Z]{2,5}$</c>) or the refusal.</summary>

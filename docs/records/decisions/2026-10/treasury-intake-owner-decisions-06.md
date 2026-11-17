@@ -156,6 +156,14 @@ Kaynak: CRM CT (MOD-0149) hizalama mesajı (K1 aktardı, 2026-11-05) ve K1 / gmg
    - MOD-0149 önkoşulu açık kalır. Bunun iki koşulu var: ekin onayı (CRM onay PR'ı) main'e girmeli ve sözleşme MOD-0149 DL-1 kabulüyle donmalı.
    - Bu revizyon yerel dalda bekler. RECORD-CODE-ALLOCATE dondurulunca zarf revizyonu aynı sürüme eklenir. Ardından Codex tek tur inceler. PR, CRM onay PR'ı main'e girince açılır.
 
+## D131 — commercial-suite domain sahibi: Beste (2026-11-05)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-05: "Beste (Önerilen)"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Ölçüm: `origin/main` @ `a38bab855`. Bağlam: CRM CT, MOD-0149 kararlarını (K-1…K-11) "commercial-suite sahibi Beste" olarak kaydediyor (`docs/crm/mod0149-review-01` @ `1ec2d1385`). Onay satırı değildir.
+
+1. **D131/1 — atama:** commercial-suite domain sahibi Beste (`bestepullukcu-alt`). MOD-0057 O-13 (D61, D65/1) kapandı.
+2. **D131/2 — sonuç:** D61 yerleşim onayı ve MOD-0057 paket onayı ona bilgi olarak gider. MOD-0057 paket onayını (CT-APR-01) domain sahibi olarak Beste verir. O-4 (MOD-0162 sahibi teyidi), O-5 (MOD-0018 kaydı, FU28) ve O-10 (DCP-011 sahibi teyidi) açık kalır.
+3. **D131/3 — sınır:** MOD-0057 kapsamı, izinleri ve AC'leri değişmedi; künye `draft`. `domain-config.md`'de sahip alanı yok, değişmedi. Sahiplik kaydının başka bir yere yazılması gerekiyorsa ayrı adımdır.
+
 ## D132 — SEC-002 kodu DL-1 kabul kapısına, RCS zarf revizyonu, kapanan iki madde (2026-11-05)
 
 Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-05: "Taşı (Önerilen)", "Şimdi yaz (Önerilen)", "Evet, hazırla (Önerilen)"); oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Ölçüm: `origin/main` @ `018f0119c`. Onay satırı değildir.
@@ -206,6 +214,14 @@ Kaynak: Codex K3 tur 1 (`de49ac68b`; MOD-0120 UYGUN DEĞİL — 3 ORTA; MOD-0124
 4. **D136/4 — sınır:** kapsam, izin, AC numaraları ve `status` değişmedi. MOD-0124 tur 1'de UYGUN (inceleme kaydı bu commit'le). MOD-0120 tur 2 bu sürümle.
 5. **D136/5 — Codex K3 tur 2 (`8cff9a5c1`, ORTA):** MOD-0120 Dependencies hücresi iznin canlı Auth kataloğunda olmadığını kesin söylüyordu; canlı ortam ölçülmedi. İfade depo ölçümüyle sınırlandı (`crm.account.lookup-validation` depoda yalnız CRM kodunda ve testinde, `git grep`, `018f0119c`); canlı katalog ve AR rol ataması Ali'den teyit ve DL-1 kabul kanıtı bekleyen koşul. Tur 3 bu sürümle.
 
+## D138 — MOD-0057 O-10 kapandı, O-4 commercial-suite payı (2026-11-05)
+
+Kaynak: Beste'nin mesajı (K1 aktardı, 2026-11-05; D131 dalını `0e3549642` okudu). Onay satırı değildir.
+
+1. **D138/1 — O-10:** (a) teyit — MOD-0057 tek modül paketi, DCP-011 üyesi değil. DCP-011'in `parked_modules` satırını DCP sahibi (Beste) günceller. Kapandı.
+2. **D138/2 — O-4:** commercial-suite sahibi (a)'yı uygun buldu: MOD-0162 Subject / Topic / AudienceProfile'ın tek kayıt sahibi kalır; `KnowledgeContent.Tags[]` v1'de değişmez. XMC-001 teyidini MOD-0162 sahibi verir — açık (MOD-0162-FU01 künyesinde `owner: module-pack-author`; kişi sorulacak).
+3. **D138/3 — sıra:** O-5 (FU28, Ali) açık; sonra MOD-0057 incelemesi Beste'de.
+
 ## D139 — Platform XMC-001 "evet", aday modu (a); dört finans paketi `ready-for-dev` (2026-11-06)
 
 Kaynak: Beste'nin mesajı (Platform sahibi; K1 aktardı, 2026-11-06), 70 çift dosyası `xmc001-finans-70-cift` (md + csv; çiftler paketlerin Authorization bölümünden, dal `docs/ct/treasury-envelope-d132-01` @ `9dfba1894`). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir.
@@ -215,3 +231,52 @@ Kaynak: Beste'nin mesajı (Platform sahibi; K1 aktardı, 2026-11-06), 70 çift d
 3. **D139/3 — paketler:** MOD-0119, MOD-0120, MOD-0124 ve MOD-0126'da SEC-002 paket kapısı maddesi kapandı (D132/1'de kalan XMC-001 cevabı ve aday modu kararı); işaretsiz paket düzeyi madde yalnız CT-APR-02 ve CT-APR-01. Künye `ready-for-dev`; ENGELLER'e S-49 onay istisnası (D127/3, D134 deseni); Durum paragrafı: kod, bu sürümün CT-APR-01 satırı main'de ve DCP-011 kod alanı paketi kapsayınca. MOD-0126 sürümü `4fc006970fc63790270af10bdab86e5b30ae03e046bd1b16a886e97d9cbf0a1e`; MOD-0119 / 0120 / 0124 ortak tanım sabitlemesi buna çekildi (D135/1).
 4. **D139/4 — sıra:** dört paketin künye farkı için Codex incelemesi (CT-APR-02), sonra sürüme bağlı CT-APR-01 satırları (`bestepullukcu-alt`, HIGH), aynı PR'da. Kod için ayrıca DCP-011 `runtime_code_scope` revizyonu (D137 deseni) ve DL-1 kabul kapıları (Platform kodu, FU27 kodu, RCS servisi).
 5. **D139/5 — açık:** MOD-0018-FU27 §5.2 "Koşullu" bölümü ve Dependencies satırı XMC-001'i hâlâ "açık" yazıyor — FU27 revizyonu (MOD-0018 sahibi Ali teyit eder) ayrı iş. Kapsam, izin, AC ve dilimler değişmedi; ürün kodu yok.
+
+## D140 — MOD-0057 O-4 kapandı (2026-11-06)
+
+Kaynak: Beste'nin mesajı (K1 aktardı, 2026-11-06). Onay satırı değildir.
+
+1. **D140/1 —** MOD-0162 commercial-suite'tedir; MOD-0162 sahibi olarak teyidi domain sahibi Beste verir (D131). MOD-0162-FU01 künyesindeki `owner: module-pack-author` paketi yazan ajanı gösterir, kişi değildir.
+2. **D140/2 — O-4 (a) teyit:** MOD-0162 Subject / Topic / AudienceProfile'ın tek kayıt sahibi kalır; MOD-0057 bu nesneleri kopyalamaz; `KnowledgeContent.Tags[]` v1'de değişmez, geçiş ileride ayrı Follow-up. O-4 ve "MOD-0162 sahibine sınır bilgisi" maddesi kapandı.
+3. **D140/3 — açık:** O-5 (FU28, Ali); sonra MOD-0057 incelemesi Beste'de.
+
+## D141 — WP-0289-DL1 dağıtım: bağımsız prompt incelemesi bulguları (2026-11-06)
+
+Kaynak: iki bağımsız prompt incelemesi (taze bağlamlı alt ajan, claude-opus-5-5; v1.2 ve v1.3 için, ikisi de UYGUN DEĞİL — her biri iki engelleyici); K1 / gmg-10 ("Yes, prepare"). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Paket değişmedi (`0056f86e…`); kararlar prompt ve kabul betiği düzeyindedir. Onay satırı değildir.
+
+1. **D141/1 — ön kontrol sha'sı (v1.2 engelleyici):** prompt'un ön kontrolü önceki onaylı sürüm `fafef5c4…`'ü bekliyordu; onaylı `ready-for-dev` sürüm `0056f86e…` yazıldı.
+2. **D141/2 — `MdmDocumentClassMaps.cs` (v1.2 engelleyici):** `Bank` / `BankBranch` `RepositoryBase` ile bütün belge yazar; R3 kuralı (`MdmDocumentClassMapsTests` iki koruma testi) gereği `StrictByDesignRoots`'a eklenir. Dosya İzinli yollara alındı; betik yalnız bu eklemeye izin verir.
+3. **D141/3 — teslim keşfi (v1.3 engelleyici):** `AuditIntentTenantPartitionDiscoveryRepository.cs`'deki sabit `Collections` listesi, teslim işçisinin bekleyen niyeti olan kiracıları bulduğu tek yoldur. Paketin "teslim deposu koleksiyon listesi de aynı sırayla genişler" kuralının parçası sayıldı: dosya İzinli yollara alındı (yalnız `mdm_banks` / `mdm_bank_branches`), gerçek keşifle AC-6 testi ve sabotajı istendi.
+4. **D141/4 — Platform eşlemesi (v1.3 engelleyici):** MDM banka niyetleri için Platform `TrustedSourceAuditIntentOperationMap.cs`'de (aggregate, operation) satırları gerekir; yoksa Platform `AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED` döner. Paket bu bağımlılığı yazmıyor. Prompt'a DL-1 kabul kapısı P-12 olarak yazıldı (başlamayı bekletmez): sahibi Platform (Beste), XMC-001; işçi Platform'a dokunmaz, çift listesini raporlar. Paket metnine eklenmesi sonraki MOD-0289 revizyonunun işidir.
+5. **D141/5 — diğer:** RCS çağıran kimliği (`Mdm` bağlaması, `mdm.banks.create`, yapılandırma yoksa 503) prompt'a yazıldı; kırmızı taban bu Mac'te 8.0.18 ile, kabulde 7.0.28; kuyruk satırının metni (v1.2) ve kayıt yolu (v1.1) sonraki CT PR'ında v1.4'e çekilir; betik kontrol adı düzeltildi.
+
+
+## D142 — MOD-0289 DL-1: `MasterDataAuditOperation` için ortak niyet altyapısı eklemeli genişler (2026-11-07)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-07: "Altyapıyı genişlet (Önerilen)"); kaynak üçüncü bağımsız prompt incelemesi (v1.4, engelleyici: `LocalAuditIntent.Operation` ve `AuditIntentClaimedPayload.Operation` yalnız `ProductAuditOperation`; işlemci `payload.Operation.ToString()` gönderir). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; paket değişmez.
+
+1. **D142/1 — D24/2 aynen:** banka / şube işlemleri ayrı, genel `MasterDataAuditOperation` enum'undadır; `ProductAuditOperation`'a değer eklenmez.
+2. **D142/2 — eklemeli biçim:** `LocalAuditIntent` ve `AuditIntentClaimedPayload`'a boş geçilebilir `MasterDataAuditOperation? MasterDataOperation`; teslim işlemcisi işlem adını bu alan doluysa ondan, değilse `Operation`'dan alır. Ürün niyetlerinin alanları, BSON biçimi ve davranışı değişmez; eski biçimli belge okunur. Test ve sabotaj WP-0289-DL1 prompt'unda (Adım 2d).
+3. **D142/3 — XMC-001:** üç dosya MOD-0290 ürün ailesi alanındadır; MDM sahibi Ali'nin yazılı onayı prompt'un dağıtım kapısıdır (P-13). Ali aynı zamanda DL-1 uygulayıcısıdır.
+4. **D142/4 — son eleman kuralı:** yalnız ekleme dosyalarında (`AuditAggregateType.cs`, `AuditIntentDeliveryRepository.cs`) yeni satırlar son elemandan önce eklenir (v1.4 incelemesinin diğer bulgusu).
+
+
+## D143 — MOD-0289 DL-1: merkezi eşleme beklemesi (BL-566) banka işlemlerine eklemeli genişler (2026-11-08)
+
+Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-08: "Bekleme korumasını genişlet (Önerilen)"); kaynak dördüncü bağımsız prompt incelemesi (v1.5, engelleyici: `AwaitsCentralMapping` ve `CentralMappingRollout.AwaitingCentralMapping` yalnız `ProductAuditOperation` tanır; Platform eşlemesi canlıda yokken banka niyeti beklemeden ölü listeye düşer, denetim satırı kaybolur). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; paket değişmez.
+
+1. **D143/1 — bekleme:** `CentralMappingRollout`'a `MasterDataAuditOperation` için eklemeli bir küme (aynı ad kuralı: `MappedByDeployedPlatform`'da olmayan beklenir); işlemcinin bekleme, zaman aşımı ve bekleme adı mantığı D142'nin "seçili işlem"ini kullanır. Ürün kümesi ve `MappedByDeployedPlatform` değişmez.
+2. **D143/2 — biçim ayrıntıları (incelemenin diğer bulguları):** `MasterDataOperation` belge alanı `[BsonIgnoreIfNull]` ile — yeni ürün niyetinde öğe yok (testle); `AuditIntentClaimedPayload`'a son parametre, varsayılan `null`.
+3. **D143/3 — XMC-001 kapsamı:** P-13 (Ali) dört dosyayı kapsar: `LocalAuditIntent.cs`, `AuditIntentClaimedPayload.cs`, `AuditIntentDeliveryProcessor.cs`, `CentralMappingRollout.cs`.
+4. **D143/4 — düzeltme (beşinci bağımsız inceleme, v1.6 UYGUN; diğer bulgu):** Domain projesinde Bson referansı olmadığı için D143/2'deki `[BsonIgnoreIfNull]` derlenmez; eşdeğeri `LocalAuditIntent.ShouldSerializeMasterDataOperation()` (sürücü AutoMap'i bulur) — csproj ve `MdmDocumentClassMaps.cs` harita mantığı değişmez. P-13 onayının kaydı prompt metnine değil, dağıtım kaydına (bu dosyada bir D-satırı) yazılır. Auth çapraz koruma testlerinin banka bekleme kümesini ölçmemesi işçi raporunda "Known gaps" olarak istenir. Prompt v1.7.
+
+
+## D144 — FU27: `crm.account.lookup-validation` AR rolleri 14 ve 16'ya bağımlı anahtar; finans XMC-001 "verildi" (2026-11-09)
+
+Kaynak: Beste'nin mesajları (K1 aktardı, 2026-11-09: izin CRM manifestinde, PR #396; liste kesin — yalnız #14 ve #16, onayda müşteri yeniden doğrulanmaz); K1 / gmg-10 ("Yes, start"). Oturum Treasury Intake CT (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`). Onay satırı değildir; MOD-0018 sahibinin (Ali) teyidine gider.
+
+1. **D144/1 — bağımlı anahtar:** `crm.account.lookup-validation` (MOD-0149) FU27 Bölüm 14.2'de bağımlı anahtar olarak roller 14 `TreasuryArOperator` ve 16 `TreasuryArOperationsManager`'a eklenir (D72/3–4 deseni, K-4 (b) — D70/1: Treasury manifestinde çapraz modül bağımlılığı, profil verir). Kaynak MOD-0120 Runtime Constraints "Müşteri uygunluğu güncel durumdur" (U-1 yalnız Create / Update / Issue; U-3 müşteri seçici). Roller 3, 15, 17 ve diğerleri almaz.
+2. **D144/2 — sayılar:** bağımlı anahtar sayısı 7 → 8; 117 modül anahtarı, 26 rol ve rol başına modül anahtarı sayıları değişmez; AC-3 genişletildi (sabotajlı); yeni AC yok.
+3. **D144/3 — XMC-001 ifadesi:** FU27 §5.2, Dependencies ve Checklist'te finans tüketicisi Platform XMC-001'i "verildi" (D139/1–2) yazıldı (D139/5'in açık maddesi kapandı).
+4. **D144/4 — sıra:** FU27 bağımsız incelemesi, sonra MOD-0018 sahibinin (Ali) teyidi; teyit gelince Beste'ye haber (takip tablosundan düşer). O zamana kadar kiracı yöneticisi izni bu iki role elle verebilir (Beste 2026-11-09).
+5. **D144/5 — bağımsız inceleme (taze alt ajan, claude-opus-5-5; UYGUN, 2 ORTA + 2 DÜŞÜK, hepsi işlendi):** K-4 karar hücresinde bağımlı anahtar sayısı 7 → 8 ve D144 notu karar hücresine taşındı; K-6'da finans XMC-001'i "verildi — D139/1–2"; §5.2'deki eski gelecek zamanlı cümle tarihçe olarak işaretlendi; AC-3'ün D144 eki DL-1 finans rolleriyle (1–19) sınırlandı ve 16'dan kaldırma sabotajı eklendi.

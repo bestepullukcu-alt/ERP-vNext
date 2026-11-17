@@ -188,11 +188,13 @@ public sealed class NavManifestL10nGuardTests
     // and asks for the entry to be deleted. A page-less manifest that is NOT listed here stays red; nothing else is relaxed.
     private static readonly IReadOnlyDictionary<string, string> PagelessUntil = new Dictionary<string, string>(StringComparer.Ordinal)
     {
+        // MOD-0180 DL-1 (WP-0180-DL1-FIX-01; XMC-001 Beste 2026-11-13): WAVE-PLANNING ships its API keys first (the 0178 / 0181 "page-less first
+        // slice" pattern) — its pages WAVES, WAVEPLANNER, WAVEEXCEPTIONS come with the DL-4 screens, and this entry is deleted then
+        ["WAVE-PLANNING"] = "MOD-0180 Wave Planning ekran işi (DL-4: pano, planlayıcı, istisna kuyruğu — pack §23) bekleniyor",
         // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
         ["mrp-replenishment"] = "MOD-0189 MRP Monitor / Exception Queue / Evidence Pack ekran işi (pack §11) bekleniyor",
-        ["safety-stock-optimization"] = "MOD-0191 Safety Stock Optimization tenant çalışma alanı ekran işi (AC-S09) bekleniyor",
-        // MOD-0181 — sayfalar DL-4'te gelince bu girdi çıkar (XMC-001, Beste 2026-11-09)
-        ["CYCLE-COUNTING"] = "MOD-0181 Cycle Counting DL-4 ekranları (pack §8.13) bekleniyor"
+        ["safety-stock-optimization"] = "MOD-0191 Safety Stock Optimization tenant çalışma alanı ekran işi (AC-S09) bekleniyor"
+        // MOD-0181 DL-4: CYCLE-COUNTING declares its pages (CYCLECOUNTS, COUNTSHEET, COUNTVARIANCES) — its entry was deleted
     };
 
     [Fact]

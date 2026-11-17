@@ -85,7 +85,7 @@ public class DocsPathGuardTests
         $@"^\s*(?:@?""contracts""(?!\s*,\s*@?""\.\."")\s*[,)]|contracts(?![{NameChars}])(?![/\\]+\.\.))",
         RegexOptions.Compiled);
 
-    /* Records never change (docs-organization.md: records/ ARTIK DEĞİŞMEZ) and are not run: a stale path in one can
+    /* Records never change on main (docs-organization.md K4; they may be archived) and are not run: a stale path in one can
        neither be fixed nor break anything. Read only when the authority file names the record. */
     private const string RecordsPrefix = "docs/records/";
 

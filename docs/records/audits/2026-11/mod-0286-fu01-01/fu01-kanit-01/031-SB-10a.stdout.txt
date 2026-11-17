@@ -1,0 +1,132 @@
+PASS CRM/Accounts CI-1 Views/CRM/Accounts/Create.cshtml
+PASS CRM/Accounts CI-1 Views/CRM/Accounts/Details.cshtml
+PASS CRM/Accounts CI-1 Views/CRM/Accounts/Edit.cshtml
+PASS CRM/Accounts CI-1 Views/CRM/Accounts/Index.cshtml
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/Create.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/Details.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/Edit.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/Index.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_ContactLinkEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_ContactLinkOffcanvas.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_DataTable.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_DetailsL10n.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_Filter.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_Form.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_IndexL10n.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelatedAccountsDataTable.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelatedAccountsFilter.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelatedContactsDataTable.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelatedContactsFilter.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelationshipEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_RelationshipOffcanvas.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_TerritoryCoverageDataTable.cshtml 0
+PASS CRM/Accounts CI-2 Views/CRM/Accounts/_TerritoryCoverageFilter.cshtml 0
+TABAN FU-14 CRM/Accounts CI-3 Compact _Form.cshtml matches Details.cshtml section/card map
+TABAN FU-14 CRM/Accounts CI-3 Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)
+TABAN FU-14 CRM/Accounts CI-3 Shaped placeholder: shared _TableSkeleton partial
+TABAN FU-4 CRM/Accounts CI-3 personalizationClient sends tenant header only for tenant users
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/form.js 0
+TABAN FU-14 CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/index.js 1
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-4 wwwroot/assets/js/CRM/Accounts/map.js 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/Create.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/Details.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/Edit.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/Index.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_ContactLinkEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_ContactLinkOffcanvas.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_DataTable.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_DetailsL10n.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_Filter.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_Form.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_IndexL10n.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelatedAccountsDataTable.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelatedAccountsFilter.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelatedContactsDataTable.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelatedContactsFilter.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelationshipEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_RelationshipOffcanvas.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_TerritoryCoverageDataTable.cshtml 0
+PASS CRM/Accounts CI-5 Views/CRM/Accounts/_TerritoryCoverageFilter.cshtml 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/form.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/index.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-5 wwwroot/assets/js/CRM/Accounts/map.js 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/Create.cshtml 0
+TABAN FU-14 CRM/Accounts CI-6 Views/CRM/Accounts/Details.cshtml 1
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/Edit.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/Index.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_ContactLinkEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_ContactLinkOffcanvas.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_DataTable.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_DetailsL10n.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_Filter.cshtml 0
+TABAN FU-14 CRM/Accounts CI-6 Views/CRM/Accounts/_Form.cshtml 4
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_IndexL10n.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelatedAccountsDataTable.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelatedAccountsFilter.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelatedContactsDataTable.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelatedContactsFilter.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelationshipEndOffcanvas.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_RelationshipOffcanvas.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_TerritoryCoverageDataTable.cshtml 0
+PASS CRM/Accounts CI-6 Views/CRM/Accounts/_TerritoryCoverageFilter.cshtml 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+TABAN FU-14 CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 1
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/form.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/index.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-6 wwwroot/assets/js/CRM/Accounts/map.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/form.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/index.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-7 wwwroot/assets/js/CRM/Accounts/map.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/form.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/index.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-8 wwwroot/assets/js/CRM/Accounts/map.js 0
+TABAN FU-14 CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/index.js:yok:savedView
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/details-contacts.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/details-territory.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/details.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/form.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/index.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-9 wwwroot/assets/js/CRM/Accounts/map.js 0
+TABAN FU-14 CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/details-contacts.js 1
+TABAN FU-14 CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/details-dt-section.js 4
+TABAN FU-14 CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/details-territory.js 1
+TABAN FU-14 CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/details.js 1
+PASS CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/details.l10n.js 0
+PASS CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/form.js 0
+TABAN FU-14 CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/index.js 4
+PASS CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/index.l10n.js 0
+PASS CRM/Accounts CI-10 wwwroot/assets/js/CRM/Accounts/map.js 0
+başvuru taraması yok
+okunan görünüm metni: HEAD 19, taban 0
+süre: 0.3 s

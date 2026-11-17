@@ -20,6 +20,12 @@ public sealed class WarehouseOutboundOptions
 
     /// <summary>Outbounds one tick looks at, at most.</summary>
     public int MaintenanceBatchSize { get; set; } = 200;
+
+    /// <summary>
+    /// DL-7 (pack §8.23): a <c>ReadyToShip</c> outbound whose <c>ReadyAtUtc</c> is older than this is the S3 <c>DispatchNotSeen</c> exception
+    /// (proposal 24 h).
+    /// </summary>
+    public int DispatchNotSeenHours { get; set; } = 24;
 }
 
 public sealed class WarehouseOutboundOptionsValidator : IValidateOptions<WarehouseOutboundOptions>
@@ -30,6 +36,7 @@ public sealed class WarehouseOutboundOptionsValidator : IValidateOptions<Warehou
         if (options.AllocationLeaseSeconds is < 10 or > 3600) failures.Add("Warehouse:Outbound:AllocationLeaseSeconds must be 10-3600.");
         if (options.MaintenanceIntervalSeconds is < 5 or > 3600) failures.Add("Warehouse:Outbound:MaintenanceIntervalSeconds must be 5-3600.");
         if (options.MaintenanceBatchSize is < 1 or > 1000) failures.Add("Warehouse:Outbound:MaintenanceBatchSize must be 1-1000.");
+        if (options.DispatchNotSeenHours is < 1 or > 720) failures.Add("Warehouse:Outbound:DispatchNotSeenHours must be 1-720.");
         return failures.Count == 0 ? ValidateOptionsResult.Success : ValidateOptionsResult.Fail(failures);
     }
 }

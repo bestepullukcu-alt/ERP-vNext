@@ -1,0 +1,78 @@
+@using Diten.Web.Views.Warehouse.WarehouseActivity
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseActivityIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["ActivityTitle"].Value;
+    ViewData["PageCode"] = "WAREHOUSEACTIVITY"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-7 — Etkinlik İzi (Golden Reference Slim, server mode, proxy profile — pack §8.23, §11.1, §11.5). READ-ONLY: the task timeline, the outbound
+    timeline and the MOD-0178 INVENTORY movements, newest first, in a MANDATORY date range of at most 31 days (the filter opens on the last 7 days).
+    Bilinçli sapma (§11.5): no create / edit offcanvas; the QuickView is read-only (the row's data) and a row links to its record's screen when the
+    reader holds that screen's key.
+
+    UAS-001 — nothing below is drawn without warehouse.activity.read: no heading, no filter, no empty table, no button. No redirect.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.ActivityRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["ActivityTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (MOD-0173 FU01 component, reused as is): /api/warehouse is company scoped like the ledger.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/WarehouseActivity/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ActivityTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="activity-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-warehouseactivity" data-dt-standard="v2"> *@
+    <div class="wh-list">
+        <partial name="~/Views/Warehouse/WarehouseActivity/_DataTable.cshtml" />
+    </div>
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" (read-only) *@
+    <partial name="~/Views/Warehouse/WarehouseActivity/_DetailsQuickView.cshtml" />
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/WarehouseActivity/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/WarehouseActivity/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/WarehouseActivity/index.js" asp-append-version="true"></script>
+    }
+}

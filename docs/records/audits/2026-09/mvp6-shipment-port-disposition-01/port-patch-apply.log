@@ -1,1 +1,0 @@
-git apply --check/apply: exit 0; byte target verified separately
