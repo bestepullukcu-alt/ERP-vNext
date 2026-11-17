@@ -3,7 +3,9 @@
 
     python3 scripts/ees_run_record.py --transcript <session.jsonl> [--transcript <other.jsonl> ...]
         [--pr <n> ...] [--repo <owner/name>] [--idle-minutes 5] [--format md|json]
-        [--since <ISO>] [--until <ISO>] [--adim N/M] [--tur-adlari]
+        [--since <ISO>] [--until <ISO>] [--adim N/M] [--tur-adlari] [--uyari-bekleme-dk N] [--uyari-dokunus N]
+        [--uyari-cikti-token N] [--uyari-toplam-token N] [--uyari-ileti N] [--uyari-ajan-tekrar N] [--uyari-hata N]
+        [--uyari-pr-gun N]
 
 Reads Claude Code session transcripts (JSONL). For each one it also reads <file without .jsonl>/subagents/*.jsonl when that
 folder exists. Output is Markdown (Turkish headings) or one JSON object (--format json): summary, turns, waits,
@@ -44,6 +46,16 @@ Report line: the summary prints `Bu adım: <is> iş + <bekleme> bekleme · <toke
 For one plan step, run the tool with --since set to the moment the step started. The progress bar comes from the plan:
 `--adim 4/8` prints `İlerleme: ▓▓▓▓░░░░ 4/8 adım`. The estimated finish is not measured; the reporter writes it.
 
+Warnings ("Uyarılar", printed right after the summary; `uyarilar` in json): fixed threshold rules over numbers the tool
+already measures - no judgement, no extra network call, the exit code stays 0. Each rule has a flag; 0 switches it off.
+  U1 long wait (>= --uyari-bekleme-dk, default 60 min; waits shorter than --idle-minutes are not measured as waits),
+  U2 human touches in the interval (> --uyari-dokunus, 3), U3 output tokens (> --uyari-cikti-token, 150000) and the
+  four-kind token total (> --uyari-toplam-token, 20000000), U4 long chat (per session, whole transcript, not only the
+  --since interval: assistant messages > --uyari-ileti, 400, or at least one compaction summary), U5 repetition (one
+  sub-agent type started > --uyari-ajan-tekrar times, 2; tool results flagged as errors > --uyari-hata, 10), U6 only with
+  --pr (failed checks > 0; a PR open more than --uyari-pr-gun days, 5). Warning text holds only numbers, fixed words,
+  "oturum-n", durations and the already whitelisted tool / sub-agent names.
+
 Python 3.9+, standard library only.
 """
 from __future__ import annotations
@@ -80,6 +92,13 @@ NON_HUMAN_PREFIXES = (
     "[Subagent hand-back]",
     "Another Claude session sent a message",
 )
+
+# Warning thresholds (flags --uyari-*); 0 switches a rule off.
+DEFAULT_LIMITS = {
+    "bekleme_dk": 60, "dokunus": 3, "cikti_token": 150000, "toplam_token": 20000000, "ileti": 400,
+    "ajan_tekrar": 2, "hata": 10, "pr_gun": 5,
+}
+MAX_WAIT_LINES = 3
 
 WAIT_TOOL = "izin ya da uzun komut"
 WAIT_HUMAN = "kişi bekleniyor"
@@ -305,7 +324,8 @@ def parse_file(path, fk, since, until, is_main, owners):
     (user, attachment) owns it; copies in other files are skipped, so a resumed session is not counted twice.
     Events are (ts, file key, kind, payload); kind is assistant / result / human / human_q / other.
     """
-    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "queued": 0, "chapters": [], "reads": Counter()}
+    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "queued": 0, "chapters": [], "reads": Counter(),
+           "errors": 0}
     anon = 0
     with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
@@ -391,6 +411,9 @@ def parse_file(path, fk, since, until, is_main, owners):
             ids = []
             if isinstance(content, list):
                 ids = [c.get("tool_use_id") for c in content if isinstance(c, dict) and c.get("type") == "tool_result"]
+            if isinstance(content, list):
+                res["errors"] += sum(1 for c in content if isinstance(c, dict) and c.get("type") == "tool_result"
+                                     and c.get("is_error") is True)
             if ids:
                 kind, payload = "result", [i for i in ids if isinstance(i, str)]
             elif is_main and is_human_event(e, content):
@@ -422,6 +445,99 @@ def find_subagent_files(main_path):
     return out
 
 
+def session_overview(path):
+    """Whole transcript, no --since/--until: (assistant messages once per id, compaction summary events). Main chat only."""
+    seen = set()
+    anon = compactions = 0
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(e, dict):
+                continue
+            if e.get("isCompactSummary") is True:
+                compactions += 1
+            if e.get("type") == "assistant" and not e.get("isSidechain"):
+                msg = e.get("message") if isinstance(e.get("message"), dict) else {}
+                mid = msg.get("id")
+                if isinstance(mid, str) and mid:
+                    seen.add(mid)
+                else:
+                    anon += 1
+    return len(seen) + anon, compactions
+
+
+def build_warnings(limits, waits, humans, t_out, t_total, chats, launches, errors, prs, now):
+    """Fixed threshold rules over measured numbers -> (list of {kod, metin, deger, esik}, count of warnings).
+
+    A rule whose limit is 0 is off. Nothing but numbers, fixed words and already whitelisted names goes into a text.
+    """
+    out = []
+    count = 0
+
+    def add(kod, metin, deger, esik):
+        out.append({"kod": kod, "metin": cell(metin), "deger": deger, "esik": esik})
+
+    lim = limits["bekleme_dk"]
+    if lim > 0:
+        long_waits = sorted((w for w in waits if w["sure_s"] >= lim * 60.0), key=lambda w: -w["sure_s"])
+        count += len(long_waits)
+        for w in long_waits[:MAX_WAIT_LINES]:
+            parts = ["Uzun bekleme: %s" % w["tur"]] + ([w["arac"]] if w["arac"] else []) + [fmt_dur(w["sure_s"])]
+            add("U1", " · ".join(parts), minutes(w["sure_s"]), lim)
+        if len(long_waits) > MAX_WAIT_LINES:
+            more = len(long_waits) - MAX_WAIT_LINES
+            add("U1", "ve %d bekleme daha" % more, more, lim)
+    lim = limits["dokunus"]
+    if lim > 0 and humans > lim:
+        count += 1
+        add("U2", "İnsan dokunuşu hedefin üstünde: %d (hedef: en çok %d)" % (humans, lim), humans, lim)
+    lim = limits["cikti_token"]
+    if lim > 0 and t_out > lim:
+        count += 1
+        add("U3", "Çıktı token'ı yüksek: %s (eşik %s)" % (fmt_int(t_out), fmt_int(lim)), t_out, lim)
+    lim = limits["toplam_token"]
+    if lim > 0 and t_total > lim:
+        count += 1
+        add("U3", "Toplam token yüksek: %s (eşik %s)" % (fmt_int(t_total), fmt_int(lim)), t_total, lim)
+    lim = limits["ileti"]
+    if lim > 0:
+        for ad, n_msg, n_compact in chats:
+            if n_msg > lim or n_compact >= 1:
+                count += 1
+                text = "Sohbet uzadı: %s %d ileti" % (ad, n_msg)
+                if n_compact:
+                    text += ", %d kez özetlendi" % n_compact
+                add("U4", text + "; yeni sohbete devir düşünülmeli", n_msg, lim)
+    lim = limits["ajan_tekrar"]
+    if lim > 0:
+        for kind, n in sorted(launches.items(), key=lambda kv: (-kv[1], kv[0] or "")):
+            if n > lim:
+                count += 1
+                add("U5", "Aynı alt ajan %d kez başlatıldı: %s" % (n, kind or "alt ajan"), n, lim)
+    lim = limits["hata"]
+    if lim > 0 and errors > lim:
+        count += 1
+        add("U5", "Hatalı araç çağrısı çok: %d" % errors, errors, lim)
+    for p in prs or []:
+        if p.get("hata"):
+            continue
+        failed = p["kontrol"]["kalan"]
+        if failed > 0:
+            count += 1
+            add("U6", "Otomatik kontrollerde kırmızı: %d (PR #%d)" % (failed, p["no"]), failed, 0)
+        lim = limits["pr_gun"]
+        created = parse_ts(p.get("acildi"))
+        if lim > 0 and p["durum"] == "açık" and created is not None:
+            days = int((now - created).total_seconds() // 86400)
+            if days > lim:
+                count += 1
+                add("U6", "Birleştirme isteği %d gündür açık (PR #%d)" % (days, p["no"]), days, lim)
+    return out, count
+
+
 # ---------------------------------------------------------------------------------------------------- analysis
 def tokens_by_model(messages):
     out = {}
@@ -448,14 +564,17 @@ def token_total(slot_map):
     return sum(slot[k] for slot in slot_map.values() for k, _ in TOKEN_KINDS)
 
 
-def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_adlari=False, adim=None):
+def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_adlari=False, adim=None, limits=None,
+               now=None):
+    limits = dict(DEFAULT_LIMITS, **(limits or {}))
+    now = now or datetime.now(timezone.utc)
     threshold_s = idle_minutes * 60.0
     owners = {}
     files = []          # every parsed file: dict(fk, session, kind, res, ...)
     sessions = []
     for si, path in enumerate(transcripts, 1):
         main_res = parse_file(path, ("m", si), since, until, True, owners)
-        sess = {"no": si, "ad": "oturum-%d" % si, "main": main_res, "subs": []}
+        sess = {"no": si, "ad": "oturum-%d" % si, "main": main_res, "subs": [], "yol": path}
         sessions.append(sess)
         files.append(main_res)
     parent_uses = {}
@@ -596,6 +715,14 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
     t_out = sum(slot["cikti"] for slot in all_tokens.values())
     line = "Bu adım: %s iş + %s bekleme · %s · %d dokunuş" % (fmt_dur(active), fmt_dur(waiting), fmt_tok(t_total), humans)
 
+    launches = Counter()
+    errors = 0
+    for f in files:
+        errors += f["errors"]
+        for u in f["tool_uses"].values():
+            if u["launcher"]:
+                launches[u["subagent_type"] if u["subagent_type"] not in (None, "?") else None] += 1
+
     data = {
         "ozet": {
             "ilk": iso(first), "son": iso(last),
@@ -625,6 +752,7 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
         ],
         "oturumlar": [],
         "prler": None,
+        "uyarilar": [],
     }
     for s in sessions:
         data["oturumlar"].append({
@@ -647,6 +775,12 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
     if prs:
         getter = gh or default_gh
         data["prler"] = [pr_summary(n, repo, getter) for n in prs]
+    chats = []
+    for s in sessions:
+        n_msg, n_compact = session_overview(s["yol"])
+        chats.append((s["ad"], n_msg, n_compact))
+    data["uyarilar"], data["ozet"]["uyari_sayisi"] = build_warnings(
+        limits, waits, humans, t_out, t_total, chats, launches, errors, data["prler"], now)
     return data
 
 
@@ -772,6 +906,7 @@ def render_md(data):
         "- Araç çağrıları (ana sohbet): %s" % count_line(Counter(o["arac_cagrilari_ana"])),
         "- Araç çağrıları (alt ajanlar): %s" % count_line(Counter(o["arac_cagrilari_alt_ajan"])),
     ]
+    out.append("- Uyarı sayısı: %d" % o["uyari_sayisi"])
     if multi:
         out.append("- %d oturum tek zaman çizelgesinde birleştirildi; aynı anda çalışan oturumların süresi toplanmaz."
                    % o["oturum_sayisi"])
@@ -791,6 +926,13 @@ def render_md(data):
     out += ["```", ""]
     if o["ilerleme"]:
         out += ["Adım sayısı plandan gelir (`--adim`); \"tahmini bitiş\" ölçülmez, raporu yazan kendi tahminiyle ekler.", ""]
+
+    out += ["## Uyarılar", ""]
+    if data["uyarilar"]:
+        out += ["- %s" % cell(w["metin"]) for w in data["uyarilar"]]
+    else:
+        out.append("Uyarı yok.")
+    out.append("")
 
     out += ["## Turlar", ""]
     rows = [
@@ -893,10 +1035,22 @@ def build_parser():
                                                   "in the transcript, so the count is given here)")
     ap.add_argument("--tur-adlari", action="store_true",
                     help="name turns after mark_chapter titles (sanitised, 60 characters); default: Tur n")
+    for flag, key, kind, what in (
+            ("--uyari-bekleme-dk", "bekleme_dk", float, "a single wait this long (minutes) or longer"),
+            ("--uyari-dokunus", "dokunus", int, "more human messages than this in the interval"),
+            ("--uyari-cikti-token", "cikti_token", int, "more output tokens than this in the interval"),
+            ("--uyari-toplam-token", "toplam_token", int, "a four-kind token total above this in the interval"),
+            ("--uyari-ileti", "ileti", int, "a session with more assistant messages than this (whole transcript) or "
+                                            "with a compaction summary"),
+            ("--uyari-ajan-tekrar", "ajan_tekrar", int, "the same sub-agent type started more often than this"),
+            ("--uyari-hata", "hata", int, "more tool results flagged as errors than this"),
+            ("--uyari-pr-gun", "pr_gun", float, "a PR open more than this many days (only with --pr)")):
+        ap.add_argument(flag, dest="uyari_" + key, type=kind, default=DEFAULT_LIMITS[key], metavar="N",
+                        help="warn on %s (default %s; 0 switches the rule off)" % (what, DEFAULT_LIMITS[key]))
     return ap
 
 
-def main(argv=None, gh=None, stdout=None):
+def main(argv=None, gh=None, stdout=None, now=None):
     args = build_parser().parse_args(argv)
     out = stdout or sys.stdout
     if args.idle_minutes <= 0:
@@ -909,6 +1063,10 @@ def main(argv=None, gh=None, stdout=None):
         return 2
     if args.until and _DATE_ONLY.match(args.until.strip()):
         until = until + timedelta(days=1) - timedelta(microseconds=1)
+    limits = {k[len("uyari_"):]: v for k, v in vars(args).items() if k.startswith("uyari_")}
+    if any(v < 0 for v in limits.values()):
+        print("--uyari-* limits must be 0 (off) or positive", file=sys.stderr)
+        return 2
     adim = None
     if args.adim:
         m = re.fullmatch(r"(\d+)/(\d+)", args.adim.strip())
@@ -922,7 +1080,7 @@ def main(argv=None, gh=None, stdout=None):
             print("transcript not found", file=sys.stderr)
             return 2
     data = build_data(paths, args.pr or [], args.repo, args.idle_minutes, since, until, gh=gh,
-                      tur_adlari=args.tur_adlari, adim=adim)
+                      tur_adlari=args.tur_adlari, adim=adim, limits=limits, now=now)
     if args.format == "json":
         text = json.dumps(data, ensure_ascii=False, indent=2)
     else:

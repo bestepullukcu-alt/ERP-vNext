@@ -103,7 +103,7 @@ class Base(unittest.TestCase):
         paths = path if isinstance(path, list) else [path]
         return rr.build_data(paths, kw.pop("prs", []), kw.pop("repo", None), kw.pop("idle", 5), kw.pop("since", None),
                              kw.pop("until", None), gh=kw.pop("gh", None), tur_adlari=kw.pop("tur_adlari", False),
-                             adim=kw.pop("adim", None))
+                             adim=kw.pop("adim", None), limits=kw.pop("limits", None), now=kw.pop("now", None))
 
     def run_main(self, argv, gh=None):
         buf = io.StringIO()
@@ -547,7 +547,7 @@ class OutputFormats(Base):
         code, text = self.run_main(["--transcript", path, "--format", "json"])
         self.assertEqual(code, 0)
         obj = json.loads(text)
-        self.assertEqual(set(obj), {"ozet", "turlar", "beklemeler", "oturumlar", "prler"})
+        self.assertEqual(set(obj), {"ozet", "turlar", "beklemeler", "oturumlar", "prler", "uyarilar"})
         self.assertIsNone(obj["prler"])
         self.assertEqual(obj["ozet"]["insan_dokunusu"], 1)
         self.assertEqual(obj["ozet"]["token_hepsi"], 10)
@@ -557,7 +557,7 @@ class OutputFormats(Base):
     def test_markdown_has_the_turkish_headings(self):
         path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1))])
         _, md = self.run_main(["--transcript", path])
-        for heading in ("## Özet", "## Turlar", "## Beklemeler", "## Alt ajanlar", "## Okunan kural dosyaları"):
+        for heading in ("## Özet", "## Uyarılar", "## Turlar", "## Beklemeler", "## Alt ajanlar", "## Okunan kural dosyaları"):
             self.assertIn(heading, md)
         self.assertNotIn("## PR'lar", md)
         self.assertNotIn("## Adımlar", md)
@@ -751,6 +751,296 @@ class MultipleTranscripts(Base):
         b = self.write("b.jsonl", [human(at(2)), assistant(at(3), "b1", usage(o=1))])
         waits = self.data([a, b])["beklemeler"]
         self.assertEqual([(w["tur"], w["arac"]) for w in waits], [(rr.WAIT_TOOL, "Bash: make")])
+
+
+# ---------------------------------------------------------------------------------------------------- warnings
+def chat_of(n, start_min=0):
+    """One human message, then n assistant messages one second apart."""
+    return [human(at(start_min))] + [assistant(at(start_min, 1 + i), "m%d-%d" % (start_min, i), usage(o=1)) for i in range(n)]
+
+
+def kods(d):
+    return [w["kod"] for w in d["uyarilar"]]
+
+
+def texts(d):
+    return [w["metin"] for w in d["uyarilar"]]
+
+
+class Warnings(Base):
+    def wait_events(self, gap_s):
+        return [human(at(0)), assistant(at(1), "m1", usage(o=1)), assistant(at(1, gap_s), "m2", usage(o=1))]
+
+    # --- U1
+    def test_u1_long_wait_fires_at_the_threshold_not_below_it(self):
+        below = self.data(self.write("a.jsonl", self.wait_events(60 * 60 - 1)))
+        at_limit = self.data(self.write("b.jsonl", self.wait_events(60 * 60)))
+        self.assertEqual(below["uyarilar"], [])
+        self.assertEqual(kods(at_limit), ["U1"])
+        self.assertEqual(texts(at_limit), ["Uzun bekleme: diğer · 60 dk"])
+        self.assertEqual((at_limit["uyarilar"][0]["deger"], at_limit["uyarilar"][0]["esik"]), (60.0, 60))
+
+    def test_u1_names_the_tool_longest_first_at_most_three_lines_and_counts_all(self):
+        events = [human(at(0))]
+        t = 1
+        for i, gap in enumerate((61, 90, 75, 120, 66)):
+            events += [assistant(at(t), "w%d" % i, usage(o=1), blocks=[tool_use("t%d" % i, "Bash", command="git push origin SECRETBRANCH")]),
+                       result(at(t + gap), "t%d" % i)]
+            t += gap + 1
+        d = self.data(self.write("s.jsonl", events))
+        self.assertEqual(texts(d), [
+            "Uzun bekleme: izin ya da uzun komut · Bash: git push · 2 sa 0 dk",
+            "Uzun bekleme: izin ya da uzun komut · Bash: git push · 90 dk",
+            "Uzun bekleme: izin ya da uzun komut · Bash: git push · 75 dk",
+            "ve 2 bekleme daha",
+        ])
+        self.assertEqual(d["ozet"]["uyari_sayisi"], 5)
+        self.assertNotIn("SECRETBRANCH", json.dumps(d, ensure_ascii=False))
+
+    def test_u1_threshold_flag_and_off_switch(self):
+        path = self.write("s.jsonl", self.wait_events(30 * 60))
+        self.assertEqual(self.data(path)["uyarilar"], [])
+        self.assertEqual(kods(self.data(path, limits={"bekleme_dk": 30})), ["U1"])
+        self.assertEqual(self.data(self.write("b.jsonl", self.wait_events(500 * 60)), limits={"bekleme_dk": 0})["uyarilar"], [])
+
+    # --- U2
+    def test_u2_touches_above_the_target_only(self):
+        three = self.write("a.jsonl", [human(at(i)) for i in range(3)])
+        four = self.write("b.jsonl", [human(at(i)) for i in range(4)])
+        self.assertEqual(self.data(three)["uyarilar"], [])
+        d = self.data(four)
+        self.assertEqual(texts(d), ["İnsan dokunuşu hedefin üstünde: 4 (hedef: en çok 3)"])
+        self.assertEqual((d["uyarilar"][0]["deger"], d["uyarilar"][0]["esik"]), (4, 3))
+        self.assertEqual(self.data(four, limits={"dokunus": 0})["uyarilar"], [])
+        self.assertEqual(self.data(four, limits={"dokunus": 4})["uyarilar"], [])
+
+    def test_u2_counts_the_interval_only(self):
+        path = self.write("s.jsonl", [human(at(i)) for i in range(6)])
+        self.assertEqual(kods(self.data(path)), ["U2"])
+        self.assertEqual(self.data(path, since=rr.parse_ts(at(3)))["uyarilar"], [])   # 3 messages left
+
+    # --- U3
+    def test_u3_output_tokens_main_plus_subagents(self):
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=100000))])
+        self.write("s/subagents/agent-1.jsonl", [sub_assistant(at(1, 10), "s1", u=usage(o=50000))])
+        self.assertEqual(self.data(path)["uyarilar"], [])                      # 150000 = at the threshold
+        self.write("s/subagents/agent-1.jsonl", [sub_assistant(at(1, 10), "s1", u=usage(o=50001))])
+        d = self.data(path)
+        self.assertEqual(texts(d), ["Çıktı token'ı yüksek: 150.001 (eşik 150.000)"])
+        self.assertEqual(self.data(path, limits={"cikti_token": 0})["uyarilar"], [])
+        self.assertEqual(self.data(path, limits={"cikti_token": 200000})["uyarilar"], [])
+
+    def test_u3_four_kind_total_is_a_separate_rule(self):
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(i=1, cw=2, cr=17999997, o=0))])
+        self.assertEqual(self.data(path)["uyarilar"], [])                      # exactly 18.000.000
+        self.assertEqual(self.data(path, limits={"toplam_token": 18000000})["uyarilar"], [])
+        d = self.data(path, limits={"toplam_token": 17999999})
+        self.assertEqual(texts(d), ["Toplam token yüksek: 18.000.000 (eşik 17.999.999)"])
+        self.assertEqual(self.data(path, limits={"toplam_token": 0})["uyarilar"], [])
+        big = self.write("b.jsonl", [human(at(0)), assistant(at(1), "m1", usage(cr=20000001))])
+        self.assertEqual(texts(self.data(big)), ["Toplam token yüksek: 20.000.001 (eşik 20.000.000)"])
+        self.assertEqual(self.data(big, limits={"toplam_token": 0})["uyarilar"], [])
+
+    # --- U4
+    def test_u4_long_chat_counts_messages_above_the_limit_only(self):
+        self.assertEqual(self.data(self.write("a.jsonl", chat_of(400)))["uyarilar"], [])
+        d = self.data(self.write("b.jsonl", chat_of(401)))
+        self.assertEqual(texts(d), ["Sohbet uzadı: oturum-1 401 ileti; yeni sohbete devir düşünülmeli"])
+        self.assertEqual((d["uyarilar"][0]["deger"], d["uyarilar"][0]["esik"]), (401, 400))
+        self.assertEqual(self.data(self.write("c.jsonl", chat_of(401)), limits={"ileti": 0})["uyarilar"], [])
+        self.assertEqual(kods(self.data(self.write("d.jsonl", chat_of(11)), limits={"ileti": 10})), ["U4"])
+
+    def test_u4_one_compaction_summary_is_enough_and_is_named(self):
+        events = chat_of(5) + [human(at(1), "SECRETSUMMARY", isCompactSummary=True)]
+        d = self.data(self.write("s.jsonl", events))
+        self.assertEqual(texts(d), ["Sohbet uzadı: oturum-1 5 ileti, 1 kez özetlendi; yeni sohbete devir düşünülmeli"])
+        self.assertNotIn("SECRETSUMMARY", json.dumps(d, ensure_ascii=False))
+        events += [human(at(2), "x", isCompactSummary=True)]
+        self.assertIn(", 2 kez özetlendi", texts(self.data(self.write("t.jsonl", events)))[0])
+        self.assertEqual(self.data(self.write("u.jsonl", events), limits={"ileti": 0})["uyarilar"], [])
+
+    def test_u4_uses_the_whole_transcript_even_with_since(self):
+        events = chat_of(450) + [human(at(60), "later"), assistant(at(61), "late", usage(o=1))]
+        path = self.write("s.jsonl", events)
+        d = self.data(path, since=rr.parse_ts(at(59)))
+        self.assertEqual(d["turlar"][0]["asistan_iletisi"], 1)                  # the interval holds one message ...
+        self.assertEqual(texts(d), ["Sohbet uzadı: oturum-1 451 ileti; yeni sohbete devir düşünülmeli"])  # ... the chat many
+        compact = self.write("c.jsonl", chat_of(3) + [human(at(1), "s", isCompactSummary=True), human(at(60)),
+                                                       assistant(at(61), "z", usage(o=1))])
+        self.assertEqual(kods(self.data(compact, since=rr.parse_ts(at(59)))), ["U4"])
+
+    def test_u4_is_per_session_and_dedupes_message_ids(self):
+        a = self.write("a.jsonl", chat_of(3))
+        b = self.write("b.jsonl", chat_of(401, start_min=30))
+        d = self.data([a, b])
+        self.assertEqual(texts(d), ["Sohbet uzadı: oturum-2 401 ileti; yeni sohbete devir düşünülmeli"])
+        streamed = [human(at(0))] + [assistant(at(0, 1 + i), "same", usage(o=1)) for i in range(500)]
+        self.assertEqual(self.data(self.write("c.jsonl", streamed))["uyarilar"], [])   # one message streamed 500 times
+
+    # --- U5
+    def launches(self, kinds):
+        events = [human(at(0))]
+        for i, kind in enumerate(kinds):
+            events.append(assistant(at(0, 5 * (i + 1)), "a%d" % i, usage(o=1), blocks=[
+                tool_use("ag%d" % i, "Agent", subagent_type=kind, description="SECRETDESC", prompt="SECRETPROMPT")]))
+        return events
+
+    def test_u5_same_subagent_type_more_than_twice(self):
+        self.assertEqual(self.data(self.write("a.jsonl", self.launches(["Explore", "Explore", "Plan"])))["uyarilar"], [])
+        d = self.data(self.write("b.jsonl", self.launches(["Explore"] * 3 + ["Plan"])))
+        self.assertEqual(texts(d), ["Aynı alt ajan 3 kez başlatıldı: Explore"])
+        self.assertEqual((d["uyarilar"][0]["deger"], d["uyarilar"][0]["esik"]), (3, 2))
+        three = self.write("c.jsonl", self.launches(["Explore"] * 3))
+        self.assertEqual(self.data(three, limits={"ajan_tekrar": 0})["uyarilar"], [])
+        self.assertEqual(self.data(three, limits={"ajan_tekrar": 3})["uyarilar"], [])
+
+    def test_u5_unprintable_type_is_called_alt_ajan_and_nothing_leaks(self):
+        d = self.data(self.write("s.jsonl", self.launches(["SECRET type | x@y.z"] * 3)))
+        self.assertEqual(texts(d), ["Aynı alt ajan 3 kez başlatıldı: alt ajan"])
+        blob = json.dumps(d, ensure_ascii=False)
+        for secret in ("SECRET", "x@y.z"):
+            self.assertNotIn(secret, blob)
+
+    def test_u5_tool_results_flagged_as_errors(self):
+        def events(n):
+            ev = [human(at(0))]
+            for i in range(n):
+                ev += [assistant(at(0, 2 * i + 1), "e%d" % i, usage(o=1), blocks=[tool_use("e%d" % i, "Bash", command="ls")]),
+                       {"type": "user", "timestamp": at(0, 2 * i + 2), "message": {"role": "user", "content": [
+                           {"type": "tool_result", "tool_use_id": "e%d" % i, "is_error": True, "content": "SECRETERR"}]}}]
+            return ev
+        self.assertEqual(self.data(self.write("a.jsonl", events(10)))["uyarilar"], [])
+        d = self.data(self.write("b.jsonl", events(11)))
+        self.assertEqual(texts(d), ["Hatalı araç çağrısı çok: 11"])
+        self.assertNotIn("SECRETERR", json.dumps(d, ensure_ascii=False))
+        self.assertEqual(self.data(self.write("c.jsonl", events(11)), limits={"hata": 0})["uyarilar"], [])
+        self.assertEqual(self.data(self.write("d.jsonl", events(11)), limits={"hata": 11})["uyarilar"], [])
+        # only a real `true` counts; ordinary results do not
+        ok = [human(at(0))] + [result(at(0, i + 1), "ok%d" % i) for i in range(20)]
+        ok += [{"type": "user", "timestamp": at(1), "message": {"content": [
+            {"type": "tool_result", "tool_use_id": "q", "is_error": "true"}] * 20}}]
+        self.assertEqual(self.data(self.write("e.jsonl", ok))["uyarilar"], [])
+
+    # --- U6
+    def open_pr(self, created="2026-11-16T10:00:00Z", failed=False):
+        raw = fake_pr()
+        raw["mergedAt"] = None
+        raw["closedAt"] = None
+        raw["createdAt"] = created
+        if not failed:
+            raw["statusCheckRollup"][2]["conclusion"] = "SUCCESS"
+        return raw
+
+    def test_u6_failed_checks_and_open_pr_age_with_fake_gh(self):
+        path = self.write("s.jsonl", [human(at(0))])
+        now = T0 + timedelta(days=6, minutes=1)
+        d = self.data(path, prs=[7], repo="o/r", gh=lambda r, n: fake_pr(), now=now)        # merged, one red check
+        self.assertEqual(texts(d), ["Otomatik kontrollerde kırmızı: 1 (PR #7)"])
+        d = self.data(path, prs=[7], gh=lambda r, n: self.open_pr(failed=True), now=now)
+        self.assertEqual(kods(d), ["U6", "U6"])
+        self.assertEqual(texts(d)[1], "Birleştirme isteği 6 gündür açık (PR #7)")
+        self.assertEqual((d["uyarilar"][1]["deger"], d["uyarilar"][1]["esik"]), (6, 5))
+        self.assertEqual(d["ozet"]["uyari_sayisi"], 2)
+
+    def test_u6_age_is_more_than_the_limit_and_off_with_zero(self):
+        path = self.write("s.jsonl", [human(at(0))])
+
+        def gh(repo, number):
+            return self.open_pr()
+        self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=5, hours=23))["uyarilar"], [])
+        self.assertEqual(kods(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=6))), ["U6"])
+        self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=60), limits={"pr_gun": 0})["uyarilar"], [])
+        self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=60), limits={"pr_gun": 60})["uyarilar"], [])
+        # a merged PR is not "still open"
+        merged = fake_pr()
+        merged["statusCheckRollup"][2]["conclusion"] = "SUCCESS"
+        self.assertEqual(self.data(path, prs=[1], gh=lambda r, n: merged, now=T0 + timedelta(days=60))["uyarilar"], [])
+
+    def test_u6_needs_pr_and_survives_a_broken_gh(self):
+        path = self.write("s.jsonl", [human(at(0))])
+        self.assertEqual(self.data(path, now=T0 + timedelta(days=60))["uyarilar"], [])
+
+        def bad(repo, number):
+            raise RuntimeError("SECRET")
+        code, md = self.run_main(["--transcript", path, "--pr", "3"], gh=bad)
+        self.assertEqual(code, 0)
+        self.assertIn("Uyarı yok.", md)
+
+    def test_u6_through_main_prints_the_lines_and_exits_zero(self):
+        path = self.write("s.jsonl", [human(at(0))])
+        buf = io.StringIO()
+        code = rr.main(["--transcript", path, "--pr", "7", "--uyari-pr-gun", "1"], gh=lambda r, n: self.open_pr(failed=True),
+                       stdout=buf, now=T0 + timedelta(days=2))
+        self.assertEqual(code, 0)
+        self.assertIn("- Otomatik kontrollerde kırmızı: 1 (PR #7)\n- Birleştirme isteği 2 gündür açık (PR #7)\n", buf.getvalue())
+
+    # --- output shape
+    def test_no_rule_fires_says_so_in_one_line_and_json_list_is_empty(self):
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1))])
+        code, md = self.run_main(["--transcript", path])
+        self.assertEqual(code, 0)
+        self.assertIn("## Uyarılar\n\nUyarı yok.\n", md)
+        self.assertIn("- Uyarı sayısı: 0\n", md)
+        code, text = self.run_main(["--transcript", path, "--format", "json"])
+        obj = json.loads(text)
+        self.assertEqual(obj["uyarilar"], [])
+        self.assertEqual(obj["ozet"]["uyari_sayisi"], 0)
+
+    def test_section_sits_right_after_the_summary_and_json_items_have_four_keys(self):
+        events = [human(at(i)) for i in range(5)] + self.wait_events(90 * 60)[1:]
+        path = self.write("s.jsonl", events)
+        code, md = self.run_main(["--transcript", path])
+        self.assertEqual(code, 0)
+        self.assertLess(md.index("## Özet"), md.index("## Uyarılar"))
+        self.assertLess(md.index("## Uyarılar"), md.index("## Turlar"))
+        self.assertIn("- Uyarı sayısı: 2\n", md)
+        self.assertIn("- İnsan dokunuşu hedefin üstünde: 5 (hedef: en çok 3)\n", md)
+        _, text = self.run_main(["--transcript", path, "--format", "json"])
+        items = json.loads(text)["uyarilar"]
+        self.assertEqual([w["kod"] for w in items], ["U1", "U2"])
+        for w in items:
+            self.assertEqual(set(w), {"kod", "metin", "deger", "esik"})
+            self.assertIsInstance(w["metin"], str)
+        self.assertEqual(json.loads(text)["ozet"]["uyari_sayisi"], 2)
+
+    def test_flags_switch_every_rule_off_and_reject_negative_values(self):
+        path = self.write("s.jsonl", chat_of(5) + [human(at(1), "s", isCompactSummary=True)] + [human(at(i + 2)) for i in range(5)]
+                          + [assistant(at(200), "late", usage(o=1))])
+        _, md = self.run_main(["--transcript", path])
+        self.assertNotIn("Uyarı yok.", md)
+        off = ["--uyari-bekleme-dk", "0", "--uyari-dokunus", "0", "--uyari-cikti-token", "0", "--uyari-toplam-token", "0",
+               "--uyari-ileti", "0", "--uyari-ajan-tekrar", "0", "--uyari-hata", "0", "--uyari-pr-gun", "0"]
+        _, md = self.run_main(["--transcript", path] + off)
+        self.assertIn("Uyarı yok.", md)
+        err = io.StringIO()
+        with redirect_stderr(err):
+            self.assertEqual(rr.main(["--transcript", path, "--uyari-dokunus", "-1"], stdout=io.StringIO()), 2)
+
+    def test_nothing_from_text_arguments_or_names_leaks_through_a_warning(self):
+        events = [human(at(0), "SECRETHUMAN a@b.cz")]
+        for i in range(12):
+            events += [assistant(at(1, i * 20), "h%d" % i, usage(o=200000),
+                                 blocks=[tool_use("h%d" % i, "SECRET_tool | x", command="rm -rf /SECRETPATH", file_path="/SECRETPATH"),
+                                         tool_use("g%d" % i, "Agent", subagent_type="SECRET sub@x.y", description="SECRETDESC")]),
+                       {"type": "user", "timestamp": at(1, i * 20 + 10), "message": {"role": "user", "content": [
+                           {"type": "tool_result", "tool_use_id": "h%d" % i, "is_error": True, "content": "SECRETRES"}]}}]
+        events += [human(at(2), "SECRETSUM", isCompactSummary=True), human(at(200), "SECRETLAST")]
+        path = self.write("secret-name.jsonl", events)
+
+        def gh(repo, number):
+            raw = self.open_pr(failed=True)
+            raw["reviews"] = [{"state": "APPROVED", "submittedAt": "2026-11-16T10:30:00Z", "author": {"login": "secret-login"}}]
+            return raw
+        _, md = self.run_main(["--transcript", path, "--pr", "5", "--idle-minutes", "1"], gh=gh)
+        _, js = self.run_main(["--transcript", path, "--pr", "5", "--idle-minutes", "1", "--format", "json"], gh=gh)
+        self.assertGreaterEqual(len(json.loads(js)["uyarilar"]), 5)
+        for secret in ("SECRET", "secret", "a@b.cz", "sub@x.y", "rm -rf"):
+            self.assertNotIn(secret, md, secret)
+            self.assertNotIn(secret, js, secret)
+        section = md.split("## Uyarılar")[1].split("## Turlar")[0]
+        for line in section.strip().splitlines():
+            self.assertTrue(line.startswith("- "), line)
+            self.assertNotIn("|", line)
 
 
 if __name__ == "__main__":
