@@ -37,7 +37,7 @@ Okuyan: kodu görmeden PR'ın ne olduğunu anlaması gereken geliştirici. Kişi
 ## Ajan çalıştırması  <!-- araç -->
 - Hat: LANE-nnn · işler: <n> · seviye: <üst|standart|hafif> (araç: <…>, model: <…>, efor: <…>)
 - Başlangıç onayı: kişinin başlangıç cümlesi aynen ve zamanı (kayıt aracı gelene dek burada; yoksa "verilmedi — her adım ayrıca soruldu")
-- Paket onayı: <"paketi onaylıyorum" cümlesi | GitHub onayı (APPROVED)> · onaylayıcının rolü (ad ya da hesap adı değil) · zamanı · GitHub onayında incelenen commit (yalnız paket dosyaları), cümlede yorum bağlantısı (H5)
+- Paket onayı: <"paketi onaylıyorum" cümlesi | GitHub onayı (APPROVED)> · onaylayıcının rolü (ad ya da hesap adı değil) · zamanı · onaylanan paket sürümü (PR'ın o anki baş commit'i, yalnız paket dosyaları) · cümlede yorum bağlantısı (H5)
 - Kart sürümleri: `.ees/kartlar/<kart>.md@<commit>` sha256:<…> (her kullanılan kart için)
 - Süre · token · deneme · denetçi sonucu (UYGUN / KOŞULLU) ve tur sayısı
 - Çalıştırma kaydı: <CI yapıtı bağlantısı> sha256:<…>
@@ -45,5 +45,6 @@ Okuyan: kodu görmeden PR'ın ne olduğunu anlaması gereken geliştirici. Kişi
 ## Kabul
 <!-- Hattın listelenen onaylayıcısı (asıl ya da yedek) tek oturuşta inceler, PR onayında "kabulü onaylıyorum" yazar, onaylar
      ve birleştirir (D-12; sahip kararı 16 Kasım). Paket onayı ayrıdır ve kabul değildir: "paketi onaylıyorum" cümlesi ya da
-     yalnız paket dosyalarını taşıyan commit'e GitHub onayı (H5). Ajan onay yazmaz, birleştirmez. -->
+     yalnız paket dosyalarını taşıyan commit'e GitHub onayı (H5); paket commit'ine verilmiş APPROVED kabul sayılmaz. Ajan onay
+     yazmaz, birleştirmez. -->
 ```
