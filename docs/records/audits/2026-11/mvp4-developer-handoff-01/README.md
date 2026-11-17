@@ -23,13 +23,13 @@ Supply Chain CT-QUEUE kaynağında üç MOD-0188 satırı ölçüldü: WP-MOD018
 
 | Uzak dal | Devir kararı | Neden / inceleme |
 |---|---|---|
-| feature/sce/mod-0191-activation-override-ui-scope | PR | Tek dosyalık kapsam önerisi; pack revizyonu ve ürün kararları öncesi kod yetkisi vermez. Main'e göre güncellenip ayrı belge PR'ı açılmalı. |
+| feature/sce/mod-0191-activation-override-ui-scope | PR | Tek dosyalık kapsam önerisi; pack revizyonu ve ürün kararları öncesi kod yetkisi vermez. Main'e göre güncellendi; kapsam önerisi PR #446 açık. |
 | feature/sce/mod-0188-uom-pack-revision | PR | Zaten açık taslak #256. AC-D07 pack revizyonu bağımsız CT-APR-01/02 inceleme ve onay bekliyor. Yeniden PR açılmamalı. |
 | feature/sce/mod-0188-product-master-uom | PR | Zaten açık taslak #227. #256 onayı ve PlanningService üzerinden canlı kabul/dönüşüm/karantina HTTP kanıtı olmadan merge hazır değil. Varsayılan SingleUnitInterim kalır. |
 | feature/sce/mod-0188-demand-v2-hardening | eskidi | Eski Superseded niyeti ve taslak sayfalama dalı; sonraki #228/#422/#423 dar işleri main'e alındı. Ayrı merge öncesi kalmış farklar yeniden incelenmeli; dal otomatik silinmez. |
 | feature/sce/mod-0189-mrp-replenishment | eskidi | Ekim pack dalı; güncel pack ve MRP çekirdeği main'de. Yereldeki tek ek izin commit'inin metni güncel main pack §14 içinde bulunuyor. Dal otomatik silinmez. |
 
-#227/#256 sahibi incelemesi ve #411 kararı bekler. Başka açık ElikPenco PR'ı bu ölçümde yok. Merge yetkisi devralan sahip/CT'dedir.
+#227/#256 sahibi incelemesi ve #411 kararı bekler. Bu envanterden sonra açılan #445 (devir) ve #446 (kapsam) da inceleme bekliyor. Merge yetkisi devralan sahip/CT'dedir.
 
 ## Yerel Git ve kayıp riski
 
