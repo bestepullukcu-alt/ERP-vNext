@@ -95,7 +95,7 @@ POSITIVE = {
     "web/src/IntegrationTests/home.md": (f'"/home/{HOME_NAME}/work"', "home-path", "notice"),
     "web/src/MailerTests.cs": (f'To = "{CORPMAIL}";', "email", "notice"),
     # not test locations: "contests" is not "tests", "test_x.md" is not test_*.py
-    "docs/contests/home.md": (f'ran /Users/{HOME_NAME}/repo/x.sh', "home-path", "warning"),
+    "notes/contests/home.md": (f'ran /Users/{HOME_NAME}/repo/x.sh', "home-path", "warning"),
     "docs/test_notes.md": (f'Email = "{FREEMAIL}",', "email-freemail", "warning"),
 }
 FIXTURE_DOWNGRADES = [p for p, (_, k, sev) in POSITIVE.items() if k in ("home-path", "email", "email-freemail")
@@ -335,7 +335,7 @@ class AddedLinesScanTests(unittest.TestCase):
 
     def test_the_same_strings_outside_tests_stay_warnings(self) -> None:
         for path in ("cases/home_mac.md", "cases/home_linux.md", "cases/home_win.md", "cases/freemail.cs",
-                     "cases/corpmail.cs", "docs/contests/home.md", "docs/test_notes.md"):
+                     "cases/corpmail.cs", "notes/contests/home.md", "docs/test_notes.md"):
             with self.subTest(path=path):
                 self.check_line_case(path)
 
@@ -352,7 +352,7 @@ class AddedLinesScanTests(unittest.TestCase):
     def test_test_location_names(self) -> None:
         yes = ["tests/a.cs", "scripts/tests/x.py", "a/Svc.Tests/b.cs", "a/UnitTests/b.cs", "a/test_x.py", "a/FooTests.cs",
                "a/b.test.ts", "a/b.spec.js", "a/fixtures/s.json", "test/x.md"]
-        no = ["docs/contests/a.md", "a/latest/b.cs", "a/test_x.md", "src/attest.py", "a/b.cs", "a/Tests.md"]
+        no = ["notes/contests/a.md", "a/latest/b.cs", "a/test_x.md", "src/attest.py", "a/b.cs", "a/Tests.md"]
         for path in yes:
             self.assertTrue(scan.is_test_path(path), path)
         for path in no:
