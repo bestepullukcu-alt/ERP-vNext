@@ -13,6 +13,7 @@ family off (sabotage) turns its own test red.
 
 from __future__ import annotations
 
+import contextlib
 import io
 import os
 import shutil
@@ -248,18 +249,19 @@ class AddedLinesScanTests(unittest.TestCase):
         whole = [("existing.cs", i + 1, t) for i, t in enumerate(EXISTING.splitlines())]
         self.assertTrue([f for f in scan.scan(whole, []) if f.path == "existing.cs"])
 
-    def test_moved_content_and_moved_files_do_not_fire(self) -> None:
-        self.assertEqual([], [f for f in self.findings() if f.path.startswith(("new/", "old/"))])
+    def test_moved_content_does_not_fire_but_a_moved_file_name_is_checked(self) -> None:
+        # content of a moved file: move cut; its NAME: checked like any added path (no move cut on names)
+        self.assertEqual([], [f for f in self.findings() if f.path == "new/moved.cs"])
+        self.assertEqual([("log-file", 0)], [(f.kind, f.line) for f in self.findings() if f.path == "new/moved.log"])
+        self.assertEqual([], [f for f in self.findings() if f.path.startswith("old/")])
 
     def test_sabotage_without_the_move_cut_the_moved_content_fires(self) -> None:
-        # the production cuts switched off: collect() then reports the moved file and its content
-        with mock.patch.object(scan, "drop_moved_lines", lambda added, removed: added), \
-                mock.patch.object(scan, "drop_moved_files", lambda added, deleted: [path for path, _ in added]):
+        # the production content cut switched off: collect() then reports the moved file's content
+        with mock.patch.object(scan, "drop_moved_lines", lambda added, removed: added):
             added, new_files = scan.collect(self.root, self.base, self.head)
         moved = scan.scan(added, new_files)
         self.assertTrue([f for f in moved if f.path == "new/moved.cs" and f.kind == "secret-assignment"])
         self.assertTrue([f for f in moved if f.path == "new/moved.cs" and f.kind == "aws-key"])
-        self.assertTrue([f for f in moved if f.path == "new/moved.log" and f.kind == "log-file"])
 
     # ------------------------------------------------------------------------------------- hidden lines (--text)
     def test_a_diff_attribute_or_a_nul_byte_cannot_hide_added_lines(self) -> None:
@@ -268,12 +270,7 @@ class AddedLinesScanTests(unittest.TestCase):
         self.assertIn(("cases/nul.txt", 2, "github-token"), got)
 
     def test_sabotage_without_text_the_lines_are_hidden(self) -> None:
-        real = scan.git
-
-        def no_text(repo, *args):
-            return real(repo, *[a for a in args if a != "--text"])
-
-        with mock.patch.object(scan, "git", no_text):
+        with mock.patch.object(scan, "PATCH_ARGS", tuple(a for a in scan.PATCH_ARGS if a != "--text")):
             added, _ = scan.collect(self.root, self.base, self.head)
         paths = {p for p, _, _ in added}
         self.assertNotIn("cases/hidden.dat", paths)
@@ -370,6 +367,11 @@ class AddedLinesScanTests(unittest.TestCase):
         with open(summary, encoding="utf-8") as fh:
             text_summary = fh.read()
         self.assertEqual(0, code)
+        for value in SENTINELS:  # first: a leak must be what turns this test red
+            for chunk in {value, value[:8], value[-8:]}:
+                self.assertNotIn(chunk, text)
+                self.assertNotIn(chunk, text_summary)
+        self.assertNotIn("iç hata", text)
         annotations = [ln for ln in text.splitlines() if ln.startswith(("::warning file=", "::notice file="))]
         self.assertEqual(scan.MAX_ANNOTATIONS, len(annotations))
         self.assertEqual(10, scan.MAX_ANNOTATIONS)
@@ -388,13 +390,17 @@ class AddedLinesScanTests(unittest.TestCase):
 
     def test_sabotage_the_secret_assertion_catches_a_leaking_hint(self) -> None:
         real = scan.scan_line
+        calls = []
 
-        def leaky(path, line_no, text):
-            return [scan.Finding(f.path, f.line, f.kind, f.severity, text) for f in real(path, line_no, text)]
+        def leaky(path, line_no, text, names=None):  # same signature as scan_line: fails on the leak, not a TypeError
+            calls.append(path)
+            return [scan.Finding(f.path, f.line, f.kind, f.severity, text) for f in real(path, line_no, text, names)]
 
         with mock.patch.object(scan, "scan_line", leaky):
-            with self.assertRaises(AssertionError):
+            with self.assertRaises(AssertionError) as caught:
                 self.test_output_has_annotations_and_never_a_secret_value()
+        self.assertTrue(calls, "the leaky scan_line was never called")
+        self.assertIn("unexpectedly found", str(caught.exception))
 
     def test_exit_code_is_zero_from_the_command_line(self) -> None:
         for args in ([self.base, self.head], [self.base, "0" * 40], ["-x", self.head], ["--base=-x", "--"]):
@@ -451,6 +457,98 @@ class AddedLinesScanTests(unittest.TestCase):
         self.assertEqual("a\tb.txt", scan.unquote_path('"a\\tb.txt"'))
         self.assertEqual("ç.txt", scan.unquote_path('"\\303\\247.txt"'))
         self.assertEqual("plain.txt", scan.unquote_path("plain.txt"))
+
+    # ------------------------------------------------------------------------- decision: literals vs provider keys
+    def test_decision_literals_are_notices_and_provider_keys_warnings_in_tests(self) -> None:
+        by_kind = {k: content for p, (content, k, _) in POSITIVE.items() if p.startswith("cases/")}
+        self.assertTrue(set(scan.PROVIDER_KINDS) <= set(by_kind) and set(scan.LITERAL_KINDS) <= set(by_kind))
+        for kind in scan.LITERAL_KINDS:
+            got = {(f.kind, f.severity) for f in scan.scan_line("tests/pinned/CaseTests.cs", 1, by_kind[kind])}
+            self.assertIn((kind, "notice"), got, kind)
+        for kind in scan.PROVIDER_KINDS:
+            got = {(f.kind, f.severity) for f in scan.scan_line("tests/pinned/CaseTests.cs", 1, by_kind[kind])}
+            self.assertIn((kind, "warning"), got, kind)
+        help_out = io.StringIO()
+        with contextlib.redirect_stdout(help_out):
+            self.assertEqual(0, scan.main(["--help"], out=io.StringIO(), env={}))
+        help_text = scan.re.sub(r"(\w)- (\w)", r"\1-\2", " ".join(help_out.getvalue().split()))  # undo hyphen wraps
+        self.assertIn("password-like literals", help_text)
+        self.assertIn("provider-shaped keys (PEM, GitHub, AWS, Slack, Google, Stripe, Anthropic, JWT) stay warnings "
+                      "everywhere", help_text)
+        self.assertIn("full names, surnames and logins", help_text)
+        doc = " ".join(scan.__doc__.split())
+        self.assertIn("Decision: in test locations password-like literals", doc)
+        self.assertIn("provider-shaped keys (PEM, GitHub, AWS, Slack, Google, Stripe, Anthropic, JWT)", doc)
+
+    def test_development_marker_is_a_whole_word(self) -> None:
+        path = "services/Svc/appsettings.Development.json"
+        device = f'"Default": "Host=device-db;Database=app;Username=svc;Password={V}"'
+        self.assertEqual([("conn-password", "warning")], [(f.kind, f.severity) for f in scan.scan_line(path, 1, device)])
+        dev1 = f'"Default": "Host=db;Database=app;Username=dev1;Password={V}"'
+        self.assertEqual([("conn-password", "notice")], [(f.kind, f.severity) for f in scan.scan_line(path, 1, dev1)])
+
+    # ------------------------------------------------------------------------------------- output and memory limits
+    def test_a_local_run_prints_every_finding_and_no_step_summary_pointer(self) -> None:
+        out = io.StringIO()
+        scan.main(["--base", self.base, "--head", self.head, "--repo", self.root, "--summary", ""], out=out, env={})
+        text = out.getvalue()
+        annotations = [ln for ln in text.splitlines() if ln.startswith(("::warning file=", "::notice file="))]
+        self.assertEqual(len(self.findings()), len(annotations))
+        self.assertGreater(len(annotations), scan.MAX_ANNOTATIONS)
+        self.assertNotIn("step summary", text)
+        for value in SENTINELS:
+            self.assertNotIn(value, text)
+
+    def test_a_console_without_utf8_never_gives_a_non_zero_exit(self) -> None:
+        for env_extra in ({"PYTHONIOENCODING": "ascii"}, {"PYTHONIOENCODING": "ascii", "EES_SCAN_NAMES": "Qaz,Ad Soyad"}):
+            with self.subTest(env=sorted(env_extra)):
+                env = dict(os.environ, **env_extra)
+                env.pop("GITHUB_STEP_SUMMARY", None)
+                result = subprocess.run([sys.executable, SCRIPT, "--base", self.base, "--head", self.head, "--repo",
+                                         self.root], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+                self.assertEqual(0, result.returncode)
+                self.assertEqual(b"", result.stderr)
+                self.assertIn(b"added-lines-scan: ", result.stdout)
+                self.assertNotIn(b"RuntimeError", result.stdout)
+                self.assertNotIn(b"UnicodeEncodeError", result.stdout)
+
+    def test_sabotage_without_safe_streams_an_ascii_console_breaks_the_output(self) -> None:
+        # the guard the test above relies on: without it the output raises and nothing useful is printed
+        env = dict(os.environ, PYTHONIOENCODING="ascii")
+        env.pop("GITHUB_STEP_SUMMARY", None)
+        code = ("import sys; sys.path.insert(0, %r); import scan_added_lines as s; s.safe_streams = lambda: None; "
+                "sys.exit(s.run_cli())" % SCRIPTS)
+        result = subprocess.run([sys.executable, "-c", code, "--base", self.base, "--head", self.head, "--repo",
+                                 self.root], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+        self.assertEqual(0, result.returncode)  # still exit 0: the handler does not re-raise
+        self.assertNotIn(b"added-lines-scan: ", result.stdout)
+
+    def test_the_patch_read_is_capped_with_one_notice(self) -> None:
+        stats: dict = {}
+        with mock.patch.object(scan, "MAX_PATCH_BYTES", 2000):
+            added, _ = scan.collect(self.root, self.base, self.head, stats)
+            out = io.StringIO()
+            scan.main(["--base", self.base, "--head", self.head, "--repo", self.root, "--summary", ""], out=out, env={})
+        self.assertTrue(stats.get("patch_cut"))
+        self.assertLess(sum(len(t) for _, _, t in added), 2000)
+        self.assertEqual(1, out.getvalue().count("Tarama yarıda kesildi"))
+        self.assertNotIn("Tarama çalışamadı", out.getvalue())
+        full: dict = {}
+        scan.collect(self.root, self.base, self.head, full)
+        self.assertFalse(full.get("patch_cut"))
+
+    def test_large_binary_files_are_not_read_but_their_names_are_checked(self) -> None:
+        # at the real 1 MB threshold the small -diff / NUL files are read (test above); with 0 they count as large
+        stats: dict = {}
+        with mock.patch.object(scan, "BINARY_SKIP_BYTES", 0):
+            added, new_files = scan.collect(self.root, self.base, self.head, stats)
+        paths = {p for p, _, _ in added}
+        self.assertNotIn("cases/hidden.dat", paths)
+        self.assertNotIn("cases/nul.txt", paths)
+        self.assertIn("cases/gh.txt", paths)
+        self.assertGreaterEqual(stats["binary_skipped"], 3)  # hidden.dat, nul.txt, site.pfx
+        self.assertIn("certs/site.pfx", new_files)
+        self.assertIn(("certs/site.pfx", "key-file"), {(f.path, f.kind) for f in scan.scan(added, new_files)})
 
 
 # ------------------------------------------------------------------------------------------- names (synthetic only)
@@ -521,11 +619,16 @@ class NameCheckTests(unittest.TestCase):
         cls.added, cls.new_files = scan.collect(r, cls.base, cls.head)
         cls.names_file = os.path.join(cls.outside, "names.txt")
         write(cls.outside, "names.txt", "\n".join(NAMES) + "\n")
+        # a sibling linked worktree of the same repository, in a directory of its own (not under root)
+        cls.sibling_parent = tempfile.mkdtemp(prefix="scan-names-wt-")
+        cls.sibling = os.path.join(cls.sibling_parent, "side")
+        git(r, "worktree", "add", "-q", "-b", "side", cls.sibling, cls.head)
 
     @classmethod
     def tearDownClass(cls) -> None:
         shutil.rmtree(cls.root, ignore_errors=True)
         shutil.rmtree(cls.outside, ignore_errors=True)
+        shutil.rmtree(cls.sibling_parent, ignore_errors=True)
 
     def matcher(self, names: list[str] | None = None) -> scan.NameMatcher:
         entries, _ = scan.parse_names("\n".join(NAMES if names is None else names))
@@ -534,12 +637,13 @@ class NameCheckTests(unittest.TestCase):
     def name_findings(self, names: list[str] | None = None) -> list[scan.Finding]:
         return [f for f in scan.scan(self.added, self.new_files, names=self.matcher(names)) if f.kind == scan.NAME_KIND]
 
-    def run_main(self, *extra: str, env: dict | None = None, head: str | None = None) -> tuple[int, str, str]:
+    def run_main(self, *extra: str, env: dict | None = None, head: str | None = None,
+                 repo: str | None = None) -> tuple[int, str, str]:
         fd, summary = tempfile.mkstemp(suffix=".md", dir=self.outside)
         os.close(fd)
         out = io.StringIO()
-        code = scan.main(["--base", self.base, "--head", head or self.head, "--repo", self.root, "--summary", summary,
-                          *extra], out=out, env={} if env is None else env)
+        code = scan.main(["--base", self.base, "--head", head or self.head, "--repo", repo or self.root, "--summary",
+                          summary, *extra], out=out, env={} if env is None else env)
         with open(summary, encoding="utf-8") as fh:
             return code, out.getvalue(), fh.read()
 
@@ -619,32 +723,117 @@ class NameCheckTests(unittest.TestCase):
         self.assertIn("| names/tr_lower.md | 1 | person-name | warning |", summary)
         self.assert_no_list_leak(text, summary)
 
+    REFUSED = "Ad listesi dosyası deponun içinde: reddedildi ve okunmadı"
+
+    def assert_refused(self, names_file: str, repo: str | None = None) -> None:
+        code, text, summary = self.run_main("--names-file", names_file, repo=repo)
+        self.assertEqual(0, code)
+        self.assertIn(self.REFUSED, text)
+        self.assertIn(scan.NAMES_NOT_RUN, text)
+        self.assertNotIn("[person-name]", text)
+        self.assertNotIn("person-name", summary)
+        self.assert_no_list_leak(text, summary)
+
+    def in_tree_list(self, root: str, rel: str = "names/list.txt") -> str:
+        write(root, rel, "\n".join(NAMES) + "\n")
+        self.addCleanup(os.remove, os.path.join(root, rel))
+        return os.path.join(root, rel)
+
     def test_names_file_inside_the_repository_is_refused(self) -> None:
-        inside = os.path.join(self.root, "names", "list.txt")
-        write(self.root, "names/list.txt", "\n".join(NAMES) + "\n")
-        try:
-            code, text, summary = self.run_main("--names-file", inside)
-            self.assertEqual(0, code)
-            self.assertIn("Ad listesi dosyası deponun içinde: reddedildi ve okunmadı", text)
-            self.assertIn(scan.NAMES_NOT_RUN, text)
-            self.assertNotIn("[person-name]", text)
-            self.assertNotIn("person-name", summary)
-            self.assert_no_list_leak(text, summary)
-            # a path through a symlink to the inside is refused too
-            link = os.path.join(self.outside, "link.txt")
-            os.symlink(inside, link)
-            try:
-                _, via_link, _ = self.run_main("--names-file", link)
-                self.assertIn("deponun içinde", via_link)
-            finally:
-                os.remove(link)
-        finally:
-            os.remove(inside)
+        self.assert_refused(self.in_tree_list(self.root))
+
+    def test_names_file_through_a_symlink_is_refused(self) -> None:
+        link = os.path.join(self.outside, "link.txt")
+        os.symlink(self.in_tree_list(self.root), link)
+        self.addCleanup(os.remove, link)
+        self.assert_refused(link)
+
+    def test_names_file_given_as_a_relative_path_is_refused(self) -> None:
+        self.assert_refused(os.path.relpath(self.in_tree_list(self.root), os.getcwd()))
+
+    def test_names_file_with_a_different_letter_case_is_refused(self) -> None:
+        inside = self.in_tree_list(self.root)
+        parent, leaf = os.path.split(self.root)
+        variant = os.path.join(parent, leaf.swapcase(), "names", "list.txt")
+        if not os.path.exists(variant) or not os.path.samefile(variant, inside):
+            self.skipTest("case-sensitive file system: a different letter case is another path")
+        self.assert_refused(variant)
+
+    def test_names_file_in_a_sibling_linked_worktree_is_refused(self) -> None:
+        self.assert_refused(self.in_tree_list(self.sibling))
+
+    def test_names_file_in_the_main_worktree_is_refused_from_a_linked_one(self) -> None:
+        self.assert_refused(self.in_tree_list(self.root, "list-main.txt"), repo=self.sibling)
+
+    def test_names_file_at_the_top_level_is_refused_from_a_subdirectory_repo_path(self) -> None:
+        self.assert_refused(self.in_tree_list(self.root, "list-top.txt"), repo=os.path.join(self.root, "names"))
 
     def test_sabotage_without_the_inside_check_the_repository_file_is_read(self) -> None:
-        with mock.patch.object(scan, "inside", lambda path, root: False):
+        with mock.patch.object(scan, "inside_any", lambda path, roots: False):
             with self.assertRaises(AssertionError):
                 self.test_names_file_inside_the_repository_is_refused()
+
+    def test_sabotage_without_the_worktree_list_a_sibling_worktree_file_is_read(self) -> None:
+        with mock.patch.object(scan, "worktree_paths", lambda repo: []):
+            with self.assertRaises(AssertionError):
+                self.test_names_file_in_a_sibling_linked_worktree_is_refused()
+
+    def test_sabotage_with_the_repo_path_as_the_only_root_the_top_level_file_is_read(self) -> None:
+        with mock.patch.object(scan, "repo_roots", lambda repo: [repo]):
+            with self.assertRaises(AssertionError):
+                self.test_names_file_at_the_top_level_is_refused_from_a_subdirectory_repo_path()
+
+    def test_sabotage_comparing_spelling_instead_of_identity_lets_a_case_variant_through(self) -> None:
+        def by_spelling(path, roots):
+            real = os.path.realpath(path)
+            return any(os.path.commonpath([real, os.path.realpath(r)]) == os.path.realpath(r) for r in roots)
+
+        parent, leaf = os.path.split(self.root)
+        if not os.path.exists(os.path.join(parent, leaf.swapcase())):
+            self.skipTest("case-sensitive file system")
+        with mock.patch.object(scan, "inside_any", by_spelling):
+            with self.assertRaises(AssertionError):
+                self.test_names_file_with_a_different_letter_case_is_refused()
+
+    # ------------------------------------------------------------------------------------------- matching details
+    def test_a_lone_first_word_does_not_match_a_two_word_entry(self) -> None:
+        pair = scan.NameMatcher(scan.parse_names(N_PAIR)[0])
+        self.assertIsNone(pair.find("ad bey"))
+        self.assertIsNone(pair.find("soyad"))
+        self.assertIsNone(pair.find("ad, bey soyad"))
+        self.assertIsNotNone(pair.find("ad soyad"))
+        self.assertIsNotNone(pair.find("x.ad.soyad.y"))
+
+    def test_other_accents_are_stripped_too(self) -> None:
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("Éxémplàr")[0]).find("EXEMPLAR"))
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("exemplar")[0]).find("x_Éxémplàr_y"))
+        self.assertIsNone(scan.NameMatcher(scan.parse_names("exemplar")[0]).find("Éxémplàrs"))
+
+    def test_a_stray_combining_dot_does_not_split_the_word(self) -> None:
+        lowered_outside_turkish = "i̇psi̇zi̇l"  # what 'İPSİZİL'.lower() gives outside the tr locale
+        self.assertEqual(lowered_outside_turkish, "İPSİZİL".lower())
+        self.assertIsNotNone(self.matcher([N_I]).find("x " + lowered_outside_turkish + " y"))
+        self.assertIsNotNone(self.matcher([N_TR]).find(scan.unicodedata.normalize("NFD", N_TR)))
+
+    # ------------------------------------------------------------------------------------------- argument errors
+    def test_an_unknown_argument_is_reached_and_never_echoed(self) -> None:
+        args = ["--base", self.base, "--head", self.head, "--repo", self.root, "--summary", "", "--bogus=" + N_ONE]
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, scan.main(args, out=out, env={}))
+        self.assertIn("geçersiz argüman", out.getvalue())  # the unknown argument WAS the error
+        self.assertNotIn(N_ONE, out.getvalue() + err.getvalue())
+        self.assertNotIn("--bogus", out.getvalue() + err.getvalue())
+        result = subprocess.run([sys.executable, SCRIPT, *args[:-1], "--unknown=" + N_ONE], stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, text=True)
+        self.assertEqual(0, result.returncode)
+        self.assertIn("geçersiz argüman", result.stdout)
+        self.assertNotIn(N_ONE, result.stdout + result.stderr)
+
+    def test_sabotage_argparse_default_error_echoes_the_argument(self) -> None:
+        with mock.patch.object(scan.QuietParser, "error", scan.argparse.ArgumentParser.error):
+            with self.assertRaises(AssertionError):
+                self.test_an_unknown_argument_is_reached_and_never_echoed()
 
     # ---------------------------------------------------------------------------------------------- masked output
     def test_name_output_is_masked_and_independent_of_the_list_size(self) -> None:
@@ -691,6 +880,74 @@ class NameCheckTests(unittest.TestCase):
                                         env=dict(os.environ, EES_SCAN_NAMES=NAMES_ENV_VALUE))
                 self.assertEqual(0, result.returncode)
                 self.assert_no_list_leak(result.stdout, result.stderr)
+
+
+class MovedFileNameTests(unittest.TestCase):
+    """A file whose content equals a deleted file's (a move, or two empty files) still has its NAME checked."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.root = tempfile.mkdtemp(prefix="scan-moved-")
+        r = cls.root
+        git(r, "init", "-q", "-b", "main")
+        write(r, "keep/config.sample", "same content\n")
+        write(r, "keep/cert.txt", "a certificate placeholder\n")
+        write(r, "other/notes.txt", "shared text\n")
+        write(r, "empty_old.txt", "")
+        git(r, "add", "-A")
+        git(r, "commit", "-q", "-m", "base")
+        cls.base = git(r, "rev-parse", "HEAD")
+        os.makedirs(os.path.join(r, "certs"))
+        os.makedirs(os.path.join(r, "people"))
+        git(r, "mv", "keep/config.sample", ".env")                       # rename into a risky name
+        git(r, "mv", "keep/cert.txt", "certs/site.pem")                  # rename into a key-file name
+        git(r, "mv", "other/notes.txt", "people/qaz-notes.md")           # same content, a listed name in the path
+        git(r, "rm", "-q", "empty_old.txt")
+        write(r, "people/ornekkisi.txt", "")                             # empty file, while another empty one goes
+        git(r, "add", "-A")
+        git(r, "commit", "-q", "-m", "head")
+        cls.head = git(r, "rev-parse", "HEAD")
+        cls.added, cls.new_files = scan.collect(r, cls.base, cls.head)
+        cls.names = scan.NameMatcher(scan.parse_names("\n".join(NAMES))[0])
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.root, ignore_errors=True)
+
+    def check(self) -> None:
+        got = {(f.path, f.line, f.kind) for f in scan.scan(self.added, self.new_files, names=self.names)}
+        self.assertIn((".env", 0, "env-file"), got)
+        self.assertIn(("certs/site.pem", 0, "key-file"), got)
+        self.assertIn(("people/qaz-notes.md", 0, "person-name"), got)
+        self.assertIn(("people/ornekkisi.txt", 0, "person-name"), got)
+
+    def test_moved_and_empty_files_get_the_file_name_checks(self) -> None:
+        self.check()
+
+    def test_the_move_cut_still_applies_to_content(self) -> None:
+        self.assertEqual([], self.added)  # every added line already existed on the base
+
+    def test_sabotage_the_old_move_cut_on_file_names_hides_them(self) -> None:
+        def old_cut(data: bytes) -> list[str]:  # the removed behaviour: drop an added path whose blob was deleted
+            parts, added, deleted, i = data.split(b"\0"), [], set(), 0
+            while i + 1 < len(parts):
+                meta = parts[i].decode()
+                if not meta.startswith(":"):
+                    i += 1
+                    continue
+                fields, path = meta[1:].split(), parts[i + 1].decode()
+                i += 2
+                if fields[4][:1] == "A":
+                    added.append((path, fields[3]))
+                elif fields[4][:1] == "D":
+                    deleted.add(fields[2])
+            return [p for p, b in added if b not in deleted]
+
+        with mock.patch.object(scan, "parse_raw", old_cut):
+            added, new_files = scan.collect(self.root, self.base, self.head)
+        with mock.patch.object(self, "new_files", new_files), mock.patch.object(self, "added", added):
+            with self.assertRaises(AssertionError):
+                self.check()
 
 
 if __name__ == "__main__":

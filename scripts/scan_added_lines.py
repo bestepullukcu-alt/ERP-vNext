@@ -16,17 +16,24 @@ tokens at every non-letter / non-digit character (., _, -, /, @, spaces ...), at
 letters and digits, so `ad.soyad`, `ad_soyad`, `adSoyad`, an e-mail local part or a path segment are found, but a name
 inside a longer word is not. A multi-word entry matches the same tokens in a row. A name finding shows only path, line
 and a masked length - never the matched text, the list or its size - and is a warning in test files too. Without a list
-the scan prints one line saying the name check did NOT run.
+the scan prints one line saying the name check did NOT run. Put full names, surnames and logins in the list; a short
+entry that is also a common word will be noisy. A names file is refused when it lies in the --repo path, its top level,
+the main working tree or ANY worktree of the repository, decided by file identity (st_dev, st_ino of each parent), so
+letter case, symlinks and relative paths do not matter.
 
 Scope: only what the pull request ADDS. `git diff --no-renames -U0 base...head` is read; the added lines and the names
-of newly added files are scanned, never the content already on the base. Two noise cuts keep moved content quiet
-(--no-renames shows a move as delete + add): an added line whose exact text is also removed somewhere in the same diff,
-and an added file whose blob equals a deleted file's blob, are not reported.
+of newly added files are scanned, never the content already on the base. One noise cut keeps moved CONTENT quiet
+(--no-renames shows a move as delete + add): an added line whose exact text is also removed somewhere in the same diff
+is not reported. File NAMES have no move cut: every added path (a rename included) gets the risky-name and person-name
+checks. A file git calls binary and larger than 1 MB is not read as text (its name is still checked); the patch read
+stops at 50 MB with one notice that the scan was cut short.
 
-Output: GitHub annotations `::warning file=<path>,line=<n>::<Turkish message>` (or `::notice`) and a summary. A finding
-carries ONLY the path, the line, the kind and a masked hint ("uzunluk 32"): the matched value is never printed, logged
-or written, not even partly. Exit code is ALWAYS 0: a git failure (unreachable base, shallow clone) or an internal error
-prints a warning that the scan could not run - this check never blocks a pull request.
+Output: GitHub annotations `::warning file=<path>,line=<n>::<Turkish message>` (or `::notice`) and a summary. With a
+summary file (CI: GITHUB_STEP_SUMMARY) at most 10 annotations are printed and every finding goes to the summary; a local
+run without one prints every finding. A finding carries ONLY the path, the line, the kind and a masked hint
+("uzunluk 32"): the matched value is never printed, logged or written, not even partly. Exit code is ALWAYS 0: a git
+failure (unreachable base, shallow clone), an internal error or a console that cannot encode the output never blocks -
+the scan prints a warning that it could not run.
 
 Kinds:
   secrets   private-key (PEM header), github-token, aws-key, slack-token, google-api-key, stripe-live-key,
@@ -34,7 +41,9 @@ Kinds:
             (`scheme://user:pass@`), secret-assignment (a quoted value of >= 8 chars assigned to a name containing
             secret / token / password / pwd / apikey)
   files     env-file (.env, not .env.example/.sample/.template), key-file (*.pfx, *.p12, *.pem, *.key), log-file (*.log),
-            trx-file (*.trx) - newly added files only
+            trx-file (*.trx) - newly added files only (moves / renames included)
+  person-name  a token sequence equal to an entry of the supplied names list (see "Names" above), in added lines and
+            in added file names
   names     home-path (/Users/<name>/, /home/<name>/, C:\\Users\\<name> starting a token; user / runner / someone
             allowed), email-freemail, email (any domain outside the allow-list: *.test, *.invalid, *.example,
             *.localhost, *.local, example.*, noreply addresses, the product dev domains diten.com / diten.local)
@@ -42,11 +51,13 @@ Allow-list (noise): hex digests (40 / 64), identifier-shaped values (CamelCase, 
 references (${, $(, {{, {name}, <...>, $VAR, %VAR%, Configuration[, Environment., process.env), prose (a value with spaces),
 paths / plain URLs, masked values (***), placeholder words (pass, password, secret, changeme).
 Vendored paths are skipped (wwwroot/lib/**, frontend/_Reference/**, wwwroot/assets/json/*).
-  person-name  a token sequence equal to an entry of the supplied names list (see "Names" above)
 Downgraded to notice: password / secret literals in appsettings*.Development.json on a line with a development / local
-marker; password / secret literals, home paths and e-mail addresses in a test location (a tests / test / fixtures
-directory, a path segment ending in Tests or .Tests, a file named test_*.py, *Tests.cs, *.test.* or *.spec.*) - test
-fixtures use fake ones on purpose. Provider-shaped secrets and person-name findings keep the warning level everywhere.
+marker word (dev, local, localhost, test, sample, example, changeme, placeholder - whole words); password / secret
+literals, home paths and e-mail addresses in a test location (a tests / test / fixtures directory, a path segment ending
+in Tests or .Tests, a file named test_*.py, *Tests.cs, *.test.* or *.spec.*) - test fixtures use fake ones on purpose.
+Decision: in test locations password-like literals (connection-string passwords, scheme://user:pass@, quoted secret
+assignments) stay notices, because tests are full of fake passwords, while provider-shaped keys (PEM, GitHub, AWS,
+Slack, Google, Stripe, Anthropic, JWT) and person-name findings keep the warning level everywhere.
 Stdlib only. Tests: scripts/tests/test_scan_added_lines.py.
 """
 
@@ -162,7 +173,9 @@ PLACEHOLDER = re.compile(r"(?i)^(?:pass|password|passwd|pwd|secret|changeme)$")
 MASKED = re.compile(r"^[*xX•.]+$")
 PATH_OR_URL = re.compile(r"^(?:/|\./|\.\./|~/|https?://)")
 DEV_SETTINGS = re.compile(r"(?i)(?:^|/)appsettings(?:\.[\w-]+)*\.development\.json$")
-DEV_MARKER = re.compile(r"(?i)dev|local|test|sample|example|changeme|placeholder")
+# Whole words only ("device", "latest", "locale" are not markers); a digit may follow (dev1).
+DEV_MARKER = re.compile(r"(?i)(?<![a-z])(?:dev|development|local|localhost|test|testing|sample|example|changeme"
+                        r"|placeholder)(?![a-z])")
 SKIP_PATH = re.compile(r"(?:^|/)wwwroot/lib/|^frontend/_Reference/|(?:^|/)wwwroot/assets/json/[^/]+$")
 # A test location: a tests / test / fixtures directory (scripts/tests/ included), a *.Tests / *.Test project, a segment
 # ending in "Tests" (UnitTests/), a file test_*.py, *Tests.cs, *.test.* or *.spec.*. "Tests" is case-sensitive so that
@@ -225,23 +238,26 @@ def unquote_path(raw: str) -> str:
 HUNK = re.compile(r"^@@ -\d+(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 
 
-def parse_patch(text: str) -> tuple[list[tuple[str, int, str]], set[str]]:
-    """-U0 patch -> (added lines [(path, line, text)], removed line texts). Hunk line counts decide where a hunk ends,
-    so an added line that itself starts with '++' is never read as a file header."""
+def parse_patch(text, skip: set[str] | frozenset = frozenset()) -> tuple[list[tuple[str, int, str]], set[str]]:
+    """-U0 patch (a string, or an iterable of lines) -> (added lines [(path, line, text)], removed line texts). Hunk line
+    counts decide where a hunk ends, so an added line that itself starts with '++' is never read as a file header.
+    Lines of the paths in `skip` (large binary files) are not kept."""
     added: list[tuple[str, int, str]] = []
     removed: set[str] = set()
     path = None
     old_left = new_left = 0
     line_no = 0
-    for raw in text.split("\n"):
+    lines = text.split("\n") if isinstance(text, str) else text
+    for raw in lines:
         if old_left > 0 or new_left > 0:
             if raw.startswith("+"):
-                if path is not None:
+                if path is not None and path not in skip:
                     added.append((path, line_no, raw[1:]))
                 line_no += 1
                 new_left -= 1
             elif raw.startswith("-"):
-                removed.add(raw[1:].strip())
+                if path not in skip:
+                    removed.add(raw[1:].strip())
                 old_left -= 1
             elif raw.startswith("\\"):
                 pass
@@ -267,10 +283,16 @@ def parse_patch(text: str) -> tuple[list[tuple[str, int, str]], set[str]]:
 
 
 def parse_raw(data: bytes) -> list[str]:
-    """`git diff --raw -z --no-abbrev` -> newly added paths whose blob is not also a deleted path's blob (moves)."""
+    """`git diff --raw -z --no-abbrev` -> EVERY newly added path, moved ones included: a file NAME is checked even when
+    its content equals a deleted file's (a rename into `.env` or into a person's name is new). Only content has a move
+    cut (drop_moved_lines)."""
+    return [path for path, _ in raw_entries(data, "A")]
+
+
+def raw_entries(data: bytes, status_wanted: str) -> list[tuple[str, str]]:
+    """`git diff --raw -z --no-abbrev` -> [(path, new blob id)] of one status (A = added, M = modified ...)."""
     parts = data.split(b"\0")
-    added: list[tuple[str, str]] = []
-    deleted_blobs: set[str] = set()
+    found: list[tuple[str, str]] = []
     i = 0
     while i + 1 < len(parts):
         meta = parts[i].decode("utf-8", "replace")
@@ -282,31 +304,89 @@ def parse_raw(data: bytes) -> list[str]:
         i += 2
         if len(fields) < 5:
             continue
-        status = fields[4][:1]
-        if status == "A":
-            added.append((path, fields[3]))
-        elif status == "D":
-            deleted_blobs.add(fields[2])
-    return drop_moved_files(added, deleted_blobs)
+        if fields[4][:1] == status_wanted:
+            found.append((path, fields[3]))
+    return found
 
 
-def collect(repo: str, base: str, head: str) -> tuple[list[tuple[str, int, str]], list[str]]:
+# --text: a PR-added `.gitattributes` with -diff, or a NUL byte, must not turn added lines into "Binary files differ".
+PATCH_ARGS = ("diff", "--no-renames", "--text", "--no-color", "--no-ext-diff", "--no-textconv", "-U0")
+MAX_PATCH_BYTES = 50 * 1024 * 1024  # the patch read is cut here (memory); one notice says the scan was cut short
+READ_CHUNK = 64 * 1024  # longest piece of one patch line kept in memory; the rest of a longer line is dropped
+BINARY_SKIP_BYTES = 1024 * 1024  # a file git calls binary AND larger than this is not read as text
+
+
+def large_binary_paths(repo: str, rng: str, raw: bytes) -> set[str]:
+    """Paths `git diff --numstat` calls binary ('-' counts) whose new blob is larger than BINARY_SKIP_BYTES. A SMALL
+    binary is still read with --text: a PR-added `-diff` attribute or a NUL byte must not hide a short added line."""
+    numstat = git(repo, "diff", "--no-renames", "--numstat", "-z", rng, "--")
+    binary = set()
+    for entry in numstat.split(b"\0"):
+        cols = entry.split(b"\t", 2)
+        if len(cols) == 3 and cols[0] == b"-" and cols[1] == b"-":
+            binary.add(cols[2].decode("utf-8", "replace"))
+    if not binary:
+        return set()
+    blobs = [(p, b) for status in ("A", "M", "T") for p, b in raw_entries(raw, status) if p in binary]
+    if not blobs:
+        return set()
+    proc = subprocess.run(["git", "-C", repo, "cat-file", "--batch-check=%(objectname) %(objectsize)"],
+                          input="".join(b + "\n" for _, b in blobs).encode(), stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE, check=False)
+    sizes = {}
+    for line in proc.stdout.decode("utf-8", "replace").splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1].isdigit():
+            sizes[parts[0]] = int(parts[1])
+    return {p for p, b in blobs if sizes.get(b, 0) > BINARY_SKIP_BYTES}
+
+
+def read_patch_lines(stream, stats: dict):
+    """Patch lines from a byte stream, decoded; a line longer than READ_CHUNK keeps only its start; reading stops at
+    MAX_PATCH_BYTES (stats["patch_cut"] = True)."""
+    total = 0
+    while True:
+        chunk = stream.readline(READ_CHUNK)
+        if not chunk:
+            return
+        total += len(chunk)
+        if not chunk.endswith(b"\n"):  # a very long line: drop the rest of it
+            while True:
+                more = stream.readline(READ_CHUNK)
+                total += len(more)
+                if not more or more.endswith(b"\n") or total > MAX_PATCH_BYTES:
+                    break
+        if total > MAX_PATCH_BYTES:
+            stats["patch_cut"] = True
+            return
+        yield chunk.rstrip(b"\n").decode("utf-8", "replace")
+
+
+def collect(repo: str, base: str, head: str, stats: dict | None = None) -> tuple[list[tuple[str, int, str]], list[str]]:
+    """stats (optional) receives "patch_cut" (the MAX_PATCH_BYTES cap was hit) and "binary_skipped" (large binaries)."""
+    stats = {} if stats is None else stats
     rng = f"{base}...{head}"
-    # --text: a PR-added `.gitattributes` with -diff, or a NUL byte, must not turn added lines into "Binary files differ".
-    patch = git(repo, "diff", "--no-renames", "--text", "--no-color", "--no-ext-diff", "--no-textconv", "-U0", rng, "--")
     raw = git(repo, "diff", "--no-renames", "--raw", "-z", "--no-abbrev", rng, "--")
-    added, removed = parse_patch(patch.decode("utf-8", "replace"))
+    skip = large_binary_paths(repo, rng, raw)
+    stats["binary_skipped"] = len(skip)
+    cmd = ["git", "-C", repo, "-c", "core.quotePath=false", "-c", "core.attributesFile=" + os.devnull, *PATCH_ARGS,
+           rng, "--"]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    try:
+        added, removed = parse_patch(read_patch_lines(proc.stdout, stats), skip)
+    finally:
+        if stats.get("patch_cut"):
+            proc.kill()
+        proc.stdout.close()
+        code = proc.wait()
+    if code != 0 and not stats.get("patch_cut"):
+        raise GitError(f"git diff çıkış kodu {code}")
     return drop_moved_lines(added, removed), parse_raw(raw)
 
 
 def drop_moved_lines(added: list[tuple[str, int, str]], removed: set[str]) -> list[tuple[str, int, str]]:
     """Move cut (lines): an added line whose exact text is also removed in the same diff already existed."""
     return [(p, n, t) for p, n, t in added if t.strip() == "" or t.strip() not in removed]
-
-
-def drop_moved_files(added: list[tuple[str, str]], deleted_blobs: set[str]) -> list[str]:
-    """Move cut (files): an added file whose blob equals a deleted file's blob already existed."""
-    return [path for path, blob in added if blob not in deleted_blobs]
 
 
 # ------------------------------------------------------------------------------------------------- names (optional)
@@ -338,10 +418,16 @@ def split_camel(run: str) -> list[str]:
     return pieces
 
 
+def strip_marks(text: str) -> str:
+    """Decompose and drop combining marks BEFORE tokenising: a stray U+0307 (what 'İ'.lower() leaves outside the Turkish
+    locale) or another accent must not split a word into pieces."""
+    return "".join(ch for ch in unicodedata.normalize("NFKD", text) if not unicodedata.combining(ch))
+
+
 def name_tokens(text: str) -> list[tuple[str, int, int]]:
-    """Text -> [(folded token, original length, run number)] in order; pieces of one letter / digit run share a number."""
+    """Text -> [(folded token, length, run number)] in order; pieces of one letter / digit run share a number."""
     out: list[tuple[str, int, int]] = []
-    for run_no, run in enumerate(ALNUM_RUN.findall(unicodedata.normalize("NFC", text))):
+    for run_no, run in enumerate(ALNUM_RUN.findall(strip_marks(text))):
         for piece in split_camel(run):
             out.append((fold(piece), len(piece), run_no))
     return out
@@ -397,25 +483,50 @@ def parse_names(raw: str) -> tuple[list[tuple[str, ...]], bool]:
     return entries, short
 
 
+def worktree_paths(repo: str) -> list[str]:
+    """Every working tree of the repository (`git worktree list --porcelain`): the main one and all linked ones."""
+    try:
+        listing = git(repo, "worktree", "list", "--porcelain").decode("utf-8", "replace")
+    except (GitError, OSError):
+        return []
+    return [line[len("worktree "):] for line in listing.splitlines() if line.startswith("worktree ")]
+
+
 def repo_roots(repo: str) -> list[str]:
-    """The working tree, its top level and the main working tree (a linked worktree's shared clone)."""
-    roots = {os.path.realpath(repo)}
+    """The --repo path, its top level, the main working tree (common-dir parent) and every worktree of the repository."""
+    roots = {repo}
     for args in (("rev-parse", "--show-toplevel"), ("rev-parse", "--path-format=absolute", "--git-common-dir")):
         try:
             value = git(repo, *args).decode("utf-8", "replace").strip()
         except (GitError, OSError):
             continue
         if value:
-            path = os.path.realpath(value)
-            roots.add(os.path.dirname(path) if args[-1] == "--git-common-dir" else path)
+            roots.add(os.path.dirname(os.path.realpath(value)) if args[-1] == "--git-common-dir" else value)
+    roots.update(worktree_paths(repo))
     return sorted(roots)
 
 
-def inside(path: str, root: str) -> bool:
+def file_identity(path: str) -> tuple[int, int] | None:
     try:
-        return os.path.commonpath([path, root]) == root
-    except ValueError:  # different drives
-        return False
+        st = os.stat(path)
+    except (OSError, ValueError):
+        return None
+    return st.st_dev, st.st_ino
+
+
+def inside_any(path: str, roots: list[str]) -> bool:
+    """Whether path is (in) one of roots, decided by FILE IDENTITY, not by spelling: each parent of the resolved path
+    is compared by (st_dev, st_ino) with each root, so a different letter case on a case-insensitive file system, a
+    symlink or a relative path cannot slip a file inside the repository past the check."""
+    ids = {i for i in (file_identity(r) for r in roots) if i is not None}
+    current = os.path.realpath(os.path.abspath(path))
+    while True:
+        if file_identity(current) in ids:
+            return True
+        parent = os.path.dirname(current)
+        if parent == current:
+            return False
+        current = parent
 
 
 def load_names(env_value: str | None, names_file: str | None, repo: str, out) -> NameMatcher | None:
@@ -424,7 +535,7 @@ def load_names(env_value: str | None, names_file: str | None, repo: str, out) ->
     raw = env_value or ""
     if names_file:
         real = os.path.realpath(names_file)
-        if any(inside(real, root) for root in repo_roots(repo)):
+        if inside_any(real, repo_roots(repo)):
             print("::warning title=added-lines-scan::Ad listesi dosyası deponun içinde: reddedildi ve okunmadı. "
                   "Listeyi depo dışında tutun (--names-file depo dışı bir yol olmalı).", file=out)
         else:
@@ -590,12 +701,22 @@ def annotation(f: Finding) -> str:
     return f"::{f.severity} {where},title=added-lines-scan::{esc_data(msg)}"
 
 
-def report(findings: list[Finding], out, summary_path: str | None, truncated: int = 0, names_ran: bool = False) -> None:
+PATCH_CUT = ("Tarama yarıda kesildi: değişiklik metni {mb} MB sınırını aştı; sınırdan sonraki eklenen satırlar "
+             "taranmadı.")
+
+
+def report(findings: list[Finding], out, summary_path: str | None, truncated: int = 0, names_ran: bool = False,
+           patch_cut: bool = False, binary_skipped: int = 0) -> None:
+    """With a summary file (CI) at most MAX_ANNOTATIONS annotations, the rest in the summary; without one (a local
+    run) every finding is printed, masked."""
     names_line = NAMES_RAN if names_ran else NAMES_NOT_RUN
     print(f"::notice title=added-lines-scan::{names_line}", file=out)
-    for f in findings[:MAX_ANNOTATIONS]:
+    if patch_cut:
+        print("::notice title=added-lines-scan::" + PATCH_CUT.format(mb=MAX_PATCH_BYTES // (1024 * 1024)), file=out)
+    shown = findings[:MAX_ANNOTATIONS] if summary_path else findings
+    for f in shown:
         print(annotation(f), file=out)
-    if len(findings) > MAX_ANNOTATIONS:
+    if len(findings) > len(shown):
         print(f"::notice title=added-lines-scan::{len(findings) - MAX_ANNOTATIONS} bulgu daha var; tamamı iş adımı "
               "özetinde (step summary).", file=out)
     warnings = sum(1 for f in findings if f.severity == WARNING)
@@ -603,6 +724,9 @@ def report(findings: list[Finding], out, summary_path: str | None, truncated: in
     kinds = Counter(f.kind for f in findings)
     by_kind = ", ".join(f"{k}={n}" for k, n in sorted(kinds.items())) or "-"
     cut = f" {truncated} satır kısaltıldı (ilk {MAX_LINE} karakter tarandı)." if truncated else ""
+    if binary_skipped:
+        cut += (f" {binary_skipped} büyük ikili dosyanın içeriği okunmadı "
+                f"({BINARY_SKIP_BYTES // (1024 * 1024)} MB üstü; adları denetlendi).")
     print(f"added-lines-scan: {warnings} uyarı, {notices} not (yalnız eklenen satırlar; engellemez). Türler: {by_kind}."
           + cut, file=out)
     if summary_path:
@@ -636,7 +760,12 @@ def main(argv: list[str] | None = None, out=None, env=None) -> int:
     parser = QuietParser(
         description="WARNING-ONLY scan of the lines (and new file names) a pull request adds: secret shapes, risky file "
                     "names, personal folder paths, e-mail addresses and - only when a names list is supplied from "
-                    f"outside the repository ({NAMES_ENV} or --names-file) - personal names. Always exits 0.")
+                    f"outside the repository ({NAMES_ENV} or --names-file) - personal names. Always exits 0. "
+                    "In test locations password-like literals (connection-string passwords, scheme://user:pass@, quoted "
+                    "secret assignments) are notices, while provider-shaped keys (PEM, GitHub, AWS, Slack, Google, "
+                    "Stripe, Anthropic, JWT) stay warnings everywhere. "
+                    "Put full names, surnames and logins in the names list; a short entry that is also a common word "
+                    "will be noisy.")
     parser.add_argument("--base", required=True, help="base commit (the diff is base...head)")
     parser.add_argument("--head", required=True, help="head commit")
     parser.add_argument("--repo", default=".", help="repository path (default: .)")
@@ -653,17 +782,48 @@ def main(argv: list[str] | None = None, out=None, env=None) -> int:
         if not args.base or not args.head or args.base.startswith("-") or args.head.startswith("-"):
             raise GitError("geçersiz --base / --head")
         names = load_names(env.get(NAMES_ENV), args.names_file, args.repo, out)
-        added, new_files = collect(args.repo, args.base, args.head)
         stats: dict = {}
+        added, new_files = collect(args.repo, args.base, args.head, stats)
         findings = scan(added, new_files, stats, names)
-        report(findings, out, args.summary, stats.get("truncated", 0), names_ran=names is not None)
+        report(findings, out, args.summary, stats.get("truncated", 0), names_ran=names is not None,
+               patch_cut=bool(stats.get("patch_cut")), binary_skipped=stats.get("binary_skipped", 0))
     except GitError as exc:
-        print(f"::warning title=added-lines-scan::Tarama çalışamadı ({exc}); bu PR denetlenmedi, engellenmez.", file=out)
+        safe_print(f"::warning title=added-lines-scan::Tarama çalışamadı ({exc}); bu PR denetlenmedi, engellenmez.", out)
     except Exception as exc:  # noqa: BLE001 - never block a pull request
-        print(f"::warning title=added-lines-scan::Tarama çalışamadı (iç hata: {type(exc).__name__}); engellenmez.",
-              file=out)
+        safe_print(f"::warning title=added-lines-scan::Tarama çalışamadı (iç hata: {type(exc).__name__}); engellenmez.",
+                   out)
+    return 0
+
+
+def safe_print(text: str, out) -> None:
+    """A last-resort message that cannot raise (a console that cannot encode it gets an escaped copy, or nothing)."""
+    try:
+        print(text, file=out)
+    except Exception:  # noqa: BLE001
+        try:
+            print(text.encode("ascii", "backslashreplace").decode("ascii"), file=out)
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def safe_streams() -> None:
+    """stdout / stderr that cannot fail on a character the console encoding lacks (PYTHONIOENCODING=ascii, cp1252)."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="backslashreplace")
+        except Exception:  # noqa: BLE001 - not a TextIOWrapper: leave it
+            pass
+
+
+def run_cli() -> int:
+    """The command line: never a non-zero exit, whatever happens (the handler does not re-raise)."""
+    try:
+        safe_streams()
+        main()
+    except BaseException:  # noqa: BLE001 - SystemExit / KeyboardInterrupt included: this check never blocks
+        pass
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run_cli())

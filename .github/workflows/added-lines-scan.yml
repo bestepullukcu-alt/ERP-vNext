@@ -8,8 +8,9 @@ name: added-lines-scan (warning only - secret shapes, risky files, home paths, e
 # its output says "Kişi adı denetimi ÇALIŞMADI" - a green job does not mean "no names". A finding shows only path, line,
 # kind and a masked hint, never the value. The script exits 0 whatever it finds, and also when git cannot compute the
 # diff (it prints a warning instead), so this job never fails a pull request; it is not a required check.
-# The scanner that runs is the copy on the BASE commit, so a pull request cannot change what checks it; only when the
-# base has no scanner yet does the pull request's own copy run. Same rules as every workflow here
+# The scanner that runs is the copy on the BASE commit (the pull request's own copy only when the base has none yet), so
+# a change to the scanner is not judged by itself. This is a convenience, NOT a security boundary: on pull_request the
+# workflow file that runs is the pull request's own, which it can change. Same rules as every workflow here
 # (CiServiceTestsGuardTests): read-only token, no stored credential is read, actions pinned to a COMMIT SHA, nothing that
 # turns a red step green.
 on:
