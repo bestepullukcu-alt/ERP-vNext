@@ -59,15 +59,9 @@ public abstract class CycleCountCommandHandler
         return await ReplayAsync(copy.Id, op, key, fingerprint, ct) ?? CycleCountSupport.Conflict<CycleCountDto>();
     }
 
-    /// <summary>A working copy of the stored count (the stored instance stays as read for the compare-and-set).</summary>
-    protected static CycleCount Copy(CycleCount c) => new()
-    {
-        Id = c.Id, TenantId = c.TenantId, LegalEntityId = c.LegalEntityId, CreatedAt = c.CreatedAt, UpdatedAt = c.UpdatedAt, Version = c.Version,
-        IsDeleted = c.IsDeleted, DeletedAt = c.DeletedAt, Number = c.Number, CompanyCodePrefix = c.CompanyCodePrefix, WarehouseId = c.WarehouseId,
-        CountType = c.CountType, Blind = c.Blind, ScopeLocationIds = [.. c.ScopeLocationIds], ScopeSkuIds = [.. c.ScopeSkuIds], PlannedDate = c.PlannedDate,
-        AssignedTo = c.AssignedTo, Note = c.Note, Status = c.Status, SnapshotAt = c.SnapshotAt, SnapshotTransactionIds = [.. c.SnapshotTransactionIds],
-        ScopeBinIds = [.. c.ScopeBinIds], LineCount = c.LineCount, RecountOfId = c.RecountOfId, CreatedBy = c.CreatedBy, CancelledBy = c.CancelledBy,
-        CancelledAt = c.CancelledAt, CancelReason = c.CancelReason, IdempotencyKey = c.IdempotencyKey, RequestFingerprint = c.RequestFingerprint,
-        EventSeq = c.EventSeq, CorrelationId = c.CorrelationId
-    };
+    /// <summary>
+    /// A working copy of the stored count (the stored instance stays as read for the compare-and-set). DL-3: every member is copied (the DL-1
+    /// member list lost <c>SubmittedBy</c> / <c>SubmittedAt</c>, which only writes after submit — DL-3's — would have noticed).
+    /// </summary>
+    protected static CycleCount Copy(CycleCount c) => c.Copy();
 }

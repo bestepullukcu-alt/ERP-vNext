@@ -1,1 +1,0 @@
-INDEPENDENT_ORACLE_PASS: R22, six stages, committed replay, open-transaction 503, eventual single-write recovery

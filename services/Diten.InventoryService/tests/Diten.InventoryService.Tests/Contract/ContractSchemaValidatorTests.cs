@@ -36,7 +36,8 @@ public sealed class ContractSchemaValidatorTests
         // WP-MVP1-NAMES1 (FU-0173-UI-USER-01, owner decision A): the additive optional step 1.4.0 → 1.5.0 (TransactionItem.createdBy).
         // MOD-0173-FU03 DL-1 (CT-03): the additive optional step 1.5.0 → 1.6.0 (reservation scope, getReservation, scope figures).
         // MOD-0173-FU03 DL-2 (CT-03): the additive optional step 1.6.0 → 1.7.0 (reservationId consumption, restoreReservation).
-        Assert.Contains("version: 1.7.0", text);
+        // MOD-0175-FU01 DL-3 (Q-06 = A, Q-07): the additive step 1.7.0 → 1.8.0 (422 REVERSAL_QUALITY_RECORD_LOCKED on postMovement).
+        Assert.Contains("version: 1.8.0", text);
     }
 
     [Fact]

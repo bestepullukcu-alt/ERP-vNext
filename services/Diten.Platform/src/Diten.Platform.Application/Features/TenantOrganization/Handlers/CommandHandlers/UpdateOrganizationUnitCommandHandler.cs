@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.RecordCodes;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Domain.Repositories;
@@ -46,15 +47,16 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
             return Response<NoContent>.Fail("Archived Organization Unit cannot be mutated.", 409);
         }
 
-        var canonicalCode = OrganizationCodeNormalizer.Normalize(request.Request.Code);
-        if (string.IsNullOrWhiteSpace(canonicalCode))
+        /*
+         * MOD-0040-FU02 DL-2 (Q-2 A, RCS-001 §6) — NO code changes on update, old hand-typed codes included. Blank keeps the
+         * stored code; one EQUAL to it (ordinal — nothing trimmed, upper-cased or normalized) is accepted, because the forms
+         * and the drag-and-drop re-link send the whole record back; anything else is 409 and nothing is written.
+         */
+        if (!string.IsNullOrWhiteSpace(request.Request.Code)
+            && !string.Equals(request.Request.Code, entity.Code, StringComparison.Ordinal))
         {
-            return Response<NoContent>.Fail("Organization Unit code is required.", 400);
-        }
-
-        if (await _repository.ExistsByCodeAsync(canonicalCode, request.Id, ct))
-        {
-            return Response<NoContent>.Fail("Organization Unit code already exists.", 409);
+            return Response<NoContent>.Fail(
+                "The Organization Unit code cannot be changed.", 409, RecordCodeReasonCodes.Immutable);
         }
 
         var legalEntity = await _legalEntityValidator.ValidateAsync(request.Request.LegalEntityId, ct);
@@ -134,24 +136,54 @@ public sealed class UpdateOrganizationUnitCommandHandler : IRequestHandler<Updat
                 403);
         }
 
-        if (lineChanged && !await _graph.TryAdvanceStructureTokenAsync(structureToken, ct))
-        {
-            return Response<NoContent>.Fail(
-                "The organization structure changed while this reporting line was being validated. "
-                + "Re-read the unit and try again.",
-                409);
-        }
-
-        entity.Code = canonicalCode;
         entity.Name = request.Request.Name.Trim();
         entity.LegalEntityId = request.Request.LegalEntityId;
         entity.ParentOrganizationUnitId = functionalParent;
         entity.AdministrativeParentOrganizationUnitId = administrativeParent;
         TenantOrganizationMapper.ApplyEnterpriseFields(entity, request.Request);
 
-        await _repository.UpdateAsync(entity, ct);
+        /*
+         * ⚠ A LINE CHANGE IS WRITTEN IN THE SAME ATOMIC STEP THAT WINS THE TOKEN. Winning the token and then
+         * writing the unit separately left a gap in which a second writer read the advanced token without the
+         * edge it stood for, and both edges landed (MOD-0288 race). Anything else goes through the plain update,
+         * which refuses to write back lines that changed after we read the unit.
+         */
+        try
+        {
+            if (lineChanged)
+            {
+                if (!await _graph.TryAdvanceStructureTokenAndUpdateAsync(structureToken, entity, ct))
+                {
+                    return StructureChanged();
+                }
+            }
+            else
+            {
+                await _repository.UpdateAsync(entity, ct);
+            }
+        }
+        catch (OrganizationUnitWriteConflictException)
+        {
+            return Response<NoContent>.Fail(
+                "The Organization Unit changed while it was being updated. Re-read it and try again.", 409);
+        }
+        catch (PlatformTransactionUnavailableException)
+        {
+            // No replica set (the line was not written), or the commit result could not be established (it may
+            // have been): either way the caller cannot be told it landed. Re-reading the unit shows which.
+            return Response<NoContent>.Fail(
+                "The reporting line could not be saved now. Try again later.",
+                PlatformTransactionUnavailableException.ServiceUnavailableStatusCode);
+        }
+
         return Response<NoContent>.Success(204);
     }
+
+    private static Response<NoContent> StructureChanged() =>
+        Response<NoContent>.Fail(
+            "The organization structure changed while this reporting line was being validated. "
+            + "Re-read the unit and try again.",
+            409);
 
     private async Task<Response<NoContent>> ValidateParentAsync(Guid currentId, Guid parentId, Guid legalEntityId, CancellationToken ct)
     {

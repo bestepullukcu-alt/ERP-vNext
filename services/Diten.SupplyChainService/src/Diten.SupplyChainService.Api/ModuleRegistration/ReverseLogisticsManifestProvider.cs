@@ -52,7 +52,19 @@ public sealed class ReverseLogisticsManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("RECEIVE", "Receive (manual assertion)", ReturnPermissions.ForTarget("Received")!, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DISPOSITION", "Disposition", ReturnPermissions.ForTarget("Dispositioned")!, "RowAction", 70, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("CLOSE", "Close", ReturnPermissions.ForTarget("Closed")!, "RowAction", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
-                    ])
+                    ]),
+                // MOD-0186 r10 §35.5 (DL-4, RB-21): the details page; read only, no action (the Details link is navigation).
+                // AUTHORIZE and REJECT above stay until DL-5.
+                new ModuleManifestPage(
+                    PageCode: "RETURN_DETAILS",
+                    DisplayName: "Return Details",
+                    RoutePath: "/SupplyChain/Returns/Details/{returnId:guid}",
+                    RequiredPermission: ReturnPermissions.Read,
+                    ParentPageCode: "RETURNS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 20,
+                    Actions: [])
             ],
             Icon: "bx-undo",
             IsBaseline: false);

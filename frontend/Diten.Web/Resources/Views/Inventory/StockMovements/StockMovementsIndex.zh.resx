@@ -66,6 +66,7 @@
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>成品</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>来源处库存不足，无法执行此移动。未做任何更改；请检查可用数量后重试。</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>此移动已被冲销。未做任何更改；请刷新列表查看冲销记录。</value></data>
+  <data name="ErrReversalQualityRecordLocked" xml:space="preserve"><value>此移动无法冲销：以其为来源的隔离 / 冻结库存记录受质量决定约束。请在“隔离”界面通过新的决定进行更正。</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>暂时无法校验产品或库位数据，因此未做任何更改。请在连接恢复后重试。</value></data>
   <data name="ErrCrossLegalEntity" xml:space="preserve"><value>此记录属于其他公司。请切换到该公司，或向管理员申请访问权限。</value></data>
   <data name="ErrKeyReused" xml:space="preserve"><value>此操作已使用其他值提交过。请关闭对话框后重新开始。</value></data>

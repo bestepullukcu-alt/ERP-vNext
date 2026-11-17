@@ -29,12 +29,10 @@
                         </select>
                     </div>
 
-                    @* Filter Chip: Shipment ID (UUID text, not a lookup) *@
+                    @* Filter Chip: Shipment (r10 §35.3 picker; sends the frozen shipmentId parameter) *@
                     <div class="filter-chip filter-shipment-id">
                         <label for="filterShipmentId" class="visually-hidden">@Localizer["ShipmentId"]</label>
-                        <input type="text" id="filterShipmentId" class="form-control form-control-sm" dir="ltr" autocomplete="off" spellcheck="false"
-                               placeholder="@Localizer["ShipmentId"]" aria-describedby="filterShipmentIdHelp" />
-                        <span id="filterShipmentIdHelp" class="visually-hidden">@Localizer["ShipmentIdHelp"]</span>
+                        <select id="filterShipmentId" class="form-select form-select-sm" data-placeholder="@Localizer["ShipmentSelect"]"></select>
                     </div>
 
                     <div class="ms-auto d-flex gap-3">

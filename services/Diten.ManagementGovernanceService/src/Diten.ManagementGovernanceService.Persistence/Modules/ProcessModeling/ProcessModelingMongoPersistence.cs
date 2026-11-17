@@ -84,7 +84,10 @@ public sealed class ProcessModelingMongoTransactionRunner(ProcessModelingMongoCo
 {
     public async Task<T> ExecuteAsync<T>(Func<IClientSessionHandle,CancellationToken,Task<T>> body,Func<CancellationToken,Task<T?>> reconcile,CancellationToken ct=default) where T:class
     {
-        using var session=await context.Client.StartSessionAsync(cancellationToken:ct); session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot,ReadPreference.Primary,WriteConcern.WMajority));
+        using var session=await context.Client.StartSessionAsync(cancellationToken:ct);
+        // Once the driver has discovered a standalone it refuses here, before any write; same typed 503 as the undiscovered path.
+        try { session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot,ReadPreference.Primary,WriteConcern.WMajority)); }
+        catch(NotSupportedException) { throw new ProcessModelingUnavailableException(ProcessModelingErrors.ProviderUnavailable); }
         T result; try { result=await body(session,ct); }
         catch(MongoWriteException ex) when(ex.WriteError?.Category==ServerErrorCategory.DuplicateKey){if(session.IsInTransaction)await session.AbortTransactionAsync(ct);throw new ProcessModelingConflictException(ProcessModelingErrors.IdempotencyConflict);}
         catch(MongoException ex){try{if(session.IsInTransaction)await session.AbortTransactionAsync(ct);}catch(MongoException){}throw new ProcessModelingUnavailableException(ProcessModelingErrors.TransactionIndeterminate+":"+ex.GetType().Name);}

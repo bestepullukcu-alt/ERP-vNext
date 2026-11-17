@@ -337,10 +337,12 @@ public static class DependencyInjection
         services.AddScoped<OrganizationUnitRepository>();
         services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
         services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        services.AddScoped<IOrganizationUnitCodeHistoryRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
         // MOD-0288-FU02 — tenant-defined Organization Unit field definitions and values.
         services.AddScoped<IOrganizationFieldDefinitionRepository, OrganizationFieldDefinitionRepository>();
         services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IPositionCodeHistoryRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IOrgDataScopeCandidateFactReader, OrgDataScopeCandidateFactReader>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();

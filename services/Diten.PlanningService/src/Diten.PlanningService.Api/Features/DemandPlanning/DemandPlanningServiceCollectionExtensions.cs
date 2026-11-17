@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.BuildingBlocks.Eventing;
 using Diten.PlanningService.Application.Features.DemandPlanning.Behaviors;
 using Diten.PlanningService.Application.Features.DemandPlanning;
 using Diten.PlanningService.Application.Features.DemandPlanning.Contracts;
@@ -91,6 +92,10 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
 
         services.AddSingleton<DemandPlanningMongoContext>();
+        services.AddSingleton<IOutboxCorrelationReader, HttpOutboxCorrelationReader>();
+        services.AddSingleton<DemandRevisionOutboxStore>();
+        services.AddSingleton<IEventOutboxStore>(sp => sp.GetRequiredService<DemandRevisionOutboxStore>());
+        services.AddSingleton<IDemandRevisionOutboxPreflight>(sp => sp.GetRequiredService<DemandRevisionOutboxStore>());
         services.AddScoped<ILegalEntityScopeReader, MdmLegalEntityScopeReader>();
         services.AddScoped<ILeadTimeAuthority, MdmLeadTimeAuthority>();
         services.AddScoped<IMrpInventoryReader, InventoryAvailabilityReader>();

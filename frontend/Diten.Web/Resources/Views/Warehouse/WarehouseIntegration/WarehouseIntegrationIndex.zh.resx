@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择您所在仓库所属的公司。选择公司前不显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>暂时无法读取公司列表，请稍后重试。</value></data>
+  <data name="IntegrationTitle" xml:space="preserve"><value>集成监控</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>仓库与发运方及库存的交互情况：事件队列、等待发运的出库单、最近一次发运同步，以及库存尚未响应的确认。</value></data>
+  <data name="Warehouse.Integration.Card.EventQueue" xml:space="preserve"><value>事件队列</value></data>
+  <data name="Warehouse.Integration.Card.AwaitingDispatch" xml:space="preserve"><value>待发运</value></data>
+  <data name="Warehouse.Integration.Card.LastSync" xml:space="preserve"><value>最近同步</value></data>
+  <data name="Warehouse.Integration.Card.PendingConfirmations" xml:space="preserve"><value>待处理确认</value></data>
+  <data name="Warehouse.Integration.Hint.EventQueue" xml:space="preserve"><value>发给发运方的“待发运”事件：等待中和已投递。</value></data>
+  <data name="Warehouse.Integration.Hint.AwaitingDispatch" xml:space="preserve"><value>已待发运但发运尚未同步的出库单。</value></data>
+  <data name="Warehouse.Integration.Hint.LastSync" xml:space="preserve"><value>最近一次发现发运并将出库单标记为已发运的时间。</value></data>
+  <data name="Warehouse.Integration.Hint.PendingConfirmations" xml:space="preserve"><value>库存尚未响应的上架和拣货确认。</value></data>
+  <data name="Warehouse.Integration.Pending" xml:space="preserve"><value>等待中</value></data>
+  <data name="Warehouse.Integration.Delivered" xml:space="preserve"><value>已投递</value></data>
+  <data name="Warehouse.Integration.OldestPendingAge" xml:space="preserve"><value>最早等待时长</value></data>
+  <data name="Warehouse.Integration.Count" xml:space="preserve"><value>出库单数</value></data>
+  <data name="Warehouse.Integration.OldestReadyAt" xml:space="preserve"><value>最早待发运时间</value></data>
+  <data name="Warehouse.Integration.LastShippedAt" xml:space="preserve"><value>最近发运</value></data>
+  <data name="Warehouse.Integration.Putaway" xml:space="preserve"><value>上架</value></data>
+  <data name="Warehouse.Integration.Pick" xml:space="preserve"><value>拣货</value></data>
+  <data name="Warehouse.Integration.Total" xml:space="preserve"><value>合计</value></data>
+  <data name="Warehouse.Integration.Never" xml:space="preserve"><value>尚无已同步的发运</value></data>
+  <data name="Warehouse.Integration.NoneWaiting" xml:space="preserve"><value>无等待</value></data>
+  <data name="Warehouse.Integration.AgeMinutes" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="Warehouse.Integration.AgeHours" xml:space="preserve"><value>{0} 小时 {1} 分钟</value></data>
+  <data name="Warehouse.Integration.AgeDays" xml:space="preserve"><value>{0} 天 {1} 小时</value></data>
+  <data name="Warehouse.Integration.AsOf" xml:space="preserve"><value>数据时间</value></data>
+  <data name="Warehouse.Integration.Refresh" xml:space="preserve"><value>刷新</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>无法访问用户目录；未校验负责人，未保存任何内容。请稍后重试。</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>请选择本公司的有效用户作为负责人。</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>公司代码不能用于任务编号；请先更正公司代码。</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>过账时库存发生变化；确认处于等待状态，请使用“重试”。</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>该确认正在处理中；请稍候并刷新。</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>只有存在完整性错误的确认才能对账。</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>只有等待中的确认才能重试。</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>此任务有一条确认正在等待库存答复；处理完成前只能使用“重试”。</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>该记录已被他人修改；请刷新后重试。</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>任务当前状态下无法执行此操作。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>该库位有未完成的上架任务；请先关闭或取消这些任务。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>一个库位不能同时为收货区和发货暂存区。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>该库位已有角色记录；请编辑该记录。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>上级或下级节点已具有相反角色；收货区与发货暂存区不能位于同一路径。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>未找到角色记录；请刷新列表。</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>角色只能分配给仓库、存储地点、区域或货位。</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>只有指派的操作员或主管可以执行此操作。</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>库存台账中已存在使用该确认键的其他移动；需由主管对账。</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>计划数量不能低于已确认或等待中的数量。</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>数量超过该行剩余的未处理库存。</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>数量超过剩余待拣数量。</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>无法生成任务编号；请稍后重试。</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>源位置的序列号已变化；请取消此任务并新建任务。</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>同一库位中该批次有部分待质检；请先完成质量决定。</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>序列号管控产品只能整件拣货，不能部分确认。</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>源库位不是收货库位。</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>所选行中未找到库存；请刷新列表。</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>库存已进入隔离或被冻结；无法上架。</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>储存条件未知——请在产品卡片中补充（MDM）。</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>储存条件无效：最多只能选择一个温度条件。</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>暂存位置不接受该产品的存储条件。</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>目标必须是同一仓库中启用、可存货且非收货区或发货暂存区的货位。</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>该任务已有负责人。</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>未找到任务；请刷新列表。</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>该请求已以不同内容发送过；请关闭对话框后重新开始。</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>请填写至少 10 个字符的原因。</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>源位置库存不足以满足该数量。</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>该批次处于召回中，不能拣货。</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>无法访问库存服务；未保存任何内容。请稍后重试。</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>部分数值无效；请检查表单。</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>请先选择公司。</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>您的会话已结束；请重新登录。</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>暂时无法访问仓库服务；请稍后重试。</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>未找到记录；请刷新列表。</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>记录已发生变化；请刷新后重试。</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>请求未被接受；请检查数值后重试。</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>出现问题；请重试。</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>导出行数过多；请缩小筛选范围。</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>未找到出库单；请刷新列表。</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>无法为每一行分配库存；未保存任何内容。</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>一个出库单最多可包含 100 行。</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>有多个发运单引用此出库单；请联系发运团队核查。</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>您无权读取发运单；请申请发运单读取权限。</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>无法连接发运服务；未做任何更改。请稍后重试。</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>物料级出库单在发运端支持之前不能设为待发运。</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>物料行无法解析为可库存的 SKU；请检查产品。</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>所选批次无法分配；请从预览中选择批次。</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>该出库单的分配仍在完成中；请稍后刷新。</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>待发运或已发运的出库单不能取消。</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>出库单已待发运，不能再修改。</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>同一出库单中不能混合物料行和 SKU 行。</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>关闭包裹前请至少添加一行内容。</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>包裹数量将超过某分配的已拣数量。</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>未找到包裹；请刷新页面。</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>仓库没有暂存位置；请先为其某个位置分配暂存角色。</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>行单位必须是 SKU 的基本单位。</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>某批次不是 FEFO 首选批次；请填写原因（至少 10 个字符）。</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>贵公司仅按 FEFO 顺序出库；请选择第一个合格批次。</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>该批次已过期，不能出库。</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>该批次已冻结，不能出库。</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>该批次需复检，复检前不能出库。</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>该库存的预留已失效；确认被拒绝。</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>库存与其预留不符；确认被拒绝。</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>预留已在此期间更改；请刷新后重试。</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>该仓库或位置不存在于所选公司或未启用。</value></data>
+</root>

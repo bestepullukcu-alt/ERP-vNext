@@ -13,6 +13,9 @@ public sealed class Shipment : EntityBase
     public string? ExternalRef { get; set; }
     public string WarehouseReferenceId { get; set; } = string.Empty;
     public string ShipToReference { get; set; } = string.Empty;
+    /// <summary>3.5.0 (MOD-0183 r9 §24.1): the customer's CRM Account.Id, lower-case "D" Guid, stored as given; null on
+    /// records written before 3.5.0, on Warehouse-intake shipments and on calls that do not send it.</summary>
+    public string? CustomerRef { get; set; }
     public Guid? CarrierId { get; set; }
     public Guid? LoadPlanId { get; set; }
     public ShipmentLine[] Lines { get; set; } = [];

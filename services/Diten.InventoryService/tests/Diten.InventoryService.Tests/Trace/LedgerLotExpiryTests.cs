@@ -6,10 +6,13 @@ using Xunit;
 namespace Diten.InventoryService.Tests.Trace;
 
 /// <summary>
-/// The test classes that create lots with a PAST expiry date or drive the expiry sweeper, which reads every tenant: run
-/// one after the other, so no sweeper of one class expires another class's lot in the middle of a test.
+/// The test classes that drive the lot expiry sweeper, which reads EVERY tenant of the shared test database. They run one
+/// after the other AND alone: xUnit starts a <c>DisableParallelization</c> collection only after every parallel collection
+/// has finished. A collection by itself only serialises its own members — any other class running beside it could have a
+/// lot past its expiry date by the wall clock (a fixed test date that the calendar overtook, e.g. 2026-11-09 in
+/// <c>ExpiryIssueHookTests</c>) and see it turn Expired, its ETag changed, between two of its own requests.
 /// </summary>
-[CollectionDefinition(Name)]
+[CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class LotExpiryCollection
 {
     public const string Name = "MOD-0174 lot expiry (sweeper reads every tenant)";

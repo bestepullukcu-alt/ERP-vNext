@@ -20,5 +20,17 @@ public static class CycleCountCollections
     /// <summary>The bin claims of the open counts (F-6; a partial unique index, never deleted).</summary>
     public const string BinClaims = "wms_count_bin_claims";
 
-    public static readonly IReadOnlyList<string> All = [Counts, Lines, Events, BinClaims];
+    /// <summary>DL-3 (pack §4.4, Q-3): one settings record per company — tolerance, recount limit, line limit. Not stock.</summary>
+    public const string Settings = "wms_count_settings";
+
+    public static readonly IReadOnlyList<string> All = [Counts, Lines, Events, BinClaims, Settings];
+
+    /// <summary>DL-5 (pack §4.5): the insert-only Evidence Pack export log (the MOD-0176 expiry_evidence_exports pattern). Not stock.</summary>
+    public const string EvidenceExports = "wms_count_evidence_exports";
+
+    /// <summary>DL-5: the stored bytes of each export (insert-only; what was hashed is what is downloaded).</summary>
+    public const string EvidenceFiles = "wms_count_evidence_files";
+
+    /// <summary>DL-5's own list (pack §24 DL-5 seam: "kanıt koleksiyonları ayrı liste") — beside <see cref="All"/>, never in it.</summary>
+    public static readonly IReadOnlyList<string> Evidence = [EvidenceExports, EvidenceFiles];
 }
