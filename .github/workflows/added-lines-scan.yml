@@ -1,17 +1,28 @@
-name: added-lines-scan
+name: added-lines-scan (warning only - secret shapes, risky files, home paths, e-mails, names if listed)
 
 # WARNING ONLY. The repository is public: this job reads the lines a pull request ADDS (git diff base...head, never the
-# content already on main) and the names of the files it adds, and annotates possible credentials, private key files,
-# logs / test results, absolute home paths and personal e-mail addresses (scripts/scan_added_lines.py). A finding shows
-# only path, line, kind and a masked hint, never the value. The script exits 0 whatever it finds, and also when git
-# cannot compute the diff (it prints a warning instead), so this job never fails a pull request; it is not a required
-# check. Same rules as every workflow here (CiServiceTestsGuardTests): read-only token, no stored credential is read,
-# actions pinned to a COMMIT SHA, nothing that turns a red step green.
+# content already on main) and the names of the files it adds, and annotates secret shapes (tokens, keys, passwords in
+# connection strings / URLs / assignments), risky new files (.env, key / certificate, .log, .trx), personal folder paths
+# and e-mail addresses (scripts/scan_added_lines.py). Fake home paths and e-mail addresses in test locations are notices.
+# Personal names are checked ONLY when a names list is supplied from outside the repository; this job supplies none, so
+# its output says "Kişi adı denetimi ÇALIŞMADI" - a green job does not mean "no names". A finding shows only path, line,
+# kind and a masked hint, never the value. The script exits 0 whatever it finds, and also when git cannot compute the
+# diff (it prints a warning instead), so this job never fails a pull request; it is not a required check.
+# The scanner that runs is the copy on the BASE commit, so a pull request cannot change what checks it; only when the
+# base has no scanner yet does the pull request's own copy run. Same rules as every workflow here
+# (CiServiceTestsGuardTests): read-only token, no stored credential is read, actions pinned to a COMMIT SHA, nothing that
+# turns a red step green.
 on:
   pull_request:
 
 permissions:
   contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow; any other run
+# and any re-run get a group of their own (the run id), so they are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   added-lines-scan:
@@ -25,8 +36,16 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Scan added lines (warning only)
+      - name: Scan added lines with the base commit's scanner (warning only)
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 scripts/scan_added_lines.py --base "$BASE_SHA" --head "$HEAD_SHA"
+        run: |
+          if git cat-file -e "$BASE_SHA:scripts/scan_added_lines.py" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/scan_added_lines.py" > "$RUNNER_TEMP/scan_added_lines.py"
+            echo "Scanner: the base commit's copy."
+          else
+            cp scripts/scan_added_lines.py "$RUNNER_TEMP/scan_added_lines.py"
+            echo "Scanner: the pull request's copy (the base commit has none)."
+          fi
+          python3 "$RUNNER_TEMP/scan_added_lines.py" --repo . --base "$BASE_SHA" --head "$HEAD_SHA"
