@@ -1,4 +1,4 @@
-# MOD-0188 — Talep geçmişi birim modu: sahip kararları 01
+# MOD-0188 — Talep geçmişi birim modu: sahip kararları 01 (D1–D6)
 
 - **Modül:** MOD-0188 Demand Planning (MVP-4)
 - **Pack:** `execution/domains/supply-chain-execution/module-packs/MOD-0188-demand-planning.md` — AC-D07 revizyonu PR #256
@@ -51,12 +51,29 @@ kabul için dönüşüm kanıtı sayılmaz.
 **bilinçli kural** olarak yazılır ve **testle gösterilir** (beklenmeyen/eksik sürüm reddi). PRODUCT-MASTER v1.1 dondurulurken
 yeniden gözden geçirilir.
 
+## D6 — `ProductMasterV1` dönüşüm kuralları bu revizyona girmez
+
+Bağımsız inceleme (2026-11-17, #256 @ `29166cd20`, UYGUN DEĞİL) pack'te D1–D5'te bulunmayan dönüşüm kuralları buldu. Ali'ye
+beş madde soruldu:
+
+- a) yeni satırın tarihsiz v1.1 çevrimiyle temel birime dönüştürülüp kabulü;
+- b) birebir ya da en çok 4 adımlı yol; farklı çarpanlı / 5+ adımlı / taşan yolda karantina;
+- c) 4 basamak `AwayFromZero` yuvarlama, `ConversionBelowPrecision` karantinası;
+- d) aynı temel birime çözülen farklı özgün birimlerin aynı batch'te kabulü;
+- e) import ile kabul arasında çevrim değişirse 409, sıfır kabul.
+
+**Karar (Ali, 2026-11-17):** a–e şimdi pakete **girmez**; PRODUCT-MASTER v1.1 dondurulunca ayrı bir pack revizyonuyla gelir.
+AC-D07 (b) yalnız açma kapısını (D1) tanımlar. #227'deki dönüşüm kodu D1 açma kapısının arkasında kapalı kalır; o revizyon
+onaylanana kadar bu kod onaylı davranış sayılmaz ve canlı kabul ilan edilmez. a–e pack'in açık maddelerine **sahibi Ali** olarak
+yazılır.
+
 ## Pack'e düşen işler (#256)
 
 - "Ali, 2026-11-11" atıfları bu dosyaya ve **2026-11-17** tarihine çevrilir (D1, D2).
 - D2 yan etkisi açık maddelere yazılır.
 - D3 açık maddesi BL-667 ile anılır.
 - D5 bilinçli kural + test beklentisi olarak yazılır; "çözülmeden canlı açma kararı verilmez" ifadesi bu kararla güncellenir.
+- D6: dönüşüm kuralları (a–e) pack metninden çıkarılır; AC-D07 (b) yalnız açma kapısı; a–e açık madde, sahip Ali.
 
 ## Sınır
 
