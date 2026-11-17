@@ -1,4 +1,35 @@
 @using Diten.Web.Views.SupplyChain.Shipments
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ShipmentsIndex> Localizer
-<div id="inlineFilterHost" class="px-3"><div id="inlineFilterCollapse" class="collapse show"><div class="pt-0 pb-3"><div class="card"><div class="card-body py-3"><div class="row g-3 align-items-end"><div class="col-12 col-md-4"><label for="filterStatus" class="form-label">@Localizer["Status"]</label><select id="filterStatus" class="form-select form-select-sm"><option value="">@Localizer["AllStatuses"]</option><option value="Draft">@Localizer["StatusDraft"]</option><option value="Planned">@Localizer["StatusPlanned"]</option><option value="Dispatched">@Localizer["StatusDispatched"]</option><option value="InTransit">@Localizer["StatusInTransit"]</option><option value="Delivered">@Localizer["StatusDelivered"]</option><option value="Exception">@Localizer["StatusException"]</option><option value="Closed">@Localizer["StatusClosed"]</option><option value="Cancelled">@Localizer["StatusCancelled"]</option></select></div><div class="col-12 col-md-5"><label for="filterSourceDocumentId" class="form-label">@Localizer["SourceDocumentId"]</label><input id="filterSourceDocumentId" class="form-control form-control-sm" /></div><div class="col-12 col-md-3 d-flex gap-2"><button type="button" id="btnFilterApply" class="btn btn-sm btn-primary">@Localizer["ApplyFilter"]</button><button type="button" id="btnFilterReset" class="btn btn-sm btn-label-secondary">@Localizer["ResetFilter"]</button></div></div></div></div></div></div></div>
+@* MOD-0183 r9 §24.3: status as Select2 (localized names, the contract's English values), source document as text, company
+   from the shared selector above the list (it is the scope, not a filter). *@
+<div id="inlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["Status"]">
+                            <option value="">@Localizer["AllStatuses"]</option>
+                            <option value="Draft">@Localizer["StatusDraft"]</option>
+                            <option value="Planned">@Localizer["StatusPlanned"]</option>
+                            <option value="Dispatched">@Localizer["StatusDispatched"]</option>
+                            <option value="InTransit">@Localizer["StatusInTransit"]</option>
+                            <option value="Delivered">@Localizer["StatusDelivered"]</option>
+                            <option value="Exception">@Localizer["StatusException"]</option>
+                            <option value="Closed">@Localizer["StatusClosed"]</option>
+                            <option value="Cancelled">@Localizer["StatusCancelled"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-source">
+                        <input id="filterSourceDocumentId" class="form-control form-control-sm" placeholder="@Localizer["SourceDocumentId"]" aria-label="@Localizer["SourceDocumentId"]" />
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@Localizer["ApplyFilter"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["ResetFilter"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

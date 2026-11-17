@@ -1,0 +1,44 @@
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCountsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filters = the listCycleCounts parameters (pack §8.13): status (multi chip — the contract's count status enum) and warehouse (LOCATION master; it also
+    narrows the KPI cards, and the manual COUNT_* card needs it). The number search lives in the toolbar search box (q).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            @foreach (var status in Diten.Web.Controllers.CycleCountsController.Statuses)
+                            {
+                                <option value="@status">@Localizer["CycleCount.Status." + status]</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouse" class="form-select form-select-sm" data-placeholder="@Localizer["FilterWarehouse"]" aria-label="@Localizer["FilterWarehouse"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <small id="cc-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

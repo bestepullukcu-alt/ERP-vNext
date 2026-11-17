@@ -138,6 +138,8 @@
   <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>View Summary</value></data>
   <data name="ActionVerb_Rebase" xml:space="preserve"><value>Rebase</value></data>
   <data name="ActionVerb_Recover" xml:space="preserve"><value>Recover</value></data>
+  <data name="ActionVerb_Post" xml:space="preserve"><value>Post</value></data>
+  <data name="ActionVerb_Recount" xml:space="preserve"><value>Recount</value></data>
   <data name="ActionVerb_Release" xml:space="preserve"><value>Release</value></data>
   <data name="ActionVerb_Reopen" xml:space="preserve"><value>Reopen</value></data>
   <data name="ActionVerb_Replace" xml:space="preserve"><value>Replace</value></data>

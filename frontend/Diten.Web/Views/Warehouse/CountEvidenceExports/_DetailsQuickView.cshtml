@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Warehouse.CountEvidenceExports
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountEvidenceExportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* QuickView: one export — count, format, the file's and the requested language, who / when, the SHA-256 and the size; the download button. *@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-file fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="offcanvasDetailsPreviewLabel" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="d-flex flex-column gap-4">
+            <div id="oc-note" class="alert alert-info d-none mb-0" role="note"></div>
+            <section class="card backbone-preview-section p-4">
+                <dl class="row g-3 mb-0" id="oc-fields"></dl>
+            </section>
+        </div>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-download" class="btn btn-primary" href="#" download><i class="bx bx-download me-1"></i>@Localizer["CountEvidence.Action.Download"]</a>
+    </div>
+</div>

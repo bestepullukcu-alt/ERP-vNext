@@ -66,6 +66,7 @@
   <data name="SkuLevelFinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
   <data name="ErrInsufficientStock" xml:space="preserve"><value>لا يوجد مخزون كافٍ في المصدر لهذه الحركة. لم يتم تغيير أي شيء؛ تحقّق من الكمية المتاحة ثم حاول مرة أخرى.</value></data>
   <data name="ErrAlreadyReversed" xml:space="preserve"><value>تم عكس هذه الحركة مسبقًا. لم يتم تغيير أي شيء؛ أعد تحميل القائمة لرؤية القيد العكسي.</value></data>
+  <data name="ErrReversalQualityRecordLocked" xml:space="preserve"><value>لا يمكن عكس هذه الحركة: سجل الحجر / المخزون المحظور الذي تُعد مصدره مرتبط بقرار جودة. أجرِ التصحيح بقرار جديد من شاشة الحجر.</value></data>
   <data name="ErrMasterUnavailable" xml:space="preserve"><value>تعذّر التحقق من بيانات المنتج أو الموقع حاليًا، لذلك لم يتم أي تغيير. حاول مرة أخرى عند عودة الاتصال.</value></data>
   <data name="ErrCrossLegalEntity" xml:space="preserve"><value>هذا السجل يخص شركة أخرى. انتقل إلى تلك الشركة أو اطلب الوصول من المسؤول.</value></data>
   <data name="ErrKeyReused" xml:space="preserve"><value>سبق إرسال هذا الإجراء بقيم أخرى. أغلق النافذة وابدأ من جديد.</value></data>

@@ -14,4 +14,14 @@ public static class DocumentRepositoryReasonCodes
     public const string NotFoundNonLeakage = "NOT_FOUND_NON_LEAKAGE";
     public const string StorageUnavailable = "STORAGE_UNAVAILABLE";
     public const string Forbidden = "FORBIDDEN";
+
+    // ── MOD-0262-FU01 DL-2 — the trusted consumer surface (api/internal/v1/document-repository/trusted-consumer, §13).
+    public const string TrustedConsumerUnauthenticated = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_UNAUTHENTICATED";
+    public const string TrustedConsumerForbidden = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_FORBIDDEN";
+    public const string TrustedConsumerTooLarge = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_TOO_LARGE";
+    public const string TrustedConsumerUnavailable = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_UNAVAILABLE";
+    public const string TrustedConsumerTimeout = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_TIMEOUT";
+
+    /// <summary>The client went away while the command ran: "the client got no answer", NOT "nothing happened" (§8.1).</summary>
+    public const string TrustedConsumerClientAborted = "DOCUMENT_REPOSITORY_TRUSTED_CONSUMER_CLIENT_ABORTED";
 }

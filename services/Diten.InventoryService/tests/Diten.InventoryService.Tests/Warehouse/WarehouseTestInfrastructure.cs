@@ -419,7 +419,7 @@ public sealed class WarehouseScenario
     {
         Factory = factory;
         Inventory = new InventoryScenario(factory, level, lotControlled, serialControlled);
-        _wms = factory.CreateDefaultClient(new WmsDraftContractHandler()); // AC-19: every /api/warehouse answer is checked against the WMS draft
+        _wms = factory.CreateDefaultClient(new WmsContractHandler()); // AC-19 / AC-60: every /api/warehouse answer is checked against the frozen WMS-BUNDLE
         factory.TrackWarehouseTenant(Inventory.Tenant);
         Token = TokenFor(Inventory.User, Read, Manage);
     }
