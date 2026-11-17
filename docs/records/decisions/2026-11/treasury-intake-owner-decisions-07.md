@@ -20,3 +20,12 @@ Onay kanıtı: K1 / gmg-10 (soru kutusu, 2026-11-16: "Open on MDM-0220-DL1 (Reco
 2. **D146/2 — D10/2:** D10/2'deki "MOD-0220 değişikliği MOD-0126 ile birlikte kodlanır" ifadesinin yerini MDM-önce teslim (`MDM-0220-DL1`, `docs/records/decisions/2026-11/mdm-mod0220-s22-delivery-owner-decision-01.md`) alır; Treasury bunu kabul eder.
 3. **D146/3 — bugünkü durum:** `MDM-0220-DL1` MDM kuyruğunda `DISCOVERED` (`execution/domains/master-data-management/work-packs/CT-QUEUE.tsv`, `c3547081a`); TRM-14 henüz kapalı değil — finans DL-1'leri onu bekler.
 4. **D146/4 — sınır:** finans paketlerinin metni, AC'leri ve `status`'u değişmedi; bu karar kapının hangi kanıtla kapandığını belirler. Bildirim: MDM CT ve Beste'ye (mesaj Natig'den).
+
+## D147 — WP-0289-DL1 P-13: Ali'nin XMC-001 onayı (2026-11-17)
+
+Onay kanıtı: Ali (MDM sahibi) yazılı cevabı, K1 / gmg-10 tarafından 2026-11-17'de Treasury Intake CT oturumuna (`f8880468-240a-4bd1-8ab8-bbdbecf875dd`) aktarıldı. Bu satır, prompt v1.7'nin P-13 dağıtım kapısının ve D143/4'ün istediği dağıtım kaydıdır (onay prompt metnine yazılmaz). Ölçüm: `origin/main` `f20344ae4`.
+
+1. **D147/1 — onay:** Ali: "MOD-0289 (Banka / Şube) DL-1 için XMC-001 cevabım: evet, D143/3'teki kapsamla."
+2. **D147/2 — kapsam:** yalnız MOD-0290 alanındaki dört dosya — `LocalAuditIntent.cs`, `AuditIntentClaimedPayload.cs`, `AuditIntentDeliveryProcessor.cs`, `CentralMappingRollout.cs`.
+3. **D147/3 — koşul:** değişiklik yalnız eklemeli (D142/2, D143/1–2); ürün niyetlerinin alanları, kayıt biçimi ve davranışı değişmez; eski biçimli kayıtlar okunmaya devam eder. Bunlar testle ve sabotajla gösterilir (DL-1 kabul kanıtı).
+4. **D147/4 — sonuç:** P-13 kapandı; WP-0289-DL1 prompt v1.7 (`8651fba3…`) dağıtılabilir. Dağıtım günü ölçümü: Expected HEAD `6be9bc3d6` ile `f20344ae4` arasında `services/Diten.MdmService/**` ve Platform `TrustedSourceAuditIntentOperationMap.cs` değişmedi; izinli yollardan yalnız `tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs` (+4/−1, MOD-0040-FU02 A-10) ve `tests/architecture/audit-ledger/CT-DECISIONS.md` (+1) değişti — DL-1 kabulünde dal main ile güncellenirken birleşir; prompt ve Expected HEAD değişmez.
