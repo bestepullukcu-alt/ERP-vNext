@@ -4,7 +4,7 @@ Kim yazar: kule (kule kartı K19). Mesaj sırası her zaman **Biten · Çalışa
 Tek bir modülün ya da adımın raporu `modul-blogu.md` biçimindedir (modül adı ve kimliği, "Ne için", ilerleme çubuğu ve tahmini
 bitiş, "Bu adım" satırı); sayılar `scripts/ees_run_record.py` aracından alınır, elle yazılmaz. Aşağıdaki satır biçimi yalnız
 birden çok hattın tek mesajdaki özetidir: hat başına tek satır.
-Araç bir hat için uyarı bildiriyorsa hattın satırı `· uyarı: <kısa neden>` ile biter.
+Araç bir hat için uyarı bildiriyorsa hattın satırı `· uyarı: <aracın kısa etiketi>` ile biter (ilk uyarının json çıktısındaki `kisa` değeri; birden çok uyarı varsa `+n`); neden raporu yazanın kendi sözleriyle yazılmaz.
 Satırın bilgisi bu turda okunmadıysa saat yerine `eski bilgi, <saat>` yazılır. Sade Türkçe; kod adı tek başına yazılmaz,
 yanında ne olduğu söylenir.
 

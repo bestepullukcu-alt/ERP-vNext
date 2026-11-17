@@ -18,6 +18,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from contextlib import redirect_stderr
 from datetime import datetime, timedelta, timezone
 
@@ -60,7 +61,7 @@ def result(ts, tool_id, **extra):
     return e
 
 
-def assistant(ts, mid, usage=None, model="model-a", blocks=None):
+def assistant(ts, mid, usage=None, model="claude-a", blocks=None):
     msg = {"id": mid, "model": model, "role": "assistant", "content": blocks if blocks is not None else [
         {"type": "text", "text": "SECRETREPLY"}]}
     if usage is not None:
@@ -76,7 +77,7 @@ def usage(i=0, cw=0, cr=0, o=0):
     return {"input_tokens": i, "cache_creation_input_tokens": cw, "cache_read_input_tokens": cr, "output_tokens": o}
 
 
-def sub_assistant(ts, mid, blocks=None, model="model-s", u=None):
+def sub_assistant(ts, mid, blocks=None, model="claude-s", u=None):
     return {"type": "assistant", "isSidechain": True, "timestamp": ts, "message": {
         "id": mid, "model": model, "usage": u or usage(o=1), "content": blocks or [{"type": "text", "text": "y"}]}}
 
@@ -120,12 +121,12 @@ class UsageCounting(Base):
             assistant(at(0, 7), "m1", usage(i=1, cw=100, cr=1000, o=40), blocks=[tool_use("t2", "Bash", command="ls")]),
             assistant(at(0, 7), "m1", usage(i=1, cw=100, cr=1000, o=40), blocks=[tool_use("t2", "Bash", command="ls")]),
             result(at(0, 8), "t1"),
-            assistant(at(0, 9), "m2", usage(i=2, cw=10, cr=20, o=7), model="model-b"),
+            assistant(at(0, 9), "m2", usage(i=2, cw=10, cr=20, o=7), model="claude-b"),
         ])
         d = self.data(path)
         main = d["ozet"]["token_ana"]
-        self.assertEqual(main["model-a"], {"mesaj": 1, "girdi": 1, "onbellek_yazma": 100, "onbellek_okuma": 1000, "cikti": 40})
-        self.assertEqual(main["model-b"]["cikti"], 7)
+        self.assertEqual(main["claude-a"], {"mesaj": 1, "girdi": 1, "onbellek_yazma": 100, "onbellek_okuma": 1000, "cikti": 40})
+        self.assertEqual(main["claude-b"]["cikti"], 7)
         self.assertEqual(d["ozet"]["token_hepsi"], (1 + 100 + 1000 + 40) + (2 + 10 + 20 + 7))
         self.assertEqual(d["ozet"]["token_girdi"], 1 + 100 + 1000 + 2 + 10 + 20)
         self.assertEqual(d["ozet"]["token_cikti"], 47)
@@ -324,7 +325,7 @@ class ActiveAndWaiting(Base):
     def test_subagent_bash_waiting_33_minutes_is_a_tool_wait(self):
         main = self.write("s.jsonl", [
             human(at(0)),
-            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("ag", "Agent", subagent_type="ees-isci")]),
+            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("ag", "Agent", subagent_type="Explore")]),
             result(at(40), "ag"),
         ])
         sub = [
@@ -341,7 +342,7 @@ class ActiveAndWaiting(Base):
     def test_main_long_command_while_a_background_subagent_works(self):
         main = self.write("s.jsonl", [
             human(at(0)),
-            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("ag", "Agent", subagent_type="ees-isci", run_in_background=True)]),
+            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("ag", "Agent", subagent_type="Explore", run_in_background=True)]),
             result(at(1, 5), "ag"),
             assistant(at(1.5), "m2", usage(o=1), blocks=[tool_use("bb", "Bash", command="dotnet test --filter SECRETFILTER")]),
             result(at(40), "bb"),
@@ -360,7 +361,7 @@ class ActiveAndWaiting(Base):
     def test_subagent_activity_fills_the_parent_wait(self):
         main = self.write("s.jsonl", [
             human(at(0)),
-            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("a1", "Agent", subagent_type="ees-isci", description="SECRETDESC")]),
+            assistant(at(1), "m1", usage(o=1), blocks=[tool_use("a1", "Agent", subagent_type="Explore", description="SECRETDESC")]),
             result(at(21), "a1"),
         ])
         self.write("s/subagents/agent-aaa.jsonl", [sub_assistant(at(m), "s%d" % m) for m in range(2, 21, 2)])
@@ -374,7 +375,7 @@ class SubAgents(Base):
         main = self.write("s.jsonl", [
             human(at(0)),
             assistant(at(1), "m1", usage(i=1, o=10), blocks=[
-                tool_use("a1", "Agent", subagent_type="ees-denetci", description="SECRETDESC"),
+                tool_use("a1", "Agent", subagent_type="Plan", description="SECRETDESC"),
                 tool_use("a2", "Task", description="no type")]),
         ])
         s1 = [
@@ -387,26 +388,26 @@ class SubAgents(Base):
         ]
         self.write("s/subagents/agent-one.jsonl", s1)
         self.meta("s/subagents/agent-one.meta.json", agentType="meta-type", toolUseId="a1")
-        self.write("s/subagents/agent-two.jsonl", [sub_assistant(at(6), "y1", model="model-t", u=usage(o=1))])
+        self.write("s/subagents/agent-two.jsonl", [sub_assistant(at(6), "y1", model="claude-t", u=usage(o=1))])
         d = self.data(main)
         subs = {a["tur"]: a for a in d["oturumlar"][0]["alt_ajanlar"]}
-        self.assertEqual(set(subs), {"ees-denetci", "alt-ajan-2"})   # no meta, no parent type: numbered, never the file name
-        one = subs["ees-denetci"]
-        self.assertEqual(one["model"], "model-s")
+        self.assertEqual(set(subs), {"Plan", "alt-ajan-2"})   # no meta, no parent type: numbered, never the file name
+        one = subs["Plan"]
+        self.assertEqual(one["model"], "claude-s")
         self.assertEqual(one["sure_dk"], 3.0)
         self.assertEqual(one["arac_cagrisi"], 3)
-        self.assertEqual(one["token"]["model-s"], {"mesaj": 1, "girdi": 5, "onbellek_yazma": 6, "onbellek_okuma": 7, "cikti": 9})
-        self.assertEqual(d["ozet"]["token_alt_ajan"]["model-t"]["cikti"], 1)
+        self.assertEqual(one["token"]["claude-s"], {"mesaj": 1, "girdi": 5, "onbellek_yazma": 6, "onbellek_okuma": 7, "cikti": 9})
+        self.assertEqual(d["ozet"]["token_alt_ajan"]["claude-t"]["cikti"], 1)
         self.assertEqual(d["turlar"][0]["alt_ajan_baslatildi"], 2)
         reads = d["oturumlar"][0]["okunan_kural_dosyalari"]["alt_ajanlar"]
-        key = [k for k in reads if k.startswith("ees-denetci")][0]
+        key = [k for k in reads if k.startswith("Plan")][0]
         self.assertEqual(reads[key], {".antigravity/rules/multi-tenancy.md": 1, ".ees/kartlar/hat.md": 1, "AGENTS.md": 1})
 
     def test_meta_type_is_the_fallback_when_the_parent_call_cannot_be_matched(self):
         main = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1))])
         self.write("s/subagents/agent-one.jsonl", [sub_assistant(at(2), "x1")])
-        self.meta("s/subagents/agent-one.meta.json", agentType="ees-isci", toolUseId="not-in-this-window")
-        self.assertEqual(self.data(main)["oturumlar"][0]["alt_ajanlar"][0]["tur"], "ees-isci")
+        self.meta("s/subagents/agent-one.meta.json", agentType="Explore", toolUseId="not-in-this-window")
+        self.assertEqual(self.data(main)["oturumlar"][0]["alt_ajanlar"][0]["tur"], "Explore")
 
 
 class RuleFiles(Base):
@@ -506,13 +507,77 @@ class Privacy(Base):
             if line.startswith("|"):
                 self.assertEqual(line.count("|"), line.count(" | ") + 2 if line.count(" | ") else line.count("|"))
 
-    def test_names_are_whitelisted(self):
-        self.assertEqual(rr.ident("claude-opus-5-5"), "claude-opus-5-5")
-        self.assertEqual(rr.ident("mcp__ccd_session__mark_chapter"), "mcp__ccd_session__mark_chapter")
-        self.assertEqual(rr.ident("ees-denetci"), "ees-denetci")
-        for bad in ("a b", "a\nb", "a|b", "x" * 61, "", "ali@x.com", "a/b", None, 5, ["x"]):
-            self.assertEqual(rr.ident(bad), "?", repr(bad))
-        self.assertEqual(rr.ident("a\n"), "?")      # a trailing newline must not slip through
+    SHAPES = ("ad.soyad", "sk-ant-api03-AbCdEf0123456789xyz", "ghp_0123456789abcdefABCDEF0123456789abcd",
+              "AKIAABCDEFGHIJKLMNOP", "ad_soyad.dev")
+
+    def test_names_come_from_allow_lists_not_from_their_characters(self):
+        self.assertEqual(rr.model_name("claude-opus-5-5"), "claude-opus-5-5")
+        for bad in ("model-a", "claude-", "Claude-x", "claude-" + "x" * 41, "claude-a\n", "claude-a b", "claude-a|b", None, 5,
+                    ["x"]) + self.SHAPES:
+            self.assertEqual(rr.model_name(bad), "?", repr(bad))
+        for good in ("Bash", "Read", "Agent", "Workflow", "ToolSearch"):
+            self.assertEqual(rr.tool_name(good), good)
+        for mcp in ("mcp__ccd_session__mark_chapter", "mcp__evil__tool"):
+            self.assertEqual(rr.tool_name(mcp), "MCP aracı")
+        for bad in ("bash", "a b", "Bash\n", "", None, 5, ["x"]) + self.SHAPES:
+            self.assertEqual(rr.tool_name(bad), "diğer araç", repr(bad))
+        for good in ("general-purpose", "Explore", "Plan", "claude", "claude-code-guide", "statusline-setup", "web-fetch", "fork"):
+            self.assertEqual(rr.agent_name(good), good)
+        for bad in ("explore", "Explore\n", "", None, 5, ["x"]) + self.SHAPES:
+            self.assertIsNone(rr.agent_name(bad), repr(bad))
+
+    def test_agents_defined_in_the_repository_are_allowed_and_the_folder_may_be_missing(self):
+        root = os.path.join(self.dir, "repo")
+        os.makedirs(os.path.join(root, ".claude", "agents"))
+        for name in ("my-agent.md", "bad name.md", "notes.txt", "other.md"):
+            open(os.path.join(root, ".claude", "agents", name), "w").close()
+        self.assertEqual(rr.load_repo_agents(root), frozenset({"my-agent", "other"}))
+        self.assertEqual(rr.load_repo_agents(os.path.join(self.dir, "none")), frozenset())
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1), blocks=[
+            tool_use("a1", "Agent", subagent_type="my-agent"), tool_use("a2", "Agent", subagent_type="Explore")])])
+        with mock.patch.object(rr, "_AGENT_ALLOW", rr.BUILTIN_AGENTS | rr.load_repo_agents(root)):
+            self.assertEqual(self.data(path)["turlar"][0]["alt_ajan_baslatildi"], 2)
+            self.write("s/subagents/agent-1.jsonl", [sub_assistant(at(2), "x1")])
+            self.meta("s/subagents/agent-1.meta.json", agentType="my-agent", toolUseId="a1")
+            self.assertEqual(self.data(path)["oturumlar"][0]["alt_ajanlar"][0]["tur"], "my-agent")
+        self.write("s/subagents/agent-1.jsonl", [sub_assistant(at(2), "x1")])
+        self.assertEqual(self.data(path)["oturumlar"][0]["alt_ajanlar"][0]["tur"], "alt-ajan-1")   # outside the repo: numbered
+
+    def test_person_and_token_shaped_names_appear_nowhere(self):
+        events = [human(at(0))]
+        n = 0
+        for shape in self.SHAPES:
+            for _ in range(3):
+                n += 1
+                events += [
+                    assistant(at(1, 10 * n), "m%d" % n, usage(o=1), model=shape, blocks=[
+                        tool_use("t%d" % n, shape, command="x"),
+                        tool_use("g%d" % n, "Agent", subagent_type=shape)]),
+                    result(at(1, 10 * n + 5), "g%d" % n)]
+            # a tool with this name stays open for 80 minutes: the long-wait warning names the tool
+        events += [assistant(at(5), "w1", usage(o=1), blocks=[tool_use("long", self.SHAPES[2], command="x")]), result(at(90), "long")]
+        path = self.write("s.jsonl", events)
+        self.write("s/subagents/agent-1.jsonl", [sub_assistant(at(2), "x1", model=self.SHAPES[1],
+                                                               blocks=[tool_use("sb", self.SHAPES[3], command="x")])])
+        self.meta("s/subagents/agent-1.meta.json", agentType=self.SHAPES[0], toolUseId="nothing")
+        for argv in ([], ["--format", "json"]):
+            _, text = self.run_main(["--transcript", path] + argv)
+            for shape in self.SHAPES + ("soyad", "AKIA", "ghp_", "sk-"):
+                self.assertNotIn(shape, text, shape)
+        d = self.data(path)
+        self.assertIn("Aynı alt ajan 15 kez başlatıldı: alt ajan", texts(d))
+        self.assertIn("Uzun bekleme: izin ya da uzun komut · diğer araç · 85 dk", texts(d))
+        self.assertEqual(d["oturumlar"][0]["alt_ajanlar"][0]["tur"], "alt-ajan-1")
+        self.assertEqual(d["oturumlar"][0]["alt_ajanlar"][0]["model"], "?")
+
+    def test_mcp_tools_are_one_aggregate_in_the_count_line(self):
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1), blocks=[
+            tool_use("a", "mcp__one__x"), tool_use("b", "mcp__two__y"), tool_use("c", "Read", file_path="/x"),
+            tool_use("d", "NoSuchTool")])])
+        self.assertEqual(self.data(path)["ozet"]["arac_cagrilari_ana"], {"MCP aracı": 2, "Read": 1, "diğer araç": 1})
+        _, md = self.run_main(["--transcript", path])
+        self.assertIn("- Araç çağrıları (ana sohbet): MCP aracı 2 · Read 1 · diğer araç 1", md)
+        self.assertNotIn("mcp__", md)
 
     def test_one_cleaning_function_for_every_cell(self):
         self.assertEqual(rr.cell("a|b\nc\r\td\x00e"), "a/b c d e")
@@ -947,7 +1012,9 @@ class Warnings(Base):
 
         def gh(repo, number):
             return self.open_pr()
-        self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=5, hours=23))["uyarilar"], [])
+        self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=5))["uyarilar"], [])      # exactly 5 days
+        d = self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=5, hours=23))                         # 5.96 days: real time
+        self.assertEqual(texts(d), ["Birleştirme isteği 5 gündür açık (PR #1)"])                          # prints whole days
         self.assertEqual(kods(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=6))), ["U6"])
         self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=60), limits={"pr_gun": 0})["uyarilar"], [])
         self.assertEqual(self.data(path, prs=[1], gh=gh, now=T0 + timedelta(days=60), limits={"pr_gun": 60})["uyarilar"], [])
@@ -986,7 +1053,7 @@ class Warnings(Base):
         self.assertEqual(obj["uyarilar"], [])
         self.assertEqual(obj["ozet"]["uyari_sayisi"], 0)
 
-    def test_section_sits_right_after_the_summary_and_json_items_have_four_keys(self):
+    def test_section_sits_right_after_the_summary_and_json_items_have_five_keys(self):
         events = [human(at(i)) for i in range(5)] + self.wait_events(90 * 60)[1:]
         path = self.write("s.jsonl", events)
         code, md = self.run_main(["--transcript", path])
@@ -998,8 +1065,9 @@ class Warnings(Base):
         _, text = self.run_main(["--transcript", path, "--format", "json"])
         items = json.loads(text)["uyarilar"]
         self.assertEqual([w["kod"] for w in items], ["U1", "U2"])
+        self.assertEqual([w["kisa"] for w in items], ["uzun bekleme", "dokunuş"])
         for w in items:
-            self.assertEqual(set(w), {"kod", "metin", "deger", "esik"})
+            self.assertEqual(set(w), {"kod", "kisa", "metin", "deger", "esik"})
             self.assertIsInstance(w["metin"], str)
         self.assertEqual(json.loads(text)["ozet"]["uyari_sayisi"], 2)
 
@@ -1041,6 +1109,128 @@ class Warnings(Base):
         for line in section.strip().splitlines():
             self.assertTrue(line.startswith("- "), line)
             self.assertNotIn("|", line)
+
+
+class OrphanCalls(Base):
+    """A tool call that never got a result must not turn a later wait into a tool wait."""
+
+    def test_session_ending_with_an_open_call_then_a_new_session_hours_later(self):
+        a = self.write("a.jsonl", [human(at(0)), assistant(at(1), "a1", usage(o=1), blocks=[tool_use("o1", "Bash", command="make deploy")])])
+        b = self.write("b.jsonl", [human(at(240)), assistant(at(241), "b1", usage(o=1))])
+        waits = self.data([a, b])["beklemeler"]
+        self.assertEqual([(w["tur"], w["arac"], w["sure_dk"]) for w in waits], [(rr.WAIT_HUMAN, None, 239.0)])
+
+    def test_subagent_file_ending_with_an_open_call_then_a_real_wait_for_the_person(self):
+        main = self.write("m.jsonl", [
+            human(at(0)),
+            assistant(at(1), "x1", usage(o=1), blocks=[tool_use("ag1", "Agent", subagent_type="Explore")]),
+            result(at(10), "ag1"), assistant(at(11), "x2", usage(o=1)),
+            human(at(200)), assistant(at(201), "x3", usage(o=1)),
+        ])
+        self.write("m/subagents/agent-1.jsonl", [sub_assistant(at(2), "s1", blocks=[tool_use("st1", "Bash", command="npm test")])])
+        self.meta("m/subagents/agent-1.meta.json", toolUseId="ag1", agentType="Explore")
+        waits = self.data(main)["beklemeler"]
+        long = [w for w in waits if w["sure_dk"] == 189.0]
+        self.assertEqual([(w["tur"], w["arac"]) for w in long], [(rr.WAIT_HUMAN, None)])
+        self.assertEqual(kods(self.data(main)), ["U1"])
+        self.assertEqual(texts(self.data(main)), ["Uzun bekleme: kişi bekleniyor · 3 sa 9 dk"])
+
+    def test_the_launcher_getting_its_result_ends_the_subagents_open_calls(self):
+        main = self.write("m.jsonl", [
+            human(at(0)),
+            assistant(at(1), "x1", usage(o=1), blocks=[tool_use("ag1", "Agent", subagent_type="Explore")]),
+            result(at(10), "ag1"), assistant(at(11), "x2", usage(o=1)),
+            assistant(at(200), "x3", usage(o=1)),
+        ])
+        # the sub-agent file goes on after the parent's answer with an event that opens no call
+        self.write("m/subagents/agent-1.jsonl", [
+            sub_assistant(at(2), "s1", blocks=[tool_use("st1", "Bash", command="npm test")]),
+            {"type": "user", "isSidechain": True, "timestamp": at(150), "message": {"role": "user", "content": "x"}}])
+        self.meta("m/subagents/agent-1.meta.json", toolUseId="ag1", agentType="Explore")
+        waits = self.data(main)["beklemeler"]
+        self.assertEqual([(w["sure_dk"], w["tur"]) for w in waits if w["sure_dk"] > 100], [(139.0, rr.WAIT_OTHER)])
+
+    def test_a_call_still_open_while_its_file_goes_on_is_a_tool_wait(self):
+        path = self.write("s.jsonl", [human(at(0)), assistant(at(1), "m1", usage(o=1), blocks=[tool_use("t", "Bash", command="make")]),
+                                      result(at(70), "t"), assistant(at(71), "m2", usage(o=1))])
+        self.assertEqual([(w["tur"], w["arac"]) for w in self.data(path)["beklemeler"]], [(rr.WAIT_TOOL, "Bash: make")])
+
+
+class WarningCorrections(Base):
+    def test_same_file_twice_or_through_a_link_is_one_session_and_one_warning(self):
+        events = chat_of(8) + [human(at(2), "s", isCompactSummary=True, uuid="cs1")]
+        p = self.write("s.jsonl", events)
+        link = os.path.join(self.dir, "link.jsonl")
+        os.symlink(p, link)
+        for paths in ([p, p], [p, link]):
+            d = self.data(paths, limits={"ileti": 100})
+            self.assertEqual(d["ozet"]["oturum_sayisi"], 1)
+            self.assertEqual(len(d["uyarilar"]), 1)
+            self.assertEqual(d["ozet"]["uyari_sayisi"], 1)
+
+    def test_a_resumed_copy_counts_its_new_messages_and_summaries_once(self):
+        history = chat_of(8) + [human(at(2), "s", isCompactSummary=True, uuid="cs1")]
+        a = self.write("a.jsonl", history)
+        b = self.write("b.jsonl", history + [assistant(at(30, i), "n%d" % i, usage(o=1)) for i in range(4)])
+        d = self.data([a, b], limits={"ileti": 10})
+        # message ids are shared: session 1 has 8, session 2 only 4 new ones - neither is above 10; one shared summary
+        self.assertEqual(texts(d), ["Sohbet uzadı: oturum-1 8 ileti, 1 kez özetlendi; yeni sohbete devir düşünülmeli"])
+        c = self.write("c.jsonl", history + [assistant(at(30, i), "n%d" % i, usage(o=1)) for i in range(12)])
+        d = self.data([a, c], limits={"ileti": 10})
+        self.assertEqual(texts(d), [
+            "Sohbet uzadı: oturum-1 8 ileti, 1 kez özetlendi; yeni sohbete devir düşünülmeli",
+            "Sohbet uzadı: oturum-2 12 ileti; yeni sohbete devir düşünülmeli"])
+
+    def test_sidechain_lines_in_the_main_transcript_do_not_inflate_the_long_chat_count(self):
+        side = [sub_assistant(at(0, 1 + i), "side%d" % i) for i in range(450)]
+        self.assertEqual(self.data(self.write("s.jsonl", [human(at(0))] + side + [assistant(at(9), "m1", usage(o=1))]))["uyarilar"], [])
+
+    def test_error_results_in_a_subagent_file_and_a_second_session_are_counted(self):
+        def err(ts, tid, **extra):
+            e = {"type": "user", "timestamp": ts, "message": {"content": [
+                {"type": "tool_result", "tool_use_id": tid, "is_error": True}]}}
+            e.update(extra)
+            return e
+        a = self.write("a.jsonl", [human(at(0))] + [err(at(0, i + 1), "x%d" % i) for i in range(4)])
+        self.write("a/subagents/agent-1.jsonl", [sub_assistant(at(1), "s1")] + [err(at(1, i + 1), "y%d" % i, isSidechain=True) for i in range(4)])
+        b = self.write("b.jsonl", [human(at(30))] + [err(at(30, i + 1), "z%d" % i) for i in range(4)])
+        self.assertEqual(self.data(a)["uyarilar"], [])                              # 4 main + 4 sub-agent = 8, below 10
+        self.assertEqual(self.data([b])["uyarilar"], [])                            # 4 alone
+        self.assertEqual(texts(self.data([a, b])), ["Hatalı araç çağrısı çok: 12"])  # all three sources together
+
+    def test_limits_must_be_finite_numbers(self):
+        path = self.write("s.jsonl", [human(at(0))])
+        err = io.StringIO()
+        with redirect_stderr(err):
+            for flag in ("--uyari-bekleme-dk", "--uyari-dokunus", "--uyari-pr-gun"):
+                for bad in ("nan", "inf", "-inf", "-1"):
+                    try:                                    # whole-number flags are refused by argparse itself (also exit 2)
+                        code = rr.main(["--transcript", path, "%s=%s" % (flag, bad)], stdout=io.StringIO())
+                    except SystemExit as exc:
+                        code = exc.code
+                    self.assertEqual(code, 2, (flag, bad))
+
+    def test_every_rule_has_its_fixed_short_label(self):
+        events = [human(at(i)) for i in range(5)]
+        for i in range(3):
+            events += [assistant(at(10, 10 * i), "g%d" % i, usage(o=100000, cr=9000000), blocks=[
+                tool_use("g%d" % i, "Agent", subagent_type="Explore")])]
+            events += [{"type": "user", "timestamp": at(10, 10 * i + 5), "message": {"content": [
+                {"type": "tool_result", "tool_use_id": "g%d" % i, "is_error": True}] * 4}}]
+        events += [assistant(at(200), "late", usage(o=1)), human(at(201), "s", isCompactSummary=True)]
+        path = self.write("s.jsonl", events)
+        d = self.data(path, prs=[7], gh=lambda r, n: self.open_pr(failed=True), now=T0 + timedelta(days=9))
+        self.assertEqual([(w["kod"], w["kisa"]) for w in d["uyarilar"]], [
+            ("U1", "uzun bekleme"), ("U2", "dokunuş"), ("U3", "maliyet"), ("U3", "maliyet"), ("U4", "uzun sohbet"),
+            ("U5", "tekrar"), ("U5", "hatalı komut"), ("U6", "kırmızı kontrol"), ("U6", "açık PR")])
+
+    def open_pr(self, failed=False):
+        raw = fake_pr()
+        raw["mergedAt"] = None
+        raw["closedAt"] = None
+        if not failed:
+            raw["statusCheckRollup"][2]["conclusion"] = "SUCCESS"
+        return raw
 
 
 if __name__ == "__main__":
