@@ -1568,7 +1568,8 @@ def main() -> int:
             continue
         for f in sorted(p for p in base.rglob("*") if p.is_file() or p.is_symlink()):
             r = f.relative_to(ROOT).as_posix()
-            if r not in expected:
+            # F2: macOS Finder writes .DS_Store into folders it shows; a plain file of that name is not an instruction
+            if r not in expected and not (f.name == ".DS_Store" and f.is_file() and not f.is_symlink()):
                 problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
     if problems and not args.check:
         for line in problems:

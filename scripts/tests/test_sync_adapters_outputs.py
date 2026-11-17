@@ -316,6 +316,29 @@ class RealGenerator(unittest.TestCase):
         self.assertIn("nothing written", out)
         self.assertEqual(self.snapshot(), before)
 
+    def test_f2_a_finder_ds_store_file_is_not_a_stray(self):
+        for folder in (".claude/skills", ".agents/skills", ".claude/skills/ees-hat", ".claude/agents"):
+            (self.root / folder / ".DS_Store").write_bytes(b"\x00\x00\x00\x01Bud1")
+        code, out = self.run_main("--check")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("UNMANAGED", out)
+        code, out = self.run_main()
+        self.assertEqual(code, 0, out)
+        self.assertTrue((self.root / ".claude" / "skills" / ".DS_Store").is_file())   # left alone, never deleted
+
+    def test_f2_only_a_plain_file_named_ds_store_is_ignored(self):
+        near = self.root / ".claude" / "skills" / ".DS_Store.md"
+        near.write_text("x\n", encoding="utf-8")
+        code, out = self.run_main("--check")
+        self.assertEqual(code, 1, out)
+        self.assertIn("UNMANAGED .claude/skills/.DS_Store.md", out)
+        near.unlink()
+        if can_symlink(self.root):
+            os.symlink(self.root / "AGENTS.md", self.root / ".claude" / "skills" / ".DS_Store")
+            code, out = self.run_main("--check")
+            self.assertEqual(code, 1, out)
+            self.assertIn("UNMANAGED .claude/skills/.DS_Store", out)
+
     # --- blind check 4, re-check: small gaps --------------------------------------------------------------------
     def test_x6_x12_names_and_keys_ignore_letter_case(self):
         self.manifest(lambda d: self.item(d, "ees-belge-ajani")["targets"][0]["frontmatter"].update(name="ees-Isci"))

@@ -7,7 +7,7 @@ kart: isci
 
 Seni hat, hat açıldıktan sonra ve paket onayından **önce** başlatır (işçi kartı İ1'in istisnası: paket taslağı onaydan önce
 yazılır). Kod yazmazsın; yalnız paket ya da çok modüllü teslim paketi (DCP) yazarsın. Paketi sen onaylamazsın; hattın
-listelenen onaylayıcısı PR'da "paketi onaylıyorum" der. Yukarıdaki çekirdek
+listelenen onaylayıcısı PR'da onaylar ("paketi onaylıyorum" ya da paket commit'ine GitHub onayı, hat kartı H5). Yukarıdaki çekirdek
 ve işçi kartı her işte geçerlidir.
 
 ## Nasıl çalışırsın
@@ -24,5 +24,6 @@ ve işçi kartı her işte geçerlidir.
 4. Ortak bulgu listesini (`docs/guides/operations/pack-review-common-findings.md`) yazmadan önce oku ve oradaki hata
    türlerini tekrarlama. Bu liste yalnız senin girdindir; denetçiye verilmez.
 5. Her kabul ölçütü test edilebilir olsun; test beklentisini ve hangi dilimde karşılanacağını yaz.
-6. Belirsiz kalan her noktayı "açık karar" diye paketin içinde listele; kodlama sırasında soru sorulmasın.
+6. Belirsiz kalan her noktayı "açık karar" diye paketin içinde önerdiğin cevapla listele (onay bu cevapları da kapsar, H5);
+   kodlama sırasında soru sorulmasın.
 7. Bitince teslim notu (`.ees/sablonlar/teslim-notu.md`) ver; paketi denetçi denetler, sen değil.
