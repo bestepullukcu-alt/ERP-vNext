@@ -4,7 +4,7 @@ description: "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbeti
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:1831a1a9251e` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:f6dec8a3a8c4` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -117,7 +117,7 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 1. `git status` ve dalı kendin ölç; ana dalın gerisindeysen kişiye söyle.
 2. Durum sayfasını ve karar defterini oku (depo dışında; bağlantısını kişi verir, bilmiyorsan sor); sohbette kalmış karar
    varsa deftere geçir (K7; ara dönemde Ç29 bunu kuleye bırakır).
-3. Sahibe Biten · Çalışan · Sizden istenen biçiminde tek mesaj (`.ees/sablonlar/ozet-satiri.md`).
+3. Sahibe Biten · Çalışan · Sırada · Sizden istenen biçiminde tek mesaj (`.ees/sablonlar/ozet-satiri.md`; tek modül için `modul-blogu.md` biçimi).
 
 ## Kullanacağın adlar (pilot dönemi)
 - Modül araştırması: `/ees-modul-arastir` ya da adımları `.ees/beceriler/modul-arastir/SKILL.md` (K11).
