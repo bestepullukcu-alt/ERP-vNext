@@ -3,33 +3,46 @@
 
     python3 scripts/ees_run_record.py --transcript <session.jsonl> [--transcript <other.jsonl> ...]
         [--pr <n> ...] [--repo <owner/name>] [--idle-minutes 5] [--format md|json]
-        [--since <ISO>] [--until <ISO>]
+        [--since <ISO>] [--until <ISO>] [--adim N/M] [--tur-adlari]
 
 Reads Claude Code session transcripts (JSONL). For each one it also reads <file without .jsonl>/subagents/*.jsonl when that
-folder exists. Output is Markdown (Turkish headings) or one JSON object (--format json): summary, steps, waits,
+folder exists. Output is Markdown (Turkish headings) or one JSON object (--format json): summary, turns, waits,
 sub-agents, rule files read and - only with --pr - the pull requests. The tool is read-only; without --pr it makes no
 network call (core card C29: operation records are generated, not hand-written).
 
-Privacy: the output never carries message text, command arguments, file contents, logins or names. Tool names are
-printed; for Bash at most the command word and, for well-known tools such as git or gh, one subcommand word
-("Bash: git push"). Paths are printed only for rule files (.ees/, .antigravity/rules/, AGENTS.md). Step names come from
-the `title` input of mark_chapter calls, nothing else. Review authors are never read: the first reviewer is "onaylayici".
+Words: a "tur" (turn) is what starts with one human message; an "adim" (step) is a step of the plan and is only used
+for the report line (`--adim N/M`), because the plan is not in the transcript.
+
+Privacy: no free text reaches the output. Message text, command arguments, file contents, logins, file names and
+sub-agent descriptions are never printed. Tool, model and sub-agent-type names are printed only when they are plain
+identifiers ([A-Za-z0-9._:-], 1-60 characters), otherwise "?". Bash is shown as the command word of a fixed list of
+well-known commands plus, for a fixed list of (command, subcommand) pairs, the subcommand ("Bash: git push"); anything
+else is just "Bash". Paths are printed only for rule files (.ees/, .antigravity/rules/, AGENTS.md) and only when
+every character is in [A-Za-z0-9._/-], no segment is "..", and the marker starts at a path boundary. Turn names are
+"Tur n"; the `title` of mark_chapter calls is used only with --tur-adlari, and then e-mail addresses, path-like and
+token-like words are removed and the text is cut to 60 characters. Review authors are never read: the first reviewer
+is "onaylayici". Transcript and sub-agent files appear as "oturum-n" / "alt-ajan-n".
 
 Definitions:
-- A human message is a `user` event that is not meta, not a side chain, not a tool result, and not an automated
-  notice (system reminders, task notifications, local commands, caveats, session or CI events, sub-agent hand-backs,
-  messages from another session, "[SYSTEM NOTIFICATION"). Each human message starts a step ("Tur n"); the first
-  mark_chapter title called inside the step names it.
-- Active time is the sum of gaps between consecutive events that are shorter than --idle-minutes; the rest of the wall
-  clock is waiting. Events of the main chat and its sub-agents share one timeline, so a long sub-agent run is work.
-- Every gap at or above the threshold is classified: "izin ya da uzun komut" (it ends with the tool result of a call
-  made earlier; the tool is named), "kisi bekleniyor" (it ends with a human message), otherwise "diger".
-- Each assistant message id is counted once (the last streamed line wins for usage). Tool calls are counted once per
-  tool_use id. token_girdi = input + cache creation + cache read; token_cikti = output.
-- With several transcripts the summary uses one merged timeline: sessions that ran at the same time are not added up.
+- A human message is a `user` event with `origin.kind == "human"`; when the event has no `origin.kind` the text
+  heuristics decide (not meta, not a side chain, not a tool result, not a compact summary, and the text does not start
+  with a system reminder, task notification, local command, bash output, hook output, the "Caveat: The messages below were
+  generated" notice, a side-session or CI event, a sub-agent hand-back, a message from another session or "[SYSTEM
+  NOTIFICATION"). A message typed while the assistant is working is stored as an `attachment` event of type
+  `queued_command`; it is a human message when its `origin.kind` is "human" (or, without origin, its commandMode is
+  "prompt" and it is not meta). Human messages are de-duplicated by event uuid across all transcripts.
+- Assistant messages are de-duplicated by message id across all transcripts (a resumed or forked session that copies
+  history is not counted twice); the last streamed line of a message wins for usage. Tool calls count once per tool_use id.
+- Everything comes from one merged timeline of all transcripts and sub-agents. Active time is the sum of gaps shorter
+  than --idle-minutes; gaps of that length or longer are waiting.
+- Every waiting gap is classified: "izin ya da uzun komut" when at least one tool call is still open during it (the tool
+  open longest is named; a sub-agent launcher is named only when nothing else is open), "kişi bekleniyor" when the gap
+  ends with a human message, otherwise "diğer".
+- token_girdi = input + cache creation + cache read; token_cikti = output.
 
-Window line (the "Bu adim" report line): the tool prints it in the summary as `Bu adim: <is> is + <bekleme> bekleme ·
-<token> · <n> dokunus`. For one step, run the tool with --since set to the moment the step started.
+Report line: the summary prints `Bu adım: <is> iş + <bekleme> bekleme · <token> · <n> dokunuş` for the whole window.
+For one plan step, run the tool with --since set to the moment the step started. The progress bar comes from the plan:
+`--adim 4/8` prints `İlerleme: ▓▓▓▓░░░░ 4/8 adım`. The estimated finish is not measured; the reporter writes it.
 
 Python 3.9+, standard library only.
 """
@@ -52,33 +65,53 @@ TOKEN_KINDS = (
     ("cikti", "output_tokens"),
 )
 
+# Text that does not come from a person. Matched at the START of a message part only.
 NON_HUMAN_PREFIXES = (
     "<system-reminder>",
     "<task-notification",
     "<local-command",
-    "Caveat:",
+    "Caveat: The messages below were generated",
     "<side-sessions-event",
     "<ci-monitor-event",
+    "<bash-stdout",
+    "<bash-stderr",
+    "<user-prompt-submit-hook",
     "[SYSTEM NOTIFICATION",
+    "[Subagent hand-back]",
+    "Another Claude session sent a message",
 )
-NON_HUMAN_CONTAINS = ("[Subagent hand-back]", "Another Claude session sent a message")
 
 WAIT_TOOL = "izin ya da uzun komut"
 WAIT_HUMAN = "kişi bekleniyor"
 WAIT_OTHER = "diğer"
 
-# Commands whose second word is a subcommand and may be shown ("Bash: git push").
-SUBCOMMAND_TOOLS = {
-    "git", "gh", "npm", "npx", "yarn", "pnpm", "dotnet", "docker", "kubectl", "pip", "pip3", "make", "cargo", "brew",
+# Bash command words that may be shown; any other first word is shown as plain "Bash".
+KNOWN_COMMANDS = {
+    "git", "gh", "dotnet", "npm", "npx", "yarn", "pnpm", "node", "python", "python3", "pip", "pip3", "make", "cargo",
+    "docker", "kubectl", "brew", "curl", "wget", "ssh", "scp", "rsync", "sshpass",
+    "cat", "ls", "grep", "rg", "find", "sed", "awk", "head", "tail", "wc", "sort", "uniq", "diff", "echo", "printf",
+    "sleep", "bash", "sh", "zsh", "cp", "mv", "rm", "mkdir", "touch", "chmod", "xargs", "tee", "jq", "test", "pwd",
+    "which", "open", "tar", "unzip", "ps", "kill", "pgrep", "date", "env", "dig", "ping", "stat", "file", "du", "df",
+    "sqlite3", "psql", "mongosh", "redis-cli", "powershell", "pwsh", "cmd",
+}
+# (command, subcommand) pairs whose subcommand may be shown. Everything else shows the command word only.
+ALLOWED_SUBCOMMANDS = {
+    "git": {"push", "pull", "fetch", "commit", "merge", "status", "diff", "log", "worktree"},
+    "gh": {"pr", "api", "run"},
+    "dotnet": {"test", "build"},
+    "npm": {"test", "run"},
 }
 
-RULE_RE = re.compile(
-    r"(\.ees/[^\s'\"`;|)&<>(]+|\.antigravity/rules/[^\s'\"`;|)&<>(]+|(?<![\w.-])AGENTS\.md(?![\w]))"
-)
+# Rule-file markers. A marker must start the token or follow a "/".
+_RULE_MARKER = re.compile(r"(?:^|/)(\.ees/|\.antigravity/rules/)")
+_RULE_OK = re.compile(r"[A-Za-z0-9._/-]+")
+_RULE_SPLIT = re.compile(r"[\s'\"`;|&<>()]+")
 
+_IDENT = re.compile(r"[A-Za-z0-9._:-]{1,60}")
 _TS_RE = re.compile(
     r"^(\d{4})-(\d\d)-(\d\d)(?:[T ](\d\d):(\d\d)(?::(\d\d))?(?:\.(\d+))?)?\s*(Z|[+-]\d\d:?\d\d)?$"
 )
+_DATE_ONLY = re.compile(r"^\d{4}-\d\d-\d\d$")
 
 
 # --------------------------------------------------------------------------------------------------- time helpers
@@ -139,50 +172,88 @@ def fmt_tok(n):
     return ("%.1f milyon token" % (n / 1000000.0)).replace(".", ",")
 
 
+def progress_bar(done, total):
+    """`İlerleme: ▓▓▓▓░░░░ 4/8 adım` - 8 cells, filled = round(8 * done / total)."""
+    filled = int(8 * done / float(total) + 0.5)
+    return "İlerleme: %s%s %d/%d adım" % ("▓" * filled, "░" * (8 - filled), done, total)
+
+
 # ------------------------------------------------------------------------------------------------ text helpers
-def clean_cell(text, limit=60):
-    t = re.sub(r"\s+", " ", str(text or "")).replace("|", "/").strip()
-    return t[:limit]
+def cell(value, limit=None):
+    """The one cleaning function for everything printed in a table or a list: no control characters, no pipes."""
+    t = re.sub(r"[\x00-\x1f\x7f  ]+", " ", str(value)).replace("|", "/")
+    t = re.sub(r"\s+", " ", t).strip()
+    return t[:limit] if limit else t
+
+
+def ident(value):
+    """A name from a transcript (tool, model, sub-agent type) is printed only when it is a plain identifier."""
+    return value if isinstance(value, str) and _IDENT.fullmatch(value) else "?"
+
+
+def sanitize_title(title):
+    """--tur-adlari: drop e-mail, path-like and token-like words, cut to 60 characters."""
+    keep = []
+    for w in str(title).split():
+        if any(c in w for c in "@/\\=") or re.search(r"[A-Za-z0-9_-]{20,}", w):
+            continue
+        keep.append(w)
+    return cell(" ".join(keep), 60)
 
 
 def bash_label(command):
-    """'Bash' plus at most the command word and one well-known subcommand word. Never other arguments."""
+    """'Bash' plus, for well-known commands, the command word and for listed pairs the subcommand. No other text."""
     if not isinstance(command, str):
         return "Bash"
-    segments = re.split(r"&&|\|\||;|\||\n", command)
-    for seg in segments:
+    for seg in re.split(r"&&|\|\||;|\||\n", command):
         words = seg.strip().split()
         while words and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[0]):
             words = words[1:]
         if not words or words[0] in ("cd", "export", "set", "source", "pushd", "popd", "true", ":"):
             continue
         first = words[0].replace("\\", "/").rsplit("/", 1)[-1]
-        if not re.match(r"^[A-Za-z0-9._+-]+$", first):
+        if first not in KNOWN_COMMANDS:
             return "Bash"
-        if first in SUBCOMMAND_TOOLS:
+        allowed = ALLOWED_SUBCOMMANDS.get(first)
+        if allowed:
             rest = words[1:]
             i = 0
             while i < len(rest) and rest[i].startswith("-"):
                 i += 2 if rest[i] in ("-C", "-c", "--git-dir", "--work-tree") else 1
-            if i < len(rest) and re.match(r"^[a-z][a-z0-9-]*$", rest[i]):
+            if i < len(rest) and rest[i] in allowed:
                 return "Bash: %s %s" % (first, rest[i])
         return "Bash: %s" % first
     return "Bash"
 
 
-def rule_paths(text):
+def _rule_from_token(token):
+    m = _RULE_MARKER.search(token)
+    if m:
+        path = token[m.start(1):]
+        if _RULE_OK.fullmatch(path) and ".." not in path.split("/"):
+            return path
+        return None
+    if token == "AGENTS.md" or token.endswith("/AGENTS.md"):
+        return "AGENTS.md"
+    return None
+
+
+def rule_paths(text, whole=False):
+    """Rule-file paths in text. whole=True: the text is one path (Read tool); otherwise it is split like a shell line."""
     if not isinstance(text, str):
         return []
-    found = []
-    for m in RULE_RE.finditer(text.replace("\\", "/")):
-        p = m.group(1).rstrip(".,:;")
+    text = text.replace("\\", "/")
+    tokens = [text.strip()] if whole else _RULE_SPLIT.split(text)
+    out = []
+    for tok in tokens:
+        p = _rule_from_token(tok) if tok else None
         if p:
-            found.append(p)
-    return found
+            out.append(p)
+    return out
 
 
-def is_human_content(content):
-    """True when a user event's content is something a person typed."""
+def human_text_ok(content):
+    """Text heuristic (used only when the event has no origin.kind)."""
     if isinstance(content, str):
         parts = [content]
         has_image = False
@@ -192,11 +263,30 @@ def is_human_content(content):
     else:
         return False
     parts = [p for p in parts if isinstance(p, str) and p.strip()]
-    joined = " ".join(parts)
-    if any(marker in joined for marker in NON_HUMAN_CONTAINS):
-        return False
-    kept = [p for p in parts if not p.strip().startswith(NON_HUMAN_PREFIXES)]
+    kept = [p for p in parts if not p.lstrip().startswith(NON_HUMAN_PREFIXES)]
     return bool(kept) or (has_image and not parts)
+
+
+def is_human_event(e, content):
+    """True when a main-chat `user` event (not a tool result) is something a person typed."""
+    if e.get("isSidechain") or e.get("isCompactSummary"):
+        return False
+    origin = e.get("origin")
+    if isinstance(origin, dict) and "kind" in origin:
+        return origin.get("kind") == "human"
+    if e.get("isMeta"):
+        return False
+    return human_text_ok(content)
+
+
+def is_queued_human(att):
+    """An `attachment` of type queued_command typed by a person while the assistant was working."""
+    if not isinstance(att, dict) or att.get("type") != "queued_command":
+        return False
+    origin = att.get("origin")
+    if isinstance(origin, dict) and "kind" in origin:
+        return origin.get("kind") == "human"
+    return att.get("commandMode") == "prompt" and not att.get("isMeta")
 
 
 # ------------------------------------------------------------------------------------------------------ parsing
@@ -208,9 +298,14 @@ def _usage_ints(usage):
     return out
 
 
-def parse_file(path, since, until, is_main):
-    """One transcript file -> events, message usage (once per id), tool uses (once per id), humans, chapters, reads."""
-    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "chapters": [], "reads": Counter()}
+def parse_file(path, fk, since, until, is_main, owners):
+    """One transcript file -> events, messages (once per id), tool uses (once per id), humans, chapters, reads.
+
+    `owners` is shared by all files of one run: the first file that holds a message id (assistant) or an event uuid
+    (user, attachment) owns it; copies in other files are skipped, so a resumed session is not counted twice.
+    Events are (ts, file key, kind, payload); kind is assistant / result / human / human_q / other.
+    """
+    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "queued": 0, "chapters": [], "reads": Counter()}
     anon = 0
     with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
@@ -224,72 +319,89 @@ def parse_file(path, since, until, is_main):
             if not isinstance(e, dict):
                 continue
             etype = e.get("type")
-            if etype not in ("user", "assistant"):
+            if etype not in ("user", "assistant", "attachment"):
                 continue
             ts = parse_ts(e.get("timestamp"))
             if ts is None or (since and ts < since) or (until and ts > until):
                 continue
+            uuid = e.get("uuid") if isinstance(e.get("uuid"), str) else None
+            if etype == "attachment":
+                if not is_main or not is_queued_human(e.get("attachment")):
+                    continue
+                if uuid:
+                    if "u:" + uuid in owners:
+                        continue
+                    owners["u:" + uuid] = fk
+                res["humans"].append(ts)
+                res["queued"] += 1
+                res["events"].append((ts, fk, "human_q", None))
+                continue
             msg = e.get("message") if isinstance(e.get("message"), dict) else {}
             content = msg.get("content")
             if etype == "assistant":
-                mid = msg.get("id")
+                mid = msg.get("id") if isinstance(msg.get("id"), str) and msg.get("id") else None
                 if not mid:
                     anon += 1
                     mid = "anon-%d" % anon
+                elif owners.setdefault("m:" + mid, fk) != fk:
+                    continue
                 rec = res["messages"].get(mid)
                 if rec is None:
                     rec = res["messages"][mid] = {"ts": ts, "model": None, "usage": _usage_ints(None)}
-                if msg.get("model"):
-                    rec["model"] = msg.get("model")
+                if isinstance(msg.get("model"), str):
+                    rec["model"] = ident(msg["model"])
                 if isinstance(msg.get("usage"), dict):
                     rec["usage"] = _usage_ints(msg["usage"])  # last line wins
+                opened = []
                 if isinstance(content, list):
                     for item in content:
                         if not isinstance(item, dict) or item.get("type") != "tool_use":
                             continue
-                        tid = item.get("id")
+                        tid = item.get("id") if isinstance(item.get("id"), str) and item.get("id") else None
                         if not tid:
                             anon += 1
                             tid = "anon-tool-%d" % anon
                         if tid in res["tool_uses"]:
                             continue
-                        name = item.get("name") if isinstance(item.get("name"), str) else "?"
+                        raw = item.get("name") if isinstance(item.get("name"), str) else ""
                         inp = item.get("input") if isinstance(item.get("input"), dict) else {}
-                        use = {"name": name, "ts": ts, "label": name, "subagent_type": None}
-                        if name in ("Agent", "Task") and isinstance(inp.get("subagent_type"), str):
-                            use["subagent_type"] = clean_cell(inp["subagent_type"], 40)
-                        if name == "Bash":
+                        use = {"name": ident(raw), "ts": ts, "label": ident(raw), "subagent_type": None,
+                               "launcher": raw in ("Agent", "Task")}
+                        if use["launcher"] and isinstance(inp.get("subagent_type"), str):
+                            use["subagent_type"] = ident(inp["subagent_type"])
+                        if raw == "Bash":
                             use["label"] = bash_label(inp.get("command"))
                             for p in rule_paths(inp.get("command")):
                                 res["reads"][p] += 1
-                        elif name == "Read":
-                            for p in rule_paths(inp.get("file_path")):
+                        elif raw == "Read":
+                            for p in rule_paths(inp.get("file_path"), whole=True):
                                 res["reads"][p] += 1
-                        if name.endswith("mark_chapter") and isinstance(inp.get("title"), str) and inp["title"].strip():
-                            res["chapters"].append((ts, clean_cell(inp["title"])))
+                        if raw.endswith("mark_chapter") and isinstance(inp.get("title"), str) and inp["title"].strip():
+                            res["chapters"].append((ts, inp["title"]))
                         res["tool_uses"][tid] = use
-                res["events"].append((ts, "assistant" if is_main else "sub", None))
+                        opened.append((tid, use["label"], use["launcher"]))
+                res["events"].append((ts, fk, "assistant", {"mid": mid, "opened": opened}))
                 continue
             # user event
+            if uuid:
+                if "u:" + uuid in owners:
+                    continue                        # an event uuid is seen once, in this file or in another
+                owners["u:" + uuid] = fk
             kind, payload = "other", None
-            if is_main:
-                ids = []
-                if isinstance(content, list):
-                    ids = [c.get("tool_use_id") for c in content if isinstance(c, dict) and c.get("type") == "tool_result"]
-                if ids:
-                    kind, payload = "result", [i for i in ids if isinstance(i, str)]
-                elif not e.get("isMeta") and not e.get("isSidechain") and is_human_content(content):
-                    kind = "human"
-                    res["humans"].append(ts)
-            else:
-                kind = "sub"
-            res["events"].append((ts, kind, payload))
+            ids = []
+            if isinstance(content, list):
+                ids = [c.get("tool_use_id") for c in content if isinstance(c, dict) and c.get("type") == "tool_result"]
+            if ids:
+                kind, payload = "result", [i for i in ids if isinstance(i, str)]
+            elif is_main and is_human_event(e, content):
+                kind = "human"
+                res["humans"].append(ts)
+            res["events"].append((ts, fk, kind, payload))
     return res
 
 
 def find_subagent_files(main_path):
-    base = os.path.splitext(main_path)[0]
-    folder = os.path.join(base, "subagents")
+    folder = os.path.join(os.path.splitext(main_path)[0], "subagents")
     if not os.path.isdir(folder):
         return []
     out = []
@@ -314,7 +426,7 @@ def find_subagent_files(main_path):
 def tokens_by_model(messages):
     out = {}
     for rec in messages:
-        model = rec["model"] or "bilinmiyor"
+        model = rec["model"] or "?"
         slot = out.setdefault(model, {"mesaj": 0, "girdi": 0, "onbellek_yazma": 0, "onbellek_okuma": 0, "cikti": 0})
         slot["mesaj"] += 1
         for key, _ in TOKEN_KINDS:
@@ -336,159 +448,149 @@ def token_total(slot_map):
     return sum(slot[k] for slot in slot_map.values() for k, _ in TOKEN_KINDS)
 
 
-def active_waiting(times, threshold_s):
-    times = sorted(times)
-    active = waiting = 0.0
-    for a, b in zip(times, times[1:]):
-        gap = (b - a).total_seconds()
-        if gap < threshold_s:
-            active += gap
-        else:
-            waiting += gap
-    return active, waiting
+def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_adlari=False, adim=None):
+    threshold_s = idle_minutes * 60.0
+    owners = {}
+    files = []          # every parsed file: dict(fk, session, kind, res, ...)
+    sessions = []
+    for si, path in enumerate(transcripts, 1):
+        main_res = parse_file(path, ("m", si), since, until, True, owners)
+        sess = {"no": si, "ad": "oturum-%d" % si, "main": main_res, "subs": []}
+        sessions.append(sess)
+        files.append(main_res)
+    parent_uses = {}
+    for sess in sessions:
+        parent_uses.update(sess["main"]["tool_uses"])
+    for sess, path in zip(sessions, transcripts):
+        for n, (sp, meta) in enumerate(find_subagent_files(path), 1):
+            sres = parse_file(sp, ("s", sess["no"], n), since, until, False, owners)
+            if not sres["events"]:
+                continue
+            parent = parent_uses.get(meta.get("toolUseId")) if isinstance(meta.get("toolUseId"), str) else None
+            cand = None
+            if parent and parent.get("subagent_type") and parent["subagent_type"] != "?":
+                cand = parent["subagent_type"]
+            elif isinstance(meta.get("agentType"), str) and ident(meta["agentType"]) != "?":
+                cand = meta["agentType"]
+            ts_all = [ev[0] for ev in sres["events"]]
+            sess["subs"].append({
+                "no": len(sess["subs"]) + 1,
+                "tur": cand or "alt-ajan-%d" % (len(sess["subs"]) + 1),
+                "ilk": min(ts_all), "son": max(ts_all), "res": sres,
+                "token": tokens_by_model(list(sres["messages"].values())),
+                "arac": Counter(u["name"] for u in sres["tool_uses"].values()),
+            })
+            files.append(sres)
 
+    events = []
+    for f in files:
+        events.extend(f["events"])
+    events.sort(key=lambda ev: ev[0])
 
-def analyze_session(index, path, since, until, threshold_s):
-    main = parse_file(path, since, until, True)
-    subs = []
-    sub_events = []
-    parent_uses = main["tool_uses"]
-    by_tool_id = {tid: u for tid, u in parent_uses.items()}
-    for sp, meta in find_subagent_files(path):
-        sres = parse_file(sp, since, until, False)
-        if not sres["events"]:
-            continue
-        stem = os.path.splitext(os.path.basename(sp))[0]
-        parent = by_tool_id.get(meta.get("toolUseId")) if isinstance(meta.get("toolUseId"), str) else None
-        agent_type = None
-        if parent and parent.get("subagent_type"):
-            agent_type = parent["subagent_type"]
-        elif isinstance(meta.get("agentType"), str) and meta["agentType"]:
-            agent_type = clean_cell(meta["agentType"], 40)
-        else:
-            agent_type = stem
-        ts_all = [t for t, _, _ in sres["events"]]
-        models = Counter((r["model"] or "bilinmiyor") for r in sres["messages"].values())
-        tool_counts = Counter(u["name"] for u in sres["tool_uses"].values())
-        subs.append({
-            "dosya": stem,
-            "tur": agent_type,
-            "model": ", ".join(m for m, _ in models.most_common()),
-            "ilk": min(ts_all),
-            "son": max(ts_all),
-            "token": tokens_by_model(list(sres["messages"].values())),
-            "mesajlar": list(sres["messages"].values()),
-            "arac_cagrilari": tool_counts,
-            "okunan": sres["reads"],
-        })
-        sub_events.extend(sres["events"])
-
-    events = sorted(main["events"] + sub_events, key=lambda ev: ev[0])
-    human_ts = sorted(main["humans"])
-
-    # steps: one per human message; events before the first one form a "Başlangıç" step.
+    # turns: one per human message; events before the first one form a "Başlangıç" turn.
+    human_ts = sorted(ts for f in files for ts in f["humans"])
     starts = list(human_ts)
-    names = []
-    for n in range(1, len(human_ts) + 1):
-        names.append("Tur %d" % n)
+    names = ["Tur %d" % n for n in range(1, len(human_ts) + 1)]
     if events and (not human_ts or events[0][0] < human_ts[0]):
         starts.insert(0, events[0][0])
         names.insert(0, "Başlangıç" if human_ts else "Tur 1")
-    steps = [
+    turns = [
         {"ad": names[i], "baslangic": starts[i], "is_s": 0.0, "bekleme_s": 0.0, "mesaj": 0, "arac": 0, "alt_ajan": 0,
          "cikti": 0, "token": 0}
         for i in range(len(starts))
     ]
 
-    def step_of(ts):
-        if not steps:
+    def turn_of(ts):
+        if not turns:
             return None
-        return steps[max(0, bisect.bisect_right(starts, ts) - 1)]
+        return turns[max(0, bisect.bisect_right(starts, ts) - 1)]
 
-    for ts, title in sorted(main["chapters"], key=lambda c: c[0]):
-        st = step_of(ts)
-        if st is not None and not st.get("ad_baslik"):
-            st["ad_baslik"] = title
-    for st in steps:
-        if st.get("ad_baslik"):
-            st["ad"] = st["ad_baslik"]
+    if tur_adlari:
+        chapters = sorted((c for s in sessions for c in s["main"]["chapters"]), key=lambda c: c[0])
+        named = set()
+        for ts, title in chapters:
+            t = turn_of(ts)
+            if t is not None and id(t) not in named:
+                title = sanitize_title(title)
+                if title:
+                    t["ad"] = title
+                    named.add(id(t))
 
-    for rec in main["messages"].values():
-        st = step_of(rec["ts"])
-        if st is not None:
-            st["mesaj"] += 1
-            st["cikti"] += rec["usage"]["cikti"]
-            st["token"] += sum(rec["usage"].values())
-    for sub in subs:
-        for rec in sub["mesajlar"]:
-            st = step_of(rec["ts"])
-            if st is not None:
-                st["token"] += sum(rec["usage"].values())
-    for use in main["tool_uses"].values():
-        st = step_of(use["ts"])
-        if st is not None:
-            st["arac"] += 1
-            if use["name"] in ("Agent", "Task"):
-                st["alt_ajan"] += 1
+    for f in files:
+        for rec in f["messages"].values():
+            t = turn_of(rec["ts"])
+            if t is not None:
+                t["token"] += sum(rec["usage"].values())
+    for sess in sessions:
+        for rec in sess["main"]["messages"].values():
+            t = turn_of(rec["ts"])
+            if t is not None:
+                t["mesaj"] += 1
+                t["cikti"] += rec["usage"]["cikti"]
+        for use in sess["main"]["tool_uses"].values():
+            t = turn_of(use["ts"])
+            if t is not None:
+                t["arac"] += 1
+                if use["launcher"]:
+                    t["alt_ajan"] += 1
 
+    # merged timeline: active/waiting, wait classification by open tool calls
+    open_calls = {}     # (file key, tool id) -> (opened at, label, launcher, message id)
     waits = []
-    for (a_ts, a_kind, _), (b_ts, b_kind, b_payload) in zip(events, events[1:]):
-        gap = (b_ts - a_ts).total_seconds()
-        st = step_of(a_ts)
+    active = waiting = 0.0
+    for i, (ts, fk, kind, payload) in enumerate(events):
+        if kind == "assistant":
+            for key in [k for k, v in open_calls.items() if k[0] == fk and v[3] != payload["mid"]]:
+                del open_calls[key]                  # an earlier message's call that never got a result: orphan
+            for tid, label, launcher in payload["opened"]:
+                open_calls[(fk, tid)] = (ts, label, launcher, payload["mid"])
+        elif kind == "result":
+            for tid in payload or []:
+                open_calls.pop((fk, tid), None)
+        elif kind == "human":
+            for key in [k for k in open_calls if k[0] == fk]:
+                del open_calls[key]                  # a new human message ends the previous turn's open calls
+        if i + 1 == len(events):
+            break
+        nts, _, nkind, _ = events[i + 1]
+        gap = (nts - ts).total_seconds()
+        t = turn_of(ts)
         if gap < threshold_s:
-            if st is not None:
-                st["is_s"] += gap
-            continue
-        if st is not None:
-            st["bekleme_s"] += gap
-        tool = None
-        if b_kind == "human":
-            klass = WAIT_HUMAN
-        elif b_kind == "result" and b_payload:
-            klass = WAIT_TOOL
-            for tid in b_payload:
-                if tid in parent_uses:
-                    tool = parent_uses[tid]["label"]
-                    break
+            active += gap
+            if t is not None:
+                t["is_s"] += gap
         else:
-            klass = WAIT_OTHER
-        waits.append({
-            "oturum": index, "sure_s": gap, "tur": klass, "arac": tool, "baslangic": a_ts, "bitis": b_ts,
-            "adim": st["ad"] if st else None,
-        })
+            waiting += gap
+            if t is not None:
+                t["bekleme_s"] += gap
+            tool = None
+            if open_calls:
+                real = [v for v in open_calls.values() if not v[2]] or list(open_calls.values())
+                tool = min(real, key=lambda v: v[0])[1]
+                klass = WAIT_TOOL
+            elif nkind in ("human", "human_q"):
+                klass = WAIT_HUMAN
+            else:
+                klass = WAIT_OTHER
+            waits.append({"sure_s": gap, "tur": klass, "arac": tool, "baslangic": ts, "bitis": nts,
+                          "turn": t["ad"] if t else None})
 
-    return {
-        "index": index,
-        "ad": os.path.splitext(os.path.basename(path))[0][:8],
-        "main": main,
-        "subs": subs,
-        "events": events,
-        "steps": steps,
-        "waits": waits,
-        "main_tokens": tokens_by_model(list(main["messages"].values())),
-        "sub_tokens": add_token_maps(*[s["token"] for s in subs]),
-    }
-
-
-def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None):
-    threshold_s = idle_minutes * 60.0
-    sessions = [analyze_session(i + 1, p, since, until, threshold_s) for i, p in enumerate(transcripts)]
-    all_times = [t for s in sessions for t, _, _ in s["events"]]
+    all_times = [ev[0] for ev in events]
     first = min(all_times) if all_times else None
     last = max(all_times) if all_times else None
     wall = (last - first).total_seconds() if first else 0.0
-    active, waiting = active_waiting(all_times, threshold_s)
 
     main_tools = Counter()
     sub_tools = Counter()
     for s in sessions:
         main_tools.update(u["name"] for u in s["main"]["tool_uses"].values())
         for sub in s["subs"]:
-            sub_tools.update(sub["arac_cagrilari"])
-    main_tokens = add_token_maps(*[s["main_tokens"] for s in sessions])
-    sub_tokens = add_token_maps(*[s["sub_tokens"] for s in sessions])
+            sub_tools.update(sub["arac"])
+    main_tokens = add_token_maps(*[tokens_by_model(list(s["main"]["messages"].values())) for s in sessions])
+    sub_tokens = add_token_maps(*[sub["token"] for s in sessions for sub in s["subs"]])
     all_tokens = add_token_maps(main_tokens, sub_tokens)
     humans = sum(len(s["main"]["humans"]) for s in sessions)
+    queued = sum(s["main"]["queued"] for s in sessions)
     t_total = token_total(all_tokens)
     t_in = sum(slot[k] for slot in all_tokens.values() for k in ("girdi", "onbellek_yazma", "onbellek_okuma"))
     t_out = sum(slot["cikti"] for slot in all_tokens.values())
@@ -499,54 +601,49 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None):
             "ilk": iso(first), "son": iso(last),
             "duvar_saati_dk": minutes(wall), "is_dk": minutes(active), "bekleme_dk": minutes(waiting),
             "sure_dk": minutes(wall), "bosta_esigi_dk": idle_minutes,
-            "insan_dokunusu": humans,
+            "insan_dokunusu": humans, "calisma_sirasinda_yazilan": queued,
             "oturum_sayisi": len(sessions),
             "arac_cagrilari_ana": dict(main_tools.most_common()),
             "arac_cagrilari_alt_ajan": dict(sub_tools.most_common()),
             "token_ana": main_tokens, "token_alt_ajan": sub_tokens, "token_toplam": all_tokens,
             "token_girdi": t_in, "token_cikti": t_out, "token_hepsi": t_total,
             "rapor_satiri": line,
+            "ilerleme": progress_bar(adim[0], adim[1]) if adim else None,
         },
+        "turlar": [
+            {
+                "ad": t["ad"], "baslangic": iso(t["baslangic"]), "is_dk": minutes(t["is_s"]),
+                "bekleme_dk": minutes(t["bekleme_s"]), "asistan_iletisi": t["mesaj"], "arac_cagrisi": t["arac"],
+                "alt_ajan_baslatildi": t["alt_ajan"], "cikti_token": t["cikti"], "token_toplam": t["token"],
+            }
+            for t in turns
+        ],
+        "beklemeler": [
+            {"sure_dk": minutes(w["sure_s"]), "tur": w["tur"], "arac": w["arac"], "baslangic": iso(w["baslangic"]),
+             "bitis": iso(w["bitis"]), "tur_adi": w["turn"]}
+            for w in sorted(waits, key=lambda w: -w["sure_s"])
+        ],
         "oturumlar": [],
-        "beklemeler": [],
         "prler": None,
     }
     for s in sessions:
-        sess = {
-            "no": s["index"], "ad": s["ad"],
-            "adimlar": [
-                {
-                    "ad": st["ad"], "baslangic": iso(st["baslangic"]), "is_dk": minutes(st["is_s"]),
-                    "bekleme_dk": minutes(st["bekleme_s"]), "asistan_iletisi": st["mesaj"], "arac_cagrisi": st["arac"],
-                    "alt_ajan_baslatildi": st["alt_ajan"], "cikti_token": st["cikti"], "token_toplam": st["token"],
-                }
-                for st in s["steps"]
-            ],
+        data["oturumlar"].append({
+            "no": s["no"], "ad": s["ad"],
             "alt_ajanlar": [
                 {
-                    "dosya": sub["dosya"], "tur": sub["tur"], "model": sub["model"],
+                    "no": sub["no"], "tur": sub["tur"], "model": ", ".join(sorted(sub["token"])),
                     "sure_dk": minutes((sub["son"] - sub["ilk"]).total_seconds()),
-                    "token": sub["token"], "arac_cagrisi": sum(sub["arac_cagrilari"].values()),
-                    "arac_cagrilari": dict(sub["arac_cagrilari"].most_common()),
+                    "token": sub["token"], "arac_cagrisi": sum(sub["arac"].values()),
+                    "arac_cagrilari": dict(sub["arac"].most_common()),
                 }
                 for sub in s["subs"]
             ],
             "okunan_kural_dosyalari": {
                 "ana": dict(sorted(s["main"]["reads"].items())),
-                "alt_ajanlar": {
-                    "%s (%s)" % (sub["tur"], sub["dosya"]): dict(sorted(sub["okunan"].items())) for sub in s["subs"]
-                },
+                "alt_ajanlar": {(sub["tur"] if sub["tur"].startswith("alt-ajan-") else "%s (%d)" % (sub["tur"], sub["no"])):
+                                dict(sorted(sub["res"]["reads"].items())) for sub in s["subs"]},
             },
-        }
-        data["oturumlar"].append(sess)
-    waits = sorted((w for s in sessions for w in s["waits"]), key=lambda w: -w["sure_s"])
-    data["beklemeler"] = [
-        {
-            "oturum": w["oturum"], "sure_dk": minutes(w["sure_s"]), "tur": w["tur"], "arac": w["arac"],
-            "baslangic": iso(w["baslangic"]), "bitis": iso(w["bitis"]), "adim": w["adim"],
-        }
-        for w in waits
-    ]
+        })
     if prs:
         getter = gh or default_gh
         data["prler"] = [pr_summary(n, repo, getter) for n in prs]
@@ -561,7 +658,7 @@ def default_gh(repo, number):
     cmd += ["--json", "createdAt,mergedAt,closedAt,isDraft,reviews,commits,statusCheckRollup"]
     proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=90)
     if proc.returncode != 0:
-        raise RuntimeError("gh pr view failed (exit %d)" % proc.returncode)
+        raise RuntimeError("gh pr view failed")
     return json.loads(proc.stdout)
 
 
@@ -576,10 +673,12 @@ REVIEW_TR = {
 def pr_summary(number, repo, getter):
     try:
         raw = getter(repo, number)
-    except Exception as exc:  # network, auth, missing gh: report the kind only, never the message
-        return {"no": number, "hata": "okunamadı (%s)" % type(exc).__name__}
+    except FileNotFoundError:
+        return {"no": number, "hata": "gh bulunamadı"}
+    except Exception:  # network, auth, bad output: say it in plain words, never echo the error text
+        return {"no": number, "hata": "PR okunamadı"}
     if not isinstance(raw, dict):
-        return {"no": number, "hata": "okunamadı (biçim)"}
+        return {"no": number, "hata": "PR okunamadı"}
     created = parse_ts(raw.get("createdAt"))
     merged = parse_ts(raw.get("mergedAt"))
     closed = parse_ts(raw.get("closedAt"))
@@ -589,13 +688,14 @@ def pr_summary(number, repo, getter):
         if isinstance(r, dict):
             t = parse_ts(r.get("submittedAt"))
             if t is not None:
-                reviews.append((t, str(r.get("state") or "")))
+                reviews.append((t, r.get("state")))
     reviews.sort(key=lambda x: x[0])
     out["inceleme_sayisi"] = len(raw.get("reviews") or [])
     if reviews and created:
         t, state = reviews[0]
+        known = isinstance(state, str) and state in REVIEW_TR
         out["ilk_inceleme"] = {
-            "kim": "onaylayici", "durum": state, "durum_tr": REVIEW_TR.get(state, state.lower()),
+            "kim": "onaylayici", "durum": state if known else "diger", "durum_tr": REVIEW_TR[state] if known else "diğer",
             "acilistan_sonra_dk": minutes((t - created).total_seconds()),
         }
     else:
@@ -636,22 +736,26 @@ def pr_summary(number, repo, getter):
 
 # --------------------------------------------------------------------------------------------------- render
 def table(headers, rows):
-    lines = ["| " + " | ".join(headers) + " |", "|" + "|".join("---" for _ in headers) + "|"]
+    lines = ["| " + " | ".join(cell(h) for h in headers) + " |", "|" + "|".join("---" for _ in headers) + "|"]
     for r in rows:
-        lines.append("| " + " | ".join(str(c) for c in r) + " |")
+        lines.append("| " + " | ".join(cell(c) for c in r) + " |")
     return lines
 
 
 def tokens_rows(label, slot_map):
     rows = []
     for model, s in sorted(slot_map.items()):
-        rows.append([label, clean_cell(model, 50), fmt_int(s["mesaj"]), fmt_int(s["girdi"]), fmt_int(s["onbellek_yazma"]),
+        rows.append([label, model, fmt_int(s["mesaj"]), fmt_int(s["girdi"]), fmt_int(s["onbellek_yazma"]),
                      fmt_int(s["onbellek_okuma"]), fmt_int(s["cikti"])])
     return rows
 
 
 def count_line(counter):
-    return " · ".join("%s %d" % (k, v) for k, v in counter.items()) or "yok"
+    return " · ".join("%s %d" % (cell(k), v) for k, v in counter.items()) or "yok"
+
+
+def dk(value):
+    return str(value).replace(".", ",")
 
 
 def render_md(data):
@@ -662,9 +766,9 @@ def render_md(data):
     out += [
         "- İlk olay: %s · son olay: %s" % (o["ilk"] or "yok", o["son"] or "yok"),
         "- Duvar saati: %s dk · iş (aktif): %s dk · bekleme: %s dk (boşta eşiği %s dk)"
-        % (str(o["duvar_saati_dk"]).replace(".", ","), str(o["is_dk"]).replace(".", ","),
-           str(o["bekleme_dk"]).replace(".", ","), str(o["bosta_esigi_dk"]).replace(".", ",")),
-        "- İnsan dokunuşu (insan mesajı): %d" % o["insan_dokunusu"],
+        % (dk(o["duvar_saati_dk"]), dk(o["is_dk"]), dk(o["bekleme_dk"]), dk(o["bosta_esigi_dk"])),
+        "- İnsan dokunuşu (insan mesajı): %d · bunlardan asistan çalışırken yazılan: %d"
+        % (o["insan_dokunusu"], o["calisma_sirasinda_yazilan"]),
         "- Araç çağrıları (ana sohbet): %s" % count_line(Counter(o["arac_cagrilari_ana"])),
         "- Araç çağrıları (alt ajanlar): %s" % count_line(Counter(o["arac_cagrilari_alt_ajan"])),
     ]
@@ -681,32 +785,29 @@ def render_md(data):
     ])
     out += table(["Kapsam", "Model", "İleti", "Girdi", "Önbellek yazma", "Önbellek okuma", "Çıktı"], rows)
     out += ["", "Dört token türünün toplamı: %s (önbellek okuma bu toplamın büyük kısmını oluşturur)." % fmt_int(o["token_hepsi"]), ""]
-    out += ["Rapor satırı:", "", "```", o["rapor_satiri"], "```", ""]
+    out += ["Rapor satırı:", "", "```", o["rapor_satiri"]]
+    if o["ilerleme"]:
+        out.append(o["ilerleme"])
+    out += ["```", ""]
+    if o["ilerleme"]:
+        out += ["Adım sayısı plandan gelir (`--adim`); \"tahmini bitiş\" ölçülmez, raporu yazan kendi tahminiyle ekler.", ""]
 
-    out += ["## Adımlar", ""]
-    for s in data["oturumlar"]:
-        if multi:
-            out += ["### Oturum %d (%s)" % (s["no"], s["ad"]), ""]
-        rows = [
-            [clean_cell(a["ad"]), a["baslangic"] or "", fmt_dk(a["is_dk"] * 60), fmt_dk(a["bekleme_dk"] * 60),
-             a["asistan_iletisi"], a["arac_cagrisi"], a["alt_ajan_baslatildi"], fmt_int(a["cikti_token"]),
-             fmt_int(a["token_toplam"])]
-            for a in s["adimlar"]
-        ]
-        out += table(["Adım", "Başlangıç", "İş (dk)", "Bekleme (dk)", "Asistan iletisi", "Araç çağrısı",
-                      "Alt ajan başlatıldı", "Çıktı token", "Toplam token (alt ajanlar dahil)"], rows)
-        out.append("")
+    out += ["## Turlar", ""]
+    rows = [
+        [a["ad"], a["baslangic"] or "", fmt_dk(a["is_dk"] * 60), fmt_dk(a["bekleme_dk"] * 60),
+         a["asistan_iletisi"], a["arac_cagrisi"], a["alt_ajan_baslatildi"], fmt_int(a["cikti_token"]),
+         fmt_int(a["token_toplam"])]
+        for a in data["turlar"]
+    ]
+    out += table(["Tur", "Başlangıç", "İş (dk)", "Bekleme (dk)", "Asistan iletisi", "Araç çağrısı",
+                  "Alt ajan başlatıldı", "Çıktı token", "Toplam token (alt ajanlar dahil)"], rows)
+    out.append("")
 
     out += ["## Beklemeler", ""]
     if data["beklemeler"]:
-        heads = (["Oturum"] if multi else []) + ["Süre (dk)", "Tür", "Araç", "Başlangıç", "Bitiş", "Adım"]
-        rows = []
-        for w in data["beklemeler"]:
-            rows.append(([w["oturum"]] if multi else []) + [
-                str(w["sure_dk"]).replace(".", ","), w["tur"], clean_cell(w["arac"] or "-"), w["baslangic"], w["bitis"],
-                clean_cell(w["adim"] or "-"),
-            ])
-        out += table(heads, rows)
+        rows = [[dk(w["sure_dk"]), w["tur"], w["arac"] or "-", w["baslangic"], w["bitis"], w["tur_adi"] or "-"]
+                for w in data["beklemeler"]]
+        out += table(["Süre (dk)", "Tür", "Araç", "Başlangıç", "Bitiş", "Tur"], rows)
     else:
         out.append("Eşiği aşan bekleme yok.")
     out.append("")
@@ -717,9 +818,8 @@ def render_md(data):
         for a in s["alt_ajanlar"]:
             tok = sum(sum(m[k] for k, _ in TOKEN_KINDS) for m in a["token"].values())
             out_tok = sum(m["cikti"] for m in a["token"].values())
-            rows.append(([s["no"]] if multi else []) + [
-                clean_cell(a["tur"]), clean_cell(a["model"], 50), fmt_dk(a["sure_dk"] * 60), fmt_int(tok),
-                fmt_int(out_tok), a["arac_cagrisi"],
+            rows.append(([s["ad"]] if multi else []) + [
+                a["tur"], a["model"], fmt_dk(a["sure_dk"] * 60), fmt_int(tok), fmt_int(out_tok), a["arac_cagrisi"],
             ])
     if rows:
         out += table((["Oturum"] if multi else []) + ["Tür", "Model", "Süre (dk)", "Token (dört tür)", "Çıktı token",
@@ -733,10 +833,10 @@ def render_md(data):
     for s in data["oturumlar"]:
         k = s["okunan_kural_dosyalari"]
         for p, n in k["ana"].items():
-            rows.append(([s["no"]] if multi else []) + ["ana sohbet", p, n])
+            rows.append(([s["ad"]] if multi else []) + ["ana sohbet", p, n])
         for who, paths in k["alt_ajanlar"].items():
             for p, n in paths.items():
-                rows.append(([s["no"]] if multi else []) + [clean_cell(who, 80), p, n])
+                rows.append(([s["ad"]] if multi else []) + [who, p, n])
     if rows:
         out += table((["Oturum"] if multi else []) + ["Kim", "Yol", "Sayı"], rows)
     else:
@@ -746,8 +846,7 @@ def render_md(data):
     if data["prler"] is not None:
         out += ["## PR'lar", ""]
         for p in data["prler"]:
-            out.append("### PR #%s" % p["no"])
-            out.append("")
+            out += ["### PR #%s" % p["no"], ""]
             if p.get("hata"):
                 out += ["- %s" % p["hata"], ""]
                 continue
@@ -755,7 +854,7 @@ def render_md(data):
             out.append("- Açıldı: %s%s" % (p["acildi"] or "bilinmiyor", " (taslak)" if p["taslak"] else ""))
             if ilk:
                 out.append("- İlk inceleme (onaylayıcı): %s · açılıştan %s dk sonra (toplam %d inceleme)"
-                           % (ilk["durum_tr"], str(ilk["acilistan_sonra_dk"]).replace(".", ","), p["inceleme_sayisi"]))
+                           % (ilk["durum_tr"], dk(ilk["acilistan_sonra_dk"]), p["inceleme_sayisi"]))
             else:
                 out.append("- İlk inceleme: yok")
             if p["birlesti"]:
@@ -768,11 +867,9 @@ def render_md(data):
             out.append("- Kontroller: %d toplam · %d geçti · %d kaldı · %d bekleyen/diğer"
                        % (k["toplam"], k["gecen"], k["kalan"], k["bekleyen"]))
             if p["son_commit_kontrol_bitis_dk"] is not None:
-                out.append("- Son commit'ten tüm kontrollerin bitişine: %s dk"
-                           % str(p["son_commit_kontrol_bitis_dk"]).replace(".", ","))
+                out.append("- Son commit'ten tüm kontrollerin bitişine: %s dk" % dk(p["son_commit_kontrol_bitis_dk"]))
             if p["acilistan_kontrol_bitis_dk"] is not None:
-                out.append("- Açılıştan tüm kontrollerin bitişine: %s dk"
-                           % str(p["acilistan_kontrol_bitis_dk"]).replace(".", ","))
+                out.append("- Açılıştan tüm kontrollerin bitişine: %s dk" % dk(p["acilistan_kontrol_bitis_dk"]))
             out.append("")
     return "\n".join(out).rstrip() + "\n"
 
@@ -780,15 +877,22 @@ def render_md(data):
 # ------------------------------------------------------------------------------------------------------ CLI
 def build_parser():
     ap = argparse.ArgumentParser(
-        description="EES run record: steps, work vs waiting time, tokens and PR data from Claude Code session transcripts.")
+        description="EES run record: turns, work vs waiting time, tokens and PR data from Claude Code session "
+                    "transcripts. Times without an offset (--since, --until) are UTC.")
     ap.add_argument("--transcript", action="append", required=True, metavar="FILE.jsonl",
                     help="session transcript (repeatable); <name>/subagents/*.jsonl is read too when present")
     ap.add_argument("--pr", action="append", type=int, metavar="N", help="pull request number (repeatable)")
     ap.add_argument("--repo", metavar="OWNER/NAME", help="repository for --pr (default: the current one)")
     ap.add_argument("--idle-minutes", type=float, default=5.0, help="gaps of this length or longer are waiting (default 5)")
     ap.add_argument("--format", choices=("md", "json"), default="md")
-    ap.add_argument("--since", metavar="ISO", help="ignore events before this time (UTC if no offset)")
-    ap.add_argument("--until", metavar="ISO", help="ignore events after this time (UTC if no offset)")
+    ap.add_argument("--since", metavar="ISO", help="ignore events before this time; times without an offset are UTC; "
+                                                   "a date alone means the start of that day")
+    ap.add_argument("--until", metavar="ISO", help="ignore events after this time; times without an offset are UTC; "
+                                                   "a date alone means the END of that day")
+    ap.add_argument("--adim", metavar="N/M", help="plan step N of M: prints the progress bar line (the plan is not "
+                                                  "in the transcript, so the count is given here)")
+    ap.add_argument("--tur-adlari", action="store_true",
+                    help="name turns after mark_chapter titles (sanitised, 60 characters); default: Tur n")
     return ap
 
 
@@ -803,14 +907,24 @@ def main(argv=None, gh=None, stdout=None):
     if (args.since and since is None) or (args.until and until is None):
         print("--since/--until must be ISO-8601 (e.g. 2026-11-16T14:10:00Z)", file=sys.stderr)
         return 2
+    if args.until and _DATE_ONLY.match(args.until.strip()):
+        until = until + timedelta(days=1) - timedelta(microseconds=1)
+    adim = None
+    if args.adim:
+        m = re.fullmatch(r"(\d+)/(\d+)", args.adim.strip())
+        if not m or int(m.group(2)) < 1 or int(m.group(1)) > int(m.group(2)):
+            print("--adim must look like 4/8 (0 <= N <= M, M >= 1)", file=sys.stderr)
+            return 2
+        adim = (int(m.group(1)), int(m.group(2)))
     paths = [os.path.expanduser(p) for p in args.transcript]
     for p in paths:
         if not os.path.isfile(p):
-            print("transcript not found: %s" % os.path.basename(p), file=sys.stderr)
+            print("transcript not found", file=sys.stderr)
             return 2
-    data = build_data(paths, args.pr or [], args.repo, args.idle_minutes, since, until, gh=gh)
+    data = build_data(paths, args.pr or [], args.repo, args.idle_minutes, since, until, gh=gh,
+                      tur_adlari=args.tur_adlari, adim=adim)
     if args.format == "json":
-        text = json.dumps(data, ensure_ascii=False, indent=2, default=lambda o: dict(o))
+        text = json.dumps(data, ensure_ascii=False, indent=2)
     else:
         text = render_md(data)
     try:
