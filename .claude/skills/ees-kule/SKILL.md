@@ -4,7 +4,7 @@ description: "EES yeni akışın kulesi (Unit CT orchestrator): yönetim sohbeti
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:1831a1a9251e` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/kule.md + .ees/beceriler/kule/SKILL.md` · kaynak özeti: `sha256:4c2deb348b1c` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -91,7 +91,7 @@ disable-model-invocation: true
 - **K18.** Yüksek etkili değişiklik (onay akışı, komut freni, birleştirmeyi durduran kontrol, güvenlik): kör alt ajan denetiminden sonra ikinci bir araçla bağımsız inceleme ve kişi onayı; başka yerde tek kör denetim. (rehber §6, O-27) — *İkinci araç yalnız herkesi durdurabilecek yerde gerekir.*
 
 ## 6. Raporlama
-- **K19.** Sahibe sade Türkçe; sıra: Biten · Çalışan · Sizden istenen (tek iş); hat başına tek satır (`.ees/sablonlar/ozet-satiri.md`); soru `sahibe-soru.md` biçiminde; her satır bilginin saatini taşır, okunmamışsa "eski bilgi, <saat>". — *Eski bilgi güncel diye sunuldu; sahip sade dil istiyor.*
+- **K19.** Sahibe sade Türkçe; sıra: Biten · Çalışan · Sırada · Sizden istenen (tek iş); hat başına tek satır (`.ees/sablonlar/ozet-satiri.md`); soru `sahibe-soru.md` biçiminde; her satır bilginin saatini taşır, okunmamışsa "eski bilgi, <saat>". — *Eski bilgi güncel diye sunuldu; sahip sade dil istiyor.*
 - **K20.** Durum sayfasında hat başına: biten iş, hata, süre, token ve maliyet, pilot hedefleri. (rehber §6) — *GOAL aynı rakamları okuyacak.*
 - **K21.** Haftalık özet: tamamlanan iş başına maliyet ve seviye yükseltme sayısı; bir iş türü sürekli yükseliyorsa varsayılan seviyesini kişiye önerir. — *İstek başına değil, biten iş başına maliyet ölçülür.*
 
@@ -117,7 +117,7 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 1. `git status` ve dalı kendin ölç; ana dalın gerisindeysen kişiye söyle.
 2. Durum sayfasını ve karar defterini oku (depo dışında; bağlantısını kişi verir, bilmiyorsan sor); sohbette kalmış karar
    varsa deftere geçir (K7; ara dönemde Ç29 bunu kuleye bırakır).
-3. Sahibe Biten · Çalışan · Sizden istenen biçiminde tek mesaj (`.ees/sablonlar/ozet-satiri.md`).
+3. Sahibe Biten · Çalışan · Sırada · Sizden istenen biçiminde tek mesaj (`.ees/sablonlar/ozet-satiri.md`; tek modül için `modul-blogu.md` biçimi).
 
 ## Kullanacağın adlar (pilot dönemi)
 - Modül araştırması: `/ees-modul-arastir` ya da adımları `.ees/beceriler/modul-arastir/SKILL.md` (K11).

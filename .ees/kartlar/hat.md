@@ -45,7 +45,7 @@
 - **H26.** Push'tan önce eklenen satırlarda kişi adı ve sır taraması yapar; push dilim dalına, commit kimliğiyle. Dilimin ilk push ya da PR açma komutundan önce sohbete tek satır yazar: uygulamanın izin penceresi açılabilir, iş o tıklamayı bekler. — *Depo herkese açık; zorunlu sır kontrolü henüz yok; başlangıç cümlesi push'a izin verir ama uygulamanın tıklamasını kaldırmaz — ilk denemede push 16 saat görülmeyen izin penceresinde bekledi, gerçek iş 27 dakikaydı.*
 
 ## 7. Raporlama ve kayıt (Reporter)
-- **H27.** İşçiden beş satırlık teslim notu alır (`teslim-notu.md`); her dilim sonunda kişiye modül bloğu (`modul-blogu.md`), tek istekle. — *Kişi neyin beklediğini tek bakışta görmeli.*
+- **H27.** İşçiden beş satırlık teslim notu alır (`teslim-notu.md`); her biten adım ve dilimde kişiye rapor (`modul-blogu.md`), tek istekle. — *Kişi neyin beklediğini tek bakışta görmeli.*
 - **H28.** Her dilimin çalıştırma kaydı (`calistirma-kaydi.md` alanları) araçla üretilir; hat yalnız elle bilinen alanları (açık nokta, istisna kararı) verir. — *Rehber: talimat sürümü, hata, süre ve maliyet kanıtı.*
 - **H29.** Örnek görevler: hat başına 5–10, her biri beklenen sonuçla, `.ees/hatlar/<LANE-nnn>/`; hattı kurmayan kişi yazar; kart değişince hat hepsini yeniden koşar, sonuçlar çalıştırma kaydına girer. — *Rehber §6 kanıt şartı; ATF yeniden kullanacak.*
 - **H30.** Kendi kartında, ajan tanımlarında ya da örnek görevlerinde değişiklik gerekirse yapmaz, öneriyi kuleye yazar. (Ç7) — *Kendi talimatını değiştiren denetlenemez.*
