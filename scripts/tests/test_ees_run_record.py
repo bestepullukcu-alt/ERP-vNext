@@ -507,8 +507,9 @@ class Privacy(Base):
             if line.startswith("|"):
                 self.assertEqual(line.count("|"), line.count(" | ") + 2 if line.count(" | ") else line.count("|"))
 
-    SHAPES = ("ad.soyad", "sk-ant-api03-AbCdEf0123456789xyz", "ghp_0123456789abcdefABCDEF0123456789abcd",
-              "AKIAABCDEFGHIJKLMNOP", "ad_soyad.dev")
+    # Token-shaped fixtures are assembled at run time: a literal that looks like a real key would trip secret scanners.
+    SHAPES = ("ad.soyad", "sk-" + "ant-api03-" + "AbCdEf0123456789xyz", "ghp" + "_" + "0123456789abcdefABCDEF0123456789abcd",
+              "AKIA" + "ABCDEFGHIJKLMNOP", "ad_soyad.dev")
 
     def test_names_come_from_allow_lists_not_from_their_characters(self):
         self.assertEqual(rr.model_name("claude-opus-5-5"), "claude-opus-5-5")
