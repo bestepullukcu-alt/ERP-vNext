@@ -450,7 +450,7 @@ class BashLabels(Base):
             "python3 secret_script.py": "Bash: python3", "python3 -m unittest": "Bash: python3",
             "make deploy-SECRET": "Bash: make", "npx SECRETTOOL": "Bash: npx", "cat /etc/SECRET": "Bash: cat",
             "FOO=SECRET npm run x": "Bash: npm run", "cd /p && git push": "Bash: git push",
-            "./ali.tufanoglu --x": "Bash", "ali.tufanoglu --x": "Bash", "sshpass -p SECRET ssh h": "Bash: sshpass",
+            "./ad.soyad --x": "Bash", "ad.soyad --x": "Bash", "sshpass -p SECRET ssh h": "Bash: sshpass",
             "": "Bash", "   ": "Bash",
         }
         for command, expected in cases.items():
