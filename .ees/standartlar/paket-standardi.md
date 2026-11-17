@@ -37,9 +37,9 @@ düzeni, korunan yollar) standartlar, altın referans ve mimari testler söyler.
   ilk paketle **aynı PR'da ve aynı onayla** gelir, ayrı kapı yoktur. Süreç varsa paket yalnız atıf yapar. Teknik modül ve
   üst paketinin süreci olan takip paketi muaftır; üst paketin süreci yoksa takip paketi o sürecin ilk paketidir ve süreci yazar.
   İlk dönemde yalnız uyarı. Ayrıntı: `is-sureci.md` şablonu. — *Eski engellerin çoğunun kökü eksik iş kuralı.*
-- **KP13. Durum ve dal:** taslak `status: draft`; onaylayıcı PR'da "paketi onaylıyorum" deyince hat aynı PR'da
-  dilim işinin ilk commit'iyle `ready-for-dev` yapar (ek dokunuş değil). Künyedeki tek `branch` alanı hattın dal
-  önekidir; dilim dalları `<önek>-dl<n>` (H8). — *Kök kural 7 onaylı durumu arar.*
+- **KP13. Durum ve dal:** taslak `status: draft`; listelenen onaylayıcı paketi PR'da onaylayınca ("paketi onaylıyorum" ya da
+  yalnız paket dosyalarını taşıyan commit'e GitHub onayı, H5) hat aynı PR'da dilim işinin ilk commit'iyle `ready-for-dev`
+  yapar (ek dokunuş değil). Künyedeki tek `branch` alanı hattın dal önekidir; dilim dalları `<önek>-dl<n>` (H8). — *Kök kural 7 onaylı durumu arar.*
 
 ## 3. Künye
 Bugünkü alanlar (`id`, `name`, `domain`, `service`, `shell`, `golden_reference`, `data_mode`, `entity_base`, `status`, `owner`,
