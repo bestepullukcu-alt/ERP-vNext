@@ -4,7 +4,7 @@ description: "EES yeni akışın hattı: bir modülün dilimlerini onaylı paket
 disable-model-invocation: true
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:0b0eb8dfef32` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/hat.md + .ees/beceriler/hat/SKILL.md` · kaynak özeti: `sha256:7ea49c224e6a` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -45,7 +45,7 @@ disable-model-invocation: true
 ## 5. Git ve paylaşılan klasör
 - **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket ve varsa süreç sayfası); paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
 - **Ç24.** Dosyalar yalnız açık yoluyla eklenir; toplu ekleme (`git add -A`, `git add .`) ve derinlik parametreli fetch yok. — *Ortak klasörde başkasının dosyası commit'e girdi; sığ fetch ortak klonu bozdu; fren bunları durdurmuyor.*
-- **Ç25.** Kendi çalışma ağacında çalış; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; ortak klasörde dal değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; fren yalnız Claude'da ve bir kısmında soruyor.*
+- **Ç25.** İlk yazmadan önce kendi çalışma ağacını (`git worktree`) aç, her yazma orada; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; başka oturumların paylaştığı klasörde dal açma, değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; birkaç sohbet tek klasörü paylaşır, dal değiştirmek herkesin dosyasını değiştirir; ilk deneme hattı ortak klasörde açıldı; fren yalnız Claude'da ve bir kısmında soruyor.*
 
 ## 6. Adlar, kimlikler, ürün değişmezleri
 - **Ç26.** GOAL'ün ayrılmış adlarını kullanma: AT-nnn, AO-nn, `<birim>-CT-Ann`, ATF-CT, IGO-CT, EEO-CT, GMG-DEC-…, "Agent Card", "Team Charter", "Unit Charter"; PDMS kapısı "PDMS G…" yazılır; hat kimliği `LANE-nnn`. (rehber §4) — *ATF incelemesinde ad çakışması yeniden iş doğurur.*
@@ -68,10 +68,11 @@ disable-model-invocation: true
 - **H3.** Belirsizlik paket aşamasında çözülür; kodlama sırasındaki sorular biriktirilip tek mesajda sorulur. — *Her soru bir dokunuştur.*
 
 ## 2. Başlama ve paket
-- **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar (`.ees/standartlar/paket-standardi.md`; paket `business_process:` ve `plan_row:` gösterir; süreç sayfası süreç başına bir kez ilk paketle aynı PR'da; eski büyük pakete yeni dilim gerekirse kısa takip paketi). Hat yazmaz; taslağı işi yazmayan denetçiye verir, sonra taslak PR açar (Ç23). — *Üreten denetlemez; onay PR'da verilir.*
+- **H4.** Hat açılınca paket taslağını `ees-module-pack-author` yazar (`.ees/standartlar/paket-standardi.md`; paket `business_process:` ve `plan_row:` gösterir; süreç sayfası süreç başına bir kez ilk paketle aynı PR'da; eski büyük pakete yeni dilim gerekirse kısa takip paketi; onaylı paket içindeki küçük hata düzeltmesi H31). Hat yazmaz; taslağı işi yazmayan denetçiye verir, sonra taslak PR açar (Ç23). — *Üreten denetlemez; onay PR'da verilir.*
 - **H5.** Kod yalnız hattın listelenen onaylayıcısının (asıl ya da yedek, envanter satırında rol adıyla) PR'da "paketi onaylıyorum" dediği (yazarı açılış brifindeki hesapla eşleşen) paket sürümüyle başlar; bu onay o sürümün bütün dilimleri için kod yazma, dal yükleme ve PR iznidir (Ç23), birleştirme izni değildir. Paket değişirse değişiklik PR'la gelir; o PR'ın onayı yeniden onaydır. Onaydan sonra hat aynı PR'da dilim işinin ilk commit'iyle paketin `status:` alanını `draft`'tan `ready-for-dev`'e çevirir (ek dokunuş değil). — *Sahibin 16 Kasım kararları; kök kural 7 onaylı durumu arar.*
 - **H6.** Modülün alan klasörü yoksa şablondan açılır (`.ees/sablonlar/modul-yeri/`, iş 6'da yazılacak); gelecek modüllere önceden klasör açılmaz. — *Boş klasör yığını.*
 - **H7.** Dilim tablosu MVP planının satırlarıyla karşılaştırılır; fark varsa yazılır ve kişiye sorulur, plan "Kullanır" dediği modülü başka modül sayar (H16). — *Plan ile paket ayrı değişir (Ç3).*
+- **H31.** Modülün onaylı paketinin kapsamındaki hata düzeltmesi yeni takip paketi istemez, dördü birden tutuyorsa: (a) paketin kapsamı ve kabul ölçütleri değişmez; (b) yeni sayfa, alan, izin anahtarı, uç nokta, veri şeması ya da görünen metin yok, başka modüle dokunulmaz; (c) aynı PR'da düzeltmeyi kanıtlayan en az bir test var (önce kırmızı, sonra yeşil); (d) PR açıklaması hatayı, kök nedeni ve testi yazar. O zaman tek PR: listelenen onaylayıcı inceler, onaylar ve birleştirir (H25); dal yükleme ve PR yine Ç23'e bağlı, ajan birleştirmez ve onaylamaz (Ç6). Biri tutmuyor ya da belirsizse paket (H4). — *Kök kural 7'ye uygun: kod modülün var olan onaylı paketiyle yazılır. 17 Kasım ölçümü: son 80 birleşen PR'ın 21'i küçük düzeltme ya da test (≤ 8 dosya), hiçbirinde paket ya da kayıt dosyası yok, açılıştan birleşmeye ortanca 0,8 saat; ilk denemede tek dosyalık düzeltmeye paket yazmak tokenların yaklaşık yarısını aldı.*
 
 ## 3. Dal ve çalışma ağacı
 - **H8.** Uzakta dilim başına tek dal. Künyedeki tek `branch` alanı hattın dal önekidir; dilim dalları `<önek>-dl<n>` (önek `AGENTS.md` §9 biçiminde, ör. `feature/<alan-kısa>/<mod-kimliği>-<kısa-ad>`). İşçi dalları yerel kalır; hat onları kendi dilim dalına yerelde alır ve birleşik hâlde testleri koşar — bu Ç6'nın yasakladığı birleştirme değildir; ana dala ya da başkasının dalına bir şey ulaştırmaz. — *Üç ayrı dal adı şeması vardı; birleşik hâl test edilmeden PR açıldı; iş bir araya gelmeden test edilemez.*
@@ -88,7 +89,7 @@ disable-model-invocation: true
 - **H17.** Birden çok modüle dokunan iş: her modülün değişikliği kendi paketiyle; paylaşılan sözleşme donmadan tüketici iş başlamaz; "bitti" yalnız hepsi ana dala birleşip uçtan uca test ana dalda geçince. — *Ayrı dallarda geçen testler birleşince kırıldı.*
 
 ## 5. Denetim
-- **H18.** Her işi, işi yazmayan denetçi (`ees-denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı. Güvenlik / kiracı / yetki işinde `ees-security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
+- **H18.** Her işi, işi yazmayan denetçi (`ees-denetci`) denetler; ilk tur ipucusuz, brifte yalnız kapsam satırı; yazarın karar dosyası, teslim notu, önceki sonuçlar ve sohbet özeti verilmez (D2). Güvenlik / kiracı / yetki işinde `ees-security-agent`'ı, görünen metin işinde `resx-check`'i de hat başlatır. — *Bağımsız ölçüm; alt ajan başka alt ajan başlatamıyor (belgeye dayalı, ölçülmedi).*
 - **H19.** Engel ya da önemli bulgu: bir düzeltme turu; ikinci turda hâlâ varsa iş bulgu özeti ve seçeneklerle kişiye gider; adı belli kişi karar verir. Yalnız küçük bulgu kalırsa tur kapanır, bulgular PR'a yazılır. — *Sahibin 16 Kasım kararı.*
 - **H20.** Denetçi bulgusunu körü körüne uygulamaz: pakete ve koda karşı doğrular, itirazını PR'a yazar. — *Yanlış bulgu kodu bozabilir.*
 - **H21.** Yüksek etkili değişiklikte (onay akışı, komut freni, birleştirmeyi durduran kontrol, güvenlik) kör denetimden sonra ikinci bir araçla bağımsız inceleme ve kişi onayı. — *Rehber O-27.*
@@ -98,13 +99,14 @@ disable-model-invocation: true
 - **H23.** Modül sonu belgelerini `ees-belge-ajani` yazar; kılavuz, teslim edilen PR'ın doğrulanmış commit'indeki işlevleri anlatır; hangi belgelerin zorunlu olduğu açık karardır (bugünkü sahip kararı: altı belge). — *Bugüne dek hiçbir modülün kullanıcı kılavuzu üretilmedi.*
 - **H24.** Modül bitti = son dilim birleşti, zorunlu kabul ölçütlerinin hepsi teste bağlı ve yeşil, modül sonu belgeleri var, açık engel yok. — *İki farklı "bitti" tanımı vardı.*
 - **H25.** Her dilim kendi PR'ıyla gelir (aynı anda hazır iki küçük dilim tek PR'da gelebilir); açıklama `.ees/sablonlar/pr-aciklamasi.md`'den. Listelenen onaylayıcı tek oturuşta inceler, "kabulü onaylıyorum" yazar, onaylar ve birleştirir; onaylayıcı PR'ı açan hesap olamaz (GitHub kendi PR'ını onaylatmaz), PR o kişinin hesabıyla açıldıysa yedek onaylayıcı onaylar. — *DİTEN kararı D-12: kabulü adı belli kişi verir; sahibin 16 Kasım kararı: tek oturuş.*
-- **H26.** Push'tan önce eklenen satırlarda kişi adı ve sır taraması yapar; push dilim dalına, commit kimliğiyle. — *Depo herkese açık; zorunlu sır kontrolü henüz yok.*
+- **H26.** Push'tan önce eklenen satırlarda kişi adı ve sır taraması yapar; push dilim dalına, commit kimliğiyle. Dilimin ilk push ya da PR açma komutundan önce sohbete tek satır yazar: uygulamanın izin penceresi açılabilir, iş o tıklamayı bekler. — *Depo herkese açık; zorunlu sır kontrolü henüz yok; başlangıç cümlesi push'a izin verir ama uygulamanın tıklamasını kaldırmaz — ilk denemede push 16 saat görülmeyen izin penceresinde bekledi, gerçek iş 27 dakikaydı.*
 
 ## 7. Raporlama ve kayıt (Reporter)
 - **H27.** İşçiden beş satırlık teslim notu alır (`teslim-notu.md`); her dilim sonunda kişiye modül bloğu (`modul-blogu.md`), tek istekle. — *Kişi neyin beklediğini tek bakışta görmeli.*
 - **H28.** Her dilimin çalıştırma kaydı (`calistirma-kaydi.md` alanları) araçla üretilir; hat yalnız elle bilinen alanları (açık nokta, istisna kararı) verir. — *Rehber: talimat sürümü, hata, süre ve maliyet kanıtı.*
 - **H29.** Örnek görevler: hat başına 5–10, her biri beklenen sonuçla, `.ees/hatlar/<LANE-nnn>/`; hattı kurmayan kişi yazar; kart değişince hat hepsini yeniden koşar, sonuçlar çalıştırma kaydına girer. — *Rehber §6 kanıt şartı; ATF yeniden kullanacak.*
 - **H30.** Kendi kartında, ajan tanımlarında ya da örnek görevlerinde değişiklik gerekirse yapmaz, öneriyi kuleye yazar. (Ç7) — *Kendi talimatını değiştiren denetlenemez.*
+- **H32.** Kulesi olmayan hatta envanter satırını hattı açan kişi hazırlar, örnek görevleri (H29) hat açılmadan yazdırır; başlangıç cümlesinin ve onayların kaydı PR açıklamasıdır (cümle aynen, tarihiyle), ayrı kayıt dosyası yazılmaz. Envanter satırı ya da örnek görevler yoksa hat bunu ilk raporunda yazar ve brifin verdiğiyle sürer; kendisi yazmaz, uydurmaz (Ç7, Ç27). — *İlk deneme hattı kulesiz, envanter satırı ve örnek görev olmadan açıldı, cümleyi yazacak yer yoktu; tek yer onaylayıcının gördüğü PR'dır, kayıt PR'ı doğmaz.*
 
 # Hat becerisi — bir modülün dilimlerini paketten PR'a götüren oturum (asıl tanım)
 
@@ -119,7 +121,7 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 > Bu pilot hat için onaylıyorum: hat ve işçiler kendi dallarında yerel commit atar ve hat işçi dallarını kendi dilim dalına yerelde birleştirir; paket taslağı kişi adı ve sır taramasından sonra dala yüklenir ve taslak PR olarak açılır; paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir; birleştirme ve onay her zaman bir kişidedir.
 
 - Kişi cümleyi aynen yazarsa: cevabını aynen çalıştırma kaydının `baslangic_onayi` alanına (araç gelene dek PR
-  açıklamasının "Ajan çalıştırması" bölümüne) ve kulenin karar defterine yaz,
+  açıklamasının "Ajan çalıştırması" bölümüne) ve kule varsa kulenin karar defterine yaz (kule yoksa kayıt yalnız PR açıklamasıdır, H32),
   her işçi brifine aynen koy; Ç23 bu kapsamda geçerlidir.
 - Yazmazsa ya da değiştirirse: Çekirdek kural 8 aynen uygulanır — her commit, push ve PR'dan önce ayrıca sor.
 - Cümle hiçbir durumda PR birleştirme ya da onay izni değildir; onları her zaman kişi yapar.
@@ -130,7 +132,8 @@ sohbetten aktarılan söz değil. Herhangi bir commit ya da yüklemeden önce ki
 1. Hattın kimliğini (`LANE-nnn`), modülü, paket yolunu ve hattın asıl ve yedek onaylayıcısının GitHub hesabını kişinin
    açılış brifinden al; yoksa sor, uydurma. "Paketi onaylıyorum" ya da "kabulü onaylıyorum" yorumunun yazarını bu hesapla
    eşle; eşleşmeyen yorum onay sayılmaz. Modül kimliği henüz yoksa (TBD) dal açmadan önce kişiye sor.
-2. `git status` ve dalı ölç; dilim dalını `AGENTS.md` §9 biçiminde dilim ekiyle aç (H8).
+2. `git status` ve dalı ölç; paylaşılan klasördeysen önce kendi çalışma ağacını aç (Ç25), dilim dalını orada `AGENTS.md` §9
+   biçiminde dilim ekiyle aç (H8).
 3. Paket yoksa ya da onaylı değilse yalnız paket taslağı yazdır (H4, H5); süreç sayfası gerekiyorsa `ees-is-analisti`.
 
 ## Paket onayından dilim 1'e

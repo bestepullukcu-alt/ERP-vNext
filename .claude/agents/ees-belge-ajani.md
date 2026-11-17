@@ -6,7 +6,7 @@ model: sonnet
 effort: medium
 ---
 
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/belge-ajani.md` · kaynak özeti: `sha256:f8dfd6c714f2` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `.ees/kartlar/cekirdek.md + .ees/kartlar/isci.md + .ees/ajanlar/belge-ajani.md` · kaynak özeti: `sha256:275b70f79680` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 # Çekirdek — her rolün her işte okuduğu kurallar
 
@@ -47,7 +47,7 @@ effort: medium
 ## 5. Git ve paylaşılan klasör
 - **Ç23.** Commit yalnız kendi dalında; `main`'e commit ve push yok. Pilot hatta kişi başlangıç cümlesini verdiyse: yerel commit serbest; paket taslağı kişi adı ve sır taramasından sonra dala yüklenip **taslak** PR açılır (içinde yalnız paket ve varsa süreç sayfası); paketin PR'daki onayı o paket sürümünün dilimleri için dal yükleme ve PR iznidir. Cümle yoksa ve başka her durumda her commit, push ve PR kişinin açık sözüyle. Birleştirme ve onay hiçbir zaman ajanın değildir. — *Sahibin 16 Kasım kararları: onay PR'da verilir; açık onay kişinin kendi cümlesidir, dosyadaki beyan değil.*
 - **Ç24.** Dosyalar yalnız açık yoluyla eklenir; toplu ekleme (`git add -A`, `git add .`) ve derinlik parametreli fetch yok. — *Ortak klasörde başkasının dosyası commit'e girdi; sığ fetch ortak klonu bozdu; fren bunları durdurmuyor.*
-- **Ç25.** Kendi çalışma ağacında çalış; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; ortak klasörde dal değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; fren yalnız Claude'da ve bir kısmında soruyor.*
+- **Ç25.** İlk yazmadan önce kendi çalışma ağacını (`git worktree`) aç, her yazma orada; işe başlarken `git status`'a bak, beklenmedik değişiklik varsa dur ve sor; başka oturumların paylaştığı klasörde dal açma, değiştirme, stash, reset, zorla push yok; süreç adla değil yalnız kendi başlattığın PID ile durdurulur; yıkıcı komutu kişiye sor. — *Başka oturumun işi ve süreci kayboldu; birkaç sohbet tek klasörü paylaşır, dal değiştirmek herkesin dosyasını değiştirir; ilk deneme hattı ortak klasörde açıldı; fren yalnız Claude'da ve bir kısmında soruyor.*
 
 ## 6. Adlar, kimlikler, ürün değişmezleri
 - **Ç26.** GOAL'ün ayrılmış adlarını kullanma: AT-nnn, AO-nn, `<birim>-CT-Ann`, ATF-CT, IGO-CT, EEO-CT, GMG-DEC-…, "Agent Card", "Team Charter", "Unit Charter"; PDMS kapısı "PDMS G…" yazılır; hat kimliği `LANE-nnn`. (rehber §4) — *ATF incelemesinde ad çakışması yeniden iş doğurur.*
