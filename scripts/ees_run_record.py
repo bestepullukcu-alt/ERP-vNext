@@ -3,7 +3,9 @@
 
     python3 scripts/ees_run_record.py --transcript <session.jsonl> [--transcript <other.jsonl> ...]
         [--pr <n> ...] [--repo <owner/name>] [--idle-minutes 5] [--format md|json]
-        [--since <ISO>] [--until <ISO>] [--adim N/M] [--tur-adlari]
+        [--since <ISO>] [--until <ISO>] [--adim N/M] [--tur-adlari] [--uyari-bekleme-dk N] [--uyari-dokunus N]
+        [--uyari-cikti-token N] [--uyari-toplam-token N] [--uyari-ileti N] [--uyari-ajan-tekrar N] [--uyari-hata N]
+        [--uyari-pr-gun N]
 
 Reads Claude Code session transcripts (JSONL). For each one it also reads <file without .jsonl>/subagents/*.jsonl when that
 folder exists. Output is Markdown (Turkish headings) or one JSON object (--format json): summary, turns, waits,
@@ -14,8 +16,11 @@ Words: a "tur" (turn) is what starts with one human message; an "adim" (step) is
 for the report line (`--adim N/M`), because the plan is not in the transcript.
 
 Privacy: no free text reaches the output. Message text, command arguments, file contents, logins, file names and
-sub-agent descriptions are never printed. Tool, model and sub-agent-type names are printed only when they are plain
-identifiers ([A-Za-z0-9._:-], 1-60 characters), otherwise "?". Bash is shown as the command word of a fixed list of
+sub-agent descriptions are never printed. Names the model or a person chose are printed only from allow-lists, never
+because their characters look harmless: sub-agent types only when built-in or defined in this repository
+(.claude/agents/*.md stems, read at start), otherwise "alt ajan" (tables: "alt-ajan-n"); tools only from a fixed list of
+built-in tools, MCP tools aggregated as "MCP aracı" (no server or tool name), anything else "diğer araç"; models only
+when they match claude-[a-z0-9.-]{1,40}, otherwise "?". Bash is shown as the command word of a fixed list of
 well-known commands plus, for a fixed list of (command, subcommand) pairs, the subcommand ("Bash: git push"); anything
 else is just "Bash". Paths are printed only for rule files (.ees/, .antigravity/rules/, AGENTS.md) and only when
 every character is in [A-Za-z0-9._/-], no segment is "..", and the marker starts at a path boundary. Turn names are
@@ -44,6 +49,16 @@ Report line: the summary prints `Bu adım: <is> iş + <bekleme> bekleme · <toke
 For one plan step, run the tool with --since set to the moment the step started. The progress bar comes from the plan:
 `--adim 4/8` prints `İlerleme: ▓▓▓▓░░░░ 4/8 adım`. The estimated finish is not measured; the reporter writes it.
 
+Warnings ("Uyarılar", printed right after the summary; `uyarilar` in json): fixed threshold rules over numbers the tool
+already measures - no judgement, no extra network call, the exit code stays 0. Each rule has a flag; 0 switches it off.
+  U1 long wait (>= --uyari-bekleme-dk, default 60 min; waits shorter than --idle-minutes are not measured as waits),
+  U2 human touches in the interval (> --uyari-dokunus, 3), U3 output tokens (> --uyari-cikti-token, 150000) and the
+  four-kind token total (> --uyari-toplam-token, 20000000), U4 long chat (per session, whole transcript, not only the
+  --since interval: assistant messages > --uyari-ileti, 400, or at least one compaction summary), U5 repetition (one
+  sub-agent type started > --uyari-ajan-tekrar times, 2; tool results flagged as errors > --uyari-hata, 10), U6 only with
+  --pr (failed checks > 0; a PR open more than --uyari-pr-gun days, 5). Warning text holds only numbers, fixed words,
+  "oturum-n", durations and the already whitelisted tool / sub-agent names.
+
 Python 3.9+, standard library only.
 """
 from __future__ import annotations
@@ -51,6 +66,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import json
+import math
 import os
 import re
 import subprocess
@@ -81,6 +97,31 @@ NON_HUMAN_PREFIXES = (
     "Another Claude session sent a message",
 )
 
+# Warning thresholds (flags --uyari-*); 0 switches a rule off.
+DEFAULT_LIMITS = {
+    "bekleme_dk": 60, "dokunus": 3, "cikti_token": 150000, "toplam_token": 20000000, "ileti": 400,
+    "ajan_tekrar": 2, "hata": 10, "pr_gun": 5,
+}
+MAX_WAIT_LINES = 3
+
+# Names that may be printed. Everything else is replaced by a fixed word (see the module docstring).
+BUILTIN_AGENTS = frozenset({"general-purpose", "Explore", "Plan", "claude", "claude-code-guide", "statusline-setup",
+                            "web-fetch", "fork"})
+BUILTIN_TOOLS = frozenset({
+    "Bash", "Read", "Edit", "Write", "Glob", "Grep", "Agent", "Task", "Skill", "ToolSearch", "WebFetch", "WebSearch",
+    "NotebookEdit", "SendMessage", "TodoWrite", "AskUserQuestion", "Artifact", "ArtifactData", "Workflow",
+    # more built-ins, taken from the tool list of a Claude Code session (not from test fixtures)
+    "ArtifactComments", "MultiEdit", "BashOutput", "KillShell", "ExitPlanMode", "EnterPlanMode", "TaskOutput", "TaskStop",
+    "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "Monitor", "EnterWorktree", "ExitWorktree", "ListSkills",
+    "SearchSkills", "ListPlugins", "SearchPlugins", "SuggestPluginInstall", "SubagentHandback",
+})
+TOOL_MCP = "MCP aracı"
+TOOL_OTHER = "diğer araç"
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Short fixed label per warning rule (json `kisa`), for the one-line lane summary.
+KISA = {"U1": "uzun bekleme", "U2": "dokunuş", "U3": "maliyet", "U4": "uzun sohbet", "U5a": "tekrar",
+        "U5b": "hatalı komut", "U6a": "kırmızı kontrol", "U6b": "açık PR"}
+
 WAIT_TOOL = "izin ya da uzun komut"
 WAIT_HUMAN = "kişi bekleniyor"
 WAIT_OTHER = "diğer"
@@ -107,7 +148,8 @@ _RULE_MARKER = re.compile(r"(?:^|/)(\.ees/|\.antigravity/rules/)")
 _RULE_OK = re.compile(r"[A-Za-z0-9._/-]+")
 _RULE_SPLIT = re.compile(r"[\s'\"`;|&<>()]+")
 
-_IDENT = re.compile(r"[A-Za-z0-9._:-]{1,60}")
+_AGENT_STEM = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,59}")
+_MODEL = re.compile(r"claude-[a-z0-9.-]{1,40}")
 _TS_RE = re.compile(
     r"^(\d{4})-(\d\d)-(\d\d)(?:[T ](\d\d):(\d\d)(?::(\d\d))?(?:\.(\d+))?)?\s*(Z|[+-]\d\d:?\d\d)?$"
 )
@@ -186,9 +228,37 @@ def cell(value, limit=None):
     return t[:limit] if limit else t
 
 
-def ident(value):
-    """A name from a transcript (tool, model, sub-agent type) is printed only when it is a plain identifier."""
-    return value if isinstance(value, str) and _IDENT.fullmatch(value) else "?"
+def load_repo_agents(root):
+    """Agent names defined in the repository the tool runs from: .claude/agents/*.md stems. Missing folder: none."""
+    folder = os.path.join(root, ".claude", "agents")
+    try:
+        names = os.listdir(folder)
+    except OSError:
+        return frozenset()
+    return frozenset(n[:-3] for n in names if n.endswith(".md") and _AGENT_STEM.fullmatch(n[:-3]))
+
+
+_AGENT_ALLOW = BUILTIN_AGENTS | load_repo_agents(REPO_ROOT)
+
+
+def agent_name(value):
+    """A sub-agent type is printed only when it is built-in or defined in this repository; otherwise None."""
+    return value if isinstance(value, str) and value in _AGENT_ALLOW else None
+
+
+def tool_name(value):
+    """A tool name is printed only from the fixed built-in list; MCP tools are one aggregate, the rest is `diğer araç`."""
+    if isinstance(value, str):
+        if value in BUILTIN_TOOLS:
+            return value
+        if value.startswith("mcp__"):
+            return TOOL_MCP
+    return TOOL_OTHER
+
+
+def model_name(value):
+    """A model name is printed only when it looks like a claude-* model id; otherwise "?"."""
+    return value if isinstance(value, str) and _MODEL.fullmatch(value) else "?"
 
 
 def sanitize_title(title):
@@ -305,7 +375,8 @@ def parse_file(path, fk, since, until, is_main, owners):
     (user, attachment) owns it; copies in other files are skipped, so a resumed session is not counted twice.
     Events are (ts, file key, kind, payload); kind is assistant / result / human / human_q / other.
     """
-    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "queued": 0, "chapters": [], "reads": Counter()}
+    res = {"events": [], "messages": {}, "tool_uses": {}, "humans": [], "queued": 0, "chapters": [], "reads": Counter(),
+           "errors": 0}
     anon = 0
     with open(path, encoding="utf-8", errors="replace") as fh:
         for line in fh:
@@ -349,7 +420,7 @@ def parse_file(path, fk, since, until, is_main, owners):
                 if rec is None:
                     rec = res["messages"][mid] = {"ts": ts, "model": None, "usage": _usage_ints(None)}
                 if isinstance(msg.get("model"), str):
-                    rec["model"] = ident(msg["model"])
+                    rec["model"] = model_name(msg["model"])
                 if isinstance(msg.get("usage"), dict):
                     rec["usage"] = _usage_ints(msg["usage"])  # last line wins
                 opened = []
@@ -365,10 +436,10 @@ def parse_file(path, fk, since, until, is_main, owners):
                             continue
                         raw = item.get("name") if isinstance(item.get("name"), str) else ""
                         inp = item.get("input") if isinstance(item.get("input"), dict) else {}
-                        use = {"name": ident(raw), "ts": ts, "label": ident(raw), "subagent_type": None,
+                        use = {"name": tool_name(raw), "ts": ts, "label": tool_name(raw), "subagent_type": None,
                                "launcher": raw in ("Agent", "Task")}
                         if use["launcher"] and isinstance(inp.get("subagent_type"), str):
-                            use["subagent_type"] = ident(inp["subagent_type"])
+                            use["subagent_type"] = agent_name(inp["subagent_type"])
                         if raw == "Bash":
                             use["label"] = bash_label(inp.get("command"))
                             for p in rule_paths(inp.get("command")):
@@ -391,6 +462,9 @@ def parse_file(path, fk, since, until, is_main, owners):
             ids = []
             if isinstance(content, list):
                 ids = [c.get("tool_use_id") for c in content if isinstance(c, dict) and c.get("type") == "tool_result"]
+            if isinstance(content, list):
+                res["errors"] += sum(1 for c in content if isinstance(c, dict) and c.get("type") == "tool_result"
+                                     and c.get("is_error") is True)
             if ids:
                 kind, payload = "result", [i for i in ids if isinstance(i, str)]
             elif is_main and is_human_event(e, content):
@@ -422,6 +496,111 @@ def find_subagent_files(main_path):
     return out
 
 
+def session_overview(path, seen, seen_compact):
+    """Whole transcript, no --since/--until: (assistant messages once per id, compaction summary events). Main chat only.
+
+    `seen` (message ids) and `seen_compact` (summary uuids) are shared by all sessions of one run, so a resumed copy of a
+    history, or the same file given twice, is counted once.
+    """
+    new_ids = 0
+    anon = compactions = 0
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for line in fh:
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(e, dict):
+                continue
+            if e.get("isCompactSummary") is True:
+                cid = e.get("uuid")
+                if not (isinstance(cid, str) and cid):
+                    compactions += 1
+                elif cid not in seen_compact:
+                    seen_compact.add(cid)
+                    compactions += 1
+            if e.get("type") == "assistant" and not e.get("isSidechain"):
+                msg = e.get("message") if isinstance(e.get("message"), dict) else {}
+                mid = msg.get("id")
+                if isinstance(mid, str) and mid:
+                    if mid not in seen:
+                        seen.add(mid)
+                        new_ids += 1
+                else:
+                    anon += 1
+    return new_ids + anon, compactions
+
+
+def build_warnings(limits, waits, humans, t_out, t_total, chats, launches, errors, prs, now):
+    """Fixed threshold rules over measured numbers -> (list of {kod, metin, deger, esik}, count of warnings).
+
+    A rule whose limit is 0 is off. Nothing but numbers, fixed words and already whitelisted names goes into a text.
+    """
+    out = []
+    count = 0
+
+    def add(kod, kisa, metin, deger, esik):
+        out.append({"kod": kod, "kisa": KISA[kisa], "metin": metin, "deger": deger, "esik": esik})
+
+    lim = limits["bekleme_dk"]
+    if lim > 0:
+        long_waits = sorted((w for w in waits if w["sure_s"] >= lim * 60.0), key=lambda w: -w["sure_s"])
+        count += len(long_waits)
+        for w in long_waits[:MAX_WAIT_LINES]:
+            parts = ["Uzun bekleme: %s" % w["tur"]] + ([w["arac"]] if w["arac"] else []) + [fmt_dur(w["sure_s"])]
+            add("U1", "U1", " · ".join(parts), minutes(w["sure_s"]), lim)
+        if len(long_waits) > MAX_WAIT_LINES:
+            more = len(long_waits) - MAX_WAIT_LINES
+            add("U1", "U1", "ve %d bekleme daha" % more, more, lim)
+    lim = limits["dokunus"]
+    if lim > 0 and humans > lim:
+        count += 1
+        add("U2", "U2", "İnsan dokunuşu hedefin üstünde: %d (hedef: en çok %d)" % (humans, lim), humans, lim)
+    lim = limits["cikti_token"]
+    if lim > 0 and t_out > lim:
+        count += 1
+        add("U3", "U3", "Çıktı token'ı yüksek: %s (eşik %s)" % (fmt_int(t_out), fmt_int(lim)), t_out, lim)
+    lim = limits["toplam_token"]
+    if lim > 0 and t_total > lim:
+        count += 1
+        add("U3", "U3", "Toplam token yüksek: %s (eşik %s)" % (fmt_int(t_total), fmt_int(lim)), t_total, lim)
+    lim = limits["ileti"]
+    if lim > 0:
+        for ad, n_msg, n_compact in chats:
+            if n_msg > lim or n_compact >= 1:
+                count += 1
+                text = "Sohbet uzadı: %s %d ileti" % (ad, n_msg)
+                if n_compact:
+                    text += ", %d kez özetlendi" % n_compact
+                add("U4", "U4", text + "; yeni sohbete devir düşünülmeli", n_msg, lim)
+    lim = limits["ajan_tekrar"]
+    if lim > 0:
+        for kind, n in sorted(launches.items(), key=lambda kv: (-kv[1], kv[0] or "")):
+            if n > lim:
+                count += 1
+                add("U5", "U5a", "Aynı alt ajan %d kez başlatıldı: %s" % (n, kind or "alt ajan"), n, lim)
+    lim = limits["hata"]
+    if lim > 0 and errors > lim:
+        count += 1
+        add("U5", "U5b", "Hatalı araç çağrısı çok: %d" % errors, errors, lim)
+    for p in prs or []:
+        if p.get("hata"):
+            continue
+        failed = p["kontrol"]["kalan"]
+        if failed > 0:
+            count += 1
+            add("U6", "U6a", "Otomatik kontrollerde kırmızı: %d (PR #%d)" % (failed, p["no"]), failed, 0)
+        lim = limits["pr_gun"]
+        created = parse_ts(p.get("acildi"))
+        if lim > 0 and p["durum"] == "açık" and created is not None:
+            elapsed = (now - created).total_seconds() / 86400.0
+            if elapsed > lim:
+                count += 1
+                days = int(elapsed)
+                add("U6", "U6b", "Birleştirme isteği %d gündür açık (PR #%d)" % (days, p["no"]), days, lim)
+    return out, count
+
+
 # ---------------------------------------------------------------------------------------------------- analysis
 def tokens_by_model(messages):
     out = {}
@@ -448,29 +627,42 @@ def token_total(slot_map):
     return sum(slot[k] for slot in slot_map.values() for k, _ in TOKEN_KINDS)
 
 
-def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_adlari=False, adim=None):
+def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_adlari=False, adim=None, limits=None,
+               now=None):
+    limits = dict(DEFAULT_LIMITS, **(limits or {}))
+    now = now or datetime.now(timezone.utc)
+    unique, real = [], set()
+    for path in transcripts:                      # the same file given twice is one session
+        rp = os.path.realpath(path)
+        if rp not in real:
+            real.add(rp)
+            unique.append(path)
+    transcripts = unique
     threshold_s = idle_minutes * 60.0
     owners = {}
     files = []          # every parsed file: dict(fk, session, kind, res, ...)
     sessions = []
     for si, path in enumerate(transcripts, 1):
         main_res = parse_file(path, ("m", si), since, until, True, owners)
-        sess = {"no": si, "ad": "oturum-%d" % si, "main": main_res, "subs": []}
+        sess = {"no": si, "ad": "oturum-%d" % si, "main": main_res, "subs": [], "yol": path}
         sessions.append(sess)
         files.append(main_res)
     parent_uses = {}
     for sess in sessions:
         parent_uses.update(sess["main"]["tool_uses"])
+    sub_of = {}         # (main file key, launcher tool id) -> sub-agent file key
     for sess, path in zip(sessions, transcripts):
         for n, (sp, meta) in enumerate(find_subagent_files(path), 1):
             sres = parse_file(sp, ("s", sess["no"], n), since, until, False, owners)
             if not sres["events"]:
                 continue
             parent = parent_uses.get(meta.get("toolUseId")) if isinstance(meta.get("toolUseId"), str) else None
+            if isinstance(meta.get("toolUseId"), str):
+                sub_of[(("m", sess["no"]), meta["toolUseId"])] = ("s", sess["no"], n)
             cand = None
-            if parent and parent.get("subagent_type") and parent["subagent_type"] != "?":
+            if parent and parent.get("subagent_type"):
                 cand = parent["subagent_type"]
-            elif isinstance(meta.get("agentType"), str) and ident(meta["agentType"]) != "?":
+            elif agent_name(meta.get("agentType")):
                 cand = meta["agentType"]
             ts_all = [ev[0] for ev in sres["events"]]
             sess["subs"].append({
@@ -536,6 +728,9 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
 
     # merged timeline: active/waiting, wait classification by open tool calls
     open_calls = {}     # (file key, tool id) -> (opened at, label, launcher, message id)
+    last_idx = {}
+    for i, ev in enumerate(events):
+        last_idx[ev[1]] = i
     waits = []
     active = waiting = 0.0
     for i, (ts, fk, kind, payload) in enumerate(events):
@@ -547,9 +742,16 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
         elif kind == "result":
             for tid in payload or []:
                 open_calls.pop((fk, tid), None)
+                sub = sub_of.get((fk, tid))
+                if sub is not None:                  # the launcher is answered: the sub-agent's open calls are over
+                    for key in [k for k in open_calls if k[0] == sub]:
+                        del open_calls[key]
         elif kind == "human":
             for key in [k for k in open_calls if k[0] == fk]:
                 del open_calls[key]                  # a new human message ends the previous turn's open calls
+        if last_idx[fk] == i:
+            for key in [k for k in open_calls if k[0] == fk]:
+                del open_calls[key]                  # this file has no more events: a call without a result is an orphan
         if i + 1 == len(events):
             break
         nts, _, nkind, _ = events[i + 1]
@@ -596,6 +798,14 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
     t_out = sum(slot["cikti"] for slot in all_tokens.values())
     line = "Bu adım: %s iş + %s bekleme · %s · %d dokunuş" % (fmt_dur(active), fmt_dur(waiting), fmt_tok(t_total), humans)
 
+    launches = Counter()
+    errors = 0
+    for f in files:
+        errors += f["errors"]
+        for u in f["tool_uses"].values():
+            if u["launcher"]:
+                launches[u["subagent_type"]] += 1
+
     data = {
         "ozet": {
             "ilk": iso(first), "son": iso(last),
@@ -625,6 +835,7 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
         ],
         "oturumlar": [],
         "prler": None,
+        "uyarilar": [],
     }
     for s in sessions:
         data["oturumlar"].append({
@@ -647,6 +858,13 @@ def build_data(transcripts, prs, repo, idle_minutes, since, until, gh=None, tur_
     if prs:
         getter = gh or default_gh
         data["prler"] = [pr_summary(n, repo, getter) for n in prs]
+    chats = []
+    seen_msgs, seen_compact = set(), set()
+    for s in sessions:
+        n_msg, n_compact = session_overview(s["yol"], seen_msgs, seen_compact)
+        chats.append((s["ad"], n_msg, n_compact))
+    data["uyarilar"], data["ozet"]["uyari_sayisi"] = build_warnings(
+        limits, waits, humans, t_out, t_total, chats, launches, errors, data["prler"], now)
     return data
 
 
@@ -772,6 +990,7 @@ def render_md(data):
         "- Araç çağrıları (ana sohbet): %s" % count_line(Counter(o["arac_cagrilari_ana"])),
         "- Araç çağrıları (alt ajanlar): %s" % count_line(Counter(o["arac_cagrilari_alt_ajan"])),
     ]
+    out.append("- Uyarı sayısı: %d" % o["uyari_sayisi"])
     if multi:
         out.append("- %d oturum tek zaman çizelgesinde birleştirildi; aynı anda çalışan oturumların süresi toplanmaz."
                    % o["oturum_sayisi"])
@@ -791,6 +1010,13 @@ def render_md(data):
     out += ["```", ""]
     if o["ilerleme"]:
         out += ["Adım sayısı plandan gelir (`--adim`); \"tahmini bitiş\" ölçülmez, raporu yazan kendi tahminiyle ekler.", ""]
+
+    out += ["## Uyarılar", ""]
+    if data["uyarilar"]:
+        out += ["- %s" % cell(w["metin"]) for w in data["uyarilar"]]
+    else:
+        out.append("Uyarı yok.")
+    out.append("")
 
     out += ["## Turlar", ""]
     rows = [
@@ -893,10 +1119,22 @@ def build_parser():
                                                   "in the transcript, so the count is given here)")
     ap.add_argument("--tur-adlari", action="store_true",
                     help="name turns after mark_chapter titles (sanitised, 60 characters); default: Tur n")
+    for flag, key, kind, what in (
+            ("--uyari-bekleme-dk", "bekleme_dk", float, "a single wait this long (minutes) or longer"),
+            ("--uyari-dokunus", "dokunus", int, "more human messages than this in the interval"),
+            ("--uyari-cikti-token", "cikti_token", int, "more output tokens than this in the interval"),
+            ("--uyari-toplam-token", "toplam_token", int, "a four-kind token total above this in the interval"),
+            ("--uyari-ileti", "ileti", int, "a session with more assistant messages than this (whole transcript) or "
+                                            "with a compaction summary"),
+            ("--uyari-ajan-tekrar", "ajan_tekrar", int, "the same sub-agent type started more often than this"),
+            ("--uyari-hata", "hata", int, "more tool results flagged as errors than this"),
+            ("--uyari-pr-gun", "pr_gun", float, "a PR open more than this many days (only with --pr)")):
+        ap.add_argument(flag, dest="uyari_" + key, type=kind, default=DEFAULT_LIMITS[key], metavar="N",
+                        help="warn on %s (default %s; 0 switches the rule off)" % (what, DEFAULT_LIMITS[key]))
     return ap
 
 
-def main(argv=None, gh=None, stdout=None):
+def main(argv=None, gh=None, stdout=None, now=None):
     args = build_parser().parse_args(argv)
     out = stdout or sys.stdout
     if args.idle_minutes <= 0:
@@ -909,6 +1147,10 @@ def main(argv=None, gh=None, stdout=None):
         return 2
     if args.until and _DATE_ONLY.match(args.until.strip()):
         until = until + timedelta(days=1) - timedelta(microseconds=1)
+    limits = {k[len("uyari_"):]: v for k, v in vars(args).items() if k.startswith("uyari_")}
+    if any(not math.isfinite(v) or v < 0 for v in limits.values()):
+        print("--uyari-* limits must be 0 (off) or a positive finite number", file=sys.stderr)
+        return 2
     adim = None
     if args.adim:
         m = re.fullmatch(r"(\d+)/(\d+)", args.adim.strip())
@@ -922,7 +1164,7 @@ def main(argv=None, gh=None, stdout=None):
             print("transcript not found", file=sys.stderr)
             return 2
     data = build_data(paths, args.pr or [], args.repo, args.idle_minutes, since, until, gh=gh,
-                      tur_adlari=args.tur_adlari, adim=adim)
+                      tur_adlari=args.tur_adlari, adim=adim, limits=limits, now=now)
     if args.format == "json":
         text = json.dumps(data, ensure_ascii=False, indent=2)
     else:
