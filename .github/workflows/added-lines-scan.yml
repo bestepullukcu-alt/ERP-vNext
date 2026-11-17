@@ -1,0 +1,32 @@
+name: added-lines-scan
+
+# WARNING ONLY. The repository is public: this job reads the lines a pull request ADDS (git diff base...head, never the
+# content already on main) and the names of the files it adds, and annotates possible credentials, private key files,
+# logs / test results, absolute home paths and personal e-mail addresses (scripts/scan_added_lines.py). A finding shows
+# only path, line, kind and a masked hint, never the value. The script exits 0 whatever it finds, and also when git
+# cannot compute the diff (it prints a warning instead), so this job never fails a pull request; it is not a required
+# check. Same rules as every workflow here (CiServiceTestsGuardTests): read-only token, no stored credential is read,
+# actions pinned to a COMMIT SHA, nothing that turns a red step green.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  added-lines-scan:
+    name: added-lines-scan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan added lines (warning only)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/scan_added_lines.py --base "$BASE_SHA" --head "$HEAD_SHA"
