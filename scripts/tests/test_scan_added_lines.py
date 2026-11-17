@@ -83,7 +83,22 @@ POSITIVE = {
         (f'"Default": "Host=localhost;Database=app;Username=dev;Password={V}"', "conn-password", "notice"),
     # a provider token under tests stays a warning
     "services/Svc/tests/TokenTests.cs": (f'// {GH}', "github-token", "warning"),
+    "scripts/tests/test_keys.py": (f'KEY = "{AWS}"', "aws-key", "warning"),
+    "web/src/session.spec.ts": (f'const t = "{JWT}";', "jwt", "warning"),
+    # fake home paths / e-mail addresses in a test location are deliberate fixtures: notice (the same strings outside a
+    # test location - cases/home_*.md, cases/*mail.cs above - stay warnings)
+    "scripts/tests/test_fixture_paths.py": (f'ROOT = "/Users/{HOME_NAME}/repo"', "home-path", "notice"),
+    "src/Svc.UnitTests/PathsTests.cs": (f'var p = @"C:\\Users\\{HOME_NAME}\\repo";', "home-path", "notice"),
+    "services/Svc/Svc.Api.Tests/Mail.cs": (f'Email = "{FREEMAIL}",', "email-freemail", "notice"),
+    "web/src/login.test.js": (f'const mail = "{CORPMAIL}";', "email", "notice"),
+    "web/src/IntegrationTests/home.md": (f'"/home/{HOME_NAME}/work"', "home-path", "notice"),
+    "web/src/MailerTests.cs": (f'To = "{CORPMAIL}";', "email", "notice"),
+    # not test locations: "contests" is not "tests", "test_x.md" is not test_*.py
+    "docs/contests/home.md": (f'ran /Users/{HOME_NAME}/repo/x.sh', "home-path", "warning"),
+    "docs/test_notes.md": (f'Email = "{FREEMAIL}",', "email-freemail", "warning"),
 }
+FIXTURE_DOWNGRADES = [p for p, (_, k, sev) in POSITIVE.items() if k in ("home-path", "email", "email-freemail")
+                      and sev == "notice"]
 NEW_FILES = {
     ".env": ("env-file", f"API_KEY={V}\n"),
     "svc/.env.production": ("env-file", "X=1\n"),
@@ -211,7 +226,7 @@ class AddedLinesScanTests(unittest.TestCase):
 
     def test_every_family_has_a_message_and_a_case(self) -> None:
         kinds = {k for _, k, _ in POSITIVE.values()} | {k for k, _ in NEW_FILES.values()}
-        self.assertEqual(set(scan.MESSAGES), kinds)
+        self.assertEqual(set(scan.MESSAGES), kinds | {scan.NAME_KIND})  # person-name: NameCheckTests
 
     def test_sabotage_switching_a_family_off_turns_its_test_red(self) -> None:
         for family in scan.FAMILIES:
@@ -312,6 +327,40 @@ class AddedLinesScanTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 self.check_line_case("services/Svc/tests/FooTests.cs")
 
+    def check_fixture_downgrades(self) -> None:
+        self.assertGreaterEqual(len(FIXTURE_DOWNGRADES), 6)
+        for path in FIXTURE_DOWNGRADES:  # no subTest: a sabotage must see the AssertionError
+            self.check_line_case(path)
+            self.assertFalse([f for f in self.findings() if f.path == path and f.severity == "warning"], path)
+
+    def test_fixture_home_paths_and_emails_in_test_locations_are_notices(self) -> None:
+        self.check_fixture_downgrades()
+
+    def test_the_same_strings_outside_tests_stay_warnings(self) -> None:
+        for path in ("cases/home_mac.md", "cases/home_linux.md", "cases/home_win.md", "cases/freemail.cs",
+                     "cases/corpmail.cs", "docs/contests/home.md", "docs/test_notes.md"):
+            with self.subTest(path=path):
+                self.check_line_case(path)
+
+    def test_secret_shapes_in_test_locations_keep_the_warning(self) -> None:
+        for path in ("services/Svc/tests/TokenTests.cs", "scripts/tests/test_keys.py", "web/src/session.spec.ts"):
+            with self.subTest(path=path):
+                self.check_line_case(path)
+
+    def test_sabotage_without_the_fixture_downgrade_the_fixtures_are_warnings(self) -> None:
+        with mock.patch.object(scan, "FIXTURE_KINDS", ()):
+            with self.assertRaises(AssertionError):
+                self.check_fixture_downgrades()
+
+    def test_test_location_names(self) -> None:
+        yes = ["tests/a.cs", "scripts/tests/x.py", "a/Svc.Tests/b.cs", "a/UnitTests/b.cs", "a/test_x.py", "a/FooTests.cs",
+               "a/b.test.ts", "a/b.spec.js", "a/fixtures/s.json", "test/x.md"]
+        no = ["docs/contests/a.md", "a/latest/b.cs", "a/test_x.md", "src/attest.py", "a/b.cs", "a/Tests.md"]
+        for path in yes:
+            self.assertTrue(scan.is_test_path(path), path)
+        for path in no:
+            self.assertFalse(scan.is_test_path(path), path)
+
     # --------------------------------------------------------------------------------------------------- output
     def test_output_has_annotations_and_never_a_secret_value(self) -> None:
         summary = os.path.join(self.root, "summary.md")
@@ -402,6 +451,246 @@ class AddedLinesScanTests(unittest.TestCase):
         self.assertEqual("a\tb.txt", scan.unquote_path('"a\\tb.txt"'))
         self.assertEqual("ç.txt", scan.unquote_path('"\\303\\247.txt"'))
         self.assertEqual("plain.txt", scan.unquote_path("plain.txt"))
+
+
+# ------------------------------------------------------------------------------------------- names (synthetic only)
+# Invented placeholder "names": none of them is a real person. "Ad Soyad" (two tokens), a 3-letter one, one with Turkish
+# letters, one with dotted / dotless i, one written as a single word.
+N_PAIR = "Ad Soyad"
+N_SHORT3 = "Qaz"
+N_TR = "Şablonöğe"
+N_I = "İpsizıl"
+N_ONE = "ornekkisi"
+NAMES = [N_PAIR, N_SHORT3, N_TR, N_I, N_ONE]
+NAMES_ENV_VALUE = "\n".join([N_PAIR, N_SHORT3]) + "," + ",".join([N_TR, N_I, N_ONE])
+PADDING = ["Dolguadbir", "Dolguadiki", "Dolguaduc", "Dolguaddort", "Dolguadbes"]  # never in the diff
+# Every string about the list that must never be printed: entries, their folded / upper / lower forms, the raw value.
+NAME_SENTINELS = sorted({v for n in NAMES + PADDING for v in (n, n.lower(), n.upper(), scan.fold(n))
+                         if len(v) >= 3} | {NAMES_ENV_VALUE})
+
+NAME_CASES = {  # path -> added line that must give a person-name finding on line 1
+    "names/dot.cs": 'var u = "ad.soyad";',
+    "names/snake.py": "ad_soyad = 1",
+    "names/kebab.md": "see ad-soyad here",
+    "names/camel.ts": "const adSoyad = load();",
+    "names/pascal.cs": "class AdSoyadReport {}",
+    "names/space.md": "Hazırlayan: AD SOYAD",
+    "names/joined.md": "user adsoyad85 logged in",
+    "names/mail.md": "write to ad.soyad@corp.example.org",
+    "names/path.md": "/data/ad/soyad/report.txt",
+    "names/short3_dot.md": "qaz.soyad",
+    "names/short3_digit.md": "user qaz1",
+    "names/short3_upper.md": "QAZ",
+    "names/tr_upper_ascii.md": "SABLONOGE",
+    "names/tr_lower.md": "şablonöğe",
+    "names/tr_mixed.md": "x_ŞABLONÖĞE_y",
+    "names/i_upper.md": "IPSIZIL",
+    "names/i_dotless.md": "ipsızil",
+    "names/i_dotted.md": "İPSİZİL",
+    "names/one_camel.ts": "let ornekKisi = 1;",
+    "names/one_plain.md": "ORNEKKISI",
+    "services/Svc/tests/PeopleTests.cs": 'var user = "ad.soyad";',  # a name in a test file: a warning
+}
+NAME_NEGATIVE = {  # a listed name only INSIDE a longer word: no finding
+    "neg/longer3.md": "qazan qazanlar Qazma aqazb",
+    "neg/longer_pair.md": "adsoyadi soyadlar badsoyad",
+    "neg/longer_tr.md": "şablonöğeler sablonogex",
+    "neg/longer_one.md": "ornekkisiler xornekkisi",
+    "neg/short.md": "ab x yz",
+}
+NAME_NEW_FILE = "people/ad_soyad.txt"
+
+
+class NameCheckTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.root = tempfile.mkdtemp(prefix="scan-names-")
+        cls.outside = tempfile.mkdtemp(prefix="scan-names-list-")
+        r = cls.root
+        git(r, "init", "-q", "-b", "main")
+        write(r, "base.md", "qaz.soyad on the base must not fire\n")
+        git(r, "add", "-A")
+        git(r, "commit", "-q", "-m", "base")
+        cls.base = git(r, "rev-parse", "HEAD")
+        for path, line in {**NAME_CASES, **NAME_NEGATIVE}.items():
+            write(r, path, line + "\n")
+        write(r, NAME_NEW_FILE, "nothing personal\n")
+        git(r, "add", "-A")
+        git(r, "commit", "-q", "-m", "head")
+        cls.head = git(r, "rev-parse", "HEAD")
+        cls.added, cls.new_files = scan.collect(r, cls.base, cls.head)
+        cls.names_file = os.path.join(cls.outside, "names.txt")
+        write(cls.outside, "names.txt", "\n".join(NAMES) + "\n")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        shutil.rmtree(cls.root, ignore_errors=True)
+        shutil.rmtree(cls.outside, ignore_errors=True)
+
+    def matcher(self, names: list[str] | None = None) -> scan.NameMatcher:
+        entries, _ = scan.parse_names("\n".join(NAMES if names is None else names))
+        return scan.NameMatcher(entries)
+
+    def name_findings(self, names: list[str] | None = None) -> list[scan.Finding]:
+        return [f for f in scan.scan(self.added, self.new_files, names=self.matcher(names)) if f.kind == scan.NAME_KIND]
+
+    def run_main(self, *extra: str, env: dict | None = None, head: str | None = None) -> tuple[int, str, str]:
+        fd, summary = tempfile.mkstemp(suffix=".md", dir=self.outside)
+        os.close(fd)
+        out = io.StringIO()
+        code = scan.main(["--base", self.base, "--head", head or self.head, "--repo", self.root, "--summary", summary,
+                          *extra], out=out, env={} if env is None else env)
+        with open(summary, encoding="utf-8") as fh:
+            return code, out.getvalue(), fh.read()
+
+    def assert_no_list_leak(self, *texts: str) -> None:
+        for text in texts:
+            for value in NAME_SENTINELS:
+                self.assertNotIn(value, text)
+
+    # ---------------------------------------------------------------------------------------------- matching forms
+    def test_every_form_is_found(self) -> None:
+        got = {(f.path, f.line, f.severity) for f in self.name_findings()}
+        for path in NAME_CASES:
+            with self.subTest(path=path):
+                self.assertIn((path, 1, "warning"), got)
+
+    def test_no_match_inside_a_longer_word(self) -> None:
+        self.assertEqual([], [f.path for f in self.name_findings() if f.path.startswith("neg/")])
+
+    def test_a_name_in_a_test_file_is_a_warning(self) -> None:
+        got = [f.severity for f in self.name_findings() if f.path == "services/Svc/tests/PeopleTests.cs"]
+        self.assertEqual(["warning"], got)
+
+    def test_a_new_file_name_is_checked(self) -> None:
+        self.assertIn((NAME_NEW_FILE, 0), {(f.path, f.line) for f in self.name_findings()})
+
+    def test_content_on_the_base_does_not_fire(self) -> None:
+        self.assertFalse([f for f in self.name_findings() if f.path == "base.md"])
+
+    def test_turkish_letters_fold_both_ways(self) -> None:
+        # list written with Turkish letters, text without - and the reverse
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names(N_TR)[0]).find("x SABLONOGE y"))
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("sablonoge")[0]).find("x ŞABLONÖĞE y"))
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("ipsizil")[0]).find("İPSİZİL"))
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("IPSIZIL")[0]).find("ipsızil"))
+        self.assertIsNotNone(scan.NameMatcher(scan.parse_names("çağ.öğün")[0]).find("CAG_OGUN"))
+        self.assertEqual(scan.fold("İıIiŞşĞğÜüÖöÇç"), "iiiissgguuoocc")
+
+    def test_short_entries_are_ignored_and_said_once(self) -> None:
+        entries, short = scan.parse_names("ab\nx, yz ,a.b\n" + N_SHORT3)
+        self.assertTrue(short)
+        self.assertEqual([("qaz",)], entries)
+        self.assertFalse([f for f in self.name_findings(["ab", "x", "yz"]) if f.path == "neg/short.md"])
+        code, text, _ = self.run_main(env={"EES_SCAN_NAMES": "ab,x,yz," + N_SHORT3})
+        self.assertEqual(0, code)
+        self.assertEqual(1, text.count("karakterden kısa ad girişleri yok sayıldı"))
+        self.assertIn(scan.NAMES_RAN, text)
+
+    def test_only_short_entries_means_the_check_did_not_run(self) -> None:
+        _, text, summary = self.run_main(env={"EES_SCAN_NAMES": "ab, x"})
+        self.assertIn(scan.NAMES_NOT_RUN, text)
+        self.assertIn(scan.NAMES_NOT_RUN, summary)
+        self.assertNotIn("[person-name]", text)
+
+    # ---------------------------------------------------------------------------------------------- list sources
+    def test_without_a_list_one_line_says_the_name_check_did_not_run(self) -> None:
+        code, text, summary = self.run_main()
+        self.assertEqual(0, code)
+        self.assertEqual(1, text.count(scan.NAMES_NOT_RUN))
+        self.assertIn("ÇALIŞMADI", text)
+        self.assertIn(scan.NAMES_NOT_RUN, summary)
+        self.assertNotIn("[person-name]", text)
+        _, empty_env, _ = self.run_main(env={"EES_SCAN_NAMES": ""})  # an unset Actions secret arrives empty
+        self.assertIn(scan.NAMES_NOT_RUN, empty_env)
+
+    def test_environment_list_runs_the_check(self) -> None:
+        code, text, summary = self.run_main(env={"EES_SCAN_NAMES": NAMES_ENV_VALUE})
+        self.assertEqual(0, code)
+        self.assertIn(scan.NAMES_RAN, text)
+        self.assertIn("[person-name]", text)
+        self.assertIn("| names/dot.cs | 1 | person-name | warning | uzunluk 7 |", summary)
+        self.assertIn(f"| {NAME_NEW_FILE} | - | person-name | warning | dosya adı |", summary)
+
+    def test_names_file_outside_the_repository_runs_the_check(self) -> None:
+        code, text, summary = self.run_main("--names-file", self.names_file)
+        self.assertEqual(0, code)
+        self.assertIn(scan.NAMES_RAN, text)
+        self.assertIn("| names/tr_lower.md | 1 | person-name | warning |", summary)
+        self.assert_no_list_leak(text, summary)
+
+    def test_names_file_inside_the_repository_is_refused(self) -> None:
+        inside = os.path.join(self.root, "names", "list.txt")
+        write(self.root, "names/list.txt", "\n".join(NAMES) + "\n")
+        try:
+            code, text, summary = self.run_main("--names-file", inside)
+            self.assertEqual(0, code)
+            self.assertIn("Ad listesi dosyası deponun içinde: reddedildi ve okunmadı", text)
+            self.assertIn(scan.NAMES_NOT_RUN, text)
+            self.assertNotIn("[person-name]", text)
+            self.assertNotIn("person-name", summary)
+            self.assert_no_list_leak(text, summary)
+            # a path through a symlink to the inside is refused too
+            link = os.path.join(self.outside, "link.txt")
+            os.symlink(inside, link)
+            try:
+                _, via_link, _ = self.run_main("--names-file", link)
+                self.assertIn("deponun içinde", via_link)
+            finally:
+                os.remove(link)
+        finally:
+            os.remove(inside)
+
+    def test_sabotage_without_the_inside_check_the_repository_file_is_read(self) -> None:
+        with mock.patch.object(scan, "inside", lambda path, root: False):
+            with self.assertRaises(AssertionError):
+                self.test_names_file_inside_the_repository_is_refused()
+
+    # ---------------------------------------------------------------------------------------------- masked output
+    def test_name_output_is_masked_and_independent_of_the_list_size(self) -> None:
+        _, text, summary = self.run_main(env={"EES_SCAN_NAMES": NAMES_ENV_VALUE})
+        self.assert_no_list_leak(text, summary)
+        padded = NAMES_ENV_VALUE + "\n" + "\n".join(PADDING)
+        _, text2, summary2 = self.run_main(env={"EES_SCAN_NAMES": padded})
+        self.assertEqual(text, text2)  # a longer list changes nothing printed: its size is not shown
+        self.assertEqual(summary, summary2)
+
+    def test_sabotage_a_leaking_name_hint_is_caught(self) -> None:
+        real = scan.scan_line
+
+        def leaky(path, line_no, text, names=None):
+            return [scan.Finding(f.path, f.line, f.kind, f.severity, text if f.kind == scan.NAME_KIND else f.hint)
+                    for f in real(path, line_no, text, names)]
+
+        with mock.patch.object(scan, "scan_line", leaky):
+            with self.assertRaises(AssertionError):
+                self.test_name_output_is_masked_and_independent_of_the_list_size()
+
+    def test_error_paths_never_show_the_list(self) -> None:
+        env = {"EES_SCAN_NAMES": NAMES_ENV_VALUE}
+        _, git_fail, _ = self.run_main(env=env, head="0" * 40)
+        self.assertIn("Tarama çalışamadı", git_fail)
+        with mock.patch.object(scan, "scan", side_effect=RuntimeError(NAMES_ENV_VALUE)):
+            _, internal, _ = self.run_main(env=env)
+        self.assertIn("iç hata: RuntimeError", internal)
+        missing = os.path.join(self.outside, "no-such-" + N_ONE + ".txt")
+        _, unreadable, _ = self.run_main("--names-file", missing, env=env)
+        self.assertIn("Ad listesi dosyası okunamadı", unreadable)
+        out = io.StringIO()
+        self.assertEqual(0, scan.main(["--base", self.base, "--names-file", self.names_file, "--bogus", N_ONE],
+                                      out=out, env=env))
+        self.assertIn("geçersiz argüman", out.getvalue())
+        self.assert_no_list_leak(git_fail, internal, unreadable, out.getvalue())
+        # the command line: stdout and stderr, list in the environment and in a file, a usage error included
+        for args in (["--base", self.base, "--head", self.head], ["--base", self.base, "--head", "0" * 40],
+                     ["--base", self.base, "--head", self.head, "--names-file", self.names_file],
+                     ["--base", self.base, "--names-file", self.names_file, "--unknown", N_ONE]):
+            with self.subTest(args=args):
+                result = subprocess.run([sys.executable, SCRIPT, *args, "--repo", self.root, "--summary", ""],
+                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                                        env=dict(os.environ, EES_SCAN_NAMES=NAMES_ENV_VALUE))
+                self.assertEqual(0, result.returncode)
+                self.assert_no_list_leak(result.stdout, result.stderr)
 
 
 if __name__ == "__main__":

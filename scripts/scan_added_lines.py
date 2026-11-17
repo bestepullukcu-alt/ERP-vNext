@@ -1,7 +1,22 @@
 #!/usr/bin/env python3
-"""Added-lines scan - a WARNING-ONLY name / secret check for pull requests (the repository is public).
+"""Added-lines scan - a WARNING-ONLY check of what a pull request adds (the repository is public).
 
-    python3 scripts/scan_added_lines.py --base <sha> --head <sha> [--repo .] [--summary file.md]
+What it checks: secret shapes (tokens, keys, passwords in connection strings / URLs / assignments), risky new file names
+(.env, key / certificate, .log, .trx), personal folder paths (/Users/<name>/, /home/<name>/, C:\\Users\\<name>), e-mail
+addresses outside an allow-list and - ONLY when a list of names is supplied from outside the repository - personal
+names. It never blocks: the exit code is always 0.
+
+    python3 scripts/scan_added_lines.py --base <sha> --head <sha> [--repo .] [--summary file.md] [--names-file <path>]
+
+Names (optional): the environment variable EES_SCAN_NAMES (entries separated by newlines or commas) and / or
+--names-file <path> (one or more entries per line, same separators). A names file inside the repository is refused
+(the list must never be committed). Entries shorter than 3 letters / digits are ignored. Matching is on whole tokens,
+case-insensitive, Turkish letters folded on both sides (ı/İ->i, ş->s, ğ->g, ü->u, ö->o, ç->c); a line is split into
+tokens at every non-letter / non-digit character (., _, -, /, @, spaces ...), at camelCase boundaries and between
+letters and digits, so `ad.soyad`, `ad_soyad`, `adSoyad`, an e-mail local part or a path segment are found, but a name
+inside a longer word is not. A multi-word entry matches the same tokens in a row. A name finding shows only path, line
+and a masked length - never the matched text, the list or its size - and is a warning in test files too. Without a list
+the scan prints one line saying the name check did NOT run.
 
 Scope: only what the pull request ADDS. `git diff --no-renames -U0 base...head` is read; the added lines and the names
 of newly added files are scanned, never the content already on the base. Two noise cuts keep moved content quiet
@@ -27,8 +42,11 @@ Allow-list (noise): hex digests (40 / 64), identifier-shaped values (CamelCase, 
 references (${, $(, {{, {name}, <...>, $VAR, %VAR%, Configuration[, Environment., process.env), prose (a value with spaces),
 paths / plain URLs, masked values (***), placeholder words (pass, password, secret, changeme).
 Vendored paths are skipped (wwwroot/lib/**, frontend/_Reference/**, wwwroot/assets/json/*).
+  person-name  a token sequence equal to an entry of the supplied names list (see "Names" above)
 Downgraded to notice: password / secret literals in appsettings*.Development.json on a line with a development / local
-marker, and under a tests / fixtures directory (or a *.Tests project).
+marker; password / secret literals, home paths and e-mail addresses in a test location (a tests / test / fixtures
+directory, a path segment ending in Tests or .Tests, a file named test_*.py, *Tests.cs, *.test.* or *.spec.*) - test
+fixtures use fake ones on purpose. Provider-shaped secrets and person-name findings keep the warning level everywhere.
 Stdlib only. Tests: scripts/tests/test_scan_added_lines.py.
 """
 
@@ -39,6 +57,7 @@ import os
 import re
 import subprocess
 import sys
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 
@@ -66,7 +85,9 @@ MESSAGES = {
     "home-path": "Mutlak ev dizini yolu (kişisel kullanıcı adı)",
     "email-freemail": "Ücretsiz posta sağlayıcısında e-posta adresi",
     "email": "İzin listesinde olmayan alan adında e-posta adresi",
+    "person-name": "Kişi adı (depo dışından verilen listeden)",
 }
+NAME_KIND = "person-name"  # not a FAMILIES entry: its "pattern" is the supplied list (NameMatcher)
 
 # ------------------------------------------------------------------------------------------------ pattern families
 # Each family maps a kind to its regexes; group "v" (when present) is the value the allow-list and the length hint read.
@@ -116,6 +137,7 @@ SECRET_KINDS = ("private-key", "github-token", "aws-key", "slack-token", "google
 PROVIDER_KINDS = ("private-key", "github-token", "aws-key", "slack-token", "google-api-key", "stripe-live-key",
                   "anthropic-key", "jwt")
 LITERAL_KINDS = ("conn-password", "url-credentials", "secret-assignment")  # downgradable password / secret literals
+FIXTURE_KINDS = ("home-path", "email", "email-freemail")  # fake ones are deliberate test data: notice in test locations
 
 ALLOWED_HOME_NAMES = {"user", "runner", "someone"}
 FREEMAIL_LABELS = {"gmail", "googlemail", "outlook", "hotmail", "yahoo", "ymail", "icloud", "proton", "protonmail",
@@ -142,7 +164,13 @@ PATH_OR_URL = re.compile(r"^(?:/|\./|\.\./|~/|https?://)")
 DEV_SETTINGS = re.compile(r"(?i)(?:^|/)appsettings(?:\.[\w-]+)*\.development\.json$")
 DEV_MARKER = re.compile(r"(?i)dev|local|test|sample|example|changeme|placeholder")
 SKIP_PATH = re.compile(r"(?:^|/)wwwroot/lib/|^frontend/_Reference/|(?:^|/)wwwroot/assets/json/[^/]+$")
-TEST_PATH = re.compile(r"(?i)(?:^|/)(?:tests?|fixtures)/|(?:^|/)[^/]+\.tests?/")
+# A test location: a tests / test / fixtures directory (scripts/tests/ included), a *.Tests / *.Test project, a segment
+# ending in "Tests" (UnitTests/), a file test_*.py, *Tests.cs, *.test.* or *.spec.*. "Tests" is case-sensitive so that
+# words like "contests/" are not test folders.
+TEST_PATH = re.compile(
+    r"(?i:(?:^|/)(?:tests?|fixtures)/|(?:^|/)[^/]+\.tests?/|(?:^|/)test_[^/]*\.py$|(?:^|/)[^/]+\.(?:test|spec)\.[^/]+$)"
+    r"|(?:^|/)[^/]*Tests/|(?:^|/)[^/]*Tests\.cs$"
+)
 NOREPLY = re.compile(r"(?i)^(?:no-?reply|do-?not-?reply)(?:[+.].*)?$|noreply")
 
 
@@ -281,6 +309,141 @@ def drop_moved_files(added: list[tuple[str, str]], deleted_blobs: set[str]) -> l
     return [path for path, blob in added if blob not in deleted_blobs]
 
 
+# ------------------------------------------------------------------------------------------------- names (optional)
+NAMES_ENV = "EES_SCAN_NAMES"
+MIN_NAME_CHARS = 3
+TURKISH_FOLD = str.maketrans({"ı": "i", "İ": "i", "I": "i", "ş": "s", "Ş": "s", "ğ": "g", "Ğ": "g", "ü": "u", "Ü": "u",
+                              "ö": "o", "Ö": "o", "ç": "c", "Ç": "c"})
+ALNUM_RUN = re.compile(r"[^\W_]+")  # letters / digits (Unicode); every other character splits
+
+
+def fold(piece: str) -> str:
+    """Case-insensitive, Turkish letters (and other combining accents) folded: 'Şükrü' and 'SUKRU' -> 'sukru'."""
+    decomposed = unicodedata.normalize("NFKD", piece.translate(TURKISH_FOLD))
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch)).casefold()
+
+
+def split_camel(run: str) -> list[str]:
+    """One letter / digit run -> its pieces at camelCase (adSoyad, XMLParser) and letter / digit boundaries."""
+    pieces: list[str] = []
+    start = 0
+    for i in range(1, len(run)):
+        prev, cur = run[i - 1], run[i]
+        nxt = run[i + 1] if i + 1 < len(run) else ""
+        if ((prev.islower() and cur.isupper()) or (prev.isdigit() != cur.isdigit())
+                or (prev.isupper() and cur.isupper() and nxt.islower())):
+            pieces.append(run[start:i])
+            start = i
+    pieces.append(run[start:])
+    return pieces
+
+
+def name_tokens(text: str) -> list[tuple[str, int, int]]:
+    """Text -> [(folded token, original length, run number)] in order; pieces of one letter / digit run share a number."""
+    out: list[tuple[str, int, int]] = []
+    for run_no, run in enumerate(ALNUM_RUN.findall(unicodedata.normalize("NFC", text))):
+        for piece in split_camel(run):
+            out.append((fold(piece), len(piece), run_no))
+    return out
+
+
+MAX_JOIN = 6  # pieces of one run joined when comparing with an entry written as one word
+
+
+class NameMatcher:
+    """Whole-token matching of a names list. A multi-token entry ('Ad Soyad', 'ad.soyad') matches those tokens in a row;
+    an entry also matches whole pieces of ONE identifier joined ('adSoyad', 'AdSoyad85' for 'Ad Soyad' or 'adsoyad').
+    A match always starts and ends on a token boundary, so a name inside a longer word never matches."""
+
+    def __init__(self, entries: list[tuple[str, ...]]) -> None:
+        self._by_first: dict[str, list[tuple[str, ...]]] = {}
+        self._joined: set[str] = set()
+        for entry in entries:
+            self._by_first.setdefault(entry[0], []).append(entry)
+            self._joined.add("".join(entry))
+
+    def find(self, text: str) -> int | None:
+        """The original length of the first matched name in text, or None. Never returns the text itself."""
+        tokens = name_tokens(text)
+        words = [t for t, _, _ in tokens]
+        for i, word in enumerate(words):
+            for entry in self._by_first.get(word, ()):
+                if tuple(words[i:i + len(entry)]) == entry:
+                    return sum(n for _, n, _ in tokens[i:i + len(entry)])
+            joined, length = "", 0
+            for j in range(i, min(i + MAX_JOIN, len(tokens))):
+                if tokens[j][2] != tokens[i][2]:
+                    break
+                joined += tokens[j][0]
+                length += tokens[j][1]
+                if joined in self._joined:
+                    return length
+        return None
+
+
+def parse_names(raw: str) -> tuple[list[tuple[str, ...]], bool]:
+    """Raw list text -> (entries as folded token tuples, whether any entry was ignored as too short)."""
+    entries: list[tuple[str, ...]] = []
+    short = False
+    for item in re.split(r"[\n,]", raw):
+        item = item.strip()
+        if not item:
+            continue
+        tokens = tuple(t for t, _, _ in name_tokens(item))
+        if sum(len(t) for t in tokens) < MIN_NAME_CHARS:
+            short = True
+            continue
+        entries.append(tokens)
+    return entries, short
+
+
+def repo_roots(repo: str) -> list[str]:
+    """The working tree, its top level and the main working tree (a linked worktree's shared clone)."""
+    roots = {os.path.realpath(repo)}
+    for args in (("rev-parse", "--show-toplevel"), ("rev-parse", "--path-format=absolute", "--git-common-dir")):
+        try:
+            value = git(repo, *args).decode("utf-8", "replace").strip()
+        except (GitError, OSError):
+            continue
+        if value:
+            path = os.path.realpath(value)
+            roots.add(os.path.dirname(path) if args[-1] == "--git-common-dir" else path)
+    return sorted(roots)
+
+
+def inside(path: str, root: str) -> bool:
+    try:
+        return os.path.commonpath([path, root]) == root
+    except ValueError:  # different drives
+        return False
+
+
+def load_names(env_value: str | None, names_file: str | None, repo: str, out) -> NameMatcher | None:
+    """The supplied list (environment and / or file outside the repository) -> a matcher, or None when no usable list.
+    Messages never carry an entry, the list size or the file's path."""
+    raw = env_value or ""
+    if names_file:
+        real = os.path.realpath(names_file)
+        if any(inside(real, root) for root in repo_roots(repo)):
+            print("::warning title=added-lines-scan::Ad listesi dosyası deponun içinde: reddedildi ve okunmadı. "
+                  "Listeyi depo dışında tutun (--names-file depo dışı bir yol olmalı).", file=out)
+        else:
+            try:
+                with open(real, encoding="utf-8-sig") as fh:
+                    raw += "\n" + fh.read()
+            except (OSError, UnicodeError):
+                print("::warning title=added-lines-scan::Ad listesi dosyası okunamadı.", file=out)
+    entries, short = parse_names(raw)
+    if short:
+        print(f"::notice title=added-lines-scan::{MIN_NAME_CHARS} karakterden kısa ad girişleri yok sayıldı.", file=out)
+    return NameMatcher(entries) if entries else None
+
+
+NAMES_NOT_RUN = ("Kişi adı denetimi ÇALIŞMADI: kullanılabilir ad listesi verilmedi (EES_SCAN_NAMES ya da --names-file). "
+                 "Yeşil sonuç 'kişi adı yok' demek değildir.")
+NAMES_RAN = "Kişi adı denetimi çalıştı (liste depo dışından)."
+
+
 # ----------------------------------------------------------------------------------------------------- the checks
 def allowed_value(value: str) -> bool:
     v = value.strip()
@@ -302,16 +465,22 @@ def email_kind(local: str, domain: str) -> str | None:
     return "email"
 
 
-def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
+def is_test_path(path: str) -> bool:
+    return bool(TEST_PATH.search(path))
+
+
+def scan_line(path: str, line_no: int, text: str, names: NameMatcher | None = None) -> list[Finding]:
     found: dict[str, Finding] = {}
     dev_line = bool(DEV_SETTINGS.search(path)) and bool(DEV_MARKER.search(text))
-    test_path = bool(TEST_PATH.search(path))
+    test_path = is_test_path(path)
 
     def add(kind: str, hint: str) -> None:
         if kind in found:
             return
         severity = WARNING
         if kind in LITERAL_KINDS and (dev_line or test_path):
+            severity = NOTICE
+        elif kind in FIXTURE_KINDS and test_path:
             severity = NOTICE
         found[kind] = Finding(path, line_no, kind, severity, hint)
 
@@ -353,6 +522,11 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
             kind = email_kind(m.group("local"), m.group("v"))
             if kind:
                 add(kind, f"uzunluk {len(m.group(0))}")
+
+    if names is not None:
+        length = names.find(text)
+        if length is not None:
+            add(NAME_KIND, f"uzunluk {length}")  # a warning everywhere: a real name in a fixture is the case to catch
     return list(found.values())
 
 
@@ -363,8 +537,10 @@ def file_kind(path: str) -> str | None:
     return None
 
 
-def scan(added: list[tuple[str, int, str]], new_files: list[str], stats: dict | None = None) -> list[Finding]:
-    """stats (optional) receives "truncated": the added lines longer than MAX_LINE (only their start is scanned)."""
+def scan(added: list[tuple[str, int, str]], new_files: list[str], stats: dict | None = None,
+         names: NameMatcher | None = None) -> list[Finding]:
+    """stats (optional) receives "truncated": the added lines longer than MAX_LINE (only their start is scanned).
+    names (optional): the supplied names list; also read against the names of newly added files."""
     findings: list[Finding] = []
     truncated = 0
     for path in new_files:
@@ -373,13 +549,15 @@ def scan(added: list[tuple[str, int, str]], new_files: list[str], stats: dict | 
         kind = file_kind(path)
         if kind:
             findings.append(Finding(path, 0, kind, WARNING, "dosya adı"))
+        if names is not None and names.find(path) is not None:
+            findings.append(Finding(path, 0, NAME_KIND, WARNING, "dosya adı"))
     for path, line_no, text in added:
         if SKIP_PATH.search(path):
             continue
         if len(text) > MAX_LINE:
             truncated += 1
             text = text[:MAX_LINE]
-        findings.extend(scan_line(path, line_no, text))
+        findings.extend(scan_line(path, line_no, text, names))
     if stats is not None:
         stats["truncated"] = truncated
     return findings
@@ -412,7 +590,9 @@ def annotation(f: Finding) -> str:
     return f"::{f.severity} {where},title=added-lines-scan::{esc_data(msg)}"
 
 
-def report(findings: list[Finding], out, summary_path: str | None, truncated: int = 0) -> None:
+def report(findings: list[Finding], out, summary_path: str | None, truncated: int = 0, names_ran: bool = False) -> None:
+    names_line = NAMES_RAN if names_ran else NAMES_NOT_RUN
+    print(f"::notice title=added-lines-scan::{names_line}", file=out)
     for f in findings[:MAX_ANNOTATIONS]:
         print(annotation(f), file=out)
     if len(findings) > MAX_ANNOTATIONS:
@@ -429,7 +609,7 @@ def report(findings: list[Finding], out, summary_path: str | None, truncated: in
         try:
             with open(summary_path, "a", encoding="utf-8") as fh:
                 fh.write(f"### added-lines-scan\n\n{warnings} uyarı, {notices} not — yalnız eklenen satırlar, "
-                         "uyarı amaçlı; değerler gösterilmez." + cut + "\n\n")
+                         "uyarı amaçlı; değerler gösterilmez." + cut + "\n\n" + names_line + "\n\n")
                 if findings:
                     fh.write("| Tür | Sayı |\n|---|---|\n")
                     for k, n in sorted(kinds.items()):
@@ -443,13 +623,26 @@ def report(findings: list[Finding], out, summary_path: str | None, truncated: in
             print("::warning title=added-lines-scan::Özet dosyası yazılamadı.", file=out)
 
 
-def main(argv: list[str] | None = None, out=None) -> int:
+class QuietParser(argparse.ArgumentParser):
+    """A usage error must not echo the arguments (a path may carry a name): exit 2 without printing them."""
+
+    def error(self, message: str):  # noqa: ARG002 - the message quotes argv
+        raise SystemExit(2)
+
+
+def main(argv: list[str] | None = None, out=None, env=None) -> int:
     out = out or sys.stdout
-    parser = argparse.ArgumentParser(description="Warning-only scan of the lines a pull request adds.")
-    parser.add_argument("--base", required=True)
-    parser.add_argument("--head", required=True)
-    parser.add_argument("--repo", default=".")
-    parser.add_argument("--summary", default=os.environ.get("GITHUB_STEP_SUMMARY"))
+    env = os.environ if env is None else env
+    parser = QuietParser(
+        description="WARNING-ONLY scan of the lines (and new file names) a pull request adds: secret shapes, risky file "
+                    "names, personal folder paths, e-mail addresses and - only when a names list is supplied from "
+                    f"outside the repository ({NAMES_ENV} or --names-file) - personal names. Always exits 0.")
+    parser.add_argument("--base", required=True, help="base commit (the diff is base...head)")
+    parser.add_argument("--head", required=True, help="head commit")
+    parser.add_argument("--repo", default=".", help="repository path (default: .)")
+    parser.add_argument("--summary", default=env.get("GITHUB_STEP_SUMMARY"), help="Markdown summary file to append to")
+    parser.add_argument("--names-file", default=None,
+                        help=f"names list OUTSIDE the repository (newline / comma separated); adds to ${NAMES_ENV}")
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:  # a usage error (or --help) must not block either
@@ -459,10 +652,11 @@ def main(argv: list[str] | None = None, out=None) -> int:
     try:
         if not args.base or not args.head or args.base.startswith("-") or args.head.startswith("-"):
             raise GitError("geçersiz --base / --head")
+        names = load_names(env.get(NAMES_ENV), args.names_file, args.repo, out)
         added, new_files = collect(args.repo, args.base, args.head)
         stats: dict = {}
-        findings = scan(added, new_files, stats)
-        report(findings, out, args.summary, stats.get("truncated", 0))
+        findings = scan(added, new_files, stats, names)
+        report(findings, out, args.summary, stats.get("truncated", 0), names_ran=names is not None)
     except GitError as exc:
         print(f"::warning title=added-lines-scan::Tarama çalışamadı ({exc}); bu PR denetlenmedi, engellenmez.", file=out)
     except Exception as exc:  # noqa: BLE001 - never block a pull request
