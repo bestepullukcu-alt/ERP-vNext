@@ -1,0 +1,326 @@
+PASS Traceability/LotMigration CI-1 Views/Traceability/LotMigration/Index.cshtml
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/Index.cshtml 0
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/_DataTable.cshtml 0
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/_IndexL10n.cshtml 0
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/_MigrationActions.cshtml 0
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/_NewLotModal.cshtml 0
+PASS Traceability/LotMigration CI-2 Views/Traceability/LotMigration/_PickModal.cshtml 0
+TABAN FU-14 Traceability/LotMigration CI-3 _Filter.cshtml exists
+PASS Traceability/LotMigration CI-4 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-4 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-4 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/Index.cshtml 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/_DataTable.cshtml 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/_IndexL10n.cshtml 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/_MigrationActions.cshtml 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/_NewLotModal.cshtml 0
+PASS Traceability/LotMigration CI-5 Views/Traceability/LotMigration/_PickModal.cshtml 0
+PASS Traceability/LotMigration CI-5 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-5 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-5 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/Index.cshtml 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/_DataTable.cshtml 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/_IndexL10n.cshtml 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/_MigrationActions.cshtml 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/_NewLotModal.cshtml 0
+PASS Traceability/LotMigration CI-6 Views/Traceability/LotMigration/_PickModal.cshtml 0
+PASS Traceability/LotMigration CI-6 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-6 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-6 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-7 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-7 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-7 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-8 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-8 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-8 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-9 wwwroot/assets/js/Traceability/LotMigration/index.js
+PASS Traceability/LotMigration CI-9 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-9 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-9 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMigration CI-10 wwwroot/assets/js/Traceability/LotMigration/index.js 0
+PASS Traceability/LotMigration CI-10 wwwroot/assets/js/Traceability/LotMigration/index.l10n.js 0
+PASS Traceability/LotMigration CI-10 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-1 Views/Traceability/LotMovements/Index.cshtml
+PASS Traceability/LotMovements CI-2 Views/Traceability/LotMovements/Index.cshtml 0
+PASS Traceability/LotMovements CI-2 Views/Traceability/LotMovements/_DataTable.cshtml 0
+PASS Traceability/LotMovements CI-2 Views/Traceability/LotMovements/_Filter.cshtml 0
+PASS Traceability/LotMovements CI-2 Views/Traceability/LotMovements/_IndexL10n.cshtml 0
+PASS Traceability/LotMovements CI-2 Views/Traceability/LotMovements/_ReceiptModal.cshtml 0
+TABAN FU-14 Traceability/LotMovements CI-3 Index.cshtml has #offcanvasDetailsPreview
+TABAN FU-14 Traceability/LotMovements CI-3 Index.cshtml shows @Localizer["PageDescription"]
+TABAN FU-14 Traceability/LotMovements CI-3 List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)
+TABAN FU-14 Traceability/LotMovements CI-3 Server mode: export declared server-side (BL-452
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Actions
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Active
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Apply
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides AreYouSure
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Cancel
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides ColumnVisibility
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Edit
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Export
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Filter
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Import
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Passive
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides QuickView
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Reset
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides SaveView
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Search
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides ShowAll
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Status
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides Unknown
+TABAN FU-14 Traceability/LotMovements CI-3 _IndexL10n.cshtml provides ViewDetails
+TABAN FU-14 Traceability/LotMovements CI-3 direct-gateway profile uses window.API service base
+TABAN FU-14 Traceability/LotMovements CI-3 index.js defines getAuthHeaders()
+TABAN FU-14 Traceability/LotMovements CI-3 index.js includes .js-quick-view selector
+TABAN FU-14 Traceability/LotMovements CI-3 index.js uses event delegation (closest('.js-quick-view'))
+TABAN FU-14 Traceability/LotMovements CI-3 index.js uses getAuthHeaders() in fetch headers
+TABAN FU-14 Traceability/LotMovements CI-3 index.l10n.js merges payload into window.L10n
+TABAN FU-4 Traceability/LotMovements CI-3 personalizationClient sends tenant header only for tenant users
+PASS Traceability/LotMovements CI-4 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-4 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-4 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-5 Views/Traceability/LotMovements/Index.cshtml 0
+PASS Traceability/LotMovements CI-5 Views/Traceability/LotMovements/_DataTable.cshtml 0
+PASS Traceability/LotMovements CI-5 Views/Traceability/LotMovements/_Filter.cshtml 0
+PASS Traceability/LotMovements CI-5 Views/Traceability/LotMovements/_IndexL10n.cshtml 0
+PASS Traceability/LotMovements CI-5 Views/Traceability/LotMovements/_ReceiptModal.cshtml 0
+PASS Traceability/LotMovements CI-5 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-5 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-5 wwwroot/assets/js/Traceability/trace-ui.js 0
+TABAN FU-14 Traceability/LotMovements CI-6 Views/Traceability/LotMovements/Index.cshtml 1
+PASS Traceability/LotMovements CI-6 Views/Traceability/LotMovements/_DataTable.cshtml 0
+PASS Traceability/LotMovements CI-6 Views/Traceability/LotMovements/_Filter.cshtml 0
+PASS Traceability/LotMovements CI-6 Views/Traceability/LotMovements/_IndexL10n.cshtml 0
+PASS Traceability/LotMovements CI-6 Views/Traceability/LotMovements/_ReceiptModal.cshtml 0
+TABAN FU-14 Traceability/LotMovements CI-6 wwwroot/assets/js/Traceability/LotMovements/index.js 1
+PASS Traceability/LotMovements CI-6 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-6 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-7 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-7 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-7 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-8 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-8 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-8 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-9 wwwroot/assets/js/Traceability/LotMovements/index.js
+PASS Traceability/LotMovements CI-9 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-9 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-9 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotMovements CI-10 wwwroot/assets/js/Traceability/LotMovements/index.js 0
+PASS Traceability/LotMovements CI-10 wwwroot/assets/js/Traceability/LotMovements/index.l10n.js 0
+PASS Traceability/LotMovements CI-10 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-1 Views/Traceability/LotTrace/Index.cshtml
+PASS Traceability/LotTrace CI-2 Views/Traceability/LotTrace/Index.cshtml 0
+PASS Traceability/LotTrace CI-2 Views/Traceability/LotTrace/_FlowColumn.cshtml 0
+PASS Traceability/LotTrace CI-2 Views/Traceability/LotTrace/_IndexL10n.cshtml 0
+PASS Traceability/LotTrace CI-4 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-4 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-4 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-5 Views/Traceability/LotTrace/Index.cshtml 0
+PASS Traceability/LotTrace CI-5 Views/Traceability/LotTrace/_FlowColumn.cshtml 0
+PASS Traceability/LotTrace CI-5 Views/Traceability/LotTrace/_IndexL10n.cshtml 0
+PASS Traceability/LotTrace CI-5 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-5 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-5 wwwroot/assets/js/Traceability/trace-ui.js 0
+TABAN FU-14 Traceability/LotTrace CI-6 Views/Traceability/LotTrace/Index.cshtml 1
+PASS Traceability/LotTrace CI-6 Views/Traceability/LotTrace/_FlowColumn.cshtml 0
+PASS Traceability/LotTrace CI-6 Views/Traceability/LotTrace/_IndexL10n.cshtml 0
+PASS Traceability/LotTrace CI-6 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-6 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-6 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-7 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-7 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-7 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-8 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-8 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-8 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-9 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-9 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-9 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/LotTrace CI-10 wwwroot/assets/js/Traceability/LotTrace/index.js 0
+PASS Traceability/LotTrace CI-10 wwwroot/assets/js/Traceability/LotTrace/index.l10n.js 0
+PASS Traceability/LotTrace CI-10 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-1 Views/Traceability/Lots/Create.cshtml
+PASS Traceability/Lots CI-1 Views/Traceability/Lots/Details.cshtml
+PASS Traceability/Lots CI-1 Views/Traceability/Lots/Edit.cshtml
+PASS Traceability/Lots CI-1 Views/Traceability/Lots/Index.cshtml
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/Create.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/Details.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/Edit.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/Index.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_DataTable.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_Filter.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_Form.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_IndexL10n.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_LotQuickCreateModal.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_StatusDialog.cshtml 0
+PASS Traceability/Lots CI-2 Views/Traceability/Lots/_TraceActions.cshtml 0
+TABAN FU-14 Traceability/Lots CI-3 Compact _Form.cshtml matches Details.cshtml section/card map
+TABAN FU-14 Traceability/Lots CI-3 Index.cshtml shows @Localizer["PageDescription"]
+TABAN FU-14 Traceability/Lots CI-3 List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)
+TABAN FU-14 Traceability/Lots CI-3 Server mode: export declared server-side (BL-452
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Actions
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Active
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Apply
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides AreYouSure
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Cancel
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides ColumnVisibility
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Edit
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Export
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Filter
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Import
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Passive
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides QuickView
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Reset
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides SaveView
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Search
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides ShowAll
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Status
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides Unknown
+TABAN FU-14 Traceability/Lots CI-3 _IndexL10n.cshtml provides ViewDetails
+TABAN FU-14 Traceability/Lots CI-3 direct-gateway profile uses window.API service base
+TABAN FU-14 Traceability/Lots CI-3 index.js defines getAuthHeaders()
+TABAN FU-14 Traceability/Lots CI-3 index.js includes .js-quick-view selector
+TABAN FU-14 Traceability/Lots CI-3 index.js uses event delegation (closest('.js-quick-view'))
+TABAN FU-14 Traceability/Lots CI-3 index.js uses getAuthHeaders() in fetch headers
+TABAN FU-14 Traceability/Lots CI-3 index.l10n.js merges payload into window.L10n
+TABAN FU-4 Traceability/Lots CI-3 personalizationClient sends tenant header only for tenant users
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-4 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/Create.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/Details.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/Edit.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/Index.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_DataTable.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_Filter.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_Form.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_IndexL10n.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_LotQuickCreateModal.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_StatusDialog.cshtml 0
+PASS Traceability/Lots CI-5 Views/Traceability/Lots/_TraceActions.cshtml 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-5 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/Create.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/Details.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/Edit.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/Index.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_DataTable.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_Filter.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_Form.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_IndexL10n.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_LotQuickCreateModal.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_StatusDialog.cshtml 0
+PASS Traceability/Lots CI-6 Views/Traceability/Lots/_TraceActions.cshtml 0
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/form.js 0
+TABAN FU-14 Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/index.js 1
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-6 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+TABAN FU-14 Traceability/Lots CI-7 wwwroot/assets/js/Traceability/Lots/status.js 1
+PASS Traceability/Lots CI-7 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-8 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/index.js
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-9 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/details.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/form.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/index.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/index.l10n.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/quick-create.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/Lots/status.js 0
+PASS Traceability/Lots CI-10 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-1 Views/Traceability/Serials/Index.cshtml
+PASS Traceability/Serials CI-2 Views/Traceability/Serials/Index.cshtml 0
+PASS Traceability/Serials CI-2 Views/Traceability/Serials/_DataTable.cshtml 0
+PASS Traceability/Serials CI-2 Views/Traceability/Serials/_Filter.cshtml 0
+PASS Traceability/Serials CI-2 Views/Traceability/Serials/_IndexL10n.cshtml 0
+TABAN FU-14 Traceability/Serials CI-3 Index.cshtml has #offcanvasDetailsPreview
+TABAN FU-14 Traceability/Serials CI-3 Index.cshtml shows @Localizer["PageDescription"]
+TABAN FU-14 Traceability/Serials CI-3 List factory carries: Row-action delegation (closest on the trigger, inside the table or the responsive modal)
+TABAN FU-14 Traceability/Serials CI-3 Server mode: export declared server-side (BL-452
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Actions
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Active
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Apply
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides AreYouSure
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Cancel
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides ColumnVisibility
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Edit
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Export
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Filter
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Import
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Passive
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides QuickView
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Reset
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides SaveView
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Search
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides ShowAll
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Status
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides Unknown
+TABAN FU-14 Traceability/Serials CI-3 _IndexL10n.cshtml provides ViewDetails
+TABAN FU-14 Traceability/Serials CI-3 direct-gateway profile uses window.API service base
+TABAN FU-14 Traceability/Serials CI-3 index.js defines getAuthHeaders()
+TABAN FU-14 Traceability/Serials CI-3 index.js includes .js-quick-view selector
+TABAN FU-14 Traceability/Serials CI-3 index.js uses event delegation (closest('.js-quick-view'))
+TABAN FU-14 Traceability/Serials CI-3 index.js uses getAuthHeaders() in fetch headers
+TABAN FU-14 Traceability/Serials CI-3 index.l10n.js merges payload into window.L10n
+TABAN FU-4 Traceability/Serials CI-3 personalizationClient sends tenant header only for tenant users
+PASS Traceability/Serials CI-4 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-4 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-4 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-5 Views/Traceability/Serials/Index.cshtml 0
+PASS Traceability/Serials CI-5 Views/Traceability/Serials/_DataTable.cshtml 0
+PASS Traceability/Serials CI-5 Views/Traceability/Serials/_Filter.cshtml 0
+PASS Traceability/Serials CI-5 Views/Traceability/Serials/_IndexL10n.cshtml 0
+PASS Traceability/Serials CI-5 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-5 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-5 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-6 Views/Traceability/Serials/Index.cshtml 0
+PASS Traceability/Serials CI-6 Views/Traceability/Serials/_DataTable.cshtml 0
+PASS Traceability/Serials CI-6 Views/Traceability/Serials/_Filter.cshtml 0
+PASS Traceability/Serials CI-6 Views/Traceability/Serials/_IndexL10n.cshtml 0
+PASS Traceability/Serials CI-6 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-6 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-6 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-7 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-7 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-7 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-8 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-8 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-8 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-9 wwwroot/assets/js/Traceability/Serials/index.js
+PASS Traceability/Serials CI-9 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-9 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-9 wwwroot/assets/js/Traceability/trace-ui.js 0
+PASS Traceability/Serials CI-10 wwwroot/assets/js/Traceability/Serials/index.js 0
+PASS Traceability/Serials CI-10 wwwroot/assets/js/Traceability/Serials/index.l10n.js 0
+PASS Traceability/Serials CI-10 wwwroot/assets/js/Traceability/trace-ui.js 0
+başvuru taraması: HEAD 1530 görünüm, taban 1530 görünüm, 0.3 s
+okunan görünüm metni: HEAD 1530, taban 1530
+süre: 0.9 s

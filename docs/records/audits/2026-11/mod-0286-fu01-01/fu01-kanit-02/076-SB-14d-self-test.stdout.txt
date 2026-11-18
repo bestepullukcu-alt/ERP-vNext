@@ -1,0 +1,164 @@
+PASS --base HEAD (empty diff) -> exit 0, the only line is the duration 'süre: … s'
+PASS exit 0: a changed page whose only reds are baseline rows -> TABAN with its FU, PASS lines, exit 0
+PASS exit 2: a missing base ref -> tool error, never '0 changed pages'
+PASS exit 2: a base that is an option ('--all') is refused — no all-pages value
+PASS count: a second match on the line of the baselined match -> +1
+PASS count: a byte copy of the violating line on a new line -> +1
+PASS count: a line inserted above the violation -> unchanged, TABAN
+PASS count: a re-indented violating line -> unchanged, TABAN
+PASS count: the violation moved inside the file -> unchanged, TABAN
+PASS count: the violating line edited without a new match -> unchanged, TABAN
+PASS count: one violation removed and one added in the same file (the written limit) -> TABAN
+PASS count: a match completed on its continuation line -> +1 (the preparatory commit itself stays TABAN)
+PASS count fell (2 -> 1) -> TABAN 1 and 'kapandı - satırı güncelle 2 -> 1', exit 0
+PASS count fell to 0 -> 'kapandı - satır silinmeli', exit 0
+PASS mapping: a deleted path selects its page; the verifier stops -> YENİ KIRMIZI '_Filter.cshtml exists', the page's other CI-3 row 'ölçülmedi', never 'kapandı'
+PASS mapping: a rename maps both paths — the old page removed ('sayfa kaldırıldı', its rows 'kapandı - satır silinmeli'), the new page checked as added (YENİ KIRMIZI)
+PASS registry: an entry added (Platform/Other, tr) -> the page selected; en still red (TABAN), tr closed
+PASS registry: both entries of a page removed (tr) -> YENİ KIRMIZI Platform/Tenants CI-12 platform-search.tr.json:yok
+PASS registry: only the navigation item removed, the suggestions item kept -> page selected, YENİ KIRMIZI
+PASS registry: an item object edited (keywords) -> the page selected
+PASS registry: a group renamed -> the page selected
+PASS registry: an entry whose url maps to no page -> 'kayıt sayfaya eşlenmedi'
+PASS registry: a page selected only through the registry runs CI-12 only
+PASS exit 2: a registry file not JSON -> tool error
+PASS exit 2: a registry file without 'suggestions' -> tool error
+PASS exit 2: a registry file an item without a string url -> tool error
+PASS mapping: a shared file and a JS file with no Views page -> 'paylaşılan dosya, sayfa kontrolü yok', exit 0
+PASS CI-11: a partial added to a new surface without GetAllStrings(true) -> YENİ KIRMIZI; with it -> PASS
+PASS CI-11: a partial re-added to a page that has files at the base (AC-18 (c) revert) -> no CI-11, exit 0
+PASS exit 2: verifier output the selector cannot classify -> tool error
+PASS CI-3: a new verifier line on a page with a baseline row -> YENİ KIRMIZI, the old row TABAN
+PASS CI-13 / CI-14 / CI-15: a language file deleted, a SharedResource key removed, a step title removed -> each a named YENİ KIRMIZI
+PASS baseline reader: the fixture baseline reads (6 rows)
+PASS baseline reader: an empty cell -> exit 2
+PASS baseline reader: a duplicate page + check + instance -> exit 2
+PASS baseline reader: a malformed instance (a line number) -> exit 2
+PASS baseline reader: a malformed instance (another page's file) -> exit 2
+PASS baseline reader: a line-check count 0 -> exit 2
+PASS baseline reader: a line-check count that is not an integer -> exit 2
+PASS baseline reader: a line-check count with a leading zero -> exit 2
+PASS baseline reader: a line-check count with a sign -> exit 2
+PASS baseline reader: another row's count other than '-' -> exit 2
+PASS baseline reader: a malformed FU id -> exit 2
+PASS baseline reader: a check outside CI-1…CI-15 -> exit 2
+PASS baseline reader: a pattern key written as a check (CI-6v) -> exit 2
+PASS baseline reader: a header that is not exact -> exit 2
+PASS baseline reader: a row with a missing cell -> exit 2
+PASS exit 2: CI mode on a malformed baseline (duplicate key) -> tool error
+PASS exit 2: git diff output b'X\x00a\x00' (unknown letter / missing path) -> tool error
+PASS exit 2: git diff output b'U\x00a\x00' (unknown letter / missing path) -> tool error
+PASS exit 2: git diff output b'R100\x00a\x00' (unknown letter / missing path) -> tool error
+PASS git diff output 'R086 old new' and 'D path' are read with both rename paths
+PASS exit 2: not a git repository -> tool error
+PASS pattern block: every key of the pack's block present, compiling with re.compile, and the selector's own pattern for each key the same string
+PASS pattern block: a missing key -> refused
+PASS pattern block: a pattern that does not compile -> refused
+PASS pattern block: a key written twice -> refused
+PASS pattern block: a different string for a key -> the self-test comparison fails
+PASS draft: the fixture's reds as rows (CI-5 count 1, CI-6 count 2, CI-3 'Old gap', CI-12 en + tr) plus the two bilgi rows; no CI-11 row
+PASS --check-baseline on a well-formed baseline -> exit 0 with per-CI rows and matches
+PASS exit 2: a working tree that is not HEAD under frontend/Diten.Web -> tool error
+PASS modes: no mode -> exit 2
+PASS modes: ['--base', 'HEAD', '--draft-baseline'] -> exit 2
+PASS modes: ['--self-test', '--check-baseline'] -> exit 2
+PASS modes: ['--base'] -> exit 2
+PASS modes: ['--all'] -> exit 2
+PASS AC-21g01 a view file directly in the folder -> page {Module}, a new match is YENİ KIRMIZI, not a shared file
+PASS AC-21g01 a non-.cshtml file directly in the folder selects the page and no check reads it
+PASS AC-21g02 JS directly in the folder, a direct view at HEAD and at the base -> page {Module}, YENİ KIRMIZI
+PASS AC-21g02 JS directly in the folder, the direct view only at the base -> the JS still selects page {Module}
+PASS AC-21g03 JS directly in the folder, no direct view at HEAD or at the base -> its FU-18 line, no page
+PASS AC-21g03 JS directly in the folder, the direct view only at the base, a subfolder page stays -> page, not FU-18
+PASS AC-21g04 one folder, a single-level and a two-level page -> each reads only its own files
+PASS AC-21g05 NOT_PAGE_AREAS (Shared, Archive): views and JS are the shared line, never a page, never FU-18, no draft row
+PASS AC-21g06 pages/** -> its FU-18 line for each path, not the shared line, no page
+PASS AC-21g07 js/{Module}/{Sub}/ with no view folder -> its FU-18 line, the single-level page is not selected
+PASS AC-21g08 an area folder holding only subfolders: JS directly in it and in a subfolder with no view -> FU-18 lines
+PASS AC-21g09 a folder-level _ViewStart.cshtml -> a file of page {Module} (its checks run) and the shared-file line
+PASS AC-21g09 a folder-level _ViewImports.cshtml -> a file of page {Module} (its checks run) and the shared-file line
+PASS AC-21g09 the root Views/_ViewStart.cshtml stays shared only
+PASS AC-21g10 baseline rows with a page key {Module} are accepted and matched as TABAN FU-16
+PASS AC-21g11 an empty key -> exit 2
+PASS AC-21g11 a key with a space -> exit 2
+PASS AC-21g11 a three-part key -> exit 2
+PASS AC-21g11 a key in NOT_PAGE_AREAS -> exit 2
+PASS AC-21g11 a CI-3 row with a single-level key -> exit 2
+PASS AC-21g12 a single-level CI-2 row whose instance lies in a subfolder -> exit 2
+PASS AC-21g12 a single-level CI-1 row whose instance lies in a subfolder -> exit 2
+PASS AC-21g13 a single-level new surface in a folder holding only subfolder pages -> CI-11 runs; at a later base it does not
+PASS AC-21g14 a single-level page removed while a subfolder page stays -> 'sayfa kaldırıldı', its rows closed, the subfolder page untouched
+PASS FU-17: a single-level list page -> one 'ölçülmedi' CI-3 line, the verifier not run, never red, no draft row; CI-9 savedView red as YENİ KIRMIZI
+PASS draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged
+PASS FU01-01 a class file with a two-level owner is red through its reference
+PASS FU01-02 a class file with a single-level owner is red through its reference
+PASS FU01-03 a file in a subfolder of a single-level page's JS folder, referenced by it, is red through it
+PASS FU01-04 a CI-4 match on a referenced class file is red through the reference
+PASS FU01-05 a CI-5 match on a referenced class file is red through the reference
+PASS FU01-06 a CI-6 match on a referenced class file is red through the reference
+PASS FU01-07 a CI-7 match on a referenced class file is red through the reference
+PASS FU01-08 a CI-8 match on a referenced class file is red through the reference
+PASS FU01-09 a CI-9 match on a referenced class file is red through the reference
+PASS FU01-10 a CI-10 match on a referenced class file is red through the reference
+PASS FU01-11 two owning pages: both red, once each, a line per page
+PASS FU01-12 two views of one page name the file: one line per check
+PASS FU01-13 the Url.Content form is a reference
+PASS FU01-14 the ?v=1 form is a reference
+PASS FU01-15 a tag in @* *@ is no reference: exit 0, only the file's own line, no variable line
+PASS FU01-16 a tag in <!-- --> is no reference: exit 0, only the file's own line, no variable line
+PASS FU01-17 data-src is no reference: exit 0, only the file's own line, no variable line
+PASS FU01-18 src="~/assets/js/@x.js" is no path: 'ölçülmedi' once, never red
+FAIL FU01-19 src="@x" is no path: 'ölçülmedi' once, never red
+PASS FU01-20 a CDN URL with @: no reference and no line
+PASS FU01-21 a file only a Shared view loads (a Shared reference wins over Archive): the Shared line, exit 0
+PASS FU01-22 a file no view loads: its own line, exit 0
+PASS FU01-23 a file only an Archive or a root view loads: the Archive / root line, exit 0
+PASS FU01-24 a referenced path missing at HEAD: a named line, no exception, never red
+PASS FU01-25 a page gains a file with no match: 'başvuru eklendi' and PASS, exit 0
+PASS FU01-26 a page gains a file with a match and no row: 'başvuru eklendi' and YENİ KIRMIZI, exit 1
+PASS FU01-27 a page regains a file whose row it had (the revert of SB-6): TABAN when n = b, YENİ KIRMIZI +n-b when n > b
+PASS FU01-28 a view drops a file another view of the page keeps: check lines as usual, no 'başvuru' line
+PASS FU01-29 the page's last reference goes: 'başvuru kalktı' and its row 'kapandı', exit 0
+PASS FU01-30 the file deleted, the page still references it: the named missing line, its row 'kapandı', exit 0
+PASS FU01-31 a file renamed and the view updated: eklendi K, kalktı J, J's row 'kapandı', K red when it has a match, PASS when not
+PASS FU01-32 a file renamed and the view not updated: the missing line for J, J's row 'kapandı', K's own line, no 'başvuru' line
+PASS FU01-33 a page selected through another of its files reads its class files
+PASS FU01-34 no class file in the diff: no other page's view read ('okunan' line), no scan
+PASS FU01-35 an added unreferenced row is exit 2 under --base; the same row unchanged is 'kapandı'; --check-baseline exit 2
+PASS FU01-36 draft: a class file's row is FU-19 with the decision's reason, a file of its own folder FU-16
+PASS FU01-37 SB-13 row R-0a (CI-4 decompositionPage.js): accepted, exit 0
+PASS FU01-38 SB-13 row R-0b (CI-7 canonical-fixtures.js): accepted, exit 0
+PASS FU01-39 SB-13 row R-1 (CI-7 person-reference-picker.js): exit 2 with 'CI-7 satır kontrolü instance'ı sayfanın '
+PASS FU01-40 SB-13 row R-2 (CI-2 Status.cshtml): exit 2 with 'FU-19 satırında kontrol CI-4, 5, 6, 7, 8'
+PASS FU01-41 SB-13 row R-3 (CI-6 Status.cshtml): exit 2 with 'FU-19 instance'ı wwwroot/assets/js/<klas'
+PASS FU01-42 SB-13 row R-4a (CI-7 details-contacts.js): exit 2 with 'FU-19 instance'ı sayfanın kendi klasörün'
+PASS FU01-43 SB-13 row R-4b (CI-7 x.js): exit 2 with 'FU-19 instance'ı sayfanın kendi klasörün'
+PASS FU01-44 SB-13 row R-4c (CI-7 cases.js): exit 2 with 'FU-19 instance'ı sayfanın kendi klasörün'
+PASS FU01-45 SB-13 row R-5 (CI-7 systemStatus.js): exit 2 with 'FU-19 instance'ı sayfanın görünümlerinde'
+PASS FU01-46 SB-13 row R-6 (CI-6 permissions.js): exit 2 with 'FU-19 instance'ı sayfanın görünümlerinde'
+PASS FU01-47 SB-13 row R-7 (CI-6 diten-tags.js): exit 2 with 'FU-19 instance'ı sınıf dosyası değil'
+PASS FU01-48 SB-13 row R-8 (CI-4 index.js): exit 2 with 'FU-19 instance'ı sınıf dosyası değil'
+PASS FU01-49 SB-13 row R-9a (CI-6 dt-defaults.js): exit 2 with 'FU-19 instance'ı wwwroot/assets/js/<klas'
+PASS FU01-50 SB-13 row R-9b (CI-6 x.js): exit 2 with 'FU-19 instance'ı wwwroot/assets/js/<klas'
+PASS FU01-51 SB-13 row R-10 (CI-6 strategy-initiatives-api.js): exit 2 with 'FU-19 instance'ı HEAD'de yok'
+PASS FU01-52 SB-13 row R-11 (CI-6 systemStatus.js): exit 2 with 'FU-19 satırında page ya da count bozuk'
+PASS FU01-53 SB-13 row R-12 (CI-6 systemStatus.js): exit 2 with 'FU-19 satırında page ya da count bozuk'
+PASS FU01-54 an empty diff prints only the duration; a diff of one shared file prints the two scan lines before it
+PASS FU01-55 ?v=@x keeps the reference: red through it, no 'ölçülmedi'
+PASS FU01-56 @Url.Content("~/assets/js/" + name + ".js"): 'ölçülmedi' once, never red
+PASS FU01-57 unquoted src=~/assets/js/a/x.js: 'ölçülmedi' once, never red
+FAIL FU01-61 src="@Url.Content(Model.X)": 'ölçülmedi' once, never red
+PASS FU01-62 ../assets/js/a/x.js: 'ölçülmedi' once, never red
+PASS FU01-58 https://cdn.x/assets/js/lib.js: no reference and no line
+PASS FU01-59 ~/assets/js/a/data.json: 'ölçülmedi', data.js is not read
+PASS FU01-60 /assets/js/a/x.js is captured: red through it
+PASS FU01-63 http://cdn.x/assets/js/lib.js: no reference and no line
+PASS FU01-64 //cdn.x/assets/js/lib.js: no reference and no line
+PASS FU01-65 src="@@x.js": no reference and no line
+PASS FU01-66 @Url.Content("~/assets/vendor/a.js"): no reference and no line
+FAIL FU01-67 the pack's reference block equals FU01_REF_PATTERNS, and all three compile with the pack's flags
+PASS FU01-68 a row whose file the page's view names only inside @* *@: exit 2 (T-6), a raw text search is not enough
+PASS FU01-69 a view gains a tag of a file absent at HEAD: only the missing line, no 'başvuru eklendi'
+PASS FU01-70 a file moved into the page's own folder: no 'başvuru eklendi' for it, read through the own folder, J's row 'kapandı'
+PASS no write: every throw-away repository is clean after the runs (no file, no __pycache__)
+self-test: 160/163 passed

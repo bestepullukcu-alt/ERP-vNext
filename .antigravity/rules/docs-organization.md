@@ -42,7 +42,7 @@ gelir ve Control Tower kararıdır.
         control-tower/                Control Tower SOP ve işletim kartı
         sop-upstream/                 üst kaynaktan gelen SOP kuralları
 
-      records/                        ← o gün ne olduğu; ARTIK DEĞİŞMEZ
+      records/                        ← o gün ne olduğu; ana dalda DEĞİŞTİRİLMEZ (arşive alınabilir, geçmişte saklanır)
         audits/<yyyy-mm>/             denetim ve inceleme çıktıları
         analysis/<konu>/              karşılaştırma ve durum analizleri
         acceptance-reports/           kabul raporları
@@ -79,8 +79,10 @@ bu bir kusur değil — o ay 84 denetim yazılmıştır, ve denetim tarihle aran
 Yoğun bir ayı ikinci bir eksene bölmek (modül, konu) aramayı kolaylaştırmaz;
 bir modülün denetimlerini iki aya dağıtarak zorlaştırır.
 
-**K4 · `records/` yazıldıktan sonra düzeltilmez.** Bir denetim yanlışsa yenisi
-yazılır, eskisi durur. Kaydın değeri o gün ne bilindiğini göstermesidir.
+**K4 · `records/` yazıldıktan sonra ana dalda düzeltilmez.** Bir denetim yanlışsa yenisi
+yazılır, eskisi durur. Kaydın değeri o gün ne bilindiğini göstermesidir. Arşive almak
+değiştirmek sayılmaz: kayıt ana daldan kalkar, içeriği git geçmişinde aynen saklanır ve arşiv dizini nereden
+geri okunacağını yazar.
 
 **K5 · `vendor/` içeriği düzenlenmez.** Dışarıdan gelen belge geldiği adla durur;
 sürüm bilgisi ad içindedir. Ondan türettiğimiz çalışma dosyası `vendor/` içine

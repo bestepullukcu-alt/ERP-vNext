@@ -26,6 +26,8 @@ public sealed class Mvp6ExplicitRoutesTests
         ("/api/shipment-bundle/loads", new[] { "GET", "POST", "OPTIONS" }),
         ("/api/shipment-bundle/loads/{loadId}/transition", new[] { "POST", "OPTIONS" }),
         ("/api/shipment-bundle/returns", new[] { "GET", "POST", "OPTIONS" }),
+        // SHIPMENT-BUNDLE 3.5.0 getReturn (MOD-0186 r10 §35.9 item 1, served from DL-4; integration lane 2026-11-06).
+        ("/api/shipment-bundle/returns/{returnId}", new[] { "GET", "OPTIONS" }),
         ("/api/shipment-bundle/returns/{returnId}/transition", new[] { "POST", "OPTIONS" }),
         ("/api/shipment-bundle/claims", new[] { "GET", "POST", "OPTIONS" }),
         ("/api/shipment-bundle/claims/{claimId}/transition", new[] { "POST", "OPTIONS" }),
@@ -47,7 +49,7 @@ public sealed class Mvp6ExplicitRoutesTests
     };
 
     [Fact]
-    public void ShipmentBundle_has_exactly_the_twelve_explicit_routes_and_no_catch_all()
+    public void ShipmentBundle_has_exactly_the_thirteen_explicit_routes_and_no_catch_all()
     {
         var routes = LoadConfiguration().Routes;
 

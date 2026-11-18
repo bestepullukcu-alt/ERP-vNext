@@ -27,4 +27,9 @@ public static class RecordCodeReasonCodes
     public const string TenantNotFound = "TENANT_NOT_FOUND";
     public const string GroupPrefixSourceInvalid = "GROUP_PREFIX_SOURCE_INVALID";
     public const string GroupPrefixLocked = "GROUP_PREFIX_LOCKED";
+
+    // DL-2 — the Organization Unit / Position endpoints' own answers (pack §3); never produced by the internal endpoint.
+    public const string SystemAssigned = "RECORD_CODE_SYSTEM_ASSIGNED";
+    public const string Immutable = "RECORD_CODE_IMMUTABLE";
+    public const string Collision = "RECORD_CODE_COLLISION";
 }

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Generate tool adapters (Claude Code, Codex, Antigravity) from the single source in .antigravity/.
+Generate tool adapters (Claude Code, Codex, Antigravity) from their sources in .antigravity/ (old) and .ees/ (new).
 
-    python3 .antigravity/scripts/sync_adapters.py           # write every adapter listed in .antigravity/adapters.json
+    python3 .antigravity/scripts/sync_adapters.py           # write every adapter listed in .ees/adapters.json
     python3 .antigravity/scripts/sync_adapters.py --check   # write nothing; exit 1 if any adapter differs from its source
 
 Rules this script enforces (İ5-A pilot):
-- .antigravity/ stays the only place a human edits. Every adapter carries a visible "generated" line with the
+- The sources (.antigravity/ and .ees/) stay the only place a human edits. Every adapter carries a visible "generated" line with the
   source path and the source hash; editing an adapter by hand is drift and fails --check.
 - Only what adapters.json lists may live in the managed adapter folders. Any other file there fails --check, so no
   agent, skill or rule enters a tool's automatic discovery without passing through the manifest.
-- An agent source may only name skills that exist under .antigravity/skills/ (the 4/4 missing-skill case on
-  security-agent must not come back).
+- An agent source may only name skills that exist under one of the manifest's skill_roots (default
+  .antigravity/skills/; the 4/4 missing-skill case on security-agent must not come back).
 - Output is LF and UTF-8 on every platform; --check compares after turning CRLF into LF, so a Windows checkout
   with core.autocrlf=true is not drift. No symlinks are used anywhere.
 - İ5-B: the "Çekirdek" block of AGENTS.md (between <!-- core:start --> and <!-- core:end -->) is copied to
@@ -80,22 +80,80 @@ Rules this script enforces (İ5-A pilot):
   complete open or closing tag in CommonMark's grammar, then only SPACE or TAB; an opening tag not pre / script /
   style / textarea.
 
+- EES-BAGLAMA-01 (2026-11-16, EES owner approval in the lane-cards chat): the manifest lives in .ees/adapters.json; the
+  script itself stays here, so REGENERATE and every existing adapter stay byte-identical. Three new manifest features,
+  each a no-op for an item that does not use it:
+  (1) "compose": a list of files (the EES role cards) placed before the source body, in order; the generated line names
+      every part ("a + b + c") and the source hash covers all of them, so a card change is drift in every adapter that
+      carries it;
+  (2) tier: an agent source whose frontmatter says 'seviye: ust | standart | hafif' gets the tool's model fields from the
+      manifest's tier_map[tool][seviye]; a target that also writes those fields itself, or an unknown seviye, is an
+      error; a tool with no tier_map entry gets no model field (Codex and Gemini mappings are not verified yet);
+  (3) instruction_budget 'max_lines': a listed file with more lines (LF, after CRLF→LF) than its limit fails --check.
+  Codex round 1 (2026-11-16): validate_manifest, before any write, refuses a non-canonical source / compose / target path,
+  an .ees/ item generated to a place every session loads or calls by itself (.claude/rules, .agents/rules, AGENTS.md,
+  CLAUDE.md, an .agents/skills skill), a pilot entry point without the 'ees-' prefix in id, name and path, and a name used
+  twice for one tool and kind; an EES frontmatter key (seviye, kart) is exact or an error, never silently skipped; a
+  target with a seviye source may not write any model field itself, mapped tool or not. Codex round 2 (blind check 3):
+  the skills rules follow the target path, not the item's kind (kind is an allow-list); a source path through a symbolic
+  link is refused; a quoted EES key is an error; the prefix is read on the entry's own file or folder name; one name per
+  tool family ('codex+antigravity' counts as codex too); no adapter may be named CLAUDE.md or AGENTS.md at any depth.
+  Codex round 2 (structural): validate_outputs checks the planned outputs themselves before the first write, in --check
+  too — the real resolved path (no symbolic link in the target or its parents, inside the repository and the managed
+  folders, forbidden places judged after resolution), the generated name (read back from the frontmatter or TOML), and
+  the generated model fields against the seviye; a target may not carry the field set its format does not use; an EES
+  frontmatter key mentioned anywhere in any form other than the one exact line is an error.
+  Blind check 4: every generated header line must be understood (a line the reader cannot read is an error, never
+  skipped); header keys are plain names and values carry no line break or control character; paths are ASCII; the
+  managed folders and the tool labels are fixed in this file (a tool writes only under its own folder); a source or a
+  target that is a hard link, a source with a byte order mark and a target that is a directory are refused; one name
+  per tool whatever the kind; stray files are found before the first write; each file is written to a temporary name
+  and moved into place (a fresh, exclusive temporary name; '.sync-tmp' targets are reserved). Re-check: names and
+  header keys are compared without letter case; 'profile' and any 'model*' key count as model fields.
+  A boolean frontmatter value is written as YAML true / false (Claude Code's disable-model-invocation). A source that
+  says 'kart: <ad>' must be composed with .ees/kartlar/<ad>.md last, so the frontmatter and the manifest cannot disagree.
+
 Standard library only. Exit codes: 0 = in sync, 1 = drift, 2 = manifest or source error.
 """
 from __future__ import annotations
 
 import argparse
+import tempfile
 import bisect
 import hashlib
 import json
+import os
+import posixpath
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ".antigravity/adapters.json"
+MANIFEST = ".ees/adapters.json"
 REGENERATE = "python3 .antigravity/scripts/sync_adapters.py"
 ANTIGRAVITY_TRIGGERS = {"always_on", "model_decision", "glob", "manual"}
+TIERS = ("ust", "standart", "hafif")
+SKILL_ROOTS = [".antigravity/skills"]   # load_manifest replaces it with the manifest's skill_roots
+TIER_MAP: dict = {}                     # load_manifest replaces it with the manifest's tier_map
+# EES-BAGLAMA-01 (Codex round 1): the pilot boundary is checked by validate_manifest before anything is written.
+PILOT_PREFIX = "ees-"
+KINDS = ("core-block", "agent", "skill", "rule")
+# blind check 4: the managed folders and the tool labels are fixed here, not read from the manifest alone
+MANAGED_DIRS = (".claude/agents", ".claude/skills", ".claude/rules", ".codex/agents", ".agents/skills", ".agents/rules")
+TOOL_PREFIXES = {"claude-code": (".claude/",), "codex": (".codex/agents/",), "codex+antigravity": (".agents/skills/",),
+                 "antigravity": (".agents/rules/",)}
+HEADER_KEY = re.compile(r"[A-Za-z_][A-Za-z0-9_-]*")
+CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f\u2028\u2029\ufeff]")
+AUTO_LOADED_PREFIXES = (".claude/rules/", ".agents/rules/")   # every session loads these by itself
+AUTO_LOADED_FILES = ("agents.md", "claude.md")                 # compared in lower case (case-insensitive file systems)
+IMPLICIT_SKILL_PREFIXES = (".agents/skills/",)                  # Codex / Antigravity may call these skills by themselves
+MODEL_KEYS = frozenset({"model", "effort", "model_reasoning_effort", "reasoning_effort", "model_provider", "profile"})
+
+
+def is_model_key(key: str) -> bool:
+    """Blind check 4, re-check: any key that can choose a model — the listed ones, and any key starting with 'model'."""
+    low = key.lower()
+    return low in MODEL_KEYS or low.startswith("model")
 
 
 class ConfigError(Exception):
@@ -108,9 +166,21 @@ def rel(path: str) -> Path:
 
 def read_text(path: str) -> str:
     p = rel(path)
+    # Codex round 2 (Y2): "No symlinks are used anywhere" is now enforced — a link in any part of a source path could
+    # carry an .ees card into an old source's name and past the pilot boundary
+    probe = ROOT
+    for part in path.split("/"):
+        probe = probe / part
+        if probe.is_symlink():
+            raise ConfigError(f"source path {path} goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
     if not p.is_file():
         raise ConfigError(f"source not found: {path}")
-    return p.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if p.stat().st_nlink > 1:
+        raise ConfigError(f"source {path} is a hard link (another name for the same file)")
+    text = p.read_text(encoding="utf-8")
+    if text.startswith("\ufeff"):
+        raise ConfigError(f"source {path} starts with a byte order mark; save it as UTF-8 without BOM")
+    return text.replace("\r\n", "\n")
 
 
 # İ5B-FIX-03 (V4A-F1): the link and import grammar of the instruction files
@@ -838,7 +908,9 @@ def yaml_scalar(value: str) -> str:
 def emit_frontmatter(fields: dict) -> str:
     lines = ["---"]
     for key, value in fields.items():
-        if isinstance(value, list):
+        if isinstance(value, bool):
+            lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, list):
             lines.append(f"{key}:")
             lines.extend(f"  - {yaml_scalar(str(v))}" for v in value)
         else:
@@ -1044,21 +1116,74 @@ def extract_core(source: str) -> str:
     return text.split(CORE_START, 1)[1].split(CORE_END, 1)[0].strip("\n") + "\n"
 
 
+def ees_key(block: str | None, key: str, source: str) -> str | None:
+    """EES-BAGLAMA-01 (Codex round 1): an EES frontmatter key is present or absent, never silently unreadable — any line
+    that names the key (any case, any indent) must be exactly 'key: value' with a lower-case token, no comment or quote."""
+    # Codex round 2 (finding 3): presence is the word anywhere in the frontmatter (flow style, quotes, any case), not a
+    # line-start pattern; the one supported form is a single line 'key: value' — everything else is an error
+    text = block or ""
+    mentions = re.findall(rf"(?<![\w-]){key}(?![\w-])", text, re.I)
+    if not mentions:
+        return None
+    exact = re.findall(rf"(?m)^{key}: ([a-z][a-z0-9-]*)$", text)
+    if len(mentions) != 1 or len(exact) != 1:
+        raise ConfigError(f"{source}: unsupported '{key}' in the frontmatter — write it once, exactly '{key}: <value>' on "
+                          "its own line (no flow style, comment, quote, indent or upper case)")
+    return exact[0]
+
+
+def source_tier(block: str | None, source: str) -> str | None:
+    tier = ees_key(block, "seviye", source)
+    if tier is not None and tier not in TIERS:
+        raise ConfigError(f"{source}: unknown seviye '{tier}' (one of {', '.join(TIERS)})")
+    return tier
+
+
+def tier_fields(tool: str, tier: str | None, own: dict, where: str) -> dict:
+    """EES-BAGLAMA-01: the tool's model fields for the source's seviye; nothing when the tool has no mapping."""
+    if tier is None:
+        return {}
+    fields = ((TIER_MAP.get(tool) or {}).get(tier) or {}) if tool else {}
+    # Codex round 1: the target may not write a model field itself, whether or not the tool has a mapping
+    clash = sorted(k for k in own if k in fields or is_model_key(k))
+    if clash:
+        raise ConfigError(f"{where}: writes {', '.join(clash)} itself although the source has a seviye (tier_map decides)")
+    return dict(fields)
+
+
 def render(item: dict, target: dict) -> str:
     source = item["source"]
     text = extract_core(source) if item.get("extract") == "core" else read_text(source)
-    digest = source_hash(text)
     block, body = split_frontmatter(text)
     body = body.lstrip("\n")
+    parts = item.get("compose") or []
+    if parts:
+        # EES-BAGLAMA-01: the role cards first, then the source body; the hash covers every part
+        cards = [read_text(p) for p in parts]
+        body = "\n".join(c.rstrip("\n") + "\n" for c in cards) + "\n" + body
+        digest = source_hash("".join(cards) + text)
+        source = " + ".join(parts + [source])
+    else:
+        digest = source_hash(text)
+    card = ees_key(block, "kart", item["source"])
+    if card and (not parts or parts[-1] != f".ees/kartlar/{card}.md"):
+        raise ConfigError(f"{item['source']}: says 'kart: {card}' but the manifest composes {parts or 'no card'}")
+    tier = source_tier(block, item["source"])
+    # Codex round 2 (finding 4): a seviye forbids the target's own model fields for every kind; only an agent gets mapped
+    # fields (a skill runs in the session that calls it)
+    tool_for_map = target["tool"] if item["kind"] == "agent" else None
     fmt = target.get("format")
 
     if item["kind"] == "agent":
-        missing = [s for s in frontmatter_list(block, "skills") if not rel(f".antigravity/skills/{s}/SKILL.md").is_file()]
+        missing = [s for s in frontmatter_list(block, "skills")
+                   if not any(rel(f"{r}/{s}/SKILL.md").is_file() for r in SKILL_ROOTS)]
         if missing:
-            raise ConfigError(f"{source} names skills that do not exist under .antigravity/skills/: {', '.join(missing)}")
+            raise ConfigError(f"{source} names skills that do not exist under {' or '.join(r + '/' for r in SKILL_ROOTS)}: "
+                              f"{', '.join(missing)}")
 
     if fmt == "codex-agent-toml":
-        fields = target.get("fields") or {}
+        fields = dict(target.get("fields") or {})
+        fields.update(tier_fields(tool_for_map, tier, fields, target["path"]))
         for key in ("name", "description"):
             if not str(fields.get(key, "")).strip():
                 raise ConfigError(f"{target['path']}: codex agent needs a non-empty '{key}'")
@@ -1077,6 +1202,10 @@ def render(item: dict, target: dict) -> str:
         raise ConfigError(f"{target['path']}: unknown format '{fmt}'")
 
     fm = target.get("frontmatter")
+    if isinstance(fm, dict):
+        fm = {**fm, **tier_fields(tool_for_map, tier, fm, target["path"])}
+    elif tier is not None and fm == "from-source":
+        raise ConfigError(f"{target['path']}: a source with a seviye needs a frontmatter dict in the manifest")
     if fm == "from-source":
         if block is None:
             raise ConfigError(f"{source}: target asks for the source frontmatter but the source has none")
@@ -1112,6 +1241,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
         raw = p.read_bytes().replace(b"\r\n", b"\n")
         text = raw.decode("utf-8")
         size = len(raw)
+        lines = text.count("\n") + (0 if text.endswith("\n") or not text else 1)
+        if lines > spec.get("max_lines", 10 ** 9):
+            problems.append(f"OVERLINES {path} has {lines} lines; limit {spec['max_lines']}")
         if size > spec.get("max_bytes", 10 ** 9):
             note = " (Antigravity truncates AGENTS.md at 24000)" if path == "AGENTS.md" else ""
             problems.append(f"OVERSIZE {path} is {size} bytes; limit {spec['max_bytes']}{note}")
@@ -1194,30 +1326,229 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
     return problems, warnings
 
 
-def load_manifest() -> dict:
-    try:
-        data = json.loads(read_text(MANIFEST))
-    except json.JSONDecodeError as e:
-        raise ConfigError(f"{MANIFEST}: invalid JSON ({e})") from e
+def canonical(path, where: str) -> str:
+    """A repository path in its one written form: no './', '..', '//', trailing '/', backslash or absolute path."""
+    if (not isinstance(path, str) or not path or not path.isascii() or CONTROL_CHARS.search(path) or "\\" in path
+            or path.startswith("/") or re.match(r"^[A-Za-z]:", path) or posixpath.normpath(path) != path
+            or path.split("/")[0] == ".."):
+        raise ConfigError(f"{MANIFEST}: {where} {path!r} is not a canonical repository path")
+    return path
+
+
+def is_ees(path: str) -> bool:
+    return path.lower().startswith(".ees/")
+
+
+def target_name(item: dict, target: dict) -> str | None:
+    fm = target.get("frontmatter")
+    if isinstance(target.get("fields"), dict):
+        return target["fields"].get("name")
+    if isinstance(fm, dict):
+        return fm.get("name")
+    if fm == "from-source":
+        m = re.search(r"(?m)^name:[ \t]*(\S+)[ \t]*$", split_frontmatter(read_text(item["source"]))[0] or "")
+        return m.group(1) if m else None
+    return None
+
+
+def validate_manifest(data: dict) -> None:
+    """Everything that must hold before a single adapter is written (EES-BAGLAMA-01 adds the pilot boundary)."""
+    if tuple(data.get("managed_dirs", ())) != MANAGED_DIRS:
+        raise ConfigError(f"{MANIFEST}: managed_dirs must be exactly {list(MANAGED_DIRS)} (fixed in the generator)")
     paths = [t["path"] for i in data["items"] for t in i["targets"]]
     if len(paths) != len(set(paths)):
         raise ConfigError(f"{MANIFEST}: two targets share one path")
     for p in paths:
         if not any(p.startswith(d + "/") for d in data["managed_dirs"]):
             raise ConfigError(f"{MANIFEST}: target {p} is outside managed_dirs")
+    names: dict = {}
+    for item in data["items"]:
+        if item.get("kind") not in KINDS:
+            raise ConfigError(f"{MANIFEST}: item {item.get('id')} has unknown kind {item.get('kind')!r} (one of {', '.join(KINDS)})")
+        canonical(item["source"], f"item {item.get('id')} source")
+        parts = item.get("compose", [])
+        if not isinstance(parts, list):
+            raise ConfigError(f"{MANIFEST}: item {item.get('id')} compose must be a list")
+        for part in parts:
+            canonical(part, f"item {item.get('id')} compose part")
+        ees = is_ees(item["source"]) or any(is_ees(p) for p in parts)
+        if ees and item.get("extract") == "core":
+            raise ConfigError(f"{MANIFEST}: pilot boundary — the always-loaded core block may not come from .ees/")
+        for t in item["targets"]:
+            path = canonical(t["path"], f"item {item.get('id')} target")
+            prefixes = TOOL_PREFIXES.get(t.get("tool"))
+            if not prefixes or not path.startswith(prefixes):
+                raise ConfigError(f"{MANIFEST}: {path}: tool {t.get('tool')!r} is unknown or does not write there "
+                                  f"(allowed: {TOOL_PREFIXES})")
+            if path.endswith(".sync-tmp"):
+                raise ConfigError(f"{MANIFEST}: {path}: the '.sync-tmp' ending is reserved for the generator")
+            for field in ("frontmatter", "fields"):
+                values = t.get(field)
+                if isinstance(values, dict) and len({str(k).lower() for k in values}) != len(values):
+                    raise ConfigError(f"{MANIFEST}: {path}: {field} has two keys that differ only in letter case")
+                if isinstance(values, dict):
+                    for k, v in values.items():
+                        if not HEADER_KEY.fullmatch(str(k)):
+                            raise ConfigError(f"{MANIFEST}: {path}: {field} key {k!r} is not a plain name")
+                        for x in (v if isinstance(v, list) else [v]):
+                            if not isinstance(x, (str, bool)) or (isinstance(x, str) and CONTROL_CHARS.search(x)):
+                                raise ConfigError(f"{MANIFEST}: {path}: {field}.{k} must be text without line breaks or "
+                                                  "control characters (or true / false)")
+            unused = {"markdown": "fields", "codex-agent-toml": "frontmatter"}.get(t.get("format"))
+            if unused and unused in t:
+                raise ConfigError(f"{MANIFEST}: {path}: format {t['format']} does not use '{unused}' — remove it")
+            low = path.lower()
+            leaf = low.rsplit("/", 1)[-1]
+            if leaf in AUTO_LOADED_FILES:
+                raise ConfigError(f"{MANIFEST}: {path}: no adapter is generated under the name of a file tools load by itself")
+            if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low.startswith(IMPLICIT_SKILL_PREFIXES)):
+                raise ConfigError(f"{MANIFEST}: pilot boundary — {item.get('id')} (.ees/) may not be generated to {path}, "
+                                  "which a session loads or calls by itself")
+            name = target_name(item, t)
+            if ees and "/skills/" in low and \
+                    (not isinstance(t.get("frontmatter"), dict) or t["frontmatter"].get("disable-model-invocation") is not True):
+                raise ConfigError(f"{MANIFEST}: {path}: a pilot skill must not be called by the model itself "
+                                  "(disable-model-invocation: true)")
+            if ees:
+                if t.get("frontmatter") == "from-source":
+                    raise ConfigError(f"{MANIFEST}: {path}: an .ees/ item writes its frontmatter in the manifest")
+                segments = path.split("/")
+                entry = segments[-2] if segments[-1] == "SKILL.md" else segments[-1]
+                if not (str(item.get("id", "")).startswith(PILOT_PREFIX) and str(name or "").startswith(PILOT_PREFIX)
+                        and entry.startswith(PILOT_PREFIX)):
+                    raise ConfigError(f"{MANIFEST}: {path}: a pilot entry point needs the '{PILOT_PREFIX}' prefix in its id, "
+                                      f"name ({name!r}) and path")
+            if name:
+                for tool in t["tool"].split("+"):   # 'codex+antigravity' shares the name space of 'codex'
+                    key = (tool, str(name).lower())   # one name per tool, whatever the kind or letter case
+                    if key in names and names[key] != item.get("id"):
+                        raise ConfigError(f"{MANIFEST}: name {name!r} ({tool} {item['kind']}) is used by {names[key]} and "
+                                          f"{item.get('id')}")
+                    names[key] = item.get("id")
+
+
+def generated_header(content: str, fmt: str) -> dict:
+    """Codex round 2: read back the keys the generator really wrote — the Markdown frontmatter or the TOML lines before
+    developer_instructions — so the checks see what a tool will load, not what the manifest says."""
+    keys: dict = {}
+    if fmt == "codex-agent-toml":
+        head = content.split("developer_instructions = " + "'" * 3, 1)[0]
+        for line in head.split("\n"):
+            if not line or line.startswith("# "):
+                continue
+            m = re.fullmatch(r'([A-Za-z_][A-Za-z0-9_-]*) = "((?:[^"\\]|\\.)*)"', line)
+            if not m:
+                raise ConfigError(f"unreadable TOML header line {line!r}")
+            if m.group(1).lower() in {k.lower() for k in keys}:
+                raise ConfigError(f"key {m.group(1)!r} written twice (case-insensitive)")
+            keys[m.group(1)] = m.group(2).replace('\\"', '"').replace("\\\\", "\\")
+        return keys
+    if not content.startswith("---\n"):
+        return keys
+    block = content[4:content.find("\n---\n", 4)]
+    for line in block.split("\n"):
+        if re.fullmatch(r"  - \S.*", line):
+            continue                      # an item of the list key above (paths of a rule)
+        m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_-]*):(?: (.*))?", line)
+        if not m:
+            raise ConfigError(f"unreadable frontmatter line {line!r}")
+        value = (m.group(2) or "").strip()
+        if len(value) >= 2 and value[0] == value[-1] == '"':
+            value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+        if m.group(1).lower() in {k.lower() for k in keys}:
+            raise ConfigError(f"key {m.group(1)!r} written twice (case-insensitive)")
+        keys[m.group(1)] = value
+    return keys
+
+
+def validate_outputs(manifest: dict, planned: list) -> None:
+    """Codex round 2 (structural): every output is checked as it will really be written, before the first write.
+    (a) the real path: no symbolic link in the target or any parent, the resolved path inside the repository and inside a
+        managed folder, and for an .ees item the forbidden places judged on the resolved path; (b) the real name: read
+        from the generated text, 'ees-' for a pilot entry point, one name per tool family and kind; (c) the model: when
+        the source has a seviye, the generated model fields are exactly the ones the seviye gives (none for a skill)."""
+    root_real = Path(os.path.realpath(ROOT))
+    managed_real = [Path(os.path.realpath(ROOT.joinpath(*d.split("/")))) for d in manifest["managed_dirs"]]
+    names: dict = {}
+    for item, target, content in planned:
+        path = target["path"]
+        probe = ROOT
+        for part in path.split("/"):
+            probe = probe / part
+            if probe.is_symlink():
+                raise ConfigError(f"{path}: the target goes through a symbolic link ({probe.relative_to(ROOT).as_posix()})")
+        full = ROOT.joinpath(*path.split("/"))
+        if full.exists() and not full.is_file():
+            raise ConfigError(f"{path}: the target exists and is not a file")
+        if full.is_file() and full.stat().st_nlink > 1:
+            raise ConfigError(f"{path}: the target is a hard link (another name for the same file)")
+        real = Path(os.path.realpath(full))
+        try:
+            real_rel = real.relative_to(root_real).as_posix()
+        except ValueError:
+            raise ConfigError(f"{path}: the target resolves outside the repository ({real})") from None
+        if not any(m in real.parents for m in managed_real):
+            raise ConfigError(f"{path}: the target resolves outside the managed folders ({real_rel})")
+        low = real_rel.lower()
+        ees = is_ees(item["source"]) or any(is_ees(p) for p in item.get("compose", []))
+        if low.rsplit("/", 1)[-1] in AUTO_LOADED_FILES:
+            raise ConfigError(f"{path}: the target resolves to a file tools load by itself ({real_rel})")
+        if ees and (low.startswith(AUTO_LOADED_PREFIXES) or low.startswith(IMPLICIT_SKILL_PREFIXES)):
+            raise ConfigError(f"pilot boundary — {item.get('id')} (.ees/) would be written to {real_rel}, which a session "
+                              "loads or calls by itself")
+        try:
+            header = generated_header(content, target.get("format", ""))
+        except ConfigError as e:
+            raise ConfigError(f"{path}: {e}") from None
+        name = next((v for k, v in header.items() if k.lower() == "name"), None)
+        if ees and not str(name or "").startswith(PILOT_PREFIX):
+            raise ConfigError(f"{path}: the generated name {name!r} lacks the '{PILOT_PREFIX}' prefix of a pilot entry point")
+        if name:
+            for tool in target["tool"].split("+"):
+                key = (tool, name.lower())
+                if key in names and names[key] != item.get("id"):
+                    raise ConfigError(f"{path}: the generated name {name!r} ({tool}) is also used by {names[key]}")
+                names[key] = item.get("id")
+        block = split_frontmatter(read_text(item["source"]))[0] if item.get("extract") != "core" else None
+        tier = source_tier(block, item["source"])
+        if tier is not None:
+            want = ((TIER_MAP.get(target["tool"]) or {}).get(tier) or {}) if item["kind"] == "agent" else {}
+            have = {k: v for k, v in header.items() if is_model_key(k)}
+            if have != {k: str(v) for k, v in want.items()}:
+                raise ConfigError(f"{path}: model fields {have} differ from what seviye '{tier}' gives ({want})")
+
+
+def load_manifest() -> dict:
+    try:
+        data = json.loads(read_text(MANIFEST))
+    except json.JSONDecodeError as e:
+        raise ConfigError(f"{MANIFEST}: invalid JSON ({e})") from e
+    validate_manifest(data)
+    global SKILL_ROOTS, TIER_MAP
+    SKILL_ROOTS = list(data.get("skill_roots") or [".antigravity/skills"])
+    TIER_MAP = data.get("tier_map") or {}
+    for tool, tiers in TIER_MAP.items():
+        if tool == "about":
+            continue
+        unknown = sorted(set(tiers) - set(TIERS))
+        if unknown:
+            raise ConfigError(f"{MANIFEST}: tier_map.{tool} has unknown seviye {', '.join(unknown)}")
     return data
 
 
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    parser = argparse.ArgumentParser(description="Generate or check tool adapters from .antigravity/")
+    parser = argparse.ArgumentParser(description="Generate or check tool adapters listed in .ees/adapters.json")
     parser.add_argument("--check", action="store_true", help="write nothing; exit 1 on any difference")
     args = parser.parse_args()
 
     try:
         manifest = load_manifest()
-        expected = {t["path"]: (item["source"], render(item, t)) for item in manifest["items"] for t in item["targets"]}
+        planned = [(item, t, render(item, t)) for item in manifest["items"] for t in item["targets"]]
+        validate_outputs(manifest, planned)   # Codex round 2: on the real outputs, before anything is written
+        expected = {t["path"]: (" + ".join(item.get("compose", []) + [item["source"]]), content)
+                    for item, t, content in planned}
     except (ConfigError, KeyError) as e:
         print(f"ERROR {e}")
         return 2
@@ -1230,6 +1561,21 @@ def main() -> int:
         print(f"FAIL {len(budget_problems)} instruction budget problem(s); nothing written")
         return 1
     problems: list[str] = []
+    # blind check 4: stray files are found before the first write, so a refused run writes nothing
+    for managed in manifest["managed_dirs"]:
+        base = rel(managed)
+        if not base.is_dir():
+            continue
+        for f in sorted(p for p in base.rglob("*") if p.is_file() or p.is_symlink()):
+            r = f.relative_to(ROOT).as_posix()
+            # F2: macOS Finder writes .DS_Store into folders it shows; a plain file of that name is not an instruction
+            if r not in expected and not (f.name == ".DS_Store" and f.is_file() and not f.is_symlink()):
+                problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
+    if problems and not args.check:
+        for line in problems:
+            print(line)
+        print(f"FAIL {len(problems)} adapter problem(s); nothing written")
+        return 1
     for path, (source, content) in expected.items():
         target = rel(path)
         if args.check:
@@ -1239,18 +1585,16 @@ def main() -> int:
                 problems.append(f"DRIFT {path} differs from source {source}; run {REGENERATE}")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            with open(target, "w", encoding="utf-8", newline="\n") as fh:
-                fh.write(content)
+            fd, tmp = tempfile.mkstemp(dir=target.parent, prefix=".", suffix=".sync-tmp")   # O_EXCL: a fresh name
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh:
+                    fh.write(content)
+                os.replace(tmp, target)   # a new file: never written through a link that appeared after the check
+            except BaseException:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+                raise
             print(f"wrote {path}")
-
-    for managed in manifest["managed_dirs"]:
-        base = rel(managed)
-        if not base.is_dir():
-            continue
-        for f in sorted(p for p in base.rglob("*") if p.is_file()):
-            r = f.relative_to(ROOT).as_posix()
-            if r not in expected:
-                problems.append(f"UNMANAGED {r} is in a tool discovery folder but not in {MANIFEST}")
 
     problems += budget_problems
     for line in budget_warnings:

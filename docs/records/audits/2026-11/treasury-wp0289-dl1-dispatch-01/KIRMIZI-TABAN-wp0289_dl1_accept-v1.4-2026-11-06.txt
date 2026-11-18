@@ -1,0 +1,40 @@
+# WP-0289-DL1 kabul betiği v1.4 — kırmızı taban (Treasury Intake CT, 2026-11-06/07)
+# betik /Users/natig/Projects/treasury-ct-teslim/wp0289-dl1/wp0289_dl1_accept.py (kopyası bu klasörde wp0289_dl1_accept-v1.4.py) sha256 ce10d36a055cc406947a18d5e8594fc1f6fa5cbf1f2c5fefe668d1e4b20ae38e
+# koşu: işçi worktree'si /Users/natig/Projects/ERP-vNext-recovery-wp0289-dl1 · dal feature/mdm/wp-0289-dl1 · HEAD = --base = Expected HEAD 6be9bc3d6 · DOTNET_ROOT=$HOME/.dotnet · mongod 8.0.18 (bu Mac; kabulde 7.0.28)
+# beklenen: 12 FAIL — 'değişiklik yok' ve 11 AC etiketi; koşudan sonra worktree temiz.
+
+HEAD 6be9bc3d661e94f8965968978bf60fd4ff21a028 · base 6be9bc3d661e94f8965968978bf60fd4ff21a028 · çıktı <çıktı dizini>
+PASS dal — feature/mdm/wp-0289-dl1
+PASS taban HEAD'in atası
+PASS worktree temiz
+PASS paket değişmedi (onaylı sürüm) — 0056f86e84fc8a7c
+FAIL değişen dosyalar yalnız İzinli yollar — değişiklik yok
+PASS yalnız ekleme dosyalarında silinen satır yok
+PASS MdmDocumentClassMaps yalnız Bank / BankBranch ekler (doğru liste R3 testinde)
+PASS Teslim keşfi yalnız mdm_banks / mdm_bank_branches ekler (D141)
+PASS denetim defterine borç satırı eklenmedi (AC-7)
+PASS git diff --check temiz
+PASS mongod yolu mutlak ve var — /opt/homebrew/bin/mongod
+mongod: db version v8.0.18
+PASS derleme services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -c Release — çıkış 0
+PASS derleme services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -c Release — çıkış 0
+PASS derleme services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj — çıkış 0
+PASS test mdm-app — çıkış 0 · 2923 sonuç · 0 kırmızı
+PASS test mdm-api — çıkış 0 · 1221 sonuç · 0 kırmızı
+FAIL AC-01 etiketli testler geçti — 0 test
+FAIL AC-02 etiketli testler geçti — 0 test
+FAIL AC-03 etiketli testler geçti — 0 test
+FAIL AC-04 etiketli testler geçti — 0 test
+FAIL AC-05 etiketli testler geçti — 0 test
+FAIL AC-06 etiketli testler geçti — 0 test
+FAIL AC-08 etiketli testler geçti — 0 test
+FAIL AC-09 etiketli testler geçti — 0 test
+FAIL AC-27 etiketli testler geçti — 0 test
+FAIL AC-59 etiketli testler geçti — 0 test
+FAIL AC-60 etiketli testler geçti — 0 test
+PASS AC-07 AuditTrailStandard — çıkış 0 · 22 sonuç
+PASS scripts/tests (yerel kapı) — çıkış 0
+SONUÇ: FAIL — 12 kontrol
+Sabotajlar bu betikte koşulmaz: her biri işçi raporunda kırmızı test adıyla verilir; kabulde CT yeniden koşar.
+exit=1
+worktree-satır: 0

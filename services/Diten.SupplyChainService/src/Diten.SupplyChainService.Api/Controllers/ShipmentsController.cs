@@ -12,8 +12,9 @@ public sealed class ShipmentsController(ISender sender) : CustomBaseController
 {
     [HttpGet]
     [HasPermission(ShipmentPermissions.Read)]
-    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? sourceDocumentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50, CancellationToken ct = default)
-     => Wire(await sender.Send(new GetShipmentListQuery(status, sourceDocumentId, page, pageSize), ct));
+    public async Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? sourceDocumentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50,
+     [FromQuery] string? search = null, [FromQuery] string? orderBy = null, [FromQuery] string? orderDir = null, CancellationToken ct = default)
+     => Wire(await sender.Send(new GetShipmentListQuery(status, sourceDocumentId, page, pageSize, search, orderBy, orderDir), ct));
     [HttpPost]
     [HasPermission(ShipmentPermissions.Create)]
     public async Task<IActionResult> Create(ShipmentModels.Create body, CancellationToken ct)

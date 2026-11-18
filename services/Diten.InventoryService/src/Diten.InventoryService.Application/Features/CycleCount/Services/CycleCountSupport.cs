@@ -59,6 +59,27 @@ public sealed partial class CycleCountSupport
         RequestFingerprint = fingerprint
     };
 
+    /// <summary>
+    /// DL-3: a row of the company settings' own trail (pack §4.4, §21 "önceki / sonraki tolerans …") — in <c>wms_count_events</c> with the settings
+    /// id as its <c>CountId</c> (its <c>Seq</c> = the settings' next event seq), so the key-event rule and the insert-only trail are the counts' own.
+    /// </summary>
+    public CycleCountEvent SettingsEvent(CycleCountSettings settings, DateTimeOffset at, IReadOnlyDictionary<string, string?> data, string key, string op,
+        string fingerprint) => new()
+    {
+        Id = Guid.NewGuid(),
+        CreatedAt = at,
+        CountId = settings.Id,
+        Seq = ++settings.EventSeq,
+        Kind = CycleCountEventKind.Updated,
+        ActorUserId = UserId,
+        At = at,
+        Data = new Dictionary<string, string?>(data, StringComparer.Ordinal),
+        CorrelationId = CorrelationId,
+        IdempotencyKey = key,
+        RequestOp = op,
+        RequestFingerprint = fingerprint
+    };
+
     // ── refusals ──────────────────────────────────────────────────────────────────────────────────────────
 
     public static Response<T> Fail<T>(string code, string message, int status, IReadOnlyDictionary<string, object?>? details = null)
