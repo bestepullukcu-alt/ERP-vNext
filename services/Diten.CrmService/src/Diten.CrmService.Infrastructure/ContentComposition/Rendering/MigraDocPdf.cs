@@ -6,14 +6,16 @@ namespace Diten.CrmService.Infrastructure.ContentComposition.Rendering;
 /// <summary>
 /// The MigraDoc building blocks shared by the CRM PDF renderers (SCMM-16B content set revision, WP-KP-3 knowledge path
 /// revision): one A4 document style, headings, label/value fields, a stable "—" for empty values, file-name sanitising
-/// and the bytes. Fonts follow the SCMM-16B note (Windows fonts; Linux font resolver is F-SCMM-16B-FONT).
+/// and the bytes. Every PDF uses the <see cref="CrmPdfFontResolver"/> family (embedded Segoe WP bytes), never an
+/// OS-installed font, so rendering behaves the same on Windows, Linux and macOS.
 /// </summary>
 internal static class MigraDocPdf
 {
-    private const string BodyFont = "Arial";
+    private const string BodyFont = CrmPdfFontResolver.FamilyName;
 
     public static (Document Document, Section Section) Create(string title, string subject)
     {
+        CrmPdfFontResolver.EnsureInstalled();
         var document = new Document();
         document.Info.Title = title;
         document.Info.Subject = subject;

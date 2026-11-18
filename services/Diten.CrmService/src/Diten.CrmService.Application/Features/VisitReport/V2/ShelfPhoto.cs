@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Common.Models;
@@ -12,7 +13,12 @@ namespace Diten.CrmService.Application.Features.VisitReport.V2;
 public sealed record ShelfPhotoDto(Guid PhotoEvidenceId, string MediaType, long ByteSize);
 
 /// <summary>WP-VW-W4 (W4-WEB-b, BE-a §37 open 2) — <c>POST api/crm/visit-report/v2/{plannedVisitId}/shelf-photo</c>.</summary>
-public sealed record UploadShelfPhotoCommand(Guid PlannedVisitId, VisitEvidenceFile? File) : IRequest<Response<ShelfPhotoDto>>;
+public sealed record UploadShelfPhotoCommand(Guid PlannedVisitId, VisitEvidenceFile? File)
+    : IRequest<Response<ShelfPhotoDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitReport");
+    public Guid? CentralAuditEntityId(object? response) => PlannedVisitId;
+}
 
 /// <summary><c>GET api/crm/visit-report/v2/{plannedVisitId}/shelf-photo</c> — the photo the visit's report points at.</summary>
 public sealed record GetShelfPhotoQuery(Guid PlannedVisitId) : IRequest<Response<ContentArtifactReadResult>>;

@@ -65,13 +65,13 @@ public sealed class ESignatureSignaturesController : CustomBaseController
     [HttpPost("{id:guid}/verify")]
     [HasPermission(ESignPermissions.SignaturesVerify)]
     public async Task<IActionResult> Verify(Guid id, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new VerifySignatureCommand(id), ct));
+        CreateActionResultInstance(await _mediator.Send(new VerifyESignatureCommand(id), ct));
 
     /// <summary>§4.8 invalidateSignature — 201 SignatureRecord with its invalidation.</summary>
     [HttpPost("{id:guid}/invalidate")]
     [HasPermission(ESignPermissions.SignaturesInvalidate)]
     public async Task<IActionResult> Invalidate(Guid id, [FromBody] InvalidateSignatureRequest request, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new InvalidateSignatureCommand(id, request.Ticket, request.Reason, request.IdempotencyKey), ct));
+        CreateActionResultInstance(await _mediator.Send(new InvalidateESignatureCommand(id, request.Ticket, request.Reason, request.IdempotencyKey), ct));
 }
 
 [Route("api/v1/esign/requests")]
@@ -85,7 +85,7 @@ public sealed class ESignatureRequestsController : CustomBaseController
     [HttpPost]
     [HasPermission(ESignPermissions.RequestsCreate)]
     public async Task<IActionResult> Create([FromBody] CreateSignatureRequestRequest request, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new CreateSignatureRequestCommand(request.Subject?.Module, request.Subject?.SubjectType,
+        CreateActionResultInstance(await _mediator.Send(new CreateESignatureRequestCommand(request.Subject?.Module, request.Subject?.SubjectType,
             request.Subject?.SubjectId, request.ActionCode, request.MeaningCode, request.SignerUserId, request.DueAtUtc, request.Note,
             request.IdempotencyKey), ct));
 
@@ -107,13 +107,13 @@ public sealed class ESignatureRequestsController : CustomBaseController
     [HttpPost("{id:guid}/reject")]
     [HasPermission(ESignPermissions.RequestsReject)]
     public async Task<IActionResult> Reject(Guid id, [FromBody] ESignReasonRequest request, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new RejectSignatureRequestCommand(id, request.Reason, request.IdempotencyKey), ct));
+        CreateActionResultInstance(await _mediator.Send(new RejectESignatureRequestCommand(id, request.Reason, request.IdempotencyKey), ct));
 
     /// <summary>§4.13 cancelSignatureRequest — the requester only.</summary>
     [HttpPost("{id:guid}/cancel")]
     [HasPermission(ESignPermissions.RequestsCreate)]
     public async Task<IActionResult> Cancel(Guid id, [FromBody] ESignReasonRequest request, CancellationToken ct) =>
-        CreateActionResultInstance(await _mediator.Send(new CancelSignatureRequestCommand(id, request.Reason), ct));
+        CreateActionResultInstance(await _mediator.Send(new CancelESignatureRequestCommand(id, request.Reason), ct));
 }
 
 [Route("api/v1/esign")]

@@ -26,6 +26,9 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         services.AddScoped<MovementMasterDataValidator>();
+        // MOD-0173-FU03 §8.7: one reservation path for the HTTP handlers and the in-process port (MOD-0178's door).
+        services.AddScoped<ReservationCommandService>();
+        services.AddScoped<Features.Inventory.Ports.IInventoryReservationPort, InventoryReservationPort>();
         services.AddScoped<LocationWriteSupport>();
 
         return services;

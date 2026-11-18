@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CompanyLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Choose the company whose warehouse you work in. Nothing is shown until a company is chosen.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>The company list cannot be read right now; try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>The user directory cannot be reached; the assignee was not checked and nothing was saved. Try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Choose an active user of your company as the assignee.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>The company code is not valid for task numbers; correct the company code first.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>The stock changed while the confirmation was posting; the confirmation is waiting — use “Retry”.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>This confirmation is being processed right now; wait a moment and refresh.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Only a confirmation with an integrity error can be reconciled.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Only a waiting confirmation can be retried.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>A confirmation of this task is waiting for the stock answer; only “Retry” works until it is settled.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Someone changed this record meanwhile; refresh and try again.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>This action is not possible in the task’s current state.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>The location has open putaway tasks; close or cancel them first.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>A location cannot be Receiving and Staging at once.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>This location already has a role record; edit that one.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>An upper or lower node already carries the opposite role; Receiving and Staging cannot meet on one path.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>The role record was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>A role can be given to a warehouse, storage location, zone or bin only.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Only the assigned operator or a supervisor can do this.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>The stock ledger already holds a different movement under this confirmation’s key; a supervisor must reconcile it.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>The planned quantity cannot be below what is already confirmed or waiting.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>The quantity is more than the stock still open in this row.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>The quantity is more than what remains to put away.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>A task number could not be issued; try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>The serial numbers at the source changed; cancel this task and open a new one.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Part of this lot at the same location is awaiting quality; complete the quality decision first.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>A serial-controlled product is put away in full only; partial confirmation and closing the remainder are not possible.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>The source location is not a receiving location.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>No stock was found in the selected row; refresh the list.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>The stock went into quarantine or is held; it cannot be put away.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Storage condition unknown — complete it on the product card (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>The storage conditions are not valid: choose at most one temperature condition.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>The target bin does not accept this product’s storage condition.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>The target must be an active, stockable bin of the same warehouse that is not a receiving or staging location.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>The task already has an assignee.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>The task was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with different content; close the dialog and start again.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Write a reason of at least 10 characters.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>There is not enough stock at the source for this quantity.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>The lot is under recall; it cannot be put away.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>The stock service cannot be reached; nothing was saved. Try again shortly.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Some values are not valid; check the form.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>You do not have access to this action.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Your session has ended; sign in again.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>The warehouse service cannot be reached right now; try again shortly.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>The record was not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>The record changed meanwhile; refresh and try again.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>The request was not accepted; check the values and try again.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Something went wrong; try again.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Too many rows to export; narrow the filters.</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lot</value></data>
+  <data name="QuantityDecrease" xml:space="preserve"><value>Decrease quantity</value></data>
+  <data name="QuantityIncrease" xml:space="preserve"><value>Increase quantity</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Some product or location names could not be read; ids are shown instead.</value></data>
+  <data name="ValidationQuantity" xml:space="preserve"><value>Enter a quantity above zero with at most 6 decimals.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_OUTBOUND" xml:space="preserve"><value>Outbound shipment not found; refresh the list.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_FAILED" xml:space="preserve"><value>The stock could not be allocated for every line; nothing was saved.</value></data>
+  <data name="Warehouse.Error.WMS_ALLOCATION_TOO_MANY_LINES" xml:space="preserve"><value>An outbound shipment can hold at most 100 lines.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_AMBIGUOUS" xml:space="preserve"><value>More than one shipment refers to this outbound; ask the shipping team to check.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_READ_FORBIDDEN" xml:space="preserve"><value>You may not read the shipments; ask for the shipment read permission.</value></data>
+  <data name="Warehouse.Error.WMS_DISPATCH_SOURCE_UNAVAILABLE" xml:space="preserve"><value>The shipping service cannot be reached; nothing was changed. Try again shortly.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_LEVEL_NOT_PUBLISHABLE" xml:space="preserve"><value>An item-level outbound cannot be made ready to ship until the shipping side supports it.</value></data>
+  <data name="Warehouse.Error.WMS_ITEM_NOT_RESOLVABLE" xml:space="preserve"><value>The item line could not be resolved to a stockable SKU; check the product.</value></data>
+  <data name="Warehouse.Error.WMS_LOT_NOT_ALLOCATABLE" xml:space="preserve"><value>The chosen lot cannot be allocated; choose a lot from the preview.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_ALLOCATION_IN_PROGRESS" xml:space="preserve"><value>The allocation of this outbound is still being completed; refresh in a moment.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_CANCEL_NOT_ALLOWED" xml:space="preserve"><value>A shipment that is ready to ship or shipped cannot be cancelled.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_IMMUTABLE" xml:space="preserve"><value>The outbound is ready to ship and can no longer be changed.</value></data>
+  <data name="Warehouse.Error.WMS_OUTBOUND_LEVEL_MIXED" xml:space="preserve"><value>Item lines and SKU lines cannot be mixed in one outbound.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EMPTY" xml:space="preserve"><value>Put at least one content line in the package before closing it.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_EXCEEDS_PICKED" xml:space="preserve"><value>The packages would hold more than was picked for an allocation.</value></data>
+  <data name="Warehouse.Error.WMS_PACKAGE_NOT_FOUND" xml:space="preserve"><value>Package not found; refresh the page.</value></data>
+  <data name="Warehouse.Error.WMS_STAGING_NOT_CONFIGURED" xml:space="preserve"><value>The warehouse has no staging location; give one of its locations the Staging role first.</value></data>
+  <data name="Warehouse.Error.WMS_UOM_NOT_BASE" xml:space="preserve"><value>The line's unit must be the SKU's base unit.</value></data>
+  <data name="Warehouse.Error.FEFO_BYPASS_REASON_REQUIRED" xml:space="preserve"><value>A lot is not the first FEFO lot; give a reason (at least 10 characters).</value></data>
+  <data name="Warehouse.Error.FEFO_ORDER_VIOLATION" xml:space="preserve"><value>Your company issues lots in FEFO order only; choose the first eligible lot.</value></data>
+  <data name="Warehouse.Error.LOT_EXPIRED" xml:space="preserve"><value>The lot has expired; it cannot be issued.</value></data>
+  <data name="Warehouse.Error.LOT_BLOCKED" xml:space="preserve"><value>The lot is blocked; it cannot be issued.</value></data>
+  <data name="Warehouse.Error.LOT_RETEST_DUE" xml:space="preserve"><value>The lot is due for retest; it cannot be issued until it is retested.</value></data>
+  <data name="Warehouse.Error.RESERVATION_NOT_ACTIVE" xml:space="preserve"><value>The reservation of this stock is no longer active; the confirmation was refused.</value></data>
+  <data name="Warehouse.Error.RESERVATION_MISMATCH" xml:space="preserve"><value>The stock does not match its reservation; the confirmation was refused.</value></data>
+  <data name="Warehouse.Error.RESERVATION_CONFLICT" xml:space="preserve"><value>The reservation changed in the meantime; refresh and try again.</value></data>
+  <data name="Warehouse.Error.UNKNOWN_LOCATION" xml:space="preserve"><value>The warehouse or location does not exist in the selected company or is not active.</value></data>
+  <data name="Warehouse.Outbound.Status.Allocated" xml:space="preserve"><value>Allocated</value></data>
+  <data name="Warehouse.Outbound.Status.Picked" xml:space="preserve"><value>Picked</value></data>
+  <data name="Warehouse.Outbound.Status.Packed" xml:space="preserve"><value>Packed</value></data>
+  <data name="Warehouse.Outbound.Status.ReadyToShip" xml:space="preserve"><value>Ready to ship</value></data>
+  <data name="Warehouse.Outbound.Status.Shipped" xml:space="preserve"><value>Shipped</value></data>
+  <data name="Warehouse.Outbound.Status.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Warehouse.Package.Status.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Warehouse.Package.Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Warehouse.Package.Status.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="PackingTitle" xml:space="preserve"><value>Packing</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Put the picked items into packages, enter weight and dimensions and close each package; when everything is packed the outbound becomes Packed.</value></data>
+  <data name="LinkPickTasks" xml:space="preserve"><value>Pick Tasks</value></data>
+  <data name="LinkOutbound" xml:space="preserve"><value>Outbound Details</value></data>
+  <data name="SectionOutbound" xml:space="preserve"><value>Outbound</value></data>
+  <data name="SectionAllocations" xml:space="preserve"><value>Picked items</value></data>
+  <data name="SectionPackages" xml:space="preserve"><value>Packages</value></data>
+  <data name="ColAllocSeq" xml:space="preserve"><value>Alloc.</value></data>
+  <data name="ColPicked" xml:space="preserve"><value>Picked</value></data>
+  <data name="ColPacked" xml:space="preserve"><value>Packed</value></data>
+  <data name="ColRemaining" xml:space="preserve"><value>To pack</value></data>
+  <data name="NoPackages" xml:space="preserve"><value>No packages yet.</value></data>
+  <data name="FieldContents" xml:space="preserve"><value>Contents</value></data>
+  <data name="FieldWeight" xml:space="preserve"><value>Weight (kg)</value></data>
+  <data name="FieldDimensions" xml:space="preserve"><value>Dimensions (cm, L×W×H)</value></data>
+  <data name="DimensionsPlaceholder" xml:space="preserve"><value>e.g. 40x30x20</value></data>
+  <data name="Warehouse.Package.Action.Create" xml:space="preserve"><value>New Package</value></data>
+  <data name="Warehouse.Package.Action.Edit" xml:space="preserve"><value>Edit Package</value></data>
+  <data name="Warehouse.Package.Action.Close" xml:space="preserve"><value>Close Package</value></data>
+  <data name="Warehouse.Package.Action.Close.Confirm" xml:space="preserve"><value>The package is closed and can no longer be changed; when every allocation is packed the outbound becomes Packed.</value></data>
+  <data name="Warehouse.Package.Saved.Created" xml:space="preserve"><value>Package opened.</value></data>
+  <data name="Warehouse.Package.Saved.Updated" xml:space="preserve"><value>Package saved.</value></data>
+  <data name="Warehouse.Package.Saved.Closed" xml:space="preserve"><value>Package closed.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New package</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit package</value></data>
+  <data name="NotPicked" xml:space="preserve"><value>The outbound is not picked; a package opens only when it is Picked.</value></data>
+  <data name="PackedDone" xml:space="preserve"><value>The outbound is packed.</value></data>
+  <data name="ValidationContents" xml:space="preserve"><value>Enter a quantity for at least one allocation.</value></data>
+  <data name="ValidationDimensions" xml:space="preserve"><value>Write the dimensions as 40x30x20.</value></data>
+  <data name="PackageContentLine" xml:space="preserve"><value>Alloc. {0}: {1}</value></data>
+  <data name="PackageLeftHint" xml:space="preserve"><value>Left to pack: {0}</value></data>
+</root>

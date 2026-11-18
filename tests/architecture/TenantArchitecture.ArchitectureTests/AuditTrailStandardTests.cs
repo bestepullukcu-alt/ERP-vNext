@@ -60,6 +60,8 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // commands on the existing best-effort recorder until the write-once pattern (FU-0022-AUD-02).
         ["Diten.AuthService"] = new(Debt: 18, Exceptions: 1, K2Debt: 11),
         // Main sync (2026-10-11): the Crm ledger shrank to 169 on main (the CT line never touched it).
+        // measured 2026-11-02 — CRM-AUD-KN-01: the 34 Knowledge commands audited through crm-merkezi-iletim; none was in the
+        // debt list (all were new, unaudited), so the debt stays 169.
         ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
@@ -133,6 +135,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.InventoryService", "inventory-merkezi-iletim", "b", "ICentralAuditDeclaration"),
         // CT decision 2026-10-21 (WP-A1, MVP-6; owner decision E-2 2026-10-21): SupplyChain on the same shared forwarder, path b.
         ("Diten.SupplyChainService", "supplychain-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // CT decision 2026-11-02 (CRM-AUD-KN-01; owner decisions K-AUD-1 Crm = 19 and K-AUD-2 not K2, Beste 2026-11-02): CRM on
+        // the same shared forwarder, path b — first slice: the 34 Knowledge commands, recorded right after they succeed.
+        ("Diten.CrmService", "crm-merkezi-iletim", "b", "ICentralAuditDeclaration"),
         // CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md): MOD-0022 e-signature commands write their central audit
         // intent INSIDE the business transaction; accepted as a trail, path a markers are NOT added (double record, §4.4).
         ("Diten.Platform", "esign-islem-ici-denetim", "a", "ESignatureAuditIntent.EnqueueAsync"),
@@ -155,10 +160,13 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
         // WP-PLATFORM-AUDIT-INTX-01 (2026-10-02) — the in-transaction door, proven end to end; the token is the CALL,
         // not the ITransactionOwnedAuditCommand marker (a marked command that calls none of these is unaudited).
+        // Owner decision A-10 (Beste, 2026-11-03, CT-DECISIONS.md): MOD-0040-FU02 record codes through the same door.
         ("Diten.Platform", "platform-islem-ici", "a",
             "PhysicalEntitlementAuditIntent.EnqueueAsync/TenantSubscriptionTransactionWriter.UpdateAsync"
             + "/TenantSubscriptionCommandSupport.CreateAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteAsync"
-            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"),
+            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"
+            + "/RecordCodeAuditIntent.EnqueueAsync/RecordCodeAuditIntent.EnqueueRefusalAsync"
+            + "/RecordCodeAuditIntent.EnqueueGroupPrefixAlignedAsync/RecordCodeAuditIntent.EnqueueGroupPrefixAlignRefusalAsync"),
         ("Diten.Platform", "gorev-etkinlik-akisi", "c", "TaskItem.Declare"),
         ("Diten.Platform", "is-akisi-gecis-gunlugu", "c",
             "IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync"

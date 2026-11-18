@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
@@ -24,24 +25,52 @@ public sealed record ResolveCountryLegalProfileQuery(string? CountryCode, string
 public sealed record CreateCountryLegalProfileCommand(
     string? CountryCode, string? LanguageCode, string? LegalFooterText, string? MarketingAuthorizationHolder = null,
     string? AdverseEventReportingText = null, string? PromotionalNotice = null, string? PageApprovalCodeFormat = null)
-    : IRequest<Response<CountryLegalProfileDto>>;
+    : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<CountryLegalProfileDto>(response, dto => dto.Id);
+}
 
 /// <summary>Content of a draft only (country + language are fixed at creation).</summary>
 public sealed record UpdateCountryLegalProfileCommand(
     Guid Id, string? LegalFooterText, string? MarketingAuthorizationHolder = null, string? AdverseEventReportingText = null,
     string? PromotionalNotice = null, string? PageApprovalCodeFormat = null, int? ExpectedVersion = null)
-    : IRequest<Response<CountryLegalProfileDto>>;
+    : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record NewCountryLegalProfileVersionCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>;
+public sealed record NewCountryLegalProfileVersionCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<CountryLegalProfileDto>(response, dto => dto.Id);
+}
 
-public sealed record SubmitCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>;
+public sealed record SubmitCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record WithdrawCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>;
+public sealed record WithdrawCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 public sealed record DecideCountryLegalProfileCommand(Guid Id, string? Decision, string? Comment)
-    : IRequest<Response<CountryLegalProfileDto>>;
+    : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record ArchiveCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>;
+public sealed record ArchiveCountryLegalProfileCommand(Guid Id) : IRequest<Response<CountryLegalProfileDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("CountryLegalProfile");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-KP-5a — every legal profile request; the lifecycle is the shared <see cref="RegulatoryTextLifecycle{T}"/>.</summary>
 public sealed class CountryLegalProfileHandlers :

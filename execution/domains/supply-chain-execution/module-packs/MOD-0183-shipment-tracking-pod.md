@@ -5,14 +5,15 @@ domain: supply-chain-execution
 service: Diten.SupplyChainService
 shell: tenant
 golden_reference: compact
+data_mode: server
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated. §23 (WP-P1, Inventory stock issue at dispatch): r6 approved (CT-APR-01 #269, 2026-10-28); r7 is a text revision from the DL-1 code reviews and awaits CT-APR-02 and a CT-APR-01 row."
+status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated. §23 (WP-P1, Inventory stock issue at dispatch): r6 approved (CT-APR-01 #269, 2026-10-28); r7 is a text revision from the DL-1 code reviews and awaits CT-APR-02 and a CT-APR-01 row. r9 (slice B, K1, K4; customer identity in a separate customerRef field, SHIPMENT-BUNDLE 3.5.0, per the MVP-1 CT answer of 2026-11-03 accepted by Natig K1): approved (CT-APR-01 row 0d0e64ef, 2026-11-04; DL-3 / DL-4 on main with PR #400). r10 (§25: warehouse intake opened, reservationId internal, K3 restoreReservation, Item level gated; owner decisions R10-1…R10-9, Natig 2026-11-11 / 2026-11-12; text revised after the CT-APR-02 reviews of 2026-11-12): approved (CT-APR-01 row 2df5a5f8, 2026-11-14, PR #426; only DL-5, DL-6, DL-7); code waits for the §25.7 gates. r11 (§26: the correlation root is read from the stored shipment, not from the request, because the Gateway mints its own X-Correlation-Id since WP-PLATFORM-AUDIT-INTX-01 FIX2/FIX3; SHIPMENT-BUNDLE 3.5.1; Shipment Details without GUIDs; Natig 2026-11-15 option C): draft, not approved; needs CT-APR-02 and a CT-APR-01 row before code."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
 target: 2026-09-30
-form_field_count: 13
+form_field_count: 10
 ---
 
 # MOD-0183 — Shipment Tracking & POD
@@ -97,6 +98,7 @@ implementation. Central consumer contracts are present. Unresolved compatibility
 | `CarrierId` | Optional MOD-0184 reference |
 | `LoadPlanId` | Optional internal MOD-0185 reference; wire projection is `loadId`; no new assignment API |
 | `ShipToReference` | Required opaque delivery destination reference |
+| `CustomerRef` | **r9 (SHIPMENT-BUNDLE 3.5.0, §24.1):** optional customer key, a MOD-0149 `Account.Id` as a lower-case Guid "D" string; the service checks the contract `pattern` and stores the value, never calling CRM; null on records written before 3.5.0 and on Warehouse-intake shipments |
 | `Lines` | At least one `ShipmentLine`; quantity uses the frozen v1 decimal-string schema |
 | `PlannedShipAt` / `PlannedDeliverAt` | UTC date-time; planned delivery cannot precede planned shipment |
 | `Status` | `Draft`, `Planned`, `Dispatched`, `InTransit`, `Delivered`, `Exception`, `Closed`, `Cancelled` |
@@ -130,6 +132,8 @@ Phase B may write only:
   fields), `wwwroot/assets/js/SupplyChain/Shipments/**` (§11 open item 4) and
   `Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (§9 Localization surface). Not granted
   here: the shared shell and layout files (§6) and `SharedResource.*.resx`, whose navigation values the integration owner adds (§22).
+- The Shipment Web tests under `frontend/Diten.Web.Tests/`, and only these: `JavaScript/Shipment*Tests.cs`,
+  `JavaScript/Node/shipment-*.test.mjs`, `Controllers/SupplyChainShipmentsControllerTests.cs`, `Forms/ShipmentFormContractTests.cs` (r11; DL-3 already wrote here, §24.9).
 - `docs/reference/architecture/api/**` for generated MOD-0183 API reference.
 - `docs/records/audits/**` for verification evidence.
 - This module pack and applicable backlog/seam records required by closure.
@@ -147,6 +151,34 @@ writer, MVP-6 CT), `services/Diten.SupplyChainService/src/Diten.SupplyChainServi
 reader's line whitelist `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs`
 with its test under `services/Diten.SupplyChainService/tests/**/Returns/**` (accepting the 3.4.0 line fields only; no MOD-0186
 behaviour change). Inventory's `ShipmentBundleHttpReader` does not read lines and needs no change.
+
+**§24 DL-3 exception (r9, same pattern as DL-1).** The DL-3 change applies SHIPMENT-BUNDLE 3.4.0 → 3.5.0 together with its
+code, because the create command, the summary projection and the contract tests must agree in one change. DL-3 therefore also
+writes, and only these: `docs/analysis/contracts/shipment-bundle.openapi.yaml` (exactly
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0.patch` as approved; single writer: the MOD-0183 contract
+writer, MVP-6 CT) and `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`.
+Every other DL-3 file is already in the paths above. 3.5.0 adds no error code, so `ContractErrorCodes` and its parity test are not
+touched. MOD-0186 code is not changed by DL-3: the Returns additions of 3.5.0 (`ReturnSummary.customerRef`, `getReturn` with
+`ReturnDetail`) are optional or not yet served, and MOD-0186 serves them in its own DL-4 (MOD-0186 section "Contract changes
+needed", items 1 and 6). No DL-5 surface is in 3.5.0.
+
+**§25 DL-5 exception (r10, same pattern as DL-1 and DL-3).** The DL-5 change applies SHIPMENT-BUNDLE 3.5.1 → 3.6.0 (25.3.1; r11: cut from 3.5.1, DL-8 first)
+together with its code, because the intake operation, its error codes and the contract tests must agree in one change. DL-5
+therefore also writes, and only these: `docs/analysis/contracts/shipment-bundle.openapi.yaml` (exactly
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.6.0.patch` as reviewed, 25.7; single writer: the MOD-0183
+contract writer, MVP-6 CT), `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`,
+`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/ContractErrorCodes.cs` and its parity test
+(`ContractErrorCodeParityTests`, because 3.6.0 adds wire codes, §13.1), and the docs-path authority re-pin of the contract file
+(`docs/reference/architecture/docs-path-authority.json` plus its owner decision record under `docs/records/decisions/`, as for
+3.3.0…3.5.0). The Gateway route is not in DL-5's paths: the integration-agent lane writes it (§6, 25.3).
+
+**§26 DL-8 exception (r11, same pattern as DL-1 and DL-3).** DL-8 applies SHIPMENT-BUNDLE 3.5.0 → 3.5.1 together with its
+code, because the contract text and the service's correlation behaviour must agree in one change. DL-8 therefore also writes,
+and only these: `docs/analysis/contracts/shipment-bundle.openapi.yaml` (exactly
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.1.patch` as approved; single writer: the MOD-0183 contract
+writer, MVP-6 CT) and `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ShipmentBundleContract.cs`.
+3.5.1 adds and removes no error code, so `ContractErrorCodes` and its parity test are not touched. No MOD-0185, MOD-0186 or
+MOD-0187 file is written by DL-8 (§26.5).
 
 ## 6. Protected Paths
 
@@ -178,11 +210,13 @@ replacement is allowed. The approved HTTP core is independent of this blocked au
 
 ## 8. Runtime Constraints
 
-- Service: `Diten.SupplyChainService`, port 5061, five layers + CQRS/MediatR.
+- Service: `Diten.SupplyChainService`, port 5066 (AGENTS.md §3), five layers + CQRS/MediatR.
 - MongoDB tenant/legal-entity scoped collections; cross-tenant and cross-LE lookup returns 404.
 - `TenantId` and `LegalEntityId` never come from mutation payloads.
 - State transitions are append-only history; a delivered/cancelled shipment is not edited back to an earlier state.
-- Commands require `Idempotency-Key` and UUID `X-Correlation-Id` exactly as frozen contract v1 specifies.
+- Commands require `Idempotency-Key` and UUID `X-Correlation-Id` exactly as frozen contract v1 specifies. **r11 (§26):** the
+  shipment's correlation root is the correlation the service received on its create; later commands are not compared with it.
+  Behind the Gateway every request carries a correlation the Gateway minted, never the caller's.
 - Duplicate idempotency key returns the prior successful result without a second transition/event.
 - State transition + outbox event are atomic or use an explicit compensating/partial marker; silent partial success is forbidden.
 - Inventory is consumed by API/mock only; no database/internal-type sharing and no second balance.
@@ -257,6 +291,7 @@ Obligations:
 1. **Snapshot access is restricted.** No query, API, export, report or log may read or return a stored Warehouse
    snapshot from any of the three collections without an approved revision of this pack. Today nothing in `src/` reads
    `sce_shipment_source_evidence`; it has a writer (`SourceIntakeStore.cs:44`) and an index (`ShipmentSchema.cs:20`) only.
+
 2. **Intake is not wired to production** until obligation 3 has landed: no host registration of
    `WarehouseIntakeCoordinator`, its Warehouse read client or a poller. This costs nothing today —
    `WarehouseIntakeCoordinator` has no production caller (no reference in `src/` outside its own file).
@@ -268,6 +303,9 @@ Obligations:
    `AGENTS.md` finds it only in the readiness record — and its candidate owners are not live: MOD-0029 Controlled
    Documents is `planned` (`execution/registries/module-id-registry.md:110`) and MOD-0031 Evidence Linking is
    `review / planned` (`:114`). Retention therefore cannot be written today and stays an open owner/Platform decision.
+
+> **r10 (§25.2, §25.3):** obligation 3 lands with the whitelist of §25.2 in the change that opens intake (DL-5); obligation 2
+> is replaced by the user-triggered intake of §25.3 (no poller); obligations 1 and 4 stay as written.
 
 ## 9. Layout & Shell Contract
 
@@ -369,6 +407,7 @@ Capture POD, which are state transitions, not edit forms.
 | `X-Correlation-Id` | Every operation | UUID, non-empty | Persist on lifecycle/outbox records for mutations |
 | `WarehouseReferenceId` | Create | Non-empty opaque reference | Warehouse mapping uses `warehouseId`; source identity separately uses `outboundId` |
 | `ShipToReference` | Create | Non-empty opaque reference | — |
+| `CustomerRef` | Optional on the wire (r9, 3.5.0); always sent by the MVC create form | Must match the contract `pattern` (lower-case Guid "D"), else 400 `INVALID_REQUEST`; no CRM call by the service. The MVC create adapter also checks the account (§24.1) | — |
 | `Lines` | Create | At least one; fields and decimal-string quantity match v1 schema | Product refs validate when mock available |
 | `PlannedShipAt` | Create | UTC | Must be before optional planned delivery |
 | `TargetStatus` / `OccurredAt` | Transitions | Frozen transition matrix + UTC timestamp | Current state is checked atomically |
@@ -387,31 +426,48 @@ Capture POD, which are state transitions, not edit forms.
 - Duplicate POD returns 409 `POD_ALREADY_CAPTURED`.
 - Missing/invalid UUID correlation returns 400 and publishes no event.
 - Unavailable Warehouse detail or incompatible correlation keeps automatic intake blocked and emits no fabricated shipment; an untrusted tenant/LE context never reaches intake — `TrustedSourceContext.FromValidatedPrincipal` throws `UnauthorizedAccessException` to the caller before the coordinator runs, so it leaves no intake result code, no evidence row and no counter increment, and emits no shipment.
-- A Warehouse source whose canonical snapshot differs from the hash already recorded for the same source identity, on a later or concurrent intake, ends in the in-process intake result `Drift` / `SOURCE_DRIFT` (no HTTP response exists; see §13.1), records one `Drift` evidence row per detection, and creates or changes no shipment, lifecycle, audit, outbox or receipt record and publishes no event.
+- A Warehouse source whose canonical snapshot differs from the hash already recorded for the same source identity, on a later or concurrent intake, ends in the intake result `Drift` / `SOURCE_DRIFT` (r10: answered 409 `SOURCE_DRIFT` by `intakeWarehouseOutbound`, §13.1), records one `Drift` evidence row per detection, and creates or changes no shipment, lifecycle, audit, outbox or receipt record and publishes no event.
 - Inventory reconciliation failure is explicit and never mutates inventory or shipment state silently.
 
-### 13.1 Intake-internal result codes — not wire codes
+### 13.1 Intake result codes and their HTTP answer
 
-The frozen contract governs the wire. These codes are the Warehouse intake coordinator's in-process result
-(`SourceIntakeResult.State` / `.Error`); the coordinator has no HTTP route and none of these reaches a client.
-**Do not add them to `shipment-bundle.openapi.yaml`.** They are declared here so that no intake code exists
-undeclared. Source identity is tenant, legal entity, `MOD-0178`, `WAREHOUSE_OUTBOUND` and `outboundId`.
-Every row writes one row to `sce_shipment_source_evidence` with its state, except the pass-through rows from the commit.
+The frozen contract governs the wire. These codes are the Warehouse intake coordinator's result
+(`SourceIntakeResult.State` / `.Error`). Up to r9 the coordinator had no HTTP route and none of these reached a client. **r10:**
+the user-triggered operation `intakeWarehouseOutbound` (25.3, SHIPMENT-BUNDLE 3.6.0) answers each of them as the table's
+"HTTP answer (3.6.0)" column says; the wire codes it names are the only intake codes added to `shipment-bundle.openapi.yaml`
+(25.3.1 item 1), every other name stays internal. They are declared here so that no intake code exists undeclared. Source identity is tenant, legal entity, `MOD-0178`, `WAREHOUSE_OUTBOUND` and `outboundId`.
+Every row writes one row to `sce_shipment_source_evidence` with its state, except where the "Evidence row" column says no (r10
+change: a Warehouse 401 / 403 / 404 writes none, so no row names another tenant's or company's outbound, IR-4, IR-5).
 "Counted" means the O-3 intake counter (`IntakeBlocked`) increments.
 
-| Code | State | Emitted at (`WarehouseIntakeCoordinator.cs`) | Trigger | Counted |
-|---|---|---|---|---|
-| `INVALID_UPSTREAM_CORRELATION` | Quarantined | `:23` | an upstream correlation is supplied that is not a non-empty UUID | yes |
-| `CONFLICTING_CORRELATION` | Quarantined | `:28` | the supplied correlations (caller, upstream, envelope) include an empty UUID or disagree | yes |
-| `DEPENDENCY_HTTP_<status>`, `SCHEMA_INCOMPATIBLE`, `DEPENDENCY_TIMEOUT`, `DEPENDENCY_UNAVAILABLE` | Blocked | `:30`, passed through from `ReadOnlySourceClients.cs:62-72` | the Warehouse detail read fails or does not match the frozen read schema | yes |
-| `SOURCE_ID_MISMATCH` | Blocked | `:33` | the detail returned carries a different `outboundId` than requested | no |
-| `SOURCE_DRIFT` | Drift | `:38`, `:54` | see the drift line in §13 | no — counted instead by the O-3 drift counter `SourceDrifts`, once per detection (`:87`, Q315) |
-| `SOURCE_NOT_READY` | Blocked | `:40` | the Warehouse status is not `ReadyToShip` | no |
-| `EMPTY_SOURCE_LINES` | Blocked | `:42` | the Warehouse detail has no lines | no |
-| `SHIPMENT_MAPPING_INCOMPATIBLE` | Blocked | `:51` | the mapped shipment fails `CreateShipmentValidator` | no |
-| `CONFLICTING_PERSISTED_ROOT` | Quarantined | `:56` | the prepared intent's correlation root differs from the supplied correlation | yes |
-| `COMMIT_FAILED` | Blocked | `:66` | the shipment transaction throws; the pending intent is kept for a later retry | no |
-| `SHIPMENT_NOT_FOUND`, `IDEMPOTENCY_KEY_REUSED`, `INVALID_REQUEST` | Blocked | `:61`, passed through from `ShipmentRepository.cs:63,69,70,73` | the commit itself returns an error; no evidence row is written | no |
+| Code | State | Emitted at (`WarehouseIntakeCoordinator.cs`) | Trigger | Counted | HTTP answer (3.6.0) | Evidence row |
+|---|---|---|---|---|---|---|
+| `INVALID_UPSTREAM_CORRELATION` | Quarantined | `:23` | an upstream correlation is supplied that is not a non-empty UUID | yes | not reachable: the operation passes no upstream or envelope correlation; if reached, 400 `INVALID_REQUEST` | yes |
+| `CONFLICTING_CORRELATION` | Quarantined | `:28` | the supplied correlations (caller, upstream, envelope) include an empty UUID or disagree | yes | not reachable (as above); if reached, 409 `CORRELATION_ROOT_MISMATCH` | yes |
+| `DEPENDENCY_HTTP_<status>`, `SCHEMA_INCOMPATIBLE`, `DEPENDENCY_TIMEOUT`, `DEPENDENCY_UNAVAILABLE` | Blocked | `:30`, passed through from `ReadOnlySourceClients.cs:62-72` | the Warehouse detail read fails or does not match the frozen read schema | yes | Warehouse 401 / 403 → 403 `FORBIDDEN`; Warehouse 404 → 404 `SOURCE_NOT_FOUND`; `SCHEMA_INCOMPATIBLE` → 502 `DEPENDENCY_RESPONSE_INVALID`; every other status, timeout or unavailable → 503 `DEPENDENCY_UNAVAILABLE` | no for 401 / 403 / 404 (and not counted); yes otherwise |
+| `SOURCE_ID_MISMATCH` | Blocked | `:33` | the detail returned carries a different `outboundId` than requested | no | 502 `DEPENDENCY_RESPONSE_INVALID` (a Warehouse fault, also logged as an integrity fault) | yes |
+| `SOURCE_DRIFT` | Drift | `:38`, `:54` | see the drift line in §13 | no — counted instead by the O-3 drift counter `SourceDrifts`, once per detection (`:87`, Q315) | 409 `SOURCE_DRIFT` | yes |
+| `SOURCE_NOT_READY` | Blocked | `:40` | the Warehouse status is not `ReadyToShip` | no | 409 `SOURCE_NOT_READY` | yes |
+| `EMPTY_SOURCE_LINES` | Blocked | `:42` | the Warehouse detail has no lines | no | 422 `EMPTY_SOURCE_LINES` | yes |
+| `SHIPMENT_MAPPING_INCOMPATIBLE` | Blocked | `:51` | the mapped shipment fails `CreateShipmentValidator` | no | 422 `SHIPMENT_MAPPING_INCOMPATIBLE` (`details.field` names the failing field, never a value) | yes |
+| `CONFLICTING_PERSISTED_ROOT` | Quarantined | `:56` | r11 (R11-8): an upstream or envelope correlation differs from the prepared intent's stored root; the caller correlation is no longer compared | yes | not reachable from the user-triggered operation (it passes no upstream or envelope correlation); if reached, 409 `CORRELATION_ROOT_MISMATCH` | yes |
+| `COMMIT_FAILED` | Blocked | `:66` | the shipment transaction throws; the pending intent is kept for a later retry | no | 503 `PERSISTENCE_UNAVAILABLE`; a retry with the same `Idempotency-Key` resumes the kept intent | yes |
+| `SHIPMENT_NOT_FOUND`, `IDEMPOTENCY_KEY_REUSED`, `INVALID_REQUEST` | Blocked | `:61`, passed through from `ShipmentRepository.cs:63,69,70,73` | the commit itself returns an error; no evidence row is written | no | as today: 404 `SHIPMENT_NOT_FOUND`, 409 `IDEMPOTENCY_KEY_REUSED`, 400 `INVALID_REQUEST` | no |
+| `SOURCE_LEGAL_ENTITY_MISSING` (r10) | Blocked | new (25.1) | the outbound carries no `legalEntityId` | no | 422 `SOURCE_LEGAL_ENTITY_MISSING` | yes |
+| outbound `legalEntityId` ≠ scope (r10) | — | new (25.1) | the outbound belongs to another company of the tenant | no | 404 `SOURCE_NOT_FOUND`, without saying it exists (§13); logged as an integrity fault without PII | no |
+| `SOURCE_LINE_WAREHOUSE_MISMATCH`, `SOURCE_STOCK_FIELDS_MISSING`, `SOURCE_STOCK_STATUS_UNSUPPORTED`, `SOURCE_ITEM_SKU_MISMATCH` (r10) | Blocked | new (25.1, 25.6) | the line checks of 25.1 / 25.6 | no | 422 with the same code (`details.lineNumber`) | yes |
+
+**Two keys (r10).** The operation's `Idempotency-Key` is the HTTP receipt key; the intake key (`WarehouseShipmentMapper.Key`,
+`:31-35`) is the business key and stays the key the coordinator passes to `MutateAsync` (`:59`), so one outbound gives one
+shipment. The receipt (operation `warehouse-intake`) fingerprints `outboundId` only. Same `Idempotency-Key`, same outbound →
+replay of the first answer. Same `Idempotency-Key`, another outbound → 409 `IDEMPOTENCY_KEY_REUSED`, nothing read or written.
+Another `Idempotency-Key`, an outbound already linked → 200 with the linked shipment (Q-M6-10), and the new key's receipt is stored.
+The `warehouse-intake` receipt is written **only for 201 and 200**, in the same Mongo transaction as the shipment and its link
+(201) or as the read of the link (200). An error answer is never stored as a receipt: every error of the table, transient ones
+(409 `SOURCE_NOT_READY`, 503) included, may be retried with the same `Idempotency-Key` and is evaluated again; the replay rule
+(r11, R11-5: fingerprint only, the correlation is not compared; `ShipmentRepository.cs:70-80`) applies only to a stored 201 / 200.
+The `warehouse-intake` receipt stores the request's correlation as its trace (R11-4); the internal `create` receipt the
+coordinator writes through `MutateAsync` stores the shipment's root (`WarehouseIntakeCoordinator.cs:59-60`).
 
 ## 14. Authorization Convention
 
@@ -429,7 +485,7 @@ the approved names but must not edit shared permission registries outside an exp
 
 ## 15. Gateway / API Routing Decision
 
-The canonical contract family is `/api/shipment-bundle/**` to service port 5061, exactly matching the OpenAPI
+The canonical contract family is `/api/shipment-bundle/**` to service port 5066 (AGENTS.md §3; `ocelot.json` routes it there), exactly matching the OpenAPI
 `servers.url` plus its paths. The Phase B developer does not edit
 `ocelot.json`. A separate `integration-agent` WP adds the route after controller endpoints exist and validates
 `Authorization`, `X-Tenant-Id`, `X-Legal-Entity-Id`, `X-Correlation-Id` and `Idempotency-Key` propagation.
@@ -441,7 +497,7 @@ The canonical contract family is `/api/shipment-bundle/**` to service port 5061,
 - [x] Repeating the same create/transition idempotency key returns the same result without a second write/event. — **✅ MET** (create/POD replay `ShipmentTests.GoldenFlow_Replay…`; transition replay `SameKeyTransitionReplayIsOneWrite…` (2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state. — **✅ MET** (`ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged` (8×8), `AllowedBranches…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Capturing POD transitions the shipment to Delivered atomically and emits the specified events once. — **✅ MET** (`ShipmentTests.AllowedBranchesAndPodFailureHaveAtomicHistory`; G5 run: POD 201 → Delivered, PodCaptured once; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
-- [x] A command's UUID correlation ID is preserved across shipment lifecycle and POD events. — **✅ MET** (`ShipmentTests.GoldenFlow_…`; G5 run: 6/6 shipment events carry the root; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [x] A command's UUID correlation ID is preserved across shipment lifecycle and POD events. **r11:** read as "the shipment's root (the create's correlation) is carried by every lifecycle and POD event"; re-measured by CR-3 through the Gateway (§26.7). — **✅ MET** (`ShipmentTests.GoldenFlow_…`; G5 run: 6/6 shipment events carry the root; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Cross-tenant/cross-LE reads and mutations return 404; missing permissions return 403. — **✅ MET** (reads `Scope_Rbac_Schema_AndCorrelationFailClosed`; mutations `CrossScopeMutationsAre404AndWriteNothingAnywhere` (2026-10-19); 403 `CancelPermissionIsRequired…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [ ] Inventory data is read only through `INVENTORY-BUNDLE` v1 mock/client; no stock collection or balance exists locally. — **⚠ PARTIAL** (client tested (`SourceClientTests.InventoryReadOnly…`) but not composed; no absent-stock guard; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [ ] Warehouse intake uses the recorded v1 map; incompatible correlation, missing trusted scope and source drift are explicit blocked/reconciliation states, never fabricated shipments. — **⚠ PARTIAL** (component level (`SourceIntakeTests`); coordinator not composed; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
@@ -631,7 +687,8 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 | `X-Correlation-Id` | the current dispatch command's correlation id, forwarded (E-1) |
 
 The legacy line field `inventoryReferenceId` is **not used in v1** — it is neither sent nor read for the issue (F-10);
-consuming an MVP-5 reservation needs `MovementRequest.reservationId`, which the MOD-0173 owner adds (W-5).
+consuming an MVP-5 reservation needs `MovementRequest.reservationId`, which the MOD-0173 owner adds (W-5). **r10:** INVENTORY
+1.7.0 has it; an intake line's internal `reservationId` is sent under §25.4 (DL-6).
 
 Sources of the line stock fields (G1, G10): in a tenant **without** a warehouse module the user enters them on the shipment;
 in a tenant with one, MVP-5 picking (WAREHOUSE-OUTBOUND `ReadyToShip`) fills them — that mapping is written when MOD-0178
@@ -684,7 +741,7 @@ posting transaction when the movement's (`sourceModule`, `sourceDocumentId`, `so
 comparison within the same SKU** (`"1"` does not match `"001"`), a reservation with an empty `sourceDocumentId` is never
 matched, and only a movement that reduces `AVAILABLE` consumes one. A shipment reservation, if MOD-0183 ever opens one,
 carries **no `expiresAt`**. Consuming an MVP-5 (MOD-0178) reservation needs `MovementRequest.reservationId` (W-5, MOD-0173
-owner). "Release first, then issue" is not used.
+owner); r10 sends it for intake lines (§25.4, DL-6), and then the source-triple match is not used. "Release first, then issue" is not used.
 
 **The dispatch attempt (F-1, F-2).** The shipment stores one `DispatchAttempt` at a time:
 
@@ -726,12 +783,14 @@ owner). "Release first, then issue" is not used.
   | `transactionDate` / `postingDate` | the moment compensation starts (server UTC), stored at the first reversal attempt and resent unchanged |
   | `idempotencyKey` / `Idempotency-Key` | `{shipmentId}:{lineNumber}:reversal:a{n}` |
   | `X-Legal-Entity-Id`, `X-Correlation-Id` | as §23.1 |
-  | **not sent** | `lotId`, `serialIds` (`MovementRequestParser.cs:125-126`), every `from*` / `to*` field including the stock statuses (`MovementDirectionRules.cs:109-112`), `fefoBypassReason`, `sourceLineId` — INVENTORY derives lot, location and direction from the original |
+  | `restoreReservation` (r10, DL-6) | `true` **only when the stored issue body of that line carries `reservationId`**; otherwise not sent (§25.5 rule 1; late writer: §25.5 item 5) |
+  | **not sent** | `lotId`, `serialIds` (`MovementRequestParser.cs:125-126`), every `from*` / `to*` field including the stock statuses (`MovementDirectionRules.cs:109-112`), `fefoBypassReason`, `sourceLineId`, `reservationId` (r10) — INVENTORY derives lot, location and direction from the original |
 
   **An INVENTORY 400 (`INVALID_REQUEST`) is never a business refusal (F-3):** it means our request is malformed. On an issue
   post the attempt is compensated as for a refusal and the command answers 500 with the correlation id; on a REVERSAL the
-  attempt becomes `CompensationFailed`. Both are logged as integrity faults. A reversed issue does not restore a reservation
-  it consumed. When all reversals are done → attempt `Compensated`, `n` increases, `dispatchState = None`, the shipment stays
+  attempt becomes `CompensationFailed`. Both are logged as integrity faults. A compensating REVERSAL restores the reservation
+  its issue consumed (r10, §25.5 rule 1), so the next attempt can consume it again; an issue without reservation restores
+  nothing. When all reversals are done → attempt `Compensated`, `n` increases, `dispatchState = None`, the shipment stays
   `Planned`, and the command answers 422 `INVENTORY_REFUSED` (§23.3).
 - **Issue reversed by someone else (r4, review F-2).** Anyone holding `inventory.movements.create` can reverse our issue in
   INVENTORY under another key; our REVERSAL then answers 422 `ALREADY_REVERSED`. That line **counts as reversed** (the stock
@@ -753,7 +812,9 @@ owner). "Release first, then issue" is not used.
     compensating** (no stored refusal, no reversal date, no reversed line) → it does nothing but log (the holder resends the same key and gets the same `transactionId`); stored `n` **greater**, or equal and
     `Compensated` / `CompensationFailed`, or `InProgress` and compensating (nobody resends its key) → it reverses its **unrecorded**
     issue (an issue the shipment already records is never reversed by a late writer, r7) with the
-    §23.4 REVERSAL body and key `{shipmentId}:{lineNumber}:reversal:a{own n}` and logs an integrity fault.
+    §23.4 REVERSAL body and key `{shipmentId}:{lineNumber}:reversal:a{own n}` and logs an integrity fault. **r10 (K3 = A,
+    §25.5 item 5):** that REVERSAL carries `restoreReservation: true` under rule 1 unless the re-read shipment has a
+    `Completed` attempt.
   - **History.** The shipment keeps, per closed attempt, each line's issue and reversal `transactionId`s (an append-only
     list beside the current attempt), and the late writer's movements in a separate append-only late-write list, so an audit
     can trace every movement of the shipment; MOD-0186 reads only the
@@ -815,7 +876,7 @@ owner). "Release first, then issue" is not used.
 | S23-12 | A background job never posts or reverses; it only flags an expired lease |
 | S23-18 | **Fencing (review F-1, r6; (f) r7):** (f) a late 201 arrives while its attempt is `InProgress` and compensating → the late writer reverses it, net stock unchanged (sabotage: dropping the compensating condition turns it red). (d) a1 compensated, a2 `Dispatched`, then A wakes with an a1 201 for line 2 → stored `n` (2) is greater → A reverses it with `…:2:reversal:a1`; net stock −(sum of lines). (e) A crashes after a 201 while a1 is `InProgress` → B, holding the lease, resends the *sent* line → replay, recorded. Earlier cases:  (a) A gets 201 `T2` for line 2 and pauses; B takes the lease, resends `…:2:dispatch:a1` → replay `T2`, records it, completes `Dispatched`; A wakes → **does not reverse**, AVAILABLE net −(sum of lines). (b) A's attempt was compensated while it paused → A reverses its unrecorded issue with `…:3:reversal:a1`, net stock unchanged. (c) A crashes after its 201 → B resends the *sent* line before compensating. Sabotage: reversing in case (a), or dropping the lease-id condition, makes the test red |
 | S23-19 | **External reversal (review F-2):** line 1's issue is reversed in INVENTORY by a user, then line 2 is refused → our REVERSAL of line 1 answers `ALREADY_REVERSED`, counted as reversed, attempt `Compensated`, no `CompensationFailed` loop |
-| S23-17 | REVERSAL body: only the §23.4 fields are sent; sabotage: adding `lotId` or a `from*` field makes the compensation test red (INVENTORY 400), and a 400 is handled as an integrity fault |
+| S23-17 | REVERSAL body: only the §23.4 fields, and `restoreReservation` under §25.5 rule 1 (r10), are sent; sabotage: adding `lotId` or a `from*` field makes the compensation test red (INVENTORY 400), and a 400 is handled as an integrity fault |
 | S23-13 | Compensation retried after a crash → each REVERSAL resent with its `…:reversal:a{n}` key and stored dates → `idempotentReplay: true`, no `ALREADY_REVERSED`, no second reversal |
 | S23-14 | **Re-dispatch after compensation (F-1):** after S23-8 the cause is removed and the shipment is dispatched again → three new issues with keys `…:a2`, three new `transactionId`s different from attempt 1, AVAILABLE net −(sum of lines); none answered by replay |
 | S23-15 | **One active attempt (F-2):** two concurrent dispatch commands → one proceeds, the other 409 `DISPATCH_IN_PROGRESS`; `Cancelled` and POD during `InProgress` → 409 `DISPATCH_IN_PROGRESS`; never two attempts |
@@ -824,16 +885,721 @@ owner). "Release first, then issue" is not used.
 Each rule gets a sabotage proof; the full SupplyChain test assembly runs unfiltered; MDM and INVENTORY consumer tests and the
 MVP-1 CT's live tours are the acceptance.
 
+## 24. Screen slice B
+
+> **Draft revision r9 — not approved.** Owner decisions K1, K3 and K4 (K1 corrected 2026-11-03), and the MVP-1 CT's answer on
+> customer identity (MOD-0177 owner, 2026-11-03, accepted by Natig K1 the same day), both in
+> `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md`. r9 replaces r8's "the account
+> id goes into `shipToReference`, SHIPMENT-BUNDLE does not change" with a separate `customerRef` field (SHIPMENT-BUNDLE 3.5.0);
+> what changed is listed in 24.10. Needs CT-APR-02 and a CT-APR-01 row before any code. Facts below are measured on `main` `49012bd7b` unless marked. Slice A is PR `bestepullukcu-alt/ERP-vNext#355`
+> (branch `feature/sce/mvp6-screen-fixes-a-01`, `1ca0e36cc`); this section is written on top of it. Whether #355 is merged is **not
+> measured** (no `gh` here); slice B starts only after it is on `main`. When approved, this section replaces the "Exact form fields"
+> table and the Compact paragraph's field count in section "Frontend File Contract". Dispatch stays permission-based (K2): no workflow here.
+
+### 24.1 Sender and recipient (K1)
+
+- **Sender:** the company of the session. The create form shows it read-only from the shared company selector of slice A (`CompanySelection`). The form's own `formLegalEntity` select goes away; changing company happens only in the shared selector. It still rides the query, never the body (R-2).
+- **Recipient (customer):** a MOD-0149 CRM account. Its id goes into a **separate field, `customerRef`** (SHIPMENT-BUNDLE 3.5.0, additive; 24.7 item 3), never into `shipToReference`. Value: `Account.Id` as a Guid in "D" format, lower case; every consumer compares it case-insensitively. Reason (MVP-1 CT, 2026-11-03): one field never carries two meanings, and a new id cannot be confused with the free text already stored in `shipToReference`.
+- **Delivery destination:** `shipToReference` keeps its meaning, the delivery destination. **Decided (OD-183-4, Natig K1, 2026-11-03):** the create adapter writes into it the chosen account's address as one text. **Rule (CT kararı 2026-11-03):** take the four fields in the order CRM lists them in `AccountDetailDto` — `CountryRef`, `CityRef`, `DistrictRef`, `AddressLine` (`services/Diten.CrmService/src/Diten.CrmService.Application/Features/Account/AccountModels.cs:54-57`) —, trim each, drop the empty ones, join the rest with `", "`. The contract sets no maximum length on `shipToReference` (3.4.0 and 3.5.0; `CreateShipmentValidator.cs:12` checks only `NotEmpty`), so nothing is cut. **All four empty → the MVC adapter refuses the create with 400 `CUSTOMER_ADDRESS_MISSING`**, localized in 7 languages, nothing sent: never an empty or invented destination. The text is stored on the shipment, never logged, and never used as a customer key.
+- **Picker:** new adapter GET `/SupplyChain/Shipments/api/customers?search=&page=` → `GET /api/crm/accounts` (`search`, `page`, `pageSize`, `status`, measured from `AccountController.cs`). The list shows `AccountName` and `AccountCode`: `AccountListItemDto` carries no `AddressLine` or `CityRef`, so the address shows right after the choice (next item) and the user confirms name and address together before saving. Whether the list itself must show the address is open with MVP-1 (OD-183-5); this is the default until they answer. No GUID is shown in the list, the field or anywhere on the form; the id rides to `customerRef` behind the scenes. Display gate: `supplychain.shipments.create` + `crm.account.read`. A user without `crm.account.read` sees a disabled field with a localized reason, and cannot create.
+- **Address:** after a choice, the adapter reads `GET /api/crm/accounts/{id:guid}` (`crm.account.read`) and v1 shows the account's single address (`AddressLine`, `CityRef`, `DistrictRef`, `CountryRef`) read-only. No delivery-address list. The reference fields show as stored; no display-name source is added for them.
+- **Contractless, measured use (MVP-1 CT, 2026-11-03).** CRM's list and by-id reads have no contract today (open item 1). Until the CRM owner decides, this measured use is accepted on two conditions: to the browser only name, code and the four address fields; nothing read from CRM appears in any log line (no name, code, address, person, phone or e-mail). When the contracted endpoint opens, the adapters switch to it (open item 5).
+- **Projection.** `AccountDetailDto` also holds the responsible person's name, phone and e-mail, notes, coordinates and logo. Every CRM adapter here returns only name, code and the four address fields to the browser, and logs none of them.
+- **Scope:** `Account.cs` has no `LegalEntityId`, so a CRM account is tenant-wide and a picker result is not company-filtered. Tenant isolation is CRM's.
+- **Intercompany shipment:** out of v1; needs a separate decision.
+- **Validation:** the service never calls CRM. **It checks the format (CT kararı 2026-11-03):** the 3.5.0 `CustomerRef` schema carries the lower-case Guid "D" `pattern`, `CreateShipmentValidator` checks it, and a mismatch answers 400 `INVALID_REQUEST`, the code the service already uses for a malformed field (`ValidationBehavior.cs:11`); a matching value is stored as given. So no free text, name or e-mail can be stored as `customerRef` through the API. Screens never show a `customerRef` that is not a lower-case Guid as a name: they show the localized "not found" text, with no CRM call. The MVC create adapter also checks it: the value must parse as a Guid in lower-case "D" format, and `GET /api/crm/accounts/{id:guid}` with the caller's token (the read already measured for the address) must answer 200. A missing or malformed value, or a CRM 404 (including another tenant's id) → 400 `INVALID_CUSTOMER_ACCOUNT`, localized, nothing sent; an account whose four address fields are all empty → 400 `CUSTOMER_ADDRESS_MISSING` (above). Adapter error list of this form: `INVALID_CUSTOMER_ACCOUNT`, `CUSTOMER_ADDRESS_MISSING`. A CRM 403 → 403; CRM unreachable → 503, nothing sent. A caller that goes straight to `createShipment` gets only the service's format check, not the CRM check; it may omit `customerRef`, and readers then keep their earlier rule (below).
+
+**Open items on MOD-0149:**
+
+1. **No frozen contract for these reads.** `docs/analysis/contracts` has no frozen CRM contract. A **draft** exists: CRM-ACCOUNT-LOOKUP 1.0.0 (`docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md`, `x-status: DRAFT`, consumer MOD-0120 only), whose U-1 `GET /api/crm/accounts/{accountId:guid}/lookup-validation` answers name, code and status by id. It has no list and no address, so the picker and the address read stay on `AccountController.cs` and `AccountModels.cs` as measured. A change there can break the picker silently. Owner: CRM / MOD-0149 owner.
+2. **TRM-09.** The registry row says `reserved / planned`, the pack `ready-for-dev`. Resolved by its owner; this module does not touch it.
+3. **`accountType` filter.** Which account types count as a customer is **not decided**: proposal, no filter in v1 beyond `status`. `Active` as the status value is **not measured**.
+4. **Permission.** `crm.account.read` is in no SupplyChain role template; the tenant grants it (BL-652 interim path, as `inventory.movements.create`).
+5. **Switch to the contracted endpoint.** When CRM opens a contracted list / address / by-id endpoint, the three adapters (picker, address, name) move to it and the contractless use above ends. Owner: CRM / MOD-0149 owner. Not a DL-3 or DL-4 gate.
+6. **MOD-0177 in the CRM-ACCOUNT-LOOKUP consumer table.** MOD-0177 is to be added as a consumer of U-1. That is MVP-1's and CRM's item, not this module's; this pack does not edit the draft contract.
+7. **MOD-0177 FU on `main` — merge gate of DL-3 (CT kararı 2026-11-03).** Owner: MVP-1 CT. MOD-0183 DL-3 does not merge before the MOD-0177 FU is on `main` (below, "Effect on other readers"; SB-24).
+
+**Effect on other readers:**
+
+- **Old records:** `shipToReference` values already stored (free text, or `warehouse-outbound:{id}:ship-to` from the intake mapper) are not rewritten, and no `customerRef` is back-filled for them. A shipment without `customerRef` shows on list and details marked "old record", with its `shipToReference` as stored and no CRM call (SB-11, SB-19).
+- **MOD-0177 recall (XMC-001, MOD-0177 is not changed here).** Rule given by the MOD-0177 owner (MVP-1 CT, 2026-11-03): when `customerRef` is set it is the customer key; when it is empty, today's order stays (`shipToReference`, then `"DOC:" + sourceDocumentId`). MOD-0177 resolves name and code with CRM-ACCOUNT-LOOKUP 1.0.0 U-1 (draft, open item 1); a deleted account keeps its id and shows the name "not found". MOD-0177 reads `getShipment`, whose `ShipmentDetail` carries `customerRef` from 3.5.0 (it inherits `ShipmentSummary`). The change in MOD-0177 is a small MOD-0177 FU that MVP-1 opens once it sees the 3.5.0 draft (`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md`).
+  **Merge gate (CT kararı 2026-11-03).** Until that FU is on `main`, MOD-0177 keeps keying on `shipToReference` (`RecallTraceEngine.cs:375`) and would key new shipments on their address text, and a case keeps the value read at trace time (`CaseDetailReadHandlers.cs:15`). So **MOD-0183 DL-3 does not merge before the MOD-0177 FU is on `main`** (CT kararı 2026-11-03; it replaces the earlier "may merge, no release ships it" wording, which no mechanism could enforce once the code was on `main`). The gate covers the whole DL-3 change, including the service side of SHIPMENT-BUNDLE 3.5.0 (the `customerRef` pattern, the summary fields, search); MOD-0186 DL-3 and DL-4, which depend on 3.5.0, therefore wait too. The window between DL-3 and the FU cannot open: it is closed by this gate, not accepted as a limit. Owner of the FU: MVP-1 CT; owner of the gate: MVP-6 CT (SB-24).
+  **The r8 DL-3 precondition is closed.** r8 required a written answer from the MOD-0177 owner before DL-3. The MVP-1 CT's answer of 2026-11-03, accepted by Natig (K1) the same day and recorded in the decision record above (section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)"), is that answer.
+- **Same customer on two rows (SB-19) — accepted limit.** In recall, an old-key row (free text, or `warehouse-outbound:…:ship-to`) and a new `customerRef` row of the same customer stay two rows. Nothing merges them automatically, and no lookup links an old key to an account id by a guessed match. Screens show the old-key row separately, marked "old record".
+- **MOD-0186** reads the customer through the same display rule: its eligible-shipment picker uses `ShipmentSummary.customerRef`, and a return carries its own read-only copy (MOD-0186 section "Contract changes needed", item 6).
+
+### 24.2 Golden Compact form
+
+Today's form asks the user for internal references. After this revision the form is:
+
+| Card | Field | Control | Sent as |
+|---|---|---|---|
+| Source and destination | Source document | text | `sourceDocumentId` |
+| | Warehouse | picker: `GET /api/locations/search`, `search`, `type=Warehouse`, `status=Active` | `warehouseReferenceId` |
+| | Customer | picker (24.1): name and code in the list, address shown read-only after the choice | `customerRef` (account id); `shipToReference` = the account's address as one text (24.1, OD-183-4 decided) |
+| Schedule | Planned ship at | flatpickr | `plannedShipAt` |
+| | Planned deliver at | flatpickr | `plannedDeliverAt` |
+| Lines (sub-table) | Product / SKU | picker: `GET /api/product-master/stockable-items?q=`, showing `name` and `canonicalCode` | `itemId`, `skuId`, `skuLevel` |
+| | Lot | picker: `GET /api/trace/lots?skuId=&q=`; empty for a line without lots | `lotId` |
+| | From location | tree picker from the chosen warehouse, below | `fromLocationId` |
+| | Quantity | text, decimal string | `quantity` |
+| | FEFO bypass reason | textarea, shown only after `FEFO_BYPASS_REASON_REQUIRED` or `FEFO_ORDER_VIOLATION` | `fefoBypassReason` |
+
+- **Field count:** 5 header + 5 per line = **10**, more than 8, so Compact stands (`form_field_count: 10`). `_Form.cshtml` and `Details.cshtml` keep the same card map.
+- **Not asked any more:** `sourceModule` and `sourceType` (the MVC adapter sends `MOD-0183` / `MANUAL`, OD-183-3, decided), `lineNumber` (assigned in order, `1, 2, 3`, read-only), `uomId` (read-only from the chosen SKU), `inventoryReferenceId` (unused in v1, section "What is posted").
+- `lotId`: a lot-tracked SKU without a lot is refused by INVENTORY as today (`LOT_REQUIRED`); the form does not decide lot tracking.
+- Location pickers use `/search` because `GET /api/locations` accepts only `type`, `parentId`, `legalEntityId`. The company comes from `LocationRepository.Scope()`; `inventory.locations.read` is required.
+- **Tree picker.** `parentId` returns direct children only (`LocationRepository`), and the contract has no ancestor filter, so the contract does not change. The picker opens the tree one layer at a time with `GET /api/locations/search`, `parentId` = the opened node, `status=Active`, **without** `isStockable`, so non-stockable parents stay visible: Warehouse → StorageLocation → Zone → Bin, or StorageLocation → Bin (`LocationHierarchyRules`, K-01). Only a node with `isStockable = true` can be chosen; a StorageLocation may be both chosen and opened. `search` narrows the open layer only.
+- Pickers: same adapter rule as MOD-0186: same-origin MVC, no GUID as a label, a stale response never fills a changed field; changing warehouse clears From location, changing SKU clears Lot.
+- Required parity: validator, view model, Razor `required`, label star and the required-fields tracker agree. `Models/SupplyChain/Shipments/ShipmentViewModels.cs` changes accordingly.
+- **PRODUCT-MASTER is `1.1.0-draft.16`, not frozen.** Section "Dependencies" keeps its row "a later MOD-0183 revision after the contract is frozen". This picker uses that read for selection, and the service still does not validate products. The read is accepted before G6 for display and selection only; field names are bound at Phase 1.5 (OD-183-2, decided).
+- `Edit.cshtml` stays absent: the contract has no update operation.
+
+### 24.3 Golden Compact list
+
+- `data_mode: server` goes into the front matter. Today `index.js` builds its own paged calls.
+- Columns: shipment number, source document, **customer name and code** (from `customerRef`), **warehouse name**, localized status, planned ship, planned delivery, details link. No GUID column. A row without `customerRef` shows "old record" and its `shipToReference` as stored (SB-11, SB-19).
+- `queryShipments` accepts `status`, `sourceDocumentId`, `page`, `pageSize` only in 3.4.0. Golden server mode needs `search`, `orderBy`, `orderDir`, `filteredTotal`, so DL-4 waits for 24.7 items 1 and 2. `ShipmentSummary` has no `shipToReference`, `warehouseReferenceId` or `customerRef` in 3.4.0 (`ShipmentProjection.Summary`), so the name columns need items 2 and 3. All three items are in SHIPMENT-BUNDLE 3.5.0, which DL-3 applies with its code (Repo Scope, §24 DL-3 exception); DL-4 therefore starts after DL-3. `search` matches shipment number and source document only: names are not stored, so a customer name is not searchable.
+- Filter: status as Select2, source document as text, company from the shared selector.
+- `verify_datatable_page.py --reference compact` fails today on checkbox, bulk bar, bulk endpoint, bulk delete, reload-with-toast, clear-selection and `window.API` rows. The contract has no delete or bulk operation, so those rows are **declared exceptions**, run and recorded only. The rest must pass.
+- Status names are localized here, closing open item 4 of section "Frontend File Contract". The note length mismatch (open item 3) is closed in the same slice: UI 1000, as the server.
+
+### 24.4 Names instead of GUIDs and the line sub-table
+
+- **Read-time resolution.** Names are not stored on the shipment; 3.5.0 adds only the `customerRef` key. The MVC adapters resolve names for the page: warehouse and location from `/api/locations/{id}`, customer name and code from `GET /api/crm/accounts/{id:guid}` with `customerRef` (projected to name and code; no CRM call for a row without `customerRef`), SKU through `POST /api/product-master/skus/bulk-read` (`name`, `canonicalCode`), lot through `/api/trace/lots/{lotId}`.
+- **Cost.** `pageSize` default 50 and `AccountController` has no bulk read: per-request de-duplication, bounded concurrency, no cross-request cache across tenants. Latency is measured in the slice's evidence.
+- **Failure.** A failed or denied name read shows a localized "name unavailable" text and the reference in a small LTR block. The page never fails for it, and it never shows a blank. **Exception (r9):** for the customer the reference is not shown, because it is an id: the cell shows only the localized "name unavailable" text.
+- **Changed master data.** Names are current, not historic: a renamed customer shows the new name on an old shipment (OD-183-1, decided). A deleted account keeps its `customerRef`; the screen shows a localized "not found" name, never the id.
+- **Details page:** the summary card shows customer name and code, the delivery destination (`shipToReference` as stored), warehouse name, company. No GUID is a label; a shipment without `customerRef` is marked "old record". **Lines sub-table:** line, product / SKU name and code (one pair: `BulkSkuReadItem.name` already names the product, and bulk-read has no separate product code), lot number, from location name, quantity, UoM, FEFO reason. `issueTransactionId` is not a column. A pre-existing line with an unresolved reference shows it as stored (r11: replaced by §26.3 — no reference is shown; only the localized "name unavailable" text).
+
+### 24.5 Warehouse intake: FU-0178-MVP6
+
+> **r10:** superseded by §25 (mapping 25.1, whitelist 25.2, user-triggered intake 25.3, `reservationId` 25.4, Item 25.6); the
+> customer row is decided by R10-6 (§25.3). The r9 text below is kept as history.
+
+The automatic intake stays off (section "Warehouse provenance snapshot — obligations", obligation 2). This revision writes no field list and no mapping. They are bound to **FU-0178-MVP6** (MOD-0178, section "Follow-up Items"), whose answers to Q-M6-1…9 are open:
+
+| Work | Bound to |
+|---|---|
+| The whitelist of obligation 3: which `OutboundShipment` / `OutboundLine` fields persist. Known input: `shipTo` is dropped; the hash stays | FU-0178-MVP6, with Q-M6-1 (location and `lotId` absent from the frozen outbound line, only `lotNumber`) |
+| Customer on an intake shipment. `WarehouseShipmentMapper` writes `warehouse-outbound:{id}:ship-to` into `shipToReference` and sets no `customerRef` | FU-0178-MVP6; K1 and `customerRef` cover the manual form only until that mapping is written |
+| Reservation on the line, `fromLocationId`, FEFO, dispatch signal, cancellation, token, `outboundId` mapping | FU-0178-MVP6, Q-M6-2…9 |
+| `Item` level in the reader's `SkuLevels` (Q-M6-6) | FU-0178-MVP6 and the tour measurement of `GOODS_ISSUE_SALES` with `skuLevel = Item` |
+
+MOD-0178's pack is not changed by this revision.
+
+### 24.6 Open item: `restoreReservation` and K3
+
+> **r10: closed by §25.5.** MOD-0173-FU03 r5 approved (CT-APR-01, GMG-ERP, 2026-11-11); its r5 text (§8.3.1, Q-09 = A) was read
+> on `main` `3b42f0005`, so the "not readable" point below no longer applies. The five changes listed below are made in §23.4,
+> §23.5 S23-17 and §25.5; acceptance IR-11, IR-12, IR-13. The r9 text below is kept as history.
+
+**Open; effective only with the approval of MOD-0173-FU03.** No text of section "Reservations attempts and compensation" changes until then.
+
+- K3 (Q-09): the correcting REVERSAL of a late dispatch record sends `restoreReservation: true`; it does not send it when the shipment has a `Dispatched` attempt.
+- FU03 r4 (`d9c378d4e`, not approved) is reported by the MVP-6 CT as leaving Q-09 to MVP-6, with Natig choosing option A. That commit was **not readable** in this checkout, so its text is **not measured**. The readable r3 (`d4176fbee`) says the late-writer correction does **not** send the field; the CT states that r3 wording is out of date. The approval step must read r4.
+- When FU03 is approved, a revision of this pack must: add `restoreReservation` to the REVERSAL table and its "not sent" row; extend S23-17, whose rule "only the §23.4 fields are sent" otherwise refuses it; update "A reversed issue does not restore a reservation it consumed"; state the compensation case from FU03; add acceptance for both K3 branches. It requires INVENTORY 1.7.0, not 1.5.0.
+- MOD-0183 opens no reservation in v1, so the field has no effect on v1 issues.
+
+### 24.7 Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here)
+
+All five items form **SHIPMENT-BUNDLE 3.5.0** (3.4.0 → 3.5.0, additive only; single writer MVP-6 CT). Sequencing (Natig K1,
+2026-11-03): the whole of 3.5.0 lands with MOD-0183 DL-3; MOD-0183 DL-4 and MOD-0186 DL-3 / DL-4 start after it. Proposal:
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.0-PROPOSAL.md`; patch: `SHIPMENT-BUNDLE-3.5.0.patch` in the same
+folder (`git apply --check` passes against the contract at 3.4.0). The patch is applied by the DL-3 code change (Repo Scope, §24
+DL-3 exception), as 3.4.0 was by DL-1. r8 said "DL-3 and K1 need none"; with `customerRef` (MVP-1 CT, 2026-11-03) DL-3 needs item 3.
+
+| # | Change | For |
+|---|---|---|
+| 1 | `queryShipments`: optional `search` (shipment number and source document only), `orderBy`, `orderDir`; `ShipmentListResponse.filteredTotal` | DL-4; MOD-0186 DL-3 |
+| 2 | `ShipmentSummary`: `shipToReference`, `warehouseReferenceId` in the list response (absent in 3.4.0) | DL-4; MOD-0186 DL-3 |
+| 3 | New schema `CustomerRef` (nullable string with a lower-case Guid "D" `pattern`; `Account.Id`; compared case-insensitively; the service checks the pattern and never calls CRM). `CreateShipmentCommand.customerRef` (optional) and `ShipmentSummary.customerRef` (so also `ShipmentDetail` and the list). `shipToReference` keeps its type and its meaning, the delivery destination; only its description says it carries no customer identity | DL-3; DL-4; MOD-0186 DL-3; MOD-0177 FU (MVP-1) |
+| 4 | `ReturnSummary.customerRef`, read-only, the same `CustomerRef` (so also `ReturnResponse` and the return list); filled by MOD-0186 | MOD-0186 DL-4 |
+| 5 | MOD-0186 section "Contract changes needed" item 1 only (Natig K1, 2026-11-03: `getReturn` joins 3.5.0): `GET /returns/{returnId}` `getReturn` and `ReturnDetail` (`reasonCode`, `createdAt`, `lines[]`; no authorization or workflow field); statuses 200, 400, 401, 403, 404, 500, 503, as `queryReturns`. Declared here with `x-served-from: MOD-0186 DL-4`, because the contract lands with this module's DL-3 before MOD-0186 serves it. The DL-5 items (submit, workflow fields, codes) are not in 3.5.0 | MOD-0186 DL-4 |
+
+Not changed by 3.5.0: `ShipmentResponse` (the create acknowledgement carries no header field today), every event payload, every
+Shipments path, status code and error code, the shipment lifecycle. The MVC adapter codes `INVALID_CUSTOMER_ACCOUNT` and `CUSTOMER_ADDRESS_MISSING` are not wire codes.
+
+### 24.8 Follow-ups and open decisions
+
+- **SHP record code:** `SHP-{id:N}` today (`CreateShipmentHandler.cs`, `49012bd7b`) while the contract's example shows `SHP-2026-000001`, and RCS-001's table has no `SHP` row. A separate FU after MOD-0040-FU02, not on `main`. No identity is minted here.
+- **OD-183-1** Current name versus name at shipment time on old shipments (24.4): **decided** (Natig, 2026-11-03): current name.
+- **OD-183-2** Using PRODUCT-MASTER draft reads in the picker before G6 (24.2): **decided** (Natig, 2026-11-03): accepted for display and selection only.
+- **OD-183-3** `sourceModule` / `sourceType` values of a hand-made shipment (24.2): **decided** (Natig, 2026-11-03): `MOD-0183` / `MANUAL`.
+- **Customer identity (24.1):** **decided** (MVP-1 CT as MOD-0177 owner, 2026-11-03; accepted by Natig K1 the same day): separate `customerRef`, SHIPMENT-BUNDLE 3.5.0; no GUID on screen; contractless measured CRM use until CRM decides; MOD-0177 keeps its fallback order; SB-19 is an accepted limit; MVP-1 opens a small MOD-0177 FU after seeing the 3.5.0 draft.
+- **OD-183-4** What the create adapter writes into `shipToReference` now that it carries no customer identity (24.1): **decided** (Natig K1, 2026-11-03; decision record section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)"): the chosen account's address as one text.
+- **OD-183-5** Must the customer picker list itself show the address (decision point 2 says "name + address"; CRM's list carries no address)? **Open, owner MVP-1 CT.** Default until answered: name and code in the list, address after the choice (24.1).
+- **MOD-0177 FU on `main` as the DL-3 merge gate** (24.1 open item 7; covers all of DL-3 including the 3.5.0 service side, so MOD-0186 DL-3 / DL-4 wait too): **open**, owner MVP-1 CT (FU), MVP-6 CT (gate; CT kararı 2026-11-03).
+- **CRM contract switch** (24.1 open item 5): **open**, owner CRM / MOD-0149 owner.
+- **MOD-0177 as a CRM-ACCOUNT-LOOKUP consumer** (24.1 open item 6): **open**, owner MVP-1 CT and CRM; recorded here only.
+- **Plan mapping:** the plan file is not in the repository; no plan identity is written for the new slices. Whether they add a new plan MVP (which would require an FU) is asked of the planning side.
+
+### 24.9 Acceptance, tests and sabotage
+
+Tests live in `frontend/Diten.Web.Tests/` (`Forms/ShipmentFormContractTests.cs`, `Controllers/SupplyChainShipmentsControllerTests.cs`, `JavaScript/ShipmentIndexBehaviorTests.cs`, `JavaScript/ShipmentDetailActionTests.cs`). Each row gets a test on production code; a row with a sabotage is red when that sabotage is applied.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| SB-1 | Create form shows the session company read-only; the query carries it, the body never does; changing it in the shared selector changes the request | Sending the company in the body turns it red |
+| SB-2 | Customer picker lists CRM accounts by name and code; choosing one shows the address and sends the account id, lower-case Guid "D", as `customerRef`; `shipToReference` carries the delivery destination (24.1), never the id; the wire body is valid against SHIPMENT-BUNDLE 3.5.0 | Sending the id in `shipToReference`, or the name in `customerRef`, turns it red |
+| SB-2a | Create adapter with a missing `customerRef`, free text, an upper-case or otherwise malformed id, or another tenant's id (CRM 404) → 400 `INVALID_CUSTOMER_ACCOUNT`, no `createShipment` call; CRM 503 → 503, no call. The service stores `customerRef` as given and makes no CRM call | Removing the adapter's CRM read, or adding a CRM client to the service, turns it red |
+| SB-3 | Without `crm.account.read`: field disabled with a localized reason, no CRM request, no create | Sending the CRM request anyway turns it red |
+| SB-4 | After a choice the address comes from the by-id read and is shown read-only; v1 offers no address choice. The adapter's JSON holds only name, code and the four address fields: no person, phone, e-mail, notes, coordinates or logo | Returning the raw `AccountDetailDto` turns it red |
+| SB-5 | Form field set equals the 24.2 table; `sourceModule`, `sourceType`, `lineNumber`, `uomId`, `inventoryReferenceId` are not user inputs; the adapter sends `MOD-0183` / `MANUAL`; `form_field_count` matches | Re-adding `inventoryReferenceId` fails `ShipmentFormContractTests` |
+| SB-6 | Line numbers are assigned in order and stay unique after a line is removed | Numbering by index after removal without renumbering turns it red |
+| SB-7 | Location pickers call `/api/locations/search`; an Inactive place is not offered; against the real INVENTORY query a Bin under Zone under StorageLocation can be reached and chosen while the Zone cannot be chosen, and a Bin directly under a StorageLocation is reached too. Changing warehouse clears From location; changing SKU clears Lot and UoM; a stale response never fills a changed field | Removing the clear, or sending `isStockable=true` on the layers, turns it red |
+| SB-8 | `fefoBypassReason` appears only after the FEFO refusal codes and is sent unchanged | Showing it always turns it red |
+| SB-9 | List shows customer name and code (from `customerRef`), warehouse name and localized status; no GUID in any cell except the shipment number until the SHP follow-up; `data_mode: server` is declared in pack, table and `createList` alike | Rendering `customerRef` raw for a resolved row turns it red |
+| SB-10 | A failed or denied name read: page loads, localized "name unavailable", reference shown small for warehouse and location; for the customer only the text, no id; no blank. A deleted account shows "not found", not its id | Throwing on a read failure, or showing `customerRef` in the failure cell, turns it red |
+| SB-11 | DL-3: no DL-3 adapter treats a stored `shipToReference` as an account id; an old shipment (no `customerRef`, free-text or `warehouse-outbound:…:ship-to`) is never sent to CRM by the create form or its adapters | Treating `shipToReference` as an account id turns it red |
+| SB-11a | DL-4: on list and details an old shipment shows its `shipToReference` as stored, marked "old record", with no CRM call | Dropping the mark, or calling CRM for it, turns it red |
+| SB-12 | Details page: customer name and code, delivery destination, warehouse name; lines sub-table with product / SKU name and code, lot number, location name, for Item, Gsku, Lsku and FinishedGood lines; `issueTransactionId` is not a column; `_Form` and `Details` share one card map | — |
+| SB-13 | Status names localized in 7 languages on filter, badge and details; note limit 1000 in UI and server | Removing the `zh` key turns parity red |
+| SB-14 | `verify_datatable_page.py --reference compact`: only the declared bulk and delete rows fail; the failures are recorded | A new failing row stops the slice |
+| SB-15 | Cross-tenant data: a name adapter uses the caller's token and sends the current tenant; no shared cache across requests | Adding a static cache turns it red |
+| SB-16 | Real browser on the integrated target: a user with the tour's permissions plus `crm.account.read` and `trace.lots.read` creates a shipment with pickers only and dispatches it; `GOODS_ISSUE_SALES` as S23-1 | — |
+| SB-17 | Intake stays off: no host registration of `WarehouseIntakeCoordinator` (r10: replaced from DL-5 by IR-3) | Registering it fails the existing obligation check |
+| SB-19 | **Accepted limit (MVP-1 CT, 2026-11-03).** Old-key records are shown separately, marked "old record": a shipment without `customerRef` is never linked to an account by any match on `shipToReference` (name, code or text), and nothing merges it with a `customerRef` shipment of the same customer. DL-3 evidence cites the decision record section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)". MOD-0177 files are unchanged in the DL-3 diff | Adding a lookup that fills a name or `customerRef` for an old record from its `shipToReference` turns it red |
+| SB-20 | **No GUID on screen.** On create form, list and details, no visible text, option label, tooltip or `title` holds `customerRef` or any account id; the id rides only in the request body. Measured on the rendered pages, 7 languages | Rendering the id as the picker's option text turns it red |
+| SB-21 | **Nothing from CRM in logs.** With a capturing logger on the picker, address, name and create adapters, no log line holds the account name, code, any address field, person, phone or e-mail | Adding a log line with the CRM response turns it red |
+| SB-22 | **3.5.0 applied exactly.** The contract file equals 3.4.0 plus `SHIPMENT-BUNDLE-3.5.0.patch`; `CreateShipmentCommand` stores `customerRef` as given and `ShipmentSummary` / `ShipmentDetail` return it with `shipToReference` and `warehouseReferenceId`; `search`, `orderBy`, `orderDir`, `filteredTotal` behave as the contract text; no error code is added; all contract examples validate; a 3.4.0 client without `customerRef` still creates | Dropping `customerRef` from the summary projection turns it red |
+| SB-23 | **Destination text (CT kararı 2026-11-03).** An account with `CountryRef` "TR", `CityRef` " Istanbul ", empty `DistrictRef`, `AddressLine` "Ataturk Cad. No 12" → `shipToReference` = `TR, Istanbul, Ataturk Cad. No 12`; an account with all four empty → 400 `CUSTOMER_ADDRESS_MISSING`, no `createShipment` call | Sending an empty or placeholder destination, or changing the order or separator, turns it red |
+| SB-24 | **Merge gate (CT kararı 2026-11-03).** The DL-3 PR description cites the MOD-0177 FU merge commit on `main`, and before merge the CT runs `git merge-base --is-ancestor <FU commit> <DL-3 base>` and records exit code 0 in the DL-3 evidence; exit code 1, or no FU commit cited, means DL-3 is not merged | Merging DL-3 on a base that does not contain the FU commit (the check exits 1) is refused |
+| SB-25 | **Format on the service (CT kararı 2026-11-03).** `createShipment` with `customerRef` in upper case, braces, free text or an e-mail → 400 `INVALID_REQUEST`, nothing stored; a lower-case Guid is stored as given; a screen given a stored non-Guid value shows "not found" and calls no CRM | Removing the pattern check from `CreateShipmentValidator` turns it red |
+| SB-26 | **7-language parity of the r9 texts.** "old record", "not found", "name unavailable", `INVALID_CUSTOMER_ACCOUNT`, `CUSTOMER_ADDRESS_MISSING`, the "Customer" label and the address caption have a non-empty value in all 7 `ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` (parity by MATCH count) | Removing one key from `ar` turns it red |
+| SB-18 | No write path changed: S23-1…S23-21 stay green; the REVERSAL body is unchanged until 24.6 closes (r10: replaced from DL-6 by the widened S23-17, IR-11 and IR-12) | Adding `restoreReservation` before FU03 fails S23-17 |
+
+The full SupplyChain and Web test assemblies run unfiltered. Measure page latency of the list with 50 rows in the slice's evidence (24.4); no latency target is invented.
+
+### 24.10 Revision r9 — what changed and why
+
+Cause: the MVP-1 CT's answer as MOD-0177 owner on customer identity (2026-11-03), accepted by Natig (K1) the same day,
+recorded in the decision record's section "2026-11-03 — MVP-1 CT answer on customer identity (MOD-0177)". It replaces r8's
+rule "`shipToReference` carries the account id; SHIPMENT-BUNDLE does not change". r8 (`f85b7c21…`) passed its last narrow
+review (`docs/records/reviews/MOD-0183/2026-11-03-f85b7c21.md`, UYGUN); none of the closed findings is reopened: the
+location tree picker, the `/search` source, the name/code + by-id address split, the projection rule and the single name +
+`canonicalCode` stay as written.
+
+| Place | r8 | r9 |
+|---|---|---|
+| Front matter `status_note` | r8 draft | r9 draft; `approved_by` not set |
+| §4 Entity fields, §12 Validation rules | no customer field | `CustomerRef` row: optional, opaque, stored as given |
+| §5 Repo Scope | DL-1 exception only | adds the §24 DL-3 exception: DL-3 applies the 3.5.0 patch and its contract test helper |
+| 24.1 Sender and recipient | account id in `shipToReference`; contract unchanged | `customerRef` (lower-case Guid "D", compared case-insensitively); `shipToReference` stays the delivery destination, filled with the account's address as one text (OD-183-4 decided by Natig K1); no GUID on screen; contractless measured CRM use with log rule; adapter error code `INVALID_CUSTOMER_ACCOUNT` |
+| 24.1 Open items on MOD-0149 | "no contract file" | draft CRM-ACCOUNT-LOOKUP 1.0.0 cited (U-1 only, no list or address); item 5 switch to the contracted endpoint (CRM owner); item 6 MOD-0177 consumer row (MVP-1 / CRM) |
+| 24.1 Effect on other readers | MOD-0177 answer is a DL-3 precondition | MOD-0177 rule written; precondition closed by the decision; SB-19 accepted limit |
+| 24.2 form table | Recipient → `shipToReference` | Customer → `customerRef` + `shipToReference` destination; field count unchanged (10) |
+| 24.3, 24.4 | recipient name from `shipToReference` | customer name and code from `customerRef`; "old record" mark; no id in the customer failure cell; DL-4 starts after DL-3 |
+| 24.5 | intake writes no account id | intake sets no `customerRef` (FU-0178-MVP6) |
+| 24.7 | items 1, 2; "DL-3 and K1 need none" | items 1–5 = SHIPMENT-BUNDLE 3.5.0, proposal + patch, applied whole by DL-3 (item 5 = MOD-0186 `getReturn` only, joined by Natig K1; the DL-5 surface is kept out); DL-4 and MOD-0186 DL-3 / DL-4 after DL-3 |
+| 24.8 | OD-183-1…3 | customer-identity decision; OD-183-4 decided (Natig K1); OD-183-5 open with MVP-1 CT; CRM switch, MOD-0177 consumer row added |
+| 24.9 | SB-2, SB-2a, SB-9…SB-11, SB-19 as precondition | rows reworded; SB-19 accepted limit; new SB-20 (no GUID on screen), SB-21 (nothing from CRM in logs), SB-22 (3.5.0 applied exactly) |
+| Slice table and its note | DL-3: "no contract change", MOD-0177 answer first | DL-3 row adds "Contract changes needed" (the only slice-table change, required by the decision); DL-3 applies 3.5.0; DL-4 after DL-3 |
+
+r9 holds two change sets, not reviewed in between: the customer-identity rule, then Natig K1's four decisions of 2026-11-03 on the open questions (OD-183-4; sequencing; `getReturn` only in 3.5.0, DL-5 surface kept out; MOD-0186 owned files). A third set closes the narrow re-review of `107861b0…` (KOŞULLU, 0 YÜKSEK) with CT kararları 2026-11-03:
+
+| Finding | Closed by |
+|---|---|
+| F-1 destination text | 24.1 rule (CRM order, trim, drop empty, `", "`, no cut); all empty → 400 `CUSTOMER_ADDRESS_MISSING`; SB-23 |
+| F-2 MOD-0177 window | DL-3 gate on the MOD-0177 FU on `main`; 24.1 effect + open item 7, 24.8, slice note, SB-24 |
+| F-10 gate not enforceable (final review `0c0d1bac…`) | gate is now "DL-3 does not merge before the MOD-0177 FU is on `main`", over the whole DL-3 change incl. the 3.5.0 service side (MOD-0186 DL-3 / DL-4 wait too); SB-24 = PR cites the FU commit + `git merge-base --is-ancestor` exit 0; 24.1, open item 7, 24.8, slice note |
+| F-11 citation and table | `AccountModels.cs:54-57`; the proposal's two "Screens" rows merged |
+| F-3 format only on MVC | `CustomerRef` `pattern` in the 3.5.0 patch; service 400 `INVALID_REQUEST` (`ValidationBehavior.cs:11`); non-Guid shown as "not found"; §4, §12, 24.1, 24.7, SB-25 |
+| F-4 `getReturn` statuses | patch declares 200, 400, 401, 403, 404, 500, 503 as `queryReturns`; 24.7 item 5 |
+| F-5 7-language parity | SB-26 |
+| F-6 consumer table | proposal §6 adds `ClaimReferenceReader` and `LoadReferenceReader` |
+| F-7 example value | examples' `shipToReference` = `TR, Istanbul, Kadikoy, Ataturk Cad. No 12` |
+| F-8 decision record table | "superseded by" notes at the K1 row and the "applied in" line, append-only |
+| F-9 SB-11 slice | SB-11 (DL-3) and SB-11a (DL-4) |
+
+Nothing in §1–§3, §6–§11, §13–§23 or the DL-1 / DL-2 rows changed; no YAML block was edited.
+
+## 25. Warehouse intake, reservation and Item level (r10)
+
+> **r10 draft (2026-11-11), not approved.** Owner decisions R10-1…R10-8 (Natig K1, 2026-11-11):
+> `docs/records/decisions/2026-11/mod0183-r10-owner-decisions-2026-11-11.md`. Requested by MOD-0178 (MVP-5) as one revision
+> after Dilim B (PR #400, merged 2026-11-11, `3b42f0005`). This section closes FU-0178-MVP6 on the MOD-0183 side (§24.5) and the
+> open item of §24.6. **No contract file is changed by this revision**; the DL-5 code applies SHIPMENT-BUNDLE 3.6.0 (25.3.1: the
+> intake operation and `outboundNumber`, R10-5 / R10-7). `reservationId` is not part of 3.6.0 and never on the SHIPMENT wire (R10-2).
+>
+> **Basis (R10-4).** The source members come from the WMS-BUNDLE draft, not from a file on `main`: on `origin/main` `3b42f0005`
+> WMS-BUNDLE exists only as `docs/analysis/contracts/drafts/wms-bundle-v1-proposal.md`, and the frozen WAREHOUSE-OUTBOUND is
+> 1.0.0 (`docs/analysis/contracts/warehouse-outbound.openapi.yaml:12`, `SkuLevel` without `Item` at `:71`). MOD-0178 r27 states
+> that WMS-BUNDLE 1.1.0 froze on the MVP-1 line (CT 2026-11-10) and reaches `main` with the line PR
+> (`MOD-0178-putaway-picking-packing.md:1677-1681`); that frozen file was **not readable here** (not measured). Code starts only
+> through the gates of 25.7.
+
+### 25.1 Intake fields and mapping
+
+Source: WMS-BUNDLE draft §2.3, the single list of additive members (`drafts/wms-bundle-v1-proposal.md:113-135`), with the MVP-6
+answers Q-M6-1, Q-M6-3, Q-M6-5, Q-M6-9 recorded in MOD-0178 (`MOD-0178-putaway-picking-packing.md:1434-1444`, `:3033-3050`).
+The intake reads `getOutboundShipment` (`warehouse-outbound.openapi.yaml:54-66`) and maps it in `WarehouseShipmentMapper.Map`
+(`services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseShipmentMapper.cs:37-61`),
+which today sets only `lineNumber`, `itemId`, `skuId`, `quantity`, `uomId` per line (`:53-55`). r10 mapping, mapping version
+`warehouse-shipment-v2` (the constant at `:11`; v1 intents keep `v1`):
+
+| Source member (1.0.0 / 1.1.0 draft) | Shipment field | Rule |
+|---|---|---|
+| `outboundId` | `sourceDocumentId`; `sourceModule` / `sourceType` = `MOD-0178` / `WAREHOUSE_OUTBOUND` | unchanged (`:49`) |
+| `warehouseId` | `warehouseReferenceId` | unchanged (`:50`) |
+| `legalEntityId` (1.1.0) | — (check only) | must equal the caller's validated `X-Legal-Entity-Id` scope (GAP-0183-02); absent → `Blocked` / 422 `SOURCE_LEGAL_ENTITY_MISSING`; different → 404 `SOURCE_NOT_FOUND` without saying it exists (§13), no evidence row; no shipment either way |
+| `outboundNumber` (1.1.0) | `Shipment.OutboundNumber` (new optional field) | stored as given and returned as the read-only `outboundNumber` of `ShipmentSummary` in SHIPMENT-BUNDLE 3.6.0 (R10-7, 25.3.1); shown as the source code on list and details; null for manual shipments and for an outbound that sends none |
+| `readyAt` | `plannedShipAt` | unchanged (`:44-45`) |
+| `shipTo` | — | **dropped** (25.2); `shipToReference` keeps the pointer text `warehouse-outbound:{outboundId}:ship-to` (`:51`); `customerRef` stays empty; the screens show the intake customer state of 25.3 (R10-6) |
+| line `skuLevel` | `ShipmentLine.SkuLevel` | as given; `Item` only after the gate of 25.6 |
+| line `lotId` (1.1.0) | `ShipmentLine.LotId` | as given; `lotNumber` is not mapped (INVENTORY needs the id, Q-M6-1) |
+| line `fromWarehouseId` (1.1.0) | — (check only) | must equal `warehouseId`; different → `Blocked` / `SOURCE_LINE_WAREHOUSE_MISMATCH` |
+| line `fromLocationId` (1.1.0, Staging) | `ShipmentLine.FromLocationId` | required for intake; absent → `Blocked` / `SOURCE_STOCK_FIELDS_MISSING` (otherwise the shipment could never dispatch, 422 `SHIPMENT_LINE_STOCK_INCOMPLETE`, §23) |
+| line `stockStatus` (1.1.0) | — (check only) | absent or `AVAILABLE`; any other value → `Blocked` / `SOURCE_STOCK_STATUS_UNSUPPORTED` (§23.1 sends `fromStockStatus: AVAILABLE` only) |
+| line `reservationId` (1.1.0) | `ShipmentLine.ReservationId` (new internal field, 25.4) | as given, never shown, never on the SHIPMENT wire |
+| line `fefoBypassReason` (1.1.0, 10–1000) | `ShipmentLine.FefoBypassReason` | sent unchanged with `GOODS_ISSUE_SALES` (Q-M6-3); never on REVERSAL (§23.4) |
+| line `orderLineId`, `serialIds` | — | `orderLineId` kept in the snapshot only; `serialIds` not sent in v1 (§23.1 row `serialIds`), so a serial line is refused at dispatch as today |
+| `packages`, `orderRef` | — | snapshot only (whitelist), never mapped |
+
+A line picked from several lots arrives as several lines with the same `orderLineId` (`drafts/wms-bundle-v1-proposal.md:134-135`);
+each becomes its own shipment line, numbered `1, 2, 3` in source order. The new `Blocked` codes are intake result codes with the
+HTTP answer of the §13.1 table (wire codes of 3.6.0, 25.3.1 item 1). At dispatch the stored line fields feed `InventoryMovementMapper.Issue` unchanged
+(`…/Application/Features/Shipments/Dispatch/InventoryMovementMapper.cs:42-44`), plus `reservationId` (25.4).
+
+### 25.2 Snapshot whitelist — §8.2 obligation 3 lands
+
+Obligation 3 of §8.2 is met by this revision's code, **in the same change that enables intake** (25.3) and therefore before any
+production row exists:
+
+- **Persisted, in all three collections** (`sce_shipment_source_intents` `IntentJson`, `sce_shipment_source_links`,
+  `sce_shipment_source_evidence`): only this projection of the outbound detail — `outboundId`, `outboundNumber`, `legalEntityId`,
+  `warehouseId`, `orderRef`, `status`, `readyAt`, `contractVersion`, `packages[] { packageId, weightKg, dimensionsCm }`, and
+  `lines[] { orderLineId, itemId, skuId, skuLevel, lotNumber, lotId, fromWarehouseId, fromLocationId, stockStatus, reservationId,
+  fefoBypassReason, quantity, uomId }`. Any other member, including members a later producer version adds, is not persisted.
+- **Dropped:** `shipTo` (all of `Address`) and `serialIds`. The evidence sites that store a snapshot today
+  (`WarehouseIntakeCoordinator.cs:33,38,40,42,51,54`) store the projection instead.
+- **Hash kept:** the drift hash stays the SHA-256 of the canonical **full** detail as read (`WarehouseShipmentMapper.cs:41-43`),
+  so a change to `shipTo` before commit is still `SOURCE_DRIFT`. Only the hash of the full detail is stored, never the detail.
+  **Accepted residual risk (R10-8, Natig 2026-11-11):** the hash covers a body that contains an address; only the SHA-256 is
+  stored, the address is neither stored nor recoverable from it.
+- **Obligation 1** (snapshot access restricted) is unchanged: r10 adds no reader that returns a snapshot; the intake's own
+  replay / drift read (`SourceIntakeStore.cs:20-21`) and the link lookup inside the shipment transaction
+  (`ShipmentRepository.cs:190-193`, also used by the 25.3 replay answer) stay the only readers, and neither returns snapshot content. **Obligation 2** is replaced by 25.3. **Obligation 4**
+  (no retention period) stays open with its owner (§8.2); dropping `shipTo` removes the PII it named, the retention question remains.
+
+### 25.3 User-triggered intake
+
+There is no service identity for background work (MOD-0178 §8.21, `MOD-0178-putaway-picking-packing.md:1524-1527`; Q-M6-8 at
+`:2171-2175`: MVP-6 reads with the user's Bearer token, `X-Tenant-Id`, `X-Legal-Entity-Id`, `X-Correlation-Id`). The intake is
+therefore started by a user, as MOD-0178's own dispatch sync is (Q-M6-4):
+
+- **Who:** a user on the Shipments list chooses a `ReadyToShip` outbound of the selected company (outbound list
+  `listOutboundShipments?status=ReadyToShip&warehouseId=…`, `warehouse-outbound.openapi.yaml:21-28`) and starts the intake. No
+  hosted service, poller or event handler calls `WarehouseIntakeCoordinator` (sabotage IR-3).
+- **Permission keys (existing only):** `supplychain.shipments.create` on the SupplyChain operation
+  (`…/Infrastructure/Authorization/ShipmentPermissions.cs`), and the user's token must also hold `warehouse.outbound-shipments.read`
+  for the Warehouse read (MOD-0178 permission table, `MOD-0178-putaway-picking-packing.md:2128`). A Warehouse 401 / 403 ends the
+  intake as 403 `FORBIDDEN` with no shipment and no evidence row (§13.1; a change from today's coordinator, which records one). Which role carries both keys is MOD-0178's / Auth's note (`ShippingPlanner`, `:2171-2173`), not
+  this pack's.
+- **Operation (R10-5):** the Web adapter calls `intakeWarehouseOutbound`, `POST /shipments/warehouse-intake/{outboundId}`,
+  through the Gateway; it is part of SHIPMENT-BUNDLE 3.6.0 (25.3.1). `Idempotency-Key` required; answers 201 (new) / 200 (replay)
+  `ShipmentDetail`, and every error exactly as the §13.1 "HTTP answer (3.6.0)" column says (400, 401, 403, 404, 409, 422,
+  500, 502, 503); the two keys follow §13.1 "Two keys". The Gateway route is written only by the integration-agent lane (AGENTS.md §4).
+- **Scope:** tenant from the token, company from the validated `X-Legal-Entity-Id` (`TrustedSourceContext`), as every Shipments
+  call; the outbound's `legalEntityId` must match (25.1). A cross-tenant or cross-company outbound answers Warehouse 404 (or carries another
+  `legalEntityId`, 25.1) and ends as 404 `SOURCE_NOT_FOUND` with no shipment and no evidence row naming the other tenant or company.
+- **One shipment per outbound (Q-M6-10):** the intake key is `WarehouseShipmentMapper.Key` (tenant, company, `MOD-0178`,
+  `WAREHOUSE_OUTBOUND`, outboundId, `:31-35`) under the unique `source_identity` index; a second intake returns the same shipment
+  (200, replay); two concurrent intakes create one. **After commit** the intake answers from the committed link and does **not**
+  re-read the outbound: MOD-0178 changes only `status` after `ReadyToShip` (`MOD-0178-putaway-picking-packing.md:1361-1363`), and
+  a re-read after `Shipped` would otherwise report false drift (CT proposal; inference from the code at
+  `WarehouseIntakeCoordinator.cs:34-38`).
+- **Drift:** before commit, a detail whose hash differs from the prepared intent's is `SOURCE_DRIFT` (unchanged rule, §13); the
+  user sees a localized text, nothing is created.
+- **Cancellation (Q-M6-7):** there is no source cancellation after `ReadyToShip` in v1. A MOD-0183 user may cancel the intake
+  shipment (`Draft` / `Planned → Cancelled`, existing rule); the link stays, a new intake of the same outbound returns the cancelled
+  shipment and creates no second one. MOD-0178 sees a cancelled shipment without stock issue as "not dispatched"
+  (`MOD-0178-putaway-picking-packing.md:1514-1517`).
+- **Screen:** a "receive from warehouse" action on the Shipments list (`SHIPMENTS` page; new action in the §22 manifest, with
+  `supplychain.shipments.create`), an outbound picker that shows the outbound number and warehouse name (never a GUID, SB-20), and
+  the result texts of 25.1 / 25.3 in 7 languages.
+- **Picker data (no address to the browser):** the Web adapter maps each `listOutboundShipments` row to `outboundId` (option
+  value only, never a visible text), `outboundNumber`, warehouse name and `readyAt`; `shipTo` and every other member stay in the
+  adapter and never reach the view model, the page or its JSON (IR-16). An outbound without `outboundNumber` (optional in 1.1.0)
+  shows a localized "no outbound number" text with the warehouse name and `readyAt`, never the id. The exact keys are written in DL-5.
+- **Customer state of an intake shipment (R10-6):** a shipment with `sourceModule = MOD-0178` / `sourceType = WAREHOUSE_OUTBOUND`
+  and no `customerRef` shows the state "warehouse shipment — no customer" on list and details, never "Old record" (that state stays
+  for manual shipments made before 3.5.0) and never an id. Proposed text key `WarehouseShipmentNoCustomer` in
+  `frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, next to the existing
+  `OldRecord` key (proposal; the final name is set in DL-5). A customer on the outbound is a later MOD-0178 topic.
+- **Source code on screen (R10-7):** list and details show `outboundNumber` as the shipment's source code when present; a
+  manual shipment (null) keeps today's display.
+
+### 25.3.1 SHIPMENT-BUNDLE 3.6.0 (no contract file is touched here)
+
+3.5.1 → 3.6.0 (r11: 3.6.0 is cut from 3.5.1, which DL-8 applies first; 3.5.1 changes descriptions only, §26.2); single writer MVP-6 CT (R10-5, R10-7, R10-9). Items 1 and 2 are additive; item 3 narrows the documented type to
+what the service already writes. The DL-5 code applies the patch in the same change, under the §25 DL-5 exception of Repo Scope,
+together with the docs-path authority re-pin of the contract file (owner decision, as for 3.3.0…3.5.0). The patch file
+`docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.6.0.patch` is written and reviewed (`git apply --check` on 3.5.1,
+duplicate-key YAML load, every 3.5.1 leaf unchanged except the `CustomerRef` schema of item 3 — its `type`, the added `format` and
+its description, whose "Null or absent" becomes "Absent" — which is checked against item 3 instead) before the DL-5 work row is READY (25.7).
+
+| # | Change | For |
+|---|---|---|
+| 1 | New operation `intakeWarehouseOutbound` `POST /shipments/warehouse-intake/{outboundId}` (`outboundId` uuid path parameter); parameters `LegalEntityId`, `CorrelationId`, `IdempotencyKey` (the `createShipment` components); no request body; responses 201 / 200 `ShipmentDetail` and the errors of the §13.1 "HTTP answer (3.6.0)" column with the shared `Error` schema. New wire codes: `SOURCE_NOT_FOUND`, `SOURCE_DRIFT`, `SOURCE_NOT_READY`, `EMPTY_SOURCE_LINES`, `SHIPMENT_MAPPING_INCOMPATIBLE`, `SOURCE_LEGAL_ENTITY_MISSING`, `SOURCE_LINE_WAREHOUSE_MISMATCH`, `SOURCE_STOCK_FIELDS_MISSING`, `SOURCE_STOCK_STATUS_UNSUPPORTED`, `SOURCE_ITEM_SKU_MISMATCH`; reused: `FORBIDDEN`, `DEPENDENCY_UNAVAILABLE`, `DEPENDENCY_RESPONSE_INVALID`, `CORRELATION_ROOT_MISMATCH`, `PERSISTENCE_UNAVAILABLE`, `INVALID_REQUEST`, `IDEMPOTENCY_KEY_REUSED`, `SHIPMENT_NOT_FOUND` | DL-5 (DL-7 serves `SOURCE_ITEM_SKU_MISMATCH`) |
+| 2 | `ShipmentSummary.outboundNumber`: optional, read-only `type: string`, absent when there is none (never `null`; so also `ShipmentDetail` and the list) | DL-5 |
+| 3 | `CustomerRef` (R10-9, MOD-0177-FU01 AC-17): `type: string`, `format: uuid`, the lower-case pattern kept; no longer `null` in the type. Still optional everywhere it is used (`CreateShipmentCommand`, `ShipmentSummary`, `ReturnSummary`); absent means "no customer" (records before 3.5.0, intake shipments, calls that do not send it). The service already never writes `null` (`ShipmentModels.cs:20`, `ReturnModels.cs:9,17,20`, `WhenWritingNull`), so no body it writes changes; it keeps reading an explicit `null` in a create request as absent, for clients built on 3.5.0 | DL-5 |
+
+Not in 3.6.0: `reservationId` (R10-2, internal only), every other existing path, schema member, status and event payload, the FEFO
+reason at dispatch for manual shipments (DL-3 VER F-1 follow-up, a later version).
+
+### 25.4 `reservationId` — internal line field sent to INVENTORY 1.7.0
+
+R10-2: the reservation id travels **inside** MOD-0183. It is stored on `ShipmentLine` (new optional property `ReservationId`,
+next to `LotId` / `FromLocationId`, `…/Domain/Features/Shipments/ShipmentLine.cs:6-9`), set only by the intake (25.1), never by
+`createShipment`, never returned by any SHIPMENT-BUNDLE response: `reservationId` does not change SHIPMENT-BUNDLE (3.6.0 exists
+for the intake operation and `outboundNumber` only, 25.3.1). The old line field
+`inventoryReferenceId` stays unused (§23.1, F-10). MOD-0178's text "SHIPMENT 3.5.0 line field" (`MOD-0178…md:1468`, `:3036`,
+`drafts/wms-bundle-v1-proposal.md:128`) is corrected on their side (MOD-0178 owner).
+
+At dispatch the §23.1 issue body gains `reservationId` **only when the line has one** (INVENTORY-BUNDLE 1.7.0
+`MovementRequest.reservationId`, `docs/analysis/contracts/inventory-bundle.openapi.yaml:24`, `:50-58`, `:415`). INVENTORY puts it
+into the idempotency fingerprint only when sent (`:24`), so every v1 line (no reservation) keeps a byte-identical body and
+fingerprint, and a resend within an attempt stays identical (§23.4). With `reservationId` INVENTORY does not use the source-triple
+match (§23.4 G2 text) and never takes the rest from free stock.
+
+The five 1.7.0 refusals (`inventory-bundle.openapi.yaml:618-622`; all in `InventoryErrorCodes.cs` on `main`) follow §23.3 / §23.4
+exactly — 422 `INVENTORY_REFUSED` with `details.inventoryCode`, posted lines compensated, attempt `Compensated`, `n + 1`:
+
+| `inventoryCode` | Meaning for a MOD-0183 attempt | Extra |
+|---|---|---|
+| `RESERVATION_NOT_ACTIVE` | the reservation was consumed, released or expired (e.g. a compensation without restore, or MOD-0178 released it) | business refusal; user text says the warehouse reservation is closed |
+| `RESERVATION_QUANTITY_EXCEEDED` | the line asks for more than the reservation still holds | business refusal |
+| `RESERVATION_NOT_FOUND` | unknown id, other tenant / company, or not a UUID | also logged as an integrity fault (our stored id is wrong) |
+| `RESERVATION_MISMATCH` | SKU, warehouse or lot of the line differs from the reservation (`details.field`) | also an integrity fault |
+| `RESERVATION_NOT_APPLICABLE` | the movement type cannot name a reservation | also an integrity fault: a `GOODS_ISSUE_SALES` out of `AVAILABLE` can (`:52`) |
+
+The §23.3 closed `inventoryCode` list gains these five codes (they are on `main` since INVENTORY 1.7.0); each gets a text in the
+Shipments resource in 7 languages (S23-7 extended; `RESERVATION_CONFLICT` already has one).
+
+### 25.5 K3 — `restoreReservation`
+
+§24.6 is closed by this revision (MOD-0173-FU03 r5 approved, CT-APR-01 GMG-ERP 2026-11-11; INVENTORY 1.7.0 on `main`). FU03 rule
+§8.3.1 (`MOD-0173-FU03-inventory-lot-location-reservation.md:500-530`): a REVERSAL with `restoreReservation: true` of a movement
+that consumed a reservation by `reservationId` restores it in the same ledger transaction; without the field it stays closed; a
+REVERSAL never carries `reservationId`; `true` on an original without reservation has no effect; the field enters the fingerprint
+only when `true`. Q-09 = A (K3, Natig 2026-11-02; FU03 `:102`, `:516-523`). The five changes §24.6 listed:
+
+1. **REVERSAL table (§23.4):** new row `restoreReservation` = `true` **only when the stored issue body of that line carries
+   `reservationId`**; otherwise not sent. The "not sent" row adds `reservationId`. Reason for "only when": a REVERSAL of a v1 issue
+   keeps its body and fingerprint, so a compensation resend that started before r10 still answers `idempotentReplay: true`.
+2. **S23-17** reads "only the §23.4 fields, and `restoreReservation` under rule 1, are sent".
+3. **"A reversed issue does not restore a reservation it consumed"** (§23.4) now reads: a compensating REVERSAL restores the
+   reservation its issue consumed (rule 1), so the next attempt can consume it again; an issue without reservation restores nothing.
+4. **Compensation case:** every compensating REVERSAL of an attempt before `Dispatched` sends the field under rule 1 (FU03 rule 5,
+   `:98-100`). There is no REVERSAL after `Dispatched` in MOD-0183 (Q-M6-11; goods come back through MOD-0186), so no reservation
+   is restored after a shipment is dispatched.
+5. **Late writer (K3 = A):** the late writer's REVERSAL of its unrecorded issue sends `restoreReservation: true` under rule 1,
+   **unless** the shipment it re-read has a `Completed` (`Dispatched`) attempt; then it does not send it (orphan-reservation reason,
+   FU03 `:510-515`).
+
+INVENTORY 1.7.0 is the version this needs (§24.6 said so); it is on `main`.
+
+### 25.6 Item level
+
+INVENTORY 1.7.0 already accepts `Item` (`inventory-bundle.openapi.yaml:371-373`; for `Item`, `skuId == itemId`, MOD-0178 §8.24
+`MOD-0178…md:1640-1645`). MOD-0183's reader does not: `FrozenReadSchema.SkuLevels` = `Gsku`, `Lsku`, `FinishedGood`
+(`…/Infrastructure/SourceIntake/FrozenReadSchema.cs:11`), used by the outbound line check (`:26`, `:34-36`) and by the INVENTORY
+read client (`…/SourceIntake/ReadOnlySourceClients.cs:31`). r10 rule:
+
+- `Item` joins `SkuLevels` **only after** the first WAREHOUSE-OUTBOUND and WMS-BUNDLE versions with `Item` in the outbound
+  `SkuLevel` (expected 1.2.0 and 1.4.0; the content, not the number, is the gate)
+  are FROZEN on `main` (MOD-0178's one CT step, §8.24 rule 4, `:1675-1683`). **Order (F-3 of the 2026-11-12 review):** r10 approved on `main` →
+  MOD-0178 writes WAREHOUSE-OUTBOUND 1.2.0 and WMS-BUNDLE 1.4.0 in one CT step (MOD-0178 CT message to MVP-6, 2026-11-12:
+  "when the revision comes"; numbers corrected in r11 per the MOD-0178 owner's message of 2026-11-16 (recorded in `docs/records/decisions/2026-11/mod0183-r11-owner-decisions-2026-11-16.md`), because versions are
+  numbered in freeze order: WMS-BUNDLE 1.2.0 went to the wave members, WMS-BUNDLE 1.3.0 + WAREHOUSE-OUTBOUND 1.1.0 to the
+  customerRef addition of the outbound form) → MOD-0183 DL-7 code. The trigger of MOD-0178's step is this pack's approval, not MOD-0183 code; the
+  matching wording in MOD-0178 (`MOD-0178…md:1676-1677`, `:3045-3047`) is changed on their side (OD-R10-6). Before that a single `Item` outbound still
+  fails the whole page (`WarehousePage`, `:39`) — MOD-0178's publication gate keeps such outbounds invisible.
+- An `Item` line must have `skuId == itemId`; otherwise `Blocked` / `SOURCE_ITEM_SKU_MISMATCH` (no shipment). SHIPMENT
+  `skuLevel` stays a free string (no SHIPMENT change).
+- Dispatch of an `Item` line posts `GOODS_ISSUE_SALES` with `skuLevel: Item`; INVENTORY's own checks (`SKU_ITEM_MISMATCH`,
+  `SKU_LEVEL_NOT_STOCKABLE`) are already in the closed list. MOD-0178 Q-M6-6 asked for the INVENTORY answer to be measured: IR-15.
+
+### 25.7 Code gates (R10-4)
+
+| Slice | Code may start when (measured on `origin/main` by the CT before the work row is made READY) |
+|---|---|
+| DL-5, DL-6 | r10 approved (CT-APR-02 review + CT-APR-01 row); DL-8 on `main` with SHIPMENT-BUNDLE 3.5.1 FROZEN (r11, so the 3.6.0 patch applies to 3.5.1); `docs/analysis/contracts/wms-bundle.openapi.yaml` at 1.1.0 `x-status: FROZEN` with the 25.1 members; the SHIPMENT-BUNDLE 3.6.0 patch file (25.3.1) written and reviewed before READY, then applied in the DL-5 change; the Gateway route for `intakeWarehouseOutbound` from the integration-agent lane before the DL-5 merge |
+| DL-7 | DL-5 on `main`; the first WAREHOUSE-OUTBOUND **and** WMS-BUNDLE versions FROZEN on `main` with `Item` in the outbound `SkuLevel` (expected WAREHOUSE-OUTBOUND 1.2.0 and WMS-BUNDLE 1.4.0, MOD-0178 owner 2026-11-16, `docs/records/decisions/2026-11/mod0183-r11-owner-decisions-2026-11-16.md`; the content, not the number, is the gate) (written by MOD-0178 after r10 is approved, 25.6 order) |
+
+If a frozen member differs from the draft §2.3 (name, type, optionality), the code follows the frozen file and this pack gets a
+text revision before merge.
+
+### 25.8 Acceptance
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| IR-1 | Each of the three collections stores only the 25.2 projection; no `shipTo` member anywhere, on success, drift and every `Blocked` path | persisting the full detail in one evidence site makes the test red |
+| IR-2 | A `shipTo`-only change between prepare and commit → `SOURCE_DRIFT`, nothing created | hashing the projection instead of the full detail lets the `shipTo`-only change commit a shipment, so the test is red |
+| IR-3 | Intake is reachable only through the 25.3 operation; no hosted service, poller or event handler resolves `WarehouseIntakeCoordinator` (replaces SB-17) | registering a poller makes the composition test red |
+| IR-4 | Without `supplychain.shipments.create` → 403; Warehouse 401 / 403 → 403 `FORBIDDEN`; no shipment, no evidence row (§13.1 change) | removing `[HasPermission]` makes the authorization guard red |
+| IR-5 | Outbound `legalEntityId` absent → 422 `SOURCE_LEGAL_ENTITY_MISSING`; ≠ the scope LE, or a cross-tenant outbound → 404 `SOURCE_NOT_FOUND` with a body identical to an unknown outbound's and no evidence row; no shipment | skipping the LE check creates a shipment → red; answering 422 for another company's outbound makes the identical-body assertion red |
+| IR-6 | Second intake → same shipment, 200 replay; two concurrent → one shipment; after commit no Warehouse read | re-reading after commit (status `Shipped`) gives drift → red |
+| IR-7 | Status ≠ `ReadyToShip` → `SOURCE_NOT_READY`; a cancelled intake shipment is returned on re-intake, no second shipment | dropping the link check opens a second shipment → red |
+| IR-8 | Mapping: every 25.1 row; `fromWarehouseId` ≠ `warehouseId`, missing `fromLocationId`, `stockStatus` ≠ `AVAILABLE` → the named `Blocked` code; split lot lines numbered in order | mapping `lotNumber` into `LotId` makes the mapping test red |
+| IR-9 | Dispatch of an intake shipment: issue body = §23.1 + `lotId`, `fromLocationId`, `fefoBypassReason`, `reservationId` as stored; a line without reservation gives a body byte-identical to r9 | always sending `reservationId: null` changes the r9 golden body → red |
+| IR-10 | Each of the five `RESERVATION_*` codes → 422 `INVENTORY_REFUSED` with that `inventoryCode`, posted lines compensated; NOT_FOUND / MISMATCH / NOT_APPLICABLE also log an integrity fault; each code has a text in 7 languages | deleting one text key makes the parity test red |
+| IR-11 | Compensating REVERSAL of an issue with `reservationId` carries `restoreReservation: true` and no `reservationId`; of an issue without, the r9 body exactly | sending the field on every REVERSAL changes the v1 replay fingerprint → red |
+| IR-12 | Late writer: shipment without a `Completed` attempt → `true` (rule 1); with a `Completed` attempt → field absent | inverting the condition makes both branch tests red |
+| IR-13 | Joint run with a real INVENTORY: reserve → intake → dispatch with line 2 refused → reservation restored → re-dispatch consumes it; net reserved and available checked after each step | dropping rule 1 leaves the re-dispatch on `RESERVATION_NOT_ACTIVE` → red |
+| IR-14 | Before the DL-7 gate an `Item` line is refused by the reader; after it an `Item` line with `skuId == itemId` is taken in, otherwise `SOURCE_ITEM_SKU_MISMATCH` | adding `Item` without the frozen WAREHOUSE-OUTBOUND and WMS-BUNDLE versions that carry it (expected 1.2.0 / 1.4.0) makes the contract-presence test red |
+| IR-15 | INVENTORY answer for `GOODS_ISSUE_SALES` with `skuLevel: Item` measured on a live INVENTORY (Q-M6-6); the record names the INVENTORY commit and holds the request / response pair | a record made against a mock, or without the commit and the pair, is not accepted and the row stays open |
+| IR-16 | No PII from the outbound in any log line or audit row (`shipTo` never read into a log); the outbound picker's view model, page and JSON carry no `shipTo` member and no visible outbound id (25.3) | logging the detail makes the log-scan test red; passing the list row unchanged to the page makes the picker test red |
+| IR-17 | SHIPMENT-BUNDLE 3.6.0 applied exactly (the reviewed patch, 25.3.1 items 1–3; 3.5.1 bodies (equal to 3.5.0 bodies) byte-identical when there is no `outboundNumber`; an explicit `customerRef: null` in a create request is still read as absent); every row of the §13.1 "HTTP answer" column answered as written and the "Two keys" cases; the service's `intakeWarehouseOutbound` statuses and error codes equal the contract's (`ContractErrorCodeParityTests`); the docs-path authority pins the 3.6.0 file | removing one declared code from the contract, or answering an undeclared status, makes the parity test red |
+| IR-18 | Through the Gateway, `POST /api/shipment-bundle/shipments/warehouse-intake/{outboundId}` reaches SupplyChain (explicit route pinned in `Mvp6ExplicitRoutesTests`) | removing the route makes the Gateway test red |
+| IR-19 | An intake shipment without `customerRef` shows "warehouse shipment — no customer" on list and details in 7 languages, never "Old record" and never an id; a manual pre-3.5.0 shipment still shows "Old record" | mapping the intake case to `OldRecord` makes the list and details tests red; deleting the key in one language makes the parity test red |
+| IR-20 | `outboundNumber` is stored from the outbound, returned on `ShipmentSummary` / `ShipmentDetail` / list, shown as the source code; null for a manual shipment and absent from its body (`WhenWritingNull`) | dropping the field from the summary projection makes the list test red; writing `outboundNumber: null` changes the 3.5.0 golden body → red |
+| IR-21 | A committed intake writes exactly one central audit record with operation `Create`, entity `Shipment` and the new shipment's id (25.11, BL-501), as `createShipment` does; the declaration test counts 20 commands; a replay writes none; a refused intake writes none centrally and leaves only the evidence row §13.1 names | sending the intake outside the MediatR pipeline (no `CentralAuditBehavior`) makes the central-record test red |
+
+S23-1…S23-21 and SB-1…SB-26 stay green, except SB-17 (replaced by IR-3 from DL-5) and SB-18 (replaced by the widened S23-17, IR-11
+and IR-12 from DL-6), which change in the same change as their replacement; the full SupplyChain assembly runs unfiltered; the MVP-1 / MVP-5 live tour is the
+acceptance of IR-13 and IR-15.
+
+### 25.9 Open items
+
+- ~~**OD-R10-1**~~ **decided (R10-5, Natig 2026-11-11):** SHIPMENT-BUNDLE 3.6.0 carries `intakeWarehouseOutbound` (25.3, 25.3.1);
+  Gateway route by the integration-agent lane; lands with the DL-5 code.
+- ~~**OD-R10-2**~~ **decided (R10-6):** separate customer state "warehouse shipment — no customer" (25.3, IR-19); a customer on the
+  outbound is a later MOD-0178 topic (owner: MOD-0178 owner, Beste; not scheduled).
+- ~~**OD-R10-3**~~ **decided (R10-7):** optional read-only `ShipmentSummary.outboundNumber` in 3.6.0 (25.1, 25.3.1, IR-20).
+- **OD-R10-4** MOD-0178's wording "SHIPMENT 3.5.0 line field `reservationId`" (25.4). Owner: MOD-0178 owner (Beste); MOD-0178
+  accepted the correction on 2026-11-11 (chat); their pack text is not yet changed.
+- ~~**OD-R10-5**~~ **decided (R10-8):** accepted residual risk — hash only, address neither stored nor recoverable (25.2).
+- **OD-R10-6** MOD-0178's wording of the Item order (`MOD-0178…md:1676-1677`, `:3045-3047`: "after the MOD-0183 reader accepts
+  Item") becomes "after the MOD-0183 revision r10 is approved on `main`" (25.6 order; MOD-0178 CT message 2026-11-12). Owner:
+  MOD-0178 owner (Beste).
+- **SHIPMENT-BUNDLE 3.6.0 patch file** (25.3.1): written and reviewed before the DL-5 work row is READY. Owner: MVP-6 CT.
+- **docs-path re-pin of the 3.6.0 contract file:** an owner decision at DL-5 time, as for 3.3.0…3.5.0. Owner: MVP-6 CT (Natig).
+- **§8.2 obligation 4** (retention) stays open with its owners as written in §8.2.
+- **Date:** target ≈ 2026-11-21 (MOD-0178 agreement; restated by the owner 2026-11-12), confirmed only when r10 is approved.
+
+### 25.10 Revision r10 — what changed and why
+
+Cause: MOD-0178's request for one revision (intake mapping, `reservationId`, `skuLevel: Item`) and the owner decisions R10-1…R10-8
+(2026-11-11; R10-5…R10-8 decide OD-R10-1, 2, 3 and 5). FU03 r5's approval the same day closes §24.6.
+
+| Place | r9 | r10 |
+|---|---|---|
+| Front matter `status_note` | "r9 … draft, not approved" (stale since the r9 approval, VER F-12) | r9 approved; r10 draft, not approved |
+| §8.2 | obligations 1–4, intake off | pointer: obligation 3 lands with 25.2, obligation 2 replaced by 25.3 |
+| §23.1, §23.4, §23.5 | no reservation by id; REVERSAL without `restoreReservation`; "a reversed issue does not restore …"; S23-17 "only the §23.4 fields" | short r10 notes in §23.1 and the G2 paragraph; REVERSAL table row `restoreReservation` + `reservationId` in "not sent"; the restore sentence replaced; late-writer note; S23-17 widened; the five codes and rules in 25.4 / 25.5 |
+| §24.5 | bound to FU-0178-MVP6, no mapping | points to §25 |
+| §24.6 | open | closed by 25.5 |
+| new §25 | — | intake mapping, whitelist, user-triggered intake, SHIPMENT-BUNDLE 3.6.0 item list (25.3.1), intake customer state, `outboundNumber`, `reservationId`, K3, Item gate, IR-1…IR-20, OD-R10-1…5 (four decided) |
+| Slice table | DL-1…DL-4 | adds DL-5, DL-6, DL-7 |
+
+No YAML block and no contract file was edited; 3.6.0 is listed here and applied by the DL-5 code.
+
+**Text revision after the CT-APR-02 review `docs/records/reviews/MOD-0183/2026-11-12-1e75cb36.md` (2026-11-12).** F-1: §13.1 gets
+the "HTTP answer (3.6.0)" and "Evidence row" columns and the "Two keys" rule; §13, 25.1, 25.3 and 25.3.1 item 1 follow it. F-2:
+SB-17 / SB-18 marked as replaced; 25.8 and the slice paragraphs say so. F-3: the Item order in 25.6 / 25.7, OD-R10-6. F-4: 25.11
+Audited Events, IR-21. F-5: §25 DL-5 exception in Repo Scope; the 3.6.0 operation shape in 25.3.1; the patch file as a gate.
+F-6: different company → 404, missing → 422 `SOURCE_LEGAL_ENTITY_MISSING`. F-7: picker data rule, IR-16 widened. F-8: the eight
+text fixes. F-9: port 5066 in §8 and §15 (the quoted Phase A decision near the top keeps its original wording). Also R10-9: 3.6.0
+item 3, `customerRef` as `type: string`, `format: uuid`.
+
+### 25.11 Audited Events
+
+AUD-001 (`module-pack-standard.md` §10.1) is written here because r10 adds a write command; it covers every write command of the
+module. Path `b`: SupplyChain forwards to the central log through BL-501 (`AddCentralAudit`, `…/Api/Program.cs:189`;
+`SupplyChainCentralAuditScope`), which records a command only when its response is successful (`Response.IsSuccessful`,
+`…/Application/Common/Response.cs:4-6`). BL-501 does not derive the operation name: each command **declares** it through `ICentralAuditDeclaration`
+(`CentralAuditMetadata` from `SupplyChainCentralAudit.For(module, operation, entity)`; operations `Create`, `Update`,
+`LifecycleTransition` at `…/Application/Common/SupplyChainCentralAudit.cs:31-33`). The intake command declares it the same way as
+`CreateShipmentCommand` (`…/Shipments/Commands/CreateShipmentCommand.cs:6-11`): module `ShipmentModule`, operation `Create`,
+entity `Shipment`, `CentralAuditEntityId` = `null` because the repository enlists with the id of the shipment it wrote
+(`ShipmentRepository.cs:265`). The declaration test pins the number of declared commands (`CentralAuditDeclarationTests.cs:25`,
+19 today); DL-5 raises it to 20 in the same change. The intake command's type name is fixed in DL-5. BL-501 has
+no details field, so failed outcomes keep the equivalent in-product traces named below. No command is K2 class (it changes no
+identity, permission, tenant state, GxP record or special-category personal data).
+
+| Command | Event (BL-501 operation) | Object | Path | What is recorded | Exception + reason |
+|---|---|---|---|---|---|
+| `CreateShipmentCommand` | `Create` (declared) | Shipment | b | successful create; actor, tenant, company, correlation | — |
+| `TransitionShipmentCommand` (every transition of the frozen state model, dispatch included) | `LifecycleTransition` (declared) | Shipment | b | successful transition; failed dispatch outcomes also in `sce_shipment_audit` (§23.4, v1 interim) | — |
+| `CapturePodCommand` | `Update` (declared) | Shipment (POD) | b | successful capture; no PII from the POD in the record | — |
+| intake command (`intakeWarehouseOutbound`, r10) | `Create` (declared, as `CreateShipmentCommand`) | Shipment | b | successful intake (201); a replay (200) adds no record; a refused intake is traced by its `sce_shipment_source_evidence` row (§13.1), never with `shipTo` | — |
+
+Not written to any audit record: `shipTo` and every other address member, the outbound snapshot, tokens. Acceptance: IR-21.
+
+## 26. Correlation root behind the Gateway (r11)
+
+> Numbered §26 because r10 adds §25. r10 reached `main` (PR #426, CT-APR-01 row 2df5a5f8) while r11 was drafted; r11 was
+> merged onto it, keeping both sections and resolving only the `status_note` line and the slice table.
+
+**Cause.** Since WP-PLATFORM-AUDIT-INTX-01 FIX2/FIX3 the Gateway does not adopt a caller's `X-Correlation-Id`: it removes it and
+forwards one it minted (`gateway/Diten.ApiGateway/Observability/CorrelationPropagationDelegatingHandler.cs:24-27`); the caller's
+value travels apart on `X-Client-Correlation-Id` (`:32-36`). This is a security decision and stays. The service still required
+each later command's correlation to equal the stored root, so on dev (2026-11-15, MOD-0177-FU01 recall tour, `SHP-95f19ef9…`)
+every transition, POD and dispatch answered 400 `INVALID_REQUEST`, and every retry of an already committed command did too:
+
+| Place | Check |
+|---|---|
+| `Application/Features/Shipments/Handlers/CommandHandlers/TransitionShipmentHandler.cs:31` | `s.CorrelationId != context.CorrelationId` → 400 |
+| `Application/Features/Shipments/Handlers/CommandHandlers/CapturePodHandler.cs:17` | same → 400 |
+| `Application/Features/Shipments/Dispatch/ShipmentDispatchCoordinator.cs:33` | same → 400 (Dispatched, and the CompensationFailed exit) |
+| `Persistence/Features/Shipments/ShipmentRepository.cs:76` | stored receipt correlation ≠ request → 400 on replay (create, transition, POD) |
+
+The service tests send one fixed correlation for every request (`ShipmentTests.cs:96`) and pin the 400 (`ShipmentTests.cs:181`),
+so they could not see it; the G5 chain (2026-10-19) ran before FIX2 reached `main`.
+
+**Decision.** Natig, 2026-11-15: option C — the service decides the root. Not chosen: A, matching on `X-Client-Correlation-Id`
+(it makes a value the Gateway marks as caller-supplied the gate of a write; the root is readable anyway through
+`lifecycleCorrelationId`, so the check protects nothing; the value is not guaranteed to be a UUID), and B, a body field (same
+objection, plus a schema change on four commands).
+
+### 26.1 Rules
+
+| # | Rule |
+|---|---|
+| R11-1 | The shipment's root is the `X-Correlation-Id` the service received on `createShipment` (behind the Gateway: the Gateway's). It is stored as `Shipment.CorrelationId` and `LifecycleCorrelationId`, never changed, and returned as `lifecycleCorrelationId`. Warehouse intake: R11-8. |
+| R11-2 | `transitionShipment`, `captureProofOfDelivery` and the dispatch coordinator do not compare the request's correlation with the root. A different correlation is not a refusal. The checks in the table above are removed; no other check moves. |
+| R11-3 | Every lifecycle entry, outbox event and `PodCaptured` keeps carrying the stored root (`ShipmentRepository.cs:221,235,244` already do); `causationId` stays the command id. |
+| R11-4 | The request's correlation is the command's trace: it is the response `X-Correlation-Id` and `error.correlationId`, it is written on the command's idempotency receipt (as today, `ShipmentRepository.cs:249`; for intake: the HTTP `warehouse-intake` receipt, while the internal `create` receipt keeps the root, `WarehouseIntakeCoordinator.cs:59-60`, §13.1 "Two keys") and on its log lines (`CorrelationIdEnricher`), and §23.1 still forwards it to INVENTORY at dispatch. |
+| R11-5 | Replay: a receipt is found by (tenant, legal entity, operation, key). Same fingerprint → the original result with `idempotentReplay: true` and the **current** request's correlation in the header; the correlation is not compared. Different fingerprint → 409 `IDEMPOTENCY_KEY_REUSED` as today. (SupplierPerformance RP13 already behaves so: `SupplierPerformanceReplayTests.cs:296`.) |
+| R11-6 | No caller value decides a root or gates a write: `X-Client-Correlation-Id` is not read by the service. Scope, permissions, idempotency and the 400 for a missing or non-UUID `X-Correlation-Id` (§13) are unchanged. |
+| R11-7 | Web: the details page no longer sends `lifecycleCorrelationId` as the command's `X-Correlation-Id` (`details.js:22-23,213`); each intent mints one UUID and keeps it for its retries, as `create.js:11` does. The browser no longer needs the root. |
+| R11-8 | Warehouse intake (§13, §25.3; Natig 2026-11-16, option C applied to intake): the root of an intake shipment is the caller correlation of the **first** intake request that prepares its intent (behind the Gateway: the Gateway's), stored on the intent and the shipment. A retry with the same `Idempotency-Key`, a resumed intent after `COMMIT_FAILED`, and a later intake of an already committed outbound use the **stored** root; the request's correlation is not compared with it (at `WarehouseIntakeCoordinator.cs:55-56` only the caller correlation leaves the compared set; the upstream and envelope correlations stay in it) and is only the command's trace (R11-4). `CONFLICTING_PERSISTED_ROOT` stays only for an upstream or envelope correlation that differs from the stored root, which the user-triggered operation does not pass (§13.1). `CONFLICTING_CORRELATION` is unchanged (the operation supplies one correlation, so it is not reachable). |
+
+### 26.2 Contract: SHIPMENT-BUNDLE 3.5.1
+
+Description-only change, proposal `docs/roadmap/plans/mvp6-integration-wp-p1-01/SHIPMENT-BUNDLE-3.5.1-PROPOSAL.md`, patch
+`SHIPMENT-BUNDLE-3.5.1.patch` in the same folder (`git apply --check` passes against 3.5.0 on `main` @ `6ef2c884b`): `info.version`
+3.5.0 → 3.5.1; `components/parameters/CorrelationId` says its "event correlation equals request correlation" sentence holds for
+Shipments only on `createShipment`; `createShipment`, `transitionShipment` and `captureProofOfDelivery` state R11-1, R11-2 and
+R11-5. No path, parameter, schema, status code, error code or example changes; Loads, Returns and Claims text is untouched.
+Single writer MVP-6 CT; applied by DL-8 under the §26 DL-8 exception. r10's planned 3.6.0 (§25.3.1) is then cut from 3.5.1.
+
+### 26.3 Shipment Details without GUIDs
+
+Measured on dev 2026-11-15 and in code:
+
+| What the user saw | Cause | r11 |
+|---|---|---|
+| "Yaşam Döngüsü Kökü" with a bare GUID | `Details.cshtml:26` (`LifecycleRoot`), `details.js:184` | row removed; §24.4's Details list never named it; the `LifecycleRoot` key leaves the 7 `ShipmentsIndex.*.resx` |
+| Carrier and load as raw ids | `details.js:185` (`carrierId`, `loadId`) | rows removed, as above (not in §24.4's list); a later revision may show carrier name and load number |
+| "Ad alınamadı c3d4e5f6-…0002" on a line | bulk-read has no such SKU (`SupplyChainShipmentsController.cs:561,617`); the id is a PRODUCT-MASTER contract example (`product-master-bundle.openapi.yaml:498`), not a dev SKU — data, not code | §24.4 / SB-10 change: an unresolved SKU, location, lot or warehouse shows only the localized "name unavailable" text, no reference (the r9 customer rule for every name cell). This resolves the SB-10 ↔ SB-20 conflict in favour of SB-20 |
+| Header `SHP-95f19ef9…` | the number itself is `SHP-{id:N}` (`CreateShipmentHandler.cs:33`) | unchanged: the SHP record-code follow-up (§24.7 note) stays out of this version |
+
+§24.4 "Failure" is read with r11: the reference is not shown for any name cell. SB-10 is replaced by CR-6.
+
+Two more places on the Details page:
+
+- **Support reference in an error message** (`details.js:80-81`, `:196-197`, `error.correlationId`): kept, as the one allowed
+  id-like text besides the shipment number. It is the trace the user quotes to support, not a record identity, it appears only
+  after a failed action, and it is labelled with the localized "Support reference" text. It is never shown in a data cell.
+- **Intake shipments** (r10 DL-5): the source cell (`detailSource`, `details.js:182`) shows the localized "Warehouse outbound"
+  text and `outboundNumber` when the snapshot has one, never `SourceDocumentId` (the outbound id); the ship-to cell
+  (`detailShipTo`, `:183`) shows only the localized "Address kept in Warehouse" text, never `ShipToReference`
+  (`warehouse-outbound:<id>:ship-to`, `WarehouseShipmentMapper.cs:49,51`): an intake shipment stores no address (§25.2,
+  R10-8), so none is read or shown. The "Warehouse outbound" and "Address kept in Warehouse" texts are new
+  `ShipmentsIndex.*.resx` keys in all 7 languages, written with the DL-5 screen texts. DL-9 writes the rule; an intake shipment exists only after DL-5, which measures it (CR-6).
+
+### 26.4 Not changed
+
+Lifecycle, permissions, scope, status and error codes, event payloads, §23 posting and compensation, the intake rules of §13,
+the Web adapters' scope handling, and every MOD-0184…0187 file.
+
+### 26.5 Other modules (not in r11)
+
+The same pattern breaks behind the Gateway, but there it is the normative rule of each module's frozen annex, so it needs that
+module's own revision and annex version; r11 does not touch them:
+
+| Module | Code | Annex rule |
+|---|---|---|
+| MOD-0186 Returns | `Persistence/Features/Returns/ReturnRepository.cs:31,71,109`: create needs request = shipment root; 409 `CORRELATION_ROOT_MISMATCH` | `returns-semantics-v3.0.0.md:9,30-31,66-67,76` |
+| MOD-0187 Claims | `Persistence/Features/Claims/ClaimRepository.cs:32,71,102`: 409 `CLAIM_CORRELATION_MISMATCH` | `claims-semantics-v3.0.0.md:8,121-139` (D187-05) |
+| MOD-0185 Loads | `Persistence/Features/Loads/LoadRepository.cs:17,45`: 409 `CORRELATION_ROOT_MISMATCH` | `loads-semantics-v3.1.0.md:85,130,139` (D185-ROOT-ACQ-01) |
+
+Not affected: MOD-0190, MOD-0192, MOD-0147. The intake coordinator (`WarehouseIntakeCoordinator.cs:26-28,55`) has no caller behind
+the Gateway today. r10's user-triggered intake (§25.3) would answer 409 on every Gateway retry, because `:55-56` compares the
+new Gateway correlation with the stored root; R11-8 (Natig 2026-11-16) removes that comparison for the caller correlation.
+
+### 26.6 Urgency
+
+DL-8 first: Shipments transitions, POD, dispatch and replay block the MOD-0177-FU01 tour on dev. DL-9 second (rule breach, the
+tour is not blocked). The §26.5 revisions next, in the order Returns, Claims, Loads.
+
+### 26.7 Acceptance and sabotage
+
+Service tests under `services/Diten.SupplyChainService/tests/**/Shipments/**` and `ShipmentTests.cs`; Web tests in
+`frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs`, `ShipmentDetailsDateNodeTests.cs` and the details controller tests.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| CR-1 | Create with correlation c1, then transition Planned, Dispatched, InTransit and POD each with a new correlation: all succeed; `ShipmentTests.cs:181` becomes "a different correlation is accepted" | Restoring `TransitionShipmentHandler.cs:31` turns it red |
+| CR-2 | Same as CR-1 for dispatch through the coordinator and for the CompensationFailed exit | Restoring `ShipmentDispatchCoordinator.cs:33` turns it red |
+| CR-3 | Every lifecycle entry and outbox event of CR-1 carries c1; the transition receipts carry their own request correlations | Writing the request correlation into the event envelope turns it red |
+| CR-4 | Replay of create, transition and POD with the same key and body and a new correlation: original result, `idempotentReplay: true`, header = the new correlation, no second write or event; a changed body → 409 `IDEMPOTENCY_KEY_REUSED` | Restoring `ShipmentRepository.cs:76` turns it red |
+| CR-5 | Through the real Gateway (lane stack), a transition and a POD on a shipment created through the Gateway succeed; `X-Client-Correlation-Id` sent by the caller changes nothing | — (E4 evidence) |
+| CR-6 | Details page: no GUID in any visible text, `title` or tooltip, 7 languages, for a manual shipment with an unknown SKU, location and lot, a carrier and a load, and (from DL-5 on) for an intake shipment with and without `outboundNumber` (ship-to cell: the "Address kept in Warehouse" text only); the only id-like texts are the shipment number (until the SHP follow-up) and, after a failed action, the labelled support reference | Showing the reference in a failure cell, or `SourceDocumentId` / `ShipToReference` of an intake shipment, turns it red |
+| CR-7 | `details.js` sends a fresh UUID per intent, the same one on its retries, never `lifecycleCorrelationId` | Sending the root turns it red |
+| CR-8 | 3.5.1 applied exactly (`git apply` of the patch, `info.version` 3.5.1, all contract example tests green); `ContractErrorCodeParityTests` unchanged | Any other contract byte turns it red |
+| CR-9 | Intake through the coordinator: the first call with c1 prepares the intent with root c1; a retry with the same key and c2, a resume after `COMMIT_FAILED` with c3, and a later intake of the committed outbound with c4 all succeed with root c1 and no `CONFLICTING_PERSISTED_ROOT` evidence row; a later call whose envelope correlation equals that call's own caller correlation c5 (≠ c1) still gives `CONFLICTING_PERSISTED_ROOT` (an envelope ≠ the caller gives `CONFLICTING_CORRELATION` first, `:26-28`) | Restoring the caller check at `WarehouseIntakeCoordinator.cs:55-56` turns it red |
+
+The phase-1 gates (`./scripts/run_phase1_gates.sh`, `DOTNET_ROOT=$HOME/.dotnet`) and the Python script tests run before any PR.
+
+### 26.8 Revision r11 — what changed and why
+
+| Place | r9 / r10 | r11 |
+|---|---|---|
+| Front matter `status_note` | r9 / r10 | r11 draft added |
+| §5 Repo Scope | DL-1, DL-3 exceptions | adds the §26 DL-8 exception (3.5.1 patch + contract test helper) |
+| §8 | correlation "exactly as frozen contract v1 specifies" | adds R11-1 in one sentence |
+| §13.1 `CONFLICTING_PERSISTED_ROOT`, R11-1 | caller correlation compared with the stored intake root (409 on every Gateway retry) | R11-8: stored root used, caller not compared; CR-9 (Natig 2026-11-16) |
+| §16 | "command's correlation preserved across events" | read as "the root is carried"; re-measured by CR-3 / CR-5 |
+| §24.4 Details page, SB-10 | reference shown for an unresolved line reference | one sentence marks it replaced; §26.3 rules no reference in any name cell, a labelled support reference, intake source and ship-to cells; SB-10 replaced by CR-6 |
+| §13.1 "Two keys", R11-4 | replay "fingerprint, then correlation" | fingerprint only; which correlation each intake receipt stores |
+| §5 Repo Scope (§25 DL-5 exception), 25.3.1, IR-17, §25.7 DL-5 gate | 3.5.0 → 3.6.0 | 3.5.1 → 3.6.0; DL-5 waits for DL-8 |
+| §5 Repo Scope | Web tests not listed | Shipment Web test paths under `frontend/Diten.Web.Tests/` |
+| IR-14, 25.6, §25.7 DL-7 gate, DL-7 note | WAREHOUSE-OUTBOUND 1.1.0 and WMS-BUNDLE 1.2.0 | gate on content ("first versions with `Item`"), expected WAREHOUSE-OUTBOUND 1.2.0 and WMS-BUNDLE 1.4.0 (MOD-0178 owner, 2026-11-16) |
+| Slice note (DL-5 gate summary) | r10 approved, WMS-BUNDLE 1.1.0 FROZEN | adds DL-8 / SHIPMENT-BUNDLE 3.5.1 on `main` |
+| §26 | — | new |
+| Slice table | DL-1…DL-4 (r10: DL-5…DL-7) | DL-8, DL-9 |
+
+Nothing else in §1–§25 changed than the rows of this table; no YAML block was edited. Owner decisions of r11: `docs/records/decisions/2026-11/mod0183-r11-owner-decisions-2026-11-16.md`.
+
 ## Teslim dilimleri
 
-| dilim | ad | kapsadığı bölümler |
-|---|---|---|
-| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance |
-| DL-2 | ret ve durum metinleri | Refusals and events, Acceptance |
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | SHIPMENT-BUNDLE 3.4.0 + çıkış çekirdeği | Ownership and Boundaries, Repo Scope, Dependencies, Inventory stock issue at dispatch, What is posted, Authorization, Refusals and events, Reservations attempts and compensation, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-2 | ret ve durum metinleri | Refusals and events, Acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-3 | gönderen, alıcı ve Compact form (K1) | Sender and recipient (K1), Golden Compact form, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here) | E3 | plan kimliği yok | plan satırı yok |
+| DL-4 | Compact liste, ad gösterimi, satır alt tablosu | Golden Compact list, Names instead of GUIDs and the line sub-table, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here) | E3 | plan kimliği yok | plan satırı yok |
+| DL-5 | depo intake'i: eşleme, beyaz liste, kullanıcı tetikli alım | Repo Scope, Warehouse provenance snapshot — obligations, Intake result codes and their HTTP answer, Intake fields and mapping, Snapshot whitelist — §8.2 obligation 3 lands, User-triggered intake, SHIPMENT-BUNDLE 3.6.0 (no contract file is touched here), Code gates (R10-4), Acceptance, Audited Events | E3 | plan kimliği yok | plan satırı yok |
+| DL-6 | reservationId ve K3 restoreReservation | Reservations attempts and compensation, `reservationId` — internal line field sent to INVENTORY 1.7.0, K3 — `restoreReservation`, Code gates (R10-4), Acceptance | E3 | plan kimliği yok | plan satırı yok |
+| DL-7 | Item düzeyi (kapılı) | Item level, Code gates (R10-4), Acceptance | E3 | plan kimliği yok | plan satırı yok |
+| DL-8 | korelasyon kökü sunucuda (Gateway arkasında geçiş, POD, tekrar) | Repo Scope, Runtime Constraints, Correlation root behind the Gateway (r11), Rules, Contract: SHIPMENT-BUNDLE 3.5.1, Acceptance and sabotage | E4 | plan kimliği yok | plan satırı yok |
+| DL-9 | Details ekranında GUID yok | Shipment Details without GUIDs, Acceptance and sabotage | E3 | plan kimliği yok | plan satırı yok |
 
 DL-1 covers S23-1…S23-6, S23-8…S23-15 and S23-17…S23-21; the 3.4.0 contract patch ships in the same change
 (`ContractErrorCodeParityTests`) together with the return reader's acceptance of the 3.4.0 line fields (Repo Scope, §23 DL-1
 exception). DL-2 covers the screen texts and labels of S23-7. S23-16 is measured when MOD-0186 DL-1 lands (it needs both
 modules). Not slices of this version: the product check (Dependencies, PRODUCT-MASTER row — dispatchable only after
 PRODUCT-MASTER is frozen, by a new revision) and MVP-5 reservation consumption (`reservationId`, MOD-0173 owner's W-5 work, a
-later MOD-0183 revision). CT-APR-01 note: "only DL-1, DL-2".
+later MOD-0183 revision — r10: now DL-6). CT-APR-01 note: "only DL-1, DL-2".
+
+DL-3 covers SB-1…SB-8, SB-2a, SB-11, SB-16, SB-19, SB-22…SB-25 and the create-form part of SB-20, SB-21 and SB-26; it applies the whole of SHIPMENT-BUNDLE 3.5.0 (all five items of "Contract changes needed"; the Shipments service side of items 1–3 included, the Returns items 4 and 5 only as declarations) in the same change, under the §24 DL-3 exception of Repo Scope. The MOD-0177 owner's written answer that r8 required first is given (decision record, 2026-11-03), so that precondition is closed. **Merge gate (CT kararı 2026-11-03):** MOD-0183 DL-3 — the whole change, including the service side of SHIPMENT-BUNDLE 3.5.0 — does not merge before the MOD-0177 FU (MVP-1) is on `main` (SB-24); MOD-0186 DL-3 and DL-4 wait with it through 3.5.0. DL-4 covers SB-9, SB-10, SB-11a, SB-12…SB-15 and the list and details part of SB-20, SB-21 and SB-26, and starts after DL-3 (contract items 1–3). SB-17 and SB-18 run in both. Not slices of this version (r9; r10 adds them as DL-5…DL-7): the K3 / `restoreReservation` item (after MOD-0173-FU03 is approved, by a new revision), FU-0178-MVP6 intake work, SHP record codes, the MOD-0177 FU (MVP-1's; it gates the DL-3 merge). CT-APR-01 note for r9: "only DL-3, DL-4"; evidence levels are proposals.
+
+DL-5 covers IR-1…IR-8 and IR-16…IR-21 (mapping, whitelist, the user-triggered intake operation, SHIPMENT-BUNDLE 3.6.0 applied in
+the same change, the Gateway route from the integration-agent lane, the intake customer state, `outboundNumber`, the `customerRef` type of 3.6.0 item 3, the Audited Events
+of 25.11, screen action and texts) and lands §8.2 obligation 3 in the same change that opens intake; it starts only when the §25.7 DL-5 gate is met (r10
+approved, WMS-BUNDLE 1.1.0 FROZEN on `main`; r11: DL-8 with SHIPMENT-BUNDLE 3.5.1 on `main`). DL-6 covers IR-9…IR-13 (the internal `reservationId`, the five `RESERVATION_*` codes
+and their texts, K3 `restoreReservation`) and follows DL-5 (only intake lines carry a reservation); IR-13 is measured on the joint
+MVP-1 / MVP-5 live tour. DL-7 covers IR-14 and IR-15 and starts only after the WAREHOUSE-OUTBOUND and WMS-BUNDLE versions with `Item` (expected 1.2.0 and 1.4.0) are FROZEN
+on `main` (MOD-0178's one CT step, 25.6 order). S23-1…S23-21 and SB-1…SB-26 run in all three, except SB-17 and SB-18 as 25.8 says. Not slices of r10: the SHP record code, the CRM
+switch, FEFO reason at dispatch for manual shipments (a later SHIPMENT-BUNDLE version, DL-3 VER F-1 follow-up), OD-R10-4, a customer on
+the outbound (MOD-0178). CT-APR-01 note
+for r10: "only DL-5, DL-6, DL-7"; evidence levels are proposals.
+
+DL-8 covers CR-1…CR-5, CR-7, CR-8 and CR-9 (R11-8 in the existing coordinator, so DL-5 inherits it) and applies SHIPMENT-BUNDLE 3.5.1 in the same change (Repo Scope, §26 DL-8 exception); it
+is urgent (§26.6). DL-9 covers CR-6 and may land with DL-8 or after it. DL-8 and DL-9 are numbered after r10's DL-5…DL-7 so
+the two revisions do not collide. Not slices of this version: the §26.5 Returns, Claims and Loads revisions, the SHP record code.
+CT-APR-01 note for r11: "only DL-8, DL-9"; evidence levels are proposals.

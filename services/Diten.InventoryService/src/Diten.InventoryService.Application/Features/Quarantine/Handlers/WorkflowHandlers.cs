@@ -151,13 +151,25 @@ public sealed class WithdrawDecisionHandler : IRequestHandler<WithdrawDecisionCo
             {
                 var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
                 var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
+                var versions = (hold?.Version, blocked?.Version);
                 await _repository.InTransactionAsync<bool>(async (session, c) =>
                 {
+                    // MOD-0175-FU01 §8.6 W7: voided meanwhile (the source was reversed) → nothing is written; the record's version is the
+                    // lock this transaction shares with the close, written even when nothing is reopened
+                    if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Voided)
+                    {
+                        return false;
+                    }
+
                     var withdrawn = QuarantineSupport.Event(decision.Id, DecisionEventKind.Withdrawn, now, _support.UserId, null, request.Reason!.Trim());
                     withdrawn.WorkflowInstanceId = instanceId;
                     withdrawn.WorkflowOutcome = "cancelled";
                     await session.InsertDecisionEventAsync(withdrawn, c);
-                    await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c);
+                    if (!await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c))
+                    {
+                        await QuarantineReopen.TouchAsync(session, hold, versions.Item1, blocked, versions.Item2, now, c);
+                    }
+
                     if (QuarantineApplyEngine.HasRecord(decision))
                     {
                         await session.InsertHistoryAsync([_support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),

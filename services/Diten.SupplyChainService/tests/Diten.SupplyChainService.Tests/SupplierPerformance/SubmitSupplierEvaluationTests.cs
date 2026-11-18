@@ -20,6 +20,28 @@ public sealed class SubmitSupplierEvaluationTests
     private static async Task<string> Draft(SupplierPerformanceHost h) => (await h.Create()).Body!["evaluationId"]!.GetValue<string>();
     private static IMongoCollection<BsonDocument> Stored(SupplierPerformanceHost h) => h.Db.GetCollection<BsonDocument>(SupplierPerformanceSchema.Evaluations);
 
+    // Pack table of undeclared statuses: a storage failure at stage 6 of submit is a 503 the client may retry.
+    [Fact]
+    public async Task Submit_WhenStage6CannotReadTheEvaluation_ShouldAnswer503AndTheRetryPublishes()
+    {
+        await using var h = new SupplierPerformanceHost();
+        var id = await Draft(h);
+        var admin = h.Db.Client.GetDatabase("admin");
+        await admin.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "configureFailPoint", "failCommand" }, { "mode", new BsonDocument("times", 1) },
+            { "data", new BsonDocument { { "failCommands", new BsonArray { "find" } }, { "namespace", h.Db.DatabaseNamespace.DatabaseName + "." + SupplierPerformanceSchema.Evaluations }, { "errorCode", 2 } } }
+        });
+
+        Answer refused;
+        try { refused = await h.Submit(id); }
+        finally { await admin.RunCommandAsync<BsonDocument>(new BsonDocument { { "configureFailPoint", "failCommand" }, { "mode", "off" } }); }
+        var retry = await h.Submit(id);
+
+        Assert.Equal((HttpStatusCode.ServiceUnavailable, "PERSISTENCE_UNAVAILABLE"), Refusal(refused));
+        Assert.Equal(HttpStatusCode.OK, retry.Status);
+    }
+
     [Fact]
     public async Task Submit_WhenTheDraftIsCurrent_ShouldPublishOneScorecardAndOneEvent()
     {

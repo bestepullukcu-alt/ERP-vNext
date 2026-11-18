@@ -11,7 +11,7 @@ using MediatR;
 namespace Diten.Platform.Application.Features.ESignature.Handlers;
 
 /// <summary>Â§4.9 â€” a consumer module (with the user's token) or a user asks one person to sign one subject.</summary>
-public sealed class CreateSignatureRequestCommandHandler : IRequestHandler<CreateSignatureRequestCommand, Response<SignatureRequestDto>>
+public sealed class CreateESignatureRequestCommandHandler : IRequestHandler<CreateESignatureRequestCommand, Response<SignatureRequestDto>>
 {
     private readonly IESignActorAccessor _actors;
     private readonly ISignableSubjectRegistry _subjects;
@@ -23,7 +23,7 @@ public sealed class CreateSignatureRequestCommandHandler : IRequestHandler<Creat
     private readonly IPlatformTransactionExecutor _transactions;
     private readonly ITransactionalAuditOutboxWriter _audit;
 
-    public CreateSignatureRequestCommandHandler(IESignActorAccessor actors, ISignableSubjectRegistry subjects, IESignatureCatalog catalog,
+    public CreateESignatureRequestCommandHandler(IESignActorAccessor actors, ISignableSubjectRegistry subjects, IESignatureCatalog catalog,
         IESignMeaningRepository meanings, IUserReferenceValidator users, IESignRequestRepository requests, IESignNumberGenerator numbers,
         IPlatformTransactionExecutor transactions, ITransactionalAuditOutboxWriter audit)
     {
@@ -38,7 +38,7 @@ public sealed class CreateSignatureRequestCommandHandler : IRequestHandler<Creat
         _audit = audit;
     }
 
-    public async Task<Response<SignatureRequestDto>> Handle(CreateSignatureRequestCommand request, CancellationToken ct)
+    public async Task<Response<SignatureRequestDto>> Handle(CreateESignatureRequestCommand request, CancellationToken ct)
     {
         var actor = _actors.Current();
         if (actor is null)
@@ -228,8 +228,8 @@ public sealed class GetSignatureRequestQueryHandler : IRequestHandler<GetSignatu
 
 /// <summary>Reject (Â§4.12, the nominated signer) and cancel (Â§4.13, the requester): guarded transition + audit, one transaction.</summary>
 public sealed class SignatureRequestDecisionHandlers :
-    IRequestHandler<RejectSignatureRequestCommand, Response<SignatureRequestDto>>,
-    IRequestHandler<CancelSignatureRequestCommand, Response<SignatureRequestDto>>
+    IRequestHandler<RejectESignatureRequestCommand, Response<SignatureRequestDto>>,
+    IRequestHandler<CancelESignatureRequestCommand, Response<SignatureRequestDto>>
 {
     private readonly IESignActorAccessor _actors;
     private readonly IESignRequestRepository _requests;
@@ -245,7 +245,7 @@ public sealed class SignatureRequestDecisionHandlers :
         _audit = audit;
     }
 
-    public async Task<Response<SignatureRequestDto>> Handle(RejectSignatureRequestCommand request, CancellationToken ct)
+    public async Task<Response<SignatureRequestDto>> Handle(RejectESignatureRequestCommand request, CancellationToken ct)
     {
         var actor = _actors.Current();
         if (actor is null)
@@ -279,7 +279,7 @@ public sealed class SignatureRequestDecisionHandlers :
         return await DecideAsync(actor, entity, e => e.Reject(request.Reason!.Trim(), DateTime.UtcNow), ESignAuditEvents.RequestRejected, ct);
     }
 
-    public async Task<Response<SignatureRequestDto>> Handle(CancelSignatureRequestCommand request, CancellationToken ct)
+    public async Task<Response<SignatureRequestDto>> Handle(CancelESignatureRequestCommand request, CancellationToken ct)
     {
         var actor = _actors.Current();
         if (actor is null)

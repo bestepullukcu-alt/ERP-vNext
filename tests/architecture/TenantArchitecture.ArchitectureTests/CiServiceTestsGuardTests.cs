@@ -25,8 +25,9 @@ namespace TenantArchitecture.ArchitectureTests;
  *   • BL-590: the job-local mongod for MDM and Eventing is a one-node replica set (--replSet, the bounded initiator,
  *     directConnection=true); RabbitMQ is pinned by tag AND digest, with a bounded readiness wait; Auth rows carry the
  *     owned-Mongo flag (takes effect with BL-570 FIX3);
- *   • triggers are pull_request + push to main + workflow_dispatch (Control Tower decision), permissions are
- *     contents: read, no secret is read, and every action is one of the three allowed, pinned to a commit SHA.
+ *   • triggers are pull_request + merge_group + push to main + workflow_dispatch (Control Tower decision; merge_group
+ *     EES MQ-01), permissions are contents: read, no secret is read, and every action is one of the three allowed,
+ *     pinned to a commit SHA.
  * And scripts/check_trx_no_skipped.py is run on fixture TRX files: 0 skipped → 0; a skipped test → 1 and its name;
  * no file → 1; malformed XML → 1; a file without results → 1.
  *
@@ -47,8 +48,17 @@ namespace TenantArchitecture.ArchitectureTests;
  *
  * WP-CI-SERVICE-TESTS-04 (BL-604): EVERY test project under services/ (all services, Building Blocks included; pattern
  * *Tests.csproj, so ArchitectureTests / IntegrationTests count) is a matrix row or named in NotInThisJob with its reason —
- * the "not yet" list (Crm, Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
+ * the "not yet" list (Enterprise Strategy, HCM, MG Integration / Architecture, PPM). A row whose project is in NO
  * solution under services/ is compiled by phase1 (both ways, as before).
+ *
+ * EES MQ-01 (merge queue): every workflow that reports a required check listens to merge_group (types:
+ * [checks_requested], no branch filter) — GitHub reports no check on a merge group otherwise and the queue cannot merge —
+ * and each one that compares with a base takes the merge group's parent commit (merge_group.base_sha) on that event.
+ *
+ * EES CI-ISRAF-01: every workflow has one top-level concurrency block, exact text — a new commit on a pull request cancels
+ * that pull request's older run; a push to main, a merge group, a manual run and any re-run are never cancelled and never
+ * queued (a re-run of an old commit cannot cancel the newest commit's run).
+ * agent-adapters runs on pull requests and on pushes to main only, like phase1-gates.
  *
  * ⚠ IT READS TEXT. A step assembled by a reusable workflow or a composite action evades it — none is allowed here.
  */
@@ -67,21 +77,17 @@ public class CiServiceTestsGuardTests
         // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
         // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
         // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard;
-        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests.)
-        ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =
-            "B (Crm): 1 red — PdfSharp needs a system font (ContentSetRevisionRenderTests)",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.Application.Tests/Diten.Application.Tests.csproj"] =
-            "B (Enterprise Strategy): 6 red, RBAC assertions among them",
-        ["services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/Diten.EnterpriseStrategy.EndToEnd.Tests.csproj"] =
-            "B (Enterprise Strategy): 2 red",
-        ["services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/Diten.HcmService.Application.Tests.csproj"] =
-            "C → B (HCM): EmployeeDraftSessionRepositoryMongoTests uses the SHARED mongodb://localhost:27017",
-        ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.IntegrationTests/Diten.ManagementGovernanceService.IntegrationTests.csproj"] =
-            "C (MG): its own mongod at a fixed /opt/homebrew/bin/mongod — must read DITEN_TEST_MONGOD",
+        // SupplyChain left it: WP-LANE-MAIN-SYNC-05 / MVP-6 plan v9.9, row supplychain-tests. HCM's Application.Tests left
+        // it 2026-11-06, owner 'Evet, düzelt': its repository test starts its own mongod, row hcm-app. Management
+        // Governance's IntegrationTests left it the same day: DITEN_TEST_MONGOD, row mg-itest.)
         ["services/Diten.ManagementGovernanceService/tests/Diten.ManagementGovernanceService.ArchitectureTests/Diten.ManagementGovernanceService.ArchitectureTests.csproj"] =
-            "B (MG): 2 red; loads its sibling test projects' DLLs (needs the MG solution built)",
+            "B + C (MG, measured 2026-11-06 with the sibling builds in place): 2 of 103 red. (1) FrontendLocalTestClosure "
+            + "expects the 09-01 provider-unavailable stub, which the 09-02 catalog replaced; (2) DWS isolation: AddDwsApplication "
+            + "registers ProcessModeling's MediatR handlers. And C: four test files git-show commits 204ed1aa3 / 2d354a97b, "
+            + "which are on no branch of main — CI's checkout cannot have them",
         ["services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj"] =
-            "green, but waits for the PPM team's approval (owner relays it)",
+            "B (PPM): 5 red in CI (PR #343, 2026-11-02) — GateI tests read files at commits that exist only in local, unpushed "
+            + "branches (feature/ppm/mod-0117-fu16-outbound-governance, feature/esbp/mod-0136-budgeting); green only on that machine",
         ["services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj"] =
             "B + C (PPM): 10 red, fixed /opt/homebrew/bin/mongod; and the PPM team's approval"
     };
@@ -229,11 +235,39 @@ public class CiServiceTestsGuardTests
     }
 
     // BL-590 item 4: Auth rows carry the owned-Mongo flag (BL-570 FIX3 makes it bite; today it is harmless).
+    // Owner decision 2026-11-02: branch protection requires one name, so one job turns both suite jobs into it. Exact,
+    // because one word ("skipped" accepted, a missing need, no if: always()) would let a red or unrun suite pass.
+    [Fact]
+    public void One_result_job_is_green_only_when_both_suite_jobs_succeeded()
+    {
+        var jobs = Jobs(Code(Workflow()));
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Select(job => job.Name));
+        Assert.Equal(
+            "  service-tests-result:\n"
+            + "    name: service-tests result\n"
+            + "    if: always()\n"
+            + "    needs: [service-tests, service-tests-macos]\n"
+            + "    runs-on: ubuntu-22.04\n"
+            + "    timeout-minutes: 5\n"
+            + "    steps:\n"
+            + "      - name: Every suite passed\n"
+            + "        env:\n"
+            + "          LINUX: ${{ needs.service-tests.result }}\n"
+            + "          MACOS: ${{ needs.service-tests-macos.result }}\n"
+            + "        run: |\n"
+            + "          echo \"linux: $LINUX, macos: $MACOS\"\n"
+            + "          case \"$LINUX/$MACOS\" in\n"
+            + "            success/success) echo \"Bütün test takımları geçti.\" ;;\n"
+            + "            *) echo \"En az bir test takımı geçmedi: success dışındaki her sonuç kırmızıdır.\"; exit 1 ;;\n"
+            + "          esac\n",
+            jobs.Single(job => job.Name == ResultJob).Body);
+    }
+
     [Fact]
     public void Auth_rows_require_an_owned_mongo()
     {
         // CT-CI-MACOS-01: in EVERY job (both run an auth- row), not only the first one Step() would find.
-        foreach (var (_, body) in Jobs(Code(Workflow())))
+        foreach (var (_, body) in SuiteJobs(Code(Workflow())))
         {
             var step = Step(body, "Owned Mongo is required (Auth)");
             Assert.Contains("if: startsWith(matrix.suite, 'auth-')", step, StringComparison.Ordinal);
@@ -262,8 +296,8 @@ public class CiServiceTestsGuardTests
         });
         // FIX1: the check runs with the job's suite, so only that suite's allow-list codes can pass.
         // Hardening: the whole step, exact — ` | cat` (no pipefail in the default bash -e) would turn its red green.
-        // CT-CI-MACOS-01: in EVERY job, exact.
-        foreach (var (_, body) in jobs)
+        // CT-CI-MACOS-01: in EVERY suite job, exact.
+        foreach (var (_, body) in SuiteJobs(workflow))
             Assert.Equal(
                 "- name: Skipped = 0\n        if: always()\n"
                 + "        run: python3 scripts/check_trx_no_skipped.py --suite \"$SUITE\" \"$RUNNER_TEMP/test-results/$SUITE.trx\"\n",
@@ -287,8 +321,8 @@ public class CiServiceTestsGuardTests
     public void Triggers_permissions_and_actions_are_the_decided_ones()
     {
         var workflow = Workflow();
-        Assert.Equal(["pull_request", "push", "workflow_dispatch"], Triggers(Code(workflow)));
-        Assert.Matches(@"(?m)^on:\n  pull_request:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
+        Assert.Equal(["pull_request", "merge_group", "push", "workflow_dispatch"], Triggers(Code(workflow)));
+        Assert.Matches(@"(?m)^on:\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n  push:\n    branches: \[main\]\n  workflow_dispatch:\n", Code(workflow));
         AssertReadOnlyAndPinned(workflow);
     }
 
@@ -351,15 +385,21 @@ public class CiServiceTestsGuardTests
     {
         ["actions/checkout"] = "11d5960a326750d5838078e36cf38b85af677262",       // v4.4.0
         ["actions/setup-dotnet"] = "67a3573c9a986a3f9c594539f4ab511d57bb3ce9",   // v4.3.1
-        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02" // v4.6.2
+        ["actions/upload-artifact"] = "ea165f8d65b6e75b540449e92b4886f43607fa02", // v4.6.2
+        // JS-CI-01 (owner 2026-11-05): web-js-tests.yml's Node — measured `git ls-remote …/actions/setup-node refs/tags/v4.4.0`.
+        ["actions/setup-node"] = "49933ea5288caeca8642d1e84afbd3f7d6820020"       // v4.4.0
     };
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
     // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
     // S-91 (owner-approved 2026-10-29): approvals-append-only.yml runs the approval history check on pull requests.
     // MOD-0286 DL-3 (owner 'ci-kur'): ui-compliance.yml checks the changed pages against the UI compliance checklist.
+    // JS-CI-01 (owner 'Evet, başla' 2026-11-05): web-js-tests.yml runs the front end's Vitest tests (not required at first).
+    // EES 2.13 (owner 'Evet, başla' 2026-11-09): ci-selection-shadow.yml records which service-test suites a changed-paths rule would select (shadow mode, not required).
+    // EES 2.7 (owner 'Evet, hazırla' 2026-11-11): added-lines-scan.yml warns about secrets, home paths and e-mails on lines a PR adds (warning only, never fails).
     private static readonly string[] NamedWorkflows =
-        ["agent-adapters.yml", "approvals-append-only.yml", "phase1-gates.yml", "service-tests.yml", "ui-compliance.yml"];
+        ["added-lines-scan.yml", "agent-adapters.yml", "approvals-append-only.yml", "ci-selection-shadow.yml", "phase1-gates.yml",
+         "service-tests.yml", "ui-compliance.yml", "web-js-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -401,9 +441,112 @@ public class CiServiceTestsGuardTests
     }
 
     [Fact]
-    public void Phase1_triggers_are_push_and_pull_request()
+    public void Phase1_triggers_are_push_pull_request_and_merge_group()
     {
-        Assert.Equal(["push", "pull_request"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+        Assert.Equal(["push", "pull_request", "merge_group"], Triggers(Code(WorkflowText("phase1-gates.yml"))));
+    }
+
+    /// <summary>
+    /// EES CI-ISRAF-01: the one concurrency block every workflow carries. On a pull request the group is the workflow and
+    /// the pull request number, and an older run is cancelled; on any other event the group ends in the run id, so it is
+    /// unique — never cancelled, and never left pending behind another run (a shared group would replace a pending run).
+    /// A re-run (github.run_attempt is the string '1' only on the first attempt) also ends in the run id: re-running an
+    /// older commit's run must not join the pull request's group, or it would cancel the newest commit's run — while that
+    /// run is still pending, before its jobs exist, which leaves the head commit with no required check at all (Codex
+    /// round 1). Only first attempts, one per new commit, cancel each other.
+    /// </summary>
+    private const string ConcurrencyBlock =
+        "concurrency:\n"
+        + "  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}\n"
+        + "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n";
+
+    // A job-level concurrency:, a group without the run id or `cancel-in-progress: true` would cancel (or hold back) the
+    // main and merge-queue runs that branch protection and the merge queue wait for; a group without the run_attempt part
+    // lets a re-run of an old commit cancel the newest one — so the text is exact, once, top level.
+    [Fact]
+    public void Every_workflow_cancels_only_a_superseded_pull_request_run()
+    {
+        foreach (var name in NamedWorkflows)
+        {
+            var code = Code(WorkflowText(name));
+            foreach (var key in new[] { "concurrency", "group", "cancel-in-progress" })
+                Assert.True(KeyCount(code, key) == 1, $"{name}: {KeyCount(code, key)} '{key}' keys, expected 1");
+            Assert.True(Regex.Matches(code, "(?m)^" + Regex.Escape(ConcurrencyBlock) + "(?![ \\t])").Count == 1,
+                $"{name}: the top-level concurrency block is not exactly:\n{ConcurrencyBlock}");
+        }
+    }
+
+    // EES CI-ISRAF-01: agent-adapters checked every pushed branch AND its pull request — the same two jobs twice (14 days to
+    // 2026-11-12: 49 branch-push runs). Like phase1-gates (owner decision 2026-11-02): pull requests and main only.
+    [Fact]
+    public void Agent_adapters_runs_on_pull_requests_and_pushes_to_main_only()
+    {
+        var code = Code(WorkflowText("agent-adapters.yml"));
+        Assert.Equal(["push", "pull_request"], Triggers(code));
+        Assert.True(KeyCount(code, "branches") == 1, $"agent-adapters.yml: {KeyCount(code, "branches")} branches keys, expected 1");
+        // The whole push block: branches [main] and the paths list, nothing else (no tags:, no branches-ignore:).
+        Assert.Single(Regex.Matches(code, @"(?m)^on:\n  push:\n    branches: \[main\]\n    paths:\n(?:      - ""[^""\n]+""\n)+  pull_request:\n"));
+    }
+
+    /// <summary>
+    /// EES MQ-01 (merge queue): the workflows whose checks branch protection requires (web-js-tests: may require) and their
+    /// exact triggers. A required check whose workflow does not listen to merge_group is never reported on the merge
+    /// group, and the queue waits until its timeout removes the pull request (GitHub, "Managing a merge queue").
+    /// </summary>
+    private static readonly Dictionary<string, string[]> MergeQueueWorkflows = new(StringComparer.Ordinal)
+    {
+        ["phase1-gates.yml"] = ["push", "pull_request", "merge_group"],
+        ["service-tests.yml"] = ["pull_request", "merge_group", "push", "workflow_dispatch"],
+        ["ui-compliance.yml"] = ["pull_request", "merge_group"],
+        ["web-js-tests.yml"] = ["pull_request", "merge_group", "push"],
+        ["approvals-append-only.yml"] = ["pull_request", "merge_group", "push"]
+    };
+
+    [Fact]
+    public void Every_required_check_runs_on_the_merge_queue_and_compares_with_the_group_parent()
+    {
+        foreach (var (name, triggers) in MergeQueueWorkflows)
+        {
+            var code = Code(WorkflowText(name));
+            Assert.Equal(triggers, Triggers(code));
+            // One merge_group key whose block is exactly its one activity type: a branches / paths filter could leave a
+            // group without the run, and its required check would never report.
+            Assert.True(KeyCount(code, "merge_group") == 1, $"{name}: {KeyCount(code, "merge_group")} merge_group keys, expected 1");
+            Assert.Single(Regex.Matches(code, @"(?m)^  merge_group:\n    types: \[checks_requested\]\n(?!    )"));
+        }
+
+        // The base of a merge_group run is the group's parent commit — the pull_request payload is empty there.
+        Assert.Contains("      - name: Run Phase 1 Gates\n        env:\n          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n"
+                        + "        run: ./scripts/run_phase1_gates.sh\n", Code(WorkflowText("phase1-gates.yml")), StringComparison.Ordinal);
+        var gates = GatesText();
+        // Blind pre-check 5: on merge_group the parent is the base whatever GITHUB_BASE_REF holds (no `-z` condition).
+        Assert.Single(Regex.Matches(gates, @"(?m)^if \[ ""\$\{GITHUB_EVENT_NAME:-\}"" = ""merge_group"" \]; then$"));
+        Assert.Single(Regex.Matches(gates, @"(?m)^  GITHUB_BASE_REF=""\$merge_group_base""$"));
+        // Blind review B3: no other assignment of GITHUB_BASE_REF anywhere in the script (an empty one would make the
+        // base steps skip green on a merge_group run).
+        Assert.Single(Regex.Matches(gates, @"(?m)^\s*(?:export\s+)?GITHUB_BASE_REF="));
+        Assert.True(gates.IndexOf("GITHUB_BASE_REF=\"$merge_group_base\"", StringComparison.Ordinal)
+                    < gates.IndexOf("\ncheck_audit_ledger_growth\n", StringComparison.Ordinal), "the merge_group base is set after the first base step");
+
+        var ui = Code(WorkflowText("ui-compliance.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", ui, StringComparison.Ordinal);
+        Assert.Contains("          if [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then base=\"$GROUP_BASE_SHA\"; fi\n"
+                        + "          if python3 scripts/uic_changed_pages.py --base \"$base\" > uic-selector-stdout.txt; then code=0; else code=$?; fi\n",
+            ui, StringComparison.Ordinal);
+
+        var approvals = Code(WorkflowText("approvals-append-only.yml"));
+        Assert.Contains("          GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}\n", approvals, StringComparison.Ordinal);
+        Assert.Contains(
+            "          if [ \"$GITHUB_EVENT_NAME\" = \"pull_request\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"merge_group\" ]; then\n"
+            + "            python3 scripts/pack_approval.py history --ref HEAD --base \"$GROUP_BASE_SHA\"\n"
+            + "          elif [ \"$GITHUB_EVENT_NAME\" = \"push\" ]; then\n"
+            + "            python3 scripts/pack_approval.py ci-main \"$BEFORE_SHA\" HEAD\n"
+            + "          else\n"
+            + "            echo \"beklenmeyen olay: $GITHUB_EVENT_NAME\"\n"
+            + "            exit 1\n"
+            + "          fi\n", approvals, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -423,13 +566,19 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = [],
         ["approvals-append-only.yml"] = [],
+        // EES 2.13: none — the selection and its upload run unconditionally.
+        ["ci-selection-shadow.yml"] = [],
+        // EES 2.7: none — the scan runs unconditionally and always exits 0.
+        ["added-lines-scan.yml"] = [],
         ["phase1-gates.yml"] = [],
         ["ui-compliance.yml"] = ["always()"],
+        // JS-CI-01: the report upload only — the test step has none.
+        ["web-js-tests.yml"] = ["always()"],
         ["service-tests.yml"] =
         [
             "matrix.suite == 'mdm-app'",
             "matrix.suite == 'platform-bgjobs'",
-            "matrix.suite == 'platform-eventing'",
+            "matrix.suite == 'platform-eventing' || matrix.suite == 'planning-tests'",
             // WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): Prism for the Inventory row.
             "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
@@ -443,6 +592,8 @@ public class CiServiceTestsGuardTests
             // CT-CI-MACOS-01: the macOS job (the Auth acceptance host) — its owned-Mongo flag, its skip check, its upload.
             "startsWith(matrix.suite, 'auth-')",
             "always()",
+            "always()",
+            // Owner decision 2026-11-02: the result job (job level, the only one).
             "always()"
         ]
     };
@@ -452,14 +603,17 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = 0,
         ["approvals-append-only.yml"] = 0,
+        ["ci-selection-shadow.yml"] = 0,
+        ["added-lines-scan.yml"] = 0,
         ["phase1-gates.yml"] = 0,
         ["ui-compliance.yml"] = 0,
+        ["web-js-tests.yml"] = 0,
         // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
         // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
         // CT-CI-MACOS-01: 7 → 10 — the macOS job's install step (DITEN_TEST_MONGOD, DITEN_ITEST_MONGOD_BIN_DIR) and its
         // owned-Mongo flag, pinned below by The_mongod_variables_are_set_by_the_install_step_and_never_overridden and
         // The_acceptance_host_runs_whole_on_macos_with_its_pinned_mongod_and_dotnet_path.
-        ["service-tests.yml"] = 10
+        ["service-tests.yml"] = 13
     };
 
     [Fact]
@@ -469,7 +623,12 @@ public class CiServiceTestsGuardTests
         {
             var code = Code(WorkflowText(name));
             Assert.True(!Regex.IsMatch(code, @"(?i)\bcontinue-on-error\b"), $"{name}: continue-on-error");
-            Assert.True(!Regex.IsMatch(code, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
+            // The one exception: the result job runs always(), or a red suite would skip it and a skipped check counts
+            // as passed. Its exact text is pinned by One_result_job_is_green_only_when_both_suite_jobs_succeeded.
+            var jobLevel = name == "service-tests.yml"
+                ? string.Concat(Jobs(code).Where(job => job.Name != ResultJob).Select(job => job.Body))
+                : code;
+            Assert.True(!Regex.IsMatch(jobLevel, @"(?im)^    [""']?if[""']?[ \t]*:"), $"{name}: a job-level if:");
             Assert.Equal(ExpectedIfs[name], KeyValues(code, "if"));
             Assert.True(KeyCount(code, "exclude") == 0, $"{name}: a matrix exclude:");
             Assert.True(!Regex.IsMatch(code, @"(?i)--filter\b"), $"{name}: dotnet test --filter");
@@ -505,20 +664,25 @@ public class CiServiceTestsGuardTests
                  })
             Assert.True(!Regex.IsMatch(Step(WorkflowText(file), step), @"(?im)^[ \t]+[""']?if[""']?[ \t]*:"), $"{file} '{step}' has an if:");
 
-        // CT-CI-MACOS-01: the Test step is exact in EVERY job (two jobs, one Test step each).
-        var serviceJobs = Jobs(Code(WorkflowText("service-tests.yml")));
+        // CT-CI-MACOS-01: each job has one exact Test step; Linux also prints the verified broker receipt.
+        var serviceJobs = SuiteJobs(Code(WorkflowText("service-tests.yml")));
         Assert.Equal(2, serviceJobs.Count);
-        foreach (var (_, body) in serviceJobs)
+        foreach (var (name, body) in serviceJobs)
         {
             Assert.Single(Regex.Matches(body, @"(?m)^      - name: Test$"));
-            Assert.Equal(
+            var expectedTestStep =
                 "- name: Test\n        run: |\n"
                 + "          dotnet test \"$PROJECT\" -c Debug --blame-hang --blame-hang-timeout 20m \\\n"
-                + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n",
-                Step(body, "Test"));
+                + "            --logger \"trx;LogFileName=$SUITE.trx\" --results-directory \"$RUNNER_TEMP/test-results\"\n";
+            if (name == "service-tests")
+                expectedTestStep +=
+                    "          if [ \"$SUITE\" = \"planning-tests\" ]; then\n"
+                    + "            cat \"$RUNNER_TEMP/test-results/mod0188-rabbitmq-delivery-proof.json\"\n"
+                    + "          fi\n";
+            Assert.Equal(expectedTestStep, Step(body, "Test"));
         }
         Assert.Single(Regex.Matches(Code(WorkflowText("phase1-gates.yml")), @"(?m)^        run: \./scripts/run_phase1_gates\.sh$"));
-        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[""\*\*""\]\n  pull_request:\n", Code(WorkflowText("phase1-gates.yml")));
+        Assert.Matches(@"(?m)^on:\n  push:\n    branches: \[main\]\n  pull_request:\n  merge_group:\n    types: \[checks_requested\]\n", Code(WorkflowText("phase1-gates.yml")));
         // Hardening: the job-level SUITE / PROJECT the test and skip steps read are exactly the matrix values — in each job
         // (CT-CI-MACOS-01: the macOS job adds only DOTNET_INSTALL_DIR after them).
         Assert.Single(Regex.Matches(Code(WorkflowText("service-tests.yml")),
@@ -985,14 +1149,14 @@ public class CiServiceTestsGuardTests
         const string project = "services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj";
         var code = Code(Workflow());
         var jobs = Jobs(code).ToDictionary(job => job.Name, job => job.Body, StringComparer.Ordinal);
-        Assert.Equal(["service-tests", "service-tests-macos"], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["service-tests", "service-tests-macos", ResultJob], jobs.Keys.Order(StringComparer.Ordinal).ToArray());
         var mac = jobs["service-tests-macos"];
         Assert.Equal([project], MatrixProjects(mac).ToArray());
         Assert.DoesNotContain(project, MatrixProjects(jobs["service-tests"]));
         Assert.Single(Regex.Matches(mac, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(code, @"(?m)^    runs-on: macos-15$"));
         Assert.Single(Regex.Matches(jobs["service-tests"], @"(?m)^    runs-on: ubuntu-22\.04$"));
-        Assert.Equal(2, KeyCount(code, "runs-on"));
+        Assert.Equal(3, KeyCount(code, "runs-on"));   // two suite jobs + the result job
 
         var version = Regex.Match(code, @"(?m)^  MONGODB_VERSION: ""(7\.0\.\d+)""$").Groups[1].Value;
         Assert.NotEmpty(version);
@@ -1112,6 +1276,105 @@ public class CiServiceTestsGuardTests
         Assert.True(File.Exists(Path.Combine(RepoRoot(), "scripts", "tests", "test_check_page_help_ledger_ceiling.py")));
     }
 
+    // EES MQ-01, Codex round 1 (ENGEL): the three base steps (audit ledger growth, page-help ceiling, acceptance criteria
+    // tags) share ONE base, fetched once with bounded retries and resolved to a verified commit SHA; a base that cannot
+    // be fetched stops the run red (exit 1) instead of letting two steps say SKIPPED while a later one passes. The shape
+    // is locked here; that the base REACHES the steps is measured by running the whole script with stubs
+    // (scripts/tests/test_phase1_base_fetch.py, OneVerifiedBaseReachesEveryStepTests + SabotageTests).
+    [Fact]
+    public void The_three_base_steps_share_one_verified_base_and_a_failed_fetch_is_red()
+    {
+        var gates = GatesText();
+        var code = string.Join('\n', gates.Split('\n').Where(line => !line.TrimStart().StartsWith('#')));
+
+        // One fetch call outside the helper itself, inside one bounded retry loop, resolved with rev-parse --verify; its
+        // stderr is kept for the FAILED message (blind pre-check 4).
+        Assert.Single(Regex.Matches(code, @"\bfetch_base_tip\b(?!\(\))"));
+        Assert.Single(Regex.Matches(code,
+            @"(?m)^    if base_fetch_err=""\$\(fetch_base_tip ""\$GITHUB_BASE_REF"" 2>&1 >/dev/null\)"" && base_fetched=""\$\(git rev-parse --verify --quiet 'FETCH_HEAD\^\{commit\}'\)""; then$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  for base_try in 1 2 3; do$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^      sleep 5$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^if \[ -n ""\$\{GITHUB_BASE_REF:-\}"" \]; then$"));
+
+        // Each red path is "*** FAILED ***" + exit 1 as the block's last line — the wording is free, the structure is not
+        // (blind pre-check 6): no else / elif, no return, no exit 0 inside.
+        void RedBlock(string ifLine, string indent)
+        {
+            Assert.Single(Regex.Matches(code, "(?m)^" + Regex.Escape(ifLine) + "$"));
+            var at = code.IndexOf(ifLine + "\n", StringComparison.Ordinal);
+            var close = code.IndexOf("\n" + indent + "fi\n", at, StringComparison.Ordinal);
+            Assert.True(at >= 0 && close > at, $"no block for '{ifLine}'");
+            var block = code[at..close];
+            Assert.Contains("*** FAILED ***", block, StringComparison.Ordinal);
+            Assert.EndsWith("\n" + indent + "  exit 1", block, StringComparison.Ordinal);
+            Assert.True(!Regex.IsMatch(block, @"\b(?:else|elif|return)\b|\bexit\s+0\b"), $"'{ifLine}' has another way out: {block}");
+        }
+
+        // A result that is not a commit SHA, or (merge_group) not the group's parent, is red — never a skip.
+        RedBlock("  if ! [[ \"$base_fetched\" =~ ^[0-9a-f]{40}$ ]]; then", "  ");
+        Assert.Contains("    printf '%s\\n' \"$base_fetch_err\" | sed 's/^/[phase1]   last try, git: /'\n    exit 1\n  fi\n", code,
+            StringComparison.Ordinal);
+        RedBlock("  if [ \"${GITHUB_EVENT_NAME:-}\" = \"merge_group\" ] && [ \"$base_fetched\" != \"${MERGE_GROUP_BASE_SHA:-}\" ]; then", "  ");
+        // Blind pre-check 3: in GitHub Actions a set override (which would replace the verified base) is red, before the fetch.
+        Assert.Contains("if [ \"${GITHUB_ACTIONS:-}\" = \"true\" ]; then\n"
+                        + "  for base_override in AUDIT_LEDGER_BASE PAGE_HELP_LEDGER_BASE AC_TAG_BASE; do\n"
+                        + "    if [ -n \"${!base_override:-}\" ]; then\n", code, StringComparison.Ordinal);
+        RedBlock("    if [ -n \"${!base_override:-}\" ]; then", "    ");
+        Assert.True(code.IndexOf("for base_override in", StringComparison.Ordinal)
+                    < code.IndexOf("for base_try in", StringComparison.Ordinal), "the override check runs after the fetch");
+        // Blind pre-check 2: with the verified base the audit step's "cannot compare" paths are red, without it they skip.
+        Assert.Contains("  local unable=\"SKIPPED\" unable_status=0\n  if [ -n \"$PHASE1_BASE_SHA\" ]; then\n"
+                        + "    unable=\"FAILED\"\n    unable_status=1\n  fi\n", code, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(code, @"(?m)^ +return ""\$unable_status""$").Count);
+        Assert.Equal(3, Regex.Matches(code, @"audit ledger growth: \*\*\* \$unable \*\*\*").Count);
+        Assert.Equal(2, Regex.Matches(code, @"\bunable_status=").Count);
+
+        // The base is set once, read-only, from the verified value. Nothing unsets, re-declares, exports away or evaluates
+        // the base, GITHUB_BASE_REF or an override (blind pre-check 6: aimed at those names, not at the whole script).
+        Assert.Single(Regex.Matches(code, @"(?m)^.*\bPHASE1_BASE_SHA="));
+        Assert.Single(Regex.Matches(code, @"(?m)^readonly PHASE1_BASE_SHA=""\$phase1_base""$"));
+        Assert.Equal(2, Regex.Matches(code, @"(?m)^.*\bphase1_base=").Count);
+        Assert.Single(Regex.Matches(code, @"(?m)^phase1_base=""""$"));
+        Assert.Single(Regex.Matches(code, @"(?m)^  phase1_base=""\$base_fetched""$"));
+        Assert.DoesNotMatch(@"(?m)(?:^|[;&|(]\s*)\s*(?:unset|eval|declare|typeset|source|export\s+-n)\b[^\n]*"
+                            + @"\b(?:PHASE1_BASE_SHA|phase1_base|GITHUB_BASE_REF|AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)\b", code);
+        Assert.DoesNotMatch(@"(?m)^\s*(?:export\s+|local\s+|readonly\s+)?(?:AUDIT_LEDGER_BASE|PAGE_HELP_LEDGER_BASE|AC_TAG_BASE)=", code);
+
+        // Each step reads that one variable (its local override first) and fetches nothing itself.
+        foreach (var (step, overrideName) in new[]
+                 {
+                     ("check_audit_ledger_growth", "AUDIT_LEDGER_BASE"), ("check_page_help_ledger_ceiling", "PAGE_HELP_LEDGER_BASE"),
+                     ("check_ac_tags", "AC_TAG_BASE")
+                 })
+        {
+            var start = code.IndexOf("\n" + step + "() {\n", StringComparison.Ordinal);
+            Assert.True(start >= 0, $"{step}() is gone");
+            var end = code.IndexOf("\n}\n", start, StringComparison.Ordinal);
+            var body = code[start..end];
+            Assert.Single(Regex.Matches(body, $@"(?m)^  local base=""\$\{{{overrideName}:-\$PHASE1_BASE_SHA\}}""$"));
+            Assert.Single(Regex.Matches(body, @"\bbase="));
+            Assert.True(!Regex.IsMatch(body, @"GITHUB_BASE_REF|FETCH_HEAD|\bfetch\b"), $"{step} reads or fetches a base of its own");
+            // Called once (as a main-flow line), after the base is fixed.
+            Assert.Single(Regex.Matches(code, $@"(?m)^{step}$"));
+            Assert.True(code.IndexOf("\n" + step + "\n", StringComparison.Ordinal)
+                        > code.IndexOf("readonly PHASE1_BASE_SHA=", StringComparison.Ordinal), $"{step} runs before the base is fixed");
+        }
+
+        // Order: the merge_group parent → the one fetch → the read-only base → the first step's definition.
+        var order = new[]
+        {
+            "  GITHUB_BASE_REF=\"$merge_group_base\"\n", "    if base_fetch_err=\"$(fetch_base_tip \"$GITHUB_BASE_REF\"", "readonly PHASE1_BASE_SHA=",
+            "\ncheck_audit_ledger_growth() {\n"
+        }.Select(anchor => code.IndexOf(anchor, StringComparison.Ordinal)).ToArray();
+        Assert.True(order.All(at => at >= 0) && order.Zip(order.Skip(1)).All(pair => pair.First < pair.Second),
+            "the base block is out of order: " + string.Join(", ", order));
+
+        // Non-vacuity: the behaviour tests that run the whole script are there (phase1 runs scripts/tests — asserted above).
+        var behaviour = File.ReadAllText(Path.Combine(RepoRoot(), "scripts", "tests", "test_phase1_base_fetch.py"));
+        Assert.Contains("class OneVerifiedBaseReachesEveryStepTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
+        Assert.Contains("class SabotageTests(unittest.TestCase):", behaviour, StringComparison.Ordinal);
+    }
+
     // ------------------------------------------------------------------------------------------------- reading
 
     private static string Workflow() => Text(WorkflowPath);
@@ -1140,6 +1403,13 @@ public class CiServiceTestsGuardTests
     private static HashSet<string> MatrixProjects(string workflow) =>
         Regex.Matches(workflow, @"(?m)^ +project: *(\S+)\s*$").Select(match => match.Groups[1].Value)
             .ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>The one job that runs no suite: it turns the suite jobs' results into one required check.</summary>
+    private const string ResultJob = "service-tests-result";
+
+    /// <summary>The jobs that run a suite — every job except <see cref="ResultJob"/>.</summary>
+    private static List<(string Name, string Body)> SuiteJobs(string workflow) =>
+        Jobs(workflow).Where(job => job.Name != ResultJob).ToList();
 
     /// <summary>Each job under `jobs:` (two-space key) with its body, up to the next job or the end.</summary>
     private static List<(string Name, string Body)> Jobs(string workflow)

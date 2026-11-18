@@ -32,8 +32,6 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
         var warehouse = ReturnWire.OptionalText(b, "toWarehouseId");
         if (string.IsNullOrWhiteSpace(warehouse)) return Fail(InvalidRequest, 400);
         var location = ReturnWire.OptionalText(b, "toLocationId");
-        // Pack §34.1: required on Received. INVENTORY refuses an inbound movement without it, which would strand the line.
-        if (string.IsNullOrWhiteSpace(location)) return Fail(InvalidRequest, 400);
         var occurredAt = ReturnInstant.Normalize(b.GetProperty("occurredAt").GetString()!);
         if (!CustomerReturnMovementMapper.TryInstant(occurredAt, out var at)) return Fail(InvalidRequest, 400);
         var unposted = ReturnWire.UnpostedLines(b);
@@ -44,6 +42,9 @@ public sealed class ReturnReceiptCoordinator(IReturnRepository repository, IRetu
             // The receipt is written only in D, so a replay after success posts nothing and emits nothing (R34-2).
             if (await repository.FindTransitionReplayAsync(context.Scope, request.ReturnId, context.IdempotencyKey, fingerprint, context.CorrelationId, ct) is { } replay)
                 return Answer(replay);
+            // Pack §34.1: required on Received. INVENTORY refuses an inbound movement without it, which would strand the line.
+            // After the replay: a request that succeeded before the location was required still gets its stored answer (R34-2).
+            if (string.IsNullOrWhiteSpace(location)) return Fail(InvalidRequest, 400);
             var order = await repository.GetAsync(context.Scope, request.ReturnId, ct);
             if (order is null) return Fail(ContractErrorCodes.ReturnNotFound, 404);
             if (order.CorrelationRoot != context.CorrelationId) return Fail(ContractErrorCodes.CorrelationRootMismatch, 409);

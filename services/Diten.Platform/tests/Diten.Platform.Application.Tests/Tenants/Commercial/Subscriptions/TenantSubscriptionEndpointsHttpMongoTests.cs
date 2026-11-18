@@ -168,7 +168,11 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests : IClassFixture<Te
     // ── WP-PLATFORM-AUDIT-INTX-01 FIX1 items 6 and 7 — assign and activate, the two with side effects ─────────
 
     private const string AssignBody = """{"planId":"50050050-0000-4000-8000-0000000000c3","isTrial":false,"trialEndDateUtc":null,"currentPeriodStartUtc":"2026-10-02T00:00:00+00:00","currentPeriodEndUtc":"2027-10-02T00:00:00+00:00","source":null}""";
-    private const string AssignTrialBody = """{"planId":"50050050-0000-4000-8000-0000000000c3","isTrial":true,"trialEndDateUtc":"2026-11-02T00:00:00+00:00","currentPeriodStartUtc":null,"currentPeriodEndUtc":null,"source":null}""";
+    // The validator requires a trial end after "now" (AssignPlanToTenantCommandValidator), so a fixed date expires and
+    // turns the race test below into a 400; keep it relative to the run.
+    private static readonly string AssignTrialBody = $$"""{"planId":"50050050-0000-4000-8000-0000000000c3","isTrial":true,"trialEndDateUtc":"{{FutureUtc(30)}}","currentPeriodStartUtc":null,"currentPeriodEndUtc":null,"source":null}""";
+
+    private static string FutureUtc(int days) => DateTimeOffset.UtcNow.Date.AddDays(days).ToString("yyyy-MM-dd'T'00:00:00+00:00", System.Globalization.CultureInfo.InvariantCulture);
     private const string ActivateBody = """{"currentPeriodStartUtc":"2026-10-02T00:00:00+00:00","currentPeriodEndUtc":"2027-10-02T00:00:00+00:00","rowVersion":null}""";
 
     [Fact]
@@ -337,7 +341,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests : IClassFixture<Te
         { "{0}/suspend", """{"reason":"x","rowVersion":null}""" },
         { "{0}/reactivate", """{"reason":"x","rowVersion":null}""" },
         { "{0}/cancel", """{"cancellationReason":"x","cancelAtPeriodEnd":false,"rowVersion":null}""" },
-        { "{0}/renew", """{"newPeriodEndUtc":"2028-01-01T00:00:00+00:00","rowVersion":null}""" },
+        { "{0}/renew", $$"""{"newPeriodEndUtc":"{{FutureUtc(30)}}","rowVersion":null}""" },
         { "{0}/expire", "null" },
     };
 

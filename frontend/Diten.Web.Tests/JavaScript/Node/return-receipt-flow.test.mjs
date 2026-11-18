@@ -48,6 +48,7 @@ const element = (id) => {
     return ids.get(id);
 };
 ids.get('returns-permissions').textContent = JSON.stringify({ canReceive: true });
+element('returnsCompanyScope').dataset.legalEntityId = 'company-a';
 
 const RETURN = '66666666-6666-4666-8666-666666666666';
 const L10n = new Proxy({
@@ -60,6 +61,8 @@ const sent = [];
 let answers = [];
 const respond = (status, body) => ({ ok: status < 400, status, headers: { get: () => null }, json: async () => body });
 const fetchStub = async (url, options) => {
+    // r10 §35.3 (RB-7): the stored place is shown by name; the adapter answers its label.
+    if (!options?.method && url.includes('/places/')) return respond(200, { state: 'resolved', label: `name-of-${decodeURIComponent(url.split('/places/')[1].split('?')[0])}` });
     if (!options?.method) return respond(200, { items: [{ returnId: RETURN, rmaNumber: 'RMA-1', shipmentId: '44444444-4444-4444-8444-444444444444', status: 'InTransit' }], total: 1 });
     sent.push({ key: options.headers['Idempotency-Key'], body: JSON.parse(options.body), text: options.body });
     const next = answers.shift();
@@ -71,7 +74,7 @@ const context = vm.createContext({
         addEventListener: () => {}, createElement: () => new FakeElement(false), createTextNode: (text) => ({ textContent: text }), body: {}, activeElement: null },
     window: { L10n, showConfirm: (_title, callback, options) => { context.lastConfirm = options; callback(); }, showToast: () => {} },
     bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show() {}, hide() {} }) } },
-    fetch: fetchStub, URLSearchParams, Intl, crypto, console: { error() {}, warn() {} }
+    fetch: fetchStub, URLSearchParams, Intl, crypto, Event, console: { error() {}, warn() {} }
 });
 const list = vm.runInContext(`${source}\n;ReturnsList`, context);
 list.bindEvents();
@@ -159,7 +162,7 @@ test('the 409 fills the stored values, shows the local time and resends the exac
     const alert = element('formReturnTransitionAlert');
     assert.ok(alert.text.includes(field.replace('T', ' ')), alert.text);
     assert.ok(!alert.text.includes(occurredAt));
-    assert.ok(alert.children[1].children.some((node) => node.dir === 'ltr' && node.textContent === 'wh-stored'), 'stored value in a bdi');
+    assert.ok(alert.children[1].children.some((node) => node.dir === 'ltr' && node.textContent === 'name-of-wh-stored'), 'stored place by name in a bdi');
     await submit();
     assert.equal(sent[1].body.occurredAt, occurredAt);
     assert.equal(sent[1].body.toWarehouseId, 'wh-stored');
@@ -175,6 +178,37 @@ test('a stored attempt without a location asks for one before it resends', async
     element('transitionToLocationId').value = 'loc-new';
     await submit();
     assert.equal(sent[1].body.toLocationId, 'loc-new');
+});
+
+test('a return created under another company moves the shared selector to it', () => {
+    const fired = [];
+    const selector = new FakeElement(false);
+    selector.dispatchEvent = (event) => fired.push(event.type);
+    ids.set('inventoryCompany', selector);
+    list.adoptCompany('company-a');
+    assert.deepEqual(fired, []);
+    list.adoptCompany('company-b');
+    assert.equal(selector.value, 'company-b');
+    assert.deepEqual(fired, ['change']);
+    ids.delete('inventoryCompany');
+    list.adoptCompany('company-a');
+});
+
+test('a new panel opens without the marks of the one closed last', async () => {
+    open();
+    element('transitionToWarehouseId').value = '';
+    element('transitionToLocationId').value = '';
+    await submit();
+    const fields = [element('transitionToWarehouseId'), element('transitionToLocationId')];
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'true');
+        assert.equal(field.classList.contains('is-invalid'), true);
+    });
+    list.openTransition(RETURN, 'Received');
+    fields.forEach((field) => {
+        assert.equal(field.attributes['aria-invalid'], 'false');
+        assert.equal(field.classList.contains('is-invalid'), false);
+    });
 });
 
 test('an empty warehouse stops both paths and marks the field', async () => {

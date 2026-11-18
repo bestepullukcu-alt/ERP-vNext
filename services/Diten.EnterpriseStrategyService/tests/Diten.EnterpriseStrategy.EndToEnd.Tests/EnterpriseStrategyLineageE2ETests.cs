@@ -106,6 +106,31 @@ public sealed class EnterpriseStrategyLineageE2ETests
         }, 0, "tester", "corr");
         Assert.True(initiative.Success);
 
+        // Strategy-link upsert validates the existing project; provide a complete non-draft fixture.
+        var createdProject = await services.Projects.CreateAsync(new ProjectStrategyLinkViewDto
+        {
+            ProjectId = "prj-001",
+            ParentInitiativeId = "init-001",
+            ProjectName = "Adoption delivery project",
+            Description = "Deliver the adoption initiative",
+            OwnerPm = "usr-pm",
+            Sponsor = "usr-sponsor",
+            DeliveryCompanyId = ActiveCompanyId,
+            ScopeSummary = "Implement adoption improvements",
+            Status = "Planned",
+            Phase = "Plan",
+            DeliveryType = "Technology",
+            DeliveryMethodology = "Hybrid",
+            Priority = "High",
+            StartDate = new DateTime(2027, 1, 10),
+            EndDate = new DateTime(2027, 4, 10),
+            ReadinessStatus = "Ready",
+            RiskRating = "Medium",
+            BudgetRequired = false,
+            NoBudgetReason = "Covered by the existing operating budget"
+        }, "tester", "corr");
+        Assert.True(createdProject.Success);
+
         var project = await services.Projects.UpsertStrategyLinkAsync("prj-001", new ProjectStrategyLinkViewDto
         {
             ProjectId = "prj-001",
@@ -113,8 +138,14 @@ public sealed class EnterpriseStrategyLineageE2ETests
             StrategyLinkStatus = "Linked",
             ContributionNote = "Delivery linkage",
             DeliveryCompanyId = "cmp-001"
-        }, 0, "tester", "corr");
+        }, createdProject.Data!.Version, "tester", "corr");
         Assert.True(project.Success);
+        Assert.Equal("Planned", project.Data!.Status);
+        Assert.Equal(createdProject.Data.Version + 1, project.Data.Version);
+        Assert.Equal("Delivery linkage", project.Data.ContributionNote);
+        Assert.Equal("init-001", project.Data.ParentInitiativeId);
+        Assert.Equal("obj-e2e-1", project.Data.ParentObjectiveId);
+        Assert.Equal("goal-e2e-1", project.Data.ParentGoalId);
 
         var lineage = await services.Projects.UpstreamLineageAsync("prj-001");
         Assert.True(lineage.Success);
@@ -213,15 +244,28 @@ public sealed class EnterpriseStrategyLineageE2ETests
             ParentObjectiveId = "o2",
             StrategyLinkStatus = "Linked",
             Version = 1,
+            Notes = "Stale write must not persist",
             SponsoringCompanyId = "cmp-001"
         }, 99, "tester", "corr");
         Assert.False(stale.Success);
         Assert.Equal(EnterpriseStrategyErrorCodes.StaleVersion, stale.Error?.Code);
+        var unchanged = await services.Initiatives.GetAsync("init-001");
+        Assert.True(unchanged.Success);
+        Assert.Equal(link.Data!.Version, unchanged.Data!.StrategyLink!.Version);
+        Assert.Equal(link.Data.Notes, unchanged.Data.StrategyLink.Notes);
+        Assert.Equal("o2", unchanged.Data.StrategyLink.ParentObjectiveId);
 
         var auth = new DefaultEnterpriseStrategyAuthorizationService();
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
         var allowed = await auth.HasPermissionAsync(EnterpriseStrategyPermissions.GoalView, principal);
         Assert.False(allowed);
+
+        var actorWithoutPermission = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "tester") }, "test"));
+        Assert.False(await auth.HasPermissionAsync(EnterpriseStrategyPermissions.GoalView, actorWithoutPermission));
+
+        var reader = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("permission", EnterpriseStrategyPermissions.GoalView) }, "test"));
+        Assert.True(await auth.HasPermissionAsync(EnterpriseStrategyPermissions.GoalView, reader));
+        Assert.False(await auth.HasPermissionAsync(EnterpriseStrategyPermissions.GoalEdit, reader));
     }
 
     private static ObjectiveDto BuildValidObjective(string id, string parentGoalId, string name, int startYear, int endYear)

@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Approvals;
@@ -78,22 +79,54 @@ public sealed record ListVisitEvidenceExceptionsQuery(string? Status = null, str
 
 public sealed record GetVisitEvidenceExceptionQuery(Guid Id) : IRequest<Response<VisitEvidenceExceptionDto>>;
 
-public sealed record CreateVisitEvidenceExceptionCommand(VisitEvidenceExceptionInput Input) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record CreateVisitEvidenceExceptionCommand(VisitEvidenceExceptionInput Input)
+    : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Create("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => CrmCentralAudit.IdFrom<VisitEvidenceExceptionDto>(response, dto => dto.Id);
+}
 
-public sealed record UpdateVisitEvidenceExceptionCommand(Guid Id, VisitEvidenceExceptionInput Input) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record UpdateVisitEvidenceExceptionCommand(Guid Id, VisitEvidenceExceptionInput Input)
+    : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record SubmitVisitEvidenceExceptionCommand(Guid Id) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record SubmitVisitEvidenceExceptionCommand(Guid Id) : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
-public sealed record WithdrawVisitEvidenceExceptionCommand(Guid Id) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record WithdrawVisitEvidenceExceptionCommand(Guid Id) : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 public sealed record DecideVisitEvidenceExceptionCommand(Guid Id, string? Decision, string? Comment)
-    : IRequest<Response<VisitEvidenceExceptionDto>>;
+    : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>A PLANNED approved exception → <c>cancelled</c> (a reason is required).</summary>
-public sealed record CancelVisitEvidenceExceptionCommand(Guid Id, string? Reason) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record CancelVisitEvidenceExceptionCommand(Guid Id, string? Reason)
+    : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>An ACTIVE approved exception → <c>ended_early</c>, its end = today (a reason is required).</summary>
-public sealed record EndVisitEvidenceExceptionEarlyCommand(Guid Id, string? Reason) : IRequest<Response<VisitEvidenceExceptionDto>>;
+public sealed record EndVisitEvidenceExceptionEarlyCommand(Guid Id, string? Reason)
+    : IRequest<Response<VisitEvidenceExceptionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("VisitEvidenceException");
+    public Guid? CentralAuditEntityId(object? response) => Id;
+}
 
 /// <summary>WP-VW-W3 (W3-BE-c) — the pure checks of an exception (dates, rules, reason, overlap).</summary>
 public static class VisitEvidenceExceptionChecks

@@ -19,22 +19,34 @@
             <div class="row g-4">
                 <div class="col-12">
                     <label for="captureDemandPlanId" class="form-label fw-medium">@Localizer["DemandPlanId"] <span class="text-danger">*</span></label>
-                    <input type="text" id="captureDemandPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureDemandPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
                     <div class="invalid-feedback" data-for="captureDemandPlanId"></div>
                 </div>
                 <div class="col-12">
                     <label for="captureDemandPlanVersion" class="form-label fw-medium">@Localizer["DemandPlanVersion"] <span class="text-danger">*</span></label>
-                    <input type="text" id="captureDemandPlanVersion" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="diten-field">
+                        <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureDemandPlanVersion" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
                     <div class="invalid-feedback" data-for="captureDemandPlanVersion"></div>
                 </div>
                 <div class="col-12">
                     <label for="captureSourceCapturedAt" class="form-label fw-medium">@Localizer["SourceCapturedAt"] <span class="text-danger">*</span></label>
-                    <input type="text" id="captureSourceCapturedAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="diten-field">
+                        <i class="bx bx-time diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureSourceCapturedAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
                     <div class="invalid-feedback" data-for="captureSourceCapturedAt"></div>
                 </div>
                 <div class="col-12">
                     <label for="captureSourceChecksum" class="form-label fw-medium">@Localizer["SourceChecksum"] <span class="text-danger">*</span></label>
-                    <input type="text" id="captureSourceChecksum" class="form-control font-monospace" dir="ltr" autocomplete="off" spellcheck="false" />
+                    <div class="diten-field">
+                        <i class="bx bx-fingerprint diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureSourceChecksum" class="form-control font-monospace" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
                     <div class="invalid-feedback" data-for="captureSourceChecksum"></div>
                 </div>
                 <div class="col-12">
@@ -59,6 +71,6 @@
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="button" id="btnSubmitCapture" class="btn btn-primary">@Localizer["CaptureSnapshot"]</button>
+        <button type="button" id="btnSubmitCapture" class="btn btn-primary" data-dt-primary="chord">@Localizer["CaptureSnapshot"]</button>
     </div>
 </div>

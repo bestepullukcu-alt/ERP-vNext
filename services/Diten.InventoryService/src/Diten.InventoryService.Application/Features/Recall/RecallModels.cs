@@ -107,7 +107,23 @@ public sealed record RecallEffectivenessRowDto(
     decimal Open,
     decimal Percent,
     bool Met,
-    bool Notified);
+    bool Notified,
+    RecallCustomerDisplayDto? Customer = null);
+
+/// <summary>
+/// MOD-0177-FU01 (RECALL 1.10.0 <c>CustomerDisplay</c>, pack §8.7) — how a customer is shown. Source: Crm | ShipTo | Document | Manual |
+/// Unknown (written before FU01). State: Resolved (name, code) | Unresolved | NotFound | Forbidden (shipTo, shipmentNumber distinguish) |
+/// Deferred (not on the requested customer page) | Legacy | NoCrm (label). The CRM key itself is never a display field.
+/// </summary>
+public sealed record RecallCustomerDisplayDto(
+    string Source,
+    string State,
+    string? Name = null,
+    string? Code = null,
+    string? Label = null,
+    string? ShipTo = null,
+    string? ShipmentNumber = null,
+    bool? NoCrmWarning = null);
 
 public sealed record RecallEffectivenessDto(
     int Class,
@@ -176,7 +192,8 @@ public sealed record RecallScopeItemDto(
     bool EffectivelyIncluded,
     string? ExclusionReason,
     string? Origin = null,
-    bool? New = null);
+    bool? New = null,
+    RecallCustomerDisplayDto? Customer = null);
 
 public sealed record RecallScopeViewDto(
     string CaseId,
@@ -237,7 +254,8 @@ public sealed record RecallCustomerRowDto(
     IReadOnlyList<RecallCaseCustomerShipmentDto> Shipments,
     RecallNotificationDto? Notification,
     IReadOnlyList<RecallNotificationDto> Notifications,
-    IReadOnlyList<RecallConsumptionDto> Consumptions);
+    IReadOnlyList<RecallConsumptionDto> Consumptions,
+    RecallCustomerDisplayDto? Customer = null);
 
 public sealed record RecallNotificationDto(
     string NotificationId,
@@ -340,7 +358,8 @@ public sealed record RecallTraceNodeDto(
     IReadOnlyList<string> Serials,
     string? GapCode,
     long? Count,
-    string? Text);
+    string? Text,
+    RecallCustomerDisplayDto? Customer = null);
 
 public sealed record RecallTraceEdgeDto(string From, string To, string Kind, string? TransformationReference, string? QuantityConsumed, string? UomId, bool Cycle);
 
@@ -475,7 +494,8 @@ public sealed record RecallReturnLinkDto(
     string PostedAtUtc,
     RecallUserAtDto LinkedBy,
     string? HoldId = null,
-    string? HoldNumber = null);
+    string? HoldNumber = null,
+    RecallCustomerDisplayDto? Customer = null);
 
 public sealed record RecallReturnCandidateDto(
     string TransactionId,

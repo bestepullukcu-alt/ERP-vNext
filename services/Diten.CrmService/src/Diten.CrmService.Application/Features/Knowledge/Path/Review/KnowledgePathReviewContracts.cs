@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Domain.Entities;
 using MediatR;
@@ -7,24 +9,44 @@ namespace Diten.CrmService.Application.Features.Knowledge.Path.Review;
 // WP-KP-2 — the path review surface. TenantId / actor are server-resolved, never in a payload.
 
 /// <summary>Freezes the path into a new revision and starts its KP-MLR-{country} round with the caller's token.</summary>
-public sealed record SubmitKnowledgePathReviewCommand(Guid PathId) : IRequest<Response<KnowledgePathRevisionDto>>;
+public sealed record SubmitKnowledgePathReviewCommand(Guid PathId) : IRequest<Response<KnowledgePathRevisionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 /// <summary>Cancels the open round (Platform cancel); the path goes back to draft.</summary>
-public sealed record WithdrawKnowledgePathReviewCommand(Guid PathId) : IRequest<Response<KnowledgePathRevisionDto>>;
+public sealed record WithdrawKnowledgePathReviewCommand(Guid PathId) : IRequest<Response<KnowledgePathRevisionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("KnowledgePath");
+    public Guid? CentralAuditEntityId(object? response) => PathId;
+}
 
 /// <summary>A reviewer's decision on the SAME MOD-0023 task the Work Center shows (one channel, K1). A rejection needs a
 /// comment; the submitter can never decide (person-based SoD).</summary>
 public sealed record DecideKnowledgePathRevisionCommand(Guid PathId, Guid RevisionId, string? Decision, string? Comment)
-    : IRequest<Response<KnowledgePathDecisionDto>>;
+    : IRequest<Response<KnowledgePathDecisionDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 public sealed record AddKnowledgePathRevisionNoteCommand(
     Guid PathId, Guid RevisionId, string? PageRef, string? BlockRef, string? StepRef, double? X, double? Y, string? Text)
-    : IRequest<Response<KnowledgePathRevisionNoteDto>>;
+    : IRequest<Response<KnowledgePathRevisionNoteDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 /// <summary>Resolves a note — its author, or a path manager (<paramref name="CanManage"/>, resolved by the API from the
 /// caller's permissions, never from a payload).</summary>
 public sealed record ResolveKnowledgePathRevisionNoteCommand(Guid PathId, Guid RevisionId, Guid NoteId, bool CanManage)
-    : IRequest<Response<KnowledgePathRevisionNoteDto>>;
+    : IRequest<Response<KnowledgePathRevisionNoteDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Update("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 public sealed record ListKnowledgePathRevisionsQuery(Guid PathId) : IRequest<Response<IReadOnlyList<KnowledgePathRevisionSummaryDto>>>;
 

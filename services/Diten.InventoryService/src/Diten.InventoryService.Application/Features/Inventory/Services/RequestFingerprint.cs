@@ -49,6 +49,18 @@ public static class RequestFingerprint
             canonical["fefoBypassReason"] = reason;
         }
 
+        // INVENTORY 1.7.0 (MOD-0173-FU03, AC-25): reservationId only when sent, restoreReservation only when true — absent and false are the
+        // same request, and a request without either keeps its 1.5.0 fingerprint byte for byte.
+        if (movement.ReservationId is { } reservationId)
+        {
+            canonical["reservationId"] = reservationId;
+        }
+
+        if (movement.RestoreReservation)
+        {
+            canonical["restoreReservation"] = true;
+        }
+
 
         var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(canonical));
         return Convert.ToHexString(SHA256.HashData(bytes));

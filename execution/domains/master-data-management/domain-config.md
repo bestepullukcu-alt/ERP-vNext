@@ -43,9 +43,10 @@ by Platform Shared Services and tenant business modules.
 
 ## In-Scope Reserved Modules (Treasury intake — owner decisions D20/1, D38; proposal with the packs)
 
-- `MOD-0289 Bank Master & Bank Account Registry` — placement D20/1 (`treasury-intake-owner-decisions-02.md`); draft pack
-  [MOD-0289](module-packs/MOD-0289-bank-master-bank-account-registry.md); `Diten.MdmService`, no new service or port;
-  kod alma izni D45/3 (2026-10-27); kod yalnız onaylı paket ve dilim sırasıyla; not `ready-for-dev`.
+- `MOD-0289 Bank Master & Bank Account Registry` — placement D20/1 (`treasury-intake-owner-decisions-02.md`); pack
+  [MOD-0289](module-packs/MOD-0289-bank-master-bank-account-registry.md) `ready-for-dev` (D127, `treasury-intake-owner-decisions-06.md`);
+  `Diten.MdmService`, no new service or port; kod alma izni D45/3 (2026-10-27); kod yalnız o paket sürümünün CT-APR-01
+  satırı main'de olunca ve dilim sırasıyla.
 - `MOD-0217 Contract Lifecycle Management (CLM)` — placement D19/1 + D38 (`treasury-intake-owner-decisions-03.md`; the
   repository owner decided on the MDM owner's behalf); draft pack
   [MOD-0217](module-packs/MOD-0217-contract-lifecycle-management-clm.md); `Diten.MdmService`; contract versions are MOD-0217's own
@@ -66,6 +67,28 @@ authority rule:
   `/api/mdm/brand-products/contract` route blocks, downstream `localhost:5059`, no `DELETE` method
   (exact scope: pack §15). Ownership remains with `integration-agent`; the existing `/api/legal-entities`
   routes are untouched.
+
+This exception applies to no other MDM module pack.
+
+## In-Scope Reserved Module (owner decisions T-5 / Q-10, 2026-11-13)
+
+- `MOD-0049-FU01 Business Partner Master Foundation` — child of Blueprint `MOD-0049` (registry rows MOD-0049 / MOD-0049-FU01);
+  placement owner decision Q-10 (`docs/records/decisions/2026-11/mod0179-3pl-owner-decisions-01.md`), MDM owner permission T-5
+  (Ali, 2026-11-13; central team develops); pack
+  [MOD-0049-FU01](module-packs/MOD-0049-FU01-business-partner-master-foundation.md); `Diten.MdmService`, no new service or port.
+  v1 scope: tenant-wide party record + roles (v1 role `ThirdPartyLogistics`); match / merge, survivorship and supplier / customer
+  SoR are out of scope (BL-665). Consumer: MOD-0179 (read only, `BUSINESS-PARTNER-READ`).
+
+## Frontend / Gateway Scope Exception (MOD-0049-FU01)
+
+The "frontend and gateway remain outside the first implementation slice" restriction is narrowly lifted for MOD-0049-FU01, per the
+module-pack-over-domain-config authority rule:
+
+- `frontend/Diten.Web/**` — only the `MasterData/BusinessPartners` surface (views, same-origin proxy controller, JS, resx) plus
+  additive shared keys (`Nav.Module.BUSINESSPARTNERMASTER`, `Nav.Page.BUSINESSPARTNERS`, `Perm.Entity.BUSINESSPARTNERS`,
+  `Help.BUSINESSPARTNERS.*`); `_LayoutTenantShell.cshtml` is unchanged (navigation comes from the manifest). Exact scope: pack §5 / §11.
+- `gateway/Diten.ApiGateway/ocelot.json` — only the two `/api/mdm/business-partners` route blocks, downstream `localhost:5059`,
+  no `DELETE` method (pack §15). Ownership remains with `integration-agent`.
 
 This exception applies to no other MDM module pack.
 

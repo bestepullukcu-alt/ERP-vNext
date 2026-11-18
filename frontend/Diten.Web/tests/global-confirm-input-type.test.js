@@ -17,7 +17,7 @@ const path = require("path");
  * its source. The Razor expressions (`@Json.Serialize(...)`) are the only thing replaced, with the strings they
  * would render. Everything else is the shipped code.
  */
-const { PROCUREMENT, STOCK, ESIGN, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, misnamedRows } = require("./main-sync-owners");
+const { PROCUREMENT, STOCK, ESIGN, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, MAIN_OWNER_STEP_WHY, misnamedRows } = require("./main-sync-owners");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const VIEW = fs.readFileSync(
   path.join(repoRoot, "frontend", "Diten.Web", "Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
@@ -57,7 +57,9 @@ const SHOW_INPUT_CALLERS = {
   "Platform/Tenants/details.js": { inputs: 3, typed: 1 },
   "Platform/Tenants/index.js": { inputs: 1, typed: 0 },
   // The module seam: it passes whatever its own caller said (`undefined` for every prose dialog).
-  "WorkCenterNext/app.js": { inputs: 1, typed: 1 }
+  "WorkCenterNext/app.js": { inputs: 1, typed: 1 },
+  // WP-0178-E3-FIX-01 (MOD-0178): "İptal" and each FEFO reason of "Sevke hazır" — a required reason, a typed textarea (Bootstrap modals → showConfirm).
+  "Warehouse/OutboundShipments/details.js": { inputs: 2, typed: 2 }
 };
 // …and the callers that came with main (XMC-001: not ours to change; listed so the census stays exact).
 const MAIN_SYNC_SHOW_INPUT = {
@@ -67,6 +69,8 @@ const MAIN_SYNC_SHOW_INPUT = {
   "ESignature/esign-pages.js": { inputs: 1, typed: 1, owner: ESIGN, why: MAIN_SYNC_2_WHY },
   "Quarantine/blocked.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Quarantine/details.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  // FU-0175-UI-MANUALHOLD-01 (2e11996bc, 2026-10-19): the manual hold's required reason, a typed textarea.
+  "Quarantine/manual-hold.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_OWNER_STEP_WHY },
   "Quarantine/retest.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Traceability/LotMigration/index.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
   "Traceability/Lots/status.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY }

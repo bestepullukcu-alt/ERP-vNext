@@ -112,6 +112,12 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
             .Find(TransactionScope() & Builders<InventoryTransaction>.Filter.Eq(x => x.ReversesTransactionId, transactionId))
             .AnyAsync(cancellationToken);
 
+    // MOD-0178 (pack §5): the reversal itself, same filter as IsReversedAsync
+    public async Task<InventoryTransaction?> FindReversalOfAsync(Guid transactionId, CancellationToken cancellationToken = default)
+        => await _transactions
+            .Find(TransactionScope() & Builders<InventoryTransaction>.Filter.Eq(x => x.ReversesTransactionId, transactionId))
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task<BalancePage> QueryBalancesAsync(BalanceQuery query, CancellationToken cancellationToken = default)
     {
         var f = Builders<InventoryBalance>.Filter;
@@ -202,6 +208,12 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
                 transaction.ExpiryChecks = expiry.Checks;
 
+                // MOD-0173-FU03 §8.3 step 5: the reservation the movement named — the SKU's due reservations are expired first, then it is read
+                // and checked on the committed state of THIS transaction (its later consumption is conditional on the version read here).
+                var named = transaction.ReservationId is { } reservationId
+                    ? await NamedReservationAsync(s, transaction, lot, reservationId, ct)
+                    : null;
+
                 var number = await NextTransactionNumberAsync(s, transaction.PostingDate.UtcDateTime.Year, ct);
                 transaction.TransactionNumber = number;
                 posting.Audit.TransactionNumber = number;
@@ -226,11 +238,32 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
                     await ApplyLotPositionAsync(s, posting, lot.Id, ct);
                 }
 
+                // MOD-0173-FU03 §8.3: the named reservation is consumed BEFORE the guards (the holder issues its own reserved stock); a
+                // LOCATION_TRANSFER only validated it — its answer is the reservation as it stands.
+                if (named is not null)
+                {
+                    transaction.ReservationConsumption = ConsumesReservation(transaction.MovementType)
+                        ? await _reservations.ConsumeNamedAsync(s, named, transaction.BaseQuantity, transaction.Id, transaction.CorrelationId,
+                            transaction.CreatedBy, transaction.SourceModule, transaction.CreatedAt, ct)
+                        : new ReservationConsumptionSnapshot
+                        {
+                            ReservationId = named.Id, ConsumedQuantity = 0m, RemainingQuantity = named.RemainingQuantity, Status = named.Status,
+                            ClosedReason = named.ClosedReason
+                        };
+                }
+
                 // CT-Q16: the lot was read in THIS transaction (its StockTouchSeq is written, so a sweeper setting / clearing the
                 // retest hold on the same document conflicts and one side re-runs) — the stored hold decides, like Blocked / Expired.
                 if (lot is null || !LotPostingRules.HoldsStock(lot))
                 {
-                    await ApplySkuPositionAsync(s, posting, ct);
+                    await ApplySkuPositionAsync(s, posting, lot, ct);
+                }
+
+                // MOD-0173-FU03 §8.3.1 (r3 F-1): giving a consumed quantity back is a RESERVATION change, not a stock one — it runs outside the
+                // HoldsStock branch, so a REVERSAL through a held lot restores too (Reserved on every level, AvailableOnHand untouched).
+                if (posting.Restore is { } restore)
+                {
+                    await _reservations.RestoreAsync(s, restore, transaction, transaction.CreatedAt, ct);
                 }
 
                 await ApplySerialsAsync(posting, lot, ct);
@@ -246,7 +279,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         }
         catch (UncoveredQuantityException uncovered)
         {
-            return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested);
+            return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested, uncovered.Level);
         }
         catch (LocationNotPostableException notPostable)
         {
@@ -255,6 +288,10 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         catch (LotPostingRefusedException refused)
         {
             return LedgerPostingResult.LotOrSerialRefused(refused.Code, refused.Message, refused.Details);
+        }
+        catch (ReservationRefusedException refused)
+        {
+            return LedgerPostingResult.ReservationRefused(refused.Code, refused.Message, refused.Details);
         }
         catch (MongoWriteException ex) when (IsDuplicateOn(ex, InventoryIndexConfiguration.IdempotencyIndex))
         {
@@ -268,32 +305,103 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
     /// <summary>
     /// The S2 half of a posting (pack ASSUMPTION-0173-13..16), in the same transaction as the legs: the SKU position
-    /// moves by the posting's NET AVAILABLE delta (a transfer between two AVAILABLE rows nets 0 and touches nothing —
-    /// reservations are SKU-level, not bin-level). On a net decrease the SKU's due reservations are expired, a matching
-    /// reservation is consumed, and only then is <c>AvailableOnHand − Reserved ≥ 0</c> enforced, so a holder can issue
-    /// its own reserved stock while nobody else can.
+    /// moves by the posting's NET AVAILABLE delta (a transfer between two AVAILABLE rows nets 0 and touches nothing at SKU
+    /// level). On a net decrease the SKU's due reservations are expired, a matching reservation is consumed, and only then is
+    /// <c>AvailableOnHand − Reserved ≥ 0</c> enforced, so a holder can issue its own reserved stock while nobody else can.
+    /// <para>MOD-0173-FU03 §8.2: the warehouse level (net AVAILABLE delta per warehouse) and the lot level (per warehouse, the
+    /// posting's registered lot; a typed lot text has none) move by their OWN net deltas — the net-0 early return is the SKU's only,
+    /// so a WAREHOUSE_TRANSFER W1 → W2 (SKU net 0) still meets the W1 guard and cannot take reserved stock out of its warehouse. A
+    /// decrease on any level first expires the SKU's due reservations; the guards then run LOT → WAREHOUSE → SKU.</para>
     /// </summary>
-    private async Task ApplySkuPositionAsync(IClientSessionHandle session, LedgerPosting posting, CancellationToken ct)
+    private async Task ApplySkuPositionAsync(IClientSessionHandle session, LedgerPosting posting, Lot? lot, CancellationToken ct)
     {
         var transaction = posting.Transaction;
-        var netAvailable = posting.Legs
-            .Where(l => l.Dimension.StockStatus == StockStatus.Available)
-            .Sum(l => l.Delta);
-        if (netAvailable == 0m)
+        var available = posting.Legs.Where(l => l.Dimension.StockStatus == StockStatus.Available).ToList();
+        var netAvailable = available.Sum(l => l.Delta);
+        var byWarehouse = available
+            .Where(l => l.Dimension.WarehouseId is not null)
+            .GroupBy(l => l.Dimension.WarehouseId!, StringComparer.Ordinal)
+            .Select(g => (WarehouseId: g.Key, Delta: g.Sum(l => l.Delta)))
+            .Where(w => w.Delta != 0m)
+            .ToList();
+        if (netAvailable == 0m && byWarehouse.Count == 0)
         {
             return;
         }
 
         var sku = new SkuKey(transaction.ItemId, transaction.SkuId, transaction.SkuLevel);
         var now = transaction.CreatedAt;
-        if (netAvailable < 0m)
+        if (netAvailable < 0m || byWarehouse.Any(w => w.Delta < 0m))
         {
             await _reservations.ExpireDueAsync(session, sku, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+        }
+
+        if (netAvailable < 0m && transaction.ReservationId is null) // FU03 §8.3: a named reservation replaces the source-triple match
+        {
             await _reservations.ConsumeAsync(session, sku, transaction.SourceModule, transaction.SourceDocumentId,
-                transaction.SourceLineId, -netAvailable, transaction.Id, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+                transaction.SourceLineId, transaction.FromWarehouseId, lot?.Id, -netAvailable, transaction.Id, transaction.CorrelationId,
+                transaction.CreatedBy, now, ct);
+        }
+
+        foreach (var (warehouseId, delta) in byWarehouse.OrderBy(w => w.Delta < 0m ? 0 : 1))
+        {
+            if (lot is not null)
+            {
+                await _reservations.ApplyScopeDeltaAsync(session, sku, ReservationScopeLevel.Lot, warehouseId, lot.Id, delta, transaction.BaseUomId, now, ct);
+            }
+
+            await _reservations.ApplyScopeDeltaAsync(session, sku, ReservationScopeLevel.Warehouse, warehouseId, Guid.Empty, delta, transaction.BaseUomId, now, ct);
         }
 
         await _reservations.ApplyAvailableDeltaAsync(session, sku, netAvailable, transaction.BaseUomId, now, ct);
+    }
+
+    /// <summary>The movement types that CONSUME a reservation they name (a LOCATION_TRANSFER only validates it — §8.3, §8.4).</summary>
+    private static bool ConsumesReservation(MovementType type) => type is MovementType.GoodsIssueSales or MovementType.GoodsIssueProd;
+
+    /// <summary>
+    /// MOD-0173-FU03 §8.3 (the in-transaction half of the ret sırası): expire the SKU's due reservations (also for a net-0 transfer), then
+    /// the named reservation must exist in this Tenant + LE (else RESERVATION_NOT_FOUND, the unknown id's answer), be ACTIVE
+    /// (RESERVATION_NOT_ACTIVE + status / closedReason), match the movement's SKU, source warehouse and registered lot (RESERVATION_MISMATCH +
+    /// field) and, for an issue, still hold the base quantity (RESERVATION_QUANTITY_EXCEEDED — the rest is never taken from free stock, Q-04).
+    /// </summary>
+    private async Task<InventoryReservation> NamedReservationAsync(
+        IClientSessionHandle session, InventoryTransaction transaction, Lot? lot, Guid reservationId, CancellationToken ct)
+    {
+        var sku = new SkuKey(transaction.ItemId, transaction.SkuId, transaction.SkuLevel);
+        await _reservations.ExpireDueAsync(session, sku, transaction.CorrelationId, transaction.CreatedBy, transaction.CreatedAt, ct);
+
+        var reservation = await _reservations.FindAsync(session, reservationId, ct)
+                          ?? throw new ReservationRefusedException(InventoryErrorCodes.ReservationNotFound,
+                              InventoryErrorCodes.ReservationNotFoundMessage);
+        if (reservation.Status != ReservationStatus.Active)
+        {
+            throw new ReservationRefusedException(InventoryErrorCodes.ReservationNotActive, "The reservation is no longer active.",
+                new Dictionary<string, object?> { ["status"] = WireNames.ToWire(reservation.Status), ["closedReason"] = reservation.ClosedReason });
+        }
+
+        var field = reservation.ItemId != transaction.ItemId || reservation.SkuId != transaction.SkuId || reservation.SkuLevel != transaction.SkuLevel ? "sku"
+            : reservation.WarehouseId is { } warehouse && !string.Equals(warehouse, transaction.FromWarehouseId, StringComparison.Ordinal) ? "warehouse"
+            : reservation.LotId is { } reservedLot && reservedLot != lot?.Id ? "lot"
+            : null;
+        if (field is not null)
+        {
+            throw new ReservationRefusedException(InventoryErrorCodes.ReservationMismatch, $"The movement's {field} is not the reservation's.",
+                new Dictionary<string, object?> { ["field"] = field });
+        }
+
+        if (ConsumesReservation(transaction.MovementType) && transaction.BaseQuantity > reservation.RemainingQuantity)
+        {
+            throw new ReservationRefusedException(InventoryErrorCodes.ReservationQuantityExceeded,
+                "The issue is more than the reservation still holds; the rest is not taken from free stock.",
+                new Dictionary<string, object?>
+                {
+                    ["remaining"] = InventoryQuantity.ToWire(reservation.RemainingQuantity),
+                    ["requested"] = InventoryQuantity.ToWire(transaction.BaseQuantity)
+                });
+        }
+
+        return reservation;
     }
 
     /// <summary>

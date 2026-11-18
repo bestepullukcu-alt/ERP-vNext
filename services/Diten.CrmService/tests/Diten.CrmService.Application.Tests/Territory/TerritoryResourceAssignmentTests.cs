@@ -8,7 +8,8 @@ namespace Diten.CrmService.Application.Tests.Territory;
 
 /// <summary>
 /// MOD-0151 FU04 — resource assignments. Every rule here is resolved from the published MOD-0048 metadata
-/// (coverage scope requires/allows a territory id, role may be primary, source requires a reason), so these tests
+/// (coverage scope requires/allows a territory id, source requires a reason; the former role rules are gone with
+/// MOD-0151 → Position and their tests now pin that), so these tests
 /// also pin the code↔vocabulary contract the FU02B reconciliation taught us to guard.
 /// </summary>
 public sealed class TerritoryResourceAssignmentTests
@@ -89,27 +90,29 @@ public sealed class TerritoryResourceAssignmentTests
         Assert.Equal(TenantId, a.TenantId);
     }
 
-    [Fact(Skip = "Role removed (MOD-0151 → Position): coverage no longer defaults from role metadata.")]
-    public async Task Create_Defaults_CoverageScope_From_Role_Metadata()
+    // Role removed (MOD-0151 → Position): coverage no longer defaults from role metadata — it is required.
+    [Fact]
+    public async Task Create_Without_CoverageScope_Fails_400_No_Role_Default()
     {
         var c = NewCtx();
         var response = await Create(c).Handle(
             Cmd(c, nodeless: true, role: "business-unit-manager", coverage: null, scopes: ["alpha"]), default);
 
-        Assert.True(response.IsSuccessful);
-        Assert.Equal("business-unit", c.Assignments.Items[0].CoverageScope);
-        Assert.Null(c.Assignments.Items[0].TerritoryId);
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(400, response.StatusCode);
+        Assert.Contains("CoverageScope is required", response.Errors!.First(), StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(c.Assignments.Items);
     }
 
-    [Fact(Skip = "Role removed (MOD-0151 → Position): position code is a free snapshot, not reference-validated.")]
-    public async Task Create_Invalid_Role_Fails_400()
+    // Role removed (MOD-0151 → Position): the position code is a free snapshot, not reference-validated.
+    [Fact]
+    public async Task Create_Accepts_An_Unknown_Position_Code_As_A_Snapshot()
     {
         var c = NewCtx();
         var response = await Create(c).Handle(Cmd(c, role: "chief-of-nothing"), default);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
-        Assert.Empty(c.Assignments.Items);
+        Assert.True(response.IsSuccessful);
+        Assert.Equal("chief-of-nothing", Assert.Single(c.Assignments.Items).PositionCode);
     }
 
     [Fact]
@@ -122,17 +125,17 @@ public sealed class TerritoryResourceAssignmentTests
         Assert.Equal(400, response.StatusCode);
     }
 
-    [Fact(Skip = "Role removed (MOD-0151 → Position): there is no role reference set to fail closed on.")]
-    public async Task Create_Fails_Closed_When_Role_Set_Unpublished()
+    // Role removed (MOD-0151 → Position): there is no role reference set to fail closed on.
+    [Fact]
+    public async Task Create_Does_Not_Read_The_Former_Role_Set()
     {
         var c = NewCtx();
         c.References.MissingSets.Add(TerritoryReferenceSets.TerritoryResourceRole);
 
         var response = await Create(c).Handle(Cmd(c), default);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
-        Assert.Contains("not published", response.Errors!.First(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(response.IsSuccessful);
+        Assert.Single(c.Assignments.Items);
     }
 
     [Fact]
@@ -238,16 +241,16 @@ public sealed class TerritoryResourceAssignmentTests
         Assert.Contains("does not allow business unit scopes", response.Errors!.First(), StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "Role removed (MOD-0151 → Position): the canBePrimary gate is gone; any position may be primary.")]
-    public async Task Create_Primary_On_A_Role_That_Cannot_Be_Primary_Fails_400()
+    // Role removed (MOD-0151 → Position): the canBePrimary gate is gone; any position may be primary.
+    [Fact]
+    public async Task Create_Primary_On_Any_Position_Succeeds()
     {
         var c = NewCtx();
         var response = await Create(c).Handle(
             Cmd(c, nodeless: true, role: "viewer", coverage: "model-wide", scopes: [], primary: true), default);
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(400, response.StatusCode);
-        Assert.Contains("cannot hold a primary assignment", response.Errors!.First(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(response.IsSuccessful);
+        Assert.True(Assert.Single(c.Assignments.Items).IsPrimary);
     }
 
     [Fact]
@@ -596,20 +599,19 @@ public sealed class TerritoryResourceAssignmentTests
         Assert.Equal(TerritoryResourceConflictKinds.MultiNodeCoverage, report.Warnings[0].Kind);
     }
 
-    [Fact(Skip = "Role removed (MOD-0151 → Position): role→node-level recommendation warnings are gone.")]
-    public async Task ConflictReport_Flags_An_Unexpected_Node_Level_As_A_Warning()
+    // Role removed (MOD-0151 → Position): the role→node-level recommendation WARNING is gone; the position policy
+    // (TerritoryPositionPolicy) now refuses a node level the position does not allow.
+    [Fact]
+    public async Task Create_Position_On_A_Node_Level_It_Does_Not_Allow_Fails_409()
     {
         var c = NewCtx();
-        // area-manager on a ZONE node: allowed, but not the recommended level.
-        await Create(c).Handle(
-            Cmd(c, nodeId: c.Zone.Id, role: "area-manager", coverage: "territory-subtree", scopes: ["alpha"]), default);
+        // area-manager on a ZONE node: once "allowed, not the recommended level", now refused.
+        var response = await Create(c).Handle(Cmd(c, nodeId: c.Zone.Id, role: "area-manager"), default);
 
-        var handler = new ValidateTerritoryResourceConflictsHandler(
-            TenantFactory.Tenant(TenantId), c.Models, c.Nodes, c.Assignments);
-        var report = (await handler.Handle(new ValidateTerritoryResourceConflictsCommand(c.Model.Id), default)).Data!;
-
-        Assert.Equal(0, report.ConflictCount);
-        Assert.Contains(report.Warnings, w => w.Kind == TerritoryResourceConflictKinds.UnexpectedNodeLevel);
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains("requires node level: area", response.Errors!.First(), StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(c.Assignments.Items);
     }
 
     [Fact]

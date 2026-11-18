@@ -4,6 +4,7 @@ using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Workflow.Events;
 using Diten.Platform.Domain.Entities.Workflow;
+using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
@@ -12,7 +13,10 @@ internal enum WorkflowTerminalWriteOutcome
 {
     Committed,
     Conflict,
-    TransactionUnavailable
+    TransactionUnavailable,
+    /// <summary>DL-2 (§17.9/17) — a RequestInfo's log met the unique (task, action, idempotency key) index: a twin of the
+    /// same key committed first. The caller reads that row and answers as the actor- and body-bound replay.</summary>
+    DuplicateKey
 }
 
 /// <param name="Replayed">D2 (C1) — Committed, but by a TWIN of this call (same actor, key and payload, another log row),
@@ -334,6 +338,11 @@ internal sealed class WorkflowTerminalTransitionWriter
         {
             return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
         }
+        catch (PlatformTransactionUnavailableException unavailable)
+            when (log.Action == WorkflowTransitionAction.RequestInfo && IsActiveIdempotencyDuplicate(unavailable))
+        {
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.DuplicateKey, null);
+        }
         catch (PlatformTransactionUnavailableException)
         {
             return await AfterUnavailableAsync(task.Id, taskVersion, log, ct, newSnapshot);
@@ -433,9 +442,45 @@ internal sealed class WorkflowTerminalTransitionWriter
     private static bool SamePayload(WorkflowTransitionLog found, WorkflowTransitionLog attempted) =>
         string.Equals(found.ToState, attempted.ToState, StringComparison.Ordinal)
         && string.Equals(found.ToStatus, attempted.ToStatus, StringComparison.Ordinal)
-        && string.Equals(found.ReasonCode, attempted.ReasonCode, StringComparison.Ordinal)
-        && string.Equals(found.Comment, attempted.Comment, StringComparison.Ordinal)
-        && string.Equals(found.EvidenceRef, attempted.EvidenceRef, StringComparison.Ordinal);
+        && SameBody(found, attempted.ReasonCode, attempted.Comment, attempted.EvidenceRef, attempted.SignatureId,
+            attempted.TargetPrincipalId);
+
+    /// <summary>
+    /// DL-2 (§17.9/7) — THE ONE BODY COMPARISON of a recorded transition and a retry under the same key: reason, comment,
+    /// evidence, e-signature and (RequestInfo) target, ordinal, null apart from "". Used by the sequential replay, the
+    /// duplicate-key mapping and (through <see cref="SamePayload"/>) the unavailable re-read. The target is compared on
+    /// its own because it is also folded into the comment; a row written before the field existed (null) is held to its
+    /// comment alone, so a genuine retry of a key sent before this change does not get 409. That branch runs first.
+    /// </summary>
+    internal static bool SameBody(
+        WorkflowTransitionLog found,
+        string? reasonCode,
+        string? comment,
+        string? evidenceRef,
+        string? signatureId,
+        string? targetPrincipalId) =>
+        string.Equals(found.ReasonCode, reasonCode, StringComparison.Ordinal)
+        && string.Equals(found.Comment, comment, StringComparison.Ordinal)
+        && string.Equals(found.EvidenceRef, evidenceRef, StringComparison.Ordinal)
+        && string.Equals(found.SignatureId, signatureId, StringComparison.Ordinal)
+        && (found.TargetPrincipalId is null
+            || string.Equals(found.TargetPrincipalId, targetPrincipalId, StringComparison.Ordinal));
+
+    private const string ActiveIdempotencyIndex = "ux_workflow_transition_logs_task_action_idempotency_active";
+
+    /// <summary>The executor wraps every MongoException of the body in PlatformTransactionUnavailableException; a
+    /// duplicate-key refusal by the (task, action, key) unique index arrives as its inner exception.</summary>
+    private static bool IsActiveIdempotencyDuplicate(PlatformTransactionUnavailableException unavailable) =>
+        unavailable.InnerException switch
+        {
+            MongoDB.Driver.MongoWriteException write =>
+                write.WriteError.Category == MongoDB.Driver.ServerErrorCategory.DuplicateKey
+                && write.WriteError.Message.Contains(ActiveIdempotencyIndex, StringComparison.Ordinal),
+            MongoDB.Driver.MongoBulkWriteException bulk => bulk.WriteErrors.Any(error =>
+                error.Category == MongoDB.Driver.ServerErrorCategory.DuplicateKey
+                && error.Message.Contains(ActiveIdempotencyIndex, StringComparison.Ordinal)),
+            _ => false
+        };
 
     /// <summary>D2 (C1) — my own row (this call's log id) is a write; a twin's row with the same payload is a replay.</summary>
     private static WorkflowTerminalWriteResult Mine(WorkflowTransitionLog attempted, WorkflowTransitionLog found) =>

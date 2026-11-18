@@ -61,6 +61,15 @@ public interface IAccountRepository
         return page.Items.Select(a => a.AccountType).Where(t => !string.IsNullOrWhiteSpace(t)).Distinct().OrderBy(t => t, StringComparer.Ordinal).ToList();
     }
 
+    /// <summary>MOD-0149 §30 U-3 (Treasury AR picker): the caller's tenant's non-deleted accounts whose name or code
+    /// CONTAINS <paramref name="search"/> as literal text (escaped, Turkish-i insensitive, as <see cref="ListAsync(Guid,string?,int,int,string?,string?,IReadOnlyCollection{string}?,IReadOnlyCollection{string}?,IReadOnlyCollection{Guid}?,CancellationToken)"/>),
+    /// optionally only <paramref name="status"/>; ALWAYS sorted name ascending then <c>_id</c> ascending (stable paging,
+    /// served by <c>ix_accounts_tenant_name_id</c>). <c>Total</c> is the filtered count. The list page never uses this
+    /// sort. The default refuses: only the Mongo repository answers it.</summary>
+    Task<(IReadOnlyList<Account> Items, long Total)> SearchLookupAsync(
+        Guid tenantId, string search, string? status, int page, int pageSize, CancellationToken cancellationToken)
+        => throw new NotSupportedException("This repository does not support the account lookup search.");
+
     Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken cancellationToken);
 
     /// <summary>Walks the parent chain from <paramref name="candidateParentId"/> to detect whether linking it under

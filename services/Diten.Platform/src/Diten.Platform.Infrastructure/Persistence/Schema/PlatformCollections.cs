@@ -126,6 +126,10 @@ public static class PlatformCollections
     /// <summary>MOD-0031 Evidence Linking (slice 1) — object ↔ document/version evidence links.</summary>
     public const string EvidenceLinks = "evidence_links";
     public const string FeatureCategories = "platform_feature_categories";
+    /// <summary>MOD-0040-FU02 Record Code Service — counters, the append-only allocation ledger, group-prefix settings.</summary>
+    public const string RecordCodeAllocations = "record_code_allocations";
+    public const string RecordCodeCounters = "record_code_counters";
+    public const string RecordCodeGroupPrefixes = "record_code_group_prefixes";
     public const string InterfaceActiveSnapshots = "platform_interface_active_snapshots";
     public const string InterfaceDefinitions = "platform_interface_definitions";
     public const string InterfaceDiscoveryBatches = "platform_interface_discovery_batches";

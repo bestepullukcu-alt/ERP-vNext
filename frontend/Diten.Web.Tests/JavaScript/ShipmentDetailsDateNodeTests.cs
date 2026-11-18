@@ -44,6 +44,22 @@ public sealed class ShipmentDetailsDateNodeTests
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 
+    [Fact]
+    public async Task ShipmentFormDateFieldsBindUnderNode()
+    {
+        var start = new ProcessStartInfo("node") { WorkingDirectory = Root(), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        start.ArgumentList.Add("--test");
+        start.ArgumentList.Add("--test-reporter=tap");
+        start.ArgumentList.Add(Path.Combine("frontend", "Diten.Web.Tests", "JavaScript", "Node", "shipment-create-dates.test.mjs"));
+        using var node = Process.Start(start)!;
+        var error = node.StandardError.ReadToEndAsync();
+        var output = await node.StandardOutput.ReadToEndAsync();
+        await node.WaitForExitAsync();
+        Assert.True(node.ExitCode == 0, $"{output}\n{await error}");
+        Assert.Matches(new Regex(@"^# pass 3$", RegexOptions.Multiline), output);
+        Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
+    }
+
     private static string Root()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

@@ -35,15 +35,34 @@ public sealed class ContactLocationPiiHardeningTests
     [Fact]
     public void PiiMasking_Redacts_Email_And_Phone_But_Keeps_Guid_And_Country()
     {
-        var id = Guid.NewGuid();
+        // The last GUID group is all digits (12 in a row): a bare 7+ digit rule would cut it.
+        var id = Guid.Parse("3f2b8c1e-4a5d-4e6f-9a7b-123456789012");
         var input = $"account={id} crossCountry=TR->US contact=ahmet.yilmaz@example.com phone=05551234567";
         var masked = PiiMasking.Redact(input);
 
         Assert.DoesNotContain("ahmet.yilmaz@example.com", masked);
         Assert.DoesNotContain("05551234567", masked);
+        Assert.Contains("phone=***", masked);
         Assert.Contains("***@***", masked);
         Assert.Contains("crossCountry=TR->US", masked);   // country codes preserved
         Assert.Contains(id.ToString(), masked!);          // GUID preserved
+        Assert.Contains(id.ToString().ToUpperInvariant(), PiiMasking.Redact($"account={id.ToString().ToUpperInvariant()}")!);
+    }
+
+    [Fact]
+    public void PiiMasking_Keeps_Any_Guid_Shape_Whole()
+    {
+        // Deterministic sweep: every GUID whose last group holds a 7..12 digit run, at each position, survives intact.
+        for (var run = 7; run <= 12; run++)
+        {
+            for (var at = 0; at + run <= 12; at++)
+            {
+                var last = new string('a', at) + new string('7', run) + new string('b', 12 - at - run);
+                var id = $"0a1b2c3d-4e5f-4a6b-8c7d-{last}";
+                var masked = PiiMasking.Redact($"account={id} phone=05551234567");
+                Assert.Equal($"account={id} phone=***", masked);
+            }
+        }
     }
 
     [Fact]

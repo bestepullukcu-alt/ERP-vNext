@@ -24,9 +24,14 @@ public static class RepoPaths
 
     public static string ServiceRoot => Path.Combine(Root, "services", "Diten.InventoryService");
 
+    // docs/records keeps evidence copies of contracts (e.g. a release pack's publication tree); they are records, never the
+    // frozen contract, so they are not candidates.
     public static string Contract(string fileName)
     {
-        var matches = Directory.EnumerateFiles(Path.Combine(Root, "docs"), fileName, SearchOption.AllDirectories).ToList();
+        var records = Path.Combine(Root, "docs", "records") + Path.DirectorySeparatorChar;
+        var matches = Directory.EnumerateFiles(Path.Combine(Root, "docs"), fileName, SearchOption.AllDirectories)
+            .Where(path => !path.StartsWith(records, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         return matches.Count == 1
             ? matches[0]
             : throw new InvalidOperationException($"Expected exactly one '{fileName}' under the docs tree, found {matches.Count}.");

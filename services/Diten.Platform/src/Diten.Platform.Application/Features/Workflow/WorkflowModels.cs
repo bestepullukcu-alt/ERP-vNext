@@ -77,6 +77,11 @@ public static class WorkflowReasonCodes
     public const string WorkflowTaskInvalidState = "WORKFLOW_TASK_INVALID_STATE";
     public const string WorkflowTransitionConflict = "WORKFLOW_TRANSITION_CONFLICT";
     public const string WorkflowTransitionIdempotent = "WORKFLOW_TRANSITION_IDEMPOTENT";
+
+    /// <summary>MOD-0023 §17.9/7 (DL-2) — the same (task, action, key) from the same actor with a different body (reason,
+    /// comment, evidence, signature, or a RequestInfo target). 409, never retryable: unlike
+    /// <see cref="WorkflowTransitionConflict"/> the key is already bound to something else.</summary>
+    public const string WorkflowTransitionIdempotencyConflict = "WORKFLOW_TRANSITION_IDEMPOTENCY_CONFLICT";
     public const string WorkflowDelegatePrincipalRequired = "WORKFLOW_DELEGATE_PRINCIPAL_REQUIRED";
     public const string WorkflowDelegateSameActorInvalid = "WORKFLOW_DELEGATE_SAME_ACTOR_INVALID";
     // D1-FIX1 — a delegation names a USER: a user id (optionally "user:"-prefixed). Anything else — free text, a
@@ -313,7 +318,10 @@ public sealed record StartWorkflowInstanceResponse(
     string CurrentStep,
     DateTimeOffset? StartedAt,
     DateTimeOffset? DueAt,
-    string? CorrelationId);
+    string? CorrelationId,
+    // MOD-0023 §17.7/5 (DL-2) — trailing, optional: true when the idempotency key was already bound before this call
+    // (or this call found its start already written); only the first write of a key answers false.
+    bool IdempotentReplay = false);
 
 public sealed record TrustedWorkflowStartRequest(
     Guid? TemplateId,

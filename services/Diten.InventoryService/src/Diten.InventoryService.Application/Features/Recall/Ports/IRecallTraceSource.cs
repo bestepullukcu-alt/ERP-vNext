@@ -86,4 +86,31 @@ public interface IRecallTraceSource
 public interface IShipmentReader
 {
     Task<IReadOnlyDictionary<string, TraceShipmentInfo>> ReadAsync(IReadOnlyCollection<string> shipmentIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// MOD-0178 DL-5 (additive, XMC-001 seam — pack §5 / §7): SHIPMENT-BUNDLE <c>queryShipments?sourceDocumentId=</c>. Default body (an implementer
+    /// that writes only <see cref="ReadAsync"/>, e.g. a test double) answers <see cref="ShipmentReadOutcome.Unavailable"/> — never "no shipment".
+    /// </summary>
+    Task<ShipmentQueryResult> QueryBySourceDocumentAsync(string sourceDocumentId, CancellationToken cancellationToken = default)
+        => Task.FromResult(new ShipmentQueryResult(ShipmentReadOutcome.Unavailable, []));
+
+    /// <summary>
+    /// MOD-0178 DL-5 (additive, XMC-001 seam): SHIPMENT-BUNDLE <c>getShipment</c> with source, status, <c>stockIssued</c> and lines. Default body
+    /// answers <see cref="ShipmentReadOutcome.Unavailable"/>.
+    /// </summary>
+    Task<ShipmentDetailResult> ReadDetailAsync(string shipmentId, CancellationToken cancellationToken = default)
+        => Task.FromResult(new ShipmentDetailResult(ShipmentReadOutcome.Unavailable, shipmentId, null, null, null, null, null, []));
 }
+
+/// <summary>MOD-0178 DL-5: one <c>ShipmentSummary</c> of a query (id + number).</summary>
+public sealed record ShipmentQueryItem(string ShipmentId, string? ShipmentNumber);
+
+/// <summary>MOD-0178 DL-5: the answer of <see cref="IShipmentReader.QueryBySourceDocumentAsync"/> (items only when <see cref="Read"/> is Ok).</summary>
+public sealed record ShipmentQueryResult(ShipmentReadOutcome Read, IReadOnlyList<ShipmentQueryItem> Shipments);
+
+/// <summary>MOD-0178 DL-5: one SHIPMENT 3.4.0 line (<c>lotId</c> / <c>fromLocationId</c> may be absent).</summary>
+public sealed record ShipmentDetailLine(string? SkuId, string? LotId, string? FromLocationId, string? Quantity);
+
+/// <summary>MOD-0178 DL-5: the answer of <see cref="IShipmentReader.ReadDetailAsync"/> (members only when <see cref="Read"/> is Ok).</summary>
+public sealed record ShipmentDetailResult(ShipmentReadOutcome Read, string ShipmentId, string? ShipmentNumber, string? SourceModule, string? SourceType, string? Status,
+    bool? StockIssued, IReadOnlyList<ShipmentDetailLine> Lines);

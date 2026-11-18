@@ -82,3 +82,30 @@ public sealed record AccountHierarchyNodeDto(
 /// <summary>External-reference quick-entry carried on create (§10.1b). Persisted into AccountExternalReference
 /// with the supplied or default SourceSystem; never kept as an Account master string field.</summary>
 public sealed record ExternalReferenceInput(string ExternalId, string? SourceSystem, string? SourceEntity, string? DisplayName);
+
+/// <summary>MOD-0149 §30 U-1 — CRM-ACCOUNT-LOOKUP 1.0 §2.2. The validation fields ONLY: no address, responsible person,
+/// external reference, attribute or logo. Built by <see cref="AccountLookupContract.ToValidation"/>.</summary>
+public sealed record AccountLookupValidationDto(
+    Guid AccountId,
+    string Code,
+    string Name,
+    string Status,
+    bool IsBillable,
+    string ContractVersion);
+
+/// <summary>MOD-0149 §30 U-3 — one picker row (CRM-ACCOUNT-LOOKUP 1.0 §2a.2): the §2.2 fields without
+/// <c>contractVersion</c>, which the page carries. Built by <see cref="AccountLookupContract.ToItem"/>.</summary>
+public sealed record AccountLookupItemDto(
+    Guid AccountId,
+    string Code,
+    string Name,
+    string Status,
+    bool IsBillable);
+
+/// <summary>MOD-0149 §30 U-3 — the picker page (CRM-ACCOUNT-LOOKUP 1.0 §2a.2). <c>Total</c> is the filtered count.</summary>
+public sealed record AccountLookupPageDto(
+    IReadOnlyList<AccountLookupItemDto> Items,
+    int Page,
+    int PageSize,
+    long Total,
+    string ContractVersion);

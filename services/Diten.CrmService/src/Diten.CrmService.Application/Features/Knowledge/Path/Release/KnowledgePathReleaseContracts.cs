@@ -1,5 +1,7 @@
-using Diten.CrmService.Application.Common.Models;
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
+using Diten.CrmService.Application.Common.Models;
 using MediatR;
 
 namespace Diten.CrmService.Application.Features.Knowledge.Path.Release;
@@ -7,18 +9,30 @@ namespace Diten.CrmService.Application.Features.Knowledge.Path.Release;
 // WP-KP-3 — render / release / withdrawal / usage of a knowledge path revision. Tenant and actor are server-resolved.
 
 /// <summary>Renders the APPROVED revision's archive PDF and stores it (idempotent: an existing pdf is returned).</summary>
-public sealed record RenderKnowledgePathRevisionCommand(Guid PathId, Guid RevisionId) : IRequest<Response<KnowledgePathArtifactDto>>;
+public sealed record RenderKnowledgePathRevisionCommand(Guid PathId, Guid RevisionId) : IRequest<Response<KnowledgePathArtifactDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Execute("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 /// <summary>Streams a rendered artifact; the content id is resolved from the revision, never taken from the client.</summary>
 public sealed record GetKnowledgePathRevisionArtifactQuery(Guid PathId, Guid RevisionId, string? Kind)
     : IRequest<Response<ContentArtifactReadResult>>;
 
 /// <summary>Releases the approved + rendered revision: the path is published (fail-closed gate, person SoD).</summary>
-public sealed record ReleaseKnowledgePathRevisionCommand(Guid PathId, Guid RevisionId) : IRequest<Response<KnowledgePathReleaseDto>>;
+public sealed record ReleaseKnowledgePathRevisionCommand(Guid PathId, Guid RevisionId) : IRequest<Response<KnowledgePathReleaseDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 /// <summary>Withdraws a released revision (reason required); refused while a published journey stage uses the path.</summary>
 public sealed record WithdrawKnowledgePathReleaseCommand(Guid PathId, Guid RevisionId, string? Reason)
-    : IRequest<Response<KnowledgePathReleaseDto>>;
+    : IRequest<Response<KnowledgePathReleaseDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => CrmCentralAudit.Lifecycle("KnowledgePathRevision");
+    public Guid? CentralAuditEntityId(object? response) => RevisionId;
+}
 
 public sealed record GetKnowledgePathUsageQuery(Guid PathId) : IRequest<Response<KnowledgePathUsageDto>>;
 

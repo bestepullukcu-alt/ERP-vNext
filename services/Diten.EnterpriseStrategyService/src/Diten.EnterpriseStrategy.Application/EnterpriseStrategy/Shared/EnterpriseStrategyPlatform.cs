@@ -217,16 +217,11 @@ public sealed class DefaultEnterpriseStrategyAuthorizationService : IEnterpriseS
 
     public Task<bool> HasPermissionAsync(string permission, ClaimsPrincipal user, CancellationToken cancellationToken = default)
     {
-        // Local dev bootstrap: enables end-to-end ES&BP testing when upstream auth/permission claims
-        // are not yet wired in this environment.
-        if (IsDevelopmentPermissionBootstrapEnabled() &&
-            KnownPermissions.Contains(permission))
-        {
-            return Task.FromResult(true);
-        }
-
         if (user?.Identity?.IsAuthenticated != true)
             return Task.FromResult(false);
+
+        if (IsDevelopmentPermissionBootstrapEnabled() && KnownPermissions.Contains(permission))
+            return Task.FromResult(true);
 
         var hasPermissionClaim = user.Claims.Any(x =>
             string.Equals(x.Type, "permission", StringComparison.OrdinalIgnoreCase) &&
@@ -238,20 +233,16 @@ public sealed class DefaultEnterpriseStrategyAuthorizationService : IEnterpriseS
     private static bool IsDevelopmentPermissionBootstrapEnabled()
     {
         var enforcePermissions = Environment.GetEnvironmentVariable("DITEN_ESBP_ENFORCE_PERMISSIONS");
-        if (!string.IsNullOrWhiteSpace(enforcePermissions))
+        if (!string.IsNullOrWhiteSpace(enforcePermissions) &&
+            !string.Equals(enforcePermissions, "0", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(enforcePermissions, "false", StringComparison.OrdinalIgnoreCase))
         {
-            return !(string.Equals(enforcePermissions, "1", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "true", StringComparison.OrdinalIgnoreCase) ||
-                     string.Equals(enforcePermissions, "yes", StringComparison.OrdinalIgnoreCase));
+            return false;
         }
 
         var configured = Environment.GetEnvironmentVariable("DITEN_ESBP_DEV_PERMISSION_BOOTSTRAP");
-        if (string.IsNullOrWhiteSpace(configured))
-            return true;
-
         return string.Equals(configured, "1", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "true", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(configured, "yes", StringComparison.OrdinalIgnoreCase);
+               string.Equals(configured, "true", StringComparison.OrdinalIgnoreCase);
     }
 }
 

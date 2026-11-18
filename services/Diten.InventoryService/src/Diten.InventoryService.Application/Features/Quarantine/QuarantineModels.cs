@@ -24,7 +24,24 @@ public sealed record DecisionRefDto(string DecisionId, string DecisionNumber, st
 public sealed record AttachmentDto(string Name, string DmsRef);
 
 public sealed record HistoryEntryDto(string AtUtc, UserRefDto By, string Action, string? Reason, string? DecisionId, string? SignatureId, string? ApproverSignatureId,
-    NoteChangeDto? NoteChange = null);
+    NoteChangeDto? NoteChange = null, string? ReversalTransactionId = null);
+
+/// <summary>QUARANTINE 1.4.0 <c>RecordVoid</c> (MOD-0175-FU01): the reversal that closed the record.</summary>
+public sealed record RecordVoidDto(string AtUtc, string Reason, string ReversalTransactionId, string ReversalTransactionNumber, UserRefDto ReversedBy, string? DecisionId);
+
+/// <summary>QUARANTINE 1.4.0 <c>SourceReversalMark</c> (MOD-0175-FU01): "Kaynak geri alındı · uyuşmazlık".</summary>
+public sealed record SourceReversalMarkDto(string AtUtc, string ReversalTransactionId, string ReversalTransactionNumber, UserRefDto ReversedBy, string Cause);
+
+/// <summary>
+/// MOD-0175-FU01 (pack §8.2): the named result of an internal <c>ApplySourceReversalTo{Hold,Blocked}Command</c> — no HTTP route, no
+/// wire schema. <paramref name="Rule"/> is the §8.3 row that matched (V2 / V3 when nothing was found).
+/// </summary>
+public sealed record SourceReversalResultDto(
+    Diten.InventoryService.Domain.Quarantine.Rules.SourceReversalVerdict Outcome,
+    Diten.InventoryService.Domain.Quarantine.Rules.SourceReversalNoChange? NoChange,
+    string Rule,
+    Guid? RecordId,
+    string? RecordNumber);
 
 /// <summary>QUARANTINE 1.2.0 <c>NoteChange</c> — on a <c>NoteUpdated</c> history row.</summary>
 public sealed record NoteChangeDto(int PreviousNoteLength, int NoteLength, int PreviousAttachmentCount, int AttachmentCount);
@@ -65,6 +82,12 @@ public class HoldRefDto
     public bool Late { get; init; }
     public ActiveDecisionDto? ActiveDecision { get; init; }
     public int Version { get; init; }
+
+    /// <summary>QUARANTINE 1.4.0: set when the hold is Voided.</summary>
+    public RecordVoidDto? Voided { get; init; }
+
+    /// <summary>QUARANTINE 1.4.0: the source-reversal mark, in any status.</summary>
+    public SourceReversalMarkDto? SourceReversalConflict { get; init; }
 }
 
 /// <summary>Contract §2.2 <c>HoldDetail</c> = HoldRef + quality facts, history, movements and decisions.</summary>
@@ -174,6 +197,12 @@ public class BlockedStockRefDto
     public IReadOnlyList<string> AllowedActions { get; init; } = [];
     public ActiveDecisionDto? ActiveDecision { get; init; }
     public int Version { get; init; }
+
+    /// <summary>QUARANTINE 1.4.0: set when the record is Voided.</summary>
+    public RecordVoidDto? Voided { get; init; }
+
+    /// <summary>QUARANTINE 1.4.0: the source-reversal mark, in any status.</summary>
+    public SourceReversalMarkDto? SourceReversalConflict { get; init; }
 }
 
 /// <summary>Contract §4.13 <c>getBlocked</c>: BlockedStockRef + history + movements + decisions.</summary>

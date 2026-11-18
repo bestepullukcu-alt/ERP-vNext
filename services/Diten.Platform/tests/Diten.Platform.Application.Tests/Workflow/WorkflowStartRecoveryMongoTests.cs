@@ -49,7 +49,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// </list>
 /// </summary>
 [Trait("Category", "Mongo")]
-public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
+public sealed partial class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
     IAsyncLifetime,
     IClassFixture<AuditOutboxTemporalReplicaSetFixture>
 {
@@ -220,11 +220,79 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
             Task.Run(() => Handler(tasks: new GatedTaskRepository(_tasks, gate)).Handle(Command(request), default)));
 
         Assert.True(gate.BothRead); // non-vacuity: both replays read "no task" before either wrote one
-        Assert.All(replies, reply => Assert.True(reply.IsSuccessful, reply.ReasonCode));
-        Assert.Single(replies.Select(r => r.Data!.ApprovalTaskId).Distinct());
+        // MOD-0023 §17.3 (D21/4): the contract is the FINAL answer. A replay whose claim keeps meeting the other one's still
+        // open transaction answers the interim retryable 503 (pinned below by
+        // A_replay_that_meets_the_other_replays_open_transaction_answers_503_and_its_replay_gets_the_one_task); whether it
+        // does depends only on how fast the winner commits, so the first answers are 200 or that 503, and the claim winner's
+        // is always 200. Every 503 replayed once answers 200 with the same task.
+        Assert.All(replies, reply => Assert.True(
+            reply.IsSuccessful || (reply.StatusCode, reply.ReasonCode) == (503, WorkflowReasonCodes.WorkflowTransitionConflict),
+            $"{reply.StatusCode} {reply.ReasonCode}"));
+        Assert.Contains(replies, reply => reply.IsSuccessful);
+        var finals = new List<Response<StartWorkflowInstanceResponse>>();
+        foreach (var reply in replies)
+        {
+            finals.Add(reply.IsSuccessful ? reply : await Handler().Handle(Command(request), default));
+        }
+
+        Assert.All(finals, reply => Assert.True(reply.IsSuccessful, reply.ReasonCode));
+        Assert.Single(finals.Select(r => r.Data!.ApprovalTaskId).Distinct());
         Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
         Assert.Single(await _snapshots.ListByInstanceIdAsync(instance.Id));
         Assert.Single(await _logs.ListByInstanceIdAsync(instance.Id));
+    }
+
+    [Fact]
+    public async Task A_replay_that_meets_the_other_replays_open_transaction_answers_503_and_its_replay_gets_the_one_task()
+    {
+        // The interleaving a slow runner produces by chance, held deterministically: the winner has claimed the instance and
+        // written its rows but not committed, so every claim the loser tries is a write conflict against an open transaction.
+        var request = Request("open-winner");
+        var instance = await InsertHalfStartAsync(request, withIds: false);
+        var hold = new HoldFirstCommit();
+        var winner = Task.Run(() => HandlerWith(new PlatformTransactionExecutor(_context, hold)).Handle(Command(request), default));
+        await hold.Holding.Task.WaitAsync(TimeSpan.FromSeconds(30));
+
+        Response<StartWorkflowInstanceResponse> loser;
+        try
+        {
+            loser = await Handler().Handle(Command(request), default);
+        }
+        finally
+        {
+            hold.Release(); // never leave the winner's transaction held past a failure
+        }
+
+        var won = await winner;
+        Assert.Equal((503, WorkflowReasonCodes.WorkflowTransitionConflict), (loser.StatusCode, loser.ReasonCode));
+        Assert.True(won.IsSuccessful, won.ReasonCode);
+        var replay = await Handler().Handle(Command(request), default);
+        Assert.True(replay.IsSuccessful, replay.ReasonCode);
+        Assert.Equal(won.Data!.ApprovalTaskId, replay.Data!.ApprovalTaskId);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
+        Assert.Single(await _snapshots.ListByInstanceIdAsync(instance.Id));
+        Assert.Single(await _logs.ListByInstanceIdAsync(instance.Id));
+    }
+
+    /// <summary>Holds the FIRST commit until released and tells when it is holding.</summary>
+    private sealed class HoldFirstCommit : IPlatformTransactionFaultProbe
+    {
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _first;
+        public TaskCompletionSource Holding { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Release() => _release.TrySetResult();
+
+        public async Task BeforeCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct)
+        {
+            if (Interlocked.Exchange(ref _first, 1) == 0)
+            {
+                Holding.TrySetResult();
+                await _release.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+            }
+        }
+
+        public Task AfterCommitAsync(IPlatformTransactionSession session, int commitAttempt, CancellationToken ct) => Task.CompletedTask;
     }
 
     // ── BL-549 rule 2 · the abandoned start is closed by the engine ──────────────────────────────────────────────
@@ -1839,9 +1907,25 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
             a.IsSuccessful || (a.StatusCode == 503 && a.ReasonCode == WorkflowReasonCodes.WorkflowTransitionConflict),
             $"{a.StatusCode} {a.ReasonCode}"));
         Assert.All(answers.Where(a => a.IsSuccessful), a => Assert.Equal(instance.Id, a.Data!.WorkflowInstanceId));
-        Assert.True(answers.Count(a => a.IsSuccessful) > callers / 2, string.Join(", ", answers.Select(a => a.StatusCode)));
+        // How MANY answer 503 depends only on how long the winner's transaction stays open (CI: three of six), so the count
+        // is not the contract (MOD-0023 §17.3 D21/4): the claim winner's answer is 200, and every 503 replayed once is 200
+        // with the same instance and task. That the re-read turns a lost race into 200 once the winner has committed is
+        // pinned deterministically by A_start_told_unavailable_after_a_winner_committed_answers_as_the_winner (first call) and
+        // A_replay_told_unavailable_after_a_winner_committed_answers_as_the_winner (replay of a half start).
+        Assert.Contains(answers, a => a.IsSuccessful);
+        var taskId = answers.First(a => a.IsSuccessful).Data!.ApprovalTaskId;
+        foreach (var _ in answers.Where(a => !a.IsSuccessful))
+        {
+            var final = await Handler().Handle(Command(request), default);
+            Assert.True(final.IsSuccessful, final.ReasonCode);
+            Assert.Equal((instance.Id, taskId), (final.Data!.WorkflowInstanceId, final.Data.ApprovalTaskId));
+        }
+
+        Assert.All(answers.Where(a => a.IsSuccessful), a => Assert.Equal(taskId, a.Data!.ApprovalTaskId));
+        Assert.Single(await _tasks.ListByInstanceIdAsync(instance.Id));
         // An answer "as the replay" writes nothing: the instance was claimed once, by the winner.
         Assert.Equal(claimedOnce, instance.Version);
+        Assert.Equal(claimedOnce, (await _instances.GetByIdAsync(instance.Id))!.Version);
     }
 
     private sealed class HoldBeforeBody(IPlatformTransactionExecutor inner, Hold hold) : IPlatformTransactionExecutor
@@ -1901,6 +1985,24 @@ public sealed class WorkflowStartRecoveryMongoTests(AuditOutboxTemporalReplicaSe
         Assert.True(answer.IsSuccessful, $"{answer.StatusCode} {answer.ReasonCode}");
         Assert.Equal(winner.Data!.ApprovalTaskId, answer.Data!.ApprovalTaskId);
         Assert.Single(await _tasks.ListByInstanceIdAsync(answer.Data.WorkflowInstanceId));
+    }
+
+    [Fact]
+    public async Task A_replay_told_unavailable_after_a_winner_committed_answers_as_the_winner()
+    {
+        // The replay path's own re-read (CompleteStartAsync → AfterUnavailableAsync): a half start, a winner replay commits
+        // the whole start, then the loser's transaction says "unavailable" — it answers as the winner, not 503.
+        var request = Request("replay-unavailable-after-winner");
+        var half = await InsertHalfStartAsync(request, withIds: true);
+        Response<StartWorkflowInstanceResponse>? winner = null;
+
+        var answer = await HandlerWith(new UnavailableAfter(async () => winner = await Handler().Handle(Command(request), default)))
+            .Handle(Command(request), default);
+
+        Assert.True(winner!.IsSuccessful, winner.ReasonCode); // non-vacuity: the winner completed the start
+        Assert.True(answer.IsSuccessful, $"{answer.StatusCode} {answer.ReasonCode}");
+        Assert.Equal(winner.Data!.ApprovalTaskId, answer.Data!.ApprovalTaskId);
+        Assert.Single(await _tasks.ListByInstanceIdAsync(half.Id));
     }
 
     [Fact]

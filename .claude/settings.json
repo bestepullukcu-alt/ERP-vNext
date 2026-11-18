@@ -10,13 +10,25 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Monitor|PowerShell|mcp__terminal__run_in_terminal|mcp__ccd_pr__set_auto_merge",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\" ] || exit 0; for p in python3 python; do \"$p\" -c 'import sys; sys.exit(sys.version_info < (3, 7))' </dev/null >/dev/null 2>&1 && exec \"$p\" \"$CLAUDE_PROJECT_DIR/scripts/hooks/command_brake.py\"; done; echo '{\"systemMessage\": \"EES command brake: no Python 3.7+ found, the brake is off\"}'; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .antigravity/scripts/list_screen_touch_hook.py",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.antigravity/scripts/list_screen_touch_hook.py\"",
             "timeout": 30
           }
         ]

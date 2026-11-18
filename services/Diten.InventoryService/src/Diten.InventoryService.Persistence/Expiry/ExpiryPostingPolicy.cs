@@ -225,7 +225,8 @@ public sealed class ExpiryPostingPolicy : IExpiryPostingPolicy
         CancellationToken ct)
     {
         // the shared candidate read (FefoCandidateReader) — the FEFO order read of F4 uses the same one (KF-F, one source)
-        var candidates = await _candidates.ReadAsync(session, warehouseId, itemId, skuId, level, ct);
+        // MOD-0173-FU03 DL-3 (Q-01 = A): the free base — lot stock reserved for other outbounds is not in the order
+        var candidates = await _candidates.ReadAsync(session, warehouseId, itemId, skuId, level, ct, freeBase: true);
         return FefoIssueRule.Evaluate(issued, FefoOrderRule.Order(candidates, asOf, minimum));
     }
 

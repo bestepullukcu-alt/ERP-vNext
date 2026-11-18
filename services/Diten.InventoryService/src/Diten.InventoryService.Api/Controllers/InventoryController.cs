@@ -12,7 +12,7 @@ namespace Diten.InventoryService.Api.Controllers;
 /// <summary>
 /// INVENTORY-BUNDLE v1 — Slice S1 + S2 operations (pack §1): <c>postMovement</c>, <c>createReservation</c>,
 /// <c>releaseReservation</c>, <c>getAvailability</c>,
-/// <c>getBalance</c>, <c>getTransactions</c> — exactly the six operations of the frozen contract. There is deliberately no
+/// <c>getBalance</c>, <c>getTransactions</c> — the six operations of the frozen contract, plus <c>getReservation</c> (1.6.0, MOD-0173-FU03). There is deliberately no
 /// PUT / PATCH / DELETE: stock changes only through POST /movements, and a transaction is never edited (AC17).
 /// No business rule lives here — every action is read → send → render.
 /// </summary>
@@ -56,6 +56,20 @@ public sealed class InventoryController : CustomBaseController
         return CreateActionResultInstance(await _mediator.Send(command, cancellationToken));
     }
 
+    /// <summary>INVENTORY 1.6.0 <c>getReservation</c> (MOD-0173-FU03 §8.8): the reservation with its current <c>ETag: W/"n"</c>.</summary>
+    [HttpGet("reservations/{id}")]
+    [HasPermission(InventoryPermissions.Read)]
+    public async Task<IActionResult> GetReservation(string id, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetReservationByIdQuery(id), cancellationToken);
+        if (response.IsSuccessful && response.Data is { } view)
+        {
+            Response.Headers.ETag = view.Etag;
+        }
+
+        return CreateActionResultInstance(response);
+    }
+
     [HttpPost("reservations/{id}/release")]
     [HasPermission(InventoryPermissions.ManageReservations)]
     public async Task<IActionResult> ReleaseReservation(string id, CancellationToken cancellationToken)
@@ -70,9 +84,10 @@ public sealed class InventoryController : CustomBaseController
         [FromQuery] string? skuLevel,
         [FromQuery] string? warehouseId,
         [FromQuery] string? locationId,
+        [FromQuery] string? lotId,
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
-            new GetAvailabilityQuery(itemId, skuId, skuLevel, warehouseId, locationId), cancellationToken));
+            new GetAvailabilityQuery(itemId, skuId, skuLevel, warehouseId, locationId, lotId), cancellationToken));
 
     [HttpGet("balance")]
     [HasPermission(InventoryPermissions.Read)]

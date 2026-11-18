@@ -1,0 +1,34 @@
+@using Diten.Web.Views.Warehouse.PickTasks
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PickTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is localized HERE.
+    //
+    // SERVER data through the proxy profile (pack §11.5): /Warehouse/PickTasks/api translates paging, search and filters for listPickTasks. The
+    // selection column feeds the bulk "Ata" bar, which only a supervisor gets (Index.cshtml). Status and the integration flag are two columns
+    // (§8.15 / §8.19, AC-46). The outbound column carries the "Paketle" link once the outbound is Picked (r21, inceleme 19 F-6).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-picktasks",
+        DataMode = "server",
+        Slug = "picktasks",
+        HasSelection = true,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColNumber"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColFlag"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColOutbound"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColProduct"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColFrom"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColQuantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColAssignee"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

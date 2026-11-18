@@ -419,33 +419,58 @@ public sealed class SubmitDecisionHandler : IRequestHandler<SubmitDecisionComman
         {
             var started = Stamp(QuarantineSupport.Event(decision.Id, DecisionEventKind.WorkflowStarted, after, _support.UserId), decision);
             started.WorkflowInstanceId = start.InstanceId;
-            await _repository.InTransactionAsync<bool>(async (session, c) =>
+            // MOD-0175-FU01 §8.6 W2: the hold is re-read on every attempt; a hold voided meanwhile (its source was reversed) is not turned
+            // DecisionPending — WorkflowStarted is still recorded (the instance exists; Voided is absorbing). A version that moved → re-read (≤ 3).
+            for (var attempt = 1; ; attempt++)
             {
-                await session.InsertDecisionEventAsync(started, c);
-                if (hold is not null)
+                try
                 {
-                    var fresh = await _repository.FindHoldAsync(hold.Id, c) ?? hold;
-                    var expected = fresh.Version;
-                    fresh.Status = HoldStatus.DecisionPending;
-                    fresh.UpdatedAt = after;
-                    fresh.Version = expected + 1;
-                    if (!await session.ReplaceHoldAsync(fresh, expected, c)) throw new QuarantineRetryException();
-                }
+                    var fresh = hold is not null ? await _repository.FindHoldAsync(hold.Id, ct) ?? hold : null;
+                    await _repository.InTransactionAsync<bool>(async (session, c) =>
+                    {
+                        await session.InsertDecisionEventAsync(started, c);
+                        if (fresh is not null && fresh.Status != HoldStatus.Voided)
+                        {
+                            var expected = fresh.Version;
+                            fresh.Status = HoldStatus.DecisionPending;
+                            fresh.UpdatedAt = after;
+                            fresh.Version = expected + 1;
+                            if (!await session.ReplaceHoldAsync(fresh, expected, c)) throw new QuarantineRetryException();
+                        }
 
-                return true;
-            }, ct);
+                        return true;
+                    }, ct);
+                    break;
+                }
+                catch (QuarantineRetryException) when (attempt < 3)
+                {
+                }
+            }
+
             return Response<DecisionDto>.Success(QuarantineMapping.Decision(decision, await _decisions.EventsAsync([decision.Id], ct)), 202);
         }
 
         var failed = Stamp(QuarantineSupport.Event(decision.Id, DecisionEventKind.StartFailed, after, _support.UserId, start.ErrorCode, start.Message), decision);
-        var freshHold = hold is not null ? await _repository.FindHoldAsync(hold.Id, ct) : null;
-        var freshBlocked = blocked is not null ? await _repository.FindBlockedAsync(blocked.Id, ct) : null;
-        await _repository.InTransactionAsync<bool>(async (session, c) =>
+        // MOD-0175-FU01 §8.6 W8: the record is re-read on every attempt (a voided record has no lock to release); ≤ 3, never leaked
+        for (var attempt = 1; ; attempt++)
         {
-            await session.InsertDecisionEventAsync(failed, c);
-            await QuarantineReopen.ReopenAsync(session, freshHold, freshBlocked, decision.Id, after, c);
-            return true;
-        }, ct);
+            try
+            {
+                var freshHold = hold is not null ? await _repository.FindHoldAsync(hold.Id, ct) : null;
+                var freshBlocked = blocked is not null ? await _repository.FindBlockedAsync(blocked.Id, ct) : null;
+                await _repository.InTransactionAsync<bool>(async (session, c) =>
+                {
+                    await session.InsertDecisionEventAsync(failed, c);
+                    await QuarantineReopen.ReopenAsync(session, freshHold, freshBlocked, decision.Id, after, c);
+                    return true;
+                }, ct);
+                break;
+            }
+            catch (QuarantineRetryException) when (attempt < 3)
+            {
+            }
+        }
+
         return QuarantineSupport.Fail<DecisionDto>(start.ErrorCode!, start.Message ?? "The approval could not be started.", start.Status);
     }
 
