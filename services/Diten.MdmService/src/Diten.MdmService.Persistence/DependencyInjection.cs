@@ -114,6 +114,10 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
 
+        // MOD-0289 DL-1 — bank master (tenant-scoped, soft delete only, one conditional write of fields + audit intent).
+        services.AddScoped<IBankRepository, BankRepository>();
+        services.AddScoped<IBankBranchRepository, BankBranchRepository>();
+
         // MOD-0290-FU04 S3 — GSKU / LSKU / Finished Good stock-behaviour writes (one conditional write each).
         services.AddScoped<IProductStockBehaviourRepository, ProductStockBehaviourRepository>();
 

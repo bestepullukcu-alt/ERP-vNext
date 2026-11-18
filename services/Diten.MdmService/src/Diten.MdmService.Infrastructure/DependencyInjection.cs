@@ -181,6 +181,18 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.Approvals.WorkflowApprovalReconciler>();
         // WP-VW-W4 (W4-BE-b2) — the reimbursement status set read (Gateway, caller's token) and the permission question.
         services.AddHttpClient<IMdmReferenceValueReader, GatewayReferenceValueReader>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        // MOD-0289 DL-1 (KARAR D59/1) — the ONE record code port and its ONE adapter (RECORD-CODE-ALLOCATE 1.0.0). Its
+        // configuration is the environment's; with none, the adapter answers "unavailable" and no record is created.
+        services.Configure<RecordCodes.RecordCodeAllocatorOptions>(
+            configuration.GetSection(RecordCodes.RecordCodeAllocatorOptions.SectionName));
+        services.AddHttpClient<Application.Contracts.RecordCodes.IRecordCodeAllocator, RecordCodes.PlatformRecordCodeAllocatorClient>(
+                client => client.Timeout = Timeout.InfiniteTimeSpan)
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                RecordCodes.PlatformRecordCodeAllocatorClient.CredentialIdHeader,
+                RecordCodes.PlatformRecordCodeAllocatorClient.CredentialSecretHeader
+            ]);
         services.AddScoped<IMdmPermissionContext, MdmPermissionContext>();
         AddWorkflowOutcomeEventing(services, configuration);
 

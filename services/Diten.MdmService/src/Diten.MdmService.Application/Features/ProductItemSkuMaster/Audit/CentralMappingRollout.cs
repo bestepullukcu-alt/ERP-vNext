@@ -39,4 +39,16 @@ public static class CentralMappingRollout
             .Where(operation => !NeverProduced.Contains(operation)
                                 && !MappedByDeployedPlatform.Contains(operation.ToString()))
             .ToHashSet();
+
+    /// <summary>
+    /// MOD-0289 (KARAR D142, D143) — the master data operations (bank / branch) that may wait for Platform's map: every
+    /// <see cref="MasterDataAuditOperation"/> the deployed Platform does not map yet, by the same name rule as the product set
+    /// above (<see cref="MappedByDeployedPlatform"/> is shared and unchanged). So MDM deployed before Platform's banking
+    /// entries (P-12) waits, bounded (<see cref="AuditIntentDeliveryProcessor.CentralMappingWaitAttempts"/>), instead of
+    /// dead-lettering a bank intent on AUDIT_SOURCE_INTENT_MAPPING_UNSUPPORTED.
+    /// </summary>
+    public static IReadOnlySet<MasterDataAuditOperation> AwaitingCentralMappingMasterData { get; } =
+        Enum.GetValues<MasterDataAuditOperation>()
+            .Where(operation => !MappedByDeployedPlatform.Contains(operation.ToString()))
+            .ToHashSet();
 }

@@ -20,4 +20,6 @@ public sealed record AuditIntentClaimedPayload(
     DateTimeOffset TimestampUtc,
     string EvidenceHash,
     string? SnapshotReference,
-    string IdempotencyKey);
+    string IdempotencyKey,
+    // MOD-0289 (D142): last parameter, default null — every existing positional call is unchanged.
+    MasterDataAuditOperation? MasterDataOperation = null);
