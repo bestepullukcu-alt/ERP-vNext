@@ -374,8 +374,8 @@ public sealed class OrganizationMatrixReportingTests
          * refused by the cycle check instead. Over several rounds at least one genuinely interleaves.
          *
          * Second, the guard has TWO code paths and one round only reaches one of them. The very first parent
-         * mutation for a tenant finds no token document and races on the INSERT (`_id` is the compare-and-set);
-         * every round after that races on the conditional `$inc`. A single round would leave the second path
+         * mutation for a tenant finds no token document and creates it (holding zero) before it races; every
+         * round after that races on an existing document. A single round would leave the second path
          * completely unexercised — and it is the path every mutation in production takes.
          */
         var refusals = 0;

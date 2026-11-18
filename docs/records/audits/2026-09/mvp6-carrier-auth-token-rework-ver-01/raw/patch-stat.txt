@@ -1,3 +1,0 @@
- .../Security/PlatformServiceTokenValidator.cs      |   62 ++++++-
- .../PlatformServiceTokenValidatorTests.cs          |  181 ++++++++++++++------
- 2 files changed, 178 insertions(+), 65 deletions(-)

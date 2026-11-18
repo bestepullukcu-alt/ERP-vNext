@@ -20,6 +20,10 @@ MOD-0286-ui-design-system-page-pattern-governance.md), "DL-3 UI uyum CI bağlant
 "DL-3 satır kontrol desenleri" kod bloğu. Satır kontrollerinin desenleri çalışma anında o kod bloğundan okunur; bu
 dosyadaki OWN_PATTERNS yalnız --self-test'in karşılaştırma kopyasıdır.
 
+MOD-0286-FU01 (paket MOD-0286-FU01-page-js-reference-mapping.md, Owned Objects 1-9): sınıf dosyaları (eski FU-18) görünümlerdeki
+`<script src>` başvurusuyla sayfalara bağlanır; desenler FU01_REF_PATTERNS sözlüğündedir (tek kopya), `FU-19` taban satırları
+sınıf dosyası satırlarıdır. Başvuru taraması yalnız fark bir sınıf dosyası adlandırdığında bütün görünümleri okur.
+
 Okuma: sayfa dosyaları HEAD'den (git ls-tree / cat-file), doğrulayıcı (CI-3) ve resx denetçisi (CI-14) diskten okur;
 bu yüzden CI ve taslak kipleri frontend/Diten.Web altında çalışma ağacı HEAD'le aynı değilse durur (çıkış 2).
 Yalnız Python standart kütüphanesi ve git. Depoya hiçbir dosya yazmaz; depo modülü import etmez.
@@ -81,12 +85,29 @@ CORE_FILE_CHECKS = {"Index.cshtml exists", "_Filter.cshtml exists", "_DataTable.
                     "index.js exists", "index.l10n.js exists", "dt-defaults.js exists", "backbone-custom.css exists"}
 NOT_MEASURED_STOP = "doğrulayıcı eksik dosyada durdu"
 FOLDER_LEVEL_VIEWS = ("_ViewStart.cshtml", "_ViewImports.cshtml")
-FU18_LINE = "eşlenmemiş sayfa JS'i, sayfa kontrolü yok (FU-18)"
+# MOD-0286-FU01 (pack rev 04, Owned Objects part 4): the lines of a class file no page references
+UNMAPPED_PREFIX = "eşlenmemiş sayfa JS'i, "
+NO_VIEW_LINE = UNMAPPED_PREFIX + "hiçbir görünüm yüklemiyor, sayfa kontrolü yok (MOD-0286-FU01)"
+SHARED_VIEW_LINE = UNMAPPED_PREFIX + "yalnız Shared görünümü yüklüyor, sayfa kontrolü yok (MOD-0286-FU01)"
+ARCHIVE_VIEW_LINE = UNMAPPED_PREFIX + "yalnız Archive ya da kök görünüm yüklüyor, sayfa kontrolü yok (MOD-0286-FU01)"
+FU01_PACK = "execution/domains/platform-shared-services/module-packs/MOD-0286-FU01-page-js-reference-mapping.md"
+JS_PREFIX = "wwwroot/assets/js/"
+FU19_CHECKS = ("CI-4", "CI-5", "CI-6", "CI-7", "CI-8", "CI-9", "CI-10")
+
+# The reference rule (pack MOD-0286-FU01, Owned Objects part 2): the only copy of the three patterns; every run compiles
+# them from here with STRIP re.S, SCRIPT and VARIABLE re.I | re.S. A plain assignment of plain string literals, on purpose.
+FU01_REF_PATTERNS = {
+    "STRIP": r"""@\*.*?\*@|<!--.*?-->""",
+    "SCRIPT": r"""<script\b[^>]*?\ssrc\s*=\s*["']\s*(?:@Url\.Content\(\s*["'])?(?:~?/)?(assets/js/[^"'?#@{(\s]+?\.js)(?=["'?#])""",
+    "VARIABLE": r"""<script\b[^>]*?\ssrc\s*=\s*(?!["']?\s*(?:https?:)?//)(?:[^>]*?assets/js/|(?!["']\s*@Url\.Content\(\s*["'][^"']*["']\s*\)\s*["'])["']?[^"'>\s]*?(?<!@)@(?!@))""",
+}
 
 # Owner decision pss-mod0286-taban-01 (taban-karar, 2026-10-27): reason, fu and owner of the first baseline
 REASON = "sahip kararı pss-mod0286-taban-01 (ilk taban, 2026-10-27)"
 # Owner decision tek-seviye-borc-01 (2026-10-31): reason of the FU-16 rows; their owners are in the decision record, not here
 SINGLE_REASON = "sahip kararı tek-seviye-borc-01 (tek seviye sayfalar, 2026-10-31)"
+# Owner decision fu01-satir-sahipleri (2026-11-01): reason of the FU-19 rows; their owners are in the decision record, not here
+FU19_REASON = "sahip kararı fu01-satir-sahipleri (2026-11-01)"
 UNKNOWN_OWNER = "belirsiz — sahip belirleyecek"
 AREA_OWNER = {}
 for _owner, _areas in (
@@ -346,6 +367,24 @@ def instance_problem(page: str, check: str, instance: str, count: str) -> str | 
     return None if ok else f"{check} instance biçimi bozuk"
 
 
+def fu19_form_problem(page: str, check: str, instance: str, count: str) -> str | None:
+    """The form of one FU-19 row (pack MOD-0286-FU01, Owned Objects part 8), no git: T-1, T-7, T-2, T-3 in this order."""
+    if check not in FU19_CHECKS:
+        return "FU-19 satırında kontrol CI-4, 5, 6, 7, 8, 9 ya da 10 olmalı"
+    area_module = re.fullmatch(r"[^/\s]+/[^/\s]+", page) is not None
+    single = re.fullmatch(r"[^/\s]+", page) is not None
+    if not (area_module or single) or page.split("/")[0] in NOT_PAGE_AREAS or re.fullmatch(r"[1-9][0-9]*", count) is None:
+        return "FU-19 satırında page ya da count bozuk"
+    top, sep, tail = instance[len(JS_PREFIX):].partition("/")
+    if not (re.fullmatch(PATH_PART, instance) is not None and _norm_ok(instance) and instance.startswith(JS_PREFIX)
+            and instance.endswith(".js") and sep and tail and top not in NOT_PAGE_AREAS):
+        return "FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil"
+    own = JS_PREFIX + page + "/"
+    if instance.startswith(own) and (area_module or "/" not in instance[len(own):]):
+        return "FU-19 instance'ı sayfanın kendi klasöründe"
+    return None
+
+
 def parse_baseline(text: str) -> list[dict]:
     """tests/ui-compliance-baseline.tsv read with the pack's Validation Rules; any violation is a tool error (exit 2)."""
     if "\r" in text:
@@ -365,7 +404,10 @@ def parse_baseline(text: str) -> list[dict]:
         row = dict(zip(HEADER, cells))
         if not (re.fullmatch(r"CI-(?:[1-9]|1[0-5])", row["check"]) or re.fullmatch(r"bilgi: \S.*", row["check"])):
             raise ToolError(f"taban satır {n}: check '{row['check'][:30]}' CI-1…CI-15 ya da 'bilgi: …' değil")
-        bad = instance_problem(row["page"], row["check"], row["instance"], row["count"])
+        if row["fu"] == "FU-19":                      # a class file's row: pack MOD-0286-FU01, part 8
+            bad = fu19_form_problem(row["page"], row["check"], row["instance"], row["count"])
+        else:                                         # every other row takes today's path unchanged
+            bad = instance_problem(row["page"], row["check"], row["instance"], row["count"])
         if bad:
             raise ToolError(f"taban satır {n}: {bad}")
         if not re.fullmatch(r"FU-[1-9][0-9]*", row["fu"]):
@@ -468,6 +510,16 @@ def rc24_sets(text: str) -> tuple[set[str], list[tuple[str, str]]]:
 
 
 # ------------------------------------------------------------------------------------------------------- the run
+class RefScan:
+    """The result of reading every view of one tree: class file -> pages, and the class files Shared / Archive+root load."""
+
+    def __init__(self, views: int):
+        self.views = views
+        self.pages: dict[str, set[str]] = {}
+        self.shared: set[str] = set()
+        self.archive: set[str] = set()
+
+
 class Run:
     def __init__(self, root, mode: str, base: str | None = None):
         self.root, self.mode = Path(root), mode
@@ -488,10 +540,19 @@ class Run:
                 raise ToolError(f"base '{base[:40]}' bir commit'e çözülmedi")
             self.base_ref = base
             self.base = Tree(self.root, commit)
+        self.base_commit = commit if base is not None else None
         self.rows: dict[tuple[str, str], dict[str, dict]] = collections.defaultdict(dict)
+        self.baseline_rows: list[dict] = []
         if mode == "ci":
-            for row in read_baseline(self.root):
+            self.baseline_rows = read_baseline(self.root)
+            for row in self.baseline_rows:
                 self.rows[(row["page"], row["check"])][row["instance"]] = row
+        # the reference rule: compiled from the one dict, with the flags of the pack (Owned Objects part 2)
+        self.fu01 = {"STRIP": re.compile(FU01_REF_PATTERNS["STRIP"], re.S),
+                     "SCRIPT": re.compile(FU01_REF_PATTERNS["SCRIPT"], re.I | re.S),
+                     "VARIABLE": re.compile(FU01_REF_PATTERNS["VARIABLE"], re.I | re.S)}
+        self.view_cache: dict[tuple[int, str], tuple[list[str], bool]] = {}
+        self.class_cache: dict[str, bool] = {}
 
     # ----- reading at HEAD and at the base
     def either_has(self, path: str) -> bool:
@@ -503,6 +564,107 @@ class Run:
     def either_has_direct(self, prefix: str) -> bool:
         return self.head.has_direct(prefix) or (self.base is not None and self.base.has_direct(prefix))
 
+    # ----- the reference rule (pack MOD-0286-FU01): which class files a view loads
+    def is_class(self, path: str) -> bool:
+        """A class file is a path map_path returns as `fu18` (the path rule does not change)."""
+        got = self.class_cache.get(path)
+        if got is None:
+            got = self.class_cache[path] = self.map_path(path)[0] == "fu18"
+        return got
+
+    def view_info(self, tree: Tree, path: str) -> tuple[list[str], bool]:
+        """([the JS paths a view's `<script src>` names, in order, once each], does a local tag the rule cannot read exist)."""
+        key = (id(tree), path)
+        got = self.view_cache.get(key)
+        if got is None:
+            text = self.fu01["STRIP"].sub("", text_of(tree.read(path)))
+            js: list[str] = []
+            for m in self.fu01["SCRIPT"].finditer(text):
+                j = WEB + "wwwroot/" + m.group(1)
+                if j not in js:
+                    js.append(j)
+            got = self.view_cache[key] = (js, self.fu01["VARIABLE"].search(self.fu01["SCRIPT"].sub("", text)) is not None)
+        return got
+
+    @staticmethod
+    def page_view_paths(tree: Tree, page: str) -> list[str]:
+        files = tree.under if "/" in page else tree.direct
+        return [p for p in files(f"{WEB}Views/{page}/") if p.endswith(".cshtml")]
+
+    def page_refs(self, tree: Tree, page: str) -> tuple[list[str], list[str]]:
+        """(the class files the page's own views reference, the views of the page with a path the rule cannot read)."""
+        views = self.page_view_paths(tree, page)
+        tree.prefetch(views)
+        refs: list[str] = []
+        unreadable: list[str] = []
+        for v in views:
+            js, variable = self.view_info(tree, v)
+            refs.extend(j for j in js if j not in refs and self.is_class(j))
+            if variable:
+                unreadable.append(v)
+        return refs, unreadable
+
+    def scan(self, tree: Tree) -> "RefScan":
+        """Every view of a tree: which pages, and which Shared / Archive / root views, reference which class file."""
+        views = [p for p in sorted(tree.sha) if p.startswith(WEB + "Views/") and p.endswith(".cshtml")]
+        tree.prefetch(views)
+        found = RefScan(len(views))
+        for v in views:
+            parts = v[len(WEB):].split("/")
+            js = [j for j in self.view_info(tree, v)[0] if self.is_class(j)]
+            if len(parts) >= 4 and parts[1] not in NOT_PAGE_AREAS:
+                owner = found.pages
+                key = f"{parts[1]}/{parts[2]}"
+            elif len(parts) == 3 and parts[1] not in NOT_PAGE_AREAS:
+                owner, key = found.pages, parts[1]
+            elif len(parts) >= 3 and parts[1] == "Shared":
+                owner, key = found.shared, None
+            else:
+                owner, key = found.archive, None
+            for j in js:
+                if key is None:
+                    owner.add(j)
+                else:
+                    owner.setdefault(j, set()).add(key)
+        return found
+
+    def reference_changes(self, page: str) -> list[str]:
+        """Part 7: how the page's references differ between the base and HEAD (only for a page with a changed view)."""
+        now, before = self.page_refs(self.head, page)[0], self.page_refs(self.base, page)[0]
+        rel = lambda p: p[len(WEB):]
+        return ([f"başvuru eklendi {page} {rel(j)}" for j in sorted(set(now) - set(before)) if self.head.has(j)]
+                + [f"başvuru kalktı {page} {rel(j)}" for j in sorted(set(before) - set(now))])
+
+    def check_fu19_rows(self, rows: list[dict]) -> None:
+        """T-4, T-5, T-6 for the given FU-19 rows (pack part 8), reading only those pages' views at HEAD."""
+        refs: dict[str, list[str]] = {}
+        for row in rows:
+            path = WEB + row["instance"]
+            bad = None
+            if not self.is_class(path):
+                bad = "FU-19 instance'ı sınıf dosyası değil"
+            elif not self.head.has(path):
+                bad = "FU-19 instance'ı HEAD'de yok"
+            else:
+                if row["page"] not in refs:
+                    refs[row["page"]] = self.page_refs(self.head, row["page"])[0] if self.head.has_page(row["page"]) else []
+                if path not in refs[row["page"]]:
+                    bad = "FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor"
+            if bad:
+                raise ToolError(f"taban satır {row['line']}: {bad}")
+
+    def check_fu19_changed(self) -> None:
+        """CI: only the FU-19 rows added or changed against the base's baseline are tested for class and reference."""
+        fu19 = [r for r in self.baseline_rows if r["fu"] == "FU-19"]
+        if not fu19:
+            return
+        old = {}
+        for line in text_of(git(self.root, "show", f"{self.base_commit}:{BASELINE}")).split("\n")[1:]:
+            cells = line.split("\t")
+            if len(cells) == len(HEADER):
+                old[tuple(cells[:3])] = tuple(cells[3:])
+        self.check_fu19_rows([r for r in fu19 if old.get((r["page"], r["check"], r["instance"])) != tuple(r[h] for h in HEADER[3:])])
+
     # ----- the checks of one page; results are ("abs", check, reds, passes, measured), ("line", check, counts) or
     # ("note", line) — a line printed as it is, never a red, never a baseline row
     def evaluate_page(self, page: str, added_partials=()) -> list[tuple]:
@@ -511,10 +673,14 @@ class Run:
         vdir, jdir = f"{WEB}Views/{page}/", f"{WEB}wwwroot/assets/js/{page}/"
         files = self.head.under if two_level else self.head.direct    # a single-level page: only files directly in its folder
         views = [p for p in files(vdir) if p.endswith(".cshtml")]
-        js = [p for p in files(jdir) if p.endswith(".js")]
+        own_js = [p for p in files(jdir) if p.endswith(".js")]
+        # pack MOD-0286-FU01 part 3: the JS of the line checks = the own folder + every class file the views reference at HEAD
+        refs, unreadable = self.page_refs(self.head, page)
+        js = own_js + [j for j in refs if j not in own_js and self.head.has(j)]
         self.head.prefetch(views + js)
         rel = lambda p: p[len(WEB):]
-        results = []
+        results = [("note", f"başvurulan JS dosyası yok {page} {rel(j)}") for j in refs if not self.head.has(j)]
+        results += [("note", f"ölçülmedi {page} değişken script yolu {rel(v)}") for v in unreadable]
         reds, passes = set(), []
         for p in views:
             if p.rsplit("/", 1)[-1].startswith("_"):
@@ -812,11 +978,15 @@ class Run:
         shared: list[str] = []
         unmapped: list[str] = []
         added: dict[str, set[str]] = collections.defaultdict(set)
+        changed_views: set[str] = set()
+        self.check_fu19_changed()
         for letter, paths in diff:
             for k, path in enumerate(paths):
                 kind, value = self.map_path(path)
                 if kind in ("page", "page_shared"):
                     pages.add(value)
+                    if path.endswith(".cshtml"):
+                        changed_views.add(value)
                     is_new = letter == "A" or (letter in "RC" and k == 1)
                     if is_new and path.rsplit("/", 1)[-1] in ("_IndexL10n.cshtml", "_L10n.cshtml"):
                         added[value].add(path)
@@ -836,10 +1006,20 @@ class Run:
                 elif kind == "shared":
                     if path not in shared:
                         shared.append(path)
+        scan_line = "başvuru taraması yok"
+        head_scan = None
+        if unmapped:     # a class file changed: every view is read, at HEAD and at the base, to find the pages that load it
+            started = time.monotonic()
+            head_scan, base_scan = self.scan(self.head), self.scan(self.base)
+            for path in unmapped:
+                pages |= head_scan.pages.get(path, set()) | base_scan.pages.get(path, set())
+            scan_line = (f"başvuru taraması: HEAD {head_scan.views} görünüm, taban {base_scan.views} görünüm, "
+                         f"{time.monotonic() - started:.1f} s")
         for path in shared:
             self.out.append(f"paylaşılan dosya, sayfa kontrolü yok {path}")
-        for path in unmapped:
-            self.out.append(f"{FU18_LINE} {path}")
+        for path in unmapped:    # a class file present at HEAD that no page references keeps its own line
+            if self.head.has(path) and path not in head_scan.pages:
+                self.out.append(f"{SHARED_VIEW_LINE if path in head_scan.shared else ARCHIVE_VIEW_LINE if path in head_scan.archive else NO_VIEW_LINE} {path}")
         for path in sorted(registry_files):
             before = registry_keys(self.base.read(path), f"{path}@base")
             after = registry_keys(self.head.read(path), f"{path}@HEAD")
@@ -858,6 +1038,8 @@ class Run:
             closing: list[str] = []
             if page in pages:
                 new_surface = self.base is not None and not self.base.has_page(page)
+                if page in changed_views:
+                    self.out.extend(self.reference_changes(page))
                 results = self.evaluate_page(page, added.get(page, set()) if new_surface else ())
                 self.emit(page, results, closing)
                 self.out.extend(self.bilgi(page))
@@ -881,7 +1063,14 @@ class Run:
                 closing = []
                 self.emit(page, results, closing)
                 self.out.extend(closing)
+        if pages or registry_pages or shared or unmapped:
+            self.out.append(scan_line)
+            self.out.append(f"okunan görünüm metni: HEAD {self.read_views(self.head)}, taban {self.read_views(self.base)}")
         return 1 if self.new_red else 0
+
+    @staticmethod
+    def read_views(tree: Tree) -> int:
+        return sum(1 for p in tree.cache if p.endswith(".cshtml"))
 
     def map_path(self, path: str) -> tuple[str, str | None]:
         if path in SEARCH.values():
@@ -953,7 +1142,10 @@ class Run:
                         rows.append((page, r[1], inst, "-") + (reason,) + owner_of(page, r[1], inst))
                 elif r[0] == "line":
                     for path, n in r[2].items():
-                        if n > 0:
+                        if n > 0 and path.startswith(JS_PREFIX) and self.is_class(WEB + path):
+                            # a class file's row (pack MOD-0286-FU01 part 6), before the single-level choices of owner_of / reason
+                            rows.append((page, r[1], path, str(n), FU19_REASON, "FU-19", UNKNOWN_OWNER))
+                        elif n > 0:
                             rows.append((page, r[1], path, str(n)) + (reason,) + owner_of(page, r[1], path))
         rows.extend(BILGI_ROWS)
         order = lambda row: (row[0], int(row[1][3:]) if row[1].startswith("CI-") else 99, row[1], row[2])
@@ -986,6 +1178,9 @@ def execute(root, mode: str, base: str | None = None) -> tuple[int, list[str], l
             return code, run.out + [duration()], []
         if mode == "check":
             rows = read_baseline(root)
+            fu19 = [r for r in rows if r["fu"] == "FU-19"]
+            if fu19:                                   # the class and reference tests of part 8, on every FU-19 row
+                Run(root, "check").check_fu19_rows(fu19)
             return 0, [f"taban {BASELINE} geçerli"] + summary(rows), []
         if mode == "draft":
             run = Run(root, "draft")
@@ -1365,7 +1560,7 @@ def self_test() -> int:
             done = subprocess.run([sys.executable, "-B", str(Path(__file__).resolve())] + argv, cwd=r, capture_output=True)
             cases.append((f"modes: {argv or 'no mode'} -> exit 2", done.returncode == 2))
         # --- single-level pages (pack rev 15, AC-21 (g)): every case a real run on a throw-away repository
-        M_V, M_J, FU18 = W + "Views/Mod/Index.cshtml", W + "wwwroot/assets/js/Mod/app.js", FU18_LINE + " "
+        M_V, M_J, FU18 = W + "Views/Mod/Index.cshtml", W + "wwwroot/assets/js/Mod/app.js", "eşlenmemiş sayfa JS'i, "
         SHARED_LINE = "paylaşılan dosya, sayfa kontrolü yok "
         mod = {M_V: layout, W + "Views/Mod/ModIndex.cs": "// marker\n", M_J: "a = 1;\n"}
 
@@ -1402,7 +1597,7 @@ def self_test() -> int:
         commit(r)
         code, out, _ = ci(r, b0)
         cases.append(("AC-21g03 JS directly in the folder, no direct view at HEAD or at the base -> its FU-18 line, no page",
-                      code == 0 and f"{FU18}{W}wwwroot/assets/js/Sub1/helper.js" in out and no_check_lines(out)))
+                      code == 0 and f"{NO_VIEW_LINE} {W}wwwroot/assets/js/Sub1/helper.js" in out and no_check_lines(out)))
         r, b0 = repo({W + "Views/Sub1/Index.cshtml": layout, W + "Views/Sub1/Inner/Index.cshtml": layout,
                       W + "wwwroot/assets/js/Sub1/helper.js": "a = 1;\n"})
         tg(r, "rm", "-q", W + "Views/Sub1/Index.cshtml")
@@ -1444,7 +1639,7 @@ def self_test() -> int:
         commit(r)
         code, out, _ = ci(r, b0)
         cases.append(("AC-21g06 pages/** -> its FU-18 line for each path, not the shared line, no page",
-                      code == 0 and all(f"{FU18}{p}" in out for p in pg) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
+                      code == 0 and all(f"{NO_VIEW_LINE} {p}" in out for p in pg) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
         deep = [W + "wwwroot/assets/js/Mod/fixtures/a.js", W + "wwwroot/assets/js/Mod/fixtures/more/b.js"]
         r, b0 = repo({**mod, **{p: "alert('x');\n" for p in deep}})
         for p in deep:
@@ -1452,7 +1647,7 @@ def self_test() -> int:
         commit(r)
         code, out, _ = ci(r, b0)
         cases.append(("AC-21g07 js/{Module}/{Sub}/ with no view folder -> its FU-18 line, the single-level page is not selected",
-                      code == 0 and all(f"{FU18}{p}" in out for p in deep) and no_check_lines(out)))
+                      code == 0 and all(f"{NO_VIEW_LINE} {p}" in out for p in deep) and no_check_lines(out)))
         area_js = [W + "wwwroot/assets/js/Ar/direct.js", W + "wwwroot/assets/js/Ar/NoPage/x.js"]
         r, b0 = repo({p: "alert('x');\n" for p in area_js})
         for p in area_js:
@@ -1460,7 +1655,7 @@ def self_test() -> int:
         commit(r)
         code, out, _ = ci(r, b0)
         cases.append(("AC-21g08 an area folder holding only subfolders: JS directly in it and in a subfolder with no view -> FU-18 lines",
-                      code == 0 and all(f"{FU18}{p}" in out for p in area_js) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
+                      code == 0 and all(f"{NO_VIEW_LINE} {p}" in out for p in area_js) and no_check_lines(out) and not any(SHARED_LINE in l for l in out)))
         for name in FOLDER_LEVEL_VIEWS:
             p = W + f"Views/Mod/{name}"
             r, b0 = repo({**mod, p: layout})
@@ -1544,6 +1739,284 @@ def self_test() -> int:
         cases.append(("draft: a single-level row has FU-16, the unknown owner (no AREA_OWNER) and the decision's reason; two-level rows unchanged",
                       dcode == 0 and "\t".join(("Account", "CI-1", "Views/Account/Login.cshtml:yok:Layout", "-", SINGLE_REASON, "FU-16", UNKNOWN_OWNER)) in dout
                       and any(l.startswith("Ar/ListA\tCI-5\t") and f"\t{REASON}\tFU-14\t" in l for l in dout)))
+        # --- MOD-0286-FU01 (pack rev 04): the reference mapping; every case is a real run on a throw-away repository
+        JI = "wwwroot/assets/js/pages/fz/x.js"                    # the class file's instance, and its path
+        JP = W + JI
+        PGV = W + "Views/Fz/Pg/Index.cshtml"
+        PG_OWN = W + "wwwroot/assets/js/Fz/Pg/own.js"
+        tag = lambda src="~/assets/js/pages/fz/x.js": f'<script src="{src}"></script>\n'
+        fz = {PGV: layout + tag(), JP: "x = 1;\n"}
+        alert = lambda t: t + "alert('x');\n"
+        touch = lambda t: t + "@* t *@\n"
+        red = lambda page, check, inst, n, d=None: f"YENİ KIRMIZI {page} {check} {inst} {n} +{d or n}"
+        fu19_row = lambda page, check, inst, n=1: f"{page}\t{check}\t{inst}\t{n}\t{FU19_REASON}\tFU-19\to\n"
+
+        def go(extra, mutate):
+            root, b = repo(extra)
+            mutate(root)
+            commit(root)
+            return (*ci(root, b), root, b)
+
+        def named(out, prefix):
+            return [l for l in out if l.startswith(prefix)]
+        no_link = lambda out: not any(l.startswith(("başvuru eklendi", "başvuru kalktı", "başvurulan")) for l in out)
+        code, out, err, r, b0 = go(fz, lambda x: edit(x, JP, alert))
+        cases.append(("FU01-01 a class file with a two-level owner is red through its reference",
+                      code == 1 and red("Fz/Pg", "CI-7", JI, 1) in out and out.count(red("Fz/Pg", "CI-7", JI, 1)) == 1))
+        sg_v, sg_j = W + "Views/Sg/Index.cshtml", W + "wwwroot/assets/js/pages/sg/y.js"
+        code, out, err, r, b0 = go({sg_v: layout + tag("~/assets/js/pages/sg/y.js"), sg_j: "y = 1;\n"}, lambda x: edit(x, sg_j, alert))
+        cases.append(("FU01-02 a class file with a single-level owner is red through its reference",
+                      code == 1 and red("Sg", "CI-7", "wwwroot/assets/js/pages/sg/y.js", 1) in out))
+        z_j = W + "wwwroot/assets/js/Sg/fixtures/z.js"
+        code, out, err, r, b0 = go({sg_v: layout + tag("~/assets/js/Sg/fixtures/z.js"), z_j: "z = 1;\n"}, lambda x: edit(x, z_j, alert))
+        cases.append(("FU01-03 a file in a subfolder of a single-level page's JS folder, referenced by it, is red through it",
+                      code == 1 and red("Sg", "CI-7", "wwwroot/assets/js/Sg/fixtures/z.js", 1) in out))
+        for fid, check, line_text in (("FU01-04", "CI-4", "createCrudTable(x);\n"), ("FU01-05", "CI-5", "DataTable({ a: 1 });\n"),
+                                      ("FU01-06", "CI-6", "a.style.b = 1;\n"), ("FU01-07", "CI-7", "alert('x');\n"),
+                                      ("FU01-08", "CI-8", "var c = document.cookie;\n"),
+                                      ("FU01-09", "CI-9", "var u = 'api/personalization';\n"),
+                                      ("FU01-10", "CI-10", "var o = { colReorder: true };\n")):
+            code, out, err, r, b0 = go(fz, lambda x: edit(x, JP, lambda t: t + line_text))
+            cases.append((f"{fid} a {check} match on a referenced class file is red through the reference",
+                          code == 1 and red("Fz/Pg", check, JI, 1) in out))
+        two = {**fz, W + "Views/Fz/Pg2/Index.cshtml": layout + tag()}
+        code, out, err, r, b0 = go(two, lambda x: edit(x, JP, alert))
+        cases.append(("FU01-11 two owning pages: both red, once each, a line per page",
+                      code == 1 and out.count(red("Fz/Pg", "CI-7", JI, 1)) == 1 and out.count(red("Fz/Pg2", "CI-7", JI, 1)) == 1
+                      and len(named(out, "YENİ KIRMIZI ")) == 2))
+        code, out, err, r, b0 = go({**fz, W + "Views/Fz/Pg/Details.cshtml": layout + tag()}, lambda x: edit(x, JP, alert))
+        cases.append(("FU01-12 two views of one page name the file: one line per check",
+                      code == 1 and len(named(out, "YENİ KIRMIZI Fz/Pg CI-7 ")) == 1 and out.count(f"PASS Fz/Pg CI-4 {JI} 0") == 1))
+        for fid, label, view in (
+                ("FU01-13", "the Url.Content form", layout + '<script src="@Url.Content("~/assets/js/pages/fz/x.js")"></script>\n'),
+                ("FU01-14", "the ?v=1 form", layout + tag("~/assets/js/pages/fz/x.js?v=1"))):
+            code, out, err, r, b0 = go({**fz, PGV: view}, lambda x: edit(x, JP, alert))
+            cases.append((f"{fid} {label} is a reference", code == 1 and red("Fz/Pg", "CI-7", JI, 1) in out))
+        for fid, label, view in (("FU01-15", "a tag in @* *@", layout + "@* " + tag() + " *@\n"),
+                                 ("FU01-16", "a tag in <!-- -->", layout + "<!-- " + tag() + " -->\n"),
+                                 ("FU01-17", "data-src", layout + '<script data-src="~/assets/js/pages/fz/x.js"></script>\n')):
+            def both(x):
+                edit(x, JP, alert)
+                edit(x, PGV, touch)
+            code, out, err, r, b0 = go({**fz, PGV: view}, both)
+            cases.append((f"{fid} {label} is no reference: exit 0, only the file's own line, no variable line",
+                          code == 0 and f"{NO_VIEW_LINE} {JP}" in out and not named(out, "YENİ KIRMIZI") and not named(out, "ölçülmedi")))
+        unread = f"ölçülmedi Fz/Pg değişken script yolu Views/Fz/Pg/Index.cshtml"
+        for fid, label, src in (("FU01-18", 'src="~/assets/js/@x.js"', "~/assets/js/@x.js"), ("FU01-19", 'src="@x"', "@x")):
+            code, out, err, r, b0 = go({**fz, PGV: layout + tag(src)}, lambda x: edit(x, PGV, touch))
+            cases.append((f"{fid} {label} is no path: 'ölçülmedi' once, never red",
+                          code == 0 and out.count(unread) == 1 and not named(out, "YENİ KIRMIZI")))
+
+        def quiet(fid, label, view):
+            code, out, err, r, b0 = go({**fz, PGV: layout + view}, lambda x: edit(x, PGV, touch))
+            cases.append((f"{fid} {label}: no reference and no line",
+                          code == 0 and "PASS Fz/Pg CI-1 Views/Fz/Pg/Index.cshtml" in out and not named(out, "ölçülmedi")
+                          and no_link(out) and not named(out, "YENİ KIRMIZI")))
+        quiet("FU01-20", "a CDN URL with @", tag("https://cdn.x/lib@1.2/assets/js/lib.js"))
+        sh_v, ar_v, rt_v = W + "Views/Shared/_Sh.cshtml", W + "Views/Archive/a.cshtml", W + "Views/Rt.cshtml"
+        pj = lambda n: W + f"wwwroot/assets/js/pages/fz/{n}.js"
+        pt = lambda n: tag(f"~/assets/js/pages/fz/{n}.js")
+        both_alert = lambda *names: (lambda x: [edit(x, pj(n), alert) for n in names])
+        code, out, err, r, b0 = go({sh_v: pt("sh") + pt("both"), ar_v: pt("both"), pj("sh"): "a = 1;\n", pj("both"): "b = 1;\n"},
+                                   both_alert("sh", "both"))
+        cases.append(("FU01-21 a file only a Shared view loads (a Shared reference wins over Archive): the Shared line, exit 0",
+                      code == 0 and f"{SHARED_VIEW_LINE} {pj('sh')}" in out and f"{SHARED_VIEW_LINE} {pj('both')}" in out
+                      and not any(l.startswith(ARCHIVE_VIEW_LINE) for l in out)))
+        code, out, err, r, b0 = go({pj("orph"): "a = 1;\n"}, both_alert("orph"))
+        cases.append(("FU01-22 a file no view loads: its own line, exit 0", code == 0 and f"{NO_VIEW_LINE} {pj('orph')}" in out))
+        code, out, err, r, b0 = go({ar_v: pt("ar"), rt_v: pt("rt"), pj("ar"): "a = 1;\n", pj("rt"): "b = 1;\n"}, both_alert("ar", "rt"))
+        cases.append(("FU01-23 a file only an Archive or a root view loads: the Archive / root line, exit 0",
+                      code == 0 and f"{ARCHIVE_VIEW_LINE} {pj('ar')}" in out and f"{ARCHIVE_VIEW_LINE} {pj('rt')}" in out))
+        gone = "wwwroot/assets/js/pages/fz/gone.js"
+        code, out, err, r, b0 = go({**fz, PGV: layout + tag() + tag("~/assets/js/pages/fz/gone.js")}, lambda x: edit(x, PGV, touch))
+        cases.append(("FU01-24 a referenced path missing at HEAD: a named line, no exception, never red",
+                      code == 0 and f"başvurulan JS dosyası yok Fz/Pg {gone}" in out and not named(out, "YENİ KIRMIZI")))
+        # part 7, one case per row of its table
+        bare = {**fz, PGV: layout}
+        code, out, err, r, b0 = go(bare, lambda x: edit(x, PGV, lambda t: t + tag()))
+        cases.append(("FU01-25 a page gains a file with no match: 'başvuru eklendi' and PASS, exit 0",
+                      code == 0 and f"başvuru eklendi Fz/Pg {JI}" in out and f"PASS Fz/Pg CI-7 {JI} 0" in out))
+        code, out, err, r, b0 = go({**bare, JP: "alert('x');\n"}, lambda x: edit(x, PGV, lambda t: t + tag()))
+        cases.append(("FU01-26 a page gains a file with a match and no row: 'başvuru eklendi' and YENİ KIRMIZI, exit 1",
+                      code == 1 and f"başvuru eklendi Fz/Pg {JI}" in out and red("Fz/Pg", "CI-7", JI, 1) in out))
+        with_row = {**fz, JP: "alert('x');\n", BASELINE: baseline + fu19_row("Fz/Pg", "CI-7", JI)}
+        r, b0 = repo(with_row)
+        edit(r, PGV, lambda t: layout)
+        sab = commit(r)
+        tg(r, "-c", "commit.gpgsign=false", "revert", "--no-edit", "HEAD")
+        code1, out1, _ = ci(r, sab)
+        code2, out2, _, r2, _ = go({**bare, JP: "alert('a');\nalert('b');\n", BASELINE: baseline + fu19_row("Fz/Pg", "CI-7", JI)},
+                                   lambda x: edit(x, PGV, lambda t: t + tag()))
+        cases.append(("FU01-27 a page regains a file whose row it had (the revert of SB-6): TABAN when n = b, YENİ KIRMIZI +n-b when n > b",
+                      code1 == 0 and f"başvuru eklendi Fz/Pg {JI}" in out1 and f"TABAN FU-19 Fz/Pg CI-7 {JI} 1" in out1
+                      and code2 == 1 and red("Fz/Pg", "CI-7", JI, 2, 1) in out2))
+        code, out, err, r, b0 = go({**fz, W + "Views/Fz/Pg/Details.cshtml": layout + tag()},
+                                   lambda x: edit(x, W + "Views/Fz/Pg/Details.cshtml", lambda t: layout))
+        cases.append(("FU01-28 a view drops a file another view of the page keeps: check lines as usual, no 'başvuru' line",
+                      code == 0 and no_link(out) and f"PASS Fz/Pg CI-7 {JI} 0" in out))
+        code, out, err, r, b0 = go(with_row, lambda x: edit(x, PGV, lambda t: layout))
+        cases.append(("FU01-29 the page's last reference goes: 'başvuru kalktı' and its row 'kapandı', exit 0",
+                      code == 0 and f"başvuru kalktı Fz/Pg {JI}" in out and f"kapandı - satır silinmeli Fz/Pg CI-7 {JI}" in out
+                      and not any(JI in l and l.startswith(("TABAN", "PASS", "YENİ")) for l in out)))
+        code, out, err, r, b0 = go(with_row, lambda x: tg(x, "rm", "-q", JP))
+        cases.append(("FU01-30 the file deleted, the page still references it: the named missing line, its row 'kapandı', exit 0",
+                      code == 0 and f"başvurulan JS dosyası yok Fz/Pg {JI}" in out and f"kapandı - satır silinmeli Fz/Pg CI-7 {JI}" in out
+                      and not named(out, "başvuru kalktı")))
+        KI, KP = "wwwroot/assets/js/pages/fz/k.js", pj("k")
+
+        def rename_updated(x):
+            tg(x, "mv", JP, KP)
+            edit(x, PGV, lambda t: t.replace("x.js", "k.js"))
+        code, out, err, r, b0 = go(with_row, rename_updated)
+        code2, out2, _, _, _ = go({**with_row, JP: "x = 1;\n"}, rename_updated)
+        cases.append(("FU01-31 a file renamed and the view updated: eklendi K, kalktı J, J's row 'kapandı', K red when it has a match, PASS when not",
+                      code == 1 and f"başvuru eklendi Fz/Pg {KI}" in out and f"başvuru kalktı Fz/Pg {JI}" in out
+                      and red("Fz/Pg", "CI-7", KI, 1) in out and f"kapandı - satır silinmeli Fz/Pg CI-7 {JI}" in out
+                      and code2 == 0 and f"PASS Fz/Pg CI-7 {KI} 0" in out2))
+        code, out, err, r, b0 = go(with_row, lambda x: tg(x, "mv", JP, KP))
+        cases.append(("FU01-32 a file renamed and the view not updated: the missing line for J, J's row 'kapandı', K's own line, no 'başvuru' line",
+                      code == 0 and f"başvurulan JS dosyası yok Fz/Pg {JI}" in out and f"kapandı - satır silinmeli Fz/Pg CI-7 {JI}" in out
+                      and f"{NO_VIEW_LINE} {KP}" in out and not named(out, "başvuru eklendi") and not named(out, "başvuru kalktı")))
+        code, out, err, r, b0 = go({**fz, JP: "alert('x');\n", PG_OWN: "o = 1;\n"}, lambda x: edit(x, PG_OWN, lambda t: t + "p = 2;\n"))
+        cases.append(("FU01-33 a page selected through another of its files reads its class files",
+                      code == 1 and red("Fz/Pg", "CI-7", JI, 1) in out))
+        code, out, err, r, b0 = go({**fz, W + "Views/Fz/Pg/Details.cshtml": layout + tag(), W + "Views/Fz/Pg2/Index.cshtml": layout + tag(),
+                                    PG_OWN: "o = 1;\n"}, lambda x: edit(x, PG_OWN, lambda t: t + "p = 2;\n"))
+        cases.append(("FU01-34 no class file in the diff: no other page's view read ('okunan' line), no scan",
+                      code == 0 and out[-3:-1] == ["başvuru taraması yok", "okunan görünüm metni: HEAD 2, taban 0"]
+                      and out[-1].startswith("süre: ") and not any("Fz/Pg2" in l for l in out)))
+        orph = "wwwroot/assets/js/pages/fz/orph.js"
+        r, b0 = repo({**fz, W + orph: "alert('o');\n"})
+        write(r, BASELINE, baseline + fu19_row("Fz/Pg", "CI-7", orph))
+        row_commit = commit(r)
+        code1, out1, err1 = ci(r, b0)
+        edit(r, PGV, touch)
+        commit(r)
+        code2, out2, _ = ci(r, row_commit)
+        code3, out3, err3 = execute(r, "check")
+        cases.append(("FU01-35 an added unreferenced row is exit 2 under --base; the same row unchanged is 'kapandı'; --check-baseline exit 2",
+                      code1 == 2 and any("FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor" in e for e in err1)
+                      and code2 == 0 and f"kapandı - satır silinmeli Fz/Pg CI-7 {orph}" in out2
+                      and code3 == 2 and any("FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor" in e for e in err3)))
+        r, b0 = repo({sg_v: layout + tag("~/assets/js/pages/sg/y.js"), sg_j: "alert('y');\n", W + "wwwroot/assets/js/Sg/own.js": "alert('o');\n"})
+        dcode, dout, _ = execute(r, "draft")
+        cases.append(("FU01-36 draft: a class file's row is FU-19 with the decision's reason, a file of its own folder FU-16",
+                      dcode == 0
+                      and "\t".join(("Sg", "CI-7", "wwwroot/assets/js/pages/sg/y.js", "1", "sahip kararı fu01-satir-sahipleri (2026-11-01)", "FU-19", UNKNOWN_OWNER)) in dout
+                      and "\t".join(("Sg", "CI-7", "wwwroot/assets/js/Sg/own.js", "1", SINGLE_REASON, "FU-16", UNKNOWN_OWNER)) in dout))
+        # the SB-13 rows (AC-6), one case each, on fixtures of the same shape
+        R = "wwwroot/assets/js/"
+        sb13 = {W + "Views/DecompositionTreeBuilder/Index.cshtml": layout + tag("~/assets/js/pages/decomposition/decompositionPage.js"),
+                W + R + "pages/decomposition/decompositionPage.js": "a = 1;\n",
+                W + "Views/WorkCenterNext/Index.cshtml": layout + tag("~/assets/js/WorkCenterNext/fixtures/canonical-fixtures.js"),
+                W + R + "WorkCenterNext/fixtures/canonical-fixtures.js": "a = 1;\n",
+                W + "Views/HCM/Employees/Index.cshtml": layout, W + "Views/Home/Status.cshtml": layout,
+                W + "Views/CRM/Accounts/Index.cshtml": layout, W + R + "CRM/Accounts/index.js": "a = 1;\n",
+                W + "Views/Recall/Index.cshtml": layout, W + R + "Recall/cases.js": "a = 1;\n",
+                W + "Views/EnterpriseStrategyBusinessPerformance/Index.cshtml":
+                    layout + tag("~/assets/js/pages/enterprise-strategy/strategy-initiatives-api.js"),
+                W + "Views/Shared/_Perm.cshtml": tag("~/assets/js/pages/governance/permissions.js"),
+                W + R + "pages/governance/permissions.js": "a = 1;\n", W + R + "pages/systemStatus.js": "a = 1;\n",
+                W + R + "shared/diten-tags.js": "a = 1;\n"}
+        e = R + "pages/enterprise-strategy"
+        T = {"T-1": "FU-19 satırında kontrol CI-4, 5, 6, 7, 8, 9 ya da 10 olmalı", "T-2": "FU-19 instance'ı wwwroot/assets/js/<klasör>/ altında .js yolu değil",
+             "T-3": "FU-19 instance'ı sayfanın kendi klasöründe", "T-4": "FU-19 instance'ı sınıf dosyası değil",
+             "T-5": "FU-19 instance'ı HEAD'de yok", "T-6": "FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor",
+             "T-7": "FU-19 satırında page ya da count bozuk"}
+        sb13_rows = (
+            ("FU01-37", "R-0a", ("DecompositionTreeBuilder", "CI-4", R + "pages/decomposition/decompositionPage.js", "1", "FU-19"), None),
+            ("FU01-38", "R-0b", ("WorkCenterNext", "CI-7", R + "WorkCenterNext/fixtures/canonical-fixtures.js", "1", "FU-19"), None),
+            ("FU01-39", "R-1", ("HCM/Employees", "CI-7", R + "Platform/PersonReferences/person-reference-picker.js", "1", "FU-14"),
+             "CI-7 satır kontrolü instance'ı sayfanın dosya yolu değil"),
+            ("FU01-40", "R-2", ("Home", "CI-2", "Views/Home/Status.cshtml", "1", "FU-19"), T["T-1"]),
+            ("FU01-41", "R-3", ("Home", "CI-6", "Views/Home/Status.cshtml", "1", "FU-19"), T["T-2"]),
+            ("FU01-42", "R-4a", ("CRM/Accounts", "CI-7", R + "CRM/Accounts/details-contacts.js", "1", "FU-19"), T["T-3"]),
+            ("FU01-43", "R-4b", ("CRM/Accounts", "CI-7", R + "CRM/Accounts/sub/x.js", "1", "FU-19"), T["T-3"]),
+            ("FU01-44", "R-4c", ("Recall", "CI-7", R + "Recall/cases.js", "1", "FU-19"), T["T-3"]),
+            ("FU01-45", "R-5", ("Home", "CI-7", R + "pages/systemStatus.js", "1", "FU-19"), T["T-6"]),
+            ("FU01-46", "R-6", ("Home", "CI-6", R + "pages/governance/permissions.js", "1", "FU-19"), T["T-6"]),
+            ("FU01-47", "R-7", ("Home", "CI-6", R + "shared/diten-tags.js", "1", "FU-19"), T["T-4"]),
+            ("FU01-48", "R-8", ("HCM/Employees", "CI-4", R + "CRM/Accounts/index.js", "1", "FU-19"), T["T-4"]),
+            ("FU01-49", "R-9a", ("Home", "CI-6", R + "dt-defaults.js", "1", "FU-19"), T["T-2"]),
+            ("FU01-50", "R-9b", ("Home", "CI-6", R + "pages/../x.js", "1", "FU-19"), T["T-2"]),
+            ("FU01-51", "R-10", ("EnterpriseStrategyBusinessPerformance", "CI-6", e + "/strategy-initiatives-api.js", "1", "FU-19"), T["T-5"]),
+            ("FU01-52", "R-11", ("Shared/X", "CI-6", R + "pages/systemStatus.js", "1", "FU-19"), T["T-7"]),
+            ("FU01-53", "R-12", ("Home", "CI-6", R + "pages/systemStatus.js", "0", "FU-19"), T["T-7"]))
+        sb13_repo, _ = repo(sb13)
+        line_no = baseline.count("\n") + 1
+        for fid, rid, (page, check, inst, count, fu), want in sb13_rows:
+            text = baseline + "\t".join((page, check, inst, count, "sahip kararı sb-13 (2026-10-31)", fu, "platform-shared-services")) + "\n"
+            write(sb13_repo, BASELINE, text)
+            code, out, err = execute(sb13_repo, "check")
+            ok = code == 0 if want is None else code == 2 and f"HATA: taban satır {line_no}: {want}" in err
+            if rid in ("R-1", "R-5", "R-10"):          # committed, the same text under --base <parent>
+                r, b0 = repo(sb13)
+                write(r, BASELINE, text)
+                commit(r)
+                code2, out2, err2 = ci(r, b0)
+                ok = ok and code2 == 2 and f"HATA: taban satır {line_no}: {want}" in err2
+            cases.append((f"{fid} SB-13 row {rid} ({check} {inst.rsplit('/', 1)[-1]}): "
+                          + ("accepted, exit 0" if want is None else f"exit 2 with '{want[:40]}'"), ok))
+        write(sb13_repo, BASELINE, baseline)
+        r, b0 = repo()
+        code1, out1, _ = ci(r, "HEAD")
+        write(r, W + "wwwroot/assets/js/shared.js", "s = 3;\n")
+        commit(r)
+        code2, out2, _ = ci(r, b0)
+        cases.append(("FU01-54 an empty diff prints only the duration; a diff of one shared file prints the two scan lines before it",
+                      code1 == 0 and len(out1) == 1 and code2 == 0
+                      and out2[-3:-1] == ["başvuru taraması yok", "okunan görünüm metni: HEAD 0, taban 0"] and out2[-1].startswith("süre: ")))
+        code, out, err, r, b0 = go({**fz, PGV: layout + tag("~/assets/js/pages/fz/x.js?v=@ver")}, lambda x: edit(x, JP, alert))
+        cases.append(("FU01-55 ?v=@x keeps the reference: red through it, no 'ölçülmedi'",
+                      code == 1 and red("Fz/Pg", "CI-7", JI, 1) in out and not named(out, "ölçülmedi")))
+        for fid, label, src in (
+                ("FU01-56", '@Url.Content("~/assets/js/" + name + ".js")', '@Url.Content("~/assets/js/" + name + ".js")'),
+                ("FU01-57", "unquoted src=~/assets/js/a/x.js", None), ("FU01-61", 'src="@Url.Content(Model.X)"', "@Url.Content(Model.X)"),
+                ("FU01-62", "../assets/js/a/x.js", "../assets/js/a/x.js")):
+            view = layout + ("<script src=~/assets/js/a/x.js></script>\n" if src is None else tag(src))
+            code, out, err, r, b0 = go({**fz, PGV: view}, lambda x: edit(x, PGV, touch))
+            cases.append((f"{fid} {label}: 'ölçülmedi' once, never red",
+                          code == 0 and out.count(unread) == 1 and not named(out, "YENİ KIRMIZI") and no_link(out)))
+        quiet("FU01-58", "https://cdn.x/assets/js/lib.js", tag("https://cdn.x/assets/js/lib.js"))
+        code, out, err, r, b0 = go({**fz, PGV: layout + tag("~/assets/js/pages/fz/data.json"), pj("data"): "alert('d');\n"},
+                                   lambda x: edit(x, PGV, touch))
+        cases.append(("FU01-59 ~/assets/js/a/data.json: 'ölçülmedi', data.js is not read",
+                      code == 0 and out.count(unread) == 1 and not any("data.js" in l for l in out)))
+        code, out, err, r, b0 = go({**fz, PGV: layout + tag("/assets/js/pages/fz/x.js")}, lambda x: edit(x, JP, alert))
+        cases.append(("FU01-60 /assets/js/a/x.js is captured: red through it", code == 1 and red("Fz/Pg", "CI-7", JI, 1) in out))
+        quiet("FU01-63", "http://cdn.x/assets/js/lib.js", tag("http://cdn.x/assets/js/lib.js"))
+        quiet("FU01-64", "//cdn.x/assets/js/lib.js", tag("//cdn.x/assets/js/lib.js"))
+        quiet("FU01-65", 'src="@@x.js"', tag("@@x.js"))
+        quiet("FU01-66", '@Url.Content("~/assets/vendor/a.js")', tag('@Url.Content("~/assets/vendor/a.js")'))
+        try:
+            pack_text = (ROOT / FU01_PACK).read_text(encoding="utf-8")
+            start = pack_text.index("```text\nSTRIP\t") + len("```text\n")
+            block = {}
+            for ln in pack_text[start:pack_text.index("\n```", start)].split("\n"):
+                key, tab, pattern = ln.partition("\t")
+                block[key] = pattern
+            ok = (block == FU01_REF_PATTERNS and set(block) == {"STRIP", "SCRIPT", "VARIABLE"}
+                  and bool(re.compile(block["STRIP"], re.S)) and bool(re.compile(block["SCRIPT"], re.I | re.S))
+                  and bool(re.compile(block["VARIABLE"], re.I | re.S)))
+        except (OSError, ValueError):
+            ok = False
+        cases.append(("FU01-67 the pack's reference block equals FU01_REF_PATTERNS, and all three compile with the pack's flags", ok))
+        code, out, err, r, b0 = go({PGV: layout + "@* " + tag() + " *@\n", JP: "alert('x');\n"}, lambda x: write(x, BASELINE, baseline + fu19_row("Fz/Pg", "CI-7", JI)))
+        cases.append(("FU01-68 a row whose file the page's view names only inside @* *@: exit 2 (T-6), a raw text search is not enough",
+                      code == 2 and any(f"FU-19 instance'ı sayfanın görünümlerinde başvurulmuyor" in e for e in err)))
+        code, out, err, r, b0 = go({PGV: layout}, lambda x: edit(x, PGV, lambda t: t + tag("~/assets/js/pages/fz/gone.js")))
+        cases.append(("FU01-69 a view gains a tag of a file absent at HEAD: only the missing line, no 'başvuru eklendi'",
+                      code == 0 and f"başvurulan JS dosyası yok Fz/Pg {gone}" in out and not named(out, "başvuru eklendi")))
+        OWN = "wwwroot/assets/js/Fz/Pg/x.js"
+
+        def into_own_folder(x):
+            (Path(x) / W / "wwwroot/assets/js/Fz/Pg").mkdir(parents=True)
+            tg(x, "mv", JP, W + OWN)
+            edit(x, PGV, lambda t: t.replace("pages/fz/x.js", "Fz/Pg/x.js"))
+        code, out, err, r, b0 = go(with_row, into_own_folder)
+        cases.append(("FU01-70 a file moved into the page's own folder: no 'başvuru eklendi' for it, read through the own folder, J's row 'kapandı'",
+                      code == 1 and f"başvuru kalktı Fz/Pg {JI}" in out and f"kapandı - satır silinmeli Fz/Pg CI-7 {JI}" in out
+                      and not named(out, "başvuru eklendi") and red("Fz/Pg", "CI-7", OWN, 1) in out))
         # --- CI-3 API profile per page (owner decision UIC-01, 2026-11-09): a page whose index.js calls its own same-origin
         # proxy '/{Area}/{Module}/api' is verified with --api-profile proxy; every other page keeps the verifier's area default
         def profile_page(page, js_body):

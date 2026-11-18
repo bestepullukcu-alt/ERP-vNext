@@ -24,6 +24,9 @@
 /.claude/agents/                                         @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /.agents/                                                @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /.codex/                                                 @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
+# EES-BAGLAMA-01 (2026-11-16, EES owner approval): the new EES home — role cards, agent and skill sources, the adapter
+# manifest — changes only with a code-owner review, like the old rule folders above. Same owner list; no new owner.
+/.ees/                                                   @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /docs/guides/operations/control-tower-operating-card.md  @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /docs/guides/operations/control-tower-sop.md             @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
 /execution/delivery/ct-queue-registry.tsv                @gmg-10 @Bestepul @bestepullukcu-alt @GMG-ERP
