@@ -1,0 +1,52 @@
+name: added-lines-scan (warning only - secret shapes, risky files, home paths, e-mails, names if listed)
+
+# WARNING ONLY. The repository is public: this job reads the lines a pull request ADDS (git diff base...head, never the
+# content already on main) and the names of the files it adds, and annotates secret shapes (tokens, keys, passwords in
+# connection strings / URLs / assignments), risky new files (.env, key / certificate, .log, .trx), personal folder paths
+# and e-mail addresses (scripts/scan_added_lines.py). Fake home paths and e-mail addresses in test locations are notices.
+# Personal names are checked ONLY when a names list is supplied from outside the repository; this job supplies none, so
+# its output says "Kişi adı denetimi ÇALIŞMADI" - a green job does not mean "no names". A finding shows only path, line,
+# kind and a masked hint, never the value. The script exits 0 whatever it finds, and also when git cannot compute the
+# diff (it prints a warning instead), so this job never fails a pull request; it is not a required check.
+# The scanner that runs is the copy on the BASE commit (the pull request's own copy only when the base has none yet), so
+# a change to the scanner is not judged by itself. This is a convenience, NOT a security boundary: on pull_request the
+# workflow file that runs is the pull request's own, which it can change. Same rules as every workflow here
+# (CiServiceTestsGuardTests): read-only token, no stored credential is read, actions pinned to a COMMIT SHA, nothing that
+# turns a red step green.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow; any other run
+# and any re-run get a group of their own (the run id), so they are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  added-lines-scan:
+    name: added-lines-scan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan added lines with the base commit's scanner (warning only)
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git cat-file -e "$BASE_SHA:scripts/scan_added_lines.py" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/scan_added_lines.py" > "$RUNNER_TEMP/scan_added_lines.py"
+            echo "Scanner: the base commit's copy."
+          else
+            cp scripts/scan_added_lines.py "$RUNNER_TEMP/scan_added_lines.py"
+            echo "Scanner: the pull request's copy (the base commit has none)."
+          fi
+          python3 "$RUNNER_TEMP/scan_added_lines.py" --repo . --base "$BASE_SHA" --head "$HEAD_SHA"

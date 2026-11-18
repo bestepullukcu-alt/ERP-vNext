@@ -1,0 +1,61 @@
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -12,7 +12,7 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.5.0
++  version: 3.5.1
+   x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+@@ -139,6 +139,11 @@
+       tags: [Shipments]
+       operationId: createShipment
+       summary: Shipment olustur
++      description: >
++        3.5.1 (korelasyon koku): servisin bu istekte aldigi X-Correlation-Id sevkiyatin kalici kokudur
++        (ShipmentDetail.lifecycleCorrelationId); Gateway arkasinda bu deger Gateway'in urettigi korelasyondur.
++        Ayni Idempotency-Key ve ayni govde ile tekrar orijinal sonucu idempotentReplay=true ile dondurur; istegin
++        korelasyonu karsilastirilmaz, yanit basligi guncel istegin korelasyonudur, kok degismez.
+       parameters:
+         - { $ref: '#/components/parameters/LegalEntityId' }
+         - { $ref: '#/components/parameters/CorrelationId' }
+@@ -233,6 +238,10 @@
+         Dispatched->InTransit|Delivered|Exception; InTransit->Delivered|Exception;
+         Exception->InTransit|Cancelled; Delivered->Closed. Diger gecisler
+         INVALID_SHIPMENT_TRANSITION ile deterministik reddedilir.
++        3.5.1 (korelasyon koku): istegin X-Correlation-Id'si yalniz bu komutun izidir; sevkiyatin kokune esit
++        olmasi istenmez ve farkli olmasi bir ret nedeni degildir. Uretilen lifecycle event'leri saklanan koku
++        (lifecycleCorrelationId) tasir. Ayni Idempotency-Key ve ayni govde ile tekrar orijinal sonucu
++        idempotentReplay=true ile dondurur; istegin korelasyonu karsilastirilmaz.
+       parameters:
+         - { $ref: '#/components/parameters/LegalEntityId' }
+         - { $ref: '#/components/parameters/ShipmentId' }
+@@ -262,7 +271,11 @@
+       tags: [Shipments]
+       operationId: captureProofOfDelivery
+       summary: Teslim kanitini kaydet ve shipment'i Delivered yap
+-      description: Yalniz Dispatched veya InTransit durumundan kabul edilir.
++      description: >
++        Yalniz Dispatched veya InTransit durumundan kabul edilir.
++        3.5.1 (korelasyon koku): istegin X-Correlation-Id'si yalniz bu komutun izidir; sevkiyatin kokune esit
++        olmasi istenmez. PodCaptured ve lifecycle event'leri saklanan koku tasir. Ayni Idempotency-Key ve ayni
++        govde ile tekrar orijinal sonucu idempotentReplay=true ile dondurur; istegin korelasyonu karsilastirilmaz.
+       parameters:
+         - { $ref: '#/components/parameters/LegalEntityId' }
+         - { $ref: '#/components/parameters/ShipmentId' }
+@@ -3319,7 +3332,12 @@
+       name: X-Correlation-Id
+       in: header
+       required: true
+-      description: UUID; uretilen lifecycle event envelope'indaki correlationId ile birebir ayni tasinir.
++      description: >
++        UUID; uretilen lifecycle event envelope'indaki correlationId ile birebir ayni tasinir. 3.5.1: Shipments
++        yollarinda (createShipment, transitionShipment, captureProofOfDelivery) bu kural yalniz createShipment icin
++        gecerlidir; sonraki Shipments komutlarinin event'leri saklanan koku tasir ve istegin korelasyonu komut izidir
++        (operasyon aciklamalarina bakin). Loads, Returns ve Claims yollari bu surumde degismez; kendi normatif ek
++        belgeleri gecerlidir.
+       schema: { type: string, format: uuid }
+     IdempotencyKey:
+       name: Idempotency-Key

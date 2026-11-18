@@ -11007,3 +11007,17 @@ Platform.Common), domain başına XMC-001 ve ayrı dal onayı gerekir. Plan ve �
 **Ölçüm komutu:**
 
     dotnet list services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj package --vulnerable --include-transitive
+
+### BL-667
+
+**MOD-0188 talep geçmişi: birimi çakışan serinin uzlaştırma kuralı (v1.2 tarihli dönüşümden sonra)**
+
+DURUM: AÇIK · SAHİP: Ali (MOD-0290 sahibi) · KARAR: Ali, 2026-11-17 ("TBD") · KAYIT: 2026-11-17
+
+**Ne:** MOD-0188'de `SingleUnitInterim` ile kabul edilmiş eski satırın birimi güncel temel birimden farklıysa yalnız görünür uyarı
+verilir (D2); o serinin farklı birimli yeni satırı `UnitConflictsWithAcceptedHistory` ile karantinaya gider. Seriyi yeniden
+kabule açacak uzlaştırma kuralı yok.
+**Neden ertelendi:** sahip kararı — kural v1.2 tarihli dönüşüm kanıtı (`conversionId`/`asOf`, BL-584) olmadan doğru kurulamaz.
+**Yapım tetikleyicisi:** BL-584 (PRODUCT-MASTER v1.2) dondurulunca; Ali kuralı karara bağlar, MOD-0188 pack revizyonuyla uygulanır.
+**Yan etki (bilinen, kabul edildi):** o güne dek çakışan seride farklı birimli yeni satır kabul edilemez.
+**Kaynak:** `docs/records/decisions/2026-11/mod0188-history-unit-mode-owner-decisions-01.md` (D2, D3); PR #256.
