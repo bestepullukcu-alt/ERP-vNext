@@ -27,7 +27,7 @@ import xml.etree.ElementTree as ET
 
 BRANCH = "feature/fin/wp-0126-dl1"
 PACK = "execution/domains/finance-treasury/module-packs/MOD-0126-payments-approvals.md"
-PACK_SHA256 = "e8e5ce47332273ef6bd0d532ce51e52c533ea6762ad065f6687274ba8c8d1288"
+PACK_SHA256 = "4fc006970fc63790270af10bdab86e5b30ae03e046bd1b16a886e97d9cbf0a1e"  # v1.1 (2026-11-19): ready-for-dev, onay satırı main'de (#385)
 AC_TAGS = ["01", "02", "03", "16", "17", "20", "21", "22", "23", "29", "32", "33", "39", "41", "45", "47"]
 
 S = "services/Diten.FinanceTreasuryService/"
