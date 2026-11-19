@@ -50,12 +50,14 @@ public sealed class RunRecallTraceHandler : IRequestHandler<RunRecallTraceComman
     private readonly RecallTraceService _trace;
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public RunRecallTraceHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support)
+    public RunRecallTraceHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _trace = trace;
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallTraceDto>> Handle(RunRecallTraceCommand request, CancellationToken ct)
@@ -65,6 +67,8 @@ public sealed class RunRecallTraceHandler : IRequestHandler<RunRecallTraceComman
             return RecallSupport.Invalid<RecallTraceDto>(error);
         }
 
+        if (!RecallCustomerDisplay.TryPage(request.CustomerPage, out var page)) return RecallSupport.Invalid<RecallTraceDto>(RecallCustomerDisplay.PageError);
+
         var result = await _trace.RunAsync(root, direction, asOf, ct);
         if (result is null) return RecallSupport.Fail<RecallTraceDto>(RecallErrorCodes.UnknownLot, "Lot not found.", 404);
         await _repository.InTransactionAsync<bool>(async (session, tx) =>
@@ -72,7 +76,9 @@ public sealed class RunRecallTraceHandler : IRequestHandler<RunRecallTraceComman
             await session.InsertAuditAsync(RecallTraceAudit.Of(_support, result, "runTrace", null, null, _support.Now(), null), tx);
             return true;
         }, ct);
-        return Response<RecallTraceDto>.Success(RecallTraceService.Dto(result));
+        // MOD-0177-FU01 (§8.6): the key is born in the live trace, so the page's names are read after it (trace + ≤ 3 s)
+        var names = await _customers.PageAsync(RecallTraceService.CustomerKeys(result.Nodes), page, ct);
+        return Response<RecallTraceDto>.Success(RecallTraceService.Dto(result, names));
     }
 }
 
@@ -82,12 +88,14 @@ public sealed class ExportRecallTraceHandler : IRequestHandler<ExportRecallTrace
     private readonly RecallTraceService _trace;
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public ExportRecallTraceHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support)
+    public ExportRecallTraceHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _trace = trace;
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallTraceCsvDto>> Handle(ExportRecallTraceCommand request, CancellationToken ct)
@@ -100,12 +108,26 @@ public sealed class ExportRecallTraceHandler : IRequestHandler<ExportRecallTrace
 
         var result = await _trace.RunAsync(root, direction, null, ct);
         if (result is null) return RecallSupport.Fail<RecallTraceCsvDto>(RecallErrorCodes.UnknownLot, "Lot not found.", 404);
+
+        // MOD-0177-FU01 (§8.8, §8.10): every CRM customer of the trace is read (Export mode); a forbidden one refuses the file before the audit row
+        var keys = RecallTraceService.CustomerKeys(result.Nodes);
+        var names = await _customers.ExportAsync(keys, ct);
+        if (names.HasForbidden)
+        {
+            return RecallSupport.Fail<RecallTraceCsvDto>(RecallErrorCodes.CustomerDirectoryForbidden,
+                "You may not read a CRM customer of this trace (crm.account.lookup-validation); no file is produced.", 403);
+        }
+
         await _repository.InTransactionAsync<bool>(async (session, tx) =>
         {
             await session.InsertAuditAsync(RecallTraceAudit.Of(_support, result, "exportTrace", null, null, _support.Now(), null), tx);
             return true;
         }, ct);
-        return Response<RecallTraceCsvDto>.Success(new RecallTraceCsvDto($"izleme_{result.RootLotNumber}.csv", RecallTraceService.Csv(result)));
+        var lang = Evidence.RecallEvidenceText.Normal(request.Language);
+        Func<TraceNode, string?>? place = keys.Any(k => k.IsCrm)
+            ? n => n.CustomerRef is null ? null : Evidence.RecallEvidenceText.CustomerCell(RecallTraceService.Customer(n, names)!, lang, marked: true)
+            : null;
+        return Response<RecallTraceCsvDto>.Success(new RecallTraceCsvDto($"izleme_{result.RootLotNumber}.csv", RecallTraceService.Csv(result, place)));
     }
 }
 
@@ -119,16 +141,19 @@ public sealed class DiffRecallScopeHandler : IRequestHandler<DiffRecallScopeComm
     private readonly RecallTraceService _trace;
     private readonly IRecallRepository _repository;
     private readonly RecallSupport _support;
+    private readonly RecallCustomerDisplay _customers;
 
-    public DiffRecallScopeHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support)
+    public DiffRecallScopeHandler(RecallTraceService trace, IRecallRepository repository, RecallSupport support, RecallCustomerDisplay customers)
     {
         _trace = trace;
         _repository = repository;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallScopeDiffDto>> Handle(DiffRecallScopeCommand request, CancellationToken ct)
     {
+        if (!RecallCustomerDisplay.TryPage(request.CustomerPage, out var page)) return RecallSupport.Invalid<RecallScopeDiffDto>(RecallCustomerDisplay.PageError);
         if (!RecallSupport.TryParseId(request.CaseId, out var caseId)) return RecallSupport.CaseNotFound<RecallScopeDiffDto>();
         var c = await _repository.FindCaseAsync(caseId, ct);
         if (c is null) return RecallSupport.CaseNotFound<RecallScopeDiffDto>();
@@ -167,8 +192,9 @@ public sealed class DiffRecallScopeHandler : IRequestHandler<DiffRecallScopeComm
                 }), tx);
             return true;
         }, ct);
-        return Response<RecallScopeDiffDto>.Success(new RecallScopeDiffDto(approved.Sha256, live.Sha256, added.Select(RecallTraceService.Node).ToList(), removed,
-            RecallSupport.Wire(live.ComputedAtUtc)));
+        var names = await _customers.PageAsync(RecallTraceService.CustomerKeys(added), page, ct);
+        return Response<RecallScopeDiffDto>.Success(new RecallScopeDiffDto(approved.Sha256, live.Sha256, added.Select(n => RecallTraceService.Node(n, names)).ToList(),
+            removed, RecallSupport.Wire(live.ComputedAtUtc)));
     }
 }
 

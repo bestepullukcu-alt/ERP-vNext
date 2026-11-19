@@ -97,4 +97,19 @@
   <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>أدخل قيمة</value></data>
   <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>أدخل رقمًا</value></data>
   <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>اختر تاريخًا</value></data>
+  <!-- MOD-0040-FU02 DL-2: the system-assigned record code (AC-60). -->
+  <data name="RecordCodeAssignedOnSave" xml:space="preserve"><value>يعيّن النظام الرمز عند حفظ السجل.</value></data>
+  <data name="RecordCodeImmutable" xml:space="preserve"><value>لا يمكن تغيير الرمز.</value></data>
+  <data name="RecordCodeSystemAssigned" xml:space="preserve"><value>يعيّن النظام الرمز؛ اترك هذا الحقل فارغًا.</value></data>
+  <data name="RecordCodeCollision" xml:space="preserve"><value>تعذّر تعيين رمز لأن الرموز التالية مستخدمة بالفعل. يُرجى التواصل مع المسؤول.</value></data>
+  <data name="RecordCodeShortCodeChanged" xml:space="preserve"><value>تغيّر الرمز المختصر للشركة بعد استخدامه. يُرجى التواصل مع مسؤول البيانات الرئيسية.</value></data>
+  <data name="RecordCodeShortCodeMissing" xml:space="preserve"><value>لا تملك الشركة رمزًا مختصرًا صالحًا (من 2 إلى 5 أحرف كبيرة). يُرجى التواصل مع مسؤول البيانات الرئيسية.</value></data>
+  <data name="RecordCodeLegalEntityNotFound" xml:space="preserve"><value>لم يتم العثور على الشركة أو أنها غير نشطة.</value></data>
+  <data name="RecordCodeLegalEntityNotEligible" xml:space="preserve"><value>لم تتم الموافقة على الشركة بعد.</value></data>
+  <data name="RecordCodeLegalEntityReadPermissionMissing" xml:space="preserve"><value>ليس لديك إذن بقراءة سجلات الشركات اللازمة لتعيين الرمز.</value></data>
+  <data name="RecordCodePermissionMissing" xml:space="preserve"><value>ليس لديك إذن بإنشاء هذا السجل.</value></data>
+  <data name="RecordCodeTenantNotActive" xml:space="preserve"><value>حساب مؤسستك غير نشط، لذا لا يمكن تعيين رمز.</value></data>
+  <data name="RecordCodeUnavailable" xml:space="preserve"><value>خدمة الرموز غير متاحة حاليًا. يُرجى المحاولة لاحقًا.</value></data>
+  <data name="RecordCodeLegalEntitySourceUnavailable" xml:space="preserve"><value>تتعذّر قراءة معلومات الشركة حاليًا. يُرجى المحاولة لاحقًا.</value></data>
+  <data name="RecordCodeForbidden" xml:space="preserve"><value>لا يُسمح لهذا الطلب بالحصول على رمز سجل.</value></data>
 </root>

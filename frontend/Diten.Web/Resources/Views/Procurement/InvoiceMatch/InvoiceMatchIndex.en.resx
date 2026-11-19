@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>Exception ID</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>Yes</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>The request is incomplete or contains invalid values. Check the fields and try again.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>A line amount does not equal quantity × unit price. Line amounts are net (excluding tax).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>The supplier, purchase order or item could not be found.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>The invoice currency does not match the purchase order currency.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>An invoice with this number already exists for this supplier.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>This action is not allowed in the invoice's current status.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>The invoice or exception could not be found.</value></data>
 </root>

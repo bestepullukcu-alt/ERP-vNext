@@ -213,6 +213,13 @@ builder.Services.AddScoped<IVerifiedReferenceDataServiceTenantContext, VerifiedR
 builder.Services.AddSingleton<ITrustedLegalEntityScopeCredentialAuthenticator, TrustedLegalEntityScopeCredentialAuthenticator>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeJwtContext, TrustedLegalEntityScopeJwtContext>();
 builder.Services.AddScoped<ITrustedLegalEntityScopeRequestExecutor, TrustedLegalEntityScopeRequestExecutor>();
+// MOD-0040-FU02 — the record-code allocate endpoint's gate (consumer credential + forwarded user token).
+builder.Services.Configure<TrustedRecordCodeCredentialOptions>(
+    builder.Configuration.GetSection(TrustedRecordCodeCredentialOptions.SectionName));
+builder.Services.AddSingleton<ITrustedRecordCodeCredentialAuthenticator, TrustedRecordCodeCredentialAuthenticator>();
+builder.Services.AddScoped<ITrustedRecordCodeJwtContext, TrustedRecordCodeJwtContext>();
+builder.Services.AddScoped<ITrustedRecordCodeRequestExecutor, TrustedRecordCodeRequestExecutor>();
+builder.Services.AddSingleton<RecordCodeAllocateRateLimiter>();
 builder.Services.AddSingleton<IOrgDataScopeCandidateAvailabilityClassifier, MongoOrgDataScopeCandidateAvailabilityClassifier>();
 builder.Services.AddScoped<ITrustedSourceAuditIntentServiceIdentity, TrustedSourceAuditIntentServiceIdentity>();
 builder.Services.AddSingleton<Diten.Platform.API.Models.Audit.TrustedSourceAuditIntentRequestParser>();
@@ -225,6 +232,8 @@ builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<Trus
 builder.Services.AddSingleton<
     Diten.Platform.Application.Features.Workflow.Services.ITrustedWorkflowStartAuthorizationPolicy>(
     services => services.GetRequiredService<ConfiguredTrustedWorkflowStartAuthorizationPolicy>());
+// MOD-0262-FU01 DL-2 — trusted document repository consumer (closed list validated at start-up, executor, refusal records).
+builder.Services.AddTrustedDocumentRepositoryConsumer(builder.Configuration);
 
 // AG-STEP-011 / MOD-0018-FU14 Group B — self-explain observer (API-layer; reuses the API-layer PermissionClaimEvaluator).
 builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext, Diten.Platform.API.Observability.CorrelationContext>();

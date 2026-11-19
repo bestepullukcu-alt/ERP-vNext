@@ -24,6 +24,7 @@ public static class RecallServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<RecallSupport>();
         services.AddScoped<RecallReads>();
+        services.AddScoped<RecallCustomerDisplay>(); // MOD-0177-FU01: the one customer display / CRM name builder (pack §8.6–§8.8)
         services.AddScoped<IRecallRepository, RecallRepository>();
         services.AddScoped<IRecallActorRecords, RecallActorRecords>(); // WP-MVP1-NAMES1: who did an action (events / audit rows), batch reads
         services.AddScoped<RecallActorNames>();
@@ -53,6 +54,13 @@ public static class RecallServiceCollectionExtensions
             {
                 http.BaseAddress = gatewayUri;
                 http.Timeout = TimeSpan.FromSeconds(10); // the per-read 2 s bound is the reader's own
+            })
+            .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        // MOD-0177-FU01 (pack §8.6): CRM-ACCOUNT-LOOKUP U-1 with the caller's token + correlation id (D-3 / Q-1 closed: the user's token)
+        services.AddHttpClient<IRecallCustomerDirectory, CrmAccountLookupHttpReader>(http =>
+            {
+                http.BaseAddress = gatewayUri;
+                http.Timeout = TimeSpan.FromSeconds(10); // the 2 s per read and the 3 s page budget are the reader's own
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
         services.AddHttpClient<IRecallESignClient, GatewayRecallESignClient>(http =>

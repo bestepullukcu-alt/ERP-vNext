@@ -1,0 +1,57 @@
+PASS Meetings/MeetingTypes CI-1 Views/Meetings/MeetingTypes/Create.cshtml
+PASS Meetings/MeetingTypes CI-1 Views/Meetings/MeetingTypes/Edit.cshtml
+PASS Meetings/MeetingTypes CI-1 Views/Meetings/MeetingTypes/Index.cshtml
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/Create.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/Edit.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/Index.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/_DataTable.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/_Filter.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/_Form.cshtml 0
+PASS Meetings/MeetingTypes CI-2 Views/Meetings/MeetingTypes/_IndexL10n.cshtml 0
+TABAN FU-14 Meetings/MeetingTypes CI-3 Compact reference has Details.cshtml
+TABAN FU-14 Meetings/MeetingTypes CI-3 index.js exists
+TABAN FU-14 Meetings/MeetingTypes CI-3 index.l10n.js exists
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/Create.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/Edit.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/Index.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/_DataTable.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/_Filter.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/_Form.cshtml 0
+PASS Meetings/MeetingTypes CI-5 Views/Meetings/MeetingTypes/_IndexL10n.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/Create.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/Edit.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/Index.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/_DataTable.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/_Filter.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/_Form.cshtml 0
+PASS Meetings/MeetingTypes CI-6 Views/Meetings/MeetingTypes/_IndexL10n.cshtml 0
+TABAN FU-14 Meetings/MeetingTypes CI-9 wwwroot/assets/js/Meetings/MeetingTypes/index.js:yok:savedView
+kapandı - satır silinmeli Meetings/MeetingTypes CI-4 wwwroot/assets/js/Meetings/types/index.js
+PASS Meetings/types CI-1 Views/Meetings/types/Index.cshtml
+PASS Meetings/types CI-2 Views/Meetings/types/Index.cshtml 0
+PASS Meetings/types CI-4 wwwroot/assets/js/Meetings/types/form.js 0
+YENİ KIRMIZI Meetings/types CI-4 wwwroot/assets/js/Meetings/types/index.js 1 +1
+PASS Meetings/types CI-4 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-5 Views/Meetings/types/Index.cshtml 0
+PASS Meetings/types CI-5 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-5 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-5 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-6 Views/Meetings/types/Index.cshtml 0
+PASS Meetings/types CI-6 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-6 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-6 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-7 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-7 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-7 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-8 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-8 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-8 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-9 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-9 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-9 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+PASS Meetings/types CI-10 wwwroot/assets/js/Meetings/types/form.js 0
+PASS Meetings/types CI-10 wwwroot/assets/js/Meetings/types/index.js 0
+PASS Meetings/types CI-10 wwwroot/assets/js/Meetings/types/index.l10n.js 0
+başvuru taraması yok
+okunan görünüm metni: HEAD 8, taban 7
+süre: 0.6 s

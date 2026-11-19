@@ -112,6 +112,8 @@ public sealed class RecallController : Controller
     {
         if (!_permissions.Has(RecallKeys.TraceRun)) return Refuse(403, null);
         if (TraceQuery(rootLotId, direction) is not { } query) return Refuse(400, "INVALID_REQUEST");
+        // MOD-0177-FU01: the customer page of the trace (the CRM names of that slice) is forwarded as the screen asked
+        if (Request.Query.ContainsKey("customerPage")) query += new QueryBuilder().Add("customerPage", Request.Query["customerPage"]).ToString().Replace('?', '&');
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/trace{query}", null, null, ct);
         if (!reply.IsSuccess) return Failed("runTrace", reply);
         var trace = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
@@ -244,13 +246,18 @@ public sealed class RecallController : Controller
         if (!_permissions.Has(RecallKeys.CasesRead)) return Refuse(403, null);
         if (!Guid.TryParse(id, out var caseId)) return Refuse(400, "INVALID_REQUEST");
         if (!CaseParts.TryGetValue(part ?? string.Empty, out var suffix)) return Refuse(400, "INVALID_REQUEST");
-        var query = part == "timeline" ? new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]).ToString() : string.Empty;
+        var query = part == "timeline" ? new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]).ToString()
+            : CustomerPageParts.Contains(part ?? string.Empty) && Request.Query.ContainsKey("customerPage") ? new QueryBuilder().Add("customerPage", Request.Query["customerPage"]).ToString()
+            : string.Empty;
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/cases/{caseId:D}{suffix}{query}", null, null, ct);
         if (!reply.IsSuccess) return Failed("case " + (part ?? "detail"), reply);
         var data = JsonNode.Parse(reply.Body) ?? new JsonObject();
         var labels = await CaseLabelsAsync(data, ct);
         return Json(new JsonObject { ["data"] = data.DeepClone(), ["labelsAvailable"] = labels });
     }
+
+    /// <summary>MOD-0177-FU01 (RECALL 1.10.0, pack §8.6): the parts whose service read takes the customer page (the CRM names of that 25-customer slice).</summary>
+    public static readonly IReadOnlySet<string> CustomerPageParts = new HashSet<string>(StringComparer.Ordinal) { "customers", "scope", "diff", "returns", "effectiveness" };
 
     /// <summary>part → the service path after /cases/{id} (getCase, getCaseScope, getCaseScopeDiff, getCaseStock, getCaseCustomers, getCaseReturns, getCaseEffectiveness, getCaseTimeline).</summary>
     public static readonly IReadOnlyDictionary<string, string> CaseParts = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -858,6 +865,8 @@ public sealed class RecallController : Controller
             request.Headers.TryAddWithoutValidation(TenantHeaderName, tenantId);
             request.Headers.TryAddWithoutValidation(CorrelationHeaderName, HttpContext.TraceIdentifier);
             if (selected is not null) request.Headers.TryAddWithoutValidation(CompanySelection.LegalEntityHeader, selected.Value.ToString("D"));
+            // MOD-0177-FU01: the file's words follow the reader's language (the trace CSV's customer cells) — as SendAsync forwards it
+            if (Header("Accept-Language") is { } language) request.Headers.TryAddWithoutValidation("Accept-Language", language);
             using var response = await _httpClientFactory.CreateClient().SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {

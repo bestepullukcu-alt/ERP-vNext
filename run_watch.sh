@@ -22,18 +22,24 @@ echo "========================================="
 echo ""
 
 # Terminate processes on our target ports
-lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
-lsof -ti :4010,5067 | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
-killall -9 dotnet 2>/dev/null || true
+lsof -t -i :5000,5001,5056,5057,5058,5059,5060 -sTCP:LISTEN | xargs kill -9 2>/dev/null || true
+lsof -t -i :4010,5067 -sTCP:LISTEN | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
+# EES 2.5 (2026-11-09): no machine-wide `killall dotnet` any more -- it stopped other sessions' and other projects'
+# .NET processes. Only the processes on this project's ports (the two lines above) are stopped.
+
+# EES 2.5 (2026-11-09): services listen on this computer only by default. For phone / hand-terminal tests over the
+# network (e.g. MVP-5 warehouse modules) start with:  DITEN_DEV_HOST=0.0.0.0 ./run_watch.sh
+DITEN_DEV_HOST="${DITEN_DEV_HOST:-localhost}"
+echo "Servis adresi: $DITEN_DEV_HOST (ağdan erişim için DITEN_DEV_HOST=0.0.0.0)"
 
 # Watch mode commands
 # Note: dotnet watch run --project <path>
-prefix_logs "[AUTH    ]" "dotnet watch run --non-interactive --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
+prefix_logs "[AUTH    ]" "dotnet watch run --non-interactive --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://${DITEN_DEV_HOST}:5056" &
 sleep 2 # Auth service needs more startup time for seeding
-prefix_logs "[DEVEN   ]" "dotnet watch run --non-interactive --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://0.0.0.0:5058" &
-prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
-prefix_logs "[MDM     ]" "dotnet watch run --non-interactive --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5059" &
-prefix_logs "[HCM     ]" "dotnet watch run --non-interactive --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://0.0.0.0:5060" &
+prefix_logs "[DEVEN   ]" "dotnet watch run --non-interactive --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://${DITEN_DEV_HOST}:5058" &
+prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://${DITEN_DEV_HOST}:5057" &
+prefix_logs "[MDM     ]" "dotnet watch run --non-interactive --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://${DITEN_DEV_HOST}:5059" &
+prefix_logs "[HCM     ]" "dotnet watch run --non-interactive --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://${DITEN_DEV_HOST}:5060" &
 # FU-PM-01: MDM PRODUCT-MASTER gerçek uç noktası gelene kadar geçici — Prism product-master mock (4010)
 PRISM_JS=""
 for c in "${LOCALAPPDATA//\\//}"/npm-cache/_npx/*/node_modules/@stoplight/prism-cli/dist/index.js "$HOME"/.npm/_npx/*/node_modules/@stoplight/prism-cli/dist/index.js; do
@@ -45,12 +51,12 @@ if [ -n "$PRISM_JS" ] && [ -n "$PM_SPEC" ]; then
 else
     echo "⚠️ Prism product-master mock (4010) atlandı: prism-cli önbellekte ya da product-master-bundle.openapi.yaml bulunamadı (önbelleğe almak için: npx --yes @stoplight/prism-cli@4.10.5 --version)"
 fi
-prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet watch run --non-interactive --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5067" &
-prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
+prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet watch run --non-interactive --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://${DITEN_DEV_HOST}:5067" &
+prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://${DITEN_DEV_HOST}:5000" &
 # FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
 # Diten.Web'in /api/product-master okumaları Prism mock'a (4010) — yalnız bu Web süreci alır ve yalnız Development'ta geçerlidir.
 export Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/
-prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
+prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://${DITEN_DEV_HOST}:5001" &
 unset Inventory__ProductMasterBaseUrl # yalnız Diten.Web süreci aldı
 
 wait

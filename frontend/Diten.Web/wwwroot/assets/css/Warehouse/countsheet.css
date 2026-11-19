@@ -1,0 +1,58 @@
+/*
+ * MOD-0181 DL-4 — the count sheet (COUNTSHEET), phone first (pack AC-39: 375 px, no horizontal scroll; touch targets ≥ 48 × 48 px).
+ * Colours come from the theme variables only.
+ */
+.cc-sheet,
+#cc-sheet-bins {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+#cc-sheet-bins .card {
+    min-width: 0;
+}
+
+.cc-touch,
+.cc-sheet-line .btn,
+.cc-sheet-line .form-control {
+    min-height: 48px;
+    min-width: 48px;
+}
+
+.cc-sheet-line .cc-qty {
+    font-size: 1.25rem;
+    text-align: center;
+    max-width: 9rem;
+}
+
+.cc-sheet-line {
+    border-top: 1px solid var(--bs-border-color);
+    padding-top: 0.75rem;
+}
+
+.cc-sheet-line:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.cc-sheet-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1020;
+    max-width: 100%;
+}
+
+.cc-found.offcanvas-bottom {
+    height: auto;
+    max-height: 90vh;
+}
+
+@media (max-width: 400px) {
+    .cc-sheet-bar .cc-bar-text {
+        display: none;
+    }
+
+    .cc-sheet-line .cc-qty {
+        max-width: 6.5rem;
+    }
+}

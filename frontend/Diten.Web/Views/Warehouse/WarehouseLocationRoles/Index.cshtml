@@ -1,0 +1,99 @@
+@using Diten.Web.Views.Warehouse.WarehouseLocationRoles
+@using Diten.Web.Models.DataTable
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseLocationRolesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["WarehouseLocationRolesTitle"].Value;
+    ViewData["PageCode"] = "WAREHOUSELOCATIONROLES"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0178 DL-3 — Depo Lokasyon Rolleri (Golden Reference Slim, server mode, proxy profile — pack §9, §11, §11.3a).
+
+    UAS-001 — nothing below is drawn without warehouse.location-roles.read: no heading, no filter, no empty table, no button. No redirect.
+    A reader without warehouse.location-roles.manage gets no New / Edit / Delete / bulk control (absent, not disabled); the service's
+    [HasPermission] stays the authority.
+*@
+@if (!Perms.Has(WarehousePermissionKeys.LocationRolesRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["WarehouseLocationRolesTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canManage = Perms.Has(WarehousePermissionKeys.LocationRolesManage);
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete", Text = SharedLocalizer["BulkDelete"].Value, Icon = "bx bx-trash", ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm", Endpoint = "/Warehouse/WarehouseLocationRoles/bulk", Method = "POST"
+            }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/WarehouseLocationRoles/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["WarehouseLocationRolesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="roles-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @if (canManage)
+    {
+        <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+    }
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-warehouselocationroles" data-dt-standard="v2"> *@
+    <partial name="~/Views/Warehouse/WarehouseLocationRoles/_DataTable.cshtml" />
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+    <partial name="~/Views/Warehouse/WarehouseLocationRoles/_DetailsQuickView.cshtml" />
+
+    @if (canManage)
+    {
+        <partial name="~/Views/Warehouse/WarehouseLocationRoles/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/WarehouseLocationRoles/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/WarehouseLocationRoles/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/WarehouseLocationRoles/index.js" asp-append-version="true"></script>
+    }
+}

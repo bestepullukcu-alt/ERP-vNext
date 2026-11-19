@@ -5,7 +5,7 @@ public enum ReservationCreateOutcome
     /// <summary>Committed: reservation, position, audit and outbox.</summary>
     Created,
 
-    /// <summary>SKU <c>AvailableOnHand − Reserved</c> did not cover the quantity; nothing written.</summary>
+    /// <summary><c>AvailableOnHand − Reserved</c> of one scope level (MOD-0173-FU03: LOT, WAREHOUSE or SKU) did not cover the quantity; nothing written.</summary>
     InsufficientAvailable,
 
     /// <summary>A concurrent request committed the same idempotency key first.</summary>

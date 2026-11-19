@@ -1,5 +1,6 @@
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Features.Expiry.Ports;
+using Diten.InventoryService.Application.Features.Inventory.Ports;
 using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Expiry.Entities;
@@ -15,6 +16,9 @@ namespace Diten.InventoryService.Persistence.Expiry;
 /// The FEFO candidate read of one company + warehouse + SKU (pack §8.2): the balance rows of registered lots with on-hand &gt; 0, summed per
 /// lot into AVAILABLE vs. held, joined to the lots. ONE reader for the posting hook (KF-B, in the posting session) and the FEFO order read
 /// (KF-F) — so both apply <see cref="FefoOrderRule"/> to the same set. Covered by the prefix of <c>ux_balance_dimension</c> (CT-F13).
+/// <para>MOD-0173-FU03 DL-3 (Q-01 = A, XMC-001): with <c>freeBase</c> a lot's AVAILABLE on-hand is its FREE quantity — minus what ACTIVE,
+/// not yet due lot reservations of this warehouse hold (<see cref="ILotReservationReader"/>), floor 0. The posting hook passes it; the FEFO
+/// order read does not (FEFO-BUNDLE <c>basis: onHandAvailable</c>, unchanged — the known difference of FU03 §8.5).</para>
 /// </summary>
 public sealed class FefoCandidateReader
 {
@@ -22,17 +26,20 @@ public sealed class FefoCandidateReader
     private readonly IMongoCollection<Lot> _lots;
     private readonly ITenantContext _tenant;
     private readonly Application.Features.Recall.Ports.IRecallLotStatusReader _recall;
+    private readonly ILotReservationReader _reservations;
 
-    public FefoCandidateReader(IMongoDatabase database, ITenantContext tenant, Application.Features.Recall.Ports.IRecallLotStatusReader recall)
+    public FefoCandidateReader(IMongoDatabase database, ITenantContext tenant, Application.Features.Recall.Ports.IRecallLotStatusReader recall,
+        ILotReservationReader reservations)
     {
         _recall = recall;
+        _reservations = reservations;
         _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
         _lots = database.GetCollection<Lot>(TraceCollections.Lots);
         _tenant = tenant;
     }
 
     public async Task<IReadOnlyList<FefoCandidate>> ReadAsync(
-        IClientSessionHandle? session, string warehouseId, Guid itemId, Guid skuId, SkuLevel level, CancellationToken ct)
+        IClientSessionHandle? session, string warehouseId, Guid itemId, Guid skuId, SkuLevel level, CancellationToken ct, bool freeBase = false)
     {
         var b = Builders<InventoryBalance>.Filter;
         var filter = b.Eq(x => x.TenantId, _tenant.TenantId) & b.Eq(x => x.LegalEntityId, _tenant.LegalEntityId) & b.Eq(x => x.IsDeleted, false)
@@ -46,8 +53,14 @@ public sealed class FefoCandidateReader
         var lots = await LotsAsync(session, perLot.Select(p => p.LotId), ct);
         // FEFO 1.3.0 (MOD-0177 CT-R12): lots under an active recall, tenant-wide (CT-R7) — excluded with reason RECALLED, posting and read alike
         var recalled = await _recall.UnderRecallAsync(lots.Keys.ToList(), ct);
-        return perLot.Where(p => lots.ContainsKey(p.LotId)).Select(p => new FefoCandidate(lots[p.LotId], p.Available, p.Held, recalled.Contains(p.LotId))).ToList();
+        // FU03 DL-3: the reserved quantity per lot — the port reads in the request's bound posting session, i.e. this same session
+        var reserved = freeBase ? await _reservations.ReservedByLotAsync(itemId, skuId, level, warehouseId, ct) : null;
+        return perLot.Where(p => lots.ContainsKey(p.LotId))
+            .Select(p => new FefoCandidate(lots[p.LotId], Free(p.Available, lots[p.LotId].Id, reserved), p.Held, recalled.Contains(p.LotId))).ToList();
     }
+
+    private static decimal Free(decimal available, Guid lotId, IReadOnlyDictionary<Guid, decimal>? reserved)
+        => reserved is null ? available : Math.Max(0m, available - reserved.GetValueOrDefault(lotId));
 
     internal async Task<Dictionary<string, Lot>> LotsAsync(IClientSessionHandle? session, IEnumerable<string> lotIds, CancellationToken ct)
     {

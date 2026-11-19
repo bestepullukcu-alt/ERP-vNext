@@ -639,4 +639,30 @@
   <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>Rechercher une personne par son nom</value></data>
   <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>Rechercher</value></data>
   <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>Aucun utilisateur actif ne correspond à ce nom.</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>Non résolu</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>Introuvable</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>Non résolu ({0})</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>Introuvable ({0})</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0} (Ancien enregistrement)</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0} (Sans identité CRM)</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>Noms des clients</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>Depuis le CRM, au moment de l’export</value></data>
+  <data name="Recall.Customer.LegacyBadge" xml:space="preserve"><value>Ancien enregistrement</value></data>
+  <data name="Recall.Customer.NoCrmBadge" xml:space="preserve"><value>Sans identité CRM</value></data>
+  <data name="Recall.Customer.LegacyHint" xml:space="preserve"><value>Enregistré avant l’identité client CRM ; il n’est pas rattaché automatiquement à la nouvelle identité.</value></data>
+  <data name="Recall.Customer.NoCrmHint" xml:space="preserve"><value>L’identité client CRM était absente ou illisible lors de la lecture de l’expédition.</value></data>
+  <data name="Recall.Customer.ManualHint" xml:space="preserve"><value>Saisi manuellement ; non rattaché à une identité client CRM.</value></data>
+  <data name="Recall.Customer.CrmUnavailable" xml:space="preserve"><value>Le CRM est inaccessible, réessayez plus tard</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Le CRM est inaccessible, réessayez plus tard</value></data>
+  <data name="Recall.Customer.CrmForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à voir les noms des clients CRM ; contactez votre administrateur.</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN" xml:space="preserve"><value>Vous n’êtes pas autorisé à voir les noms des clients CRM ; contactez votre administrateur.</value></data>
+  <data name="Recall.Customer.Deferred" xml:space="preserve"><value>Nom absent de cette page</value></data>
+  <data name="Recall.Customer.NamesPage" xml:space="preserve"><value>Clients {0}–{1} / {2}</value></data>
+  <data name="Recall.Customer.PagePrev" xml:space="preserve"><value>Précédent</value></data>
+  <data name="Recall.Customer.PageNext" xml:space="preserve"><value>Suivant</value></data>
+  <data name="Recall.Customer.Forbidden" xml:space="preserve"><value>Autorisation manquante</value></data>
+  <data name="Recall.Customer.ForbiddenWith" xml:space="preserve"><value>Autorisation manquante ({0})</value></data>
+  <data name="Recall.Customer.ExportForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à voir les noms des clients CRM ; l’export est impossible. Contactez votre administrateur.</value></data>
 </root>

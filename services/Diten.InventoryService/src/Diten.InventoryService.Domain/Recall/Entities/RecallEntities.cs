@@ -286,6 +286,18 @@ public sealed class RecallScopeItem : EntityBase
 
     public string? CustomerRef { get; set; }
 
+    /// <summary>
+    /// MOD-0177-FU01 (pack §4.1): the source of <see cref="CustomerRef"/> on a Shipment item; null = written before FU01 (legacy) — sticky: a
+    /// null row never takes a source (re-trace, revision copy, restore). Not part of the rs-scope-v1 seal (CT-1).
+    /// </summary>
+    public RecallCustomerRefSource? CustomerRefSource { get; set; }
+
+    /// <summary>
+    /// MOD-0177-FU01 (pack §4.1, §8.5): the last re-trace read the MVP-6 shipment (Ok) but got no customerRef, and the stored CRM key was kept.
+    /// Read only while <see cref="CustomerRefSource"/> is Crm; not part of the seal, not in the audit detail.
+    /// </summary>
+    public bool NoCrmWarning { get; set; }
+
     public decimal? Quantity { get; set; }
 
     public string? BaseUomId { get; set; }

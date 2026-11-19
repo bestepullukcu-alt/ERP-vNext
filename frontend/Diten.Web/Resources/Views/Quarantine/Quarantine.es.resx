@@ -455,4 +455,17 @@
   <data name="Help.QUARANTINEMANUALHOLD.Step2Title" xml:space="preserve"><value>Confirme con un motivo</value></data>
   <data name="Help.QUARANTINEMANUALHOLD.Step2" xml:space="preserve"><value>La confirmación pide un motivo de al menos 10 caracteres; el registro espera luego una decisión en la cola.</value></data>
   <data name="Quarantine.Details.Moves.UnknownUser" xml:space="preserve"><value>Usuario desconocido</value></data>
+  <data name="Quarantine.HoldState.Voided" xml:space="preserve"><value>Anulado · Origen revertido</value></data>
+  <data name="Quarantine.Blocked.Status.Voided" xml:space="preserve"><value>Anulado · Origen revertido</value></data>
+  <data name="Quarantine.Workflow.Voided" xml:space="preserve"><value>Anulada</value></data>
+  <data name="Quarantine.History.SourceReversed" xml:space="preserve"><value>Origen revertido — registro anulado</value></data>
+  <data name="Quarantine.History.SourceReversalConflict" xml:space="preserve"><value>Origen revertido · discrepancia</value></data>
+  <data name="Quarantine.Details.VoidedBanner" xml:space="preserve"><value>Este registro está anulado: el movimiento de origen se revirtió con {0} el {1} por {2}.</value></data>
+  <data name="Quarantine.Details.ConflictBanner" xml:space="preserve"><value>El movimiento de origen se revirtió con {0} el {1} por {2}.</value></data>
+  <data name="Quarantine.Common.ConflictBadge" xml:space="preserve"><value>Origen revertido · discrepancia</value></data>
+  <data name="Quarantine.Conflict.Cause.Decided" xml:space="preserve"><value>El registro ya estaba decidido; el stock cambió fuera de este registro — se requiere control de QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.LinesPosted" xml:space="preserve"><value>Se contabilizó una línea de la decisión; el stock cambió fuera de este registro — se requiere control de QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.QuantityChanged" xml:space="preserve"><value>El registro tiene menos que el movimiento de origen; el stock cambió fuera de este registro — se requiere control de QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.OwnMovementReversed" xml:space="preserve"><value>Se revirtió el propio movimiento de cuarentena del registro; el stock cambió fuera de este registro — se requiere control de QA.</value></data>
+  <data name="Quarantine.Conflict.Cause.LotChanged" xml:space="preserve"><value>El cambio de lote de la decisión ya se había aplicado; el lote no se revirtió — QA controla el estado del lote.</value></data>
 </root>

@@ -47,5 +47,8 @@ public enum SchemaProfile
     /// <summary>MOD-0022 e-Signature Service (E2): records, invalidations, requests, policies, policy history, meanings,
     /// signable actions, exports, number counters. (WP-MVP1-SYNC1: 12 → 13 — main's TimeEntry took 12; the value is a
     /// code-only selector, never stored.)</summary>
-    ESignature = 13
+    ESignature = 13,
+
+    /// <summary>MOD-0040-FU02 Record Code Service (RCS-001): counters, the allocation ledger, group-prefix settings.</summary>
+    RecordCodes = 14
 }

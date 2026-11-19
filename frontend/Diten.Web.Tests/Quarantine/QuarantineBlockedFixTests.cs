@@ -99,8 +99,9 @@ public sealed class QuarantineBlockedFixTests : IClassFixture<WebApplicationFact
         var html = await TraceViewRenderer.RenderAsync(_factory, "/Views/Quarantine/Blocked.cshtml", null, "quarantine.holds.read", "quarantine.blocked.block");
         var select = Regex.Match(html, @"<select id=""filterStatus""[^>]*>([\s\S]*?)</select>");
         Assert.True(select.Success, "no status filter on the page");
-        var options = Regex.Matches(select.Groups[1].Value, @"<option value=""([^""]*)"">([^<]*)</option>").Select(m => (m.Groups[1].Value, m.Groups[2].Value)).ToList();
-        Assert.Equal([("", "Open"), ("Closed", "Closed"), ("SampleRetained", "Sample retained"), ("All", "All")], options);
+        var options = Regex.Matches(select.Groups[1].Value, @"<option value=""([^""]*)"">([^<]*)</option>").Select(m => (m.Groups[1].Value, WebUtility.HtmlDecode(m.Groups[2].Value))).ToList();
+        // MOD-0175-FU01 DL-2 (AC-27): the Voided choice (QUARANTINE 1.4.0 BlockedStatus) sits before "All"
+        Assert.Equal([("", "Open"), ("Closed", "Closed"), ("SampleRetained", "Sample retained"), ("Voided", "Void · Source reversed"), ("All", "All")], options);
         Assert.Contains("id=\"qr-block-available\"", html, StringComparison.Ordinal);
         Assert.Matches(new Regex(@"id=""qr-block-uom""[\s\S]*?id=""qr-block-available""[\s\S]*?data-err=""qty"""), html);
     }

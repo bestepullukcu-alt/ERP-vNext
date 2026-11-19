@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Features.Quarantine.Services;
 
 namespace Diten.InventoryService.Api.CentralAudit;
 
@@ -13,19 +14,26 @@ namespace Diten.InventoryService.Api.CentralAudit;
 /// <para>Outside an HTTP request (the recall quarantine sweeper, the MOD-0023 outcome consumer) the scope is the one
 /// that code set for the user it acts for (the case's requester / the approver): the record names that user, with
 /// actor type <c>TenantUser</c> and no display name.</para>
+///
+/// <para><b>System actor mode</b> (MOD-0175-FU01 Q-03 = A; XMC-001 Beste 2026-11-03): while the dispatch of a source-reversal command
+/// runs (<see cref="QuarantineSystemActor"/>, opened by its own pipeline behavior whoever sends it), the record is
+/// <c>ActorType System</c>, <see cref="QuarantineSystemActor.ActorId"/>, no display name, and the REVERSAL's correlation id. Tenant
+/// and company are unchanged (the record's scope). Every other command — the REVERSAL's own posting included — is untouched.</para>
 /// </summary>
 public sealed class InventoryCentralAuditScope(
     ITenantContext tenant,
     ICorrelationContext correlation,
     IHttpContextAccessor http) : ICentralAuditScope
 {
+    private static QuarantineSystemActor.Frame? SystemActor => QuarantineSystemActor.Current;
+
     public bool IsResolved => tenant.IsResolved;
 
     public Guid TenantId => tenant.TenantId;
 
     public Guid? CompanyId => tenant.LegalEntityId;
 
-    public Guid? ActorId => tenant.UserId;
+    public Guid? ActorId => SystemActor is null ? tenant.UserId : QuarantineSystemActor.ActorId;
 
     /// <summary>
     /// The name AuthService writes (<c>given_name</c> + <c>family_name</c>, or <c>name</c>). Inventory's JWT bearer maps
@@ -37,6 +45,11 @@ public sealed class InventoryCentralAuditScope(
     {
         get
         {
+            if (SystemActor is not null)
+            {
+                return null;
+            }
+
             var user = http.HttpContext?.User;
             string? Claim(params string[] types) => types.Select(t => user?.FindFirst(t)?.Value).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 
@@ -51,18 +64,25 @@ public sealed class InventoryCentralAuditScope(
         }
     }
 
-    public string ActorType => http.HttpContext?.User.FindFirst("actor_type")?.Value switch
-    {
-        "platform_admin" => CentralAuditActorTypes.PlatformAdministrator,
-        "partner_admin" => CentralAuditActorTypes.PartnerAdministrator,
-        _ => CentralAuditActorTypes.TenantUser
-    };
+    public string ActorType => SystemActor is not null
+        ? CentralAuditActorTypes.System
+        : http.HttpContext?.User.FindFirst("actor_type")?.Value switch
+        {
+            "platform_admin" => CentralAuditActorTypes.PlatformAdministrator,
+            "partner_admin" => CentralAuditActorTypes.PartnerAdministrator,
+            _ => CentralAuditActorTypes.TenantUser
+        };
 
-    /// <summary>The request's correlation id; a background flow has none (the recorder then uses the event id).</summary>
+    /// <summary>The request's correlation id (system actor mode: the REVERSAL's); a background flow has none (the recorder then uses the event id).</summary>
     public Guid CorrelationId
     {
         get
         {
+            if (SystemActor is { CorrelationId: var reversal } && reversal != Guid.Empty)
+            {
+                return reversal;
+            }
+
             try
             {
                 return correlation.CorrelationId;

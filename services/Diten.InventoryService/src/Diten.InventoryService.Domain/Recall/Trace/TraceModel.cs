@@ -1,4 +1,5 @@
 using Diten.InventoryService.Domain.Enums;
+using Diten.InventoryService.Domain.Recall.Enums;
 
 namespace Diten.InventoryService.Domain.Recall.Trace;
 
@@ -51,8 +52,12 @@ public enum TraceSide
 public sealed record TraceMovementRef(string TransactionId, string? TransactionNumber, string MovementType, DateTimeOffset PostingDate,
     string SourceModule, string? SourceDocumentId);
 
-/// <summary>The shipment read result on a Shipment node (display only — never part of the seal, never a quantity source).</summary>
-public sealed record TraceShipmentInfo(ShipmentReadOutcome Read, string? Status, DateTimeOffset? ActualDeliverAt, string? ShipToReference);
+/// <summary>
+/// The shipment read result on a Shipment node (display only — never part of the seal, never a quantity source). MOD-0177-FU01:
+/// <see cref="CustomerAccountId"/> = the parsed SHIPMENT-BUNDLE 3.5.0 <c>customerRef</c> (a CRM account id; null when absent or invalid).
+/// </summary>
+public sealed record TraceShipmentInfo(ShipmentReadOutcome Read, string? Status, DateTimeOffset? ActualDeliverAt, string? ShipToReference,
+    Guid? CustomerAccountId = null);
 
 /// <summary>One node of the trace. <see cref="Quantity"/> is in <see cref="BaseUomId"/> of the node's SKU.</summary>
 public sealed class TraceNode
@@ -94,8 +99,14 @@ public sealed class TraceNode
 
     public TraceShipmentInfo? Shipment { get; set; }
 
-    /// <summary>The customer reference of a Shipment node: <c>shipToReference</c> when read, else <c>DOC:{sourceDocumentId}</c> (pack §8.6).</summary>
+    /// <summary>
+    /// The customer reference of a Shipment node (MOD-0177-FU01 §8.2): the CRM account id (<c>customerRef</c>) when read, else
+    /// <c>shipToReference</c> when read (and not a "D" GUID), else <c>DOC:{sourceDocumentId}</c>.
+    /// </summary>
     public string? CustomerRef { get; set; }
+
+    /// <summary>MOD-0177-FU01: where <see cref="CustomerRef"/> came from (written with it).</summary>
+    public RecallCustomerRefSource? CustomerRefSource { get; set; }
 
     public List<string> Serials { get; init; } = [];
 

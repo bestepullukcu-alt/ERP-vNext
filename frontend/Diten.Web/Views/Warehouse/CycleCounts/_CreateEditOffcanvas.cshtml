@@ -1,0 +1,104 @@
+@model Diten.Web.Models.Warehouse.CycleCountWriteRequest
+@using Diten.Web.Views.Warehouse.CycleCounts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CycleCountsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Create / edit a Draft count — the EIGHT form fields of pack §4.1 (form_field_count = 8, slim): warehouse, type, blind, scope, SKU filter, planned
+    date, assignee, note. "Başlat" is NOT here: it is its own confirmed action (the snapshot is taken then and the scope never changes after). The form
+    is filled and sent by index.js (no asp-for binding); the model directive names the write contract it produces (CycleCountWriteRequest).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset wh-touch" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCycleCountAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formCycleCount" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="ccWarehouse" class="form-label fw-medium">@Localizer["FieldWarehouse"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                        <select id="ccWarehouse" class="form-select" data-placeholder="@Localizer["WarehousePlaceholder"]" required><option value=""></option></select>
+                    </div>
+                    <div class="invalid-feedback d-block" id="ccWarehouseError"></div>
+                </div>
+
+                <div class="col-12">
+                    <span class="form-label fw-medium d-block">@Localizer["FieldType"] <span class="text-danger">*</span></span>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ccType" id="ccTypeCycle" value="Cycle" checked />
+                            <label class="form-check-label" for="ccTypeCycle">@Localizer["CycleCount.Type.Cycle"]</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="ccType" id="ccTypeFull" value="Full" />
+                            <label class="form-check-label" for="ccTypeFull">@Localizer["CycleCount.Type.Full"]</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="ccBlind" />
+                        <label class="form-check-label fw-medium" for="ccBlind">@Localizer["FieldBlind"]</label>
+                    </div>
+                    <small class="text-muted d-block">@Localizer["BlindHint"]</small>
+                </div>
+
+                <div class="col-12" id="ccScopeBlock">
+                    <label for="ccScope" class="form-label fw-medium">@Localizer["FieldScope"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-grid-alt diten-field-icon" aria-hidden="true"></i>
+                        <select id="ccScope" class="form-select" multiple="multiple" data-placeholder="@Localizer["ScopePlaceholder"]"></select>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["ScopeHint"]</small>
+                    <div class="invalid-feedback d-block" id="ccScopeError"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="ccSkus" class="form-label fw-medium">@Localizer["FieldSkus"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                        <select id="ccSkus" class="form-select" multiple="multiple" data-placeholder="@Localizer["SkusPlaceholder"]"></select>
+                    </div>
+                    <small class="text-muted d-block mt-1">@Localizer["SkusHint"]</small>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="ccPlannedDate" class="form-label fw-medium">@Localizer["FieldPlannedDate"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                        <input type="date" id="ccPlannedDate" class="form-control" required />
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6">
+                    <label for="ccAssignee" class="form-label fw-medium">@Localizer["FieldAssignee"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                        <select id="ccAssignee" class="form-select" data-placeholder="@Localizer["AssigneePlaceholder"]"><option value=""></option></select>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="ccNote" class="form-label fw-medium">@Localizer["FieldNote"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="ccNote" class="form-control" rows="3" maxlength="500"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button data-dt-primary="enter" type="button" id="btnSaveCycleCount" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

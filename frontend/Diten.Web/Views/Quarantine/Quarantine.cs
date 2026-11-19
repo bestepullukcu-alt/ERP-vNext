@@ -457,6 +457,19 @@ public sealed class Quarantine
         "Quarantine.Errors.LOT_EXPIRED",
         "Quarantine.Errors.LOT_RETEST_DUE",
         "Quarantine.Errors.POSTING_PERIOD_CLOSED",
-        "Quarantine.Errors.UNKNOWN_LOCATION"
+        "Quarantine.Errors.UNKNOWN_LOCATION",
+        "Quarantine.HoldState.Voided",
+        "Quarantine.Blocked.Status.Voided",
+        "Quarantine.Workflow.Voided",
+        "Quarantine.History.SourceReversed",
+        "Quarantine.History.SourceReversalConflict",
+        "Quarantine.Details.VoidedBanner",
+        "Quarantine.Details.ConflictBanner",
+        "Quarantine.Common.ConflictBadge",
+        "Quarantine.Conflict.Cause.Decided",
+        "Quarantine.Conflict.Cause.LinesPosted",
+        "Quarantine.Conflict.Cause.QuantityChanged",
+        "Quarantine.Conflict.Cause.OwnMovementReversed",
+        "Quarantine.Conflict.Cause.LotChanged" // MOD-0175-FU01 DL-2 (pack §11: 13 keys)
     ];
 }

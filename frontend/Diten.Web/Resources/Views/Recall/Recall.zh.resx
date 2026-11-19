@@ -639,4 +639,30 @@
   <data name="Recall.Drills.OwnerSearch" xml:space="preserve"><value>按姓名搜索人员</value></data>
   <data name="Recall.Drills.OwnerFind" xml:space="preserve"><value>查找</value></data>
   <data name="Recall.Drills.OwnerNone" xml:space="preserve"><value>没有与此姓名匹配的活跃用户。</value></data>
+  <data name="Recall.Customer.NameCode" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.Unresolved" xml:space="preserve"><value>无法解析</value></data>
+  <data name="Recall.Customer.NotFound" xml:space="preserve"><value>未找到</value></data>
+  <data name="Recall.Customer.Distinguisher" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="Recall.Customer.UnresolvedWith" xml:space="preserve"><value>无法解析（{0}）</value></data>
+  <data name="Recall.Customer.NotFoundWith" xml:space="preserve"><value>未找到（{0}）</value></data>
+  <data name="Recall.Customer.LegacyMarked" xml:space="preserve"><value>{0}（旧记录）</value></data>
+  <data name="Recall.Customer.NoCrmMarked" xml:space="preserve"><value>{0}（无 CRM 标识）</value></data>
+  <data name="Recall.Ev.W.customerNames" xml:space="preserve"><value>客户名称</value></data>
+  <data name="Recall.Ev.W.customerNamesSnapshot" xml:space="preserve"><value>来自 CRM，导出时</value></data>
+  <data name="Recall.Customer.LegacyBadge" xml:space="preserve"><value>旧记录</value></data>
+  <data name="Recall.Customer.NoCrmBadge" xml:space="preserve"><value>无 CRM 标识</value></data>
+  <data name="Recall.Customer.LegacyHint" xml:space="preserve"><value>在 CRM 客户标识之前记录；不会自动关联到新标识。</value></data>
+  <data name="Recall.Customer.NoCrmHint" xml:space="preserve"><value>读取发货时，CRM 客户标识缺失或无法读取。</value></data>
+  <data name="Recall.Customer.ManualHint" xml:space="preserve"><value>手动输入；不关联 CRM 客户标识。</value></data>
+  <data name="Recall.Customer.CrmUnavailable" xml:space="preserve"><value>无法连接 CRM，请稍后重试</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>无法连接 CRM，请稍后重试</value></data>
+  <data name="Recall.Customer.CrmForbidden" xml:space="preserve"><value>您无权查看 CRM 客户名称；请联系管理员。</value></data>
+  <data name="Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN" xml:space="preserve"><value>您无权查看 CRM 客户名称；请联系管理员。</value></data>
+  <data name="Recall.Customer.Deferred" xml:space="preserve"><value>名称不在此页</value></data>
+  <data name="Recall.Customer.NamesPage" xml:space="preserve"><value>客户 {0}–{1} / {2}</value></data>
+  <data name="Recall.Customer.PagePrev" xml:space="preserve"><value>上一页</value></data>
+  <data name="Recall.Customer.PageNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="Recall.Customer.Forbidden" xml:space="preserve"><value>缺少权限</value></data>
+  <data name="Recall.Customer.ForbiddenWith" xml:space="preserve"><value>缺少权限（{0}）</value></data>
+  <data name="Recall.Customer.ExportForbidden" xml:space="preserve"><value>您无权查看 CRM 客户名称；无法导出。请联系管理员。</value></data>
 </root>

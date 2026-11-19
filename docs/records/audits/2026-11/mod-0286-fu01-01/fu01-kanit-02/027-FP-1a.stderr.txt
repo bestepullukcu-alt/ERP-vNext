@@ -1,0 +1,1 @@
+HATA: git show 265b1af6cfde573acd61ca0bc581c5930ef542a2:tests/ui-compliance-baseline.tsv → çıkış 128: fatal: path 'tests/ui-compliance-baseline.tsv' exists on disk, but not in '265b1af6cfde573acd61ca0bc581c5930ef542a2'

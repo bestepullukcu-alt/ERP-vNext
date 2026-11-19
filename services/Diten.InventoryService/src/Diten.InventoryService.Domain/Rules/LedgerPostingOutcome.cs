@@ -25,5 +25,11 @@ public enum LedgerPostingOutcome
     /// (<c>LOT_BLOCKED</c> / <c>LOT_EXPIRED</c> after a concurrent status change, a serial taken meanwhile …); the code is
     /// in <see cref="LedgerPostingResult.RefusalCode"/>. Nothing was written.
     /// </summary>
-    LotOrSerialRefused
+    LotOrSerialRefused,
+
+    /// <summary>
+    /// MOD-0173-FU03 §8.3: the reservation the movement named by <c>reservationId</c> refused it inside the posting transaction
+    /// (RESERVATION_NOT_FOUND / _NOT_ACTIVE / _MISMATCH / _QUANTITY_EXCEEDED, code in <see cref="LedgerPostingResult.RefusalCode"/>). Nothing was written.
+    /// </summary>
+    ReservationRefused
 }

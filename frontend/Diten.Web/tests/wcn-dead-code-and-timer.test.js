@@ -55,8 +55,7 @@ describe("the dead renders are gone, not just unwired", () => {
      * The distinction this guard exists to make still stands: code with no caller is removed, code with the
      * wrong caller is moved. These were the second kind.
      */
-    // Unreachable: a Bootstrap dropdown replaced this menu, so no click could arrive.
-    "openNew",
+    // `openNew` (unreachable: a Bootstrap dropdown replaced its menu) moved to DELETED_IN_THIS_MODULE below.
     /*
      * The bulk strip: `data-wcn-check` was read in four places and drawn in none.
      * ⚠ `bulkBar` IS NOT ON THIS LIST, deliberately. It is also a local variable in `diten-datatable.js` —
@@ -73,8 +72,13 @@ describe("the dead renders are gone, not just unwired", () => {
    * `VisitFrequencyPolicies/details.js` (merged from main) defines its own `renderNotes`, and the tree-wide
    * scan reported that healthy code as OUR leftover. Same reasoning the list above already applies to
    * `bulkBar`: a generic name is checked inside WorkCenterNext, a distinctive one across the tree.
+   *
+   * `openNew` joined this list 2026-11-06 for the same reason. CRM's `VisitEvidenceSettings/visit-evidence-settings.js`
+   * (PR #141, 2026-10-13) opens its own "new exception" form with a function of that name — healthy code the
+   * tree-wide scan reported as OUR leftover the first time these tests ran in CI (JS-CI-01). Ours was unreachable:
+   * a Bootstrap dropdown replaced its menu, so no click could arrive.
    */
-  const DELETED_IN_THIS_MODULE = ["renderNotes", "renderAgenda"];
+  const DELETED_IN_THIS_MODULE = ["renderNotes", "renderAgenda", "openNew"];
 
   it("names none of them anywhere under wwwroot or Views", () => {
     const files = shipped();

@@ -2,7 +2,8 @@
  * MOD-0175 Q5 — the shared helpers of the quarantine pages (pack §11.2). No quarantine rule lives here: the server decides
  * (QUARANTINE-BUNDLE 1.0.0). This file holds the vocabulary reader, formatting, the same-origin calls (/Quarantine/api/** —
  * antiforgery + Idempotency-Key + If-Match), the status badges, the tab counts, and the ONE sign-and-send step shared by Karar
- * Ver, Disposition, Blokeyi Kaldır and Karar Gönder:
+ * Ver, Disposition, Blokeyi Kaldır and Karar Gönder. MOD-0175-FU01 DL-2: the open predicate (holdOpen — Voided is terminal) and the
+ * "Kaynak geri alındı · uyuşmazlık" badge (conflictBadge) live here too, shared by the queue, the detail and Bloke Stok:
  *   decision.signatureRequired → ESign.open({ module: 'quarantine', subjectType: 'quarantine.decision', subjectId, actionCode })
  *   (MOD-0022 E5W1 dialog, CT-D17 — 0175 draws no password field, KQ-G, and keeps only the signature id) → submitDecision.
  * A cancelled signature sends nothing. Buttons are shown by action code (can) — never by a permission key.
@@ -91,22 +92,42 @@ window.QuarantineUi = (function () {
     const STOCK = { QUARANTINE: 'bg-label-warning', QUALITY_INSPECTION: 'bg-label-info', BLOCKED: 'bg-label-danger', AVAILABLE: 'bg-label-success' };
     const stockBadge = (status) => status ? `<span class="badge ${STOCK[status] || 'bg-label-secondary'}">${esc(t('Quarantine.Status.' + status) || status)}</span>` : '';
     const PENDING = ['Submitted', 'PendingApproval', 'Approved', 'ApplyFailed', 'StartFailed', 'Draft'];
-    /** Durum column: Bekliyor / İncelemede / Onay bekliyor / Karar Verildi (§11.3; "Onay bekliyor" = a decision in flight, §21.3 #1). */
+    /**
+     * MOD-0175-FU01 DL-2 (pack §8.5, §11): the ONE open predicate of a hold on the page — Decided and Voided (QUARANTINE 1.4.0, the
+     * source movement was reversed) are terminal; every "Karar Ver" / "İncelemeye al" / late-colour check asks this, never `!== 'Decided'`.
+     */
+    const TERMINAL_HOLD = ['Decided', 'Voided'];
+    const holdOpen = (hold) => !!hold?.status && !TERMINAL_HOLD.includes(hold.status);
+    /** Durum column: Bekliyor / İncelemede / Onay bekliyor / Karar Verildi / Geçersiz (§11.3; "Onay bekliyor" = a decision in flight, §21.3 #1). */
     const holdState = (hold) => {
         if (hold?.status === 'Decided') return 'Decided';
+        if (hold?.status === 'Voided') return 'Voided';
         const state = hold?.activeDecision?.state;
         if (state && state !== 'Draft' && PENDING.includes(state)) return 'Pending';
         return hold?.reviewState === 'InReview' ? 'InReview' : 'Waiting';
     };
-    const HOLD = { Waiting: 'bg-label-secondary', InReview: 'bg-label-primary', Pending: 'bg-label-warning', Decided: 'bg-label-success' };
+    const HOLD = { Waiting: 'bg-label-secondary', InReview: 'bg-label-primary', Pending: 'bg-label-warning', Decided: 'bg-label-success', Voided: 'bg-label-dark' };
     const holdBadge = (hold) => {
         const s = holdState(hold);
-        return `<span class="badge ${HOLD[s]}">${esc(t('Quarantine.HoldState.' + s))}</span>`;
+        return `<span class="badge ${HOLD[s]}" data-qr-hold-state="${esc(s)}">${esc(t('Quarantine.HoldState.' + s))}</span>`;
+    };
+    /**
+     * MOD-0175-FU01 DL-2 (pack §11 "Uyuşmazlık", AC-28): "Kaynak geri alındı · uyuşmazlık" + the cause sentence on EVERY record that
+     * carries sourceReversalConflict — whatever its status (Open, DecisionPending, Decided, Closed, SampleRetained and Voided alike).
+     */
+    const conflictCause = (mark) => (mark?.cause ? t('Quarantine.Conflict.Cause.' + mark.cause) || mark.cause : '');
+    const conflictBadge = (record) => {
+        const mark = record?.sourceReversalConflict;
+        if (!mark) return '';
+        return `<div class="d-flex flex-column gap-1 mt-1" data-qr-conflict="${esc(mark.cause || '')}">`
+            + `<span class="badge bg-label-danger align-self-start"><i class="bx bx-error me-1"></i>${esc(t('Quarantine.Common.ConflictBadge'))}</span>`
+            + `<small class="text-danger">${esc(conflictCause(mark))}</small></div>`;
     };
     const DECISION = {
         Draft: 'bg-label-secondary', Submitted: 'bg-label-info', PendingApproval: 'bg-label-warning', Approved: 'bg-label-info',
         Applied: 'bg-label-success', Rejected: 'bg-label-danger', Cancelled: 'bg-label-secondary', TimedOut: 'bg-label-secondary',
-        Withdrawn: 'bg-label-secondary', StartFailed: 'bg-label-danger', ApplyFailed: 'bg-label-danger', FourEyesViolation: 'bg-label-danger'
+        Withdrawn: 'bg-label-secondary', StartFailed: 'bg-label-danger', ApplyFailed: 'bg-label-danger', FourEyesViolation: 'bg-label-danger',
+        Voided: 'bg-label-dark'
     };
     const decisionBadge = (state) => state ? `<span class="badge ${DECISION[state] || 'bg-label-secondary'}">${esc(t('Quarantine.Workflow.' + state) || state)}</span>` : '';
     const lotUrl = (lotId) => `/Lots/Details?${new URLSearchParams({ lotId })}`;
@@ -251,7 +272,7 @@ window.QuarantineUi = (function () {
         t, has, esc, qty, date, dateTime, daysUntil, newKey, byId, person, personHtml, levelLabel,
         can: (code) => actions[code] === true,
         get, api, write, send, codeOf, errorText, showError, hideError, toast,
-        stockBadge, holdState, holdBadge, decisionBadge, lotUrl, lotLink, productCell, whereCell, uom,
+        stockBadge, holdOpen, holdState, holdBadge, conflictCause, conflictBadge, decisionBadge, lotUrl, lotLink, productCell, whereCell, uom,
         setCount, loadCounts, counter, fieldError, clearFieldErrors,
         summaryHtml, signatureRequired, showSignStep, signAndSubmit, announceSent
     };

@@ -15,7 +15,7 @@ public sealed class DwsMongoCollection : ICollectionFixture<DisposableDwsMongo>
 
 public sealed class DisposableDwsMongo : IAsyncLifetime
 {
-    private const string Mongod = "/opt/homebrew/bin/mongod";
+    private static string Mongod => MongodBinary.Location;
     private Process? _process;
     private string? _directory;
 

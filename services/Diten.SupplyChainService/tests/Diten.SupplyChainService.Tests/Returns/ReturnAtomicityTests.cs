@@ -47,6 +47,8 @@ public sealed class ReturnTestFixture
  // fixture alone (Q214 R2). Db is that same client, so arming and the commits under test agree.
  public string AppName {get;private set;}=null!;
  public ReturnScope Scope {get;set;}=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid());public Guid Shipment=Guid.NewGuid();public Guid Root=Guid.NewGuid();public bool Offline;public int Observations;
+ /// <summary>MOD-0186 r10 §35.6: the shipment customerRef the observation answers (null = an old shipment).</summary>
+ public string? CustomerRef;
  public List<ReturnSourceLine> SourceLines {get;}=[new("1","10","EA",Guid.NewGuid(),Guid.NewGuid())];
  public BsonDocument Filter=>new(){{"TenantId",Scope.TenantId.ToString()},{"LegalEntityId",Scope.LegalEntityId.ToString()}};
  public static async Task<ReturnTestFixture> New(string databaseName="diten_returns_tests",bool caseInsensitive=false)
@@ -64,7 +66,7 @@ public sealed class ReturnTestFixture
   if(caseInsensitive){try{await f.Db.CreateCollectionAsync("return_entitlements",new CreateCollectionOptions{Collation=new Collation("en",strength:CollationStrength.Secondary)});}catch(MongoCommandException ex)when(ex.Code==48){}}
   await new ReturnSchema(f.Db).StartAsync(default);f.Repository=new(f.Db,f.Probe);return f;
  }
- public Task<ReturnReferenceSnapshot> Observe(ReturnOrder order,CancellationToken ct){Observations++;if(Offline)throw new ReturnFailureException(503,"REFERENCE_UNAVAILABLE");return Task.FromResult(new ReturnReferenceSnapshot(order.ShipmentId,"Delivered",Root,DateTimeOffset.UtcNow,SourceLines.ToArray()));}
+ public Task<ReturnReferenceSnapshot> Observe(ReturnOrder order,CancellationToken ct){Observations++;if(Offline)throw new ReturnFailureException(503,"REFERENCE_UNAVAILABLE");return Task.FromResult(new ReturnReferenceSnapshot(order.ShipmentId,"Delivered",Root,DateTimeOffset.UtcNow,SourceLines.ToArray(),CustomerRef:CustomerRef));}
  public Task<ReturnMutationResult> Create(string quantity="1",string key="create",string? fingerprint=null,Guid? root=null,List<ReturnLine>? lines=null)
  {var order=new ReturnOrder{ShipmentId=Shipment,ReasonCode="reason",Lines=lines??[new("1",quantity,"EA")]};return Repository.MutateAsync(Scope,null,key,fingerprint??quantity,root??Root,order,null,null,null,null,Observe,default);}
  public Task<ReturnMutationResult> Transition(Guid id,ReturnStatus target,string key,string? inventory=null,string? disposition=null,Guid? root=null,string? fingerprint=null)=>Repository.MutateAsync(Scope,id,key,fingerprint??target.ToString(),root??Root,null,target,"2026-09-20T09:00:00.123456789Z",inventory,disposition,Observe,default);

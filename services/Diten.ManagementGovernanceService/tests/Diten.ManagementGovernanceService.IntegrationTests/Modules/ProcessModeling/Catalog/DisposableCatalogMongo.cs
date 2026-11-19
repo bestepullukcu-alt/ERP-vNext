@@ -17,7 +17,7 @@ public sealed class CatalogMongoCollection : ICollectionFixture<DisposableCatalo
 public sealed class DisposableCatalogMongo : IAsyncLifetime
 {
     public const string DatabaseName = "diten_mg_process_modeling_catalog_itest";
-    private const string Mongod = "/opt/homebrew/bin/mongod";
+    private static string Mongod => MongodBinary.Location;
     private Process? _process;
     private string? _directory;
 

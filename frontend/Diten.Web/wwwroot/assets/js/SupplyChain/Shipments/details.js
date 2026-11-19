@@ -112,14 +112,44 @@ const ShipmentDetails = (function () {
         return true;
     };
     // The stock fields as the response carries them. issueTransactionId is INVENTORY's id: the response has no INV- number.
-    const lineCells = (line) => [line.lineNumber, line.itemId, line.skuId, line.quantity, line.uomId, line.inventoryReferenceId || L.unavailable,
-        own(L.skuLevels, line.skuLevel) || line.skuLevel || L.unavailable, line.fromLocationId || L.unavailable, line.lotId || L.unavailable,
-        line.issueTransactionId || L.unavailable];
+    // MOD-0183 r9 §24.4 (SB-10, SB-12): names the adapter resolved; a failed or denied read says "name unavailable" with the
+    // reference as stored; never a blank. Product / SKU is one name + canonicalCode pair; issueTransactionId is not a column.
+    // VER F-3: an unresolved reference is returned apart, so the page shows it small and LTR after the text (SB-10).
+    const nameCell = (cell) => cell?.state === 'resolved' ? cell.label
+        : (cell?.reference ? { text: L.nameUnavailable, reference: cell.reference } : L.nameUnavailable);
+    const fillCell = (element, value) => {
+        element.replaceChildren();
+        if (value && typeof value === 'object') {
+            const reference = document.createElement('small');
+            reference.className = 'text-muted ms-1'; reference.dir = 'ltr'; reference.textContent = value.reference;
+            element.append(document.createTextNode(value.text), reference);
+        } else element.textContent = value ?? L.unavailable;
+    };
+    const lineCells = (line) => [line.lineNumber, nameCell(line.sku), line.lot ? nameCell(line.lot) : '—',
+        nameCell(line.fromLocation), line.quantity, line.uomId || L.unavailable, line.fefoBypassReason || '—'];
+    // SB-10 / SB-11a / SB-25: the customer cell never shows an id — a name and code, "old record", "not found" or "name unavailable".
+    const customerText = (cell) => {
+        switch (cell?.state) {
+            case 'resolved': return [cell.name, cell.code].filter(Boolean).join(' · ') || L.nameUnavailable;
+            case 'oldRecord': return L.oldRecord;
+            case 'notFound': return L.nameNotFound;
+            default: return L.nameUnavailable;
+        }
+    };
+    const loadCompany = async () => {
+        try {
+            const response = await fetch('/SupplyChain/api/legal-entities', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const payload = response.ok ? await response.json() : null;
+            const rows = Array.isArray(payload) ? payload : (payload?.data ?? payload?.items ?? []);
+            const match = rows.find((row) => String(row.legalEntityId ?? row.LegalEntityId ?? '') === legalEntityId);
+            text('detailCompany', match ? String(match.displayName ?? match.DisplayName ?? match.legalName ?? match.LegalName ?? match.code ?? L.nameUnavailable) : L.nameUnavailable);
+        } catch (_) { text('detailCompany', L.nameUnavailable); }
+    };
     const renderLines = (lines) => {
         const body = document.getElementById('detailLines'); body.replaceChildren();
         (lines || []).forEach((line) => { const row = body.insertRow();
             lineCells(line)
-                .forEach((item) => { const cell = row.insertCell(); cell.textContent = item; }); });
+                .forEach((item) => fillCell(row.insertCell(), item)); });
     };
     const renderPod = (pod) => {
         document.getElementById('podEmpty').classList.toggle('d-none', !!pod);
@@ -149,7 +179,8 @@ const ShipmentDetails = (function () {
         hideSkeleton(); setDetailSurfaceVisible(true);
         document.getElementById('detailsAlert')?.classList.add('d-none');
         shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusText(data.status, data.dispatchState));
-        text('detailSource', data.sourceDocumentId); text('detailWarehouse', data.warehouseReferenceId); text('detailShipTo', data.shipToReference);
+        text('detailSource', data.sourceDocumentId); fillCell(document.getElementById('detailWarehouse'), nameCell(data.warehouse)); text('detailCustomer', customerText(data.customer));
+        text('detailShipTo', data.shipToReference); void loadCompany();
         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();
     };
@@ -215,5 +246,5 @@ const ShipmentDetails = (function () {
     document.addEventListener('DOMContentLoaded', init);
     // localInputValue, parseLocalInput, errorText, statusText and lineCells touch no DOM; they are returned for the Node tests
     // (Q382, MOD-0183 DL-2), nothing else uses them.
-    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText, lineCells };
+    return { init, allowedTargets, localInputValue, parseLocalInput, errorText, statusText, lineCells, customerText };
 })();

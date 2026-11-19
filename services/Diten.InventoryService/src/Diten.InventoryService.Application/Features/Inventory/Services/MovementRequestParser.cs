@@ -131,6 +131,14 @@ public static class MovementRequestParser
         if (fefoBypassReason is { Length: > MaxFefoBypassReasonLength })
             errors.Add(Invalid($"fefoBypassReason must be at most {MaxFefoBypassReasonLength} characters."));
 
+        // INVENTORY 1.7.0 (MOD-0173-FU03 §8.3, §8.3.1): reservationId is optional text (blank = absent; ≤ 100); restoreReservation belongs
+        // to a REVERSAL only — on any other type it is a 400, whatever its value (the ReversalRules envelope precedent).
+        var reservationId = Blank(command.ReservationId)?.Trim();
+        if (reservationId is { Length: > MaxTextLength })
+            errors.Add(Invalid($"reservationId must be at most {MaxTextLength} characters."));
+        if (command.RestoreReservation is not null && movementTypeOk && movementType != MovementType.Reversal)
+            errors.Add(Invalid("restoreReservation belongs to a REVERSAL only."));
+
         if (errors.Count > 0)
         {
             return (null, errors);
@@ -156,7 +164,9 @@ public static class MovementRequestParser
             Blank(command.SourceSystem),
             transactionDate,
             postingDate,
-            fefoBypassReason), errors);
+            fefoBypassReason,
+            reservationId,
+            command.RestoreReservation == true), errors);
     }
 
     private static void RequireText(string? value, string name, List<FieldError> errors)
