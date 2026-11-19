@@ -27,6 +27,8 @@ Ne için: <bu işin kullanıcıya faydası, tek cümle>
 ## Biten
 <biten işler, sade cümlelerle>
 Bu adım: <iş süresi> iş + <bekleme süresi> bekleme · <token> · <dokunuş sayısı> dokunuş
+Uyarılar:
+- <aracın "Uyarılar" bölümündeki satır, olduğu gibi>
 ## Çalışan
 <şu an kimin ne yaptığı; yoksa "Şu an çalışan yok.">
 ## Sırada
@@ -44,6 +46,7 @@ Bu adım: <iş süresi> iş + <bekleme süresi> bekleme · <token> · <dokunuş 
 - **Bu adım:** iş süresi = beklemesiz çalışma; bekleme süresi = izin, uzun komut ya da kişi beklemesi; token = o adımda işlenen
   toplam (ana sohbet ve alt ajanlar; önbellekten okunan kısım dahil, bu yüzden büyük çıkar); dokunuş = o adımda kişinin yazdığı
   mesaj sayısı.
+- **Uyarılar:** isteğe bağlı blok; aracın "Uyarılar" bölümündeki `- …` satırları yeniden yazılmadan, olduğu gibi kopyalanır; araç "Uyarı yok." diyorsa blok hiç yazılmaz.
 - **Sizden istenen:** tek şey (kişiden aynı anda birden çok şey istenmez). Onay ise "kabulü onaylıyorum" gibi yazılacak cümle
   ve bağlantı verilir.
 
