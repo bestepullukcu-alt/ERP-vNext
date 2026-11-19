@@ -101,12 +101,13 @@ public sealed class LedgerImmutabilityArchitectureTests
             .OrderBy(r => r, StringComparer.Ordinal)
             .ToList();
 
-        // S1's four + S2's createReservation / releaseReservation — the frozen contract has no other operation (no
-        // GET reservation, no reservation list), so neither does the service.
+        // S1's four + S2's createReservation / releaseReservation + INVENTORY 1.6.0 getReservation (MOD-0173-FU03, a READ) — the
+        // contract has no other operation (no reservation list, no edit of a transaction), so neither does the service.
         Assert.Equal(
             [
                 "GET api/inventory/availability",
                 "GET api/inventory/balance",
+                "GET api/inventory/reservations/{id}",
                 "GET api/inventory/transactions",
                 "POST api/inventory/movements",
                 "POST api/inventory/reservations",
@@ -143,6 +144,23 @@ public sealed class LedgerImmutabilityArchitectureTests
             .ToList();
 
         Assert.NotEmpty(routes);
+        // WMS-BUNDLE updateLocationRole / deleteLocationRole (PUT / DELETE /api/warehouse/location-roles/{roleId} — a location role, master data,
+        // soft delete; MOD-0178 DL-1, XMC-001 decision Beste 2026-10-29): exactly these two are taken out; any other PUT / DELETE still turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "WarehouseLocationRolesController:{roleId}");
+        Assert.Single(routes, r => r.Verb == "DELETE" && r.Route == "WarehouseLocationRolesController:{roleId}");
+        routes.RemoveAll(r => r.Route == "WarehouseLocationRolesController:{roleId}" && (r.Verb == "PUT" || r.Verb == "DELETE"));
+        // WMS-BUNDLE updatePutawayTask (PUT /api/warehouse/putaway-tasks/{taskId} — the task's plan fields, never stock; MOD-0178 DL-2, XMC-001
+        // decision Beste 2026-10-30): exactly this one is taken out; any other PUT / DELETE still turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "PutawayTasksController:putaway-tasks/{taskId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "PutawayTasksController:putaway-tasks/{taskId}");
+        // WMS-BUNDLE updateOutboundShipment (PUT /api/warehouse/outbound-shipments/{outboundId} — the outbound's header, never stock nor the
+        // allocation; MOD-0178 DL-4, XMC-001 decision Beste 2026-11-05): exactly this one is taken out; any other PUT / DELETE still turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "OutboundShipmentsController:{outboundId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "OutboundShipmentsController:{outboundId}");
+        // WMS-BUNDLE updatePackage (PUT /api/warehouse/packages/{packageId} — an Open package's content / weight / dimensions, never stock; MOD-0178
+        // DL-5, XMC-001 decision Beste 2026-11-05): exactly this one is taken out; any other PUT / DELETE still turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "PackagesController:{packageId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "PackagesController:{packageId}");
         Assert.DoesNotContain(routes, r => r.Verb == "DELETE");
         // RECALL-BUNDLE 1.0.0 updateSettings (PUT /api/recall/settings — the company's recall settings, master data, WP-0177-R1): exactly
         // this one recall PUT; it is taken out here so the list below stays as frozen (any other recall PUT still turns it red).
@@ -151,6 +169,11 @@ public sealed class LedgerImmutabilityArchitectureTests
         // RECALL-BUNDLE updateDrillPlan (PUT /api/recall/drill-plans/{planId} — a drill plan, master data, frozen since 1.0.0, served by WP-0177-R5)
         Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
         routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
+        // WMS-COUNT-BUNDLE updateCycleCountSettings (PUT /api/warehouse/count-settings — the company's count settings, master-data-like, never stock;
+        // MOD-0181 DL-3, pack §5 / AC-51, F-1 owner decision A, XMC-001 MVP-1 CT Beste): exactly this one is taken out; any other 0181 PUT / DELETE still
+        // turns it red.
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "CountVariancesController:count-settings");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "CountVariancesController:count-settings");
         Assert.Equal(
             ["ExpiryController:policy", "QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
             routes.Where(r => r.Verb == "PUT").Select(r => r.Route).OrderBy(x => x, StringComparer.Ordinal).ToList());

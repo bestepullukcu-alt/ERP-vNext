@@ -1,0 +1,18 @@
+@using Diten.Web.Models.Warehouse
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    var canCancel = Perms.Has(WarehousePermissionKeys.OutboundShipmentsCancel);
+    var canRelease = Perms.Has(WarehousePermissionKeys.OutboundShipmentsRelease);
+    var canSync = Perms.Has(WarehousePermissionKeys.OutboundShipmentsUpdate);
+}
+@*
+    The Details page's state actions (pack §11.3). WP-0178-E3-FIX-01: "İptal" (a reason, 10-1000, IsDangerous), "Sevke hazır" (what it freezes; on a
+    422 FEFO_BYPASS_REASON_REQUIRED a reason for each deviating allocation, r22) and "Sevkiyatı kontrol et" are the product's ONE confirm
+    (window.showConfirm, MOD-0013 premium-modal-standard) opened by details.js — no page-drawn Bootstrap modal. What stays here is the anti-forgery
+    token the writes carry, drawn only for a reader holding one of the keys (UAS-001 §6); details.js opens a dialog only for a menu entry the reader's
+    keys allow (OutboundRules.menu).
+*@
+@if (canCancel || canRelease || canSync)
+{
+    <form id="outboundActionToken" class="d-none">@Html.AntiForgeryToken()</form>
+}

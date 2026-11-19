@@ -8,6 +8,8 @@ using Diten.InventoryService.Domain.Quarantine.Repositories;
 using Diten.InventoryService.Domain.Quarantine.Rules;
 using Diten.InventoryService.Domain.Traceability.Enums;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.InventoryService.Application.Features.Quarantine.Services;
 
@@ -29,6 +31,11 @@ public sealed class QuarantineRetryException() : Exception("A quarantine record 
 /// new retest date of a retest release) sends the internal <see cref="ApplyApprovedLotStatusChangeCommand"/> BEFORE its movements
 /// (idempotent on the decision); a refusal ends ApplyFailed like a refused line. A new retest date then clears the lot's retest
 /// hold (<see cref="ILotRetestHold"/>, one transaction with the SKU positions), so the released stock is available at once.</para>
+/// <para><b>MOD-0175-FU01 — a voided decision (pack §8.6).</b> The state is re-read right before every line is posted; a Voided decision
+/// posts nothing more. Neither recorder writes anything for a Voided decision (W5 / W6). When a line of it was posted after all (the
+/// window between that re-read and the posting), the source-reversal mark is written by the internal
+/// <c>ApplySourceReversalTo{Hold,Blocked}Command</c>, sent outside every transaction (its own central record, actor System) — never
+/// by this engine. A lot step this call applied before the decision turned Voided is logged by name (accepted limit).</para>
 /// </summary>
 public sealed class QuarantineApplyEngine
 {
@@ -40,6 +47,7 @@ public sealed class QuarantineApplyEngine
     private readonly QuarantineSupport _support;
     private readonly ISender _sender;
     private readonly ILotRetestHold _retestHold;
+    private readonly ILogger<QuarantineApplyEngine> _logger;
 
     public QuarantineApplyEngine(
         IQuarantineRepository repository,
@@ -47,7 +55,8 @@ public sealed class QuarantineApplyEngine
         QuarantineMovementPoster poster,
         QuarantineSupport support,
         ISender sender,
-        ILotRetestHold retestHold)
+        ILotRetestHold retestHold,
+        ILogger<QuarantineApplyEngine>? logger = null)
     {
         _repository = repository;
         _decisions = decisions;
@@ -55,6 +64,7 @@ public sealed class QuarantineApplyEngine
         _support = support;
         _sender = sender;
         _retestHold = retestHold;
+        _logger = logger ?? NullLogger<QuarantineApplyEngine>.Instance;
     }
 
     /// <summary>True when the decision changes its lot (status and / or retest date) — KQ-I, CT-Q5, KQ-H.</summary>
@@ -88,17 +98,17 @@ public sealed class QuarantineApplyEngine
             QuarantineContract.SourceTypeDecision, decision.DecisionNumber, decision.Id.ToString("D"),
             decision.BlockReasonCode ?? decision.Disposition?.Kind.ToString());
 
+        var lotChanged = false;
         if (ChangesLot(decision) && Guid.TryParse(decision.LotId, out var lotId))
         {
             var lot = await _sender.Send(new ApplyApprovedLotStatusChangeCommand(decision.Id, lotId), ct);
             if (!lot.IsSuccessful)
             {
                 var refused = new PostedMovement(false, null, false, lot.ErrorCode, lot.StatusCode, string.Join(" ", lot.Errors), null);
-                return await RecordFailureAsync(decision, actorUserId, refused, [], ct)
-                    ? new ApplyResult(DecisionState.ApplyFailed, refused.ErrorCode, refused.Message)
-                    : new ApplyResult(DecisionState.Applied, null, null);
+                return await FailedAsync(decision, actorUserId, refused, [], lotChanged, ct);
             }
 
+            lotChanged = true;
             if (decision.NewRetestDate is not null)
             {
                 await _retestHold.RefreshAsync(lotId, QuarantineSupport.Now(), ct);
@@ -108,14 +118,18 @@ public sealed class QuarantineApplyEngine
         var posted = new List<(PlannedMovement Movement, string TransactionId)>();
         foreach (var movement in QuarantineStockEffects.Plan(decision))
         {
+            // FU01 §8.6: the state right before the line — a decision voided with its record posts nothing more
+            if (QuarantineFacts.StateOf(await _decisions.EventsAsync([decision.Id], ct)) == DecisionState.Voided)
+            {
+                return await VoidedAsync(decision, posted.Count, lotChanged, ct);
+            }
+
             var result = await _poster.PostAsync(movement, envelope, QuarantineMovementPoster.DecisionKey(decision.Id, movement.LineNo), actorUserId, ct);
             if (!result.Posted)
             {
                 // Q2 (runtime probe): a concurrent applier of the same decision may have committed this line's key a moment ago;
                 // the ledger then refuses the duplicate on stock, not on the key. Applied by then → that is the answer, no failure.
-                return await RecordFailureAsync(decision, actorUserId, result, posted.Select(p => p.TransactionId).ToList(), ct)
-                    ? new ApplyResult(DecisionState.ApplyFailed, result.ErrorCode, result.Message)
-                    : new ApplyResult(DecisionState.Applied, null, null);
+                return await FailedAsync(decision, actorUserId, result, posted.Select(p => p.TransactionId).ToList(), lotChanged, ct);
             }
 
             posted.Add((movement, result.TransactionId!));
@@ -125,8 +139,9 @@ public sealed class QuarantineApplyEngine
         {
             try
             {
-                await RecordAppliedAsync(decision, actorUserId, posted, ct);
-                return new ApplyResult(DecisionState.Applied, null, null);
+                return await RecordAppliedAsync(decision, actorUserId, posted, ct)
+                    ? new ApplyResult(DecisionState.Applied, null, null)
+                    : await VoidedAsync(decision, posted.Count, lotChanged, ct);
             }
             catch (QuarantineRetryException) when (attempt < MaxAttempts)
             {
@@ -140,8 +155,76 @@ public sealed class QuarantineApplyEngine
         }
     }
 
-    /// <summary>Records ApplyFailed — unless the decision is Applied already (a concurrent applier won); false then.</summary>
-    private async Task<bool> RecordFailureAsync(
+    private enum FailureRecord
+    {
+        Recorded,
+        AlreadyApplied,
+        Voided
+    }
+
+    private async Task<ApplyResult> FailedAsync(
+        QuarantineDecision decision, Guid actorUserId, PostedMovement result, IReadOnlyList<string> postedIds, bool lotChanged, CancellationToken ct)
+        => await RecordFailureAsync(decision, actorUserId, result, postedIds, ct) switch
+        {
+            FailureRecord.Recorded => new ApplyResult(DecisionState.ApplyFailed, result.ErrorCode, result.Message),
+            FailureRecord.AlreadyApplied => new ApplyResult(DecisionState.Applied, null, null),
+            _ => await VoidedAsync(decision, postedIds.Count, lotChanged, ct)
+        };
+
+    /// <summary>
+    /// FU01 §8.6 — the decision ended Voided in this call (the line re-read, W5 or W6). A line posted before that is marked by the
+    /// internal command (R0a), sent here, outside every transaction; a lot step this call applied is logged, unless the record already
+    /// carries the LotChanged mark (R5a).
+    /// </summary>
+    private async Task<ApplyResult> VoidedAsync(QuarantineDecision decision, int postedLines, bool lotChanged, CancellationToken ct)
+    {
+        var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
+        var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
+        var number = hold?.HoldNumber ?? blocked?.BlockedNumber;
+        if (lotChanged && (hold?.SourceReversalConflict ?? blocked?.SourceReversalConflict)?.Cause != SourceReversalCause.LotChanged)
+        {
+            _logger.LogWarning("quarantine.source_reversal.lot_changed_after_void Record={Record} Decision={Decision} Lot={Lot}",
+                number, decision.Id, decision.LotId);
+        }
+
+        if (postedLines >= 1)
+        {
+            await DispatchMarkAsync(decision, hold, blocked, number, ct);
+        }
+
+        return new ApplyResult(DecisionState.Voided, QuarantineErrorCodes.DecisionNotApplicable,
+            "The decision was voided: the source movement of its record was reversed.");
+    }
+
+    /// <summary>W5 / W6: the mark of a line posted after the close, by the internal command (its own transaction and central record).</summary>
+    private async Task DispatchMarkAsync(QuarantineDecision decision, QuarantineHold? hold, BlockedStock? blocked, string? number, CancellationToken ct)
+    {
+        var reversal = (hold?.Voided ?? blocked?.Voided)?.ReversalTransactionId;
+        try
+        {
+            if (reversal is not null)
+            {
+                var sent = hold is not null
+                    ? await _sender.Send(new Commands.ApplySourceReversalToHoldCommand(reversal), ct)
+                    : await _sender.Send(new Commands.ApplySourceReversalToBlockedCommand(reversal), ct);
+                if (sent.IsSuccessful)
+                {
+                    return;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "quarantine.source_reversal.mark_dispatch_failed Record={Record} Decision={Decision}", number, decision.Id);
+            return;
+        }
+
+        // the void-feed sweep writes the mark (FU01 §8.2); this line names the gap until then
+        _logger.LogError("quarantine.source_reversal.mark_dispatch_failed Record={Record} Decision={Decision}", number, decision.Id);
+    }
+
+    /// <summary>Records ApplyFailed — unless the decision is Applied already (a concurrent applier won) or Voided (FU01 W6: nothing is written).</summary>
+    private async Task<FailureRecord> RecordFailureAsync(
         QuarantineDecision decision, Guid actorUserId, PostedMovement result, IReadOnlyList<string> postedIds, CancellationToken ct)
     {
         var now = QuarantineSupport.Now();
@@ -154,29 +237,36 @@ public sealed class QuarantineApplyEngine
         if (history is not null) Stamp(history, decision);
         return await _repository.InTransactionAsync(async (session, c) =>
         {
-            if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Applied)
+            switch (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)))
             {
-                return false;
+                case DecisionState.Applied:
+                    return FailureRecord.AlreadyApplied;
+                case DecisionState.Voided:
+                    return FailureRecord.Voided;
             }
 
             await session.InsertDecisionEventAsync(failed, c);
             if (history is not null) await session.InsertHistoryAsync([history], c);
-            return true;
+            return FailureRecord.Recorded;
         }, ct);
     }
 
-    private async Task RecordAppliedAsync(
+    /// <summary>Records Applied and the record changes. True when Applied (now or before); false when the decision is Voided (FU01 W5: nothing is written).</summary>
+    private async Task<bool> RecordAppliedAsync(
         QuarantineDecision decision, Guid actorUserId, IReadOnlyList<(PlannedMovement Movement, string TransactionId)> posted, CancellationToken ct)
     {
         var now = QuarantineSupport.Now();
         var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
         var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
 
-        await _repository.InTransactionAsync<bool>(async (session, c) =>
+        return await _repository.InTransactionAsync(async (session, c) =>
         {
-            if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Applied)
+            switch (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)))
             {
-                return false;
+                case DecisionState.Applied:
+                    return true;
+                case DecisionState.Voided:
+                    return false;
             }
 
             var applied = QuarantineSupport.Event(decision.Id, DecisionEventKind.Applied, now, actorUserId);
@@ -410,6 +500,11 @@ public sealed class QuarantineOutcomeApplier
 
         var events = await _decisions.EventsAsync([decisionId], ct);
         var state = QuarantineFacts.StateOf(events);
+        if (state == DecisionState.Voided)
+        {
+            return Response<DecisionState>.Success(DecisionState.Voided); // FU01 V8: any outcome of a voided decision changes nothing (before the instance check)
+        }
+
         var started = events.Where(e => e.Kind == DecisionEventKind.WorkflowStarted).Select(e => e.WorkflowInstanceId).LastOrDefault();
         if (instanceId is not null && !string.Equals(instanceId, started, StringComparison.Ordinal))
         {
@@ -433,7 +528,7 @@ public sealed class QuarantineOutcomeApplier
         if (state != DecisionState.PendingApproval)
         {
             return state is DecisionState.Applied or DecisionState.Rejected or DecisionState.Cancelled or DecisionState.TimedOut
-                or DecisionState.FourEyesViolation or DecisionState.ApplyFailed or DecisionState.Withdrawn
+                or DecisionState.FourEyesViolation or DecisionState.ApplyFailed or DecisionState.Withdrawn or DecisionState.Voided
                 ? Response<DecisionState>.Success(state) // terminal / already handled: the repeat changes nothing
                 : QuarantineSupport.Fail<DecisionState>(QuarantineErrorCodes.DecisionNotPending, $"A {state} decision has no approval to finish.", 409);
         }
@@ -448,14 +543,14 @@ public sealed class QuarantineOutcomeApplier
                 _ => DecisionEventKind.TimedOut
             };
             var closing = Approval(decision, kind, now, approverUserId, started, outcome);
-            await CloseWithoutMovementAsync(decision, approverUserId, now, [closing],
+            var voided = await CloseWithoutMovementAsync(decision, approverUserId, now, [closing],
                 kind switch
                 {
                     DecisionEventKind.Rejected => HistoryAction.Rejected,
                     DecisionEventKind.Cancelled => HistoryAction.Cancelled,
                     _ => HistoryAction.TimedOut
                 }, ct);
-            return Response<DecisionState>.Success(QuarantineFacts.StateOf([.. events, closing]));
+            return Response<DecisionState>.Success(voided ? DecisionState.Voided : QuarantineFacts.StateOf([.. events, closing]));
         }
 
         var approved = Approval(decision, DecisionEventKind.Approved, now, approverUserId, started, outcome);
@@ -467,38 +562,69 @@ public sealed class QuarantineOutcomeApplier
             var violation = QuarantineSupport.Event(decision.Id, DecisionEventKind.FourEyesViolation, now, approverUserId,
                 QuarantineErrorCodes.DecisionNotApplicable, "The approver is the decider (four eyes).");
             Stamp(violation, decision);
-            await CloseWithoutMovementAsync(decision, approverUserId, now, [approved, violation], HistoryAction.FourEyesViolation, ct);
-            return Response<DecisionState>.Success(DecisionState.FourEyesViolation);
+            return Response<DecisionState>.Success(
+                await CloseWithoutMovementAsync(decision, approverUserId, now, [approved, violation], HistoryAction.FourEyesViolation, ct)
+                    ? DecisionState.Voided
+                    : DecisionState.FourEyesViolation);
         }
 
-        try
+        // FU01 §8.6 W3: the approval writes the record's version too (the lock it shares with the source-reversal close) and re-reads the
+        // decision's events inside its transaction; a version that moved meanwhile re-reads the record (≤ 3 attempts, then the conflict
+        // goes up — nothing was written). Voided inside → no Approved, no apply.
+        for (var attempt = 1; ; attempt++)
         {
-            await _repository.InTransactionAsync<bool>(async (session, c) =>
+            try
             {
-                await session.InsertDecisionEventAsync(approved, c);
-                if (QuarantineApplyEngine.HasRecord(decision))
+                var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
+                var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
+                var versions = (hold?.Version, blocked?.Version);
+                var voided = await _repository.InTransactionAsync(async (session, c) =>
                 {
-                    var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
-                        HistoryAction.Approved, now, null, decision.Id, approverUserId);
-                    history.ApproverSignatureId = approverSignatureId;
-                    Stamp(history, decision);
-                    await session.InsertHistoryAsync([history], c);
+                    if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Voided)
+                    {
+                        return true;
+                    }
+
+                    await session.InsertDecisionEventAsync(approved, c);
+                    if (QuarantineApplyEngine.HasRecord(decision))
+                    {
+                        var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision),
+                            HistoryAction.Approved, now, null, decision.Id, approverUserId);
+                        history.ApproverSignatureId = approverSignatureId;
+                        Stamp(history, decision);
+                        await session.InsertHistoryAsync([history], c);
+                    }
+
+                    await QuarantineReopen.TouchAsync(session, hold, versions.Item1, blocked, versions.Item2, now, c);
+                    return false;
+                }, ct);
+                if (voided)
+                {
+                    return Response<DecisionState>.Success(DecisionState.Voided);
                 }
 
-                return true;
-            }, ct);
-        }
-        catch (QuarantineDuplicateException)
-        {
-            // a concurrent outcome recorded Approved first (once-only event): that call applies — this one reports the state
-            return Response<DecisionState>.Success(QuarantineFacts.StateOf(await _decisions.EventsAsync([decisionId], ct)));
+                break;
+            }
+            catch (QuarantineRetryException) when (attempt < 3)
+            {
+                // the record changed between the read and the write (another writer): read it again
+            }
+            catch (QuarantineDuplicateException)
+            {
+                // a concurrent outcome recorded Approved first (once-only event): that call applies — this one reports the state
+                return Response<DecisionState>.Success(QuarantineFacts.StateOf(await _decisions.EventsAsync([decisionId], ct)));
+            }
         }
 
         return Response<DecisionState>.Success((await _engine.ApplyAsync(decision, approverUserId, ct)).State);
     }
 
-    /// <summary>Records the closing events, reopens the hold / blocked record and writes the history — no movement.</summary>
-    private async Task CloseWithoutMovementAsync(
+    /// <summary>
+    /// Records the closing events, reopens the hold / blocked record and writes the history — no movement. FU01 §8.6 W4: the events are
+    /// re-read inside the transaction and the record's version is written even when nothing is reopened; true (nothing written) when
+    /// the decision is Voided.
+    /// </summary>
+    private async Task<bool> CloseWithoutMovementAsync(
         QuarantineDecision decision, Guid by, DateTimeOffset now, IReadOnlyList<QuarantineDecisionEvent> closing, HistoryAction action, CancellationToken ct)
     {
         for (var attempt = 1; ; attempt++)
@@ -507,10 +633,20 @@ public sealed class QuarantineOutcomeApplier
             {
                 var hold = decision.HoldId is { } holdId ? await _repository.FindHoldAsync(holdId, ct) : null;
                 var blocked = decision.BlockedStockId is { } blockedId ? await _repository.FindBlockedAsync(blockedId, ct) : null;
-                await _repository.InTransactionAsync<bool>(async (session, c) =>
+                var versions = (hold?.Version, blocked?.Version);
+                return await _repository.InTransactionAsync(async (session, c) =>
                 {
+                    if (QuarantineFacts.StateOf(await session.DecisionEventsAsync(decision.Id, c)) == DecisionState.Voided)
+                    {
+                        return true;
+                    }
+
                     foreach (var e in closing) await session.InsertDecisionEventAsync(e, c);
-                    await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c);
+                    if (!await QuarantineReopen.ReopenAsync(session, hold, blocked, decision.Id, now, c))
+                    {
+                        await QuarantineReopen.TouchAsync(session, hold, versions.Item1, blocked, versions.Item2, now, c);
+                    }
+
                     if (QuarantineApplyEngine.HasRecord(decision))
                     {
                         var history = _support.History(QuarantineApplyEngine.SubjectOf(decision), QuarantineApplyEngine.TargetId(decision), action, now, null, decision.Id, by);
@@ -518,16 +654,15 @@ public sealed class QuarantineOutcomeApplier
                         await session.InsertHistoryAsync([history], c);
                     }
 
-                    return true;
+                    return false;
                 }, ct);
-                return;
             }
             catch (QuarantineRetryException) when (attempt < 3)
             {
             }
             catch (QuarantineDuplicateException)
             {
-                return; // the same outcome was recorded by a concurrent caller
+                return false; // the same outcome was recorded by a concurrent caller
             }
         }
     }
@@ -559,9 +694,11 @@ public sealed class QuarantineOutcomeApplier
 /// <summary>Contract §5: on every terminal state except Applied the hold / blocked record is reopened (the lock is released).</summary>
 public static class QuarantineReopen
 {
-    public static async Task ReopenAsync(
+    /// <summary>Reopens the record locked by <paramref name="decisionId"/>; false when no record was written (not locked by it).</summary>
+    public static async Task<bool> ReopenAsync(
         IQuarantineWriteSession session, QuarantineHold? hold, BlockedStock? blocked, Guid decisionId, DateTimeOffset now, CancellationToken ct)
     {
+        var wrote = false;
         if (hold is not null && hold.ActiveDecisionId == decisionId)
         {
             var expected = hold.Version;
@@ -570,6 +707,7 @@ public static class QuarantineReopen
             hold.UpdatedAt = now;
             hold.Version = expected + 1;
             if (!await session.ReplaceHoldAsync(hold, expected, ct)) throw new QuarantineRetryException();
+            wrote = true;
         }
 
         if (blocked is not null && blocked.ActiveDecisionId == decisionId)
@@ -579,6 +717,31 @@ public static class QuarantineReopen
             blocked.UpdatedAt = now;
             blocked.Version = expected + 1;
             if (!await session.ReplaceBlockedAsync(blocked, expected, ct)) throw new QuarantineRetryException();
+            wrote = true;
+        }
+
+        return wrote;
+    }
+
+    /// <summary>
+    /// MOD-0175-FU01 §8.6: the shared write lock of a decision writer — the record's version + 1 (nothing else changes), against the
+    /// version read before the transaction. A record changed meanwhile → <see cref="QuarantineRetryException"/>.
+    /// </summary>
+    public static async Task TouchAsync(
+        IQuarantineWriteSession session, QuarantineHold? hold, int? holdVersion, BlockedStock? blocked, int? blockedVersion, DateTimeOffset now, CancellationToken ct)
+    {
+        if (hold is not null && holdVersion is { } hv)
+        {
+            hold.UpdatedAt = now;
+            hold.Version = hv + 1;
+            if (!await session.ReplaceHoldAsync(hold, hv, ct)) throw new QuarantineRetryException();
+        }
+
+        if (blocked is not null && blockedVersion is { } bv)
+        {
+            blocked.UpdatedAt = now;
+            blocked.Version = bv + 1;
+            if (!await session.ReplaceBlockedAsync(blocked, bv, ct)) throw new QuarantineRetryException();
         }
     }
 }

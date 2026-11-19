@@ -31,7 +31,9 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
         "Recall.Ev.W.sku", "Recall.Drills.Plan", "Recall.Ev.W.planCode", "Recall.Drills.Lot", "Recall.Ev.W.lot", "Recall.Ev.W.7_signatures",
         "Recall.Ev.W.signatures", "Recall.Ev.W.signatureId", "Recall.Ev.W.document", "Recall.Ev.W.date",
         // WP-MVP1-FIX-LIVE2 review: es "No" is Spanish (Recall.Ev.W.no); Recall.Ev.W.skuId is now "Identifiant SKU" … (left the list)
-        "Recall.Ev.W.no"
+        "Recall.Ev.W.no",
+        // MOD-0177-FU01 — two placeholders joined by a middle dot in every language: "{name} · {code}", "{ship-to} · {shipment no}"
+        "Recall.Customer.NameCode", "Recall.Customer.Distinguisher"
     };
 
     public static readonly TheoryData<string, string, string> Pages = new()

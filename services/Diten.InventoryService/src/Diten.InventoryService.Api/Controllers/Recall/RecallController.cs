@@ -105,8 +105,8 @@ public sealed class RecallController : CustomBaseController
 
     [HttpGet("cases/{caseId}/scope")]
     [HasPermission(RecallPermissions.CasesRead)]
-    public async Task<IActionResult> GetCaseScope(string caseId, CancellationToken ct)
-        => await CompanyChecked(caseId, WithETag(await _mediator.Send(new GetRecallCaseScopeQuery(caseId), ct), s => s.Version), ct);
+    public async Task<IActionResult> GetCaseScope(string caseId, [FromQuery] string? customerPage, CancellationToken ct)
+        => await CompanyChecked(caseId, WithETag(await _mediator.Send(new GetRecallCaseScopeQuery(caseId, customerPage), ct), s => s.Version), ct);
 
     [HttpGet("cases/{caseId}/timeline")]
     [HasPermission(RecallPermissions.CasesRead)]
@@ -122,22 +122,23 @@ public sealed class RecallController : CustomBaseController
 
     [HttpGet("trace")]
     [HasPermission(RecallPermissions.TraceRun)]
-    public async Task<IActionResult> RunTrace([FromQuery] string? rootLotId, [FromQuery] string? direction, [FromQuery] string? asOfUtc, CancellationToken ct)
-        => CreateActionResultInstance(await _mediator.Send(new RunRecallTraceCommand(rootLotId, direction, asOfUtc), ct));
+    public async Task<IActionResult> RunTrace([FromQuery] string? rootLotId, [FromQuery] string? direction, [FromQuery] string? asOfUtc,
+        [FromQuery] string? customerPage, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new RunRecallTraceCommand(rootLotId, direction, asOfUtc, customerPage), ct));
 
     [HttpGet("trace/export")]
     [HasPermission(RecallPermissions.TraceExport)]
     public async Task<IActionResult> ExportTrace([FromQuery] string? rootLotId, [FromQuery] string? direction, [FromQuery] string? format, CancellationToken ct)
     {
-        var response = await _mediator.Send(new ExportRecallTraceCommand(rootLotId, direction, format), ct);
+        var response = await _mediator.Send(new ExportRecallTraceCommand(rootLotId, direction, format, EvidenceLanguage()), ct);
         if (!response.IsSuccessful || response.Data is not { } csv) return CreateActionResultInstance(response);
         return File(new System.Text.UTF8Encoding(false).GetBytes(csv.Content), "text/csv; charset=utf-8", csv.FileName);
     }
 
     [HttpGet("cases/{caseId}/scope/diff")]
     [HasPermission(RecallPermissions.CasesRead)]
-    public async Task<IActionResult> GetCaseScopeDiff(string caseId, CancellationToken ct)
-        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new DiffRecallScopeCommand(caseId), ct)), ct);
+    public async Task<IActionResult> GetCaseScopeDiff(string caseId, [FromQuery] string? customerPage, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new DiffRecallScopeCommand(caseId, customerPage), ct)), ct);
 
     // ── R3: stock + quarantine requests (KR-B), returns (KR-H), scope revision (CT-R5) ─────────────────────
 
@@ -239,18 +240,18 @@ public sealed class RecallController : CustomBaseController
 
     [HttpGet("cases/{caseId}/customers")]
     [HasPermission(RecallPermissions.CasesRead)]
-    public async Task<IActionResult> GetCaseCustomers(string caseId, CancellationToken ct)
-        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseCustomersQuery(caseId), ct)), ct);
+    public async Task<IActionResult> GetCaseCustomers(string caseId, [FromQuery] string? customerPage, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseCustomersQuery(caseId, customerPage), ct)), ct);
 
     [HttpGet("cases/{caseId}/effectiveness")]
     [HasPermission(RecallPermissions.CasesRead)]
-    public async Task<IActionResult> GetCaseEffectiveness(string caseId, CancellationToken ct)
-        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseEffectivenessQuery(caseId), ct)), ct);
+    public async Task<IActionResult> GetCaseEffectiveness(string caseId, [FromQuery] string? customerPage, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseEffectivenessQuery(caseId, customerPage), ct)), ct);
 
     [HttpGet("cases/{caseId}/returns")]
     [HasPermission(RecallPermissions.CasesRead)]
-    public async Task<IActionResult> GetCaseReturns(string caseId, CancellationToken ct)
-        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseReturnsQuery(caseId), ct)), ct);
+    public async Task<IActionResult> GetCaseReturns(string caseId, [FromQuery] string? customerPage, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseReturnsQuery(caseId, customerPage), ct)), ct);
 
     [HttpPost("cases/{caseId}/return-links")]
     [HasPermission(RecallPermissions.ReturnsLink)]

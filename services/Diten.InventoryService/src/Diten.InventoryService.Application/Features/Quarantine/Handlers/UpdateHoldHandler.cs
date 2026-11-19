@@ -84,9 +84,9 @@ public sealed class UpdateHoldHandler : IRequestHandler<UpdateHoldCommand, Respo
             return QuarantineSupport.Fail<HoldDetailDto>(QuarantineErrorCodes.HoldNotFound, "Hold not found.", 404);
         }
 
-        if (hold.Status == HoldStatus.Decided)
+        if (QuarantineDecisionRules.HoldState(hold.Status, null) is { Code: QuarantineDecisionRules.HoldClosed } closed)
         {
-            return QuarantineSupport.Fail<HoldDetailDto>(QuarantineDecisionRules.HoldClosed, "The hold is already decided.", 409);
+            return QuarantineSupport.Fail<HoldDetailDto>(closed);
         }
 
         if (hold.ActiveDecisionId is not null)

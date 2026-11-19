@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый Просмотр</value></data>
+  <data name="Searching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Нет результатов</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию склада, в котором вы работаете. Пока компания не выбрана, данные не показываются.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Список компаний сейчас недоступен; повторите попытку чуть позже.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>Изменено — обновите</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>Не найдено</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Справочник пользователей недоступен; исполнитель не проверен, ничего не сохранено. Повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Выберите исполнителем активного пользователя вашей компании.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>Код компании не подходит для номеров задач; сначала исправьте код компании.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>Остаток изменился во время проводки; подтверждение ожидает — используйте «Повторить».</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Это подтверждение сейчас обрабатывается; подождите немного и обновите страницу.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Сверить можно только подтверждение с ошибкой целостности.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Повторить можно только ожидающее подтверждение.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Подтверждение этой задачи ждёт ответа склада; до его завершения доступно только «Повторить».</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Запись тем временем изменил другой пользователь; обновите страницу и повторите.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Это действие невозможно в текущем состоянии задачи.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>На месте хранения есть открытые задачи размещения; сначала закройте или отмените их.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Место хранения не может одновременно быть зоной приёмки и зоной подготовки отгрузки.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>У этого места хранения уже есть запись роли; измените её.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Вышестоящий или нижестоящий узел уже имеет противоположную роль; приёмка и подготовка отгрузки не могут быть на одной ветке.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>Запись роли не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Роль можно назначить только складу, месту хранения, зоне или ячейке.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Это может сделать только назначенный оператор или руководитель.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>В складском журнале уже есть другое движение с ключом этого подтверждения; его должен сверить руководитель.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>Плановое количество не может быть меньше уже подтверждённого или ожидающего.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>Количество больше остатка, ещё открытого в этой строке.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>Количество больше остатка к размещению.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Не удалось выдать номер задачи; повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Серийные номера в источнике изменились; отмените эту задачу и создайте новую.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Часть этой партии в том же месте ожидает контроля качества; сначала завершите решение по качеству.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Товар с серийным учётом размещается только целиком; частичное подтверждение и закрытие остатка невозможны.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>Исходное место хранения не является зоной приёмки.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>В выбранной строке нет остатка; обновите список.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>Остаток помещён в карантин или заблокирован; разместить его нельзя.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Условие хранения неизвестно — заполните его в карточке товара (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Условия хранения недопустимы: выберите не более одного температурного условия.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>Целевая ячейка не принимает условие хранения этого товара.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>Целью должна быть активная ячейка того же склада, пригодная для хранения и не являющаяся зоной приёмки или подготовки отгрузки.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>У задачи уже есть исполнитель.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>Задача не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже был отправлен с другим содержимым; закройте окно и начните заново.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>Укажите причину длиной не менее 10 символов.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>В источнике недостаточно остатка для этого количества.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>Партия отзывается; разместить её нельзя.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Складская служба недоступна; ничего не сохранено. Повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Некоторые значения недопустимы; проверьте форму.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Сеанс завершён; войдите снова.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>Складская служба сейчас недоступна; повторите попытку чуть позже.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>Запись не найдена; обновите список.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>Запись тем временем изменилась; обновите страницу и повторите.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>Запрос не принят; проверьте значения и повторите.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Что-то пошло не так; повторите попытку.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Слишком много строк для экспорта; сузьте фильтры.</value></data>
+  <data name="WarehouseLocationRolesTitle" xml:space="preserve"><value>Роли Мест Склада</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Отметьте зоны приёмки и подготовки отгрузки и условия хранения, которые принимает узел; нижние узлы их наследуют.</value></data>
+  <data name="AddNewWarehouseLocationRole" xml:space="preserve"><value>Новая Роль</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Место</value></data>
+  <data name="ColLocationType" xml:space="preserve"><value>Тип</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="ColRoles" xml:space="preserve"><value>Роли</value></data>
+  <data name="ColConditions" xml:space="preserve"><value>Действующие условия хранения</value></data>
+  <data name="ColNote" xml:space="preserve"><value>Примечание</value></data>
+  <data name="FilterRole" xml:space="preserve"><value>Роль</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Узел места</value></data>
+  <data name="FieldRoles" xml:space="preserve"><value>Роли (необязательно)</value></data>
+  <data name="FieldConditions" xml:space="preserve"><value>Принимаемые условия хранения</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Поиск по коду или названию</value></data>
+  <data name="RolesHint" xml:space="preserve"><value>Чтобы задать только условия хранения, роль не нужна.</value></data>
+  <data name="ConditionsHint" xml:space="preserve"><value>Нижние узлы наследуют их, если не заданы свои; не более одного температурного условия.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая роль места</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить роль места</value></data>
+  <data name="ValidationLocation" xml:space="preserve"><value>Выберите место.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Удалить эту роль места?</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить роли мест: {0}?</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>Удалено {0} из {1}</value></data>
+  <data name="InheritedBadge" xml:space="preserve"><value>от вышестоящего узла</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>Унаследовано от {0}</value></data>
+  <data name="NoConditions" xml:space="preserve"><value>Нет условий хранения</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>Нет роли</value></data>
+  <data name="Warehouse.Role.Receiving" xml:space="preserve"><value>Приёмка</value></data>
+  <data name="Warehouse.Role.Staging" xml:space="preserve"><value>Подготовка отгрузки</value></data>
+  <data name="Warehouse.StorageCondition.AMBIENT_15_25" xml:space="preserve"><value>Комнатная 15–25 °C</value></data>
+  <data name="Warehouse.StorageCondition.COOL_2_8" xml:space="preserve"><value>Холод 2–8 °C</value></data>
+  <data name="Warehouse.StorageCondition.FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Заморозка ниже −20 °C</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_LIGHT" xml:space="preserve"><value>Беречь от света</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Беречь от влаги</value></data>
+  <data name="Warehouse.LocationType.Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="Warehouse.LocationType.StorageLocation" xml:space="preserve"><value>Место хранения</value></data>
+  <data name="Warehouse.LocationType.Zone" xml:space="preserve"><value>Зона</value></data>
+  <data name="Warehouse.LocationType.Bin" xml:space="preserve"><value>Ячейка</value></data>
+  <data name="Warehouse.Action.EditRole" xml:space="preserve"><value>Изменить</value></data>
+  <data name="Warehouse.Action.DeleteRole" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Warehouse.Action.BulkDelete" xml:space="preserve"><value>Удалить Выбранные</value></data>
+  <data name="Warehouse.Saved.RoleCreated" xml:space="preserve"><value>Роль места создана.</value></data>
+  <data name="Warehouse.Saved.RoleUpdated" xml:space="preserve"><value>Роль места сохранена.</value></data>
+  <data name="Warehouse.Saved.RoleDeleted" xml:space="preserve"><value>Роль места удалена.</value></data>
+  <data name="Warehouse.BulkOutcome.Deleted" xml:space="preserve"><value>Удалено</value></data>
+</root>

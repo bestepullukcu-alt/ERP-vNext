@@ -1,16 +1,28 @@
 name: phase1-gates
 
 # Owner decision 2026-11-02: a pushed branch is checked through its pull request; main is checked after every merge.
+# EES merge queue (MQ-01): merge_group runs the same gates on the queue's merge group (main + the PRs ahead + this one) —
+# a required check whose workflow does not listen to merge_group is never reported there and the queue cannot merge.
 on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
+    types: [checks_requested]
 
 # WP-CI-SERVICE-TESTS-03 (CT decision): the same rule as service-tests.yml — read-only token, no secret, and every action
 # one of the allowed ones pinned to a COMMIT SHA (a tag can be moved). The SHAs are what the floating @v4 tags resolved
 # to on 2026-10-10 (git ls-remote: checkout v4 = v4.4.0, setup-dotnet v4 = v4.3.1), so the gates run exactly as before.
 permissions:
   contents: read
+
+# EES CI-ISRAF-01: a new commit on a pull request cancels that pull request's older run of this workflow, whose result
+# nobody reads any more. A push to main, a merge group and a manual run each get a group of their own (the run id), so
+# they are never cancelled and never wait for another run. A re-run (run_attempt 2 or more) also gets a group of its own:
+# re-running an older commit's run can never cancel the newest commit's run (Codex round 1, CI-ISRAF-01).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number }}-${{ github.event_name != 'pull_request' && github.run_id }}-${{ github.run_attempt != '1' && github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   phase1:
@@ -28,4 +40,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Run Phase 1 Gates
+        # merge_group: GITHUB_BASE_REF is set only for pull_request events; the gates compare with the group's parent
+        # commit instead (run_phase1_gates.sh reads this variable only on a merge_group run, and fails without it).
+        env:
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
         run: ./scripts/run_phase1_gates.sh

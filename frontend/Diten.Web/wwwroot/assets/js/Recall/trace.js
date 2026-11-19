@@ -12,6 +12,7 @@
     const { t, esc, byId } = ui;
     const RECENT_KEY = 'recall.trace.recent';
     let last = null;          // { rootLotId, lotNumber, direction, trace }
+    let customerPage = 1;     // MOD-0177-FU01: the 25-customer slice whose CRM names the trace read resolves
     let rows = [];
     const collapsed = new Set();
 
@@ -93,8 +94,13 @@
             actions.push(`<button type="button" class="btn btn-sm btn-primary" id="rc-open-case"><i class="bx bx-error-alt me-1"></i>${esc(t('Recall.Trace.OpenCase'))}</button>`);
         }
         if (ui.can('RECALL_TRACE_EXPORT')) {
-            const href = `/Recall/export/trace?${new URLSearchParams({ rootLotId: last.rootLotId, direction: last.direction })}`;
-            actions.push(`<a class="btn btn-sm btn-label-secondary" id="rc-trace-csv" href="${esc(href)}"><i class="bx bx-download me-1"></i>${esc(t('Recall.Trace.Csv'))}</a>`);
+            // MOD-0177-FU01 (§8.8): a drawn node whose CRM customer the caller may not read → the CSV would be refused; say so instead of a link
+            if (view.exportForbidden(last.trace)) {
+                actions.push(`<span class="small text-warning" id="rc-trace-csv-forbidden">${esc(t('Recall.Customer.ExportForbidden'))}</span>`);
+            } else {
+                const href = `/Recall/export/trace?${new URLSearchParams({ rootLotId: last.rootLotId, direction: last.direction })}`;
+                actions.push(`<a class="btn btn-sm btn-label-secondary" id="rc-trace-csv" href="${esc(href)}"><i class="bx bx-download me-1"></i>${esc(t('Recall.Trace.Csv'))}</a>`);
+            }
         }
         byId('rc-trace-actions').innerHTML = actions.join('');
         byId('rc-open-case')?.addEventListener('click', openCase);
@@ -103,19 +109,43 @@
         collapsed.clear();
         drawTree();
         drawTable();
+        drawCustomerPager();
         byId('rc-trace-result').classList.remove('d-none');
         byId('rc-trace-empty').classList.add('d-none');
     };
 
-    const run = async (event) => {
+    /** MOD-0177-FU01: past 25 customers, the page selector above the table — another page re-reads the trace with that customer page. */
+    const drawCustomerPager = () => {
+        const table = byId('rc-trace-table');
+        let box = byId('rc-trace-cpager');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'rc-trace-cpager';
+            box.className = 'd-flex align-items-center gap-2 small mb-2';
+            table.parentElement.insertBefore(box, table);
+        }
+        const p = view.customerPager(view.customerKeys(last.trace).length, customerPage);
+        box.classList.toggle('d-none', !p.show);
+        box.innerHTML = p.show
+            ? `<span>${esc(t('Recall.Customer.NamesPage', p.from, p.to, p.total))}</span>`
+              + `<button type="button" class="btn btn-xs btn-label-secondary" data-cpage="-1" ${p.prev ? '' : 'disabled'}>${esc(t('Recall.Customer.PagePrev'))}</button>`
+              + `<button type="button" class="btn btn-xs btn-label-secondary" data-cpage="1" ${p.next ? '' : 'disabled'}>${esc(t('Recall.Customer.PageNext'))}</button>`
+            : '';
+        box.querySelectorAll('[data-cpage]').forEach((b) => b.addEventListener('click', () => { customerPage += Number(b.dataset.cpage); run(null, true); }));
+    };
+
+    const run = async (event, keepPage) => {
         event?.preventDefault();
-        const rootLotId = lotSelect().value;
+        if (!keepPage) customerPage = 1;
+        const rootLotId = keepPage && last ? last.rootLotId : lotSelect().value;
         if (!rootLotId) return;
         let lotNumber = lotSelect().selectedOptions?.[0]?.textContent || rootLotId;
         ui.hideError(byId('rc-error'));
         byId('rc-trace-busy').classList.remove('d-none');
         byId('rc-trace-run').disabled = true;
-        const reply = await ui.get(`/Recall/data/trace?${new URLSearchParams({ rootLotId, direction: direction() })}`);
+        const query = { rootLotId, direction: keepPage && last ? last.direction : direction() };
+        if (customerPage > 1) query.customerPage = String(customerPage);
+        const reply = await ui.get(`/Recall/data/trace?${new URLSearchParams(query)}`);
         byId('rc-trace-busy').classList.add('d-none');
         byId('rc-trace-run').disabled = false;
         if (!reply.ok) {
@@ -127,7 +157,7 @@
         // R7c: opened by ?lot={id} the picker knows only the id — the root node names the lot; the option and the recent list take its number
         const rootNumber = (trace.nodes || []).find((n) => view.isLot(n) && n.lot?.lotId === rootLotId)?.lot?.lotNumber;
         if (rootNumber && rootNumber !== lotNumber) { lotNumber = rootNumber; const select = lotSelect(); [...select.options].filter((o) => o.value === rootLotId).forEach((o) => o.remove()); select.add(new Option(rootNumber, rootLotId, true, true)); if (window.jQuery?.fn?.select2) window.jQuery(select).trigger('change.select2'); }
-        last = { rootLotId, lotNumber, direction: direction(), trace };
+        last = { rootLotId, lotNumber, direction: query.direction, trace };
         remember(rootLotId, lotNumber);
         drawRecent();
         draw();

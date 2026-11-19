@@ -29,7 +29,10 @@ try:
 except ImportError as e:  # a missing dependency is an error, never a skip
     raise RuntimeError("test_ct_cli_regression: openpyxl gerekli — python3 -m pip install -r scripts/requirements-tools.txt") from e
 
-ENV = dict(os.environ, GIT_OPTIONAL_LOCKS="0", PYTHONDONTWRITEBYTECODE="1", GIT_CONFIG_NOSYSTEM="1",
+# Every inherited GIT_* goes first: a git hook or `git rebase -x` exports GIT_DIR / GIT_INDEX_FILE, and the fixture's
+# git calls would then land in the developer's repository (review 2026-11-06, test_phase1_base_fetch.py).
+ENV = dict({k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+           GIT_OPTIONAL_LOCKS="0", PYTHONDONTWRITEBYTECODE="1", GIT_CONFIG_NOSYSTEM="1",
            GIT_CONFIG_GLOBAL=os.devnull, GIT_AUTHOR_NAME="R0 Fixture", GIT_AUTHOR_EMAIL="fixture@example.invalid",
            GIT_COMMITTER_NAME="R0 Fixture", GIT_COMMITTER_EMAIL="fixture@example.invalid",
            GIT_AUTHOR_DATE="2026-10-17T12:00:00Z", GIT_COMMITTER_DATE="2026-10-17T12:00:00Z")

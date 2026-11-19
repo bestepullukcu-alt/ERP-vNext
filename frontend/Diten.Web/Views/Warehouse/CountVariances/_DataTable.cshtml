@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Warehouse.CountVariances
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountVariancesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // SERVER data through the proxy profile (pack §11): /Warehouse/CountVariances/api translates paging and the filters (source, warehouse, dates,
+    // status, SKU, lot) for listCountVariances. No selection: the decisions are per row (FU-0181-BULK).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-countvariances",
+        DataMode = "server",
+        Slug = "countvariances",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColCount"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColSource"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColBin"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColProduct"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColExpectedAtCount"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCounted"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColVariance"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColFlags"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColAdjustment"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

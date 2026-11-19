@@ -1,0 +1,91 @@
+@using Diten.Web.Views.Warehouse.CountVariances
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountVariancesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["CountVariancesTitle"].Value;
+    ViewData["PageCode"] = "COUNTVARIANCES"; // UXH-001: the "?" panel shows THIS page's help
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0181 DL-4 — Fark İzi / Variance Trace (Golden Reference Slim, server mode, proxy profile — pack §2.4, §8.5, §8.13, §11).
+
+    UAS-001 — nothing below is drawn without cycle-count.variances.read: no heading, no band, no filter, no empty table, no button. No redirect.
+
+    ⚠ Display only. The decisions (approve / reject / recount / retry / resolve) are offered only on "Sayım" rows and only for their key; "Elle" rows
+    are read-only. "Onayla" is withheld from the line's counter and the count's submitter (four eyes) — the service still refuses it (403); the
+    screen rule never replaces the server's (§8.5). The tolerance approval's label is the translation of its code, never stored text.
+*@
+@if (!Perms.Has(CycleCountPermissionKeys.VariancesRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["CountVariancesTitle"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var decides = Perms.Has(CycleCountPermissionKeys.VariancesApprove) || Perms.Has(CycleCountPermissionKeys.VariancesReject)
+                  || Perms.Has(CycleCountPermissionKeys.VariancesRecount) || Perms.Has(CycleCountPermissionKeys.VariancesPost)
+                  || Perms.Has(CycleCountPermissionKeys.VariancesResolve);
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Warehouse/CountVariances/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CountVariancesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    @* the rules the screen tells (brief §3): approval corrects the stock at once; tolerance approvals; four eyes; drift; serial lines *@
+    <div class="alert alert-info d-flex flex-column gap-1" role="note">
+        <span>@Localizer["Band.Immediate"]</span>
+        <span>@Localizer["Band.Tolerance"]</span>
+        <span>@Localizer["Band.FourEyes"]</span>
+    </div>
+
+    <div id="cv-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-countvariances" data-dt-standard="v2"> *@
+    <partial name="~/Views/Warehouse/CountVariances/_DataTable.cshtml" />
+
+    @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+    <partial name="~/Views/Warehouse/CountVariances/_DetailsQuickView.cshtml" />
+
+    @if (decides)
+    {
+        <partial name="~/Views/Warehouse/CountVariances/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/Warehouse/warehouse.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Warehouse/CountVariances/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Warehouse/CountVariances/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Warehouse/CountVariances/index.js" asp-append-version="true"></script>
+    }
+}

@@ -2,13 +2,13 @@
   "schemaVersion": 1,
   "status": "APPROVED",
   "decision": {
-    "path": "docs/records/decisions/2026-10/mod0183-docs-path-shipment-bundle-340-repin-owner-decision-01.json",
-    "sha256": "54f8e59fb57c85b4ba1bfd40647873ae36d6d40fd26d77f5f12b5652ab517833"
+    "path": "docs/records/decisions/2026-11/mod0183-docs-path-shipment-bundle-350-repin-owner-decision-01.json",
+    "sha256": "29de855dff1a15710958b34d12501bd9fa9ec9c19e03e3f7999e003d6e39750b"
   },
   "canonicalTargets": [
     {
       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
-      "sha256": "84d804f6bbcb0ebc14c2046d44a72585c482e014a4ca9e295e15757648f59562"
+      "sha256": "42ccf361a08c13f8c080a0c95dfcd98a91bc9f5d7da4295041b9e9c17d25f8b7"
     },
     {
       "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",

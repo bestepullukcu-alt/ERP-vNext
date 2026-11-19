@@ -16,14 +16,14 @@ public sealed class SupplyChainShipmentsControllerTests
     private static readonly Guid Tenant = Guid.Parse("11111111-1111-4111-8111-111111111111");
     private static readonly Guid LegalEntity = Guid.Parse("22222222-2222-4222-8222-222222222222");
     private static readonly Guid Correlation = Guid.Parse("33333333-3333-4333-8333-333333333333");
-    private static readonly Guid Shipment = Guid.Parse("44444444-4444-4444-8444-444444444444");
+    internal static readonly Guid Shipment = Guid.Parse("44444444-4444-4444-8444-444444444444");
 
     [Fact]
     public async Task List_ForwardsOnlyFrozenQueryAndScopeThroughGateway()
     {
         var handler = new CaptureHandler(_ => Response(HttpStatusCode.OK, "{\"items\":[],\"total\":0}"));
         var controller = CreateController(handler, ["supplychain.shipments.read"]);
-        var result = await controller.List("InTransit", "SO 1", 2, 25, CancellationToken.None);
+        var result = await controller.List("InTransit", "SO 1", 25, 25, null, null, null, 0, CancellationToken.None);
         Assert.Equal(StatusCodes.Status200OK, Assert.IsType<ContentResult>(result).StatusCode);
         Assert.Equal("http://localhost:5000/api/shipment-bundle/shipments?page=2&pageSize=25&status=InTransit&sourceDocumentId=SO 1", handler.Uri);
         Assert.Equal(Tenant.ToString("D"), handler.Headers["X-Tenant-Id"]);
@@ -39,14 +39,9 @@ public sealed class SupplyChainShipmentsControllerTests
     [InlineData(HttpStatusCode.GatewayTimeout, "<html>gateway timeout</html>")]
     public async Task UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(HttpStatusCode upstream, string body)
     {
-        var handler = new CaptureHandler(_ => Response(upstream, body));
-        var controller = CreateController(handler, ["supplychain.shipments.create"], true);
-        var result = await controller.Create(new CreateShipmentViewModel
-        {
-            SourceModule = "O2C", SourceType = "Order", SourceDocumentId = "SO-1", WarehouseReferenceId = "WH-1",
-            ShipToReference = "DEST-1", PlannedShipAt = DateTimeOffset.Parse("2026-09-25T08:00:00Z"),
-            Lines = [new() { LineNumber = "1", ItemId = Tenant, SkuId = LegalEntity, Quantity = "1", UomId = "EA" }]
-        }, CancellationToken.None);
+        var handler = new CaptureHandler(r => IsCrm(r) ? Response(HttpStatusCode.OK, AccountJson) : Response(upstream, body));
+        var controller = CreateController(handler, ["supplychain.shipments.create", "crm.account.read"], true);
+        var result = await controller.Create(NewShipment("1"), CancellationToken.None);
         var failure = Assert.IsType<ObjectResult>(result);
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, failure.StatusCode);
         Assert.Contains("PERSISTENCE_UNAVAILABLE", System.Text.Json.JsonSerializer.Serialize(failure.Value));
@@ -59,7 +54,7 @@ public sealed class SupplyChainShipmentsControllerTests
         const string envelope = "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"x\",\"correlationId\":\"33333333-3333-4333-8333-333333333333\"},\"contractVersion\":\"v1\"}";
         var handler = new CaptureHandler(_ => Response(HttpStatusCode.InternalServerError, envelope));
         var controller = CreateController(handler, ["supplychain.shipments.read"]);
-        var result = Assert.IsType<ContentResult>(await controller.List(null, null, 1, 10, CancellationToken.None));
+        var result = Assert.IsType<ContentResult>(await controller.List(null, null, 0, 10, null, null, null, 0, CancellationToken.None));
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         Assert.Equal(envelope, result.Content);
     }
@@ -67,15 +62,10 @@ public sealed class SupplyChainShipmentsControllerTests
     [Fact]
     public async Task Create_PreservesExactWireFieldsQuantityAndStableIntentHeader()
     {
-        var handler = new CaptureHandler(_ => Response(HttpStatusCode.Created, "{\"shipmentId\":\"44444444-4444-4444-8444-444444444444\"}"));
-        var controller = CreateController(handler, ["supplychain.shipments.create"], true);
-        var result = await controller.Create(new CreateShipmentViewModel
-        {
-            SourceModule = "O2C", SourceType = "Order", SourceDocumentId = "SO-1", WarehouseReferenceId = "WH-1",
-            ShipToReference = "DEST-1", PlannedShipAt = DateTimeOffset.Parse("2026-09-25T08:00:00Z"),
-            PlannedDeliverAt = null, Lines = [new() { LineNumber = "1", ItemId = Tenant, SkuId = LegalEntity,
-                Quantity = "1.250", UomId = "EA", InventoryReferenceId = "INV-1" }]
-        }, CancellationToken.None);
+        var handler = new CaptureHandler(r => IsCrm(r) ? Response(HttpStatusCode.OK, AccountJson)
+            : Response(HttpStatusCode.Created, "{\"shipmentId\":\"44444444-4444-4444-8444-444444444444\"}"));
+        var controller = CreateController(handler, ["supplychain.shipments.create", "crm.account.read"], true);
+        var result = await controller.Create(NewShipment("1.250"), CancellationToken.None);
         Assert.IsType<ContentResult>(result);
         Assert.Equal("intent-key", handler.Headers["Idempotency-Key"]);
         Assert.Contains("\"quantity\":\"1.250\"", handler.Body);
@@ -113,12 +103,22 @@ public sealed class SupplyChainShipmentsControllerTests
         Assert.Equal(0, handler.CallCount);
     }
 
-    private static SupplyChainShipmentsController CreateController(CaptureHandler handler, string[] permissions, bool includeIntent = false)
+    internal const string Customer = "14900000-0000-4000-8000-000000000001";
+    internal const string AccountJson = """{"data":{"id":"14900000-0000-4000-8000-000000000001","accountName":"Acme","accountCode":"C-1","countryRef":"TR","cityRef":"Istanbul","districtRef":null,"addressLine":"Ataturk Cad. No 12","responsiblePersonEmail":"buyer@example.test"},"isSuccessful":true,"statusCode":200}""";
+    internal static bool IsCrm(HttpRequestMessage request) => request.RequestUri!.AbsolutePath.StartsWith("/api/crm/", StringComparison.Ordinal);
+    internal static CreateShipmentViewModel NewShipment(string quantity, string? customerRef = Customer) => new()
+    {
+        SourceDocumentId = "SO-1", WarehouseReferenceId = "WH-1", CustomerRef = customerRef, PlannedShipAt = DateTimeOffset.Parse("2026-09-25T08:00:00Z"),
+        PlannedDeliverAt = null, Lines = [new() { ItemId = Tenant, SkuId = LegalEntity, SkuLevel = "Lsku", Quantity = quantity, UomId = "EA", FromLocationId = "loc-1" }]
+    };
+
+    internal static SupplyChainShipmentsController CreateController(CaptureHandler handler, string[] permissions, bool includeIntent = false,
+        Microsoft.Extensions.Logging.ILogger<SupplyChainShipmentsController>? logger = null)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         { ["GatewayUrl"] = "http://localhost:5000" }).Build();
         var controller = new SupplyChainShipmentsController(new HttpClient(handler), configuration,
-            NullLogger<SupplyChainShipmentsController>.Instance);
+            logger ?? NullLogger<SupplyChainShipmentsController>.Instance);
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "shipment-tester"),
             new("tenant_id", Tenant.ToString("D")), new("legal_entity_id", LegalEntity.ToString("D")) };
         claims.AddRange(permissions.Select(permission => new Claim("permission", permission)));
@@ -134,22 +134,23 @@ public sealed class SupplyChainShipmentsControllerTests
         return controller;
     }
 
-    private static HttpResponseMessage Response(HttpStatusCode status, string body)
+    internal static HttpResponseMessage Response(HttpStatusCode status, string body)
     {
         var response = new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         response.Headers.TryAddWithoutValidation("X-Correlation-Id", Correlation.ToString("D"));
         return response;
     }
 
-    private sealed class CaptureHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
+    internal sealed class CaptureHandler(Func<HttpRequestMessage, HttpResponseMessage> responder) : HttpMessageHandler
     {
         public int CallCount { get; private set; }
         public string Uri { get; private set; } = string.Empty;
         public Dictionary<string, string> Headers { get; } = new(StringComparer.OrdinalIgnoreCase);
         public string Body { get; private set; } = string.Empty;
+        public List<string> Uris { get; } = [];
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            CallCount++; Uri = request.RequestUri?.ToString() ?? string.Empty;
+            CallCount++; Uri = request.RequestUri?.ToString() ?? string.Empty; Uris.Add(Uri);
             foreach (var header in request.Headers) Headers[header.Key] = string.Join(',', header.Value);
             Body = request.Content is null ? string.Empty : await request.Content.ReadAsStringAsync(cancellationToken);
             return responder(request);

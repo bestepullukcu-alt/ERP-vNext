@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-public sealed class PositionRepository : TenantRepository<Position>, IPositionRepository
+public sealed class PositionRepository : TenantRepository<Position>, IPositionRepository, IPositionCodeHistoryRepository
 {
     public PositionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.Positions)
@@ -29,6 +29,13 @@ public sealed class PositionRepository : TenantRepository<Position>, IPositionRe
 
         return Collection.Find(Builders<Position>.Filter.And(filters)).AnyAsync(ct);
     }
+
+    /// <summary>MOD-0040-FU02 DL-2 — tenant-exact and deliberately WITHOUT the soft-delete filter <see cref="ExistsByCodeAsync"/> has.</summary>
+    public Task<bool> ExistsByCodeIncludingDeletedAsync(string code, CancellationToken ct = default) =>
+        Collection.Find(Builders<Position>.Filter.And(
+                Builders<Position>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+                Builders<Position>.Filter.Eq(x => x.Code, code)))
+            .AnyAsync(ct);
 
     public async Task UpdateAsync(Position position, CancellationToken ct = default)
     {

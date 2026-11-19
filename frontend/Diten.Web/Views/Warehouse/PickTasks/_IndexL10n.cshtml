@@ -1,0 +1,51 @@
+@using Diten.Web.Views.Warehouse.PickTasks
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PickTasksIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    The pick screen's words for the browser: the shared toolbar / list vocabulary (SharedResource) and the page's own Warehouse.* words
+    (the page resx, enumerated → Words). No hardcoded fallback text in the JS (localization §4).
+*@
+@{
+    // Bridge pattern A (dynamic-localization-standard "İKİ KÖPRÜ"; MOD-0286 CI-11): the page's whole resx (current culture + parents)
+    // goes to Words, so a key added to the resx can never miss the browser. WarehouseVocabulary.PickKeys stays the test-side list of the keys
+    // the script reads (every one of them must be in the resx — AC-23 / AC-34).
+    var words = new Dictionary<string, string>(StringComparer.Ordinal);
+    foreach (var entry in Localizer.GetAllStrings(true))
+    {
+        words[entry.Name] = entry.Value;
+    }
+}
+<script id="picktasks-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Actions = Localizer["Actions"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Close = SharedLocalizer["Close"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Searching = Localizer["Searching"].Value,
+        NoResults = Localizer["NoResults"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        AddNew = string.Empty, // no create on this screen (§11.5) — the allocation opens the tasks
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        Words = words
+    })
+</script>

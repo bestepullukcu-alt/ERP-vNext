@@ -8,6 +8,7 @@ using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
+using Diten.InventoryService.Domain.ValueObjects;
 using MediatR;
 
 namespace Diten.InventoryService.Application.Features.Inventory.Handlers.QueryHandlers;
@@ -24,6 +25,9 @@ namespace Diten.InventoryService.Application.Features.Inventory.Handlers.QueryHa
 /// <c>onHand</c> and <c>byStatus</c> are unchanged: the rows keep their stock status ("bloke lot ≠ bloke stok").</item>
 /// <item>FU-S1-01 / ASSUMPTION-0173-18: with NO ledger row, PRODUCT-MASTER decides — known item/SKU → 200 with zeros;
 /// unknown → 404 UNKNOWN_ITEM; unreachable → 503 PRODUCT_MASTER_UNAVAILABLE (fail-closed). With rows, no upstream call.</item>
+/// <item>INVENTORY 1.6.0 (MOD-0173-FU03 §8.8): with one named SKU and <c>warehouseId</c> (no <c>locationId</c>), <c>scopeReserved</c> /
+/// <c>scopeAvailable</c> of the warehouse — or, with <c>lotId</c>, of the warehouse + lot. <c>reserved</c> / <c>available</c> keep their
+/// SKU meaning.</item>
 /// </list>
 /// </summary>
 public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuery, Response<AvailabilityViewDto>>
@@ -79,8 +83,9 @@ public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuer
             }
         }
 
+        var now = DateTimeOffset.UtcNow; // FU03 §8.8: ONE now for reserved and the scope figures (the same vade rule)
         var reserved = await _reservations.SumActiveReservedAsync(
-            filter with { WarehouseId = null, LocationId = null }, DateTimeOffset.UtcNow, cancellationToken);
+            filter with { WarehouseId = null, LocationId = null }, now, cancellationToken);
         var availableRows = rows.Where(r => r.StockStatus == StockStatus.Available).ToList();
         var heldLots = await _lots.HeldLotIdsAsync(
             availableRows.Where(r => r.LotId is not null).Select(r => r.LotId!).Distinct(StringComparer.Ordinal).ToList(), cancellationToken);
@@ -100,6 +105,19 @@ public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuer
         if (warehouseId is not null) scope["warehouseId"] = warehouseId;
         if (locationId is not null) scope["locationId"] = locationId;
 
+        // INVENTORY 1.6.0 (MOD-0173-FU03 §8.8): the scope figures — one named SKU, a warehouse, no bin. Reserved is read from the
+        // reservations with the vade filter (a due but unclosed reservation is not counted), never from the position's Reserved.
+        string? scopeReserved = null, scopeAvailable = null;
+        if (warehouseId is not null && locationId is null && itemId.HasValue && skuId.HasValue && skuLevel.HasValue)
+        {
+            var sku = new SkuKey(itemId.Value, skuId.Value, skuLevel.Value);
+            var lotId = QueryParameterRules.Uuid(request.LotId);
+            var held = await _reservations.SumActiveScopeReservedAsync(sku, warehouseId, lotId, now, cancellationToken);
+            var onHand = await _reservations.ScopeAvailableOnHandAsync(sku, warehouseId, lotId, cancellationToken);
+            scopeReserved = InventoryQuantity.ToWire(held);
+            scopeAvailable = InventoryQuantity.ToWire(onHand - held);
+        }
+
         return Response<AvailabilityViewDto>.Success(new AvailabilityViewDto
         {
             ItemId = (itemId ?? Single(rows, r => r.ItemId))?.ToString(),
@@ -112,7 +130,9 @@ public sealed class GetAvailabilityHandler : IRequestHandler<GetAvailabilityQuer
             Available = InventoryQuantity.ToWire(available),
             ByStatus = byStatus,
             BaseUomId = rows.Count > 0 ? rows[0].BaseUomId : null,
-            AsOf = InventoryMapping.Utc(DateTimeOffset.UtcNow)
+            AsOf = InventoryMapping.Utc(DateTimeOffset.UtcNow),
+            ScopeReserved = scopeReserved,
+            ScopeAvailable = scopeAvailable
         });
     }
 

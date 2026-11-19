@@ -25,6 +25,10 @@ namespace Diten.InventoryService.Persistence.Repositories;
 /// <para>MOD-0174 CT-D1 (a), WP-0174-P2: the AVAILABLE rows of a Blocked / Expired registered lot are not counted — the same
 /// rule the posting and the lot status change maintain, so a restart never brings a blocked lot's stock back into
 /// availability. The tenant's lots are read in the same transaction (a status change writes the position too → conflict).</para>
+/// <para>MOD-0173-FU03 §8.2 (yol 6): the same step rebuilds the SKU's warehouse and warehouse + lot positions
+/// (<c>inventory_reservation_positions</c>) from the same rows and reservations — per warehouse Σ OnHand of its AVAILABLE rows and
+/// Σ remaining of the ACTIVE reservations of that warehouse (warehouse and lot scope); per warehouse + registered lot the same for the
+/// lot. A scope position no source names any more is set to 0, never deleted.</para>
 /// </summary>
 public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
 {
@@ -32,6 +36,7 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
     private readonly IMongoCollection<InventoryBalance> _balances;
     private readonly IMongoCollection<InventoryReservation> _reservations;
     private readonly IMongoCollection<InventorySkuPosition> _positions;
+    private readonly IMongoCollection<InventoryReservationPosition> _scopePositions;
     private readonly IMongoCollection<Lot> _lots;
 
     public SkuPositionRebuilder(IMongoClient client, IMongoDatabase database)
@@ -40,6 +45,7 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
         _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
         _reservations = database.GetCollection<InventoryReservation>(InventoryCollections.Reservations);
         _positions = database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions);
+        _scopePositions = database.GetCollection<InventoryReservationPosition>(InventoryCollections.ReservationPositions);
         _lots = database.GetCollection<Lot>(TraceCollections.Lots);
     }
 
@@ -61,6 +67,7 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
             .Match(Builders<InventoryReservation>.Filter.Eq(x => x.Status, ReservationStatus.Active))
             .Group(groupId).ToListAsync(cancellationToken));
         groups.AddRange(await _positions.Aggregate().Group(groupId).ToListAsync(cancellationToken));
+        groups.AddRange(await _scopePositions.Aggregate().Group(groupId).ToListAsync(cancellationToken));
         foreach (var g in groups)
         {
             if (TryKey(g, out var key))
@@ -131,7 +138,70 @@ public sealed class SkuPositionRebuilder : ISkuPositionRebuilder
                 u.SetOnInsert(x => x.DeletedAt, null)),
             new UpdateOptions { IsUpsert = true },
             ct);
+
+        await RebuildScopesAsync(session, tenant, le, item, skuId, level, rows, active, now, ct);
         return true;
+    }
+
+    /// <summary>
+    /// MOD-0173-FU03 §4.2: the warehouse and warehouse + lot positions of one SKU from the rows (held lots already left out) and its ACTIVE
+    /// reservations. Rows without a warehouse belong to no warehouse position; a typed lot text has no lot position (its stock counts in
+    /// the warehouse only). Existing positions that no source names are set to 0 (a rebuild never deletes).
+    /// </summary>
+    private async Task RebuildScopesAsync(
+        IClientSessionHandle session, Guid? tenant, Guid? le, Guid item, Guid skuId, SkuLevel level,
+        IReadOnlyList<InventoryBalance> rows, IReadOnlyList<InventoryReservation> active, DateTimeOffset now, CancellationToken ct)
+    {
+        var target = new Dictionary<(ReservationScopeLevel Level, string Warehouse, Guid Lot), (decimal OnHand, decimal Reserved, string Uom)>();
+        void Add((ReservationScopeLevel, string, Guid) key, decimal onHand, decimal reserved, string uom)
+        {
+            (decimal OnHand, decimal Reserved, string Uom) current = target.TryGetValue(key, out var found) ? found : (0m, 0m, uom);
+            target[key] = (current.OnHand + onHand, current.Reserved + reserved, current.Uom.Length > 0 ? current.Uom : uom);
+        }
+
+        foreach (var row in rows.Where(r => r.WarehouseId is not null))
+        {
+            Add((ReservationScopeLevel.Warehouse, row.WarehouseId!, Guid.Empty), row.OnHand, 0m, row.BaseUomId);
+            if (LotPostingRules.IsRegisteredLotForm(row.LotId, out var lotId))
+            {
+                Add((ReservationScopeLevel.Lot, row.WarehouseId!, lotId), row.OnHand, 0m, row.BaseUomId);
+            }
+        }
+
+        foreach (var reservation in active.Where(r => r.WarehouseId is not null))
+        {
+            Add((ReservationScopeLevel.Warehouse, reservation.WarehouseId!, Guid.Empty), 0m, reservation.RemainingQuantity, string.Empty);
+            if (reservation.LotId is { } lotId)
+            {
+                Add((ReservationScopeLevel.Lot, reservation.WarehouseId!, lotId), 0m, reservation.RemainingQuantity, string.Empty);
+            }
+        }
+
+        var sf = Builders<InventoryReservationPosition>.Filter;
+        var skuFilter = sf.Eq(x => x.TenantId, tenant) & sf.Eq(x => x.LegalEntityId, le) & sf.Eq(x => x.IsDeleted, false)
+                        & sf.Eq(x => x.ItemId, item) & sf.Eq(x => x.SkuId, skuId) & sf.Eq(x => x.SkuLevel, level);
+        foreach (var existing in await _scopePositions.Find(session, skuFilter).ToListAsync(ct))
+        {
+            target.TryAdd((existing.Level, existing.WarehouseId, existing.LotId), (0m, 0m, existing.BaseUomId));
+        }
+
+        var su = Builders<InventoryReservationPosition>.Update;
+        foreach (var ((scope, warehouse, lot), (onHand, reserved, uom)) in target)
+        {
+            await _scopePositions.UpdateOneAsync(
+                session,
+                skuFilter & sf.Eq(x => x.Level, scope) & sf.Eq(x => x.WarehouseId, warehouse) & sf.Eq(x => x.LotId, lot),
+                su.Combine(
+                    su.Set(x => x.AvailableOnHand, onHand),
+                    su.Set(x => x.Reserved, reserved),
+                    su.SetOnInsert(x => x.Id, Guid.NewGuid()),
+                    su.SetOnInsert(x => x.BaseUomId, uom),
+                    su.SetOnInsert(x => x.CreatedAt, now),
+                    su.SetOnInsert(x => x.Version, 0),
+                    su.SetOnInsert(x => x.DeletedAt, null)),
+                new UpdateOptions { IsUpsert = true },
+                ct);
+        }
     }
 
     /// <summary>

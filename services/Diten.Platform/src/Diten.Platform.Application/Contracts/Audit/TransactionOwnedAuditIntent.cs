@@ -7,6 +7,9 @@ namespace Diten.Platform.Application.Contracts.Audit;
 /// payload: the canonical payload (tenant, correlation, actor, masking, redaction, source service) is built in one
 /// place, at the in-transaction writer's entry (<c>CanonicalTransactionalAuditOutboxWriter</c>). A request without an
 /// intent is refused there — the in-transaction door takes no hand-written payload.
+/// <para>MOD-0040-FU02 (K-9) — the source service is set at the door: an intent may only PROPOSE a name from
+/// <c>TransactionOwnedAuditSourceServices</c> (<see cref="SourceService"/>); empty means <c>Diten.Platform</c>, and any
+/// other name is refused there with nothing written.</para>
 /// </summary>
 public sealed record TransactionOwnedAuditIntent
 {
@@ -23,6 +26,12 @@ public sealed record TransactionOwnedAuditIntent
     public IReadOnlyDictionary<string, object?>? Metadata { get; init; }
 
     public string? SourceModule { get; init; }
+
+    /// <summary>
+    /// MOD-0040-FU02 (K-9) — the calling service the record names, when the change is made on another service's behalf
+    /// (taken from a verified consumer credential, never from a body or header). Null or blank: <c>Diten.Platform</c>.
+    /// </summary>
+    public string? SourceService { get; init; }
 
     /// <summary>
     /// The NAME of the unattended job that may make this change without a signed-in person (a startup seed, a

@@ -290,16 +290,20 @@ public sealed class GetRecallCaseReturnsHandler : IRequestHandler<GetRecallCaseR
     private readonly IRecallRepository _repository;
     private readonly IRecallLedgerReader _ledger;
     private readonly IRecallQuarantineRequester _quarantine;
+    private readonly RecallCustomerDisplay _customers;
 
-    public GetRecallCaseReturnsHandler(IRecallRepository repository, IRecallLedgerReader ledger, IRecallQuarantineRequester quarantine)
+    public GetRecallCaseReturnsHandler(IRecallRepository repository, IRecallLedgerReader ledger, IRecallQuarantineRequester quarantine,
+        RecallCustomerDisplay customers)
     {
         _repository = repository;
         _ledger = ledger;
         _quarantine = quarantine;
+        _customers = customers;
     }
 
     public async Task<Response<RecallReturnsDto>> Handle(GetRecallCaseReturnsQuery request, CancellationToken ct)
     {
+        if (!RecallCustomerDisplay.TryPage(request.CustomerPage, out var page)) return RecallSupport.Invalid<RecallReturnsDto>(RecallCustomerDisplay.PageError);
         if (!RecallSupport.TryParseId(request.CaseId, out var caseId) || await _repository.FindCaseAsync(caseId, ct) is not { } c)
         {
             return RecallSupport.CaseNotFound<RecallReturnsDto>();
@@ -319,8 +323,12 @@ public sealed class GetRecallCaseReturnsHandler : IRequestHandler<GetRecallCaseR
                 reason is null, reason));
         }
 
+        // MOD-0177-FU01 (§8.7, son bakış 04 F-2): a link's customer = its key with the source / warning of the current scope revision
+        var facts = RecallCustomerDisplay.Facts(await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct));
+        var names = await _customers.PageAsync(links.Select(l => RecallCustomerDisplay.Of(facts, l.CustomerRef)), page, ct);
+        var customer = RecallMapping.Customers(facts, names);
         var linked = new List<RecallReturnLinkDto>();
-        foreach (var link in links) linked.Add(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct));
+        foreach (var link in links) linked.Add(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct) with { Customer = customer(link.CustomerRef) });
         return Response<RecallReturnsDto>.Success(new RecallReturnsDto(linked, candidates));
     }
 }
@@ -366,13 +374,16 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
     private readonly IRecallLedgerReader _ledger;
     private readonly RecallSupport _support;
     private readonly IRecallQuarantineRequester _quarantine;
+    private readonly RecallCustomerDisplay _customers;
 
-    public LinkRecallReturnHandler(IRecallRepository repository, IRecallLedgerReader ledger, RecallSupport support, IRecallQuarantineRequester quarantine)
+    public LinkRecallReturnHandler(IRecallRepository repository, IRecallLedgerReader ledger, RecallSupport support, IRecallQuarantineRequester quarantine,
+        RecallCustomerDisplay customers)
     {
         _quarantine = quarantine;
         _repository = repository;
         _ledger = ledger;
         _support = support;
+        _customers = customers;
     }
 
     public async Task<Response<RecallReturnLinkDto>> Handle(LinkRecallReturnCommand request, CancellationToken ct)
@@ -385,10 +396,17 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
             return RecallSupport.Invalid<RecallReturnLinkDto>("transactionId and customerRef (1-200) are required; returnReference at most 100.");
         }
 
-        var fingerprint = RecallSupport.Fingerprint(("op", "linkReturn"), ("id", request.CaseId.ToString("D")), ("tx", transactionId), ("customer", customer), ("ref", reference));
+        var fingerprint = RecallSupport.Fingerprint(("op", "linkReturn"), ("id", request.CaseId.ToString("D")), ("tx", transactionId),
+            ("customer", RecallCustomerKeyRules.FingerprintForm(customer)), ("ref", reference));
         if (await _repository.FindReturnLinkByKeyAsync(_support.UserId, request.IdempotencyKey, ct) is { } earlier)
         {
-            return earlier.RequestFingerprint == fingerprint ? Response<RecallReturnLinkDto>.Success(RecallReturnRules.Dto(earlier), 200) : RecallSupport.KeyReused<RecallReturnLinkDto>();
+            if (earlier.RequestFingerprint != fingerprint) return RecallSupport.KeyReused<RecallReturnLinkDto>();
+            // MOD-0177-FU01 (son bakış 04 F-1): the replay's customer is built from the stored link — no CRM call (a CRM key is Deferred)
+            var stored = RecallCustomerDisplay.Facts(await _repository.ScopeItemsAsync(earlier.CaseId, (await _repository.FindCaseAsync(earlier.CaseId, ct))?.ScopeRevision ?? 0, ct));
+            return Response<RecallReturnLinkDto>.Success(RecallReturnRules.Dto(earlier) with
+            {
+                Customer = RecallMapping.Customers(stored, RecallCustomerDisplay.Resolution.None)(earlier.CustomerRef)
+            }, 200);
         }
 
         var c = await _repository.FindCaseAsync(request.CaseId, ct);
@@ -413,9 +431,13 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
                     new Dictionary<string, object?> { ["transactionId"] = t.TransactionId, ["toStockStatus"] = t.ToStockStatus is { } s ? WireNames.ToWire(s) : null });
         }
 
-        var customers = RecallReads.Shipments(await _repository.ScopeItemsAsync(c.Id, c.ApprovedScope?.Revision ?? c.ScopeRevision, ct))
-            .Select(s => s.CustomerRef).ToHashSet(StringComparer.Ordinal);
-        if (!customers.Contains(customer)) return RecordRecallNotificationHandler.UnknownCustomer<RecallReturnLinkDto>(customer);
+        var scoped = RecallReads.Shipments(await _repository.ScopeItemsAsync(c.Id, c.ApprovedScope?.Revision ?? c.ScopeRevision, ct));
+        if (RecallCustomerMatch.Of(scoped, request.CustomerRef!) is not { } match) return RecordRecallNotificationHandler.UnknownCustomer<RecallReturnLinkDto>(customer);
+        customer = match.Key;
+
+        // MOD-0177-FU01 (§8.4): the last check before the write — a CRM customer must resolve now (Unresolved 503, Forbidden 403; NotFound writes)
+        var checkedName = match.IsCrm ? await _customers.OneAsync(customer, ct) : null;
+        if (RecallCustomerMatch.Refusal<RecallReturnLinkDto>(checkedName) is { } refused) return refused;
 
         var now = _support.Now();
         var link = new RecallReturnLink
@@ -435,7 +457,9 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
             await _repository.InTransactionAsync<bool>(async (session, tx) =>
             {
                 await session.InsertReturnLinkAsync(link, tx);
-                await session.InsertEventAsync(_support.Event(c.Id, RecallCaseEventKind.ReturnLinked, now, $"{t.Number ?? t.TransactionId} → {customer}", refs,
+                // MOD-0177-FU01 (§8.4): a CRM key never enters the event text (timeline, evidence); it stays in refs.customerRef
+                await session.InsertEventAsync(_support.Event(c.Id, RecallCaseEventKind.ReturnLinked, now,
+                    match.IsCrm ? t.Number ?? t.TransactionId : $"{t.Number ?? t.TransactionId} → {customer}", refs,
                     idempotencyKey: request.IdempotencyKey, fingerprint: fingerprint), tx);
                 await session.InsertAuditAsync(_support.Audit(RecallContract.AuditReturnLinked, RecallContract.SubjectCase, c.Id, c.Number, now, request.IdempotencyKey, refs), tx);
                 return true;
@@ -446,7 +470,11 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
             return Response<RecallReturnLinkDto>.Fail(RecallErrorCodes.ReturnAlreadyLinked, "This return is already linked to a recall case.", 409);
         }
 
-        return Response<RecallReturnLinkDto>.Success(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct), 201);
+        // MOD-0177-FU01 (son bakış 03 F-1): the 201 customer is built from the check's own answer (no second CRM call)
+        var display = RecallCustomerDisplay.Display(match.Facts,
+            checkedName is null ? RecallCustomerDisplay.Resolution.None
+                : new RecallCustomerDisplay.Resolution(new Dictionary<string, RecallCustomerName>(StringComparer.Ordinal) { [customer] = checkedName }), customer);
+        return Response<RecallReturnLinkDto>.Success(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct) with { Customer = display }, 201);
     }
 
     private static Response<RecallReturnLinkDto> NotEligible(string message, string reason)
@@ -528,7 +556,8 @@ public sealed class ReviseRecallScopeHandler : RecallCaseCommandHandler, IReques
         {
             Id = Guid.NewGuid(), CreatedAt = now, CaseId = c.Id, Revision = revision, NodeKey = i.NodeKey, ParentKey = i.ParentKey, Kind = i.Kind, IsRoot = i.IsRoot,
             LotId = i.LotId, LotNumber = i.LotNumber, ItemId = i.ItemId, SkuId = i.SkuId, SkuLevel = i.SkuLevel, WarehouseId = i.WarehouseId, LocationId = i.LocationId,
-            StockStatus = i.StockStatus, SourceDocumentId = i.SourceDocumentId, CustomerRef = i.CustomerRef, Quantity = i.Quantity, BaseUomId = i.BaseUomId,
+            StockStatus = i.StockStatus, SourceDocumentId = i.SourceDocumentId, CustomerRef = i.CustomerRef, CustomerRefSource = i.CustomerRefSource,
+            NoCrmWarning = i.NoCrmWarning, Quantity = i.Quantity, BaseUomId = i.BaseUomId,
             Included = i.Included, ExclusionReason = i.ExclusionReason, Origin = i.Origin, IsNew = false, AddedBy = i.AddedBy, AddedAtUtc = i.AddedAtUtc,
             MarkedBy = i.MarkedBy, MarkedAtUtc = i.MarkedAtUtc
         }).ToList();

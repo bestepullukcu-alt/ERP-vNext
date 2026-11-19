@@ -1,0 +1,30 @@
+@using Diten.Web.Views.Warehouse.CountEvidenceExports
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CountEvidenceExportsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // SERVER data through the proxy profile (pack §11): /Warehouse/CountEvidenceExports/api translates paging and the count filter for
+    // listCountEvidenceExports. No selection: an export is never changed or deleted (insert-only — pack §4.5), so there is no bulk action.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-countevidenceexports",
+        DataMode = "server",
+        Slug = "countevidenceexports",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColCount"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColFormat"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLanguage"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRequestedBy"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColRequestedAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSha256"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSize"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

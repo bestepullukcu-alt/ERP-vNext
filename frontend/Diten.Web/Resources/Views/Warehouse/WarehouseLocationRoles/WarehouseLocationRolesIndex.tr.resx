@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Bakış</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sonuç yok</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Çalıştığınız deponun şirketini seçin. Şirket seçilene kadar hiçbir veri gösterilmez.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi şu an okunamıyor; birazdan yeniden deneyin.</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="Warehouse.BulkOutcome.Conflict" xml:space="preserve"><value>Bu arada değişti — yenileyin</value></data>
+  <data name="Warehouse.BulkOutcome.NotFound" xml:space="preserve"><value>Bulunamadı</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_DIRECTORY_UNAVAILABLE" xml:space="preserve"><value>Kullanıcı dizinine ulaşılamıyor; atanan kontrol edilemedi ve hiçbir şey kaydedilmedi. Birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_ASSIGNEE_INVALID" xml:space="preserve"><value>Atanan olarak şirketinizin etkin bir kullanıcısını seçin.</value></data>
+  <data name="Warehouse.Error.WMS_COMPANY_CODE_INVALID" xml:space="preserve"><value>Şirket kodu görev numarası için geçerli değil; önce şirket kodunu düzeltin.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_CONFLICT_RETRY" xml:space="preserve"><value>Onay işlenirken stok değişti; onay bekliyor — “Yeniden Dene”yi kullanın.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_IN_FLIGHT" xml:space="preserve"><value>Bu onay şu anda işleniyor; biraz bekleyip sayfayı yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RESOLVABLE" xml:space="preserve"><value>Yalnız bütünlük hatası olan bir onay uzlaştırılabilir.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_NOT_RETRYABLE" xml:space="preserve"><value>Yalnız bekleyen bir onay yeniden denenebilir.</value></data>
+  <data name="Warehouse.Error.WMS_CONFIRMATION_PENDING" xml:space="preserve"><value>Bu görevin bir onayı stok cevabını bekliyor; sonuçlanana kadar yalnız “Yeniden Dene” çalışır.</value></data>
+  <data name="Warehouse.Error.WMS_CONFLICT" xml:space="preserve"><value>Bu kayıt bu arada başka biri tarafından değiştirildi; yenileyip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_INVALID_TRANSITION" xml:space="preserve"><value>Bu işlem görevin şu anki durumunda yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_HAS_OPEN_TASKS" xml:space="preserve"><value>Lokasyonda açık yerleştirme görevleri var; önce onları kapatın ya da iptal edin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_CONFLICT" xml:space="preserve"><value>Bir lokasyon aynı anda hem Mal Kabul hem Sevkiyat Hazırlık olamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_EXISTS" xml:space="preserve"><value>Bu lokasyonun zaten bir rol kaydı var; onu düzenleyin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_INHERITED_CONFLICT" xml:space="preserve"><value>Üst ya da alt bir düğüm zaten karşıt rolü taşıyor; Mal Kabul ve Sevkiyat Hazırlık aynı yolda buluşamaz.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_ROLE_NOT_FOUND" xml:space="preserve"><value>Rol kaydı bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_LOCATION_TYPE_NOT_ALLOWED" xml:space="preserve"><value>Rol yalnız depo, depolama yeri, bölge ya da rafa verilebilir.</value></data>
+  <data name="Warehouse.Error.WMS_NOT_ASSIGNEE" xml:space="preserve"><value>Bunu yalnız atanan operatör ya da bir sorumlu yapabilir.</value></data>
+  <data name="Warehouse.Error.WMS_POSTING_INTEGRITY_ERROR" xml:space="preserve"><value>Stok defterinde bu onayın anahtarıyla farklı bir hareket var; bir sorumlunun uzlaştırması gerekir.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_BELOW_CONFIRMED" xml:space="preserve"><value>Planlanan miktar onaylanan ve bekleyen miktarın altına inemez.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_OPEN" xml:space="preserve"><value>Miktar bu satırda hâlâ açık olan stoktan fazla.</value></data>
+  <data name="Warehouse.Error.WMS_QUANTITY_EXCEEDS_REMAINING" xml:space="preserve"><value>Miktar yerleştirilecek kalandan fazla.</value></data>
+  <data name="Warehouse.Error.WMS_RECORD_CODE_UNAVAILABLE" xml:space="preserve"><value>Görev numarası verilemedi; birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_CHANGED" xml:space="preserve"><value>Kaynaktaki seri numaraları değişti; bu görevi iptal edip yenisini açın.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_BUCKET_MIXED_STATUS" xml:space="preserve"><value>Aynı lokasyonda bu lotun kalite bekleyen parçası var; önce kalite kararını tamamlayın.</value></data>
+  <data name="Warehouse.Error.WMS_SERIAL_PARTIAL_NOT_SUPPORTED" xml:space="preserve"><value>Seri takipli ürün yalnız tam miktar yerleştirilir; kısmi onay ve kalanı kapatma yapılamaz.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_NOT_RECEIVING" xml:space="preserve"><value>Kaynak lokasyon bir mal kabul lokasyonu değil.</value></data>
+  <data name="Warehouse.Error.WMS_SOURCE_STOCK_NOT_FOUND" xml:space="preserve"><value>Seçilen satırda stok bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.WMS_STOCK_NOT_PUTAWAY_ELIGIBLE" xml:space="preserve"><value>Stok karantinaya girdi ya da tutuldu; yerleştirilemez.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITIONS_UNKNOWN" xml:space="preserve"><value>Saklama koşulu bilinmiyor — ürün kartında tamamlanmalı (MDM).</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_INVALID" xml:space="preserve"><value>Saklama koşulları geçerli değil: en fazla bir sıcaklık koşulu seçin.</value></data>
+  <data name="Warehouse.Error.WMS_STORAGE_CONDITION_MISMATCH" xml:space="preserve"><value>Hedef raf bu ürünün saklama koşulunu kabul etmiyor.</value></data>
+  <data name="Warehouse.Error.WMS_TARGET_NOT_ALLOWED" xml:space="preserve"><value>Hedef, aynı depoda etkin, stok tutabilen ve mal kabul ya da sevkiyat hazırlık olmayan bir raf olmalı.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_ALREADY_ASSIGNED" xml:space="preserve"><value>Görevin zaten bir atananı var.</value></data>
+  <data name="Warehouse.Error.WMS_TASK_NOT_FOUND" xml:space="preserve"><value>Görev bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı içerikle zaten gönderildi; pencereyi kapatıp yeniden başlayın.</value></data>
+  <data name="Warehouse.Error.REASON_REQUIRED" xml:space="preserve"><value>En az 10 karakterlik bir gerekçe yazın.</value></data>
+  <data name="Warehouse.Error.INSUFFICIENT_STOCK" xml:space="preserve"><value>Kaynakta bu miktar için yeterli stok yok.</value></data>
+  <data name="Warehouse.Error.LOT_UNDER_RECALL" xml:space="preserve"><value>Lot geri çağırma altında; yerleştirilemez.</value></data>
+  <data name="Warehouse.Error.INVENTORY_UNAVAILABLE" xml:space="preserve"><value>Stok servisine ulaşılamıyor; hiçbir şey kaydedilmedi. Birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.VALIDATION_ERROR" xml:space="preserve"><value>Bazı değerler geçerli değil; formu kontrol edin.</value></data>
+  <data name="Warehouse.Error.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="Warehouse.Error.NoPermission" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Warehouse.Error.SessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi; yeniden oturum açın.</value></data>
+  <data name="Warehouse.Error.ServiceUnavailable" xml:space="preserve"><value>Depo servisine şu an ulaşılamıyor; birazdan yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.NotFound" xml:space="preserve"><value>Kayıt bulunamadı; listeyi yenileyin.</value></data>
+  <data name="Warehouse.Error.Conflict" xml:space="preserve"><value>Kayıt bu arada değişti; yenileyip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.Invalid" xml:space="preserve"><value>İstek kabul edilmedi; değerleri kontrol edip yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.Generic" xml:space="preserve"><value>Bir sorun oluştu; yeniden deneyin.</value></data>
+  <data name="Warehouse.Error.TooLarge" xml:space="preserve"><value>Dışa aktarmak için çok fazla satır var; filtreleri daraltın.</value></data>
+  <data name="WarehouseLocationRolesTitle" xml:space="preserve"><value>Depo Lokasyon Rolleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Mal kabul ve sevkiyat hazırlık lokasyonlarını ve bir düğümün kabul ettiği saklama koşullarını işaretleyin; alt düğümler bunları devralır.</value></data>
+  <data name="AddNewWarehouseLocationRole" xml:space="preserve"><value>Yeni Rol</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Lokasyon</value></data>
+  <data name="ColLocationType" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="ColRoles" xml:space="preserve"><value>Roller</value></data>
+  <data name="ColConditions" xml:space="preserve"><value>Geçerli saklama koşulları</value></data>
+  <data name="ColNote" xml:space="preserve"><value>Not</value></data>
+  <data name="FilterRole" xml:space="preserve"><value>Rol</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Lokasyon düğümü</value></data>
+  <data name="FieldRoles" xml:space="preserve"><value>Roller (isteğe bağlı)</value></data>
+  <data name="FieldConditions" xml:space="preserve"><value>Kabul edilen saklama koşulları</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Kod ya da ad ile arayın</value></data>
+  <data name="RolesHint" xml:space="preserve"><value>Yalnız saklama koşulu girmek için rol seçmek gerekmez.</value></data>
+  <data name="ConditionsHint" xml:space="preserve"><value>Kendi koşulları yoksa alt düğümler bunları devralır; en fazla bir sıcaklık koşulu.</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni lokasyon rolü</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Lokasyon rolünü düzenle</value></data>
+  <data name="ValidationLocation" xml:space="preserve"><value>Bir lokasyon seçin.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Bu lokasyon rolü silinsin mi?</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>{0} lokasyon rolü silinsin mi?</value></data>
+  <data name="BulkDeleteResult" xml:space="preserve"><value>{1} kayıttan {0} tanesi silindi</value></data>
+  <data name="InheritedBadge" xml:space="preserve"><value>üst düğümden</value></data>
+  <data name="InheritedFrom" xml:space="preserve"><value>{0} düğümünden devralındı</value></data>
+  <data name="NoConditions" xml:space="preserve"><value>Saklama koşulu yok</value></data>
+  <data name="NoRoles" xml:space="preserve"><value>Rol yok</value></data>
+  <data name="Warehouse.Role.Receiving" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="Warehouse.Role.Staging" xml:space="preserve"><value>Sevkiyat Hazırlık</value></data>
+  <data name="Warehouse.StorageCondition.AMBIENT_15_25" xml:space="preserve"><value>Oda sıcaklığı 15–25 °C</value></data>
+  <data name="Warehouse.StorageCondition.COOL_2_8" xml:space="preserve"><value>Soğuk 2–8 °C</value></data>
+  <data name="Warehouse.StorageCondition.FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Donuk −20 °C altı</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_LIGHT" xml:space="preserve"><value>Işıktan koruyun</value></data>
+  <data name="Warehouse.StorageCondition.PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Nemden koruyun</value></data>
+  <data name="Warehouse.LocationType.Warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="Warehouse.LocationType.StorageLocation" xml:space="preserve"><value>Depolama yeri</value></data>
+  <data name="Warehouse.LocationType.Zone" xml:space="preserve"><value>Bölge</value></data>
+  <data name="Warehouse.LocationType.Bin" xml:space="preserve"><value>Raf</value></data>
+  <data name="Warehouse.Action.EditRole" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="Warehouse.Action.DeleteRole" xml:space="preserve"><value>Sil</value></data>
+  <data name="Warehouse.Action.BulkDelete" xml:space="preserve"><value>Seçilenleri Sil</value></data>
+  <data name="Warehouse.Saved.RoleCreated" xml:space="preserve"><value>Lokasyon rolü oluşturuldu.</value></data>
+  <data name="Warehouse.Saved.RoleUpdated" xml:space="preserve"><value>Lokasyon rolü kaydedildi.</value></data>
+  <data name="Warehouse.Saved.RoleDeleted" xml:space="preserve"><value>Lokasyon rolü silindi.</value></data>
+  <data name="Warehouse.BulkOutcome.Deleted" xml:space="preserve"><value>Silindi</value></data>
+</root>

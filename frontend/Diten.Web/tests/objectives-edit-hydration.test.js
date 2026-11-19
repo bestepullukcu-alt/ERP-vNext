@@ -136,7 +136,9 @@ async function boot() {
       { value: "comp-1", label: "Grand Medical Group" },
       { value: "comp-2", label: "Northwind Health" }
     ],
-    goalObjectiveTypes: ["Growth", "Transformation"],
+    // Operations permits Transformation; Growth does not. Keep another allowed
+    // type first so hydration cannot pass by merely selecting the first option.
+    goalObjectiveTypes: ["Operations", "Transformation", "Growth"],
     priorities: ["Critical", "High", "Medium"],
     businessUnits: [{ value: "Corporate", label: "Corporate" }],
     regions: [{ value: "Global", label: "Global" }],
@@ -185,7 +187,7 @@ async function boot() {
         goalId: "G-1001",
         goalTitle: "Expand Market",
         strategyPeriodId: "sp-1",
-        category: "Growth",
+        category: "Operations",
         ownerRole: "Chief Executive Officer",
         ownerCompanyId: "comp-1",
         applicableCompanyIds: ["comp-1", "comp-2"],
@@ -197,7 +199,7 @@ async function boot() {
       goalId: "G-1001",
       goalTitle: "Expand Market",
       strategyPeriodId: "sp-1",
-      category: "Growth",
+      category: "Operations",
       planningHorizonStart: "2026-03-24",
       planningHorizonEnd: "2026-04-24",
       ownerCompanyId: "comp-1",
@@ -260,6 +262,15 @@ describe("objective edit hydration", () => {
 
   it("keeps the save button visible while editing before the last wizard step", () => {
     expect(document.getElementById("objective-save").classList.contains("d-none")).toBe(false);
+  });
+
+  it("preserves the saved compatible type without exposing incompatible parent-goal choices", () => {
+    const typeEl = document.getElementById("objective-type");
+    const values = Array.from(typeEl.options).map((option) => option.value).filter(Boolean);
+
+    expect(values).toEqual(["Operations", "Transformation"]);
+    expect(typeEl.disabled).toBe(false);
+    expect(typeEl.value).toBe("Transformation");
   });
 
   it("clears stale current owner person when the selected position has no active incumbent", async () => {

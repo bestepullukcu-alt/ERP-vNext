@@ -29,7 +29,7 @@
         Quarantined: 'warning', ReviewStarted: 'primary', DecisionSubmitted: 'info', Approved: 'success', Applied: 'success',
         Rejected: 'danger', Cancelled: 'secondary', TimedOut: 'secondary', Withdrawn: 'secondary', ApplyFailed: 'danger',
         FourEyesViolation: 'danger', Blocked: 'danger', ReviewCompleted: 'primary', Disposed: 'info', Unblocked: 'success', SampleRetained: 'primary',
-        NoteUpdated: 'secondary'
+        NoteUpdated: 'secondary', SourceReversed: 'dark', SourceReversalConflict: 'danger'
     };
     const signatureChip = (label, id) => id
         ? `<span class="badge bg-label-primary d-inline-flex align-items-center gap-1 mt-1" title="${esc(id)}"><i class="bx bx-pen"></i>${esc(t(label, String(id).slice(0, 8)))}</span>`
@@ -78,6 +78,7 @@
         const withdraw = ui.byId('qr-wf-withdraw');
         const reapply = ui.byId('qr-wf-reapply');
         [refresh, submit, withdraw, reapply].forEach((b) => show(b, false));
+        const live = ui.holdOpen(hold); // MOD-0175-FU01 DL-2 (AC-26): a Voided hold offers no workflow action at all
         if (!decision) {
             stateBox.innerHTML = '';
             const last = (hold.decisions || []).slice(-1)[0];
@@ -98,10 +99,10 @@
         body.innerHTML = rows.map(([k, v]) => `<div class="d-flex justify-content-between gap-2 mb-1"><span class="text-muted">${esc(k)}</span><span class="text-end">${v}</span></div>`).join('')
             + (decision.error ? `<div class="alert alert-danger py-2 small mt-2 mb-0">${esc(t('Quarantine.Errors.' + decision.error.code) || decision.error.message || decision.error.code)}</div>` : '');
         const mine = me && decision.decider?.userId && me.toLowerCase() === decision.decider.userId.toLowerCase();
-        show(refresh, ui.can('REFRESHWORKFLOW') && ['Submitted', 'PendingApproval', 'Approved'].includes(decision.state));
-        show(withdraw, !!withdraw && ui.can('WITHDRAWDECISION') && mine && decision.state === 'PendingApproval');
-        show(reapply, !!reapply && ui.can('REAPPLYDECISION') && decision.state === 'ApplyFailed');
-        if (submit && ui.can('SUBMITDECISION') && mine && ['Draft', 'StartFailed'].includes(decision.state)) {
+        show(refresh, live && ui.can('REFRESHWORKFLOW') && ['Submitted', 'PendingApproval', 'Approved'].includes(decision.state));
+        show(withdraw, live && !!withdraw && ui.can('WITHDRAWDECISION') && mine && decision.state === 'PendingApproval');
+        show(reapply, live && !!reapply && ui.can('REAPPLYDECISION') && decision.state === 'ApplyFailed');
+        if (live && submit && ui.can('SUBMITDECISION') && mine && ['Draft', 'StartFailed'].includes(decision.state)) {
             submit.href = `/Quarantine/Decisions/${encodeURIComponent(decision.decisionId)}/Submit`;
             show(submit, true);
         }
@@ -122,7 +123,7 @@
             lotButton.href = ui.lotUrl(h.lot.lotId);
             show(lotButton, true);
         }
-        const open = h.status !== 'Decided';
+        const open = ui.holdOpen(h); // MOD-0175-FU01 DL-2 (AC-26): Voided is terminal — no Karar Ver / İncelemeye al / note edit
         show(ui.byId('qr-d-decide'), ui.can('DECIDE') && open && !h.activeDecision);
         show(ui.byId('qr-d-review'), ui.can('STARTREVIEW') && open && h.reviewState === 'Waiting' && !h.activeDecision);
         // QUARANTINE 1.2.0 (FU-0175-ITEM-03): a submitted decision locks the note until it ends — the explanation replaces the button.
@@ -133,6 +134,7 @@
         const late = ui.byId('qr-d-late');
         show(late, !!h.late && open);
         if (h.late) late.querySelector('span').textContent = t('Quarantine.Details.LateAlert', h.waitDays, h.targetDays);
+        renderReversal(h);
 
         const days = ui.daysUntil(h.lot?.expiryDate);
         set('lot', ui.lotLink(h.lot));
@@ -152,6 +154,28 @@
         renderMoves(h.movements);
         renderHistory(h.history);
         renderWorkflow(h, data.decision, data.me);
+    };
+
+    /**
+     * MOD-0175-FU01 DL-2 (pack §11, AC-26, AC-28): a Voided hold says why it closed — "Bu kayıt geçersiz: kaynak hareket {REVERSAL no} ile
+     * {tarih} tarihinde {kişi} tarafından geri alındı"; a sourceReversalConflict mark (any status, Voided included) shows its badge, its
+     * cause and the same REVERSAL facts. The sentence is the reader's language (escaped); the person goes through the ONE person rule
+     * (QuarantineUi.personHtml, D-KAR-1: the name, else "unknown user" with the id only as the hover title).
+     */
+    const reversalSentence = (key, ref) => esc(t(key, '\u00010\u0001', '\u00011\u0001', '\u00012\u0001'))
+        .replace(/\u0001(\d)\u0001/g, (m, i) => [esc(ref.reversalTransactionNumber || ''), esc(date(ref.atUtc)), ui.personHtml(ref.reversedBy)][i]);
+    const renderReversal = (h) => {
+        const voidedBox = ui.byId('qr-d-voided');
+        const voided = h.status === 'Voided' ? h.voided : null;
+        show(voidedBox, !!voided);
+        if (voided && voidedBox) voidedBox.querySelector('span').innerHTML = reversalSentence('Quarantine.Details.VoidedBanner', voided);
+        const conflictBox = ui.byId('qr-d-conflict');
+        const mark = h.sourceReversalConflict;
+        show(conflictBox, !!mark);
+        if (mark && conflictBox) {
+            conflictBox.querySelector('[data-qr-conflict-badge]').innerHTML = ui.conflictBadge(h);
+            conflictBox.querySelector('[data-qr-conflict-text]').innerHTML = reversalSentence('Quarantine.Details.ConflictBanner', mark);
+        }
     };
 
     const load = async () => {

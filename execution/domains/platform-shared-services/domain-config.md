@@ -11,6 +11,8 @@ Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için tena
 
 **Mevcut (yapılmış / kısmi):** MOD-0009-FU01/FU02/FU03 (Tenant Management; canonicalized from MOD-0043/44/46 per DCP-002), MOD-0361 SaaS Subscription, Plan & Entitlement Management (was CAND-CAP-0002, Subscription Lifecycle; Blueprint 8.7) with its follow-ups CAND-CAP-0002-FU01 (Module Catalog), CAND-CAP-0002-FU02 (Subscription Plan), CAND-CAP-0002-FU03 (Feature Mgmt), CAND-CAP-0002-FU05 (Tenant Module Entitlement) — FU allocation under MOD-0361 open, MOD-0017-FU01 (Tenant Login & Security), Platform Administration Console workspace over MOD-0009 + MOD-0018 + MOD-0360 + MOD-0361 (was CAND-CAP-0003, Platform Administrators; Blueprint 8.7)
 
+**Geliştirmede:** MOD-0040-FU02 Record Code Service (Blueprint MOD-0040 Canonical ID FU'su; RCS-001 ortak kayıt kodu servisi; sözleşme RECORD-CODE-ALLOCATE 1.0.0 FROZEN; Repo Scope `services/Diten.Platform/**`) — A-12, MVP-1 CT 2026-11-04.
+
 **Planlanmış:** NEW-001 Secrets, MOD-0009 Tenant Lifecycle Events, MOD-0018 RBAC/ABAC Enforcement, MOD-0026 Job Scheduler, MOD-0035 Event Bus, MOD-0027 Notification, MOD-0028 Document Mgmt, MOD-0021 Audit Trail, MOD-0022 e-Signature Service (pack ready-for-dev 2026-10-07, MVP-1 branch, tenant shell), MOD-0031 Evidence Linking, MOD-0032 Gateway Hardening, MOD-0033 Quota, MOD-0299 Billing, MOD-0041/42 Logging/Alerting
 
 ## Out-of-Scope

@@ -1,0 +1,31 @@
+@using Diten.Web.Views.Warehouse.OutboundShipments
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OutboundShipmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is localized HERE.
+    //
+    // SERVER data through the proxy profile (pack §11.5): /Warehouse/OutboundShipments/api translates paging, search and filters for
+    // searchOutboundShipments. No selection column: the outbound list has no bulk action (§11.3).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-outboundshipments",
+        DataMode = "server",
+        Slug = "outboundshipments",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColNumber"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColOrderRef"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColShipTo"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLines"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColCreated"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

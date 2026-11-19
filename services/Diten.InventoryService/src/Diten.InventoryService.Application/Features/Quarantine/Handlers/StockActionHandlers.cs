@@ -187,7 +187,7 @@ public sealed class QuarantineStockActions
 
         var taken = new HashSet<string>(StringComparer.Ordinal);
         var holds = await _repository.ListHoldsAsync(new HoldQuery(null, b.WarehouseId, null, null, null, null, b.LotId, null, 1, 500), ct);
-        foreach (var hold in holds.Items.Where(h => h.Status != HoldStatus.Decided && SameBucket(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, b)))
+        foreach (var hold in holds.Items.Where(h => QuarantineRecordStates.IsOpen(h.Status) && SameBucket(h.ItemId, h.SkuId, h.SkuLevel, h.LotId, h.LocationId, b)))
         {
             taken.UnionWith(hold.SerialIds ?? []);
         }
