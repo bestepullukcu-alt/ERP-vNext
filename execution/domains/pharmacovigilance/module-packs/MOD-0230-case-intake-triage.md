@@ -210,6 +210,39 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > `route` declared; the subscription tie; the automatic grants (SuperAdmin, Viewer); the two resx keys; the platform administrator's direct entitlement call (it writes a row for this module and, through the existing entitlement bridge, puts all five keys on that tenant's `Admin` role and the read key on its `Viewer` role; no menu entry). Order: this revision's approval does not wait for the store; DL-11 starts only after WP-0230-DL10-R1 is `INTEGRATED` (KK-12).
 > A version-bound approval row for this version is still required (KK-4: pre-review, independent review, HIGH approval).
 >
+> **Revision 16 (2026-11-19, owner "şimdi düzelt" on G-25).** Authority: the owner's decision of 2026-11-19 on G-25
+> ("şimdi düzelt") and on OD-PVG-15 and OD-PVG-16, recorded by the Control Tower in
+> `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md` (not committed when this revision was written; the record
+> is not a pack approval). Findings used: `docs/records/audits/2026-10/pvg-wave7-verify-01/VERIFY-DL7B.md` (the
+> Edit finding), `docs/records/audits/2026-11/pvg-wave8-verify-02/VERIFY-DL10-R1.md` (DÜŞÜK-1), and
+> `docs/records/audits/2026-11/pvg-wave10-verify-01/VERIFY-DL4E.md` (D-1). Measured by reading the repo at commit
+> `36d10126a`; nothing was built, run, or measured live. Changed:
+> (1) New section "Edit Keeps Stored Data" and new slice DL-12 (G-25): an update of a draft that was triaged or routed is
+> refused with 409 and changes nothing; an update never erases `TriageOutcome`, `TriageReason`, or `RouteTargetQueue`; the
+> item response returns the 15 stored fields G-25 names; the Edit form prefills every editable field, so a save without a
+> change leaves every stored field as it was.
+> (2) New AC-40 (update refused after triage or route), AC-41 (the item response carries the 15 fields), AC-42 (Edit
+> prefill and round trip), AC-43 (the missing `" Mongo"` row; DL10-R1 DÜŞÜK-1), and AC-44 (`harness.Store.ReadCalls == 0`
+> in AC-39 (a)'s test; DL4E D-1). AC count 44. No existing AC text changes: AC-39 stays as written; AC-44 measures its test file.
+> (3) Two new decisions, both decided by the owner on 2026-11-19 (`pvg-mod0230-g25-karar-01.md` items 2 and 3): OD-PVG-15,
+> option (a) - a new reason code, `PVG_INTAKE_DRAFT_NOT_EDITABLE` (constant `IntakeDraftNotEditable` in
+> `PvgApplicationReasonCodes`), HTTP 409; OD-PVG-16 - under the build/test gate the item response returns all 15 fields,
+> as a revision 16 exception to the "PHI/PII And Regulated Safety Controls" response rule and the MOD-0019 masking notes
+> of "Entity Fields"; that rule and MOD-0019 masking of these fields stay mandatory conditions of the working live screen
+> (OD-PVG-14) and of the operational runtime gate (DL-9), written there. No acceptance criterion of DL-12 waits for an
+> owner decision.
+> (4) Aligned: G-25 (owning slice) and the Build-Gate Gaps intro, "Build Authorization" (authorized list), the "Open
+> Decisions" intro, the OD-PVG-14 row (the masking condition), "Entity Fields" (one sentence), "PHI/PII And Regulated
+> Safety Controls" (one bullet), "Required Approval Gates" and "Validation Required Before Runtime Work Can Be Accepted"
+> (one item each), "Failure Path to Verify" (one path), "Test Expectations" (one entry), "Ready-for-dev Checklist" (one
+> entry), "Follow-up Items" (the G-25 sentence), and "Teslim dilimleri" (row and detail of DL-12).
+> Not changed: the frontmatter (`form_field_count` stays 25; no field is added); DL-1 ... DL-11, their paths and their
+> required evidence; the measurement of every other acceptance criterion; the gates (the operational runtime gate stays
+> closed; nothing here replaces a deny-all adapter, OD-PVG-14); `.antigravity/**`; MOD-0231, MOD-0232, MOD-0234. DL-12's
+> required evidence is E4 (state-changing UI, SOP §23.1); its work package integrates with E2 (tests), and its live
+> acceptance is deferred, not lowered, because no write succeeds live (G-23; KK-8). Risk HIGH (contract and compliance).
+> A version-bound approval row for this version is still required.
+>
 > **Two gates, not one:**
 >
 > | Gate | State | Authorizes |
@@ -247,6 +280,8 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 - `gateway/Diten.ApiGateway/ocelot.json` - the one MOD-0230 route family, via integration-agent only.
 - Once revision 15 is approved on main: the closed catalog registration of MOD-0230 ("Closed
   Catalog Registration", slice DL-11), inside `services/Diten.PvgService/**`.
+- Once revision 16 is approved on main: slice DL-12 ("Edit Keeps Stored Data", G-25), on the files listed in its slice
+  detail under "Teslim dilimleri" only.
 - Tests for the above.
 
 **Slice 1 scope - commands and queries:**
@@ -297,7 +332,8 @@ commit `8e13f3787` (independent review 02, `docs/records/reviews/MOD-0230/2026-1
 `services/Diten.PvgService/src`, `services/Diten.PvgService/tests`, and the MOD-0230 frontend paths of "Repo Scope").
 Row G-23 (revision 15) is a static fact measured by reading on 2026-10-31 at commit `324ec6600`
 (`pvg-mod0230-kapali-kayit-02.md`); no slice owns it. Row G-24 rests on the run recorded in `pvg-mod0230-kapali-kayit-04.md`;
-row G-25 is measured by reading on 2026-10-31 at the same code.
+row G-25 is measured by reading on 2026-10-31 at the same code; revision 16 read it again at commit `36d10126a`
+(unchanged; facts in "Edit Keeps Stored Data").
 
 | # | Gap | Measured fact | Owning slice |
 |---|---|---|---|
@@ -325,7 +361,7 @@ row G-25 is measured by reading on 2026-10-31 at the same code.
 | G-22 | No read access to MOD-0290, MOD-0150, MOD-0288, or a country list | PvgService projects reference only their own projects (`*.csproj`); no `HttpClient` and no call to another service in `services/Diten.PvgService/src`. Each read waits for its owner contract ("Required Interface Contracts"); the pickers of the screen are DL-7 (AC-32). | DL-2 |
 | G-23 | No working live screen exists under the build/test gate | `IPvgPermissionGate` has one production implementation, `DenyAllPermissionGate`, registered in the host (`PvgServiceApiHost.cs:90-96`). No slice or acceptance criterion replaces it: DL-5 covers the audit write and DL-6 the key constants. The real field-security adapter belongs to the operational gate (MOD-0019), so list and create would still be refused if the permission gate alone changed. Tests reach allowed paths only through allow stubs in test code. DL-11 opens the page, not the data ("Closed Catalog Registration"). Required evidence that cannot be reached live while this holds (slice table; `pvg-mod0230-kapali-kayit-02.md` counts tests with allow stubs as E2): DL-2 E4; DL-4 E4 (its refusal paths can be, the paths of a stored record cannot); DL-5 E5; DL-7 E4; DL-10 E4 (its start, bootstrap, and readiness can be, a write through the API cannot); DL-6 E5 in part (AC-38 reaches the key catalog and the MVC gate, not an allowed call in the service). DL-9 E5 is closed by design. DL-1 E1, DL-3 E3, DL-8 E3, and DL-11 E5 can be reached. No slice's level changes here. Acceptance of the listed slices stays deferred, not lowered; they remain `INTEGRATED` until a live path exists (`pvg-mod0230-kapali-kayit-04.md` KK-8; SOP §23.1). | open, OD-PVG-14 |
 | G-24 | A triage with a chosen outcome stops at JSON binding | `Details.cshtml` requires a choice in `TriageOutcome`; `TriageFormInput.ToPayload` sends it as text; `PvgCaseIntakeTriageRequest.TriageOutcome` is `PvgTriageOutcome?`, a plain enum, and PvgService has no JSON string-enum converter. Measured (`pvg-mod0230-kapali-kayit-04.md`): the text `"Triaged"` gets 400 with an empty body before the permission gate; `null` and the number `1` get 409 with `PVG_PERMISSION_DENIED`. The proxy passes the empty body on as `{}` (`TenantShellProxyResponse.cs`), and `details.js` then shows its general error. So the `TRIAGE` button gets no controlled refusal today, and triage would still fail if the gates opened. `PvgCaseIntakeTriageWebTests.cs` measures the proxy side only. The fix and AC-39 are in `PvgCaseIntakeTriageEndpoints.cs`. | DL-4 |
-| G-25 | Edit drops stored data | Measured by reading. The item response (`PvgCaseIntakeDraftResponse`) omits 15 stored fields: `IntakeChannel`, `SourceType`, `SourceReference`, `ReceivedAtUtc`, `ReporterType`, `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`, `AdverseEventNarrative`, `Seriousness`, `IntakePriority`, `TriageOutcome`, `TriageReason`, `RouteTargetQueue`, `EvidenceLinkReferences`. `UpdateDraftAsync` has no status check and rebuilds the record (`BuildIntake`), so an update sets the status back to `IntakeUpdated` and erases `TriageOutcome`, `TriageReason`, and `RouteTargetQueue`. The Edit form does not prefill the optional `ReporterContactSummary`, `EventOnsetDate`, and `EvidenceLinkReferences`, so saving erases them too (`docs/records/audits/2026-10/pvg-wave7-verify-01/VERIFY-DL7B.md`). No test measures this. No write succeeds live today, so no data is lost yet. This revision does not fix it. | open, owner decision; nothing authorized |
+| G-25 | Edit drops stored data | Measured by reading. The item response (`PvgCaseIntakeDraftResponse`) omits 15 stored fields: `IntakeChannel`, `SourceType`, `SourceReference`, `ReceivedAtUtc`, `ReporterType`, `ReporterContactSummary`, `PatientSubjectCode`, `EventOnsetDate`, `AdverseEventNarrative`, `Seriousness`, `IntakePriority`, `TriageOutcome`, `TriageReason`, `RouteTargetQueue`, `EvidenceLinkReferences`. `UpdateDraftAsync` has no status check and rebuilds the record (`BuildIntake`), so an update sets the status back to `IntakeUpdated` and erases `TriageOutcome`, `TriageReason`, and `RouteTargetQueue`. The Edit form does not prefill the optional `ReporterContactSummary`, `EventOnsetDate`, and `EvidenceLinkReferences`, so saving erases them too (`docs/records/audits/2026-10/pvg-wave7-verify-01/VERIFY-DL7B.md`). No test measures this. No write succeeds live today, so no data is lost yet. Revision 15 did not fix it. Revision 16 (owner, 2026-11-19, "şimdi düzelt"): read again at commit `36d10126a`, unchanged; fixed by slice DL-12 ("Edit Keeps Stored Data", AC-40 ... AC-42). | DL-12, authorized by revision 16 |
 
 Gateway note: route-level `AuthenticationOptions` is absent on most routes by repo norm; the Gateway applies
 authentication and `TenantResolutionMiddleware` pipeline-wide. E3 G1 / G4 (dev profile, 2026-10-20) observed anonymous
@@ -356,6 +392,12 @@ under the build/test gate (pending the owner; nothing authorized). The answers o
 fourteen rows, eleven are fully decided; OD-PVG-3 and OD-PVG-9 wait for another owner's approval; OD-PVG-14 waits for the
 owner.
 
+Revision 16 (2026-11-19) adds two rows for slice DL-12, OD-PVG-15 (the reason code of the refused update) and OD-PVG-16
+(the 15 stored fields in the item response before MOD-0019 masking); the owner decided both on 2026-11-19
+(`docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`). The answers of OD-PVG-1 ... 14 are unchanged; the
+OD-PVG-14 row gains the masking condition of OD-PVG-16. Of the sixteen rows, thirteen are fully decided; OD-PVG-3 and
+OD-PVG-9 wait for another owner's approval; OD-PVG-14 waits for the owner.
+
 | ID | Decision | Facts | Recommended option | Who decides | Owner decision (2026-10-21) |
 |---|---|---|---|---|---|
 | OD-PVG-1 | Single permission-key family | G-3. No key of either family is seeded, granted, emitted in a JWT, or enforced by a shipped `[HasPermission]`, so neither is "published" under PKS-001 §2. The `pvg.*` namespace is not yet listed in PKS-001 §4. | Adopt `pvg.case-intake-triage.{read,create,update,triage,route}`; change the five service constants and the shape test (DL-6); no alias is needed because no key is published. `triage` and `route` are registered here as PKS-001 Tier-3 actions. Reason: PKS-001 §1 makes the middle segment a resource, not a module ID (module code is not a permission namespace); the name matches the Gateway route family and MVC route; cost is five constants and one test. | PVG paket sahibi; MOD-0018 owner confirms catalog / grant ownership and the `pvg.*` namespace | PVG side decided 2026-10-21 (owner): target family `pvg.case-intake-triage.*`. **Approved 2026-10-27** (owner as MOD-0018 / Auth owner, "izin-evet"; `docs/records/decisions/2026-10/pvg-mod0230-od-pvg-1-izin-01.md`): keys `pvg.case-intake-triage.{read,create,update,triage,route}`; the `pvg.*` namespace row was added to PKS-001 §4 in that record's commit; catalog and grant follow the catalog→Auth sync path, no separate seed. Implementation pending: DL-6 (constants, shape test, AC-4), DL-7 (MVC permission checks through `RequirePage` / `RequireJson` over `PermissionClaims.HasPermission`, AC-2; revision 12). |
@@ -371,7 +413,9 @@ owner.
 | OD-PVG-11 | `ReporterCountry` = "unknown" and unchanged stored codes once the country list exists (revision 05) | Review 04 F-3. EK-1 (`pvg-mod0230-intake-fields-02.md`) makes "unknown" the only accepted value of both country fields **until** the list arrives; AL-3 gives the "unknown" option to the **event** country; no record says whether `ReporterCountry` accepts a new or changed "unknown" once the list is present or its read is interrupted, nor what an update does with an unchanged stored list code while the list read is interrupted or after the code has left the list. These were the open cells of the "Country rule table" ("Entity Fields") in the revision 05 draft; they are now filled by KR-1. | (a) `ReporterCountry` keeps accepting "unknown" in every list state, like `EventCountry`; it stays a non-identifier ("Reporter identifiers"). (b) An unchanged stored list code is kept on update in every list state; only a new or changed code is checked against the list. Reason: PV refuses no notification (EK-3); "unknown" and null already mean "no country" for the reporter; a GxP record is not changed by a later list change (AL-6 snapshot principle). | PVG paket sahibi; QPPV if the reporter-country value is treated as regulatory content | **Evet — intake-fields-03 KR-1** (owner, 2026-10-22): recommended option (a) and (b) adopted; applied in the "Country rule table", Validation Rules, and AC-26. QPPV: for information. |
 | OD-PVG-12 | Removing a reporter link on update (revision 05) | Review 04 F-1. AL-6 and EK-4 say a link is made by selection or by the one-time CRM search and that the link id stays when the snapshot is edited; no record said whether a user may remove an existing link (turn a `Crm` / `PersonDirectory` reporter into `Manual`). Now settled by KR-2: removal only through the explicit `RemoveReporterLink` marker; an update without the selection pair and without the marker on a linked record stays rejected 400 (no silent unlink; AC-29). | Allow removal only as an explicit action: the update carries an explicit "remove link" marker instead of simply omitting the pair; the server then writes `ReporterSource = Manual`, clears `ReporterSourceId`, keeps the snapshot values as typed values, and the audit record names the change (field names only). Reason: an omitted pair cannot be told apart from a client defect; an explicit marker is measurable. | PVG paket sahibi; QPPV (the reporter link is the basis of MOD-0231's duplicate check, AL-7) | **Evet — intake-fields-03 KR-2** (owner, 2026-10-22): recommended option adopted; the marker is `RemoveReporterLink` (boolean), applied in the "Reporter selection contract", Validation Rules, Failure Path, and AC-29 / AC-31 / AC-32 / AC-33. QPPV: for information. |
 | OD-PVG-13 | Catalog registration of MOD-0230: the WP-0230-08 choice - A defer, B register non-assignable, C register fully (revision 15) | Every screen action needs a key (AC-2); no `pvg.case-intake-triage.*` key exists under `services/Diten.AuthService`, so no role can hold one and nobody can open the screen (record, measured 2026-10-31 at `c89fda3c4`, by reading). Option A assumed the screen opens by direct address; since DL-7's permission check an unauthorized user gets 403 there. Option C advertises a regulated module whose masking, workflow, and evidence dependencies do not exist. | Option B, narrowed: `IsTenantAssignable: false`, every page `IsNavigationVisible: false`, pushed by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like, no Platform or Auth code. All five keys are declared, `route` included (CT reading). | Owner | **Evet, sürsün** (owner, 2026-10-31; `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`): `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md` KK-1 ... KK-6 hold with the corrections of `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`; option B, narrowed, applied in "Closed Catalog Registration", slice DL-11. Open to the owner at this approval: `route` declared; the subscription tie; the automatic grants (SuperAdmin, Viewer); the two resx keys; the platform administrator's direct entitlement call (it writes a row for this module and, through the existing entitlement bridge, puts all five keys on that tenant's `Admin` role and the read key on its `Viewer` role; no menu entry). |
-| OD-PVG-14 | Working live screen under the build/test gate (revision 15) | G-23. After DL-11 an authorized user sees the page and the form; the list returns no records and saving is refused. OD-PVG-9 and AUD-001 K2 make that deliberate. `domain-config.md` defines the ports as "interface + deny default only". `pvg-mod0230-kapali-kayit-03.md` re-confirms the closed registration with this known and leaves this row open. Required evidence that cannot be reached live while this holds (slice table; `pvg-mod0230-kapali-kayit-02.md` counts tests with allow stubs as E2): DL-2 E4; DL-4 E4 (its refusal paths can be, the paths of a stored record cannot); DL-5 E5; DL-7 E4; DL-10 E4 (its start, bootstrap, and readiness can be, a write through the API cannot); DL-6 E5 in part (AC-38 reaches the key catalog and the MVC gate, not an allowed call in the service). DL-9 E5 is closed by design. DL-1 E1, DL-3 E3, DL-8 E3, and DL-11 E5 can be reached. No slice's level changes here. | None; the two paths are stated, not chosen. (a) It stays refused until the operational gate opens. (b) Local / dev-only allowing adapters on synthetic data, refused on a production-like host, only after DL-5 is `INTEGRATED` (K2; `pvg-mod0230-kapali-kayit-04.md` KK-9). Path (b) would require changing the "interface + deny default only" rule in `domain-config.md`. | Owner | **Pending owner.** Nothing is authorized by this row or by this revision. |
+| OD-PVG-14 | Working live screen under the build/test gate (revision 15) | G-23. After DL-11 an authorized user sees the page and the form; the list returns no records and saving is refused. OD-PVG-9 and AUD-001 K2 make that deliberate. `domain-config.md` defines the ports as "interface + deny default only". `pvg-mod0230-kapali-kayit-03.md` re-confirms the closed registration with this known and leaves this row open. Required evidence that cannot be reached live while this holds (slice table; `pvg-mod0230-kapali-kayit-02.md` counts tests with allow stubs as E2): DL-2 E4; DL-4 E4 (its refusal paths can be, the paths of a stored record cannot); DL-5 E5; DL-7 E4; DL-10 E4 (its start, bootstrap, and readiness can be, a write through the API cannot); DL-6 E5 in part (AC-38 reaches the key catalog and the MVC gate, not an allowed call in the service). DL-9 E5 is closed by design. DL-1 E1, DL-3 E3, DL-8 E3, and DL-11 E5 can be reached. No slice's level changes here. | None; the two paths are stated, not chosen. (a) It stays refused until the operational gate opens. (b) Local / dev-only allowing adapters on synthetic data, refused on a production-like host, only after DL-5 is `INTEGRATED` (K2; `pvg-mod0230-kapali-kayit-04.md` KK-9). Path (b) would require changing the "interface + deny default only" rule in `domain-config.md`. | Owner | **Pending owner.** Nothing is authorized by this row or by this revision. Revision 16 (OD-PVG-16, owner 2026-11-19, `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md` item 3): whichever path is chosen, a working live screen is a **mandatory condition** of MOD-0019 field masking applied to the 15 stored fields of the item response ("Edit Keeps Stored Data", rule 4) and of the "PHI/PII And Regulated Safety Controls" response rule being met; the build/test exception of revision 16 does not carry over. |
+| OD-PVG-15 | Reason code of the refused update (revision 16, DL-12) | "Edit Keeps Stored Data": no code in the service names "this draft can no longer be updated". `PvgApplicationReasonCodes` holds only `PVG_INTAKE_DRAFT_NOT_FOUND` and `PVG_INTAKE_DRAFT_VERSION_CONFLICT` (`PvgApplicationReasonCodes.cs:5-6`); `PVG_OPERATION_NOT_ALLOWED_IN_SLICE` (`PvgValidationReasonCodes.cs:8`) is a validation code and a validation result answers 400 (`PvgCaseIntakeTriageEndpoints.cs:233`), not 409; the `PvgSafeReasonCodes` name unavailable ports (`PvgSafeReasonCodes.cs:5-7`). | Two paths were offered: (a) one new constant in `PvgApplicationReasonCodes`, returned through `BlockedMutation` (409); the screen shows its existing `ControlledBlock: <code>` sentence (`form.js:370-372`). (b) Reuse `PVG_INTAKE_DRAFT_VERSION_CONFLICT`: no new name, but the refusal cannot be told apart from a stale version, and the screen shows `VersionConflict` ("Refresh the page and try again", `CaseIntakeTriageIndex.en.resx:33`), which cannot help. | Owner (PVG paket sahibi) | **Decided 2026-11-19** (owner, "Yeni kod"; `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md` item 2): option (a), HTTP 409; the version-conflict code is not reused. Name (this revision, following the measured pattern `PVG_INTAKE_DRAFT_<STATE>` of `PvgApplicationReasonCodes.cs:5-6`): constant `IntakeDraftNotEditable` = `"PVG_INTAKE_DRAFT_NOT_EDITABLE"`. `PvgApplicationReasonCodes.cs` is a DL-12 path. AC-40 is not blocked. |
+| OD-PVG-16 | The 15 stored fields in the item response before MOD-0019 masking (revision 16, DL-12) | A conflict inside this pack, written and not resolved. Against returning them: "PHI/PII And Regulated Safety Controls" says "Allowed responses must use safe reason codes, metadata-only envelopes, redacted hashes, precision indicators, or controlled taxonomy codes where approved"; "Entity Fields" marks `ReporterContactSummary` (PII), `PatientSubjectCode` and `EventOnsetDate` (PHI) "Requires MOD-0019 masking / row-field policy before runtime" and says every field on a detail surface "must receive masking behavior, row/field access rules ... before slice 1 acceptance"; `AdverseEventNarrative` and `TriageReason` are PHI free text. For returning them: the Edit form cannot prefill without them (G-25); the read is gated as a whole by the field-security port before the store read (`PvgIntakeDraftApplicationService.cs:463-473`, `:551-559`), deny-all in the host (G-23), so no value leaves the service live today; "Runtime Constraints" lets a missing policy "deny the operation"; the item response already returns the PII fields `ReporterSourceId`, `ReporterNameOrInitials`, `ReporterProfession`, `ReporterCountry` (`PvgCaseIntakeTriageEndpoints.cs:517-521`). | Two readings were offered: (a) under the build/test gate the item response returns the fields, the whole-read field-security check is the fail-closed form, and per-field masking stays a precondition of live and operational use (MOD-0019). (b) Raw PHI / PII is not returned before MOD-0019 masking exists; AC-41 and AC-42 would wait for MOD-0019, and the Edit form would keep erasing the fields it cannot prefill. | Owner (PVG paket sahibi); QPPV and the MOD-0019 owner if it is treated as regulatory content | **Decided 2026-11-19** (owner, "Şimdi dönsün, canlıda maskeleme şart"; `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md` item 3): reading (a). Under the build/test gate the item response returns all 15 fields - a **revision 16 exception** to the "PHI/PII And Regulated Safety Controls" response rule and to the MOD-0019 masking notes of "Entity Fields", for this response only. The rule and MOD-0019 masking of these fields stay **mandatory conditions** of the working live screen (OD-PVG-14 row) and of the operational runtime gate (DL-9: "Required Approval Gates", "Validation Required Before Runtime Work Can Be Accepted"). AC-41 and AC-42 are not blocked. |
 
 ## Module Summary
 
@@ -513,6 +557,10 @@ selection since revision 05 -, `ReporterCrmSearchState` - set by the server only
 Every field included in create/edit/list/detail/export surfaces must receive masking behavior, row/field access
 rules, audit payload rules, evidence-link rules, and fail-closed tests before slice 1 acceptance. Export remains
 out of slice 1 and still requires a real MOD-0019 approval before it can be added.
+Revision 16 exception (OD-PVG-16, owner 2026-11-19, `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`): under
+the build/test gate only, the item response returns the 15 stored fields of "Edit Keeps Stored Data" rule 4 without
+per-field masking, behind the whole-read field-security check; MOD-0019 masking of those fields stays a mandatory
+condition of the working live screen (OD-PVG-14) and of the operational runtime gate (DL-9).
 
 **Revision 04 field rules (AL-1 ... AL-7, 2026-10-22).** Authority:
 `docs/records/decisions/2026-10/pvg-mod0230-intake-fields-01.md` (all seven rows "Evet", AL-2 and AL-6 with
@@ -1179,6 +1227,92 @@ run recorded in `pvg-mod0230-kapali-kayit-04.md` (real host at commit `2bfe93f36
   adapter (OD-PVG-14), and any operational use (KK-6). A person's
   role grant in dev, for the AC-38 measurement, is allowed: the owner makes it and the CT measures it (record, "Sonuç").
 
+## Edit Keeps Stored Data
+
+Revision 16 (owner, 2026-11-19, "şimdi düzelt" on G-25); slice DL-12. Measured by reading the repo at commit
+`36d10126a`; nothing was run. "Inference" marks what is read from the code and not run. Paths without a folder are under
+`services/Diten.PvgService/src/` or `frontend/Diten.Web/` as their names show.
+
+**Measured facts.**
+
+- Update: `UpdateDraftAsync` (`PvgIntakeDraftApplicationService.cs:131-247`) validates (`:154-160`), reads the stored
+  draft (`:162-166`), checks the reporter link (`:168-180`), and then rebuilds the whole record with `BuildIntake` and
+  status `IntakeUpdated` (`:209-223`); no line between `:162` and `:225` reads `stored.Status`. `BuildIntake`
+  (`:816-857`) passes no triage or route value, so the constructor leaves `TriageOutcome`, `TriageReason`, and
+  `RouteTargetQueue` null (`SafetyCaseIntake.cs:15-17`); `ReplaceAsync` then writes the record (`:225-231`). Both stores
+  refuse a replace without the matching version (`InMemoryPvgIntakeDraftRepository.cs:50`, `PvgMongoIntakeDraftStore.cs:79-92`).
+- Statuses written by the code: create `IntakeCreated` (`PvgIntakeDraftApplicationService.cs:113`); update
+  `IntakeUpdated` (`:212`, `:219`); triage `Triaged` (`MarkTriaged`, `SafetyCaseIntake.cs:64-69`, called at `:320`);
+  route `RoutePending` (`MarkRoutePending`, `SafetyCaseIntake.cs:71-75`, called at `:416`). `Draft`, `TriagePending`, and
+  `Routed` (`PvgIntakeStatus.cs:5`, `:8`, `:11`) are written by no code under `services/Diten.PvgService/src` (grep). The
+  route path reads the status only to pass it to the workflow gate (`:391-403`); inference: when the gate allows, a route
+  can follow a create without a triage.
+- Reason codes and the 409 pattern: see OD-PVG-15 (facts; decided 2026-11-19). A refusal is `BlockedMutation(<code>)`
+  (`PvgIntakeDraftApplicationService.cs:640-641`), which `ToHttpResult` answers with 409 (`PvgCaseIntakeTriageEndpoints.cs:228-236`).
+- Item response: `PvgCaseIntakeDraftResponse` (`PvgCaseIntakeTriageEndpoints.cs:507-539`) has 14 members and none of the
+  15 fields G-25 names. Both stores keep all 15: the in-memory store holds the `SafetyCaseIntake`; the Mongo mapper writes
+  them (`PvgIntakeDraftDocumentMapper.cs:45-63`) and reads them back (`:101-122`). The item read asks the field-security
+  port for every non-public field before the store read (`PvgIntakeDraftApplicationService.cs:13-17`, `:463-473`); one
+  refusal blocks the whole read (`:551-559`); the host's adapter is deny-all (G-23).
+- Edit form: `loadVersion` reads the proxy's `/detail/{id}` (`wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js:292-311`);
+  `prefillFromDraft` (`form.js:261-281`) fills awareness, report type, event country, reporter country, reporter name,
+  profession, product lines (role, name, lot), and the reporter link - none of the twelve slice 1 fields of "Entity
+  Fields". The proxy sends every field on each save (`CaseIntakeFormInput.ToPayload`,
+  `Controllers/PharmacovigilanceCaseIntakeTriageController.cs:410-455`); an empty input becomes null or an empty list
+  (`Clean`, `:491`; `SplitReferences`, `:514-520`), and the service replaces the whole record. Inputs:
+  `Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml:51-217` (`ReporterContactSummary` `:111`, `EventOnsetDate`
+  `:138`, `EvidenceLinkReferencesRaw` `:217`).
+- Not reachable today, so outside DL-12: `GlobalProductId`, `PresentationGskuId`, and `CompanyRecipientPersonId` have no
+  form input (`ProductLineFormInput`, controller `:459`), and the validator refuses a value until the owner read contracts
+  exist (`PvgIntakeDraftValidator.cs:283`, `:368-379`), so none can be stored (AC-22, AC-24, AC-32).
+- The 409 alert: `safeMessage` (`form.js:357-375`) shows `VersionConflict` for `PVG_INTAKE_DRAFT_VERSION_CONFLICT` and
+  `ControlledBlock: <code>` for every other 409 code.
+
+**Contract (DL-12).**
+
+1. **Updatable states.** An update is allowed only when the stored draft has status `IntakeCreated` or `IntakeUpdated`
+   and none of `TriageOutcome`, `TriageReason`, `RouteTargetQueue` is set. Every other draft is refused: `Triaged`,
+   `RoutePending`, and the statuses no code writes today (`Draft`, `TriagePending`, `Routed`). The rule is an allow-list
+   because this pack fails closed ("Runtime Constraints").
+2. **Refusal.** `BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotEditable)` - `"PVG_INTAKE_DRAFT_NOT_EDITABLE"`,
+   a new constant (OD-PVG-15, owner 2026-11-19) - answered 409 by today's mapping (G-8; OD-PVG-3
+   also keeps 409 for a workflow-blocked request). The check runs right after the stored draft is read (after `:162-166`),
+   before the reporter-link checks, the ports, and any write. A refused update calls no `ReplaceAsync` and changes neither
+   the record nor its version. The order before it is unchanged: tenant, actor / correlation / permission, validation
+   (AC-7), store read. A triage that lands between the read and the write is not overwritten, because the replace needs
+   the read version (AC-12).
+3. **No erasure.** The update writes the stored `TriageOutcome`, `TriageReason`, and `RouteTargetQueue` back unchanged;
+   no update sets them to another value. Under rule 1 they are null on every allowed update, so this is a second guard
+   that no reachable state exercises; it is read in review, not measured by a test.
+4. **Item response.** `PvgCaseIntakeDraftResponse` adds the 15 fields G-25 names, each with its stored value:
+   `IntakeChannel`, `SourceType`, `SourceReference`, `ReceivedAtUtc`, `ReporterType`, `ReporterContactSummary`,
+   `PatientSubjectCode`, `EventOnsetDate`, `AdverseEventNarrative`, `Seriousness`, `IntakePriority`, `TriageOutcome` (the
+   enum name as text, like `Status` and `ReporterSource`), `TriageReason`, `RouteTargetQueue`, `EvidenceLinkReferences`.
+   Only the item response changes; list items stay `PvgIntakeDraftSummary` (id, status, version). The read path is
+   unchanged: the field-security check before the store read, the store's tenant scope, and the not-found answer for
+   another tenant's id (AC-35 (b)). Returning them before MOD-0019 masking exists is a revision 16 exception for the
+   build/test gate only (OD-PVG-16, owner 2026-11-19); masking of these fields stays a mandatory condition of the working
+   live screen (OD-PVG-14) and of the operational runtime gate (DL-9).
+5. **Edit prefill.** `prefillFromDraft` fills every editable field from the stored draft: the twelve slice 1 fields
+   (`ReceivedAtUtc` as the UTC moment with seconds; `EvidenceLinkReferences` one reference per line in
+   `EvidenceLinkReferencesRaw`) beside the fields it fills today. A select whose stored code is not among its options
+   keeps the code (`selectStored`, `form.js:147-154`). Inference (the owner's words "kaydetme boş bırakılan alanı
+   silmez", read against G-25): a field the user did not touch goes back with its stored value, so a save without a change
+   leaves every stored field as it was; a user who empties an optional field on purpose still clears it, because the
+   update stays a full replacement. This reading is written out as a measured criterion in AC-42 (d); an empty field
+   that never clears a stored value (a partial update) is not the contract.
+6. **Text.** No new visible text is needed: the refusal shows the existing `ControlledBlock` sentence with the code, as
+   AC-38 already accepts. A dedicated sentence would need a resx key in all seven languages (AC-15) and a pack change,
+   because the resx files are not DL-12 paths.
+
+Known limit, not changed: a stored evidence reference that contains a comma or a line break comes back split by
+`SplitReferences` (controller `:514-520`). Whether a stored reference can carry one is not known.
+
+**Out of scope of DL-12:** the 404 answer for an unknown or cross-tenant id (AC-6, DL-4); the audit record of the update or
+of its refusal (DL-5); the permission-gate and other adapters and a working live screen (OD-PVG-14, G-23); archive and
+void; the Details page, the list, and the triage and route forms; the MVC proxy controller and its C# tests; the views and
+resx files; persistence code (both stores already keep the 15 fields); other modules' and services' files (XMC-001).
+
 ## Service Port And Appsettings Policy
 
 - **Port source.** The single port source is the `AGENTS.md` §3 table. 5011 is not in it; `AGENTS.md` lists 5011
@@ -1265,6 +1399,11 @@ Applies to the build/test code now and to any later runtime.
   audit metadata.
 - Allowed responses must use safe reason codes, metadata-only envelopes, redacted hashes, precision indicators,
   or controlled taxonomy codes where approved.
+- Revision 16 exception (OD-PVG-16, owner 2026-11-19, `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`): under
+  the build/test gate only, the item response (`PvgCaseIntakeDraftResponse`) returns the 15 stored fields of "Edit Keeps
+  Stored Data" rule 4, so the Edit form can prefill them. The bullet above and MOD-0019 masking of these fields remain
+  mandatory conditions of the working live screen (OD-PVG-14) and of the operational runtime gate (DL-9); the exception
+  ends when either opens.
 - Missing FieldSecurity, ObservabilityErrorModel, AuditEvent redaction, or trace policy must block regulated mutation or
   use only an explicitly approved fail-closed/degraded behavior.
 
@@ -1535,6 +1674,10 @@ until then).
 - **Concurrent update on a stale version**
   - Expected: 409 with a version-conflict reason code distinct from not-found; no silent overwrite. Today: last write
     wins; no version exists in any layer (G-15; AC-12, AC-19, AC-20).
+- **Update of a triaged or routed draft** (revision 16, DL-12)
+  - Expected: 409 with `PVG_INTAKE_DRAFT_NOT_EDITABLE` (OD-PVG-15); record and version unchanged; `TriageOutcome`, `TriageReason`, and
+    `RouteTargetQueue` never erased (AC-40). Today (read at `36d10126a`): the update succeeds, sets the status back to
+    `IntakeUpdated`, and erases the three fields (G-25).
 - **Unauthorized actor / missing or invalid token**
   - Expected: 401 for missing or invalid token, 403 for missing permission; no data leakage. Today: no token
     validation; 409 `PVG_PERMISSION_DENIED` from the deny-all gate (G-1, G-8).
@@ -1859,6 +2002,22 @@ SECENEK-01 S-1, S-3, S-4 (a); added 2026-10-28).** Tests in `tests/Diten.PvgServ
 - [ ] AC-38 (zorunlu) — DL-11; revision 15 (`pvg-mod0230-kapali-kayit-01.md` KK-1, KK-3; `pvg-mod0230-kapali-kayit-02.md`; `pvg-mod0230-kapali-kayit-03.md`; live, this slice's E5 evidence; not measured yet). Preconditions: PvgService, Platform, Auth, Diten.Web, the Gateway, and PvgService's Mongo store run in dev; PvgService has `JwtSettings__Secret`, `JwtSettings__Issuer`, and `JwtSettings__Audience` equal to AuthService's values, because without them every protected endpoint answers 401 and (f), (g), (i) would show the session message instead of the refusal; the CT sets `PlatformRegistration__BaseUrl` (Platform's direct address) and `PlatformRegistration__InternalApiKey` at process start, takes the key from Platform's own dev configuration (`AuthService:InternalApiKey`), and never writes or logs it. Baseline: on the dev database, before the first push, the CT reads once that the row of (a) and the keys of (b) do not exist. A catalog row cannot be deleted by hand. If a row or a key already exists, AC-38 runs on a throwaway local Mongo for all services and the record says why; if that run cannot be set up, the record says the baseline was not measured ("Closed Catalog Registration", limit). An acceptance record then shows all of: (a) `GET /api/platform/module-catalog?search=CASE-INTAKE-TRIAGE` as a platform administrator returns one row `CASE-INTAKE-TRIAGE` with `IsTenantAssignable` false; (b) the five `pvg.case-intake-triage.*` keys exist in AuthService with `Scope` = `Tenant` (a read-only query of the permission catalog, plus their presence in `GET /api/permissions/tenant-assignable`); (c) `GET /api/platform/module-catalog/assignable` does not list the module; (d) a user whose role holds `pvg.case-intake-triage.read` opens `/Pharmacovigilance/CaseIntakeTriage`: 200, with the `datatables-pvg-case-intake-triage` table markup; (e) a user without it gets the shared 403 (`/Home/Status/403`) with neither that table markup nor `pvg-case-intake-form`; (f) for the user in (d), the list is refused under control: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx, the page keeps its table and shows its refusal sentence in `pvg-list-alert` (`ControlledBlock` while the API answers 409, G-8; `NotAuthorized` once AC-6 maps a permission denial to 403), with no script error, no blank page, and no code standing alone; (g) a user holding the create key and the read key (the form's options need the read key) fills `/Pharmacovigilance/CaseIntakeTriage/Create` with synthetic values and saves: the same refusal, shown in `pvg-form-alert`, and the form stays on the page; (h) the store is unchanged by that save: a read-only count of `pvg_case_intake_drafts` for that tenant is the same before and after (Mongo store, because the in-memory store cannot be read while the list is refused); (i) with an unknown draft id, a user holding the read key and the update, the triage, or the route key posts directly to `/Pharmacovigilance/CaseIntakeTriage/api/update/{id}`, `api/triage/{id}`, or `api/route/{id}` with the antiforgery token of the `Details` page, and gets the controlled refusal: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx. Code order: the antiforgery filter; the proxy's key check; for update only, the proxy's date and link-removal checks, so the update call carries readable dates and no link removal with a selection; the Gateway; the binding of the JSON body; the service's tenant, actor, and correlation checks; the permission gate, which runs before any store read. The triage call sends `TriageOutcome` empty, which `TriageFormInput.ToPayload` sends as null; it stays so until AC-39 lands, and from then on the outcome as the form sends it must get the same refusal. Measured on 2026-10-31 (`pvg-mod0230-kapali-kayit-04.md`) by running the real PvgService host at commit `2bfe93f36` with fake values, without the proxy or the Gateway: the JSON string `"Triaged"`, which the proxy sends for a chosen outcome, gets 400 with an empty body before the permission gate, because `PvgTriageOutcome` is a plain enum and the host has no JSON string-enum converter; `null` and the number `1` get 409 with `PVG_PERMISSION_DENIED`. A user without that key (the read-only user of (d)) gets 403 from the proxy with no Gateway call. Today's refusal sentence ends with the safe reason code (`safeMessage` in `index.js` and `form.js`); (f) and (g) accept that and refuse a code without the sentence. (f), (g), (h), and (i) hold while the host registers the deny adapters (G-23); if OD-PVG-14 changes that, they are read again. An allowed update, triage, or route needs a stored draft, which cannot exist live while create is refused, so AC-38 measures only their refusal. The role grant is made by a person on the existing role screen (`/RoleAssignments`), not by code, and takes effect at the next login. The users in (e), and the keyless user of (i), hold no `*` claim and no role the catalog path filled by itself (`SuperAdmin` of the default tenant; a `Viewer` role created after the first push; "Closed Catalog Registration"). A live measurement has no compiled sabotage; its controls are: the baseline above; the same user gets 403 before the grant and 200 after it, and 403 again after the grant is revoked; the service restarted with the two variables leaves one catalog row, five keys, and `IsTenantAssignable` false (the restart control E5 needs); and the service restarted without them makes no call (Platform logs no `Module manifest registered` entry for that start, and PvgService has no log provider to read), while the screen behaves the same for both users. For (f): a direct `GET /Pharmacovigilance/CaseIntakeTriage/api/options` by the same user returns 200, so the service is up and the refusal is its own; with PvgService stopped, the list shows the list component's outage message instead, not this sentence. For (g): the same save by a user without the create key gets 403 from the MVC proxy with no Gateway call. For (h): the collection is listed in the database (created by the schema bootstrap), so an unchanged count is not a count of a wrong name. For (i): one id, one user at a time, the only difference being the key held. This measures a refusal; no record is listed or saved (G-23, OD-PVG-14). Accepting AC-38 does not close DL-7 (E4) or open the operational gate.
 - [ ] AC-39 (zorunlu) — DL-4; revision 15 (G-24, `pvg-mod0230-kapali-kayit-04.md` KK-10): a triage body with the outcome as the form sends it binds and reaches the permission gate. Every named test below has a sabotage that compiles, turns at least that test red, and touches only DL-4 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. Both tests run the real host and its middleware chain, not the endpoint method directly. (a) Test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` posts `"TriageOutcome"` as each of the texts `Triaged`, `Rejected`, and `Duplicate`, with the deny-all permission gate, and expects the permission refusal with `PVG_PERMISSION_DENIED` and a non-empty body for each (sabotage: the binding change removed from `PvgCaseIntakeTriageEndpoints.cs` - the answer is 400 with an empty body). (b) Test `Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx` posts a text outside the enum, with the deny-all permission gate, and expects 400, no `PVG_PERMISSION_DENIED` in the response, and no store write, because binding refuses the text before the gate (sabotage: the unknown text mapped to `Triaged` - the request then reaches the gate and gets the permission refusal with `PVG_PERMISSION_DENIED`, which fails both the 400 and the absence check). Suite `pvg-api` 0 failed, 0 skipped.
 
+**Edit keeps stored data - revision 16** (owner, 2026-11-19, "şimdi düzelt" on G-25; "Edit Keeps Stored Data"; slice
+DL-12). In AC-40 ... AC-44 every named test has a sabotage that compiles and turns at least that test red; it is applied
+in a repository-shaped scratch copy outside the work tree and never committed, and it touches only DL-12 paths unless the
+criterion says otherwise. "The real host" means `PvgServiceApiHost.CreatePvgServiceWebHostBuilder` (Development, Kestrel
+on loopback with a random port, never 5011) through its whole middleware chain, with a signed test JWT, the tenant header,
+and an `HttpClient`, as `PvgCaseIntakeTriageBindingTests.cs` does, never the endpoint method called directly; where a
+write must succeed, the four deny-all adapters are replaced by allow stubs in test code only, as `Persistence/PvgMongoApiHost.cs`
+does, and the non-production branch of `PvgServiceApiHost` stays deny-all; the store is the host's in-memory store, read
+for assertions through the host's `IPvgIntakeDraftStore`.
+
+- [ ] AC-40 (zorunlu) — DL-12; revision 16 (G-25); OD-PVG-15 decided 2026-11-19 (`PVG_INTAKE_DRAFT_NOT_EDITABLE`, `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`): an update of a triaged or routed draft is refused and changes nothing ("Edit Keeps Stored Data", rules 1 and 2). Tests on the real host with allow stubs. (a) Test `Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing` (rows: create then triage; create then route; create, triage, then route) sends a valid PUT with the current version and expects 409, `Outcome` `Blocked`, `PVG_INTAKE_DRAFT_NOT_EDITABLE`, no validation reason code, and the stored draft unchanged - the same version, status, `TriageOutcome`, `TriageReason`, `RouteTargetQueue`, and every other field (sabotage: the status check removed from `UpdateDraftAsync` - the PUT answers 200 and the status becomes `IntakeUpdated`). (b) Test `Update_is_allowed_only_in_intake_created_and_intake_updated` - positive control first: create, PUT (200, status `IntakeUpdated`), PUT again with the new version (200); then drafts seeded into the store with status `Draft`, `TriagePending`, and `Routed` each get 409 with that code and stay unchanged (sabotage: the allow-list turned into a refusal of `Triaged` and `RoutePending` only - the seeded drafts are updated). (c) Test `Update_never_erases_triage_or_route_fields` seeds a draft with status `IntakeUpdated` and `TriageOutcome`, `TriageReason`, and `RouteTargetQueue` set, sends a PUT, and expects 409 with that code and the three values unchanged (sabotage: the field condition removed from the check - the PUT answers 200). Rule 3 (carrying the three values) is a second guard that no reachable state exercises and is read in review. Suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-41 (zorunlu) — DL-12; revision 16 (G-25); OD-PVG-16 decided 2026-11-19 (build/test exception; `pvg-mod0230-g25-karar-01.md`): the item response carries the 15 stored fields ("Edit Keeps Stored Data", rule 4). Tests on the real host. (a) Test `Get_by_id_returns_the_fifteen_stored_fields` (allow stubs) creates a draft with a fake value in every create field, triages it with an outcome and a reason, routes it with a queue, and reads it: the `draft` object carries each of the 15 members `intakeChannel`, `sourceType`, `sourceReference`, `receivedAtUtc`, `reporterType`, `reporterContactSummary`, `patientSubjectCode`, `eventOnsetDate`, `adverseEventNarrative`, `seriousness`, `intakePriority`, `triageOutcome` (the text `Triaged`), `triageReason`, `routeTargetQueue`, and `evidenceLinkReferences`, each with the stored value (sabotage: `PatientSubjectCode` dropped from `PvgCaseIntakeDraftResponse.From` - the member is missing; a second sabotage, `TriageOutcome` written as its number, fails the text check). (b) Test `Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values` - positive control first: with the allow stub the read returns the values; then, with a field-security stub that refuses, the answer is the blocked outcome with no `draft` and none of the 15 fake values in the raw body, and a list answer for the same tenant carries none of them either (sabotage: the field-security call skipped in `GetDraftByIdAsync` - the values appear). The existing test `Get_by_id_of_another_tenants_draft_returns_no_draft_fields` and AC-35 (b) stay green unchanged. Suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-42 (zorunlu) — DL-12; revision 16 (G-25); after AC-41 (the screen reads the fields from the item response): the Edit form prefills every editable field and a save without a change keeps every stored field ("Edit Keeps Stored Data", rule 5). (a) Test `pvg edit form prefills every editable field from the stored draft` in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: given a proxy `/detail` answer with a value in each of the twelve slice 1 fields and in the fields prefilled today, after load each form input holds the stored value - `ReceivedAtUtc` as the UTC moment with seconds, `EventOnsetDate` as `yyyy-MM-dd`, `EvidenceLinkReferencesRaw` one reference per line, and a select's stored code kept when it is not among the options (sabotage: the `ReporterContactSummary` line removed from `prefillFromDraft` - the textarea is empty; a second sabotage, the `EvidenceLinkReferences` line removed, also turns it red). (b) Test `pvg edit save without a change sends back every stored value` in the same file: after load, the form is submitted untouched, and the posted form data carries every stored value, the optional `ReporterContactSummary`, `EventOnsetDate`, and `EvidenceLinkReferencesRaw` included (sabotage: the `EventOnsetDate` line removed from `prefillFromDraft` - the posted value is empty). (c) Test `Update_with_the_values_read_back_keeps_every_stored_field` on the real host with allow stubs: create a draft with every create field set, read it, PUT a body built only from the editable fields of the read `draft` and its version, read again - every one of the 15 fields and of the revision 04 fields equals the first read, the status is `IntakeUpdated`, and the version grew by one (sabotage: the update's `BuildIntake` path stops carrying `ReporterContactSummary` - the stored value is erased). (d) The empty-field rule, written out (revision 16; the owner's "kaydetme boş bırakılan alanı silmez" read against G-25): a field the user does not touch goes back with its stored value, so it is never erased by a save; a field the user empties on purpose is cleared, because the update stays a full replacement - test `pvg edit save sends an optional field the user emptied as empty` in `pvg-case-intake-triage-ui.test.js`: after load, the user empties `ReporterContactSummary` only and saves; the posted value of that field is empty and every other field carries its stored value (sabotage: the submit refills an empty input with the value read at load - the emptied field is posted with its stored value). vitest `pvg-case-intake-triage-ui.test.js` 0 failed; suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-43 (zorunlu) — DL-12; revision 16 (`docs/records/audits/2026-11/pvg-wave8-verify-02/VERIFY-DL10-R1.md` DÜŞÜK-1): the theory `Unknown_store_value_refuses_start` (`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs:58-77`) gains the row `[InlineData(" Mongo")]` (a leading blank), refused with `PVG_PERSISTENCE_STORE_UNKNOWN` like the other rows; no other row and no host code changes. Sabotage, on a path outside DL-12 because the host file is not one, in the scratch copy only: `TrimStart()` applied to the store value before the ordinal switch of `PvgServiceApiHost.cs` (`:214-225`) - the new row turns red (`VERIFY-DL10-R1.md` V10). Suite `pvg-api` 0 failed, 0 skipped.
+- [ ] AC-44 (zorunlu) — DL-12; revision 16 (`docs/records/audits/2026-11/pvg-wave10-verify-01/VERIFY-DL4E.md` D-1): AC-39 (a)'s test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` (`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs:33-48`) also asserts `harness.Store.ReadCalls == 0` (`Assert.Equal(0, harness.Store.ReadCalls)`) for each of its three rows, as AC-39 (b)'s test already does (`:69`); AC-39's text and the test's other assertions do not change. Sabotage: a store read (`FindByIdAsync`) added in `TriageDraftAsync` before the permission gate (`PvgIntakeDraftApplicationService.cs:249-269`) - the three rows turn red. Suite `pvg-api` 0 failed, 0 skipped.
+
 ## Gate State and Acceptance History
 
 The lists below are recorded facts and gate states carried from earlier revisions of this pack; they are not acceptance criteria.
@@ -1974,6 +2133,10 @@ All gates below must be owner-approved and evidence-backed before MOD-0230 opera
 - [ ] MOD-0230 operational runtime authorization explicitly granted by the user / PVG system owner / Enterprise Architecture.
 - [ ] MOD-0018 RBAC owner approval for runtime permission enforcement, JWT validation, actor context, seed/grant ownership, tenant scope, and deny behavior.
 - [ ] MOD-0019 FieldSecurity / masking owner approval for all MOD-0230 fields and every exposed surface.
+- [ ] Mandatory (revision 16, OD-PVG-16, `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`): MOD-0019 field
+      masking applied to the 15 stored fields the item response returns ("Edit Keeps Stored Data", rule 4), and the
+      "PHI/PII And Regulated Safety Controls" response rule met; the build/test exception of revision 16 does not carry
+      into operational runtime.
 - [ ] MOD-0021 AuditEvent owner approval for append/event shape, outage behavior, redaction, and correlation propagation.
 - [ ] MOD-0023 Workflow/Inbox owner approval for gate-before-commit triage/route behavior.
 - [ ] MOD-0031 EvidenceLink owner approval for required evidence links, completeness rules, outage behavior, and no fake packs.
@@ -2035,6 +2198,8 @@ For the operational runtime slice (build/test work under the build/test gate is 
 - cross-tenant read/write denial tests
 - missing RBAC, FieldSecurity, AuditEvent, WorkflowTransitionGate, EvidenceLink, trace/correlation, and error-model block tests
 - no sensitive echo tests for results, logs, traces, metrics, validation errors, regulated errors, and audit metadata
+- per-field masking tests for the 15 stored fields of the item response (revision 16, OD-PVG-16): a field the MOD-0019
+  policy masks or denies is masked or absent in the response
 - appsettings policy tests proving no permissive fallback and no production use of non-production adapters
 - role-screen and login tests proving that a `pvg.*` key is neither listed, nor grantable, nor carried in the token for a tenant without the subscription (revision 15, `GetTenantAssignablePermissionsQueryHandler`, `AssignPermissionCommandHandler`, `TenantEffectivePermissionResolver`), and a catalog read showing the `IsTenantAssignable` change, which `RegisterModuleManifestCommandHandler` does not make on a re-push
 - no forbidden path changes
@@ -2113,6 +2278,12 @@ Behaviour that the suites must cover (each with at least one named test):
   one named hosted service (AC-37); the nav l10n guard green with the two keys (AC-36 (f)); the live catalog, Auth,
   assignable-list, 200 / 403, and controlled-refusal measurement with an unchanged store (AC-38); a triage body with the
   outcome as the form sends it reaches the permission gate (AC-39, DL-4).
+- Revision 16 (2026-11-19, owner "şimdi düzelt" on G-25; slice DL-12): an update of a triaged or routed draft refused
+  with 409 and nothing changed, only `IntakeCreated` / `IntakeUpdated` updatable, the triage and route fields never
+  erased (AC-40); the 15 stored fields in the item response, and none of them when field security refuses (AC-41); the
+  Edit form prefilled, and a save without a change that keeps every stored field (AC-42); the `" Mongo"` row (AC-43); no
+  store read before the permission gate in AC-39 (a)'s test (AC-44). Service tests run the real host with an
+  `HttpClient`; allow stubs exist in test code only.
 - REG-PV-BASE port conformance C-01 ... C-17: the document `docs/reference/architecture/pvg-reg-pv-base-port-contracts-v1.md`
   is committed, but its type names and configuration key are not in the code (G-12). **Until the type names are
   aligned with the code, or a C-id-to-test mapping is recorded, this criterion is unmapped and cannot be checked.**
@@ -2182,6 +2353,8 @@ Behaviour that the suites must cover (each with at least one named test):
       (KK-12, which changes KK-5 and KK-7). WP-0230-DL10-R1 `INTEGRATED` in the queue is DL-11's own prerequisite in "Teslim
       dilimleri"; this order adds no prerequisite to any other slice (DCP-004 §8 item 6). DL-5's existing prerequisite on DL-10
       is the same state.
+- [ ] Revision 16 Edit keeps stored data (DL-12, AC-40 ... AC-44) - recorded in this text; not in code. No criterion waits
+      for an owner decision: OD-PVG-15 and OD-PVG-16 were decided on 2026-11-19 (`docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`). Needs this revision's independent review and HIGH approval.
 
 ## Implementation Notes
 
@@ -2353,7 +2526,7 @@ Behaviour that the suites must cover (each with at least one named test):
 MOD-0230's own follow-ups (other owners' work is listed under "Teslim dilimleri" as outside every slice):
 
 - Close build-gate gaps G-1 ... G-22 through slices DL-2 ... DL-8 (G-17 ... G-22: revision 04 intake fields). G-23 has no
-  slice; it waits for OD-PVG-14. G-24 belongs to DL-4 (AC-39). G-25 has no slice; it waits for an owner decision.
+  slice; it waits for OD-PVG-14. G-24 belongs to DL-4 (AC-39). G-25 belongs to DL-12 (revision 16, owner 2026-11-19; AC-40 ... AC-42).
 - Revision 04: ask the MOD-0290, MOD-0150, and MOD-0288 owners for their read contracts and the MOD-0048 owner for the
   country-list source; ask QPPV for AL-2 timestamp trust, the AL-4 values, and AL-5. Drafts only; nothing is sent by
   this pack.
@@ -2399,6 +2572,7 @@ into the named pack only by its owner (MOD-0231 / MOD-0233 owners are TBD today)
 | DL-9 | operasyonel runtime kapısı (kapalı) | MOD-0230 Runtime Authorization Packet (Draft / Not Approved), Current Handoff Evidence - `MOD0230HandoffReference v0.1` Build/Test, Required Approval Gates, Allowed Paths After Explicit Runtime Approval, Forbidden Until Separately Approved, Validation Required Before Runtime Work Can Be Accepted | E5 |
 | DL-10 | kalıcı depo (yapı/test, Mongo) | Build/Test Persistence (Mongo Store) | E4 |
 | DL-11 | kapalı katalog kaydı (yapı/test) | Closed Catalog Registration | E5 |
+| DL-12 | düzenleme saklı veriyi korur (G-25) | Edit Keeps Stored Data | E4 |
 
 `gerekli kanıt` is the minimum evidence level (SOP §23.1) an acceptance record of a work package of that slice must
 reach; it is not lowered under the build/test gate; the acceptance record cites this table row as
@@ -2578,6 +2752,38 @@ Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · öl�
   `pvg-api`, `pvg-regpv-base`, `pvg-case-processing`, `pvg-meddra-coding`, `pvg-signal-management` ve
   `tests/architecture/TenantArchitecture.ArchitectureTests` 0 kırmızı, atlanan 0. Bu dilimin kabulü DL-7'yi kapatmaz (E4; G-23,
   OD-PVG-14) ve operasyonel kapıyı açmaz.
+- **DL-12** — Revizyon 16 (sahip, 2026-11-19, G-25 için «şimdi düzelt»; "Edit Keeps Stored Data"). Risk HIGH (sözleşme +
+  uyum). İzinli yollar, dosya düzeyinde; başka dosya yok:
+  `services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs` (yalnız
+  `UpdateDraftAsync` içindeki durum denetimi ve güncellemenin triyaj / yönlendirme alanlarını taşıması, `BuildIntake`'in
+  güncelleme yolu);
+  `services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs` (yalnız tek
+  sabit: `IntakeDraftNotEditable` = `"PVG_INTAKE_DRAFT_NOT_EDITABLE"`, OD-PVG-15 kararı 2026-11-19);
+  `services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs` (yalnız `PvgCaseIntakeDraftResponse`
+  kaydı ve `From`);
+  `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs` (yeni; AC-40,
+  AC-41, AC-42 (c));
+  `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs` (yalnız bir
+  `InlineData` satırı; AC-43);
+  `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs` (yalnız AC-39 (a)
+  testine bir iddia; AC-44);
+  `frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js` (yalnız `prefillFromDraft` ve
+  yardımcıları);
+  `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js` (AC-42 (a), (b)).
+  Önkoşul: sahip kararı beklenmez (OD-PVG-15 ve OD-PVG-16 2026-11-19'da verildi,
+  `docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md`). DoR'da ölçülür: PVG
+  kuyruğunda (`execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv`) bu dosyalara dokunan ve son durumda olmayan
+  iş paketi yok. Okumayla (`36d10126a`, `tests/**` içinde durum sabitleri taraması) triyajlanmış ya da yönlendirilmiş
+  taslağı güncelleyip başarı bekleyen test bulunmadı; DoR bir tane bulursa iş durur ve paket değişir.
+  Kapsam dışı: 404 (AC-6, DL-4); denetim kaydı (DL-5); izin kapısı ve diğer uyarlayıcılar, canlı ekran (OD-PVG-14, G-23);
+  arşiv / iptal; MVC vekili ve C# testleri, görünümler (`_Form.cshtml` dahil) ve resx (yeni görünen metin yok; özel
+  cümle paket değişikliği ister); kalıcılık kodu ve iki depo; `PvgServiceApiHost.cs` (AC-43'ün sabotajı yalnız karalama
+  kopyada); Details sayfası, liste, triyaj ve yönlendirme formları; başka modül ve servis dosyaları (XMC-001); MOD-0231 /
+  MOD-0232 / MOD-0234; `.antigravity/**`.
+  Sabotaj kanıtı: depo biçimli, çalışma ağacı dışındaki karalama kopyada; commit edilmez; AC-43'ünki dışında yalnız bu
+  dilimin yollarına dokunur. Gerekli kanıt E4 (SOP §23.1, durum değiştiren UI); iş paketi E2 (testler) ile `INTEGRATED`
+  olur; canlı kabul KK-8 gereği ertelenir, düşürülmez — canlıda hiçbir yazma başarılı olamaz (G-23). Bitiş: AC-40 …
+  AC-44; `pvg-api` ve `pvg-regpv-base` 0 kırmızı, atlanan 0; vitest `pvg-case-intake-triage-ui.test.js` 0 kırmızı.
 
 Başka sahiplerin işi (XMC-001) — hiçbir dilimde değil; bu paket bunları yapmaz, yalnız bekler:
 
