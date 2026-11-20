@@ -8,7 +8,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 - **Karar:** İki dar ek kapsam doğrudan insan onaylı; rev21 son kesin pack/domain iki bağımsız UYGUN aldı. İki geçerli review-row deftere eklendi; Gerçek HIGH card/row0; yazılı insan onayına bağlı yeni HIGH satırı eklendi, kesin check0 ile onaylı; bağımsız insan main adımı son PR’da bekliyor.
 - **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı adayın doğrulama devamı ve birleşik test kapısı sırada.
-- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGH ve yenilenmiş normal kapıdan önce yeni çalışma yok.
+- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temizr2 ağacında yeni normal prompt kapısı hazırlanıyor.
 - **Kural:** Registry işçisi7dbdfd4 bağımsız UYGUN aldı ve CT dalına mergea1c0a33f ile alındı. Birleşik gerçek kapılar0; yalnız beş hücre, yeni Web testi iddiası yok.
 - **Arka uç:** Ana DL-12 BLOCKED; her iki PREP bağımsız E2 ve entegrasyonunu bekliyor. CT ürün kodu yazmıyor; tek son PR hedefi korunuyor.
 - **Karar:** Operasyon/yayın kapalı. Son PR Linux/Phase1 ve bağımsız insan main merge kapıları açık; hiçbir işçi ağacı silinmedi.
@@ -28,23 +28,23 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 3 BLOCKED, 1 INTEGRATED |
+| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 2 READY, 1 INTEGRATED |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:3, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:12, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:12, `READY`:2, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `BLOCKED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan rev20 kapsam/politika/ortak yol/build-test onayı alındı; resmî incelemenin uygulanabilirlik notları aynı kapsamda netleştiriliyor; kesin-sürüm HIGH/dağıtım kapıları ve iki PREP E2 entegrasyonu sonrası feature; kod başlamadı; BLOCKED
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md`.
-- [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `BLOCKED`
-  - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — sınırlı Windows Mongo test hazırlığı, yalnız iki onaylı harness/guard test yolu; feasibility kendi çıktısı, parent feature değişmez
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-01/STOP-v1.2.md`.
-- [ ] **Test: Gerçek tarayıcı–MVC–servis–depo test bağlantısı** — `WP-0230-DL12-PREP-WEB` · `BLOCKED`
+- [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `READY`
+  - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md`.
+- [ ] **Test: Gerçek tarayıcı–MVC–servis–depo test bağlantısı** — `WP-0230-DL12-PREP-WEB` · `READY`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — sınırlı Web alias/Node-jsdom gerçek MVC-PVG-store test bağlantısı ve iki CI hazırlık adımı, yalnız üç onaylı yol; feasibility kendi çıktısı, parent veri-koruma feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/CT-DECISION.md`.
 - [ ] **Kural: Ortak regresyon kaydındaki beş eski XML tetikleyicisi** — `WP-0230-DL12-REGISTRY-01` · `INTEGRATED`
