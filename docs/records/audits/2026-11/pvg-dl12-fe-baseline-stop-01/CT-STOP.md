@@ -1,0 +1,5 @@
+# Test — birleşik baseline hazırlığı altyapı duruşu
+
+Exact v3/helperv2 ilkactualrun exit1: API456/456/0skip actualPASS/exit0 ardından privateJob içinde kimliği kaydedilmeyen iki artçısüreç10s sonunda çıkmadı. Helper ownJobactive2→0 kapattı; forced1 yüzünden wholecleanupfalse ve BASELINE.json yok. Reg/Web/JS koşulmadı. Derlemesunucusu ihtimali çıkarımdır, PID/exe kimliği kanıtlanmadı. HamAPI TRX7255bec92beab9bf549c432f28ffd1acf39b5c02a6583fde6ca2a2bcd00c28a8 ve fullrawproof C:\Users\epenc\AppData\Local\Temp\pvg-fe-baseline-runner-prepare-01\1700a8613ef345a38a69bba228d17b9e\evidence altında korunur; öncekiAPI bağımsız456/211 sonucu değişmez.
+
+Finally bütün5ownMongo PID/port/datadir veACLroot temiz, fullsources/CTHEAD/indexunchanged; hiçbirkoruma gevşetilmedi. Minimal command/environment-only runnerfix bağımsızincelenecek; ürün/pack/onay/dependency kapsamı değişmez. Yeni gerçekbaseline tüm4suite ile yeniden ölçülecek, başarısızwholebaseline tekrar kullanılamaz. Bu ürünhatasi/FEacceptance/dispatch değildir.
