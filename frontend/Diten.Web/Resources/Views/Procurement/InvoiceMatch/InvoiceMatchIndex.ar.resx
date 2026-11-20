@@ -81,4 +81,11 @@
   <data name="ExceptionId" xml:space="preserve"><value>معرف الاستثناء</value></data>
   <data name="WithinToleranceYes" xml:space="preserve"><value>نعم</value></data>
   <data name="WithinToleranceNo" xml:space="preserve"><value>لا</value></data>
+  <data name="ErrorValidationFailed" xml:space="preserve"><value>الطلب غير مكتمل أو يحتوي على قيم غير صالحة. تحقق من الحقول وحاول مرة أخرى.</value></data>
+  <data name="ErrorLineAmountMismatch" xml:space="preserve"><value>مبلغ أحد البنود لا يساوي الكمية × سعر الوحدة. مبالغ البنود صافية (بدون ضريبة).</value></data>
+  <data name="ErrorUnknownReference" xml:space="preserve"><value>تعذّر العثور على المورد أو أمر الشراء أو الصنف.</value></data>
+  <data name="ErrorCurrencyMismatch" xml:space="preserve"><value>عملة الفاتورة لا تطابق عملة أمر الشراء.</value></data>
+  <data name="ErrorDuplicateInvoice" xml:space="preserve"><value>توجد بالفعل فاتورة بهذا الرقم لهذا المورد.</value></data>
+  <data name="ErrorInvalidState" xml:space="preserve"><value>هذا الإجراء غير مسموح به في الحالة الحالية للفاتورة.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>تعذّر العثور على الفاتورة أو الاستثناء.</value></data>
 </root>
