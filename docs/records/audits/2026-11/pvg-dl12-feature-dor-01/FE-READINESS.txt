@@ -1,0 +1,66 @@
+PVG FE readiness — salt okunur CT hazırlığı
+
+Kaynak: CT HEAD 0b03b35075caba7e353e64f6f9fc7936f53d0d87; kapanış okuması HEAD 0b03b35075caba7e353e64f6f9fc7936f53d0d87. Model inherited; istenen gpt-6.2-astra/high, gerçek model/effort ölçülemiyor. AGENTS, rev21 ready-for-dev/approved pack ve domain, frontend-standards/frontend-js-standard/frontend-form-template/localization-standard okundu. Test/build/runtime çalıştırılmadı. Bu metin inceleme/normal prompt/dispatch veya E2 onayı değildir; BE/L10N çıktısı teslim edilmiş sayılmaz.
+
+1. FE'nin tam altı yazma yolu (repo köküne göre; pack:3135–3158):
+- frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js — prefill/helpers, complete-detail Save kapısı, update-only gerçek lossless submission; yalnız bir safeMessage not-editable eşlemesi. Create değişmez.
+- frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs — yalnız UpdateDraft/ona özel form input, validation/ToPayload ve minimum update-local helper. Shared CaseIntakeFormInput/ProductLineFormInput/Clean/SplitReferences/TryNormalizeUtc için Create/diğer çağrı davranışları korunur. Route/auth/header/generic error değişmez.
+- frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs — yalnız modül MVC/bağlı testleri, aliased host, embedded node -e/jsdom ve sınırlı stdin/stdout RPC; mevcut testler korunur.
+- frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js — AC42 UI regresyonu, edge corpus ve complete-detail fail-closed; ayrı runner yok.
+- frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml — yalnız Edit SourceReference/PatientSubjectCode required attribute ve eşleşen yıldızları; Create ve diğer markup/validation aynı.
+- frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml — yalnız DraftNotEditable bridge satırı.
+Yedi page RESX L10N'nin ayrı tek yazıcısına aittir; FE'ye ek yol değildir. csproj/CI PREP çıktıları, API/service/BE testleri, SharedResource, Details/list/triage/route yazma kapsamında değildir. Ek helper dosyası gerekirse kapsamı sessiz genişletme. Tek bridge + form.js mapping, L10N'nin yedi gerçek çevirisine bağlanır; key/code/English fallback yok. Bugünkü XML: en=111/111/DraftNotEditable:yok; tr=111/111/DraftNotEditable:yok; fr=111/111/DraftNotEditable:yok; es=111/111/DraftNotEditable:yok; zh=111/111/DraftNotEditable:yok; ar=111/111/DraftNotEditable:yok; ru=111/111/DraftNotEditable:yok; parity=True.
+
+2. Mevcut kod ile kesin fark (çalışmış FE deneyi değil):
+- API PvgCaseIntakeDraftResponse/From hâlâ14 alan (Endpoints.cs:507–539); BE'nin AC41 ile ekleyeceği15 alan henüz yok. FE bağlı no-loss başarısı bugün varsayılamaz.
+- form.js:42,292–317 options+version ile Save açıyor; items[0].version tek başına yetiyor. prefill:261–281 slice1 alanlarını doldurmuyor; Date/ToISOString:288–289 görünür saniyeye indiriyor. safeMessage:357–372 not-editable eşlemesi yok.
+- Controller:376–455 tüm metni Clean, kanıtı SplitReferences ile çeviriyor; :491 trim/null, :495–511 saniye normalizasyonu, :514–520 delimiter split/trim/empty-filter/Distinct yapıyor. Bunlar untouched Update için kayıplı; Create/diğer çağrılar korunarak Update ayrılır. MVC boş-string binding/null dönüşümü de gerçek uçtan uca sınanmalı.
+- _Form:70–71 ve106–107 iki servis-opsiyonel alanda bugün koşulsuz required+yıldız var. Validator:218–250 yalnız ilgili sınırları kontrol ediyor.
+- Mevcut Web bağlı akışında BrowserProgram:1182–1187 birçok alanı kullanıcı düzenlemesi gibi dolduruyor; ConnectedEditAsync:884–889 reporter/evidence eşitliğini yalnız WriteLine ediyor. PREP transport başarısı untouched no-loss kabulü değildir. JS testindeki version-only fixture (:495–524) tam geçerli detail ile güncellenmeli; linkedDraft (:952–965) eksik üyeleri kapıdan kaçırmamalı.
+
+3. Normatif named tests (pack AC42:2333):
+JS yeni dört ad:
+  pvg edit form prefills every editable field from the stored draft
+  pvg edit save without a change sends back every stored value
+  pvg edit save sends an optional field the user emptied as empty
+  pvg edit refusal after triage shows the not-editable sentence
+JS mevcut iki ad korunur:
+  pvg resources carry the same key set in seven languages without english echo
+  keeps browser localization references backed by PVG resources or shared localizer keys
+C# yeni altı ad:
+  Mvc_update_preserves_untouched_stored_text_and_reference_sequence
+  Edit_optional_source_reference_and_patient_code_match_service_validation
+  Edit_round_trip_preserves_subsecond_received_and_awareness_instants
+  Edit_round_trip_clears_only_the_optional_field_the_user_emptied
+  Edit_round_trip_sends_the_users_nonempty_change
+  Edit_requires_a_complete_well_shaped_detail_before_enabling_save
+C# mevcut zorunlu iki ad korunur/güçlendirilir:
+  Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable
+  Connected_edit_submission_preserves_browser_antiforgery_request_token
+Mevcut Connected_edit_with_an_unusable_request_token_is_refused_by_mvc MissingToken/InvalidToken ve diğer regresyonlar korunur. AC42(c) Update_with_the_values_read_back_keeps_every_stored_field BE'nin API test bağımlılığıdır; FE'nin yedinci yazma yolu değildir. Yukarıdaki yeni adlar mevcut FE test kaynaklarında henüz yok; mevcut iki C# ve iki JS adı var.
+
+4. Complete-detail kapısı ve corpus:
+Non-null plain draft object; own-property olarak TAM29 üye: intakeDraftId,status,version,productLines,awarenessAtUtc,companyRecipientPersonId,eventCountry,reportType,reporterSource,reporterSourceId,reporterCrmSearchState,reporterNameOrInitials,reporterProfession,reporterCountry,intakeChannel,sourceType,sourceReference,receivedAtUtc,reporterType,reporterContactSummary,patientSubjectCode,eventOnsetDate,adverseEventNarrative,seriousness,intakePriority,triageOutcome,triageReason,routeTargetQueue,evidenceLinkReferences.
+- id nonempty string ve route id ile aynı; version pozitif integer ve summary ile tutarlı. Status/code/required text string. received/awareness geçerli DateTimeOffset, Z ve pozitif/negatif nonzero +/-hh:mm, desteklenen fraction; Z-only gate yok.
+- productLines object array; HER üründe productRole,globalProductId,productNameAsReported,presentationGskuId,lotNumber own-property; role/name string, diğerleri string/null.
+- Nullable12: sourceReference,reporterContactSummary,patientSubjectCode,eventOnsetDate,companyRecipientPersonId,reporterSourceId,reporterNameOrInitials,reporterProfession,reporterCountry,triageOutcome,triageReason,routeTargetQueue. Her birinde explicit null pozitif, aynı üyenin missing hali negatif; eventOnsetDate geçerli yyyy-MM-dd/null.
+- evidenceLinkReferences string/null element array; collection null/missing ve number/object element negatif. [] eksik array değildir. [null] ve ["ref-A",null,"",null,"ref-A"] pozitif corpus; null/string kimliği, konumu, boş öğe, sıra ve mükerrerler eşit kalır.
+- HER29 alan ve HER nested product alanı bağımsız omit edilir; yanlış type, absent/null/non-object/array draft, version-only summary, yanlış id/version, malformed date/collection ayrı negatifler. Görünür required alanlar doldurulup submit denense de Save kapalı + ZERO update. Eski snapshot/default ile eksik detail tamir edilmez. Tam valid null-bearing ve unknown-select string fixture Save'i açar; unknown seçeneği saklamak servis lookup/enum doğrulamasını gevşetmez.
+- Önce gerçek API create/read ile bugün kabul edilen veriyi ölç: leading/trailing/whitespace-only optional text; null/empty; comma/embedded CRLF/empty/duplicate evidence; [null]/mixed; yedi fraction ve sub-ms tick içeren Z/+offset/-offset received+awareness. Girdinin kabul edildiği varsayılmaz; aksi sonuç açık blocker, API hardening/coercion izni değildir. CompanyRecipientPersonId ve ürün GlobalProductId/PresentationGskuId null+present kalır. Required text/service tarafından zaten normalize edilen değerlerde ilk actual read authoritative baseline'dır.
+- Untouched time hidden/raw değeri JS Date/ToISOString veya MVC TryNormalizeUtc üzerinden yuvarlama. Önce/sonra UTC ticks tam eşit; offset metni normalleşebilir. Görünür seconds ve one-reference-per-line düzeni serialization kaybına izin vermez.
+- SourceReference/PatientSubjectCode: bağımsız ve birlikte null/empty untouched vakalar; gerçek Edit checkValidity true ve tek update. Deliberate clear ReporterContactSummary/SourceReference/PatientSubjectCode ayrı rows; yalnız hedef alan temizlenir. Deliberate nonempty edit yalnız hedefi değiştirir; old-value fallback yok.
+
+5. Bağlı zincir ve sabotaj kontrol listesi:
+Her named connected C# test kendisi gerçek API create/read → gerçek Razor Edit HTML/token → production form.js Node22/jsdom → ordered FormData entries → gerçek MVC binding/Update/ToPayload → mevcut Gateway route eşlemesi üzerinden actual API/application/store → gerçek reread zincirini yürütür. Untouched senaryoda mevcut BrowserProgram'ın alan doldurma listesi kullanılmaz. Transport order/repeated names/empty/whitespace taşır; metadata/string/null array/timestampi tamir, sanitize, round, dedup veya replacement PUT üretmez. Form metadata tenant/id/status/response alanlarını yazamaz, permission/field policy/version/server validation atlatamaz. Reread'de tüm stored editable alanlar ve korunan diğer alanlar eşit; yalnız beklenen status IntakeUpdated ve version+1. Salt200/tek ürün/count veya log yeterli değildir.
+- Token dört ayrı assertion: jsdom çıktısında HEADER RequestVerificationToken ve FormData MEMBER __RequestVerificationToken; gerçek MVC'ye iletilen istekte aynı ikisi. Dördü de Razor tokenına presence+exact equality; token/JWT ham değeri loglanmaz. Valid kontrol tek update. Yalnız header veya yalnız member'ın her observation boundary'de düşürülmesi kendi assertionını kırar; diğer taşıyıcı MVC'ye yetse bile PASS olmaz. İki taşıyıcıyı kaldırma veya bozma → actual MVC400, Gateway/API updates0, store writes0/değişmez; token repair sabotajı bu negatif kontrolü RED yapar.
+- MissingNode/MissingJsdom/MissingReceipt/SuppressUpdate fail-never-skip+zero-write; mevcut StartFailure/Timeout/BridgeFailure/EarlyEnd/Malformed vakaları korunur; bounded frame/time/reap/cleanup korunur.
+- Derlenen, ayrı mutantlar: ReporterContactSummary prefill satırını kaldır; evidence prefill satırını kaldır; EventOnsetDate prefill kaldır; not-editable mapping kaldır; untouched Update'e Clean/SplitReferences döndür; raw zamanlardan her birini truncation; deliberate-empty/nonempty üzerine eski değer bas; version-only gate; missing'i null/empty defaultla; malformed collection kabul et; her Edit required'ı bağımsız geri koy; null evidence filtrele/coerce/reorder veya shape gate'de reddet; missing receipt/fixed-success update; token düşürme/repair. Her mutant ilgili normatif testi bağımsız RED yapar; syntax/build failure davranış RED sayılmaz. Ürün ve test beklentisi birlikte değiştirilmez.
+
+6. Sonraki CT S-83 capture sözleşmesi:
+- Kart:209–211 uyarınca CT ayrı FE capture producer'ını kendisi yazar, immutable yol+canonical-LF SHA ile prompt'a bağlar; kırmızı taban ve gerçek run/source bağını kaydeder. Bu araştırma helper yazmadı. Kaydedilmiş PREP Web62/62 GREEN'dir; iki loss WriteLine=False gözlemi yeni FE runtime RED gibi sunulmaz. Producer acceptance'ının absent named tests/no-loss yüzünden RED olması ile test-suite RED ayrı alanlardır.
+- Korunmuş integration.trx gerçek62 result/62 unique testId/62 Passed; LF SHA e2772c5aebfba847c54eabbfba7753af6329a8b99650e20ea42b8ce82fe3f4b5. Final Web case sayısı ve theory row kimlikleri actual TRX result listesinden alınır;62 üstüne varsayımsal N yazılmaz. Baseline isim/parametre multiset'i korunur, yeni named tests+HER corpus/negative row gerçekten listede ve passed olmalı. Aggregate count tek başına kanıt değildir.
+- WIN helper'ındaki395 (v2.0:47/81) veya BE helper'ındaki396+new API count (:94/98) FE Web beklenen sayısı değildir. Tam API/RegPvBase regresyonu istenirse son doğrulanmış BE tabanına ve gerçek TRX kimliklerine bağlanır; BE teslimi henüz varsayılmaz. Mevcut JS suite actual runtime baseline bu araştırmada ölçülmedi; source it() sayısı runtime case sayısı yerine geçmez.
+- Fresh source→assembly→TRX storage/Times/hash bağını, node/npm/package-lock runtime/prerequisites'ini, producer argv/exit/stdout/stderr'ini, before/after raw+LF kaynak hashlerini, yalnız altı yol+metot sınırını ve tüm mutant/cleanup manifestini tut. Product expectedHEAD, BE/L10N entegre exact sürümünden yeniden ölçülür; bu eski HEAD otomatik dispatch tabanı değildir.
+- Gerçek check_trx_no_skipped.py ve known_failures.py check --suite Diten.Web.Tests sıfır; her normatif vaka ve UI vitest JSON sonuçlarında fail0/skip0. Gerçek token/receipt/update-count+store-equality assertionlarını bağımsız denetle. Yeni test result case listesi, named-test coverage ve corpus coverage ayrı tutulur. Aynı actual run/source'dan kanıt; --no-build ile eski DLL/saved TRX taşınmaz. CI'nin gerçek Linux Phase1 run'ı son PR kapanış kapısıdır; mevcut Node22/npm ci önkoşulu tek başına feature kabulü değildir.
+
+Sonuç: altı-yol FE kapsamı somut; mevcut ürün henüz complete-detail/lossless değildir. Sonraki iş normal prompt/inceleme/dispatch kapılarına tabidir. Ürün/RESX/JS/C#/pack/queue/helper veya Git değiştirilmedi; yalnız bu izinli visualization raporu yazıldı. Duruldu.

@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `0b03b35075caba7e353e64f6f9fc7936f53d0d87`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `b2651a119d3d0f43f0febb8926b3422ca01e9c2d`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -28,19 +28,19 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 3 INTEGRATED, 3 PLANNED |
+| DL-12 | Düzenlemede veriyi koruma | 3 INTEGRATED, 1 PLANNED, 3 READY |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:14, `PLANNED`:3, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:14, `PLANNED`:1, `READY`:3, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
-- [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `BLOCKED`
-  - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — rev21 onayları ve HIGHcheck0 tamam; ana veri koruma işi iki PREP bağımsız E2 ve birleşik kapılarını bekliyor; operasyon kapalı
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/PROMPT-v2.0-REVIEW.md`.
+- [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `READY`
+  - Kapsam/kuyruk kaydı: Rev21 onayları ve HIGHcheck0 tamam; iki PREP ve registry bağımsız doğrulanıp CT'ye entegre. BE/L10N hazır; normal dağıtım kapıları beklenir. Operasyon kapalı.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md`.
@@ -51,12 +51,12 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan XMC onaylı ortak regresyon kaydında yalnız beş fixed rerun_trigger hücresinden ölü ,*.xml öğesini kaldırma; ürün/guard değişmez
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
 
-- [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `PLANNED`
-  - Yalnız onaylı yedi backend/test yolu; AC-40/41/42(c)/43/44. İki PREP ve registry entegrasyonu beklenir.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
-- [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `PLANNED`
-  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. İki PREP ve registry entegrasyonu beklenir.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
+- [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `READY`
+  - Yalnız onaylı yedi backend/test yolu; AC-40/41/42(c)/43/44. Bağımlılıklar entegre; kesin prompt/inceleme/normal gate0 beklenir.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY.md`.
+- [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `READY`
+  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. Bağımlılıklar entegre; kendi normal gate0 beklenir.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY.md`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `PLANNED`
   - Yalnız onaylı altı frontend yolu; önce BE ve L10N doğrulanıp CT'ye entegre edilir.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
