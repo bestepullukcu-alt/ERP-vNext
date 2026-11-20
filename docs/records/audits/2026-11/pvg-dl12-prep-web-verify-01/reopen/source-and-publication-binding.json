@@ -1,0 +1,426 @@
+{
+  "reviewed_ct_head": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+  "ct_head_at_check_start": "dfa4df19de00428700285baee2abc52d0f481297",
+  "ct_head_at_check_end": "dfa4df19de00428700285baee2abc52d0f481297",
+  "worker_head": "15791333afa89e447210b8d877dc5407693e9b5b",
+  "base": "58920519a17e8f4c085738642b33e36689bc8fee",
+  "worker_status_before_after": "",
+  "ct_status_at_check_start": "M  docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/REOPEN-STATE-JOURNAL.md\nM  execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv\nM  execution/domains/pharmacovigilance/work-packs/CT-TRACKING.md\n?? execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-PREP-WIN-v2.0.md\n?? scripts/__pycache__/\n",
+  "ct_status_at_check_end": "M  docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/REOPEN-STATE-JOURNAL.md\nM  execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv\nM  execution/domains/pharmacovigilance/work-packs/CT-TRACKING.md\n?? execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-PREP-WIN-v2.0.md\n?? scripts/__pycache__/\n",
+  "initial_pass_ct_status": "?? scripts/__pycache__/\n",
+  "authorized_concurrent_ct_change": "Untracked WP-0230-DL12-PREP-WIN-v2.0.md appeared during first pass; root confirmed CT-owned packaging. No candidate/code change. CT is not claimed globally clean.",
+  "candidate_paths": [
+    ".github/workflows/phase1-gates.yml",
+    "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+    "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj"
+  ],
+  "ct_code_paths_changed_since_base": [],
+  "source_files": [
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "raw_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45",
+      "lf_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "raw_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87",
+      "lf_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "raw_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a",
+      "lf_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+      "raw_sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4",
+      "lf_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web/package.json",
+      "raw_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6",
+      "lf_sha256": "023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web/package-lock.json",
+      "raw_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e",
+      "lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": ".github/workflows/phase1-gates.yml",
+      "raw_sha256": "f524a30b83a9c9e9fb67250e64e167f0577d4cfc117e9980b9f5912db11c7f46",
+      "lf_sha256": "c5e112e8416dd112401a71241306332173690a5c3cd53bed1bf5bfb0b75357fa",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "166a37426dddd1f8d7184303abdca2342d8201e9663cc5e7ba2df39bed440094",
+      "lf_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "same_as_previous_verification": true
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "raw_sha256": "50b13829202fc3f0cc21d456e6d3934519020ae984b9113e6808b3e7eb705200",
+      "lf_sha256": "1fb91c728c5579a7a4a3b51af97a1d917b86bb9cb83852f495899fcad4bd425c",
+      "same_as_previous_verification": true
+    }
+  ],
+  "published_evidence": [
+    {
+      "file": "canned200.log",
+      "lf_sha256": "df2276e17e72e67a11b97267614f1ce20bfe39d291e5115e999535aa37947afc",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "canned200.trx",
+      "lf_sha256": "2f2cc1f16d6073c8fb0ba4cd1bba78895ad4601aad4f7b32fa69e2ea72acee41",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "dotnet-version.log",
+      "lf_sha256": "889bcd977affaed790bc08b12d1d934e807005b95d1678b47f137170447520c1",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "environment.json",
+      "lf_sha256": "5534253f40be64ac7a26624b814e927b4b8e770023574a2afef9d4d6169a8d36",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "independent-cleanup.json",
+      "lf_sha256": "0f1b971c2d38e6cab39c1a3e77d5e77beded280db85f9700ab5fe1a3cf382fba",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "independent-mutants.json",
+      "lf_sha256": "7ee9ea200401301eb5bfe982dcccc4e2f9271be9f6a6f99a9afdd9ea0911a04e",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "independent.log",
+      "lf_sha256": "bb8f4017ea5a218615731252d375451b8655ffa12158651c87232a4483118222",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "independent.trx",
+      "lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "load-during.json",
+      "lf_sha256": "0279c55515f3a46683cec462e54d9cb74e44425f62e6d8ccba4acc74f6fdc56f",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "node-version.log",
+      "lf_sha256": "17e666b140e321b57eec7d7066da9f774ad2457620dc275d6386b5224ab416ac",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "prerequisites.json",
+      "lf_sha256": "a0132a1aeb3919af3976a31bfeef8c68858bd899d89bec3ea82558c71580dd42",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "restore.log",
+      "lf_sha256": "4d8fd62f23bbd2f6ffc41092011d8a0c809ae5065f31614f083b7a4a8788c1b0",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "source-after.json",
+      "lf_sha256": "648cc8ea137be8eff5fccb32ee99cd6fd9ded4223f8b1218c688f02962e4d0a0",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "source-before.json",
+      "lf_sha256": "f2ba14d0a16c3cb8eaad1d84a3a1491865fba547620d52f687832592d88d438e",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "static-scope-audit.json",
+      "lf_sha256": "d210feb2af6630cac8bb92a4ba4ea2c21594f0107fa2980d60e10b21508aa410",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "test-result.json",
+      "lf_sha256": "6d50f42152bc655cfe2ea18c3223ccdb545b2ed26236f43f9272c5404ea38710",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "tokenrepair.log",
+      "lf_sha256": "c5f48db58e9ab1ed00511fb8e2c7f7a45b7a4e78a518c86e9fd8ffd8e1523a51",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "tokenrepair.trx",
+      "lf_sha256": "c5d62a3fbdd45db1d0f4961a2ef64c0173444790d35bd5e90c5b720d72610236",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "VERIFY-WEB.md",
+      "lf_sha256": "52ab8f68a6401cadc3c8c74301c7a3773fdba3351bef6194a0eaa7ad2f5aa51d",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-child-cleanup.json",
+      "lf_sha256": "9ddda12516863e85a51b9bfc8d84ff3c068a90788ae98848221932567726ec32",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-evidence-audit.json",
+      "lf_sha256": "0ef3b5e88bd12a5a96bb17ca8d4fc3057a39748db495cb9b15df81502347db4f",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-evidence-summary.json",
+      "lf_sha256": "1246b6ee20846e67ab6db80361851fd3d0f3b5b359384188aa33469dc992431b",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-filtered.log",
+      "lf_sha256": "0c2f22dbfa59a1cb60f4f3ddb23737cd653ad8bf724728022d7a9132dcab35a1",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-npm-ci.log",
+      "lf_sha256": "6e2329b9ad328402c67250ba33bf2277e6a45600e96e198cdbc636172aaf36a4",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-pvg-prep-web.trx",
+      "lf_sha256": "a6a1f01155e326c9bd4ec974b7c925347ece089b632c019b9e524bbac545bcf3",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-restore.log",
+      "lf_sha256": "04deb6ac732f1cad5776b409e4f6e9b0d7b9138e04636a48667750a81fd015b1",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/browser-form/browser-form.trx",
+      "lf_sha256": "f286627bf908d679534e51eb13c5b3d82cc353ff6ebe5422887432b3eea08082",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/browser-form/run.log",
+      "lf_sha256": "95d7e8f0b9705a11a5b14f9723c30c79f9a78846216dcb2da9d33173e08c2410",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/browser-header/browser-header.trx",
+      "lf_sha256": "3410afe8f52a305bd66bbee626f0960882e337529a23d8123d901b9f02a7f468",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/browser-header/run.log",
+      "lf_sha256": "91cb299ac7fa9c5bb3ea53ee70a9dab1ff0b5ede4c281ca6eadbf1069fb63908",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/form/form.trx",
+      "lf_sha256": "080d9da850d3c5ac401aff53533083804e578cf18ec577d28046af6f06228e78",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/form/run.log",
+      "lf_sha256": "0d0d959109d82e60b6090fced2eee924ff2d47ad3cc3e4faf0d6389cccfcdeb7",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/header/header.trx",
+      "lf_sha256": "ffc38d4a132dac0cd30f77ec599b0edd20939b165f03c0ade02c052cb0484f0a",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/header/run.log",
+      "lf_sha256": "03df0b8a21993113671ee86c188ba8b7d00fec8cccff1040a960151c493bfca2",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/receipt/receipt.trx",
+      "lf_sha256": "9b825b5efa66df8a1d1d688d6d0e193959893fecc09e58447c51479fee59d099",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/receipt/run.log",
+      "lf_sha256": "e7b46452c310737c2c65de726f4f6c56249468f7d5664db73b0918dc18c4e329",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/repair/repair.trx",
+      "lf_sha256": "aa345e1e9b3ed76f596ecbc09fddbeaf7f9bba2554a79d7115de7dbf60128fe3",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/repair/run.log",
+      "lf_sha256": "9b55d9230c01b254627cae50ed0d194a7c3243cc83ab610c55f3d8f5ffd0aba5",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/update/run.log",
+      "lf_sha256": "bd36857b5cd1dbd4f03af9667ac27a29920447c3fe64c44db27767353016424d",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages/update/update.trx",
+      "lf_sha256": "589a95ff49f8f6b9fb31d5d1bd4b090ed3bd6af06443dfafefd2f0b11033efdb",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-sabotages.json",
+      "lf_sha256": "382c363153fe0072494a357c7839ab80ed854acd6132216fb0f8fbee7bd59e7a",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-source-hashes.json",
+      "lf_sha256": "575ec71cc30ad5c406e0259f0a05be96c22fa4b1951e69517bca17cffc3feed2",
+      "matches_published_manifest": true
+    },
+    {
+      "file": "worker-transport-evidence.json",
+      "lf_sha256": "1afc3751bbf464894a0a6f8bf948796d06fe8bf9b219aac3c8789243f28df644",
+      "matches_published_manifest": true
+    }
+  ],
+  "preserved_external_sources": [
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\audit-worker-evidence.py",
+      "raw_sha256": "603299b70bcccf1494ac2fce65c2f99ae4b9094588119c39efa5e3e6f6b24596",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\canned200-mutant.cs.txt",
+      "raw_sha256": "bbf92f8d59b7662b8f5090780c1da38ed9f12d4f1ca10afdc6a058d010f68772",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\tokenrepair-mutant.cs.txt",
+      "raw_sha256": "6eb0b4b12430180364870259db981c2fd9d4ebc2331c463ad3fcab10173eac90",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\verify-run.py",
+      "raw_sha256": "9b64b8a17b84747856e5ada05c42db7fb1a7b7c4d733e24d62b66b51b5b258a7",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-exact.diff",
+      "raw_sha256": "bc11b5c8ab8f6e52cea4b7e2bce9003cb7b5df609dff498c157672ea6a097187",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-measure-sabotages.py",
+      "raw_sha256": "115b0f386c224dff8b1ff2015dd9142858268d52a82f512b256d8440d48690cf",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\browser-form\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "5a079f5aa4156e1827119467d0c8e3a46dcd43ba882751d431fb03dbca3eac0c",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\browser-header\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "0d7d1fb7b162271258cf0c7281b2e63d2dedc11294732d7fe040dfd81f89c1cf",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\form\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "be169bab665f95b89f34b01404edaa2de0b8a1a0886bd060d0c75333f721c87a",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\header\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "7c16ac19240e1a4900b6d1e6b5a9c7d42a438da9db5e3346b9e066a99058bf01",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\receipt\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "a053e99f335bf2f30d8055289de9833b5bbc89b8917b224abbe49711665291d6",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\repair\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "6eb0b4b12430180364870259db981c2fd9d4ebc2331c463ad3fcab10173eac90",
+      "unchanged": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-prep-web-verify-01\\worker-sabotages\\update\\PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "bbf92f8d59b7662b8f5090780c1da38ed9f12d4f1ca10afdc6a058d010f68772",
+      "unchanged": true
+    }
+  ],
+  "historical_trx_counters": {
+    "total": "62",
+    "executed": "62",
+    "passed": "62",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "historical_mutants": [
+    {
+      "path": "canned200.trx",
+      "result": "historical RED",
+      "error": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure : SuppressUpdate"
+    },
+    {
+      "path": "tokenrepair.trx",
+      "result": "historical RED",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200"
+    },
+    {
+      "path": "worker-sabotages/browser-form/browser-form.trx",
+      "result": "historical RED",
+      "error": "Browser form token member differs from Razor."
+    },
+    {
+      "path": "worker-sabotages/browser-header/browser-header.trx",
+      "result": "historical RED",
+      "error": "Browser request token header differs from Razor."
+    },
+    {
+      "path": "worker-sabotages/form/form.trx",
+      "result": "historical RED",
+      "error": "MVC form token member differs from Razor."
+    },
+    {
+      "path": "worker-sabotages/header/header.trx",
+      "result": "historical RED",
+      "error": "MVC request token header differs from Razor."
+    },
+    {
+      "path": "worker-sabotages/receipt/receipt.trx",
+      "result": "historical RED",
+      "error": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure)"
+    },
+    {
+      "path": "worker-sabotages/repair/repair.trx",
+      "result": "historical RED",
+      "error": "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200"
+    },
+    {
+      "path": "worker-sabotages/update/update.trx",
+      "result": "historical RED",
+      "error": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure : SuppressUpdate"
+    }
+  ],
+  "known_failures_actual_exit": 0,
+  "trx_lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+  "trx_raw_sha256_before_after": "8a07396ceb66120190b20d99d9ee7ac0d51b6e6c4af42ab4724bed1e1d184232"
+}

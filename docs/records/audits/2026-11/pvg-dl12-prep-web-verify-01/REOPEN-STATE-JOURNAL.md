@@ -9,3 +9,5 @@ Kayıt zamanı UTC; işçi olayları CT’ye daha önce iletildi. Aşağıdaki s
 - 2026-11-20T18:04:56.495913+00:00 — IN_PROGRESS → REPORTED: Mevcut yazılı işçi15791333 raporu/PUBLISH-MANIFEST/VERIFY-WEB korunmuş; aynı baytların yeniden ölçüm sonuçları alındı, yeni kod veya yeni geçmiş test sonucu üretilmedi.
 
 - 2026-11-20T18:05:10.039824+00:00 — REPORTED → VERIFYING: Yazardan farklı pvg_dl12_prep_web_verify aynı15791333 için bağımsız yeniden doğrulamaya atandı; kayıt engeli kalktı, öncekiE2 koşusu kaynak bağıyla inceleniyor; yeni ürün yazımı yok.
+
+- 2026-11-20T18:05:59.772243+00:00 — VERIFYING → VERIFIED: Bağımsız yeniden doğrulama UYGUN, açık bulgu yok. İşçi157 temiz; dokuz hash ve üç yol aynı. CT ürün kodu farkı0;43 kalıcı ve13 dış kanıt bağı, immutable TRX korunmuş. Güncel CT gerçek known_failures kontrolü0; rapor reopen/VERIFY-WEB-REOPEN.txt. Yeni test koşusu değildir.
