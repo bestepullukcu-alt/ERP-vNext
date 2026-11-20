@@ -1,0 +1,28 @@
+{
+  "kind": "Actual normal production prompt gate v1.1; not prepare",
+  "short": "L10N",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-L10N-v1.1.md",
+    "--queue",
+    "pvg"
+  ],
+  "started": "2026-11-20T20:16:14.022271+00:00",
+  "prompt_raw_sha256": "501ed6f6cf4284984f4e0bf6c4554f1c065440ba4c1eddc1e3c084043ba69f8c",
+  "source_head": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "review_commit": "85c49b14496ef09e2510dfb6d332667443eb4810",
+  "root_head_start": "85c49b14496ef09e2510dfb6d332667443eb4810",
+  "queue_raw_sha256_start": "879dd2c57e9e0b608be0f4a49e8f6ff82609a101646a7360faaacdb5582f419d",
+  "process_id": 21592,
+  "finished": "2026-11-20T20:38:37.970759+00:00",
+  "exit_code": 0,
+  "stdout_raw_sha256": "60a7cf6fdb37cd5d59f99a51025199148b14c0b303c3d7376ba4ffd96973399c",
+  "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root_head_end": "85c49b14496ef09e2510dfb6d332667443eb4810",
+  "queue_raw_sha256_end": "879dd2c57e9e0b608be0f4a49e8f6ff82609a101646a7360faaacdb5582f419d"
+}
