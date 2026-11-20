@@ -8,7 +8,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
 - **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
-- **Arka uç / çeviri:** Parent IN_PROGRESS; BE IN_PROGRESS; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
+- **Arka uç / çeviri:** Parent IN_PROGRESS; BE IN_PROGRESS; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. BE tek yazarı /root/pvg_dl12_be_continuation; önceki appişçisi durdu, WIP/iki kısmî RED korundu. CT ürün kodu yazmaz.
 - **Ekran:** FE PLANNED; BE ve L10N bağımsız doğrulanıp CT'ye alınınca başlayacak. İlk JS34/34 ölçümü son FE baseline/acceptance değildir.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
