@@ -39,8 +39,10 @@ ACL'i veya fixture dışı yetki değişimi yoktur.
 Erişimi gerçekten reddeden DACL uygulandıktan sonra mevcut
 `Directory.EnumerateFileSystemEntries(locked).ToArray()` önkoşulu **UnauthorizedAccessException** üretmelidir.
 Runner bunu sağlayamıyorsa test açıkça başarısız olur; skip, early return, sahte exception veya önkoşulu geçerli
-sayma yoktur. Ardından gerçek mevcut scanner'ın fixture kökünü tarama çağrısı fail-closed exception assertion'ını
-karşılamalıdır. `IgnoreInaccessible=false` ve scanner'ın geri kalan davranışı değişmez.
+sayma yoktur. Ardından gerçek scanner'ın fixture kökünü tarama çağrısı da aynı kilitli dizinden kaynaklanan
+**UnauthorizedAccessException** üretmelidir; `ThrowsAny<Exception>` veya ilgisiz bir exception yeterli değildir.
+Bu assertion güçlendirmesi yalnız hedef metot gövdesinde kalır. `IgnoreInaccessible=false`, erişilebilir pozitif
+kontroller ve scanner'ın geri kalan davranışı değişmez.
 
 `finally`, assertion veya tarama hata verse de özgün DACL'i ve erişim/kalıtım durumunu geri yükler. ACL geri yükleme
 hatası yutulmaz. Kilitlemeden önce ve geri yüklemeden sonra aynı nötr JSON dosyasının listelenebildiği ve scanner'ın
@@ -64,18 +66,48 @@ Ek bağımlılık ya da metot dışı değişiklik gerekirse bu önerinin sını
 
 ## Kabul ve bağımsız doğrulama
 
-- Windows'ta hedef test 0 başarısız/0 atlanan; tam API süiti 0 başarısız/0 atlanan. Yeni test sayısı varsayılmaz.
-  Pozitif erişim kontrolü, gerçek UnauthorizedAccessException önkoşulu ve scanner fail-closed ölçüsü ayrı görünür.
+- Windows'ta yeni ACL dalıyla hedef test ve tam API süiti 0 başarısız/0 atlanan olmalı. Pozitif erişim kontrolü,
+  gerçek UnauthorizedAccessException önkoşulu ve scanner çağrısının aynı dizinden gelen UnauthorizedAccessException'ı
+  ayrı ölçülür. Yeni test sayısı varsayılmaz; test sayısını düşürmek veya atlamak kabul edilmez.
 - Mevcut Mongo guard'ları, iki hedef test ve 35 gerçek Mongo testi yeniden yeşil; özgün 27017 yasağı, binary yolu/
   varlık kontrolü, replica-set/transaction koşulları, kendi süreç/port/veri izolasyonu ve cleanup korunur.
-- Unix runner'da aynı hedef test ve ilgili API regresyonları geçer; chmod dalı ve güvenlik assertion'ları korunur.
-  Windows sonucu Unix çalıştırmasının yerine geçmez.
-- İki ayrı **derlenen** sabotaj yalnız dış repository-shaped scratch kopyasında uygulanır: (1) Windows deny
-  uygulamasını kaldırmak erişilemezlik önkoşulunu RED yapar; (2) deny yerindeyken scanner'ı inaccessible dizini
-  atlayan fail-open davranışa çevirmek scanner assertion'ını RED yapar. İkinci ölçüde önkoşul hâlâ gerçek
-  UnauthorizedAccessException olmalıdır. Sabotajlar gerçek çalışma dalına/commit'e taşınmaz.
-- ACL geri yükleme, yeniden erişim ve geçici fixture temizliği normal/başarısız assertion yollarında kanıtlanır.
-  Yeni başarısızlık yutma, skip veya assertion kaldırma kabul edilmez; kanıt yalnız HTTP/çıkış koduna indirgenmez.
+- Bağımsız E2'nin hazırlık/entegrasyon girdisi, **58920519a17e8f4c085738642b33e36689bc8fee baseline'inden son adaya
+  kadar iki WIP dosyası ile ACL metodu düzeltmesini BİRLİKTE** kapsayan Windows ölçümleri ve aşağıdaki altı sabotajdır.
+  CT'nin aradaki pack/onay commit'leri kaynak zincirinde ayrıca gösterilir; ürün diff'i yalnız bu üç test dosyasının
+  yetkili sınırlarını taşır. Önceki dört sabotaj tamamlanmış sayılmaz veya yeni ikisiyle ikame edilmez.
+
+| No | Dış scratch'ta ayrı derlenen sabotaj | Beklenen RED |
+|---|---|---|
+| 1 | `--nounixsocket` bayrağını Windows'ta koşulsuz ekleme | Windows platform-argüman/gerçek başlatma koruması kırılır |
+| 2 | Unix dalından `--nounixsocket` bayrağını düşürme | Mevcut Unix argüman dalı assertion'ı kırılır; bu tek başına Unix runtime kanıtı değildir |
+| 3 | `ResolveBinary` missing/relative korumasını kaldırma | Gerçekte olmayan binary ve göreli yol ret fixture'ları kırılır |
+| 4 | 27017 ret korumasını kaldırma | Mevcut forbidden/default-port assertion'ları kırılır; gerçek development Mongo'ya bağlanılmaz |
+| 5 | Windows ACL deny uygulamasını kaldırma | Gerçek UnauthorizedAccessException erişilemezlik önkoşulu kırılır |
+| 6 | Deny yerindeyken scanner'ı fail-open yapma (`IgnoreInaccessible=true`/inaccessible atlama) | Önkoşul hâlâ gerçek UnauthorizedAccessException iken scanner'ın aynı exception assertion'ı kırılır |
+
+1–2 numaralı satırlar mevcut `Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation`,
+3–4 mevcut `Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod`, 5–6 ise mevcut
+`Configuration_scan_fails_closed_on_inaccessible_directory` testiyle ayrı ayrı bağlanır.
+
+Her satır için bağımsız derleme, ilgili isimli testin RED sonucu, sabotajı taşımayan özgün adayın GREEN sonucu ve
+kaynak hash çifti kaydedilir. Altısının hiçbiri atlanmaz; aynı anda birden çok sabotaj uygulayıp tek RED yeterli
+sayılmaz. Sabotajlar yalnız dış repository-shaped scratch kopyasında yapılır; gerçek işçi dalına/commit'e taşınmaz.
+ACL geri yükleme, yeniden erişim ve geçici fixture temizliği normal/başarısız assertion yollarında kanıtlanır.
+Yeni başarısızlık yutma, skip veya assertion kaldırma yoktur; kanıt yalnız çıkış koduna indirgenmez.
+
+**Unix kapanış kapısı, hazırlık döngüsü oluşturmaz.** Mevcut Unix chmod dalı ve güvenlik assertion'ları kaynakla
+birebir kıyaslanıp korunur; Windows/argüman testinden Unix runtime PASS sonucu çıkarılmaz. Hazırlığın Windows
+ölçümleri ve altı bağımsız RED/GREEN kanıtı E2 ile doğrulanıp entegre edilebilir; henüz olmayan PR'ın Unix koşusu,
+PREP geliştirme/entegrasyonu veya sonraki feature dispatch'i için önkoşul yapılmaz. Unix runtime doğrulaması açık
+kalan final kapanış şartı olarak taşınır.
+
+Tek son PR'ın **aynı final head SHA'sında**, `.github/workflows/service-tests.yml` içindeki `pvg-api` /
+`ubuntu-22.04` işi hedef test dahil tam API süitini 0 başarısız/0 atlanan olarak çalıştırmalıdır. Kaynakta runner
+satır 54, suite/proje satır 99–100, gerçek `dotnet test` satır 281 ve skip denetimi satır 291'dedir. Head değişirse
+bu nihai head için sonuç yeniden gerekir. İş pending veya başarısızsa final PR merge/main birleştirmesi ve WP DONE
+kapanışı gerçekleşmez. `scripts/run_phase1_gates.sh:331` PVG API projesini yalnız build eder; `:351` Web testlerini
+çalıştırır. Phase 1 veya onun Web test başarısı, gerçek Linux `pvg-api` testinin yerine geçmez. Bu belge ne Unix
+runtime başarısı ne de bu GitHub işinin koştuğu iddiasıdır; CI dosyası değişikliği önerilmez.
 
 ## Kapılar, WIP ve geri dönüş
 
@@ -85,16 +117,16 @@ Onaydan sonra paket yazarı gerçek pack/domain uyumunu, PREP-WIN dosya/metot s�
 Değişen kesin sürüm yeniden resmî inceleme/HIGH onay kaydına bağlanır; yenilenmiş worker prompt'u normal HIGH
 inceleme ve dağıtım kapısından geçmeden bu üçüncü dosyada çalışma başlamaz. Bu belge tek başına izin değildir.
 
-**Aynı tek öneride istenen ikinci açık yetki: bir defalık WIP koruma checkpoint'i.** WIN v1.2'nin 394/1/0 sonucu
-normal teslim commit koşulunu karşılamadı; dirty iki dosya üzerinde yeni normal kapı başlatılamaz. Bu nedenle sahip
-onayı iki somut eylemi birlikte kapsamalıdır: yukarıdaki tek Windows ACL test-metodu istisnası ve aşağıdaki donmuş
-iki WIP dosyasının yalnız işçinin aynı özel `feature/pvg/mod-0230-dl12-prep-win` dalında yerel CHECKPOINT commit'i.
-Bu, mevcut normal teslim commit koşuluna yalnız bu koruma için **bir defalık açık insan izni** talebidir; izin
-verildiği varsayılmaz ve bu belgeyle stage/commit uygulanmaz. Yeni worktree gerektirmeden mevcut çalışma korunur.
+**Tek yeni insan onayı yalnız Windows ACL test metodudur; checkpoint istisnası istenmez.** WIN v1.2'nin
+394/1/0 sonucu normal teslim commit koşulunu karşılamadı. Kirli iki WIP dosyası ve eski işçi ağacı silinmeden,
+değiştirilmeden korunur; bu ağaçta checkpoint commit, yeniden stage veya test-RED iken teslim commit'i yapılmaz.
+Kullanıcının önceden yetkilendirdiği ayrı worktree düzeniyle, yeni pack/domain kesin sürümü ve resmî HIGH kayıtları
+hazır olduktan sonra temiz bir replacement worker ağacı oluşturulur. Bugünkü baz revizyon 20 kendiliğinden
+genişlemez; yeni metot istisnası için insan onayından sonra paket yazarı yeni kesin sürümü hazırlar.
 
-Checkpoint'e girebilecek kesin iki dosya ve kaydedilmiş **Windows işçi disk baytlarının SHA-256** değerleri:
+Korunacak kesin iki WIP dosyası ve kaydedilmiş **Windows işçi disk baytlarının SHA-256** değerleri:
 
-| Tek izin istenen WIP yolu | Donmuş işçi disk SHA-256 |
+| Korunan, zaten izinli WIP yolu | Donmuş işçi disk SHA-256 |
 |---|---|
 | `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs` | `f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053` |
 | `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs` | `763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a` |
@@ -102,15 +134,19 @@ Checkpoint'e girebilecek kesin iki dosya ve kaydedilmiş **Windows işçi disk b
 Kaynak snapshot kaydı `docs/records/audits/2026-11/pvg-dl12-prep-win-01/stopped-v1.2/capture.json`, disk-hash kaydı
 aynı dizindeki `green-hashes.json`, tam patch `worker-wip.diff` dosyasıdır; kaydedilen patch SHA-256
 `bd7ebf58ac4866fdba94729d0dfb29f688ec87e8a26d7cc80d1f7bbb9c50617f` gerçek patch baytlarıyla eşleşti.
-Snapshot işçi HEAD'i `58920519a17e8f4c085738642b33e36689bc8fee` olarak kaydedilmiştir. Commit öncesinde exact iki
-staged dosya listesi **ve tam staged diff**, CT/bağımsız denetimden geçmeli; kaynak disk SHA'ları ve snapshot
-eşleşmesi doğrulanmalıdır. Üçüncü dosya veya başka değişiklik checkpoint'e giremez.
+Snapshot işçi HEAD'i `58920519a17e8f4c085738642b33e36689bc8fee` olarak kaydedilmiştir.
 
-394/1/0 süitine rağmen bu checkpoint yalnız korumadır: sabotaj, E2, kabul, tamamlanma, push, PR veya CT'ye merge
-izni değildir. Bağımsız E2 tamamlanmadan checkpoint CT'ye birleştirilmez. Ardından CT'nin yeni kesin pack/domain
-resmî inceleme/HIGH kayıtları işçiye çakışmasız merge ile alınır; temiz yeni ExpectedHEAD ve kaynak paketi ölçülür.
-Yenilenmiş HIGH prompt'un normal kapısı 0 olmadan üçüncü dosyada düzeltme başlamaz. Kapı sonrasında yalnız yeni
-onaylı metot düzeltilir ve tüm test/sabotaj/cleanup ölçüleri tamamlanır; korunan iki WIP kaynak değişikliği kaybolmaz.
+Yeni temiz ağacın ExpectedHEAD'i ve kaynak paketi, onaylı yeni pack/domain ve kaynak/patch zinciri açıkça ölçülür.
+Yenilenmiş normal HIGH prompt ve dağıtım kapısı **0'dan SONRA**, exact kaydedilmiş iki WIP patch'i bu temiz ağaca
+uygulanır. Uygulama öncesi donmuş ham patch/disk hash'leri; sonrasında her iki dosyanın snapshot'a göre kanonik LF
+**içerik ve SHA-256 eşitliği** doğrulanır. Başka hunk üretme, uyuşmayan patch'i sessiz düzeltme veya kaynak zinciri
+atlama yoktur; uyuşmazlıkta durulur. Bu, zaten onaylı iki dosya kapsamındaki çalışmanın kontrollü taşınmasıdır;
+üçüncü metot için henüz verilmemiş onay veya genel commit koşuluna istisna değildir.
+
+Ardından yalnız yeni onaylı ACL metodu düzeltilir; iki WIP ile birlikte tam testler, altı ayrı derlenen sabotaj ve
+cleanup ölçülür. Eski dirty ağaç aynen korunur, ona commit yapılmaz. Normal teslim şartları karşılandıktan sonra
+oluşan yalnız final doğrulanmış commit, bağımsız E2 sonrası CT'ye birleştirilebilir. Yeni worktree üzerinde patch
+uygulaması, ACL deneyi veya gerçek commit bu öneri hazırlanırken yapılmaz; onay ve normal kapılar beklenir.
 
 İki mevcut izinli dosyanın WIP'si korunur; bu öneri onları geri almaz veya tamamlanmış/entegre saymaz. Olası geri
 dönüş yalnız yetkilendirilmiş hedef metot düzeltmesini ayrı diff/commit sınırında geri almaktır; ilk iki dosya ve
