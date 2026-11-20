@@ -52,10 +52,10 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
 
 - [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `READY`
-  - Yalnız onaylı yedi backend/test yolu; AC-40/41/42(c)/43/44. Bağımlılıklar entegre; kesin prompt/inceleme/normal gate0 beklenir.
+  - Yalnız onaylı yedi backend/test yolu; AC-40/41/42(c)/43/44. Kesin v1.0 bağımsız UYGUN ve kaynak/hash review-check0; gerçek normal dağıtım gate0 beklenir.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY.md`.
 - [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `READY`
-  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. Bağımlılıklar entegre; kendi normal gate0 beklenir.
+  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. Kesin v1.0 bağımsız UYGUN ve kaynak/hash review-check0; kendi gerçek normal dağıtım gate0 henüz beklenir.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY.md`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `PLANNED`
   - Yalnız onaylı altı frontend yolu; önce BE ve L10N doğrulanıp CT'ye entegre edilir.

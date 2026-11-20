@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\");sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "pack",
+    "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-BE-v1.0.md"
+  ],
+  "exit_code": 0,
+  "stdout_raw_sha256": "287f273417e98fe9ee972eb121863c85402d17b410ff01a874b1fa218309accd",
+  "stderr": "",
+  "prompt_raw_sha256": "3bb5cce5fbf44a4faf1742b74b56226314b02ef70eac064d7ce51c3305ba9f8b",
+  "review_raw_sha256": "7645c8d547043b42dcd960caf23123595545473e6366eda90689638a252f1e89"
+}
