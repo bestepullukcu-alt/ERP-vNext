@@ -1,0 +1,19 @@
+{
+  "at_utc": "2026-11-20T21:46:28.901323+00:00",
+  "files": [
+    {
+      "name": "REVIEW.md",
+      "bytes": 7975,
+      "raw_sha256": "4e9aec18294af1b11e39c51179b2580cf6f69b0d076242e2ab5554e8d20cc04e"
+    },
+    {
+      "name": "FINAL-MANIFEST.json",
+      "bytes": 19960,
+      "raw_sha256": "266c02070592b2ddc708d98cc738606700f2a208e48f2c96f605d0250ca897b6"
+    }
+  ],
+  "actual_eight_run_manifest_and_trx_hash_checks": true,
+  "CT_disposition": "UYGUN accepted for candidate E2; VERIFYING to VERIFIED; CT merge/combined baseline still pending",
+  "scope": "Exact7 files authorized; no guard/auth/Create/otherdomain change",
+  "limits": "No FE acceptance/publication/live/main/operational closure"
+}
