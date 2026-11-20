@@ -159,10 +159,34 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(validation);
         }
 
-        var stored = await GetDraftAsync(command.TenantContext, command.IntakeDraftId, cancellationToken);
-        if (stored is null)
+        var fieldDecision = await EnsureFieldSecurityAsync(
+            PvgIntakeOperation.Update,
+            "update",
+            command.TenantContext.TenantId,
+            command.ActorContext.ActorId,
+            FieldSecurityControlledFields,
+            cancellationToken);
+        if (fieldDecision is not null)
+        {
+            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
+        }
+
+        var snapshot = await _draftStore.FindByIdAsync(
+            Scope(command.TenantContext),
+            command.IntakeDraftId,
+            cancellationToken);
+        if (snapshot is null)
         {
             return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotFound);
+        }
+
+        var stored = snapshot.Intake;
+        if (stored.Status is not (PvgIntakeStatus.IntakeCreated or PvgIntakeStatus.IntakeUpdated) ||
+            stored.TriageOutcome is not null ||
+            stored.TriageReason is not null ||
+            stored.RouteTargetQueue is not null)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftNotEditable);
         }
 
         var isLinked = stored.ReporterSource is PvgReporterSource.Crm or PvgReporterSource.PersonDirectory;
@@ -179,18 +203,6 @@ public sealed class PvgIntakeDraftApplicationService
             return InvalidMutation(PvgIntakeField.RemoveReporterLink, PvgValidationReasonCodes.ReporterLinkAbsent);
         }
 
-        var fieldDecision = await EnsureFieldSecurityAsync(
-            PvgIntakeOperation.Update,
-            "update",
-            command.TenantContext.TenantId,
-            command.ActorContext.ActorId,
-            FieldSecurityControlledFields,
-            cancellationToken);
-        if (fieldDecision is not null)
-        {
-            return new PvgIntakeDraftMutationResult(fieldDecision, null, null);
-        }
-
         if (HasEvidenceReferences(command.Draft.EvidenceLinkReferences))
         {
             var evidenceDecision = await EnsureEvidenceAsync(
@@ -203,6 +215,11 @@ public sealed class PvgIntakeDraftApplicationService
             {
                 return new PvgIntakeDraftMutationResult(evidenceDecision, null, null);
             }
+        }
+
+        if (command.ExpectedVersion != snapshot.Version)
+        {
+            return BlockedMutation(PvgApplicationReasonCodes.IntakeDraftVersionConflict);
         }
 
         // Server-set reporter fields are carried from the stored record; only RemoveReporterLink changes them here.
@@ -225,7 +242,7 @@ public sealed class PvgIntakeDraftApplicationService
         var replaced = await _draftStore.ReplaceAsync(
             Scope(command.TenantContext),
             command.IntakeDraftId,
-            command.ExpectedVersion,
+            snapshot.Version,
             command.ActorContext.ActorId,
             updated,
             cancellationToken);

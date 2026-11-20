@@ -65,6 +65,7 @@ public sealed class PvgMongoStartRefusalTests
     [InlineData("inmemory")]
     [InlineData("INMEMORY")]
     [InlineData("Mongo ")]
+    [InlineData(" Mongo")]
     public void Unknown_store_value_refuses_start(string value)
     {
         var configuration = PvgMongoApiHost.Configuration(value, FakeConnectionString, "diten_fake");
