@@ -1,0 +1,20 @@
+{
+  "git_source_commit": "fbfcf0a46a66e2f8947c765a7778e73022928178",
+  "web_tested_commit": "788047137bdc3d127771434608d28b8f205611a6",
+  "path": "docs/records/audits/2026-11/pvg-dl12-prep-web-integration-01/integration.trx",
+  "lf_sha256": "e2772c5aebfba847c54eabbfba7753af6329a8b99650e20ea42b8ce82fe3f4b5",
+  "web_reexecuted": false,
+  "prior_real_loss_observations": [
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+      "outcome": "Passed",
+      "stdout": "Reaped browser PID 16308.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False."
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_reaches_the_real_store",
+      "outcome": "Passed",
+      "stdout": "Reaped browser PID 24828.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False."
+    }
+  ],
+  "interpretation": "Existing no-loss gap persists; this BE baseline does not implement/fix feature or add no-loss tests."
+}

@@ -1,0 +1,34 @@
+{
+  "head": "fbfcf0a46a66e2f8947c765a7778e73022928178",
+  "preexisting_bin_obj": false,
+  "build_start_epoch": 1795199226.007258,
+  "assemblies": [
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot\\services\\Diten.PvgService\\tests\\Diten.PvgService.RegPvBase.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.RegPvBase.Tests.dll",
+      "sha256": "8b1966d201423754dd195097868ceff96bd836fddc2ecc2b6dcdf2d692441619",
+      "mtime_epoch": 1795199234.4814367,
+      "fresh": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\bin\\Debug\\net8.0\\Diten.PvgService.Application.dll",
+      "sha256": "55df07c5d4cc7a22f0131d768f6c00aef4b115db92ba5653b1432af64fd1687e",
+      "mtime_epoch": 1795199231.6177626,
+      "fresh": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\bin\\Debug\\net8.0\\Diten.PvgService.Domain.dll",
+      "sha256": "9f9d013f449fa399b39d0a674cf4aaea65436858561010dd8fabfe7dfff6ef74",
+      "mtime_epoch": 1795199229.982269,
+      "fresh": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\bin\\Debug\\net8.0\\Diten.PvgService.Infrastructure.dll",
+      "sha256": "ee00e1a12566ea4a69fd16d51528c191650e1e49edc959812088a1b74d701537",
+      "mtime_epoch": 1795199232.1500182,
+      "fresh": true
+    }
+  ],
+  "test_storage_count": 211,
+  "all_trx_storage_bound_to_fresh_test_dll": true,
+  "manifest_sha256": "612e0ea7ae82f31e4ea1a50a072cee90a8445b51538357648a1f252220cc3f83"
+}
