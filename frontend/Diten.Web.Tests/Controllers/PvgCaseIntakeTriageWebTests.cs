@@ -1,12 +1,20 @@
+extern alias pvgapi;
+
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Net.Http.Json;
 using System.Reflection;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Diten.PvgService.Application.RegPvBase;
+using Diten.PvgService.Infrastructure.RegPvBase;
 using Diten.Web.Controllers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +23,13 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
+using Xunit.Abstractions;
+using PvgApiHost = pvgapi::Diten.PvgService.Api.PvgServiceApiHost;
 
 namespace Diten.Web.Tests.Controllers;
 
@@ -38,7 +49,7 @@ namespace Diten.Web.Tests.Controllers;
 /// MOD-0230 WP-0230-DL7C: W15 — every screen draws the bridge, the loader and its own script, once each and in that order;
 /// W16 — the bridge carries the shared RecordSaved text; W17 — both date inputs of the form accept seconds.
 /// </summary>
-public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory, ITestOutputHelper output) : IClassFixture<WebApplicationFactory<Program>>
 {
     private const string Read = "pvg.case-intake-triage.read";
     private const string Create = "pvg.case-intake-triage.create";
@@ -796,7 +807,398 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         return await page.Content.ReadAsStringAsync();
     }
 
-    private WebApplicationFactory<Program> HostOver(Wire wire, string signingKey) =>
+    private const string BrowserPrefix = "/Pharmacovigilance/CaseIntakeTriage";
+    private const string TokenMember = "__RequestVerificationToken";
+    private const string TokenHeader = "RequestVerificationToken";
+    private const string ApiPrefix = pvgapi::Diten.PvgService.Api.PvgCaseIntakeTriageEndpoints.RoutePrefix;
+
+    [Fact]
+    public Task Connected_edit_submission_reaches_the_real_store() => ConnectedEditAsync("Valid");
+
+    [Fact]
+    public Task Connected_edit_submission_preserves_browser_antiforgery_request_token() => ConnectedEditAsync("Valid");
+
+    [Theory]
+    [InlineData("MissingToken")]
+    [InlineData("InvalidToken")]
+    public Task Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(string fault) =>
+        ConnectedEditAsync(fault);
+
+    [Theory]
+    [InlineData("MissingNode")]
+    [InlineData("MissingJsdom")]
+    [InlineData("StartFailure")]
+    [InlineData("Timeout")]
+    [InlineData("BridgeFailure")]
+    [InlineData("EarlyEnd")]
+    [InlineData("Malformed")]
+    [InlineData("MissingReceipt")]
+    [InlineData("SuppressUpdate")]
+    public async Task Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(string fault)
+    {
+        var failure = await Assert.ThrowsAsync<BrowserFailure>(() => ConnectedEditAsync(fault));
+        Assert.Equal(fault, failure.Message);
+    }
+
+    private sealed class BrowserFailure(string reason) : Exception(reason);
+
+    private async Task ConnectedEditAsync(string fault)
+    {
+        var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var jwt = Token(signingKey, Read, Create, Update);
+        var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["JwtSettings:Secret"] = signingKey,
+            ["JwtSettings:Issuer"] = "pvg-web-test",
+            ["JwtSettings:Audience"] = "pvg-web-test",
+            [PvgApiHost.PersistenceStoreKey] = "InMemory"
+        }).Build();
+        var ports = new ConnectedPorts();
+        using var api = new TestServer(PvgApiHost.CreatePvgServiceWebHostBuilder(
+            "Development", settings, "http://127.0.0.1:0", services =>
+            {
+                services.Replace(ServiceDescriptor.Singleton<IPvgPermissionGate>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgFieldSecurityPolicy>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgWorkflowTransitionGate>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgEvidenceLinkPort>(ports));
+            }));
+        var store = Assert.IsType<InMemoryPvgIntakeDraftRepository>(api.Services.GetRequiredService<IPvgIntakeDraftStore>());
+        using var apiClient = api.CreateClient();
+        var id = await SeedDraftAsync(apiClient, jwt);
+        var scope = new PvgPersistenceTenantScope(TenantId);
+        var before = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
+        using var gateway = new ConnectedGateway(api.CreateHandler(), id);
+        var observer = new MvcTokenObserver($"{BrowserPrefix}/api/update/{id}");
+        using var web = HostOver(gateway, signingKey, observer);
+        using var client = web.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        using var page = await GetAsync(client, $"{BrowserPrefix}/Edit/{id}", jwt);
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+        var html = await page.Content.ReadAsStringAsync();
+        var renderedToken = Regex.Match(html, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+        Assert.True(renderedToken.Length > 0 && !html.Contains(jwt), "Expected a Razor request token and a server-only session credential.");
+        var cookie = page.Headers.GetValues("Set-Cookie").Select(header => header.Split(';')[0])
+            .Single(header => header.StartsWith(".AspNetCore.Antiforgery.", StringComparison.Ordinal));
+        var webRoot = web.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath;
+        try
+        {
+            var status = await SubmitInBrowserAsync(webRoot, html, id, fault, client, $"access_token={jwt}; {cookie}", renderedToken);
+            var after = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
+            if (fault is "MissingToken" or "InvalidToken")
+            {
+                Assert.Equal(StatusCodes.Status400BadRequest, status);
+                Assert.Equal(1, observer.Posts);
+                Assert.False(observer.HeaderMatches(renderedToken));
+                Assert.False(observer.FormMatches(renderedToken));
+                Assert.Equal(0, gateway.Updates);
+                Assert.Equal(before.Version, after.Version);
+                output.WriteLine("MVC status 400, API updates 0, stored version {0}.", after.Version);
+                return;
+            }
+
+            if (gateway.Updates != 1)
+                throw new BrowserFailure("SuppressUpdate");
+            Assert.Equal(StatusCodes.Status200OK, status);
+            Assert.Equal(1, observer.Posts);
+            Assert.True(observer.HeaderMatches(renderedToken), "MVC request token header differs from Razor.");
+            Assert.True(observer.FormMatches(renderedToken), "MVC form token member differs from Razor.");
+            Assert.Equal(1, gateway.Details);
+            Assert.Equal(before.Version + 1, after.Version);
+            Assert.Equal("browser-edited-synthetic", after.Intake.AdverseEventNarrative);
+            Assert.Equal(before.Intake.ProductLines.Single().ProductNameAsReported, after.Intake.ProductLines.Single().ProductNameAsReported);
+            output.WriteLine("API detail reads {0}, updates {1}, stored version {2} -> {3}.",
+                gateway.Details, gateway.Updates, before.Version, after.Version);
+            // Observe the current behavior; the later lossless feature owns the equality assertions.
+            output.WriteLine("Untouched reporter contact preserved: {0}. Untouched evidence list preserved: {1}.",
+                before.Intake.ReporterContactSummary == after.Intake.ReporterContactSummary,
+                before.Intake.EvidenceLinkReferences.SequenceEqual(after.Intake.EvidenceLinkReferences));
+        }
+        catch (BrowserFailure failure)
+        {
+            // An unavailable browser/bridge must fail the same save test before changing the seeded draft.
+            Assert.Equal(0, gateway.Updates);
+            var unchanged = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
+            Assert.Equal(before.Version, unchanged.Version);
+            output.WriteLine("Child failure {0}, API updates 0, stored version {1}.", failure.Message, unchanged.Version);
+            throw;
+        }
+    }
+
+    private static async Task<string> SeedDraftAsync(HttpClient api, string jwt)
+    {
+        using var create = new HttpRequestMessage(HttpMethod.Post, ApiPrefix);
+        create.Headers.Authorization = new("Bearer", jwt);
+        create.Headers.Add("X-Tenant-Id", TenantId);
+        create.Headers.Add("X-Correlation-Id", "synthetic-prep-web");
+        create.Content = JsonContent.Create(new
+        {
+            intakeChannel = "Portal", sourceType = "Spontaneous", sourceReference = "synthetic-reference",
+            receivedAtUtc = "2020-03-01T08:00:00Z", awarenessAtUtc = "2020-03-01T08:00:00Z",
+            reporterType = "Consumer", reporterContactSummary = "synthetic-contact", patientSubjectCode = "synthetic-subject",
+            eventOnsetDate = "2020-02-01", adverseEventNarrative = "seeded-synthetic", seriousness = "Serious",
+            intakePriority = "Routine", evidenceLinkReferences = new[] { "synthetic-evidence" },
+            productLines = new[] { new { productRole = "Suspect", productNameAsReported = "synthetic-product", lotNumber = "synthetic-lot" } },
+            eventCountry = "unknown", reportType = "Spontaneous", reporterNameOrInitials = "S.Y.",
+            reporterProfession = "synthetic-profession", reporterCountry = "unknown"
+        });
+        using var result = await api.SendAsync(create);
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        var body = await result.Content.ReadFromJsonAsync<JsonElement>();
+        return Assert.IsType<string>(body.GetProperty("intakeDraftId").GetString());
+    }
+
+    private sealed class ConnectedPorts : IPvgPermissionGate, IPvgFieldSecurityPolicy, IPvgWorkflowTransitionGate, IPvgEvidenceLinkPort
+    {
+        public ValueTask<PvgPermissionDecision> EvaluateAsync(PvgPermissionRequest request, CancellationToken ct) =>
+            ValueTask.FromResult(request.TenantId == TenantId && request.ActorId == "7b2c51f0-0000-4000-8000-0000000000a1"
+                && request.RequiredPermission is Read or Create or Update
+                ? PvgPermissionDecision.Allowed() : PvgPermissionDecision.Denied("PVG_TEST_DENIED"));
+        public ValueTask<PvgPortDecision> EvaluateAsync(PvgFieldSecurityRequest request, CancellationToken ct) => Allowed();
+        public ValueTask<PvgPortDecision> EvaluateAsync(PvgWorkflowTransitionRequest request, CancellationToken ct) => Allowed();
+        public ValueTask<PvgPortDecision> EvaluateAsync(PvgEvidenceLinkRequest request, CancellationToken ct) => Allowed();
+        private static ValueTask<PvgPortDecision> Allowed() => ValueTask.FromResult(new PvgPortDecision(true, true, "PVG_TEST_ALLOWED"));
+    }
+
+    // The same upstream/downstream route translation as the Gateway. All module responses come from the API.
+    private sealed class ConnectedGateway(HttpMessageHandler api, string id) : DelegatingHandler(api)
+    {
+        public int Details { get; private set; }
+        public int Updates { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            const string upstream = "/api/pv-case-intake-triage/";
+            var path = request.RequestUri!.AbsolutePath;
+            if (request.Method == HttpMethod.Get && path == upstream + id) Details++;
+            else if (request.Method == HttpMethod.Put && path == upstream + id) Updates++;
+            else if (request.Method != HttpMethod.Get || path != upstream + "options")
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+
+            request.RequestUri = new Uri("http://localhost" + ApiPrefix + "/" + path[upstream.Length..]);
+            return base.SendAsync(request, ct);
+        }
+    }
+
+    private sealed class MvcTokenObserver(string updatePath) : IStartupFilter
+    {
+        private string[] header = [];
+        private string[] form = [];
+        public int Posts { get; private set; }
+        public bool HeaderMatches(string expected) => header.Length == 1 && header[0] == expected;
+        public bool FormMatches(string expected) => form.Length == 1 && form[0] == expected;
+
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        {
+            app.Use(async (ctx, run) =>
+            {
+                if (HttpMethods.IsPost(ctx.Request.Method) && ctx.Request.Path == updatePath)
+                {
+                    Posts++;
+                    header = ctx.Request.Headers[TokenHeader].OfType<string>().ToArray();
+                    var submitted = await ctx.Request.ReadFormAsync(ctx.RequestAborted);
+                    form = submitted[TokenMember].OfType<string>().ToArray();
+                }
+                await run(ctx);
+            });
+            next(app);
+        };
+    }
+
+    private async Task<int> SubmitInBrowserAsync(
+        string webRoot, string html, string id, string fault, HttpClient mvc, string cookie, string renderedToken)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var ct = timeout.Token;
+        var start = new ProcessStartInfo
+        {
+            FileName = fault == "MissingNode" ? Path.Combine(webRoot, "unavailable-node-executable") : "node",
+            WorkingDirectory = fault == "MissingJsdom" ? AppContext.BaseDirectory : webRoot,
+            UseShellExecute = false, CreateNoWindow = true,
+            RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
+            StandardInputEncoding = new UTF8Encoding(false), StandardOutputEncoding = Encoding.UTF8
+        };
+        start.ArgumentList.Add("--no-global-search-paths");
+        start.ArgumentList.Add("-e");
+        start.ArgumentList.Add(BrowserProgram);
+        start.ArgumentList.Add(fault);
+        using var child = new Process { StartInfo = start };
+        try { child.Start(); }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 2) { throw new BrowserFailure("MissingNode"); }
+
+        // Never echo browser stderr, JWTs, request tokens or form data into test output.
+        var drain = child.StandardError.BaseStream.CopyToAsync(Stream.Null);
+        try
+        {
+            var script = Path.Combine(webRoot, "wwwroot", "assets", "js", "Pharmacovigilance", "CaseIntakeTriage", "form.js");
+            await ReplyAsync(new { html, script });
+            var status = 0;
+            var gets = 0;
+            var posted = false;
+            for (var frame = 0; frame < 8; frame++)
+            {
+                var line = await child.StandardOutput.ReadLineAsync(ct);
+                if (line is null)
+                {
+                    await child.WaitForExitAsync(ct);
+                    throw new BrowserFailure(child.ExitCode == 0 ? "EarlyEnd" : "StartFailure");
+                }
+                if (line.Length > 256 * 1024) throw new BrowserFailure("Malformed");
+                using var doc = JsonDocument.Parse(line);
+                var message = doc.RootElement;
+                switch (message.GetProperty("kind").GetString())
+                {
+                    case "missing-jsdom": throw new BrowserFailure("MissingJsdom");
+                    case "stall":
+                        timeout.CancelAfter(TimeSpan.FromMilliseconds(500));
+                        continue;
+                    case "done":
+                        child.StandardInput.Close();
+                        await child.WaitForExitAsync(ct);
+                        if (child.ExitCode != 0 || !posted || await child.StandardOutput.ReadLineAsync(ct) is not null)
+                            throw new BrowserFailure("EarlyEnd");
+                        return status;
+                    case "fetch": break;
+                    default: throw new BrowserFailure("Malformed");
+                }
+
+                var path = message.GetProperty("path").GetString();
+                var method = message.GetProperty("method").GetString();
+                var isPost = method == "POST";
+                if (method == "GET" && !posted &&
+                    path == (gets == 0 ? $"{BrowserPrefix}/api/options" : $"{BrowserPrefix}/api/detail/{id}") && gets < 2)
+                    gets++;
+                else if (isPost && !posted && gets == 2 && path == $"{BrowserPrefix}/api/update/{id}")
+                    posted = true;
+                else throw new BrowserFailure("BridgeFailure");
+
+                using var request = new HttpRequestMessage(isPost ? HttpMethod.Post : HttpMethod.Get, path);
+                request.Headers.Add("Cookie", cookie);
+                var headers = message.GetProperty("headers");
+                foreach (var property in headers.EnumerateObject())
+                {
+                    if (property.Name is not ("X-Requested-With" or TokenHeader))
+                        throw new BrowserFailure("Malformed");
+                    request.Headers.Add(property.Name, property.Value.GetString());
+                }
+                if (isPost)
+                {
+                    if (!message.GetProperty("receipt").GetBoolean()) throw new BrowserFailure("MissingReceipt");
+                    var pairs = message.GetProperty("fields").EnumerateArray()
+                        .Select(pair => new KeyValuePair<string, string>(pair[0].GetString()!, pair[1].GetString()!)).ToArray();
+                    if (fault is not ("MissingToken" or "InvalidToken"))
+                    {
+                        Assert.True(headers.TryGetProperty(TokenHeader, out var header) && header.GetString() == renderedToken,
+                            "Browser request token header differs from Razor.");
+                        Assert.True(pairs.Where(pair => pair.Key == TokenMember).Select(pair => pair.Value).SequenceEqual([renderedToken]),
+                            "Browser form token member differs from Razor.");
+                    }
+                    // Preserve the multipart entries as received, including repeated names, empty values and whitespace.
+                    var form = new MultipartFormDataContent();
+                    foreach (var pair in pairs) form.Add(new StringContent(pair.Value, Encoding.UTF8), pair.Key);
+                    request.Content = form;
+                    if (fault == "SuppressUpdate")
+                    {
+                        await ReplyAsync(new { status = 503, body = "{}" });
+                        continue;
+                    }
+                }
+                using var response = await mvc.SendAsync(request, ct);
+                var responseBody = await response.Content.ReadAsStringAsync(ct);
+                if (isPost) status = (int)response.StatusCode;
+                await ReplyAsync(new { status = (int)response.StatusCode, body = responseBody });
+            }
+            throw new BrowserFailure("Malformed");
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw new BrowserFailure("Timeout"); }
+        catch (JsonException) { throw new BrowserFailure("Malformed"); }
+        finally
+        {
+            if (!child.HasExited) child.Kill(entireProcessTree: true);
+            using var reap = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await child.WaitForExitAsync(reap.Token);
+            await drain.WaitAsync(reap.Token);
+            output.WriteLine("Reaped browser PID {0}.", child.Id);
+        }
+
+        async Task ReplyAsync(object reply)
+        {
+            var json = JsonSerializer.Serialize(reply);
+            if (json.Length > 2 * 1024 * 1024) throw new BrowserFailure("Malformed");
+            await child.StandardInput.WriteLineAsync(json.AsMemory(), ct);
+            await child.StandardInput.FlushAsync(ct);
+        }
+    }
+
+    private const string BrowserProgram = """
+        const { createInterface } = require('node:readline');
+        const { readFileSync } = require('node:fs');
+        const { setTimeout: delay } = require('node:timers/promises');
+        const input = createInterface({ input: process.stdin, crlfDelay: Infinity });
+        const lines = input[Symbol.asyncIterator]();
+        const send = frame => process.stdout.write(JSON.stringify(frame) + '\n');
+        async function read() {
+            const line = await lines.next();
+            if (line.done) throw Error('end');
+            return JSON.parse(line.value);
+        }
+        async function run() {
+            const { html, script } = await read();
+            const fault = process.argv[1];
+            if (fault === 'StartFailure') process.exit(17);
+            if (fault === 'EarlyEnd') return;
+            if (fault === 'Malformed') { process.stdout.write('invalid\n'); return; }
+            if (fault === 'Timeout') { send({ kind: 'stall' }); await read(); return; }
+            if (process.versions.node.split('.')[0] !== '22') throw Error('runtime version');
+            let JSDOM, VirtualConsole;
+            try {
+                ({ JSDOM, VirtualConsole } = require('jsdom'));
+            } catch (error) {
+                if (error.code !== 'MODULE_NOT_FOUND') throw error;
+                send({ kind: 'missing-jsdom' });
+                return;
+            }
+            const dom = new JSDOM(html, { url: 'http://localhost/', runScripts: 'outside-only', virtualConsole: new VirtualConsole() });
+            try {
+                const w = dom.window;
+                const form = w.document.querySelector('#pvg-case-intake-form');
+                const save = w.document.querySelector('button[type="submit"][form="pvg-case-intake-form"]');
+                const version = form.elements.namedItem('ExpectedVersion');
+                let detailRead = false, submitted = false, event;
+                w.fetch = async (path, options) => {
+                    const method = options.method || 'GET';
+                    const isPost = method === 'POST';
+                    const receipt = fault !== 'MissingReceipt' && detailRead && !!version.value &&
+                        event?.defaultPrevented === true && options.body instanceof w.FormData;
+                    send({ kind: 'fetch', path: fault === 'BridgeFailure' ? '/invalid-bridge-path' : path,
+                        method, headers: options.headers, fields: isPost ? Array.from(options.body.entries()) : [], receipt });
+                    const { status, body } = await read();
+                    if (isPost) submitted = true;
+                    if (!isPost && path.includes('/detail/') && status === 200) detailRead = true;
+                    return { status, ok: status >= 200 && status < 300, json: async () => JSON.parse(body) };
+                };
+                w.eval(readFileSync(script, 'utf8'));
+                while (save.disabled) await delay(5);
+                // Simulated user edits in the actual controls. Current detail/prefill omits required fields.
+                // The transport does not fill in or normalize any field after production constructs FormData.
+                const edits = {
+                    IntakeChannel: 'Portal', SourceType: 'Spontaneous', SourceReference: 'edited-reference',
+                    ReceivedAtUtc: '2020-03-01T08:00', ReporterType: 'Consumer', PatientSubjectCode: 'edited-subject',
+                    Seriousness: 'Serious', IntakePriority: 'Routine', AdverseEventNarrative: 'browser-edited-synthetic'
+                };
+                for (const [name, value] of Object.entries(edits)) form.elements.namedItem(name).value = value;
+                const token = form.elements.namedItem('__RequestVerificationToken');
+                if (fault === 'MissingToken') token.remove();
+                if (fault === 'InvalidToken') token.value = 'invalid-synthetic-token';
+                if (!form.checkValidity()) throw Error('form invalid');
+                event = new w.Event('submit', { cancelable: true, bubbles: true });
+                form.dispatchEvent(event);
+                while (!submitted || save.getAttribute('aria-busy') === 'true') await delay(5);
+                send({ kind: 'done' });
+            } finally { dom.window.close(); }
+        }
+        run().catch(() => { process.exitCode = 19; }).finally(() => { input.close(); process.stdin.destroy(); });
+        """;
+
+    private WebApplicationFactory<Program> HostOver(HttpMessageHandler wire, string signingKey, IStartupFilter? observer = null) =>
         factory.WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("Development");
@@ -806,7 +1208,10 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             builder.UseSetting("GatewayUrl", "http://127.0.0.1:9");
             builder.UseSetting("PlatformServiceUrl", "http://127.0.0.1:9");
             builder.ConfigureTestServices(services =>
-                services.AddTransient(_ => new HttpClient(wire, disposeHandler: false)));
+            {
+                if (observer is not null) services.AddSingleton(observer);
+                services.AddTransient(_ => new HttpClient(wire, disposeHandler: false));
+            });
         });
 
     /// <summary>The field names of the form as the real view drew it, with the antiforgery pair of that page. Nothing here
