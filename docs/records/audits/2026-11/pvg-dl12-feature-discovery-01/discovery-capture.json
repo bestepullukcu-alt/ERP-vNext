@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\");sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    ".antigravity/scripts/verify_module_id.py",
+    ".",
+    "--discover",
+    "Case Intake & Triage"
+  ],
+  "exit_code": 3,
+  "started": "2026-11-20T19:07:52.990341+00:00",
+  "finished": "2026-11-20T19:08:16.880829+00:00",
+  "raw_sha256": "054905939f49da8865f5c5b5a3e7203b48ab2cdec3854c58c7bf1142457bd74d",
+  "report_sha256": "ce0498084f3a077ab8c0b66693603f245a0ee97f541e97b4c2513834e9770bdc",
+  "check_argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    ".antigravity/scripts/verify_module_id.py",
+    "--check-report",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-feature-discovery-01\\discovery-report.txt"
+  ],
+  "check_exit_code": 0,
+  "check_stdout": "RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı\r\n",
+  "ref_lines": 536
+}

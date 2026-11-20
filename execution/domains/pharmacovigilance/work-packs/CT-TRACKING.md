@@ -223,4 +223,3 @@ Bu bölümde ayrı kuyruk satırı yok.
 - Son pack: `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`; domain: `2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b`.
 - Son inceleme ve CT karşılığı: `docs/records/audits/2026-11/pvg-rev21-formal-review-01/ROUND-02-DECISION.md@5976407f`.
 - Dağıtım, kabul ve main merge birbirinden ayrı kapılardır; READY veya UYGUN tek başına tamamlanma değildir.
-
