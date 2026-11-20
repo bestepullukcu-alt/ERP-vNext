@@ -38,7 +38,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `IN_PROGRESS`
-  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; iki iş emri gönderildi, ürün sonucu henüz yok.
+  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE sürüyor, L10N CTde, FE bekliyor; no-loss kabulü henüz yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
@@ -74,6 +74,8 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - Kapsam/kuyruk kaydı: MOD-0232 MedDRA Coding — başlanmış (yalnız sözleşme sınıfları ve testler): MedDRA sözlük/sürüm kaynak sözleşmesi (lisans, içe aktarma sahipliği) kararı ve paket sahibi ataması
   - Kanıt/karar: `docs/records/audits/2026-10/pvg-m1-01-discovery-01/RECORD.md`.
   - Tarihsel kuyruk envanteri; başka modülün güncel kod/runtime durumu bu oturumda yeniden ölçülmedi.
+
+- **Kural:** Ortak resx-check gerçekFAIL: CT/main aynasında11[X],175eksik mainileaynı; PVGikiNavanahtarı7/7dilmevcut. TekyeniFrench literalaynılık için ANSMkelimekullanımı ayrıca değerlendirildi; araçFAILkorunur, sayfaçevirisi/E2/runtimeyerinegeçmez. Kanıt: docs/records/audits/2026-11/pvg-shared-resx-audit-01/CT-REVIEW.md.
 
 ## Sonraki fazlar
 
