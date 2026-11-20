@@ -1,0 +1,145 @@
+{
+  "snapshot": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+  "physical_git": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\.git",
+  "git_dir_owned_by_task": true,
+  "read_only_alternate_objectstore": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-git\\.git\\objects",
+  "head_commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "head_tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "initial_status": "",
+  "source_tree_identity_unchanged": true,
+  "real_repo_index_ref_writes": false,
+  "raw_context_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\raw-git-context.json",
+  "raw_context_sha256": "b4aa8c8e9d5c10b06bb056ccb0db5a8b40f83cc441da6683b3883b450baa9c52",
+  "raw_context_bytes": 2601862,
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "config",
+        "core.autocrlf",
+        "true"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "config",
+        "core.longpaths",
+        "true"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "read-tree",
+        "0b03b35075caba7e353e64f6f9fc7936f53d0d87"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "update-ref",
+        "--no-deref",
+        "HEAD",
+        "0b03b35075caba7e353e64f6f9fc7936f53d0d87"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 41,
+      "stdout_sha256": "26d5ac16a66ee4b30b521b57955666c86d889da40877b6c81d52d28225a93b81",
+      "stdout": "0b03b35075caba7e353e64f6f9fc7936f53d0d87\n"
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 41,
+      "stdout_sha256": "7788761c44c895de5045cc169a9034073cbb3f06dc07ac84cc33b9692681f355",
+      "stdout": "bebcdcfe886f4abcbfc15f2a74711333093e47c8\n"
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "status",
+        "--porcelain"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+        "ls-files",
+        "-z"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout_bytes": 2466433,
+      "stdout_sha256": "10f38f2f3b86e63184e439ad1690f001307a21485ba79b25992cb8a22c580ebf"
+    }
+  ]
+}

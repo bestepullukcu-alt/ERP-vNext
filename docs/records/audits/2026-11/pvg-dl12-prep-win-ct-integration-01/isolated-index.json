@@ -1,0 +1,11 @@
+{
+  "tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "git_dir_read_only": false,
+  "git_dir_owned_external": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\.git",
+  "work_tree": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+  "index": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\.git\\index",
+  "index_sha256": "b83bf6dfb5de421daac07ce9bdaef80f729bb5bd6e435ae4b1f33d946825db77",
+  "index_outside_real_repo": true,
+  "ls_files_equals_frozen_tree": true,
+  "physical_real_git": true
+}

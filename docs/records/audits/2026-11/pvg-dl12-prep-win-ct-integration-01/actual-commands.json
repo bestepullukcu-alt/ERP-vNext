@@ -1,0 +1,124 @@
+[
+  {
+    "name": "sdk-version",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 15068,
+    "exit": 0,
+    "start_epoch": 1795202327.8620405,
+    "seconds": 0.221,
+    "log_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+  },
+  {
+    "name": "mongo-version",
+    "argv": [
+      "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 20896,
+    "exit": 0,
+    "start_epoch": 1795202328.0847201,
+    "seconds": 0.092,
+    "log_sha256": "03d73207a5508d9f88f233c9188b1537cf7937a2e419bac681d56ced2f093ee6"
+  },
+  {
+    "name": "restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 29108,
+    "exit": 0,
+    "start_epoch": 1795202328.1781507,
+    "seconds": 2.652,
+    "log_sha256": "bf4f797210d917f0ea5ffac84bc06b69a457adcd27b53eda93be8089b54e59d9"
+  },
+  {
+    "name": "normal-full",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore",
+      "--logger",
+      "trx;LogFileName=win-independent.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 25800,
+    "exit": 0,
+    "start_epoch": 1795202330.8334198,
+    "seconds": 47.111,
+    "log_sha256": "ac06f10df90c82cb973d1463d357350cdc9bd841eaadba69b4fd1b026bc50dd5"
+  },
+  {
+    "name": "skip-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\scripts\\check_trx_no_skipped.py",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361\\win-independent.trx"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 3848,
+    "exit": 0,
+    "start_epoch": 1795202379.0129066,
+    "seconds": 0.107,
+    "log_sha256": "aa1e89e5fb54aeb7d93de57b708ae5c13d820c52cce1c15e21d648f24a03c975"
+  },
+  {
+    "name": "known-failures-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\scripts\\known_failures.py",
+      "check",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361\\win-independent.trx",
+      "--suite",
+      "pvg-api"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 35356,
+    "exit": 0,
+    "start_epoch": 1795202379.1212246,
+    "seconds": 1.696,
+    "log_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+  },
+  {
+    "name": "ct-producer",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-PREP-WIN-v2.0.py",
+      "--repo",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+      "--trx",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361\\win-independent.trx",
+      "--out",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361\\ct-capture.json",
+      "--base",
+      "754ae2724cf847383ecc6829850f1aadc3d614b2",
+      "--assembly",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src",
+    "pid": 5476,
+    "exit": 0,
+    "start_epoch": 1795202380.8189023,
+    "seconds": 23.576,
+    "log_sha256": "05ad27baca1071157eb0ffb3551c30987da1e032fafccfe776ca39524edeea6b"
+  }
+]

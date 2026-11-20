@@ -13,3 +13,5 @@ Kayıt zamanı UTC; işçi olayları CT’ye daha önce iletildi. Aşağıdaki s
 - 2026-11-20T19:14:12.807575+00:00 — VERIFYING → VERIFIED: Independent candidate E2 UYGUN: actual395/395,35Mongo,3targets,checkers0,CTproducer0; G5/G6 compiled assertionRED+originalGREEN and other5 mutants source-audited. All90raw hashes match. fee7d013==addfab; source unchanged and ownPID/ACL/data cleanup0. Combined CT integration not yet measured.
 
 - 2026-11-20T19:14:50.432958+00:00 — VERIFIED → INTEGRATION_READY: Independent E2 UYGUN and candidate fee7d013/addfab fixed, source and own cleanup proven. Registry and Web already integrated. CT no-ff merge required; fresh combined API gate pending, no feature dispatch yet.
+
+- 2026-11-20T19:22:24.402906+00:00 — INTEGRATION_READY → INTEGRATED: CT merge0b03b350, parent1 754ae272 and workerfee7 parent2; independent combined full395/35Mongo/3target PASS, strictskip/knownfail/unchangedproducer0, source and freshDLL/TRX binding and own cleanup0. Actual proof published; Linux/live/feature acceptance remain separate.
