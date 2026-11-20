@@ -10,7 +10,7 @@ data_mode: server
 entity_base: EntityBase
 status: ready-for-dev
 build_gate: open
-revision: 20
+revision: 21
 approval_status: approved
 operational_runtime_gate: closed
 owner: PVG paket sahibi
@@ -24,19 +24,23 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 
 # MOD-0230 - Case Intake & Triage
 
-> **Revision 20 ready-for-dev, 2026-11-20: direct human scope/policy/build-test approval.**
-> `docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md` records the user's direct approval of the
-> unchanged revision 20 scope, pre-read field-policy order, exact shared-file paths and single-writer arrangement,
-> bounded build/test feasibility preparation and delegated development after the required gates. Current metadata is
-> `status: ready-for-dev`, `build_gate: open`, `approval_status: approved`; this denotes human consent, not a completed
-> formal ledger or dispatch gate. The source approved by the user was commit `486521d11c5ddaec2294b94e9114b4c3875a4fd6`,
-> pack SHA-256 `f5a028c54ced21480a94d0db45b99a81ab9a982a56f3934818955aa2f44d35b1`, domain SHA-256
-> `b201a180309d5a0e8e04de8b845cc16bd55912085fcc345b4a51f19999c27099`. This administrative promotion changes no scope,
-> acceptance measurement or business rule. Formal independent review/HIGH approval records and the prompt/dispatch
-> gate must bind these FINAL bytes before a DL-12 product worker starts. Those records/gates have not passed here.
-> Bounded alias/RPC/clean-CI/Windows feasibility work is consented, but success remains unmeasured. Live/production
-> operation and publication remain unauthorized; `operational_runtime_gate: closed`. Actual WP status comes from the
-> CT-QUEUE row and current gate result, not a hardcoded pack dl12_state or repeated pack-hash changes.
+> **Revision 21 ready-for-dev, 2026-11-20: two direct human-approved narrow additions.**
+> `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md` binds the user's direct consent to
+> the independently reviewed Windows ACL proposal at SHA-256
+> `89e373028ecf7acdbe9d12f0de09fa2d06d4839f617bca24fb4d651a491eb758`, and separately to removal of the literal
+> ,*.xml trigger token from exactly five fixed known-failure rows. The product addition is ONLY one existing test
+> method body; the ledger metadata correction is a separate administrative worker, not a PVG feature/PREP path.
+> The approved source baseline is revision 20 pack `186ad9675e2f5219d240080f93012c54f266561f6ce70451f96aaeddb242aa01`,
+> domain `914c0c1dab0979d3ec48e3d4f6e08646ad0bf4494f9b73a97fa27bca4c5ead9c`, CT HEAD
+> `ce70f5ddf5de1c12d9908521e8f63acfd635d1b5`. Earlier consent remains in pvg-mod0230-rev20-owner-approval-01.md.
+> `status: ready-for-dev`, `build_gate: open`, `approval_status: approved` express human scope consent; they do NOT
+> assert that these NEW revision 21 bytes passed formal review/HIGH ledger or any prompt/dispatch gate. New exact-
+> version formal records and the worker's own normal HIGH prompt/gate are still required before work under this
+> amendment. Earlier version approvals/reviews remain bound to their own hashes, not transferred to these bytes.
+> AC-1 ... AC-44 retain their revision 20 text; revision 21 extends only AC-45. Identity, shell, form count, service,
+> routes, other slices and other modules are unchanged. Live/production operation and publication remain unauthorized;
+> operational_runtime_gate stays closed. WP state is read from CT-QUEUE and gate results, not fixed in pack metadata.
+> The stopped WIN work is evidence of a known RED, not E2 completion; new ACL/Linux/sabotage success is unmeasured.
 >
 > **Historical draft-review provenance (opinions remain bound to their own bytes):**
 > Revision 17 was independently reviewed in a separate chat: `docs/records/reviews/MOD-0230/2026-11-20-rev17-separate-chat-01.md`,
@@ -59,7 +63,7 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > transition. Identity, service, shell, form count, routes, other slices and operational gates are unchanged.
 
 > **Historical status change 2026-08-09.** DCP-004 was approved and earlier pack versions were promoted for build/test.
-> This is earlier-version provenance; current revision 20 consent is the separate 2026-11-20 owner record above.
+> This is earlier-version provenance; revision 20 consent is historical; revision 21 additions follow the extra-scope record above.
 >
 > **Revision 2026-10-21 (independent review 01).** Review 01 of pack version `f1b56737` returned "UYGUN DEĞİL" with
 > seven blocking findings F-1 ... F-7 (`docs/records/reviews/MOD-0230/2026-10-21-f1b56737.md`). The Control Tower
@@ -315,7 +319,7 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 
 **Historical build/test authorization of earlier versions (local / dev / CI only):**
 
-Earlier-version approvals do not transfer. The direct 2026-11-20 owner record grants revision 20 scope/policy/shared-
+Earlier-version approvals do not transfer. The direct 2026-11-20 owner records grant revision 21 scope/policy/shared-
 file single-writer and bounded build/test preparation consent. The ready-for-dev metadata implements that human
 approval; formal exact-version independent review/HIGH ledger records and a passed prompt/dispatch gate are still
 required before a DL-12 product worker starts. Alias/RPC/clean-CI/Windows success remains unmeasured.
@@ -329,7 +333,7 @@ required before a DL-12 product worker starts. Alias/RPC/clean-CI/Windows succes
 - `gateway/Diten.ApiGateway/ocelot.json` - the one MOD-0230 route family, via integration-agent only.
 - Once revision 15 is approved on main: the closed catalog registration of MOD-0230 ("Closed
   Catalog Registration", slice DL-11), inside `services/Diten.PvgService/**`.
-- DL-12 revision 20 has direct human scope/build-test consent: its exact paths and remaining record/dispatch gates are in its slice detail.
+- DL-12 revision 21 has direct human scope/build-test consent: its exact paths and remaining record/dispatch gates are in its slice detail.
   Earlier revision 16 owner approval cannot authorize these changed bytes or permit current dispatch.
 - Tests for the above.
 
@@ -818,16 +822,27 @@ Authorized for the build/test gate:
   `tests/Diten.PvgService.Api.Tests/**`, and `tests/Diten.PvgService.RegPvBase.Tests/**`. The MOD-0231 / MOD-0232 /
   MOD-0234 folders in the same service belong to their own packs.
 - `services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs` - OWNER-APPROVED / DISPATCH-GATED
-  revision 20 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial,
+  revision 21 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial,
   change ONLY the Update row's permission-only call-log/no-field expectations to permission then the existing
   update field-policy calls before not-found, under the owner-adopted pre-read policy order. Preserve the
   not-found/safe/no-record/no-workflow/no-evidence assertions and Triage/Route rows. No other test/helper changes.
   Human consent is recorded above; bounded preparation follows that record. Exact-version formal review/HIGH
   records and a passed prompt/dispatch gate remain required before product-worker dispatch.
+- `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs` - OWNER-APPROVED /
+  DISPATCH-GATED revision 21 exception: PREP-WIN may change ONLY the BODY of
+  Configuration_scan_fails_closed_on_inaccessible_directory for the Windows private-fixture ACL/test assertions
+  defined below. Its DL-3 ownership remains; no other test, using block, helper, ScanFixture or scanner implementation
+  is editable. No production/config/store/host change. New exact-version formal review/HIGH records and normal
+  worker prompt/gate are required. This exception is not whole-file or whole-DL-3 authority.
+- `tests/known-failures.tsv` - separate owner-approved ADMINISTRATIVE correction only, by a separate worker, NOT
+  PREP-WIN, PREP-WEB or the module feature worker: remove the literal ,*.xml token ONLY from rerun_trigger in the
+  five exact fixed rows identified below, under existing CT work package WP-0230-DL12-REGISTRY-01. No other row/cell,
+  status/fingerprint/owner/review data or product/test/
+  guard code change, no test suppression. Its own reviewed normal prompt/gate and single writer still apply.
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` - the same-origin MVC proxy
   controller (actual file name; WP-0230-07 still names it `CaseIntakeTriageController.cs`).
 - `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`
-- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml` - OWNER-APPROVED / DISPATCH-GATED revision 20
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml` - OWNER-APPROVED / DISPATCH-GATED revision 21
   DL-12 scope: only the Edit-mode required attributes and matching required indicators for SourceReference and
   PatientSubjectCode; both are optional in the service. Create markup/validation stays unchanged. The broad historical
   view-root entry above does not widen this exact exception. Human consent and the single-writer scope are recorded;
@@ -841,13 +856,13 @@ Authorized for the build/test gate:
 - `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`
 - `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs` - the C# tests of the MVC proxy controller
   (listed since revision 13; AC-20 W7, AC-32).
-- `frontend/Diten.Web.Tests/Diten.Web.Tests.csproj` - OWNER-APPROVED / DISPATCH-GATED revision 20 scope: exactly one
+- `frontend/Diten.Web.Tests/Diten.Web.Tests.csproj` - OWNER-APPROVED / DISPATCH-GATED revision 21 scope: exactly one
   ProjectReference to `../../services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj` with
   assembly alias `pvgapi`, used only by this module's connected tests. No package/framework/solution/other-reference
   change. The direct owner record approves this exact shared-file/single-writer scope and bounded preparation;
   product dispatch still requires valid final-version review/HIGH records and a passed prompt/dispatch gate.
   Every other change in this shared file remains protected.
-- `.github/workflows/phase1-gates.yml` - OWNER-APPROVED / DISPATCH-GATED revision 20 scope: only two prerequisite steps
+- `.github/workflows/phase1-gates.yml` - OWNER-APPROVED / DISPATCH-GATED revision 21 scope: only two prerequisite steps
   before Run Phase 1 Gates, pinned actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 with Node 22 and
   npm cache keyed by frontend/Diten.Web/package-lock.json, then npm ci --no-audit --no-fund in frontend/Diten.Web.
   No new workflow, package, framework, trigger, permissions, gate command or other job change. This exact shared CI
@@ -857,6 +872,25 @@ Authorized for the build/test gate:
   integration-agent only.
 - `tests/architecture/audit-ledger/Diten.PvgService.md` - removal of a known-debt row only, by DL-5, when that command
   is audited (the list only shrinks).
+
+**Separate administrative metadata correction (not a delivery-slice or product addition).** The extra-scope
+owner record consents to exactly the following test cells, all with suite TenantArchitecture.ArchitectureTests and
+status fixed. In each, rerun_trigger loses ONLY its one literal ,*.xml substring; every other trigger token/order/cell and
+all OTHER rows remain byte-identical. This does not alter an assertion, scanner/guard, runtime rule or feature scope.
+
+- `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance`
+- `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool")`
+- `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor")`
+- `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash")`
+- `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders`
+
+The existing twelve DL rows and evidence levels stay unchanged; no new MOD/FU/AC identity or thirteenth slice is
+created. The separately coordinated administrative work is the existing CT-registered WP-0230-DL12-REGISTRY-01,
+named in the extra-scope approval record; this pack does not invent another worker identity. The file is not a
+PREP-WIN/PREP-WEB/feature write allowance. Its recorded administrative acceptance requires the existing production
+known_failures validator and check against the preserved independent normal Web TRX (suite Diten.Web.Tests) to pass;
+restoring one old XML token in memory must make the existing tracked-source validator refuse. No guard source edit,
+XML-scan waiver or Web VERIFIED/INTEGRATED claim before independent scope/diff/integration verification.
 
 Record of an earlier scope breach: the controller (commit `0860632f1`) and the UI test (commit `b00093ea6`) were
 committed on 2026-08-16 while this pack's Repo Scope did not list them. This revision lists them; it does not
@@ -893,6 +927,12 @@ Still blocked:
 - `gateway/**` except the four MOD-0230 route entries in `ocelot.json`, via integration-agent; this includes
   `gateway/Diten.ApiGateway/Middleware/**`
 - `tests/architecture/audit-ledger/**` except the shrink-only row removal named in "Repo Scope"
+- `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs` remains protected to
+  PREP-WIN outside the single named method BODY. No using/helper/ScanFixture/scanner or unrelated DL-3 change.
+- `tests/known-failures.tsv` remains protected outside the five exact fixed-row rerun_trigger token removals in
+  Repo Scope; that exception belongs only to the separate administrative worker, never a PVG PREP/feature worker.
+- `.github/workflows/service-tests.yml` is an EVIDENCE SOURCE ONLY; revision 21 grants no CI YAML/input/job/step/
+  permission change to satisfy the Unix closure proof.
 - `.claude/launch.json` (repo owner)
 - `execution/portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md` (higher authority) and
   other domain module packs
@@ -1349,7 +1389,7 @@ Revision 16 (owner, 2026-11-19, "şimdi düzelt" on G-25); slice DL-12. Measured
 - The 409 alert: `safeMessage` (`form.js:357-375`) shows `VersionConflict` for `PVG_INTAKE_DRAFT_VERSION_CONFLICT` and
   `ControlledBlock: <code>` for every other 409 code.
 
-**Contract (DL-12, owner-approved revision 20; WP state is tracked in CT-QUEUE and dispatch gates).**
+**Contract (DL-12, owner-approved revision 21; WP state is tracked in CT-QUEUE and dispatch gates).**
 
 1. **Editable states.** Only `IntakeCreated` and `IntakeUpdated`, with none of `TriageOutcome`, `TriageReason`,
    `RouteTargetQueue` set, are editable. Other states, including `Triaged`, `RoutePending`, `Draft`, `TriagePending`
@@ -1485,12 +1525,14 @@ review/HIGH approval records and passed dispatch gate before its worker starts. 
 The PREP WPs do not depend on the parent DL-12 feature WP and do not require their own not-yet-produced feasibility
 outputs before dispatch. They may proceed independently with non-overlapping writers after their respective gates.
 
-- WP-0230-DL12-PREP-WIN writes ONLY the existing PvgMongoTestHarness.cs and PvgPersistenceBoundaryScanTests.cs paths
-  named in the DL-12 scope below: platform launch arguments and platform-qualified synthetic binary-path fixtures,
-  with every existing security assertion preserved. Its OUTPUT is real Windows replica-set/transaction/process-
-  isolation and cleanup evidence plus the named platform/safety tests and their sabotage proof, independently
-  verified at E2 and integrated. Installed-binary availability is measured/handled during this gated preparation;
-  a missing binary or failed safety test prevents completion, never a skip/pass or relaxed production boundary.
+- WP-0230-DL12-PREP-WIN retains the two existing Mongo harness/guard-test paths and adds ONLY the named ACL
+  test-method BODY in PvgServiceApiHostTests.cs. The third file remains DL-3-owned outside that exception. Windows
+  full-API/target/Mongo and six independent sabotage proofs below are its E2 OUTPUT, not its dispatch precondition.
+  WIN v1.2 stopped at full API 394 PASS/1 FAIL/0 skip; no completed E2, sabotage or commit is inferred. Preserve that
+  dirty tree unchanged; after new final-version records and normal HIGH prompt/gate 0, a clean replacement worker
+  receives the frozen exact two-file patch with canonical-LF content/hash verification, then fixes the one method.
+  No checkpoint/RED-test commit exception is requested or granted. Only the final verified commit can integrate
+  after independent E2. Unix runtime is the final PR/WP closure condition below, not a circular PREP/feature entry gate.
 - WP-0230-DL12-PREP-WEB writes ONLY the existing module C# Web test file, its one aliased Api ProjectReference in the
   exact Web test csproj, and the exact two prerequisite steps in the existing Phase 1 workflow. No production service,
   response DTO, MVC controller, form.js, _Form, l10n, extra JS runner or JS test file changes are in PREP-WEB.
@@ -1506,9 +1548,70 @@ outputs before dispatch. They may proceed independently with non-overlapping wri
   passed dispatch gate. That feature work implements and measures the existing full lossless/version/policy/l10n
   acceptance contract; it cannot treat preparation transport success as completed final acceptance.
 
-This concretizes the already consented feasibility-then-feature flow; it creates no new module, capability, file
-path or business rule. Test-only allow ports never replace production deny defaults; random loopback ports never
+This retains the consented feasibility-then-feature flow; revision 21 adds only the explicitly approved third-file
+method exception and separately scoped administrative correction, with no new module or capability. Test-only allow ports never replace production deny defaults; random loopback ports never
 use 5011 or development Mongo 27017. E2 output does not open E4/live acceptance or operational runtime.
+
+
+**Revision 21 Windows ACL, preserved WIP and final Linux closure contract (AC-45).** The immutable approved proposal
+pvg-mod0230-windows-acl-scope-proposal-2026-11-20.md at SHA-256
+89e373028ecf7acdbe9d12f0de09fa2d06d4839f617bca24fb4d651a491eb758 supplies the following exact boundaries:
+
+1. ONLY the body of Configuration_scan_fails_closed_on_inaccessible_directory may change in PvgServiceApiHostTests.cs.
+   Windows uses the existing private ScanFixture/locked directory and current test identity SID. Verify the target
+   stays in that own fixture, with no reparse redirection or parent/shared/global ACL change. Preserve an independent
+   copy of the original access DACL before mutation. Existing .NET 8 ACL APIs deny only ListDirectory on this directory
+   without inheritance propagation; do not deny FullControl or ReadPermissions/ChangePermissions or prevent restore.
+   No new package/framework, using block/helper/class, fixture/scanner/production host/store/config change.
+2. Both Directory.EnumerateFileSystemEntries(locked).ToArray() AND the actual scanner Scan(fixture.Root) call must
+   raise UnauthorizedAccessException from that same locked directory. ThrowsAny<Exception>, unrelated errors, skip,
+   early return, fabricated denial and weaker assertions do not qualify. Keep IgnoreInaccessible=false. Before deny
+   and after restoration, the same neutral JSON file must be listable and actually seen by the scanner. In finally,
+   restore the original DACL/access-inheritance state even after assertion/scan failure, verify restoration/re-access,
+   and prove the private root is removed after fixture disposal. Do not swallow restoration errors or treat the
+   helper's best-effort cleanup as proof. Keep the Unix chmod/restore calls, permission values and security conditions intact and compare their source;
+   source comparison is not a Unix runtime PASS. No ACL/runtime success is claimed by this pack edit.
+3. Preserve the stopped old dirty worktree without edits, stage, checkpoint commit or deletion. Its baseline HEAD is
+   58920519a17e8f4c085738642b33e36689bc8fee. The frozen Windows disk SHA-256 values are
+   f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053 (PvgMongoTestHarness.cs) and
+   763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a (PvgPersistenceBoundaryScanTests.cs).
+   The saved worker-wip.diff raw SHA-256 is bd7ebf58ac4866fdba94729d0dfb29f688ec87e8a26d7cc80d1f7bbb9c50617f;
+   capture.json and green-hashes.json under docs/records/audits/2026-11/pvg-dl12-prep-win-01/stopped-v1.2/ bind it.
+   After new formal pack/domain records, create a clean separately authorized replacement worktree; measure its clean
+   ExpectedHEAD/source package and full source/patch chain. ONLY AFTER its renewed HIGH prompt normal dispatch gate 0
+   apply that exact two-file patch. Verify raw snapshot hashes first, then both resulting canonical LF contents AND
+   SHA-256 equality against the frozen snapshot; disk CRLF and Git LF hashes are distinguished, never conflated.
+   No silent patch/hunk repair or unrecorded source change; stop on mismatch. Then implement only the approved ACL
+   method and measure the THREE files together from baseline 58920519 through the final candidate. Old WIP remains
+   recoverable; rollback of the new method never destroys it or affects WEB. ACL rollback belongs in test finally,
+   not a later Git rollback. No RED-test delivery/checkpoint exception exists; final verified commit integrates only
+   after ordinary conditions and independent E2. The separate ledger worker does not edit these three files.
+4. Windows target test and full API suite require 0 failed/0 skipped without reduced test counts. Re-run existing
+   Mongo guards, both target tests and 35 real Mongo tests; preserve 27017/default-port refusal, fully-qualified/
+   existence binary checks, replica-set/transactions, private PID/port/data isolation and cleanup. Independent E2
+   covers both WIP files plus the ACL method, not just the new method. Six separate compiling external-scratch RED
+   mutations are mandatory, each paired with the original candidate GREEN and exact source hashes: (1) unconditional
+   Windows --nounixsocket; (2) drop Unix --nounixsocket; (3) drop ResolveBinary missing/relative safeguards; (4) drop
+   the 27017 guard; (5) remove the Windows ACL deny; (6) with deny still real, make the scanner fail-open via
+   IgnoreInaccessible=true/inaccessible skipping. Cases 1-2 bind to the named platform-argument test, 3-4 to the named
+   existing Mongo safety test, 5-6 to the named ACL test. Case 6 must retain the actual UnauthorizedAccessException
+   precondition and break the scanner's same-exception assertion. No combined-mutant substitute, omitted old four
+   cases, skips or count reduction; no mutation is committed or run against development Mongo. Windows results and
+   these six proofs are independently verified preparation E2 outputs before integration, not preconditions to the
+   same gated preparation. PREP integration/feature dispatch do not wait for a not-yet-existing PR run.
+5. Unix runtime remains OPEN until the single final PR's existing service-tests.yml pvg-api/ubuntu-22.04 job measures
+   the target and entire API suite 0 failed/0 skipped. Phase 1 builds PVG API and tests Web; neither replaces this API
+   job. Its same run/attempt TRX, checkout C and event PR head H/base B must prove actual-tested-source==final-H.
+   Normally C is synthetic merge M: real Git commit objects must show H as a DIRECT parent and the relation to B;
+   real Git tree objects must show tree(M)==tree(H). Record H/B/C, parents, tree IDs, checkout log and the SAME job TRX;
+   workflow/run API head_sha or comments alone do not prove checkout/source identity. If needed the final branch must
+   already include current main, with the changed final H re-tested. A tree mismatch cannot be waved through.
+   Only if normal PR source equality cannot be proved, the EXISTING workflow_dispatch at the final CT branch ref
+   may measure actual checkout C==H and the same pvg-api TRX. There is no suite-filter input; use the ordinary PR
+   proof first and create no unnecessary second matrix run. These are two measurements of one source-equality
+   condition, not new CI scope. Any changed H or failed relation/tree equality invalidates the old result. Pending,
+   red or unbound Linux evidence prevents final PR/main merge and WP DONE, not earlier PREP work/integration or
+   feature dispatch. No service-tests workflow change/extra step/permission or Unix PASS is authorized/claimed here.
 
 **Out of scope:** 404/error-envelope completion (AC-6/DL-4), audit implementation/refusal logging (DL-5), adapters or
 permissive defaults, live screen/operation, archive/void, Details/list/triage/route forms and scripts, views other than
@@ -2201,7 +2304,7 @@ SECENEK-01 S-1, S-3, S-4 (a); added 2026-10-28).** Tests in `tests/Diten.PvgServ
 - [ ] AC-38 (zorunlu) — DL-11; revision 15 (`pvg-mod0230-kapali-kayit-01.md` KK-1, KK-3; `pvg-mod0230-kapali-kayit-02.md`; `pvg-mod0230-kapali-kayit-03.md`; live, this slice's E5 evidence; not measured yet). Preconditions: PvgService, Platform, Auth, Diten.Web, the Gateway, and PvgService's Mongo store run in dev; PvgService has `JwtSettings__Secret`, `JwtSettings__Issuer`, and `JwtSettings__Audience` equal to AuthService's values, because without them every protected endpoint answers 401 and (f), (g), (i) would show the session message instead of the refusal; the CT sets `PlatformRegistration__BaseUrl` (Platform's direct address) and `PlatformRegistration__InternalApiKey` at process start, takes the key from Platform's own dev configuration (`AuthService:InternalApiKey`), and never writes or logs it. Baseline: on the dev database, before the first push, the CT reads once that the row of (a) and the keys of (b) do not exist. A catalog row cannot be deleted by hand. If a row or a key already exists, AC-38 runs on a throwaway local Mongo for all services and the record says why; if that run cannot be set up, the record says the baseline was not measured ("Closed Catalog Registration", limit). An acceptance record then shows all of: (a) `GET /api/platform/module-catalog?search=CASE-INTAKE-TRIAGE` as a platform administrator returns one row `CASE-INTAKE-TRIAGE` with `IsTenantAssignable` false; (b) the five `pvg.case-intake-triage.*` keys exist in AuthService with `Scope` = `Tenant` (a read-only query of the permission catalog, plus their presence in `GET /api/permissions/tenant-assignable`); (c) `GET /api/platform/module-catalog/assignable` does not list the module; (d) a user whose role holds `pvg.case-intake-triage.read` opens `/Pharmacovigilance/CaseIntakeTriage`: 200, with the `datatables-pvg-case-intake-triage` table markup; (e) a user without it gets the shared 403 (`/Home/Status/403`) with neither that table markup nor `pvg-case-intake-form`; (f) for the user in (d), the list is refused under control: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx, the page keeps its table and shows its refusal sentence in `pvg-list-alert` (`ControlledBlock` while the API answers 409, G-8; `NotAuthorized` once AC-6 maps a permission denial to 403), with no script error, no blank page, and no code standing alone; (g) a user holding the create key and the read key (the form's options need the read key) fills `/Pharmacovigilance/CaseIntakeTriage/Create` with synthetic values and saves: the same refusal, shown in `pvg-form-alert`, and the form stays on the page; (h) the store is unchanged by that save: a read-only count of `pvg_case_intake_drafts` for that tenant is the same before and after (Mongo store, because the in-memory store cannot be read while the list is refused); (i) with an unknown draft id, a user holding the read key and the update, the triage, or the route key posts directly to `/Pharmacovigilance/CaseIntakeTriage/api/update/{id}`, `api/triage/{id}`, or `api/route/{id}` with the antiforgery token of the `Details` page, and gets the controlled refusal: a 4xx carrying `PVG_PERMISSION_DENIED`, never a 5xx. Code order: the antiforgery filter; the proxy's key check; for update only, the proxy's date and link-removal checks, so the update call carries readable dates and no link removal with a selection; the Gateway; the binding of the JSON body; the service's tenant, actor, and correlation checks; the permission gate, which runs before any store read. The triage call sends `TriageOutcome` empty, which `TriageFormInput.ToPayload` sends as null; it stays so until AC-39 lands, and from then on the outcome as the form sends it must get the same refusal. Measured on 2026-10-31 (`pvg-mod0230-kapali-kayit-04.md`) by running the real PvgService host at commit `2bfe93f36` with fake values, without the proxy or the Gateway: the JSON string `"Triaged"`, which the proxy sends for a chosen outcome, gets 400 with an empty body before the permission gate, because `PvgTriageOutcome` is a plain enum and the host has no JSON string-enum converter; `null` and the number `1` get 409 with `PVG_PERMISSION_DENIED`. A user without that key (the read-only user of (d)) gets 403 from the proxy with no Gateway call. Today's refusal sentence ends with the safe reason code (`safeMessage` in `index.js` and `form.js`); (f) and (g) accept that and refuse a code without the sentence. (f), (g), (h), and (i) hold while the host registers the deny adapters (G-23); if OD-PVG-14 changes that, they are read again. An allowed update, triage, or route needs a stored draft, which cannot exist live while create is refused, so AC-38 measures only their refusal. The role grant is made by a person on the existing role screen (`/RoleAssignments`), not by code, and takes effect at the next login. The users in (e), and the keyless user of (i), hold no `*` claim and no role the catalog path filled by itself (`SuperAdmin` of the default tenant; a `Viewer` role created after the first push; "Closed Catalog Registration"). A live measurement has no compiled sabotage; its controls are: the baseline above; the same user gets 403 before the grant and 200 after it, and 403 again after the grant is revoked; the service restarted with the two variables leaves one catalog row, five keys, and `IsTenantAssignable` false (the restart control E5 needs); and the service restarted without them makes no call (Platform logs no `Module manifest registered` entry for that start, and PvgService has no log provider to read), while the screen behaves the same for both users. For (f): a direct `GET /Pharmacovigilance/CaseIntakeTriage/api/options` by the same user returns 200, so the service is up and the refusal is its own; with PvgService stopped, the list shows the list component's outage message instead, not this sentence. For (g): the same save by a user without the create key gets 403 from the MVC proxy with no Gateway call. For (h): the collection is listed in the database (created by the schema bootstrap), so an unchanged count is not a count of a wrong name. For (i): one id, one user at a time, the only difference being the key held. This measures a refusal; no record is listed or saved (G-23, OD-PVG-14). Accepting AC-38 does not close DL-7 (E4) or open the operational gate.
 - [ ] AC-39 (zorunlu) — DL-4; revision 15 (G-24, `pvg-mod0230-kapali-kayit-04.md` KK-10): a triage body with the outcome as the form sends it binds and reaches the permission gate. Every named test below has a sabotage that compiles, turns at least that test red, and touches only DL-4 paths; it is applied in a repository-shaped scratch copy outside the work tree and never committed. Both tests run the real host and its middleware chain, not the endpoint method directly. (a) Test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` posts `"TriageOutcome"` as each of the texts `Triaged`, `Rejected`, and `Duplicate`, with the deny-all permission gate, and expects the permission refusal with `PVG_PERMISSION_DENIED` and a non-empty body for each (sabotage: the binding change removed from `PvgCaseIntakeTriageEndpoints.cs` - the answer is 400 with an empty body). (b) Test `Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx` posts a text outside the enum, with the deny-all permission gate, and expects 400, no `PVG_PERMISSION_DENIED` in the response, and no store write, because binding refuses the text before the gate (sabotage: the unknown text mapped to `Triaged` - the request then reaches the gate and gets the permission refusal with `PVG_PERMISSION_DENIED`, which fails both the 400 and the absence check). Suite `pvg-api` 0 failed, 0 skipped.
 
-**Edit keeps stored data - owner-approved revision 20** (historical objective from owner, 2026-11-19, "şimdi düzelt" on G-25; "Edit Keeps Stored Data"; slice
+**Edit keeps stored data - owner-approved revision 21** (historical objective from owner, 2026-11-19, "şimdi düzelt" on G-25; "Edit Keeps Stored Data"; slice
 DL-12; WP state follows CT-QUEUE and the dispatch gate). For the new protection criteria below, every critical named test has a sabotage that compiles and turns at least that test red; it is applied
 in a repository-shaped scratch copy outside the work tree and never committed, and it touches only DL-12 paths unless the
 criterion says otherwise. "The real host" means `PvgServiceApiHost.CreatePvgServiceWebHostBuilder` (Development, Kestrel
@@ -2216,7 +2319,7 @@ for assertions through the host's `IPvgIntakeDraftStore`.
 - [ ] AC-42 (zorunlu) — DL-12; revision 20 (G-25); after AC-41 (the screen reads the fields from the item response): the Edit form prefills every editable field and a save without a change keeps every stored field ("Edit Keeps Stored Data", rules 4 and 5). (a) Test `pvg edit form prefills every editable field from the stored draft` in `frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js`: given a proxy `/detail` answer with a value in each of the twelve slice 1 fields and in the fields prefilled today, after load each form input holds the stored value - `ReceivedAtUtc` visibly in UTC seconds while retaining its untouched raw tick value, `EventOnsetDate` as `yyyy-MM-dd`, `EvidenceLinkReferencesRaw` as human-readable text while retaining the untouched original array, and a select's stored code kept when it is not among the options (sabotage: the `ReporterContactSummary` line removed from `prefillFromDraft` - the textarea is empty; a second sabotage, the `EvidenceLinkReferences` line removed, also turns it red). (b) Test `pvg edit save without a change sends back every stored value` in the same file: after load, the form is submitted untouched, and the posted form data carries every stored value, the optional `ReporterContactSummary`, `EventOnsetDate`, and `EvidenceLinkReferencesRaw` included (sabotage: the `EventOnsetDate` line removed from `prefillFromDraft` - the posted value is empty). (c) Test `Update_with_the_values_read_back_keeps_every_stored_field` on the real host with allow stubs: create a draft with every TODAY ACCEPTED editable create field filled using distinct synthetic text within current constraints and valid closed lookup/enum codes; CompanyRecipientPersonId and each product line GlobalProductId/PresentationGskuId are explicitly null and asserted present/null in both reads because their owner read contracts are absent (no bypass or owner-contract gate change); read it, PUT a body built only from the editable fields of the read `draft` and its version, read again - every one of the 15 fields and of the revision 04 fields equals the first read, the status is `IntakeUpdated`, and the version grew by one (sabotage: the update's `BuildIntake` path stops carrying `ReporterContactSummary` - the stored value is erased). (d) The empty-field rule - CT reading (inference), not the owner's words: a field the user does not touch goes back with its stored value, so it is never erased by a save; a field the user empties on purpose is cleared, because the update stays a full replacement - test `pvg edit save sends an optional field the user emptied as empty` in `pvg-case-intake-triage-ui.test.js`: after load, the user empties `ReporterContactSummary` only and saves; the posted value of that field is empty and every other field carries its stored value (sabotage: the submit refills an empty input with the value read at load - the emptied field is posted with its stored value). (e) The refusal says why ("Edit Keeps Stored Data", rule 5): test `pvg edit refusal after triage shows the not-editable sentence` in `pvg-case-intake-triage-ui.test.js`: a save answered 409 with `PVG_INTAKE_DRAFT_NOT_EDITABLE` shows the bridge's `DraftNotEditable` text in `pvg-form-alert`, not the code standing alone and not the `VersionConflict` text, and the form stays on the page (sabotage: the mapping removed from `safeMessage` - the alert shows `ControlledBlock: PVG_INTAKE_DRAFT_NOT_EDITABLE`); the key is in all seven `CaseIntakeTriageIndex.*.resx` files and in `_IndexL10n.cshtml`, and the existing tests `pvg resources carry the same key set in seven languages without english echo` and `keeps browser localization references backed by PVG resources or shared localizer keys` stay green (AC-15); the values are the l10n-agent's. (f) `Mvc_update_preserves_untouched_stored_text_and_reference_sequence` in PvgCaseIntakeTriageWebTests.cs follows the SINGLE connected chain above from real service create/read through actual rendered Edit form, production form.js serialization, real MVC binding/proxy, API/application/store and reread; optional whitespace/null/empty cases and comma/embedded-CRLF/empty/duplicate reference elements preserve accepted values, order and count. Include independent actual API create/read fixtures for evidenceLinkReferences=[null] and a mixed array such as ["ref-A", null, "", null, "ref-A"]; first assert API success and exact stored/read acceptance, then execute the connected unchanged Edit save and compare every element including null identity, position, order, empty strings and duplicates. This is a future runtime measurement, not an acceptance claim from annotations; contrary acceptance results require explicit reconciliation, with no silent API hardening or string coercion; only status becomes IntakeUpdated and version increases once. For SourceReference and PatientSubjectCode independently, and both together, actual API-created/read optional values null and empty remain unchanged through the actual Razor Edit form; checkValidity succeeds, one real update is observed, and store equality is asserted. `Edit_optional_source_reference_and_patient_code_match_service_validation` checks actual rendered Edit HTML has neither required attribute nor required indicator on these two fields, and rendered Create retains its existing required attributes/indicators; remaining form constraints are retained. Independently restoring either Edit required attribute turns the corresponding connected empty-field case RED, without stubbing checkValidity or removing attributes in the test. (g) `Edit_round_trip_preserves_subsecond_received_and_awareness_instants` follows that same actual API create/read to untouched real Edit to service/store reread chain with distinct seven-fractional-digit DateTimeOffset instants and nonzero sub-millisecond ticks. The accepted input corpus includes Z AND positive/negative nonzero +/-hh:mm offsets for ReceivedAtUtc and AwarenessAtUtc, with awareness/received bounds valid; first measure actual API create/read acceptance, then compare original/readback UTC ticks exactly, without expected-value rounding. The item read may retain or normalize an offset according to existing behavior; format normalization may not change the semantic instant/UTC ticks. A Z-only or zero-offset-only detail gate must fail this named test rather than disable Save for an accepted record. No new schema, DTO or validation rule is introduced. (h) `Edit_round_trip_clears_only_the_optional_field_the_user_emptied` and `Edit_round_trip_sends_the_users_nonempty_change` follow that chain after one deliberate form edit; only that field changes and all other editable values remain equal. The deliberate-empty test is parameterized separately for ReporterContactSummary, SourceReference and PatientSubjectCode, with initially nonempty stored values; each real Razor form passes checkValidity, issues exactly one update and persists the existing full-replacement empty/cleared meaning for that field alone. Replacing empty with an old-value fallback makes each relevant row RED. Every chain runs production MVC ToPayload and the actual service/store; no fixed Wire success body, handwritten replacement PUT, disconnected fake success or HTTP-status-only assertion satisfies it. Sabotages independently restore SplitReferences/Clean on untouched updates, truncate either raw time, refill an emptied field, or force an old value over a deliberate nonempty edit; each corresponding named test fails. Existing (a)-(e) still run. (i) `Edit_requires_a_complete_well_shaped_detail_before_enabling_save` runs actual rendered Razor/production form.js and, for EACH necessary response member, omits it independently from an otherwise complete valid response; a valid items[0].version alone, missing/null/non-object/array draft, wrong member type, mismatched id or version, and missing/wrong nested product member keep Save disabled and produce ZERO update requests after filling remaining visible required controls and attempting submit. The exact required draft own-properties are intakeDraftId, status, version, productLines, awarenessAtUtc, companyRecipientPersonId, eventCountry, reportType, reporterSource, reporterSourceId, reporterCrmSearchState, reporterNameOrInitials, reporterProfession, reporterCountry, intakeChannel, sourceType, sourceReference, receivedAtUtc, reporterType, reporterContactSummary, patientSubjectCode, eventOnsetDate, adverseEventNarrative, seriousness, intakePriority, triageOutcome, triageReason, routeTargetQueue, evidenceLinkReferences. Require nonempty matching string id and positive integral version consistent with the summary version, string status/codes and required text, valid DateTimeOffset timestamp strings denoting UTC instants, accepting Z and nonzero positive/negative +/-hh:mm offsets with supported fractional precision (never a Z-only gate), productLines as an array of objects with all five own-properties productRole, globalProductId, productNameAsReported, presentationGskuId and lotNumber (role/name strings, optional others string/null), evidenceLinkReferences as an array whose elements are string OR explicit null (including [null] and mixed arrays), and eventOnsetDate as valid yyyy-MM-dd string/null; declared nullable text/reference/triage members permit explicit null or their declared string type, never an absent property. Nullable members are sourceReference, reporterContactSummary, patientSubjectCode, eventOnsetDate, companyRecipientPersonId, reporterSourceId, reporterNameOrInitials, reporterProfession, reporterCountry, triageOutcome, triageReason and routeTargetQueue. Tests explicitly distinguish null from missing for EACH nullable member, and empty arrays from missing arrays; evidence collection null/absence and number/object elements are invalid-shape negative cases, whereas explicit null ELEMENTS must retain their accepted stored value; complete valid null-bearing responses and complete stored unknown-select strings proceed with the existing server validation preserved. A full valid detail response still exercises the existing version-conflict submit test. Independent sabotages enabling Save from version alone, defaulting a missing member to null/empty, or accepting a malformed collection make this named test RED. (j) Each named connected C# test above itself launches the embedded Node/jsdom program and validates production form.js execution plus actual MVC-to-service/store update/reread; the existing JS test file remains UI regression coverage. `Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable` measures missing Node, missing jsdom, omitted JS execution receipt and suppressed browser-to-MVC update in isolated child fixtures: the corresponding connected test FAILS (never skips/passes), with zero writes. PREP-WEB clean-LOCAL evidence runs the same prerequisite/filtered dotnet-test command described above against current behavior and transport, as output of its own gated product WP, not its own dispatch precondition. Final no-loss scenarios remain the main feature acceptance; known current RED stays explicit. The actual GitHub Linux Phase 1 run is required at final PR closure, not before opening the preparation work. Dependency setup in a separate job is not transport evidence. `Connected_edit_submission_preserves_browser_antiforgery_request_token` uses actual Razor HTML with the synthetic request token and actual production form.js header/FormData; the C# bridge forwards both unchanged without injection/repair/substitution. The named test independently asserts at BOTH observation points (jsdom output and the request actually forwarded to real MVC) that (1) the RequestVerificationToken HEADER is present and exactly equals the synthetic token rendered by Razor, and (2) the __RequestVerificationToken FormData MEMBER is present and exactly equals that same token. These are four explicit equality/presence assertions; a successful update alone cannot substitute for either carrier assertion. A valid control reaches one real update. Independent sabotages dropping only the header or only the form member at either observation boundary break the corresponding assertion even if MVC can accept the remaining carrier. Token values are not logged. Removing the request token from BOTH browser header and form, or corrupting it, is refused by actual MVC antiforgery validation with zero Gateway/API updates and zero writes. A bridge sabotage that repairs the invalid browser token makes this negative control RED. A compiling sabotage accepting missing JS receipts or replacing the real update leg with a fixed success fails the corresponding equality/one-update assertion. Independent sabotages filtering/coercing null evidence elements, changing their positions, or rejecting null elements in the complete-detail shape gate make the corresponding null-array connected case RED. Human consent covers the same exact aliased test-host/CI/single-writer scope. PREP-WEB must pass its own normal prompt/HIGH review, formal pack approval and dispatch gate; its feasibility evidence is its output. Main feature dispatch needs both preparation WPs independently verified at E2 and integrated, plus its own passed gate. No success is assumed or measured by this text. vitest module tests, PvgCaseIntakeTriageWebTests and pvg-api have 0 failed, 0 skipped.
 - [ ] AC-43 (zorunlu) — DL-12; revision 16 (`docs/records/audits/2026-11/pvg-wave8-verify-02/VERIFY-DL10-R1.md` DÜŞÜK-1): the theory `Unknown_store_value_refuses_start` (`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs:58-77`) gains the row `[InlineData(" Mongo")]` (a leading blank), refused with `PVG_PERSISTENCE_STORE_UNKNOWN` like the other rows; no other row and no host code changes. Sabotage, on a path outside DL-12 because the host file is not one, in the scratch copy only: `TrimStart()` applied to the store value before the ordinal switch of `PvgServiceApiHost.cs` (`:220-226`) - the new row turns red (`VERIFY-DL10-R1.md` V10). Suite `pvg-api` 0 failed, 0 skipped.
 - [ ] AC-44 (zorunlu) — DL-12; revision 16 (`docs/records/audits/2026-11/pvg-wave10-verify-01/VERIFY-DL4E.md` D-1): AC-39 (a)'s test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` (`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs:33-48`) also asserts `harness.Store.ReadCalls == 0` (`Assert.Equal(0, harness.Store.ReadCalls)`) for each of its three rows, as AC-39 (b)'s test already does (`:69`); AC-39's text and the test's other assertions do not change. Sabotage: a store read (`FindByIdAsync`) added in `TriageDraftAsync` before the permission gate (`PvgIntakeDraftApplicationService.cs:249-269`) - the three rows turn red. Suite `pvg-api` 0 failed, 0 skipped.
-- [ ] AC-45 (zorunlu) — DL-12 test-only environment preparation, revision 20: `Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation` in `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs` exercises the ACTUAL argument-building path consumed by `PvgMongoTestHarness.cs`: Unix includes --nounixsocket and Windows omits it; random loopback/non-27017 port, dedicated temporary data, fixed test database/tenant isolation, replica-set and transaction flags remain. On Windows run the existing real replica-set/store tests using an absolute installed DITEN_TEST_MONGOD, with 0 failed/0 skipped, and confirm its own process is stopped and its temporary data is isolated. In existing Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod ONLY the synthetic missing/positive binary-path fixtures may be constructed as platform-appropriate fully-qualified paths (the current /opt/fake/mongod positive fixture is not fully qualified on Windows). EVERY existing safety assertion remains: ResolveBinary retains Path.IsPathFullyQualified and existence checks, null/empty/relative/missing binaries fail closed, and port 27017/default-port addresses stay forbidden. No path normalization bypass, fallback, relaxed isolation or weaker cleanup. The test name and security expectations are unchanged. Sabotages: unconditional --nounixsocket fails the Windows argument case/real launch; dropping it fails the Unix argument case. No production host/store edit or unsafe fallback; no launch/test success is claimed by the administrative promotion. These measures are OUTPUT of WP-0230-DL12-PREP-WIN after its own ordinary product prompt/HIGH review, formal pack approval and dispatch gate, not a prerequisite for that same preparation dispatch. A missing binary, failing replica set or safety regression prevents PREP-WIN completion and main feature readiness; it never yields a skip/pass. Main feature dispatch requires both PREP WPs independently verified at E2 and integrated.
+- [ ] AC-45 (zorunlu) — DL-12 test-only environment preparation, revision 21: `Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation` in `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs` exercises the ACTUAL argument-building path consumed by `PvgMongoTestHarness.cs`: Unix includes --nounixsocket and Windows omits it; random loopback/non-27017 port, dedicated temporary data, fixed test database/tenant isolation, replica-set and transaction flags remain. On Windows run the existing real replica-set/store tests using an absolute installed DITEN_TEST_MONGOD, with 0 failed/0 skipped, and confirm its own process is stopped and its temporary data is isolated. In existing Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod ONLY the synthetic missing/positive binary-path fixtures may be constructed as platform-appropriate fully-qualified paths (the current /opt/fake/mongod positive fixture is not fully qualified on Windows). EVERY existing safety assertion remains: ResolveBinary retains Path.IsPathFullyQualified and existence checks, null/empty/relative/missing binaries fail closed, and port 27017/default-port addresses stay forbidden. No path normalization bypass, fallback, relaxed isolation or weaker cleanup. The test name and security expectations are unchanged. Sabotages: unconditional --nounixsocket fails the Windows argument case/real launch; dropping it fails the Unix argument case. No production host/store edit or unsafe fallback; no launch/test success is claimed by the administrative promotion. These measures are OUTPUT of WP-0230-DL12-PREP-WIN after its own ordinary product prompt/HIGH review, formal pack approval and dispatch gate, not a prerequisite for that same preparation dispatch. A missing binary, failing replica set or safety regression prevents PREP-WIN completion and main feature readiness; it never yields a skip/pass. Main feature dispatch requires both PREP WPs independently verified at E2 and integrated. Revision 21 additionally requires the Windows ACL/preserved-WIP/final-Linux contract in Edit Keeps Stored Data: ONLY Configuration_scan_fails_closed_on_inaccessible_directory BODY in PvgServiceApiHostTests.cs; current-SID/private ScanFixture/locked ListDirectory-only deny with independent original DACL copy and no external/inherited/global ACL or restore-right removal; both directory enumeration and actual scanner raise UnauthorizedAccessException from that same locked directory (ThrowsAny<Exception> is insufficient), accessible before/after scanner positives, finally original DACL/access-inheritance restoration and verified own-root cleanup even after failure, unchanged Unix chmod branch. No new dependencies, using/helper/fixture/scanner/host/store/config edits, skip or assertion relaxation. Full Windows API/target 0 failed/0 skipped and unchanged test counts, all Mongo guards/two targets/35 real Mongo tests and cleanup remain required. Independent E2 covers baseline 58920519a17e8f4c085738642b33e36689bc8fee through the final three-file candidate with all SIX separate compiling scratch RED/original GREEN/source-hash pairs: Windows flag unconditional, Unix flag dropped, missing/relative binary safeguards dropped, 27017 guard dropped, Windows deny removed, scanner fail-open with the denial precondition intact. No old case is replaced by the new two, no skip/count reduction or committed mutation. Freeze the old dirty tree unchanged with no checkpoint; only after new exact pack/domain formal/HIGH records and the clean replacement worker's normal HIGH prompt/gate 0 apply the saved exact two-file patch, verify raw snapshot and canonical-LF contents/hashes, then fix the sole new method; mismatch stops, no silent repair. Only the final verified commit can integrate after independent E2. Unix source preservation is not runtime PASS: final PR closure/WP DONE requires existing service-tests pvg-api/ubuntu-22.04 same-job target/full TRX 0 failed/0 skipped bound to final H and actual C. For normal synthetic M, real commit objects prove H direct-parent/base-B relation and real tree(M)==tree(H), with checkout/event/run-attempt/TRX bindings; head_sha alone is insufficient. If unprovable, existing unfiltered workflow_dispatch on final CT ref must prove C==H with its same-job TRX; no YAML/step/permission expansion or unnecessary second matrix. New H or unequal source invalidates the prior result. This Linux closure does not block the earlier gated preparation/integration/feature entry, but pending/red/unbound evidence blocks final merge/DONE. Phase1 PVG build/Web test is no substitute. The separate five-row known-failures metadata worker is outside this product acceptance/write scope.
 
 ## Gate State and Acceptance History
 
@@ -2497,11 +2600,22 @@ complete-detail fail-closed checks, Edit-only optional-field validation, indepen
 harness tests described above. These are requirements, not results. Test alias/reference, embedded Node/RPC and same-
 runner CI preparation remain unbuilt/unmeasured; no test execution is claimed. Human bounded build/test consent is recorded, with final-version record/dispatch gates still open.
 
+Revision 21 extends only the existing Windows environment-preparation criterion. Its target ACL test must measure
+both exact UnauthorizedAccessException paths, real before/after access, original DACL/finally and private cleanup.
+The candidate/source interval is baseline 58920519 through all three final test-file changes; all six separate
+compiling RED/original GREEN/hash pairs and Windows full-API/Mongo evidence are PREP E2 outputs. Unix chmod stays
+source-preserved, with no runtime claim until existing service-tests pvg-api/ubuntu-22.04 provides final-PR source-
+bound target/full TRX 0 failed/0 skipped. Use synthetic-M direct-parent/tree-equality proof first, existing dispatch
+exact-checkout proof only if needed; no workflow edit, new step/input or extra routine matrix run. Changed H, pending,
+red or unbound results block final PR merge/WP DONE, not the earlier gated PREP/feature sequence. Old dirty WIP is
+preserved and transplanted only after clean replacement normal gate 0 with canonical LF/hash proof, never checkpointed.
+The independent five-fixed-row ledger correction has its own worker/prompt and no product/test acceptance waiver.
+
 ## Ready-for-dev Checklist
 
 - [x] Required governance files read.
 - [x] DCP-002 preflight passed.
-- [x] Revision 20 is ready-for-dev with build gate open and direct human scope/policy/shared-file/single-writer/build-test consent recorded on 2026-11-20; operational runtime stays closed. Formal final-version review/HIGH records and the dispatch gate remain separate requirements.
+- [x] Revision 21 retains ready-for-dev/build-open human scope consent, including the two narrow additions in pvg-mod0230-extra-scope-approval-01.md; operational runtime stays closed. New exact-version formal review/HIGH records and normal prompt/dispatch gates remain separate requirements.
 - [ ] Version-bound approval row for the current pack version (CT-APR-01 / CT-APR-02) - none; independent reviews 01
       and 02 returned "UYGUN DEĞİL"; review 03 (`execution/approvals/reviews.tsv` row 4) returned "UYGUN" for version
       `f5ca98e3`, and no approval row for that version remains: the unpushed approval-row commit and its revert were
@@ -2559,8 +2673,9 @@ runner CI preparation remain unbuilt/unmeasured; no test execution is claimed. H
       (KK-12, which changes KK-5 and KK-7). WP-0230-DL10-R1 `INTEGRATED` in the queue is DL-11's own prerequisite in "Teslim
       dilimleri"; this order adds no prerequisite to any other slice (DCP-004 §8 item 6). DL-5's existing prerequisite on DL-10
       is the same state.
-- [x] Revision 20 DL-12 human scope/policy/shared-file/single-writer and bounded build/test consent is recorded in
-      pvg-mod0230-rev20-owner-approval-01.md. This administrative promotion changes no scope or acceptance measurement.
+- [x] Revision 20 base consent remains recorded in
+      pvg-mod0230-rev20-owner-approval-01.md; revision 21 adds only the ACL method and separate five-row administrative
+      correction under pvg-mod0230-extra-scope-approval-01.md. New formal version records are not marked complete.
 - [ ] Each PREP-WIN/PREP-WEB product WP needs its own normal prompt/HIGH review, final-version formal pack approval
       and passed dispatch gate; its feasibility is output, not its dispatch precondition. Main feature needs both E2
       outputs independently verified/integrated and its own gate. The real GitHub Linux Phase 1 result remains a final
@@ -2962,16 +3077,20 @@ reach; it is not lowered under the build/test gate; the acceptance record cites 
   `pvg-api`, `pvg-regpv-base`, `pvg-case-processing`, `pvg-meddra-coding`, `pvg-signal-management` ve
   `tests/architecture/TenantArchitecture.ArchitectureTests` 0 kırmızı, atlanan 0. Bu dilimin kabulü DL-7'yi kapatmaz (E4; G-23,
   OD-PVG-14) ve operasyonel kapıyı açmaz.
-- **DL-12** - revision 20, risk HIGH; ready-for-dev human scope/build-test consent recorded 2026-11-20.
+- **DL-12** - revision 21, risk HIGH; ready-for-dev human scope/build-test consent recorded 2026-11-20.
   Policy and exact shared-file/single-writer scope are adopted in pvg-mod0230-rev20-owner-approval-01.md. Bounded
   alias/embedded-RPC/clean-local/Windows preparation follows WP-0230-DL12-PREP-WIN and WP-0230-DL12-PREP-WEB, each
   product-class with its own normal prompt/HIGH review, formal final-version pack approval and passed dispatch gate.
   Feasibility is OUTPUT of those gated WPs, not their dispatch precondition; neither depends on the parent feature WP.
-  WIN writes only the two harness/guard-test paths below; WEB only the module C# Web test, single-reference csproj and
+  WIN writes the same two harness/guard-test paths PLUS ONLY the newly approved ACL method BODY below; WEB only
+  the module C# Web test, single-reference csproj and
   two-step Phase 1 workflow paths below. Main feature dispatch needs both independently verified E2 outputs integrated
   and its own normal prompt/HIGH review/formal pack approval/passed gate. Real GitHub Linux Phase 1 is the final PR
   closure gate; clean-local same-prerequisite/same-test feasibility is a preparation output. Actual WP state comes
-  from CT-QUEUE and gate results. Other slices and every file/protected boundary are unchanged.
+  from CT-QUEUE and gate results. The ACL file remains DL-3-owned outside its sole PREP exception; all other slice
+  boundaries remain. Revision 21 exact formal/HIGH records and renewed normal HIGH prompt/gate are not presumed passed.
+  The full Windows ACL/WIP/six-sabotage/Unix-source-bound closure contract above applies; service-tests is read-only.
+  The separate five-row ledger metadata correction is not any PVG product/PREP writer's file allowance.
   Exact owner-consented paths and method boundaries (service-relative paths under `services/Diten.PvgService/`):
   - `src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs`: update-only versioned snapshot
     read, policy ordering, state guard, client/snapshot equality and same-version replace; minimum update-local helper.
@@ -2994,6 +3113,11 @@ reach; it is not lowered under the build/test gate; the acceptance record cites 
     fixture paths in Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod. Preserve EVERY security
     assertion, ResolveBinary fully-qualified/existence requirements, null/empty/relative/missing rejection and 27017
     prohibition; no weaker isolation/cleanup. Only fixture portability changes inside that existing safety test.
+  - `tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`: ONLY BODY of
+    Configuration_scan_fails_closed_on_inaccessible_directory for own-fixture Windows ACL, exact denial/scanner
+    exceptions, before/after positives and original DACL/finally cleanup. Unix chmod/security branch preserved.
+    No using/helper/ScanFixture/PvgConfigurationScanner/other test edit; no production host/config/store change.
+    Exact new human consent is pvg-mod0230-extra-scope-approval-01.md; new formal/HIGH and normal prompt gate required.
   - `frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js`: prefill/helpers, update-only
     lossless actual submission and original time/array/null/empty handling, one safeMessage mapping; Create unchanged.
   - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`: only update-specific form input,

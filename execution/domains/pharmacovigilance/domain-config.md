@@ -6,8 +6,13 @@
 
 ## Current MOD-0230 build/test gate (2026-11-20)
 
-MOD-0230 revision 20 is ready-for-dev with build_gate open and direct human scope/policy/shared-file/single-writer
-and bounded build/test consent recorded in docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md.
+MOD-0230 revision 21 is ready-for-dev with build_gate open and direct human scope/policy/shared-file/single-writer
+and bounded build/test consent originally recorded in pvg-mod0230-rev20-owner-approval-01.md, with revision 21's
+one ACL method and separate five-row metadata addition in docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md.
+That consent does not imply new-version formal review/HIGH or prompt gates passed. The approved source baseline is
+pack `186ad9675e2f5219d240080f93012c54f266561f6ce70451f96aaeddb242aa01` /
+domain `914c0c1dab0979d3ec48e3d4f6e08646ad0bf4494f9b73a97fa27bca4c5ead9c`;
+revision 20 records remain bound to their bytes, not these amended revision 21 bytes.
 Formal final-version independent review/HIGH ledger records and the passed prompt/dispatch gate remain required
 before any product-class worker starts, including each preparation WP. Bounded preparation uses independent
 WP-0230-DL12-PREP-WIN and WP-0230-DL12-PREP-WEB; each has its own ordinary prompt/HIGH review, valid formal pack
@@ -86,15 +91,20 @@ recorded as draft / not approved and does not open operational runtime.**
 - `gateway/**` except the single MOD-0230 route family
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml` (FROZEN)
 - `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**`
+- PvgServiceApiHostTests.cs is protected to PREP-WIN outside the sole ACL method BODY below; no using/helper/
+  ScanFixture/scanner/other DL-3 change. tests/known-failures.tsv is protected except the separate five-row metadata
+  correction below; it is not a PREP/feature writer path. service-tests.yml is read-only evidence, no CI-edit exception.
 - Other domain governance folders except by explicit user request
 
-## Revision 20 owner-consented alignment - record/dispatch gated
+## Revision 21 owner-consented alignment - record/dispatch gated
 
-The direct 2026-11-20 owner record approves the unchanged revision 20 scope, pre-read field-policy order, exact
+The direct 2026-11-20 owner records approve the retained revision 20 scope plus only the explicit revision 21 additions,
+pre-read field-policy order, exact
 shared-file paths and single-writer arrangement, bounded build/test preparation and delegated development after
 required gates. Ready-for-dev metadata expresses human consent; it is not a completed formal review/HIGH ledger.
 Final-version independent review/HIGH records and a passed prompt/dispatch gate are still required before a DL-12
-product worker starts. The exact path exceptions below follow that consent and those gates; no new path is added.
+product worker starts. The path exceptions below follow that consent and those gates; the ACL exception is only one existing test body
+and the five-row ledger job is separately scoped administrative metadata, not PVG product/PREP code.
 Publication and operational use remain unauthorized.
 
 - `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`: update-only lossless form input and
@@ -123,10 +133,30 @@ permission-only/no-field expectations to the owner-adopted pre-read update field
 Not-found/safe/no-record/no-workflow/no-evidence assertions, Triage/Route rows and all other tests/helpers remain
 unchanged. The same human consent and final-version formal record/dispatch gates above apply.
 
+Revision 21 adds this exact PREP-WIN exception, retaining DL-3 ownership of the rest of the file:
+`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs`, ONLY BODY of
+Configuration_scan_fails_closed_on_inaccessible_directory. Use existing .NET8/current-SID ACL on the own private
+ScanFixture/locked only: independent original DACL copy, no inheritance propagation or external/global ACL, deny
+ListDirectory only without removing restore rights, exact UnauthorizedAccessException for enumeration AND scanner,
+real before/after scanner positives, finally original DACL/access-inheritance restore and verified private cleanup.
+Keep Unix chmod/security branch source-preserved; no using/helper/fixture/scanner/host/store/config/dependency edits,
+skip, early return or weaker exception assertion. New exact-version formal/HIGH records and normal HIGH prompt/gate
+remain required. No real ACL/restore success is claimed by this amendment.
+
+Separate owner-approved administrative metadata scope: `tests/known-failures.tsv`, ONLY one literal ,*.xml removal
+from rerun_trigger in the five fixed DocsPathGuardTests rows identified individually in the pack Repo Scope (suite
+TenantArchitecture.ArchitectureTests). Every other trigger token/order/cell/status/fingerprint and all OTHER rows stay unchanged.
+The existing CT-registered WP-0230-DL12-REGISTRY-01 (extra-scope approval record) handles this file under its own
+normal reviewed prompt/gate; no PVG PREP/feature worker may edit it. No test, guard, runtime rule or product scope
+is relaxed; no new module/slice/AC identity is created and no additional WP identity is invented here. Its recorded
+acceptance uses the existing production known_failures validator/check on preserved normal Web TRX (Diten.Web.Tests),
+plus an in-memory old-XML-token refusal; no guard-source edit or premature Web VERIFIED/INTEGRATED claim.
+
 The direct owner record adopts the field-policy/pre-read order and record-existence visibility contract; no user
 policy or exact shared-path consent remains pending for this unchanged scope. Embedded Node/RPC, aliased reference,
 clean-local execution and Windows Mongo preparation remain unimplemented/unmeasured outputs of separately gated
-product-class preparation WPs. PREP-WIN writes only the existing two Mongo harness/guard-test paths in the pack;
+product-class preparation WPs. PREP-WIN writes the existing two Mongo harness/guard-test paths PLUS only the new ACL
+method BODY above; its three-file candidate is measured together from baseline58920519 through final,
 PREP-WEB only the existing module C# Web test, single-alias csproj and exact two Phase 1 prerequisite steps. PREP-WEB
 measures transport/current behavior and negative failure controls; final no-loss acceptance is feature work and its
 known current RED stays visible. No production service/DTO/controller/form.js/_Form/l10n change belongs to PREP-WEB.
@@ -136,6 +166,26 @@ outputs independently verified and integrated plus its own normal prompt/HIGH re
 Clean LOCAL same-prerequisite/same-dotnet-test evidence measures feasibility; real GitHub Linux Phase 1 is required
 at closure of the single final PR, not before a not-yet-opened PR. A separate job's JS setup proves no transport.
 Bounded work stays under the same consent/single-writer scope; no implementation or successful measurement is claimed.
+
+The stopped WIN tree stays dirty/unchanged/recoverable, with no checkpoint or RED-test commit exception. The pack
+binds its frozen two raw disk hashes, patch SHA and capture metadata. After the amended formal pack/domain records,
+a clean separately authorized replacement worker measures ExpectedHEAD/source chain and passes its renewed normal
+HIGH prompt gate 0 BEFORE exact saved-patch application; both canonical LF contents/hashes must match the snapshot,
+with raw CRLF disk vs Git LF distinguished. Stop on mismatch, no silent repair. Then fix only the ACL method.
+Windows target/full API 0 failed/0 skipped, unchanged counts, original guards/two targets/35 Mongo tests and private
+cleanup accompany SIX separate compiling scratch RED/original GREEN/source-hash proofs: unconditional Windows flag,
+dropped Unix flag, missing/relative binary guard drop, 27017 guard drop, Windows deny removal, scanner fail-open with
+real denial precondition. No skipped old four cases or committed mutations. Independent E2 covers all three files;
+only the final verified commit may integrate after it. These are outputs, not same-PREP dispatch prerequisites.
+
+Unix runtime stays open until the final PR's existing service-tests pvg-api/ubuntu-22.04 target/full TRX is 0 failed/
+0 skipped and source-bound to final H. Same run/attempt event H/base B and actual checkout C are measured: synthetic
+M must directly parent H with real commit/base relation and tree(M)==tree(H) Git objects, plus checkout log and same-
+job TRX; API head_sha/comments are insufficient. Only if that normal PR equality cannot be proved may EXISTING
+unfiltered workflow_dispatch on final CT ref prove C==H and its same-job TRX. No CI YAML/input/job/step/permission
+edit or unnecessary second matrix. Changed H or unequal source invalidates old results. Pending/red/unbound Unix
+proof prevents final PR/main merge and WP DONE, not prior PREP integration or feature dispatch. Phase1 PVG build/
+Web tests do not replace the service API job. No Unix/runtime/build/test result is claimed by these governance edits.
 
 The test-only --nounixsocket platform-selection scope for the pack's exact Mongo harness and guard test files is
 within this service boundary under the same consent/gates. In the existing named safety test, only synthetic
