@@ -2788,7 +2788,7 @@ into the named pack only by its owner (MOD-0231 / MOD-0233 owners are TBD today)
 reach; it is not lowered under the build/test gate; the acceptance record cites this table row as
 `required_evidence_source`.
 
-Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · ölçülebilir bitiş koşulu):
+## Dilim ayrıntıları (sahip olunan yollar · önkoşul · kapsam dışı · ölçülebilir bitiş koşulu):
 
 - **DL-1** — Yollar: yalnız bu paket dosyası; kod yok. Önkoşul: yok.
   Kapsam dışı: her kod yolu, WP dosyaları, DCP-004. Bitiş: OD-PVG-1…10 için sahip yanıtı pakete yazılmış ya da
