@@ -1,0 +1,21 @@
+PACK-APPROVAL v1 — execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md @ 3689138497673bcbc609398d30414824c91e9688 · dal onayı okuması (S-115)
+hesaplanan risk: HIGH
+  - 'Build Authorization (Non-Production) - 2' altında değişti: Earlier-version approvals do not transfer. The direct 2026-11-20 owner
+  - 'Build Authorization (Non-Production) - 2' altında değişti: Earlier-version approvals do not transfer. The direct 2026-11-20 owner
+  - 'Build Authorization (Non-Production) - 2' altında değişti: - DL-12 revision 20 has direct human scope/build-test consent: its exa
+  - 'Build Authorization (Non-Production) - 2' altında değişti: - DL-12 revision 21 has direct human scope/build-test consent: its exa
+  - 'Repo Scope' altında değişti: revision 20 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existen
+  - 'Repo Scope' altında değişti: revision 21 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existen
+  - 'Repo Scope' altında değişti: - `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServi
+  - 'Repo Scope' altında değişti: DISPATCH-GATED revision 21 exception: PREP-WIN may change ONLY the BOD
+  - 'Repo Scope' altında değişti: Configuration_scan_fails_closed_on_inaccessible_directory for the Wind
+  - 'Repo Scope' altında değişti: defined below. Its DL-3 ownership remains; no other test, using block,
+  - 'Repo Scope' altında değişti: is editable. No production/config/store/host change. New exact-version
+  - 'Repo Scope' altında değişti: worker prompt/gate are required. This exception is not whole-file or w
+inceleme (CT-APR-02): gerekli — künye dışında içerik değişti; künye alanı 'revision' değişti
+  - başka sürümlere 21 inceleme (UYGUN DEĞİL: 6) — bu sürüm için sayılmaz
+  - dal onayı (S-115): 2 inceleme satırı henüz main'de değil — insan adımı modül PR'ında ölçülür
+  - bu sürüm için 2 inceleme: codex UYGUN, codex UYGUN
+insan adımı: beklemede — modül PR'ı başka bir kişi tarafından birleştirilince ölçülür (dal onayı, S-115)
+sonuç: onaylı — HIGH · onaylayan bestepullukcu-alt · 2026-11-20 · dal onayı: insan adımı beklemede, modül PR'ında ölçülür (S-115)
+çıkış: 0
