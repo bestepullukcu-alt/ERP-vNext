@@ -1,15 +1,15 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `e690a0f21edd6b78260ab8e00387311a4b5ba873`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `a1c0a33fe1f18bedc934f79df602dd824b8c7e41`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
 ## Güncel odak
 
 - **Karar:** İki dar ek kapsam doğrudan insan onaylı; rev21 son kesin pack/domain iki bağımsız UYGUN aldı. İki geçerli review-row deftere eklendi; Gerçek HIGH card/row0; yazılı insan onayına bağlı yeni HIGH satırı eklendi, kesin check0 ile onaylı; bağımsız insan main adımı son PR’da bekliyor.
-- **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt kapısı2 nedeniyle henüz birleştirilmedi.
+- **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı adayın doğrulama devamı ve birleşik test kapısı sırada.
 - **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGH ve yenilenmiş normal kapıdan önce yeni çalışma yok.
-- **Kural:** Registry işçisi7dbdfd4 teslim etti; yalnız beş tetikleyici hücresi, gerçek validate/check0 ve eski öğe sabotajıRED. Bağımsız doğrulama/CT entegrasyonu sırayla yürütülüyor; yeni Web testi iddiası yok.
+- **Kural:** Registry işçisi7dbdfd4 bağımsız UYGUN aldı ve CT dalına mergea1c0a33f ile alındı. Birleşik gerçek kapılar0; yalnız beş hücre, yeni Web testi iddiası yok.
 - **Arka uç:** Ana DL-12 BLOCKED; her iki PREP bağımsız E2 ve entegrasyonunu bekliyor. CT ürün kodu yazmıyor; tek son PR hedefi korunuyor.
 - **Karar:** Operasyon/yayın kapalı. Son PR Linux/Phase1 ve bağımsız insan main merge kapıları açık; hiçbir işçi ağacı silinmedi.
 
@@ -28,13 +28,13 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 3 BLOCKED, 1 INTEGRATION_READY |
+| DL-12 | Düzenlemede veriyi koruma | 3 BLOCKED, 1 INTEGRATED |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:3, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:11, `INTEGRATION_READY`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `BLOCKED`:3, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:12, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
@@ -47,7 +47,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Test: Gerçek tarayıcı–MVC–servis–depo test bağlantısı** — `WP-0230-DL12-PREP-WEB` · `BLOCKED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — sınırlı Web alias/Node-jsdom gerçek MVC-PVG-store test bağlantısı ve iki CI hazırlık adımı, yalnız üç onaylı yol; feasibility kendi çıktısı, parent veri-koruma feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/CT-DECISION.md`.
-- [ ] **Kural: Ortak regresyon kaydındaki beş eski XML tetikleyicisi** — `WP-0230-DL12-REGISTRY-01` · `INTEGRATION_READY`
+- [ ] **Kural: Ortak regresyon kaydındaki beş eski XML tetikleyicisi** — `WP-0230-DL12-REGISTRY-01` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan XMC onaylı ortak regresyon kaydında yalnız beş fixed rerun_trigger hücresinden ölü ,*.xml öğesini kaldırma; ürün/guard değişmez
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
 

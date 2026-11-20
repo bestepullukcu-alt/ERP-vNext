@@ -11,3 +11,5 @@ Kayıt zamanı UTC; işçi olayları CT’ye daha önce iletildi. Aşağıdaki s
 - 2026-11-20T17:58:39.868597+00:00 — VERIFYING → VERIFIED: Bağımsız rapor UYGUN:7dbdfd4 temiz, exact5hücre, gerçek üretici0/validate0/check0, bellekRED, immutableTRX aynı; raporSHA1eb47520. Worker/independent ham kanıtı PUBLISH-MANIFEST ile eklendi.
 
 - 2026-11-20T17:59:11.496412+00:00 — VERIFIED → INTEGRATION_READY: Tek işçi commit7dbdfd4 CT dalına no-ff merge gerektirir; insan XMC onayı ve bağımsız UYGUN/PASS tamam, başka bağımlılık yok. Main/push/PR izni değildir.
+
+- 2026-11-20T18:00:00.723114+00:00 — INTEGRATION_READY → INTEGRATED: No-ff mergea1c0a33f CT dalında; gerçek birleşik üretici0/validate0/check0, tokenRED/immutableTRX aynı. INTEGRATION.md ve INTEGRATED-GREEN.json; parentkabulü/liveyok.
