@@ -32,6 +32,20 @@ Yeni test dosyası toplamı artırır; WIN'in395'e sabit kabul üreticisi bu fea
 
 Yalnız `frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.{en,tr,fr,es,zh,ar,ru}.resx` sayfa kaynaklarında DraftNotEditable anahtarı. Yedi gerçek dosya CT tarafından rg ile bulundu; yeni dizin açılmaz. Yeni anahtarın mevcut olup olmadığı dağıtımdan önce ayrıca ölçülür. Yedi değer anlamlı çevrilir, anahtar/parity ve XML denetlenir. SharedResource skill'i yalnız ortak kaynakları kapsar; sayfa kaynaklarını denetlediği iddia edilmez. JS/bridge/ortak kaynak değişikliği bu işte yoktur.
 
+Salt-okunur l10n-agent hazırlığı (pvg_dl12_readiness): yedi dosyada111 benzersiz anahtar, dil keysetleri eşit, eksik/fazla/boş/yinelenen0. DraftNotEditable mevcut değil; ControlledBlock/Forbidden/VersionConflict aynı işlevi karşılamaz. Aşağıdakiler henüz uygulanmamış öneri değerleridir; normal iş emri sonrası beklenen sayı112/dildir.
+
+| Dil | Öneri |
+| --- | --- |
+| en | This record can no longer be edited. |
+| tr | Bu kayıt artık düzenlenemez. |
+| fr | Cet enregistrement ne peut plus être modifié. |
+| es | Este registro ya no se puede editar. |
+| zh | 此记录已无法编辑。 |
+| ar | لم يعد من الممكن تعديل هذا السجل. |
+| ru | Эту запись больше нельзя редактировать. |
+
+Kontrol yalnız sayfa kaynakları için XML/keyset ve dar diff ölçümüdür; çeviri taslağı bağımsız E2 veya dağıtım izni değildir. Mevcut hata metinleri gibi kısa, noktalı ve placeholdersızdır. İşçinin gerçek çıktısı ayrıca incelenecektir.
+
 ## Ekran ve MVC
 
 Arka uç ve çeviri commit'leri bağımsız doğrulanıp CT'ye entegre olduktan sonra başlar. Yalnız module pack'in altı yolu: form.js, mevcut MVC controller update input/ToPayload kısmı, mevcut WebTests, sayfa JS testi, _Form.cshtml içinde yalnız Edit SourceReference/PatientSubjectCode required/indicator düzeltmesi ve _IndexL10n.cshtml tek anahtar köprüsü. Create, auth/header/error/route, yeni dependency/csproj/CI ve diğer ekranlar değişmez.
