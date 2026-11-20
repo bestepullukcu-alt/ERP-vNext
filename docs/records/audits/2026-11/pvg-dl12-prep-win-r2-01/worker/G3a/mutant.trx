@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c4032e69-2203-4bf4-b0d9-d05186dde399" name="epenc@GMGRAPHIC 2026-11-20 22:36:22" runUser="GMGRAPHIC\epenc" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T22:36:22.2783554+04:00" queuing="2026-11-20T22:36:22.2783556+04:00" start="2026-11-20T22:36:21.4305126+04:00" finish="2026-11-20T22:36:22.2846560+04:00" />
+  <TestSettings name="default" id="a2892811-9fa7-48d9-91eb-b70d51aa7a95">
+    <Deployment runDeploymentRoot="epenc_GMGRAPHIC_2026-11-20_22_36_22" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e1be7cac-e682-4772-864f-2ad8def0bf9f" testId="4be9aab4-455d-006a-d6a1-07e098debe6b" testName="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod" computerName="GMGRAPHIC" duration="00:00:00.0096749" startTime="2026-11-20T22:36:22.1769291+04:00" endTime="2026-11-20T22:36:22.1769483+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e1be7cac-e682-4772-864f-2ad8def0bf9f">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(System.InvalidOperationException)</Message>
+          <StackTrace>   at Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod() in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G3a\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Persistence\PvgPersistenceBoundaryScanTests.cs:line 243&#xD;
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod" storage="c:\users\epenc\appdata\local\temp\pvg-dl12-prep-win-r2-evidence\g3a\src\services\diten.pvgservice\tests\diten.pvgservice.api.tests\bin\debug\net8.0\diten.pvgservice.api.tests.dll" id="4be9aab4-455d-006a-d6a1-07e098debe6b">
+      <Execution id="e1be7cac-e682-4772-864f-2ad8def0bf9f" />
+      <TestMethod codeBase="C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G3a\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests" name="Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="4be9aab4-455d-006a-d6a1-07e098debe6b" executionId="e1be7cac-e682-4772-864f-2ad8def0bf9f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Bir Listede Olmayan Sonuçlar" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Yüklenen Tüm Sonuçlar" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.34)&#xD;
+[xUnit.net 00:00:00.11]   Discovering: Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.22]   Discovered:  Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.23]   Starting:    Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.28]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.29]       Expected: typeof(System.InvalidOperationException)&#xD;
+[xUnit.net 00:00:00.29]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.29]         C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G3a\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Persistence\PvgPersistenceBoundaryScanTests.cs(243,0): at Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod()&#xD;
+[xUnit.net 00:00:00.29]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+[xUnit.net 00:00:00.29]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.29]   Finished:    Diten.PvgService.Api.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="GMGRAPHIC" outcome="Error" timestamp="2026-11-20T22:36:22.1752866+04:00">
+        <Text>[xUnit.net 00:00:00.28]     Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

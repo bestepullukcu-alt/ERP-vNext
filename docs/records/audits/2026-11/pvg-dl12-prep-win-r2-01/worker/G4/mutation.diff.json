@@ -1,0 +1,9 @@
+{
+  "kind": "byte-preserving raw artifact transport",
+  "original_name": "G4/mutation.diff",
+  "raw_bytes": 520,
+  "raw_sha256": "172b5538191c5948de57f7243db8540b0e7724e4b2f71295d6131d672c18939a",
+  "encoding": "base64",
+  "content": "LS0tIHNlcnZpY2VzXERpdGVuLlB2Z1NlcnZpY2VcdGVzdHNcRGl0ZW4uUHZnU2VydmljZS5BcGkuVGVzdHNcUGVyc2lzdGVuY2VcUHZnTW9uZ29UZXN0SGFybmVzcy5jcw0KKysrIHNlcnZpY2VzXERpdGVuLlB2Z1NlcnZpY2VcdGVzdHNcRGl0ZW4uUHZnU2VydmljZS5BcGkuVGVzdHNcUGVyc2lzdGVuY2VcUHZnTW9uZ29UZXN0SGFybmVzcy5jcw0KQEAgLTU5LDcgKzU5LDcgQEANCiANDQogICAgIHB1YmxpYyBzdGF0aWMgaW50IFJlc29sdmVQb3J0KGludCByZXF1ZXN0ZWRQb3J0KQ0NCiAgICAgew0NCi0gICAgICAgIGlmIChyZXF1ZXN0ZWRQb3J0ID09IEZvcmJpZGRlblBvcnQpDQ0KKyAgICAgICAgaWYgKHJlcXVlc3RlZFBvcnQgPCAwKQ0NCiAgICAgICAgIHsNDQogICAgICAgICAgICAgdGhyb3cgbmV3IEludmFsaWRPcGVyYXRpb25FeGNlcHRpb24oIlBvcnQgMjcwMTcgaXMgdGhlIGRldmVsb3BtZW50IG1vbmdvZDsgdGhlIFBWRyBNb25nbyB0ZXN0cyBuZXZlciB1c2UgaXQuIik7DQ0KICAgICAgICAgfQ0NCg==",
+  "reason": "Raw difflib output contains CRCRLF from Windows source lines; escaped envelope preserves exact bytes without creating whitespace errors in repository text."
+}

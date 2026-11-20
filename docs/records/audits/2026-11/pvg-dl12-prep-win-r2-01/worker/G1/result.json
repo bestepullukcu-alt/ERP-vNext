@@ -1,0 +1,51 @@
+{
+  "group": "G1",
+  "build": [
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "build",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+    "-c",
+    "Debug"
+  ],
+  "test": [
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "test",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+    "-c",
+    "Debug",
+    "--no-build",
+    "--no-restore",
+    "--filter",
+    "FullyQualifiedName~Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+    "--logger",
+    "trx;LogFileName=mutant.trx",
+    "--results-directory",
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\G1"
+  ],
+  "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+  "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+  "mutant_sha256": "4fb78c9c94c63abcf0991ded1f25b42b1afd0d4b5b41e852100857048800e615",
+  "green_test": {
+    "executionId": "e96a9a2e-3425-42ad-9d43-eae1424b3f5d",
+    "testId": "57470346-841a-1c5f-f9ec-222a3c997c70",
+    "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+    "computerName": "GMGRAPHIC",
+    "duration": "00:00:00.0196622",
+    "startTime": "2026-11-20T22:33:09.9790634+04:00",
+    "endTime": "2026-11-20T22:33:09.9791071+04:00",
+    "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+    "outcome": "Passed",
+    "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+    "relativeResultsDirectory": "e96a9a2e-3425-42ad-9d43-eae1424b3f5d"
+  },
+  "green_trx_sha256": "259115c0c5503edf40a3088f9d8a26bd1d70f8f249f7e9ba1646ba567d72ead6",
+  "build_exit": 0,
+  "assembly_sha256": "c192e03c6bfcd3e0ac503647ea9622c14558b459c6f461ef69434d3ebf53dccf",
+  "test_exit": 1,
+  "assertion": "Assert.DoesNotContain(\"--nounixsocket\", windowsArguments);",
+  "line": 207,
+  "message": "Assert.DoesNotContain() Failure: Item found in collection\r\n                                                            ↓ (pos 12)\r\nCollection: [···, \"--setParameter\", \"enableTestCommands=1\", \"--nounixsocket\", \"--replSet\", \"pvgintake\", ···]\r\nFound:      \"--nounixsocket\"",
+  "stack": "   at Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation() in C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\G1\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgPersistenceBoundaryScanTests.cs:line 207\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)",
+  "red_trx_sha256": "4b04018806d6171c7be8942133cfab8c2aabb6b60352a94f5c50a14aac8df115",
+  "fixture_roots_left": 0
+}
