@@ -654,6 +654,9 @@
   <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
     <value>Справочник брендов и продуктов</value>
   </data>
+  <data name="Nav.Module.BANKMASTERBANKACCOUNTREGISTRY" xml:space="preserve">
+    <value>Справочник банков и реестр банковских счетов</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Мастер-данные продукта / позиции / SKU</value>
   </data>
@@ -1280,6 +1283,9 @@
   </data>
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>Настройки волн</value>
+  </data>
+  <data name="Perm.Entity.BANKS" xml:space="preserve">
+    <value>Банки</value>
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Планирование волн</value>

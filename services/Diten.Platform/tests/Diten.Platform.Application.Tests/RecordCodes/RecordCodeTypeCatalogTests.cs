@@ -15,9 +15,6 @@ namespace Diten.Platform.Application.Tests.RecordCodes;
 /// </summary>
 public sealed class RecordCodeTypeCatalogTests
 {
-    /// <summary>The one named difference from §3 (K-7): MOD-0217 is AGR, §3 still says CTR until DL-7 (A-3).</summary>
-    private static readonly (string Rule, string Catalog) NamedException = ("CTR", "AGR");
-
     /// <summary>
     /// §3 rows that are ahead of the catalogue: the type is OTOMATİK in the rule and its code is issued today by another counter, the
     /// catalogue entry comes with a later slice. Each row names that slice; the test turns red when the rule row is gone or the catalogue
@@ -43,8 +40,9 @@ public sealed class RecordCodeTypeCatalogTests
     {
         var automatic = AutomaticTypesInTheRule();
 
-        Assert.Contains(NamedException.Rule, automatic); // §3 changed: remove the named exception from this test (DL-7)
-        Assert.DoesNotContain(NamedException.Catalog, automatic);
+        // §3 and the catalogue agree on MOD-0217 (D148): AGR is the rule row, CTR is MOD-0144's code and not an automatic row.
+        Assert.Contains("AGR", automatic);
+        Assert.DoesNotContain("CTR", automatic);
         foreach (var (type, slice) in RuleAheadOfCatalogue)
         {
             Assert.True(automatic.Contains(type), $"{type} is no longer an OTOMATİK row of §3: remove it from RuleAheadOfCatalogue");
@@ -52,7 +50,7 @@ public sealed class RecordCodeTypeCatalogTests
         }
 
         var expected = automatic.Where(type => !RuleAheadOfCatalogue.ContainsKey(type))
-            .Select(type => type == NamedException.Rule ? NamedException.Catalog : type).Append("PLN")
+            .Append("PLN")
             .OrderBy(type => type, StringComparer.Ordinal).ToArray();
         Assert.Equal(expected, RecordCodeTypeCatalog.All.Select(d => d.RecordType).OrderBy(type => type, StringComparer.Ordinal).ToArray());
         Assert.All(RecordCodeTypeCatalog.All.Where(d => d.RecordType != "PLN"), d => Assert.Equal("OTOMATİK", d.Class));

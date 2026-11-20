@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>Abra la fila y pulse « Descargar »; compare el SHA-256 del archivo con el mostrado para probar que es la evidencia guardada.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>Esta página lista los bancos de su grupo con sus sucursales. Cada banco se crea aquí como «Borrador» y pasa por sus estados: «Borrador», «Activo», «Inactivo».</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>El equipo de datos maestros y tesorería</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>Añadir un banco</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>Haga clic en «Añadir nuevo», complete los datos del banco y guarde: el banco se guarda como «Borrador». Un borrador innecesario se elimina con «Eliminar borrador», o varios a la vez con «Eliminar borradores seleccionados».</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>Cambiar su estado</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>Abra las acciones de un banco: «Activar» lo deja utilizable, «Desactivar» retira de uso un banco activo; «Ver detalles» y «Editar» abren su registro.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>Usar el teclado</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>Fuera de un campo de texto, sin un diálogo ni un panel lateral abiertos, la tecla «?» abre esta ayuda con los atajos de la página.</value>
+  </data>
 </root>

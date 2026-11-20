@@ -720,6 +720,9 @@
   <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
     <value>Brand &amp; Product Master</value>
   </data>
+  <data name="Nav.Module.BANKMASTERBANKACCOUNTREGISTRY" xml:space="preserve">
+    <value>Bank Master &amp; Bank Account Registry</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Product / Item / SKU Master</value>
   </data>
@@ -1339,6 +1342,9 @@
   </data>
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>Wave Settings</value>
+  </data>
+  <data name="Perm.Entity.BANKS" xml:space="preserve">
+    <value>Banks</value>
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Wave Planning</value>

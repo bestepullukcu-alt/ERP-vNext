@@ -177,7 +177,7 @@ public sealed class AuditIntentDeliveryProcessor
                     claim, delivery.ErrorCode, true, retryDelay, maximumAttempts, batch, cancellationToken);
                 return;
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal
-                when AwaitsCentralMapping(payload.Operation, delivery.CentralReasonCode):
+                when AwaitsCentralMapping(payload, delivery.CentralReasonCode):
                 // BL-552 flow 3 FIX1 item 2: an operation the deployed Platform does not map YET (MDM deployed before
                 // Platform; CentralMappingRollout) waits — bounded, counted, its reason on the intent — instead of being
                 // dead-lettered for good. An operation never produced, and every other 409, is terminal.
@@ -190,11 +190,11 @@ public sealed class AuditIntentDeliveryProcessor
                 if (batch.RetryScheduled > scheduledBefore)
                 {
                     batch.AwaitingCentralMapping++;
-                    batch.AwaitingCentralMappingOperationNames.Add(payload.Operation.ToString());
+                    batch.AwaitingCentralMappingOperationNames.Add(SelectedOperationName(payload));
                 }
                 return;
             case TrustedSourceAuditIntentDeliveryOutcome.Terminal
-                when delivery.CentralReasonTimedOut && AwaitingCentralMappingOperations.Contains(payload.Operation):
+                when delivery.CentralReasonTimedOut && MayAwaitCentralMapping(payload):
                 // Flow 3 FIX3 item 3: for an operation that may wait for Platform's map (CentralMappingRollout), a 409
                 // whose reason did not arrive in time may be that very "not mapped yet" — a timeout, retried as one (the
                 // ordinary bound), not a dead letter. An operation never produced keeps its definite 409.
@@ -220,8 +220,19 @@ public sealed class AuditIntentDeliveryProcessor
     private static IReadOnlySet<ProductAuditOperation> AwaitingCentralMappingOperations =>
         CentralMappingRollout.AwaitingCentralMapping;
 
-    private static bool AwaitsCentralMapping(ProductAuditOperation operation, string? centralReason) =>
-        AwaitingCentralMappingOperations.Contains(operation)
+    // MOD-0289 (D142): the "selected operation" is decided once — the master data operation when the intent has one (a bank
+    // or branch intent), else the product operation as before. The name sent to Platform, the wait, the timeout branch and the
+    // waiting names all use it: a bank intent never travels (or waits) under a product operation's name or under "0".
+    internal static string SelectedOperationName(AuditIntentClaimedPayload payload) =>
+        payload.MasterDataOperation is { } masterData ? masterData.ToString() : payload.Operation.ToString();
+
+    private static bool MayAwaitCentralMapping(AuditIntentClaimedPayload payload) =>
+        payload.MasterDataOperation is { } masterData
+            ? CentralMappingRollout.AwaitingCentralMappingMasterData.Contains(masterData)
+            : AwaitingCentralMappingOperations.Contains(payload.Operation);
+
+    private static bool AwaitsCentralMapping(AuditIntentClaimedPayload payload, string? centralReason) =>
+        MayAwaitCentralMapping(payload)
         && string.Equals(centralReason, MappingUnsupported, StringComparison.Ordinal);
 
     private async Task CompleteAsync(
@@ -325,7 +336,7 @@ public sealed class AuditIntentDeliveryProcessor
             payload.AggregateId,
             payload.PreVersion,
             payload.PostVersion,
-            payload.Operation.ToString(),
+            SelectedOperationName(payload),
             payload.ActorId,
             payload.CorrelationId,
             payload.CausationId,

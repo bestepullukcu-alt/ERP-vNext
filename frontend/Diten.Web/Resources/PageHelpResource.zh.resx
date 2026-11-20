@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>打开该行并点击“下载”；将文件的 SHA-256 与显示的值比较，以证明它就是保存的证据。</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>此页面列出您集团的银行及其分行。每家银行在此创建为“草稿”，并经历其状态：“草稿”、“启用”、“停用”。</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>主数据团队和资金管理</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>添加银行</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>点击“新增”，填写银行信息并保存：银行保存为“草稿”。不需要的草稿可用“删除草稿”删除，多个草稿可用“删除所选草稿”一次删除。</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>打开银行的操作：“启用”使其可用，“停用”使启用中的银行停止使用；“查看详情”和“编辑”打开其记录。</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>使用键盘</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>在文本框之外、没有打开对话框或侧面板时，按“?”键可打开此帮助及页面快捷键。</value>
+  </data>
 </root>

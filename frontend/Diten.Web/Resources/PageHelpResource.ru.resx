@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>Откройте строку и нажмите « Скачать »; сравните SHA-256 файла с показанным, чтобы доказать, что это сохранённое доказательство.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>На этой странице перечислены банки вашей группы с их филиалами. Каждый банк создаётся здесь как «Черновик» и проходит свои статусы: «Черновик», «Активен», «Неактивен».</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>Команда основных данных и казначейство</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>Добавить банк</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>Нажмите «Добавить», заполните данные банка и сохраните: банк сохраняется как «Черновик». Ненужный черновик удаляется кнопкой «Удалить черновик», несколько сразу — «Удалить выбранные черновики».</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>Изменить статус</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>Откройте действия банка: «Активировать» делает его доступным, «Деактивировать» выводит активный банк из использования; «Просмотр» и «Изменить» открывают его запись.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>Использовать клавиатуру</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>Вне текстового поля, когда не открыты диалог или боковая панель, клавиша «?» открывает эту справку с сочетаниями клавиш страницы.</value>
+  </data>
 </root>

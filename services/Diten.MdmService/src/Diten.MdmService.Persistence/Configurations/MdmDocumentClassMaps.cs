@@ -72,7 +72,8 @@ public static class MdmDocumentClassMaps
     /// </summary>
     public static readonly IReadOnlyList<Type> StrictByDesignRoots =
     [
-        typeof(ProductLegalEntityScopeRolloutState), typeof(ProductLegalEntityScopePolicy), typeof(LegalEntity)
+        typeof(ProductLegalEntityScopeRolloutState), typeof(ProductLegalEntityScopePolicy), typeof(LegalEntity),
+        typeof(Bank), typeof(BankBranch) // MOD-0289 DL-1 (R3): a payment-routing master stays strict — an unknown field fails the read, never dropped
     ];
 
     private static readonly Lazy<IReadOnlyList<Type>> Covered = new(() => Reachable(PersistedRoots));
