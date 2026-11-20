@@ -7,8 +7,8 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 ## Güncel odak
 
 - **Karar:** İki dar ek kapsam doğrudan insan onaylı; rev21 son kesin pack/domain iki bağımsız UYGUN aldı. İki geçerli review-row deftere eklendi; Gerçek HIGH card/row0; yazılı insan onayına bağlı yeni HIGH satırı eklendi, kesin check0 ile onaylı; bağımsız insan main adımı son PR’da bekliyor.
-- **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı adayın doğrulama devamı ve birleşik test kapısı sırada.
-- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temizr2 ağacında yeni normal prompt kapısı hazırlanıyor.
+- **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı aday bağımsız UYGUN sonrası CT merge78804713 ile birleşti; taze birleşik62test koşusu devam ediyor.
+- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temiz r2 için v2.0 prompt bağımsız UYGUN ve S-54 kontrolü0; normal dağıtım kapısı sırada.
 - **Kural:** Registry işçisi7dbdfd4 bağımsız UYGUN aldı ve CT dalına mergea1c0a33f ile alındı. Birleşik gerçek kapılar0; yalnız beş hücre, yeni Web testi iddiası yok.
 - **Arka uç:** Ana DL-12 BLOCKED; her iki PREP bağımsız E2 ve entegrasyonunu bekliyor. CT ürün kodu yazmıyor; tek son PR hedefi korunuyor.
 - **Karar:** Operasyon/yayın kapalı. Son PR Linux/Phase1 ve bağımsız insan main merge kapıları açık; hiçbir işçi ağacı silinmedi.
@@ -39,8 +39,8 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `BLOCKED`
-  - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan rev20 kapsam/politika/ortak yol/build-test onayı alındı; resmî incelemenin uygulanabilirlik notları aynı kapsamda netleştiriliyor; kesin-sürüm HIGH/dağıtım kapıları ve iki PREP E2 entegrasyonu sonrası feature; kod başlamadı; BLOCKED
-  - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md`.
+  - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — rev21 onayları ve HIGHcheck0 tamam; ana veri koruma işi iki PREP bağımsız E2 ve birleşik kapılarını bekliyor; operasyon kapalı
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/PROMPT-v2.0-REVIEW.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `READY`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md`.
