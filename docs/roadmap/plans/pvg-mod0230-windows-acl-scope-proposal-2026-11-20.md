@@ -101,11 +101,29 @@ birebir kıyaslanıp korunur; Windows/argüman testinden Unix runtime PASS sonuc
 PREP geliştirme/entegrasyonu veya sonraki feature dispatch'i için önkoşul yapılmaz. Unix runtime doğrulaması açık
 kalan final kapanış şartı olarak taşınır.
 
-Tek son PR'ın **aynı final head SHA'sında**, `.github/workflows/service-tests.yml` içindeki `pvg-api` /
-`ubuntu-22.04` işi hedef test dahil tam API süitini 0 başarısız/0 atlanan olarak çalıştırmalıdır. Kaynakta runner
-satır 54, suite/proje satır 99–100, gerçek `dotnet test` satır 281 ve skip denetimi satır 291'dedir. Head değişirse
-bu nihai head için sonuç yeniden gerekir. İş pending veya başarısızsa final PR merge/main birleştirmesi ve WP DONE
-kapanışı gerçekleşmez. `scripts/run_phase1_gates.sh:331` PVG API projesini yalnız build eder; `:351` Web testlerini
+Tek son PR kapanışında şart, **gerçekte test edilen kaynak baytlarının son PR head'i H ile aynı olmasıdır**;
+checkout commit SHA'sının her normal PR koşusunda doğrudan H olması varsayılmaz. Mevcut
+`.github/workflows/service-tests.yml` içindeki `pvg-api` / `ubuntu-22.04` işinin AYNI koşu/run-attempt kaydında,
+hedef test dahil tam API süitinin 0 başarısız/0 atlanan TRX'i gerçek checkout C'ye bağlanır. Kaynakta runner satır 54,
+suite/proje satır 99–100, varsayılan checkout satır 159–160, gerçek test satır 281 ve skip denetimi satır 291'dedir.
+
+Esas kanıt olağan otomatik PR koşusudur. Olay kaydından PR head H ve base B, aynı işin checkout logundan C alınır;
+bunlar yalnız yorum veya workflow/run API'sindeki head_sha alanı ile eşleşmiş sayılmaz. Checkout sentetik merge M
+ise C=M, M'nin ebeveynlerinde H'nin DOĞRUDAN bulunduğu ve olayın B tabanı ile ilişkisi gerçek Git commit objelerinden
+ölçülür. Ayrıca gerçek Git tree objelerinde **tree(M)==tree(H)** zorunludur; iki tree kimliği ve M'nin ebeveynleri
+kanıta yazılır. Bu eşlikte M ve H'nin commit SHA'ları farklı olsa da test edilen bütün kaynak baytları aynıdır.
+Gerekirse final dalın güncel main'i zaten içermesi ve oluşan yeni H için PR koşusunun yeniden alınması gerekir;
+tree farkı varsayımla kapatılamaz. Kanıt aynı run/attempt, checkout logu, H/B/C ve o işin TRX'iyle birlikte bağlanır;
+CI YAML'ına ek adım/yol/izin eklemek bu önerinin kapsamında değildir.
+
+Bu otomatik koşuda eşlik kanıtlanamazsa aynı kaynak-eşliği şartı, zaten mevcut `workflow_dispatch` final CT dal
+ref'inde çalıştırılarak ve **gerçek checkout SHA C==H** tam ölçülerek karşılanır; aynı pvg-api işinin hedef/tam süit
+0 başarısız/0 atlanan TRX'i gerekir. Bu workflow_dispatch'te suite filtre input'u yoktur; olağan PR kanıtı esas
+olduğundan gereksiz ikinci matrix koşusu oluşturulmaz. İki teknik ölçüm yolu farklı kapsam veya yeni CI yetkisi
+önerisi değildir: birinde kanıtlanmış tree eşliği, diğerinde doğrudan checkout eşliği aynı tested-source==final-H
+şartını sağlar. H değişirse veya ilişki/tree eşliği bozulursa önceki sonuç geçersizdir; yeni final H için bağ ve
+sonuç yeniden ölçülür. İş pending/başarısız ya da kaynak bağı kanıtsızsa final PR merge/main birleştirmesi ve WP DONE
+kapanışı gerçekleşmez. GitHub koşusu, Git obje/tree eşliği ve bu kaynak-TRX bağı burada henüz ölçülmüş değildir. `scripts/run_phase1_gates.sh:331` PVG API projesini yalnız build eder; `:351` Web testlerini
 çalıştırır. Phase 1 veya onun Web test başarısı, gerçek Linux `pvg-api` testinin yerine geçmez. Bu belge ne Unix
 runtime başarısı ne de bu GitHub işinin koştuğu iddiasıdır; CI dosyası değişikliği önerilmez.
 
