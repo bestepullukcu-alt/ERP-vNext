@@ -1,0 +1,10 @@
+{
+  "ownedNodeCount": 3,
+  "terminatedExactOwnNodeIds": [
+    20592,
+    28792,
+    36820
+  ],
+  "remaining": [],
+  "matchingRule": "Parent PID matches actual command; portable SDK/MSBuild executable+command; creation inside exact parent invocation window. No unrelated process killed."
+}

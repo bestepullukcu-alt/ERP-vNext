@@ -1,0 +1,11 @@
+{
+  "tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "git_dir_read_only": false,
+  "git_dir_owned_external": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\.git",
+  "work_tree": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+  "index": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\.git\\index",
+  "index_sha256": "d1ac369e44c8cd8c4bf831d2f0ede62c8e381099f3b03f2a6e602f134555cddd",
+  "index_outside_real_repo": true,
+  "ls_files_equals_frozen_tree": true,
+  "physical_real_git": true
+}

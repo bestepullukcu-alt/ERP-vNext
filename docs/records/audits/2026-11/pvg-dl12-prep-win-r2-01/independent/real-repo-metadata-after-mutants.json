@@ -1,0 +1,14 @@
+{
+  "ct": {
+    "head": "4e15894f059c642a37de145a61a784901527e63d",
+    "index_path": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-git\\.git\\worktrees\\ERP-vNext-git\\index",
+    "index_sha256": "a87a3a03868e3c3c60e97b698e78f4d4c70e61f69b25b8099c16edc010919b6c",
+    "scope": "Read only observation; write commands restricted to owned external scratch Git directories."
+  },
+  "worker": {
+    "head": "fee7d0132e3862ded7025465e311f263e068f7aa",
+    "index_path": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-git\\.git\\worktrees\\ERP-vNext-git4\\index",
+    "index_sha256": "f367417ed240f89844f81df70210579743e0e7bfda0a401f7c33620826544c30",
+    "scope": "Read only observation; write commands restricted to owned external scratch Git directories."
+  }
+}
