@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `ff4609ac81f85e0fd4398aace2808bf5dd10b6e2`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `6a739b43b8b8742ac9e62cad2f0cfc58caa5efc7`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -28,13 +28,13 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 2 INTEGRATED, 1 VERIFYING |
+| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 2 INTEGRATED, 3 PLANNED, 1 VERIFYING |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:13, `REWORK`:2, `SUPERSEDED`:1, `VERIFYING`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:13, `PLANNED`:3, `REWORK`:2, `SUPERSEDED`:1, `VERIFYING`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
@@ -50,6 +50,16 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Kural: Ortak regresyon kaydındaki beş eski XML tetikleyicisi** — `WP-0230-DL12-REGISTRY-01` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan XMC onaylı ortak regresyon kaydında yalnız beş fixed rerun_trigger hücresinden ölü ,*.xml öğesini kaldırma; ürün/guard değişmez
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
+
+- [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `PLANNED`
+  - Yalnız onaylı yedi backend/test yolu; AC-40/41/42(c)/43/44. İki PREP ve registry entegrasyonu beklenir.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
+- [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `PLANNED`
+  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. İki PREP ve registry entegrasyonu beklenir.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
+- [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `PLANNED`
+  - Yalnız onaylı altı frontend yolu; önce BE ve L10N doğrulanıp CT'ye entegre edilir.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
 
 ## Karar bekleyenler
 
@@ -213,3 +223,4 @@ Bu bölümde ayrı kuyruk satırı yok.
 - Son pack: `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`; domain: `2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b`.
 - Son inceleme ve CT karşılığı: `docs/records/audits/2026-11/pvg-rev21-formal-review-01/ROUND-02-DECISION.md@5976407f`.
 - Dağıtım, kabul ve main merge birbirinden ayrı kapılardır; READY veya UYGUN tek başına tamamlanma değildir.
+
