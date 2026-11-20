@@ -1849,23 +1849,92 @@ public sealed class PvgServiceApiHostTests
     [Fact]
     public void Configuration_scan_fails_closed_on_inaccessible_directory()
     {
-        using var fixture = new ScanFixture();
-        fixture.Write("locked/appsettings.json", "{}");
-        var locked = Path.Combine(fixture.Root, "locked");
-
-        File.SetUnixFileMode(locked, UnixFileMode.None);
+        var fixture = new ScanFixture();
+        string? windowsFixtureName = null;
         try
         {
-            var precondition = Record.Exception(() => Directory.EnumerateFileSystemEntries(locked).ToArray());
-            Assert.True(
-                precondition is UnauthorizedAccessException,
-                "The runner ignores directory permissions (for example root); the inaccessible-directory scan cannot be measured here.");
+            fixture.Write("locked/appsettings.json", "{}");
+            var locked = Path.Combine(fixture.Root, "locked");
+            if (OperatingSystem.IsWindows())
+            {
+                var temp = new DirectoryInfo(Path.GetTempPath());
+                var directory = new DirectoryInfo(locked);
+                var relative = Path.GetRelativePath(temp.FullName, directory.FullName);
+                var parts = relative.Split(Path.DirectorySeparatorChar);
+                Assert.Equal(5, parts.Length);
+                Assert.StartsWith("pvg-dl3b-", parts[0]);
+                Assert.True(Guid.TryParseExact(parts[0]["pvg-dl3b-".Length..], "N", out _));
+                Assert.Equal(new[] { ".claude", "worktrees", "fixture-root", "locked" }, parts[1..]);
+                windowsFixtureName = parts[0];
+                for (var current = directory; current is not null; current = current.Parent)
+                {
+                    Assert.False(current.Attributes.HasFlag(FileAttributes.ReparsePoint), current.FullName);
+                    if (string.Equals(current.FullName, Path.TrimEndingDirectorySeparator(temp.FullName),
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        break;
+                    }
+                }
 
-            Assert.ThrowsAny<Exception>(() => PvgConfigurationScanner.Scan(fixture.Root));
+                void AssertAccessible()
+                {
+                    Assert.Contains(Path.Combine(locked, "appsettings.json"), Directory.GetFileSystemEntries(locked));
+                    Assert.Contains("locked/appsettings.json", PvgConfigurationScanner.Scan(fixture.Root).ScannedFiles);
+                }
+
+                const System.Security.AccessControl.AccessControlSections access =
+                    System.Security.AccessControl.AccessControlSections.Access;
+                var acl = directory.GetAccessControl(access);
+                var original = acl.GetSecurityDescriptorSddlForm(access);
+                using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+                var sid = Assert.IsType<System.Security.Principal.SecurityIdentifier>(identity.User);
+                acl.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(sid,
+                    System.Security.AccessControl.FileSystemRights.ListDirectory,
+                    System.Security.AccessControl.InheritanceFlags.None, System.Security.AccessControl.PropagationFlags.None,
+                    System.Security.AccessControl.AccessControlType.Deny));
+
+                AssertAccessible();
+                try
+                {
+                    directory.SetAccessControl(acl);
+                    Assert.Throws<UnauthorizedAccessException>(() => Directory.EnumerateFileSystemEntries(locked).ToArray());
+                    var denied = Assert.Throws<UnauthorizedAccessException>(() => PvgConfigurationScanner.Scan(fixture.Root));
+                    Assert.Contains(locked, denied.Message, StringComparison.OrdinalIgnoreCase);
+                }
+                finally
+                {
+                    var restore = new System.Security.AccessControl.DirectorySecurity();
+                    restore.SetSecurityDescriptorSddlForm(original, access);
+                    directory.SetAccessControl(restore);
+                    Assert.Equal(original, directory.GetAccessControl(access).GetSecurityDescriptorSddlForm(access));
+                    AssertAccessible();
+                }
+            }
+            else
+            {
+                File.SetUnixFileMode(locked, UnixFileMode.None);
+                try
+                {
+                    var precondition = Record.Exception(() => Directory.EnumerateFileSystemEntries(locked).ToArray());
+                    Assert.True(
+                        precondition is UnauthorizedAccessException,
+                        "The runner ignores directory permissions (for example root); the inaccessible-directory scan cannot be measured here.");
+
+                    Assert.ThrowsAny<Exception>(() => PvgConfigurationScanner.Scan(fixture.Root));
+                }
+                finally
+                {
+                    File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                }
+            }
         }
         finally
         {
-            File.SetUnixFileMode(locked, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            fixture.Dispose();
+            if (windowsFixtureName is not null)
+            {
+                Assert.Empty(Directory.GetFileSystemEntries(Path.GetTempPath(), windowsFixtureName));
+            }
         }
     }
 

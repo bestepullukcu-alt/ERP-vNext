@@ -196,6 +196,37 @@ public sealed class PvgPersistenceBoundaryScanTests
     }
 
     [Fact]
+    public void Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation()
+    {
+        const int port = 27123;
+        var root = Path.Combine(Path.GetTempPath(), "pvg-mongo-argument-fixture");
+
+        var windowsArguments = PvgOwnedMongod.BuildLaunchArguments(port, root, replicaSet: true, isWindows: true);
+        var unixArguments = PvgOwnedMongod.BuildLaunchArguments(port, root, replicaSet: true, isWindows: false);
+
+        Assert.DoesNotContain("--nounixsocket", windowsArguments);
+        Assert.Contains("--nounixsocket", unixArguments);
+        foreach (var arguments in new[] { windowsArguments, unixArguments })
+        {
+            AssertArgument(arguments, "--bind_ip", "127.0.0.1");
+            AssertArgument(arguments, "--port", "27123");
+            AssertArgument(arguments, "--dbpath", Path.Combine(root, "data"));
+            AssertArgument(arguments, "--logpath", Path.Combine(root, "mongod.log"));
+            AssertArgument(arguments, "--wiredTigerCacheSizeGB", "0.25");
+            AssertArgument(arguments, "--setParameter", "enableTestCommands=1");
+            AssertArgument(arguments, "--replSet", PvgMongoTestHarness.ReplicaSetName);
+            AssertArgument(arguments, "--oplogSize", "128");
+        }
+
+        static void AssertArgument(List<string> arguments, string flag, string expectedValue)
+        {
+            var index = arguments.IndexOf(flag);
+            Assert.InRange(index, 0, arguments.Count - 2);
+            Assert.Equal(expectedValue, arguments[index + 1]);
+        }
+    }
+
+    [Fact]
     public void Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod()
     {
         // The port: an address on 27017 is refused, and so is an address without a port (that is 27017).
@@ -210,8 +241,10 @@ public sealed class PvgPersistenceBoundaryScanTests
         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(null, _ => true));
         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(" ", _ => true));
         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary("mongod", _ => true));
-        Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary("/opt/none/mongod", _ => false));
-        Assert.Equal("/opt/fake/mongod", PvgMongoTestHarness.ResolveBinary("/opt/fake/mongod", _ => true));
+        var missingBinary = OperatingSystem.IsWindows() ? @"C:\opt\none\mongod.exe" : "/opt/none/mongod";
+        var existingBinary = OperatingSystem.IsWindows() ? @"C:\opt\fake\mongod.exe" : "/opt/fake/mongod";
+        Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(missingBinary, _ => false));
+        Assert.Equal(existingBinary, PvgMongoTestHarness.ResolveBinary(existingBinary, _ => true));
     }
 }
 
