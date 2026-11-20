@@ -39,6 +39,17 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/Diten.Web/package-lock.json
+
+      - name: Install Web test dependencies
+        working-directory: frontend/Diten.Web
+        run: npm ci --no-audit --no-fund
+
       - name: Run Phase 1 Gates
         # merge_group: GITHUB_BASE_REF is set only for pull_request events; the gates compare with the group's parent
         # commit instead (run_phase1_gates.sh reads this variable only on a merge_group run, and fails without it).
