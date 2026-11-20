@@ -1,0 +1,34 @@
+{
+ "argv": [
+  "python",
+  "-B",
+  "scripts/ct_queue.py",
+  "validate",
+  "--queue",
+  "pvg"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-ct-readiness-02/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-ct-readiness-02/stdout.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+ ],
+ "commit": "9fa2ed6755ade67c3a09d70681560e75139f9e4c",
+ "cwd": ".",
+ "exit": 4294967295,
+ "finished_utc": "2026-11-20T08:04:08Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/pvg-ct-readiness-02",
+ "started_utc": "2026-11-20T07:58:23Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "54c3b647065b522102e1d12cfdbe522c58e0096060a39244301bc22b1ba210b2"
+ },
+ "tree": "8e3c2932eec822d0ed9b64e1475baf7ef38d7603"
+}

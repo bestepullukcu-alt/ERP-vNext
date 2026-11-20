@@ -4,6 +4,12 @@
 > [.antigravity/rules/](../../../.antigravity/rules/)'dadir; capability-level sozlesme
 > [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)'tedir.
 
+## Current MOD-0230 draft gate (2026-11-20)
+
+MOD-0230 revision 20 is a preparation/review draft, not an implementation authorization. DL-12 remains BLOCKED.
+The proposed path exceptions below are dormant until future exact-version pack/domain approval and explicit
+code/build authorization. Historical approvals remain bound to their own versions; other members' gates are unchanged.
+
 ## Purpose
 
 Pharmacovigilance domain'i, regulated life-sciences safety operations icin Safety Case intake/triage,
@@ -76,6 +82,56 @@ recorded as draft / not approved and does not open operational runtime.**
 - `frontend/Diten.Web/Views/Shared/_Layout.cshtml` (FROZEN)
 - `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**`
 - Other domain governance folders except by explicit user request
+
+## Proposed revision 20 alignment - DRAFT / inactive
+
+The 2026-11-20 owner instruction authorizes preparation and independent review of MOD-0230 revision 20 only.
+The current revision is draft; DL-12 stays BLOCKED. Earlier ready-for-dev statements are historical with respect to
+this changed scope. This paragraph grants no code/build, dispatch, publication or operational authorization.
+
+The following exact path exceptions are PROPOSED ONLY, effective solely after independent review, valid
+exact-version HIGH approval of the pack and this domain alignment, approved/ready-for-dev pack status, explicit future
+code/build authorization and applicable shared-file owner/single-writer consent:
+
+- `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`: update-only lossless form input and
+  payload conversion plus minimum update-local helpers; no route, auth/header, generic error or Create changes.
+- `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs`: only this module's real MVC/connected API/store
+  tests, alias-qualified PVG host, embedded node -e jsdom program and bounded stdin/stdout RPC; no hidden install,
+  runtime skip, new runner or other module tests.
+- `frontend/Diten.Web.Tests/Diten.Web.Tests.csproj`: exactly one ProjectReference to
+  `../../services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj` with alias `pvgapi`; no other
+  references/packages/framework/solution changes. This shared-file proposal needs its recorded owner/single-writer
+  consent. Its alias build and embedded connected RPC remain unmeasured readiness conditions; additional
+  needs require a new explicit proposal, not silent expansion.
+
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml`: only Edit-mode required attributes and
+  matching required indicators for SourceReference and PatientSubjectCode, both service-optional. Create and all
+  other markup/validation stay unchanged; the historical view-root exception does not activate this DL-12 proposal.
+- `.github/workflows/phase1-gates.yml`: only two prerequisites before the unchanged Run Phase 1 Gates step:
+  actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, Node 22/npm cache/frontend lock path, followed by
+  npm ci --no-audit --no-fund in frontend/Diten.Web. Recorded CI-owner/single-writer consent is OPEN; no new workflow,
+  package/framework, triggers, permissions, gate commands or other jobs are proposed. All .github paths stay
+  protected; only these two steps in this exact file could become an exception after all gates above.
+
+Within the already scoped PVG service, the exact additional CONDITIONAL / INACTIVE DL-12 test proposal is
+`services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs`:
+only the Update row of Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial may align its
+permission-only/no-field expectations to the proposed pre-read update field-policy calls after owner adoption.
+Not-found/safe/no-record/no-workflow/no-evidence assertions, Triage/Route rows and all other tests/helpers remain
+unchanged. All future review/approval/code-build gates above still apply; drafting grants no test edit permission.
+
+The field-policy/pre-read order and record-existence visibility are an OPEN pack-owner policy decision, not adopted
+by this domain alignment. Embedded Node/RPC, aliased reference and clean Phase 1 execution remain unimplemented and
+unmeasured pre-dispatch readiness blockers. A separate runner's JS setup does not satisfy the connected C# test
+prerequisite. After exact-version reviewed/approved scope and applicable consents, the owner may separately authorize
+bounded build/test implementation and feasibility measurements before dispatch; this draft authorizes neither and
+does not require implementation evidence before that limited future permission can be granted.
+
+The test-only --nounixsocket platform-selection proposal for the pack's exact Mongo harness and guard test files
+is inside this service boundary but remains inactive under the same future gates. No store/production host change,
+weaker binary/port/replica-set safety or permissive adapter is proposed. Existing frontend protection rules continue
+until the conditions above are met. Other slices, MOD-0231/0232/0234, other domain ownership and all operational gates
+are unchanged. No code or test has run for this proposal; merely drafting/reviewing it grants no path exception.
 
 ## Ownership Boundaries
 
