@@ -179,8 +179,9 @@ real denial precondition. No skipped old four cases or committed mutations. Inde
 only the final verified commit may integrate after it. These are outputs, not same-PREP dispatch prerequisites.
 
 Unix runtime stays open until the final PR's existing service-tests pvg-api/ubuntu-22.04 target/full TRX is 0 failed/
-0 skipped and source-bound to final H. Same run/attempt event H/base B and actual checkout C are measured: synthetic
-M must directly parent H with real commit/base relation and tree(M)==tree(H) Git objects, plus checkout log and same-
+0 skipped and source-bound to final H. Same run/attempt event H/base B and actual checkout C are measured:
+require H ∈ parents(M), meaning H is a direct parent of synthetic M, with real commit/base relation and
+tree(M)==tree(H) Git objects, plus checkout log and same-
 job TRX; API head_sha/comments are insufficient. Only if that normal PR equality cannot be proved may EXISTING
 unfiltered workflow_dispatch on final CT ref prove C==H and its same-job TRX. No CI YAML/input/job/step/permission
 edit or unnecessary second matrix. Changed H or unequal source invalidates old results. Pending/red/unbound Unix

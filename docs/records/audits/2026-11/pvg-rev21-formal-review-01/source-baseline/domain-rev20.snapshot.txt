@@ -1,0 +1,207 @@
+# Pharmacovigilance (PVG) - Domain Config
+
+> Bu dosya domain'in **sinirlarini ve kararlarini** tanimlar. Engineering NASIL kurallari
+> [.antigravity/rules/](../../../.antigravity/rules/)'dadir; capability-level sozlesme
+> [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)'tedir.
+
+## Current MOD-0230 build/test gate (2026-11-20)
+
+MOD-0230 revision 20 is ready-for-dev with build_gate open and direct human scope/policy/shared-file/single-writer
+and bounded build/test consent recorded in docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md.
+Formal final-version independent review/HIGH ledger records and the passed prompt/dispatch gate remain required
+before any product-class worker starts, including each preparation WP. Bounded preparation uses independent
+WP-0230-DL12-PREP-WIN and WP-0230-DL12-PREP-WEB; each has its own ordinary prompt/HIGH review, valid formal pack
+approval and dispatch gate. Their feasibility evidence is output, not a prerequisite for that same dispatch, and
+neither depends on the parent feature WP. No successful feasibility is claimed. Operational runtime stays closed; actual WP state comes from CT-QUEUE/gate, not pack dl12_state.
+Other modules' authorizations and historical version-bound reviews are unchanged.
+
+## Purpose
+
+Pharmacovigilance domain'i, regulated life-sciences safety operations icin Safety Case intake/triage,
+signal-minimum case processing, MedDRA coding, and Signal Management contract boundaries sahiplenir.
+Ilk kapsam yalnizca DCP-004 tarafindan tanimlanan urgent W-3 first-stage governance block'tur.
+
+## In-Scope Modules
+
+> Canonical identity and names come from the Blueprint and DCP-002 preflight. Wave/status details remain in
+> portfolio-level governance; burada sadece PVG sahiplik listesi tutulur.
+
+**First-stage DCP-004 members:**
+
+- MOD-0230 - Case Intake & Triage
+- MOD-0231 - Case Processing; urgent W-3 delivery slice: Signal Minimum Scope
+- MOD-0232 - MedDRA Coding
+- MOD-0234 - Signal Management; Signal MVP contract/object model/workflow/interface gates only
+
+## Out-of-Scope
+
+- W-3A0 foundation remediation development; not waived, still a production blocker.
+- Operational runtime implementation, production deployment, supplier qualification, validation, collections
+  (except the MOD-0230 build/test intake-draft store, DCP-004 §10), seed data, jobs, migrations (that store's startup
+  index bootstrap excepted; no data migration), and any runtime surface outside the
+  MOD-0230/MOD-0231/MOD-0232/MOD-0234 build/test gates.
+- MOD-0234 runtime shell, placeholder dashboard, placeholder endpoint, menu entry, fake data, fake signal, fake
+  metric, or fake cohort.
+- Full W-4/W-5 PV scope outside DCP-004, including MOD-0233, MOD-0235, MOD-0236, MOD-0237, MOD-0238, and MOD-0239.
+- AI summarization, extraction, recommendation, or routing implementation until governed-AI prerequisites are approved.
+
+## Domain-Level Repo Scope
+
+**Authorized now (updated 2026-08-12 - final all-four PVG governance package; DCP-004 `approved`,
+MOD-0230/MOD-0231/MOD-0232/MOD-0234 `ready-for-dev` for build/test):**
+
+- `execution/domains/pharmacovigilance/**`
+- `services/Diten.PvgService/**` - dedicated PVG service boundary, port **5011** (OD-7). MOD-0230 slice 1,
+  MOD-0231 Signal Minimum Scope, MOD-0232 MedDRA Coding, and MOD-0234 Signal Management class-library
+  contracts/tests only; since 2026-10-29 MOD-0230 slice 1 also has its build/test Mongo store (DEPO-01, pack slice
+  DL-10). MOD-0231, MOD-0232, and MOD-0234 must stay non-operational: no API host, controllers,
+  appsettings, persistence, Mongo, repositories, Gateway route, frontend, seeds, jobs, dictionary import,
+  dictionary redistribution, static MedDRA data, cache/search index, data-product stub, fake signal, fake metric,
+  fake cohort, partner integration, AI, archive/void/export/delete/bulk-delete, or runtime endpoint.
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**` plus matching JS / l10n / resource files. Since
+  2026-10-31, once revision 15 is approved on main: exactly two `Nav.*` keys in the seven
+  `frontend/Diten.Web/Resources/SharedResource.*.resx` files (pack slice DL-11).
+- `gateway/Diten.ApiGateway/**/ocelot.json` - one MOD-0230 route family, integration-agent-owned.
+  Upstream `/api/pv-case-intake-triage`, downstream `/api/v1/pv-case-intake-triage` (NET-001).
+- `tests/**` for the above.
+
+**All of the above is authorized for the build/test gate only: local, dev, and CI. Production deployment,
+supplier qualification, and validation approval remain unauthorized. The MOD-0230 runtime authorization packet is
+recorded as draft / not approved and does not open operational runtime.**
+
+**Still blocked:**
+
+- MOD-0231 operational runtime; its build/test gate is open only for non-operational class-library contracts/tests.
+- MOD-0232 operational runtime - build/test gate is open only for non-operational class-library contracts/tests.
+- MOD-0234 operational runtime - build/test gate is open only for no-shell non-operational class-library
+  contracts/tests.
+- Archive, void, export, seed data, and background jobs for MOD-0230 (out of slice 1).
+- Any AI behaviour.
+
+## Protected Paths
+
+- `.antigravity/**` (global engineering system). `rules/ports.md` needs explicit approval before port 5011 is registered there.
+- `services/**` **except `services/Diten.PvgService/**`**
+- `frontend/**` **except the MOD-0230 view root and its JS / resource siblings**, and the two `Nav.*` keys of pack slice DL-11
+- `gateway/**` except the single MOD-0230 route family
+- `frontend/Diten.Web/Views/Shared/_Layout.cshtml` (FROZEN)
+- `frontend/Diten.Web/Controllers/Archive/**`, `frontend/Diten.Web/Views/Archive/**`
+- Other domain governance folders except by explicit user request
+
+## Revision 20 owner-consented alignment - record/dispatch gated
+
+The direct 2026-11-20 owner record approves the unchanged revision 20 scope, pre-read field-policy order, exact
+shared-file paths and single-writer arrangement, bounded build/test preparation and delegated development after
+required gates. Ready-for-dev metadata expresses human consent; it is not a completed formal review/HIGH ledger.
+Final-version independent review/HIGH records and a passed prompt/dispatch gate are still required before a DL-12
+product worker starts. The exact path exceptions below follow that consent and those gates; no new path is added.
+Publication and operational use remain unauthorized.
+
+- `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs`: update-only lossless form input and
+  payload conversion plus minimum update-local helpers; no route, auth/header, generic error or Create changes.
+- `frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs`: only this module's real MVC/connected API/store
+  tests, alias-qualified PVG host, embedded node -e jsdom program and bounded stdin/stdout RPC; no hidden install,
+  runtime skip, new runner or other module tests.
+- `frontend/Diten.Web.Tests/Diten.Web.Tests.csproj`: exactly one ProjectReference to
+  `../../services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj` with alias `pvgapi`; no other
+  references/packages/framework/solution changes. Human consent for this exact shared-file/single-writer scope is recorded. Its alias build and embedded connected RPC remain unmeasured readiness conditions; additional
+  needs require a new explicit proposal, not silent expansion.
+
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml`: only Edit-mode required attributes and
+  matching required indicators for SourceReference and PatientSubjectCode, both service-optional. Create and all
+  other markup/validation stay unchanged; the historical view-root exception does not widen this exact DL-12 scope.
+- `.github/workflows/phase1-gates.yml`: only two prerequisites before the unchanged Run Phase 1 Gates step:
+  actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, Node 22/npm cache/frontend lock path, followed by
+  npm ci --no-audit --no-fund in frontend/Diten.Web. Human CI-path/single-writer consent is recorded; no new workflow,
+  package/framework, triggers, permissions, gate commands or other jobs are proposed. All .github paths stay
+  protected; only these two owner-consented steps in this exact file follow the bounded preparation/dispatch gates above.
+
+Within the already scoped PVG service, the exact owner-consented / dispatch-gated DL-12 test scope is
+`services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs`:
+only the Update row of Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial may align its
+permission-only/no-field expectations to the owner-adopted pre-read update field-policy calls.
+Not-found/safe/no-record/no-workflow/no-evidence assertions, Triage/Route rows and all other tests/helpers remain
+unchanged. The same human consent and final-version formal record/dispatch gates above apply.
+
+The direct owner record adopts the field-policy/pre-read order and record-existence visibility contract; no user
+policy or exact shared-path consent remains pending for this unchanged scope. Embedded Node/RPC, aliased reference,
+clean-local execution and Windows Mongo preparation remain unimplemented/unmeasured outputs of separately gated
+product-class preparation WPs. PREP-WIN writes only the existing two Mongo harness/guard-test paths in the pack;
+PREP-WEB only the existing module C# Web test, single-alias csproj and exact two Phase 1 prerequisite steps. PREP-WEB
+measures transport/current behavior and negative failure controls; final no-loss acceptance is feature work and its
+known current RED stays visible. No production service/DTO/controller/form.js/_Form/l10n change belongs to PREP-WEB.
+Each PREP WP requires its own normal prompt/HIGH review, formal pack approval and passed dispatch gate; --prepare is
+not authority. Feasibility is its output, not a circular entry condition. Main feature dispatch requires BOTH E2
+outputs independently verified and integrated plus its own normal prompt/HIGH review/formal approval/passed gate.
+Clean LOCAL same-prerequisite/same-dotnet-test evidence measures feasibility; real GitHub Linux Phase 1 is required
+at closure of the single final PR, not before a not-yet-opened PR. A separate job's JS setup proves no transport.
+Bounded work stays under the same consent/single-writer scope; no implementation or successful measurement is claimed.
+
+The test-only --nounixsocket platform-selection scope for the pack's exact Mongo harness and guard test files is
+within this service boundary under the same consent/gates. In the existing named safety test, only synthetic
+missing/positive binary fixture paths may become platform-fully-qualified while every safety assertion stays intact:
+Path.IsPathFullyQualified/existence checks, null/empty/relative/missing rejection, 27017 prohibition, isolation and
+cleanup are never weakened. This is portability within the existing guard-test file, not a new path or permission.
+No store/production host change, weaker binary/port/
+replica-set safety or permissive adapter is authorized. Protection remains outside the exact listed exceptions.
+Other slices, MOD-0231/0232/0234, other domain ownership and all operational gates are unchanged. No product/test/CI
+file is changed by this administrative transition, and no code/test/feasibility success is claimed.
+
+## Ownership Boundaries
+
+- **MOD-0230 Case Intake & Triage:** owns Safety Case intake records, intake artifacts, triage state, and routing decision boundary for the first PVG sequence.
+- **MOD-0231 Case Processing:** canonical module name remains Case Processing. In DCP-004 first stage, only the Signal Minimum Scope delivery slice may be planned.
+- **MOD-0232 MedDRA Coding:** owns coded-term assignment boundaries and MedDRA dictionary-version binding contracts for Safety Case terms. It cannot hardcode dictionary data as local UI/static data.
+- **MOD-0234 Signal Management:** owns signal hypothesis, evaluation, review decision, linked evidence boundaries for Signal MVP planning. Runtime shell implementation is explicitly blocked.
+- **W-3A0 foundation dependencies:** REG-PV-BASE, CASE-LIFECYCLE, CODESET, and REG-SIGNAL-BASE dependencies remain external prerequisites and production blockers where applicable.
+- **Evidence, workflow, audit, masking, data product, semantic metric, and governed-AI controls:** PVG consumes approved contracts from their owning modules; this domain does not reimplement those foundations inside member modules.
+
+## Runtime Decisions
+
+> MOD-0230, MOD-0231, MOD-0232, and MOD-0234 build/test preparation is governed by their ready-for-dev module packs and
+> DCP-004. This domain config does not authorize operational runtime, production use, supplier qualification, or
+> validation.
+
+- **Identity and naming:** Blueprint canonical IDs/names are mandatory. Ref: [DCP-002](../../portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md).
+- **Orchestration boundary:** DCP-004 stays the first-stage capability contract until user approval changes it. Ref: [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md).
+- **Gateway and ports:** MOD-0230 records `Diten.PvgService` on port 5011 and one route family for the build/test
+  gate only. MOD-0231, MOD-0232, and MOD-0234 record no additional port and no Gateway route.
+  `.antigravity/rules/ports.md` remains protected and has not been updated here. No other PVG route or port is
+  reserved. Ref:
+  [.antigravity/rules/ports.md](../../../.antigravity/rules/ports.md), [.antigravity/rules/routes.md](../../../.antigravity/rules/routes.md).
+- **Security and regulated data:** PHI/PII masking, row/field security, RBAC/ABAC, audit, correlation, evidence-link, and regulated error-model gates must remain fail-closed. Full owner approvals still gate operational runtime. Ref: [.antigravity/rules/security-jwt.md](../../../.antigravity/rules/security-jwt.md), [.antigravity/rules/multi-tenancy.md](../../../.antigravity/rules/multi-tenancy.md).
+- **Localization and UI:** MOD-0230 tenant UI is limited to the build/test gate if executed by its pack. Other PVG UI remains unauthorized. Approved UI must follow repo localization/layout rules. Ref: [.antigravity/rules/localization-standard.md](../../../.antigravity/rules/localization-standard.md), [.antigravity/rules/views-organization.md](../../../.antigravity/rules/views-organization.md).
+- **Data and persistence:** no operational collection/schema/index is authorized here. Exception (2026-10-29, DEPO-01): MOD-0230 may use one Mongo store under its build/test gate only (local / dev / CI) - collection, tenant-first indexes, startup schema bootstrap - as scoped by the MOD-0230 pack (revision 14, slice DL-10) and DCP-004 §10; MOD-0231, MOD-0232, and MOD-0234 gain nothing from it. Any other persistence decision belongs in an approved member module pack and remains subject to the operational runtime gate. Ref: [.antigravity/rules/entity-base-template.md](../../../.antigravity/rules/entity-base-template.md), [.antigravity/rules/mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md).
+
+## Domain Bootstrap Notes
+
+- This PVG governance scaffold exists and contains DCP-004 member module packs for:
+  - `MOD-0230 Case Intake & Triage` - `ready-for-dev` for the build/test gate only
+  - `MOD-0231 Case Processing` - `ready-for-dev` for the build/test gate only; Signal Minimum Scope delivery slice
+  - `MOD-0232 MedDRA Coding` - `ready-for-dev` for the build/test gate only; non-operational class-library contracts/tests
+  - `MOD-0234 Signal Management` - `ready-for-dev` for the build/test gate only; no-shell non-operational class-library contracts/tests
+- **2026-08-09:** DCP-004 is `approved`; MOD-0230 is `ready-for-dev` for the build/test gate.
+- **2026-08-10:** MOD-0231 is `ready-for-dev` for the build/test gate only.
+- **2026-08-11:** MOD-0232 and MOD-0234 are `ready-for-dev` for the build/test gate only. MOD-0234 keeps
+  `shell: none` and authorizes no operational runtime, shell, placeholder dashboard, fake signal, fake metric, or
+  fake cohort.
+- **2026-08-12:** Final all-four PVG governance package reconciliation recorded. MOD-0230 runtime authorization
+  packet remains draft / not approved. Operational runtime remains **NO-GO**; MOD-0231, MOD-0232, and MOD-0234
+  operational runtime remain blocked.
+- **2026-10-29:** MOD-0230 build/test Mongo store exception (DEPO-01, DEPO-03; DCP-004 §10; pack revision 14, slice
+  DL-10). Operational runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
+- **2026-10-31:** MOD-0230 build/test closed catalog registration exception (`docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-01.md`,
+  KK-1 ... KK-6, corrected by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-02.md`, re-confirmed by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-03.md`, sequenced by `docs/records/decisions/2026-10/pvg-mod0230-kapali-kayit-04.md`; DCP-004 §10; pack revision 15, slice DL-11): non-assignable, hidden from the menu, pushed once at start
+  by `Diten.PvgService` when the key and the base URL are both set, the URL is a valid absolute http/https address, and the host is not production-like. In force only once revision 15 is approved on main. Operational
+  runtime stays **closed**; MOD-0231, MOD-0232, and MOD-0234 are unchanged.
+- MOD-0230 consumes MOD-0019, MOD-0023, and MOD-0031 through fail-closed PVG-owned ports
+  (`IPvgFieldSecurityPolicy`, `IPvgWorkflowTransitionGate`, `IPvgEvidenceLinkPort`) because those modules have no
+  runtime. Ports are interface + deny default only; they must never store policy, host a workflow engine, or
+  persist evidence. Detailed port contract material remains a pending support package and is not normative until
+  committed.
+- Operational runtime authorization for every PVG member remains **closed**.
+- Seed data, background jobs, menu entries, and module-catalog work remain blocked. One exception (2026-10-31,
+  DCP-004 §10; pack revision 15, slice DL-11): the closed catalog registration of MOD-0230 under its build/test gate,
+  once revision 15 is approved on main. Its one startup push is not a background job, and the catalog→Auth sync it triggers
+  is the OD-PVG-1 path, not a seed. Nothing else opens: seed data, grant code, menu entries, and every other catalog entry
+  stay blocked, for MOD-0231, MOD-0232, and MOD-0234 too.
