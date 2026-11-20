@@ -1,0 +1,29 @@
+{
+  "worker_commit": "43f856f22f0549be1d61fab09d40086b755661ba",
+  "worker_tree": "72e59b13b99d4fa5ba7ccacb2544145128f4d7f2",
+  "worker_base": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "files": [
+    {
+      "name": "before.json",
+      "bytes": 6976,
+      "raw_sha256": "6621ea24e877279875402ef063e4661c8469021311a4cb4d0803ed3bb59f2fda"
+    },
+    {
+      "name": "after.json",
+      "bytes": 4323,
+      "raw_sha256": "1485e7c8e60939e853007eddfb79180a031e29ada681072bdeb242746afdd57e"
+    },
+    {
+      "name": "commands.json",
+      "bytes": 13745,
+      "raw_sha256": "828249a4acd47a7964d676f1abee8ab56d296543e64e7470941582904b4d32b1"
+    },
+    {
+      "name": "manifest.json",
+      "bytes": 1882,
+      "raw_sha256": "3134c13410d8cf334e3f479e382a6b2493b0bdd8e8e8daa6042c536608ff62b4"
+    }
+  ],
+  "worker_report_origin": "Verbatim final app agentMessage text, UTF8 LF file; read_thread turn01a1fab0-f436-7523-80c1-e0ca99af3741",
+  "worker_report_file_sha256": "9933b305fff62742d3757796c88837e1965279ace6a677033ed87c3673c73e90"
+}
