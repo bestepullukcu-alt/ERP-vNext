@@ -1,0 +1,27 @@
+{
+  "kind": "Actual production report_contract preflight only; not normal dispatch",
+  "utc": "2026-11-20T20:04:19.865339+00:00",
+  "head": "8650802eb2d2cec91b687a603de9b3bac984e408",
+  "checks": [
+    {
+      "report": "docs/records/audits/2026-11/pvg-dl12-feature-discovery-01/discovery-report.txt",
+      "raw_sha256": "054905939f49da8865f5c5b5a3e7203b48ab2cdec3854c58c7bf1142457bd74d",
+      "body_sha256": "ce0498084f3a077ab8c0b66693603f245a0ee97f541e97b4c2513834e9770bdc",
+      "findings": [
+        "keşif: rapordaki araç sha256 ae87a56615f5 üretici commit'indeki aracın değil (72d27f77dcf4)"
+      ],
+      "findings_count": 1,
+      "ref_count": 536,
+      "bulgu_count": 34
+    },
+    {
+      "report": "docs/records/audits/2026-11/pvg-dl12-feature-discovery-02/discovery-report.txt",
+      "raw_sha256": "afb28c26db1d50b95823193cf0e73e743b62094e1ff97b79cc6f945d2147465a",
+      "body_sha256": "b9dd8c2f751a22c40c2a88a8c382473df864a9cae3b562e5215c2ae3a78f8ccc",
+      "findings": [],
+      "findings_count": 0,
+      "ref_count": 538,
+      "bulgu_count": 34
+    }
+  ]
+}

@@ -1,17 +1,16 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `875b8a6fd5d0cf12badfead9c5a6a08f04b47847`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `8650802eb2d2cec91b687a603de9b3bac984e408`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
 ## Güncel odak
 
-- **Karar:** İki dar ek kapsam doğrudan insan onaylı; rev21 son kesin pack/domain iki bağımsız UYGUN aldı. İki geçerli review-row deftere eklendi; Gerçek HIGH card/row0; yazılı insan onayına bağlı yeni HIGH satırı eklendi, kesin check0 ile onaylı; bağımsız insan main adımı son PR’da bekliyor.
-- **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı aday bağımsız UYGUN sonrası CT merge78804713 ile birleşti; taze birleşik62/62 PASS,0skip ve known-failures0 ile E2 entegrasyonu tamamlandı.
-- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temiz r2 için v2.0 prompt bağımsız UYGUN ve S-54 kontrolü0; gerçek normal dağıtım kapısı18:29:05UTC çıkış0. Kesin v2.0 iş emri ayrı Windows sohbetinde başladı; ürün başarısı/E2 henüz yok.
-- **Kural:** Registry işçisi7dbdfd4 bağımsız UYGUN aldı ve CT dalına mergea1c0a33f ile alındı. Birleşik gerçek kapılar0; yalnız beş hücre, yeni Web testi iddiası yok.
-- **Arka uç:** Ana DL-12 BLOCKED; Web hazırlığı E2 ile entegre, Windows hazırlığının bağımsız E2 ve entegrasyonunu bekliyor. CT ürün kodu yazmıyor; tek son PR hedefi korunuyor.
-- **Karar:** Operasyon/yayın kapalı. Son PR Linux/Phase1 ve bağımsız insan main merge kapıları açık; hiçbir işçi ağacı silinmedi.
+- **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
+- **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
+- **Arka uç / çeviri:** v1.0 normal kapılarının tek keşif özeti hatası gerçek canonical producer ile düzeltildi. Parent/BE/L10N READY; kesin v1.1 kaynak/prompt incelemesi ve gerçek normal0 ardından iki işçi paralel başlayacak. CT ürün kodu yazmıyor.
+- **Ekran:** FE PLANNED; BE ve L10N bağımsız doğrulanıp CT'ye alınınca başlayacak. İlk JS34/34 ölçümü son FE baseline/acceptance değildir.
+- **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
 ## Teslim dilimleri
 
@@ -28,19 +27,19 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 3 BLOCKED, 3 INTEGRATED, 1 PLANNED |
+| DL-12 | Düzenlemede veriyi koruma | 3 INTEGRATED, 1 PLANNED, 3 READY |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:3, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:14, `PLANNED`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:14, `PLANNED`:1, `READY`:3, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
-- [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `BLOCKED`
-  - Kapsam/kuyruk kaydı: Rev21 onayları ve HIGHcheck0, iki PREP/registry entegrasyonu tamam. Normal BE/L10N kontrolleri1: yalnız keşif aracının Windows CRLF özeti canonical Git sürümüyle uyuşmadı. Dış canonical producer kaydı yenilenir; yeni onay beklenmiyor, kod başlamadı.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-prompts-01/DISPATCH-STOP-v1.0.md`.
+- [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `READY`
+  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0 beklenir, ürün başlamadı.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md`.
@@ -51,12 +50,12 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — insan XMC onaylı ortak regresyon kaydında yalnız beş fixed rerun_trigger hücresinden ölü ,*.xml öğesini kaldırma; ürün/guard değişmez
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
 
-- [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `BLOCKED`
-  - Yalnız onaylı yedi backend/test yolu; v1.0 bağımsız UYGUN fakat normalcheck1. Tek keşif girdisi düzeltilip yeni kesin prompt/gate geçecek; ürün kodu yok.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-prompts-01/DISPATCH-STOP-v1.0.md`.
-- [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `BLOCKED`
-  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable. v1.0 normalcheck1, aynı tek keşif girdisi; yeni kesin prompt/gate bekler, RESX yazılmadı.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-prompts-01/DISPATCH-STOP-v1.0.md`.
+- [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `READY`
+  - Yalnız onaylı yedi backend/test yolu. Keşif girdisi düzeltildi; kesin v1.1 kaynak/prompt incelemesi ve normal0 bekleniyor. Ürün kodu yok.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
+- [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `READY`
+  - Yalnız yedi sayfa RESX dosyasında DraftNotEditable; v1.1 normal0 bekleniyor, RESX yazılmadı.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `PLANNED`
   - Yalnız onaylı altı frontend yolu; önce BE ve L10N doğrulanıp CT'ye entegre edilir.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md`.
