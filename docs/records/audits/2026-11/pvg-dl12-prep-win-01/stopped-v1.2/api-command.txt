@@ -1,0 +1,1 @@
+C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\dotnet.exe "test" "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj" "-c" "Debug" "--logger" "trx;LogFileName=pvg-prep-win-api.trx" "--results-directory" "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-kanıt/win-58920519-01"
