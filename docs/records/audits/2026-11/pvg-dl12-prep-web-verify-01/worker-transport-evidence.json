@@ -1,0 +1,118 @@
+{
+  "branch": "feature/pvg/mod-0230-dl12-prep-web",
+  "base": "58920519a17e8f4c085738642b33e36689bc8fee",
+  "head": "15791333afa89e447210b8d877dc5407693e9b5b",
+  "result": {
+    "total": "62",
+    "executed": "62",
+    "passed": "62",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "trx_sha256": "9488e96e415adb1e1bf594f781c3362a3bc139ad02e91f1bc167cf4d8cdecc3f",
+  "child_pids": [
+    11988,
+    16032,
+    17984,
+    19064,
+    20728,
+    22580,
+    22916,
+    31892,
+    32576,
+    34032,
+    35040,
+    35832
+  ],
+  "connected_tests": [
+    {
+      "case": "Connected_edit_submission_preserves_browser_antiforgery_request_token",
+      "outcome": "Passed",
+      "duration": "00:00:10.0143817",
+      "measurement": "Reaped browser PID 19064.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False."
+    },
+    {
+      "case": "Connected_edit_submission_reaches_the_real_store",
+      "outcome": "Passed",
+      "duration": "00:00:08.6434141",
+      "measurement": "Reaped browser PID 20728.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"BridgeFailure\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.4469470",
+      "measurement": "Reaped browser PID 35832.\r\nChild failure BridgeFailure, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"EarlyEnd\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6352827",
+      "measurement": "Reaped browser PID 16032.\r\nChild failure EarlyEnd, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"Malformed\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.2185395",
+      "measurement": "Reaped browser PID 32576.\r\nChild failure Malformed, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingJsdom\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.9708867",
+      "measurement": "Reaped browser PID 22580.\r\nChild failure MissingJsdom, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingNode\")",
+      "outcome": "Passed",
+      "duration": "00:00:10.2604876",
+      "measurement": "Child failure MissingNode, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingReceipt\")",
+      "outcome": "Passed",
+      "duration": "00:00:10.0952729",
+      "measurement": "Reaped browser PID 35040.\r\nChild failure MissingReceipt, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"StartFailure\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6220043",
+      "measurement": "Reaped browser PID 34032.\r\nChild failure StartFailure, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"SuppressUpdate\")",
+      "outcome": "Passed",
+      "duration": "00:00:10.1515370",
+      "measurement": "Reaped browser PID 22916.\r\nChild failure SuppressUpdate, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"Timeout\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.2467732",
+      "measurement": "Reaped browser PID 11988.\r\nChild failure Timeout, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"InvalidToken\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.1147320",
+      "measurement": "Reaped browser PID 17984.\r\nMVC status 400, API updates 0, stored version 1."
+    },
+    {
+      "case": "Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"MissingToken\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.5625909",
+      "measurement": "Reaped browser PID 31892.\r\nMVC status 400, API updates 0, stored version 1."
+    }
+  ]
+}
