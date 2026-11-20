@@ -151,8 +151,7 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
 
         Port = PvgMongoTestHarness.ResolvePort(port);
         _root = Path.Combine(Path.GetTempPath(), "diten-pvg-intake-mongo-" + Guid.NewGuid().ToString("N"));
-        var data = Path.Combine(_root, "data");
-        Directory.CreateDirectory(data);
+        Directory.CreateDirectory(Path.Combine(_root, "data"));
 
         var start = new ProcessStartInfo(binary)
         {
@@ -161,22 +160,7 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        var arguments = new List<string>
-        {
-            "--bind_ip", "127.0.0.1",
-            "--port", Port.ToString(),
-            "--dbpath", data,
-            "--logpath", Path.Combine(_root, "mongod.log"),
-            "--nounixsocket",
-            "--wiredTigerCacheSizeGB", "0.25",
-            "--setParameter", "enableTestCommands=1"
-        };
-        if (ReplicaSet)
-        {
-            arguments.AddRange(["--replSet", PvgMongoTestHarness.ReplicaSetName, "--oplogSize", "128"]);
-        }
-
-        foreach (var argument in arguments)
+        foreach (var argument in BuildLaunchArguments(Port, _root, ReplicaSet, OperatingSystem.IsWindows()))
         {
             start.ArgumentList.Add(argument);
         }
@@ -216,6 +200,30 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
         {
             ClusterRegistry.Instance.UnregisterAndDisposeCluster(bootstrap.Cluster);
         }
+    }
+
+    internal static List<string> BuildLaunchArguments(int port, string root, bool replicaSet, bool isWindows)
+    {
+        var arguments = new List<string>
+        {
+            "--bind_ip", "127.0.0.1",
+            "--port", port.ToString(),
+            "--dbpath", Path.Combine(root, "data"),
+            "--logpath", Path.Combine(root, "mongod.log"),
+            "--wiredTigerCacheSizeGB", "0.25",
+            "--setParameter", "enableTestCommands=1"
+        };
+        if (!isWindows)
+        {
+            arguments.Add("--nounixsocket");
+        }
+
+        if (replicaSet)
+        {
+            arguments.AddRange(["--replSet", PvgMongoTestHarness.ReplicaSetName, "--oplogSize", "128"]);
+        }
+
+        return arguments;
     }
 
     private async Task WaitAsync(Func<Task<bool>> ready)
