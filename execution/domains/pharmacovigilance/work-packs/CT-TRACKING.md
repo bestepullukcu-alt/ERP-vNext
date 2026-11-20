@@ -68,6 +68,8 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 
 ## Sonraki fazlar
 
+- **Belge:** Onaylı DL12 için [paralel teslim planı](../../../../docs/roadmap/plans/pvg-mod0230-dl12-parallel-delivery-plan-2026-11-20.md): iki PREP entegrasyonu sonrası arka uç ve yedi dil paralel; ardından ekran/MVC. Henüz ana feature dağıtımı yok.
+
 Bu bölümde ayrı kuyruk satırı yok.
 
 ## Bizim takipler
