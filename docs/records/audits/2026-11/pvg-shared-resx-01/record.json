@@ -1,0 +1,54 @@
+{
+  "head": "cc27da0a5dca2b554601a659103383c9cd985aa1",
+  "main": "2de950edcaeb9d8a153465e5f29d7c71eeb31144",
+  "runs": [
+    {
+      "name": "ct-head",
+      "command": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        ".antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "--context",
+        "tenant"
+      ],
+      "exit": 1,
+      "stdout_sha256": "d37afe6d6e940c6dcd7db4d4cc9c003708f023f0b571b20deb86fc22cd4a7959",
+      "finding_lines": 11
+    },
+    {
+      "name": "origin-main",
+      "command": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        ".antigravity/skills/i18n-localization/scripts/resx_sharedresource_checker.py",
+        "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\resx-baseline-2de950edc",
+        "--context",
+        "tenant"
+      ],
+      "exit": 1,
+      "stdout_sha256": "9a15496487e988f30f41843c9a373807a2162f879ffc6b100fd0be9bc981b648",
+      "finding_lines": 11
+    }
+  ],
+  "pvg_added_keys": {
+    "Nav.Domain.PHARMACOVIGILANCE": {
+      "en": "Pharmacovigilance",
+      "tr": "Farmakovijilans",
+      "fr": "Pharmacovigilance",
+      "es": "Farmacovigilancia",
+      "zh": "药物警戒",
+      "ar": "اليقظة الدوائية",
+      "ru": "Фармаконадзор"
+    },
+    "Nav.Module.CASEINTAKETRIAGE": {
+      "en": "Case Intake & Triage",
+      "tr": "Vaka Girişi ve Triyaj",
+      "fr": "Réception des Cas et Triage",
+      "es": "Recepción de Casos y Triaje",
+      "zh": "病例接收与分诊",
+      "ar": "استقبال الحالات والفرز",
+      "ru": "Приём Случаев и Триаж"
+    }
+  }
+}

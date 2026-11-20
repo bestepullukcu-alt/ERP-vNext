@@ -1,0 +1,15 @@
+PQG RAPORU v1
+prompt-sha256: cc60086a75b61ce8d46ea1ee79321b138c93ff0016ee0364ef827ca17a80add3
+kip: DAĞITIM DENETİMİ
+wp: WP-0230-DL12-PREP-WEB · prompt PVG-WP-0230-DL12-PREP-WEB-P v1.1 · risk HIGH · sınıf ürün
+kaynak-paketi-sha256: d9d551ee0039bfb573258764e9af2f7e172c86177bfea076ccf1d3a55e1627db · 28 dosya
+BİLGİ sözleşme: 3 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ dilim: DL-12 · paketin 12 diliminden
+BİLGİ dağıtım kapısı (S-5): bu sürümün dalda ya da main'deki incelemesi geçerli (execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md)
+BİLGİ dağıtım kapısı (S-5): dal onayı (S-115): 2 inceleme satırı henüz main'de değil — insan adımı modül PR'ında ölçülür (execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md)
+BİLGİ kuyruk: DAĞITILABİLİR WP-0230-DL12-PREP-WEB: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 2de950edcaeb9d8a153465e5f29d7c71eeb31144 — kayıtlı
+ENGEL keşif: rapordaki araç sha256 ae87a56615f5 üretici commit'indeki aracın değil (72d27f77dcf4)
+sonuç: engel — 1 bulgu
+çıkış: 1
+rapor-sha256: 080668f8cbffcd3d317e629a8ce7db293eebbb122ab13d57281c24f43f5db180
