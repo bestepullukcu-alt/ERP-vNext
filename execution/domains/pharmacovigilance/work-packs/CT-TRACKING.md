@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `34c9f9ef32746ffea59eca84f7d2d7f8182cf845`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `77ecab323fc731d157cedeae63d653bb604517db`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -8,7 +8,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
 - **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
-- **Arka uç / çeviri:** Parent IN_PROGRESS; BE IN_PROGRESS; L10N INTEGRATION_READY. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
+- **Arka uç / çeviri:** Parent IN_PROGRESS; BE IN_PROGRESS; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
 - **Ekran:** FE PLANNED; BE ve L10N bağımsız doğrulanıp CT'ye alınınca başlayacak. İlk JS34/34 ölçümü son FE baseline/acceptance değildir.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
@@ -27,13 +27,13 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 3 INTEGRATED, 1 INTEGRATION_READY, 2 IN_PROGRESS, 1 PLANNED |
+| DL-12 | Düzenlemede veriyi koruma | 4 INTEGRATED, 2 IN_PROGRESS, 1 PLANNED |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:14, `INTEGRATION_READY`:1, `IN_PROGRESS`:2, `PLANNED`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:15, `IN_PROGRESS`:2, `PLANNED`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
@@ -53,7 +53,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `IN_PROGRESS`
   - Yalnız onaylı yedi backend/test yolu. Keşif girdisi düzeltildi; kesin v1.1 bağımsız inceleme UYGUN0; gerçek normal0; işçi eski ürüne karşı assertionRED hazırlığında, henüz sonuç yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
-- [ ] **Ekran: düzenlenemez kayıt mesajının yedi dil çevirisi** — `WP-0230-DL12-L10N` · `INTEGRATION_READY`
+- [ ] **Ekran: düzenlenemez kayıt mesajının yedi dil çevirisi** — `WP-0230-DL12-L10N` · `INTEGRATED`
   - Yalnız yedi sayfa RESX dosyasında DraftNotEditable; v1.1 gerçek normal0; işçi yedi XML/111 baseline kontrolünde, henüz final sonuç yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `PLANNED`
