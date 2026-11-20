@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `925d8a4ff2348a54f27e79b4a3f38304fa8d2ad2`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `e09192bc8c840fdf21380c171745a6d61f49488f`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -8,7 +8,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 - **Karar:** İki dar ek kapsam doğrudan insan onaylı; rev21 son kesin pack/domain iki bağımsız UYGUN aldı. İki geçerli review-row deftere eklendi; Gerçek HIGH card/row0; yazılı insan onayına bağlı yeni HIGH satırı eklendi, kesin check0 ile onaylı; bağımsız insan main adımı son PR’da bekliyor.
 - **Test:** PREP-WEB işçi15791333 ve bağımsız62/62 PASS; veri koruma ana feature tamamlanmadı. Ortak kayıt engeli CT entegrasyonuyla kalktı; aynı aday bağımsız UYGUN sonrası CT merge78804713 ile birleşti; taze birleşik62test koşusu devam ediyor.
-- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temiz r2 için v2.0 prompt bağımsız UYGUN ve S-54 kontrolü0; normal dağıtım kapısı sırada.
+- **Test:** PREP-WIN eski ağaç değişmeden korunuyor:394 PASS/1 FAIL/0skip. Yeni tek ACL metodu için scopeonayı var; kesin HIGHcheck0; temiz r2 için v2.0 prompt bağımsız UYGUN ve S-54 kontrolü0; normal dağıtım kapısı 2026-11-20T18:09:39UTC başlangıcıyla çalışıyor; sonuç gelmeden ürün çalışması yok.
 - **Kural:** Registry işçisi7dbdfd4 bağımsız UYGUN aldı ve CT dalına mergea1c0a33f ile alındı. Birleşik gerçek kapılar0; yalnız beş hücre, yeni Web testi iddiası yok.
 - **Arka uç:** Ana DL-12 BLOCKED; her iki PREP bağımsız E2 ve entegrasyonunu bekliyor. CT ürün kodu yazmıyor; tek son PR hedefi korunuyor.
 - **Karar:** Operasyon/yayın kapalı. Son PR Linux/Phase1 ve bağımsız insan main merge kapıları açık; hiçbir işçi ağacı silinmedi.
