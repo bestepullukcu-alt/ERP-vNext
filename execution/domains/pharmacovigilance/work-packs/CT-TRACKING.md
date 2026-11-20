@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `a1c0a33fe1f18bedc934f79df602dd824b8c7e41`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-20 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a`; yerel son alınan main `2de950edcaeb9d8a153465e5f29d7c71eeb31144`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -28,13 +28,13 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 2 READY, 1 INTEGRATED |
+| DL-12 | Düzenlemede veriyi koruma | 1 BLOCKED, 1 DISPATCHED, 1 INTEGRATED, 1 READY |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:12, `READY`:2, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `BLOCKED`:1, `DISCOVERED`:10, `DISPATCHED`:1, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:12, `READY`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **39** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
@@ -44,7 +44,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `READY`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md`.
-- [ ] **Test: Gerçek tarayıcı–MVC–servis–depo test bağlantısı** — `WP-0230-DL12-PREP-WEB` · `READY`
+- [ ] **Test: Gerçek tarayıcı–MVC–servis–depo test bağlantısı** — `WP-0230-DL12-PREP-WEB` · `DISPATCHED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — sınırlı Web alias/Node-jsdom gerçek MVC-PVG-store test bağlantısı ve iki CI hazırlık adımı, yalnız üç onaylı yol; feasibility kendi çıktısı, parent veri-koruma feature değişmez
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/CT-DECISION.md`.
 - [ ] **Kural: Ortak regresyon kaydındaki beş eski XML tetikleyicisi** — `WP-0230-DL12-REGISTRY-01` · `INTEGRATED`
