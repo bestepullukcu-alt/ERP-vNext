@@ -45,6 +45,7 @@ public sealed class PvgCaseIntakeTriageBindingTests
         Assert.NotEqual(400, response.StatusCode);
         Assert.False(string.IsNullOrWhiteSpace(response.Raw));
         Assert.Contains(PvgPermissionReasonCodes.PermissionDenied, response.Raw, StringComparison.Ordinal);
+        Assert.Equal(0, harness.Store.ReadCalls);
     }
 
     // ---- AC-39 (b) ----------------------------------------------------------------------------------------------

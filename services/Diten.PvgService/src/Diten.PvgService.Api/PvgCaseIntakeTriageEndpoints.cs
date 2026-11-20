@@ -518,7 +518,22 @@ public sealed record PvgCaseIntakeDraftResponse(
     string ReporterCrmSearchState,
     string? ReporterNameOrInitials,
     string? ReporterProfession,
-    string? ReporterCountry)
+    string? ReporterCountry,
+    string IntakeChannel,
+    string SourceType,
+    string? SourceReference,
+    DateTimeOffset ReceivedAtUtc,
+    string ReporterType,
+    string? ReporterContactSummary,
+    string? PatientSubjectCode,
+    DateOnly? EventOnsetDate,
+    string AdverseEventNarrative,
+    string Seriousness,
+    string IntakePriority,
+    string? TriageOutcome,
+    string? TriageReason,
+    string? RouteTargetQueue,
+    IReadOnlyList<string> EvidenceLinkReferences)
 {
     public static PvgCaseIntakeDraftResponse From(PvgIntakeDraftSummary summary, SafetyCaseIntake intake) =>
         new(
@@ -535,7 +550,22 @@ public sealed record PvgCaseIntakeDraftResponse(
             intake.ReporterCrmSearchState.ToString(),
             intake.ReporterNameOrInitials,
             intake.ReporterProfession,
-            intake.ReporterCountry);
+            intake.ReporterCountry,
+            intake.IntakeChannel,
+            intake.SourceType,
+            intake.SourceReference,
+            intake.ReceivedAtUtc,
+            intake.ReporterType,
+            intake.ReporterContactSummary,
+            intake.PatientSubjectCode,
+            intake.EventOnsetDate,
+            intake.AdverseEventNarrative,
+            intake.Seriousness,
+            intake.IntakePriority,
+            intake.TriageOutcome?.ToString(),
+            intake.TriageReason,
+            intake.RouteTargetQueue,
+            intake.EvidenceLinkReferences);
 }
 
 public sealed record PvgCaseIntakeApiResponse(

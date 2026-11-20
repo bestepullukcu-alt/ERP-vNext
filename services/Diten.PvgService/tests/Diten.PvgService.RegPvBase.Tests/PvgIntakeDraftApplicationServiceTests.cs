@@ -855,8 +855,20 @@ public sealed partial class PvgIntakeDraftApplicationServiceTests
         Assert.Empty(blocked.Result.ValidationFailures);
         Assert.Null(blocked.IntakeDraftId);
         Assert.Null(blocked.AuditIntent);
-        Assert.Equal([$"permission:{operation}:pvg.case-intake-triage.{operation.ToString().ToLowerInvariant()}"], callLog);
-        Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
+        if (operation == PvgIntakeOperation.Update)
+        {
+            Assert.Equal(
+                new[] { "permission:Update:pvg.case-intake-triage.update" }
+                    .Concat(PvgIntakeFieldDefinition.ApprovedFields
+                        .Where(definition => definition.Sensitivity != PvgFieldSensitivity.PublicMetadata)
+                        .Select(definition => $"field:Update:update:{definition.Field}")),
+                callLog);
+        }
+        else
+        {
+            Assert.Equal([$"permission:{operation}:pvg.case-intake-triage.{operation.ToString().ToLowerInvariant()}"], callLog);
+            Assert.DoesNotContain(callLog, entry => entry.StartsWith($"field:{operation}:", StringComparison.Ordinal));
+        }
         Assert.DoesNotContain($"workflow:{operation}", callLog);
         Assert.DoesNotContain($"evidence:{operation}", callLog);
         AssertSafe(blocked);
