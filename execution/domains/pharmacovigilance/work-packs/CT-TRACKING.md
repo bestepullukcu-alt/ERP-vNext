@@ -8,7 +8,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
 - **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
-- **Arka uç / çeviri:** v1.0 normal kapılarının tek keşif özeti hatası gerçek canonical producer ile düzeltildi. Parent/BE/L10N READY; kesin v1.1 kaynak/prompt incelemesi ve gerçek normal0 ardından iki işçi paralel başlayacak. CT ürün kodu yazmıyor.
+- **Arka uç / çeviri:** v1.0 normal kapılarının tek keşif özeti hatası gerçek canonical producer ile düzeltildi. Parent/BE/L10N READY; kesin v1.1 kaynak/prompt bağımsız incelemeleri UYGUN0 ve gerçek review-check0; normal dağıtım kontrolü ardından iki işçi paralel başlayacak. CT ürün kodu yazmıyor.
 - **Ekran:** FE PLANNED; BE ve L10N bağımsız doğrulanıp CT'ye alınınca başlayacak. İlk JS34/34 ölçümü son FE baseline/acceptance değildir.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
@@ -51,7 +51,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - Kanıt/karar: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md`.
 
 - [ ] **Arka uç: düzenlenebilirlik, sürüm ve eksiksiz detay yanıtı** — `WP-0230-DL12-BE` · `READY`
-  - Yalnız onaylı yedi backend/test yolu. Keşif girdisi düzeltildi; kesin v1.1 kaynak/prompt incelemesi ve normal0 bekleniyor. Ürün kodu yok.
+  - Yalnız onaylı yedi backend/test yolu. Keşif girdisi düzeltildi; kesin v1.1 bağımsız inceleme UYGUN0; normal0 bekleniyor. Ürün kodu yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Çeviri: düzenlenemez kayıt mesajı, yedi dil** — `WP-0230-DL12-L10N` · `READY`
   - Yalnız yedi sayfa RESX dosyasında DraftNotEditable; v1.1 normal0 bekleniyor, RESX yazılmadı.

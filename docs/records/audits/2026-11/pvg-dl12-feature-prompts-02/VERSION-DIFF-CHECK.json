@@ -1,0 +1,14 @@
+[
+  {
+    "wp": "BE",
+    "prompt_raw_sha256": "65b0005ecf7700c7e77ad84d1d97dd9cc708cbd9cd8ddd284cec21e7c841fc58",
+    "instruction_body_same_except_expected_head": true,
+    "previous_version_retained": true
+  },
+  {
+    "wp": "L10N",
+    "prompt_raw_sha256": "501ed6f6cf4284984f4e0bf6c4554f1c065440ba4c1eddc1e3c084043ba69f8c",
+    "instruction_body_same_except_expected_head": true,
+    "previous_version_retained": true
+  }
+]

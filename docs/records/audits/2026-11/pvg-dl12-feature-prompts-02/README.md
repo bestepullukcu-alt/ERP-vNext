@@ -1,0 +1,9 @@
+# DL-12 v1.1 — kesin iş emri incelemeleri
+
+2026-11-21 (Asia/Baku). Kaynak ab039c2c53d82edf8413bae4e3304d21b57e04e4. BE ve L10N için yeni kesin promptlar bağımsız UYGUN/0 kritik/0 engelleyici aldı; root gerçek production pack ve review-check araçlarıyla ikisini de exit0 doğruladı. PROMPT-DELTA-CHECK.json uygulama gövdesi/izinli yollar/korunan yollar/risk/dilimin değişmediğini ölçer. Yalnız version/ExpectedHEAD/queue READY tarih-kaydı/DoR/keşif bağı yenidir. Pack/domain/insan onayı değişmedi; yeniden onay gerekmez.
+
+BE55 kaynak digest e06ddfebb9f30ca7cf5ce8736dfad79c5f32dd7fd2353dd9a79a7afbfdc2ef13; L10N29 kaynak digest0a0d377739f39830eeed899290d7f5514b8c3b69254ff831855429e958d1a8ac. Raw bağımsız review dosyaları reviews/MOD-0230 altındadır, yazar/inceleyen ayrıdır. Model/effort gerçek kimliği görünmeyen inceleyende verilemiyor yazıldı. Eski v1.0 review/gate1/discovery01 ve yeni keşif ön kontrolü normal0 yerine kullanılmaz.
+
+BE-source-pack-sandbox-incomplete kaydı yeni commit'in kısıtlı filesystem görünümünden okunamadığı actual exit2'dir; saklandı. Dış Git metadata/işçi tuple'larını salt okunur normal escalation ile okuyabilen gerçek araç koşumları iki pack0/review-check0 verdi. RAW-CLI-OUTPUTS.json her stdout'un değişmemiş baytlarını base64 ve SHA ile saklar; Actual stdout satır sonları da envelope ve dış raw kopyada aynen korunur; araç arayüzündeki gösterim ham bayt ölçümü sayılmaz. Hiçbir üretim kapısı veya hashed çıktı düzeltilmedi.
+
+Bu inceleme/source kontrolü dağıtım izni değildir. Bu commit'teki exactreview ile BE normalcheck --review ve LOW L10N normalcheck gerçek0 vermeden ürün/RESX/test/build başlamaz. İki workerbranch temiz ab039c…'de sabittir. Normal kapılar sürerken CT ref/queue/worker source değiştirilmeyecek. Sonraki DISPATCHED ve IN_PROGRESS gözlenen olayları ayrı kayıtlarla ilerler; FE PLANNED ve operasyon kapalıdır.

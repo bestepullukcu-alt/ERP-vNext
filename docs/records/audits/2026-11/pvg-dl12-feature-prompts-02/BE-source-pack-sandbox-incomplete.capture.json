@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/prompt_gate.py",
+    "pack",
+    "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-BE-v1.1.md"
+  ],
+  "exit_code": 2,
+  "at_utc": "2026-11-20T20:07:26.329140+00:00",
+  "stdout_raw_sha256": "c0a65e7d6ebadc4b94575809605a7157645dd5885ab1fffa07ce841ed3f96fa4",
+  "stderr": ""
+}
