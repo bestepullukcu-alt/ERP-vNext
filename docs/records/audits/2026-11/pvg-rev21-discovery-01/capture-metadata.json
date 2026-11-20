@@ -1,0 +1,41 @@
+{
+  "command": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy; sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\"); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--discover",
+    "Case Intake & Triage"
+  ],
+  "exit_code": 3,
+  "check_command": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy; sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\"); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--check-report",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-rev21-discovery-01\\discovery-report.txt"
+  ],
+  "check_exit_code": 0,
+  "producer_copies": [
+    {
+      "path": ".antigravity/scripts/verify_module_id.py",
+      "sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f"
+    },
+    {
+      "path": "scripts/ct_queue.py",
+      "sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2"
+    }
+  ],
+  "head_start": "b60aabc77fde43e38d56353754bd2d4150b89fe8",
+  "head_end": "b60aabc77fde43e38d56353754bd2d4150b89fe8",
+  "started_utc": "2026-11-20T13:06:41.138858+00:00",
+  "finished_utc": "2026-11-20T13:07:03.763170+00:00",
+  "report_raw_sha256": "f3fa36025db7500fd884eb173a77934a40a84558c71594af4e5e0878a68ad9b6",
+  "report_bytes": 65301,
+  "crlf": 0
+}
