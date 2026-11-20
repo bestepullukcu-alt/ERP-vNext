@@ -9,8 +9,10 @@
 MOD-0230 revision 20 is ready-for-dev with build_gate open and direct human scope/policy/shared-file/single-writer
 and bounded build/test consent recorded in docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md.
 Formal final-version independent review/HIGH ledger records and the passed prompt/dispatch gate remain required
-before a DL-12 product worker starts. Bounded alias/RPC/clean-CI/Windows preparation is consented, not measured
-successful. Operational runtime stays closed; actual WP state comes from CT-QUEUE/gate, not pack dl12_state.
+before any product-class worker starts, including each preparation WP. Bounded preparation uses independent
+WP-0230-DL12-PREP-WIN and WP-0230-DL12-PREP-WEB; each has its own ordinary prompt/HIGH review, valid formal pack
+approval and dispatch gate. Their feasibility evidence is output, not a prerequisite for that same dispatch, and
+neither depends on the parent feature WP. No successful feasibility is claimed. Operational runtime stays closed; actual WP state comes from CT-QUEUE/gate, not pack dl12_state.
 Other modules' authorizations and historical version-bound reviews are unchanged.
 
 ## Purpose
@@ -123,13 +125,24 @@ unchanged. The same human consent and final-version formal record/dispatch gates
 
 The direct owner record adopts the field-policy/pre-read order and record-existence visibility contract; no user
 policy or exact shared-path consent remains pending for this unchanged scope. Embedded Node/RPC, aliased reference,
-clean Phase 1 execution and Windows Mongo preparation remain unimplemented/unmeasured pre-dispatch conditions.
-A separate runner's JS setup does not satisfy the connected C# prerequisite. Bounded build/test implementation and
-feasibility measurements are consented under the single-writer arrangement; formal final-version review/HIGH records
-and the prompt/dispatch gate remain separate. No success is assumed or claimed.
+clean-local execution and Windows Mongo preparation remain unimplemented/unmeasured outputs of separately gated
+product-class preparation WPs. PREP-WIN writes only the existing two Mongo harness/guard-test paths in the pack;
+PREP-WEB only the existing module C# Web test, single-alias csproj and exact two Phase 1 prerequisite steps. PREP-WEB
+measures transport/current behavior and negative failure controls; final no-loss acceptance is feature work and its
+known current RED stays visible. No production service/DTO/controller/form.js/_Form/l10n change belongs to PREP-WEB.
+Each PREP WP requires its own normal prompt/HIGH review, formal pack approval and passed dispatch gate; --prepare is
+not authority. Feasibility is its output, not a circular entry condition. Main feature dispatch requires BOTH E2
+outputs independently verified and integrated plus its own normal prompt/HIGH review/formal approval/passed gate.
+Clean LOCAL same-prerequisite/same-dotnet-test evidence measures feasibility; real GitHub Linux Phase 1 is required
+at closure of the single final PR, not before a not-yet-opened PR. A separate job's JS setup proves no transport.
+Bounded work stays under the same consent/single-writer scope; no implementation or successful measurement is claimed.
 
 The test-only --nounixsocket platform-selection scope for the pack's exact Mongo harness and guard test files is
-within this service boundary under the same consent/gates. No store/production host change, weaker binary/port/
+within this service boundary under the same consent/gates. In the existing named safety test, only synthetic
+missing/positive binary fixture paths may become platform-fully-qualified while every safety assertion stays intact:
+Path.IsPathFullyQualified/existence checks, null/empty/relative/missing rejection, 27017 prohibition, isolation and
+cleanup are never weakened. This is portability within the existing guard-test file, not a new path or permission.
+No store/production host change, weaker binary/port/
 replica-set safety or permissive adapter is authorized. Protection remains outside the exact listed exceptions.
 Other slices, MOD-0231/0232/0234, other domain ownership and all operational gates are unchanged. No product/test/CI
 file is changed by this administrative transition, and no code/test/feasibility success is claimed.
