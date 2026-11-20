@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>افتح السطر واضغط « تنزيل »؛ قارن بصمة SHA-256 للملف بالمعروضة لإثبات أنه الدليل المحفوظ.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>تعرض هذه الصفحة بنوك مجموعتك مع فروعها. يُنشأ كل بنك هنا بحالة «مسودة» ويمر بحالاته: «مسودة»، «نشط»، «غير نشط».</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>فريق البيانات الرئيسية والخزينة</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>إضافة بنك</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>انقر «إضافة جديد»، واملأ بيانات البنك واحفظ: يُحفظ البنك بحالة «مسودة». تُحذف المسودة غير المطلوبة بـ«حذف المسودة»، وعدة مسودات معًا بـ«حذف المسودات المحددة».</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>تغيير حالته</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>افتح إجراءات البنك: «تفعيل» يجعله قابلاً للاستخدام، و«إلغاء التفعيل» يُخرج بنكًا نشطًا من الاستخدام؛ و«عرض التفاصيل» و«تعديل» يفتحان سجله.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>استخدام لوحة المفاتيح</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>خارج حقل نصي، ومن دون مربع حوار أو لوحة جانبية مفتوحة، يفتح المفتاح «?» هذه المساعدة مع اختصارات الصفحة.</value>
+  </data>
 </root>

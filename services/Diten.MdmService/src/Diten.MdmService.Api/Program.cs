@@ -454,6 +454,8 @@ builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvid
 builder.Services.AddSingleton<IModuleManifestProvider, ProductItemSkuMasterManifestProvider>();
 // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, CT model A) — Brand and Product are their own module (brand-product-master).
 builder.Services.AddSingleton<IModuleManifestProvider, BrandProductMasterManifestProvider>();
+// MOD-0289 DL-1 — Bank Master & Bank Account Registry is its own module (bank-master-bank-account-registry).
+builder.Services.AddSingleton<IModuleManifestProvider, BankMasterManifestProvider>();
 apiStartupExecutionMode.AddModuleRegistrationHostedService(builder.Services);
 
 // MOD-0021 Faz 2 — forward MDM audit events to Platform's central store (S2S), reusing the same Platform base URL +

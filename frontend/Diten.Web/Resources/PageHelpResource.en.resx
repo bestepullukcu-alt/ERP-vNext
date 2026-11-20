@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>Open the row and press “Download”; compare the file's SHA-256 with the one shown to prove it is the stored evidence.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>This page lists the banks of your group with their branches. Each bank is created here as “Draft” and taken through its statuses: “Draft”, “Active”, “Inactive”.</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>The master data team and treasury</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>Add a bank</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>Click “Add New”, fill in the bank's details and save: the bank is saved as “Draft”. A draft that is not needed can be removed with “Delete Draft”, or several at once with “Delete Selected Drafts”.</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>Change its status</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>Open a bank's actions: “Activate” makes it usable, “Deactivate” takes an active bank out of use; “View Details” and “Edit” open its record.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>Use the keyboard</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>Outside a text field, with no dialog or side panel open, the “?” key opens this help with the page's shortcuts.</value>
+  </data>
 </root>

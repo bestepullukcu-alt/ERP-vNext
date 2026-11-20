@@ -655,6 +655,9 @@
   <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
     <value>Référentiel Marque et Produit</value>
   </data>
+  <data name="Nav.Module.BANKMASTERBANKACCOUNTREGISTRY" xml:space="preserve">
+    <value>Référentiel bancaire et registre des comptes bancaires</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Référentiel Produit / Article / SKU</value>
   </data>
@@ -1279,6 +1282,9 @@
   </data>
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>Paramètres des vagues</value>
+  </data>
+  <data name="Perm.Entity.BANKS" xml:space="preserve">
+    <value>Banques</value>
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Planification des vagues</value>

@@ -221,8 +221,9 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
     public void The_strict_by_design_documents_are_named_and_never_get_the_flag()
     {
         // R2 / R3 (CT decisions): the scope rollout (leases, fence, abort, snapshot), the scope policy (periods) and the
-        // whole-document-replaced LegalEntity stay strict — named, not forgotten.
-        Assert.Equal(["LegalEntity", "ProductLegalEntityScopePolicy", "ProductLegalEntityScopeRolloutState"],
+        // whole-document-replaced LegalEntity stay strict — named, not forgotten. MOD-0289 DL-1 (the WP prompt, R3): the bank
+        // and its branch — a payment-routing master — are strict too, so an unknown field fails the read instead of being dropped.
+        Assert.Equal(["Bank", "BankBranch", "LegalEntity", "ProductLegalEntityScopePolicy", "ProductLegalEntityScopeRolloutState"],
             MdmDocumentClassMaps.StrictByDesignRoots.Select(type => type.Name).Order(StringComparer.Ordinal));
         Assert.Contains(MdmDocumentClassMaps.StrictByDesign, type => type.Name == "ProductLegalEntityScopeWriterLease");
         Assert.Contains(MdmDocumentClassMaps.StrictByDesign, type => type.Name == "ProductLegalEntityScopeActivationFence");

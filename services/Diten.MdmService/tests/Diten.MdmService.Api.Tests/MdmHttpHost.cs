@@ -90,6 +90,8 @@ public class MdmHttpHost : IAsyncLifetime
     public ShiftableClock Clock { get; } = new();
     public FakeReferenceData References { get; } = new();
     public RecordingAuditForwarder Audit { get; } = new();
+    // MOD-0289 DL-1: the code service is another service — the host's own fake answers (production composition: the real adapter).
+    public FakeRecordCodes RecordCodes { get; } = new();
     public FakePlatformReferenceEndpoint PlatformReference { get; } = new();
     // LSKU FIX1: the verified market answers (create and approval time).
     public FakeMarkets Markets { get; } = new();
@@ -283,6 +285,8 @@ public class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IProductIdentityWorkflowTransportReadiness, ReadyTransport>();
                     services.RemoveAll<IPlatformAuditForwarder>();
                     services.AddSingleton<IPlatformAuditForwarder>(Audit);
+                    services.RemoveAll<Diten.MdmService.Application.Contracts.RecordCodes.IRecordCodeAllocator>();
+                    services.AddSingleton<Diten.MdmService.Application.Contracts.RecordCodes.IRecordCodeAllocator>(RecordCodes);
                     services.RemoveAll<TimeProvider>();
                     services.AddSingleton<TimeProvider>(Clock);
                     // LSKU FIX1: Platform's market reference answers (the resolvers are clients of that service).

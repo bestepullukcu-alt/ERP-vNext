@@ -14,6 +14,13 @@ public sealed class LocalAuditIntent
     public int PreVersion { get; set; }
     public int PostVersion { get; set; }
     public ProductAuditOperation Operation { get; set; }
+    // MOD-0289 (KARAR D24/2, D142): the operation of a master data intent. Null for every product intent — and then the
+    // element is not written (ShouldSerializeMasterDataOperation; the Domain project has no Bson reference for an attribute),
+    // so a product intent's stored shape is unchanged. When set, it is the operation; Operation stays at its default.
+    public MasterDataAuditOperation? MasterDataOperation { get; set; }
+
+    // The driver's AutoMap picks up ShouldSerialize<Member>: no element for a product intent.
+    public bool ShouldSerializeMasterDataOperation() => MasterDataOperation is not null;
     public string ActorId { get; set; } = string.Empty;
     public string CorrelationId { get; set; } = string.Empty;
     public string CausationId { get; set; } = string.Empty;
