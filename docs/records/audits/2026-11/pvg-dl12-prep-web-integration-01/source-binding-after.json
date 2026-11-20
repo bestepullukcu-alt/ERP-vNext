@@ -1,0 +1,20 @@
+{
+  "frozen_head": "788047137bdc3d127771434608d28b8f205611a6",
+  "live_ct_head_at_end": "c6ee38135e5f52867db36f0978e2606a5feb89b0",
+  "candidate": "15791333afa89e447210b8d877dc5407693e9b5b",
+  "worker_status": "",
+  "all_frozen_manifest_files_unchanged": true,
+  "frozen_file_count": 26199,
+  "candidate_nine_raw_hashes_unchanged": true,
+  "skip_check_exit": 0,
+  "known_failures_exit": 0,
+  "normal_exit": 0,
+  "new_cases": 62,
+  "new_failed": 0,
+  "new_skipped": 0,
+  "scope": "PREP transport E2 only; reporter contact/evidence loss remains main DL12; no Linux/live/E4 claim",
+  "requested_model": "gpt-6.2-astra",
+  "requested_effort": "high",
+  "actual_model": "doğrulanamaz",
+  "actual_effort": "doğrulanamaz"
+}

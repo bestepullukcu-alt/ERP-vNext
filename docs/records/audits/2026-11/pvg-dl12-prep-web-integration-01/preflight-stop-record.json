@@ -1,0 +1,6 @@
+{
+  "stage": "Before Node copy/restore/build/test",
+  "normal_test_runs_before_resume": 0,
+  "reason": "Verifier compared raw CRLF archive bytes to LF Git blob SHA; assertion stopped. No source edited.",
+  "resolution": "9/9 raw hashes match original candidate raw hashes and canonical-LF hashes match frozen merge Git blobs. Correctly distinguish raw and LF; preserve raw snapshot unchanged."
+}
