@@ -1,6 +1,6 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `de44aa2cc6237e49975198c52d812a34ec4ea69b`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `6679972f4f6fd312ac3daeda520435fd8ac16ef4`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
@@ -9,7 +9,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
 - **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
 - **Arka uç / çeviri:** Parent IN_PROGRESS; BE INTEGRATED; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
-- **Ekran:** FE READY; BE/L10N entegre ve gerçek API456/Reg211/Web62/JS34 baseline/6CLI/owncleanup0. Exactpromptreview ve actualnormal0 sonrası başlar, ürünhenüzyok.
+- **Ekran:** FE DISPATCHED; bağımsız exactpromptUYGUN0 ve actualnormal0 sonrası ayrıtek yazıcı. Güncel durum STATE-JOURNAL ve gerçek teslim kanıtındadır; CT ürün kodu yazmaz.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
 ## Teslim dilimleri
@@ -27,13 +27,13 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 5 INTEGRATED, 1 IN_PROGRESS, 1 READY |
+| DL-12 | Düzenlemede veriyi koruma | 1 DISPATCHED, 5 INTEGRATED, 1 IN_PROGRESS |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:16, `IN_PROGRESS`:1, `READY`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `DISPATCHED`:1, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:16, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
@@ -56,8 +56,8 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Ekran: düzenlenemez kayıt mesajının yedi dil çevirisi** — `WP-0230-DL12-L10N` · `INTEGRATED`
   - 43f856f22f0549be1d61fab09d40086b755661ba bağımsızUYGUN0 sonrası CTnoff77ecab323fc731d157cedeae63d653bb604517db ile entegre.7XML112/parity/old111korunur, yalnız7satır. FEbridge/runtime ayrı.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-l10n-01/CT-INTEGRATION.json`.
-- [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `READY`
-  - BE/L10N entegre, actual API456/Reg211/Web62/JS34 test tabanı doğrulandı. Altı frontend yolu için exactpromptreview/normal0 bekler.
+- [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `DISPATCHED`
+  - BE/L10N entegre, actual API456/Reg211/Web62/JS34 test tabanı doğrulandı. Altı frontend yolu için bağımsız exactprompt UYGUN0 ve gerçek normal0 tamam; işçi DEV GO aldığını ve temiz kesin dal preflight sonucunu bildirdi. Henüz ürün teslimi yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-dor-01/READY.md`.
 
 ## Karar bekleyenler
