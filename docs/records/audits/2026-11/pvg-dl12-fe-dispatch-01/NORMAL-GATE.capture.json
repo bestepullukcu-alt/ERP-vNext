@@ -1,0 +1,29 @@
+{
+  "kind": "Actual normal production FE dispatch gate; not prepare",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-FE-v1.0.md",
+    "--queue",
+    "pvg",
+    "--review",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-DL12-FE-v1.0.md@e3674b3218129001ed8301e841f452bcfa80473b"
+  ],
+  "source_head": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "review": "docs/records/reviews/MOD-0230/PROMPT-REVIEW-DL12-FE-v1.0.md@e3674b3218129001ed8301e841f452bcfa80473b",
+  "prompt_sha256": "d02639654b0551cb572e5b91738e98b2320d9e0ee7ba44890bf5a40917ba6789",
+  "root_head_start": "e3674b3218129001ed8301e841f452bcfa80473b",
+  "queue_raw_sha256_start": "fbb2f7a52d6c66e0623af25a97f15c5c3954115810e7eca4f6029fcb2d9fe253",
+  "start_utc": "2026-11-20T22:49:18.317020+00:00",
+  "pid": 14216,
+  "end_utc": "2026-11-20T23:12:07.561185+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "c264a43ddd29b706381c200ba80004ee233b9e4dd3a67e604c2562120d0aa87f",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "root_head_end": "e3674b3218129001ed8301e841f452bcfa80473b",
+  "queue_raw_sha256_end": "fbb2f7a52d6c66e0623af25a97f15c5c3954115810e7eca4f6029fcb2d9fe253"
+}
