@@ -1,0 +1,36 @@
+{
+  "helper_lf_sha256": "a21820922d34f6588740aba98724a1b10b3db4dccc5261abcbe3aa7eb3fbb8ed",
+  "change": "Only required named case filter changed: six invented prefixes replaced by eleven exact approved pack method names; N is actual data rows.",
+  "normal_saved": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py",
+      "--repo",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "--saved-baseline",
+      "--out",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-capture-v2-fresh.json"
+    ],
+    "exit_code": 1,
+    "stdout": "{\"acceptance_passed\": false, \"kind\": \"Saved source-bound observations; not a new test run or BE behavior RED\"}\r\n",
+    "stderr": ""
+  },
+  "negative": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py",
+      "--repo",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-capture-missing-source-wdq0hatq\\snapshot",
+      "--saved-baseline",
+      "--out",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-capture-v2-negative-must-not-write.json"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\r\n  File \"C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py\", line 44, in <module>\r\n    assert all(x['present'] for i,x in enumerate(sources) if i!=4),'Every one of the six existing BE sources must be present'\r\n           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nAssertionError: Every one of the six existing BE sources must be present\r\n",
+    "claim_not_written": true
+  },
+  "limits": "Saved observations not a new runtime test or BE behavior RED. Normal mode still requires future actual candidate source/DLL/TRX evidence and independent E2."
+}

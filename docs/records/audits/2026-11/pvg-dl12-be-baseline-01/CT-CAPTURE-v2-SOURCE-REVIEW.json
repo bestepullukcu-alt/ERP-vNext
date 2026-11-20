@@ -1,0 +1,35 @@
+{
+  "kind": "New supplementary source-only review 02; not a replay of missing Temp report",
+  "verdict": "UYGUN",
+  "target": "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-BE.py",
+  "target_lf_sha256": "a21820922d34f6588740aba98724a1b10b3db4dccc5261abcbe3aa7eb3fbb8ed",
+  "comparison_lf_sha256": "8e4ab7509122c3aab1ae4f0dc8421484838f4e419f4272bec7cc596dbf19dcc2",
+  "reviewer": "/root/pvg_revision17_proposal",
+  "requested_model_effort": "gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor",
+  "utc": "2026-11-20T19:04:06.016398+00:00",
+  "only_required_cases_assignment_changed": true,
+  "exact_normative_names_same_order": [
+    "Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing",
+    "Update_is_allowed_only_in_intake_created_and_intake_updated",
+    "Update_never_erases_triage_or_route_fields",
+    "Update_refusals_for_another_tenant_or_a_caller_without_the_key_never_say_not_editable",
+    "Update_requires_the_version_read_with_the_editability_snapshot",
+    "Concurrent_triage_between_update_read_and_replace_is_not_overwritten",
+    "Field_policy_denial_does_not_disclose_draft_editability",
+    "Field_policy_denial_does_not_disclose_record_existence",
+    "Get_by_id_returns_the_fifteen_stored_fields",
+    "Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values",
+    "Update_with_the_values_read_back_keeps_every_stored_field"
+  ],
+  "preserved": {
+    "api_count": "396+N actual expanded new-class TRX results, not11methods",
+    "regpv_count": 211,
+    "mongo_count": 35,
+    "all_six_existing_sources_required": true,
+    "saved_source_equality_and_absent_new_test_checks": true,
+    "all_other_source_bytes_and_logic": true
+  },
+  "open_findings": [],
+  "limits": "Whole source read and AST/text comparison only. No producer/saved-mode/test/build/worker executed. Method scope, behaviors, two real stores, RED/GREEN, freshness and cleanup remain independent E2 obligations. Previous8e4 review is not superseded. Missing be4b Temp report was NOT transferred."
+}

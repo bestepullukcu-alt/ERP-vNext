@@ -63,12 +63,17 @@ else:
  changed.update(git('ls-files','--others','--exclude-standard').decode().splitlines())
  scope_ok=changed==set(paths) and all(x['present'] for x in sources)
  new=[x for x in ars if '.PvgCaseIntakeEditKeepsStoredDataTests.' in x.get('testName','')]
- required_cases=['Update_rejects_closed_states_and_markers',
- 'Update_field_policy_denial_precedes_record_reads',
- 'Update_matches_the_persisted_snapshot_version',
- 'Update_conflicts_after_a_real_concurrent_triage',
- 'Detail_contains_the_complete_edit_contract_and_list_is_minimal',
- 'Complete_api_edit_round_trip_keeps_all_stored_values']
+ required_cases=['Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing',
+ 'Update_is_allowed_only_in_intake_created_and_intake_updated',
+ 'Update_never_erases_triage_or_route_fields',
+ 'Update_refusals_for_another_tenant_or_a_caller_without_the_key_never_say_not_editable',
+ 'Update_requires_the_version_read_with_the_editability_snapshot',
+ 'Concurrent_triage_between_update_read_and_replace_is_not_overwritten',
+ 'Field_policy_denial_does_not_disclose_draft_editability',
+ 'Field_policy_denial_does_not_disclose_record_existence',
+ 'Get_by_id_returns_the_fifteen_stored_fields',
+ 'Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values',
+ 'Update_with_the_values_read_back_keeps_every_stored_field']
  case_presence={n:any(('.PvgCaseIntakeEditKeepsStoredDataTests.'+n) in x.get('testName','') for x in new) for n in required_cases}
  targets=['Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation',
  'Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod',
