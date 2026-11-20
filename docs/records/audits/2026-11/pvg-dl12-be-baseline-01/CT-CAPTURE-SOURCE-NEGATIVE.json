@@ -1,0 +1,36 @@
+{
+  "helper_lf_sha256": "8e4ab7509122c3aab1ae4f0dc8421484838f4e419f4272bec7cc596dbf19dcc2",
+  "normal_saved": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py",
+      "--repo",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "--saved-baseline",
+      "--out",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-saved-baseline-v1.1.json"
+    ],
+    "exit_code": 1,
+    "stdout": "{\"acceptance_passed\": false, \"kind\": \"Saved source-bound observations; not a new test run or BE behavior RED\"}\r\n",
+    "stderr": ""
+  },
+  "negative": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py",
+      "--repo",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-capture-missing-source-wdq0hatq\\snapshot",
+      "--saved-baseline",
+      "--out",
+      "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\be-capture-missing-source-wdq0hatq\\must-not-create-claim.json"
+    ],
+    "exit_code": 1,
+    "missing_only_in_external_fixture": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+    "claim_not_written": true,
+    "stderr": "Traceback (most recent call last):\r\n  File \"C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py\", line 44, in <module>\r\n    assert all(x['present'] for i,x in enumerate(sources) if i!=4),'Every one of the six existing BE sources must be present'\r\n           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nAssertionError: Every one of the six existing BE sources must be present\r\n"
+  },
+  "git_scope": "Existing objectstore read-only; no real source/index/ref modification",
+  "limit": "Saved mode always exits1; exact assertion and no false claim artifact were both required, not exit1 alone."
+}
