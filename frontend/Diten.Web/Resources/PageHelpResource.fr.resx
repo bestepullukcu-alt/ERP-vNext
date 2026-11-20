@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>Ouvrez la ligne et cliquez sur « Télécharger » ; comparez le SHA-256 du fichier à celui affiché pour prouver qu'il s'agit de la preuve conservée.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>Cette page liste les banques de votre groupe avec leurs agences. Chaque banque est créée ici en « Brouillon » et passe par ses statuts : « Brouillon », « Active », « Inactive ».</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>L'équipe des données de référence et la trésorerie</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>Ajouter une banque</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>Cliquez sur « Ajouter », renseignez les informations de la banque et enregistrez : la banque est enregistrée en « Brouillon ». Un brouillon inutile se supprime avec « Supprimer le brouillon », plusieurs à la fois avec « Supprimer les brouillons sélectionnés ».</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>Changer son statut</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>Ouvrez les actions d'une banque : « Activer » la rend utilisable, « Désactiver » retire une banque active de l'usage ; « Voir les détails » et « Modifier » ouvrent sa fiche.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>Utiliser le clavier</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>Hors d'un champ de texte, sans boîte de dialogue ni panneau latéral ouvert, la touche « ? » ouvre cette aide avec les raccourcis de la page.</value>
+  </data>
 </root>

@@ -720,6 +720,9 @@
   <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
     <value>Marka ve Ürün Ana Verisi</value>
   </data>
+  <data name="Nav.Module.BANKMASTERBANKACCOUNTREGISTRY" xml:space="preserve">
+    <value>Banka Ana Verisi ve Banka Hesabı Sicili</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Ürün / Kalem / SKU Ana Verisi</value>
   </data>
@@ -1337,6 +1340,9 @@
   </data>
   <data name="Perm.Entity.WAVESSETTINGS" xml:space="preserve">
     <value>Dalga Ayarları</value>
+  </data>
+  <data name="Perm.Entity.BANKS" xml:space="preserve">
+    <value>Bankalar</value>
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Dalga Planlama</value>

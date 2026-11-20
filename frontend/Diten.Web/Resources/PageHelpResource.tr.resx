@@ -2418,4 +2418,28 @@
   <data name="Help.COUNTEVIDENCE.Step2" xml:space="preserve">
     <value>Satırı açın ve “İndir”e basın; saklanan kanıt olduğunu göstermek için dosyanın SHA-256 özetini gösterilenle karşılaştırın.</value>
   </data>
+  <data name="Help.BANKS.Purpose" xml:space="preserve">
+    <value>Bu sayfa grubunuzun bankalarını şubeleriyle birlikte listeler. Her banka burada “Taslak” olarak oluşturulur ve durumlarından geçirilir: “Taslak”, “Aktif”, “Pasif”.</value>
+  </data>
+  <data name="Help.BANKS.Audience" xml:space="preserve">
+    <value>Ana veri ekibi ve hazine</value>
+  </data>
+  <data name="Help.BANKS.Step1Title" xml:space="preserve">
+    <value>Banka ekleyin</value>
+  </data>
+  <data name="Help.BANKS.Step1" xml:space="preserve">
+    <value>“Yeni Ekle”ye tıklayın, bankanın bilgilerini doldurup kaydedin: banka “Taslak” olarak kaydedilir. Gerekmeyen bir taslak “Taslağı Sil” ile, birkaçı birden “Seçili Taslakları Sil” ile kaldırılır.</value>
+  </data>
+  <data name="Help.BANKS.Step2Title" xml:space="preserve">
+    <value>Durumunu değiştirin</value>
+  </data>
+  <data name="Help.BANKS.Step2" xml:space="preserve">
+    <value>Bankanın eylemlerini açın: “Aktifleştir” onu kullanılabilir yapar, “Pasifleştir” aktif bir bankayı kullanımdan çıkarır; “Ayrıntıları Görüntüle” ve “Düzenle” kaydını açar.</value>
+  </data>
+  <data name="Help.BANKS.Step3Title" xml:space="preserve">
+    <value>Klavyeyi kullanın</value>
+  </data>
+  <data name="Help.BANKS.Step3" xml:space="preserve">
+    <value>Bir metin alanının dışında, açık bir iletişim kutusu ya da yan panel yokken “?” tuşu bu yardımı sayfanın kısayollarıyla açar.</value>
+  </data>
 </root>
