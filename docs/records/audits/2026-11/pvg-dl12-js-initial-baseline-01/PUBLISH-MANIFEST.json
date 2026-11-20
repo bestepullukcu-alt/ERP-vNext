@@ -1,0 +1,41 @@
+{
+  "raw_root": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-initial-js-baseline-01",
+  "published": [
+    {
+      "path": "command.json",
+      "bytes": 1877,
+      "raw_sha256": "1f713695d93268feddf23141c38ed9d381d9d91fae7b5f77f00164e86b6438b1",
+      "lf_sha256": "1f713695d93268feddf23141c38ed9d381d9d91fae7b5f77f00164e86b6438b1"
+    },
+    {
+      "path": "source-before.json",
+      "bytes": 8415,
+      "raw_sha256": "8c40feda6ff12fa9e5326352a53415ca296f1265c6531247e180b45d359ff980",
+      "lf_sha256": "8c40feda6ff12fa9e5326352a53415ca296f1265c6531247e180b45d359ff980"
+    },
+    {
+      "path": "source-after-check.json",
+      "bytes": 4803,
+      "raw_sha256": "efa3253b69e44f7c645e7002eff79b0afcf7b121cc176b9955a0d6961e3b7d98",
+      "lf_sha256": "efa3253b69e44f7c645e7002eff79b0afcf7b121cc176b9955a0d6961e3b7d98"
+    },
+    {
+      "path": "stdout.txt",
+      "bytes": 164,
+      "raw_sha256": "cccbd79f5257f9c2e33d800098d869884d51a6d45d7a533e4d1c21eb61129495",
+      "lf_sha256": "cccbd79f5257f9c2e33d800098d869884d51a6d45d7a533e4d1c21eb61129495"
+    },
+    {
+      "path": "stderr.txt",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "vitest.json",
+      "bytes": 13139,
+      "raw_sha256": "64a4b27e216222aff89bafa5d69c897d9140917b687a3a34b2c93e70df5aa616",
+      "lf_sha256": "64a4b27e216222aff89bafa5d69c897d9140917b687a3a34b2c93e70df5aa616"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "kind": "Actual normal production prompt gate; not prepare",
+  "short": "BE",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\");sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-BE-v1.0.md",
+    "--queue",
+    "pvg",
+    "--review",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-DL12-BE-v1.0.md@875b8a6fd5d0cf12badfead9c5a6a08f04b47847"
+  ],
+  "started": "2026-11-20T19:34:45.087485+00:00",
+  "prompt_raw_sha256": "3bb5cce5fbf44a4faf1742b74b56226314b02ef70eac064d7ce51c3305ba9f8b",
+  "source_head": "f3f718b7c6da16c500aea2eca9ca13da1d78cb4b",
+  "review_commit": "875b8a6fd5d0cf12badfead9c5a6a08f04b47847",
+  "root_head": "875b8a6fd5d0cf12badfead9c5a6a08f04b47847",
+  "process_id": 28704
+}
