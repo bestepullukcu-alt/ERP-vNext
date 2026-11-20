@@ -25,8 +25,11 @@ for i in range(3, 8):
     lines[i] = '\t'.join(cells) + '\n'
 expected = ''.join(lines).encode('utf-8')
 current = (root / rel).read_bytes().replace(b'\r\n', b'\n')
+trx_rel = 'docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/independent.trx'
+expected_trx = subprocess.check_output(['git', '-C', str(root), 'show', f'{base}:{trx_rel}'])
+trx_before = (root / trx_rel).read_bytes().replace(b'\r\n', b'\n')
 commands = []
-for tail in [['validate'], ['check', str(root / 'docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/independent.trx'), '--suite', 'Diten.Web.Tests']]:
+for tail in [['validate'], ['check', str(root / trx_rel), '--suite', 'Diten.Web.Tests']]:
     argv = [sys.executable, '-B', str(root / 'scripts/known_failures.py'), *tail]
     run = subprocess.run(argv, capture_output=True, text=True, encoding='utf-8')
     commands.append(dict(argv=argv, exit_code=run.returncode, stdout=run.stdout, stderr=run.stderr))
@@ -40,10 +43,16 @@ mutant[2]['rerun_trigger'] += ',*.xml'
 tracked = subprocess.check_output(['git', '-C', str(root), 'ls-files', '-z']).decode('utf-8').split('\0')
 problems = module.validate(mutant, tracked=tracked)
 guard_red = any("glob '*.xml' matches no tracked path" in problem for problem in problems)
-passed = current == expected and all(c['exit_code'] == 0 for c in commands) and guard_red
+trx_after = (root / trx_rel).read_bytes().replace(b'\r\n', b'\n')
+trx_bound = trx_before == expected_trx and trx_after == expected_trx
+passed = current == expected and all(c['exit_code'] == 0 for c in commands) and guard_red and trx_bound
 result = dict(base=base, repository=str(root), exact_five_cell_diff=current == expected,
               source_sha256=hashlib.sha256(Path(__file__).read_bytes().replace(b'\r\n', b'\n')).hexdigest(),
               ledger_lf_sha256=hashlib.sha256(current).hexdigest(), commands=commands,
+              trx_identity=dict(path=trx_rel, source_commit=base,
+                  expected_lf_sha256=hashlib.sha256(expected_trx).hexdigest(),
+                  before_lf_sha256=hashlib.sha256(trx_before).hexdigest(),
+                  after_lf_sha256=hashlib.sha256(trx_after).hexdigest(), matches_before_after=trx_bound),
               in_memory_single_old_token_sabotage=dict(production_function='known_failures.validate',
                   real_tracked_paths=True, guard_red=guard_red, problems=problems), acceptance_passed=passed)
 out = Path(a.out)
