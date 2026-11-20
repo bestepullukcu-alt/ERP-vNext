@@ -1,0 +1,24 @@
+{
+  "head": "7dbdfd4f47f8361319c1c3f533036ad43a867f71",
+  "status": "",
+  "branch": "feature/pvg/mod-0230-dl12-registry",
+  "protected_raw_hashes_unchanged": true,
+  "ledger_unchanged_during_verification": true,
+  "diff_check_exit": 0,
+  "decision": "UYGUN",
+  "worker_evidence_same_checks": {
+    "base": true,
+    "exact_five_cell_diff": true,
+    "source_sha256": true,
+    "ledger_lf_sha256": true,
+    "trx_identity": true,
+    "in_memory_single_old_token_sabotage": true,
+    "acceptance_passed": true
+  },
+  "requested_model": "gpt-6.2-astra",
+  "requested_effort": "high",
+  "actual_model": "doğrulanamaz",
+  "actual_effort": "doğrulanamaz",
+  "limitation": "Existing immutable 62/62 Web TRX reclassification only; no Web test rerun or E4 claim",
+  "reader_note": "Producer ran exactly once and returned zero. An initial verifier JSON read used the Windows locale encoding and failed; reread explicitly as UTF-8, no producer/test rerun."
+}

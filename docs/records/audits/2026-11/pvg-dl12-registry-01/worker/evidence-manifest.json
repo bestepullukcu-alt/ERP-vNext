@@ -1,0 +1,42 @@
+{
+  "final-green.json": {
+    "bytes": 2144,
+    "sha256": "1d4e4921042317e3b6cc6aadb15150dfa50bffe0816ae8cf3fa940e8bbb790ee"
+  },
+  "five-cell-diff.json": {
+    "bytes": 2949,
+    "sha256": "dbc4659aeccc7490d489efd4f8fc10658603ce9d75df4e323126afd139efe39b"
+  },
+  "handoff.json": {
+    "bytes": 617,
+    "sha256": "d3a208113aa8c55580fc8e56d1d2f07948a65c94706518091fb1a56c46b8b748"
+  },
+  "initial.json": {
+    "bytes": 2213,
+    "sha256": "b17fafc32894f9559dd7d3a42ef4edc7eaa1673c4c867c4a8ac82fc76a0fcb8e"
+  },
+  "post-measurement.json": {
+    "bytes": 1679,
+    "sha256": "1bc4168dfc5a6246ffd53ef60eccc79ae08733acf7222dbbdd99d7874000e179"
+  },
+  "producer-run.json": {
+    "bytes": 715,
+    "sha256": "c0d5e3258784a68e6e1abf2107a0a21e60f2b752a0975609259d04a9381d55ad"
+  },
+  "producer.stderr.txt": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "producer.stdout.txt": {
+    "bytes": 78,
+    "sha256": "f5fd2e34f3250cfdd8e04d155ba22f3faaa34cb3c53d8fd9f5aa68e9a382bf72"
+  },
+  "staged.patch": {
+    "bytes": 6470,
+    "sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e"
+  },
+  "working.patch": {
+    "bytes": 6470,
+    "sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e"
+  }
+}
