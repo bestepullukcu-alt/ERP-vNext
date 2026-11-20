@@ -7,7 +7,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 ## Güncel odak
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
-- **Test:** WIN ve Web hazırlıkları bağımsız E2 sonrası CT'ye entegre; birleşik395/395 ve62/62,0skip. Registry yalnız beş hücreyle entegre. Ana kayıpsız düzenleme feature'ı henüz yapılmadı.
+- **Test:** WIN ve Web hazırlıkları ve beş hücreli registry düzeltmesi CT’ye entegre. BE/L10N sonrası gerçek taban API456/Reg211/Web62/JS34,0skip; FE geliştirmesi sürüyor, veri koruma teslimi henüz yok.
 - **Arka uç / çeviri:** Parent IN_PROGRESS; BE INTEGRATED; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
 - **Ekran:** FE IN_PROGRESS; bağımsız exactpromptUYGUN0 ve actualnormal0 sonrası ayrıtek yazıcı. Güncel durum STATE-JOURNAL ve gerçek teslim kanıtındadır; CT ürün kodu yazmaz.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
@@ -38,7 +38,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `IN_PROGRESS`
-  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE sürüyor, L10N CTde, FE bekliyor; no-loss kabulü henüz yok.
+  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin v1.0 UYGUN0/normal0 ve gözlenen preflight sonrası IN_PROGRESS; no-loss kabulü henüz yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
@@ -57,7 +57,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - 43f856f22f0549be1d61fab09d40086b755661ba bağımsızUYGUN0 sonrası CTnoff77ecab323fc731d157cedeae63d653bb604517db ile entegre.7XML112/parity/old111korunur, yalnız7satır. FEbridge/runtime ayrı.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-l10n-01/CT-INTEGRATION.json`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `IN_PROGRESS`
-  - BE/L10N entegre, actual API456/Reg211/Web62/JS34 test tabanı doğrulandı. Altı frontend yolu için bağımsız exactprompt UYGUN0 ve gerçek normal0 tamam; işçi DEV GO aldığını ve temiz kesin dal preflight sonucunu bildirdi. Henüz ürün teslimi yok.
+  - BE/L10N entegre, actual API456/Reg211/Web62/JS34 test tabanı doğrulandı. Altı frontend yolu için bağımsız exactprompt UYGUN0 ve gerçek normal0 tamam; işçi DEV GO aldığını ve temiz kesin dal preflight sonucunu bildirdi. İşçi eski ürün üzerinde yeni JS ve gerçek connected C# assertion RED gözlediğini bildirdi; tam kaynak bağlı sonuç teslimde denetlenecek. Henüz ürün teslimi yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-dor-01/READY.md`.
 
 ## Karar bekleyenler
