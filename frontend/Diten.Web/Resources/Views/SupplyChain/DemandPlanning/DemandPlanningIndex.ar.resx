@@ -60,6 +60,7 @@
   <data name="HistoryUnit" xml:space="preserve"><value>الوحدة المقبولة</value></data>
   <data name="HistoryQuantity" xml:space="preserve"><value>الكمية المقبولة</value></data>
   <data name="HistoryUnitPending" xml:space="preserve"><value>لم يتم التحقق من الوحدة عبر MOD-0290</value></data>
+  <data name="HistoryUnitMismatch" xml:space="preserve"><value>تختلف الوحدة المقبولة عن الوحدة الأساسية الحالية</value></data>
   <data name="HistoryBatch" xml:space="preserve"><value>دفعة الاستيراد</value></data>
   <data name="HistoryDecision" xml:space="preserve"><value>القرار</value></data>
   <data name="HistoryActor" xml:space="preserve"><value>صاحب القرار</value></data>

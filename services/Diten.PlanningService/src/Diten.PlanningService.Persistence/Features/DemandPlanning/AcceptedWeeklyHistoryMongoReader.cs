@@ -7,8 +7,13 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 public sealed class AcceptedWeeklyHistoryMongoReader : IAcceptedWeeklyHistoryReader
 {
     private readonly DemandPlanningMongoContext _context;
+    private readonly IHistoryRowReferenceChecker? _references;
 
     public AcceptedWeeklyHistoryMongoReader(DemandPlanningMongoContext context) => _context = context;
+
+    public AcceptedWeeklyHistoryMongoReader(DemandPlanningMongoContext context,
+        IHistoryRowReferenceChecker references)
+    { _context = context; _references = references; }
 
     public async Task<AcceptedSeriesHistory> ReadAsync(Guid tenantId, Guid legalEntityId,
         Guid skuId, string skuLevel, string warehouseId, DateOnly asOfWeekStart,
@@ -38,12 +43,23 @@ public sealed class AcceptedWeeklyHistoryMongoReader : IAcceptedWeeklyHistoryRea
                 .Limit(10001).ToListAsync(cancellationToken);
             if (rows.Count > 10000)
                 throw new InvalidOperationException("Accepted history row limit exceeded.");
+            var verifiedUnits = rows.Where(row => !row.UnitVerificationPending)
+                .Select(row => row.BaseUomId).Distinct(StringComparer.Ordinal).ToArray();
+            if (verifiedUnits.Length > 1)
+                throw new InvalidOperationException("Accepted history has conflicting base units.");
+            var verifiedUnit = verifiedUnits.SingleOrDefault();
             var rowIds = rows.Select(x => x.Id).ToArray();
             var audits = rowIds.Length == 0 ? [] :
                 await _context.HistoryAcceptanceAudit.Find(session, x =>
                     x.TenantId == tenantId && x.LegalEntityId == legalEntityId &&
                     rowIds.Contains(x.AcceptedRowId)).ToListAsync(cancellationToken);
             await session.CommitTransactionAsync(cancellationToken);
+
+            var pendingUnitStatus = "UnitVerificationPending";
+            var pendingRow = rows.FirstOrDefault(row => row.UnitVerificationPending);
+            if (pendingRow is not null && _references is not null)
+                pendingUnitStatus = await AcceptedHistoryUnitProjection.CheckAsync(pendingRow,
+                    _references, cancellationToken);
 
             var weeks = new List<AcceptedWeekObservation>(weekCount);
             for (var index = 0; index < weekCount; index++)
@@ -72,7 +88,8 @@ public sealed class AcceptedWeeklyHistoryMongoReader : IAcceptedWeeklyHistoryRea
                 var accepted = rows.Where(row => row.OccurredOn >= start &&
                     row.OccurredOn < start.AddDays(7)).ToArray();
                 if (accepted.Any(row => row.BatchId != batch.Id || row.SkuLevel != skuLevel ||
-                    row.OriginalUomId != claim.UomId || row.AcceptedUomId != claim.UomId ||
+                    row.OriginalUomId != claim.UomId ||
+                    row.AcceptedUomId != (row.UnitVerificationPending ? claim.UomId : row.BaseUomId) ||
                     row.ContentSha256 != AcceptedHistoryFingerprint.Compute(row) ||
                     audits.Count(audit => audit.AcceptedRowId == row.Id &&
                         audit.BatchId == row.BatchId && audit.BatchRowNumber == row.BatchRowNumber &&
@@ -93,22 +110,28 @@ public sealed class AcceptedWeeklyHistoryMongoReader : IAcceptedWeeklyHistoryRea
                         row.OriginalQuantity == item.OriginalQuantity)))
                 {
                     weeks.Add(new(start, AcceptedWeekState.IncompleteAcceptance,
-                        claim.UomId, false, batch.CoverageFileSha256, []));
+                        verifiedUnit ?? claim.UomId, false, batch.CoverageFileSha256, []));
                     continue;
                 }
                 if (claim.StockState is ImportWeekStockState.OutOfStock or ImportWeekStockState.Unknown)
                 {
                     weeks.Add(new(start, AcceptedWeekState.StockoutUnresolved,
-                        claim.UomId, accepted.Any(row => row.UnitVerificationPending),
+                        accepted.Any(row => row.UnitVerificationPending) ? claim.UomId :
+                        verifiedUnit ?? claim.UomId,
+                        accepted.Any(row => row.UnitVerificationPending) &&
+                        pendingUnitStatus != "VerifiedBase",
                         batch.CoverageFileSha256, []));
                     continue;
                 }
                 var events = accepted.OrderBy(row => row.OccurredOn).ThenBy(row => row.Id)
                     .Select(row => new AcceptedWeekEvent(row.Id, row.OccurredOn,
                         row.AcceptedQuantity)).ToArray();
+                var pending = accepted.Any(row => row.UnitVerificationPending) &&
+                    pendingUnitStatus != "VerifiedBase";
+                var originalPending = accepted.Any(row => row.UnitVerificationPending);
                 weeks.Add(new(start, events.Length == 0 ? AcceptedWeekState.VerifiedZeroDemand :
-                    AcceptedWeekState.VerifiedDemand, claim.UomId,
-                    accepted.Any(row => row.UnitVerificationPending), batch.CoverageFileSha256,
+                    AcceptedWeekState.VerifiedDemand, originalPending ? claim.UomId :
+                    verifiedUnit ?? claim.UomId, pending, batch.CoverageFileSha256,
                     Array.AsReadOnly(events)));
             }
 

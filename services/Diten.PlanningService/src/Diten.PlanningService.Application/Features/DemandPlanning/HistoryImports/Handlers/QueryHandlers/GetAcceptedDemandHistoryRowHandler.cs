@@ -7,10 +7,11 @@ public sealed class GetAcceptedDemandHistoryRowHandler :
 {
     private readonly IAcceptedDemandHistoryStore _store;
     private readonly IHistoryImportScopeAuthority _authority;
+    private readonly IHistoryRowReferenceChecker _references;
 
     public GetAcceptedDemandHistoryRowHandler(IAcceptedDemandHistoryStore store,
-        IHistoryImportScopeAuthority authority)
-    { _store = store; _authority = authority; }
+        IHistoryImportScopeAuthority authority, IHistoryRowReferenceChecker references)
+    { _store = store; _authority = authority; _references = references; }
 
     public async Task<Response<AcceptedDemandHistoryView>> Handle(
         GetAcceptedDemandHistoryRowQuery query, CancellationToken cancellationToken)
@@ -36,7 +37,9 @@ public sealed class GetAcceptedDemandHistoryRowHandler :
                 [found.Row.WarehouseId], cancellationToken);
             if (authorized is null)
                 return Response<AcceptedDemandHistoryView>.Fail("History scope is unavailable.", 503);
-            return authorized.Value ? Response<AcceptedDemandHistoryView>.Success(found) :
+            return authorized.Value ? Response<AcceptedDemandHistoryView>.Success(
+                await AcceptedHistoryUnitProjection.ResolveAsync(found, _references,
+                    cancellationToken)) :
                 Response<AcceptedDemandHistoryView>.Fail("Accepted row was not found.", 404);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
