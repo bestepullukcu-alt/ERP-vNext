@@ -1,0 +1,217 @@
+{
+  "kind": "Independent technical E2 publication; no automatic operational/acceptance or merge",
+  "candidate": {
+    "commit": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+    "tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+    "sole_parent": "6d845de19296d919620503a4024ddcaa0bda42dc",
+    "branch": "feature/pvg/mod-0230-dl12-fe",
+    "worker": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-web/ERP-vNext-git",
+    "ordinary_single_commit": true,
+    "final_observed_clean": true,
+    "final_diff_check_exit": 0,
+    "six_raw_LF_and_committed_source_pins": "CANDIDATE-SOURCE-v3.json@e923eea5f1b83ff6c292d230bbfa313b573e5bed5139b8d024e29dec060f1613"
+  },
+  "recorded_utc": "2026-11-21T17:32:28.890117+00:00",
+  "review_raw_sha256": "d5a9b68637c834f055726ea5ab0af7ddc48625adc8372e6b0b96d18b18e122fe",
+  "review_verdict": "UYGUN",
+  "source_bound_technical_blockers": 0,
+  "actual_normal": {
+    "evidence": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence",
+    "reviewed_runner_SHA256": "cbf806d93fa60ebe2cbe4a53f2fa6b2a48fa54485dd836220fcdb7b8218cb792",
+    "overall_exit": 0,
+    "web_target_class_passed": 78,
+    "JS_target_file_passed": 39,
+    "full_API_passed": 456,
+    "full_RegPvBase_passed": 211,
+    "failed": 0,
+    "skipped": 0,
+    "old_Web62_JS34_retained": true,
+    "API_Reg_exact_baseline_multisets_retained": true,
+    "normal_summary_SHA256": "3205af60bd53892b57076ddb7ffb7069169341e6d180e18b76718d4ebcc47e1b",
+    "frozen_capture_SHA256": "9e6c5e0bf6d957be614c238ab463c2aa5c6a01ee5afa98641bb8c34e0089147d",
+    "frozen_capture_actual_exit": 0,
+    "mechanical_capture_passed": true,
+    "actual_skip_known_failure_CLI_count": 6,
+    "all_six_actual_CLI_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "actual_MSBuild_transitive_source_DLL_TRX_storage_time_bound": true,
+    "all_26600_tracked_source_bytes_and_Git_blob_OIDs_bound": true,
+    "raw_Git_OID_raw_SHA256_canonicalLF_separate": true
+  },
+  "actual_cleanup": {
+    "normal_complete_success": true,
+    "normal_Jobs_empty_unforced": 110,
+    "repeat_Jobs_empty_unforced": 54,
+    "successful_phase_forced_Job_terminations": 0,
+    "actual_backend_Mongo_processes": 5,
+    "all_original_PID_birth_handles_exited_ports_closed_own_data_removed": true,
+    "ACL_own_roots_and_private_fixture_roots_remaining": [],
+    "normal_26600_source_bytes_and_worker_bytes_index_HEAD_unchanged": true,
+    "repeat_all_26600_source_bytes_restored": true,
+    "both_private_dependency_copies_posthash_unchanged": true,
+    "original_worker_source_ref_index_writes": 0,
+    "product_fixes_by_verifier": 0
+  },
+  "own_compiled_repeat_count": 11,
+  "canned200_failure_label": "Declared BrowserFailure.SuppressUpdate, not xUnit assertion",
+  "records": [
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/FINAL-REVIEW.json",
+      "raw_bytes": 30818,
+      "raw_sha256": "d5a9b68637c834f055726ea5ab0af7ddc48625adc8372e6b0b96d18b18e122fe",
+      "raw_CR": 433,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/REVIEW.json",
+      "view_lf_sha256": "160d92b9d6d21d238a4737bb2bd06621e9df1ed09044e77f8ae96c6d5d63f938",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/FINAL-POSTCHECK.json",
+      "raw_bytes": 2108625,
+      "raw_sha256": "b779c287eed7fd30a067ab37841a6b2ff1ea3ca3a9f08961e471d203f4123b2c",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/FINAL-POSTCHECK.json",
+      "view_lf_sha256": "b779c287eed7fd30a067ab37841a6b2ff1ea3ca3a9f08961e471d203f4123b2c",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/INDEPENDENT-RAW-MANIFEST.json",
+      "raw_bytes": 346557,
+      "raw_sha256": "41bf224c6ff26b8ab4f3e798cd6ac20cb3aad7f51fb115516cc0c9109f861e8c",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/RAW-MANIFEST-LF-VIEW.json",
+      "view_lf_sha256": "41bf224c6ff26b8ab4f3e798cd6ac20cb3aad7f51fb115516cc0c9109f861e8c",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/AUTHOR-PROOF-CHECK.json",
+      "raw_bytes": 44997,
+      "raw_sha256": "f0c7421102c7f7de4d2599e7176d4add4046733ec57305ddbe126b31a818f1c6",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/AUTHOR-PROOF-CHECK.json",
+      "view_lf_sha256": "f0c7421102c7f7de4d2599e7176d4add4046733ec57305ddbe126b31a818f1c6",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/AUTHOR-OLD-RED-CHECK.json",
+      "raw_bytes": 2794,
+      "raw_sha256": "96076102f16caf0cdd17cd7a488af562b66dead8ee9f1b2dde7ea7197134d93e",
+      "raw_CR": 55,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/AUTHOR-OLD-RED-CHECK.json",
+      "view_lf_sha256": "0e8c338eacc9ee3ce9d6ad13a22eea2a61d341350fd5bb95d59e92c8185d614d",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/AUTHOR-BACKEND-REUSE-CHECK.json",
+      "raw_bytes": 1170,
+      "raw_sha256": "a08aeaaa7546d92bf62babdab7c2c6d64351285bfeaaded7694ecfaf82aaf9fd",
+      "raw_CR": 27,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/AUTHOR-BACKEND-REUSE-CHECK.json",
+      "view_lf_sha256": "3efc90828348f241f49899becc44323cde6190c6126a4e04500b2c720f843bfb",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-dl12-fe-independent-02/INDEPENDENT-SETUP-ATTEMPTS.json",
+      "raw_bytes": 2057,
+      "raw_sha256": "0f1cfe704507124ebc3e4ce807ac3a0853c5be6119b05768262aeacba6cdfb92",
+      "raw_CR": 37,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/SETUP-ATTEMPTS.json",
+      "view_lf_sha256": "8b0ffc904fe6ab1f26a0a276c810d69e3c886884858bbb98fb5a0aad164010bd",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/RUN-SUMMARY.json",
+      "raw_bytes": 1838071,
+      "raw_sha256": "3205af60bd53892b57076ddb7ffb7069169341e6d180e18b76718d4ebcc47e1b",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/NORMAL-SUMMARY.json",
+      "view_lf_sha256": "3205af60bd53892b57076ddb7ffb7069169341e6d180e18b76718d4ebcc47e1b",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/cleanup-finally.json",
+      "raw_bytes": 171373,
+      "raw_sha256": "3b27f86246d2a702ecf63e4dfa5e411752bc12fbc64b9c4cbc4d879be62f9acf",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/NORMAL-CLEANUP.json",
+      "view_lf_sha256": "3b27f86246d2a702ecf63e4dfa5e411752bc12fbc64b9c4cbc4d879be62f9acf",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/ct-capture.json",
+      "raw_bytes": 148416,
+      "raw_sha256": "9e6c5e0bf6d957be614c238ab463c2aa5c6a01ee5afa98641bb8c34e0089147d",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/CAPTURE.json",
+      "view_lf_sha256": "9e6c5e0bf6d957be614c238ab463c2aa5c6a01ee5afa98641bb8c34e0089147d",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence/PAIRS.json",
+      "raw_bytes": 23064,
+      "raw_sha256": "54f11435fb6b0dc9a9f001d4b36829b937957079b5c6a142fdc7ddc54a611981",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/INDEPENDENT-PAIRS.json",
+      "view_lf_sha256": "54f11435fb6b0dc9a9f001d4b36829b937957079b5c6a142fdc7ddc54a611981",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence/CLEANUP.json",
+      "raw_bytes": 130,
+      "raw_sha256": "9e6777cd58cb34cb5c76d369c2bb6f2c5ebc2cd23550103627888dd82a37ef4e",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/REPEAT-CLEANUP.json",
+      "view_lf_sha256": "9e6777cd58cb34cb5c76d369c2bb6f2c5ebc2cd23550103627888dd82a37ef4e",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/Diten.Web.Tests.trx",
+      "raw_bytes": 2426935,
+      "raw_sha256": "f6924a325aa11b8337be72bfb5271ff088b6449f142a50f261c82c7f5b0458e7",
+      "raw_CR": 606,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/Diten.Web.Tests.trx",
+      "view_lf_sha256": "18072d94bae29c4e0603778b5c3493bbbd8e5e981ae836a367723818d279892d",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/pvg-api.trx",
+      "raw_bytes": 803229,
+      "raw_sha256": "e06cf56652e99795f287aa166c3d68650f4375243b8eac1f606c0d639bdbb635",
+      "raw_CR": 2758,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/pvg-api.trx",
+      "view_lf_sha256": "dc639a83092947feb81deff97519dd5206f4cee39779e6375bf5f8e544fc4910",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/pvg-regpv-base.trx",
+      "raw_bytes": 367738,
+      "raw_sha256": "68b6b0a85dc4277a250bbe96b771780ae073dea9bb7262bd833eeda44214d7b8",
+      "raw_CR": 1288,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/pvg-regpv-base.trx",
+      "view_lf_sha256": "812df0aa4c31a4fc0b65409c8dba32d4326e742cf58281a98d67b8952cbd8169",
+      "label": "Canonical LF view; original raw identity separate"
+    },
+    {
+      "source": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence/vitest.json",
+      "raw_bytes": 15257,
+      "raw_sha256": "f4da7d59c6dd1fb84da7f3b27ded944c4efb79334356b212bdca6978a5699604",
+      "raw_CR": 0,
+      "view": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/vitest.json",
+      "view_lf_sha256": "f4da7d59c6dd1fb84da7f3b27ded944c4efb79334356b212bdca6978a5699604",
+      "label": "Canonical LF view; original raw identity separate"
+    }
+  ],
+  "lossless_envelope": {
+    "path": "docs/records/audits/2026-11/pvg-dl12-fe-independent-02/RAW-REVIEW-ARTIFACTS.json",
+    "sha256": "b70b9bf5666787788ba22244619cac65379dc87f11bbdaa2490cf1a5e75d1616"
+  },
+  "bulk_DLLs_sources_retained_external": true,
+  "ct_accepted": false,
+  "root_merged": false,
+  "publication_authorized": false
+}
