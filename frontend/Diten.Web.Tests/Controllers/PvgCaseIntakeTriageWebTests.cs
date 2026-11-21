@@ -2,6 +2,7 @@ extern alias pvgapi;
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Json;
@@ -10,9 +11,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Infrastructure.RegPvBase;
+using Diten.PvgService.Domain.RegPvBase;
 using Diten.Web.Controllers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +52,8 @@ namespace Diten.Web.Tests.Controllers;
 /// MOD-0230 WP-0230-DL7C: W15 — every screen draws the bridge, the loader and its own script, once each and in that order;
 /// W16 — the bridge carries the shared RecordSaved text; W17 — both date inputs of the form accept seconds.
 /// </summary>
-public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory, ITestOutputHelper output) : IClassFixture<WebApplicationFactory<Program>>
+public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> factory, ITestOutputHelper output, PvgCaseIntakeTriageWebTests.ConnectedMatrixFixture matrix)
+    : IClassFixture<WebApplicationFactory<Program>>, IClassFixture<PvgCaseIntakeTriageWebTests.ConnectedMatrixFixture>
 {
     private const string Read = "pvg.case-intake-triage.read";
     private const string Create = "pvg.case-intake-triage.create";
@@ -100,7 +104,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         ("Detail", Read, false, c => c.Detail(DraftId, CancellationToken.None)),
         ("Options", Read, false, c => c.Options(CancellationToken.None)),
         ("CreateDraft", Create, false, c => c.CreateDraft(Input(), CancellationToken.None)),
-        ("UpdateDraft", Update, false, c => c.UpdateDraft(DraftId, Input(), CancellationToken.None)),
+        ("UpdateDraft", Update, false, c => UpdateDraftAsync(c, DraftId, Input(), CancellationToken.None)),
         ("TriageDraft", Triage, false, c => c.TriageDraft(DraftId, new("Triaged", null, null), CancellationToken.None)),
         ("RouteDraft", Route, false, c => c.RouteDraft(DraftId, new("PV_SAFETY_REVIEW"), CancellationToken.None))
     ];
@@ -297,7 +301,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     {
         var wire = new Wire(ListAnswer);
 
-        await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 7), CancellationToken.None);
+        await UpdateDraftAsync(Controller(wire, Update), DraftId, Input(version: 7), CancellationToken.None);
         await Controller(wire, Triage).TriageDraft(DraftId, new("Triaged", "R1", "why", 7), CancellationToken.None);
         await Controller(wire, Route).RouteDraft(DraftId, new("PV_SAFETY_REVIEW", 7), CancellationToken.None);
         await Controller(wire, Create).CreateDraft(Input(version: 7), CancellationToken.None);
@@ -353,7 +357,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         var wire = new Wire(refusal, HttpStatusCode.Conflict);
 
         var list = await Controller(wire, Read).List(CancellationToken.None);
-        var update = await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 2), CancellationToken.None);
+        var update = await UpdateDraftAsync(Controller(wire, Update), DraftId, Input(version: 2), CancellationToken.None);
 
         foreach (var result in new[] { list, update })
         {
@@ -415,7 +419,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         var lines = FormInput.ProductLines.Concat([new(null, null, null), new("  ", " ", "   ")]).ToArray();
 
         await Controller(wire, Create).CreateDraft(Input(lines: lines), CancellationToken.None);
-        await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 2, lines: lines), CancellationToken.None);
+        await UpdateDraftAsync(Controller(wire, Update), DraftId, Input(version: 2, lines: lines), CancellationToken.None);
 
         Assert.Equal(2, wire.Requests.Count);
         foreach (var sent in wire.Bodies)
@@ -454,7 +458,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             foreach (var result in new[]
             {
                 await Controller(refusedWire, Create).CreateDraft(input, CancellationToken.None),
-                await Controller(refusedWire, Update).UpdateDraft(DraftId, input, CancellationToken.None)
+                await UpdateDraftAsync(Controller(refusedWire, Update), DraftId, input, CancellationToken.None)
             })
             {
                 var content = Assert.IsType<ContentResult>(result);
@@ -483,7 +487,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         var wire = new Wire(ListAnswer);
 
         await Controller(wire, Create).CreateDraft(Input(), CancellationToken.None);
-        await Controller(wire, Update).UpdateDraft(DraftId, Input(version: 2), CancellationToken.None);
+        await UpdateDraftAsync(Controller(wire, Update), DraftId, Input(version: 2), CancellationToken.None);
 
         Assert.Equal(2, wire.Bodies.Count);
         foreach (var sent in wire.Bodies)
@@ -510,7 +514,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             Input(version: 2) with { RemoveReporterLink = true, ReporterSelectionDirectory = "Crm" }
         })
         {
-            var content = Assert.IsType<ContentResult>(await Controller(refused, Update).UpdateDraft(DraftId, input, CancellationToken.None));
+            var content = Assert.IsType<ContentResult>(await UpdateDraftAsync(Controller(refused, Update), DraftId, input, CancellationToken.None));
             Assert.Equal(StatusCodes.Status400BadRequest, content.StatusCode);
             using var body = JsonDocument.Parse(content.Content!);
             Assert.Equal("PVG_REPORTER_LINK_REMOVAL_WITH_SELECTION", body.RootElement.GetProperty("reason_code").GetString());
@@ -521,7 +525,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
 
         // The marker alone travels, and no key of the pair travels with it.
         var removal = new Wire(ListAnswer);
-        await Controller(removal, Update).UpdateDraft(DraftId, Input(version: 2) with { RemoveReporterLink = true }, CancellationToken.None);
+        await UpdateDraftAsync(Controller(removal, Update), DraftId, Input(version: 2) with { RemoveReporterLink = true }, CancellationToken.None);
         using (var body = JsonDocument.Parse(Assert.Single(removal.Bodies)))
         {
             Assert.True(body.RootElement.GetProperty("RemoveReporterLink").GetBoolean());
@@ -531,7 +535,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
 
         // An update without the marker has no such key at all.
         var plain = new Wire(ListAnswer);
-        await Controller(plain, Update).UpdateDraft(DraftId, Input(version: 2), CancellationToken.None);
+        await UpdateDraftAsync(Controller(plain, Update), DraftId, Input(version: 2), CancellationToken.None);
         using (var body = JsonDocument.Parse(Assert.Single(plain.Bodies)))
         {
             Assert.False(body.RootElement.TryGetProperty("RemoveReporterLink", out _));
@@ -651,6 +655,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         var withPair = editForm.Fields([0]).Append(version)
             .Append(editForm.Hidden("ReporterSelectionDirectory", "Crm"))
             .Append(editForm.Hidden("ReporterSelectionId", "synthetic-c"))
+            .Append(("UpdateValuesJson", UpdateFixtureJson(Input(version: 7) with { ReporterSelectionDirectory = "Crm", ReporterSelectionId = "synthetic-c" })))
             .ToArray();
         using (var posted = await PostFormAsync(client, updateUrl, updateToken, editForm, withPair))
         {
@@ -667,7 +672,8 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
 
         wire.Requests.Clear();
         wire.Bodies.Clear();
-        var withRemoval = editForm.Fields([0]).Append(version).Append(editForm.Hidden("RemoveReporterLink", "true")).ToArray();
+        var withRemoval = editForm.Fields([0]).Append(version).Append(editForm.Hidden("RemoveReporterLink", "true"))
+            .Append(("UpdateValuesJson", UpdateFixtureJson(Input(version: 7) with { RemoveReporterLink = true }))).ToArray();
         using (var posted = await PostFormAsync(client, updateUrl, updateToken, editForm, withRemoval))
         {
             Assert.Equal(HttpStatusCode.OK, posted.StatusCode);
@@ -842,9 +848,223 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
 
     private sealed class BrowserFailure(string reason) : Exception(reason);
 
-    private async Task ConnectedEditAsync(string fault)
+    public static IEnumerable<object[]> LosslessCorpusCases()
     {
-        var signingKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(),
+            "docs/records/audits/2026-11/pvg-dl12-fe-corpus-01/FE-CORPUS.json")));
+        var cases = doc.RootElement.GetProperty("cases").EnumerateArray().ToArray();
+        Assert.Equal(47, cases.Length);
+        Assert.Equal(47, cases.Select(row => row.GetProperty("name").GetString()).Distinct(StringComparer.Ordinal).Count());
+        foreach (var row in cases) yield return [row.GetProperty("name").GetString()!];
+    }
+
+    [Fact]
+    public Task Mvc_update_preserves_untouched_stored_text_and_reference_sequence() =>
+        RunNewMatrixAsync("corpus", LosslessCorpusCases().Select(row => (string)row[0]),
+            name => ConnectedEditAsync("Valid", caseName: name, lossless: true, receiptKind: "corpus"));
+
+    [Fact]
+    public async Task Edit_optional_source_reference_and_patient_code_match_service_validation()
+    {
+        // This named acceptance itself runs the connected browser/MVC/API/store chain.
+        await ConnectedEditAsync("Valid", caseName: "source-and-patient-null", lossless: true);
+        await ConnectedEditAsync("Valid", caseName: "source-and-patient-empty", lossless: true);
+        var key = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        using var web = HostOver(new Wire(ListAnswer), key);
+        using var client = web.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false });
+        foreach (var mode in new[] { "Create", "Edit/" + DraftId })
+        {
+            using var response = await GetAsync(client, BrowserPrefix + "/" + mode, Token(key, Create, Update));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var html = await response.Content.ReadAsStringAsync();
+            foreach (var field in new[] { "SourceReference", "PatientSubjectCode" })
+            {
+                var input = Regex.Match(html, "<input\\b[^>]*id=\"" + field + "\"[^>]*>").Value;
+                var label = Regex.Match(html, "<label\\b[^>]*for=\"" + field + "\"[^>]*>[\\s\\S]*?</label>").Value;
+                Assert.NotEmpty(input);
+                Assert.NotEmpty(label);
+                Assert.Equal(mode == "Create", Regex.IsMatch(input, "\\brequired(?:=|\\s|/|>)"));
+                Assert.Equal(mode == "Create", label.Contains("text-danger", StringComparison.Ordinal));
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("timestamp-seven-ticks-Z")]
+    [InlineData("timestamp-seven-ticks-+0530")]
+    [InlineData("timestamp-seven-ticks--0400")]
+    [InlineData("timestamp-mixed-offsets")]
+    public Task Edit_round_trip_preserves_subsecond_received_and_awareness_instants(string caseName) =>
+        ConnectedEditAsync("Valid", caseName: caseName, lossless: true);
+
+    [Theory]
+    [InlineData("ReporterContactSummary")]
+    [InlineData("SourceReference")]
+    [InlineData("PatientSubjectCode")]
+    [InlineData("EventOnsetDate")]
+    public Task Edit_round_trip_clears_only_the_optional_field_the_user_emptied(string field) =>
+        ConnectedEditAsync("Valid", caseName: "baseline", editField: field, editValue: "", lossless: true);
+
+    [Theory]
+    [InlineData("ReporterContactSummary")]
+    [InlineData("SourceReference")]
+    [InlineData("PatientSubjectCode")]
+    [InlineData("EventOnsetDate")]
+    public Task Edit_round_trip_sends_the_users_nonempty_change(string field) =>
+        ConnectedEditAsync("Valid", caseName: "baseline", editField: field, editValue: field == "EventOnsetDate" ? "2020-02-02" : "changed-synthetic", lossless: true);
+
+    [Fact]
+    public Task Edit_accepts_the_services_explicit_empty_product_collection() =>
+        ConnectedEditAsync("Valid", caseName: "baseline", lossless: true, emptyProducts: true);
+
+    private static readonly string[] DetailMembers =
+    [
+        "intakeDraftId", "status", "version", "productLines", "awarenessAtUtc", "companyRecipientPersonId",
+        "eventCountry", "reportType", "reporterSource", "reporterSourceId", "reporterCrmSearchState",
+        "reporterNameOrInitials", "reporterProfession", "reporterCountry", "intakeChannel", "sourceType",
+        "sourceReference", "receivedAtUtc", "reporterType", "reporterContactSummary", "patientSubjectCode",
+        "eventOnsetDate", "adverseEventNarrative", "seriousness", "intakePriority", "triageOutcome", "triageReason",
+        "routeTargetQueue", "evidenceLinkReferences"
+    ];
+    private static readonly string[] NullableDetailMembers =
+    [
+        "sourceReference", "reporterContactSummary", "patientSubjectCode", "eventOnsetDate", "companyRecipientPersonId",
+        "reporterSourceId", "reporterNameOrInitials", "reporterProfession", "reporterCountry", "triageOutcome",
+        "triageReason", "routeTargetQueue"
+    ];
+    private static readonly string[] ProductMembers =
+        ["productRole", "globalProductId", "productNameAsReported", "presentationGskuId", "lotNumber"];
+
+    public static IEnumerable<object[]> InvalidDetailCases()
+    {
+        foreach (var member in DetailMembers) yield return ["missing:" + member];
+        foreach (var member in DetailMembers) yield return ["type:" + member];
+        foreach (var member in ProductMembers) yield return ["nested-missing:" + member];
+        foreach (var member in ProductMembers) yield return ["nested-type:" + member];
+        foreach (var field in new[] { "status", "reporterSource", "reporterCrmSearchState", "intakeChannel", "sourceType", "reporterType", "adverseEventNarrative", "seriousness", "intakePriority", "eventCountry", "reportType" })
+        {
+            yield return ["blank:" + field];
+            yield return ["empty:" + field];
+        }
+        foreach (var member in new[] { "productRole", "productNameAsReported" })
+        {
+            yield return ["nested-blank:" + member];
+            yield return ["nested-empty:" + member];
+        }
+        foreach (var value in new[] { "draft-absent", "draft-null", "draft-number", "draft-array", "version-only", "wrong-id", "wrong-version", "zero-version", "fraction-version", "bad-day", "bad-received", "bad-awareness", "null-evidence", "number-evidence", "object-evidence", "null-products", "null-product", "array-product" })
+            yield return [value];
+    }
+
+    [Fact]
+    public Task Edit_requires_a_complete_well_shaped_detail_before_enabling_save() =>
+        RunNewMatrixAsync("shape", InvalidDetailCases().Select(row => (string)row[0]),
+            name => ConnectedEditAsync("Valid", caseName: "baseline", shapeCase: name, lossless: true, receiptKind: "shape"));
+
+    private readonly object _receiptLock = new();
+
+    private async Task RunNewMatrixAsync(string kind, IEnumerable<string> names, Func<string, Task> run)
+    {
+        var cases = names.ToArray();
+        Assert.NotEmpty(cases);
+        Assert.Equal(cases.Length, cases.Distinct(StringComparer.Ordinal).Count());
+        _ = matrix.Host; // Warm actual hosts once before any parallel client/request; no fake response is used.
+        using var slots = new SemaphoreSlim(4);
+        var tasks = cases.Select(async name =>
+        {
+            await slots.WaitAsync();
+            try { await run(name); }
+            catch
+            {
+                lock (_receiptLock) output.WriteLine("Matrix {0} case {1} failed; all other rows and child cleanup are still awaited.", kind, name);
+                throw;
+            }
+            finally { slots.Release(); }
+        }).ToArray();
+        // WhenAll completes only after every started/waiting row's finally/reap; a failed row always fails this Fact.
+        await Task.WhenAll(tasks);
+        WriteReceipt(new { kind = "batch", matrix = kind, cases, concurrency = 4, complete = true });
+    }
+
+    private void WriteReceipt(object receipt)
+    {
+        var json = JsonSerializer.Serialize(receipt);
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        lock (_receiptLock) output.WriteLine("PVG_FE_ASSERTION_RECEIPT {0} sha256:{1}", json, hash);
+    }
+
+    private static string ReceiptHash(object value) =>
+        Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value))).ToLowerInvariant();
+
+    private static string RepositoryRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent;
+        return dir?.FullName ?? throw new InvalidOperationException("Repository root missing.");
+    }
+
+    private static string CorpusPayload(string name)
+    {
+        var path = Path.Combine(RepositoryRoot(), "docs/records/audits/2026-11/pvg-dl12-fe-corpus-01/FE-CORPUS.json");
+        var bytes = Encoding.UTF8.GetBytes(File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal));
+        Assert.Equal("003eb12bd41eb6f7028accaed82a76e070862d4fa7678652e73ab3ba139a9adc",
+            Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant());
+        using var doc = JsonDocument.Parse(bytes);
+        var row = doc.RootElement.GetProperty("cases").EnumerateArray().Single(row => row.GetProperty("name").GetString() == name);
+        return row.GetProperty("createPayload").GetProperty("jsonUtf8").GetString()!;
+    }
+
+    private static string MalformedDetail(string body, string shape)
+    {
+        var root = JsonNode.Parse(body)!.AsObject();
+        var draft = root["draft"]!.AsObject();
+        var parts = shape.Split(':', 2);
+        if (parts.Length == 2)
+        {
+            switch (parts[0])
+            {
+                case "missing": draft.Remove(parts[1]); break;
+                case "type": draft[parts[1]] = 42; break;
+                case "blank": draft[parts[1]] = " \t "; break;
+                case "empty": draft[parts[1]] = ""; break;
+                case "nested-missing": draft["productLines"]![0]!.AsObject().Remove(parts[1]); break;
+                case "nested-type": draft["productLines"]![0]![parts[1]] = 42; break;
+                case "nested-blank": draft["productLines"]![0]![parts[1]] = " \t "; break;
+                case "nested-empty": draft["productLines"]![0]![parts[1]] = ""; break;
+                default: throw new InvalidOperationException(shape);
+            }
+        }
+        else switch (shape)
+        {
+            case "draft-absent": root.Remove("draft"); break;
+            case "draft-null": root["draft"] = null; break;
+            case "draft-number": root["draft"] = 42; break;
+            case "draft-array": root["draft"] = new JsonArray(); break;
+            case "version-only": root.Remove("draft"); break;
+            case "wrong-id": draft["intakeDraftId"] = "another-synthetic-id"; break;
+            case "wrong-version": draft["version"] = 2; break;
+            case "zero-version": draft["version"] = 0; break;
+            case "fraction-version": draft["version"] = 1.5; break;
+            case "bad-day": draft["eventOnsetDate"] = "2020-02-30"; break;
+            case "bad-received": draft["receivedAtUtc"] = "2020-02-30T08:00:00Z"; break;
+            case "bad-awareness": draft["awarenessAtUtc"] = "2020-03-01T08:00:00.12345678Z"; break;
+            case "null-evidence": draft["evidenceLinkReferences"] = null; break;
+            case "number-evidence": draft["evidenceLinkReferences"] = new JsonArray(42); break;
+            case "object-evidence": draft["evidenceLinkReferences"] = new JsonArray(new JsonObject()); break;
+            case "null-products": draft["productLines"] = null; break;
+            case "null-product": draft["productLines"] = new JsonArray((JsonNode?)null); break;
+            case "array-product": draft["productLines"] = new JsonArray(new JsonArray()); break;
+            default: throw new InvalidOperationException(shape);
+        }
+        return root.ToJsonString();
+    }
+
+    private async Task ConnectedEditAsync(string fault, string? caseName = null, string? editField = null,
+        string? editValue = null, string? shapeCase = null, bool lossless = false, bool emptyProducts = false, string receiptKind = "connected")
+    {
+        // Only the new matrix reuses immutable hosts. Every row still creates its own actual record,
+        // client, Razor antiforgery session, browser and keyed metrics. Existing transport faults keep own hosts.
+        var shared = lossless ? matrix.Host : null;
+        var signingKey = shared?.SigningKey ?? Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var jwt = Token(signingKey, Read, Create, Update);
         var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -854,23 +1074,41 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             [PvgApiHost.PersistenceStoreKey] = "InMemory"
         }).Build();
         var ports = new ConnectedPorts();
-        using var api = new TestServer(PvgApiHost.CreatePvgServiceWebHostBuilder(
+        using var ownApi = shared is null ? new TestServer(PvgApiHost.CreatePvgServiceWebHostBuilder(
             "Development", settings, "http://127.0.0.1:0", services =>
             {
                 services.Replace(ServiceDescriptor.Singleton<IPvgPermissionGate>(ports));
                 services.Replace(ServiceDescriptor.Singleton<IPvgFieldSecurityPolicy>(ports));
                 services.Replace(ServiceDescriptor.Singleton<IPvgWorkflowTransitionGate>(ports));
                 services.Replace(ServiceDescriptor.Singleton<IPvgEvidenceLinkPort>(ports));
-            }));
-        var store = Assert.IsType<InMemoryPvgIntakeDraftRepository>(api.Services.GetRequiredService<IPvgIntakeDraftStore>());
+                services.Replace(ServiceDescriptor.Singleton<IPvgIntakeDraftStore>(new ObservedStore()));
+            })) : null;
+        var api = shared?.Api ?? ownApi!;
+        var store = Assert.IsType<ObservedStore>(api.Services.GetRequiredService<IPvgIntakeDraftStore>());
+        Assert.IsType<InMemoryPvgIntakeDraftRepository>(store.Inner);
         using var apiClient = api.CreateClient();
-        var id = await SeedDraftAsync(apiClient, jwt);
+        var createJson = caseName is null ? null : CorpusPayload(caseName);
+        if (emptyProducts)
+        {
+            var create = JsonNode.Parse(createJson!)!.AsObject();
+            create["productLines"] = new JsonArray();
+            createJson = create.ToJsonString();
+        }
+        var id = await SeedDraftAsync(apiClient, jwt, createJson);
+        var firstRead = await ReadConnectedDraftAsync(apiClient, jwt, id);
         var scope = new PvgPersistenceTenantScope(TenantId);
         var before = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
-        using var gateway = new ConnectedGateway(api.CreateHandler(), id);
-        var observer = new MvcTokenObserver($"{BrowserPrefix}/api/update/{id}");
-        using var web = HostOver(gateway, signingKey, observer);
-        using var client = web.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        var writesBefore = store.Writes(scope, id);
+        var attemptsBefore = store.ReplaceCalls(scope, id);
+        using var ownGateway = shared is null ? new ConnectedGateway(api.CreateHandler(), id) : null;
+        using var row = shared?.Register(id);
+        IUpdateTraffic gateway = (IUpdateTraffic?)row ?? ownGateway!;
+        ITokenTraffic observer = (ITokenTraffic?)row ?? new MvcTokenObserver($"{BrowserPrefix}/api/update/{id}");
+        using var ownWeb = shared is null ? HostOver(ownGateway!, signingKey, (MvcTokenObserver)observer) : null;
+        var web = shared?.Web ?? ownWeb!;
+        using var client = shared is null
+            ? web.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false })
+            : shared.CreateClient();
         using var page = await GetAsync(client, $"{BrowserPrefix}/Edit/{id}", jwt);
         Assert.Equal(HttpStatusCode.OK, page.StatusCode);
         var html = await page.Content.ReadAsStringAsync();
@@ -881,8 +1119,22 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         var webRoot = web.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath;
         try
         {
-            var status = await SubmitInBrowserAsync(webRoot, html, id, fault, client, $"access_token={jwt}; {cookie}", renderedToken);
+            var status = await SubmitInBrowserAsync(webRoot, html, id, fault, client, $"access_token={jwt}; {cookie}", renderedToken, lossless, editField, editValue, shapeCase, firstRead);
             var after = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
+            if (shapeCase is not null)
+            {
+                Assert.Equal(0, status);
+                Assert.Equal(0, gateway.Updates);
+                Assert.Equal(0, store.Writes(scope, id) - writesBefore);
+                Assert.Equal(0, store.ReplaceCalls(scope, id) - attemptsBefore);
+                Assert.Equal(JsonSerializer.Serialize(before), JsonSerializer.Serialize(after));
+                output.WriteLine("Shape {0}: Save disabled, forced submit updates 0, all stored fields unchanged.", shapeCase);
+                WriteReceipt(new { kind = receiptKind, @case = shapeCase, id, status, mvcPosts = observer.Posts,
+                    apiUpdates = gateway.Updates, storeWrites = store.Writes(scope, id) - writesBefore,
+                    storeReplaceCalls = store.ReplaceCalls(scope, id) - attemptsBefore, beforeHash = ReceiptHash(before), afterHash = ReceiptHash(after),
+                    firstGetHash = ReceiptHash(firstRead), zeroWriteAndFullEqualityAssertions = true });
+                return;
+            }
             if (fault is "MissingToken" or "InvalidToken")
             {
                 Assert.Equal(StatusCodes.Status400BadRequest, status);
@@ -890,7 +1142,9 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
                 Assert.False(observer.HeaderMatches(renderedToken));
                 Assert.False(observer.FormMatches(renderedToken));
                 Assert.Equal(0, gateway.Updates);
-                Assert.Equal(before.Version, after.Version);
+                Assert.Equal(0, store.Writes(scope, id) - writesBefore);
+                Assert.Equal(0, store.ReplaceCalls(scope, id) - attemptsBefore);
+                Assert.Equal(JsonSerializer.Serialize(before), JsonSerializer.Serialize(after));
                 output.WriteLine("MVC status 400, API updates 0, stored version {0}.", after.Version);
                 return;
             }
@@ -903,6 +1157,32 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             Assert.True(observer.FormMatches(renderedToken), "MVC form token member differs from Razor.");
             Assert.Equal(1, gateway.Details);
             Assert.Equal(before.Version + 1, after.Version);
+            Assert.Equal(1, store.Writes(scope, id) - writesBefore);
+            Assert.Equal(1, store.ReplaceCalls(scope, id) - attemptsBefore);
+            if (lossless)
+            {
+                var expected = JsonNode.Parse(JsonSerializer.Serialize(before.Intake))!.AsObject();
+                expected["Status"] = JsonSerializer.SerializeToNode(Diten.PvgService.Domain.RegPvBase.PvgIntakeStatus.IntakeUpdated);
+                if (editField is not null) expected[editField] = editField == "EventOnsetDate" && editValue == "" ? null : editValue;
+                Assert.True(JsonNode.DeepEquals(expected, JsonSerializer.SerializeToNode(after.Intake)),
+                    "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.");
+                Assert.Equal(before.Intake.ReceivedAtUtc.UtcTicks, after.Intake.ReceivedAtUtc.UtcTicks);
+                Assert.Equal(before.Intake.AwarenessAtUtc.UtcTicks, after.Intake.AwarenessAtUtc.UtcTicks);
+                var reread = await ReadConnectedDraftAsync(apiClient, jwt, id);
+                var expectedRead = JsonNode.Parse(firstRead.GetRawText())!.AsObject();
+                expectedRead["status"] = "IntakeUpdated";
+                expectedRead["version"] = before.Version + 1;
+                if (editField is not null) expectedRead[char.ToLowerInvariant(editField[0]) + editField[1..]] = editField == "EventOnsetDate" && editValue == "" ? null : editValue;
+                Assert.True(JsonNode.DeepEquals(expectedRead, JsonNode.Parse(reread.GetRawText())), "Actual API reread lost a stored field.");
+                output.WriteLine("Connected case {0}: actual create/firstGET/Razor/productionJS/orderedFormData/MVC/API/InMemory/reread equality; update 1; all 29 fields; tokens 4.", caseName);
+                WriteReceipt(new { kind = receiptKind, @case = caseName, editField, editValueHash = ReceiptHash(editValue), emptyProducts, id,
+                    status, mvcPosts = observer.Posts, apiDetails = gateway.Details, apiUpdates = gateway.Updates,
+                    storeWrites = store.Writes(scope, id) - writesBefore, storeReplaceCalls = store.ReplaceCalls(scope, id) - attemptsBefore,
+                    createPayloadHash = ReceiptHash(createJson), firstGetHash = ReceiptHash(firstRead), rereadHash = ReceiptHash(reread),
+                    beforeHash = ReceiptHash(before), afterHash = ReceiptHash(after), expectedAfterHash = ReceiptHash(expected),
+                    storedFullEquality = true, apiFullEquality = true, fourTokenCarrierAssertions = true });
+                return;
+            }
             Assert.Equal("browser-edited-synthetic", after.Intake.AdverseEventNarrative);
             Assert.Equal(before.Intake.ProductLines.Single().ProductNameAsReported, after.Intake.ProductLines.Single().ProductNameAsReported);
             output.WriteLine("API detail reads {0}, updates {1}, stored version {2} -> {3}.",
@@ -916,6 +1196,8 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         {
             // An unavailable browser/bridge must fail the same save test before changing the seeded draft.
             Assert.Equal(0, gateway.Updates);
+                Assert.Equal(0, store.Writes(scope, id) - writesBefore);
+                Assert.Equal(0, store.ReplaceCalls(scope, id) - attemptsBefore);
             var unchanged = Assert.IsType<PvgPersistedIntakeDraft>(await store.FindByIdAsync(scope, id));
             Assert.Equal(before.Version, unchanged.Version);
             output.WriteLine("Child failure {0}, API updates 0, stored version {1}.", failure.Message, unchanged.Version);
@@ -923,7 +1205,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         }
     }
 
-    private static async Task<string> SeedDraftAsync(HttpClient api, string jwt)
+    private static async Task<string> SeedDraftAsync(HttpClient api, string jwt, string? createJson = null)
     {
         using var create = new HttpRequestMessage(HttpMethod.Post, ApiPrefix);
         create.Headers.Authorization = new("Bearer", jwt);
@@ -940,10 +1222,219 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             eventCountry = "unknown", reportType = "Spontaneous", reporterNameOrInitials = "S.Y.",
             reporterProfession = "synthetic-profession", reporterCountry = "unknown"
         });
+        if (createJson is not null) create.Content = new StringContent(createJson, Encoding.UTF8, "application/json");
         using var result = await api.SendAsync(create);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         var body = await result.Content.ReadFromJsonAsync<JsonElement>();
         return Assert.IsType<string>(body.GetProperty("intakeDraftId").GetString());
+    }
+
+    private static async Task<JsonElement> ReadConnectedDraftAsync(HttpClient api, string jwt, string id)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, ApiPrefix + "/" + id);
+        request.Headers.Authorization = new("Bearer", jwt);
+        request.Headers.Add("X-Tenant-Id", TenantId);
+        request.Headers.Add("X-Correlation-Id", "synthetic-fe-read");
+        using var response = await api.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var draft = doc.RootElement.GetProperty("draft");
+        Assert.Equal(DetailMembers.Order(StringComparer.Ordinal), draft.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal));
+        foreach (var member in NullableDetailMembers) Assert.True(draft.TryGetProperty(member, out _));
+        foreach (var line in draft.GetProperty("productLines").EnumerateArray())
+            Assert.Equal(ProductMembers.Order(StringComparer.Ordinal), line.EnumerateObject().Select(p => p.Name).Order(StringComparer.Ordinal));
+        return draft.Clone();
+    }
+
+    // Pass-through instrumentation: actual production InMemory store performs every operation. Counters are
+    // keyed by tenant/id, never reset, and distinguish Replace attempts from successful writes after the first GET.
+    internal sealed class ObservedStore : IPvgIntakeDraftStore
+    {
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<(string Tenant, string Id), int> _writes = new();
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<(string Tenant, string Id), int> _replaces = new();
+        public InMemoryPvgIntakeDraftRepository Inner { get; } = new();
+        public int Writes(PvgPersistenceTenantScope scope, string id) => _writes.GetValueOrDefault((scope.TenantId, id));
+        public int ReplaceCalls(PvgPersistenceTenantScope scope, string id) => _replaces.GetValueOrDefault((scope.TenantId, id));
+        public async ValueTask<string> AddAsync(PvgPersistenceTenantScope scope, string actor, SafetyCaseIntake intake, CancellationToken ct = default)
+        {
+            var id = await Inner.AddAsync(scope, actor, intake, ct);
+            _writes.AddOrUpdate((scope.TenantId, id), 1, (_, n) => n + 1);
+            return id;
+        }
+        public async ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(PvgPersistenceTenantScope scope, string id,
+            long? version, string actor, SafetyCaseIntake intake, CancellationToken ct = default)
+        {
+            _replaces.AddOrUpdate((scope.TenantId, id), 1, (_, n) => n + 1);
+            var result = await Inner.ReplaceAsync(scope, id, version, actor, intake, ct);
+            if (result.Outcome == PvgIntakeDraftReplaceOutcome.Replaced)
+                _writes.AddOrUpdate((scope.TenantId, id), 1, (_, n) => n + 1);
+            return result;
+        }
+        public ValueTask<PvgPersistedIntakeDraft?> FindByIdAsync(PvgPersistenceTenantScope scope, string id, CancellationToken ct = default) =>
+            Inner.FindByIdAsync(scope, id, ct);
+        public ValueTask<IReadOnlyList<PvgPersistedIntakeDraft>> ListAsync(PvgPersistenceListScope scope, CancellationToken ct = default) =>
+            Inner.ListAsync(scope, ct);
+        public ValueTask<int> CountAsync(PvgPersistenceTenantScope scope, PvgIntakeStatus? status, CancellationToken ct = default) =>
+            Inner.CountAsync(scope, status, ct);
+    }
+
+    internal interface IUpdateTraffic
+    {
+        int Details { get; }
+        int Updates { get; }
+    }
+
+    internal interface ITokenTraffic
+    {
+        int Posts { get; }
+        bool HeaderMatches(string expected);
+        bool FormMatches(string expected);
+    }
+
+    // xUnit owns this fixture for the class lifetime; a lazy host is disposed only after every awaited row/child.
+    // No current-id switch, shared counter reset, shared client/cookie or mutable permission gate exists.
+    public sealed class ConnectedMatrixFixture : IDisposable
+    {
+        private readonly Lazy<MatrixHost> _host = new(() => new MatrixHost());
+        internal MatrixHost Host => _host.Value;
+        public void Dispose()
+        {
+            if (_host.IsValueCreated) _host.Value.Dispose();
+        }
+    }
+
+    internal sealed class MatrixRow(string id, Action release) : IUpdateTraffic, ITokenTraffic, IDisposable
+    {
+        private int _details, _updates, _posts;
+        private string[] _headers = [], _form = [];
+        public string Id { get; } = id;
+        public int Details => Volatile.Read(ref _details);
+        public int Updates => Volatile.Read(ref _updates);
+        public int Posts => Volatile.Read(ref _posts);
+        public void Detail() => Interlocked.Increment(ref _details);
+        public void Update() => Interlocked.Increment(ref _updates);
+        public void Observe(IHeaderDictionary headers, IFormCollection form)
+        {
+            _headers = headers[TokenHeader].OfType<string>().ToArray();
+            _form = form[TokenMember].OfType<string>().ToArray();
+            Interlocked.Increment(ref _posts);
+        }
+        public bool HeaderMatches(string expected) => _headers.Length == 1 && _headers[0] == expected;
+        public bool FormMatches(string expected) => _form.Length == 1 && _form[0] == expected;
+        public void Dispose()
+        {
+            release();
+            _headers = [];
+            _form = [];
+        }
+    }
+
+    internal sealed class MatrixHost : IDisposable
+    {
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, MatrixRow> _rows = new(StringComparer.Ordinal);
+        private readonly WebApplicationFactory<Program> _base = new();
+        private readonly MatrixGateway _gateway;
+        private readonly object _clientLock = new();
+        public string SigningKey { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        public TestServer Api { get; }
+        public WebApplicationFactory<Program> Web { get; }
+
+        public MatrixHost()
+        {
+            var settings = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["JwtSettings:Secret"] = SigningKey, ["JwtSettings:Issuer"] = "pvg-web-test",
+                ["JwtSettings:Audience"] = "pvg-web-test", [PvgApiHost.PersistenceStoreKey] = "InMemory"
+            }).Build();
+            var ports = new ConnectedPorts();
+            Api = new TestServer(PvgApiHost.CreatePvgServiceWebHostBuilder("Development", settings, "http://127.0.0.1:0", services =>
+            {
+                services.Replace(ServiceDescriptor.Singleton<IPvgPermissionGate>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgFieldSecurityPolicy>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgWorkflowTransitionGate>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgEvidenceLinkPort>(ports));
+                services.Replace(ServiceDescriptor.Singleton<IPvgIntakeDraftStore>(new ObservedStore()));
+            }));
+            _gateway = new MatrixGateway(Api.CreateHandler(), _rows);
+            Web = _base.WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Development");
+                builder.UseSetting("JwtSettings:Secret", SigningKey);
+                builder.UseSetting("JwtSettings:Issuer", "pvg-web-test");
+                builder.UseSetting("JwtSettings:Audience", "pvg-web-test");
+                builder.UseSetting("GatewayUrl", "http://127.0.0.1:9");
+                builder.UseSetting("PlatformServiceUrl", "http://127.0.0.1:9");
+                builder.ConfigureTestServices(services =>
+                {
+                    services.AddSingleton<IStartupFilter>(new MatrixTokenObserver(_rows));
+                    services.AddTransient(_ => new HttpClient(_gateway, disposeHandler: false));
+                });
+            });
+            _ = Web.Server; // Publish the immutable actual server before concurrent per-row client creation.
+        }
+
+        public HttpClient CreateClient()
+        {
+            // Factory bookkeeping is serialized briefly; actual Razor/MVC/browser requests run concurrently.
+            lock (_clientLock)
+                return Web.CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = false, AllowAutoRedirect = false });
+        }
+
+        public MatrixRow Register(string id)
+        {
+            var row = new MatrixRow(id, () => Assert.True(_rows.TryRemove(id, out _), "Matrix row ownership missing."));
+            Assert.True(_rows.TryAdd(id, row), "A fresh API id must not be registered twice.");
+            return row;
+        }
+
+        public void Dispose()
+        {
+            try { Assert.Empty(_rows); }
+            finally
+            {
+                Web.Dispose();
+                _base.Dispose();
+                _gateway.Dispose();
+                Api.Dispose();
+            }
+        }
+    }
+
+    private sealed class MatrixGateway(HttpMessageHandler api,
+        System.Collections.Concurrent.ConcurrentDictionary<string, MatrixRow> rows) : DelegatingHandler(api)
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            const string upstream = "/api/pv-case-intake-triage/";
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == upstream + "options" && request.Method == HttpMethod.Get) { }
+            else if (path.StartsWith(upstream, StringComparison.Ordinal) && rows.TryGetValue(path[upstream.Length..], out var row))
+            {
+                if (request.Method == HttpMethod.Get) row.Detail();
+                else if (request.Method == HttpMethod.Put) row.Update();
+                else return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            }
+            else return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound));
+            request.RequestUri = new Uri("http://localhost" + ApiPrefix + "/" + path[upstream.Length..]);
+            return base.SendAsync(request, ct);
+        }
+    }
+
+    private sealed class MatrixTokenObserver(System.Collections.Concurrent.ConcurrentDictionary<string, MatrixRow> rows) : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+        {
+            app.Use(async (ctx, run) =>
+            {
+                const string prefix = BrowserPrefix + "/api/update/";
+                var path = ctx.Request.Path.Value!;
+                if (HttpMethods.IsPost(ctx.Request.Method) && path.StartsWith(prefix, StringComparison.Ordinal)
+                    && rows.TryGetValue(path[prefix.Length..], out var row))
+                    row.Observe(ctx.Request.Headers, await ctx.Request.ReadFormAsync(ctx.RequestAborted));
+                await run(ctx);
+            });
+            next(app);
+        };
     }
 
     private sealed class ConnectedPorts : IPvgPermissionGate, IPvgFieldSecurityPolicy, IPvgWorkflowTransitionGate, IPvgEvidenceLinkPort
@@ -959,7 +1450,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     }
 
     // The same upstream/downstream route translation as the Gateway. All module responses come from the API.
-    private sealed class ConnectedGateway(HttpMessageHandler api, string id) : DelegatingHandler(api)
+    private sealed class ConnectedGateway(HttpMessageHandler api, string id) : DelegatingHandler(api), IUpdateTraffic
     {
         public int Details { get; private set; }
         public int Updates { get; private set; }
@@ -978,7 +1469,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         }
     }
 
-    private sealed class MvcTokenObserver(string updatePath) : IStartupFilter
+    private sealed class MvcTokenObserver(string updatePath) : IStartupFilter, ITokenTraffic
     {
         private string[] header = [];
         private string[] form = [];
@@ -1004,7 +1495,8 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     }
 
     private async Task<int> SubmitInBrowserAsync(
-        string webRoot, string html, string id, string fault, HttpClient mvc, string cookie, string renderedToken)
+        string webRoot, string html, string id, string fault, HttpClient mvc, string cookie, string renderedToken,
+        bool lossless = false, string? editField = null, string? editValue = null, string? shapeCase = null, JsonElement firstRead = default)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var ct = timeout.Token;
@@ -1029,11 +1521,11 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
         try
         {
             var script = Path.Combine(webRoot, "wwwroot", "assets", "js", "Pharmacovigilance", "CaseIntakeTriage", "form.js");
-            await ReplyAsync(new { html, script });
+            await ReplyAsync(new { html, script, lossless, editField, editValue, shapeCase });
             var status = 0;
             var gets = 0;
             var posted = false;
-            for (var frame = 0; frame < 8; frame++)
+            for (var frame = 0; frame < 10; frame++)
             {
                 var line = await child.StandardOutput.ReadLineAsync(ct);
                 if (line is null)
@@ -1050,10 +1542,33 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
                     case "stall":
                         timeout.CancelAfter(TimeSpan.FromMilliseconds(500));
                         continue;
+                    case "ready":
+                        if (shapeCase is not null)
+                        {
+                            Assert.True(message.GetProperty("disabled").GetBoolean(), "Incomplete/malformed detail enabled Save: " + shapeCase);
+                        }
+                        else if (lossless)
+                        {
+                            Assert.False(message.GetProperty("disabled").GetBoolean(), "Complete accepted detail kept Save disabled.");
+                            Assert.True(message.GetProperty("valid").GetBoolean(), "Untouched accepted stored detail failed actual browser validity.");
+                            var values = message.GetProperty("values");
+                            foreach (var member in new[] { "reporterContactSummary", "sourceReference", "patientSubjectCode", "eventOnsetDate" })
+                            {
+                                var field = char.ToUpperInvariant(member[0]) + member[1..];
+                                var stored = firstRead.GetProperty(member);
+                                var display = stored.ValueKind == JsonValueKind.Null ? "" : stored.GetString()!.Replace("\r\n", "\n").Replace("\r", "\n");
+                                if (member is "sourceReference" or "patientSubjectCode") display = display.Replace("\n", "");
+                                Assert.Equal(display, values.GetProperty(field).GetString());
+                            }
+                            Assert.Equal(string.Join("\n", firstRead.GetProperty("evidenceLinkReferences").EnumerateArray().Select(x => x.ValueKind == JsonValueKind.Null ? "" : x.GetString())).Replace("\r\n", "\n").Replace("\r", "\n"),
+                                values.GetProperty("EvidenceLinkReferencesRaw").GetString());
+                        }
+                        await ReplyAsync(new { proceed = true });
+                        continue;
                     case "done":
                         child.StandardInput.Close();
                         await child.WaitForExitAsync(ct);
-                        if (child.ExitCode != 0 || !posted || await child.StandardOutput.ReadLineAsync(ct) is not null)
+                        if (child.ExitCode != 0 || (shapeCase is null && !posted) || await child.StandardOutput.ReadLineAsync(ct) is not null)
                             throw new BrowserFailure("EarlyEnd");
                         return status;
                     case "fetch": break;
@@ -1103,6 +1618,8 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
                 }
                 using var response = await mvc.SendAsync(request, ct);
                 var responseBody = await response.Content.ReadAsStringAsync(ct);
+                if (shapeCase is not null && method == "GET" && path!.Contains("/detail/", StringComparison.Ordinal))
+                    responseBody = MalformedDetail(responseBody, shapeCase);
                 if (isPost) status = (int)response.StatusCode;
                 await ReplyAsync(new { status = (int)response.StatusCode, body = responseBody });
             }
@@ -1141,7 +1658,7 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
             return JSON.parse(line.value);
         }
         async function run() {
-            const { html, script } = await read();
+            const { html, script, lossless, editField, editValue, shapeCase } = await read();
             const fault = process.argv[1];
             if (fault === 'StartFailure') process.exit(17);
             if (fault === 'EarlyEnd') return;
@@ -1176,7 +1693,13 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
                     return { status, ok: status >= 200 && status < 300, json: async () => JSON.parse(body) };
                 };
                 w.eval(readFileSync(script, 'utf8'));
-                while (save.disabled) await delay(5);
+                if (lossless) {
+                    while (!detailRead) await delay(5);
+                    await delay(30);
+                    send({ kind: 'ready', disabled: save.disabled, valid: form.checkValidity(),
+                        values: Object.fromEntries(Array.from(form.elements).filter(e => e.id).map(e => [e.id, e.value])) });
+                    await read();
+                } else while (save.disabled) await delay(5);
                 // Simulated user edits in the actual controls. Current detail/prefill omits required fields.
                 // The transport does not fill in or normalize any field after production constructs FormData.
                 const edits = {
@@ -1184,14 +1707,33 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
                     ReceivedAtUtc: '2020-03-01T08:00', ReporterType: 'Consumer', PatientSubjectCode: 'edited-subject',
                     Seriousness: 'Serious', IntakePriority: 'Routine', AdverseEventNarrative: 'browser-edited-synthetic'
                 };
-                for (const [name, value] of Object.entries(edits)) form.elements.namedItem(name).value = value;
+                if (!lossless || shapeCase) {
+                    for (const [name, value] of Object.entries(edits)) form.elements.namedItem(name).value = value;
+                    if (shapeCase) {
+                        form.elements.namedItem('AwarenessAtUtc').value = '2020-03-01T08:00';
+                        form.elements.namedItem('ReportType').value = 'Spontaneous';
+                        form.elements.namedItem('EventCountry').value = 'unknown';
+                        for (const row of form.querySelectorAll('[data-product-line]')) {
+                            row.querySelector('[name$=".ProductRole"]').value = 'Suspect';
+                            row.querySelector('[name$=".ProductNameAsReported"]').value = 'synthetic-product';
+                        }
+                    }
+                }
+                if (editField) {
+                    const control = form.elements.namedItem(editField);
+                    control.value = editValue;
+                    control.dispatchEvent(new w.Event('input', { bubbles: true }));
+                }
                 const token = form.elements.namedItem('__RequestVerificationToken');
                 if (fault === 'MissingToken') token.remove();
                 if (fault === 'InvalidToken') token.value = 'invalid-synthetic-token';
                 if (!form.checkValidity()) throw Error('form invalid');
                 event = new w.Event('submit', { cancelable: true, bubbles: true });
                 form.dispatchEvent(event);
-                while (!submitted || save.getAttribute('aria-busy') === 'true') await delay(5);
+                if (shapeCase) {
+                    await delay(50);
+                    if (submitted) throw Error('invalid detail posted');
+                } else while (!submitted || save.getAttribute('aria-busy') === 'true') await delay(5);
                 send({ kind: 'done' });
             } finally { dom.window.close(); }
         }
@@ -1303,6 +1845,33 @@ public sealed class PvgCaseIntakeTriageWebTests(WebApplicationFactory<Program> f
     };
 
     // ------------------------------------------------------------------------------------------------ helpers
+
+    // Legacy direct-action fixtures use the current Update representation. Reflection keeps the SAME source
+    // compilable on the old product for assertion RED. Connected tests never call this fixture converter.
+    private static Task<IActionResult> UpdateDraftAsync(PharmacovigilanceCaseIntakeTriageController controller,
+        string id, PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput input, CancellationToken ct)
+    {
+        var method = typeof(PharmacovigilanceCaseIntakeTriageController).GetMethod(nameof(PharmacovigilanceCaseIntakeTriageController.UpdateDraft))!;
+        object bound = method.GetParameters()[1].ParameterType == typeof(PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput)
+            ? input : new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            {
+                ["UpdateValuesJson"] = UpdateFixtureJson(input)
+            });
+        return (Task<IActionResult>)method.Invoke(controller, [id, bound, ct])!;
+    }
+
+    private static string UpdateFixtureJson(PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput input)
+    {
+        // Pre-existing normalized synthetic fixtures only: the fresh lossless browser cases independently
+        // forward actual FormData and assert raw stored equality without this shared Create converter.
+        var values = input.ToPayload(isUpdate: true).ToDictionary(pair => pair.Key, pair => pair.Value);
+        if (!input.HasReadableDates())
+        {
+            values["ReceivedAtUtc"] = input.ReceivedAtUtc;
+            values["AwarenessAtUtc"] = input.AwarenessAtUtc;
+        }
+        return JsonSerializer.Serialize(values);
+    }
 
     private static PharmacovigilanceCaseIntakeTriageController.CaseIntakeFormInput Input(
         long? version = null, PharmacovigilanceCaseIntakeTriageController.ProductLineFormInput[]? lines = null) =>
