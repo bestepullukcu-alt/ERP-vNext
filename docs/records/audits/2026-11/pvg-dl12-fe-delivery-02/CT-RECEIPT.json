@@ -1,0 +1,60 @@
+{
+  "recorded_utc": "2026-11-21T16:54:21.482706+00:00",
+  "wp": "WP-0230-DL12-FE",
+  "kind": "CT observed final ordinary source candidate; independent runtime not complete",
+  "candidate": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+  "sole_parent": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "branch": "feature/pvg/mod-0230-dl12-fe",
+  "root_verified_clean_six_paths_diff_check_and_six_committed_blob_pins": true,
+  "source_manifest": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-fe-evidence/489a012f050f47f7a888e8a82d33fc82/CANDIDATE-SOURCE-v3.json",
+  "source_manifest_raw_sha256": "e923eea5f1b83ff6c292d230bbfa313b573e5bed5139b8d024e29dec060f1613",
+  "author": "/root/pvg_dl12_fe_continuation_02",
+  "independent_verifier": "/root/pvg_dl12_fe_independent_02",
+  "actual_model_effort": "verilemiyor",
+  "author_normal_reported": {
+    "web": 78,
+    "javascript": 39,
+    "pvg_api": 456,
+    "regpv_base": 211,
+    "failed": 0,
+    "skipped": 0,
+    "actual_case_matrix": {
+      "corpus": 47,
+      "malformed_shape": 112,
+      "fresh_ids": 174,
+      "receipts": 176
+    },
+    "final_js_mutants": 18,
+    "final_compiled_mutants": 10,
+    "extra_real_Razor_browser_boundary_pairs": 2
+  },
+  "author_mechanical_capture": {
+    "path": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-fe-evidence/489a012f050f47f7a888e8a82d33fc82/FINAL-CT-CAPTURE-02.json",
+    "bytes": 148401,
+    "raw_sha256": "1820ed1c9dd7dae4ea1cce47df682d0ea7178c58e024ad192198ffb12d61f573",
+    "root_read_json_verified_acceptance_true_and_six_cli_exit0": true,
+    "frozen_wrapper_lf_sha256": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203"
+  },
+  "independent_runtime_go": {
+    "observed_dispatch": true,
+    "exact_candidate_only": true,
+    "runner_raw_sha256": "ac6444e8f196f8bbe6a9b5b9cde43ba6775858ac562d852776f7c878a5831f46",
+    "source_review_raw_sha256": "e56da42da3a4945c04f64f83626b451fd3ff7f8008bbedbc3fa7bb22e699509f",
+    "source_reviewed_v3_delta_raw_sha256": "cd48073a8c8c72aa156b8bd0c4b165b88d1c3dbd2b87aebfa41957bbc04f79aa",
+    "four_own_suites_and_selected_compiled_repeats_pending": true
+  },
+  "historical_limits": [
+    "First interrupted160row run has no completed TRX/cleanup and is not final evidence.",
+    "Date-clear source bug actual repro MVC502, fixed two real connected200/null-newday rows; initial400 was only hypothesis.",
+    "First API invocation exit0 without TRX/Mongo was a rejected no-op; proper restored actual API456/Reg211 followed.",
+    "Initial v3 capture had web_assembly_after_sources false despite sixCLI0; actual rebuild and fresh78case TRX resolved it, no timestamp or producer edit.",
+    "One old-product bootstrap/cleanup failed before tests; its own Job forced cleanup retained separately, not RED/PASS; subsequent final-test-hash old-product assertions completed with unforced cleanup.",
+    "Full author raw manifest/process summary is being sealed; independent semantic review and runtime completion are still required.",
+    "Tree proof uses canonical subprocess argv; one earlier unquoted PowerShell brace read failed and is not evidence."
+  ],
+  "ct_accepted": false,
+  "root_merged": false,
+  "publication_authorized": false,
+  "operational_authorization": false
+}
