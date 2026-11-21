@@ -1,15 +1,15 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `f8609a47cd1c9abb7931d4a8e24ecadba166565b`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `3881b13b4a7238326d41e1b777916c248a34cdaf`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
 ## Güncel odak
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
-- **Test:** WIN ve Web hazırlıkları ve beş hücreli registry düzeltmesi CT’ye entegre. BE/L10N sonrası gerçek taban API456/Reg211/Web62/JS34,0skip; FE geliştirmesi sürüyor, veri koruma teslimi henüz yok.
+- **Test:** WIN ve Web hazırlıkları ve beş hücreli registry düzeltmesi CT’ye entegre. Bağımsız kesin FE adayında API456/Reg211/Web78/JS39, sıfır hata/skip; 11 ayrı mutant tekrarı doğrulandı. Birleşmiş CT kaynağında filtresiz Web ve mimari testleri sırada.
 - **Arka uç / çeviri:** Parent IN_PROGRESS; BE INTEGRATED; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
-- **Ekran:** FE INTEGRATION_READY; bağımsız exactpromptUYGUN0 ve actualnormal0 sonrası ayrıtek yazıcı. Güncel durum STATE-JOURNAL ve gerçek teslim kanıtındadır; CT ürün kodu yazmaz.
+- **Ekran:** FE INTEGRATED; bağımsız exactpromptUYGUN0 ve actualnormal0 sonrası ayrıtek yazıcı. Güncel durum STATE-JOURNAL ve gerçek teslim kanıtındadır; CT ürün kodu yazmaz.
 - **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
 
 ## Teslim dilimleri
@@ -27,18 +27,18 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
 | DL-11 | Kapalı katalog kaydı | 1 INTEGRATED |
-| DL-12 | Düzenlemede veriyi koruma | 5 INTEGRATED, 1 INTEGRATION_READY, 1 IN_PROGRESS |
+| DL-12 | Düzenlemede veriyi koruma | 6 INTEGRATED, 1 IN_PROGRESS |
 
 Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya operasyonun açıldığı sonucu çıkarılmaz.
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:16, `INTEGRATION_READY`:1, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:17, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `IN_PROGRESS`
-  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin v1.0 UYGUN0/normal0 ve gözlenen preflight sonrası IN_PROGRESS; no-loss kabulü henüz yok.
+  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin aday fbcb3353 bağımsız teknik E2 UYGUN sonrası CT merge3881b13b ile INTEGRATED. Parent IN_PROGRESS; final kök testleri/CI ve operasyonel kabul henüz yok.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
@@ -56,9 +56,9 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 - [ ] **Ekran: düzenlenemez kayıt mesajının yedi dil çevirisi** — `WP-0230-DL12-L10N` · `INTEGRATED`
   - 43f856f22f0549be1d61fab09d40086b755661ba bağımsızUYGUN0 sonrası CTnoff77ecab323fc731d157cedeae63d653bb604517db ile entegre.7XML112/parity/old111korunur, yalnız7satır. FEbridge/runtime ayrı.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-l10n-01/CT-INTEGRATION.json`.
-- [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `INTEGRATION_READY`
-  - BE/L10N entegre, actual API456/Reg211/Web62/JS34 test tabanı doğrulandı. Altı frontend yolu için bağımsız exactprompt UYGUN0 ve gerçek normal0 tamam; işçi DEV GO aldığını ve temiz kesin dal preflight sonucunu bildirdi. Kesilen160row koşu tarihsel/eksik korunur; yeni işçi bounded gerçek eski-ürün assertion RED/Jobclean tamamladı. 47 corpus+112shape gerçek zincir iki Fact içinde bounded4 ve ayrı hashli receiptlerle ölçülür; doğrudan tenant/id store writes+Replaceattempts sayaçları var. Statik incelemede bulunan optional olay tarihi temizleme hatası actual502 ile doğrulandı, update-local null düzeltmesi iki actual200/storeNULL-newday testiyle kapandı. UTC DateTimeOffset1..9999 taşma denetimi mevcut malformed-date kapsamındadır; yeni1900/now iş kuralı yok, raw7fraction değişmez. V3manifest e923eea5…; form4910e174…, C#test0aa87c4b…, JS87d239ff…. İşçi son Web78/JS39,0skip/18JS mutant RED→restoreGREEN bildirdi; API456/Reg211 için143/90 unchanged compiled-input eşitlik kanıtı var. İşçi 18JS+10compiled+2actualRazorbrowserboundary=30 RED→GREEN ve actualfreshRebuild/Web78 sonrası capture02True/6CLI0 teslim etti. ExactordinaryC fbcb3353…/treeb309be66…/soleparent6d, clean/exact6blob rootölçümlü; ayrı bağımsız runtime E2 başladı. CT kabulü/rootbirleştirmesi/yayın yok.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-dor-01/READY.md`.
+- [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `INTEGRATED`
+  - Kesin aday fbcb33533daacb9ae5b3b215736ad14d2b466c11, altı onaylı yol. Bağımsız teknik E2 UYGUN/açık0; kendi taze Web78/JS39/API456/Reg211, sıfır hata/skip, capture6CLI0 ve 11 ayrı mutant RED→GREEN. 47 corpus+112shape gerçek tarayıcı/MVC/API/depo zincirinde ölçüldü; raw zaman/null/boş/dizi düzeni korunur. CT noff3881b13b4a7238326d41e1b777916c248a34cdaf, altı blob adayla birebir; BE/L10N ve donmuş kaynaklar değişmedi. Birleşik CT filtresiz Web/mimari testleri bekleniyor; ACCEPTED/E4/canlı kullanım onayı yok.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-independent-02/CT-INTEGRATION.json`, `CT-DISPOSITION.md`, `REVIEW.json`.
 
 ## Karar bekleyenler
 
