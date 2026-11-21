@@ -143,24 +143,81 @@ public sealed class PharmacovigilanceCaseIntakeTriageController : Controller
 
     [HttpPost("api/update/{intakeDraftId}")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateDraft(string intakeDraftId, [FromForm] CaseIntakeFormInput input, CancellationToken ct)
+    public async Task<IActionResult> UpdateDraft(string intakeDraftId, [FromForm] IFormCollection input, CancellationToken ct)
     {
         if (RequireJson(UpdatePermission) is { } denied)
         {
             return denied;
         }
 
-        if (!input.HasReadableDates())
+        if (!TryUpdatePayload(input, out var payload))
         {
             return ValidationFailedJson();
         }
 
-        if (input.RemovesLinkWithSelection())
+        if (payload.TryGetValue("RemoveReporterLink", out var remove) && remove is JsonElement { ValueKind: JsonValueKind.True }
+            && new[] { "ReporterSelectionDirectory", "ReporterSelectionId" }.Any(key =>
+                payload.TryGetValue(key, out var selection) && selection is JsonElement text
+                && text.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(text.GetString())))
         {
             return JsonFailure(StatusCodes.Status400BadRequest, ReporterLinkRemovalWithSelection, _sharedLocalizer["ValidationFailed"].Value);
         }
 
-        return await ProxyJsonAsync(HttpMethod.Put, $"{ApiBase}/{Uri.EscapeDataString(intakeDraftId)}", input.ToPayload(isUpdate: true), ct);
+        return await ProxyJsonAsync(HttpMethod.Put, $"{ApiBase}/{Uri.EscapeDataString(intakeDraftId)}", payload, ct);
+    }
+
+    // Update has its own representation: JSON inside the actual form preserves null, empty strings, CRLF and array
+    // elements across MVC string binding. Only editable API input fields are admitted; identity/policy remain server-owned.
+    private static bool TryUpdatePayload(IFormCollection form, out IReadOnlyDictionary<string, object?> payload)
+    {
+        payload = new Dictionary<string, object?>();
+        if (!form.TryGetValue("UpdateValuesJson", out var values) || values.Count != 1 || string.IsNullOrEmpty(values[0])) return false;
+        try
+        {
+            using var document = JsonDocument.Parse(values[0]!);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object) return false;
+            string[] textFields =
+            [
+                "IntakeChannel", "SourceType", "SourceReference", "ReceivedAtUtc", "ReporterType", "ReporterContactSummary",
+                "PatientSubjectCode", "EventOnsetDate", "AdverseEventNarrative", "Seriousness", "IntakePriority", "AwarenessAtUtc",
+                "EventCountry", "ReportType", "ReporterNameOrInitials", "ReporterProfession", "ReporterCountry"
+            ];
+            string[] required = [.. textFields, "ProductLines", "EvidenceLinkReferences", "ExpectedVersion"];
+            string[] allowed = [.. required, "ReporterSelectionDirectory", "ReporterSelectionId", "RemoveReporterLink"];
+            var properties = root.EnumerateObject().ToArray();
+            if (properties.Any(p => !allowed.Contains(p.Name, StringComparer.Ordinal))
+                || properties.Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length
+                || required.Any(key => !root.TryGetProperty(key, out _))) return false;
+            static bool NullableText(JsonElement value) => value.ValueKind is JsonValueKind.Null or JsonValueKind.String;
+            if (textFields.Any(key => !NullableText(root.GetProperty(key)))) return false;
+            foreach (var field in new[] { "ReceivedAtUtc", "AwarenessAtUtc" })
+            {
+                var value = root.GetProperty(field);
+                if (value.ValueKind == JsonValueKind.String && !DateTimeOffset.TryParseExact(value.GetString(),
+                    ["yyyy-MM-dd'T'HH:mm:ssK", "yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK"], CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out _)) return false;
+            }
+            var lines = root.GetProperty("ProductLines");
+            if (lines.ValueKind != JsonValueKind.Array || lines.EnumerateArray().Any(line =>
+                line.ValueKind != JsonValueKind.Object || line.EnumerateObject().Count() != 3
+                || new[] { "ProductRole", "ProductNameAsReported", "LotNumber" }.Any(key =>
+                    !line.TryGetProperty(key, out var value) || !NullableText(value)))) return false;
+            var evidence = root.GetProperty("EvidenceLinkReferences");
+            if (evidence.ValueKind != JsonValueKind.Array || evidence.EnumerateArray().Any(value => !NullableText(value))) return false;
+            var version = root.GetProperty("ExpectedVersion");
+            if (version.ValueKind is not (JsonValueKind.Null or JsonValueKind.Number)
+                || (version.ValueKind == JsonValueKind.Number && !version.TryGetInt64(out _))) return false;
+            foreach (var field in new[] { "ReporterSelectionDirectory", "ReporterSelectionId" })
+                if (root.TryGetProperty(field, out var selection) && !NullableText(selection)) return false;
+            if (root.TryGetProperty("RemoveReporterLink", out var marker) && marker.ValueKind is not (JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null)) return false;
+            payload = properties.ToDictionary(property => property.Name, property => (object?)property.Value.Clone(), StringComparer.Ordinal);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     [HttpPost("api/triage/{intakeDraftId}")]
