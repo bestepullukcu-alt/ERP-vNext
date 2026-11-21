@@ -1,0 +1,823 @@
+{
+  "kind": "Exact fixture dependency/main comparison and precise failed-case ledger lookup",
+  "recorded_utc": "2026-11-21T17:47:12.861962+00:00",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "origin_main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "failed_test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: \"symlink\")",
+  "dependency_basis": "DocsPathGuardTests AuthorityFixture constructor lines331-344 copies AuthorityPath canonicalTargets, sealedInputs paths and provenancePaths. This record compares all those Git entries plus whole test/csproj and tracked ancestor build settings; not merely the ledger.",
+  "dependency_entries": [
+    {
+      "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "18ba9fd74c28959e16053cb6db7b3d3c4d9a4f5f"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "18ba9fd74c28959e16053cb6db7b3d3c4d9a4f5f"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "be27f8a9bbd8da89056ea39d4658f1d9a271c552"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "be27f8a9bbd8da89056ea39d4658f1d9a271c552"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "5ab1cf5f5e9fa3d32fe4273eaa1e375a49e9351a"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "5ab1cf5f5e9fa3d32fe4273eaa1e375a49e9351a"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ffa9acacbf47e9bf70d66ef3c592fc4f6b4c21b5"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ffa9acacbf47e9bf70d66ef3c592fc4f6b4c21b5"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "59592bc8a031f5025a93ca2d77a7274d5044b5d7"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "59592bc8a031f5025a93ca2d77a7274d5044b5d7"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/verify.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4d8888b3f41455d5741f66f12f94d8299b6b06ef"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4d8888b3f41455d5741f66f12f94d8299b6b06ef"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "b7a988b807837e2079d4e7cb3cdd6fd9e478afb8"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "b7a988b807837e2079d4e7cb3cdd6fd9e478afb8"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c482f3e350ac8f80079b262ef1be4a8bed8b585f"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c482f3e350ac8f80079b262ef1be4a8bed8b585f"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ffa9acacbf47e9bf70d66ef3c592fc4f6b4c21b5"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ffa9acacbf47e9bf70d66ef3c592fc4f6b4c21b5"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c58130cdbab00bfca18f66ff02f744f896a9583a"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c58130cdbab00bfca18f66ff02f744f896a9583a"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0802c115d20a454f6c5dcae55d40e1de49151bca"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0802c115d20a454f6c5dcae55d40e1de49151bca"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "442960264335e1f3f10dc2e0967c8dee40d63ebf"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "442960264335e1f3f10dc2e0967c8dee40d63ebf"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ec279c7eac9c6368f4e5603e21542a4613184ec6"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ec279c7eac9c6368f4e5603e21542a4613184ec6"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "442960264335e1f3f10dc2e0967c8dee40d63ebf"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "442960264335e1f3f10dc2e0967c8dee40d63ebf"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "303add8ede4447e741eeba53551e86c69826e398"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "303add8ede4447e741eeba53551e86c69826e398"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7ea9d214f45d0b5375ea54a93e4874383a754f4c"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7ea9d214f45d0b5375ea54a93e4874383a754f4c"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e986a775111c472d0036634ca37c310921c20b8b"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e986a775111c472d0036634ca37c310921c20b8b"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e7df7919cc38891bcb1cfcb060d0485f0cd54681"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e7df7919cc38891bcb1cfcb060d0485f0cd54681"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a6686e3c534e7efc7c18bbe1ee4427d46cea67d0"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a6686e3c534e7efc7c18bbe1ee4427d46cea67d0"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-published-uptake/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7af1a38479aa678c093f560186b6ec2f8789ffd0"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7af1a38479aa678c093f560186b6ec2f8789ffd0"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7a4b629732c6160d7c3e13476e0465aa8b689fe2"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7a4b629732c6160d7c3e13476e0465aa8b689fe2"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "76633bde8a9d5a63d4e661b6dcc7c74391991852"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "76633bde8a9d5a63d4e661b6dcc7c74391991852"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4b09f7851a0eca6499ea4ca598bca169552876c8"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4b09f7851a0eca6499ea4ca598bca169552876c8"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/PROVENANCE.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a4e2ba33e0740ca67304197e8315278ef5b9f25f"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a4e2ba33e0740ca67304197e8315278ef5b9f25f"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "76472803805b9357a9eef531c426cd9d7e168dc5"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "76472803805b9357a9eef531c426cd9d7e168dc5"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c0d0ddccffb5ab9c5247c802ec974ecc34aa467c"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c0d0ddccffb5ab9c5247c802ec974ecc34aa467c"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0771a9dc9407030f138b5b109cf85fed627d5c6f"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0771a9dc9407030f138b5b109cf85fed627d5c6f"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e2744075e591d3b5122ece7d62a03901d10bbf90"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e2744075e591d3b5122ece7d62a03901d10bbf90"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "21efa3368435e39fb61465040d40c7ef66600ccc"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "21efa3368435e39fb61465040d40c7ef66600ccc"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "21efa3368435e39fb61465040d40c7ef66600ccc"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "21efa3368435e39fb61465040d40c7ef66600ccc"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "b76d091ba9bfbd83149b8984325f4db9651522c3"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "b76d091ba9bfbd83149b8984325f4db9651522c3"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ea0d26127fe5e914f67a7c3b20124fd9ca7be142"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ea0d26127fe5e914f67a7c3b20124fd9ca7be142"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ea0d26127fe5e914f67a7c3b20124fd9ca7be142"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ea0d26127fe5e914f67a7c3b20124fd9ca7be142"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1afe079338ada19854217ff9e469ae481401ecb9"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1afe079338ada19854217ff9e469ae481401ecb9"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/inputs.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "6708c4baeb0411f155572d0dffb2f04429260655"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "6708c4baeb0411f155572d0dffb2f04429260655"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7cbb4bdbd9cc51f7f59c39d16827b958dcf9f19d"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7cbb4bdbd9cc51f7f59c39d16827b958dcf9f19d"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/MANIFEST.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a90f4ccc2ad2f9d804b0484e2453cfd9a2efd2e5"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a90f4ccc2ad2f9d804b0484e2453cfd9a2efd2e5"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/verify_candidate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a8dfd6c45836bfc62188cfe419f7b1698bf322b9"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a8dfd6c45836bfc62188cfe419f7b1698bf322b9"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-candidate-01/verify_candidate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3aca3ec95c690d63d9f36a5824a95774a42f3b53"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3aca3ec95c690d63d9f36a5824a95774a42f3b53"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/verify_candidate.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "d52e32d165474a02ab2fb40efbb898aa24521fe0"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "d52e32d165474a02ab2fb40efbb898aa24521fe0"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/build_final.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "bdfdbdbe986649edb225faf564e28d1a0f958f7f"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "bdfdbdbe986649edb225faf564e28d1a0f958f7f"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/candidate-to-final.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "08de053210ef0dc0f8000988cb672d8695d8cbbe"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "08de053210ef0dc0f8000988cb672d8695d8cbbe"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/verification-results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "d99f73594e29b52ed1cf7a288e2366d090b2f011"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "d99f73594e29b52ed1cf7a288e2366d090b2f011"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/verify_final.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "644bd0b02e237e3a70a077061601d5464effbb3d"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "644bd0b02e237e3a70a077061601d5464effbb3d"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/manifest-A-input-output.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "167bffd6cf51eaa9a0d2d0d67b7db950bbaca9d4"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "167bffd6cf51eaa9a0d2d0d67b7db950bbaca9d4"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/results.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "98ed6e67a4ed2f63bc498fcf0cbae81da78cf993"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "98ed6e67a4ed2f63bc498fcf0cbae81da78cf993"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/verify.py",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "dc1eee28b06c87fdfa1d9ac60e7a52f80f795d1d"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "dc1eee28b06c87fdfa1d9ac60e7a52f80f795d1d"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "cbe4fb7d5463275b38ffdc5d3d2369ca82dfa8a6"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "cbe4fb7d5463275b38ffdc5d3d2369ca82dfa8a6"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/reference/architecture/docs-path-authority.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "9b83e09843a77346a18fda16618142dfce3dcb6a"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "9b83e09843a77346a18fda16618142dfce3dcb6a"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4fe699e4106ea59062b031e786fb275efa7a8864"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4fe699e4106ea59062b031e786fb275efa7a8864"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2cd9733fe7ee97d2491939d3457b4a595bc28843"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2cd9733fe7ee97d2491939d3457b4a595bc28843"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "009a2003c3eaea2837e7b4cc1bb98e36c8e3d4ea"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "009a2003c3eaea2837e7b4cc1bb98e36c8e3d4ea"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    },
+    {
+      "path": "tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj",
+      "head": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "9c5b30a23ec1ec27d999f7e4d86addaeaf833f39"
+      },
+      "origin_main": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "9c5b30a23ec1ec27d999f7e4d86addaeaf833f39"
+      },
+      "git_entry_equal": true,
+      "present_both": true
+    }
+  ],
+  "all_fixture_test_and_project_dependency_git_entries_equal": true,
+  "exact_failed_case_rows_in_ct_ledger": [],
+  "exact_failed_case_rows_in_main_ledger": [],
+  "prior_classification_broad_ledger_matches": "Earlier ledger_symlink_rows contained three different roadmap-* cases due to broad method-name search. None names the failed symlink case. Exact lookup above is authoritative for registration.",
+  "actually_green_old_audit_tests": [
+    {
+      "name": "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt",
+      "outcome": "Passed"
+    },
+    {
+      "name": "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous",
+      "outcome": "Passed"
+    }
+  ],
+  "main_runtime_executed": false,
+  "classification": "Actual FAIL at Windows File.CreateSymbolicLink privilege prerequisite with equal test/fixture/dependency Git entries. No main test outcome inferred. No load retry or privilege/config/test/skip modification.",
+  "model": "verilemiyor",
+  "effort": "verilemiyor"
+}

@@ -1,0 +1,85 @@
+{
+  "kind": "CT prepared terminal Web views; overall FAIL retained",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "views": [
+    {
+      "view_path": "WEB-SUMMARY.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\SUMMARY.json",
+      "raw_bytes": 3510,
+      "raw_sha256": "3db0c44937fa4ff78528ae0d7817c9ec2769faca24ee9ce4a4ac54ac42a129c6",
+      "lf_bytes": 3441,
+      "lf_sha256": "2b4402ff0da65e91560a56c2ab74f8821c845eea0002f22d04a7ee519f838b18"
+    },
+    {
+      "view_path": "WEB-RAW-MANIFEST.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\RAW-MANIFEST.json",
+      "raw_bytes": 54498,
+      "raw_sha256": "202dc11374b82c0b9f53e68814dcf63cfbe3c6f4b14118dacede58b3cc9ad416",
+      "lf_bytes": 53096,
+      "lf_sha256": "953f14371d5b74c73a567b465d80b83d62fcb4a7c8854d46b56ffd81e45309f5"
+    },
+    {
+      "view_path": "WEB-ACTUAL-FAILURE.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\ACTUAL-FAILURE.json",
+      "raw_bytes": 1775,
+      "raw_sha256": "bbf12a70c4c6e54db8a515ef510dfd750848709635becae91cd61ef2a776f52b",
+      "lf_bytes": 1763,
+      "lf_sha256": "b960fa42ce8eb902f005daee48d3c76d8cc533f6ad0bd0cd1041334ccb317dd2"
+    },
+    {
+      "view_path": "WEB-RETURNS-SOURCE-COMPARISON.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\RETURNS-FAILURE-SOURCE-COMPARISON.json",
+      "raw_bytes": 3500,
+      "raw_sha256": "443ba662cc110a9e87ebb459ca761a0b816d61aff1c46835bda4602ca59938f6",
+      "lf_bytes": 3445,
+      "lf_sha256": "aafa8f7157ac468840ed6bfca420e1ee7785a091f78eeb6fed73b239d4976356"
+    },
+    {
+      "view_path": "WEB-COMPILE-SETTINGS-MAIN-COMPARISON.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\COMPILE-SETTINGS-MAIN-COMPARISON.json",
+      "raw_bytes": 3293,
+      "raw_sha256": "93a8653035bdfddff06829ddac2cc3acad623db2463469d457175f5c569264b6",
+      "lf_bytes": 3225,
+      "lf_sha256": "848668d2d033bfa7b3433459e0ba7ab7c088f4e970f6b757aea739b1ca5733df"
+    },
+    {
+      "view_path": "WEB-PVG-78-IDENTITY.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\PVG-78-IDENTITY.json",
+      "raw_bytes": 13434,
+      "raw_sha256": "05f3a3eb2cbc58e154ed57c25d53da3b10591998a1dc40c77501b1c3ada359d1",
+      "lf_bytes": 13345,
+      "lf_sha256": "0455276af812a65616b5ec6b9fc99722223fb29e69325a01df856de78c8e3111"
+    },
+    {
+      "view_path": "WEB-PVG-ASSERTION-RECEIPTS.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\PVG-ASSERTION-RECEIPTS.json",
+      "raw_bytes": 157142,
+      "raw_sha256": "31bb8367171ac99af1104f9a97e321023cd875054f673386ea8feaa165ea5fb0",
+      "lf_bytes": 153443,
+      "lf_sha256": "39238d9e2fae24b9c7be9accabb5ffdbf0c83d00832573be6a71d385e3baaddd"
+    },
+    {
+      "view_path": "WEB-ACTUAL-JOBS.json",
+      "representation": "canonical LF view; original raw identities distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\attempt-02-actual-full-web\\actual-commands.json",
+      "raw_bytes": 92433,
+      "raw_sha256": "dccb2806a3f3e5643a2c6c7abb679a719f775e937fbd71f3177fff1cedd0e36e",
+      "lf_bytes": 92433,
+      "lf_sha256": "dccb2806a3f3e5643a2c6c7abb679a719f775e937fbd71f3177fff1cedd0e36e"
+    }
+  ],
+  "ct_verified_raw_files": 279,
+  "ct_verified_raw_bytes": 143306783,
+  "ct_all_69_job_rows_verified_empty_unforced": true,
+  "ct_actual_unfiltered_test_exit": 1,
+  "ct_bulk_source_and_build_setting_git_objects_recomputed": true,
+  "main_runtime_not_run": true,
+  "diagnostic_tool_install_or_attach_performed": false
+}

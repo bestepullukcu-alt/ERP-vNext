@@ -1,0 +1,46 @@
+{
+  "kind": "CT prepared canonical LF views, source raw identities retained",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "views": [
+    {
+      "view_path": "ARCHITECTURE-SUMMARY.json",
+      "representation": "canonical LF view; original raw bytes and hashes are distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\FINAL-SUMMARY.json",
+      "raw_bytes": 3687,
+      "raw_sha256": "a0bf733433c9d36c0f00791273d63e2be17d330bb1d0646b613721be74f7b3ff",
+      "lf_bytes": 3687,
+      "lf_sha256": "a0bf733433c9d36c0f00791273d63e2be17d330bb1d0646b613721be74f7b3ff"
+    },
+    {
+      "view_path": "ARCHITECTURE-CLASSIFICATION.json",
+      "representation": "canonical LF view; original raw bytes and hashes are distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\DEPENDENCY-AND-LEDGER-CLASSIFICATION.json",
+      "raw_bytes": 25913,
+      "raw_sha256": "122e4cd98533620585893fd6bf899a6ef62efc7ed8aed441b9e205bcb829094a",
+      "lf_bytes": 25913,
+      "lf_sha256": "122e4cd98533620585893fd6bf899a6ef62efc7ed8aed441b9e205bcb829094a"
+    },
+    {
+      "view_path": "ARCHITECTURE-RAW-CATALOGUE.json",
+      "representation": "canonical LF view; original raw bytes and hashes are distinct",
+      "source_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\RAW-CATALOGUE.json",
+      "raw_bytes": 73019,
+      "raw_sha256": "6f3623a259ffd6363b2bcaa657da4f63ffc59671eb682302841efde0d918b4ea",
+      "lf_bytes": 73019,
+      "lf_sha256": "6f3623a259ffd6363b2bcaa657da4f63ffc59671eb682302841efde0d918b4ea"
+    },
+    {
+      "view_path": "architecture.trx",
+      "representation": "canonical LF view; original raw bytes and hashes are distinct",
+      "source_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\architecture.trx",
+      "raw_bytes": 413167,
+      "raw_sha256": "1ac1b43fe851eba8e15f1d7d7548bc341c34183b8c37c10d0a57b2f6ea5c5dc7",
+      "lf_bytes": 411743,
+      "lf_sha256": "4149b0b889aa09662e7a49f1f4dddcd17496352fb854bda1739f7ddb677c4b90"
+    }
+  ],
+  "ct_verified_raw_catalogue_files": 237,
+  "ct_verified_raw_catalogue_bytes": 45271059,
+  "ct_independent_bulk_ls_tree_equal_for_classified_paths": true,
+  "classification_is_not_main_runtime_pass": true
+}

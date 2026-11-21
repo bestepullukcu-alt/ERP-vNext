@@ -1,16 +1,16 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, veri okuma HEAD `3881b13b4a7238326d41e1b777916c248a34cdaf`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, son genel test kaynağı `51c58549b7c2e7a0a232e74a15054f9b2b8b51dd`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
 ## Güncel odak
 
 - **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
-- **Test:** WIN ve Web hazırlıkları ve beş hücreli registry düzeltmesi CT’ye entegre. Bağımsız kesin FE adayında API456/Reg211/Web78/JS39, sıfır hata/skip; 11 ayrı mutant tekrarı doğrulandı. Birleşmiş CT kaynağında filtresiz Web ve mimari testleri sırada.
-- **Arka uç / çeviri:** Parent IN_PROGRESS; BE INTEGRATED; L10N INTEGRATED. İki kesin v1.1 normal dağıtım kapısı0; işçiler ayrı dallardadır. Son teslim kanıtı STATE-JOURNAL ve ilgili bağımsız incelemedir. CT ürün kodu yazmaz.
-- **Ekran:** FE INTEGRATED; bağımsız exactpromptUYGUN0 ve actualnormal0 sonrası ayrıtek yazıcı. Güncel durum STATE-JOURNAL ve gerçek teslim kanıtındadır; CT ürün kodu yazmaz.
-- **Karar:** Tek son PR; operasyon/yayın kapalı. Linux/Phase1/bağımsız insan mainmerge kapıları açık, hiçbir işçi ağacı silinmedi.
+- **Test:** Bağımsız FE teknik E2 UYGUN/açık0; API456/Reg211/PVGWeb78/JS39,0hata/0skip. Birleşik H51 üzerinde genel Web4584geçti/1hata, mimari230geçti/1hata,0skip; PVG78 tamamı geçti. İki genel kapı FAIL kalır; kanıtlar pvg-final-integration-01 altında.
+- **Arka uç / çeviri:** BE/L10N/FE ve üç hazırlık CT dalına kesin merge commit ile entegre. Parent IN_PROGRESS; mevcut6ACCEPTED korunur, yeni kabul verilmedi. CT ürün kodu yazmaz.
+- **Ekran:** FE INTEGRATED; kesin fbcb3353 adayının altı blob’u CT merge3881b13b ile aynı. Bağımsız inceleme ve birleşik koşuda78PVG testi geçti. Kalan genel kırmızılar PVG dışı iade metin testi ve Windows symlink ayrıcalığıdır; atlama/istisna yok.
+- **Karar:** Tek taslak PR için kesin son dal/SHA push+PR onayı bekleniyor. Doğru S115 paketHIGH ve kuyruk doğrulaması0; Linux/Phase1 ve farklı HIGH yetkili insanın mainmerge kapısı açık. Operasyon/E4 kapalı; worktree arşivi main erişilebilirliğinden sonra.
 
 ## Teslim dilimleri
 
@@ -38,7 +38,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 ## Şimdi ve sırada
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `IN_PROGRESS`
-  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin aday fbcb3353 bağımsız teknik E2 UYGUN sonrası CT merge3881b13b ile INTEGRATED. Parent IN_PROGRESS; final kök testleri/CI ve operasyonel kabul henüz yok.
+  - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin aday fbcb3353 bağımsız teknik E2 UYGUN sonrası CT merge3881b13b ile INTEGRATED. Parent IN_PROGRESS. H51 genel Web4584/1, mimari230/1,0skip; iki FAIL açık. Paket/kuyruk kapısı0, kesinPRkaynağı CI/ikinci insan mainmerge ve operasyonel kabul bekleniyor.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md`.
 - [ ] **Test: Windows Mongo ve tek erişim güvenliği testi hazırlığı** — `WP-0230-DL12-PREP-WIN` · `INTEGRATED`
   - Kapsam/kuyruk kaydı: MOD-0230 DL-12 — Windows test hazırlığı: donmuş iki harness/guard dosyası ve üçüncü dosyada yalnız onaylı ACL test gövdesi; toplam üç test yolu, gerçek395/35Mongo/sabotaj; parent feature değişmez
@@ -57,8 +57,8 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
   - 43f856f22f0549be1d61fab09d40086b755661ba bağımsızUYGUN0 sonrası CTnoff77ecab323fc731d157cedeae63d653bb604517db ile entegre.7XML112/parity/old111korunur, yalnız7satır. FEbridge/runtime ayrı.
   - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-l10n-01/CT-INTEGRATION.json`.
 - [ ] **Ekran: gerçek düzenleme kaydında veriyi koruma** — `WP-0230-DL12-FE` · `INTEGRATED`
-  - Kesin aday fbcb33533daacb9ae5b3b215736ad14d2b466c11, altı onaylı yol. Bağımsız teknik E2 UYGUN/açık0; kendi taze Web78/JS39/API456/Reg211, sıfır hata/skip, capture6CLI0 ve 11 ayrı mutant RED→GREEN. 47 corpus+112shape gerçek tarayıcı/MVC/API/depo zincirinde ölçüldü; raw zaman/null/boş/dizi düzeni korunur. CT noff3881b13b4a7238326d41e1b777916c248a34cdaf, altı blob adayla birebir; BE/L10N ve donmuş kaynaklar değişmedi. Birleşik CT filtresiz Web/mimari testleri bekleniyor; ACCEPTED/E4/canlı kullanım onayı yok.
-  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-independent-02/CT-INTEGRATION.json`, `CT-DISPOSITION.md`, `REVIEW.json`.
+  - Kesin aday fbcb33533daacb9ae5b3b215736ad14d2b466c11, altı onaylı yol. Bağımsız teknik E2 UYGUN/açık0; kendi taze Web78/JS39/API456/Reg211, sıfır hata/skip, capture6CLI0 ve 11 ayrı mutant RED→GREEN. 47 corpus+112shape gerçek tarayıcı/MVC/API/depo zincirinde ölçüldü; raw zaman/null/boş/dizi düzeni korunur. CT noff3881b13b4a7238326d41e1b777916c248a34cdaf, altı blob adayla birebir; BE/L10N ve donmuş kaynaklar değişmedi. Birleşik CT filtresiz Web4584/1 ve mimari230/1,0skip; tüm78PVG testi geçti. Genel iki FAIL açık; yeni ACCEPTED/E4/canlı kullanım onayı yok.
+  - Kanıt/karar: `docs/records/audits/2026-11/pvg-dl12-fe-independent-02/CT-INTEGRATION.json`, `docs/records/audits/2026-11/pvg-final-integration-01/CT-DISPOSITION.md`.
 
 ## Karar bekleyenler
 
@@ -83,7 +83,7 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 
 - **Test:** Değişmemiş arka uç başlangıcı fbfcf0a4 yeni snapshotında211/211PASS,0skip ve gerçek known-failures0; [başlangıç raporu](../../../../docs/records/audits/2026-11/pvg-dl12-be-baseline-01/VERIFY-BE-BASELINE.txt). Yeni feature veya no-loss kabulü değildir.
 
-- **Belge:** Onaylı DL12 için [paralel teslim planı](../../../../docs/roadmap/plans/pvg-mod0230-dl12-parallel-delivery-plan-2026-11-20.md): iki PREP entegrasyonu sonrası arka uç ve yedi dil paralel; ardından ekran/MVC. Henüz ana feature dağıtımı yok.
+- **Belge:** Onaylı DL12 için [paralel teslim planı](../../../../docs/roadmap/plans/pvg-mod0230-dl12-parallel-delivery-plan-2026-11-20.md): hazırlık, arka uç, yedi dil ve ekran/MVC teslimleri CT dalına entegre. Sonraki adım, genel test kırmızıları açık tek taslak PR; kesin PR kaynağında CI ve bağımsız insan birleştirmesi bekleniyor.
 
 Bu bölümde ayrı kuyruk satırı yok.
 

@@ -1,0 +1,78 @@
+{
+  "kind": "Root management wording cross-check only; no pack/product/runtime acceptance review",
+  "recorded_utc": "2026-11-21T18:09:39.150653+00:00",
+  "reviewer": "/root/pvg_architecture_continuation_02",
+  "requested_model_effort": "inherited gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor",
+  "role_limit": "The architecture summary is my own measured run and is used only as a factual input here, not independently re-reviewed. No runtime, install, attach, script/test/repo or queue operation occurred.",
+  "inputs_at_first_read": [
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\FINAL-CT-DISPOSITION-DRAFT.md",
+      "bytes": 2819,
+      "raw_sha256": "6486f26564625e809096bb48730696df29a615d4808dec68d460fa6d308b164b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\PVG-FINAL-PR-DRAFT.md",
+      "bytes": 3254,
+      "raw_sha256": "3cfbb1d7d7455198d1d3107bc5a4e8852167e2ca0d4ecd46da8b65ca9a5bc177"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\SUMMARY.json",
+      "bytes": 3510,
+      "raw_sha256": "3db0c44937fa4ff78528ae0d7817c9ec2769faca24ee9ce4a4ac54ac42a129c6"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-run-02\\ACTUAL-FAILURE.json",
+      "bytes": 1775,
+      "raw_sha256": "bbf12a70c4c6e54db8a515ef510dfd750848709635becae91cd61ef2a776f52b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\FINAL-SUMMARY.json",
+      "bytes": 3687,
+      "raw_sha256": "a0bf733433c9d36c0f00791273d63e2be17d330bb1d0646b613721be74f7b3ff"
+    }
+  ],
+  "confirmed_wording": [
+    "Both general suites are called FAIL, not PASS. Web4585 total4584 Passed1 Failed0 skipped; architecture231 total230 Passed1 Failed0 skipped.",
+    "Returns encoding explanation is explicitly a hypothesis, not reproduced/proven cause; matching source is not main runtime evidence.",
+    "Architecture symlink failure is explicitly Windows fixture creation privilege failure, test/53 dependencies equal but main runtime not measured.",
+    "No new E4/live/module DONE/publication authority is granted; exact final branch/SHA push/PR approval remains explicit.",
+    "Initial XML infrastructure failures and corrected encoding literal are distinct from product tests; unused diagnostic proposal did not install or attach."
+  ],
+  "recommended_wording": [
+    {
+      "topic": "Historical acceptance scope",
+      "draft": "ACCEPTED/E4/canlı kullanım/modül DONE yok",
+      "proposal": "Bu dalgaya yeni ACCEPTED/E4, canlı kullanım veya modül DONE kararı verilmiyor; mevcut altı ACCEPTED satırı korunur.",
+      "reason": "Avoid a broad reading that erases already accepted historical queue work."
+    },
+    {
+      "topic": "Tested H versus later metadata H",
+      "proposal": "Yerel genel Web ve mimari yalnız 51c58549b7c2e7a0a232e74a15054f9b2b8b51dd üzerinde koşuldu. Daha sonraki kayıt/metadata SHA’sına otomatik runtime PASS aktarılmaz; kesin PR SHA’sı için CI ayrıca ölçülür.",
+      "reason": "FINAL_CT_SHA is deliberately unresolved; later management records cannot be described as newly runtime-tested by these historical runs."
+    },
+    {
+      "topic": "Integration result placeholder before publication",
+      "proposal": "CT genel Web FAIL:4584 geçti/1 başarısız/0 atlandı; tüm PVG78 geçti. Tek Web hatası MOD-0186 Returns JS karşılaştırmasıdır; encoding nedeni hipotezdir. Genel mimari FAIL:230 geçti/1 başarısız/0 atlandı; tek symlink vakası Windows ayrıcalık önkoşulunda durdu.",
+      "reason": "Fill CT_INTEGRATION_FINAL_RESULT explicitly with both FAIL results before publishing; pending draft placeholder is not currently a false result."
+    },
+    {
+      "topic": "Duration/normal completion",
+      "draft": "Süreç 14m23s sonunda normal kapandı",
+      "proposal": "Test işlemi exit1 ile kendiliğinden kapandı; zorlamalı sonlandırma yok.",
+      "reason": "Supplied Web TRX interval is14m25.846262s; exact14m23s process duration is not established by these compared inputs. Avoid implying success through normal wording."
+    },
+    {
+      "topic": "Cleanup scope",
+      "draft": "fixture yok",
+      "proposal": "Symlink vakasının geçici fixture dizini yok; özel kaynak/build/cache kanıt için korunuyor.",
+      "reason": "Actual architecture summary retains six tool-temp directories and does not claim lane CLOSED."
+    }
+  ],
+  "pending_items": [
+    "FINAL_CT_SHA, FINAL_TYPE_COUNTS and CT_INTEGRATION_FINAL_RESULT remain intentional draft placeholders; replace only from final actual records.",
+    "Corrected queue retry4743 was parent-reported pending; this wording check neither queries it nor fabricates its outcome."
+  ],
+  "unchecked_prior_evidence": "Worker/independent FE corpus/mutant assertions and CT catalogue-byte totals were not re-audited in this wording check; root’s separate source-bound verification is outside this narrow task.",
+  "repository_or_scripts_edited": false
+}
