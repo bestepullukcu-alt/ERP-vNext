@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>خارج حقل نصي، ومن دون مربع حوار أو لوحة جانبية مفتوحة، يفتح المفتاح «?» هذه المساعدة مع اختصارات الصفحة.</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>اطّلع على مسودات استقبال الحالات. الاستخدام التشغيلي غير متاح بعد.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>مراجعة المسودات المتاحة</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>استخدم عوامل التصفية، ثم افتح تفاصيل المسودة عند توفرها. إذا حُظر الوصول، فاقرأ السبب المعروض واتصل بالمسؤول المختص.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>أعدّ مسودة استقبال حالة باستخدام بيانات اصطناعية فقط. الاستخدام التشغيلي غير متاح بعد.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>مراجعة حقول المسودة</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>استخدم بيانات اصطناعية فقط؛ ولا تُدخل بيانات مرضى حقيقية. الحفظ غير متاح بعد. اقرأ أي سبب معروض واتصل بالمسؤول المختص إذا احتجت إلى مساعدة.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>راجع القيم المحمّلة لمسودة استقبال حالة قبل تغييرها. الاستخدام التشغيلي غير متاح بعد.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>مراجعة القيم المحمّلة</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>استخدم بيانات اصطناعية فقط وراجع جميع القيم المحمّلة. التحديث غير متاح بعد؛ والطلب المحظور لا يحفظ التغييرات.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>افحص حالة الفرز والتوجيه لمسودة استقبال حالة. الاستخدام التشغيلي غير متاح بعد.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>مراجعة الحالة</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>راجع حالة المسودة قبل اختيار إجراء. الفرز والتوجيه غير متاحين بعد.</value>
+  </data>
 </root>

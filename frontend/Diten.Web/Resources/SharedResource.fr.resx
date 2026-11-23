@@ -1220,7 +1220,7 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimisation du stock de sécurité</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planification de la demande</value></data>
-  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Pharmacovigilance</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Pharmacovigilance (surveillance des médicaments)</value></data>
   <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Réception des Cas et Triage</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
     <value>Opérations d’Entrepôt</value>
@@ -1290,5 +1290,17 @@
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Planification des vagues</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Réception des Cas et Triage</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Créer un Brouillon de Réception</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Mettre à Jour le Brouillon de Réception</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Détails du Brouillon de Réception</value>
   </data>
 </root>

@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>Hors d'un champ de texte, sans boîte de dialogue ni panneau latéral ouvert, la touche « ? » ouvre cette aide avec les raccourcis de la page.</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>Consultez les brouillons de réception des cas. L’utilisation opérationnelle n’est pas encore disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>Personnes autorisées à examiner la réception des cas de pharmacovigilance.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>Examiner les brouillons disponibles</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>Utilisez les filtres, puis ouvrez les détails d’un brouillon s’ils sont disponibles. Si l’accès est bloqué, lisez le motif affiché et contactez l’administrateur responsable.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>Préparez un brouillon de réception d’un cas avec des données synthétiques uniquement. L’utilisation opérationnelle n’est pas encore disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>Personnes autorisées à examiner la réception des cas de pharmacovigilance.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>Examiner les champs du brouillon</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>Utilisez uniquement des données synthétiques ; ne saisissez aucune donnée réelle de patient. L’enregistrement n’est pas encore disponible. Lisez tout motif affiché et contactez l’administrateur responsable si vous avez besoin d’aide.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>Vérifiez les valeurs chargées d’un brouillon de réception d’un cas avant de les modifier. L’utilisation opérationnelle n’est pas encore disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>Personnes autorisées à examiner la réception des cas de pharmacovigilance.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>Vérifier les valeurs chargées</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>Utilisez uniquement des données synthétiques et vérifiez toutes les valeurs chargées. La mise à jour n’est pas encore disponible ; une demande bloquée n’enregistre aucune modification.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>Examinez l’état du triage et de l’orientation d’un brouillon de réception d’un cas. L’utilisation opérationnelle n’est pas encore disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>Personnes autorisées à examiner la réception des cas de pharmacovigilance.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>Vérifier le statut</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>Vérifiez le statut du brouillon avant de choisir une action. Le triage et l’orientation ne sont pas encore disponibles.</value>
+  </data>
 </root>

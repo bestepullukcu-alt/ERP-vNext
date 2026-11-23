@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>Fuera de un campo de texto, sin un diálogo ni un panel lateral abiertos, la tecla «?» abre esta ayuda con los atajos de la página.</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>Consulte los borradores de recepción de casos. El uso operativo aún no está disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>Revisores autorizados de recepción de casos de farmacovigilancia.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>Revisar los borradores disponibles</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>Utilice los filtros y abra los detalles de un borrador cuando estén disponibles. Si el acceso está bloqueado, lea el motivo mostrado y contacte con el administrador responsable.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>Prepare un borrador de recepción de un caso únicamente con datos sintéticos. El uso operativo aún no está disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>Revisores autorizados de recepción de casos de farmacovigilancia.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>Revisar los campos del borrador</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>Utilice únicamente datos sintéticos; no introduzca datos reales de pacientes. La función de guardar aún no está disponible. Lea cualquier motivo mostrado y contacte con el administrador responsable si necesita ayuda.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>Revise los valores cargados de un borrador de recepción de un caso antes de modificarlos. El uso operativo aún no está disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>Revisores autorizados de recepción de casos de farmacovigilancia.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>Revisar los valores cargados</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>Utilice únicamente datos sintéticos y revise todos los valores cargados. La actualización aún no está disponible; una solicitud bloqueada no guarda los cambios.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>Inspeccione el estado del triaje y la derivación de un borrador de recepción de un caso. El uso operativo aún no está disponible.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>Revisores autorizados de recepción de casos de farmacovigilancia.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>Revisar el estado</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>Revise el estado del borrador antes de elegir una acción. El triaje y la derivación aún no están disponibles.</value>
+  </data>
 </root>

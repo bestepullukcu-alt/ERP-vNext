@@ -1349,4 +1349,16 @@
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Dalga Planlama</value>
   </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Vaka Girişi ve Triyaj</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Giriş Taslağı Oluştur</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Giriş Taslağını Güncelle</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Giriş Taslağı Ayrıntıları</value>
+  </data>
 </root>

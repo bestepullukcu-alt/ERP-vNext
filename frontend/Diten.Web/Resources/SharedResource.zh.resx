@@ -1290,4 +1290,16 @@
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>波次计划</value>
   </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>病例接收与分诊</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>创建接收草稿</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>更新接收草稿</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>接收草稿详情</value>
+  </data>
 </root>

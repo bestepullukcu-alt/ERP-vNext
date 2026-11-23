@@ -1290,4 +1290,16 @@
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Планирование волн</value>
   </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Приём Случаев и Триаж</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Создать Черновик Приёма</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Обновить Черновик Приёма</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Сведения о Черновике Приёма</value>
+  </data>
 </root>
