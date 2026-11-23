@@ -1,0 +1,21 @@
+PACK-APPROVAL v1 — execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md @ 72b451b605ebea41092a4f6da61a11c9c7ad8fc1 · dal onayı okuması (S-115)
+hesaplanan risk: HIGH
+  - 'Problem, identity and retained boundarie' altında değişti: ### Problem, identity and retained boundaries
+  - 'Problem, identity and retained boundarie' altında değişti: This is a contained correction to the EXISTING MOD-0230 Case Intake & 
+  - 'Problem, identity and retained boundarie' altında değişti: FU, plan MVP, capability identity or thirteenth delivery slice. Existi
+  - 'Problem, identity and retained boundarie' altında değişti: unchanged; `golden_reference: compact`, `data_mode: server`, `_LayoutT
+  - 'Problem, identity and retained boundarie' altında değişti: The live Compact pack/backend query+handler/frontend pages were read a
+  - 'Problem, identity and retained boundarie' altında değişti: The repo master-development-plan has no MOD-0230 row/plan capability i
+  - 'Problem, identity and retained boundarie' altında değişti: **plan satırı yok / plan kimliği yok**; registry MOD-0230 and this pac
+  - 'Problem, identity and retained boundarie' altında değişti: No identity is created/reserved; a new-ID discovery/preflight is not a
+  - 'Problem, identity and retained boundarie' altında değişti: Actual exact-H CI at `82bc773938baa6689f0089b89c765b60f4411932` (PR #4
+  - 'Problem, identity and retained boundarie' altında değişti: failures: four missing help page codes (CASEINTAKETRIAGE, CASEINTAKETR
+  - 'Problem, identity and retained boundarie' altında değişti: CASEINTAKETRIAGEDETAILS), and two untranslated verbs (`route`, `triage
+  - 'Problem, identity and retained boundarie' altında değişti: 5565 tests, 5562 passed, 3 failed across 2 files; 39 PVG UI tests pass
+inceleme (CT-APR-02): gerekli — künye dışında içerik değişti; künye satır sayısı değişti
+  - başka sürümlere 24 inceleme (UYGUN DEĞİL: 6) — bu sürüm için sayılmaz
+  - dal onayı (S-115): 2 inceleme satırı henüz main'de değil — insan adımı modül PR'ında ölçülür
+  - bu sürüm için 2 inceleme: codex UYGUN, codex UYGUN
+insan adımı: beklemede — modül PR'ı başka bir kişi tarafından birleştirilince ölçülür (dal onayı, S-115)
+sonuç: onaylı — HIGH · onaylayan bestepullukcu-alt · 2026-11-23 · dal onayı: insan adımı beklemede, modül PR'ında ölçülür (S-115)
+çıkış: 0
