@@ -7,3 +7,5 @@
 Parent yetkisi fork_none ajanlara kaynakları ve doğrudan kullanıcı 'onaylıyorum'/'devam edelim' sözleriyle tekrar taşındı; kullanıcıdan yeni izin istenmedi. Root ürün yazmaz; max2 aktifçocuk; ürün23+4 ayrık. Ordinary localcommit/noff izinli, push/mainmerge/operasyon kapalı. BağımsızE2/combinedINT/finalCI/AC45 bekler.
 
 2026-11-23T12:05:11.457246+00:00 | rootCT | İkiWP DISPATCHED→IN_PROGRESS. Shared işçi “Başladım…tuple/hash/clean doğrulandı, kaynak/gate/allowlist/ortam ölçüyorum”; views işçi “Görevi aldım…yazmadan önce prompt/tuple/clean doğruluyorum” bildirdi. Gerçek görev/preflight başlangıcıdır; ürün değişikliği veya test geçti iddiası değildir. Fork_none yetki aktarımı her iki işçiye rootta doğrudan onay/sondevam bağlamıyla açıklandı.
+
+2026-11-23T12:37:58.539301+00:00 | rootCT | WP-0230-DL7-CI-VIEWS-01 IN_PROGRESS→INTEGRATION_READY. Gerçek author REPORTED exact3af28aa/clean; başka oturumda VERIFYING yapıldı; fresh48/4actualrender/Editnegative ve kaynak bağları UYGUN0critical0blocker ile VERIFIED. CT88e45636a karşılığı kabul etti, INTEGRATION_READY. Bunlar geçmiş gerçek olayların şimdi kaydı; noff henüz yapılmadı, fullhelp/CI/ACCEPTED/DONE yok.
