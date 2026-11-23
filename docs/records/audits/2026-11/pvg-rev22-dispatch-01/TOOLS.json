@@ -1,0 +1,33 @@
+{
+  "kind": "Availability only; not build/test/GO",
+  "source_head": "7265acb09b61ac819f1d3d1e3c8fb4110ac31cbe",
+  "commands": {
+    "node": {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "v22.23.5\n",
+      "stderr": ""
+    },
+    "dotnet": {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "8.0.428\n",
+      "stderr": ""
+    },
+    "python": {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "Python 3.13.17\n",
+      "stderr": ""
+    }
+  }
+}
