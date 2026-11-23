@@ -38,6 +38,11 @@ slice: "Slice 1 - intake + triage + route. Archive/void and export are out of sc
 > wording. Earlier version-bound records, history, DL-1...DL-12 and AC-1...AC-45 are preserved, not retroactively
 > rewritten or transferred. The `approved: 2026-08-09` date remains the historical initial approval date.
 
+> **Historical authentication snapshots:** the later Required Interface Contracts cell's “No JWT validation in the service” and Layout & Shell Contract's “Today the controller carries `[Authorize]` only (G-4)” preserve earlier research snapshots, not current authentication/permission facts.
+> At source `82bc773938baa6689f0089b89c765b60f4411932`, current service authentication/authorization is in `services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs:71-72,153-161` and `PvgCaseIntakeTriageEndpoints.cs:27-33`.
+> Current MVC page permission checks are in `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs:58-85,249-250`; read these production paths and the current-principal evidence in Tenant Isolation Rules (`PvgCaseIntakeTriageEndpoints.cs:628-650`) as current source, not the two older snapshot claims.
+> This is historical clarification only: no authentication/authorization work, approved scope/content/27-path allowlist change or operational permission is added.
+
 ## Revision 22 owner-consented CI-closure amendment (formal records and dispatch gated)
 
 ### Problem, identity and retained boundaries
