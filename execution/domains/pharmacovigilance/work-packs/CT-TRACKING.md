@@ -6,7 +6,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 ## Güncel odak
 
-- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. İki yeni WP READY. v1.0 normal kapıları tek keşif üretici hash bağı nedeniyle1; düzeltilmiş gerçek discovery02/35karar sonrası v1.1 ayrı HIGH inceleme ve normal0 beklenir. Ürün başlamadı.
+- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. İki yeni WP READY. v1.0 normal kapıları tek keşif üretici hash bağı nedeniyle1; düzeltilmiş gerçek discovery02/35karar sonrası v1.1 ayrı HIGH incelemeler UYGUN/kritik0/engelleyici0 ve iki actualNORMAL0. Taze worktree kontrolü temiz; CTGO hazır, actual işçi başlatma sırada. Ürün henüz başlamadı.
 - **Test:** H82 gerçek service-tests API456/Reg211,0hata/0skip; aynıiş fullTRX/gerçeksyntheticmergeC ve Htree eşitliğiyle AC45 bağı ölçüldü. Phase1 ilkFAIL korundu; tekaynıkaynakattempt2 tenancy3/mimari231/Web4585,0hata/0skip. Retry kökneden düzeltmesi değildir.
 - **Test:** H82 JS5565/3FAIL (PVG39geçti):4helpcode ve triage/route etiketleri; UIselector FrenchliteralaynılığıFAIL. Rev22 yalnız bunların onaylı27yol düzeltmesidir. Her yeniH sonCI/AC45 bağını yenileyecek.
 - **Arka uç:** BE/L10N/FE/hazırlıklar CT entegre; parentDL12 IN_PROGRESS.6tarihîACCEPTED korunur, yeniACCEPTED yok. CT ürün yazmaz.
@@ -228,7 +228,7 @@ Bu bölümde ayrı kuyruk satırı yok.
 ## Kesin kaynaklar
 
 - Görev kaynağı: `execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv`.
-- İnsan onayı: `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md@a2586b89`.
-- Son pack: `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`; domain: `2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b`.
+- İnsan onayı: rev22 exact27/XMC/content/singlewriter `docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md`; önceki ek kapsam kaydı `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md@a2586b89` tarihîdir.
+- Son rev22 pack: `d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b`; domain: `0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298`. Önceki rev21 kaynakları tarihîdir.
 - Son inceleme ve CT karşılığı: `docs/records/audits/2026-11/pvg-rev21-formal-review-01/ROUND-02-DECISION.md@5976407f`.
 - Dağıtım, kabul ve main merge birbirinden ayrı kapılardır; READY veya UYGUN tek başına tamamlanma değildir.
