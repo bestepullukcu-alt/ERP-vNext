@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "file": "SOURCE-BOUND-PVG-CI.json",
+      "raw_sha256": "73671037995412a483d85b6ca63e540126135fcccb023825f4ebbf8fe037097c",
+      "raw_bytes": 3106,
+      "canonical_lf_sha256": "73671037995412a483d85b6ca63e540126135fcccb023825f4ebbf8fe037097c",
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-ci-01/SOURCE-BOUND-PVG-CI.json"
+    },
+    {
+      "file": "phase1-attempt2-review.md",
+      "raw_sha256": "3954b9938dfa12e7a07bd342f2cef1286eade9a9cd7a396b421dd2f7876da047",
+      "raw_bytes": 2946,
+      "canonical_lf_sha256": "6617f92269b38edcddfa8335e0628c09ed2c3c9a9a7615060b333e0a1a103191",
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-ci-01/phase1-attempt2-review.md"
+    },
+    {
+      "file": "phase1-attempt2-review.json",
+      "raw_sha256": "68e4387a9bca73def8829a3fc984e164358d7898c1c74aa59ab4aa029ffc926c",
+      "raw_bytes": 4039,
+      "canonical_lf_sha256": "f1e4418cebb0d4a0af1eca7d16eae4b5f1da611f2c80976163f9990e8c5e3367",
+      "source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-ci-01/phase1-attempt2-review.json"
+    }
+  ],
+  "note": "Original UTC-timed facts preserved; JSON remaining field predates successful Phase1retry. Read OBSERVATION.md for later state. No future-H PASS."
+}

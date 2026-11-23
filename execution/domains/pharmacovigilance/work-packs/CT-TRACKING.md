@@ -1,16 +1,17 @@
 # PVG İş Takibi
 
-Son güncelleme: **2026-11-21 (Asia/Baku)**. Kaynak CT dalı `chore/ct/pvg-ct-01`, son genel test kaynağı `51c58549b7c2e7a0a232e74a15054f9b2b8b51dd`; yerel son alınan main `58eb6fa901683296a0049a06910dc4b12e970950`. Bu dosya repo görünümüdür; çelişkide CT-QUEUE.tsv ve kesin kanıt/karar kaydı esas alınır.
+Son güncelleme: **2026-11-23 (Asia/Baku)**. CT dalı `chore/ct/pvg-ct-01`; yayımlanmış PR460 kaynağı `82bc773938baa6689f0089b89c765b60f4411932` (H82), yerel son main `58eb6fa901683296a0049a06910dc4b12e970950`. Rev22 yönetim kayıtları yereldir; yeni ürün/test/push iddiası yok. Çelişkide kuyruk ve kesin kaynak bağlı kayıt esas alınır.
 
 Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai bağlantısı web okuyucusunda erişilemedi, içeriği/rolü doğrulanmadı. Yeni bir site veya farklı tasarım açılmadı. SOP22.2/9 uyarınca aynı iş listesi bu Markdown dosyasında tutulur; uygun Artifact aracı geldiğinde mevcut tek sayfayla eşleştirilir. Onay kutuları durum gösterimidir; değişiklik için PVG Control Tower sohbetine yazılır.
 
 ## Güncel odak
 
-- **Karar:** Rev21 kapsamı ve iki ek kapsam insan onaylı; iki resmî UYGUN ve kesin HIGHcheck0 korunuyor. Yeniden onay beklenmiyor.
-- **Test:** Bağımsız FE teknik E2 UYGUN/açık0; API456/Reg211/PVGWeb78/JS39,0hata/0skip. Birleşik H51 üzerinde genel Web4584geçti/1hata, mimari230geçti/1hata,0skip; PVG78 tamamı geçti. İki genel kapı FAIL kalır; kanıtlar pvg-final-integration-01 altında.
-- **Arka uç / çeviri:** BE/L10N/FE ve üç hazırlık CT dalına kesin merge commit ile entegre. Parent IN_PROGRESS; mevcut6ACCEPTED korunur, yeni kabul verilmedi. CT ürün kodu yazmaz.
-- **Ekran:** FE INTEGRATED; kesin fbcb3353 adayının altı blob’u CT merge3881b13b ile aynı. Bağımsız inceleme ve birleşik koşuda78PVG testi geçti. Kalan genel kırmızılar PVG dışı iade metin testi ve Windows symlink ayrıcalığıdır; atlama/istisna yok.
-- **Karar:** Tek taslak PR için kesin son dal/SHA push+PR onayı bekleniyor. Doğru S115 paketHIGH ve kuyruk doğrulaması0; Linux/Phase1 ve farklı HIGH yetkili insanın mainmerge kapısı açık. Operasyon/E4 kapalı; worktree arşivi main erişilebilirliğinden sonra.
+- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Final8d44e327/domain0aa1706e formal HIGH incelemede. İki yeni WP PLANNED; prompt/gerçekdispatch beklenir.
+- **Test:** H82 gerçek service-tests API456/Reg211,0hata/0skip; aynıiş fullTRX/gerçeksyntheticmergeC ve Htree eşitliğiyle AC45 bağı ölçüldü. Phase1 ilkFAIL korundu; tekaynıkaynakattempt2 tenancy3/mimari231/Web4585,0hata/0skip. Retry kökneden düzeltmesi değildir.
+- **Test:** H82 JS5565/3FAIL (PVG39geçti):4helpcode ve triage/route etiketleri; UIselector FrenchliteralaynılığıFAIL. Rev22 yalnız bunların onaylı27yol düzeltmesidir. Her yeniH sonCI/AC45 bağını yenileyecek.
+- **Arka uç:** BE/L10N/FE/hazırlıklar CT entegre; parentDL12 IN_PROGRESS.6tarihîACCEPTED korunur, yeniACCEPTED yok. CT ürün yazmaz.
+- **Ekran:**23ortakdosya teksharedwriter,4PVGview ayrıwriter; normalkapılardan sonra paralel. Yönetimcommitleri16ada4be/4b1c7197; ürün ilerleme kod0 · belge2commit. Bağımsız exactcommitE2 ve birleşik7dil gerçekrender bekleniyor.
+- **Karar:** Mevcut PR460 OPEN DRAFT; eski “PRaçılmadı” satırları tarihîdir. YeniSHA push ayrıfinalizin, mainmerge farklıHIGHinsan, operasyon/E4 kapalı. Worktree arşivi main erişilebilirliğinden sonra.
 
 ## Teslim dilimleri
 
@@ -22,7 +23,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-4 | API ve kimlik/kiracı | 1 ACCEPTED, 3 INTEGRATED |
 | DL-5 | Denetim kaydı | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-6 | İzin anahtarları | 1 INTEGRATED |
-| DL-7 | Kiracı ekranı | 3 INTEGRATED, 1 REWORK |
+| DL-7 | Kiracı ekranı | 3 INTEGRATED, 1 REWORK, rev22 2 PLANNED (ortak iş DL-6/DL-11 eki de taşır) |
 | DL-8 | Gateway rotaları | 1 ACCEPTED |
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
@@ -33,9 +34,14 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:17, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1. Toplam **42** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:17, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1, `PLANNED`:2. Toplam **44** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
+
+- [ ] **Ekran: yedi dil yardım/başlık/izin etiketleri ve Frenchnav** — `WP-0230-DL7-CI-SHARED-01` · `PLANNED`; rev22 tam23sharedyol, tekwriter. Kaynak: pvg-rev22-dispatch-01/STATE-JOURNAL.md.
+- [ ] **Ekran: dört PVG sayfasının gerçek PageCode kimliği** — `WP-0230-DL7-CI-VIEWS-01` · `PLANNED`; yalnız4atama. Kaynak: aynıgünlük.
+
+Aşağıdaki eski H51/önceki prompt ölçümleri tarihî E2 kayıtlarıdır; bugünün CI/PR durumu üstteki Güncelodak satırlarıdır. Yeni sonuçlar geçmişhamkanıtın üzerine yazılmaz.
 
 - [ ] **Arka uç: Edit sırasında kayıt verisini eksiksiz koruma** — `WP-0230-DL12` · `IN_PROGRESS`
   - Kapsam/kuyruk kaydı: Üç hazırlık entegre. Önceki normal1 korunur; canonical discovery-02 ve güncel DoR ile READY. Kesin v1.1 normal0; BE/L10N CT’de; FE kesin aday fbcb3353 bağımsız teknik E2 UYGUN sonrası CT merge3881b13b ile INTEGRATED. Parent IN_PROGRESS. H51 genel Web4584/1, mimari230/1,0skip; iki FAIL açık. Paket/kuyruk kapısı0, kesinPRkaynağı CI/ikinci insan mainmerge ve operasyonel kabul bekleniyor.

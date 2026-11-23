@@ -1,0 +1,47 @@
+{
+  "kind": "Actual final-H service CI source/TRX binding; not overall PR acceptance",
+  "recorded_utc": "2026-11-23T09:01:21.597268+00:00",
+  "pr": 460,
+  "H": "82bc773938baa6689f0089b89c765b60f4411932",
+  "B": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "C": "d4aff06421eaf9e3a64f8d462b671cee40c1f88e",
+  "real_commit_object": "tree 2b1bf19163ba07c304dd214ef22d91ab03bb20a3\nparent 58eb6fa901683296a0049a06910dc4b12e970950\nparent 82bc773938baa6689f0089b89c765b60f4411932\nauthor ElikPenco <e.penciyev@grandmedical.eu> 1795423678 +0400\ncommitter GitHub <noreply@github.com> 1795423678 +0400\ngpgsig -----BEGIN PGP SIGNATURE-----\n \n wsFcBAABCAAQBQJrA/2+CRC1aQ7uu5UhlAAALCQQAKdDlUXBymlD5hylsq2MIVsR\n DMxtYG9lSVu6axYsGuCFV+wk0dRtaATnZhbHAQIZOgy5wtFfCSsxjuocJKK8Edup\n IvAVjNyP7DYVo++F96KWBeAd71RAV4AS5UBjZOayo0k1oC3bcX2I3ncrWK4AcAB2\n KqRtEC73TGMWLf01vNruWKGAAG/RozbB+LYFm4ixIwCoBxexeUuoWOMJwwGtabjb\n s12hVcaQZw+7xpsOFYiz7NXdvKBEDuxUudOni3R9elia6+K2lF7NW7F0XFB9cxoR\n 7swA810ATul5Mn/SxtxNozCsrk0mZchwzQNJkg1xhJ7wKfWvIwDQkpjzSZX0/PRp\n SDTK5RCwvlUTlt/4mhsCmzkCp1ICCZDHU98RDsQhzp0KLuYL8seOfFqZrRRKMgm2\n yZLh/hmBpbJHD+yyFKLNrDNh2d0FUApU/1N0a1wl8sQIlKmSyJBLgXC+tLJ0ZzOM\n pXLx7iAXWM1CiMEsJiKAIlOjihBAEMthf8vj8gNYaZ+ga3NrOJg8nIB7feJPDZpr\n ZkQzb+bk5SxK/xik/ZS+dHwn2sZsJsUkX3uDC1TnSWdo4b+lQjFWEI9fvphInNEX\n TzTTU1+h3m8A3z4nJ5p1pXESZf+HkUgfvIswNQ+3xT0en/2aBYab5cUtW/y/k94t\n zRz7yQ5VV/Cn5dt2etsA\n =ojEs\n -----END PGP SIGNATURE-----\n \n\nMerge 82bc773938baa6689f0089b89c765b60f4411932 into 58eb6fa901683296a0049a06910dc4b12e970950\n",
+  "parents": [
+    "58eb6fa901683296a0049a06910dc4b12e970950",
+    "82bc773938baa6689f0089b89c765b60f4411932"
+  ],
+  "tree_C": "2b1bf19163ba07c304dd214ef22d91ab03bb20a3",
+  "tree_H": "2b1bf19163ba07c304dd214ef22d91ab03bb20a3",
+  "direct_H_parent": true,
+  "tree_equal": true,
+  "workflow_run": 45141577983,
+  "run_attempt": 1,
+  "event": "pull_request",
+  "pvg_api_runner_image": "ubuntu-22.04",
+  "same_job_passed_TRXs": [
+    {
+      "suite": "pvg-api",
+      "actual_checkout_commit_from_log": "d4aff06421eaf9e3a64f8d462b671cee40c1f88e",
+      "outcomes": {
+        "Passed": 456
+      },
+      "TRX_raw_sha256": "f417dc9dc9ae3bd845653d167a3337d6ff039bfdc44933da61fc54304edb16df",
+      "artifact_id": 14801977715,
+      "artifact_api_digest": "sha256:bba762942b6ac8e4c1c9e7f18bf12b831b926a1d04d6c971a53e591bfdcb4e4f",
+      "log_raw_sha256": "adf89641a01e9ee407a83c7b6253b60c5ddcabf3ccd55ca0d7628688d7f71cf4"
+    },
+    {
+      "suite": "pvg-regpv-base",
+      "actual_checkout_commit_from_log": "d4aff06421eaf9e3a64f8d462b671cee40c1f88e",
+      "outcomes": {
+        "Passed": 211
+      },
+      "TRX_raw_sha256": "e54a13d3b373390bd3954aafcbfccd4ebf27f0c9893ca9b594f965238dfb909f",
+      "artifact_id": 14801728745,
+      "artifact_api_digest": "sha256:4353ef4da60f738caf354d32eb1528064ae188609f86f46fe741f6884b8edcb4",
+      "log_raw_sha256": "fb843bb495f9c8a64fef0b6a09466be5029a04504953e99320fb6e125dcbf92a"
+    }
+  ],
+  "new_H_invalidates_this_result": true,
+  "remaining": "UI/JS failures and Phase1/general service jobs still pending; no DONE/main merge"
+}
