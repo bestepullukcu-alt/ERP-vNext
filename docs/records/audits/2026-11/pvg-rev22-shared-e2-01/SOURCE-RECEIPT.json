@@ -1,0 +1,23 @@
+{
+  "candidate": "ba132012ef03c1b9c55c754c2b3e2406727106c0",
+  "tree": "e4d497bcaeaf3642ef82bcca77a2c34466dfcdf3",
+  "parent": "b0dcca109997320e55659d7f41c489396338e15c",
+  "external_root": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\sE2-1795437404367",
+  "review_sha256": "eb93ed118b0056dd7b9e32476a846943024d93443e7c38f450c8b9dd56b17329",
+  "manifest_sha256": "5807bba94709babd42255b60d4632394f4ba8d3b90f0d0080f561703f2815257",
+  "zip_sha256": "a8124d5b603ddd6435cf78e5b807c2b87a82e7634e0ef40d5a59974608e21277",
+  "source_scope_count": 23,
+  "verdict": "KOŞULLU UYGUN only partial/local integration",
+  "critical": 0,
+  "blocking_in_source_scope": 0,
+  "fresh_targeted_JS_pass": 302,
+  "fresh_targeted_JS_fail": 0,
+  "fresh_targeted_JS_skip": 0,
+  "fresh_actual_Role_culture": 7,
+  "fresh_actual_labels": 14,
+  "fresh_independent_single_mutant_pairs": 4,
+  "native_full_JS_exit": 1,
+  "native_full_JS_failures": 13,
+  "global_resx_checker_exit": 1,
+  "combined_INT_finalCI_AC45_pending": true
+}
