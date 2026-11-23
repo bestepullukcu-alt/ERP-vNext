@@ -6,11 +6,11 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 ## Güncel odak
 
-- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Final8d44e327/domain0aa1706e formal HIGH incelemede. İki yeni WP PLANNED; prompt/gerçekdispatch beklenir.
+- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH satır/check0 hazırlanıyor. İki yeni WP PLANNED; prompt/gerçekdispatch beklenir.
 - **Test:** H82 gerçek service-tests API456/Reg211,0hata/0skip; aynıiş fullTRX/gerçeksyntheticmergeC ve Htree eşitliğiyle AC45 bağı ölçüldü. Phase1 ilkFAIL korundu; tekaynıkaynakattempt2 tenancy3/mimari231/Web4585,0hata/0skip. Retry kökneden düzeltmesi değildir.
 - **Test:** H82 JS5565/3FAIL (PVG39geçti):4helpcode ve triage/route etiketleri; UIselector FrenchliteralaynılığıFAIL. Rev22 yalnız bunların onaylı27yol düzeltmesidir. Her yeniH sonCI/AC45 bağını yenileyecek.
 - **Arka uç:** BE/L10N/FE/hazırlıklar CT entegre; parentDL12 IN_PROGRESS.6tarihîACCEPTED korunur, yeniACCEPTED yok. CT ürün yazmaz.
-- **Ekran:**23ortakdosya teksharedwriter,4PVGview ayrıwriter; normalkapılardan sonra paralel. Yönetimcommitleri16ada4be/4b1c7197; ürün ilerleme kod0 · belge2commit. Bağımsız exactcommitE2 ve birleşik7dil gerçekrender bekleniyor.
+- **Ekran:**23ortakdosya teksharedwriter,4PVGview ayrıwriter; normalkapılardan sonra paralel. Ürün ilerleme kod0 · belge3resmî rapor (ilk koşullu ve iki son UYGUN); ham geçmiş korunur. Bağımsız exactcommitE2 ve birleşik7dil gerçekrender bekleniyor.
 - **Karar:** Mevcut PR460 OPEN DRAFT; eski “PRaçılmadı” satırları tarihîdir. YeniSHA push ayrıfinalizin, mainmerge farklıHIGHinsan, operasyon/E4 kapalı. Worktree arşivi main erişilebilirliğinden sonra.
 
 ## Teslim dilimleri
