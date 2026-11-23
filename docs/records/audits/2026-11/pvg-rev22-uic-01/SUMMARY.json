@@ -1,0 +1,42 @@
+{
+  "kind": "Real unchanged selector before1/after0 in canonical LF source checkouts; baseline debts not waived; not runtime or finalHCI",
+  "runs": [
+    {
+      "name": "H82-BEFORE",
+      "exit": 1,
+      "line_prefix_counts": {
+        "PASS": 64,
+        "TABAN": 388,
+        "kapandı": 2,
+        "YENİ": 1,
+        "başvuru": 1,
+        "okunan": 1,
+        "süre:": 1
+      },
+      "notable": [
+        "başvuru taraması yok",
+        "okunan görünüm metni: HEAD 8, taban 8",
+        "süre: 2.4 s"
+      ]
+    },
+    {
+      "name": "H636-AFTER",
+      "exit": 0,
+      "line_prefix_counts": {
+        "PASS": 624,
+        "TABAN": 388,
+        "kapandı": 2,
+        "başvuru": 1,
+        "okunan": 1,
+        "süre:": 1
+      },
+      "notable": [
+        "başvuru taraması yok",
+        "okunan görünüm metni: HEAD 10, taban 10",
+        "süre: 5.6 s"
+      ]
+    }
+  ],
+  "after_source": "6361654b6df9334803c3651231c754fe1d0685ad",
+  "base": "58eb6fa901683296a0049a06910dc4b12e970950"
+}

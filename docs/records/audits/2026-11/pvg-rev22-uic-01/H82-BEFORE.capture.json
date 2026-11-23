@@ -1,0 +1,33 @@
+{
+  "kind": "Fresh private LF clone / actual unchanged UI selector PRE-FIX observation; not candidate/final-H pass",
+  "clone_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-uic-nu1li15d",
+  "clone_created_by": [
+    "git",
+    "clone",
+    "--no-checkout",
+    "--shared",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-uic-nu1li15d"
+  ],
+  "core_autocrlf_before_checkout": "false",
+  "H": "82bc773938baa6689f0089b89c765b60f4411932",
+  "base": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "tree": "2b1bf19163ba07c304dd214ef22d91ab03bb20a3",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/uic_changed_pages.py",
+    "--base",
+    "58eb6fa901683296a0049a06910dc4b12e970950"
+  ],
+  "started_utc": "2026-11-23T10:30:26.422537+00:00",
+  "completed_utc": "2026-11-23T10:30:29.178738+00:00",
+  "exit_code": 1,
+  "stdout_sha256": "b2ecd7919d739a47b0b8efb65de68d592972714b2c611669847910a8a2d64664",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "selector_sha256": "7a93e3cdf032d01553b777a6e67a69fa7cf664dfcd27dde22d88237b0816d4c2",
+  "clone_status_after": "",
+  "original_head_before": "b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf",
+  "original_head_after": "b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf",
+  "original_index_or_product_not_written": true
+}
