@@ -17,6 +17,7 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
         <!-- WP-0176-F5 Kanıt Paketi PDF: PDFsharp-MigraDoc 6.1.1 (MIT, CT-R14) — the version CrmService / Platform already ship. -->
         <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
+        <PackageReference Include="ZXing.Net" Version="0.16.11" />
     </ItemGroup>
 
     <ItemGroup>

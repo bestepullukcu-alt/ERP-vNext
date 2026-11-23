@@ -18,7 +18,7 @@ status: ready-for-dev
 approval_status: pending
 risk: HIGH
 risk_reason: "Stok değişmezi (açık tutma kaydı miktarı ≤ kova bakiyesi) + GxP kaydı denetimi (AUD-001 K2) + sözleşme (QUARANTINE 1.4.0; DL-3'te INVENTORY 1.8.0 ek hata kodu) + ürün kodu yolu + üç XMC-001 (MOD-0173 defter, MOD-0173 / BL-501 denetim kapsamı bağdaştırıcısı, MOD-0173-FU01 ekran metni — DL-3 Web)"
-status_note: "ready-for-dev r5 (2026-11-03) — sahip «onayla» (Beste, 2026-11-03). Onay satırı S-49 gereği `draft` künyeye yazılamadığı için künye `ready-for-dev`, `approval_status: pending`: CT-APR-01 onay satırını CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar; satır yazılmadan kod yazılmaz. DL-3 Web XMC-001 izni verildi (Beste 2026-11-03, `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`; kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` ekran metni). r4 (`962fda71`) inceleme 01 tur 3 (UYGUN, 2 DÜŞÜK) ve son bakış 01 (UYGUN, 5 DÜŞÜK) bulguları tek geçişte pakete işlendi (S-101; CT kararı MVP-1 CT 2026-11-03, hepsi kabul) — §19.8. Önceki: draft r4 (2026-11-03) — bağımsız inceleme 01 tur 2 (r3 `54d736e1`, KOŞULLU, 0 ENGEL / 1 ORTA / 4 DÜŞÜK) bulguları F-1…F-5 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.7; r4'te DL-3 Web XMC-001 izni henüz verilmemişti (r5'te verildi). Önceki: draft r3 (2026-11-03) — bağımsız inceleme 01 tur 1 (r2 `ae3fed7d`, UYGUN DEĞİL, 2 ENGEL / 3 ORTA / 8 DÜŞÜK) bulguları F-1…F-13 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.6. Kod yazılmaz: r3'ün kendi CT-APR-02 incelemesi ve CT-APR-01 onay satırı gerekir. Önceki: draft r2 (2026-11-03) — sahip kararları Q-01…Q-06, Q-08, Q-09 (Beste, 2026-11-03, \"hepsi öneri gibi\") ve CT kararları Q-07 (QUARANTINE 1.4.0; INVENTORY 1.8.0, FU03 1.7.0'dan sonra), Q-11 (registry satırını CT ekler) işlendi; iki XMC-001 izni (InventoryCentralAuditScope.cs; MOD-0173 defter bekçisi dikişi) yazıldı — §19.5. Açık kalan: Q-10 (MVP-6 CT Natig; DL-3 kabul kapısı, ready-for-dev önkoşulu değil), registry satırı (CT), plan satırı. Kod yazılmaz: CT-APR-02 bağımsız inceleme (r2'nin kendi incelemesi) ve CT-APR-01 onay satırı gerekir; ready-for-dev'i inceleme sonrası CT yapar. r1 (2026-11-02): MVP-6 yerel turu F-2 (KRN-2026-0001) ve MVP-1 turu 2026-11-02 (KRN-2026-0004) bulgusu — kaynak hareketin REVERSAL'ı tutma kaydını kapatmıyor, kayıt sıkışıyor."
+status_note: "ready-for-dev r6 (2026-11-11) — yeniden onay sürümü; kapsam, kabul ölçütleri ve tasarım r5 (sha256 `e070d6b6…5380`, sahip onaylı 2026-11-03) ile aynı. EES 2.14 (PR #403, main'e 2026-11-11, `290134f8f`) altında r5'in inceleme satırları başlangıç noktası öncesi yalnız sıra değiştiren merge'e (`7bd1d0bae`) bağlandığı için sayılmıyor (Ali, PR #402 mesajı 2026-11-10) → r6 yeni bağımsız inceleme (CT-APR-02) ve yeni onay satırı (CT-APR-01; onaylayıcı Ali) bekliyor: `approval_status: pending` = yeni sürüm onay bekliyor. Teslim durumu §19.9: DL-1 (CT VERIFIED 2026-11-04) ve DL-2 + E3 smoke (CT VERIFIED 2026-11-05) main'de (PR #397, `7e8aa77d8`); DL-3 başlamadı, kabul kapısı Q-10 açık (Natig; 2026-11-10 yeniden soruldu, 2026-11-11 itibarıyla yanıt yok). Önceki: ready-for-dev r5 (2026-11-03) — sahip «onayla» (Beste, 2026-11-03). Onay satırı S-49 gereği `draft` künyeye yazılamadığı için künye `ready-for-dev`, `approval_status: pending`: CT-APR-01 onay satırını CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar; satır yazılmadan kod yazılmaz. DL-3 Web XMC-001 izni verildi (Beste 2026-11-03, `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `705a9cd03`; kapsam yalnız `REVERSAL_QUALITY_RECORD_LOCKED` ekran metni). r4 (`962fda71`) inceleme 01 tur 3 (UYGUN, 2 DÜŞÜK) ve son bakış 01 (UYGUN, 5 DÜŞÜK) bulguları tek geçişte pakete işlendi (S-101; CT kararı MVP-1 CT 2026-11-03, hepsi kabul) — §19.8. Önceki: draft r4 (2026-11-03) — bağımsız inceleme 01 tur 2 (r3 `54d736e1`, KOŞULLU, 0 ENGEL / 1 ORTA / 4 DÜŞÜK) bulguları F-1…F-5 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.7; r4'te DL-3 Web XMC-001 izni henüz verilmemişti (r5'te verildi). Önceki: draft r3 (2026-11-03) — bağımsız inceleme 01 tur 1 (r2 `ae3fed7d`, UYGUN DEĞİL, 2 ENGEL / 3 ORTA / 8 DÜŞÜK) bulguları F-1…F-13 tek geçişte kapatıldı, CT kararı MVP-1 CT 2026-11-03 (hepsi kabul) — §19.6. Kod yazılmaz: r3'ün kendi CT-APR-02 incelemesi ve CT-APR-01 onay satırı gerekir. Önceki: draft r2 (2026-11-03) — sahip kararları Q-01…Q-06, Q-08, Q-09 (Beste, 2026-11-03, \"hepsi öneri gibi\") ve CT kararları Q-07 (QUARANTINE 1.4.0; INVENTORY 1.8.0, FU03 1.7.0'dan sonra), Q-11 (registry satırını CT ekler) işlendi; iki XMC-001 izni (InventoryCentralAuditScope.cs; MOD-0173 defter bekçisi dikişi) yazıldı — §19.5. Açık kalan: Q-10 (MVP-6 CT Natig; DL-3 kabul kapısı, ready-for-dev önkoşulu değil), registry satırı (CT), plan satırı. Kod yazılmaz: CT-APR-02 bağımsız inceleme (r2'nin kendi incelemesi) ve CT-APR-01 onay satırı gerekir; ready-for-dev'i inceleme sonrası CT yapar. r1 (2026-11-02): MVP-6 yerel turu F-2 (KRN-2026-0001) ve MVP-1 turu 2026-11-02 (KRN-2026-0004) bulgusu — kaynak hareketin REVERSAL'ı tutma kaydını kapatmıyor, kayıt sıkışıyor."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-02
@@ -70,6 +70,15 @@ dependencies: [MOD-0175, MOD-0173, MOD-0174, QUARANTINE-BUNDLE-v1.3.0, INVENTORY
 > (2) lot adımı uygulanmış satırsız karar kapanışla `Voided` olur **ve** `Cause = LotChanged` işareti + log alır (§8.3 R5a); lot adımının dar
 > penceresi kabul edilen sınır, adı ve logu var (§8.6); (3) detay ucunun hareket listesi REVERSAL satırını sunucuda verir (DL-1, §5).
 > Yeni ölçütler AC-40, AC-41 (DL-1); AC-2, AC-5, AC-13, AC-23, AC-27, AC-28, AC-29, AC-33 düzeldi / genişledi. Kapanış tablosu §19.8.
+>
+> **r6 (2026-11-11) — yeniden onay sürümü; kapsam, AC ve tasarım değişmez.** EES 2.14 (PR #403, `scripts/pack_approval.py`
+> `HISTORY_BASELINE` / `BASELINE_REORDERS`; main'e 2026-11-11, `290134f8f`) altında r5'in inceleme satırları başlangıç noktası öncesi yalnız
+> sıra değiştiren merge'e (`7bd1d0bae`, 2026-11-06) bağlanır ve sayılmaz; kaynak: Ali'nin PR #402'deki mesajı (2026-11-10). Ölçüm
+> (`python3 -X utf8 scripts/pack_approval.py check <bu paket>` @ `58f7c489f`, 2026-11-11, r5): «ENGEL: inceleme satır 309: … `7bd1d0bae308`
+> … sıra değiştiren bir merge» · «sonuç: onay geçersiz». Bu yüzden yeni sürüm, yeni bağımsız inceleme (CT-APR-02) ve yeni onay satırı
+> (CT-APR-01, onaylayıcı Ali) gerekir; `approval_status: pending` = yeni sürüm onay bekliyor. r6'da değişenler yalnız künye notu, bu paragraf,
+> §18 onay maddeleri, §19.4 Q-10 durumu, §19.5 açık kalanlar, yeni §19.9 (teslim durumu, kaynaklı) ve §22'deki tek atıf satırıdır; §1–§17,
+> §20, §21, §23 ve dilim tablosu r5 ile aynıdır.
 >
 > **Yetki:** bu paket > `execution/domains/supply-chain-execution/domain-config.md` > `AGENTS.md` > `.antigravity/`. Ebeveyn
 > `MOD-0175-quarantine-blocked-stock.md` (`ready-for-dev`) **tabanıdır**; bu paket onun §8 "Hold states" kuralını ("A hold is never deleted";
@@ -867,9 +876,11 @@ temsili; AC-16 (a)'daki doğrudan yazılmış kayıt emsali). Bekçi hiçbir tes
 - [x] Registry satırı `MOD-0175-FU01` — CT ekledi (Q-11; `execution/registries/module-id-registry.md` satır 307, durum `draft` — ölçüldü 2026-11-03 `8b5205226`); bu paket kayıt dosyasına yazmaz
 - Not: Q-10 (MVP-6 CT, Natig — DL-3'ün MOD-0186 etkisi) **ready-for-dev önkoşulu değildir**; DL-3 kabul kapısıdır (§8.8, §22)
 - Not: plan satırı bu pakete verilmedi (plan dosyası depoda değil) → §22'de `plan kimliği yok` / `plan satırı yok` (module-pack-standard §16 "Plan hizalaması"; değer uydurulmaz); **ready-for-dev önkoşulu değildir**, plan sahibinden gelince yazılır
-- [x] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — r4 (`962fda71`): inceleme 01 tur 3 UYGUN (0 ENGEL, 2 DÜŞÜK) ve son bakış 01 (S-116) UYGUN (0 ENGEL, 5 DÜŞÜK), `execution/approvals/reviews.tsv` satır 228-229; yedi düşük bulgu r5'te kapandı (§19.8). Önceki turlar §19.6, §19.7
-- [x] `status: ready-for-dev` (r5; sahip «onayla», Beste 2026-11-03)
-- [ ] CT-APR-01 onay satırı (risk HIGH) — CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar (S-49: `draft` künyeye yazılamazdı); satır yazılana kadar `approval_status: pending` ve kod yazılmaz
+- [x] ~~CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — r4 (`962fda71`): inceleme 01 tur 3 UYGUN (0 ENGEL, 2 DÜŞÜK) ve son bakış 01 (S-116) UYGUN (0 ENGEL, 5 DÜŞÜK), `execution/approvals/reviews.tsv` satır 228-229; yedi düşük bulgu r5'te kapandı (§19.8). Önceki turlar §19.6, §19.7~~ — r5 geçmişi; r5 için ayrıca son bakış 02 UYGUN (0 ENGEL, 3 DÜŞÜK → geliştirme talimatına, CT 2026-11-03; `docs/records/reviews/MOD-0175-FU01/2026-11-03-e070d6b6-son-bakis-02.md`, `ce2495671`). EES 2.14 altında r5 inceleme satırları sayılmaz (§19.9). Satır numaraları `8b5205226`'daki ölçümdür; `58f7c489f`'de aynı satırlar 307-308 (r4) ve 309 (r5; yeniden satır 326, `1fbfdd4e6`)
+- [x] `status: ready-for-dev` (r5; sahip «onayla», Beste 2026-11-03; r6'da değişmez)
+- [x] ~~CT-APR-01 onay satırı (risk HIGH) — CT, r5'in sha256'sıyla `execution/approvals/approvals.tsv`'ye yazar~~ — **yazıldı** (r5: satır 65, `79a6fa096`; yeniden satır 70, `1fbfdd4e6`, PR #402), ama EES 2.14 altında geçersiz (§19.9 ölçüm)
+- [ ] CT-APR-02 bağımsız inceleme — **r6'nın kendi** incelemesi (yazandan ayrı oturum; risk HIGH → S-116 son bakış kuralı CT'nin)
+- [ ] CT-APR-01 onay satırı (risk HIGH) — r6'nın sha256'sıyla, onaylayıcı Ali; satır yazılana ve `scripts/pack_approval.py check` onaylı diyene kadar `approval_status: pending` ve **yeni kod (DL-3) yazılmaz**
 
 ## 19. Implementation Notes
 
@@ -979,7 +990,7 @@ gönderim, başlatma hatası kolu, kilit), `QuarantineApplyEngine.cs:55-145, 555
 | Q-07 | Sürümler | **KAPANDI (CT):** QUARANTINE **1.4.0** tek adım (DL-1); INVENTORY ek kodu FU03'ün 1.7.0'ından sonraki ek sürüm **1.8.0** (DL-3); FU03 onaylı (`execution/approvals/approvals.tsv`, `c03ac5511`) | MVP-1 CT (2026-11-03) | §19.5 |
 | Q-08 | Kuyruk varsayılanı: `Voided` satırlar görünür mü? | **KAPANDI — A:** görünür, sona sıralı, KPI'ya girmez; varsayılan liste değişmez. (B — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
 | Q-09 | Geç intake | **KAPANDI — A:** kaynağı geri alınmış hareket için kayıt açılmaz (§8.4). (B — seçilmedi) | Beste (sahip kararı 2026-11-03) | §19.5 |
-| Q-10 | MVP-6 etkisi | **AÇIK.** (1) Bilgi: MOD-0186 tur satırı R1-a'nın beklenen sonucu "hold `Open`" → "hold `Voided`" olur (DL-1; MVP-6'nın tur kaydı, bu paketin kapısı değil). (2) Karar: DL-3'te MOD-0186 geç yazanının, kaydı karar verilmiş iadenin REVERSAL'ı 422 `REVERSAL_QUALITY_RECORD_LOCKED` alır → mevcut `ReversalFailed:<kod>` yolu (`ReturnLateWriterPolicy.cs:43`) — kabul mü? MOD-0183'ün REVERSAL'ları (`GOODS_ISSUE_SALES` telafisi) etkilenmez. **DL-3 kabul kapısı; ready-for-dev önkoşulu değil** (§8.8, §22) | Natig (MVP-6 CT) — soruldu | **TBD** — DL-3 kabulünden önce |
+| Q-10 | MVP-6 etkisi | **AÇIK.** (1) Bilgi: MOD-0186 tur satırı R1-a'nın beklenen sonucu "hold `Open`" → "hold `Voided`" olur (DL-1; MVP-6'nın tur kaydı, bu paketin kapısı değil). (2) Karar: DL-3'te MOD-0186 geç yazanının, kaydı karar verilmiş iadenin REVERSAL'ı 422 `REVERSAL_QUALITY_RECORD_LOCKED` alır → mevcut `ReversalFailed:<kod>` yolu (`ReturnLateWriterPolicy.cs:43`) — kabul mü? MOD-0183'ün REVERSAL'ları (`GOODS_ISSUE_SALES` telafisi) etkilenmez. **DL-3 kabul kapısı; ready-for-dev önkoşulu değil** (§8.8, §22) | Natig (MVP-6 CT) — soruldu; 2026-11-10 yeniden gönderildi; **2026-11-11 itibarıyla yanıt yok** (r6; kaynak: MVP-1 CT bildirimi, depoda yazılı yanıt kaydı yok — §19.9) | **TBD** — DL-3 kabulünden önce |
 | Q-11 | Registry satırı `MOD-0175-FU01` | **KAPANDI (CT):** CT ekler; bu paket kayıt dosyasına yazmaz (MOD-0173-FU03 CT-01 emsali) | MVP-1 CT (2026-11-03) | satır onaydan önce |
 
 Ayrıca bilgi (F-6@ae3fed7d): MOD-0142 `reverseGrn` (Procurement) bugün Inventory'ye ulaşmıyor (G-18) → **DL-3 etkisi yok**; gerçek istemci bağlandığında REVERSAL zarfı da `MOD-0173` / `REVERSAL`'a uymalıdır. Sahibine bilgi notu CT'den (karar değil).
@@ -1007,7 +1018,8 @@ izninin kapsamıyla yazılması (§5), INVENTORY sürüm numarası (1.8.0), Q-03
 | Onay (r5) | «onayla» — künye `ready-for-dev`; CT-APR-01 satırı CT tarafından r5 sha256'sıyla (S-49) | Beste (sahip) | künye, §18 |
 
 **Açık kalanlar:** Q-10 (MVP-6 CT Natig — DL-3'ün MOD-0186 etkisi; DL-3 kabul kapısı, ready-for-dev önkoşulu değil); plan satırı (yetenek
-kimliği, plan MVP — plan sahibinden; değer uydurulmadı, ready-for-dev önkoşulu değil, §22); CT-APR-01 onay satırı (CT, r5 sha256'sı). Registry
+kimliği, plan MVP — plan sahibinden; değer uydurulmadı, ready-for-dev önkoşulu değil, §22); ~~CT-APR-01 onay satırı (CT, r5 sha256'sı)~~ —
+r5 satırı yazıldı (`79a6fa096`), EES 2.14 altında geçersiz; r6 için yeni inceleme ve onay satırı (onaylayıcı Ali) açık (r6, §18, §19.9). Registry
 satırı CT tarafından eklendi (satır 307, Q-11 kapandı); DL-3 Web XMC-001 izni verildi (r5).
 
 ### 19.6 Bağımsız inceleme 01 — kapanış tablosu (tur 1 → r3)
@@ -1116,6 +1128,53 @@ ayrı yazar olarak sayıldı ve kalan penceresi adlandırıldı; "tamamlandı i�
 durum × komut — §8.3 R0a–R13 + R5a, §8.9 yeni satırlar. §4 araç biçimi — ölçütler liste satırı, hücre içi `|` yok. §5 dış sistem — geri çekmede
 Workflow görevi iptal edilmiş olabilir; kayıt yine son yeniden okunan duruma göre yazılır (W7), iptal çağıranın isteğidir.
 
+### 19.9 Teslim durumu ve yeniden onay (r6, 2026-11-11)
+
+Salt okuma ile ölçüldü: çalışma ağacı `58f7c489f` (PR #402 dalı, main ile eşit), MVP-1 hattı etiketi `ct/line-ff-2026-11-10f` (`96dafb449`),
+dal `feature/sce/mod-0173-inventory-ledger-valuation`. Bu bölüm kayıtları özetler; kabul kayıtlarının yerine geçmez.
+
+**Yeniden onay.** EES 2.14 (Ali; PR #403 main'e 2026-11-11, `290134f8f`; kod `scripts/pack_approval.py` `HISTORY_BASELINE = 7e8aa77d87…`,
+`BASELINE_REORDERS` içinde `7bd1d0bae`): başlangıç noktası öncesindeki yedi sıra değiştiren merge'e bağlanan satırın insan adımı ölçülemez.
+r5'in son bakış 02 satırı (`reviews.tsv` 309) git'e göre `7bd1d0bae`'ye bağlı; yeniden satırı (326, `1fbfdd4e6`, PR #402) henüz main'de değil.
+`pack_approval.py check` (r5, `58f7c489f`): «sonuç: onay geçersiz». Kaynak karar: Ali'nin PR #402'deki mesajı (2026-11-10) — r5 satırları
+sayılmaz, yeni sürüm + yeni bağımsız inceleme + yeni onay (onaylayıcı Ali). r6 kapsamı, AC'leri ve tasarımı değiştirmez; DL-1 ve DL-2 r5'e göre
+yazıldı ve kabul edildi, r6 onlar için yeni iş açmaz.
+
+| Dilim | Durum | Kayıt | Kod / main |
+|---|---|---|---|
+| DL-1 | **CT VERIFIED** 2026-11-04 (paket r5 `e070d6b6`); tam Inventory 1715 / 1719, 0 kırmızı; CT sabotajı kırmızı | `docs/records/audits/2026-11/mod-0175-fu01-dl1-ct-acceptance-2026-11-04.md` (`e9bb3fa80`) | `47762de1f`; main'de PR #397 merge'üyle (`7e8aa77d8`, 2026-11-09) |
+| DL-2 | **CT VERIFIED** 2026-11-05; tam Inventory 1755 / 1759, Web 4 kırmızı (Planning, tabanla aynı); **E3 smoke geçti** 2026-11-05 (DL-1 + DL-2 birlikte, KRN-2026-0005, tr / en / ar) | `docs/records/audits/2026-11/mod-0175-fu01-dl2-ct-acceptance-2026-11-05.md` (`7ae2141b9`; smoke `412bee478`, görüntüler `docs/records/audits/2026-11/mod-0175-fu01-e3-smoke/`) | `e768b9b55`; main'de PR #397 (`7e8aa77d8`) |
+| DL-3 | **başlamadı** — iki kabul kaydı da «DL-3 … başlamadı» diyor; `ct/line-ff-2026-11-10f` ve çalışma dalında DL-3 commit'i yok, `services/` / `frontend/`'de `REVERSAL_QUALITY_RECORD_LOCKED` yok | — | — |
+
+CT kuyruğu: `execution/**/CT-QUEUE.tsv` dosyalarının hiçbirinde (`58f7c489f` ve `ct/line-ff-2026-11-10f`) MOD-0175-FU01 satırı yok; dilim
+kabulleri yalnız yukarıdaki kayıtlarda.
+
+**Kayıtlara göre kapanan maddeler:**
+- DL-1 + DL-2 açılış kapısı (§22 F-9, §17 E3 smoke) — karşılandı (DL-2 kaydı, E3 smoke 2026-11-05).
+- DL-3 sözleşme kapısı (1) (§8.8, §22; Q-07): FU03'ün INVENTORY 1.7.0'ı dalda — `docs/analysis/contracts/inventory-bundle.openapi.yaml:9-10`
+  `version: 1.7.0`, `x-status: FROZEN` (`58f7c489f`); FU03 DL-2 CT kaydı `docs/records/audits/2026-11/mod-0173-fu03-dl2-ct-acceptance-2026-11-04.md`
+  (`123c4e803`). 1.8.0 adımı DL-3'te yazılabilir.
+- r5 CT-APR-01 onay satırı — yazıldı (`approvals.tsv` satır 65, `79a6fa096`; yeniden satır 70, `1fbfdd4e6`); EES 2.14 altında geçersiz (yukarıda).
+- DL-1 kaydının açık maddesi (MOD-0178'in iki açık-yüklem yeri) — XMC-001 izni (Beste 2026-11-04,
+  `docs/records/decisions/2026-11/mod0175-fu01-owner-decisions-01.md`, `ad6391cea`) ile DL-2'de düzeltildi (`e768b9b55`; DL-2 kaydı, CT sabotajı kırmızı).
+
+**Açık kalanlar (r6):**
+- CT-APR-02 r6 bağımsız inceleme ve CT-APR-01 r6 onay satırı (onaylayıcı Ali) — §18.
+- **Q-10** (Natig, MVP-6 CT): MOD-0186 geç yazanının 422 `REVERSAL_QUALITY_RECORD_LOCKED` alması kabul mü — soruldu, 2026-11-10 yeniden
+  gönderildi, **2026-11-11 itibarıyla yanıt yok** (kaynak: MVP-1 CT bildirimi; depoda yazılı yanıt kaydı yok). DL-3 kabul kapısı, ready-for-dev
+  önkoşulu değil (§8.8, §22).
+- DL-1 / DL-2 kabul kayıtlarındaki «ACCEPTED, kod main'e girdiğinde yazılır (SOP §7)» satırı: kod 2026-11-09'da main'de (`7e8aa77d8`), kayıtlarda
+  ACCEPTED satırı `58f7c489f`'de yok — CT kaydı işi, paket değişmez.
+- DL-2 kaydının açık maddesi: Web Planning kırmızıları (4) — main'de aynı gün kontrol (CT kuralı); bu paketin kapsamı dışında.
+- Plan satırı (§22) — değişmedi.
+
+**Paketin dışında kalan, kayıtlı izinler (bilgi; r6 kapsamı değiştirmez):** DL-1 `ExpiryQuarantineTypeExemptionTests` sabit satırı 111 → 127
+(MOD-0176, sahip izni Beste 2026-11-04 — yalnız DL-1 kabul kaydında); DL-2 MOD-0178'in iki dosyası (yukarıdaki izin) ve
+`JavaScript/Node/quarantine-blocked.test.mjs` (CT kabul etti, DL-2 kaydı «Sapmalar»). Bu dosyalar §5 Repo Scope'ta yok; CT kabul kayıtlarında
+sapma / izin olarak yazılı. Bilgi: `ExpiryQuarantineTypeExemptionTests.cs:28` bu modülün poster çağrısını satır numarasıyla sabitler
+(`QuarantineApplyEngine.cs:127`, `58f7c489f`); o satırın üstündeki her değişiklik testi kırmızıya çevirir ve sabitin güncellenmesi MOD-0176
+dosyasına dokunur (XMC-001, sahip izni gerekir).
+
 ## 20. Follow-up Items
 
 - **FU-0175-FU01-OUTBOUND** — REVERSAL dışı yollarla tutma statüsünden çıkan stok (QUARANTINE / QI / BLOCKED'dan MOD-0175 olmayan `SCRAP`,
@@ -1188,6 +1247,8 @@ dalda bu görünüm **bilinen geçici sapmadır** ve DL-1 kabul kaydına yazıl�
 2026-11-03). **DL-3 kapıları:** (1) sözleşme adımı — FU03'ün INVENTORY 1.7.0'ı dalda olmadan 1.8.0 yazılmaz (Q-07, §8.8); (2) **kabul kapısı
 Q-10** — DL-3 kabul kaydı MVP-6 CT (Natig) kararını (tarih, veren) taşımadan kapanmaz; Q-10 ready-for-dev önkoşulu değildir, DL-1 / DL-2
 kabulünü bağlamaz.
+
+**Teslim durumu (r6, 2026-11-11):** DL-1 ve DL-2 CT VERIFIED ve main'de; DL-3 başlamadı; DL-3 kapısı (1) karşılandı, (2) Q-10 açık — kaynaklar §19.9.
 
 ## 23. Page Help (UXH-001)
 

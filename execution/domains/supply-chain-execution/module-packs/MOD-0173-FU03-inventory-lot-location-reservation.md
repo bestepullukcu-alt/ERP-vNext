@@ -10,7 +10,7 @@ golden_reference: none
 entity_base: EntityBase
 status: ready-for-dev
 approval_status: pending
-status_note: "ready-for-dev (2026-11-02) — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\"), CT kararları CT-01, CT-02, CT-03, CT-04 ve CT-07 (sahip izni + CT kapsam hizası) verildi — §19.6. r4 (2026-11-02): bağımsız son bakış 01 (r3 üzerinde, KOŞULLU, 1 ORTA, 5 DÜŞÜK) bulguları F-1…F-6 tek geçişte işlendi (CT kararı MVP-1 CT 2026-11-02, hepsi kabul) — FEFO serbest tabanı ve kapsam rakamları vadesi geçmiş ama kapanmamış rezervasyonu saymaz, okuma portunun oturumu adlandırıldı, kullanılmayan exclude parametresi kaldırıldı, port fail-closed denetimlerine adlı sabotaj, geç yazan düzeltmesi için Q-09 (MVP-6 CT, TBD), reservationId'siz bekçi ret satırı DL-1'de (AC-40); 40 AC; yeni inceleme ve onay gerekir. r3 (2026-11-02): inceleme 01 tur 2 (KOŞULLU, 1 ORTA, 4 DÜŞÜK) bulguları ve MVP-6 CT notu (Natig) üzerine CT-08 sınırı — REVERSAL geri getirmesi yalnız açık `restoreReservation: true` ile — işlendi; yeni inceleme ve onay gerekir. r2 (2026-11-02): bağımsız inceleme 01 tur 1 (UYGUN DEĞİL, 1 ENGEL, 7 ORTA, 7 DÜŞÜK) bulgularının hepsi işlendi; CT-08 (REVERSAL rezervasyonu geri getirir) ve sahip kararı Q-01 = A (FEFO serbest miktar; DL-3 W-5'in parçası, CT-04 güncellendi; MOD-0176 XMC-001 izni) yazıldı; 39 AC'nin hepsi adlı sabotajlı (§17.1). Ready-for-dev önkoşullarından geriye yalnız r4'ün CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay satırı kaldı (§18); approval_status pending. Açık sorular Q-05, Q-07, Q-09 (§19.4); açık CT kararları CT-05, CT-06 (§19.5) — ready-for-dev önkoşulu değil. Kod yazılmaz: CT-APR-02 + CT-APR-01 onay satırı gerekir."
+status_note: "r5 (2026-11-11) — yeniden onay sürümü; kapsam, AC'ler ve tasarım r4 ile aynı. r4 (sha256 0e93c1ba…847f2d) sahip onayı aldı (2026-11-03, approvals.tsv satır 63, c03ac5511), ama EES 2.14 (PR #403, 290134f8f, 2026-11-11) altında r4'ün inceleme satırı (reviews.tsv satır 301) başlangıç noktası öncesi yalnız sıra değiştiren merge 7bd1d0bae'ye bağlandığı için sayılmaz; pack_approval.py check r4'te 'onay geçersiz' (çıkış 1, ölçüldü 58f7c489f). Kaynak: Ali'nin PR #402 mesajı (2026-11-10; depoda değil, MVP-1 CT aktarımı). r5 yeni bağımsız inceleme (CT-APR-02) ve yeni onay satırı (CT-APR-01, onaylayan Ali) ister; approval_status pending = yeni sürüm, onay bekliyor. r5'te yalnız künye, teslim durumu notu (§22.1) ve kayıtlarla kapanan Q-07 / Q-09 işlendi. Aşağısı r4 künyesidir, yazıldığı gibi durur. — ready-for-dev (2026-11-02) — W-5 (sahip kararı 2026-10-21: lot / lokasyon rezervasyonu INVENTORY'ye eklemeli, MVP-1 CT yapar, MVP-5 S2'den önce). MOD-0178 S2'nin (DL-4) tek INVENTORY engeli (MOD-0178 §7, §8.10, §19.1.1 Q-01, FU-0178-W5). Backend + sözleşme; ekran yok. 2026-11-02: sahip kararları Q-02, Q-03, Q-04, Q-06, Q-08 (Beste, \"hepsi öneri gibi\"), CT kararları CT-01, CT-02, CT-03, CT-04 ve CT-07 (sahip izni + CT kapsam hizası) verildi — §19.6. r4 (2026-11-02): bağımsız son bakış 01 (r3 üzerinde, KOŞULLU, 1 ORTA, 5 DÜŞÜK) bulguları F-1…F-6 tek geçişte işlendi (CT kararı MVP-1 CT 2026-11-02, hepsi kabul) — FEFO serbest tabanı ve kapsam rakamları vadesi geçmiş ama kapanmamış rezervasyonu saymaz, okuma portunun oturumu adlandırıldı, kullanılmayan exclude parametresi kaldırıldı, port fail-closed denetimlerine adlı sabotaj, geç yazan düzeltmesi için Q-09 (MVP-6 CT, TBD), reservationId'siz bekçi ret satırı DL-1'de (AC-40); 40 AC; yeni inceleme ve onay gerekir. r3 (2026-11-02): inceleme 01 tur 2 (KOŞULLU, 1 ORTA, 4 DÜŞÜK) bulguları ve MVP-6 CT notu (Natig) üzerine CT-08 sınırı — REVERSAL geri getirmesi yalnız açık `restoreReservation: true` ile — işlendi; yeni inceleme ve onay gerekir. r2 (2026-11-02): bağımsız inceleme 01 tur 1 (UYGUN DEĞİL, 1 ENGEL, 7 ORTA, 7 DÜŞÜK) bulgularının hepsi işlendi; CT-08 (REVERSAL rezervasyonu geri getirir) ve sahip kararı Q-01 = A (FEFO serbest miktar; DL-3 W-5'in parçası, CT-04 güncellendi; MOD-0176 XMC-001 izni) yazıldı; 39 AC'nin hepsi adlı sabotajlı (§17.1). Ready-for-dev önkoşullarından geriye yalnız r4'ün CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay satırı kaldı (§18); approval_status pending. Açık sorular Q-05, Q-07, Q-09 (§19.4); açık CT kararları CT-05, CT-06 (§19.5) — ready-for-dev önkoşulu değil. Kod yazılmaz: CT-APR-02 + CT-APR-01 onay satırı gerekir."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-02
@@ -25,6 +25,21 @@ dependencies: [MOD-0173, MOD-0173-FU02, MOD-0174, MOD-0175, MOD-0176, MOD-0177, 
 > `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0173-FU03 --name "Inventory Lot & Location Reservation" --parent MOD-0173`
 > → çıkış **0** ("OK MOD-0173-FU03: proven against Blueprint/registry"). Ebeveyn `--check-id MOD-0173 --name "Inventory Ledger & Valuation"`
 > → çıkış 0. Keşif ve kimlik gerekçesi §19.1'de. **Registry satırı bu paketle yazılmaz** — satırı CT ekledi (CT-01, `2265cce90`, §19.6). **Kanonik ad** "Inventory Lot & Location Reservation" (CT kararı 2026-11-02); kayıt satırındaki ad CT tarafından düzeltildi (`f2b2b3a96`; ölçüldü `4b9f7a023`, `module-id-registry.md` satır 304). Kayıt satırının durumu bugün `draft`, paket `ready-for-dev`: durum hizası CT'dedir (bu paket kayıt dosyasına yazmaz). **Satırdan sonraki ölçüm (r2, inceleme 01 F-11):** `703cbaec7` satır commit'inden (`2265cce90`) önceydi (`git merge-base --is-ancestor 2265cce90 703cbaec7` → değil); ön kontrol satır varken `4b9f7a023`'te yeniden koşuldu → çıkış **0** ("OK MOD-0173-FU03: proven against Blueprint/registry", Python 3.12.10).
+>
+> **Revizyon r5 (2026-11-11) — yeniden onay sürümü.** Hedef r4 `0e93c1bad2328a6f89aef03753e64f16e43fc5a19e6f9df8b7626dba69847f2d`.
+> r4 iki inceleme aldı (diyalog inceleme 01 tur 3 UYGUN, r3 üzerinde — `docs/records/reviews/MOD-0173-FU03/2026-11-02-2bba39c1.md`;
+> bağımsız son bakış 02 UYGUN, 0 bulgu, r4 üzerinde — `docs/records/reviews/MOD-0173-FU03/2026-11-02-0e93c1ba-son-bakis-02.md`) ve sahip
+> onayı (Beste «onayla» 2026-11-03, HIGH; `execution/approvals/approvals.tsv` satır 63, commit `c03ac5511`). **EES 2.14** (PR #403, merge
+> `290134f8f`, 2026-11-11; `scripts/pack_approval.py` `HISTORY_BASELINE` / `BASELINE_REORDERS`): r4'ün inceleme satırı
+> (`execution/approvals/reviews.tsv` satır 301) `git blame`'de PR #397 içindeki, satırları yalnız yeniden sıralayan merge `7bd1d0bae`'ye
+> bağlanır; böyle satırın insan adımı ölçülemez ve sayılmaz. PR #402'nin aynı satırları yeniden yazması (`1fbfdd4e6`, satır 325 ve 69)
+> main'de değil. Ölçüm (`58f7c489f`, 2026-11-11): `python3 scripts/pack_approval.py check <bu paket>` → "sonuç: onay geçersiz", çıkış 1.
+> Kaynak: Ali'nin PR #402 mesajı (2026-11-10; mesaj depoda değil, MVP-1 CT'nin aktarımıyla) — r4 satırları sayılmaz, paket yeni sürüm,
+> yeni bağımsız inceleme ve yeni onay ister.
+> **Kapsam, AC'ler (AC-1…AC-40) ve tasarım değişmez.** r5'te değişenler yalnız: künye ve bu blok; teslim durumu notu (§22.1); kayıtlarla
+> kapanmış iki açık sorunun durumu — Q-09 (MVP-6 sahip kararı K3, Natig 2026-11-02) ve Q-07 (MOD-0178 §8.10 kararı) (§19.4, §19.6; ilgili
+> durum cümleleri §1, §7, §8.3.1, §18, §20). Künye `ready-for-dev` / `pending`: r5 yeni bağımsız inceleme (CT-APR-02, yazandan ayrı
+> oturum) ve yeni onay satırı (CT-APR-01, onaylayan Ali) ister.
 >
 > **Revizyon r4 (2026-11-02).** Hedef r3 `2bba39c1…ced981`; bağımsız son bakış 01 (`docs/records/reviews/MOD-0173-FU03/2026-11-02-2bba39c1-son-bakis-01.md`,
 > özet `7dbfa6b4…`; KOŞULLU, 1 ORTA, 5 DÜŞÜK); CT kararı MVP-1 CT 2026-11-02: hepsi kabul, tek geçiş. İşlenenler: F-1 (FEFO serbest
@@ -84,7 +99,8 @@ getirir:
    taşıyorsa (isteğe bağlı, varsayılan `false`; INVENTORY 1.7.0 eklemeli alan) o rezervasyonu aynı işlemde geri getirir (CT-08 ve r3
    sınırı, §8.3.1): MVP-6'nın Dispatched öncesi çok satırlı sevk telafisi `true` gönderir ve rezervasyonla yeniden denenebilir;
    Shipped sonrası geri alma alanı göndermez, rezervasyon kapalı kalır. Geç yazan kaydın düzeltme REVERSAL'ının alanı gönderip
-   göndermeyeceği MVP-6 kararıdır (Q-09, öneri A; r4, son bakış 01 F-5) — INVENTORY davranışı iki seçenekte de aynıdır.
+   göndermeyeceği MVP-6 kararıdır (Q-09, öneri A; r4, son bakış 01 F-5) — INVENTORY davranışı iki seçenekte de aynıdır. **r5:** Q-09
+   kapandı — A (sahip kararı K3, Natig 2026-11-02; §19.4).
 
 Hedef kullanıcı yoktur (ekran yok): tüketiciler MOD-0178 (süreç içi port, §8.7), MOD-0183 (HTTP `postMovement`), ileride MOD-0172 ATP.
 Kiracı + şirket kapsamlıdır (`TenantId`, `LegalEntityId`, W-0173-02). Servis `Diten.InventoryService`, port **5067** (AGENTS.md §3).
@@ -328,7 +344,7 @@ telafisi (§23.4: yazılmış satırları REVERSAL ile geri al, `n` artar, yeni 
 `restoreReservation: true` **eklemelidir** — 0183'ün S23-17 kuralı ("only the §23.4 fields are sent") bu alanı §23.4 alan listesine almadan
 gönderemez; Shipped sonrası geri alma alanı **göndermez** (rezervasyon kapalı kalır — gerekçe §8.3.1). **Geç yazan kaydın düzeltmesi
 (r4, son bakış 01 F-5) MVP-6 kararıdır — Q-09, sahip MVP-6 CT (Natig), karar TBD; öneri A** (iki seçenek ve gerekçe §8.3.1 "Geç yazan
-kaydın düzeltmesi"). Bu, 0183'ün REVERSAL gövdesinde tek alanlık değişikliktir; 1.7.0 öncesi INVENTORY bilinmeyen üyeyi yok sayar (§8.8), sıra serbesttir. Bugün (1.5.0)
+kaydın düzeltmesi"). **r5: Q-09 kapandı — A** (K3, Natig 2026-11-02, §19.4). Bu, 0183'ün REVERSAL gövdesinde tek alanlık değişikliktir; 1.7.0 öncesi INVENTORY bilinmeyen üyeyi yok sayar (§8.8), sıra serbesttir. Bugün (1.5.0)
 0183 `reservationId` göndermez; not, 0183'ün `reservationId` gönderen revizyonu (Q-05) için yazılır. Bildirim MVP-1 CT'den MVP-6 CT'ye
 gider (bu paket MVP-6 dosyasına yazmaz).
 
@@ -497,7 +513,8 @@ kendisi `reservationId` taşımaz (§12; geri getirme izi denetim satırındadı
   rezervasyonları bir kez bırakır ve tahsisi `ReservationReleaseState = Released` yapar (MOD-0178 @ `8ee5a000c` satır 1424-1428).
   Bundan sonra geri getirilen rezervasyon `ACTIVE` kalır ama onu tüketecek ya da bırakacak sahip yoktur (öksüz rezervasyon); serbest
   stoğu kapatır. Geç yazan kaydın düzeltmesi aşağıda (Q-09).
-- **Geç yazan kaydın düzeltmesi (r4, son bakış 01 F-5 — karar MVP-6 CT (Natig), TBD; Q-09).** MOD-0183 §23.4 "Late writer" maddesinde
+- **Geç yazan kaydın düzeltmesi (r4, son bakış 01 F-5 — karar MVP-6 CT (Natig), TBD; Q-09; r5: karar A verildi — K3, Natig 2026-11-02,
+  §19.4; aşağıdaki iki seçenek r4'te yazıldığı gibi durur).** MOD-0183 §23.4 "Late writer" maddesinde
   (`d4176fbee` satır 751-756; `c1a563cf7`'de aynı dosya) kirası dolmuş ve 201'ini kaydedemeyen yazıcı, sevkiyatı yeniden okur; denemesi geçilmiş ya da telafi ediliyorsa kendi
   **kaydedilmemiş** çıkışını §23.4 REVERSAL gövdesiyle geri alır. O çıkış R'yi `reservationId` ile tüketmişse:
   - **A (öneri):** düzeltme REVERSAL'ı da `restoreReservation: true` gönderir — R geri gelir, sevkiyatın sonraki denemesi R'yi
@@ -1022,11 +1039,12 @@ AC-32 toplu koşu kapısıdır — sabotajı test sınıfını değil kabul kayd
 - [x] Q-01 (FEFO) **kapandı** — sahip kararı A (Beste 2026-11-02); MOD-0176 XMC-001 izni yazıldı (§5, §7, §8.5); DL-3 W-5'in parçası (CT-04 güncel, §19.6)
 - [x] CT-08 REVERSAL geri getirme kararı yazıldı (MVP-1 CT 2026-11-02; §8.3.1, AC-35); MVP-6 XMC-001 bilgi notu (§7)
 - [x] Bağımsız inceleme 01 tur 1 (r1, UYGUN DEĞİL) bulguları F-1…F-15 r2'de işlendi (§19.7)
-- Not: Q-05, Q-07, Q-09 başka paketlerin kararıdır.
+- Not: Q-05, Q-07, Q-09 başka paketlerin kararıdır. r5: Q-07 ve Q-09 kapandı (§19.4); Q-05 açık.
 - [x] Bağımsız inceleme 01 tur 2 (r2, KOŞULLU) bulguları F-1…F-5 ve CT-08 sınırı (`restoreReservation`), port anahtarla okuma üyesi r3'te işlendi (§19.7)
-- [x] Bağımsız son bakış 01 (r3, KOŞULLU) bulguları F-1…F-6 r4'te işlendi (§19.7; CT kararı MVP-1 CT 2026-11-02, hepsi kabul); F-5'in karar kısmı Q-09 olarak açık (MVP-6 CT, TBD — ready-for-dev önkoşulu değil, §8.3.1)
-- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — **r4'ün kendi incelemesi** (önceki sürümlerin incelemesi r4'ü kapsamaz) + CT-APR-01 onay satırı (yüksek risk: sözleşme + ürün kodu yolu + iki XMC-001 izni)
-- [x] `status: ready-for-dev` (2026-11-02; önkoşullardan yalnız CT-APR-02 ve CT-APR-01 açık — onay satırı bu sürümün sha256'sına yazılır, `approval_status` onunla güncellenir)
+- [x] Bağımsız son bakış 01 (r3, KOŞULLU) bulguları F-1…F-6 r4'te işlendi (§19.7; CT kararı MVP-1 CT 2026-11-02, hepsi kabul); F-5'in karar kısmı Q-09 olarak açık (MVP-6 CT, TBD — ready-for-dev önkoşulu değil, §8.3.1); r5: Q-09 kapandı — A (K3, Natig 2026-11-02, §19.4)
+- [x] (r4, tarihî) r4'ün CT-APR-02 incelemesi (son bakış 02 UYGUN, `reviews.tsv` satır 301) ve CT-APR-01 onay satırı (Beste 2026-11-03, `approvals.tsv` satır 63, `c03ac5511`) yazıldı — **EES 2.14 altında sayılmaz** (künye r5 bloğu; `pack_approval.py check` → onay geçersiz)
+- [ ] CT-APR-02 bağımsız inceleme (yazandan ayrı oturum) — **r5'in kendi incelemesi** (r4 ve önceki sürümlerin incelemesi r5'i kapsamaz) + CT-APR-01 onay satırı, onaylayan Ali (yüksek risk: sözleşme + ürün kodu yolu + iki XMC-001 izni)
+- [x] `status: ready-for-dev` (2026-11-02; r5'te önkoşullardan yalnız r5'in CT-APR-02 ve CT-APR-01'i açık — onay satırı r5'in sha256'sına yazılır, `approval_status` onunla güncellenir)
 
 ## 19. Implementation Notes
 
@@ -1148,9 +1166,9 @@ revizyonu onaylı"); MOD-0176 FU-0176-RES-01 ("Lot-based reservation … MOD-017
 | Q-04 | Tüketen çıkış kalandan fazlaysa? | **KAPANDI** — 422 `RESERVATION_QUANTITY_EXCEEDED`; fazlası serbest stoktan alınmaz | Beste (sahip kararı 2026-11-02) | §19.6 |
 | Q-05 | MVP-6 sevkiyat satırından `reservationId` hangi alanla gelir? (`inventoryReferenceId` mi, 3.5.0 yeni alan mı) — MOD-0178 Q-M6-2 ile aynı | MVP-6'nın kararı; bu paket yalnız `MovementRequest.reservationId` sunar | MVP-6 CT (Natig) | MOD-0183 revizyonunda; MVP-5 S2 canlıya çıkmadan önce |
 | Q-06 | Toplu port (`CreateBatchAsync`) kabul mü? | **KAPANDI — evet**; toplu port hepsi ya da hiçbiri (§8.7) | Beste (sahip kararı 2026-11-02) | §19.6 |
-| Q-07 | 0178 rezervasyonları `expiresAt` taşır mı; `reservationType` / kaynak üçlüsü değeri? | 0178 S2 revizyonunun kararı; öneri `expiresAt` yok (MVP-6 sevkiyat rezervasyonu emsali, `DECISION-DRAFT.md` §3b ek not 2) | MVP-1 CT (MVP-5 S2 revizyonu) | 0178 S2 revizyonu |
+| Q-07 | 0178 rezervasyonları `expiresAt` taşır mı; `reservationType` / kaynak üçlüsü değeri? | **KAPANDI (r5 kaydı)** — MOD-0178 S2 revizyonu karar verdi: `reservationType = WAREHOUSE_OUTBOUND`, `sourceModule = MOD-0178`, `sourceDocumentId = outboundId`, `sourceLineId = "{lineSeq}"`, `priority` yok, **`expiresAt` yok** (`MOD-0178-putaway-picking-packing.md` §8.10 "FU03 Q-07 — bu revizyonun kararı" satır 1112-1119 ve satır 2966 "Q-07: bu revizyonda kapandı", `58f7c489f`'de okundu). MOD-0178 DL-4 bu kararla CT'de VERIFIED (`docs/records/audits/2026-11/mod-0178-dl4-ct-acceptance-2026-11-05.md`). İlk öneri: `expiresAt` yok (MVP-6 sevkiyat rezervasyonu emsali, `DECISION-DRAFT.md` §3b ek not 2) | MVP-1 CT (MVP-5 S2 revizyonu) | 0178 S2 revizyonu — verildi (MOD-0178 r20 önerisi, sahip onayı MOD-0178'in CT-APR-01'iyle; MOD-0178'in onay satırları da EES 2.14 yeniden satır listesinde, `1fbfdd4e6` — onun durumu bu paketin değil) |
 | Q-08 | Rezervasyona görünür kayıt kodu gerekir mi? | **KAPANDI — hayır** (§8.10) | Beste (sahip kararı 2026-11-02) | §19.6 |
-| Q-09 | (r4, son bakış 01 F-5) MOD-0183'ün geç yazanı, kaydedilmemiş ve rezervasyonu `reservationId` ile tüketmiş çıkışını geri alırken REVERSAL'a `restoreReservation: true` koyar mı? | **A (öneri):** koyar — sonraki deneme rezervasyonla geçer; önerilen sınır: sevkiyatta tamamlanmış (Dispatched) deneme varsa koymaz (öksüz rezervasyon). **B:** koymaz — rezervasyon kapalı kalır, kurtarma rezervasyonsuz yeniden deneme (B1 0183 `reservationId`'siz gönderir ya da B2 0178 yeni rezervasyon açar). INVENTORY davranışı iki seçenekte aynı (§8.3.1); bu paketin önkoşulu değil | MVP-6 CT (Natig) | **TBD** — MOD-0183'ün `reservationId` gönderen revizyonunda (Q-05) |
+| Q-09 | (r4, son bakış 01 F-5) MOD-0183'ün geç yazanı, kaydedilmemiş ve rezervasyonu `reservationId` ile tüketmiş çıkışını geri alırken REVERSAL'a `restoreReservation: true` koyar mı? | **A (öneri):** koyar — sonraki deneme rezervasyonla geçer; önerilen sınır: sevkiyatta tamamlanmış (Dispatched) deneme varsa koymaz (öksüz rezervasyon). **B:** koymaz — rezervasyon kapalı kalır, kurtarma rezervasyonsuz yeniden deneme (B1 0183 `reservationId`'siz gönderir ya da B2 0178 yeni rezervasyon açar). INVENTORY davranışı iki seçenekte aynı (§8.3.1); bu paketin önkoşulu değil. **KAPANDI — A (r5 kaydı):** geç kalan sevk kaydının düzeltme REVERSAL'ı `restoreReservation: true` gönderir; sevkiyatın `Dispatched` denemesi varsa göndermez (sahip kararı K3, Natig 2026-11-02 — `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md` satır 13; MOD-0183 paketi satır 944; onay satırı notu `execution/approvals/approvals.tsv` satır 63). Kararın kendi koşulu: "Effective only with the approval of MOD-0173-FU03" — r4 onayı EES 2.14 altında sayılmadığından yürürlüğü r5 onayına bağlıdır. INVENTORY kodu, sözleşmesi ve AC'leri değişmez (§8.3.1) | MVP-6 CT (Natig) | **verildi 2026-11-02 (K3)**; uygulaması MOD-0183'ün `reservationId` gönderen revizyonunda (Q-05) |
 
 ### 19.5 CT kararları
 
@@ -1190,8 +1208,13 @@ yeniden yazıldı.
 | CT-08 | REVERSAL, rezervasyonu `reservationId` ile tüketen hareketi geri alınca o rezervasyonu geri getirir (§8.3.1) — **r3 sınırı:** yalnız istek `restoreReservation: true` taşıdığında (varsayılan `false`; INVENTORY 1.7.0 eklemeli alan). r4: geç yazanın düzeltmesinin alanı gönderip göndermeyeceği Q-09'a çevrildi (MVP-6 CT, TBD; öneri A) | MVP-1 CT, 2026-11-02 (sınır: MVP-1 CT kararı, MVP-6 CT notu Natig 2026-11-02; r4: MVP-1 CT 2026-11-02) | §1, §7, §8.3, §8.3.1, §8.8, §8.9, §12, §13, §19.4, §21; AC-25, AC-35 |
 | CT-09 | Portta anahtarla okuma `FindByIdempotencyKeysAsync` (MOD-0178 FU-0178-RSV-BYKEY), DL-1 | MVP-1 CT, 2026-11-02 | §3, §8.7, §21, §22; AC-39 |
 | SB01 | Bağımsız son bakış 01 (r3) bulguları F-1…F-6 kabul; r4'te tek geçişte işlenir; F-5'in kararı MVP-6 CT (Natig) ile netleşir, o gelene kadar paket gerekçeyi ve iki seçeneği yazar (Q-09). F-1'de iki yoldan biri pakete bırakıldı — paketin seçimi vade süzgeci, gerekçe §8.5 "Vade kuralı" | MVP-1 CT, 2026-11-02 | §5, §7, §8.3, §8.3.1, §8.5, §8.7, §8.8, §13, §19.4, §19.7, §22; AC-16, AC-17, AC-28, AC-31, AC-38, AC-39, AC-40 |
+| Q-09 (r5 kaydı) | **A** — geç kalan sevk kaydının düzeltme REVERSAL'ı `restoreReservation: true` gönderir; sevkiyatın `Dispatched` denemesi varsa göndermez. Koşulu: MOD-0173-FU03 onayıyla yürürlüğe girer (r5 onayı) | Natig (MVP-6 sahibi), 2026-11-02 — K3, `docs/records/decisions/2026-11/mvp6-screens-and-return-approval-owner-decisions-2026-11-02.md` | §1, §7, §8.3.1, §18, §19.4, §20 |
+| Q-07 (r5 kaydı) | 0178 rezervasyonları `WAREHOUSE_OUTBOUND` / `MOD-0178` / `outboundId` / `"{lineSeq}"`, `priority` ve **`expiresAt` yok** | MOD-0178 S2 revizyonu (r20 önerisi, MOD-0178 CT-APR-01) — `MOD-0178-putaway-picking-packing.md` §8.10 | §19.4 |
 
-**Açık kalanlar:** Q-05 (MVP-6), Q-07 (MOD-0178 S2 revizyonu), Q-09 (MVP-6 CT, TBD — geç yazanın düzeltmesi; r4); CT-05 (plan satırı), CT-06 (MOD-0176 FU satırı düzeltmesi); kayıt satırının
+**Açık kalanlar (r5 güncel):** Q-05 (MVP-6); CT-05 (plan satırı); CT-06 (MOD-0176 FU satırı düzeltmesi — MOD-0176 paketi `58f7c489f`'de
+FU-0176-RES-01'i hâlâ MOD-0178'e yazar); kayıt satırının durum hizası (CT — `module-id-registry.md` satır 308 `58f7c489f`'de hâlâ `draft`).
+Teslimin açıkları (AC-19 E3, CT-02 sürüm notu) §22.1'de. r4'te açık yazılan Q-07 ve Q-09 r5'te kayıtlarla kapandı (yukarıdaki iki satır).
+*r4 metni:* Q-05 (MVP-6), Q-07 (MOD-0178 S2 revizyonu), Q-09 (MVP-6 CT, TBD — geç yazanın düzeltmesi; r4); CT-05 (plan satırı), CT-06 (MOD-0176 FU satırı düzeltmesi); kayıt satırının
 durum hizası (CT). **CT-07 ifade farkı kapandı** (CT kararı MVP-1 CT 2026-11-02): izin, paketin §8.2 yol 3–4 değişikliğidir; izin metnindeki ifade CT'nin özetiydi.
 
 ### 19.7 Bağımsız inceleme 01 — kapanış tabloları (tur 1 → r2, tur 2 → r3)
@@ -1262,8 +1285,8 @@ CT-08 sınırı (`restoreReservation`) ve CT-09 (port anahtarla okuma).
 - **FU-03-COUNT** — MOD-0181 sayımı: ayrılmış stoğu açıkta bırakan `COUNT_LOSS` reddedilir (§8.2); sayım akışının rezervasyon uzlaştırması MOD-0181 paketinde.
 - **FU-03-EAM** — MOD-0201 yedek parça "reservations (maintenance view)" bu rezervasyonu tüketecekse ayrı paket.
 - **XMC (başka sahipler):** MOD-0183 revizyonu (`reservationId` gönderimi, Q-05; r3: Dispatched öncesi telafinin REVERSAL gövdesine
-  `restoreReservation: true` — §7 hiza notu, sahip Natig; r4: geç yazanın düzeltmesi Q-09, MVP-6 CT TBD, öneri A — §8.3.1); MOD-0178 S2
-  revizyonu (portun kullanımı, Q-07; r3: tahsis kurtarmasında `FindByIdempotencyKeysAsync`, FU-0178-RSV-BYKEY; r4 hiza notu, son bakış
+  `restoreReservation: true` — §7 hiza notu, sahip Natig; r4: geç yazanın düzeltmesi Q-09, MVP-6 CT TBD, öneri A — §8.3.1; r5: Q-09 kapandı — A, K3 Natig 2026-11-02, §19.4); MOD-0178 S2
+  revizyonu (portun kullanımı, Q-07 — r5: kapandı, MOD-0178 §8.10, §19.4; r3: tahsis kurtarmasında `FindByIdempotencyKeysAsync`, FU-0178-RSV-BYKEY; r4 hiza notu, son bakış
   01 F-4 / F-1: port `CreateAsync` / `CreateBatchAsync` çağrıda `legalEntityId`'yi (outbound'un şirketi) taşır, farklıysa
   `InvalidOperationException`; `GetScopeFreeAsync` vadesi geçmiş ama kapanmamış rezervasyonu saymaz — MOD-0178 §8.17 "alınabilir"
   miktarı FEFO kancasıyla aynı tabanı görür. MOD-0178 metni bu imzayı sabitlemiyor (yalnız üye adı); bildirim MVP-1 CT içinde).
@@ -1306,6 +1329,33 @@ rezervasyonu düşürmez — AC-5; `WAREHOUSE_TRANSFER` depo / lot bekçisi — 
 AC-24). DL-3'ün Repo Scope / Protected Paths / Dependencies payı yalnız Q-01 = A XMC-001 maddeleridir (MOD-0176 dosyaları). DL-1'in önkoşulu CT-07 — sahip izniyle karşılandı (Beste 2026-11-02, yalnız izin kapsamında; §19.6). DL-1 kabulünde ebeveyn MOD-0173 paketine beş yeni hata kodu için sürüm notu düşülür (CT-02). DL-2 ve DL-3 DL-1'e dayanır. Sözleşme bölümü
 iki dilimde geçer: DL-1 yalnız 1.6.0 maddelerini, DL-2 yalnız 1.7.0 maddelerini yapar. W-5'in kapanışı ve MOD-0178 S2'nin (DL-4) açılma
 koşulu: DL-1 + DL-2 + DL-3 CT kabulü (CT-04, r2'de Q-01 = A ile güncellendi). MVP-6'nın gerçek tüketimi (E5, iki modül birlikte) MOD-0183 revizyonunun kabulüdür, bu paketin değil.
+
+### 22.1 Teslim durumu (r5, 2026-11-11 — kayıtlardan; ölçüm `58f7c489f`)
+
+Üç dilim r4'e (sha256 `0e93c1ba…847f2d`, onay satırı `c03ac5511`) göre yazıldı ve MVP-1 CT tarafından doğrulandı. r5 bu kodu ve
+kabulleri değiştirmez; r4 onayının EES 2.14 altında sayılmaması (künye r5 bloğu) dilimlerin CT doğrulamasını yeniden açmaz, onay
+kaydını yeniler.
+
+| Dilim | Commit | CT kaydı | Sonuç | Açık kalan (kayıttan) |
+|---|---|---|---|---|
+| DL-1 | `372082aa0` (2026-11-03) | `docs/records/audits/2026-11/mod-0173-fu03-dl1-ct-acceptance-2026-11-03.md` | VERIFIED | AC-19 E3 (Gateway 5000 üzerinden gerçek token'la `getReservation` smoke); CT-02 ebeveyn sürüm notu |
+| DL-2 | `123c4e803` (2026-11-04) | `docs/records/audits/2026-11/mod-0173-fu03-dl2-ct-acceptance-2026-11-04.md` | VERIFIED | AC-19 E3 (DL-1'den); CT-02 (1.6.0 / 1.7.0) |
+| DL-3 | `f5d490d7a` (2026-11-05) | `docs/records/audits/2026-11/mod-0173-fu03-dl3-ct-acceptance-2026-11-05.md` (kayıt commit'i `2e6b29dcc`) | VERIFIED | AC-19 E3; CT-02; §8.5 bilinen fark `getFefoOrder` (FU-03-FEFO) |
+
+- **main'de:** üç commit de PR #397'nin main merge'üyle (`7e8aa77d87`, 2026-11-09) main'e girdi (`git merge-base --is-ancestor` → üçü de
+  `7e8aa77d87`'nin atası, ilk ebeveyninin değil).
+- **ACCEPTED yazılmadı:** üç kayıt da "ACCEPTED, kod main'e girdiğinde yazılır (SOP §7)" der; `58f7c489f`'de FU03 için ACCEPTED kaydı ve
+  FU03'e ait CT-QUEUE satırı bulunmadı (`execution/**/CT-QUEUE.tsv` aramasında yalnız MOD-0178 satırları FU03'ü anar).
+- **W-5 / MOD-0178 DL-4:** MOD-0178 DL-4 başlama kapısı FU03'ün üç dilim kabulüne bağlandı (DL-3 kaydı; MOD-0178 DL-4 kaydı
+  `docs/records/audits/2026-11/mod-0178-dl4-ct-acceptance-2026-11-05.md` "Başlama kapısı: FU03 üç dilim CT kabulünde (`2e6b29dcc`)").
+  `execution/domains/supply-chain-execution/work-packs/mvp5-wms/CT-QUEUE.tsv` satırı `WMS-MVP5-DL4`: MVP-1 hat etiketi
+  `ct/line-ff-2026-11-10f` (`96dafb449`) içinde VERIFIED, "W-5 = MOD-0173-FU03 main'de, main'de (PR #397)"; bu ağaçta (`58f7c489f`,
+  main ile eş) aynı satır henüz eski `BLOCKED` metnini taşır — kuyruk satırının güncellemesi main'e girmedi.
+- **AC-19 E3** dört kayıtta da açık (MOD-0178 DL-4 kaydı: "E3 (canlı) ve FU03 AC-19 E3 … DL-5 Web ekranlarıyla CT koşar"); kapandığını
+  gösteren kayıt bulunmadı.
+- **Yan etki (bilgi):** DL-1 sözleşmeye `getReservation` ekledi ama `gateway/Diten.ApiGateway.Tests/Mod0173Pm2InternalInventoryRouteTests.cs`
+  sayımını (6 → 7) güncellemedi; kırmızı MOD-0181 DL-1'de (`3480daffd`, XMC-001 Beste 2026-11-09) düzeltildi —
+  `docs/records/audits/2026-11/mod-0181-dl1-ct-acceptance-2026-11-09.md` DÜŞÜK-5 ("MOD-0173-FU03 sahibine bilgi notu").
 
 ## 23. Page Help (UXH-001)
 

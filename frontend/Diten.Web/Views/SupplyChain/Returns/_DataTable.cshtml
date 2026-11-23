@@ -36,6 +36,9 @@
                 <tr>
                     <th></th>
                     <th class="all">@Localizer["RmaNumber"]</th>
+                    @* r10 §35.5: the customer column (name and code from the return's own customerRef). Always declared so no column
+                       index moves with a permission (VER F-5); index.js keeps it hidden without crm.account.read. *@
+                    <th>@Localizer["ReturnCustomer"]</th>
                     <th>@Localizer["ShipmentId"]</th>
                     <th>@SharedLocalizer["Status"]</th>
                     <th class="cell-fit text-end pe-3 all">@Localizer["ActionsHeader"]</th>

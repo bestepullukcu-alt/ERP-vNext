@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Warehouse.WarehouseExceptions
+@using Diten.Web.Models.Warehouse
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WarehouseExceptionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    Filters = the listWarehouseExceptions parameters (WMS draft §9): kind (the nine kinds of §8.23) and warehouse (LOCATION master).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-kind">
+                        <select id="filterKind" class="form-select form-select-sm" data-placeholder="@Localizer["FilterKind"]" aria-label="@Localizer["FilterKind"]">
+                            <option value=""></option>
+                            @foreach (var kind in WarehouseVocabulary.ExceptionKinds)
+                            {
+                                <option value="@kind">@Localizer["Warehouse.Exception.Kind." + kind]</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouse" class="form-select form-select-sm" data-placeholder="@Localizer["FilterWarehouse"]" aria-label="@Localizer["FilterWarehouse"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <small id="exceptions-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

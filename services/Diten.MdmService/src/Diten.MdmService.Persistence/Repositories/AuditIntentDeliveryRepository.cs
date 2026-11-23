@@ -21,6 +21,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
     private const string ProductLegalEntityScopePolicyCollectionName = "mdm_product_legal_entity_scope_policies";
     private const string ProductLegalEntityScopeRolloutStateCollectionName = "mdm_product_legal_entity_scope_rollout_states";
     private const string ProductAbbreviationCollectionName = "mdm_product_abbreviation_register";
+    private const string BankCollectionName = "mdm_banks";
+    private const string BankBranchCollectionName = "mdm_bank_branches";
     private readonly IMongoCollection<CodeReservation> _codeReservations;
     private readonly IMongoCollection<GlobalProduct> _globalProducts;
     private readonly IMongoCollection<ProductDefinitionRevision> _productDefinitionRevisions;
@@ -30,6 +32,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
     private readonly IMongoCollection<ProductLegalEntityScopePolicy> _productLegalEntityScopePolicies;
     private readonly IMongoCollection<ProductLegalEntityScopeRolloutState> _productLegalEntityScopeRolloutStates;
     private readonly IMongoCollection<ProductAbbreviationRegisterEntry> _productAbbreviations;
+    private readonly IMongoCollection<Bank> _banks;
+    private readonly IMongoCollection<BankBranch> _bankBranches;
     private readonly IAuditIntentTemporalMigrationRepository _temporalMigrationRepository;
     private readonly Guid _tenantId;
     private readonly TimeProvider _timeProvider;
@@ -109,6 +113,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             ProductLegalEntityScopeRolloutStateCollectionName);
         _productAbbreviations = database.GetCollection<ProductAbbreviationRegisterEntry>(
             ProductAbbreviationCollectionName);
+        _banks = database.GetCollection<Bank>(BankCollectionName);
+        _bankBranches = database.GetCollection<BankBranch>(BankBranchCollectionName);
         _temporalMigrationRepository = temporalMigrationRepository
             ?? throw new ArgumentNullException(nameof(temporalMigrationRepository));
         _tenantId = tenantContext.TenantId;
@@ -140,6 +146,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 FindEligibleScalarWorkItemsAsync(_lskus, AuditAggregateType.Lsku, now, limit, cancellationToken),
                 FindEligibleScalarWorkItemsAsync(_productLegalEntityScopePolicies, AuditAggregateType.ProductLegalEntityScopePolicy, now, limit, cancellationToken),
                 FindEligibleScalarWorkItemsAsync(_productLegalEntityScopeRolloutStates, AuditAggregateType.ProductLegalEntityScopeRolloutState, now, limit, cancellationToken),
+                FindEligibleScalarWorkItemsAsync(_banks, AuditAggregateType.Bank, now, limit, cancellationToken),
+                FindEligibleScalarWorkItemsAsync(_bankBranches, AuditAggregateType.BankBranch, now, limit, cancellationToken),
                 FindEligibleScalarWorkItemsAsync(_productAbbreviations, AuditAggregateType.ProductAbbreviation, now, limit, cancellationToken));
             return scalarItems.SelectMany(items => items)
                 .OrderBy(item => item.TimestampUtc.UtcTicks)
@@ -315,6 +323,10 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             AuditAggregateType.ProductAbbreviation => TryClaimInCollectionAsync(
                 _productAbbreviations, locator, expectedClaimGeneration, leaseOwner, leaseDuration, now,
                 scalarCutover, cancellationToken),
+            AuditAggregateType.Bank => TryClaimInCollectionAsync(
+                _banks, locator, expectedClaimGeneration, leaseOwner, leaseDuration, now, scalarCutover, cancellationToken),
+            AuditAggregateType.BankBranch => TryClaimInCollectionAsync(
+                _bankBranches, locator, expectedClaimGeneration, leaseOwner, leaseDuration, now, scalarCutover, cancellationToken),
             _ => Task.FromResult<AuditIntentClaim?>(null)
         });
         if (_selection is not null && claim is not null) _selectedClaims.TryAdd(locator, claim);
@@ -340,6 +352,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             AuditAggregateType.Lsku => ReadClaimedPayloadFromCollectionAsync(_lskus, claim, now, cancellationToken),
             AuditAggregateType.ProductLegalEntityScopePolicy => ReadClaimedPayloadFromCollectionAsync(_productLegalEntityScopePolicies, claim, now, cancellationToken),
             AuditAggregateType.ProductLegalEntityScopeRolloutState => ReadClaimedPayloadFromCollectionAsync(_productLegalEntityScopeRolloutStates, claim, now, cancellationToken),
+            AuditAggregateType.Bank => ReadClaimedMasterDataPayloadFromCollectionAsync(_banks, claim, now, cancellationToken),
+            AuditAggregateType.BankBranch => ReadClaimedMasterDataPayloadFromCollectionAsync(_bankBranches, claim, now, cancellationToken),
             _ => Task.FromResult<AuditIntentClaimedPayload?>(null)
         });
     }
@@ -470,6 +484,10 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 cancellationToken),
             AuditAggregateType.ProductAbbreviation => AcknowledgeAndCompactInCollectionAsync(
                 _productAbbreviations, claim, acknowledgement, compactReceiptReference, now, cancellationToken),
+            AuditAggregateType.Bank => AcknowledgeAndCompactInCollectionAsync(
+                _banks, claim, acknowledgement, compactReceiptReference, now, cancellationToken),
+            AuditAggregateType.BankBranch => AcknowledgeAndCompactInCollectionAsync(
+                _bankBranches, claim, acknowledgement, compactReceiptReference, now, cancellationToken),
             _ => Task.FromResult(false)
         };
     }
@@ -521,6 +539,10 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 cancellationToken),
             AuditAggregateType.ProductAbbreviation => CompactInCollectionAsync(
                 _productAbbreviations, claim, compactReceiptReference, now, cancellationToken),
+            AuditAggregateType.Bank => CompactInCollectionAsync(
+                _banks, claim, compactReceiptReference, now, cancellationToken),
+            AuditAggregateType.BankBranch => CompactInCollectionAsync(
+                _bankBranches, claim, compactReceiptReference, now, cancellationToken),
             _ => Task.FromResult(false)
         };
     }
@@ -648,6 +670,22 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             intent.SnapshotReference, intent.IdempotencyKey);
     }
 
+    // MOD-0289 (D142): a bank / branch claim carries its MasterDataOperation. The payload is read and fully validated by the
+    // shared reader above; this adds the operation of the claimed intent — and refuses a bank intent that has none, so it can
+    // never travel under the product operation's default ("0") or name.
+    private async Task<AuditIntentClaimedPayload?> ReadClaimedMasterDataPayloadFromCollectionAsync<TEntity>(
+        IMongoCollection<TEntity> collection, AuditIntentClaim claim, DateTimeOffset now, CancellationToken cancellationToken)
+        where TEntity : EntityBase, IAuditIntentAggregate
+    {
+        var payload = await ReadClaimedPayloadFromCollectionAsync(collection, claim, now, cancellationToken);
+        if (payload is null) return null;
+        var aggregate = await collection.Find(TenantAggregateFilter<TEntity>(claim.Locator)).FirstOrDefaultAsync(cancellationToken);
+        var operation = aggregate?.AuditIntents.SingleOrDefault(intent => intent.IntentId == claim.Locator.IntentId)?.MasterDataOperation;
+        if (operation is null || !Enum.IsDefined(operation.Value))
+            throw new InvalidOperationException("AUDIT_INTENT_CLAIMED_PAYLOAD_INVALID");
+        return payload with { MasterDataOperation = operation };
+    }
+
     private Task<bool> UpdateClaimedIntentAsync(
         AuditIntentClaim claim,
         DateTimeOffset now,
@@ -725,6 +763,12 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 ConvertUpdate<CodeReservation, ProductAbbreviationRegisterEntry>(legacyUpdate),
                 ConvertUpdate<CodeReservation, ProductAbbreviationRegisterEntry>(currentUpdate),
                 cancellationToken),
+            AuditAggregateType.Bank => UpdateClaimedInCollectionAsync(
+                _banks, claim, now, ConvertUpdate<CodeReservation, Bank>(legacyUpdate),
+                ConvertUpdate<CodeReservation, Bank>(currentUpdate), cancellationToken),
+            AuditAggregateType.BankBranch => UpdateClaimedInCollectionAsync(
+                _bankBranches, claim, now, ConvertUpdate<CodeReservation, BankBranch>(legacyUpdate),
+                ConvertUpdate<CodeReservation, BankBranch>(currentUpdate), cancellationToken),
             _ => Task.FromResult(false)
         };
     }
@@ -1799,6 +1843,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         EnsureIndexes(_lskus, "lskus");
         EnsureIndexes(_productLegalEntityScopePolicies, "product_legal_entity_scope_policies");
         EnsureIndexes(_productLegalEntityScopeRolloutStates, "product_legal_entity_scope_rollout_states");
+        EnsureIndexes(_banks, "banks");
+        EnsureIndexes(_bankBranches, "bank_branches");
     }
 
     private static void EnsureIndexes<TEntity>(IMongoCollection<TEntity> collection, string suffix)

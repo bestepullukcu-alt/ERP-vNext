@@ -10,5 +10,8 @@ public enum AuditAggregateType
     Lsku = 6,
     ProductLegalEntityScopePolicy = 7,
     ProductLegalEntityScopeRolloutState = 8,
+    // MOD-0289 DL-1: added before the last member so the file only gains lines; the numbers are explicit.
+    Bank = 10,
+    BankBranch = 11,
     ProductAbbreviation = 9
 }

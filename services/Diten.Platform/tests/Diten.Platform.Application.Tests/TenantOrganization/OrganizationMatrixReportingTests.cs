@@ -8,6 +8,8 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
+using Diten.Platform.Application.Tests.RecordCodes;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.TenantOrganization;
@@ -33,10 +35,10 @@ public sealed class OrganizationMatrixReportingTests
         var (repo, root) = await SeedRootAsync();
 
         var response = await Create(repo).Handle(
-            new CreateOrganizationUnitCommand(Request("CHILD", parent: root.Id)), CancellationToken.None);
+            new CreateOrganizationUnitCommand(Request("", "CHILD", parent: root.Id)), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
-        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Code == "CHILD"));
+        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Name == "CHILD"));
 
         Assert.Equal(root.Id, child.ParentOrganizationUnitId);
 
@@ -54,11 +56,11 @@ public sealed class OrganizationMatrixReportingTests
         repo.Add(second);
 
         var response = await Create(repo).Handle(
-            new CreateOrganizationUnitCommand(Request("CHILD", parent: root.Id, administrative: second.Id)),
+            new CreateOrganizationUnitCommand(Request("", "CHILD", parent: root.Id, administrative: second.Id)),
             CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
-        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Code == "CHILD"));
+        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Name == "CHILD"));
         Assert.Equal(root.Id, child.ParentOrganizationUnitId);
         Assert.Equal(second.Id, child.AdministrativeParentOrganizationUnitId);
 
@@ -79,11 +81,11 @@ public sealed class OrganizationMatrixReportingTests
         var (repo, root) = await SeedRootAsync();
 
         var response = await Create(repo).Handle(
-            new CreateOrganizationUnitCommand(Request("CHILD", parent: root.Id, administrative: root.Id)),
+            new CreateOrganizationUnitCommand(Request("", "CHILD", parent: root.Id, administrative: root.Id)),
             CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
-        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Code == "CHILD"));
+        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Name == "CHILD"));
         Assert.Equal(root.Id, child.ParentOrganizationUnitId);
         Assert.Equal(root.Id, child.AdministrativeParentOrganizationUnitId);
     }
@@ -95,9 +97,9 @@ public sealed class OrganizationMatrixReportingTests
         var (repo, root) = await SeedRootAsync();
 
         await Create(repo).Handle(
-            new CreateOrganizationUnitCommand(Request("CHILD", parent: root.Id)), CancellationToken.None);
+            new CreateOrganizationUnitCommand(Request("", "CHILD", parent: root.Id)), CancellationToken.None);
 
-        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Code == "CHILD"));
+        var child = Assert.Single((await repo.GetAllAsync()).Where(u => u.Name == "CHILD"));
         Assert.NotEqual(child.ParentOrganizationUnitId, child.AdministrativeParentOrganizationUnitId);
     }
 
@@ -372,8 +374,8 @@ public sealed class OrganizationMatrixReportingTests
          * refused by the cycle check instead. Over several rounds at least one genuinely interleaves.
          *
          * Second, the guard has TWO code paths and one round only reaches one of them. The very first parent
-         * mutation for a tenant finds no token document and races on the INSERT (`_id` is the compare-and-set);
-         * every round after that races on the conditional `$inc`. A single round would leave the second path
+         * mutation for a tenant finds no token document and creates it (holding zero) before it races; every
+         * round after that races on an existing document. A single round would leave the second path
          * completely unexercised — and it is the path every mutation in production takes.
          */
         var refusals = 0;
@@ -464,7 +466,8 @@ public sealed class OrganizationMatrixReportingTests
     {
         var context = new TenantContext();
         context.SetTenant(TenantId);
-        return new CreateOrganizationUnitCommandHandler(repo, repo, new AlwaysValidLegalEntity(), context);
+        return new CreateOrganizationUnitCommandHandler(repo, repo, new AlwaysValidLegalEntity(), context,
+            new FakeInProcessRecordCodeAllocator(), repo, NullLogger<CreateOrganizationUnitCommandHandler>.Instance);
     }
 
     private static UpdateOrganizationUnitCommandHandler Update(InMemoryOrganizationUnitRepository repo) =>

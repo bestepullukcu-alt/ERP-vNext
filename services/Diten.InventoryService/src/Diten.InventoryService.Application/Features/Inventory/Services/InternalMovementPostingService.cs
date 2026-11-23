@@ -47,6 +47,7 @@ public sealed class InternalMovementPostingService
     private readonly IExpiryPostingPolicy _expiry;
     private readonly IPostingActorName? _actorName;
     private readonly IInventoryReservationRepository? _reservations;
+    private readonly IReversalPrecondition _reversalPrecondition;
 
     public InternalMovementPostingService(
         IInventoryLedgerRepository ledger,
@@ -58,8 +59,10 @@ public sealed class InternalMovementPostingService
         ILogger<InternalMovementPostingService> logger,
         IExpiryPostingPolicy? expiry = null,
         IPostingActorName? actorName = null,
-        IInventoryReservationRepository? reservations = null)
+        IInventoryReservationRepository? reservations = null,
+        IReversalPrecondition? reversalPrecondition = null)
     {
+        _reversalPrecondition = reversalPrecondition ?? new AllowAllReversalPrecondition(); // MOD-0175-FU01 DL-3: DI always passes the registered one
         _actorName = actorName; // WP-MVP1-FU-CLEAN2: DI always passes it; a hand-built service stores no name
         _reservations = reservations; // MOD-0173-FU03 AC-40: DI always passes it; a hand-built service writes no refusal row
         _expiry = expiry ?? new AllowAllExpiryPostingPolicy(); // MOD-0176 F2: DI always passes the registered policy
@@ -376,6 +379,27 @@ public sealed class InternalMovementPostingService
         if (await _ledger.IsReversedAsync(originalId, ct))
         {
             return (null, AlreadyReversed(), null);
+        }
+
+        // MOD-0175-FU01 DL-3 (pack §8.8, Q-06 = A; XMC-001 MOD-0173): the reversal precondition, out of any transaction and after the
+        // "already reversed" check. A refusal is a 422 and writes nothing but the precondition's own refusal audit row; a precondition
+        // that cannot read answers 503 INVENTORY_UNAVAILABLE — fail-closed, never Allow.
+        ReversalPreconditionResult precondition;
+        try
+        {
+            precondition = await _reversalPrecondition.CheckAsync(original, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex, "inventory.reversal.precondition_unavailable Original={Original}", original.TransactionNumber);
+            return (null, Response<MovementResponseDto>.Fail(InventoryErrorCodes.InventoryUnavailable,
+                "The quality records of the original movement could not be read; nothing was posted.", 503), null);
+        }
+
+        if (!precondition.Allowed)
+        {
+            await _reversalPrecondition.FlushRefusalAuditAsync(ct);
+            return (null, Response<MovementResponseDto>.Fail(precondition.Code!, precondition.Message!, 422, precondition.Details), null);
         }
 
         var inverse = MovementDirectionRules.InverseOf(ReversalRules.DirectionOf(original));

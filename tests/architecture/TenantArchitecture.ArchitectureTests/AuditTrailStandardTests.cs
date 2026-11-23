@@ -77,6 +77,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
         // CT kararı 2026-10-15 (MOD-0290-FU05 T-3): CreateGlobalProductDraftCommand borçtan çıktı (10 → 9) — oluşturma niyeti
         // GlobalProductDraftCreated ürünle aynı ekleme yazımında; belirteçe IGlobalProductRepository.CreateDraftAsync girdi.
+        // CT kararı 2026-11-17 (WP-0289-DL1, MOD-0289 DL-1): 11 banka / şube yazma komutu izle (mdm-guvenilir-kaynak-niyeti) denetlenir; borç, istisna ve dolaylı sayısı DEĞİŞMEZ.
         ["Diten.MdmService"] = new(Debt: 9, Exceptions: 2, Indirect: 19),
         // Birleştirme WP-CT-LANE-TKO-MERGE-01: hattın WP-PLATFORM-AUDIT-INTX-01'i 25 borcu kapattı (164 → 139); takeover'ın
         // 3 dolaylı işleyicisi (Indirect: 3) aşağıdaki CT kararıyla kalır.
@@ -128,6 +129,15 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             + "/ILskuRepository.AcquireLifecycleOperationAsync"
             + "/IFirstGskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
             + "/ILskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
+            // CT kararı 2026-11-17 (WP-0289-DL1, MOD-0289 DL-1; KARAR D27/11, D24/2): banka / şube yazmaları — iş belgesi ve niyeti
+            // TEK koşullu yazımda (Version süzgeçli); toplu silme tek işlemde. Niyet MasterDataAuditOperation taşır.
+            + "/IBankRepository.CreateAsync"
+            + "/IBankRepository.UpdateAsync"
+            + "/IBankRepository.SoftDeleteAsync"
+            + "/IBankRepository.SoftDeleteManyAsync"
+            + "/IBankBranchRepository.CreateAsync"
+            + "/IBankBranchRepository.UpdateAsync"
+            + "/IBankBranchRepository.SoftDeleteAsync"
             + "/IProductAbbreviationRegisterRepository.AppendAuditIntentIfAbsentAsync"),
         // CT acceptance 2026-10-06 (MVP-3 lane, MOD-0193 pack §21): the BOM version history is written in the SAME Mongo
         // transaction as the BOM (K2 fail-closed), has no update/delete member, and is read on the BOM's own screen.

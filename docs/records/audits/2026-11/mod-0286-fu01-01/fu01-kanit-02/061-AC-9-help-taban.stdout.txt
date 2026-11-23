@@ -1,0 +1,11 @@
+usage: uic_changed_pages.py [-h]
+                            (--base REF | --self-test | --check-baseline | --draft-baseline)
+
+MOD-0286 DL-3 UI uyum seçicisi
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --base REF        CI kipi: <REF>...HEAD farkının dokunduğu sayfalar
+  --self-test       kendi kendine test (geçici depo)
+  --check-baseline  tabanı biçim kurallarıyla oku
+  --draft-baseline  bütün sayfalar, başlıklı TSV (yalnız yerelde)

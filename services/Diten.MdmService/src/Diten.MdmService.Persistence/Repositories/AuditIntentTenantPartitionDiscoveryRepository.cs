@@ -18,6 +18,8 @@ public sealed class AuditIntentTenantPartitionDiscoveryRepository : IAuditIntent
         new("mdm_lskus", AuditAggregateType.Lsku),
         new("mdm_product_legal_entity_scope_policies", AuditAggregateType.ProductLegalEntityScopePolicy),
         new("mdm_product_legal_entity_scope_rollout_states", AuditAggregateType.ProductLegalEntityScopeRolloutState),
+        new("mdm_banks", AuditAggregateType.Bank),
+        new("mdm_bank_branches", AuditAggregateType.BankBranch),
         new("mdm_product_abbreviation_register", AuditAggregateType.ProductAbbreviation)
     ];
 

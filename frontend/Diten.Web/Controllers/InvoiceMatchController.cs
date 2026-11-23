@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models.Procurement.InvoiceMatch;
+using Diten.Web.Views.Procurement.InvoiceMatch;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -39,9 +40,23 @@ public sealed class InvoiceMatchController : Controller
         ["QtyMismatch", "PriceMismatch", "AmountMismatch", "NoReceipt", "NoPo", "DuplicateInvoice", "CurrencyMismatch"];
     private static readonly string[] ExceptionStatusNames = ["Open", "Resolved"];
 
+    // Procurement invoice-match error codes (Response.Fail) → page resource keys. Codes are never shown raw;
+    // an unmapped code or a non-JSON body falls back to the shared GatewayError text.
+    private static readonly Dictionary<string, string> ErrorCodeKeys = new(StringComparer.Ordinal)
+    {
+        ["VALIDATION_FAILED"] = "ErrorValidationFailed",
+        ["LINE_AMOUNT_MISMATCH"] = "ErrorLineAmountMismatch",
+        ["UNKNOWN_REFERENCE"] = "ErrorUnknownReference",
+        ["CURRENCY_MISMATCH"] = "ErrorCurrencyMismatch",
+        ["DUPLICATE_INVOICE"] = "ErrorDuplicateInvoice",
+        ["INVALID_STATE"] = "ErrorInvalidState",
+        ["NOT_FOUND"] = "ErrorNotFound"
+    };
+
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<InvoiceMatchIndex> _localizer;
     private readonly ILogger<InvoiceMatchController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -52,12 +67,14 @@ public sealed class InvoiceMatchController : Controller
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
+        IStringLocalizer<InvoiceMatchIndex> localizer,
         ILogger<InvoiceMatchController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
+        _localizer = localizer;
         _logger = logger;
     }
 
@@ -101,7 +118,7 @@ public sealed class InvoiceMatchController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Invoice capture failed.");
-            AddGatewayErrorsToModelState(BuildExceptionErrors(ex));
+            ModelState.AddModelError(string.Empty, _sharedLocalizer["GatewayError"].Value);
         }
 
         return View($"{ViewRoot}/Create.cshtml", model);
@@ -228,7 +245,7 @@ public sealed class InvoiceMatchController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Invoice-match lifecycle proxy failed for {Path}.", path);
-            return StatusCode(StatusCodes.Status502BadGateway, new { success = false, errors = new[] { ex.GetBaseException().Message } });
+            return StatusCode(StatusCodes.Status502BadGateway, new { success = false, errors = new[] { _sharedLocalizer["GatewayError"].Value } });
         }
     }
 
@@ -354,31 +371,26 @@ public sealed class InvoiceMatchController : Controller
             ModelState.AddModelError(string.Empty, error);
     }
 
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        if (string.IsNullOrWhiteSpace(message))
-            message = _sharedLocalizer["GatewayError"].Value;
-
-        return [message];
-    }
+    private string LocalizeErrorCode(string code) =>
+        ErrorCodeKeys.TryGetValue(code.Trim(), out var key) ? _localizer[key].Value : _sharedLocalizer["GatewayError"].Value;
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
     {
         if (response.StatusCode == HttpStatusCode.Unauthorized)
             return [_sharedLocalizer["Unauthorized"].Value];
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+            return [_sharedLocalizer["AccessDenied"].Value];
 
         try
         {
             var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<object>>(_jsonOptions);
-            var errors = payload?.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).ToList();
+            var errors = payload?.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).Select(LocalizeErrorCode).Distinct().ToList();
             if (errors?.Count > 0)
                 return errors;
         }
         catch { }
 
-        var raw = await response.Content.ReadAsStringAsync();
-        return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
+        return [_sharedLocalizer["GatewayError"].Value];
     }
 
     private void SetIdempotencyKey()

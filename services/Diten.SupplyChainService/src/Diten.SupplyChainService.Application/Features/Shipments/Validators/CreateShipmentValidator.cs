@@ -10,6 +10,8 @@ public sealed class CreateShipmentValidator : AbstractValidator<CreateShipmentCo
         {
             RuleFor(x => x.Body.SourceModule).NotEmpty(); RuleFor(x => x.Body.SourceType).NotEmpty(); RuleFor(x => x.Body.SourceDocumentId).NotEmpty();
             RuleFor(x => x.Body.WarehouseReferenceId).NotEmpty(); RuleFor(x => x.Body.ShipToReference).NotEmpty();
+            // 3.5.0 CustomerRef pattern (MOD-0183 r9 §12, SB-25): lower-case Guid "D" or absent; anything else is 400 INVALID_REQUEST.
+            RuleFor(x => x.Body.CustomerRef).Must(CustomerRefRule.IsValid).When(x => x.Body.CustomerRef is not null);
             RuleFor(x => x.Body.PlannedShipAt).NotEmpty().Must(x => x.Offset == TimeSpan.Zero);
             RuleFor(x => x.Body.PlannedDeliverAt).Must((r, x) => x is null || (x.Value.Offset == TimeSpan.Zero && x >= r.Body.PlannedShipAt));
             RuleFor(x => x.Body.Lines).NotEmpty();
