@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>在文本框之外、没有打开对话框或侧面板时，按“?”键可打开此帮助及页面快捷键。</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>查看病例接收草稿。目前尚不能用于实际业务。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>获授权的药物警戒病例接收审核人员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>查看可用草稿</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>使用筛选条件，然后在有可用草稿时打开其详情。如果访问被阻止，请阅读显示的原因并联系负责的管理员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>仅使用合成数据准备病例接收草稿。目前尚不能用于实际业务。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>获授权的药物警戒病例接收审核人员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>查看草稿字段</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>仅使用合成数据，请勿输入真实患者数据。目前尚不能保存。请阅读显示的原因，如需帮助，请联系负责的管理员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>更改病例接收草稿之前，请检查已加载的值。目前尚不能用于实际业务。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>获授权的药物警戒病例接收审核人员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>检查已加载的值</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>仅使用合成数据，并检查所有已加载的值。目前尚不能更新；被阻止的请求不会保存更改。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>检查病例接收草稿的分诊和转交状态。目前尚不能用于实际业务。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>获授权的药物警戒病例接收审核人员。</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>检查状态</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>选择操作前，请检查草稿状态。目前尚不能执行分诊和转交操作。</value>
+  </data>
 </root>

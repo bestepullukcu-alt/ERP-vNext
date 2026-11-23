@@ -1291,4 +1291,16 @@
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Planificación de olas</value>
   </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Recepción de Casos y Triaje</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Crear Borrador de Recepción</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Actualizar Borrador de Recepción</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Detalles del Borrador de Recepción</value>
+  </data>
 </root>

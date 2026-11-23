@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>Вне текстового поля, когда не открыты диалог или боковая панель, клавиша «?» открывает эту справку с сочетаниями клавиш страницы.</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>Просматривайте черновики приёма случаев. Операционное использование пока недоступно.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>Уполномоченные специалисты по проверке приёма случаев фармаконадзора.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>Просмотреть доступные черновики</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>Используйте фильтры, затем откройте сведения о черновике, если они доступны. Если доступ заблокирован, прочитайте указанную причину и обратитесь к ответственному администратору.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>Подготовьте черновик приёма случая, используя только синтетические данные. Операционное использование пока недоступно.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>Уполномоченные специалисты по проверке приёма случаев фармаконадзора.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>Проверить поля черновика</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>Используйте только синтетические данные; не вводите реальные данные пациентов. Сохранение пока недоступно. Прочитайте указанную причину и при необходимости обратитесь за помощью к ответственному администратору.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>Проверьте загруженные значения черновика приёма случая перед их изменением. Операционное использование пока недоступно.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>Уполномоченные специалисты по проверке приёма случаев фармаконадзора.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>Проверить загруженные значения</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>Используйте только синтетические данные и проверьте все загруженные значения. Обновление пока недоступно; заблокированный запрос не сохраняет изменения.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>Проверьте статус триажа и маршрутизации черновика приёма случая. Операционное использование пока недоступно.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>Уполномоченные специалисты по проверке приёма случаев фармаконадзора.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>Проверить статус</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>Проверьте статус черновика перед выбором действия. Триаж и маршрутизация пока недоступны.</value>
+  </data>
 </root>

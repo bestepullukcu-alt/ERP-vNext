@@ -51,9 +51,9 @@
         { tone: 'primary',   icon: 'bx-plus',         words: ['create', 'instantiate', 'register', 'append', 'record', 'request', 'upload', 'attach', 'issue', 'capture', 'generate', 'propose', 'comment'] },
         { tone: 'warning',   icon: 'bx-edit',         words: ['update', 'edit', 'manage', 'configure', 'move', 'correct', 'recount', 'rebase', 'change', 'reconcile', 'apply', 'link', 'write', 'amend', 'replace', 'transition', 'migrate'] },
         { tone: 'danger',    icon: 'bx-trash',        words: ['delete', 'redact', 'invalidate', 'purge', 'dispose'] },
-        { tone: 'success',   icon: 'bx-check-circle', words: ['approve', 'publish', 'activate', 'reactivate', 'release', 'complete', 'confirm', 'sign', 'submit', 'start', 'renew', 'resolve', 'commit', 'post', 'decide', 'settle', 'dispatch', 'unblock'] },
+        { tone: 'success',   icon: 'bx-check-circle', words: ['approve', 'publish', 'activate', 'reactivate', 'release', 'complete', 'confirm', 'sign', 'submit', 'start', 'renew', 'resolve', 'commit', 'post', 'decide', 'triage', 'settle', 'dispatch', 'unblock'] },
         { tone: 'secondary', icon: 'bx-undo',         words: ['cancel', 'reject', 'suspend', 'deprecate', 'retire', 'expire', 'archive', 'revoke', 'deactivate', 'withdraw', 'rollback', 'reopen', 'block', 'end', 'close'] },
-        { tone: 'dark',      icon: 'bx-user-check',   words: ['assign', 'claim', 'delegate', 'allocate', 'reserve', 'share'] },
+        { tone: 'dark',      icon: 'bx-user-check',   words: ['assign', 'claim', 'delegate', 'route', 'allocate', 'reserve', 'share'] },
         { tone: 'primary',   icon: 'bx-play-circle',  words: ['run', 'execute', 'retry', 'initialize', 'evaluate', 'queue', 'recover'] }
     ];
 

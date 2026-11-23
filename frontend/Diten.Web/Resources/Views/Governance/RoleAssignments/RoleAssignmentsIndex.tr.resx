@@ -198,4 +198,10 @@
     <value>Rol bu izne zaten sahip. Sayfayı yenileyin.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Bu izni kaldırmak, kullanıcı ekleyebilen başka etkin hesap bırakmaz. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
+  <data name="ActionVerb_Triage" xml:space="preserve">
+    <value>Triyaj Yap</value>
+  </data>
+  <data name="ActionVerb_Route" xml:space="preserve">
+    <value>Yönlendir</value>
+  </data>
 </root>

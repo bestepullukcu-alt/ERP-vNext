@@ -1349,4 +1349,16 @@
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Wave Planning</value>
   </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Case Intake &amp; Triage</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Create Intake Draft</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Update Intake Draft</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Intake Draft Details</value>
+  </data>
 </root>
