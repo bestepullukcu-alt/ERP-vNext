@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
 @{
+    ViewData["PageCode"] = "CASEINTAKETRIAGEDETAILS";
     ViewData["Title"] = Localizer["DetailTitle"].Value;
     Layout = "_LayoutTenantShell";
     var intakeDraftId = ViewData["IntakeDraftId"] as string;
