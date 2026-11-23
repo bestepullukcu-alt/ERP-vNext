@@ -1,2 +1,0 @@
-ENGEL koşu kaydı kendi dizininde değil (docs\records\audits\2026-11\pvg-rev22-queue-validation-01\run-record-v1.json)
-ENGEL koşu kaydının araç özeti kod commit'indeki scripts/run_record.py ile aynı değil
