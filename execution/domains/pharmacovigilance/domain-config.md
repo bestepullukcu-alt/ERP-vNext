@@ -4,6 +4,76 @@
 > [.antigravity/rules/](../../../.antigravity/rules/)'dadir; capability-level sozlesme
 > [DCP-004](../../portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md)'tedir.
 
+## Current MOD-0230 revision 22 CI-closure exception (2026-11-23; formal/dispatch gated)
+
+MOD-0230 revision 22 is `ready-for-dev`, build/test gate open and human `approval_status: approved` for the exact
+27-file correction below. Direct user **“onaylıyorum”**, scope/XMC/content/presentation/single-writer consent and
+mechanical pack/domain promotion authority are recorded in
+`docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md`, SHA-256
+`0fa566c24df9a3d0910e1ebd1b4febc68711d92ca22e64dbc754535fe217e0d7`. That consent is NOT final-byte formal review/HIGH,
+ordinary prompt approval or an actual dispatch gate pass. Fresh author-separate final-version review/HIGH records
+for the exact pack/domain bytes, then each worker's reviewed ordinary scoped prompt and real dispatch gate 0 remain
+mandatory before product work. No worker GO or successful CI is claimed. Operational runtime and publication remain
+closed; new-SHA push/main merge are not authorized by this record.
+
+This section is the sole narrow revision 22 exception to the frontend/SharedResource Protected Paths and old exact
+DL-12 allowances below. The exhaustive 27 paths/key/statement boundaries live in the approved scope of
+`execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md` revision 22 and the durable artifacts:
+- `docs/records/reviews/MOD-0230/2026-11-23-rev22-scope-01/scope.json`, canonical LF SHA-256
+  `c1238043f7bced900b9b59224ada56e5cc5c9776a2be9c3a5c46077038d477ed`;
+- `docs/records/reviews/MOD-0230/2026-11-23-rev22-scope-01/localized-content.json`, canonical LF SHA-256
+  `875b6a025a64bac11cb923092015858d5e6b7615b2d684a7172ffb2327b405e4`.
+The owner record binds the original reviewed CRLF raw scope hash
+`a386b1bfe016bfdde6f129fef9dcc54efbc90595be87c5c7bb80141ae99105a9` and content hash
+`5157d2ec9e40bd835330f9117cbf6da08d13434391cb2ebb0680ee2c665c1d2a`. The same durable directory's
+`SOURCE-MANIFEST.json` preserves lossless raw originals/base64 and both representations' hashes with semantic
+equality. LF adoption changes no approved path/key/value/presentation. Frozen draft labels inside those artifacts
+remain original proposal provenance; the direct owner record adopts their exact scope/content, not a dispatch status.
+
+**Exact key/statement limits, seven languages `en,tr,fr,es,zh,ar,ru`:**
+
+| Existing path family / exact file | Only permitted revision 22 change | Count / owner-consented writer |
+|---|---|---|
+| `frontend/Diten.Web/Resources/PageHelpResource.{en,tr,fr,es,zh,ar,ru}.resx` | For CASEINTAKETRIAGE, CASEINTAKETRIAGECREATE, CASEINTAKETRIAGEEDIT and CASEINTAKETRIAGEDETAILS: only Help.{CODE}.Purpose / Audience / Step1Title / Step1 | 7 files / `pvg_r22_shared_writer` |
+| `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx` | Only four NEW Nav.Page keys for those normalized codes; additionally only SharedResource.fr.resx existing Nav.Domain.PHARMACOVIGILANCE value Pharmacovigilance → Pharmacovigilance (surveillance des médicaments) | 7 files / `pvg_r22_shared_writer` |
+| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx` | Only ActionVerb_Triage / ActionVerb_Route | 7 files / `pvg_r22_shared_writer` |
+| `frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml` | Only triage/route entries in the existing ActionVerbs map to those two Localizer keys | 1 file / `pvg_r22_shared_writer` |
+| `frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js` | Only triage word added to the existing success / bx-check-circle (decide) row, route word to dark / bx-user-check (assign/delegate); presentation only | 1 file / `pvg_r22_shared_writer` |
+| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml` | Only ViewData["PageCode"] = "CASEINTAKETRIAGE" in the existing setup block | 1 file / `pvg_r22_views_writer` |
+| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml` | Only ViewData["PageCode"] = "CASEINTAKETRIAGECREATE" in the existing setup block | 1 file / `pvg_r22_views_writer` |
+| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml` | Only ViewData["PageCode"] = "CASEINTAKETRIAGEEDIT" in the existing setup block | 1 file / `pvg_r22_views_writer` |
+| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml` | Only ViewData["PageCode"] = "CASEINTAKETRIAGEDETAILS" in the existing setup block | 1 file / `pvg_r22_views_writer` |
+
+Total 27 product files: **23 shared files with one writer**, **four module views with the other**, 154 new localized
+values plus exactly one existing French value replacement. The listed named workers are consented plans, not
+started/dispatched jobs. No overlapping author is allowed. They may run in separate clean managed worktrees in
+parallel only after their individual formal/ordinary prompt/dispatch gates pass. CT writes no product code.
+
+The nine RoleAssignments resource/bridge/script paths remain owned by **MOD-0018-FU9 / platform-team**, with the
+frontend-ui-ux implementation role identified by that pack's §3/§4. The direct user record grants ONLY this precise
+PVG label addition XMC exception, including the existing presentation rows; it does not transfer ownership, edit
+FU9's pack or authorize its other atomic groups. Its separate-step conditions remain. The direct user also covers
+this work's exact 14 common Help/SharedResource paths and coordination/single writer without giving PVG canonical
+ownership or whole-file permission. No authority is inferred from DCP-001/DCP-004 and neither DCP scope nor
+operational/API/auth boundary is expanded. The existing module identity and twelve slices remain; DL-7 help,
+DL-6 label obligation and DL-11 French correction are bounded by the pack's AC-46...AC-50 while AC-1...AC-45/history
+remain unchanged. Existing E4/E5 evidence minima and live-acceptance deferrals are not lowered to E2.
+
+No permission/grant/RBAC/checkbox/UAS behavior, schema/catalog/manifest/menu/routes/API/controller/store/audit, layout,
+CI/test/guard/ledger or operational behavior may change. No new module/FU/delivery slice, tour, related-page catalog
+or new product feature is authorized. Unlisted writes stop for a new bounded scope decision; already adopted routine
+choices do not require repeating owner approval. Final values are exact hash-bound content, not worker discretion.
+The previous six-file FE producer/prompt cannot certify these 27 paths. Use new ordinary scope-bound prompts and
+source/diff evidence, author-separate E2 verification, CT no-ff integration and independent combined verification.
+Keep PR #460. Every new final H invalidates old exact-source CI/AC-45 Unix binding; final required CI and existing
+pvg-api/ubuntu-22.04 target/full same-job TRX/source proof must be renewed without CI/guard/ledger changes. No merge/
+DONE while final required results are pending/red/unbound; operational runtime remains closed.
+
+> **Historical revision 21 gate note below:** the dated 2026-11-20 block (including its old “Current” heading and
+> embedded source-baseline hashes) is preserved verbatim as history. It is not revision 22 approval/dispatch evidence.
+> For the new correction only, this revision 22 section and the exact pack/owner record govern; other modules'
+> authorizations and all earlier version-bound records remain unchanged.
+
 ## Current MOD-0230 build/test gate (2026-11-20)
 
 MOD-0230 revision 21 is ready-for-dev with build_gate open and direct human scope/policy/shared-file/single-writer

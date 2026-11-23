@@ -1,0 +1,30 @@
+{
+  "at_utc": "2026-11-23T09:16:02.927556+00:00",
+  "H": "82bc773938baa6689f0089b89c765b60f4411932",
+  "pins": {
+    "MOD-0230-case-intake-triage.md": "69d7ed9e8ab1dd155aa0e868c0319b30e0b11ca19804b472a870f4e6e6c16435",
+    "rev21-to-rev22.diff": "89acb1b9bfe506a92d15b6a963c3bb55506f7b43e5defb842b2e339e9185bfbe",
+    "localized-content-rev22.json": "5157d2ec9e40bd835330f9117cbf6da08d13434391cb2ebb0680ee2c665c1d2a",
+    "scope-rev22.json": "a386b1bfe016bfdde6f129fef9dcc54efbc90595be87c5c7bb80141ae99105a9"
+  },
+  "independent_review_sha256": "eade0ba24641640ebe4150e335efd74a6d9e779ee8a8a30bafa7d850eb2e5305",
+  "ct_full_diff_read_and_patch_reconstruction_verified": true,
+  "ct_accepts_review_for_presenting_scope_to_owner": true,
+  "actionable_package_defects": 0,
+  "paths": 27,
+  "shared_paths": 23,
+  "PVG_views": 4,
+  "localized_additions": 154,
+  "French_replacement": 1,
+  "user_XMC_consent": false,
+  "product_dispatch": false,
+  "formal_final_byte_HIGH_and_prompt_gates": "pending after exact owner consent; no review transfer",
+  "repository_clean": true,
+  "remaining_execution_gates": [
+    "Exact27pathshared/FU9/content/family/singlewriterownerconsent",
+    "Finalpack/domainpairanddurablecontentadoption",
+    "FinalbyteindependentHIGHrecordsand2normalpromptgates",
+    "ActualcombinedE2andfinalHCIAC45proof"
+  ],
+  "current_CI": "Allservicejobssuccess/API456/Reg211; architecture231passed inPhase1attempt1; UIcompliance1newred andJS3fail; Phase1attempt2inprogress,original4583/2preserved"
+}
