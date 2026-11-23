@@ -6,7 +6,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 ## Güncel odak
 
-- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. İki yeni WP READY; son prompt/HIGH inceleme ve gerçekdispatch beklenir.
+- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. İki yeni WP READY. v1.0 normal kapıları tek keşif üretici hash bağı nedeniyle1; düzeltilmiş gerçek discovery02/35karar sonrası v1.1 ayrı HIGH inceleme ve normal0 beklenir. Ürün başlamadı.
 - **Test:** H82 gerçek service-tests API456/Reg211,0hata/0skip; aynıiş fullTRX/gerçeksyntheticmergeC ve Htree eşitliğiyle AC45 bağı ölçüldü. Phase1 ilkFAIL korundu; tekaynıkaynakattempt2 tenancy3/mimari231/Web4585,0hata/0skip. Retry kökneden düzeltmesi değildir.
 - **Test:** H82 JS5565/3FAIL (PVG39geçti):4helpcode ve triage/route etiketleri; UIselector FrenchliteralaynılığıFAIL. Rev22 yalnız bunların onaylı27yol düzeltmesidir. Her yeniH sonCI/AC45 bağını yenileyecek.
 - **Arka uç:** BE/L10N/FE/hazırlıklar CT entegre; parentDL12 IN_PROGRESS.6tarihîACCEPTED korunur, yeniACCEPTED yok. CT ürün yazmaz.
