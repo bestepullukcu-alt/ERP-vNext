@@ -1,0 +1,329 @@
+{
+  "kind": "Preparation only; no product worker / GO / branch / queue / commit change",
+  "source_ref": "6571d2cbbe8e6bd7db99ed420f05f381f9df51d9",
+  "created_via": "mcp__codex_app__create_worktree",
+  "scope_canonical_sha256": "c1238043f7bced900b9b59224ada56e5cc5c9776a2be9c3a5c46077038d477ed",
+  "requested_model_effort": "inherited gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor",
+  "worktrees": {
+    "pvg_r22_shared_writer": {
+      "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-shared\\ERP-vNext-git",
+      "head": "6571d2cbbe8e6bd7db99ed420f05f381f9df51d9",
+      "branch": "DETACHED",
+      "status_porcelain": "",
+      "git_common_dir": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git/.git",
+      "owned_path_count": 23,
+      "scope": "Exact named paths/key/statement limits only; no implementation dispatch"
+    },
+    "pvg_r22_views_writer": {
+      "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git",
+      "head": "6571d2cbbe8e6bd7db99ed420f05f381f9df51d9",
+      "branch": "DETACHED",
+      "status_porcelain": "",
+      "git_common_dir": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git/.git",
+      "owned_path_count": 4,
+      "scope": "Exact named paths/key/statement limits only; no implementation dispatch"
+    }
+  },
+  "baseline_files": [
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.en.resx",
+      "git_blob": "bd8b599ae8e6aa8104ec7bd251b0962b995e9944",
+      "canonical_git_sha256": "1c9aad50965b6171dde4638dd75352ea5c8da54be554282fb53919640fafefdb",
+      "raw_disk_sha256": "6e531d5bdef57706670490346ec0cce06e1187a0930f581949defc26386d536a",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.en.resx",
+      "git_blob": "5346f9a7c5b0d43e0b531854dff9295e91889640",
+      "canonical_git_sha256": "1416ba6ce45a1fc8dae10594a905d31ed223a2c82398549fb37ab068b7fd777e",
+      "raw_disk_sha256": "d86f7c876c4493da8fecaab0177a9897edba0a226496a39946feb5d360839b96",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.en.resx",
+      "git_blob": "120c4708727c281e6b53dc47f679737359c651ef",
+      "canonical_git_sha256": "67150e37b4a7340ad6d90a6c586634cbd26779f6eac4d67b0943f600fc5fecf6",
+      "raw_disk_sha256": "b3100b2a2d052813f7e9f850275019f340dab5b3ccc1a519ec624c8a3d7655af",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.tr.resx",
+      "git_blob": "4d511433c0489cadd37e0e23cb1cd8735bd87ca6",
+      "canonical_git_sha256": "0eb119b01d285932394404004681dfc7ebbb91a56201075f533f8546b7109ca6",
+      "raw_disk_sha256": "fc843cd6cec4cc659807eb51118a5d9f55713cdf5c9d6223411c9dfa9cc6ac0f",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.tr.resx",
+      "git_blob": "6b9bbde119271af55f9c6920488ffcdf1aa5502b",
+      "canonical_git_sha256": "6aa82aa064b1ea6b263d932ae2c5ee27893f3b107d6687c789e3a8ed10f28919",
+      "raw_disk_sha256": "c4c97896262575289f94fa5e533211fefc546cca9fdc5e80b41c014c4f6d1ef2",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.tr.resx",
+      "git_blob": "066687f20508ad26e4ea7d1cbe6bb8994d16888c",
+      "canonical_git_sha256": "7496e92f1f68d6ec96b1621bbd7c92c76c71f5024eccc878128d895f18a0dc7b",
+      "raw_disk_sha256": "272976177666989b8012209a5d7679a8196794153a6a47f47aee599d5cc0f0e4",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.fr.resx",
+      "git_blob": "546cf9215033fccba2022a800256b4c138e73e8c",
+      "canonical_git_sha256": "691eaa4eec8610175cf174d0651aacec7ecd15ddd7ed2dfa6f813ba3dc0f5a7e",
+      "raw_disk_sha256": "6b136fd91857b47c2356ada361a1fee1be0d722cfe9af3479e88f3e0b30467ad",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+      "git_blob": "2d3675540e689743f3b64ef7758743fa1e8a22d8",
+      "canonical_git_sha256": "a8a6351fe0140acf8e23acb246a23fbe66808148b57fac4d8e0fe5cea13cf694",
+      "raw_disk_sha256": "32e533309209141ba0cc17e8c26ef6f03e2599c1681ef9a18f14f8bc912ab03b",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": [],
+      "french_current_value": "Pharmacovigilance"
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.fr.resx",
+      "git_blob": "e7269b9f3bc0d2fce022865caeac5186a5110f63",
+      "canonical_git_sha256": "6b0b8880fd02abd23e7880e2b02406a97d030d7a22a124b4420c04017a52747d",
+      "raw_disk_sha256": "469e0fca5646cfc7101f8bb7a0c02e22c37e3b52a771c706802f02fbb6396f73",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.es.resx",
+      "git_blob": "10590a736e81f70dd684e2fed3863dcdc3079916",
+      "canonical_git_sha256": "6db6af7c2fbf73937e91fc7bf4e7164dd20e0ea989ca485f3e0081bdf0318781",
+      "raw_disk_sha256": "e55eff3d031101704cfe151a38a62af17d74853a1df9524a6a5168d7c62c7273",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.es.resx",
+      "git_blob": "22fdb1d80060f8697ba13f261bf914d4a1e47993",
+      "canonical_git_sha256": "400f22f99f86e340e336479de53ad70cbf389439bf74287396cb9a1ed70c431b",
+      "raw_disk_sha256": "61247e9ac4104e2c93db7bae64723ed38a40018e18b779b51de0fedc8a1fa73a",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.es.resx",
+      "git_blob": "e60db42f8230fc022a539c1a2a3a469673c9b8e2",
+      "canonical_git_sha256": "78a7f66fb0b653d8b9a295dcc18c0d9f1eec5994ac16604ca6d3aee95a80fce4",
+      "raw_disk_sha256": "3533aa72afe782ff1b78024c80b347c53cb15f8a04ebf0f527457d1f7dac5a3e",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.zh.resx",
+      "git_blob": "ad3dae53ce8719800d6c8eae165e263bb5b60668",
+      "canonical_git_sha256": "ec62ecdab2c4dd00082b7a2c13a3e092447c7cbe03c995a809f8c3ac1a4a07bd",
+      "raw_disk_sha256": "fa3fd54dcd9b7e5d57005a84ee0f1fd2e310d6e9187a607cf8efd141d9ffc773",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.zh.resx",
+      "git_blob": "bbecebd161db967ceef785cb01c81a69c16c47ef",
+      "canonical_git_sha256": "45b9c0a52b838098c76e05d9ae87ee68d19f5259d3f75a74ce7e9b18f312f4d5",
+      "raw_disk_sha256": "fe88f3ad64d31ae7f3b1c20c65a523a4bb5745262dfd8f48fe3a78343cfe89be",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.zh.resx",
+      "git_blob": "d0749b1c2edf81ac49fb0a14f6b6ef5fa16b37cd",
+      "canonical_git_sha256": "90e4bbaee88c1063f9bad7dad19dcc9334e221681b4329e024d0f240ebdfd9fa",
+      "raw_disk_sha256": "c8634cbfa570efd8ccbda4da7cef77e2cf9129f492c9546abdab188d3a2f4733",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.ar.resx",
+      "git_blob": "8608c3c38608b23d99d759b49d2eb1797798618a",
+      "canonical_git_sha256": "9fe58da0d3f88781ee5c8b524511af767df44e5c16c31e1b94393a165163853b",
+      "raw_disk_sha256": "e67a1c4252172f1500ea96475b6a9351353649d7321ee9e9722f0cfe0249fca7",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.ar.resx",
+      "git_blob": "1292dd779d310c0a398c5f65692862a33adff866",
+      "canonical_git_sha256": "f27168ed94a55b10ae54491663384e7826251264ea378dea0f031495125be2d0",
+      "raw_disk_sha256": "75fd448c47eeef8ca0c8f51aa9a24aabf06420299505b9565a68092e2f782cdc",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ar.resx",
+      "git_blob": "af56f14603ab0f6a89ae2865f69cf709a5c201e9",
+      "canonical_git_sha256": "b299a3cf4ecb808b765fee3c72984362be31135f2a17eeb9d28e72d66c164a99",
+      "raw_disk_sha256": "4c6d1208290c9e712ed6696769b462d49f52f4993488aef3a1938760b0f7a65e",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.ru.resx",
+      "git_blob": "ef38916760584f2ed40cd3c72c282fc41de68479",
+      "canonical_git_sha256": "a9ade1ca8630b6bc87812560a9e220df54a317648e3ff695f5371d420af9a1df",
+      "raw_disk_sha256": "19629e355ca9dd36c2ac181223d15adfe97526fb353a35418c1b593b0fa98c24",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/SharedResource.ru.resx",
+      "git_blob": "f6a7b33e41bdffdaf40b78859bfb7c70b507c039",
+      "canonical_git_sha256": "d20a53bcc87452c9be3d7ba67c2e67024a27d45f7cad544b918cf058eaa07f7d",
+      "raw_disk_sha256": "f862a6ee044f63e4c3b977635633cd2cb719badf2f39a81caa017954e43254bc",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ru.resx",
+      "git_blob": "ae4df7831dc94e050d6e34842594045a0f1d046e",
+      "canonical_git_sha256": "5610a893ce407760d889cc7dd0fcb7a6acf83a3a9d824ad03d55cbeae5877d9b",
+      "raw_disk_sha256": "e4d7816f95940a00dd2e5c4ef0341468b9d60a2f694e99418388bc382d1b2d82",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "new_keys_already_present": []
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml",
+      "git_blob": "7cd4ff78127504800118ff7adffb7fff422353f6",
+      "canonical_git_sha256": "263aa36782d2954d28ffb53403b2f673fda27b65e3623663c18884e7924e4e45",
+      "raw_disk_sha256": "4696080127011c38f8c393f4bafc44c73a32f127fc5cb7c7d0184e2b6d3bcb9f",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true
+    },
+    {
+      "actor": "pvg_r22_shared_writer",
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js",
+      "git_blob": "bba1b91ae42c26b2f04f0f684f7c01dc4cd91eb5",
+      "canonical_git_sha256": "e2f46b6e1478391956cae775db39525fa33c91bea4be4b63c36b8a45ff1bc62d",
+      "raw_disk_sha256": "e26429dd830715bb2419fa10452952444a3d3bcbbc9ef33b429700ce6ff9ad95",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true
+    },
+    {
+      "actor": "pvg_r22_views_writer",
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml",
+      "git_blob": "9bcad38d4e4771454e7d3ac3e424f1bf034c25b6",
+      "canonical_git_sha256": "61061203707ec41405f1e5046d26879b9b7d37ae7c4018b4d9ccaa80451dba41",
+      "raw_disk_sha256": "fb9511a8c6a9896a49d9d1977c19307eb794dc663b80f1de9e55fafa8769d02f",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "already_sets_PageCode": false
+    },
+    {
+      "actor": "pvg_r22_views_writer",
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+      "git_blob": "8140717c198bdea2c92e4192a68f81f7ff8cd9d5",
+      "canonical_git_sha256": "542bedb4626607ee3af0e21fdc41fa4f4a4915e2343a516eb4c0f012397ba59a",
+      "raw_disk_sha256": "ee95ade3b1c498b1101305810209cba939b407fcb76737d783bef917e288678f",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "already_sets_PageCode": false
+    },
+    {
+      "actor": "pvg_r22_views_writer",
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+      "git_blob": "5ace0423c748ab63d2f45c6f224aacca76b7d5c3",
+      "canonical_git_sha256": "c72df56c62a744ecc7bdc8833bc085246a191a669b78dcb1a074f84a5ced1e19",
+      "raw_disk_sha256": "f437c5e4254acd9af791db015c6730432f4e8a123b90d362c57d964a7cadcb6b",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "already_sets_PageCode": false
+    },
+    {
+      "actor": "pvg_r22_views_writer",
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml",
+      "git_blob": "14cf84254b50fbe6a36a54dde34e09db381bdb6e",
+      "canonical_git_sha256": "adc5ecbfbfec1136df7f4b8a52e8dc77e61110b906a6ea721e270580851b9e1c",
+      "raw_disk_sha256": "fdc93d13aae7c85926cb328db9c47a2a7bb49bc332f8bbe609ebfba2a2d27fec",
+      "raw_disk_has_CR": true,
+      "LF_equivalent_to_git": true,
+      "already_sets_PageCode": false
+    }
+  ],
+  "disjoint_single_writer_sets": true,
+  "datatable_touch_observation": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "-c",
+      "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.stderr.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\.antigravity\\scripts\\verify_datatable_page.py",
+      ".",
+      "--area",
+      "Pharmacovigilance",
+      "--module",
+      "CaseIntakeTriage",
+      "--reference",
+      "compact",
+      "--api-profile",
+      "proxy",
+      "--format",
+      "gaps"
+    ],
+    "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git",
+    "started_utc": "2026-11-23T09:38:04.607160+00:00",
+    "exit_code": 1,
+    "stdout_sha256": "f0d5b69ff2e80615475f14b8dce56bd3c504898b49d48eb1c18dcafc0bd77381",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "[factory] index.js calls DitenDataTable.createList (dataMode='server') — 15/15 mechanics verified in C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\diten-datatable.js\n1) Server mode: export declared server-side (BL-452 — CSV/Excel = every matching row, not the page) — data_mode=server but index.js declares no `export: { mode: 'server', url }` — CSV/Excel write only the page DataTables holds (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n2) _IndexL10n.cshtml provides BulkDelete — Missing L10n key: BulkDelete (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_IndexL10n.cshtml)\n3) _IndexL10n.cshtml provides BulkDeleteConfirm — Missing L10n key: BulkDeleteConfirm (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_IndexL10n.cshtml)\n4) _IndexL10n.cshtml provides AreYouSure — Missing L10n key: AreYouSure (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_IndexL10n.cshtml)\n5) _IndexL10n.cshtml provides Export — Missing L10n key: Export (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_IndexL10n.cshtml)\n6) _IndexL10n.cshtml provides Import — Missing L10n key: Import (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_IndexL10n.cshtml)\n7) _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all) — Missing select-all checkbox header (class containing dt-checkboxes-select-all) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\Views\\Pharmacovigilance\\CaseIntakeTriage\\_DataTable.cshtml)\n8) index.js declares bulk action config (bulkOptions / bulkBarSelector) — Missing bulk action config (bulkOptions or bulkBarSelector wiring) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n9) index.js wires bulk selection (getSelectedIds(...) or onBulkAction) — Missing bulk selection wiring (expected getSelectedIds(...) or bulkOptions.onBulkAction) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n10) index.js calls bulk endpoint (.../bulk) — Missing bulk endpoint binding (expected URL ending with /bulk) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n11) index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action]) — Missing bulk delete trigger (#btnBulkDelete, .bulk-delete-btn or [data-bulk-action]) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n12) index.js wires clear-selection (clearSelectionSelector or clearSelection()) — Missing clear-selection wiring (bulk bar must expose a clear control) (file: C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\wwwroot\\assets\\js\\Pharmacovigilance\\CaseIntakeTriage\\index.js)\n",
+    "stderr": "",
+    "not_a_product_test_run": true
+  },
+  "both_still_clean_and_frozen_after_measurement": true
+}
