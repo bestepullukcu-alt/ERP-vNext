@@ -6,7 +6,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 
 ## Güncel odak
 
-- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. Rev22 shared IN_PROGRESS; views INTEGRATED. v1.0 normal kapıları tek keşif üretici hash bağı nedeniyle1; düzeltilmiş gerçek discovery02/35karar sonrası v1.1 ayrı HIGH incelemeler UYGUN/kritik0/engelleyici0 ve iki actualNORMAL0. Taze worktree kontrolü temiz; CTGO verildi; views exact3af28aa bağımsızUYGUN sonrası noff300c5347 ile INTEGRATED; shared exact23 PARTIALba132012 bağımsızE2 devam ediyor. NativefullJS5577/13FAIL ve finalLinuxfullCI açık.
+- **Karar:** Rev22 exact27kapsam/XMC/metin/singlewriter insan onaylı; yeniden kapsam onayı beklenmiyor. Finald20813b2/domain0aa1706e iki ayrı resmî incelemede UYGUN/açık0; kesin HIGH check0 geçti. Rev22 shared VERIFYING; views INTEGRATED. v1.0 normal kapıları tek keşif üretici hash bağı nedeniyle1; düzeltilmiş gerçek discovery02/35karar sonrası v1.1 ayrı HIGH incelemeler UYGUN/kritik0/engelleyici0 ve iki actualNORMAL0. Taze worktree kontrolü temiz; CTGO verildi; views exact3af28aa bağımsızUYGUN sonrası noff300c5347 ile INTEGRATED; shared exact23 PARTIALba132012 bağımsızE2 devam ediyor. NativefullJS5577/13FAIL ve finalLinuxfullCI açık.
 - **Test:** H82 gerçek service-tests API456/Reg211,0hata/0skip; aynıiş fullTRX/gerçeksyntheticmergeC ve Htree eşitliğiyle AC45 bağı ölçüldü. Phase1 ilkFAIL korundu; tekaynıkaynakattempt2 tenancy3/mimari231/Web4585,0hata/0skip. Retry kökneden düzeltmesi değildir.
 - **Test:** H82 JS5565/3FAIL (PVG39geçti):4helpcode ve triage/route etiketleri; UIselector FrenchliteralaynılığıFAIL. Rev22 yalnız bunların onaylı27yol düzeltmesidir. Her yeniH sonCI/AC45 bağını yenileyecek.
 - **Arka uç:** BE/L10N/FE/hazırlıklar CT entegre; parentDL12 IN_PROGRESS.6tarihîACCEPTED korunur, yeniACCEPTED yok. CT ürün yazmaz.
@@ -23,7 +23,7 @@ Artifact/ArtifactData aracı bu ortamda yok; kullanıcının verdiği claude.ai 
 | DL-4 | API ve kimlik/kiracı | 1 ACCEPTED, 3 INTEGRATED |
 | DL-5 | Denetim kaydı | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-6 | İzin anahtarları | 1 INTEGRATED |
-| DL-7 | Kiracı ekranı | 3 INTEGRATED, 1 REWORK, rev22 shared IN_PROGRESS, views INTEGRATED (ortak iş DL-6/DL-11 eki de taşır) |
+| DL-7 | Kiracı ekranı | 3 INTEGRATED, 1 REWORK, rev22 shared VERIFYING, views INTEGRATED (ortak iş DL-6/DL-11 eki de taşır) |
 | DL-8 | Gateway rotaları | 1 ACCEPTED |
 | DL-9 | Operasyonel çalışma | Ayrı WP satırı yok; paket/backlog üzerinden izlenir |
 | DL-10 | Mongo kalıcılık | 1 INTEGRATED, 1 REWORK |
@@ -34,11 +34,11 @@ Bu özet alt işlerin durumunu sayar; tüm dilimlerin kabul edildiği veya opera
 
 ## Kuyruk özeti
 
-`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:18, `IN_PROGRESS`:2, `REWORK`:2, `SUPERSEDED`:1. Toplam **44** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
+`ACCEPTED`:6, `DISCOVERED`:10, `INSPECTED`:1, `INSPECTION_REQUIRED`:4, `INTEGRATED`:18, `IN_PROGRESS`:1, `REWORK`:2, `SUPERSEDED`:1, `VERIFYING`:1. Toplam **44** kaynak satırı. Yalnız `ACCEPTED` satırları işaretlidir; bütün modülün bittiği anlamına gelmez.
 
 ## Şimdi ve sırada
 
-- [ ] **Ekran: yedi dil yardım/başlık/izin etiketleri ve Frenchnav** — `WP-0230-DL7-CI-SHARED-01` · `IN_PROGRESS`; rev22 tam23sharedyol, tekwriter. Kaynak: pvg-rev22-dispatch-02/STATE-JOURNAL.md.
+- [ ] **Ekran: yedi dil yardım/başlık/izin etiketleri ve Frenchnav** — `WP-0230-DL7-CI-SHARED-01` · `VERIFYING`; rev22 tam23sharedyol, tekwriter. Kaynak: pvg-rev22-dispatch-02/STATE-JOURNAL.md.
 - [ ] **Ekran: dört PVG sayfasının gerçek PageCode kimliği** — `WP-0230-DL7-CI-VIEWS-01` · `INTEGRATED`; yalnız4atama. Kaynak: aynıgünlük.
 
 Aşağıdaki eski H51/önceki prompt ölçümleri tarihî E2 kayıtlarıdır; bugünün CI/PR durumu üstteki Güncelodak satırlarıdır. Yeni sonuçlar geçmişhamkanıtın üzerine yazılmaz.
