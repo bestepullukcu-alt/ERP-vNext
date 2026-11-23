@@ -1,0 +1,157 @@
+{
+  "recorded_utc": "2026-11-23T09:45:45.097753+00:00",
+  "kind": "READ ONLY exact27-path dirty-state inventory; not global/external writer proof or GO",
+  "scope_sha256": "c1238043f7bced900b9b59224ada56e5cc5c9776a2be9c3a5c46077038d477ed",
+  "root_head": "3cb5131f0d89a3a2219c1fe594f868e2758aa794",
+  "observed": [
+    {
+      "worktree": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-ct-handoff/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-web/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-win/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-win-r2/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-dl12-registry/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-shared/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-views/ERP-vNext-git",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-mod0188-evidence",
+      "scope_status_exit": 0,
+      "scope_porcelain": "",
+      "stderr": ""
+    },
+    {
+      "worktree": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-main",
+      "scope_status_exit": 128,
+      "scope_porcelain": "",
+      "stderr": "fatal: not a git repository (or any of the parent directories): .git\n",
+      "physical_scope_files": [
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.en.resx",
+          "raw_sha256": "01fde95b420c186d4e01b0c00cfa2ee0fc025f5ba569d9fd378111a96babd5d7"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.en.resx",
+          "raw_sha256": "9e2a34158850f2537df4eeb364facc9ccd809b3bde11d1ca79d5823caac28936"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.tr.resx",
+          "raw_sha256": "5293e6ccbdc415f616eeb5f3eb430475448ab4e6a4febc50952b832f0db887a9"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.tr.resx",
+          "raw_sha256": "dcc05cf238ffe767f36f2de4280fa61c4b45b12e895f927d973a2a2c6bca8a7f"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+          "raw_sha256": "432190d2016aeee5533ad75194b3e4dec3d1ddf106c7001275b31671dd2bf230"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.fr.resx",
+          "raw_sha256": "adb1fce2c7652b0678bb39e9d16d41c33c638fcc1e2771aa56d0820b38e097da"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.es.resx",
+          "raw_sha256": "b72cb39bc45f5f16328d299e469d96adc440a8c8d91d7f7350395659ab634f97"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.es.resx",
+          "raw_sha256": "34a1dc93f56f233f3266a754c45ba9ad044c58cf6e0e464a142319e8bc16ecba"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.zh.resx",
+          "raw_sha256": "4d00fd2a9401b1839159d4b4ad1aa544b696d43f6290c5a78fcd5b9e3a9deb42"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.zh.resx",
+          "raw_sha256": "125dbc7612d3c03580382d63d019ebb9443f3bf3c0a85d409a744518b086bd87"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.ar.resx",
+          "raw_sha256": "05a0093a3fd55c8553c29fa6b9e2081f9a8ccf274e40402c297ce78d3cd4fea7"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ar.resx",
+          "raw_sha256": "7d0a9102ddbc6af4e095df77f73a0e4e50889741634e7131522f40ce641f1cba"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.ru.resx",
+          "raw_sha256": "2a3fc7eccb918db9fc9e8ac55f8ae23a06f875ad8a8d98a92122990419e31eaf"
+        },
+        {
+          "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ru.resx",
+          "raw_sha256": "9a1caeda538063bfd43de27c769afbc488d2afe11b8d32349accbd9f95c90e4c"
+        },
+        {
+          "path": "frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml",
+          "raw_sha256": "ff6889c44d9a5ae926745680ed2ec010643d1b01c4a4461467c44e2ec458f297"
+        },
+        {
+          "path": "frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js",
+          "raw_sha256": "64e629721ac06d9ffad9500a8559a8c038be29dbd562400d20de56529dd36e67"
+        },
+        {
+          "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml",
+          "raw_sha256": "e41f7d49c7cf09cb744aab36e25a7aef11d9c12edd009df96c0a28174fab71ed"
+        },
+        {
+          "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+          "raw_sha256": "0884197e1233d8d46c0a341849bd716a703b323c54bc9f3933e58575869cdf7f"
+        },
+        {
+          "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+          "raw_sha256": "d72465cd0d6d60564eaf3e4cf1edea7f40c7d12e3584922c4995be269ba7f0a9"
+        },
+        {
+          "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml",
+          "raw_sha256": "bd3298a81c83c54bd65318c590f3c22110432cccce52884dd3251d31fe11f28f"
+        }
+      ],
+      "interpretation": "Stale idle chat cwd is not a Git checkout; physical exact scope paths separately enumerated. No source cleanup attempted."
+    }
+  ],
+  "chat_observation": "Recent20 app inventory: only current CT active; CT-MVP4 idle; older PVG worker chats notLoaded. Child agents are management/prompt preparation and ZIP-only review; no product writer dispatched. Unlisted machines/manual edits/older chat pages not proved absent. Recheck before GO.",
+  "planned_exclusive_writers": [
+    "pvg_r22_shared_writer owns23",
+    "pvg_r22_views_writer owns4"
+  ],
+  "path_sets_disjoint": true
+}
