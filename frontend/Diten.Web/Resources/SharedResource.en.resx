@@ -914,6 +914,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Content Scope</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Content Set</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Eligibility</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>Master Record</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Visit Frequency Policy</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>Cases</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Consumption Declarations</value></data>

@@ -849,6 +849,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Alcance de contenido</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Conjunto de contenidos</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Elegibilidad</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>Registro maestro</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>Casos</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Declaraciones de consumo</value></data>
