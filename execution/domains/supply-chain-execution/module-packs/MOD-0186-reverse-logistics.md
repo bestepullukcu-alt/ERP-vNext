@@ -7,7 +7,9 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r10 (slice B DL-3, DL-4; customer shown from customerRef, SHIPMENT-BUNDLE 3.5.0, per the MVP-1 CT answer of 2026-11-03 accepted by Natig K1): draft, not approved; needs CT-APR-02 and a CT-APR-01 row before code. DL-5 (K2) is not yet in force."
+approval_status: pending
+revision: "r12 (2026-11-23) — fixes from the independent review docs/records/reviews/MOD-0186/2026-11-23-a4e80d68.md (KOŞULLU) of r11, §36.9: slice table DL-3, DL-4, DL-5 name full headings so the approval gate reads DL-1…DL-6 (F-1); decision record linked (F-3); RR-8 / RC-7 one wording, adapter answer log line binds the trace with the Gateway response X-Correlation-Id, new S-RC-7b (F-4); §8 and C-4: envelope correlationId is no link to the shipment, pre-DL-6 returns carry the shipment root (F-5); line citations, RR-9 comments, RC-3 'never 409 CORRELATION_ROOT_MISMATCH' (F-6); RC-9 bound to the CT's SHIPMENT-BUNDLE / returns-semantics proposal and patch (git apply --check, before DL-6), O-R11-1 open waiting for the CT (F-2). No rule changes meaning. r11 (2026-11-20) — §36 (new): the return's correlation root is the service's (option C of MOD-0183 r11 applied to Returns; owner decision Beste 2026-11-20). The root is the X-Correlation-Id the service received on createReturn (behind the Gateway: the Gateway's own, gateway/Diten.ApiGateway/Observability/EdgeCorrelation.cs:16-17); transitionReturn, the §34 receipt and idempotent replay do not compare the request's correlation with any root; 409 CORRELATION_ROOT_MISMATCH leaves the Returns operations; the Web adapter sends a UUID of its own and no longer needs the root. Cause (CT independent review 2026-11-20, inference): ReturnRepository.cs:31, :71, :109 and ReturnReceiptCoordinator.cs:50 answer 409 behind the Gateway on every create, transition, receipt and replay, and the tests did not see it because the ReturnsClaimsHttpHost.cs:41-45 stub echoes the request's correlation as the shipment root. New rules RR-1…RR-9, new AC RC-1…RC-9 with sabotages S-RC-1…S-RC-7, new slice DL-6, SHIPMENT-BUNDLE / Returns annex new version required (kind: CT decision). Changed outside §36: §7, §8, §16 (correlation item), §23 (Headers, Correlation, same-key rows, error-correlation sentence), §25 (pointer), §32.3, §32.4 (adapter rows, adapter headers, Q279 note), §32.8 (CORRELATION_ROOT_MISMATCH row, support reference), §32.10 (Gateway passthrough), §32.11 (RU-VS1), §34.1 (X-Correlation-Id row), §35.7 (Approved row), slice table. r10 (1d005bcd) approved (CT-APR-01 row, 2026-11-04, only DL-3, DL-4); that approval does not cover r11. Identity preflight re-run 2026-11-20: OK."
+status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r10 (slice B DL-3, DL-4; customer shown from customerRef, SHIPMENT-BUNDLE 3.5.0, per the MVP-1 CT answer of 2026-11-03 accepted by Natig K1): approved (CT-APR-01 row 1d005bcd, 2026-11-04; only DL-3, DL-4). DL-5 (K2) is not yet in force. r11 (§36: correlation root behind the Gateway, option C, Beste 2026-11-20; slice DL-6): ready-for-dev / approval_status pending — needs a new independent review (CT-APR-02) and a CT-APR-01 row before code; DL-6 also waits for the SHIPMENT-BUNDLE / Returns annex version of §36.2. r12 (2026-11-23, fixes of review a4e80d68, §36.9): pending — needs a narrow re-review (CT-APR-02) and the CT-APR-01 row; that approval covers DL-6 only."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -75,10 +77,14 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
 | INVENTORY v1 | Frozen consumed (1.5.0) | Read/reference, movement reconciliation and — §34 only — `postMovement` with `movementType: CUSTOMER_RETURN`, `toStockStatus: QUARANTINE` |
 | `SHIPMENT-BUNDLE` v1 | Frozen | Reverse API/lifecycle/mock authority |
 | Warehouse outbound | Frozen read-only upstream seam exists | No inbound return, receiving or automatic ingress implied; see §21 |
+| SHIPMENT-BUNDLE version after 3.5.1 + Returns annex version after `returns-semantics-v3.0.0.md` (r11, §36.2) | Not written; kind (additive/minor or major) is a CT decision; proposal and patch are CT work, written before DL-6 development and checked with `git apply --check` (r12, RC-9) | DL-6 does not merge before both are on the line; single writer MVP-6 CT; this pack touches no contract file |
 
 ## 8. Runtime Constraints
 
-Prospective mutations are tenant/LE scoped, idempotent and correlation-preserving. Receipt requests the §34 `CUSTOMER_RETURN` movements and records their references; it never writes INVENTORY persistence or
+Prospective mutations are tenant/LE scoped and idempotent; each return keeps the correlation root it was created with on
+every event (r11, §36: the root is the X-Correlation-Id the service received on createReturn; a later command's or a
+replay's correlation is that request's trace and is not compared with the root). The `correlationId` of a return envelope carries no
+meaning of a link to the shipment; the link is `shipmentId` only; returns created before DL-6 carry the shipment's root (r12, §36.2 C-4). Receipt requests the §34 `CUSTOMER_RETURN` movements and records their references; it never writes INVENTORY persistence or
 holds a balance. Invalid/terminal lifecycle transitions produce no event or partial write. Draft
 status forbids runtime implementation.
 
@@ -124,7 +130,7 @@ Use frozen `SHIPMENT-BUNDLE` `/returns**`; route publication is a separate integ
 - [ ] Future code consumes MOD-0183/INVENTORY strictly by frozen contract/mock. — **⚠ PARTIAL** (reference by mocked transport; BOUNDARY-REFS B-04 (`ShipmentScope` type coupling) unruled; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Return quantity invariants and lifecycle are atomic and deterministic. — **✅ MET** (`ReturnLifecycleTests.…All64Pairs…`, `ReturnConcurrencyTests.Create_Races…`, `ReturnAtomicityTests.*`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] No stock collection, projection or movement SoR exists in MOD-0186. — **✅ MET** (`ReturnEventCorrelationTests.A_received_and_dispositioned_return_creates_no_stock_record` (2026-10-19); G5 DB check; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
-- [x] Correlation ID remains unchanged through reverse lifecycle events. — **✅ MET** (`ReturnEventCorrelationTests.Every_return_event_type_carries_the_shipment_root` (8/8, 2026-10-19); G5 run; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] The return's correlation root is carried on every reverse lifecycle event (r11: the root stored at createReturn, §36 RR-1, RR-3). — **↻ RE-MEASURE (r11)** (old evidence measured the inherited Shipment root: `ReturnEventCorrelationTests.Every_return_event_type_carries_the_shipment_root` (8/8, 2026-10-19); G5 run; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`; under r11 re-measured by RC-4 and RC-8)
 
 ## 17. Test Expectations
 
@@ -257,15 +263,15 @@ No permission inferred from a valid token alone; test scoped actors independentl
 
 | Case | Frozen fact / bounded requirement | Exact unresolved decision / acceptance oracle |
 |---|---|---|
-| Headers | GET and both POST require UUID X-Correlation-Id; POST key is string length1..128 | Nil UUID, duplicate header, parser/whitespace behavior, validation/auth ordering and fallback trace must be owner-bound for this family; no Carrier-default import |
+| Headers | GET and both POST require UUID X-Correlation-Id; POST key is string length1..128 | Nil UUID, duplicate header, parser/whitespace behavior, validation/auth ordering and fallback trace must be owner-bound for this family; no Carrier-default import. **r11 (§36):** behind the Gateway the value the service receives is the Gateway's own (`EdgeCorrelation.cs:16-17`; the caller's value travels on `X-Client-Correlation-Id`, which the service does not read); it is the request's trace, and on createReturn it becomes the return's root (RR-1) |
 | JWT + scope | Bearer; server-resolved tenant; LegalEntityId request-borne and MDM-validated fail-closed (R-2, SHIPMENT-BUNDLE 3.2.0); global JWT/header matching; no payload-selected scope | Security owner binds trusted claim names, missing/duplicate claim handling, scope-header validation and precedence. Test two tenants×two LEs and missing permission; all lookups fail closed |
 | Missing/cross-scope target | POST create/transition declare404 NotFound; list declares200 only | Target code `RETURN_NOT_FOUND` exists in shared examples; reference-specific404 mapping/disclosure must be chosen; list no-leak filtering required |
 | Schema / auth / persistence failure | Shared Error requires code/message/correlationId plus contractVersion:v1, details optional | GET lacks declared errors; POST lacks400/401/403/5xx (and415). Owner supplies exact status/code/header matrix and decides clarification vs versioned amendment before DEV |
 | Duplicate / changed payload | Create declares409 Conflict; shared IDEMPOTENCY_KEY_REUSED example | Transition **does not declare409**; cannot substitute422 to conceal it or silently add409. Business duplicate code/error is separately unresolved |
 | Lifecycle | Transition422 + INVALID_RETURN_TRANSITION frozen | Verify all source×target pairs and zero partial writes/events; create422 examples from other modules are not local business scenarios |
-| Correlation | LifecycleEventEnvelope requires UUID equal to first command root, preserved in chain | Different-root subsequent mutation/replay response body/header/root semantics need owner decision; never hash/replace root or copy Carrier cross-root policy |
-| Same key, same valid payload/root | idempotentReplay field exists | Proposal: durable original result, no new mutation/audit/event; create201/transition200 proposed but no dedicated replay status description. Owner confirms |
-| Same key/payload, different correlation | Not specified for this family | Decide same-root restriction vs accepted retry trace policy consistent with immutable event root; exact failure status/code if denied required |
+| Correlation | LifecycleEventEnvelope requires UUID equal to first command root, preserved in chain | **Decided (r11, Beste 2026-11-20, option C; §36 RR-1…RR-3):** the first command is createReturn, so the root is the correlation the service received on it, stored once and carried on every event; a subsequent mutation with a different correlation is accepted, the root is not replaced, and the response header / `error.correlationId` is that request's correlation (RR-4). Never hash/replace root or copy Carrier cross-root policy |
+| Same key, same valid payload | idempotentReplay field exists | Proposal: durable original result, no new mutation/audit/event; create201/transition200 proposed but no dedicated replay status description. Owner confirms. r11: the correlation is not part of the match (RR-5) |
+| Same key/payload, different correlation | Not specified for this family | **Decided (r11, §36 RR-5):** accepted retry; original result with `idempotentReplay: true` and the current request's correlation in the header; the correlation is not compared, so no 409 `CORRELATION_ROOT_MISMATCH`. A changed payload stays 409 `IDEMPOTENCY_KEY_REUSED` |
 | Same key, different payload | Shared conflict example | Scope tuple, actor policy, canonicalization (decimal representations, order, null/omission), retention and transition response mapping must be approved |
 | Concurrent same-key / lost response | Durable L3 and idempotency required | One committed entity/receipt/audit/event. After commit loss retry returns original receipt; before commit rollback leaves none. Uncertain commit never reported as definitely rolled back |
 
@@ -273,6 +279,9 @@ No new error code or undocumented status is declared resolved by this draft. Own
 operation/schema pointer and a failing/passing scenario, then update or publish affected authority if necessary.
 Error.code being open string is not permission to invent business policy. Required output schema stays plain Error;
 Carrier no-details rule is not universal. Error correlation for invalid/missing header is currently undefined here.
+r11 (§36): behind the Gateway the service always receives the Gateway's UUID; a direct call with a missing or invalid
+header still gets 400 `INVALID_REQUEST` with a service-generated trace (`ReturnContextMiddleware.cs:53`, `:66`), which is
+never a root (RR-6).
 
 Proposed internal key identity: (TenantId,LegalEntityId,operationId,targetId-or-create,key), durable success receipt,
 no TTL until approved retention; auth validated before receipt access. These are **review proposals**, not defaults.
@@ -434,6 +443,8 @@ no parent wildcard, and nothing of DL-5 (35.7) is granted here.
   (RB-21) follows section "Self-registration".
 - Not written by DL-3 or DL-4: `shipment-bundle.openapi.yaml` (3.5.0 lands with MOD-0183 DL-3), service `Program.cs`, the Gateway
   route for `getReturn` (integration owner), and any Shipment source file.
+
+**§36 DL-6 additions (r11).** Written only when r11 is approved; the exact list is §36.6. Still no parent wildcard.
 
 ## 26. Transaction/event and verification contract (future acceptance)
 
@@ -662,7 +673,7 @@ Observed 2026-09-26: `OK`, exit 0.
 
 Published SHIPMENT-BUNDLE 3.1.0 / wire v1 (`6dc1dd48…96aa2`; accepted on 3.0.0, see §31) and Returns annex (`00990a28…8a11`) only:
 `queryReturns` (list/filter/reload), `createReturn` (create offcanvas), `transitionReturn` (row action), and Shipment-owned
-`getShipment` consumed read-only (number, status, lines, and the lifecycle root resolved **server-side**). No Return by-ID GET, detail page,
+`getShipment` consumed read-only (number, status, lines; r11: the lifecycle root is no longer read by the UI adapter, §36 RR-8). No Return by-ID GET, detail page,
 edit, delete, bulk, import/export, server paging/search/sort, reason/disposition catalogue, remaining-entitlement display, Inventory or Warehouse call.
 
 ### 32.4 Screens, routes, permissions
@@ -674,25 +685,31 @@ Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → Supp
 | Page | GET `/SupplyChain/Returns` | — | `supplychain.returns.read` | — |
 | List adapter | GET `/SupplyChain/Returns/api?shipmentId=&status=` | GET `/api/shipment-bundle/returns` | read | `queryReturns` |
 | Shipment resolve adapter | GET `/SupplyChain/Returns/api/shipments/{shipmentId:guid}` | GET `/api/shipment-bundle/shipments/{shipmentId}` | `.create` + `supplychain.shipments.read` | `getShipment`; projection = number, status, lines (lineNumber, quantity, uomId); root never returned to the browser |
-| Create adapter | POST `/SupplyChain/Returns/api` | root via `getShipment`, then POST `/api/shipment-bundle/returns` | `.create` + `supplychain.shipments.read` | `createReturn` |
-| Transition adapter | POST `/SupplyChain/Returns/api/{returnId:guid}/transition` | root via `getShipment`, then POST `/api/shipment-bundle/returns/{returnId}/transition` | `.transition` + target key + `supplychain.shipments.read` | `transitionReturn` |
+| Create adapter | POST `/SupplyChain/Returns/api` | shipment pre-read via `getShipment` (404 mapping; r11: no root taken from it), then POST `/api/shipment-bundle/returns` | `.create` + `supplychain.shipments.read` | `createReturn` |
+| Transition adapter | POST `/SupplyChain/Returns/api/{returnId:guid}/transition` | shipment pre-read via `getShipment` (404 mapping; r11: no root taken from it), then POST `/api/shipment-bundle/returns/{returnId}/transition` | `.transition` + target key + `supplychain.shipments.read` | `transitionReturn` |
 | Unsupported detail/edit/delete/bulk/import/export | absent | absent | — | no route, control, proxy or request |
 
 Permission keys stay exactly as in the annex (D186-05): `supplychain.returns.read`, `.create`, `.transition` plus target keys `.authorize`,
 `.transit`, `.cancel`, `.receive`, `.disposition`, `.close`, plus the approved UI prerequisite **`supplychain.shipments.read`** for create and
 transition actors (G-SHIPREAD). The UI check is a display decision (UAS-001 §4); `[HasPermission]` on the backend stays the authority.
 
-Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UUID trace for GET, **the Shipment's `lifecycleCorrelationId`**
-for create/transition (the Return inherits the Shipment root; annex "Persist inherited Shipment root"); `Idempotency-Key` = browser per-intent
+Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = **a UUID of the adapter's own for every call**, GET and POST
+alike (r11, §36 RR-8: the adapter's trace for this call; it no longer reads or sends the Shipment's `lifecycleCorrelationId`, and the
+Gateway replaces the value with its own anyway, so the service decides the root, RR-1); `Idempotency-Key` = browser per-intent
 key forwarded exactly; **`X-Tenant-Id`/`X-Legal-Entity-Id` required by the Returns family, filled only from the signed session claims**, never
 from browser input; scope query keys never sent. Antiforgery on every POST. The browser-supplied `shipmentId` on a transition is a lookup hint
-only; the backend root check (409 `CORRELATION_ROOT_MISMATCH`) is authoritative.
+only, for the shipment pre-read; the backend's scoped return lookup (404 `RETURN_NOT_FOUND`) is authoritative. r11: there is no root check
+any more (409 `CORRELATION_ROOT_MISMATCH` leaves the Returns operations, RR-7).
 
-**Measured 2026-10-03 (Q279, ledger rows Q279 and Q285 in `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`):** the root rule
-above is enforced by the backend for every caller of `createReturn`, not only this adapter. Against a started service, a create with a
-fresh `X-Correlation-Id` returned 409 `CORRELATION_ROOT_MISMATCH`; the same create carrying the Shipment's own `lifecycleCorrelationId`
-returned 201. Source of the check: `ReturnRepository.cs:56` (create) and `:92` (transition). Any client must read `lifecycleCorrelationId`
-from the Shipment detail and send it. The Returns UI is not built (§33 open gap 4), so no built client has been checked against this rule.
+**Measured 2026-10-03 (Q279, ledger rows Q279 and Q285 in `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`) — history, superseded
+by r11:** the root rule then in force was enforced by the backend for every caller of `createReturn`, not only this adapter. Against a started
+service, a create with a fresh `X-Correlation-Id` returned 409 `CORRELATION_ROOT_MISMATCH`; the same create carrying the Shipment's own
+`lifecycleCorrelationId` returned 201. Source of the check then: `ReturnRepository.cs:56` (create) and `:92` (transition); today `:71` and
+`:109`, plus the replay check `:31` and the §34 receipt check `ReturnReceiptCoordinator.cs:50`. The measurement ran without the Gateway.
+**Rule from r11 (§36):** no client reads `lifecycleCorrelationId` to call Returns; any client sends its own UUID, and behind the Gateway the
+service receives the Gateway's. Since WP-PLATFORM-AUDIT-INTX-01 FIX2/FIX3 the Gateway does not adopt a caller's `X-Correlation-Id`
+(`EdgeCorrelation.cs:16-17`, `CorrelationPropagationDelegatingHandler.cs:24-27`), so the old rule answered 409 to every Gateway create,
+transition, receipt and replay (CT independent review 2026-11-20, inference from code; not measured live).
 
 ### 32.5 List — bounded DataTables v2 profile
 
@@ -746,7 +763,7 @@ InTransit→Cancelled does not exist (annex correction). Optional fields not lis
 | `RETURN_NOT_FOUND` (404) and shipment 404 | One identical safe-not-found text + support reference for unknown, foreign-scope and soft-deleted targets; action closed; list reload; hidden surfaces inert and not keyboard-reachable; late responses never re-expose them |
 | `INVALID_RETURN_TRANSITION` (422) | Stale-state conflict + support reference + reload |
 | Other 422 (quantity, UoM, eligibility, duplicate line, disposition) | Specific localized message where the code is known; exact code set bound from the accepted backend at Phase 1.5; unknown code → generic localized text + support reference; inputs kept |
-| `CORRELATION_ROOT_MISMATCH` (409) | "Request no longer matches the shipment record"; no automatic new key |
+| `CORRELATION_ROOT_MISMATCH` (409) | **r11: no longer sent by any Returns operation (§36 RR-7).** The row, the adapter's published-code entry (`SupplyChainReturnsController.cs:55`), the page branch and the `ErrCorrelationRootMismatch` text of the 7 `ReturnsIndex` languages leave in DL-6, in the same slice as the contract version that removes the code from the Returns operations (§36.2, RR-9). Until then the old text ("Request no longer matches the shipment record"; no automatic new key) stays and is unreachable |
 | `IDEMPOTENCY_KEY_REUSED` (409) | Stop retry; new user intent required |
 | `RETURN_SOURCE_CHANGED` (409) | Source shipment changed since the first return; show the conflict; no automatic adjustment |
 | `RETURN_SHIPMENT_ROOT_INVALID` (502) | Shipment reference data invalid; no retry loop |
@@ -761,7 +778,9 @@ request was already received with different values and that a different request 
 Measured by R-2 (`docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md` §T2): a key re-minted per payload created **two Returns from one intent**; one key per opened form gave 409 and **one** Return.
 A 201/200
 with `idempotentReplay: true` is shown as completed, then the list reloads; a replay snapshot is never shown as current state. The response
-`X-Correlation-Id` (= `error.correlationId`) is a copyable support reference, never labelled as the lifecycle root.
+`X-Correlation-Id` (= `error.correlationId`) is a copyable support reference, never labelled as the lifecycle root. r11 (§36 RR-4,
+RR-8): it is the trace of that one call (the adapter writes its own UUID there); the return's root is the service's, stored at create, and
+is never sent to the browser.
 
 ### 32.9 Localization, UAS-001, accessibility
 
@@ -790,7 +809,9 @@ guards, existing records and Git state.
 One CT-appointed **integration owner** (the same owner as for Claims §32) alone delivers exact diffs for:
 gateway routes (**listed, not edited here**): GET+POST `/api/shipment-bundle/returns`, POST `/api/shipment-bundle/returns/{returnId}/transition`,
 and confirmation of GET `/api/shipment-bundle/shipments/{shipmentId}`, explicit routes with OPTIONS (NET-001), with passthrough of
-Authorization, X-Correlation-Id, Idempotency-Key, X-Tenant-Id and X-Legal-Entity-Id, and `/returnsXYZ` not matched;
+Authorization, Idempotency-Key, X-Tenant-Id and X-Legal-Entity-Id (r11: `X-Correlation-Id` is not passed through — the Gateway forwards its
+own, `EdgeCorrelation.cs:16-17`, and the caller's value on `X-Client-Correlation-Id`, which the Returns service does not read; §36 RR-1, RR-6),
+and `/returnsXYZ` not matched;
 page/permission registration and G-SHIPREAD role design; tenant navigation and Ctrl+K with registry-reconciled module/page codes; shared
 L10n nav keys in 7 languages; personalization confirmation; the `ICON_MAP` entries; Shipment root emission in the target; and uptake
 of the accepted Returns backend (46 paths + its separately approved `Program.cs` composition) into the integrated target.
@@ -802,7 +823,7 @@ Full row text with HTTP/browser/DB expectations, owner, evidence type and depend
 
 | ID | Criterion | Readiness |
 |---|---|---|
-| RU-VS1 | Early vertical slice: real-Auth actor resolves a Delivered Shipment (non-null root) and creates a Return for one line; 201 Requested with Gateway `X-Correlation-Id` = Shipment root and X-Tenant/LE from session; +1 return, +1 entitlement per line, +1 receipt/audit/Pending outbox; reload shows the row | BLOCKED (target, gateway, G-SHIPREAD, seed) |
+| RU-VS1 | Early vertical slice: real-Auth actor resolves a Delivered Shipment and creates a Return for one line through the Gateway; 201 Requested with X-Tenant/LE from session; the return's stored root = the `X-Correlation-Id` the service received (the Gateway's), neither the Shipment root nor the adapter's or browser's value (r11, §36 RR-1); a following transition through the Gateway answers 200, not 409; +1 return, +1 entitlement per line, +1 receipt/audit/Pending outbox; reload shows the row | BLOCKED (target, gateway, G-SHIPREAD, seed) |
 | RU-01, RU-02, RU-03 | Same-origin chain (BLOCKED gateway); list query parity; envelope/absent fields | BLOCKED / READY |
 | RU-04, RU-05 | Skeleton/empty/error; UAS-001 no read | READY |
 | RU-06, RU-07 | Create CTA gating (BLOCKED G-SHIPREAD); action gating per target with 403 zero-write | BLOCKED / READY |
@@ -960,7 +981,7 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 | `transactionDate` / `postingDate` | the validated `occurredAt` of the receipt command that **opened the attempt**; posting day = UTC day (E-6); stored, and changed only for a **Refused** line that a later command corrects — under a new key (below). The `ReturnReceived` event and the receipt carry the `occurredAt` of the command that completes `Received` (r6) |
 | `idempotencyKey` / `Idempotency-Key` | deterministic per line and request version: `{returnId}:{shipmentLineNumber}:customer-return:a{k}`, `k` = 1 for the first request and **+1 each time a Refused line's request is corrected** (r6, review F-1), so a key is never sent with two different bodies and `IDEMPOTENCY_KEY_REUSED` cannot arise from a correction |
 | `X-Legal-Entity-Id` | the return's stored, validated `LegalEntityId`, always sent (F-4) |
-| `X-Correlation-Id` | the receipt command's correlation id, forwarded (E-1) |
+| `X-Correlation-Id` | the receipt command's correlation id, forwarded (E-1); unchanged by r11 — it is that command's trace (§36 RR-4), never the return's root and never compared with it |
 
 The caller's token is forwarded (G5): the receiving role needs `inventory.movements.create`, granted in Roles →
 Permissions (the BL-652 interim path), never through the default role template. An INVENTORY 403 is answered as 403
@@ -1186,7 +1207,7 @@ Dispatch of a shipment is not touched: K2 names no workflow there.
 | Platform 401 / 403 | 403 `RETURN_WORKFLOW_FORBIDDEN`, no state change; the panel names the missing workflow permission in localized text |
 | Platform refuses the body | 400 `RETURN_WORKFLOW_REJECTED`, no state change |
 | Workflow unreachable | 503 `DEPENDENCY_UNAVAILABLE`, no state change |
-| Approved | The return moves `Requested → Authorized`, `ReturnAuthorized` event, audit, with `occurredAt` = the event's `CompletedAt` and the return's stored correlation root |
+| Approved | The return moves `Requested → Authorized`, `ReturnAuthorized` event, audit, with `occurredAt` = the event's `CompletedAt` and the return's stored correlation root (unchanged by r11: the root stored at create, §36 RR-1, RR-3; the consumer's own correlation is not compared with it) |
 | Rejected | `Requested → Rejected`, `ReturnRejected`; entitlement released as today, once |
 | Cancelled / timed out | The return stays `Requested`, `authorizationState = None`; it can be submitted again with `n + 1`. The user sees the outcome |
 | Four-eyes violation | The approver is the person who opened the return. Nothing moves: the return stays `Requested`, `authorizationState = None`, `lastAuthorizationOutcome = FourEyesViolation`, entitlement unchanged. It can be submitted again with `n + 1`, and the screen says a new approval is needed. The instance id stays in the audit record |
@@ -1323,18 +1344,197 @@ tree picker stays as written.
 The two change sets of r10 (customer identity; then Natig K1's four decisions of 2026-11-03 on the open questions) are one draft revision, not reviewed in between. A third set closes the narrow re-review of `aa24eab0…` (KOŞULLU, 0 YÜKSEK) with CT kararları 2026-11-03: F-1 single rule — own `customerRef` only, "old record" otherwise, list customer column defined (35.5, RB-25); F-2 decision number 4, not 6 (§25, this table); F-3 RB-27 expects 400 `INVALID_REQUEST` from the measured allow-list; MOD-0183 F-3 and F-4 carried here (35.6 copy safety, item 1 statuses 200, 400, 401, 403, 404, 500, 503). The final review (`0c0d1bac…` on MOD-0183, F-10) adds one slice-note sentence here: DL-3 and DL-4 inherit MOD-0183's DL-3 merge gate through 3.5.0. The slice table, every YAML block, §1–§24, §26–§34, 35.1, 35.4, 35.7, 35.8 and 35.10 are unchanged. Scope stays DL-3 and DL-4; DL-5 stays
 outside this approval.
 
+## 36. Correlation root behind the Gateway (r11)
+
+> **Revision r11 — `ready-for-dev`, `approval_status: pending`.** Owner decision: Beste, 2026-11-20 — option C of MOD-0183 r11
+> (MOD-0183 pack section "Correlation root behind the Gateway (r11)", Natig 2026-11-15) applied to Returns. Needs a new independent
+> review (CT-APR-02) and a CT-APR-01 row before any code; that approval covers DL-6 only. The decision record is
+> `docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md` (written with r11, commit `b1573204b`; r12, 36.9).
+> r12 (2026-11-23) applies the findings of the independent review `docs/records/reviews/MOD-0186/2026-11-23-a4e80d68.md`. Code facts below are measured on `main` `2de950edc` (this pack's text there is the r10 text approved
+> as `1d005bcd`) unless marked; the CT's finding that the old rule fails behind the Gateway is an inference from code, not a live measurement.
+
+**Cause.** Since WP-PLATFORM-AUDIT-INTX-01 FIX2/FIX3 the Gateway does not adopt a caller's `X-Correlation-Id`: it sets
+`TrustInboundCorrelation = false` for itself (`gateway/Diten.ApiGateway/Observability/EdgeCorrelation.cs:16-17`), removes the caller's
+header and forwards a value it minted (`CorrelationPropagationDelegatingHandler.cs:24-27`); the caller's value travels apart on
+`X-Client-Correlation-Id`. This is a security decision and stays. The Returns service still requires the request's correlation to
+equal a root (prefix `services/Diten.SupplyChainService/src/Diten.SupplyChainService.`):
+
+| Place | Check |
+|---|---|
+| `Persistence/Features/Returns/ReturnRepository.cs:31` | replay: the receipt's stored correlation ≠ request → 409 `CORRELATION_ROOT_MISMATCH` (create, transition, Received) |
+| `Persistence/Features/Returns/ReturnRepository.cs:71` | create: the shipment's `lifecycleCorrelationId` (`observation.Root`) ≠ request → 409 |
+| `Persistence/Features/Returns/ReturnRepository.cs:109` | transition: the return's `CorrelationRoot` ≠ request → 409 |
+| `Application/Features/Returns/Receipt/ReturnReceiptCoordinator.cs:50` | §34 Received: the same → 409 (not in the CT review's list; found while writing r11) |
+
+The Web adapter sends the Shipment root as `X-Correlation-Id` on create and transition (`frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs:560-576`,
+`ProxyReturnsMutationAsync`: `ReturnRootResolution.From` at `:560`, `AddReturnsHeaders(request, scope, root.Root)` at `:573`; the file-head
+comment `:17`, `:26`, `:30` only describes it), and the Gateway replaces it, so behind the Gateway every create, transition, receipt and replay
+answers 409. The service tests do not see it: the HTTP host's Returns reader stub echoes the request's correlation back as the shipment root
+(`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ReturnsClaimsHttpHost.cs:41-45`, `:108`), and no test turns
+red when the transition check `:109` is removed (CT review gap S3). Q279 (§32.4, 2026-10-03) measured the old rule without the Gateway.
+
+**Decision.** Beste, 2026-11-20: option C, as in MOD-0183 r11 — the service decides the root. Options A (match on `X-Client-Correlation-Id`)
+and B (a body field) are not chosen, for the reasons recorded in MOD-0183 r11.
+
+### 36.1 Rules
+
+| # | Rule |
+|---|---|
+| RR-1 | The return's root is the `X-Correlation-Id` the service received on `createReturn` (behind the Gateway: the Gateway's). It is stored as `ReturnOrder.CorrelationRoot` at create (`ReturnRepository.cs:100` stores the request's correlation instead of `observation.Root`), never changed, never derived from the shipment and never taken from `X-Client-Correlation-Id`. The link to the shipment stays `ShipmentId` (and `documentGroupId` on the §34 movements). Returns created before DL-6 keep the root they have; nothing is back-filled. |
+| RR-2 | `createReturn` does not compare the shipment's `lifecycleCorrelationId` with the request (`ReturnRepository.cs:71` removed); `transitionReturn` (`:109`) and the §34 Received path (`ReturnReceiptCoordinator.cs:50`) do not compare the request's correlation with the return's root. A different correlation is not a refusal. No other check moves: scope, permissions, lifecycle, entitlement, the §34 lease and key rules, and the reference reader's `RETURN_SHIPMENT_ROOT_UNAVAILABLE` (503) / `RETURN_SHIPMENT_ROOT_INVALID` (502) on the shipment detail (`Infrastructure/Features/Returns/ReturnReferenceReader.cs:78-79`) stay as they are (open item O-R11-2). |
+| RR-3 | Every lifecycle event and outbox envelope (`ReturnRepository.cs:154`, already `order.CorrelationRoot`) and every `returns_audit` row carries the stored root: the audit's `CorrelationRoot` is written from `order.CorrelationRoot`, not from the request (`:135` writes the request value today, which equalled the root only while the check held). `causationId` is unchanged. |
+| RR-4 | The request's correlation is the command's trace: it is the response `X-Correlation-Id` and `error.correlationId` (`Api/Features/Returns/ReturnContextMiddleware.cs:54`, `:60`), it is written on that command's idempotency receipt in the existing field (`ReturnRepository.cs:128`; field name kept, no migration, read as the trace) and on its log lines, it is forwarded on the shipment read (`ReturnReferenceReader.cs:89`), and §34.1 still forwards it to INVENTORY on Received. |
+| RR-5 | Replay: a receipt is found by (tenant, legal entity, operation, target-or-create, key). Same fingerprint → the original result with `idempotentReplay: true` and the **current** request's correlation in the header; the correlation is not compared (`ReturnRepository.cs:31` removed; this also covers `FindTransitionReplayAsync`, `:226-230`). Different fingerprint → 409 `IDEMPOTENCY_KEY_REUSED` as today. Same rule as MOD-0183 R11-5. |
+| RR-6 | No caller value decides a root or gates a write: `X-Client-Correlation-Id` is not read by the service. The 400 `INVALID_REQUEST` for a missing or non-UUID `X-Correlation-Id` (`ReturnContextMiddleware.cs:66`) is unchanged; its generated trace (`:53`) is never a root. |
+| RR-7 | 409 `CORRELATION_ROOT_MISMATCH` leaves `createReturn` and `transitionReturn`: no Returns path returns it. The constant `ContractErrorCodes.CorrelationRootMismatch` stays, because Loads still uses the code (`Persistence/Features/Loads/LoadRepository.cs:17`, `:45`). |
+| RR-8 | Web adapter: `X-Correlation-Id` on every Returns call is the adapter's trace for that call (`scope.Trace`: the browser's valid trace, otherwise a UUID the adapter mints — as for GET today). It no longer reads `lifecycleCorrelationId`; `ReturnRootResolution` and its adapter-originated 503 / 502 root mapping leave `ProxyReturnsMutationAsync`. The adapter's answer log line writes the adapter's trace together with the `X-Correlation-Id` of the Gateway's response (the correlation the service received; on create, the return's root), read before the adapter replaces the response header with its trace (`SupplyChainReturnsController.cs:581`, `:585`), so the support reference the user sees reaches the service log and the return's root without the Gateway request log (r12, F-4 of review a4e80d68). The shipment pre-read stays for its 404 mapping (open item O-R11-3). The browser never had the root and still does not. |
+| RR-9 | UI code set: `CORRELATION_ROOT_MISMATCH` leaves the adapter's published-code list (`SupplyChainReturnsController.cs:55`) and the transition adapter's comment (`:348`), the page map, comment and branches (`wwwroot/assets/js/SupplyChain/Returns/index.js:84`, `:876`, `:924`, `:1226`), the `ErrCorrelationRootMismatch` key of the 7 `ReturnsIndex` languages, `_IndexL10n.cshtml:130`, `index.l10n.js:157` and the Web tests that list it, in DL-6, together with the contract version of 36.2. If the CT keeps the code in the Returns operations (open item O-R11-1), the UI set stays unchanged. Loads UI is not touched. |
+
+### 36.2 Contract versions needed
+
+No contract file is touched here. Single writer MVP-6 CT. Base: SHIPMENT-BUNDLE 3.5.1 (MOD-0183 r11 DL-8; on the MVP-1 line, `main` still has 3.5.0), whose text left
+Loads, Returns and Claims untouched. **The kind of version — additive/minor or major — is the CT's decision**; r11 proposes none and does
+not write the patch. **r12 (F-2 of review a4e80d68):** the SHIPMENT-BUNDLE / `returns-semantics` proposal and its patch are CT work, written
+by the MVP-6 CT before DL-6 development starts and measured with `git apply --check` on the line DL-6 merges into; RC-9 measures DL-6
+against that patch, and the kind waits for the CT decision (O-R11-1). What changes:
+
+| # | Place | Change |
+|---|---|---|
+| C-1 | `createReturn`, `transitionReturn` descriptions | "inherited Shipment root" → RR-1…RR-5 (root = the correlation the service received on `createReturn`; later commands and replays not compared) |
+| C-2 | `components/parameters/CorrelationId` | its "event correlation equals request correlation" sentence holds for Returns only on `createReturn` (as 3.5.1 says for Shipments) |
+| C-3 | 409 of `createReturn` and of `transitionReturn` | the `CORRELATION_ROOT_MISMATCH` example leaves both (RR-7); the 409 status stays (`IDEMPOTENCY_KEY_REUSED`, `RETURN_SOURCE_CHANGED`, `RETURN_RECEIPT_IN_PROGRESS`). Removing a declared error is not additive; this is why the kind is a CT decision (O-R11-1) |
+| C-4 | Returns annex `returns-semantics-v3.0.0.md` | a new annex version replaces `:9` ("mismatch409"), `:24` ("committed receipt root then fingerprint → fresh reference/target/root"), `:30-31` (same-root replay; "Different root precedes changed payload409"), `:66-67` (root code `CORRELATION_ROOT_MISMATCH409`; "Same-root changed valid payload") and `:76` ("Persist inherited Shipment root, not local create root" → the root is the local create correlation, RR-1). The new annex version also says: the `correlationId` of a return envelope carries no meaning of a link to the shipment; the link is `shipmentId` only; returns created before DL-6 carry the shipment's root (r12, F-5 of review a4e80d68; no consumer may rely on the envelope correlation to find the shipment). The shipment-root annex `shipment-root-semantics-v3.0.0.md` names no Returns rule and is unchanged |
+
+`ContractErrorCodeParityTests` stays green (the code remains in Loads). **Dependency:** DL-6 does not merge before the new SHIPMENT-BUNDLE
+version and annex version are on the line it merges into; whether the CT applies them inside DL-6 under an exception (as MOD-0183 DL-8)
+or ahead of it is the CT's decision. Gateway routes are unchanged.
+
+### 36.3 Not changed
+
+Lifecycle and arrows, permissions, scope and 404 rules, entitlement, the §34 receipt rules (keys `a{k}`, lease, late writer, refusals),
+event types and payloads, status codes other than RR-7, the customer copy (35.6), DL-5 (35.7) and every MOD-0183, MOD-0185 and MOD-0187 file.
+The Loads adapter and Loads UI keep `CORRELATION_ROOT_MISMATCH`.
+
+### 36.4 Other modules (not in r11)
+
+Claims (MOD-0187, `ClaimRepository.cs:32,71,102`, 409 `CLAIM_CORRELATION_MISMATCH`) and Loads (MOD-0185, `LoadRepository.cs:17,45`) break
+the same way behind the Gateway and need their own revisions and annex versions (MOD-0183 r11 order: Returns, Claims, Loads). Shared file:
+`ReturnsClaimsHttpHost.cs` also hosts the Claims stub (`StubClaimReferenceReader`, `:112-117`); DL-6 changes only the Returns stub
+(`StubReturnReferenceReader`, `:104-108`), and the Claims stub keeps echoing until the Claims revision.
+
+### 36.5 Acceptance and sabotage
+
+Service tests under `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/` and the HTTP host; Web tests in
+`frontend/Diten.Web.Tests/`. **Gateway-like host:** in every RC row the Returns reader stub of `ReturnsClaimsHttpHost` returns a shipment
+root fixed when the host is built, never the request's correlation, and each request carries a new correlation, as the Gateway does.
+Each sabotage turns its row red on production code.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| RC-1 | Create over HTTP with correlation c1 while the shipment's root is s0 ≠ c1: 201; stored `CorrelationRoot` = c1; `ReturnRequested` envelope `correlationId` = c1 | S-RC-1: restoring `ReturnRepository.cs:71` (create answers 409) turns it red; S-RC-1b: storing `observation.Root` at `:100` turns it red |
+| RC-2 | Transitions Authorized, InTransit (and the Rejected and Cancelled paths) each with a new correlation c2, c3…: 200, not 409. Closes CT review gap S3 | S-RC-2: restoring `ReturnRepository.cs:109` turns it red |
+| RC-3 | Received through the §34 coordinator with a new correlation c4 reaches the §34 outcome (200, or its 409 `RETURN_RECEIPT_IN_PROGRESS` / 422 / 503), never 409 `CORRELATION_ROOT_MISMATCH` | S-RC-3: restoring `ReturnReceiptCoordinator.cs:50` turns it red |
+| RC-4 | Every envelope and every `returns_audit` row of RC-1…RC-3 carries c1; each command's receipt carries its own request correlation; each response `X-Correlation-Id` and `error.correlationId` equals that request's correlation. Replaces the assertion of `ReturnEventCorrelationTests.Every_return_event_type_carries_the_shipment_root` (§16) | S-RC-4: writing the request correlation into the envelope, or keeping `:135`'s request value in the audit, turns it red |
+| RC-5 | Replay of create, transition and Received with the same key and body and a new correlation: original result, `idempotentReplay: true`, header = the new correlation, no second write, receipt, audit or event; a changed body → 409 `IDEMPOTENCY_KEY_REUSED`. `ReturnReplayTests.cs:13` becomes "a different correlation is accepted" | S-RC-5: restoring `ReturnRepository.cs:31` turns it red |
+| RC-6 | Host self-test: two requests with different correlations to the Returns reader stub return the same fixed shipment root, different from both | S-RC-6: making the stub echo `context.CorrelationId` again (`:108`) turns it red |
+| RC-7 | Web adapter: create and transition send the adapter's trace (`scope.Trace`: the browser's valid trace, otherwise a UUID the adapter mints; RR-8); the fixture shipment's `lifecycleCorrelationId` appears in no outgoing header, log line or response; the adapter originates no `RETURN_SHIPMENT_ROOT_*` code. The adapter's answer log line carries the adapter's trace together with the `X-Correlation-Id` of the Gateway's response (fixture: a value different from the trace), and the browser still receives the trace (r12, F-4) | S-RC-7: sending the root as `X-Correlation-Id` turns it red; S-RC-7b: leaving the Gateway response's `X-Correlation-Id` out of the answer log line turns it red |
+| RC-8 | Through the real Gateway (lane stack): create, then Authorized, InTransit and Received on that return succeed; a caller-sent `X-Client-Correlation-Id` changes nothing; the stored root equals the Gateway's create correlation (also measures RU-VS1's root clause and the §16 item) | — (E4 evidence) |
+| RC-9 | The SHIPMENT-BUNDLE / `returns-semantics` proposal and patch the CT writes for 36.2 (before DL-6, checked with `git apply --check`) applied byte-for-byte by that patch, with the `info.version` the CT decides (O-R11-1) (all contract example tests green, `ContractErrorCodeParityTests` unchanged); if the code leaves the Returns operations, no Returns UI file, adapter list or test names `CORRELATION_ROOT_MISMATCH` and the 7 `ReturnsIndex` languages stay in parity (RR-9) | Any contract or annex byte that differs from the CT patch, or a leftover UI reference, turns it red |
+
+The full SupplyChain and Web test assemblies run unfiltered; the phase-1 gates and the Python script tests run before any PR.
+
+### 36.6 Owned files (DL-6)
+
+Prefix S as in §25. Changed: `S.Persistence/Features/Returns/ReturnRepository.cs`, `S.Application/Features/Returns/Receipt/ReturnReceiptCoordinator.cs`,
+`S.Api/Features/Returns/ReturnsController.cs` (the `:28-29` comment "the Shipment root on mutations" only); tests
+`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/{ReturnReplayTests.cs, ReturnEventCorrelationTests.cs}`, new
+`…/Returns/ReturnCorrelationRootTests.cs`, the §34 receipt tests under `…/Returns/Receipt/` that send a fixed correlation, and
+`…/Common/ReturnsClaimsHttpHost.cs` (Returns stub only, 36.4) and `…/Common/ReturnsClaimsObservabilityTests.cs` (`:70-73` comment and the
+transition's correlation). Web: `frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs`,
+`frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs` (`ReturnRootResolution`, if no other user remains), and the RR-9 files
+(`wwwroot/assets/js/SupplyChain/Returns/{index.js, index.l10n.js}`, `Views/SupplyChain/Returns/_IndexL10n.cshtml`,
+`Resources/Views/SupplyChain/Returns/ReturnsIndex.{en,tr,fr,es,zh,ar,ru}.resx`) with
+`frontend/Diten.Web.Tests/{Controllers/SupplyChainReturnsControllerTests.cs, Forms/ReturnFormContractTests.cs, JavaScript/ReturnIndexBehaviorTests.cs}`.
+Not written by DL-6: any contract or annex file (36.2, CT), `gateway/**`, service `Program.cs`, any Shipment, Claims or Loads source.
+
+**Audited Events (AUD-001):** DL-6 adds no write command; the `CreateReturnCommand` and `TransitionReturnCommand` rows of 35.10 are unchanged.
+
+### 36.7 Open items
+
+- **O-R11-1 (CT):** the kind of the contract version, and whether the `CORRELATION_ROOT_MISMATCH` example leaves the Returns operations
+  (C-3). Proposal: remove it, as the service never sends it after DL-6, and treat the version as the CT decides. **Status (r12): open —
+  waiting for the CT decision**, together with the CT's SHIPMENT-BUNDLE / `returns-semantics` proposal and patch (36.2, RC-9; F-2 of review a4e80d68).
+- **O-R11-2 (CT / Beste):** `RETURN_SHIPMENT_ROOT_UNAVAILABLE` (503) and `RETURN_SHIPMENT_ROOT_INVALID` (502) still refuse a create when the
+  shipment detail has no valid `lifecycleCorrelationId`, although the return no longer uses it. Proposal: keep them in r11 (RR-2, no other
+  check moves) and decide in the annex version.
+- **O-R11-3 (CT):** the shipment pre-read of the transition adapter now only maps a 404 the backend gives anyway. Proposal: keep it in DL-6;
+  removing it is a later clean-up.
+- **Decision record:** Beste's decision of 2026-11-20 is recorded in
+  `docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md` (commit `b1573204b`, with r11); closed (r12, F-3).
+- **Not touched by r11 and still open:** F-9 and F-13 of the CT independent review of 2026-11-20.
+
+### 36.8 Revision r11 — what changed and why
+
+| Place | r10 | r11 |
+|---|---|---|
+| Front matter | `status_note` r10 draft | `approval_status: pending`, `revision` r11, `status_note` (r10 approved row `1d005bcd`; r11 pending) |
+| §7 Dependencies | — | new row: SHIPMENT-BUNDLE and Returns annex versions (36.2) |
+| §8 | "correlation-preserving" | the root stored at create is carried on every event; later correlations are traces |
+| §16 correlation item | "Correlation ID remains unchanged" ✅ MET (shipment root) | "the root is carried on every event"; re-measure by RC-4, RC-8 |
+| §23 Headers, Correlation, same-key rows; error-correlation sentence | open decisions | decided by RR-1…RR-6 |
+| §25 | — | pointer to 36.6 |
+| §32.3, §32.4 adapter rows and headers | root via `getShipment`, sent as `X-Correlation-Id` | the adapter's own UUID; no root read (RR-8) |
+| §32.4 Q279 note | rule in force | kept as history; r11 rule written beside it |
+| §32.8 `CORRELATION_ROOT_MISMATCH` row; support reference | 409 shown | no longer sent; leaves with DL-6 and the contract (RR-9); support reference = trace of one call |
+| §32.10 Gateway passthrough | `X-Correlation-Id` passed through | the Gateway's own; caller's on `X-Client-Correlation-Id` |
+| §32.11 RU-VS1 | Gateway `X-Correlation-Id` = Shipment root | stored root = the Gateway's create correlation; a transition answers 200 |
+| §34.1 `X-Correlation-Id`, §35.7 Approved row | — | marked unchanged (trace / stored root) |
+| §36 | — | new |
+| Slice table | DL-1…DL-5 | DL-6 |
+
+Read with r11, without editing their historical text: §29 R08 "root409", §31 / annex `:9`, `:30-31`, `:66-67`, `:76` (36.2 C-4), §32.11 RU-15
+"Root seam" (for Returns the root is the service's; the shipment root seam is no longer needed). Nothing else in §1–§35 changed than the
+rows of this table; no YAML block was edited. AC identifiers RU-*, R34-*, RB-* unchanged; new RC-1…RC-9, S-RC-1…S-RC-7 (with S-RC-1b).
+
+### 36.9 Revision r12 — what changed and why
+
+r12 (2026-11-23) applies the findings of the independent review `docs/records/reviews/MOD-0186/2026-11-23-a4e80d68.md`
+(target r11 `a4e80d68…`, KOŞULLU). No rule changes meaning; scope stays DL-6.
+
+| Place | r11 | r12 | Finding |
+|---|---|---|---|
+| Slice table DL-3, DL-4, DL-5 | sections written as `Screen slice B and return approval: Line fields of …`, `Contract changes needed`, `Authorization through Platform Workflow` (no such headings; `pack_approval.slice_ids` read no slices) | each section named by its full heading, so the table reads DL-1…DL-6 | F-1 |
+| §36 header note, 36.7 decision-record item | "no path is assigned here", "has no record file yet" | linked to `docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md` (commit `b1573204b`) | F-3 |
+| 36.1 RR-8, 36.5 RC-7 | "a UUID of the adapter's own"; "the log line binds the trace only" | one wording, "the adapter's trace (`scope.Trace` …)"; the answer log line writes the trace with the Gateway response's `X-Correlation-Id`; new sabotage S-RC-7b | F-4 |
+| §8, 36.2 C-4 | — | the envelope `correlationId` carries no link to the shipment; link = `shipmentId`; pre-DL-6 returns carry the shipment root | F-5 |
+| §36 Cause | adapter cited at `SupplyChainReturnsController.cs:17`, `:26`, `:30` | `:560-576` (`:560`, `:573`); the head comment marked as description only | F-6 (a) |
+| 36.1 RR-9 | — | adds `SupplyChainReturnsController.cs:348` and `index.js:876` comments | F-6 (b) |
+| 36.5 RC-3 | "never 409" | "never 409 `CORRELATION_ROOT_MISMATCH`" (409 `RETURN_RECEIPT_IN_PROGRESS` stays a valid §34 outcome) | F-6 (c) |
+| §7 row, 36.2 lead, 36.5 RC-9, 36.7 O-R11-1 | "applied exactly"; no proposal or patch | RC-9 measures against the SHIPMENT-BUNDLE / `returns-semantics` proposal and patch the CT writes before DL-6 (`git apply --check`); O-R11-1 open, waiting for the CT decision. No contract file is touched | F-2 |
+| Front matter `revision`, `status_note`; DL-6 slice note | r11 | r12 named; `status` and `approval_status` unchanged | — |
+
+Not changed by r12: the decision record itself still cites `SupplyChainReturnsController.cs:17,26,30` (CT's file, not this pack's).
+Needs a narrow re-review (CT-APR-02) of r12 before the CT-APR-01 row.
+
 ## Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
 |---|---|---|---|---|---|
 | DL-1 | iade → karantina | Exact prospective DEV owned files and shared exception proposal, Customer return to Inventory, What is posted, Receipt attempt and failure behaviour, Return acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
 | DL-2 | ret metinleri | Receipt attempt and failure behaviour, Return acceptance | önceki sürümde | plan kimliği yok | plan satırı yok |
-| DL-3 | iade seçicileri ve satır görünümü | Screen slice B and return approval: Line fields of the return screens, Pickers, Form shape | E3 | plan kimliği yok | plan satırı yok |
-| DL-4 | iade ayrıntı sayfası ve KRN bağı | Return details page and quarantine link, Read model, Contract changes needed | E4 | plan kimliği yok | plan satırı yok |
-| DL-5 | iade onayı iş akışı (K2); taslak, henüz yürürlükte değil | Authorization through Platform Workflow, Contract changes needed, Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-3 | iade seçicileri ve satır görünümü | Screen slice B and return approval, Line fields of the return screens, Pickers, Form shape | E3 | plan kimliği yok | plan satırı yok |
+| DL-4 | iade ayrıntı sayfası ve KRN bağı | Return details page and quarantine link, Read model, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here) | E4 | plan kimliği yok | plan satırı yok |
+| DL-5 | iade onayı iş akışı (K2); taslak, henüz yürürlükte değil | Authorization through Platform Workflow (K2) — not yet in force, Contract changes needed (SHIPMENT-BUNDLE; no contract file is touched here), Audited Events | E4 | plan kimliği yok | plan satırı yok |
+| DL-6 | iade korelasyon kökü servisin (C yolu, r11) | Correlation root behind the Gateway (r11), Rules, Contract versions needed, Acceptance and sabotage, Owned files (DL-6) | E4 | plan kimliği yok | plan satırı yok |
 
 DL-1 covers R34-1, R34-2, R34-4…R34-17 and the non-text part of R34-3; DL-2 covers the R34-3 texts. DL-1 is dispatchable only
 after MOD-0183 §23 DL-1 is on `main`, because §34.1 reads the completed attempt's per-line issue (`issueTransactionId`,
 `lotId`) that MOD-0183 stores and SHIPMENT-BUNDLE 3.4.0 exposes. CT-APR-01 note: "only DL-1, DL-2; after MOD-0183 DL-1".
 
 DL-3 covers RB-1…RB-7, the picker part of RB-24…RB-26 and the matching part of RB-22; it needs contract item 5 (MOD-0183 contract items 1–3, SHIPMENT-BUNDLE 3.5.0, applied by MOD-0183 DL-3) first. DL-4 covers RB-8…RB-10, RB-27, the list and details part of RB-24…RB-26, the DL-4 part of RB-21 and the matching part of RB-22, and needs contract items 1 and 6 (SHIPMENT-BUNDLE 3.5.0, landed with MOD-0183 DL-3) and the Gateway route of item 1; it starts after MOD-0183 DL-3. DL-5 covers RB-11…RB-20, the DL-5 part of RB-21, RB-23, needs contract items 2–4 (a later contract version opened with DL-5, not 3.5.0), and opens only after OD-186-1 and OD-186-6 are decided, with its own CT-APR-02 and CT-APR-01. All three follow slice A (#355) and need no MOD-0183 §23 change; the customer name in DL-3 and DL-4 needs MOD-0183 DL-3. Through SHIPMENT-BUNDLE 3.5.0, DL-3 and DL-4 inherit MOD-0183's merge gate: MOD-0183 DL-3 does not merge before the MOD-0177 FU is on `main` (CT kararı 2026-11-03), so neither do these. Until DL-5 ships, return approval runs through the existing `.authorize` transition and K2 is not met live. CT-APR-01 note for r10: "only DL-3, DL-4"; evidence levels are proposals.
+
+DL-6 (r11) covers RC-1…RC-9 and re-measures the §16 correlation item and the root clause of RU-VS1. It needs the SHIPMENT-BUNDLE and
+Returns annex versions of 36.2 (kind decided by the CT) on its line before merge, and SHIPMENT-BUNDLE 3.5.1 (MOD-0183 r11 DL-8) as their
+base. It changes code written by DL-1 (the §34 receipt check) and by the accepted isolated core (ReturnRepository), and no Shipment,
+Claims or Loads file. Until DL-6 ships, every Returns create, transition, receipt and replay behind the Gateway answers 409 (inference from
+code, 36). CT-APR-01 note for r12 (r11 with the fixes of review a4e80d68, 36.9): "only DL-6"; evidence level is a proposal.

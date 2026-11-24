@@ -7,11 +7,13 @@ shell: tenant
 golden_reference: slim
 data_mode: server
 entity_base: EntityBase
-status: ready-for-dev
-status_note: "r2 (2026-11-13): ready-for-dev künyesi S-49 gereği CT-APR-01'den önce yazıldı; CT-APR-02 r2 teyidi ve CT-APR-01 onay satırı gelene ve Bölüm 0.4 S0 kapısı ile Bölüm 22 dilim kapıları kapanana kadar kod yetkisi yoktur."
+status: draft
+status_note: "r4 (2026-11-24) TASLAK — draft / approval pending. Yazar: Beste (merkez, K2); onaylayan: MOD-0360 sahibi (GMG-ERP, K3) — paketi yazmamış onaylayıcı. Ali 2026-11-24'te r3 içeriğini (sha256 068646c1…) onayladı (F-2 ve sırası, F-8: 403 ve 404 kodu), bir koşul ekledi (AC-29 sabotaj 3) ve SQ-18'i kapattı; bu içerik onayıdır, CT-APR-01 satırı değildir ve r4 satırı yerine geçmez. r3 bağımsız incelemesi (docs/records/reviews/MOD-0360-FU01/2026-11-24-068646c1.md) KOŞULLU; F-1…F-3 r4'te kapandı. r4 için yeni CT-APR-02 bağımsız inceleme + yeni CT-APR-01 satırı gerekir; r2 (8086bf9a) CT-APR-01 satırı (approvals.tsv, Ali, 2026-11-13) bu sürüme geçmez. Onay satırı gelene kadar r2 metni bağlayıcıdır; r3/r4 maddeleri (AC-28, AC-29, AC-30 ve S2S ucunun Auth kiracı ara katmanı muafiyeti) için kod yetkisi yoktur. Onaydan sonra künye ready-for-dev'e döner (S-49); kod yetkisi yine Bölüm 0.4 S0 ve Bölüm 22 dilim kapılarına bağlıdır — adlı istisna DL-2.0: S0'ı beklemez, yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001 iznini bekler (SQ-18 kapandı, Ali 2026-11-24)."
 approval_status: pending
+revision: "r4 (2026-11-24) — r3 bağımsız incelemesi docs/records/reviews/MOD-0360-FU01/2026-11-24-068646c1.md (KOŞULLU) F-1…F-3 ve SQ-18 kapanışı (Ali 2026-11-24, dc03-supplier-user-binding-owner-decisions-01.md son ek) işlendi: F-1 — S2S binding_rev yolu (/api/internal/supplier-bindings) Auth kiracı ara katmanında (TenantResolutionMiddleware.cs) kiracı zorunluluğundan, dev bypass'tan ve BL-324 çelişki 400'ünden muaf, kiracı kararı uç politikasında; sıra 401 → 403 → 404 ara katmanla da korunur (Bölüm 0.3, 5, 7, 8, 13, 14, 17, AC-19, AC-30, Teslim dilimleri); F-2 — AC-28'e DefaultRolePermissionTemplate.cs:182 ve EntitlementPermissionSyncService.cs:294 için tek yol sabotajları (AC-28, Bölüm 17); F-3 — Ali kararı ve XMC-001 izni 2026-11-24, öneri 2026-11-19 (künye, r3 notu, Bölüm 0.3, 5, AC-28, 19); SQ-18 KAPANDI — DL-2.0 Bölüm 0.4 S0'ı beklemez, yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001'i bekler (Bölüm 0.4, 5, 18, 22, 23, Teslim dilimleri). Başka kapsam değişikliği yok. r3 (2026-11-19 taslak; Ali kararı 2026-11-24) — Auth sahibi kararı (Ali, MOD-0018 / MOD-0360 sahibi, 2026-11-24; Beste önerdi 2026-11-19; XMC-001 izni Ali'den, 2026-11-24): MOD-0148 incelemesi docs/records/reviews/MOD-0148/2026-11-15-75b33fcb.md F-2 ve F-8 (+ 2026-11-17-dab26a67.md F-2) kabul. (1) supplychain.supplier-portal.read / .submit Auth ExplicitGrantOnlyPermissions listesine girer — varsayılan rol şablonu, tam katalog / SuperAdmin ve modül yetkilendirme eşitlemesi bu iki anahtarı vermez; şirket kullanıcılarına yalnız Roller → İzinler (MOD-0148 D2 / K-5) — AC-28. (2) S2S binding_rev ucunda bu kiracıda bulunmayan bağ (başka kiracının bağı dahil) adlandırılmış 404 SUPPLIER_BINDING_NOT_FOUND — AC-29; listede olmayan service_name 403 (SQ-3 kaydı) — AC-30; AC-19 ve Bölüm 13'teki 401 ifadesi 403'e hizalandı. Uygulama DL-2'de. Kesinleştirme (Beste önerdi 2026-11-19, MOD-0018/0360 sahibi Ali onayladı 2026-11-24): SQ-16 kod adı SUPPLIER_BINDING_NOT_FOUND karar (başka kiracının bağı ve olmayan kimlik aynı gövde); SQ-17 ExplicitGrantOnlyPermissions eklemesi DL-2'nin ilk commit'i (DL-2.0), DL-2'nin katalog kapısından muaf, MOD-0148 P4'ten önce main'de, DL-1 kabulünü beklemez; S2S kiracı X-Tenant-Id başlığından — yok / GUID değil / token'ın izinli kiracı kapsamında değil → 403, bağ okunmaz, aynı gövde, ayrı kod adı yok; 403'e kod adı verilmez; DL-1 AC-4 404 kodu ve §23 SQ-1…SQ-15 güncellemesi kapsam dışı (sonraki revizyon). Yazar Beste (merkez, K2), onaylayan MOD-0360 sahibi (GMG-ERP, K3). Başka kapsam değişikliği yok. r2 (2026-11-13, 535475f7b) — r1 incelemesi F-1…F-12. r1 (2026-11-13, f032a41a3) — ilk taslak."
 owner: platform-shared-services / merkez (Beste) — DC-03 sahibi
-approver: Ali (GMG-ERP) — Auth sahibi (MOD-0017 / MOD-0018); CT-APR-01 yüksek risk, paketi yazmamış onaylayıcı
+author: Beste (merkez, K2) — r3 ve r4 yazarı
+approver: Ali (GMG-ERP) — Auth sahibi (MOD-0017 / MOD-0018) ve MOD-0360 sahibi; CT-APR-01 yüksek risk, paketi yazmamış onaylayıcı (r3: onaylayan MOD-0360 sahibi, GMG-ERP, K3)
 risk: HIGH
 branch: feature/pss/mod-0360-fu01-supplier-user-binding (henüz açılmadı)
 started: 2026-11-13
@@ -24,6 +26,62 @@ decision_gate: DC-03 (MVP-6 plan v10.0 C4 / C7)
 
 # MOD-0360-FU01 — Supplier User Binding (DC-03)
 
+> **r4 (2026-11-24, TASLAK — onay bekliyor) — r3 bağımsız incelemesi `docs/records/reviews/MOD-0360-FU01/2026-11-24-068646c1.md`
+> (KOŞULLU, F-1…F-3) ve SQ-18 kapanışı işlendi.** Yalnız şu kapanışlar; başka kapsam değişmedi (AC-1…AC-27, DL-1, DL-3, DL-4 aynı):
+> 1. **F-1 (ORTA) — Auth kiracı ara katmanı S2S ucunun önünde:** `Program.cs:221-223` sırası `UseAuthentication` →
+>    `UseTenantResolution` → `UseAuthorization`; `TenantResolutionMiddleware.cs` başlıksız / GUID olmayan başlıklı istekte uç
+>    politikasından önce 400 `Missing Tenant` döner (`:101-111`, `:110`), geliştirme ortamında dev bypass'ı uygular (`:87-94`);
+>    `/api/internal` yolu `:141`'deki `/internal` muafiyetine girmez. Kural: `/api/internal/supplier-bindings` öneki ara katmanda
+>    kiracı zorunluluğundan, dev bypass'tan ve BL-324 çelişki 400'ünden muaf tutulur (emsal `IsServiceTokenIssuancePath`,
+>    `:148-162`; dar önek, `/api/internal`'ın tamamı değil); kiracı kararı uç politikasındadır. Yerler: Bölüm 0.3, 5 (DL-2 r4
+>    eklenenler), 7, 8, 13, 14, AC-19, AC-30 (sabotaj 5-7), 17, Teslim dilimleri.
+> 2. **F-2 (DÜŞÜK) — AC-28 tek yol sabotajları:** `DefaultRolePermissionTemplate.cs:182` süzgeci tek başına kalkınca (a),
+>    `EntitlementPermissionSyncService.cs:294` süzgeci tek başına kalkınca (c) kırmızı (AC-28 sabotaj 5 ve 6; Bölüm 17).
+> 3. **F-3 (DÜŞÜK) — tarih ve atıf:** Ali'nin kararı ve XMC-001 izni **2026-11-24**'tür (Beste'nin önerisi 2026-11-19); künye
+>    (`revision`, `status_note`), r3 notu, Bölüm 0.3, 5, AC-28 ve 19 hizalandı; `status_note`'taki sayı-liste uyuşmazlığı giderildi.
+> 4. **SQ-18 KAPANDI (Ali, 2026-11-24; `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md` son ek):**
+>    DL-2.0 Bölüm 0.4 S0 kapanışını **beklemez**; yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001 iznini bekler — Bölüm 0.4, 5, 18, 22,
+>    23, Teslim dilimleri.
+> 5. **Bilgi notu 1:** Bölüm 8'deki (incelemede "Bölüm 9" diye anılan) "her sorgu `TenantId` (JWT) ile sınırlıdır" satırına
+>    S2S istisnası yazıldı.
+>
+> **Onay durumu:** Ali'nin 2026-11-24 onayı r3 içeriği içindir (paket sha256 `068646c1…`); r4 satırı için **yeni CT-APR-02**
+> bağımsız inceleme ve **yeni CT-APR-01** satırı gerekir. r2 satırı (`8086bf9a…`) bu sürüme geçmez. Künye `status: draft`,
+> `approval_status: pending`, revizyon r4 (2026-11-24). Ölçüm tabanı HEAD `86c5dfe9b` (salt okunur kod okuması; test koşulmadı).
+> Yazar: Beste (merkez, K2); onaylayan: MOD-0360 sahibi (GMG-ERP, K3).
+>
+> **r3 (2026-11-19 taslak, TASLAK — onay bekliyor) — Auth sahibi kararı (Ali, MOD-0018 / MOD-0360 sahibi, 2026-11-24; Beste
+> önerdi 2026-11-19; XMC-001 izni Ali'den, 2026-11-24):** MOD-0148 bağımsız incelemesi `docs/records/reviews/MOD-0148/2026-11-15-75b33fcb.md` **F-2** ve **F-8** (üçüncü tur
+> `2026-11-17-dab26a67.md` **F-2** aynı konuyu taşır) ve MOD-0148 karar kaydı
+> `docs/records/decisions/2026-11/mod0148-dc03-consumer-owner-decisions-2026-11-15.md` "Açık kalanlar" (:55-57) Auth'a yönelik
+> iki istek kabul edildi:
+> 1. **Otomatik verme yolu yok (F-2, K-5):** `supplychain.supplier-portal.read` ve `.submit` Auth'taki
+>    `ExplicitGrantOnlyPermissions` listesine eklenir; varsayılan rol şablonu, tam katalog / SuperAdmin ve modül yetkilendirme
+>    eşitlemesi bu iki anahtarı vermez; şirket kullanıcılarına yalnız Roller → İzinler ile verilir (MOD-0148 D2 / K-5). Tedarikçi
+>    token'ının sabit kümesi (K-1, AC-12) bundan etkilenmez — Bölüm 14, AC-28.
+> 2. **S2S ucunun hata kodları (F-8, BREV-01):** bu kiracıda bulunmayan bağ (başka kiracının bağı ya da hiç olmayan kimlik) için
+>    adlandırılmış 404 `SUPPLIER_BINDING_NOT_FOUND` (**karar — SQ-16**); listede olmayan `service_name` için **403** (SQ-3
+>    kaydı, `dc03-supplier-user-binding-owner-decisions-01.md:34`) esas alınır; AC-19 ve Bölüm 13'teki "401" ifadesi 403'e
+>    hizalandı — Bölüm 13, 14, AC-19, AC-29, AC-30.
+>
+> Uygulama **DL-2**'dedir (Bölüm 5, 22, Teslim dilimleri). Bu revizyon yalnız bu iki maddeyi (ve S2S ucunun kiracı başlığı
+> kuralını) içerir; başka kapsam değişmedi.
+>
+> **Kesinleştirme — Beste önerdi (2026-11-19), MOD-0018/0360 sahibi Ali onayladı (2026-11-24; `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md` son ek):**
+> (a) **SQ-16:** 404 kodu `SUPPLIER_BINDING_NOT_FOUND` — karar; başka kiracının bağı ve var olmayan kimlik aynı gövdeyi alır.
+> (b) **SQ-17 (bağlayıcı sıra):** `ExplicitGrantOnlyPermissions` eklemesi DL-2'nin **ilk commit'i** (DL-2.0); DL-2'nin katalog
+>     kapısından muaftır; MOD-0148 P4'ten (anahtarların kataloğa girmesi) **önce** main'de olmalıdır; DL-1 kabulünü beklemez
+>     (Bölüm 5, 22, Teslim dilimleri; kanıt AC-28 (f)). Bu, "dilim sırasıyla (DL-1 → DL-4)" kuralının adlı istisnasıdır.
+> (c) **S2S kiracı bilgisi:** `X-Tenant-Id` başlığından okunur; başlık yok / GUID değil / servis token'ının izinli kiracı
+>     kapsamında değil → **403**, bağ okunmaz, aynı 403 gövdesi, ayrı kod adı yok (Bölüm 13, 14, AC-30).
+> (d) 403'e kod adı verilmez; DL-1 AC-4 404 kodu ve §23 SQ-1…SQ-15 güncellemesi kapsam dışı — sonraki revizyon (Bölüm 23).
+> (e) **Ali'nin koşulu (2026-11-24):** hiç var olmayan bağ için cevap, başka kiracının bağına verilen cevapla tıpatıp aynıdır
+>     (aynı durum kodu, aynı kod, aynı gövde; istek başına değişen izleme alanları hariç) ve bu bir testle gösterilir (AC-29,
+>     sabotaj 3).
+> Yazar: Beste (merkez, K2); onaylayan: MOD-0360 sahibi (GMG-ERP, K3). Künye `draft` / `approval_status: pending`.
+> r2'nin CT-APR-01 satırı (`execution/approvals/approvals.tsv`, pack sha256 `8086bf9a…`, Ali 2026-11-13) bu sürüme geçmez; r3 için
+> CT-APR-02 + yeni CT-APR-01 gerekir. Ölçüm tabanı origin/main `7236d9608` (salt okunur kod okuması; test koşulmadı).
+>
 > **r2 (2026-11-13) — inceleme `docs/records/reviews/MOD-0360-FU01/2026-11-13-ce91314f.md` (KOŞULLU, F-1…F-12) işlendi.**
 > Sahip kararları (Beste, "hepsi öneri gibi"; `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md`
 > son madde): **F-2** erişim token'ının bitişi oturum bitişini asla geçmez — `exp = min(nbf + 15 dk, oturum sonu)`, oturum tam 8
@@ -35,7 +93,8 @@ decision_gate: DC-03 (MVP-6 plan v10.0 C4 / C7)
 >
 > **ready-for-dev ≠ kod yetkisi.** Bu paket kod, şema, izin kataloğu, rol, token, gateway rotası ya da dağıtım yetkisi
 > vermez. Kod yalnız CT-APR-02 (bu sürüm) ve CT-APR-01 onay satırı yazıldıktan ve Bölüm 0'daki S0 kapısı kapandıktan sonra,
-> dilim sırasıyla (DL-1 → DL-4) ve Bölüm 22'deki dilim kapılarıyla yazılır. Auth ve Gateway dosyalarına dokunmak ayrıca
+> dilim sırasıyla (DL-1 → DL-4) ve Bölüm 22'deki dilim kapılarıyla yazılır (adlı istisna DL-2.0: S0'ı ve DL-1 kabulünü beklemez —
+> SQ-17, SQ-18; Bölüm 22). Auth ve Gateway dosyalarına dokunmak ayrıca
 > XMC-001 izni ister (Bölüm 0.3).
 >
 > **Kimlik kapısı (DCP-002, 2026-11-13):** `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0360-FU01
@@ -92,6 +151,9 @@ gateway kuralı için ayrı Auth/Platform paketi" — bu paket o ayrı pakettir.
 | Yol | Sahip | Ne istenir |
 |---|---|---|
 | `services/Diten.AuthService/**` (yeni özellik klasörü + mevcut kapı dosyaları, Bölüm 5) | Ali — MOD-0017 / MOD-0018 sahibi | DL-1 ve DL-2 dosya listesine izin; `TenantDoorPlatformAccountRefusal` emsalinin tedarikçi hesabına genişletilmesi; `AssignRoleCommand` reddi; AccountKind oluşturma yolu bekçisi (`AccountKindCreationPathsGuardTests`) değişikliği |
+| **r3 (DL-2):** `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs` — sınıf `:8`, `Keys` kümesi `:108-114` (iki sabit + iki küme girdisi) | Ali — **izin verildi 2026-11-24** (r3 sahip kararı; Beste önerisi 2026-11-19) | yalnız ekleme: `supplychain.supplier-portal.read`, `supplychain.supplier-portal.submit`. Listeyi okuyan üç otomatik yol **değişmez**, yalnız ölçülür: `.../Domain/Authorization/DefaultRolePermissionTemplate.cs:181-183` (SuperAdmin / Admin / Viewer şablonu; çağıran `DefaultRoleProvisioningRule.cs:27`), `.../Application/Common/Services/FullCatalogPermissionGrantService.cs:39` (tam katalog / SuperAdmin; çağıran `.../Api/Controllers/InternalPermissionsController.cs:96` ilk kayıt, `:117` yeniden etkinleştirme), `.../Application/Common/Services/EntitlementPermissionSyncService.cs:293-295` (modül yetkilendirme eşitlemesi) |
+| **r3 (DL-2):** `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:60-80` | Ali — izin verildi 2026-11-24 | küme sayısı bekçisi `Assert.Equal(13, …)` (`:78`) → 15, test adı ve iki ada göre `Contains` satırı; başka değişiklik yok |
+| **r4 (DL-2, F-1):** `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs` — Auth'un kiracı ara katmanı (Gateway'deki aynı adlı dosya değil); bugün çelişki 400 `:68-81`, dev bypass `:87-94`, `Missing Tenant` 400 `:101-111`, `/internal` muafiyeti `:141`, emsal `IsServiceTokenIssuancePath` `:148-162` | Ali — izin verildi 2026-11-24 (r3/r4 kararının parçası) | yalnız ekleme: `/api/internal/supplier-bindings` öneki için dar muafiyet (Bölüm 5 r4 kuralı); başka yolun davranışı değişmez. Yeni test `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/SupplierAuth/BindingRevisionTenantMiddlewareExemptionTests.cs` (emsal `Tenancy/ServiceTokenEndpointTenantExemptionTests.cs`) |
 | `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` | MOD-0032 (Gateway) sahibi / `integration-agent` | DL-3 izin listesi + F4 sertleştirmesi |
 | `gateway/Diten.ApiGateway/ocelot.json` | yalnız `integration-agent` (AGENTS.md §4) | iki yeni rota (Bölüm 15) — ayrı görev |
 | `tests/architecture/audit-ledger/Diten.AuthService.md` + `AuditTrailStandardTests.cs` | Control Tower (defter kararı) | yeni iz satırı (Bölüm 21) |
@@ -104,6 +166,10 @@ SQ-13 cevaplandığında, (3) 0.3 tablosundaki Auth ve Gateway izinleri yazılı
 Control Tower defter kararı verildiğinde kapanır. SQ-2, SQ-8, SQ-9, SQ-10, SQ-14, SQ-15 DL-1'i bekletmez; ilgili dilimin
 başında kapanır (Bölüm 22). Sahipli maddeler (r2): SQ-11 ve SQ-14 Natig; SQ-12, SQ-13 ve SQ-15 Ali — inceleme bulguları F-4,
 F-6, F-7, F-8, F-9.
+
+**r4 — DL-2.0 S0'ı beklemez (SQ-18 KAPANDI, Ali 2026-11-24;** `dc03-supplier-user-binding-owner-decisions-01.md` son ek**):**
+S0 DL-1'in kapısıdır; DL-2.0 (`ExplicitGrantOnlyPermissions` eklemesi, AC-28) yalnız r4 CT-APR-02 + CT-APR-01 ve 0.3'teki
+XMC-001 iznini (Auth, Ali) bekler (Bölüm 22).
 
 ## 1. Module Summary
 
@@ -175,7 +241,9 @@ paketin dışındadır.
   - `GET /api/internal/supplier-bindings/{bindingId}/revision` (S2S; audience SQ-3)
 - **İzinler (PKS-001):** `auth.supplier-bindings.manage` (üç yazma komutu; D6), `auth.supplier-bindings.read` (liste /
   tekil / geçmiş / sapma — **öneri**, SQ-6). `supplier_user` token'ına konan `supplychain.supplier-portal.read` ve `.submit`
-  bu paketin anahtarı değildir (MOD-0148 §14); verilme yolu SQ-7.
+  bu paketin anahtarı değildir (MOD-0148 §14); verilme yolu SQ-7. **r3:** iki anahtar Auth'ta `ExplicitGrantOnlyPermissions`
+  listesindedir — şirket kullanıcılarına otomatik yoldan (varsayılan rol şablonu, tam katalog / SuperAdmin, modül eşitlemesi)
+  verilmez, yalnız Roller → İzinler ile (MOD-0148 D2 / K-5; AC-28).
 - **Frontend rotası (DL-4):** `/Governance/SupplierBindings`.
 
 ## 4. Entity Fields
@@ -269,6 +337,57 @@ Yollar DL başında yeniden ölçülür; burada adı geçmeyen dosyaya dokunulma
     `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IRefreshTokenRepository.cs` ve
     `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RefreshTokenRepository.cs` (döndürmede iki alanın taşınması).
   - Testler: `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/SupplierAuth/` (yeni).
+- **r3 eklenenler (sahip kararı Ali 2026-11-24, Beste önerisi 2026-11-19; XMC-001 izni Ali'den, 2026-11-24):**
+  - **DL-2.0 — otomatik verme dışı (AC-28):** değişir `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs`
+    (`:8` sınıf; `:108-114` `Keys` kümesi — iki sabit + iki girdi, yalnız ekleme). Listeyi okuyan yollar (`DefaultRolePermissionTemplate.cs:181-183`,
+    `FullCatalogPermissionGrantService.cs:39`, `EntitlementPermissionSyncService.cs:293-295`) **değişmez**. Değişir (yalnız sayı / ad):
+    `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Users/AccountKindTests.cs:60-80` (`:78` 13 → 15). Yeni test:
+    `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/SupplierPortalExplicitGrantPermissionTests.cs`
+    (emsal `Roles/LeaveExplicitGrantPermissionTests.cs`, `Permissions/FullCatalogPermissionGrantServiceTests.cs:61-64`,
+    `Roles/EntitlementPermissionSyncServiceTests.cs:312-316`).
+    **Sıra (bağlayıcı; SQ-17, Beste 2026-11-19, Ali onayı 2026-11-24):** DL-2.0 DL-2'nin **ilk commit'idir**; DL-2'nin katalog kapısından ("MOD-0148
+    anahtarları Auth kataloğunda", Bölüm 22) muaftır; MOD-0148 P4'ten (anahtarların kataloğa girmesi) **önce** main'de olmalıdır;
+    DL-1 kabulünü ve Bölüm 0.4 S0 kapanışını beklemez (SQ-18 KAPANDI, Ali 2026-11-24); yalnız r4'ün CT-APR-02 + CT-APR-01 onayını
+    ve XMC-001 iznini (Bölüm 0.3) bekler. Kanıt AC-28 (f). DL-2'nin geri kalanı Bölüm 22 kapılarına bağlıdır.
+  - **S2S ucunun kodları (AC-29, AC-30):** hata kodu sabiti `SUPPLIER_BINDING_NOT_FOUND` `SupplierAuth` özelliğinin kod sınıfında
+    (yer DL-2 başında ölçülür; emsal `services/Diten.AuthService/src/Diten.AuthService.Application/Common/AuthRefusalCodes.cs` —
+    kod `errorCodes`'ta taşınır); `service_name` kabul listesi denetimi (`Diten.SupplyChain`, SQ-3) yukarıdaki
+    `SupplierBindingRevisionServiceTokenValidator.cs` / yetki politikasında; `X-Tenant-Id` başlık denetimi (yok / GUID değil / token'ın
+    izinli kiracı kapsamında değil → 403; bugün servis token'ı tek `tenant_id` claim'i taşır,
+    `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/ServiceIdentityTokenIssuer.cs:50`) aynı politikada,
+    bağ okumasından önce. Ek dosya: Auth kiracı ara katmanı (aşağıda, r4).
+- **r4 eklenenler (r3 incelemesi F-1; XMC-001 izni Ali'den, 2026-11-24):**
+  - **Auth kiracı ara katmanı muafiyeti (AC-30):** değişir
+    `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs` (yalnız ekleme). Neden:
+    hat sırası `UseAuthentication` → `UseTenantResolution` → `UseAuthorization`
+    (`services/Diten.AuthService/src/Diten.AuthService.Api/Program.cs:221-223`); varsayılan şema kullanıcı `JwtBearer`
+    (`.../Infrastructure/DependencyInjection.cs:42`), servis token'ı ayrı RSA anahtarı ve issuer ile imzalanır
+    (`ServiceIdentityTokenIssuer.cs:44`, `:55`), bu yüzden ara katman servis token'ının `tenant_id`'sini görmez. Bugün bu uçta ara
+    katman, politika 403 vermeden önce başlıksız ya da GUID olmayan başlıklı isteği 400 `Missing Tenant` ile çevirir
+    (`TenantResolutionMiddleware.cs:101-111`, yazım `:110`), geliştirme ortamında dev bypass ile varsayılan kiracıya düşer
+    (`:87-94`), kullanıcı token'ı + farklı kiracı başlığında 400 `Tenant mismatch` döner (`:68-81`); `/api/internal` yolu `:141`'deki
+    `/internal` muafiyetine girmez.
+  - **Kural (bağlayıcı):** `/api/internal/supplier-bindings` öneki (bu paketin `SupplierBindingRevisionController` rotası; uç
+    `GET /api/internal/supplier-bindings/{bindingId}/revision`) için ara katmana adlı bir yol denetimi eklenir — emsal
+    `IsServiceTokenIssuancePath` (`TenantResolutionMiddleware.cs:148-162`; özet yorumu `:148-160`, yöntem `:161-162`; kullanıldığı yerler
+    `:84`, `:87`, `:103`): `StartsWithSegments`, büyük / küçük harften bağımsız, **yalnız bu önek** — `/api/internal`'ın tamamı ya da
+    `/api/internal/supplier-bindings-…` gibi kardeş adlar değil. Bu önekte ara katman (1) kiracı zorunluluğunu (`:101-111`)
+    uygulamaz, (2) dev bypass'ı (`:87-94`) uygulamaz, (3) BL-324 çelişki 400'ünü (`:68-81`) uygulamaz ve (4) `TenantContext`'i
+    doldurmaz; isteği uca geçirir. Kiracı kararı uç politikasındadır: `X-Tenant-Id` yok / GUID değil / servis token'ının
+    `tenant_id`'sine eşit değil → 403, bağ okunmaz (Bölüm 13, 14, AC-30). İşleyici kiracıyı politikanın doğruladığı başlık
+    değerinden alır ve sorguya açıkça geçirir; ortam `TenantContext`'ini okumaz. Bu önekin altına başka uç eklenmesi paket
+    revizyonu ister.
+  - **BL-324 / DCP-004 §7.4 ile ilişki:** başlık ile kullanıcı token'ının farklı kiracı göstermesi bütün öteki yollarda 400
+    `Tenant mismatch` kalır (`TenantResolutionMiddleware.cs:59-64` yorumu, `:68-81`); emsal `IsServiceTokenIssuancePath` de çelişkiyi
+    400 tutar. Bu önekte çelişki denetimi bilerek uygulanmaz: uç yalnız kendi adlı şemasındaki servis token'ını kabul eder, kullanıcı
+    token'ı burada **şema gereği 401**'dir (Bölüm 14); servis token'ı ile başlığın farklı kiracı göstermesi biçim hatası değil yetki
+    kararıdır → 403 (Ali, F-8, 2026-11-24). Çelişki denetimi bu önekte kalsaydı kullanıcı token'ı + farklı başlık 401 yerine 400
+    alır, 401 → 403 → 404 sırası bozulurdu.
+  - Uygulama S2S ucuyla aynı commit'tedir (DL-2.0'da değil); DL-2 kapılarına bağlıdır (Bölüm 22).
+  - Testler: yeni `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/SupplierAuth/BindingRevisionTenantMiddlewareExemptionTests.cs`
+    (gerçek ara katman tek başına, iki ortam; emsal `Tenancy/ServiceTokenEndpointTenantExemptionTests.cs:36-110`) ve
+    `SupplierAuth/BindingRevisionPipelineHttpTests.cs` (gerçek Api hattı, Development dışı ortam; emsal aynı dosya `:176-297`).
+    Emsal testler (`ServiceTokenEndpointTenantExemptionTests.cs:55-72`, `:267-285`) değişmez ve yeşil kalır.
 
 **DL-3 (Gateway — integration-agent / MOD-0032 sahibi)**
 - Değişir: `gateway/Diten.ApiGateway/Middleware/TenantResolutionMiddleware.cs` (izin listesi + F4)
@@ -302,7 +421,9 @@ Yollar DL başında yeniden ölçülür; burada adı geçmeyen dosyaya dokunulma
 | Kabul edilmiş Auth denetim izi | `auth-gunlugu` `aday` (`tests/architecture/audit-ledger/Diten.AuthService.md`, `## İzler`); yeni iz için Control Tower defter kararı gerekir (Bölüm 21) | **DL-1 başlamaz** |
 | Auth → Platform merkezi iletici (meta-denetim) | `IPlatformAuditForwarder` var; anahtar boşsa sessiz düşer — geçmiş ucu bunu 503 ile karşılar (MOD-0018-FU27 K-W5 emsali) | DL-1 |
 | MOD-0148 izin anahtarları `supplychain.supplier-portal.read` / `.submit` Auth kataloğunda | MOD-0148 manifestiyle girer; DL-2 başında ölçülür | DL-2 |
+| **r3:** iki anahtar `ExplicitGrantOnlyPermissions`'ta **MOD-0148 P4 itilmeden önce** (MOD-0148 §0.0 P1: "requested from the Auth owner (Ali) before P4 is pushed"). Liste yalnız **yeni** otomatik vermeyi durdurur, var olan rol-izin satırını silmez (`ExplicitGrantOnlyPermissions.cs:38-40` yorumu); P4 önce gelirse manifest kaydı `InternalPermissionsController.cs:96`'da anahtarı SuperAdmin'e anında verir | DL-2.0 (DL-2'nin ilk commit'i; DL-1 kabulünü beklemez — SQ-17); main'de değil | **MOD-0148 P4'ü bekletir** (Bölüm 22) |
 | S2S `binding_rev` ucu için audience ve SupplyChain `service_name` | SQ-3 (MOD-0140 S-5 ile aynı sahip) | DL-2 (AC-19) |
+| **r4 (F-1):** Auth kiracı ara katmanı (`services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs`) `/api/internal/supplier-bindings` önekini kiracı zorunluluğundan, dev bypass'tan ve BL-324 çelişki 400'ünden muaf tutar (Bölüm 5 r4 kuralı); bugün tutmaz — `Program.cs:221-223` sırasıyla ara katman politikadan önce çalışır, `:101-111` 400 `Missing Tenant`, `:87-94` dev bypass, `:141` muafiyeti `/api/internal`'a işlemez | XMC-001 izni Ali'den, 2026-11-24 (Bölüm 0.3); kod yok | DL-2 (AC-19, AC-30) |
 | MOD-0140 DL-7 servis token'ı (MOD-0148'in uygunluk okuması) | Cihan; SQ-10 | bu paketi bekletmez; MOD-0148'i bekletir |
 | `integration-agent` görevi (ocelot iki rota) | açılmadı | DL-3 |
 | MOD-0032 FU (internete açılma kapıları) | numarası ve sahibi TBD | portalın internete açılması (bu paket değil) |
@@ -312,7 +433,10 @@ Yollar DL başında yeniden ölçülür; burada adı geçmeyen dosyaya dokunulma
 - Servis: Auth 5056; dış erişim yalnız Gateway 5000 üzerinden (AGENTS.md §3). Web 5001 servislere doğrudan gitmez.
 - Auth → Procurement çağrısı Gateway 5000 üzerinden `/api/suppliers/{everything}` rotasıyla (mevcut) yapılır; adres
   yapılandırmadan okunur, port koda yazılmaz.
-- Kiracı izolasyonu: her sorgu ve komut `TenantId` (JWT) ile sınırlıdır; başka kiracının bağı 404.
+- Kiracı izolasyonu: her sorgu ve komut `TenantId` (JWT) ile sınırlıdır; başka kiracının bağı 404. **S2S istisnası (r4, r3
+  incelemesi bilgi notu 1):** `binding_rev` ucunda kullanıcı JWT'si yoktur; kiracı `X-Tenant-Id` başlığından okunur ve uç
+  politikasında servis token'ının `tenant_id`'siyle karşılaştırılır (eşit değil / yok / GUID değil → 403, bağ okunmaz); sorgu bu
+  doğrulanmış kiracıyla sınırlıdır, başka kiracının bağı 404 `SUPPLIER_BINDING_NOT_FOUND` (Bölüm 5 r4, 13, 14; AC-29, AC-30).
 - Soft delete: kaldırma `IsDeleted` + `DeletedAt`; kayıt fiziksel silinmez.
 - Eşzamanlılık: kaldırma ve kod düzeltme `expectedRevision` taşır; uyuşmazlık 409, sessiz üzerine yazma yok.
 - Token ömürleri: `supplier_user` erişim 15 dk, oturum (yenileme anahtarı) mutlak 8 saat — yeni `JwtSettings` anahtarları
@@ -455,7 +579,17 @@ Tedarikçi kapısı (DL-2), D8 sırası:
 - Yenilemede bağ kaldırılmış / silinmiş → 401 + oturum ailesi iptal.
 - Oturum 8 saati aşmış → 401 `SUPPLIER_SESSION_EXPIRED`; yeniden giriş + e-posta kodu.
 - Başka kapının challenge'ı ile doğrulama → 401.
-- S2S `binding_rev` ucunda: servis token'ı yok / yanlış audience / listede olmayan `service_name` → 401; başka kiracının bağı → 404.
+- S2S `binding_rev` ucunda (r3, sıra 401 → 403 → 404): servis token'ı yok / imza geçersiz / yanlış audience / kullanıcı token'ı
+  → **401**; token geçerli ama `service_name` kabul listesinde (`Diten.SupplyChain`, SQ-3) değil → **403** (SQ-3 kaydı
+  `dc03-supplier-user-binding-owner-decisions-01.md:34`; bağ okunmaz, kiracı başlığına bakılmaz); kiracı yalnız `X-Tenant-Id`
+  başlığından okunur — başlık yok / GUID değil / servis token'ının izinli kiracı kapsamında değil → **403** (aynı 403 gövdesi, ayrı
+  kod adı yok; bağ okunmaz; Beste 2026-11-19, Ali onayı 2026-11-24); bu kiracıda bağ yok — başka kiracının bağı ya da hiç olmayan kimlik, ikisi aynı
+  gövde → **404 `SUPPLIER_BINDING_NOT_FOUND`** (SQ-16 kararı).
+  Kaldırılmış (soft delete) bağ 404 değildir: 200 `active = false` (AC-19).
+  **Auth kiracı ara katmanı bu sırayı bozmaz (r4, F-1):** `/api/internal/supplier-bindings` önekinde ara katman kiracı kararı
+  vermez (Bölüm 5 r4 kuralı) — token da başlık da yok → **401** (400 `Missing Tenant` değil); kullanıcı token'ı + farklı kiracı
+  başlığı → **401** (400 `Tenant mismatch` değil); geçerli servis token'ı + başlık yok / GUID değil → **403** (400 değil); geliştirme
+  ortamında dev bypass varsayılan kiracıya düşmez, başlıksız istek orada da 403'tür.
 - Denetim satırı yazılamıyor → 503, token / oturum verilmez.
 
 ## 14. Authorization Convention
@@ -476,7 +610,23 @@ Tedarikçi kapısı (DL-2), D8 sırası:
   `permission` claim'leri **tam olarak** `supplychain.supplier-portal.read` ve `supplychain.supplier-portal.submit`; rol claim'i
   yok. Verilme yolu (sabit küme mi, kiracı rolü mü) SQ-7; öneri sabit küme (D2: kiracı rolü taşımaz).
 - **S2S `binding_rev` ucu:** yalnız güvenilir servis token'ı (Auth'un kendi `ServiceClientIdentity` kaydı; audience ve
-  `service_name` listesi SQ-3); kullanıcı token'ı bu uçta 401.
+  `service_name` listesi SQ-3); kullanıcı token'ı bu uçta 401. **r3:** kimlik doğrulama (imza, audience) başarısız → 401;
+  doğrulanmış ama listede olmayan `service_name` → **403** (yetki reddi; 401 değil — SQ-3 kaydı :34, MOD-0148 inceleme F-8);
+  kiracı yalnız `X-Tenant-Id` başlığından okunur — başlık yok / GUID değil / token'ın izinli kiracı kapsamında değil (bugün tek
+  `tenant_id` claim'i, `ServiceIdentityTokenIssuer.cs:50`) → **403**, aynı gövde, ayrı kod adı yok (Beste 2026-11-19, Ali onayı 2026-11-24; AC-30);
+  bu dallarda bağ okunmaz. Sıra: 401 → 403 (`service_name`, sonra kiracı başlığı) → 404. Bu kiracıda bulunmayan bağ → 404
+  `SUPPLIER_BINDING_NOT_FOUND` (SQ-16 kararı, Beste 2026-11-19, Ali onayı 2026-11-24; AC-29). MOD-0148
+  P3 bu kodu "bağ eskidi" diye tanır, öteki 404'leri 503 sayar (MOD-0148 §0.0 P3, T-0148-V1-BREV-01).
+  **r4 (F-1):** bu sıra uç politikasındadır ve Auth kiracı ara katmanı önünde bozulmaz — ara katman
+  (`Program.cs:221-223`'te `UseAuthorization`'dan önce) `/api/internal/supplier-bindings` önekinde kiracı zorunluluğunu, dev bypass'ı
+  ve BL-324 çelişki 400'ünü uygulamaz, `TenantContext`'i doldurmaz (Bölüm 5 r4 kuralı); 400 bu uçta hiçbir dalda dönmez. BL-324
+  / DCP-004 §7.4'ün 400'ü öteki bütün yollarda kalır; bu uçta kullanıcı token'ı şema gereği 401'dir.
+- **Portal anahtarlarının şirket kullanıcılarına verilmesi (r3, AC-28):** `supplychain.supplier-portal.read` ve `.submit`
+  `ExplicitGrantOnlyPermissions` listesindedir; varsayılan rol şablonu (SuperAdmin tam katalog dalı, Admin, Viewer okuma dalı),
+  `FullCatalogPermissionGrantService` ve modül yetkilendirme eşitlemesi bu iki anahtarı vermez; tek yol bir yetkilinin Roller →
+  İzinler ile açık ataması (`AssignPermissionCommandHandler`). Anahtarların anlamı değişmez (PKS-001 "published key" kuralı;
+  liste yalnız verme yolunu daraltır). `supplier_user` token'ının sabit kümesi rol / şablon yolundan geçmez, liste onu etkilemez
+  (K-1, AC-12).
 - **Kiracı kapısı:** tedarikçi hesabını hesap düzeyinde reddeder (`IsPlatformAccount` emsali,
   `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs:108-114`).
 - **Rol ataması:** tedarikçi hesabına kiracı rolü atanamaz → 422 `SUPPLIER_ACCOUNT_ROLE_FORBIDDEN` (AC-26, XMC-001).
@@ -581,8 +731,65 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 - [ ] AC-18 (zorunlu) — `logout` oturum ailesini iptal eder (sonraki yenileme 401); `me` bağ bilgisini ve oturum bitişini döner;
   `tenant_user` token'ıyla `me` 403. Sabotaj: `logout`'ta yalnız sunulan anahtarı iptal etmek → aile testi kırmızı.
 - [ ] AC-19 (zorunlu) — S2S `binding_rev` ucu: geçerli servis token'ıyla `{active, revision, supplierCode, legalEntityId}`
-  döner; kaldırılmış bağ `active = false`; kullanıcı token'ı / yanlış audience / listede olmayan `service_name` 401; başka kiracının
-  bağı 404. Sabotaj: ucu `[Authorize]` kullanıcı şemasına açmak → kullanıcı token'ı testi kırmızı.
+  döner; kaldırılmış bağ `active = false`; kullanıcı token'ı / yanlış audience / token yok 401 (başlık ne olursa olsun; Auth kiracı
+  ara katmanı bu uçta 400 vermez — r4, AC-30); listede olmayan `service_name` **403** (r3,
+  AC-30); bu kiracıda bulunmayan bağ (başka kiracının bağı dahil) 404 `SUPPLIER_BINDING_NOT_FOUND` (r3, AC-29). Sabotaj: ucu
+  `[Authorize]` kullanıcı şemasına açmak → kullanıcı token'ı testi kırmızı.
+- [ ] AC-28 (zorunlu, r3) — Otomatik verme yok (sahip kararı Ali 2026-11-24, Beste önerisi 2026-11-19; MOD-0148 D2 / K-5, inceleme F-2):
+  `ExplicitGrantOnlyPermissions.Keys` tam adlarıyla `supplychain.supplier-portal.read` ve `.submit`'i içerir (büyük / küçük
+  harften bağımsız) ve küme 15 anahtardır. Üretim kodunda, iki anahtar Admin dalının ulaştığı bir modülün altına ve yanına sıradan
+  bir okuma anahtarı konarak (boş geçmesin diye): (a) `DefaultRolePermissionTemplate.SelectFor` SuperAdmin, Admin ve Viewer için iki
+  anahtarı döndürmez, sıradan kardeş anahtar Admin ve Viewer'a ulaşır; (b) `FullCatalogPermissionGrantService.GrantToFullCatalogRolesAsync`
+  iki anahtar için rol-izin satırı yazmaz; (c) modül yetkilendirme eşitlemesi (`EntitlementPermissionSyncService`) iki anahtarı
+  Admin'e ve Viewer'a vermez, kardeşi verir; (d) Roller → İzinler açık ataması (`AssignPermissionCommandHandler`) iki anahtarı bir
+  role verebilir; (e) `supplier_user` token'ı iki anahtarı hâlâ taşır (AC-12 değişmez). Sabotaj 1: iki anahtarı
+  `ExplicitGrantOnlyPermissions.Keys`'ten çıkarmak → (a) SuperAdmin ve Viewer `.read`, (b) ve (c) testleri kırmızı. Sabotaj 2:
+  `FullCatalogPermissionGrantService.cs:39` denetimini kaldırmak → (b) kırmızı (yolun ayrı ölçüldüğünün kanıtı). Sabotaj 3:
+  token üreticisinde izin kümesini rol / şablon yolundan ya da `ExplicitGrantOnlyPermissions` süzgecinden geçirmek → (e) kırmızı.
+  (f) **Sıra kanıtı — P4'ten önce main'de (SQ-17, bağlayıcı):** DL-2.0 commit'i MOD-0148 P4 commit'inden önce main'dedir —
+  `git merge-base --is-ancestor <DL-2.0> <P4>` çıkışı 0; ve P4'ün ölçülen ortamda ilk kaydı anında çalışan Auth ikilisi DL-2.0'ı
+  içerir, kayıttan sonra iki anahtarda `GrantSource.System` / `GrantSource.Module` satırı sıfırdır (Bölüm 17 DL-2.0 kanıtı); ölçüm
+  REP-001 koşu kaydına yazılır. Sabotaj 4 (sıra): P4'ü DL-2.0'dan önce birleştirmek / kaydetmek → ancestor denetimi çıkış 1 ve
+  ortam ölçümünde SuperAdmin'in `GrantSource.System` satırı görünür (`InternalPermissionsController.cs:96`), kanıt kırmızı.
+  **Yol başına tek sabotaj (r4, r3 incelemesi F-2):** her otomatik yolun kendi süzgeci ayrı ölçülür; sabotaj 2 tam katalog yolu
+  içindir. Sabotaj 5: yalnız `DefaultRolePermissionTemplate.cs:182`'deki süzgeci (`&& !ExplicitGrantOnlyPermissions.Keys.Contains(p.Key)`)
+  kaldırmak, liste ve öteki iki yol olduğu gibi → (a) kırmızı (SuperAdmin tam katalog dalı iki anahtarı, Viewer okuma dalı `.read`'i
+  alır); (b) ve (c) yeşil kalır. Sabotaj 6: yalnız `EntitlementPermissionSyncService.cs:294`'teki süzgeci
+  (`.Where(permission => !ExplicitGrantOnlyPermissions.Keys.Contains(permission.Key))`) kaldırmak → (c) kırmızı (Admin iki anahtarı,
+  Viewer `.read`'i `GrantSource.Module` ile alır); (a) ve (b) yeşil kalır.
+- [ ] AC-29 (zorunlu, r3) — Adlandırılmış 404 (inceleme F-8; MOD-0148 BREV-01 "once its code is named"): geçerli
+  `Diten.SupplyChain` servis token'ıyla kiracı A bağlamında (`X-Tenant-Id` = A, token kiracısı A) kiracı B'nin bağ kimliği **ve** hiç var olmayan bir kimlik → ikisi de 404,
+  gövde `errorCodes = [SUPPLIER_BINDING_NOT_FOUND]` (SQ-16 kararı, Beste 2026-11-19, Ali onayı 2026-11-24); iki cevabın durum kodu, kodu ve gövdesi aynıdır
+  (varlık sızmaz); kaldırılmış bağ 404 değil 200 `active = false`; cevapta bağın alanları yoktur. Sabotaj 1: kiracı filtresini
+  sorgudan çıkarmak → başka kiracı vakası 200 döner, kırmızı. Sabotaj 2: 404'ü gövdesiz / kodsuz döndürmek (ya da başka kiracı
+  için ayrı bir kod) → kod beyanı ve iki cevabın eşitliği kırmızı. **Ali'nin koşulu (2026-11-24):** test iki cevabı yan yana
+  karşılaştırır — durum kodu, `errorCodes` ve gövdenin geri kalanı, istek başına değişen izleme alanları (`traceId`, korelasyon
+  kimliği) dışında birebir aynıdır. Sabotaj 3: hiç var olmayan kimlik için gövdeye farklı bir `title` / `detail` metni yazmak (ya da
+  başka kiracı vakasında farklı) → eşitlik testi kırmızı.
+- [ ] AC-30 (zorunlu, r3) — Listede olmayan `service_name` ve geçersiz kiracı başlığı 403 (SQ-3 kaydı :34; inceleme F-8): imzası ve audience'ı
+  (`TRUSTED_SUPPLIER_BINDING_CONSUMER`) geçerli, `service_name` `Diten.SupplyChain` olmayan servis token'ı → **403** (401 değil),
+  bağ okunmaz (repository çağrısı sıfır); aynı token'la başka kiracının bağı istenince de 403 (404 değil — sıra 401 → 403 → 404);
+  yanlış audience ve kullanıcı token'ı 401 kalır. Sabotaj 1: `service_name` denetimini kaldırmak → yabancı servis 200 alır,
+  kırmızı. Sabotaj 2: listede olmayan adı kimlik doğrulama şemasında reddetmek (401) → 403 beyanı kırmızı. Sabotaj 3: bağı
+  `service_name` denetiminden önce okumak → "repository çağrısı sıfır" ve 403-önce-404 vakası kırmızı.
+  **Kiracı başlığı (Beste 2026-11-19, Ali onayı 2026-11-24):** geçerli `Diten.SupplyChain` token'ıyla `X-Tenant-Id` yok, GUID değil ya da token'ın izinli
+  kiracı kapsamında değil (bugün tek `tenant_id` claim'i, `ServiceIdentityTokenIssuer.cs:50`) → **403**, liste dışı adla aynı 403
+  gövdesi (ayrı kod adı yok), repository çağrısı sıfır; başlık geçersiz + başka kiracının bağı → 403 (404 değil). Sabotaj 4: başlık
+  yokken token'ın `tenant_id`'sine ya da varsayılan kiracıya düşüp bağı okumak → başlıksız vaka 200 / 404 döner, 403 ve
+  "repository çağrısı sıfır" beyanı kırmızı.
+  **Gerçek hat, Auth kiracı ara katmanı dahil (r4, r3 incelemesi F-1):** yukarıdaki vakalar yalnız politika ya da denetleyici
+  düzeyinde değil, `Program.cs:221-223` sırasıyla `UseAuthentication` → `UseTenantResolution` → `UseAuthorization`'dan geçen
+  gerçek Api hattında da sınanır (Development dışı ortam, dev bypass kapalı; sayaçlı repository): geçerli `Diten.SupplyChain`
+  token'ıyla (1) `X-Tenant-Id` yok, (2) GUID olmayan başlık, (3) başlık ≠ token kiracısı → üçü de **403**, gövdede `Missing Tenant`
+  / `Tenant mismatch` yok, repository çağrısı sıfır; (4) token yok ve başlık yok → **401** (400 `Missing Tenant` değil);
+  (5) kullanıcı token'ı + başka kiracının başlığı → **401** (400 `Tenant mismatch` değil). Ara katman tek başına (iki ortam): bu
+  önekte başlıksız istek uca ulaşır ve `TenantContext.IsResolved = false`; Development + dev bypass açıkken de `IsResolved = false`
+  (denetim: aynı yapılandırma `/api/users`'ta bypass'ı uygular); `/api/internal`, `/api/internal/supplier`,
+  `/api/internal/supplier-bindings-admin` gibi kardeş yollar başlıksız 400 `Missing Tenant` almaya devam eder. Sabotaj 5: ara
+  katmandaki muafiyeti kaldırmak → başlıksız vaka 403 yerine 400 `Missing Tenant` döner (Development'ta dev bypass `TenantContext`'e
+  varsayılan kiracıyı yazar — `IsResolved = false` beyanı kırmızı; uç bu kiracıyı okursa 200 döner), vaka (4) 401 yerine 400 —
+  kırmızı. Sabotaj 6: muafiyeti `/api/internal` önekine genişletmek → kardeş yol vakası kırmızı. Sabotaj 7: bu önekte BL-324
+  çelişki denetimini yerinde bırakmak → vaka (5) 401 yerine 400 `Tenant mismatch` döner, kırmızı.
 - [ ] AC-20 (zorunlu) — Oturum olayları (giriş challenge'ı, oturum başlangıcı, yenileme, çıkış) token verilmeden önce denetim
   satırı yazar; yazılamazsa 503 ve token yok; satırlarda parola, kod, token ve bilet yoktur. Sabotaj: yazımı token üretiminden
   sonraya almak → arıza enjeksiyonu testi kırmızı.
@@ -637,6 +844,10 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 | AC-17 | `SupplierAuth/SupplierBindingSelectionTests` (eşzamanlı iki seçim, TTL indeksi var) | HTTP + gerçek Mongo | sabotaj: bilet tek kullanımlık işaretlenmez |
 | AC-18 | `SupplierAuth/SupplierLogoutAndMeTests` | HTTP | sabotaj: yalnız sunulan anahtar iptal edilir |
 | AC-19 | `SupplierAuth/BindingRevisionServiceEndpointTests` | HTTP + Platform biçimli servis token'ı | sabotaj: uç kullanıcı şemasına açılır |
+| AC-28 (r3) | `Roles/SupplierPortalExplicitGrantPermissionTests` (şablon üç rol + kardeş anahtar; tam katalog yolu; modül eşitlemesi; açık atama) + (f) sıra kanıtı (`git merge-base --is-ancestor`, ortam ölçümü) + `Users/AccountKindTests` (küme 15, iki ad) + `SupplierAuth/SupplierTokenClaimsTests` (AC-12, iki anahtar token'da) | üretim `DefaultRolePermissionTemplate` / `FullCatalogPermissionGrantService` / `EntitlementPermissionSyncService` / `AssignPermissionCommandHandler` + sahte repository'ler (emsal `LeaveExplicitGrantPermissionTests`, `FullCatalogPermissionGrantServiceTests.cs:61-64`, `EntitlementPermissionSyncServiceTests.cs:312-316`) | sabotaj 1: iki anahtar `Keys`'ten çıkar; sabotaj 2: `FullCatalogPermissionGrantService.cs:39` denetimi kalkar → (b); sabotaj 3: token izin kümesi şablon / liste süzgecinden geçer; sabotaj 4: P4 DL-2.0'dan önce birleşir; sabotaj 5 (r4, F-2): yalnız `DefaultRolePermissionTemplate.cs:182` süzgeci kalkar → (a), (b) ve (c) yeşil; sabotaj 6 (r4, F-2): yalnız `EntitlementPermissionSyncService.cs:294` süzgeci kalkar → (c), (a) ve (b) yeşil |
+| AC-29 (r3) | `SupplierAuth/BindingRevisionNotFoundCodeTests` (başka kiracı + olmayan kimlik + kaldırılmış bağ) | HTTP + gerçek Mongo + servis token'ı | sabotaj 1: kiracı filtresi kalkar; sabotaj 2: 404 gövdesiz / ayrı kodlu; sabotaj 3: olmayan kimlikte gövde metni farklı (Ali koşulu) |
+| AC-30 (r3) | `SupplierAuth/BindingRevisionServiceNameForbiddenTests` (yabancı ad; yabancı ad + başka kiracı; yanlış audience; kullanıcı token'ı) + `SupplierAuth/BindingRevisionTenantHeaderTests` (başlık yok; GUID değil; token kiracısından farklı; geçersiz başlık + başka kiracının bağı) | HTTP + sayaçlı repository | sabotaj 1: `service_name` denetimi kalkar; sabotaj 2: liste dışı ad 401'e çevrilir; sabotaj 3: bağ denetimden önce okunur; sabotaj 4: başlık yokken token kiracısına / varsayılan kiracıya düşülüp bağ okunur |
+| AC-30 (r4, F-1) | `SupplierAuth/BindingRevisionPipelineHttpTests` (gerçek Api hattı, Auth kiracı ara katmanı dahil, Development dışı: servis token'ı + başlık yok / GUID değil / token kiracısından farklı → 403 ve repository çağrısı sıfır; token ve başlık yok → 401; kullanıcı token'ı + başka kiracı başlığı → 401) + `SupplierAuth/BindingRevisionTenantMiddlewareExemptionTests` (gerçek ara katman, Production ve Development + dev bypass; kardeş yollar 400 `Missing Tenant`) | HTTP (gerçek hat) + sayaçlı repository; ara katman birim testi (emsal `Tenancy/ServiceTokenEndpointTenantExemptionTests.cs:36-110`, `:176-297`) | sabotaj 5: ara katman muafiyeti kalkar → başlıksız vaka 400 `Missing Tenant` (Development'ta dev bypass kiracı yazar, `IsResolved` beyanı kırmızı), token+başlık yok vakası 400; sabotaj 6: muafiyet `/api/internal`'a genişler → kardeş yol vakası kırmızı; sabotaj 7: bu önekte BL-324 çelişki denetimi kalır → kullanıcı token'ı + başka başlık 400 |
 | AC-20 | `SupplierAuth/SupplierSessionAuditFailClosedTests` | arıza enjeksiyonu | sabotaj: denetim yazımı token üretiminden sonraya alınır |
 | AC-21 | Gateway `SupplierUserAllowListTests` | gateway middleware testi | sabotaj: izin listesi denetimi kaldırılır |
 | AC-22 | Gateway `MissingActorTypeRefusedTests` + `UnauthenticatedRequestUnchangedTests` (tokensız, süresi dolmuş) + `TenantRouteRegressionTests` | gateway middleware testi | sabotaj: `IsNullOrWhiteSpace` kısa devresi geri konur / `IsAuthenticated` koşulu kaldırılır |
@@ -650,6 +861,13 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
   (REP-001 koşu kaydı).
 - DL-1 kabulü canlı kanıt ister: Gateway üzerinden gerçek MOD-0140 ucuna karşı bir başarılı kur ve bir 422 (E4).
 - DL-3 kabulü canlı kanıt ister: `supplier_user` token'ıyla portal dışı bir yolda 403 ve portal yolunda servise ulaşma (E5).
+- **r3 — DL-2.0 kanıtı (AC-28 (f)):** önce sıra — DL-2.0 commit'i MOD-0148 P4'ün atası (`git merge-base --is-ancestor`, çıkış 0;
+  SQ-17 bağlayıcı); sonra MOD-0148 P4 kaydından sonra, DL-2'nin ölçtüğü ortamda iki anahtar katalogda `Tenant` kapsamıyla
+  görünür ve iki anahtarı tutan rol-izin satırlarının hiçbiri otomatik kaynaklı değildir — `GrantSource.System` (şablon ve tam
+  katalog `RolePermission.SystemGrant`, `FullCatalogPermissionGrantService.cs:78-80`) ya da `GrantSource.Module` satırı sıfır; yalnız
+  `GrantSource.Manual` olabilir (`services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/GrantSource.cs:14`, `:20`, `:23`);
+  kayıt REP-001 koşu kaydına yazılır. Sıfır değilse DL-2 durur ve satırlar
+  açık kararla temizlenir (liste var olan satırı silmez).
 
 ## 18. Ready-for-dev Checklist
 
@@ -669,6 +887,15 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 - [ ] Audited Events her yazma komutunu tam bir kez içeriyor; K2 sınıfı kapalı-başarısız ve testli — var
 - [ ] Sayfa yardımı (DL-4): `Help.SUPPLIERBINDINGS.*` kiracı 7 dil; tur yok (beş akıştan biri değil)
 - [ ] CT-APR-02 bağımsız inceleme + CT-APR-01 onay satırı (yüksek risk: yeni aktör türü, kimlik doğrulama yolu, gateway, kiracı)
+- [x] **r3:** CT-APR-02 bağımsız inceleme (r3 farkı: AC-19, AC-28, AC-29, AC-30; Bölüm 0.3, 3, 5, 7, 13, 14, 17, 22) — yapıldı,
+  KOŞULLU (`docs/records/reviews/MOD-0360-FU01/2026-11-24-068646c1.md`, F-1…F-3); bulgular r4'te kapandı
+- [ ] **r4:** yeni CT-APR-02 bağımsız inceleme (r4 farkı: F-1 → Bölüm 0.3, 5, 7, 8, 13, 14, 17, AC-19, AC-30; F-2 → AC-28, 17;
+  F-3 → künye, r3 notu, 0.3, 5, AC-28, 19; SQ-18 → 0.4, 5, 18, 22, 23) + yeni CT-APR-01 satırı — Ali'nin 2026-11-24 onayı r3
+  içeriği (`068646c1…`) içindir, r4 satırı yerine geçmez; r2 satırı (`8086bf9a…`) bu sürüme geçmez
+- [x] **r3:** `SUPPLIER_BINDING_NOT_FOUND` adı kararlaştırıldı (SQ-16; Beste önerdi 2026-11-19, MOD-0018/0360 sahibi Ali onayladı 2026-11-24)
+- [x] **r4:** SQ-18 kapandı (Ali, 2026-11-24): DL-2.0 Bölüm 0.4 S0'ı beklemez; yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001
+- [ ] **r3:** DL-2.0 MOD-0148 P4'ten önce main'de (AC-28 (f); SQ-17 bağlayıcı)
+- [x] **r4:** XMC-001 Auth izni — `TenantResolutionMiddleware.cs` (Auth) dahil (Bölüm 0.3; Ali, 2026-11-24, r3/r4 kararının parçası)
 
 ## 19. Implementation Notes
 
@@ -710,6 +937,40 @@ sabotajı vardır: üretim kodunda yazılan değişiklik testi kırmızıya çev
 - **r2 bulgu → yer eşlemesi:** F-1 → Bölüm 15, AC-22; F-2 → Bölüm 0.1 (D4), 8, 14, AC-12, AC-13; F-3 → Bölüm 3, 4, 5; F-4 → SQ-11;
   F-5 → Bölüm 0.1 (D6), 12, 13, AC-27, AC-8; F-6 → SQ-12; F-7 → SQ-13; F-8 → SQ-14; F-9 → SQ-15; F-10 → Bölüm 15; F-11 → AC-13;
   F-12 → künye.
+- **r3 kaynakları ve eşleme (taslak 2026-11-19):** sahip kararı Ali, 2026-11-24 (MOD-0018 / MOD-0360 sahibi; Beste önerisi 2026-11-19;
+  XMC-001 izni Ali'den, 2026-11-24) — MOD-0148 inceleme
+  `docs/records/reviews/MOD-0148/2026-11-15-75b33fcb.md` F-2 → Bölüm 0.3, 3, 5 (DL-2.0), 7, 14, 17, 22, AC-28; F-8 ve
+  `2026-11-17-dab26a67.md` F-2 → Bölüm 13, 14, AC-19, AC-29, AC-30. Karar kaydındaki istekler:
+  `docs/records/decisions/2026-11/mod0148-dc03-consumer-owner-decisions-2026-11-15.md:30-32` (K-5), `:55-57` (Açık kalanlar). MOD-0148
+  tarafı: §0.0 P1 (`MOD-0148-supplier-portal.md:81-93`, "before P4 is pushed"; kontrol listesi `:598`), P3 (`:113-117`, "until it is, no 404 is treated as a
+  mismatch"), T-0148-V1-BREV-01 (`:278-281`, "once its code is named"). Ölçüm origin/main `7236d9608`: `ExplicitGrantOnlyPermissions.cs:8`,
+  `:38-40`, `:108-114`; `DefaultRolePermissionTemplate.cs:181-183`, Viewer dalı `:207-212` (iki anahtardan `.read` liste olmadan
+  Viewer'a düşerdi: `Tenant` kapsamı + `read` eylemi); `DefaultRoleProvisioningRule.cs:27`; `FullCatalogPermissionGrantService.cs:39`,
+  `:78-80`; `InternalPermissionsController.cs:96`, `:117`; `EntitlementPermissionSyncService.cs:293-295`; `AccountKindTests.cs:60-80`;
+  `GrantSource.cs:14-23`; `AuthRefusalCodes.cs` (kod `errorCodes`'ta). Test koşulmadı, kod okumasıdır.
+- **r3 — hata kodu adı:** `SUPPLIER_BINDING_NOT_FOUND` paketin `SUPPLIER_BINDING_*` adlandırmasını izler (Bölüm 13: `…_EXISTS`,
+  `…_REVISION_CONFLICT`, `…_SUPPLIER_UNKNOWN`, …). Başka kiracının bağı ile var olmayan kimlik aynı kodu alır: kiracılar arası
+  erişim 404'tür ve varlık sızdırmaz (AGENTS.md Çekirdek 2). **Karar** (SQ-16; Beste önerdi 2026-11-19, MOD-0018/0360 sahibi Ali onayladı 2026-11-24).
+- **r3 — S2S kiracı başlığı:** servis token'ı bugün tek `tenant_id` claim'i taşır
+  (`services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/ServiceIdentityTokenIssuer.cs:50`); "izinli kiracı
+  kapsamı" bu değerdir, biçimi DL-2 başında yeniden ölçülür. Geçersiz başlık 403'tür (Beste 2026-11-19, Ali onayı 2026-11-24), 400 değil.
+- **r3 — MOD-0148'e geri bildirim (bu paket MOD-0148'i değiştirmez):** ad kararlaştırıldı (SQ-16); MOD-0148 sahibi P3 ve BREV-01'deki
+  "once its code is named" ifadesini bu kodla sabitler; listede olmayan `service_name` artık yalnız 403'tür (MOD-0148 401 / 403'ü
+  ayırt etmeden 503'e eşlediği için MOD-0148 davranışı değişmez — inceleme F-8).
+- **r4 bulgu → yer eşlemesi (2026-11-24; inceleme `docs/records/reviews/MOD-0360-FU01/2026-11-24-068646c1.md`, KOŞULLU):**
+  F-1 → Bölüm 0.3 (Auth `TenantResolutionMiddleware.cs` satırı), 5 (DL-2 "r4 eklenenler": kural, BL-324 / DCP-004 §7.4 ilişkisi,
+  testler), 7, 8 (S2S istisnası, bilgi notu 1), 13, 14, AC-19, AC-30 (gerçek hat vakaları, sabotaj 5-7), 17, Teslim dilimleri;
+  F-2 → AC-28 (sabotaj 5, 6), 17; F-3 → künye (`revision`, `status_note`), r3 notu, Bölüm 0.3, 5, AC-28, 19; SQ-18 (Ali 2026-11-24,
+  `dc03-supplier-user-binding-owner-decisions-01.md` son ek) → Bölüm 0.4, 5, 18, 22, 23, Teslim dilimleri. Bilgi notu 2 (GUID olmayan
+  `bindingId` rota kısıtı) bu revizyonun kapsamı dışında bırakıldı.
+- **r4 ölçümleri (HEAD `86c5dfe9b`, salt okunur kod okuması; test koşulmadı):** `services/Diten.AuthService/src/Diten.AuthService.Api/Program.cs:221-223`
+  (`UseAuthentication`, `UseTenantResolution`, `UseAuthorization`); `services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Middleware/TenantResolutionMiddleware.cs`
+  — BL-324 yorumu `:59-64`, çelişki 400 `:68-81`, `isServiceTokenIssuance` `:84`, dev bypass `:87-94`, kiracı yokken yol `:101-111`
+  (400 `Missing Tenant` `:110`), `IsBypassPath` `:134-143` (`/internal` `:141`), `IsServiceTokenIssuancePath` `:148-162`;
+  `.../Infrastructure/DependencyInjection.cs:42-55` (varsayılan kullanıcı `JwtBearer`); `ServiceIdentityTokenIssuer.cs:44`, `:49`,
+  `:50`, `:55`; `DefaultRolePermissionTemplate.cs:182`; `EntitlementPermissionSyncService.cs:294`; emsal testler
+  `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Tenancy/ServiceTokenEndpointTenantExemptionTests.cs:36-110`,
+  `:176-297`.
 
 ## 20. Follow-up Items
 
@@ -751,13 +1012,15 @@ borç yok.
 - **Yazma hatası davranışı (K2):** deneme satırı iş yazımından önce; yazılamazsa 503 ve iş verisi / token yok; iş yazımı + sonuç
   satırı aynı Mongo işleminde (AC-9, AC-20). Belirsiz commit'te ikinci mutasyon yapılmaz, denetim kimliğiyle okunur (FU27 emsali).
 - Sorgular (liste, tekil, geçmiş, sapma, `me`, `binding_rev`) yazma komutu değildir; geçmiş okuması meta-denetim satırı yazar.
+- **r3:** yeni yazma komutu yok. `ExplicitGrantOnlyPermissions` statik bir listedir (çalışma anında yazma yapmaz); S2S ucunun
+  401 / 403 / 404 cevapları sorgu cevabıdır. Tablo değişmez, `PinnedCounts` değişmez.
 
 ## 22. Bağımlılık kapıları (dilim başına)
 
 | Dilim | Başlamadan önce |
 |---|---|
 | DL-1 | S0 kapalı (0.4; SQ-12 ve SQ-13 dahil); XMC-001 Auth izni; Control Tower defter kararı (Bölüm 21); **MOD-0140 DL-3 main'de + Gateway canlı kanıtı** (SQ-9); CT-APR-02 + CT-APR-01 |
-| DL-2 | DL-1 kabul; SQ-2 (challenge kapısı), SQ-3 (audience), SQ-7 (izin verme yolu), SQ-14 (katalog tek yazarı), SQ-15 (son bağdan sonra hesap); MOD-0148 anahtarları Auth kataloğunda; SQ-11 cevabı MOD-0148 paketine kapı olarak yazılmış (D3 tüketicisi) |
+| DL-2 | DL-1 kabul; SQ-2 (challenge kapısı), SQ-3 (audience), SQ-7 (izin verme yolu), SQ-14 (katalog tek yazarı), SQ-15 (son bağdan sonra hesap); MOD-0148 anahtarları Auth kataloğunda; SQ-11 cevabı MOD-0148 paketine kapı olarak yazılmış (D3 tüketicisi); **r3:** SQ-16 kararlı (`SUPPLIER_BINDING_NOT_FOUND`). **r3 — DL-2.0 (AC-28) sırası — bağlayıcı (SQ-17; Beste önerdi 2026-11-19, MOD-0018/0360 sahibi Ali onayladı 2026-11-24):** DL-2.0 DL-2'nin **ilk commit'idir**; bu satırdaki "DL-1 kabul" ve "MOD-0148 anahtarları Auth kataloğunda" kapılarından **muaftır** (liste anahtar adıdır, katalog kaydı gerektirmez; DL-1 kabulünü beklemez); MOD-0148 P4 itilmeden **önce** main'de olmalıdır (MOD-0148 P1; Bölüm 7; kanıt AC-28 (f)). **r4 — SQ-18 KAPANDI (Ali, 2026-11-24; `dc03-supplier-user-binding-owner-decisions-01.md` son ek):** DL-2.0 Bölüm 0.4 S0 kapanışını **beklemez**; yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001 iznini (Auth, Ali — Bölüm 0.3) bekler. DL-2'nin geri kalanı (Auth kiracı ara katmanı muafiyeti dahil, r4 F-1) bu satırın bütün kapılarına bağlıdır ve P4'ten sonra başlar |
 | DL-3 | DL-2 kabul; Gateway izni (MOD-0032 sahibi); `integration-agent` görevi; regresyon rota listesi onaylı |
 | DL-4 | DL-1 kabul; Web ekran sahibi izni; isteğe bağlı — sahip isterse |
 
@@ -791,6 +1054,23 @@ borç yok.
 - **SQ-15 — son bağ kaldırılınca hesap (r2, F-9):** tedarikçi hesabı kapatılır mı, pasifleştirilir mi, ne kadar saklanır (kişisel
   veri)? Öneri: son aktif bağ kaldırılınca hesap pasif (giriş zaten bağ yokken genel 401), kişisel veri saklama süresi kiracının
   kullanıcı saklama kuralını izler. DL-2'den önce. Sahip: Ali.
+**r3 kapanışları (2026-11-19) — Beste önerdi 2026-11-19, MOD-0018/0360 sahibi Ali onayladı 2026-11-24**
+- ~~**SQ-16 — S2S 404 kodunun adı**~~ — **KAPANDI:** `SUPPLIER_BINDING_NOT_FOUND`; başka kiracının bağı ve var olmayan kimlik aynı
+  gövde (Bölüm 13, 14, AC-29). MOD-0148 BREV-01 / P3'ün bu adla sabitlenmesi MOD-0148 sahibinin işidir.
+- ~~**SQ-17 — DL-2.0 sırası**~~ — **KAPANDI (bağlayıcı):** `ExplicitGrantOnlyPermissions` eklemesi DL-2'nin ilk commit'i (DL-2.0);
+  DL-2'nin katalog kapısından muaf; MOD-0148 P4'ten önce main'de; DL-1 kabulünü beklemez (Bölüm 5, 22, Teslim dilimleri; AC-28 (f)).
+- ~~**S2S kiracı bilgisi**~~ — **KAPANDI:** `X-Tenant-Id` başlığından okunur; başlık yok / GUID değil / token'ın izinli kiracı
+  kapsamında değil → 403, bağ okunmaz, aynı gövde, ayrı kod adı yok (Bölüm 13, 14, AC-30).
+- ~~**403 gövdesine kod adı**~~ — **KAPANDI: hayır.** Liste dışı `service_name` ve geçersiz kiracı başlığı 403'ü kod adı taşımaz
+  (MOD-0148 401 / 403'ü ayırt etmeden 503'e eşler).
+- ~~**DL-1 uçlarında (AC-4) 404 kodu**~~ — **kapsam dışı / sonraki revizyon.**
+- ~~**§23 SQ-1…SQ-15'in güncellenmesi**~~ (2026-11-13 `dc03-…-owner-decisions-01.md` ve 2026-11-15 MOD-0148 K-1…K-4 cevapları) —
+  **kapsam dışı / sonraki revizyon.** Bu bölümdeki SQ-1…SQ-15 metni r2'deki gibi bırakıldı.
+- ~~**SQ-18 — DL-2.0 ve S0 (r3)**~~ — **KAPANDI (Ali, 2026-11-24; Beste iletti;
+  `docs/records/decisions/2026-11/dc03-supplier-user-binding-owner-decisions-01.md` son ek, commit `76276e123`):** DL-2.0 Bölüm 0.4 S0
+  kapanışını (D1–D8 yeniden onayı, Control Tower defter kararı, MOD-0140 kanıtı vb.) **beklemez**; yalnız r4 CT-APR-02 + CT-APR-01
+  ve XMC-001 iznini bekler (öneri gibi). Gerekçe: liste değişikliği S0 maddelerinin hiçbirine bağlı değil; S0'ı beklerse P4 S0
+  kapanışına kadar gecikirdi. Yerler: Bölüm 0.4, 5 (DL-2.0), 18, 22, Teslim dilimleri.
 
 **Natig'e (MOD-0148 sahibi)**
 - **SQ-7 — izin verme yolu:** `supplier_user` token'ına `.read` / `.submit` sabit küme olarak mı (öneri) yoksa kiracıda tohumlanan bir
@@ -821,6 +1101,6 @@ borç yok.
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
 |---|---|---|---|---|---|
 | DL-1 | S1 çekirdek: SupplierActorBinding kaydı, kur / kaldır / kod düzelt, uygunluk okuması, tedarikçi hesabı, K2 denetim izi | Module Summary, Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Audited Events, Acceptance Criteria, Test Expectations | E4 | plan kimliği yok | MVP-6 (plan v10.0 C4/C7) |
-| DL-2 | S2 tedarikçi kapısı: login / OTP / seçim / refresh / logout / me, supplier_user token, S2S binding_rev ucu, kiracı kapısı reddi | Owned Objects, Repo Scope, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Audited Events, Acceptance Criteria, Test Expectations | E4 | plan kimliği yok | MVP-6 (plan v10.0 C4/C7) |
+| DL-2 | S2 tedarikçi kapısı: login / OTP / seçim / refresh / logout / me, supplier_user token, S2S binding_rev ucu (r3: adlandırılmış 404 `SUPPLIER_BINDING_NOT_FOUND`, liste dışı `service_name` ve geçersiz `X-Tenant-Id` 403 — AC-29, AC-30; sıra 401 → 403 → 404; r4: Auth kiracı ara katmanında `/api/internal/supplier-bindings` muafiyeti — bu uçta 400 yok, AC-30 gerçek hat vakaları), kiracı kapısı reddi; r3 DL-2.0 (bağlayıcı sıra, SQ-17: DL-2'nin ilk commit'i, katalog kapısından muaf, DL-1 kabulünü beklemez, MOD-0148 P4'ten önce main'de; r4: S0'ı beklemez, yalnız r4 CT-APR-02 + CT-APR-01 ve XMC-001 — SQ-18 kapandı): portal anahtarları `ExplicitGrantOnlyPermissions`'ta (AC-28) | Owned Objects, Repo Scope, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Audited Events, Acceptance Criteria, Test Expectations | E4 | plan kimliği yok | MVP-6 (plan v10.0 C4/C7) |
 | DL-3 | S3 Gateway: supplier_user izin listesi, F4 sertleştirmesi, iki ocelot rotası (integration-agent) | Gateway / API Routing Decision, Repo Scope, Acceptance Criteria, Test Expectations | E5 | plan kimliği yok | MVP-6 (plan v10.0 C4/C7) |
 | DL-4 | S4 bağlama ekranı (isteğe bağlı), 7 dil | Layout & Shell Contract, Frontend File Contract, Acceptance Criteria, Test Expectations | E4 | plan kimliği yok | MVP-6 (plan v10.0 C4/C7) |

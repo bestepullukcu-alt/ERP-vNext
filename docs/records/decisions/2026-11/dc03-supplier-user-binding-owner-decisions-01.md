@@ -41,3 +41,90 @@
   (3) v1 parola belirleme bugünkü anonim `/api/users/set-password` + kiracı Web sayfasıyla.
   SQ-15 son aktif bağ kaldırılınca hesap **pasif**; kişisel veri saklama kiracının kullanıcı saklama kuralını izler.
   Açık kalanlar: SQ-7, SQ-8, SQ-11, SQ-14 (Natig), SQ-9, SQ-10 (Cihan).
+
+## 2026-11-13 akşam — Natig'i beklemeden ilerleme (Beste: "Natig'i beklemeden ilerleyelim, o bizim yaptığımıza göre yapsın")
+
+- **SQ-7 = öneri:** `supplier_user` token'ına `supplychain.supplier-portal.read` / `.submit` sabit küme olarak girer (kiracı rolü yok, D2).
+- **SQ-8:** iki adımlı doğrulamayı Auth zorlar (token yalnız OTP adımından sonra verilir, `amr` taşır); MOD-0148'in `amr`'yi yeniden
+  denetlemesi isteğe bağlı savunmadır, bu paketin kapısı değildir.
+- **SQ-11:** Auth `binding_rev` ucunu (AC-19) bu paket her durumda sunar. MOD-0148 yazmadan önce çağırırsa bağ kaldırma anında
+  etkili olur (uyuşmazlık 403, Auth yok 503 — D8); çağırmazsa erişim token'ı ömrü içinde (en çok 15 dk). D3 bu iki durumla yazılır;
+  MOD-0148'in seçimi kendi paketinde (Natig) kayda geçer, bu paketi bekletmez.
+- **SQ-14:** portal izin anahtarlarının kataloğa tek yazarı MOD-0148 manifestidir (Natig); DL-2 başlama kapısı olarak kalır, DL-1'i bekletmez.
+- **S0 kapanışı:** SQ-1, SQ-3, SQ-4, SQ-12, SQ-13 daha önce karara bağlandı; SQ-7 ve SQ-11 bu satırla kapandı. S0 kapalı.
+- **MOD-0140 DL-3 (Cihan):** DL-1 başlama kapısı olmaktan çıkar, **kabul kapısı** olur. DL-1 uygunluk okumasını donmuş
+  `supplier.openapi.yaml` 1.3.0'a karşı sözleşme ikiziyle kodlar; DL-1 ACCEPTED için MOD-0140 DL-3 main'de ve Gateway üzerinden canlı
+  kanıt (gerçek 200, 404 `UNKNOWN_SUPPLIER`, token reddi) gerekir. Hata kodu yeri (sözleşme `error.code`; bugün kodda `Errors[]`): okuyucu
+  sözleşmeye göre yazılır, MOD-0140 sözleşmeye uyar (Cihan'a iletildi).
+- Natig'e bilgi metni gönderilir (MVP-6, kararlar ve MOD-0148'den beklenenler).
+
+## Ek — DL-1 kapsam soruları S-1…S-4 (Beste, 2026-11-14)
+
+Geliştirici oturumu (WP-0360-FU01-DL1) başlangıç ölçümünde dört XMC-001 / kapsam sorusu sordu; sahip (Beste) önerilenleri seçti:
+
+- **S-1:** `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`'e tek `Perm.Entity.SUPPLIER_BINDINGS` satırı (yalnız
+  ekleme; fiiller `manage` / `read` köprüde var, yeni fiil yok). Katalog tohumu `DataSeeder.BuildCanonicalPermissions()`'da yazılır. Platform
+  `AccessGovernanceManifestProvider.cs` bir testle zorlanırsa geliştirici ayrıca yazar (o dosya için ayrı soru).
+- **S-2:** `Supplier` hesap türünü yalnız bağ komutu açar; şu dosyalarda yalnız `Supplier`'ı reddeden satırlar onaylı:
+  `Features/Users/Services/AccountKindWriter.cs` (`TryParse` tanımaz + `Apply` tedarikçi hesabında türü değiştirmez),
+  `SetAccountKindCommandValidator` (`IsDefinedKindName`), `CreateUserCommandHandler.ResolveInitialKind` (ya da `CreateUserCommandValidator`).
+  Ters yön (tedarikçi → `Human`) de kapalı. AC + sabotaj.
+- **S-3:** `Domain/Entities/AuthAuditLog.cs`'e yalnız ekleme `EntityType` (string?) + `EntityId` (Guid?) ve indeks
+  `(TenantId, EntityType, EntityId, OccurredAt)` (`MongoDbIndexConfigurations.cs`) — FU27 (D98 öneri 2) biçimiyle aynı.
+- **S-4:** `Application/Common/Interfaces/IPlatformAuditForwarder.cs` + `Infrastructure/Services/PlatformAuditForwarder.cs`'e yalnız ekleme
+  `Task<bool> TryForwardAsync(...)` (mevcut `ForwardAsync` onu çağırıp sonucu yok sayar; davranış aynen) ve `PlatformAuditEvent.IsMetaAudit`
+  (varsayılan `false`) — FU27 D99/1, D106/1 emsali. Teslim edilmezse geçmiş ucu 503.
+- Not: Auth MOD-0018 sahibi Ali; bu satırlar FU27 tasarımıyla aynı biçimde olduğundan çakışmaz, Ali'ye toplu bilgilendirmede bildirilir.
+
+### S-3 uygulama notu ve S-5 (Beste, 2026-11-14)
+
+- **S-3 uygulaması:** geliştirici `AuthAuditLog.cs`'e dokunmadan kendi satır tipiyle `authAuditLogs`'a aynı alanlar + `EntityType`, `EntityId`,
+  `BindingId`, `AttemptId`, `Phase` yazıyor (`IgnoreExtraElementsConvention(true)` ölçüldü; satır `AuthAuditLog` olarak da okunuyor — testli).
+  Onaylanan seçenekten daha dar; CT kabul. İndeks `MongoDbIndexConfigurations.cs`'te.
+- **S-5 onaylı:** `tests/.../Users/AdminResetPathGuardTests.cs` `NonResetLinks` listesine tek satır
+  `(…/CreateSupplierActorBindingHandler.cs, "NewSupplierAccountAsync")` (yalnız ekleme; `CreateUser` / `CreateByInvitationAsync` emsali).
+
+### S-6…S-9 ve dev Mongo olayı (Beste, 2026-11-14)
+
+- **S-6 onaylı:** `AccessGovernanceManifestSeedParityTests.ApiOnlyKeys`'e `auth.supplier-bindings.manage` ve `auth.supplier-bindings.read`
+  (emsal `auth.users.lookup`; v1 ekransız; DL-4 ekranıyla manifeste taşınır). Platform `AccessGovernanceManifestProvider.cs`'e dokunulmaz.
+- **S-7 onaylı:** `permission-scope-baseline.csv`'ye iki satır, kapsam 0 (Tenant).
+- **S-8 onaylı:** `ProductIdentityEntitlementReconciliationCommandContractTests` `AddPersistence` parmak izi sabiti yeni değere (yalnız
+  `Persistence/DependencyInjection.cs`'in dört kayıt satırı yüzünden).
+- **S-9 onaylı:** aynı dosyada `ClosedWriterInventory` envanterine yeni yazar çağrıları elle, satır satır gerekçeli (yeniden üretim yok);
+  tam liste raporda.
+- **Dev Mongo olayı:** geliştiricinin geçici A-2 testi paylaşılan dev Auth veritabanında (`localhost:27017/diten_auth_v3`) boş
+  `supplierActorBindings` koleksiyonu + 3 indeks oluşturdu (veri yazılmadı; salt-okunur ölçüm). Sahip kararı: **koleksiyon silinir**
+  (önce belge sayısının 0 olduğu doğrulanır). Ders: `WithWebHostBuilder` kopyası izole Mongo ayarını taşımıyor — testler paylaşılan dev
+  Mongo'ya hiç açılmamalı.
+
+## Ek — MOD-0360-FU01 kabulü MOD-0140 DL-3 ile (Beste, 2026-11-17)
+
+Kaynak: Cihan'ın MVP-2 devir notu §5 (PR #444, `docs/records/audits/2026-11/mvp2-mvp3-ct-handoff-01/MVP-2-DEVIR.md`). Başarılı bağ
+`onboardingStatus = Approved` ister (F-5); Procurement bu değeri ancak MOD-0140 DL-4'te yazar (S-3'e bağlı, tarihsiz). DL-3 ile yalnız
+"uygun değil → 422" ölçülebilir.
+
+- **Karar A — koşullu kabul:** MOD-0140 DL-3 main'e girince MOD-0360-FU01 kabulü "uygun değil → 422" yolu ölçülerek koşullu verilir;
+  başarılı bağ ölçütü DL-4'e kadar açık kalır ve DL-4 main'e girince ölçülüp kapanır. Test kiracısında Procurement verisine dışarıdan
+  `Approved` yazılmaz (B reddedildi); F-5 değiştirilmez (C reddedildi).
+- **Zarf ↔ sözleşme:** okuyucu hem MOD-0140 yanıt zarfını hem 1.3.0 sözleşme şeklini okur (devir notu önerisi); MOD-0140 §20 kararı
+  gelince sadeleşir.
+
+## Ek — MOD-0360-FU01 r3: MOD-0148 F-2 / F-8 (Ali, 2026-11-24)
+
+Kaynak: Ali'nin Beste'ye cevabı (2026-11-24), r3 taslağına (2026-11-19) ve
+`docs/records/reviews/MOD-0148/2026-11-15-75b33fcb.md` F-2 / F-8'e. Ali MOD-0018 / MOD-0360 sahibidir; XMC-001 izni Ali'den.
+
+- **F-2 — evet:** `supplychain.supplier-portal.read` ve `.submit` otomatik verilmeyen izinler listesine
+  (`ExplicitGrantOnlyPermissions`) girer; varsayılan rol şablonu, tam katalog ve modül eşitlemesi bu izinleri vermez. Bu değişiklik
+  MOD-0360-FU01 DL-2'nin **ilk commit'i** (DL-2.0) olur ve MOD-0148 P4'ten **önce** main'e girer (SQ-17).
+- **F-8 — 403:** listede olmayan servis adı ya da eksik / geçersiz `X-Tenant-Id` için 403; paketteki 401'ler buna göre düzeltilir.
+  Başka kiracıya ait bağ için 404 ve `SUPPLIER_BINDING_NOT_FOUND` kodu (SQ-16).
+- **Ali'nin koşulu:** hiç var olmayan bağ için de tıpatıp aynı cevap (aynı kod, aynı gövde) döner ve bu bir testle gösterilir
+  (pakette AC-29, sabotaj 3; istek başına değişen izleme alanları karşılaştırma dışı).
+- **Sonraki adım:** r3 pakete işlendi; bağımsız inceleme (CT-APR-02) sonrası onay satırı (CT-APR-01) Ali'ye getirilir.
+- **Açık:** SQ-18 — DL-2.0, Bölüm 0.4 S0 kapanışını bekler mi? Öneri: yalnız r3 onayı + XMC-001. Sahip: Beste / Ali.
+- **SQ-18 — KAPANDI (Ali, 2026-11-24; Beste iletti):** DL-2.0, Bölüm 0.4 S0 kapanışını **beklemez**; yalnız r3 onayını
+  (CT-APR-02 + CT-APR-01) ve XMC-001 iznini bekler. Pakette SQ-18 "açık" görünür; bu kayıt onu kapatır, metin bir sonraki
+  revizyonda hizalanır. Ali r3'ü (paket sha256 `068646c1…`) "onaylıyorum" ile onayladı; onay satırı bağımsız inceleme
+  kaydından sonra yazılır.

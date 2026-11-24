@@ -19,19 +19,36 @@ screens:
 entity_base: EntityBase
 status: ready-for-dev
 approval_status: pending
-revision: "r9 (2026-11-13) — AC-17 sahip kararı (Beste, 2026-11-13; mod0177-fu01-dependency-confirmations-01 son ek, 3d26264f0): AC-17 donmuş SHIPMENT-BUNDLE 3.5.0'a hizalandı — getShipment 200 şemasındaki customerRef components/schemas/CustomerRef'e bağlı, CustomerRef type kümesi tam [string, null], küçük harf GUID pattern'i, format: uuid beklentisi yok (§19.13). Başka AC değişmedi. r8 onayı (fc7f3cd3, approvals.tsv) EES 2.14 gereği r9 için geçersizdir; r9 bağımsız inceleme (CT-APR-02) ve Ali onayı (CT-APR-01) ister. Önceki: r8 (fc7f3cd3, 2026-11-04) — bağımsız son bakış 03 (hedef r7 124eb974, KOŞULLU, 0 ENGEL, 1 ORTA, 2 DÜŞÜK) F-1…F-3 ve CT kararı (MVP-1 CT, 2026-11-04) tek geçişte kapatıldı (§19.12; S-101); yeniden inceleme (CT-APR-02) ve onay satırı (CT-APR-01) ister. Önceki: r7 (124eb974) — son bakış 02 (8002d286) kapanışı (§19.11); r6 (8002d286) — son bakış 01 (9753e23a) kapanışı (§19.10); r5 (9753e23a) — tur 3 (807c8dc2) kapanışı (§19.9); r4 (807c8dc2) — tur 2 (fbafd3af) kapanışı (§19.8); r3 (fbafd3af) — tur 1 (a66dd353) kapanışı (§19.7)."
+revision: "r10 (2026-11-23) — okuma nedeni sahip kararı (Beste, 2026-11-23, seçenek 1; docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md son bölüm, b3c89f435): müşteri anahtarı belge yedeğine (DOC:, kaynak Document) sevkiyat okuma sonucu Forbidden / NotFound / Unavailable yüzünden düştüğünde neden kapsam kalemine yazılır (RecallScopeItem.CustomerSourceReason) ve vaka ayrıntısı ile iz ekranında üç ayrı metinle (7 dil, yeni anahtarlar) gösterilir; RECALL 1.10.0 → 1.11.0 yalnız ekleme (tam fark §8.11; sözleşme dosyası WP'de güncellenir); yeni dilim DL-3, yeni AC-32…AC-41, açık kararlar K-1…K-7 (§19.14); inceleme düzeltmesi (bağımsız inceleme 329d81c0c, r10, KOŞULLU; CT kararı): F-1 CustomerRow nedeni en son yazılan kalemden (K-6 kapandı, AC-34 (g)), F-2 Ok + belge → neden yok etiketi yazar çıkarımı, F-3 contracts/README.md RECALL 1.10.0 + 1.11.0 satırları DL-3 Repo Scope'ta; sürüm r10 kalır. AC-1…AC-31, DL-1 ve DL-2 değişmedi. r9 onayı (c12df7b7, approvals.tsv, 2026-11-13) EES 2.14 gereği r10 için geçersizdir; r10 bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01, onaylayan MOD-0177-FU01 sahibi, yazan ≠ onaylayan) ister. Önceki: r9 (c12df7b7, 2026-11-13) — AC-17 donmuş SHIPMENT-BUNDLE 3.5.0 CustomerRef'e hizalandı (sahip kararı 3d26264f0, §19.13); r8 (fc7f3cd3, 2026-11-04) — son bakış 03 kapanışı (§19.12); r7 (124eb974) — son bakış 02 kapanışı (§19.11); r6 (8002d286) — son bakış 01 kapanışı (§19.10); r5 (9753e23a) — tur 3 kapanışı (§19.9); r4 (807c8dc2) — tur 2 kapanışı (§19.8); r3 (fbafd3af) — tur 1 kapanışı (§19.7)."
 risk: HIGH
-risk_reason: "GxP geri çağırma kaydı: müşteri anahtarı bildirim, tüketim beyanı, iade bağlama ve etkinlik hesabının birleştirme anahtarıdır — yanlış anahtar kaydı yetim bırakır ve etkinliği yanlış gösterir; servisler arası okuma (CRM 5061) ile kiracı izolasyonu ve kişisel veri sınırı; kapsam mührü (rs-scope-v1) customerRef'i içerir; kanıt paketinin saklı baytları müşteri adını dışa aktarım anının anlık görüntüsü olarak taşır; sözleşme değişikliği (RECALL 1.10.0) ve dondurulmamış iki üretici sözleşmesine bağımlılık (SHIPMENT-BUNDLE 3.5.0, CRM-ACCOUNT-LOOKUP 1.0.0)"
-status_note: "ready-for-dev r9 (2026-11-13) — künye S-49 gereği ready-for-dev (draft künyeli paket onaylanamaz; onay satırı ready-for-dev künyeli sürüme yazılır); approval_status pending: r8 onayı (fc7f3cd3, approvals.tsv, 2026-11-04) EES 2.14 gereği r9 için geçersizdir — r9 bağımsız inceleme (CT-APR-02, yazandan ayrı oturum) ve Ali'nin onay satırını (CT-APR-01) bekler; AC-17 Skip kaldırma dalı (fix/ci/remove-shipment-bundle-350-skip-01) ve DL-1 kabulü r9 onayından sonradır. ready-for-dev geliştirme başlangıcı ya da kabul değildir; DL-1 kabul kapıları açık kalır. r9: yalnız AC-17 (SHIPMENT 3.5.0 hizası) donmuş sözleşmeye hizalandı (sahip kararı Beste, 2026-11-13; §19.13) ve ona atıf yapan yerler (§17, §17.1, §18, §19.4 Q-2, §19.7 notu, §22) tutarlı kılındı; sözleşme değişmedi; başka AC değişmedi, AC sayısı 31. r8: bağımsız son bakış 03'ün (124eb974, KOŞULLU) üç bulgusu CT kararıyla (MVP-1 CT, 2026-11-04) tek geçişte kapatıldı (S-101, §19.12): F-1 — GetRecallCaseScopeHandler (CaseQueryHandlers.cs), GetRecallCaseReturnsHandler ve RecallReturnRules.WithHoldAsync (R3Handlers.cs), RunRecallTraceHandler (TraceHandlers.cs) Repo Scope'ta adıyla, yalnız müşteri gösterimi sınırıyla; customer taşıyan her yanıtın işleyici / kurucu eşlemesi §5'te; F-2 — okuma Ok değilken saklı uyarı kalır, AC-6 (b2) (2), S-6p; F-3 — AC-6 (b2) adım sırası: temizleme approveScope'tan önce PendingScopeApproval'da, taşıyıcılar ayrı fixture, S-6k (3) adımına bağlı. AC sayısı değişmedi. r7: bağımsız son bakış 02'nin (8002d286, KOŞULLU) dört bulgusu CT kararıyla (MVP-1 CT, 2026-11-04) tek geçişte kapatıldı (S-101, §19.11): F-1 — NoCrmWarning'i ScopeItems iz düğümünün Shipment.Read değerinden hesaplar, Reconcile izlenen kalemin değerine bakar ve yalnız saklı Crm satırı korunduğunda yazar; insert ve Crm dışı saklı satırda false; CaseCommandHandlers.cs:553 değişmez, geçici alan yok (§4.1, §5, §8.5, §19.2, AC-6 (b3)); F-2 — S-15b (AC-15); F-3 — mevcut NoCrmBadge / NoCrmHint CT kararıyla kabul, yeni anahtar yok (§8.8); F-4 — EffectivenessRow ve ReturnLink kapsam kaleminin değerini salt-okunur kopyalar (§8.7, AC-6 (b2)). AC sayısı değişmedi. r6: bağımsız son bakış 01'in (9753e23a, KOŞULLU) dört bulgusu CT kararıyla (MVP-1 CT, 2026-11-04) tek geçişte kapatıldı (S-101, §19.10): F-1 — DL-1 ve DL-2 aynı geçişle açılır, DL-1 tek başına kullanıcıya açık ortama çıkmaz (§22, AC-30 (3)); F-2 — EvidenceTextParityTests SharedKeys listesine sekiz Recall.Customer.* adı, dosya DL-1 Repo Scope'ta, önek listesi değişmez (§5, §11, AC-19); F-3 — elle girilmiş anahtarın korunması Origin'e değil CustomerRefSource = Manual'a dayanır, ikinci yeniden izleme ölçülür (§8.2, §8.5, AC-6 (a6)); F-4 — başarılı okumada customerRef gelmezse saklı Crm anahtarı kalır ve satır NoCrmWarning ile işaretlenir, onaya giderken görünür (§4.1, §8.5, §8.7, §8.8, AC-6 (b2), AC-23). Önceki r5 notu: bağımsız inceleme 01 tur 3'ün (807c8dc2, KOŞULLU) üç bulgusu CT kararıyla (MVP-1 CT, 2026-11-04) tek geçişte kapatıldı (S-101, §19.9): F-1 — Export kipine devre kesici (ordinal sırayla 8'lik dalgalar; bir dalganın bütün okumaları zaman aşımı / 5xx / ulaşılamaz ise kalan hesaplar çağrılmadan Unresolved; sağlıklı gecikmeli CRM'de hepsi çözülür), Q-9 ölçümü kanıt olarak yazıldı (Ocelot 24.1.0 tanımsız rota zaman aşımı 90 sn, Web HttpClient 100 sn, kesicisiz eşik ~361 yanıtsız hesap) (§8.6, AC-14, AC-29); F-2 — recall.evidence.export ve recall.trace.export AC-30 rol kontrolüne girdi; vakada / izde Forbidden müşteri varken previewEvidence, createEvidenceExport ve exportTrace 403 RECALL_CUSTOMER_DIRECTORY_FORBIDDEN ile reddedilir, izin eksikliği kalıcı GxP dosyasına girmez (§8.6, §8.7, §8.10, §14, AC-16, AC-18, AC-26, AC-27, AC-29, AC-30; yeni metin Recall.Customer.ExportForbidden 7 dil); F-3 — müşteri sayfalarının ordinal anahtar sırası (Crm müşterilerinde fiilen GUID sırası, adla sıralama ve arama yok) kabul edilen sınır (§8.8, §20 FU-0177-FU01-FIND). Q-9 kapandı. Kimlik ön kontrolü 8ba30d12b'de çıkış 0 (değişmedi). Açık: Q-1…Q-4, D-1…D-5; DL-1 kabul kapısı D-1, D-2, D-3, D-4, AC-20 (f) veri sayımı ve AC-30 rol kontrolü (§22). 31 AC (DL-1 AC-1…AC-20, AC-25, AC-26, AC-28, AC-29, AC-30; DL-2 AC-21…AC-24, AC-27, AC-31)."
+risk_reason: "GxP geri çağırma kaydı: müşteri anahtarı bildirim, tüketim beyanı, iade bağlama ve etkinlik hesabının birleştirme anahtarıdır — yanlış anahtar kaydı yetim bırakır ve etkinliği yanlış gösterir; servisler arası okuma (CRM 5061) ile kiracı izolasyonu ve kişisel veri sınırı; kapsam mührü (rs-scope-v1) customerRef'i içerir; kanıt paketinin saklı baytları müşteri adını dışa aktarım anının anlık görüntüsü olarak taşır; sözleşme değişikliği (RECALL 1.10.0) ve dondurulmamış iki üretici sözleşmesine bağımlılık (SHIPMENT-BUNDLE 3.5.0, CRM-ACCOUNT-LOOKUP 1.0.0); r10: RECALL 1.11.0 (DL-3) kapsam kalemine sevkiyat okuma nedenini yazar — mühürlere, kanıt paketine, iz CSV'sine ve denetim ayrıntısına girmez"
+status_note: "ready-for-dev r10 (2026-11-23) — künye S-49 gereği ready-for-dev kalır (draft künyeli paket onaylanamaz; onay satırı ready-for-dev künyeli sürüme yazılır — scripts/pack_approval.py DRAFT_WARNING; bu paketin r9 deseni); approval_status pending: r9 onayı (c12df7b7, approvals.tsv, 2026-11-13) EES 2.14 gereği r10 için geçersizdir — r10 bağımsız inceleme (CT-APR-02, yazandan ayrı oturum) ve onay satırını (CT-APR-01, onaylayan MOD-0177-FU01 sahibi) bekler. DL-3 kodu (WP) bu iki satırdan önce yazılmaz; ready-for-dev geliştirme başlangıcı ya da kabul değildir. r10: okuma nedeni (sahip kararı Beste 2026-11-23, seçenek 1) — §3 / §4.1 izinli alan listesine CustomerSourceReason, §8.11 kural ve RECALL 1.10.0 → 1.11.0 farkının tam listesi (bu revizyon sözleşme dosyasına dokunmaz), §11 üç yeni yalnız Web anahtarı, §16 AC-32…AC-41 (AC sayısı 31 → 41), §22 DL-3 ve kabul kapısı, §19.14 açık kararlar K-1…K-7 (K-1…K-5 yazar önerisiyle yazıldı; K-6 kapandı — CT, inceleme F-1; K-7 DL-1 / DL-2 kabullerinin sürümü). AC-1…AC-31 ve DL-1 / DL-2 metni değişmedi. Önceki notlar: r9 — yalnız AC-17 donmuş SHIPMENT 3.5.0'a hizalandı (§19.13); r8 — son bakış 03 F-1…F-3 (§19.12); r7 — son bakış 02 F-1…F-4 (§19.11); r6 — son bakış 01 F-1…F-4 (§19.10); r5 — tur 3 F-1…F-3 (§19.9). Açık (r9'dan): Q-1…Q-4, D-1…D-5; DL-1 kabul kapısı D-1, D-2, D-3, D-4, AC-20 (f) veri sayımı ve AC-30 rol kontrolü (§22). 41 AC (DL-1 AC-1…AC-20, AC-25, AC-26, AC-28, AC-29, AC-30; DL-2 AC-21…AC-24, AC-27, AC-31; DL-3 AC-32…AC-41)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-11-03
 target: TBD
 form_field_count: 0
-dependencies: [MOD-0177, RECALL-v1.9.0 (→ 1.10.0, bu paket), SHIPMENT-BUNDLE-v3.5.0 (MVP-6, customerRef — kabul kapısı; bugün 3.4.0), CRM-ACCOUNT-LOOKUP-v1.0.0 (MOD-0149, U-1 — taslak; uç kodda yok, MOD-0149 DL-1), MOD-0018 (Auth — crm.account.lookup-validation rol eşlemesi; DL-1 kabul kapısı, D-4)]
+dependencies: [MOD-0177, RECALL-v1.9.0 (→ 1.10.0 DL-1, → 1.11.0 DL-3 r10, bu paket), SHIPMENT-BUNDLE-v3.5.0 (MVP-6, customerRef — kabul kapısı; bugün 3.4.0), CRM-ACCOUNT-LOOKUP-v1.0.0 (MOD-0149, U-1 — taslak; uç kodda yok, MOD-0149 DL-1), MOD-0018 (Auth — crm.account.lookup-validation rol eşlemesi; DL-1 kabul kapısı, D-4)]
 ---
 
 # MOD-0177-FU01 — Recall customer identity from CRM
+
+> **r10 (2026-11-23) — okuma nedeni (DL-3).** Sahip kararı (Beste, 2026-11-23, seçenek 1;
+> `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` son bölüm, `b3c89f435`; ölçüm MOD-0177-FU01-READTEXT-01): vaka
+> açılırken müşteri anahtarı belge yedeğine (`DOC:`, kaynak `Document`) sevkiyat okuma sonucu yüzünden (`Forbidden` / `NotFound` /
+> `Unavailable`) düştüğünde neden vakaya yazılır ve vaka ayrıntısı ile iz ekranında üç ayrı metinle gösterilir ("Sevkiyat servisine
+> erişilemedi" / "Sevkiyatı okuma yetkisi yok" / "Sevkiyat bulunamadı"; 7 dil, yeni anahtarlar; var olan `Recall.Read.*` teslim sütununda
+> değişmeden kalır). Okuma `Ok` iken belgeden gelen müşteride neden yoktur; eski vakalarda (alan yok) metin çizilmez. Yeniden deneme /
+> bütçe ve vakayı reddetme kapsam dışıdır (O-9). RECALL 1.10.0 → 1.11.0 yalnız ekleme (tam fark §8.11); yeni dilim DL-3, AC-32…AC-41;
+> açık kararlar §19.14. AC-1…AC-31 ve DL-1 / DL-2 değişmedi. r9 onayı (`c12df7b7`) EES 2.14 gereği r10 için geçersizdir: r10 bağımsız
+> inceleme (CT-APR-02) ve onay satırı (CT-APR-01) bekler. **r10 ölçüm tabanı:** worktree `wms-ct-01` @ `b3c89f435` (DL-1 kodu `f57172eed`
+> ve sonrası); r10'un yeni satırlarındaki satır numaraları bu tabandandır — DL-1 kodu satırları kaydırdığı için önceki revizyonların
+> numaralarından farklı olabilir (ör. `submitScope` `Reconcile` çağrısı bugün `CaseCommandHandlers.cs:560`).
+> **r10 inceleme düzeltmesi** (bağımsız inceleme `329d81c0c`, KOŞULLU, 3 bulgu; CT kararı; sürüm r10 kalır): F-1 (ORTA) `CustomerRow` nedeni
+> aynı anahtarın **en son yazılan** kaleminden alınır, en son kalem nedensizse neden yok (§8.11, AC-32, AC-34 (g), S-34d; K-6 kapandı);
+> F-2 (DÜŞÜK) "`Ok` + belge → neden yok" etiketi **yazar çıkarımı** (sahip kararından türetildi: neden yalnız üç okuma hatasında) olarak
+> düzeltildi (§8.11, §19.5 madde 13, AC-33 (a)); F-3 (DÜŞÜK) `docs/analysis/contracts/README.md` sözleşme kaydına RECALL 1.10.0 (DL-1'den
+> eksik) ve 1.11.0 satırları DL-3 Repo Scope'a ve kabul kapısına eklendi (§5, §22).
 
 > **r9 (2026-11-13) — AC-17 sözleşmeye hizalandı.** Sahip kararı (Beste, 2026-11-13; `docs/records/decisions/2026-11/mod0177-fu01-dependency-confirmations-01.md` son ek, `3d26264f0`): donmuş SHIPMENT-BUNDLE 3.5.0
 > `customerRef`'i `components/schemas/CustomerRef` ile `type: [string, 'null']` ve küçük harf GUID `pattern`'iyle tanımlar, `format: uuid`
@@ -98,11 +115,17 @@ Elle eklenen kapsam satırında CRM müşterisi seçilemez; GUID biçimli serbes
 rotası yoktur; yeni hata kodu iki tanedir (`RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE` 503 — üç kayıt komutu; `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`
 403 — üç kayıt komutu ve üç dışa aktarım ucu).
 
+**r10 — okuma nedeni (DL-3, sahip kararı Beste 2026-11-23):** sıra 3'e (`DOC:`) düşen bir sevkiyat müşterisinde düşüşün nedeni sevkiyat
+okumasıysa (`Forbidden`, `NotFound`, `Unavailable`) bu neden kapsam kalemine yazılır (`RecallScopeItem.CustomerSourceReason`, §4.1) ve vaka
+ayrıntısında (müşteriler ve kapsam sekmeleri) ile iz ekranında üç ayrı metinle gösterilir (§8.11). Okuma `Ok` iken belgeye düşen müşteride
+(sevkiyat okundu ama `customerRef` ve kullanılabilir teslim yeri yoktu) neden yoktur; DL-3 öncesi vakalarda alan yoktur ve metin çizilmez.
+Neden hiçbir mühre, kanıt dosyasına, iz CSV'sine ve denetim ayrıntısına girmez. Sözleşme RECALL 1.11.0 (yalnız ekleme).
+
 ## 2. Ownership and Boundaries
 
 | Konu | Sahip | Bu paketin payı |
 |---|---|---|
-| Recall müşteri anahtarı, kayıtlar, ekran, RECALL sözleşmesi | MOD-0177 (bu paket) | yazar (RECALL 1.10.0 tek yazıcı adımı bu paketin) |
+| Recall müşteri anahtarı, kayıtlar, ekran, RECALL sözleşmesi | MOD-0177 (bu paket) | yazar (RECALL 1.10.0 tek yazıcı adımı bu paketin; r10: RECALL 1.11.0, DL-3) |
 | SHIPMENT-BUNDLE ve `customerRef` alanı | MVP-6 (MOD-0183) | yalnız okur; sözleşmeye yazmaz |
 | CRM hesabı ve CRM-ACCOUNT-LOOKUP sözleşmesi | MOD-0149 (commercial-suite, CrmService 5061) | yalnız tüketici tarafını tanımlar; sözleşmeye yazmaz |
 | `crm.account.lookup-validation` kataloğu ve rol eşlemesi | Auth (MOD-0018, Ali) | bağımlılık (XMC-001); dokunmaz |
@@ -125,13 +148,13 @@ Yeni koleksiyon yok. Değişen nesneler:
 
 | Nesne | Koleksiyon | Değişiklik |
 |---|---|---|
-| `RecallScopeItem` | `recall_scope_items` | eklenen alanlar `CustomerRefSource` ve `NoCrmWarning` (r6, F-4@9753e23a) (§4.1) |
+| `RecallScopeItem` | `recall_scope_items` | eklenen alanlar `CustomerRefSource` ve `NoCrmWarning` (r6, F-4@9753e23a) ve (r10, DL-3; sahip kararı Beste 2026-11-23) `CustomerSourceReason` (§4.1, §8.11) — izinli alan listesi bu üçüdür |
 | `TraceNode` (bellek içi) / `TraceShipmentInfo` | — | eklenen alanlar (§4.2) |
 | `RecallCustomerNotification`, `RecallConsumptionDeclaration`, `RecallReturnLink` | mevcut | **alan eklenmez**; `CustomerRef` CRM anahtarında kanonik GUID taşır |
 | `RecallEvidenceExport` / `RecallEvidenceFile` | mevcut | **alan eklenmez**; saklı baytlar adı anlık görüntü olarak taşıyabilir (§2, §8.10) |
 | `RecallErrorCodes` (`RecallRules.cs:11`) | — | eklenen kodlar `RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE` (503) ve `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN` (403) (§8.4) |
 | `RecallCaseEvent` (`ReturnLinked` olayı) | mevcut | **alan eklenmez**; `Crm` satırına bağlanan iadenin olay metni müşteri anahtarını taşımaz (§8.4) |
-| RECALL yanıt şemaları | `recall.openapi.yaml` | eklemeli `customer` nesnesi, `customerPage` sorgu parametresi, `DrillRun.customers` adlandırması, iki yeni hata kodu (üç kayıt komutunda ikisi, üç dışa aktarım ucunda `…_FORBIDDEN`) (§8.7) |
+| RECALL yanıt şemaları | `recall.openapi.yaml` | eklemeli `customer` nesnesi, `customerPage` sorgu parametresi, `DrillRun.customers` adlandırması, iki yeni hata kodu (üç kayıt komutunda ikisi, üç dışa aktarım ucunda `…_FORBIDDEN`) (§8.7); r10 (DL-3): RECALL 1.11.0 — `components/schemas/CustomerSourceReason` ve `ScopeItem` / `CustomerRow`'da isteğe bağlı `customerSourceReason`, başka değişiklik yok (§8.11) |
 
 ## 4. Entity Fields
 
@@ -141,6 +164,7 @@ Yeni koleksiyon yok. Değişen nesneler:
 |---|---|---|
 | `CustomerRefSource` | `RecallCustomerRefSource?` (`Crm`, `ShipTo`, `Document`, `Manual`) | yalnız `Kind = Shipment`'ta dolu. **`null` = FU01'den önce yazılmış satır** ("eski", §8.5) ve **yapışkandır**: `null` satır hiçbir yazımda (yeniden izleme, revizyon kopyası, geri yükleme) kaynak almaz (F-14). Yazıcılar: iz (`RecallTraceService.ScopeItems`, §8.2), elle ekleme (`Manual`, §8.2), yeniden izleme (§8.5), revizyon kopyası (aynen, §8.5). Enum değerleri yalnız sona eklenir. **rs-scope-v1 mührüne girmez** (CT-1 kararı, 2026-11-03; §8.5). Mongo eşlemesi bugünkü sözleşme paketiyle (`InventoryBsonMappings.cs:36-43`: yalnız `EnumRepresentationConvention`, `IgnoreExtraElementsConvention`): FU01 sonrası yeniden yazılan eski satırda alan `null` olarak yazılır; okumada alanın yokluğu ile `null` aynıdır. |
 | `NoCrmWarning` (r6, CT kararı F-4@9753e23a; r7 F-1@8002d286) | `bool`, varsayılan `false` | **Hesaplama yeri (r7, CT kararı F-1@8002d286):** `RecallTraceService.ScopeItems` (`:63`) izlenen kalemin değerini iz düğümünden hesaplar: Shipment düğümünde `n.Shipment.Read = Ok` ve `n.Shipment.CustomerAccountId = null` ise `true`, aksi hâlde `false` (izlenen kalemin kaynağı bu durumda `ShipTo` ya da `Document`'tır). `Reconcile` (`:111`) iz düğümünü görmez, yalnız izlenen kalemin bu alanına bakar ve saklı satıra **yalnız saklı `Crm` satırı korunduğunda** yazar: izlenen kalem `true` ise `true`; izlenen kalem `Crm` ise (aynı ya da farklı GUID) `false`; izlenen kalem `false` ve `Crm` değilse (okuma `Ok` değil ya da okuma yok) saklı değer değişmez. Reconcile'ın **yeni eklediği** (insert) satırda ve `Crm` dışı her saklı satırda değer `false` yazılır. `CaseCommandHandlers.cs:553` çağrısı değişmez, geçici alan eklenmez. `ScopeItems`'ın öteki iki çağıranı — vaka açılışı (`CaseCommandHandlers.cs:111`) ve revizyon deltası (`R3Handlers.cs:502`) — çıktıyı Reconcile'dan geçirmeden yazar ve FU01'de değişmez; bu satırlar `Crm` değildir (değer `true` ise kaynakları `ShipTo` / `Document`'tır), bu yüzden okuma kuralı: alan **yalnız `CustomerRefSource = Crm` iken okunur** (`RecallCustomerDisplay` `noCrmWarning`'i yalnız `source = Crm` iken yazar, §8.7); `Crm` dışı satırdaki kalıcı değer anlamsızdır, gösterilmez ve o satır sonraki bir izde `Crm`'e geçerse Reconcile `false` yazar (izlenen kalem `Crm`). Revizyon kopyası aynen taşır (§8.5); elle ekleme `false` yazar. **rs-scope-v1 mührüne girmez** (CT-1 gerekçesiyle, §8.5) ve denetim ayrıntısına girmez. Okumada alanın yokluğu `false`'tur (FU01 öncesi satırlar). |
+| `CustomerSourceReason` (r10, DL-3; sahip kararı Beste 2026-11-23, seçenek 1) | `ShipmentReadOutcome?` (var olan enum, `TraceModel.cs:34-41`; yalnız `Forbidden`, `NotFound`, `Unavailable` yazılır — K-6) | **Değişmez kural:** dolu ⇒ `Kind = Shipment` ve `CustomerRefSource = Document`. **Hesaplama yeri:** `RecallTraceService.ScopeItems` (`:82`) izlenen kalemde, kaynak `Document` iken düğümün `Shipment.Read` değeri `Forbidden` / `NotFound` / `Unavailable` ise o değeri, aksi hâlde `null` yazar — `Ok` (sevkiyat okundu, müşteri yine belgeden), `NotApplicable` (MOD-0183 dışı kaynak / belgesiz hareket) ve `Crm` / `ShipTo` / `Manual` kaynakta `null`. Okuyucu sözlüğünde belge yoksa motorun varsayılanı `Unavailable`'dır (`RecallTraceEngine.cs:375`) — neden `Unavailable` yazılır. **Yazıcılar:** vaka açılışı (`CaseCommandHandlers.cs:111`, `ScopeItems` çıktısı), revizyon deltası (`R3Handlers.cs:530`, `ScopeItems` çıktısı), `Reconcile` (`RecallTraceService.cs:133`, `CustomerKey` `:198`; §8.11 tablosu: yeni eklenen kalem izlenen kalemin değerini **korur** — `NoCrmWarning`'in aksine —; saklı `ShipTo` / `Document` kalemi anahtar ve kaynakla birlikte izlenen kalemin değerini alır; `Crm`, `Manual` ve `null` kaynaklı saklı kalemde `null` yazılır), revizyon kopyası (`R3Handlers.cs:555-563`, aynen), elle ekleme (`CaseCommandHandlers.cs:428`, `null`). Yazım anları K-5. Mongo'da dize (`InventoryBsonMappings.cs:40` `EnumRepresentationConvention(BsonType.String)`); DL-3 öncesi belgede alan yoktur ve okumada `null`'dır — okuma yolu alanı canlı okumadan doldurmaz, belgeyi yeniden yazmaz. **rs-scope-v1 mührüne, rt-v1'e, denetim ayrıntısına, kanıt paketine ve iz CSV'sine girmez** (§8.11). Yalnız `CustomerRefSource = Document` iken okunur. |
 
 ### 4.2 Trace modeli eklenen alanlar
 
@@ -247,6 +271,49 @@ Yeni koleksiyon yok. Değişen nesneler:
 
 `drill-view.js` değişmez (`customers` alanını bugün çizmiyor, ölçüldü; AC-22 bunu sabitler).
 
+**DL-3 (r10 — okuma nedeni; arka uç + sözleşme + ekran tek dilim, §22; satır numaraları `b3c89f435`):**
+- `services/Diten.InventoryService/src/Diten.InventoryService.Domain/Recall/Entities/RecallEntities.cs` (yalnız `RecallScopeItem`'a
+  `CustomerSourceReason`, `NoCrmWarning`'den (`:299`) sonra)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Recall/Trace/RecallTraceService.cs` (yalnız `ScopeItems` `:82` —
+  neden yazımı, `:115` `NoCrmWarning` satırının yanında — ve `Reconcile` `:133` / `CustomerKey` `:198` — §8.11 tablosu)
+- `services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Recall/Handlers/R3Handlers.cs` (yalnız `ReviseRecallScopeHandler`
+  kopyası `:555-563` — `CustomerSourceReason = i.CustomerSourceReason`; delta `:530` `ScopeItems` çıktısıdır, değişmez)
+- `.../Features/Recall/Handlers/CaseDetailReadHandlers.cs` (yalnız `GetRecallCaseCustomersHandler` satır kurulumu `:100` — satırın nedeni,
+  §8.11 "en son yazılan kalem" kuralı, inceleme F-1)
+- `.../Features/Recall/Services/RecallReads.cs` (yalnız `Item` `:216` — kalemin nedeni)
+- `.../Features/Recall/RecallModels.cs` (yalnız `RecallScopeItemDto` `:177` ve `RecallCustomerRowDto` `:251` sonuna isteğe bağlı
+  `string? CustomerSourceReason = null`; `null` yazılmaz — Api `Program.cs:111` `WhenWritingNull`)
+- **Değişmez (DL-3):** `CaseCommandHandlers.cs` (`:111` `ScopeItems` çıktısını yazar; `:428` elle eklemede alan varsayılan `null`; `:560`
+  `Reconcile` çağrısı aynen), `RecallTraceEngine.cs`, `TraceModel.cs`, `TraceRules.cs`, `RecallRules.cs` (`RecallScopeRules.Canonical`),
+  `RecallEvidence.cs` ve `RecallEvidenceText_*.resx`, `RecallCustomerDisplay.cs`, `ShipmentBundleHttpReader.cs`, `RecallTraceService.Csv`,
+  `RecallSignableSubjects.cs`, denetim yazıcıları, izinler, Gateway
+- `docs/analysis/contracts/recall.openapi.yaml` (1.10.0 → 1.11.0; tam fark §8.11 — WP'de güncellenir, bu revizyon dokunmaz)
+- `docs/analysis/contracts/README.md` (inceleme F-3@329d81c0c; yalnız sözleşme kaydı tablosu): `b3c89f435`'te RECALL satırları 1.9.0'da
+  biter (`:27`) — DL-1'in 1.10.0 satırı eksik kaldı. DL-3, 1.9.0 satırının ardından iki satır yazar: **RECALL-BUNDLE 1.10.0** (MOD-0177-FU01
+  DL-1, `f57172eed`; yalnız ekleme + tek girdi daraltması — `CustomerDisplay`, `customerPage`, iki hata kodu, `DrillRun.customers`, Q-6;
+  fixture `recall-v1.9.0.openapi.yaml`) ve **RECALL-BUNDLE 1.11.0** (MOD-0177-FU01 DL-3, yalnız ekleme — `CustomerSourceReason`,
+  `ScopeItem` / `CustomerRow.customerSourceReason`; fixture `recall-v1.10.0.openapi.yaml`). Tablonun öteki satırları değişmez. Belge
+  satırıdır, AC'si yoktur; varlığı DL-3 kabul kapısının (7) maddesidir (§22)
+- **Sözleşme testleri:** `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Contract/Fixtures/recall-v1.10.0.openapi.yaml` (yeni —
+  dondurulmuş 1.10.0, git blob `f57172eed:docs/analysis/contracts/recall.openapi.yaml`, LF sha256
+  `21e76b77f30d130ab2d103004df32c462ceec47cf07935a636b8a7c928eb5f4f`; `b3c89f435`'te canlı dosya bu blob'la aynıdır);
+  `Recall/RecallContract1110Tests.cs` (yeni, AC-37); `Recall/RecallContract1100Tests.cs` (yalnız `:53` "after" dosyası canlıdan fixture'a —
+  emsal `RecallContract190Tests.cs:40` `after = RecallContract1100Tests.FixtureV190Path`); `Recall/RecallRulesAndShapeTests.cs` (yalnız `:196`
+  sürüm satırı `1.11.0` ve 1.11.0 belirteçleri, `:224-226` deseninde)
+- **Testler:** `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Recall/RecallCustomerSourceReasonTests.cs` (yeni; AC-32…AC-36,
+  AC-38); MVP-6 ikizi (`ShipmentReaderTests.cs` `ShipmentDoubleBehaviour`) belge başına davranışla kullanılır — ikize ek gerekiyorsa yalnız
+  test altyapısında
+- **Web:** `frontend/Diten.Web/wwwroot/assets/js/Recall/case-detail.js` (yalnız saf `RecallCustomerView` parçasına (`:15-65`) neden metni
+  işlevi ve dışa açık listesine (`:65`) adı; kapsam sekmesi yer hücresi `:294`; müşteriler sekmesi müşteri hücresi `:434`), `trace-view.js`
+  (yalnız `describe` Shipment dalı `:65` — K-2); `frontend/Diten.Web/Resources/Views/Recall/Recall.{en,tr,fr,es,zh,ar,ru}.resx` ve
+  `frontend/Diten.Web/Views/Recall/Recall.cs` (üç anahtar, §11). `recall.l10n.js` **değişmez** (ölçüldü: `Recall.Customer.*` anahtarı
+  taşımıyor; anahtar akışı `Recall.cs`). Teslim sütunu (`case-detail.js:404-407`, `Recall.Read.*`), `Recall.Read.*` ve
+  `Recall.Shipment.Unreadable` metinleri, `PageHelpResource.*.resx` **değişmez**
+- **Web testleri:** `frontend/Diten.Web.Tests/JavaScript/Node/recall-fu01-reason.test.mjs` (yeni; `recall-fu01.test.mjs`'in sahte DOM deseni) ve
+  koşucusu `frontend/Diten.Web.Tests/Recall/RecallFu01ReasonWebTests.cs` (yeni; `RecallFu01NodeTests`'in `# pass 9` sabitlemesi —
+  `RecallFu01WebTests.cs:32` — değişmesin diye ayrı dosya); `recall-fu01.test.mjs`, `recall-r6.test.mjs`, `EvidenceTextParityTests.cs`
+  **değişmez**
+
 ## 6. Protected Paths
 
 `.antigravity/**`, `gateway/Diten.ApiGateway/ocelot.json` (yalnız integration-agent), `_Layout.cshtml`, Archive;
@@ -264,6 +331,13 @@ cümlesi yanlıştı):**
 | `RecallContractValidatingHandler` | `RecallTestInfrastructure.cs:132-192`, şemalar `ContractSchemas.cs:147` (`ValidateRecall`, `:152`) | 2xx gövdeler adlı şemaya, öteki durumlar `Error` şemasına | 1.10.0 şemaları (`customer`) canlı dosyada olmadan DL-1 yanıtları kırmızı; R7a okumaları listeye eklenir (Repo Scope) |
 | Web `ContractRoutes` + `RecallContractFakes.Bound` | `frontend/Diten.Web.Tests/Contracts/ContractRoutes.cs:29`, `:73-75`, `:187`; `Recall/RecallContractFakes.cs:25-40` | **yalnız 2xx JSON** gövdeler (kapalı nesneler); 2xx dışı yanıtlar denetlenmez (`RecallContractFakes.cs:28`, `ContractRoutes.cs:75`) | DL-2 sahteleri `customer` nesnesi taşıyan 2xx gövdesi döndüğünde canlı sözleşmede 1.10.0 şemaları gerekir — **DL-2 önkoşulu** (§22). Sahtelerin 503 / 403 gövdeleri şemaya karşı denetlenmez; bu gövdeler AC-27'de sözleşmenin `Error` biçimiyle (`error.code`) yazılır |
 
+**r10 (DL-3):** tablodaki okuyucular 1.11.0'da aynı kalır; değişen yalnız `RecallContract1100Tests`'in "after" dosyasının dondurulmuş 1.10.0
+fixture'ına çevrilmesidir (canlı dosyayı okuyan sürüm testi `RecallContract1110Tests` olur) ve `RecallRulesAndShapeTests` `:196` sürüm satırıdır.
+`RecallContractValidatingHandler` ve Web `RecallContractFakes.Bound` `ScopeItem`'ı kapalı nesne olarak denetler (`ContractSchemas.cs:405-407`,
+`ContractRoutes.cs:248`: `properties` olup `additionalProperties` olmayan nesne kapatılır) — `customerSourceReason` taşıyan 2xx gövde 1.11.0
+canlı dosyada olmadan kırmızıdır; bu yüzden DL-3'te sözleşme önce gelir (§22). `CustomerRow` `additionalProperties: true`'dur; üye yine de
+adlandırılır.
+
 ## 7. Dependencies
 
 | # | Bağımlılık | Durum (2026-11-03) | Bu pakete etkisi |
@@ -274,6 +348,7 @@ cümlesi yanlıştı):**
 | D-4 | `crm.account.lookup-validation` izninin geri çağırma rollerine atanması | Auth işi (MOD-0018, **Ali**) — XMC-001; Q-1 = kullanıcı token'ıysa gerekir. Ölçüldü: varsayılan Görüntüleyici rolü yalnız `read` eylemli anahtarları alır (`DefaultRolePermissionTemplate.cs:207-211`); `lookup-validation` eylemi kendiliğinden verilmez | **DL-1 kabul kapısı (CT kararı, 2026-11-03; F-8):** Q-4 yanıtlı ve kabul ortamında atama yapılmış. Atanmamış kullanıcıda CRM 401 / 403 → **"İzin eksik"** (`Forbidden`, F-2@fbafd3af); okumalar çalışır (AC-18) ama o kullanıcı CRM anahtarlı müşteriye bildirim / beyan / iade bağı **kaydedemez** (403 `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`, §8.4) ve CRM anahtarlı müşterisi olan vakanın kanıt paketini ve böyle bir düğümü olan iz CSV'sini **dışa aktaramaz** (aynı 403, §8.10; F-2@807c8dc2) — bu yüzden kapı. **Canlı geçiş kapısı (CT kararı, 2026-11-04):** ebeveynin rol şablonu yalnız yeni kiracılara uygulanır (ebeveyn §14.3 ROLE1), mevcut kiracıların rolleri kiracıya özgüdür; bu yüzden **her hedef ortamda, kiracı başına** rol ataması FU01 kod geçişinden önce kontrol edilir (AC-30) — eksik atamalı kiracı varsa o ortamın geçişi durur |
 | D-5 | CRM sözleşmesinin tüketici satırı | CRM sahibinin adımı | önerilen satır: `x-consumers: … MOD-0177 Recall Readiness (U-1 — müşteri adı / kodu gösterimi ve kayıt öncesi çözüm denetimi; ekran okumasında istek başına en çok 25 hesap, dışa aktarımda vakanın bütün hesapları 8'lik dalgalarla — bir dalganın bütün okumaları zaman aşımı / 5xx ise kalanı çağrılmaz —, en çok 8 eşzamanlı; uygunluk kararı vermez, isBillable kullanmaz)` |
 | D-6 | MOD-0177 ebeveyn (RECALL 1.9.0 FROZEN, `recall.openapi.yaml:14`) | uygulandı | 1.10.0 bu paketin tek yazıcı adımı (CT-2 kararı, 2026-11-03); `97cf7d170`'de `recall.openapi.yaml` hâlâ `1.9.0` |
+| D-7 (r10) | DL-1 kodu ve RECALL 1.10.0 (`f57172eed`; `b3c89f435`'te canlı `recall.openapi.yaml` = `f57172eed` blob'u, `version: 1.10.0`) ve DL-2 ekranı (`a12cfc5b7` VERIFIED; canlı ölçüm 2026-11-23, `601d49994`) | hatta | **DL-3 önkoşulu:** DL-3 bu kodun üzerine yazılır (`CustomerRefSource`, `RecallCustomerView`, `customer` gösterimi); 1.11.0 1.10.0'ın üzerine eklenir. DL-3 D-1…D-5'e (SHIPMENT 3.5.0, CRM, Auth) bağlı değildir — yalnız var olan sevkiyat okuma sonucunu kullanır |
 
 Bağımlılık sırası: D-1…D-4 olmadan DL-1 **kodlanabilir** (ikizlerle, kullanıcı token'ıyla), ama **kabul edilemez**. DL-2 DL-1'e dayanır.
 
@@ -459,6 +534,9 @@ ipucunu taşırdı. `Active` vakada (kayıtlar olabilir) hiçbir satır yükselt
 satırlarında (saklı `Crm` satırı korunduğunda) izlenen kalemden alır. Reconcile'ın **yeni eklediği** satırda (saklı karşılığı olmayan düğüm, `:120-125`)
 izlenen kalemin değeri `true` olsa da `false` yazılır; `Crm` dışı her saklı satırda (`null`, `ShipTo`, `Document`, `Manual` kaynaklı;
 geri yüklenen dahil) `false` yazılır. Ölçüm AC-6 (b3).
+
+**Okuma nedeni (r10, DL-3):** `CustomerSourceReason`'ın yeniden izleme, geri yükleme ve revizyon kuralı §8.11'dedir (yukarıdaki tablonun
+anahtar ve kaynak sonuçları değişmez).
 
 **Bayt eşitliği (F-14):** `Draft` yeniden izlemede saklı satır bugün de değiştirilip yeniden yazılır (`UpdatedAt` dahil, `:139-143`); FU01 eski
 satırda bayt eşitliği beklemez, şunu bekler: anahtar bugünkü kuralla, `CustomerRefSource` `null` (alan `null` yazılır, §4.1). `Active` vakada
@@ -752,6 +830,7 @@ paketi önizleme / dışa aktarma müşteri hücresini §8.8 metniyle yazar (§8
 | `recordNotification`, `declareConsumption`, `linkReturn` | `Active` / `EffectivenessCheck` | §8.3 eşleşmesi (§8.4); bütün mevcut denetimlerden sonra `Crm` satırı `Unresolved` → 503 `RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE`, `Forbidden` → 403 `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`, yazım 0; `NotFound` → yazılır (Q-7); `linkReturn` `Crm` eşleşmesinde olay metni anahtarsız |
 | `createEvidenceExport` | — | ad anlık görüntüsü (`Export` kipi, toplam tavansız, devre kesiciyle); `Unresolved` satır işaretli girer, dışa aktarım reddedilmez; `Forbidden` müşteri varken 403 `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`, dışa aktarım günlüğü satırı, dosya ve denetim satırı yazılmaz; aynı anahtarla daha önce saklanmış dışa aktarımın tekrarı 200 (§8.10) |
 | `previewEvidence`, `exportTrace` (okuma / dosya) | — | `Export` kipi, devre kesiciyle; `Forbidden` müşteri / düğüm varken 403 `RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`; `exportTrace` reddinde `recall.trace.run` (`exportTrace` bağlamı) denetim satırı yazılmaz (§8.10) |
+| `openCase`, `submitScope` (yeniden izleme), `reviseScope` (delta ve kopya) — r10, DL-3 | `Draft` / `Active` | kapsam kalemine `CustomerSourceReason` yazılır / kopyalanır (§8.11); istek, yanıt kodu, denetim satırı ve mühür değişmez |
 | diğer komutlar | — | değişmez |
 
 ### 8.10 Kanıt paketi ve ad anlık görüntüsü
@@ -802,6 +881,125 @@ CT kararı CT-3 (MVP-1 CT, 2026-11-03; F-1); bütçe CT-6 (2026-11-04); devre ke
   geçerlidir (tekrar yeni dosya üretmez).
 - Dışa aktarım günlüğü satırının ve `recall.evidence.exported` denetim satırının alanları değişmez; ad onlara girmez (§2).
 
+### 8.11 Okuma nedeni ve RECALL 1.11.0
+
+r10, DL-3. Sahip kararı (Beste, 2026-11-23, seçenek 1; `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` son bölüm, `b3c89f435`).
+Tetikleyen olay (aynı dosya, "MOD-0177-FU01 CRM müşteri satırı canlı ölçümü", `601d49994`): canlı turda (RC-2026-0003) günün ilk izinde iki
+sevkiyat okuması okuma başına 2 sn'yi aştı (`Unavailable`), müşteri `DOC:`'a düştü ve kapsam açılışta dondu; vaka ekranı nedeni göstermiyordu,
+iz ekranı genel "Sevkiyat ayrıntıları okunamadı (eksik alan)" rozetini basıyordu (`trace-view.js:65`, `Recall.Shipment.Unreadable` — CT: yanıltıcı).
+Karar nedeni **göstermektir**; yeniden deneme / bütçe ve vakayı reddetme kapsam dışıdır (O-9).
+
+**Kural — tek kaynak `RecallTraceService.ScopeItems` (`:82`):**
+
+| İz düğümü (Shipment) | `CustomerRefSource` | `CustomerSourceReason` |
+|---|---|---|
+| okuma `Ok`, `customerRef` dolu | `Crm` | `null` |
+| okuma `Ok`, kullanılabilir `shipToReference` | `ShipTo` | `null` |
+| okuma `Ok`, `customerRef` yok, teslim yeri boş ya da `"D"` biçimli (§8.2 bekçisi) | `Document` | `null` — **yazar çıkarımı (sahip kararından türetildi: neden yalnız üç okuma hatasında)** — sevkiyat okundu, müşteri yine belgeden; neden yok |
+| okuma `Forbidden` (MVP-6 401 / 403, `ShipmentBundleHttpReader.cs:81-82`) | `Document` | `Forbidden` |
+| okuma `NotFound` (MVP-6 404 ya da GUID olmayan sevkiyat kimliği, `:61`, `:83-84`) | `Document` | `NotFound` |
+| okuma `Unavailable` (zaman aşımı, öteki durum kodları, ulaşılamıyor — `:86`, `:93`; okuyucu sözlüğünde belge yok — `RecallTraceEngine.cs:375`) | `Document` | `Unavailable` |
+| okuma `NotApplicable` (MOD-0183 dışı kaynak; belgesiz hareket) | `Document` (belge yoksa anahtar `DOC:TXN-…`) | `null` |
+| elle ekleme (`addScopeItems`, `CaseCommandHandlers.cs:428`) | `Manual` | `null` |
+
+**Yeniden izleme (`Reconcile` `:133` / `CustomerKey` `:198`; §8.5 tablosunun eki — anahtar ve kaynak sonuçları değişmez):**
+
+| Saklı kalem | `CustomerSourceReason` sonucu |
+|---|---|
+| yok (Reconcile'ın yeni eklediği kalem, `:141-147`) | izlenen kalemin değeri **korunur** (`NoCrmWarning`'in aksine: neden bu izin kendi bilgisidir, saklı bir CRM bağını koruma koşulu yoktur) |
+| `ShipTo` / `Document` (FU01 sonrası; geri yüklenen dahil) — `CustomerKey` varsayılan dalı | anahtar ve kaynakla birlikte izlenen kalemin değerini alır (ör. `Document` / `Unavailable` → yeni iz `Ok` + teslim yeri → `ShipTo`, `null`; yeni iz 404 → `Document`, `NotFound`; yeni iz `customerRef` → `Crm`, `null`) |
+| `Crm` (korunsun ya da güncellensin) | `null` — okuma hatasında saklı `Crm` anahtarı korunur (§8.5), `Crm` satırı belge yedeği değildir |
+| `null` kaynak (FU01 öncesi) | `null` — kaynak yapışkan `null`'dır (§4.1), eski satır neden almaz |
+| `Manual` (`Origin`'den bağımsız) | `null` |
+
+**Revizyon:** kopya aynen taşır (`R3Handlers.cs:555-563`); delta düğümleri `ScopeItems` kuralıyla yazılır (`:530`). Kopyalanan hiçbir kalemin
+nedeni yeniden hesaplanmaz. Yazım anlarının kapsamı (yalnız açılış mı, yeniden izleme ve delta da mı) K-5'tir; paket üçünü de yazar.
+
+**Okuma:** neden kalıcıdır — kalemin yazıldığı anın (vaka açılışı, `Draft` yeniden izleme, revizyon deltası) okuma sonucudur, canlı okuma
+değildir. Okuma yolu alanı canlı sevkiyat okumasından **doldurmaz** ve belgeyi yeniden yazmaz: `getCaseCustomers` her istekte MVP-6'yı yeniden
+okur (`CaseDetailReadHandlers.cs:47-50`); bu canlı sonuç `CaseCustomerShipment.read` ve teslim sütunu `Recall.Read.*` olarak değişmeden kalır.
+`Forbidden` nedeni, izi koşan kullanıcının o anki yetkisidir (MVP-6 okuması çağıranın token'ıyla, `ForwardCallerHeadersHandler`), okuyanın
+değil (K-3).
+- `ScopeItem.customerSourceReason` = kalemin değeri; yalnız `kind = Shipment` ve kalemin kaynağı `Document` iken var (`RecallReads.Item` `:216`).
+- `CustomerRow.customerSourceReason` (CT kararı, inceleme F-1@329d81c0c; K-6 kapandı) = satırın `customer.source = Document` ise satırın
+  müşteri anahtarı altındaki Shipment kalemlerinden **en son yazılanın** değeri; aksi hâlde yok (`GetRecallCaseCustomersHandler`,
+  `CaseDetailReadHandlers.cs:100`). Sıra: en yüksek `Revision` (`RecallEntities.cs:259`) → en geç yazım zamanı `UpdatedAt ?? AddedAtUtc`
+  (`EntityBase.cs:19` `DateTimeOffset? UpdatedAt`, `RecallEntities.cs:317` `DateTimeOffset AddedAtUtc`) → `NodeKey` ordinal. En son yazılan
+  kalemin nedeni `null` ise (ör. `Ok` okumayla yazılmış delta kalemi) satırda neden **yoktur** — daha eski bir kalemin nedenine geri
+  düşülmez. Ölçülen alanlar (`b3c89f435`): kodda ayrı bir "neden yazım zamanı" alanı yok. `ScopeItems` kalemi `AddedAtUtc = at` ile kurar;
+  `Reconcile` güncellediği kalemde `UpdatedAt = at` yazar; revizyon kopyası `AddedAtUtc`'yi aynen taşır, `UpdatedAt`'i taşımaz
+  (`R3Handlers.cs:555-563`), delta kalemi `AddedAtUtc = now` alır — bu yüzden r+1'de delta kalemi kopyadan sonra gelir. `markScopeItems`
+  da `UpdatedAt`'i ilerletir (`CaseCommandHandlers.cs:509`) ama nedeni değiştirmez; aynı izde yazılmış kalemler arasında sırayı değiştirir,
+  nedeni başka bir izden almaz. `getCaseCustomers` yalnız vakanın güncel revizyonunu okur (`CaseDetailReadHandlers.cs:47`), `Revision`
+  adımı orada sabittir; kural revizyonlar arası okuyuculara da aynı sırayla uygulanır.
+- İz ekranı (`runTrace`) canlıdır: Shipment düğümünün nedeni düğümün var olan `shipment.read` değeridir (`TraceNode` açıklaması,
+  `recall.openapi.yaml:1488`); `TraceNode` şemasına üye **eklenmez**. Canlı izde `Forbidden` / `NotFound` / `Unavailable` okumalı her belgeli
+  düğümün kaynağı `Document`'tır (`RecallTraceEngine.cs:331-333`, `:378-387` — `Crm` ve `ShipTo` yalnız `Ok` okumadan doğar).
+- Kapsam farkı listesi (`getCaseScopeDiff` `added`, `TraceNode`), etkinlik tablosu, iade bağları, bildirim / tüketim / iade bağlama
+  pencereleri, kanıt paketi, iz CSV'si ve sayfa yardımı neden metni **almaz** (yazar önerisi, K-4).
+
+**Mühür, kanıt ve denetim:** `CustomerSourceReason` rs-scope-v1 kanonik biçimine (`RecallRules.cs:288` `RecallScopeRules.Canonical`)
+**yazılmaz** — CT-1 gerekçesi (§8.5): DL-3 öncesi mühürler bayt eşit yeniden hesaplanır; rc-v1 imza konusu kapsamı bu mühürle taşır
+(`RecallSignableSubjects.cs:69-70` `submittedSnapshotSha256` / `approvedSnapshotSha256`), o da değişmez. rt-v1 sevkiyat okumasını bilerek
+dışarıda bırakır (`TraceRules.cs`; RECALL 1.1.0 notu) — **değişmez**. Kanıt paketi (CSV / PDF), iz CSV'si (`exportTrace`,
+`RecallTraceService.Csv`) ve denetim satırlarının ayrıntısı (`recall.case.opened`, `recall.scope.submitted`, `recall.scope.items-added`,
+`reviseScope`'un satırı) nedeni taşımaz; dondurulmuş vektörler bayt eşit kalır (AC-38).
+
+**Sözleşme — RECALL 1.11.0, "additive" (1.10.0 → 1.11.0).** Fark **tam olarak** aşağıdaki beş maddedir; başka hiçbir düğüm (şemalar,
+`paths` ve uçlar, parametreler, yanıtlar, `x-error-codes`, `x-permissions`, `x-signable-actions`, `x-implemented-by-slice`, `x-decisions`,
+`required` listeleri, `CustomerDisplay`, `TraceNode`, `CaseCustomerShipment`) değişmez. Yeni uç olmadığından `x-implemented-by-slice`'a satır
+eklenmez.
+
+1. `info.version`: `1.10.0` → `1.11.0` (`recall.openapi.yaml:14`).
+2. `info.x-changelog` başına tek satır (öteki satırlar aynen ve aynı sırada):
+   ```yaml
+   - "1.11.0 — additive (MOD-0177-FU01 DL-3, pack r10; owner decision Beste 2026-11-23, option 1): why a shipment customer fell back to the document key. New schema CustomerSourceReason {Unavailable | Forbidden | NotFound} = the MVP-6 shipment read that wrote the key when the customer could not be taken from the shipment (CustomerDisplay source Document): the shipment service could not be reached, the caller who ran the trace may not read the shipment, the shipment was not found. ScopeItem and CustomerRow gain the optional member customerSourceReason: present only when the item's (the row's) customer source is Document and that read was not Ok; never after an Ok read (a document key from an Ok read without customerRef or usable shipToReference has no reason), never on NotApplicable, Crm, ShipTo, Manual or Unknown, absent on every item written before 1.11.0. Written when the trace writes the item (openCase, submitScope re-trace, reviseScope delta) and copied by reviseScope; it is the read at that time, not a live read (CaseCustomerShipment.read and TraceNode shipment.read stay the live read). Not part of rs-scope-v1, rt-v1, the evidence pack, exportTrace or any audit detail. CustomerDisplay, TraceNode and every operation are unchanged; nothing becomes required; no code, parameter or response is added."
+   ```
+3. `components/schemas/CustomerSourceReason` (yeni; `CustomerDisplay`'den hemen sonra, `ReturnLink`'ten (`:1594`) önce):
+   ```yaml
+   CustomerSourceReason:
+     type: string
+     enum: [Unavailable, Forbidden, NotFound]
+     description: "1.11.0 (MOD-0177-FU01 DL-3) — why the customer key of a Shipment item is the document key (customer source Document): the MVP-6 shipment read that wrote it. Unavailable = the shipment service could not be reached (time-out, 5xx or another status, unreachable, no answer for the document); Forbidden = the caller who ran the trace may not read the shipment (401 / 403); NotFound = the shipment was not found (404). Never Ok or NotApplicable. The read at the time the item was written, not a live read."
+   ```
+4. `components/schemas/ScopeItem/properties/customerSourceReason` (yeni; `customer`'dan (`:1337`) hemen sonra):
+   ```yaml
+   customerSourceReason: { $ref: '#/components/schemas/CustomerSourceReason', description: "1.11.0 (additive) — Shipment items whose customer source is Document only, and only when the read that wrote the key was not Ok; absent otherwise and on items written before 1.11.0" }
+   ```
+5. `components/schemas/CustomerRow/properties/customerSourceReason` (yeni; `customer`'dan (`:1559`) hemen sonra):
+   ```yaml
+   customerSourceReason: { $ref: '#/components/schemas/CustomerSourceReason', description: "1.11.0 (additive) — only when customer.source is Document: the reason of the row's first Shipment item (node-key order) of source Document that carries one; absent otherwise" }
+   ```
+
+**Ad ve yer (K-6 — kapandı: CT, inceleme F-1@329d81c0c; ad / tip / değerler incelemede bulgu almadı):** üye `customerSourceReason` (varlık alanı `CustomerSourceReason`, sahip kaydındaki ad);
+değerler `ShipmentReadOutcome`'un ve `CaseCustomerShipment.read`'in aynı adları. `CustomerDisplay`'e **eklenmez**: `CustomerDisplay` beş
+taşıyıcıda ortaktır (`additionalProperties: false`, `:1584`; `EffectivenessRow`, `ReturnLink`, `TraceNode` neden taşımaz) ve sahip kararı
+nedeni yalnız `ScopeItem` / `CustomerRow`'a koyar; iz düğümü canlı `shipment.read`'i zaten taşır.
+
+**Sözleşme testi (AC-37):** dondurulmuş 1.10.0 (`recall-v1.10.0.openapi.yaml`) ile canlı 1.11.0 arasında yukarıdaki beş madde geri
+alındığında iki belge veri olarak eşittir (`JsonNode.DeepEquals`, `RecallContract1100Tests.cs:155` deseni); değişiklik notunun ilk satırı
+`1.11.0 — additive (MOD-0177-FU01` ile başlar ve `CustomerSourceReason`, `customerSourceReason`, `ScopeItem`, `CustomerRow` belirteçlerini
+taşır.
+
+**Gösterim (DL-3 ekran; yer K-1, K-2, zaman K-3):**
+
+| Değer | Anahtar | tr (sahip metni) | en (öneri) |
+|---|---|---|---|
+| `Unavailable` | `Recall.Customer.SourceReason.Unavailable` | "Sevkiyat servisine erişilemedi" | "The shipment service could not be reached" |
+| `Forbidden` | `Recall.Customer.SourceReason.Forbidden` | "Sevkiyatı okuma yetkisi yok" | "No permission to read the shipment" |
+| `NotFound` | `Recall.Customer.SourceReason.NotFound` | "Sevkiyat bulunamadı" | "Shipment not found" |
+
+- **Vaka ayrıntısı:** müşteriler sekmesinde müşterinin ilk sevkiyat satırının müşteri hücresinde (`case-detail.js:434`) ve kapsam sekmesinde
+  Shipment kaleminin yer hücresinde (`:294`), müşteri metni ve "CRM kimliği yok" rozetinin altında küçük metin
+  (`<div class="small text-muted" data-customer-reason="{değer}">`) — yazar önerisi, K-1. Rozet ve `Recall.Customer.NoCrmHint` aynen kalır.
+- **İz ekranı:** `customer.source = Document` ve `shipment.read` ∈ {`Unavailable`, `Forbidden`, `NotFound`} olan Shipment düğümünde uyarı
+  rozetinin metni bu üç anahtardan biridir (`trace-view.js:65`); `customer` taşımayan düğümde rozet bugünkü `Recall.Shipment.Unreadable`'dır
+  (`recall-r6.test.mjs:75` değişmeden yeşil; anahtar silinmez) — yazar önerisi, K-2.
+- Metin yalnız değer `Unavailable` / `Forbidden` / `NotFound` **ve** `customer.source = Document` iken çizilir; alan yoksa (eski vaka, `Ok` +
+  belge) ya da değer bilinmiyorsa hiçbir şey çizilmez ve hata yoktur; metin canlı `shipments[].read`'den **türetilmez**. Teslim sütunu
+  (`Recall.Read.*`, `case-detail.js:404-407`) değişmez.
+- Metinler yalnız Web ailesindedir (`Recall.{7}.resx`, `Recall.cs`); servis `RecallEvidenceText_*` ailesine ve parite bekçisine girmez (§11).
+
 ## 9. Layout & Shell Contract
 
 Ebeveynin sayfaları (`_LayoutTenantShell`, Scope = Tenant). Yeni sayfa, yeni modal, yeni form alanı yok (`form_field_count: 0`). Rozet mevcut
@@ -845,11 +1043,20 @@ Ebeveyn §10 düzeni: port `Application/Features/Recall/Ports/`, kural `Domain/R
 | yalnız Web (r5: ortaktan taşındı) | `Recall.Customer.Forbidden` | "İzin eksik" |
 | yalnız Web (r5: ortaktan taşındı) | `Recall.Customer.ForbiddenWith` | "İzin eksik ({0})" |
 | yalnız Web (r5, F-2@807c8dc2) | `Recall.Customer.ExportForbidden` | "CRM müşteri adlarını görme izniniz yok; dışa aktarım yapılamaz. Yöneticinize başvurun." |
+| yalnız Web (r10, DL-3) | `Recall.Customer.SourceReason.Unavailable` | "Sevkiyat servisine erişilemedi" |
+| yalnız Web (r10, DL-3) | `Recall.Customer.SourceReason.Forbidden` | "Sevkiyatı okuma yetkisi yok" |
+| yalnız Web (r10, DL-3) | `Recall.Customer.SourceReason.NotFound` | "Sevkiyat bulunamadı" |
 
 - **r5 (F-2@807c8dc2):** `Forbidden` artık hiçbir dosyaya (kanıt CSV / PDF, iz CSV'si) girmez — dışa aktarım reddedilir (§8.10); bu yüzden
   `Recall.Customer.Forbidden` ve `…ForbiddenWith` servis ailesinden çıkar, yalnız Web'de (ekran) kalır. Dışa aktarım reddinin hata metni
   ayrı anahtar istemez: kod eşlemesi aynı koddur (`Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`, nedeni ve çözümü söyler, yeniden
   deneme önermez); `Recall.Customer.ExportForbidden` yalnız iz ekranında CSV bağlantısının yerine çizilir (§8.8).
+- **r10 (DL-3, sahip kararı Beste 2026-11-23):** üç okuma nedeni anahtarı (`Recall.Customer.SourceReason.{Unavailable,Forbidden,NotFound}`)
+  yalnız Web'dedir ve **DL-3'te** eklenir (DL-1 / DL-2 anahtar listeleri değişmez); tr değerleri sahip metnidir, en önerisi §8.11; fr / es /
+  zh / ar / ru gerçek çeviri (İngilizce kopya değil, AC-41). Servis ailesine ve parite bekçisine girmez (`Recall.Customer.` paylaşılan önek
+  değildir, `EvidenceTextParityTests.cs:29-31`). `Recall.Read.*` (teslim sütunu) ve `Recall.Shipment.Unreadable` değişmez.
+  `…SourceReason.NotFound`'un tr değeri `Recall.Read.NotFound`'unkiyle aynıdır ("Sevkiyat bulunamadı", sahip metni) — ayrı anahtar sahip
+  kararıdır (yeni anahtarlar); AC-41 yalnız üç yeni değerin aynı dilde birbirinden farklı olmasını ister.
 - Servis ailesi kanıt paketi PDF / CSV sözcüklerini taşır; **parite bekçisi** (`EvidenceTextParityTests`) ortak anahtarın Web ailesinde aynı
   değerle bulunmasını ister → ortak anahtarlar **DL-1'de** iki ailede birlikte eklenir; DL-2 yalnız kullanır. Yalnız Web anahtarları da DL-1'de
   eklenir (Repo Scope DL-1), DL-2 kullanır.
@@ -907,6 +1114,12 @@ Ebeveyn §10 düzeni: port `Application/Features/Recall/Ports/`, kural `Domain/R
 15. CRM dışa aktarımın ortasında düşer (ilk iki dalga yanıtlanır, sonrası yanıtsız) → üçüncü dalga zaman aşımıyla biter, kalan hesaplar
     çağrılmaz, dosya 201 ve işaretli (AC-29 (f)); her dalgada bir okuma zaman aşımına uğrarsa kesici açılmaz (AC-29 (g); kalan sınır O-7).
 16. Sağlıklı CRM'de ilk dalganın bütün hesapları 404 → kesici açılmaz, kalan hesaplar okunur (AC-29 (h)).
+17. (r10) Vaka açılışında sevkiyat okuması zaman aşımına uğrar → müşteri `DOC:`, kalem `Unavailable`; ekranda "Sevkiyat servisine
+    erişilemedi" (AC-32, AC-39). MVP-6 403 / 404 → `Forbidden` / `NotFound` ve kendi metni.
+18. (r10) Sevkiyat okundu (`Ok`) ama `customerRef` ve kullanılabilir teslim yeri yok → `DOC:`, neden yok, metin yok (AC-33, AC-40).
+19. (r10) DL-3 öncesi vaka (alan yok) → okumalar 200, metin yok, hata yok; canlı okuma bugün `Unavailable` olsa da neden türetilmez (AC-35,
+    AC-40).
+20. (r10) Başka kiracının sevkiyat belgesi → MVP-6 404 → `NotFound`, öteki kiracının sevkiyat bilgisi yok; başka kiracının vakası 404 (AC-36).
 
 ## 14. Authorization Convention
 
@@ -982,6 +1195,25 @@ kabul kaydına "kırmızı → geri al → yeşil, diff boş" yazılır.
 - [ ] AC-27 (zorunlu) — Çözülemeyen ya da izni eksik müşteriye ekranda komut yok (sahip kararı F-1; F-2@fbafd3af, F-6@fbafd3af; §8.8): AC-25 verisiyle müşteriler sekmesinde C ve D satırında bildirim ve tüketim düğmesi çizilmez, yerine `Recall.Customer.CrmUnavailable` metni; A ve N satırında düğmeler var; iade bağlama penceresinin seçim listesinde C ve D seçenek değil, pencerede `Recall.Customer.CrmUnavailable` görünür; yalnız C'nin olduğu vakada pencere alanları ve bağlama düğmesi çizilmez; AC-18 verisiyle (C `Forbidden`) C satırında düğme yok, yerine `Recall.Customer.CrmForbidden` metni (`CrmUnavailable` değil), seçim listesinde C yok; sunucunun 503 yanıtı (`{error: {code: "RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE"}}`) ve 403 yanıtı (`{error: {code: "RECALL_CUSTOMER_DIRECTORY_FORBIDDEN"}}`) — sahte gövdeler sözleşmenin `Error` biçiminde, `RecallContractFakes.Bound` 2xx dışını denetlemez (§6) — pencerenin hata kutusunda gösterilir ve test gösterilen metnin ilgili `Recall.Errors.*` anahtarının değerine **eşit** ve `Recall.Errors.SERVICE_UNAVAILABLE` / `Recall.Errors.FORBIDDEN` değerinden **farklı** olduğunu sınar; **dışa aktarım ekranda (F-2@807c8dc2, §8.8):** kanıt ekranında önizleme ve dışa aktarımın 403 yanıtı (`{error: {code: "RECALL_CUSTOMER_DIRECTORY_FORBIDDEN"}}`) `rc-error` kutusunda `Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN` değeriyle görünür, indirme başlamaz; iz ekranında çizilen düğümlerden biri `customer.state = Forbidden` iken `rc-trace-csv` bağlantısı yoktur ve yerinde `Recall.Customer.ExportForbidden` metni vardır, `Forbidden` düğümü olmayan, bir `Unresolved` düğümü olan izde bağlantı bugünkü gibidir. Test `recall-fu01.test.mjs` "unresolved or forbidden customer offers no command". Sabotaj (her biri ayrı): S-27a `Unresolved` satırda düğmeleri çiz → kırmızı; S-27b `Unresolved` müşteriyi seçim listesinde bırak → kırmızı; S-27c `Recall.Errors.RECALL_CUSTOMER_DIRECTORY_UNAVAILABLE`'ı `Recall.cs` listesinden çıkar → `recall-ui.js:51` eşlemesi düşer, ekran 5xx için `Recall.Errors.SERVICE_UNAVAILABLE` metnini gösterir (`:52`), kırmızı; S-27d `Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`'ı `Recall.cs` listesinden çıkar → ekran `Recall.Errors.FORBIDDEN` metnini gösterir (`:53`), kırmızı; S-27e `Forbidden` satıra `CrmUnavailable` bas → kırmızı; S-27f `trace.js` `Forbidden` düğüm varken de CSV bağlantısını çizsin → kırmızı; S-27g `trace.js` bağlantıyı `Unresolved` düğümde de kaldırsın → `Forbidden`'sız izde bağlantı yok, kırmızı.
 - [ ] AC-31 (zorunlu) — Müşteri sayfası ekranda (CT kararı F-1@fbafd3af; §8.8): V200 verisiyle (sahte ağ geçidi, 1.10.0 şemalı 2xx gövdeleri): (a) müşteriler sekmesi anahtar sırasıyla ilk 25 müşteri satırını çizer, özet bütün 200'ü sayar, altında "Müşteriler 1–25 / 200" ve sonraki düğmesi; sonraki → Web'e giden istek `part=customers&customerPage=2`, sekme 26.–50. müşterileri çizer; sekmede hiçbir satırda `Recall.Customer.Deferred` görünmez; (b) iade bağlama penceresinin seçim listesi sayfanın 25 müşterisini listeler, pencerede önceki / sonraki düğmeleri; (c) iz ekranı ve etkinlik tablosu 200 satırı çizer, üstte sayfa seçicisi; 1. sayfada 25 `Crm` satırı ad + kodla, 175'i `Recall.Customer.Deferred` metniyle; hiçbir yerde A metni yok; (d) 25 ya da daha az müşterili vakada sayfa seçicisi çizilmez; (e) Web vekili `RecallController.CaseData` `customerPage`'i `customers`, `scope`, `diff`, `returns`, `effectiveness` parçalarında servise iletir, `TraceData` iz okumasında iletir, `ExportTrace` dosya isteği `Accept-Language`'ı iletir. Test `recall-fu01.test.mjs` "customer pages" ve `RecallCustomerPageWebTests.*`. Sabotaj (her biri ayrı): S-31a müşteriler sekmesi bütün 200 satırı çizsin → `Deferred` satırları görünür, kırmızı; S-31b sayfa değişiminde `customerPage`'i göndermesin → 2. sayfa `Deferred`, kırmızı; S-31c Web vekili `customerPage`'i iletmesin → (e) kırmızı; S-31d `SendFileAsync` `Accept-Language`'ı iletmesin → (e) kırmızı.
 
+**DL-3 (r10 — okuma nedeni; §8.11)**
+
+Ortak DL-3 fixture'ı: kiracı T1 / şirket LE1, ikinci kiracı T2; MVP-6 ikizi (`ShipmentReaderTests.cs` `ShipmentDoubleBehaviour`) belge başına
+programlanır: S-U (yanıt vermez → okuma başına 2 sn sınırı, `Unavailable`), S-F (403), S-N (404), S-K (200, `customerRef` yok,
+`shipToReference` boş), S-G (200, `customerRef` yok, `shipToReference` `"D"` biçimli), S-A (200, `customerRef = A`), S-T (200,
+`shipToReference = "CUST-100/ADDR-2"`); S-L MOD-0183 dışı kaynaklı satış hareketi (`NotApplicable`). Her sabotaj üretim kodunda (sözleşme
+dosyası ve resx dahil) tek tek uygulanır ve geri alınır; kabul kaydına "kırmızı → geri al → yeşil, diff boş" yazılır.
+
+- [ ] AC-32 (zorunlu) — Vaka açılışında neden yazımı (§4.1, §8.11): T1'de S-U, S-F ve S-N sevkiyatlı kök lotla `openCase` → üç Shipment kalemi `CustomerRef = "DOC:<belge>"`, `CustomerRefSource = Document`, `CustomerSourceReason` sırasıyla `Unavailable`, `Forbidden`, `NotFound` (Mongo belgesinde dize); `getCaseScope` üç kalemde `customerSourceReason` aynı değerler ve `customer` 1.10.0'daki gibi `{source: Document, state: NoCrm, label}`; `getCaseCustomers` üç satırda `customerSourceReason` aynı değerler; S-U belgesinde iki lot (aynı `DOC:` anahtarlı, aynı izde yazılmış iki kalem) olduğunda satırın değeri ikisinin ortak değeridir (`Unavailable`); farklı yazım anlarındaki kalemlerin kuralı AC-34 (g). Test `RecallCustomerSourceReasonTests.Open_writes_the_read_reason`. Sabotaj (her biri ayrı): S-32a `ScopeItems` nedeni yazmasın → kırmızı; S-32b `ScopeItems` her başarısız okumaya `Unavailable` yazsın → `Forbidden` ve `NotFound` kalemleri kırmızı; S-32c `RecallReads.Item` kaleme nedeni koymasın → `getCaseScope` kırmızı; S-32d `GetRecallCaseCustomersHandler` satıra nedeni koymasın → `getCaseCustomers` kırmızı.
+- [ ] AC-33 (zorunlu) — Neden yalnız okuma hatasında (§8.11), her biri ayrı fixture; her birinde Mongo kaleminde `CustomerSourceReason = null` ve `getCaseScope` / `getCaseCustomers` yanıtında `customerSourceReason` yok: (a) S-K → `Document` (yazar çıkarımı, sahip kararından türetildi: `Ok` + belge → neden yok); (b) S-G → `Document` (AC-2 (h) yolu); (c) S-L → `Document`, okuma `NotApplicable`; (d) S-A → `Crm`; (e) S-T → `ShipTo`; (f) `addScopeItems` ile elle Shipment kalemi → `Manual`; (g) `Draft` vakada saklı `Crm` A kalemi, `submitScope` yeniden izinde aynı sevkiyat S-U davranışıyla → anahtar A ve `Crm` kalır (AC-6 (b)), neden `null`; (h) saklı `null` kaynaklı `DOC:` kalemi, yeniden izde aynı sevkiyat S-U davranışıyla → kaynak `null`, neden `null`; (i) saklı `Manual` kalemi (`Origin = Trace`, geri yüklenmiş), yeniden izde aynı belge S-F davranışıyla → neden `null`. Test `RecallCustomerSourceReasonTests.No_reason_*`. Sabotaj (her biri ayrı): S-33a `ScopeItems` `Document` kalemine okuma sonucunu koşulsuz yazsın (`Ok`, `NotApplicable` dahil) → (a), (b), (c) kırmızı (ayrıca `Ok` / `NotApplicable` değeri AC-37 şema doğrulamasında kırmızı); S-33b `CustomerKey` `Crm` dalında izlenen kalemin nedenini yazsın → (g) kırmızı; S-33c `null` kaynak dalında izlenen kalemin nedenini yazsın → (h) kırmızı; S-33d `Manual` dalında izlenen kalemin nedenini yazsın → (i) kırmızı.
+- [ ] AC-34 (zorunlu) — Yeniden izleme ve revizyon (§8.11; yazım anları K-5), her biri ayrı fixture: (a) `Draft` vakada saklı `Document` / `Unavailable` kalemi, `submitScope` yeniden izinde aynı sevkiyat S-T davranışıyla → kaynak `ShipTo`, neden `null`; (b) aynısı S-A davranışıyla → anahtar A, kaynak `Crm`, neden `null`; (c) aynısı S-N davranışıyla → `Document`, `NotFound`; (d) silinmiş (soft-removed) `Document` / `Unavailable` kalemi izle geri gelir, okuma S-F → `Forbidden`; (e) saklı karşılığı olmayan yeni düğüm (Reconcile insert'i), okuma S-F → `Document`, `Forbidden`; (f) `Active` vaka, `reviseScope` (bulgu eklenerek): kopyalanan `Document` / `NotFound` kalemi r+1'de `NotFound`, eklenen bulgunun (delta düğümü, okuma S-U) kalemi `Unavailable`; revizyon onaylandıktan sonra `getCaseScope` (r+1) iki değeri gösterir; (g) **`CustomerRow` en son yazılan kalemden** (CT kararı, inceleme F-1@329d81c0c; §8.11), her biri ayrı fixture, `Active` vaka, aynı `DOC:<belge>` anahtarı altında (aynı belge, iki lot): (i) r'de yazılmış kalem `NotFound`, `reviseScope` ile r+1'e kopyalanır (`AddedAtUtc` eski), aynı belgenin yeni lotu delta düğümü olarak okuma S-U ile eklenir (`Unavailable`, `AddedAtUtc` yeni) → onaydan sonra `getCaseCustomers` satırında `customerSourceReason = Unavailable`; (ii) aynısı, delta düğümünün okuması S-K (`Ok`, neden `null`) → satırda `customerSourceReason` **yok** (kopyanın `NotFound`'una geri düşülmez); (iii) iki kalemin `Revision` ve yazım zamanı eşit, değerleri farklı → `NodeKey` ordinal sırasıyla sonuncunun değeri. Test `RecallCustomerSourceReasonTests.Retrace_and_revision_*`. Sabotaj (her biri ayrı): S-34a `CustomerKey` varsayılan dalında nedeni kopyalamasın → (a) `Unavailable` kalır ve (c) `Unavailable`, kırmızı; S-34b Reconcile insert'inde nedeni temizlesin (`NoCrmWarning` gibi) → (e) kırmızı; S-34c revizyon kopyası (`R3Handlers.cs:555-563`) nedeni taşımasın → (f) kopya kalemi kırmızı; S-34d `CustomerRow` nedenini r10 ilk metnindeki "`NodeKey` sırasıyla ilk dolu kalem" kuralına döndür → (g) (i) ve (ii) `NotFound`, kırmızı.
+- [ ] AC-35 (zorunlu) — Eski vaka, sunucu (§4.1, §8.11): DL-3 öncesi biçimde tohumlanmış iki `Active` vaka — kapsam belgelerinde `CustomerSourceReason` alanı hiç yok —: (i) DL-1 koduyla yazılmış `Document` kaynaklı `DOC:` kalemli, (ii) FU01 öncesi `null` kaynaklı `DOC:` kalemli; MVP-6 ikizi o belgeler için bugün S-U davranışıyla → `getCaseScope`, `getCaseCustomers`, `getCaseScopeDiff`, `getCaseEffectiveness`, `getCaseReturns` ve `previewEvidence` 200; hiçbir yanıtta `customerSourceReason` yok; okumalardan sonra kapsam belgelerinin baytları ve `UpdatedAt` değerleri okumadan öncekine eşit (okuma yolu alanı doldurmaz, belgeyi yeniden yazmaz); `getCaseCustomers` `shipments[].read = Unavailable` (canlı okuma, bugünkü gibi). Test `RecallCustomerSourceReasonTests.Legacy_case_has_no_reason`. Sabotaj (her biri ayrı): S-35a `GetRecallCaseCustomersHandler` eksik nedeni canlı okumadan (`lines[].Read`) doldursun → (i) satırda `Unavailable`, kırmızı; S-35b `RecallReads.Item` alan yokken `Unavailable` varsaysın → kırmızı.
+- [ ] AC-36 (zorunlu) — Kiracı sınırı (§8.1, §8.11): (a) T2 vakasının sevkiyatı T1 kiracısının belgesi; MVP-6 ikizi o belge için T2 isteğine 404 → T2 kalemi `Document`, `NotFound`; T2 yanıtlarında T1 sevkiyatının teslim yeri, durumu ve numarası yok; (b) T1 kullanıcısı T2 vakasının `getCaseScope` ve `getCaseCustomers`'ını okur → 404 (bugünkü), gövdede `customerSourceReason` yok; (c) vaka açılışındaki MVP-6 isteği çağıranın `Authorization` başlığını taşır (ikizin `Seen` kaydında çağıranın token'ı) — `Forbidden` nedeni yalnız ikiz o çağırana 401 / 403 verdiğinde doğar; `RecallTenantBoundaryTests` değiştirilmeden yeşil. Test `RecallCustomerSourceReasonTests.Tenant_*`. Sabotaj S-36: sevkiyat okuyucusunun `HttpClient` kaydından (`RecallServiceCollectionExtensions.cs`) `.AddHttpMessageHandler<ForwardCallerHeadersHandler>()`'ı kaldır → (c) `Authorization` yok, kırmızı.
+- [ ] AC-37 (zorunlu) — RECALL 1.11.0 (§8.11): canlı `recall.openapi.yaml` `version: 1.11.0`; dondurulmuş 1.10.0 fixture'ı (`recall-v1.10.0.openapi.yaml`, git blob `f57172eed:docs/analysis/contracts/recall.openapi.yaml`, LF sha256 `21e76b77…5f4f`) bayt eşit; değişiklik notunun ilk satırı `1.11.0 — additive (MOD-0177-FU01` ile başlar ve `CustomerSourceReason`, `customerSourceReason`, `ScopeItem`, `CustomerRow` belirteçlerini taşır, öteki satırlar 1.10.0'ınkiyle aynı ve aynı sırada; `components/schemas/CustomerSourceReason` tam olarak `type: string`, `enum: [Unavailable, Forbidden, NotFound]` (+ açıklama); `ScopeItem` ve `CustomerRow` `properties`'inde `customerSourceReason` `$ref: '#/components/schemas/CustomerSourceReason'`; fark **tam olarak** §8.11'in beş maddesidir — beş madde canlı belgeden geri alındığında fixture'la veri olarak eşit (`JsonNode.DeepEquals`); `CustomerDisplay`, `TraceNode`, `CaseCustomerShipment`, `paths`, `x-error-codes` ve her `required` listesi fixture'dakiyle aynı; AC-32…AC-36 yanıtları `RecallContractValidatingHandler` ile canlı sözleşmeye karşı doğrulanır (`ScopeItem` kapalıdır — 1.11.0'sız `customerSourceReason` kırmızı) ve `Validated` sayacında `getCaseScope` ile `getCaseCustomers` sıfırdan büyük; `RecallContract1100Tests` yalnız `:53` "after" dosyası fixture'a çevrilerek, `RecallRulesAndShapeTests` yalnız `:196` sürüm satırı ve 1.11.0 belirteçleriyle değişip yeşil; `RecallContract120Tests` … `RecallContract190Tests`, `RecallESignTests` ve Web `RecallContractFakesTests` değiştirilmeden yeşil. Test `RecallContract1110Tests.*`. Sabotaj (her biri ayrı; S-37a…S-37c sözleşme dosyasına uygulanır ve geri alınır — r9 S-17 deseni): S-37a `CustomerSourceReason` enum'una `Ok` ekle → fark testi kırmızı; S-37b `customerSourceReason`'ı `CustomerDisplay`'e de ekle → fark testi kırmızı; S-37c değişiklik notunun ilk satırını "1.11.0 — additive only" diye başlat → kırmızı; S-37d sunucu kalemde `customerSourceReason = "Ok"` yazsın (`RecallReads.Item`) → `getCaseScope` şema doğrulaması kırmızı.
+- [ ] AC-38 (zorunlu) — Dondurulmuş vektörler bayt eşit (§8.11; CT-1): AC-32 vakası (üç nedenli kalem) ve kalemlerinin nedeni `null` olan bayt eşi (öteki bütün veriler aynı): (a) iki vakanın rs-scope-v1 özeti aynı; `RecallScopeRules.Canonical` metninde `customerSourceReason` adı ve `Unavailable` / `Forbidden` / `NotFound` değeri yok; AC-15 sabit vektörü değiştirilmeden yeşil — dolayısıyla rc-v1 imza konusunun `submittedSnapshotSha256` / `approvedSnapshotSha256` alanları değişmez; (b) rt-v1 iz özeti iki vakada aynı; (c) AC-2 (a) `runTrace` vektörü, AC-10 (f) `exportTrace` CSV vektörü ve AC-26 (d) kanıt paketi vektörü değiştirilmeden yeşil; iki vakanın kanıt paketi CSV ve PDF'inin müşteri, iz ve özet bölümleri ile `exportTrace` CSV'si bayt eşit; (d) `recall.case.opened`, `recall.scope.submitted`, `recall.scope.items-added` ve `reviseScope` denetim satırlarının ayrıntısında `customerSourceReason` adı ve üç değer yok. Test `RecallCustomerSourceReasonTests.Frozen_vectors_*` ve mevcut vektör testleri değişmeden. Sabotaj (her biri ayrı): S-38a `RecallScopeRules.Canonical`'a `customerSourceReason` yaz → (a) ve AC-15 vektörü kırmızı; S-38b kanıt paketi müşteri hücresine neden metnini ekle → (c) kırmızı; S-38c `exportTrace` "place" hücresine düğümün okuma nedenini ekle → (c) ve AC-10 (f) kırmızı; S-38d `submitScope` denetim ayrıntısına kalemlerin nedenini ekle → (d) kırmızı.
+- [ ] AC-39 (zorunlu) — Üç metin ekranda (§8.11; yer K-1, K-2): sahte ağ geçidi (1.11.0 şemalı 2xx gövdeleri, `RecallContractFakes.Bound` deseni; Node koşusunda `recall-fu01.test.mjs` sahte DOM deseni), dil `tr`: (a) müşteriler sekmesinde `customer = {source: Document, state: NoCrm, label}` ve `customerSourceReason` sırasıyla `Unavailable`, `Forbidden`, `NotFound` olan üç satırda, müşterinin ilk sevkiyat satırının müşteri hücresinde sırasıyla "Sevkiyat servisine erişilemedi", "Sevkiyatı okuma yetkisi yok", "Sevkiyat bulunamadı" (`data-customer-reason` = değer) görünür, üç metin birbirinden farklıdır, "CRM kimliği yok" rozeti ve `Recall.Customer.NoCrmHint` aynen durur; (b) kapsam sekmesinde aynı üç Shipment kaleminin yer hücresinde aynı üç metin; (c) iz ekranında (`trace-view.js` `describe`) `customer.source = Document` ve `shipment.read` sırasıyla `Unavailable`, `Forbidden`, `NotFound` olan üç Shipment düğümünün uyarı rozetinin anahtarı `Recall.Customer.SourceReason.{değer}`'dir, `Recall.Shipment.Unreadable` değildir; `customer` taşımayan düğümde rozet `Recall.Shipment.Unreadable` kalır ve `recall-r6.test.mjs` değiştirilmeden yeşildir; (d) müşteriler sekmesinin teslim sütunu `shipments[].read` için `Recall.Read.*` metinlerini bugünkü gibi basar (`case-detail.js:404-407`). Test `recall-fu01-reason.test.mjs` "three reasons, three texts" (koşucu `RecallFu01ReasonWebTests.cs`). Sabotaj (her biri ayrı): S-39a üç değeri tek anahtara eşle (`Recall.Customer.SourceReason.Unavailable`) → (a) kırmızı; S-39b metni `Recall.Read.{değer}` anahtarından al → (a) `Forbidden` hücresi "Sevkiyat okunamadı — yetki", kırmızı; S-39c kapsam sekmesi nedeni çizmesin → (b) kırmızı; S-39d `trace-view.js:65` `Document` düğümünde de genel rozeti bassın → (c) kırmızı.
+- [ ] AC-40 (zorunlu) — Neden yoksa metin yok (§8.11): (a) `customerSourceReason` taşımayan `Document` satırı ve kalemi (`Ok` + belge) → neden metni ve `data-customer-reason` öğesi yok; (b) eski vaka gövdeleri (alan yok; `customer.source` `Document` ya da `Unknown` / `state: Legacy`) → metin yok, sekmeler hatasız çizilir (konsolda hata yok, satır sayısı gövdeyle aynı); (c) alan yok ama canlı `shipments[].read = Unavailable` → metin yok (neden canlı okumadan türetilmez); alan `Unavailable`, canlı okuma `Ok` → metin "Sevkiyat servisine erişilemedi" ve teslim sütunu canlı `Ok` metnini basar; (d) saf `RecallCustomerView` işlevinde `customer.source` `Crm`, `ShipTo` ya da `Manual` iken değer verilse de, ve bilinmeyen değerde (`"Other"`) metin yok, anahtar adı basılmaz; (e) iz ekranında `customer.source = Document`, `shipment.read = Ok` → rozet ve metin yok. Test `recall-fu01-reason.test.mjs` "no reason, no text". Sabotaj (her biri ayrı): S-40a metni canlı okumadan türet (`r.shipments[0].read`) → (c) kırmızı; S-40b `customer.source = Document` denetimini kaldır → (d) kırmızı; S-40c alan yokken `Unavailable` varsay → (a), (b) kırmızı; S-40d bilinmeyen değerde `t('Recall.Customer.SourceReason.' + değer)` sonucunu bas → (d) kırmızı.
+- [ ] AC-41 (zorunlu) — 7 dil (§11): üç anahtar (`Recall.Customer.SourceReason.Unavailable`, `…Forbidden`, `…NotFound`) `Recall.{en,tr,fr,es,zh,ar,ru}.resx`'te dolu, `zh` / `ar` / `ru` İngilizce kopya değil, `Recall.cs` anahtar listesinde; `tr` değerleri sahip metinlerine harfiyen eşit ("Sevkiyat servisine erişilemedi", "Sevkiyatı okuma yetkisi yok", "Sevkiyat bulunamadı"); her dilde üç değer birbirinden farklı; anahtarlar servis `RecallEvidenceText_*` ailesinde yok; `RecallWebTests.Seven_languages_carry_exactly_the_Recall_keys_with_real_text` ve `EvidenceTextParityTests` değiştirilmeden yeşil; dil `ar` iken AC-39 (a) ve (c)'nin metinleri `Recall.ar.resx` değerleriyle çizilir. Test `RecallFu01ReasonWebTests.Seven_languages_*` ve `recall-fu01-reason.test.mjs` "texts come from l10n". Sabotaj (her biri ayrı): S-41a `Recall.ru.resx`'ten `…NotFound`'u sil → kırmızı; S-41b `Recall.zh.resx`'te `…Forbidden` değerini İngilizce kopya yap → kırmızı; S-41c `Recall.cs` listesinden `…Unavailable`'ı çıkar → kırmızı; S-41d `case-detail.js`'e "Sevkiyat bulunamadı" sabit yaz → `ar` çizimi kırmızı.
+
 ## 17. Test Expectations
 
 - Build: InventoryService ve Web çözümü uyarı politikası değişmeden derlenir.
@@ -1005,6 +1237,13 @@ kabul kaydına "kırmızı → geri al → yeşil, diff boş" yazılır.
   kaydına ve geçiş kaydına yazılır.
 - Smoke (E5, FU01 kapanışı — DL kabulü değil): MOD-0149 DL-1 ve MVP-6 3.5.0 yayındayken, DL-1 ve DL-2'nin birlikte açıldığı ortamda (§22,
   AC-30 (3)) bir vakada müşteri adı ve kodu görünür, GUID görünmez.
+- **DL-3 (r10):** tam paket koşusu DL-1 / DL-2 kuralıyla (filtresiz Inventory + `Diten.Web.Tests`, Node testleri dahil; temel kırmızılar
+  aynı gün `main` ile karşılaştırılır). Dilim içinde sözleşme önce gelir (1.11.0 canlı dosyada olmadan `customerSourceReason` taşıyan
+  yanıtlar ve Web sahteleri kırmızı, §6 r10 notu). AC-32…AC-36 ve AC-38 yanıtları `RecallContractValidatingHandler` altında; AC-38 mevcut
+  vektör testlerinin (AC-2 (a), AC-10 (f), AC-15, AC-26 (d)) değiştirilmeden yeşil kalmasını da ister. Denetim: yeni olay yok;
+  `recall.case.opened`, `recall.scope.submitted`, `recall.scope.items-added` ve `reviseScope` satırlarının ayrıntısı değişmez (AC-38 (d)).
+  Süre ölçütü yok (neden var olan okumanın sonucudur; yeni çağrı yok). Smoke (E5, DL-3 kapanışı — dilim kabulü değil): MVP-6 okuması
+  `Unavailable` iken açılan vakada müşteriler sekmesinde "Sevkiyat servisine erişilemedi" görünür (RC-2026-0003'ün soğuk ilk okuma durumu).
 
 ### 17.1 Sabotaj tablosu
 
@@ -1026,15 +1265,18 @@ r8: okuma hatasında uyarının korunması S-6p (F-2@124eb974); S-6k ve S-6o AC-
 r9: S-17 donmuş SHIPMENT 3.5.0'a hizalandı (sahip kararı 2026-11-13, §19.13): adı aynı, üç ayrı koşu — `CustomerRef` `pattern`'i
 kaldırılır / değiştirilir, `type` kümesinden `'null'` kaldırılır, sabitin değeri değiştirilir; her biri kırmızı. r8'in `format: uuid`
 beklentisi kalktı. (1) ve (2) koşuları testin okuduğu üretim girdisine — sözleşme dosyasına — uygulanır ve geri alınır (sözleşme değişmez).
+r10 (DL-3): S-32a…S-32d yazım, S-33a…S-33d neden yokluğu, S-34a…S-34d yeniden izleme / revizyon, S-35a / S-35b eski vaka, S-36 kiracı
+başlığı, S-37a…S-37d sözleşme (S-37a…S-37c sözleşme dosyasına uygulanır ve geri alınır — r9 S-17 deseni; S-37d sunucu kodu), S-38a…S-38d
+dondurulmuş vektörler, S-39a…S-39d ve S-40a…S-40d ekran, S-41a…S-41d metin. DL-3'te sabotajsız ölçüt yoktur.
 
 ## 18. Ready-for-dev Checklist
 
 - [x] Golden Reference / Backend File Convention ebeveyn düzeniyle (§10)
 - [x] Frontmatter zorunlu alanlar dolu; ekranlar ebeveynin üç sayfası (§9)
 - [x] Validation Rules (§12), Failure Path ≥ 4 (§13), Authorization (§14), Gateway kararı (§15)
-- [x] AC'lerin hepsi üretim koduna karşı ve adlı sabotajlı (§16, 31 AC, her biri tek satır; istisnalar AC-20 (f) veri sayımı ve AC-30 rol kontrolü, §17.1)
+- [x] AC'lerin hepsi üretim koduna karşı ve adlı sabotajlı (§16, 41 AC — r9'da 31, r10'da DL-3 AC-32…AC-41 eklendi —, her biri tek satır; istisnalar AC-20 (f) veri sayımı ve AC-30 rol kontrolü, §17.1)
 - [x] Audited Events (§21) — yeni yazma komutu yok
-- [x] Teslim dilimleri (§22) ve sayfa yardımı kararı (§23)
+- [x] Teslim dilimleri (§22) ve sayfa yardımı kararı (§23); r10: DL-3 ve kabul kapısı (§22), sayfa yardımı değişmez (§23, K-4)
 - [x] Sahip kararları Q-5 = HAYIR, Q-6 = HAYIR, F-1 (çözülemeyen müşteri) (Beste, 2026-11-03) — §8.2, §8.4, §8.5, §8.8, AC-6, AC-20, AC-25, AC-27
 - [x] Sahip kararları Q-7 = açık (Bulunamadı satırında işlemler açık), Q-8 = EVET ("eski" yalnız FU01 öncesi, `null` kaynaklı anahtar) (Beste, 2026-11-04) — §8.4, §8.5, §8.8, AC-6, AC-23, AC-25, AC-27; §19.5 madde 11, 12
 - [x] CT kararları CT-1 (mühre girmez), CT-2 (RECALL 1.10.0), CT-3 (kanıt anlık görüntüsü), CT-4 (D-3 / D-4 DL-1 kabul kapısı), CT-5 (Q-5 "eski" tanımı) (MVP-1 CT, 2026-11-03) — §19.6
@@ -1049,9 +1291,16 @@ beklentisi kalktı. (1) ve (2) koşuları testin okuduğu üretim girdisine — 
 - [x] Bağımsız son bakış 02 (8002d286) bulguları kapatıldı (§19.11); CT kararı CT-13 (F-1…F-4@8002d286) (MVP-1 CT, 2026-11-04) — §19.6
 - [x] Bağımsız son bakış 03 (124eb974) bulguları kapatıldı (§19.12); CT kararı CT-14 (F-1…F-3@124eb974) (MVP-1 CT, 2026-11-04) — §19.6
 - [x] AC-17 sahip kararı (Beste, 2026-11-13) r9'da uygulandı — AC-17 ve S-17 donmuş SHIPMENT 3.5.0 `CustomerRef`'e hizalı (§19.13)
-- [x] `status: ready-for-dev` (r9) — S-49: draft künyeli paket onaylanamaz, onay satırı ready-for-dev künyeli sürüme yazılır; `approval_status: pending`
-- [ ] CT-APR-02 bağımsız inceleme (r9, yazandan ayrı oturum) + CT-APR-01 onay satırı (Ali; yüksek risk) — r8 onayı (`fc7f3cd3`) EES 2.14 gereği
-  r9 için geçersiz; AC-17 Skip kaldırma dalı ve DL-1 kabulü bunlardan sonra
+- [x] Okuma nedeni sahip kararı (Beste, 2026-11-23, seçenek 1) r10'da uygulandı — §3, §4.1, §8.11 (RECALL 1.11.0 farkının tam listesi), §11,
+  AC-32…AC-41, §22 DL-3 (§19.14)
+- [x] `status: ready-for-dev` (r10) — S-49: draft künyeli paket onaylanamaz, onay satırı ready-for-dev künyeli sürüme yazılır; `approval_status: pending`
+- [x] CT-APR-02 bağımsız inceleme (r9, `c12df7b7`, UYGUN) + CT-APR-01 onay satırı (Ali, 2026-11-13) — r9 için kapandı; EES 2.14 gereği r10 için geçersiz
+- [ ] CT-APR-02 bağımsız inceleme (r10, yazandan ayrı oturum) + CT-APR-01 onay satırı (onaylayan MOD-0177-FU01 sahibi; yazan ≠ onaylayan; yüksek
+  risk) — DL-3 kodu (WP) bunlardan sonra
+- [ ] r10 açık kararları K-1…K-7 (§19.14): K-1…K-5 yazar önerisiyle yazıldı — farklı karar verilirse ilgili AC ve sabotaj yeni revizyonla
+  değişir; K-6 kapandı (CT, inceleme F-1@329d81c0c); K-7 (DL-1 / DL-2 kabullerinin sürümü) CT kararı
+- [x] r10 bağımsız inceleme `329d81c0c` (KOŞULLU) bulguları F-1…F-3 r10 içinde düzeltildi (inceleme düzeltmesi; §8.11, §5, §22, AC-32,
+  AC-33, AC-34 (g)); düzeltilmiş r10 için CT-APR-02 / CT-APR-01 yukarıdaki maddededir
 - [ ] Açık, **DL-1 kabul kapısı** (kodlamayı engellemez — §7, §22): D-1 (Q-2), D-2 (Q-3), D-3 (Q-1), D-4 (Q-4), AC-20 (f) veri sayımı,
   AC-30 rol kontrolü. D-5 CRM sahibinin adımı (kapı değil). ready-for-dev bu kapıları kapatmaz; kapılar DL-1 kabulündedir
 
@@ -1244,7 +1493,7 @@ beklentisi kalktı. (1) ve (2) koşuları testin okuduğu üretim girdisine — 
 | Q-4 | `crm.account.lookup-validation` hangi geri çağırma rollerine atanır (Q-1 = kullanıcı token'ı ise) — **DL-1 kabul kapısı** (§7 D-4) | Auth (Ali) | TBD |
 | ~~Q-9~~ | **Kapandı (r5).** (a) Ölçüldü (inceleme 01 tur 3, CT kararı F-1@807c8dc2): Gateway tanımsız rota zaman aşımında 90 sn keser, Web `HttpClient` 100 sn; kesicisiz yanıtsız CRM'de eşik ≈ 361 hesap → devre kesici (CT-9, §8.6, AC-29 (d)). (b) Önizleme `Export` kipinde kalır: tur 3 bunu bulgu saymadı (önizleme dosyanın aynısıdır), CT kararı yeniden açmadı; kesici yanıtsız CRM'de bekleyişi ≈ 2 sn'ye indirir (§8.6). Kalan sınır O-7 | MVP-1 CT | kapandı 2026-11-04 |
 
-Q-5 ve Q-6 r2'de, Q-7 ve Q-8 r4'te, Q-9 r5'te kapandı — §19.5 madde 8, 9, 11, 12; §19.6 CT-9.
+Q-5 ve Q-6 r2'de, Q-7 ve Q-8 r4'te, Q-9 r5'te kapandı — §19.5 madde 8, 9, 11, 12; §19.6 CT-9. r10'un açık kararları (K-1…K-7) §19.14'tedir.
 
 ### 19.5 Verilen kararlar (sahip — Beste / MVP-1 CT, 2026-11-03 ve 2026-11-04)
 
@@ -1270,6 +1519,12 @@ Q-5 ve Q-6 r2'de, Q-7 ve Q-8 r4'te, Q-9 r5'te kapandı — §19.5 madde 8, 9, 11
     AC-25 (c), AC-27; ASSUMPTION-FU01-4 karara dönüştü.
 12. **Q-8 = EVET** (Beste, 2026-11-04): "eski" yalnız FU01 öncesi (`CustomerRefSource = null`) anahtardır; FU01 sonrası `ShipTo` / `Document`
     satırı eski değildir ve `Draft`'ta `Crm`'e geçebilir — §8.5, AC-6 (a4), (a5), (c3), AC-23 (S-23d). CT-5 sahip teyidini aldı.
+13. **Okuma nedeni — seçenek 1** (Beste, 2026-11-23; `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` son bölüm): "c"
+    (erişilemedi / yetki yok / bulunamadı ayrı metin) kabul; neden vakaya yazılır (`RecallScopeItem.CustomerSourceReason`), RECALL 1.11.0
+    yalnız ekleme (`ScopeItem` / `CustomerRow`'da isteğe bağlı neden üyesi), vaka ve iz ekranında üç metin, 7 dilde yeni anahtarlar
+    (`Recall.Read.*` teslim sütununda kalır), eski vakalarda metin yok; sevkiyat `Ok` okunup müşteri yine belgeden geldiyse neden yok (yazar çıkarımı — sahip kararından türetildi: neden yalnız üç okuma hatasında; inceleme F-2);
+    yeniden deneme / bütçe ve vakayı reddetme kapsam dışı (O-9); akış revizyon → CT-APR-02 → CT-APR-01 (onaylayan MOD-0177-FU01 sahibi) →
+    WP — §3, §4.1, §8.11, §11, AC-32…AC-41, §22 DL-3.
 
 ### 19.6 CT kararları (MVP-1 CT, 2026-11-03 ve 2026-11-04 — verildi)
 
@@ -1427,6 +1682,36 @@ içerir (`:3438-3440`) ve `customerRef: { $ref: '#/components/schemas/CustomerRe
 kendi `properties`'ine bakar (`ShipmentDetail`'de doğrudan `properties` yok, alan `allOf` içindedir) ve `("string", "uuid")` bekler — skip
 kaldırma dalı testi r9 AC-17'ye göre yeniden yazar; bu revizyon kodu değiştirmez.
 
+### 19.14 Okuma nedeni sahip kararı — kapanış tablosu ve açık kararlar (r9 → r10)
+
+Kaynak: sahip kararı (Beste, 2026-11-23, seçenek 1), `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` son bölüm ("Sahip
+kararı — MOD-0177-FU01 okuma nedeni metni", commit `b3c89f435`); ölçüm MOD-0177-FU01-READTEXT-01 (geliştiricinin "önce ölç" raporu; kod
+yazılmadan durdu) ve CT canlı ölçümü (aynı dosya, "MOD-0177-FU01 CRM müşteri satırı canlı ölçümü", `601d49994`). Ölçüm tabanı `b3c89f435`
+(worktree `wms-ct-01`); bu revizyonda kod ve sözleşme açılıp okundu, hiçbiri değiştirilmedi. AC-1…AC-31, DL-1, DL-2 ve önceki kapanışlar
+değişmedi; önceki sahip / CT kararları yeniden açılmadı.
+
+| Karar / ölçüm | Düzeltme | Bölümler |
+|---|---|---|
+| Neden vakada saklanmıyor (READTEXT-01, `b3c89f435`'te yeniden okundu: `RecallScopeItem` yalnız `CustomerRef`, `CustomerRefSource`, `NoCrmWarning` taşır, `RecallEntities.cs:287-299`; vaka açılışı `CaseCommandHandlers.cs:111` `ScopeItems` çıktısını yazar; okuma sonucu iz düğümünde var — `RecallTraceShipmentDto(sh.Read.ToString(), …)` —, kapsam kalemine geçmiyor; `NoCrmWarning` yalnız `Ok` + kimlik yok, `RecallTraceService.cs:115`) | `CustomerSourceReason` (`ShipmentReadOutcome?`): `ScopeItems` yazar, `Reconcile` / `CustomerKey` ve revizyon kopyası taşır | §3, §4.1, §8.9, §8.11 |
+| Paket yalnız iki alana izin veriyordu (§3 / §4.1); `CustomerDisplay` kapalı (`recall.openapi.yaml:1584`) | §3 / §4.1 izinli alan listesine `CustomerSourceReason`; sözleşmede `CustomerDisplay` değil `ScopeItem` / `CustomerRow` üyesi (sahip kararının yeri); 1.11.0 farkının tam listesi | §3, §4.1, §8.11 |
+| AC-16 / `RecallContract1100Tests` 1.9.0 → 1.10.0 farkını "tam olarak bu liste" diye ölçer (`:50-155`) | 1.10.0 dondurulur (`recall-v1.10.0`, blob `f57172eed`), `RecallContract1100Tests` "after" fixture'a çevrilir (`:53`), `RecallContract1110Tests` 1.10.0 → 1.11.0 farkını tam liste ölçer | §5, §6, §8.11; AC-37 |
+| rt-v1 sevkiyat okumasını bilerek dışarıda bırakır (`TraceRules.cs`) | değişmez; neden hiçbir mühürlü kanonik biçime girmez (rs-scope-v1 dahil — CT-1 gerekçesi), kanıt / CSV / denetim ayrıntısına girmez | §8.11; AC-38 |
+| Web yerleri (READTEXT-01: vaka ayrıntısı `case-detail.js` `:33-38` rozet, `:404-406` teslim sütunu, `:434` müşteri hücresi; iz `trace-view.js:65` genel `Recall.Shipment.Unreadable`) | müşteriler ve kapsam sekmesinde müşteri hücresi altı metin, iz ekranında `Document` düğümünün rozet metni (K-1, K-2); teslim sütunu değişmez | §5, §8.11, §11; AC-39…AC-41 |
+| Onay | r9 onayı (`c12df7b7`, Ali 2026-11-13) EES 2.14 gereği r10 için geçersiz; künye `ready-for-dev` (S-49), `approval_status: pending`; akış r10 → CT-APR-02 → CT-APR-01 (onaylayan MOD-0177-FU01 sahibi) → WP (DL-3) | künye, §18, §22 |
+
+**Açık kararlar (r10).** Uydurulmadı: her birinde yazar önerisi pakete yazıldı ve AC'ler ona göre ölçer; sahip / CT farklı karar verirse
+ilgili AC ve sabotaj yeni revizyonla değişir.
+
+| # | Karar | Yazar önerisi (pakette uygulanan) | Farklı kararda etkilenen | Sahip |
+|---|---|---|---|---|
+| K-1 | Vaka ayrıntısında metnin tam yeri | müşteriler sekmesinde müşterinin ilk sevkiyat satırının müşteri hücresinde, kapsam sekmesinde Shipment kaleminin yer hücresinde; müşteri metni ve rozetin altında küçük metin (`data-customer-reason`) — rozet ipucu (`title`) değil (dokunmatik ekranda görünmez) | §8.11; AC-39 (a), (b), S-39c | Beste |
+| K-2 | İz ekranındaki genel `Recall.Shipment.Unreadable` rozeti | `customer.source = Document` düğümünde rozet metni nedenin metniyle değişir (CT yan bulgusu: genel metin yanıltıcı); `customer` taşımayan düğümde genel rozet kalır, anahtar silinmez. Seçenek B: genel rozet kalır, neden yer satırına eklenir | §8.11; AC-39 (c), AC-40 (e), S-39d | Beste |
+| K-3 | Metnin zamanı ve öznesi | sahip metinleri aynen; neden kalemin yazıldığı anın okumasıdır (açılış / yeniden izleme / revizyon deltası) ve `Forbidden` izi koşan kullanıcının yetkisidir — teslim sütunu canlı okumayı gösterirken aynı satırda "Sevkiyat servisine erişilemedi" görünebilir. Zaman bağlamı ("vaka açılırken …") eklenmez | §8.11, §11; AC-39, AC-41 metinleri | Beste |
+| K-4 | Metni alan yüzeyler | yalnız müşteriler sekmesi, kapsam sekmesi ve iz ekranı; kapsam farkı listesi, etkinlik tablosu, iade bağları, bildirim / tüketim / iade bağlama pencereleri, kanıt paketi, iz CSV'si ve sayfa yardımı (`Help.RECALLCASEDETAILS.Step4`) değişmez | §8.11, §23; AC-38 (c), AC-39 | Beste |
+| K-5 | Yazım anları | sahip kararı "vaka açılırken" der; paket aynı `ScopeItems` kuralını `Draft` yeniden izlemesine (`submitScope`) ve revizyon deltasına da uygular ve kopyada taşır (geliştirici önerisi). Seçenek: yalnız açılış — o zaman `Reconcile` ve delta `null` yazar | §4.1, §8.11; AC-34 | Beste |
+| K-6 | Ad, tip ve değerler | varlık alanı `CustomerSourceReason` (sahip kaydındaki ad), tipi var olan `ShipmentReadOutcome?` (yeni enum yok); sözleşme üyesi `customerSourceReason`, şema `CustomerSourceReason` {`Unavailable`, `Forbidden`, `NotFound`} (`ShipmentReadOutcome` ve `CaseCustomerShipment.read` adları); `CustomerDisplay`'e girmez; `CustomerRow` için **en son yazılan kalem** kuralı (en yüksek `Revision` → `UpdatedAt ?? AddedAtUtc` → `NodeKey`; en son kalem nedensizse neden yok) — r10 ilk metnindeki "`NodeKey` sırasıyla ilk dolu kalem" kuralının yerine | §4.1, §8.11; AC-32, AC-34 (g), AC-37 | **kapandı** (CT, inceleme F-1@329d81c0c) |
+| K-7 | DL-1 / DL-2 kabullerinin bağlı olduğu sürüm | EES 2.14 r9 onayını r10 için geçersiz kılar; AC-1…AC-31 ve DL-1 / DL-2 metni r10'da değişmedi. Öneri: r10 onaylanana dek DL-1 / DL-2 kabul ve tur kayıtları r9'u (`c12df7b7`) anar, r10 onayından sonra r10'u | kabul kayıtları | MVP-1 CT / onaylayan |
+
 ## 20. Follow-up Items
 
 | ID | Konu | Sahip |
@@ -1443,6 +1728,7 @@ kaldırma dalı testi r9 AC-17'ye göre yeniden yazar; bu revizyon kodu değişt
 | FU-0177-FU01-FIND | **Kabul edilen sınırın iyileştirmesi (F-3@807c8dc2, CT-11):** müşteri sayfaları ordinal anahtar sırasındadır (`Crm` müşterilerinde fiilen GUID sırası), adla sıralama ve arama yoktur (§8.8). Seçenekler: müşteriler sekmesinde ve iade bağlama seçim listesinde sevkiyat hareket numarası ya da teslim yeri metniyle süzme (CRM'siz, sunucu tarafında, sayfa kuralından önce); CRM toplu sorgusu (birden çok hesabı tek istekte döndüren uç — CRM sözleşmesinde bugün yok) gelince adla sıralama ve arama. Plan satırı yok; açılırsa yeni FU paketi | MOD-0177 / CT; CRM toplu sorgusu MOD-0149 |
 | O-7 | **Kalan sınır (F-1@807c8dc2, CT-9):** devre kesici yalnız bir dalganın tamamı düşünce açılır. Her dalgada en az bir okumanın zaman aşımına uğradığı kısmi kesintide her dalga ≈ 2 sn sürer (≈ 361 hesap üstünde Gateway'in 90 sn'si yine keser, genel 503); sağlıklı sınırdaki (500 ms) CRM'de ≈ 1 440 hesaba kadar sınırın altında kalınır. Ölçülmeyenler: Ocelot'un 90 sn'de döndürdüğü kod, Inventory işleyicisinin iptali alıp almadığı, canlı ters vekil sınırları (§8.6). Gateway rotasına zaman aşımı yazmak integration-agent'ın kararıdır | CT / integration-agent |
 | O-8 | **Gözlem (ebeveyn):** Recall'un dosya bağlantıları (`/Recall/export/trace`, `/Recall/export/evidence/{id}`) başarısızlıkta Web vekilinin JSON ret gövdesini döner (`RecallController.cs:144`, `:706`, `Refuse` `:946`); tarayıcı bunu sayfa olarak açar (503 dahil, bugünkü davranış). FU01 iz ekranında `Forbidden` görünür düğümde bağlantıyı kaldırır (§8.8), öteki durumları değiştirmez | MOD-0177 / CT |
+| O-9 | **Kapsam dışı (sahip kararı, Beste, 2026-11-23; r10):** CT canlı ölçümünün (`mvp1-ct-acceptance-batch-2026-11-13.md`, "MOD-0177-FU01 CRM müşteri satırı canlı ölçümü", `601d49994`) (a) "vaka açılışında okuma `Unavailable` ise açmayı reddet / uyar ve yeniden dene" ve (b) "okumada tek yeniden deneme ya da soğuk başlangıçta daha geniş bütçe" önerileri DL-3'e girmez; DL-3 yalnız nedeni gösterir. Kök neden: soğuk ilk sevkiyat okuması okuma başına 2 sn'yi aşar (`ShipmentBundleHttpReader`; RC-2026-0003). Yeniden istenirse yeni sahip kararı ve ayrı iş | Beste / MOD-0177 |
 
 ## 21. Audited Events
 
@@ -1458,12 +1744,18 @@ denetim satırı yazar, `TraceHandlers.cs:103-107`) — başarılı istekte sat�
 kayıt komutlarındaki 503 / 403 reddiyle aynı kuraldadır (yazım 0, §8.4) — istisna sınıfı değil, yazılmayan işlem. CRM okuması AUD-001 okuma olayı üretmez (CRM
 taslağı §1).
 
+**r10 (DL-3):** yeni yazma komutu ve yeni denetim olayı yok. `openCase` (`recall.case.opened`), `submitScope` (`recall.scope.submitted`) ve
+`reviseScope` kapsam kalemlerine `CustomerSourceReason` yazar / kopyalar; `addScopeItems` (`recall.scope.items-added`) `null` yazar. Bu
+satırların denetim ayrıntısı **değişmez** — neden girmez (AC-38 (d)); AUD-001 yolları ve denetim defteri
+(`tests/architecture/audit-ledger/Diten.InventoryService.md`) değişmez.
+
 ## 22. Teslim dilimleri
 
 | dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
 |---|---|---|---|---|---|
 | DL-1 | arka uç: customerRef okuma + anahtar sırası + ad çözümü (müşteri sayfası ve dışa aktarım kipleri, devre kesici) + çözüm denetimi (503 / 403) + kayıtlar + kanıt anlık görüntüsü ve dışa aktarımın izin reddi (403) + RECALL 1.10.0 + 7 dil metinleri | Owned Objects, Entity Fields, Repo Scope, Dependencies, Müşteri anahtarı sırası, Anahtar biçimi ve tekrar parmak izi, Kayıtlar, Yeniden izlemede anahtar kararlılığı (SB-19), Ad çözümü (CRM-ACCOUNT-LOOKUP U-1), Sözleşme — RECALL 1.10.0, Gösterim kuralı, Kanıt paketi ve ad anlık görüntüsü, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Audited Events | E4 | plan satırı yok | MVP-1 |
 | DL-2 | ekran: ad + kod, durum metinleri ve ayırıcı, kapalı komutlar, rozetler, müşteri sayfası, iz ekranında izin eksikken CSV bağlantısı yerine metin, Web vekilinin sorgu ve dil iletimi | Gösterim kuralı, Frontend File Contract, Layout & Shell Contract, Page Help (UXH-001) | E4 | plan satırı yok | MVP-1 |
+| DL-3 | okuma nedeni (r10): `CustomerSourceReason` yazımı (açılış, yeniden izleme, revizyon) + RECALL 1.11.0 + vaka ayrıntısı ve iz ekranında üç metin (7 dil) | Owned Objects, Entity Fields, Repo Scope, Dependencies, Durum ve komut tablosu, Okuma nedeni ve RECALL 1.11.0, Frontend File Contract, Failure Path to Verify, Audited Events | E4 | plan satırı yok | MVP-1 |
 
 Kabul ölçütleri: DL-1 → AC-1…AC-20, AC-25, AC-26, AC-28, AC-29, AC-30; DL-2 → AC-21…AC-24, AC-27, AC-31. **DL-1 kabul kapısı:** D-1 (SHIPMENT
 3.5.0 FROZEN, AC-17 Skip'siz yeşil, Q-2 teyidi), D-2 (CRM U-1 şekli teyitli ya da sözleşme FROZEN), D-3 (Q-1 = kullanıcı token'ı; aksi paket
@@ -1488,6 +1780,19 @@ FU01'in kapanışı ayrıca E5 smoke ister (§17; MOD-0149 DL-1 ve MVP-6 3.5.0 y
 (`fc7f3cd3`) EES 2.14 gereği r9 için geçersizdir — AC-17 Skip kaldırma dalı CT-APR-02 bağımsız inceleme (r9) ve Ali'nin CT-APR-01 onay
 satırından sonra açılır, DL-1 yukarıdaki kapılar kapanmadan kabul edilmez.
 
+**DL-3 (r10) — kabul ölçütleri ve kapısı.** Kabul ölçütleri: AC-32…AC-41. Dilim numarası pakette sıradaki boş numaradır (DL-1, DL-2
+kullanıldı). Önkoşul: DL-1 ve DL-2 kodu hatta (D-7); DL-3 D-1…D-5'e bağlı değildir. **Dilim içi sıra:** önce sözleşme (RECALL 1.11.0,
+`recall-v1.10.0` fixture'ı, `RecallContract1110Tests`, `RecallContract1100Tests` "after" çevrimi, `RecallRulesAndShapeTests` sürüm satırı) —
+`ScopeItem` kapalı nesne olduğundan neden taşıyan yanıt ve Web sahteleri 1.11.0'sız kırmızıdır (§6 r10 notu) —, sonra arka uç, sonra ekran.
+**Kabul kapısı:** (1) r10 CT-APR-02 bağımsız inceleme ve CT-APR-01 onay satırı DL-3 kodundan önce (künye `ready-for-dev` bu kapıyı kapatmaz);
+(2) AC-32…AC-41 yeşil ve her sabotaj üretim kodunda tek tek "kırmızı → geri al → yeşil, diff boş" (kabul kaydına); (3) tam paket: filtresiz
+Inventory test paketi + `Diten.Web.Tests` (Node testleri dahil), temel kırmızılar aynı gün `main` ile karşılaştırılır, yeni kırmızı 0;
+(4) AC-37 fark testi ve AC-38 dondurulmuş vektörler — mevcut vektör testleri değiştirilmeden — yeşil; (5) K-1…K-5'in sahip / CT yanıtı ya da
+yazar önerisinin kabulü kabul kaydında (K-6 kapandı); (6) UIC seçici ve tarayıcı kontrolü (tr / en, 375 px) vaka ayrıntısında ve iz ekranında;
+(7) `docs/analysis/contracts/README.md` sözleşme kaydında RECALL-BUNDLE 1.10.0 ve 1.11.0 satırları var (inceleme F-3, §5).
+**Açılış:** DL-3 DL-1 + DL-2 ile birlikte ya da onlardan sonra açılır; tek başına açılamaz (DL-1 kodunun üzerindedir). DL-3 olmadan DL-1 +
+DL-2 açılabilir (alan yoktur, metin çizilmez — eski vaka davranışı, AC-35 / AC-40). Kapanış smoke'u §17 (E5).
+
 ## 23. Page Help (UXH-001)
 
 Yeni sayfa yok. Vaka detayı "?" panelindeki müşteriler adımı (`Help.RECALLCASEDETAILS.Step4`, `PageHelpResource.{7}.resx`) üç cümle alır:
@@ -1495,3 +1800,6 @@ Yeni sayfa yok. Vaka detayı "?" panelindeki müşteriler adımı (`Help.RECALLC
 bağlamanın kapalı olduğu; müşteri adlarının 25'lik sayfalarla gösterildiği (DL-2; yeni tur yok). Kanıt ve iz ekranlarının yardım metni
 değişmez (r5): izin eksikken dışa aktarım reddinin metni (`Recall.Errors.RECALL_CUSTOMER_DIRECTORY_FORBIDDEN`, iz ekranında
 `Recall.Customer.ExportForbidden`) nedeni ve çözümü kendisi söyler.
+
+**r10 (DL-3):** sayfa yardımı değişmez (K-4 yazar önerisi): neden metni kendi başına okunur; "?" panelindeki müşteriler adımı
+(`Help.RECALLCASEDETAILS.Step4`) DL-2'deki gibi kalır.
