@@ -15,3 +15,12 @@ MVP-3, MVP-5 ile paralel ilerler; ilk adımlar kodsuzdur.
   davranıştır. F-0193-09 (ad çakışması) bu kayıtla kapanır: repo satırı MOD-0040 = MOD-0288'in takma adı, Blueprint MOD-0040 =
   standart; MOD-0040-FU02 Blueprint anlamına bağlıdır. Kayıt defteri notu ve MOD-0193 satırı (port 5070, durum `done`) düzeltildi.
 - **Sınır:** Kod, ortam açma ya da dağıtım izni değildir.
+
+## Ek — INT3-01 için Ali'nin kararları (2026-11-24)
+
+- **PRODUCT-MASTER v1.1:** `1.1.0` olarak dondurulmasına evet. Dondurma adımlarını MDM kulesi yapar; tarih Ali tarafından ayrıca
+  bildirilecek.
+- **Kimlik:** Manufacturing MDM'ye **Auth servis token'ı** ile gider; kullanıcı token'ı iletilmez. MDM'nin servis kimliğine açılması
+  GOAL ve SupplyChain'in aynı ihtiyacıyla tek işte yapılacak (Ali); tarih netleşince bildirilecek.
+- **Sonuç:** INT3-01 iş paketi iki ön koşulu bekler: v1.1 dondurma ve MDM servis kimliği işi. Bu arada BOM kullanıcılarına
+  `mdm.product-master.read` gerekmez (kullanıcı token'ı iletilmediği için).

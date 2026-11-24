@@ -128,3 +128,17 @@ Kaynak: Ali'nin Beste'ye cevabı (2026-11-24), r3 taslağına (2026-11-19) ve
   (CT-APR-02 + CT-APR-01) ve XMC-001 iznini bekler. Pakette SQ-18 "açık" görünür; bu kayıt onu kapatır, metin bir sonraki
   revizyonda hizalanır. Ali r3'ü (paket sha256 `068646c1…`) "onaylıyorum" ile onayladı; onay satırı bağımsız inceleme
   kaydından sonra yazılır.
+
+## Ek — MOD-0360-FU01 r4 onayı ve ara katman izni (Ali, 2026-11-24)
+
+Kaynak: Ali'nin Beste'ye cevabı (2026-11-24).
+
+- **r4 onayı:** paket r4 (sha256 `c6c9fbf1bb8cb730d0e1bccb9929852540f29c230c02cf1b542a3c3f391dc390`) onaylandı (CT-APR-01, onaylayan
+  Ali / GMG-ERP; yazan Beste — yazan ≠ onaylayan).
+- **XMC-001 izni:** Auth `TenantResolutionMiddleware.cs` değişikliği ve **yalnız** `/api/internal/supplier-bindings` önekinde BL-324
+  (DCP-004 §7.4) çelişki 400'ünün uygulanmaması için izin verildi. Bu kayıt r4 incelemesinin
+  (`docs/records/reviews/MOD-0360-FU01/2026-11-24-c6c9fbf1.md`) tek düşük bulgusunu kapatır: paketteki "izin verildi 2026-11-24"
+  ifadesi artık kayıtla desteklenir.
+- **Ali'nin koşulu:** diğer bütün yollarda 400 kuralı aynen kalır ve bu bir testle gösterilir. Pakette karşılığı AC-30'un ara katman
+  tek başına vakaları (kardeş `/api/internal/*` yollar ve önek dışı yollar 400 almaya devam eder; sabotaj 6: muafiyetin
+  `/api/internal`'a genişletilmesi kırmızı). DL-2 kabulünde bu test adıyla ölçülür.
