@@ -1,0 +1,118 @@
+{
+  "source_commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "source_tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "report_sha256": "f02903db55dd54d4d0650ef0c435fd3ea1fe7f43f349a703536be40c3bae3320",
+  "summary_sha256": "3221c8ad297cfb8dbeddc506be93d4fa8cd8b87270970737537a1e495c1559c8",
+  "files": [
+    {
+      "path": "actual-commands.json",
+      "bytes": 5201,
+      "sha256": "923be87351a6a8dd2d5a6153e99306892b0a4de8e0b5d83677e514c22b1d7172"
+    },
+    {
+      "path": "assembly-binding.json",
+      "bytes": 651,
+      "sha256": "b5684a05662ad82138020310379faa5f32046135232e843ab39ea8625aba7a13"
+    },
+    {
+      "path": "combined-summary.json",
+      "bytes": 9256,
+      "sha256": "3221c8ad297cfb8dbeddc506be93d4fa8cd8b87270970737537a1e495c1559c8"
+    },
+    {
+      "path": "ct-capture.json",
+      "bytes": 6942,
+      "sha256": "330fdffb597554e36ddb7c4e3c56799a105c4648df11463cb99b1df45ec8bfc8"
+    },
+    {
+      "path": "ct-producer.log",
+      "bytes": 89,
+      "sha256": "05ad27baca1071157eb0ffb3551c30987da1e032fafccfe776ca39524edeea6b"
+    },
+    {
+      "path": "final-cleanup.json",
+      "bytes": 535,
+      "sha256": "4d05a799581116d893e6007cd4c3db2593056c433ca49ef5631870a147473718"
+    },
+    {
+      "path": "full-snapshot-manifest.json",
+      "bytes": 6140731,
+      "sha256": "d96badcbd4dcc35f684b9af6cc0453a5853f202f7c565248678b97ebe57f669c"
+    },
+    {
+      "path": "git-context-binding.json",
+      "bytes": 4362,
+      "sha256": "3cbf39a287052895f6db640d0471739bee5164cbc39b9a9cb5b751da7e0c5881"
+    },
+    {
+      "path": "isolated-index.json",
+      "bytes": 594,
+      "sha256": "ddb29de9d5564823c803c49e654813499b9349e3f37093a1c288b5efa447c420"
+    },
+    {
+      "path": "known-failures-check.log",
+      "bytes": 101,
+      "sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+    },
+    {
+      "path": "mongo-cleanup.json",
+      "bytes": 3769,
+      "sha256": "3593f707cfe057dafea2c9a9861d399c978173261d38192f1e431ab95bbb7e93"
+    },
+    {
+      "path": "mongo-observed-running.json",
+      "bytes": 3404,
+      "sha256": "2d06db2f3d1373e287d95ccd8631dd0e7bb1e82157a073c5f73cba0f51fe6b8e"
+    },
+    {
+      "path": "mongo-version.log",
+      "bytes": 301,
+      "sha256": "03d73207a5508d9f88f233c9188b1537cf7937a2e419bac681d56ced2f093ee6"
+    },
+    {
+      "path": "normal-full.log",
+      "bytes": 2412,
+      "sha256": "ac06f10df90c82cb973d1463d357350cdc9bd841eaadba69b4fd1b026bc50dd5"
+    },
+    {
+      "path": "normal-trx-summary.json",
+      "bytes": 109865,
+      "sha256": "c00640c3a52f0541c1a7905ede8645823f504e100cfbf2adf4732c5990311267"
+    },
+    {
+      "path": "restore.log",
+      "bytes": 1687,
+      "sha256": "bf4f797210d917f0ea5ffac84bc06b69a457adcd27b53eda93be8089b54e59d9"
+    },
+    {
+      "path": "sdk-version.log",
+      "bytes": 9,
+      "sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+    },
+    {
+      "path": "skip-check.log",
+      "bytes": 166,
+      "sha256": "aa1e89e5fb54aeb7d93de57b708ae5c13d820c52cce1c15e21d648f24a03c975"
+    },
+    {
+      "path": "source-after.json",
+      "bytes": 466,
+      "sha256": "444a436022a76b8df60511036e8193e9935c862afcebe179cdc7c4bd37f8a453"
+    },
+    {
+      "path": "source-before.json",
+      "bytes": 26913,
+      "sha256": "ce62723599669330a444485f19a7b85a4dc85f20ecce3a8e7be148208a5787e1"
+    },
+    {
+      "path": "VERIFY-WIN-CT-INTEGRATION.txt",
+      "bytes": 3393,
+      "sha256": "f02903db55dd54d4d0650ef0c435fd3ea1fe7f43f349a703536be40c3bae3320"
+    },
+    {
+      "path": "win-independent.trx",
+      "bytes": 684311,
+      "sha256": "e222ad1acdb19205f3128a64f6653578c7454993f320fcad5753d1440d2c9ac1"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "pack",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL7-CI-VIEWS-01-v1.1.md"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "02c21db902b459af6805c44d01e3e6f3e6590be11a9501f08f1daf512eb3a40a",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "prompt_sha256": "c1ed47e427bd6ac890c4a3b43adf5195850d3db0e3d4e0ed75bf3923fda577f1",
+  "expected_head": "b0dcca109997320e55659d7f41c489396338e15c",
+  "source_pack_sha256": "879866cd87e960cdf84f05c64d2767e5872d563f745e669adc36894f30db08cd"
+}

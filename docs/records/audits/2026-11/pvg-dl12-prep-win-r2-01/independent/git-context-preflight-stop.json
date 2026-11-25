@@ -1,0 +1,13 @@
+{
+  "stage": "Before any SDK/build/test/ACL/Mongo invocation",
+  "normal_test_runs_so_far": 0,
+  "command": [
+    "git",
+    "read-tree",
+    "fee7d0132e3862ded7025465e311f263e068f7aa"
+  ],
+  "exit": 128,
+  "alternates_before_bytes_hex": "433a2f55736572732f6570656e632f446f63756d656e74732f436f6465782f323032362d30392d32392f68747470732d6769746875622d636f6d2d626573746570756c6c756b63752d616c742d6572702f776f726b2f4552502d764e6578742d6769742f2e6769742f6f626a656374730d0a",
+  "error": "object directory ending with CR does not exist; failed to unpack fee7 tree",
+  "resolution": "Only owned metadata alternates rewritten using exact UTF-8 path plus one LF byte; no product/source edit."
+}

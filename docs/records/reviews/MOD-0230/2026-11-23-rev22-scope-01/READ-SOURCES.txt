@@ -1,0 +1,41 @@
+Read source list for revision 22 draft authoring
+
+Existing identity/context (read-only)
+- AGENTS.md and its supplied execution contract.
+- execution/domains/pharmacovigilance/domain-config.md: current gate, frontend roots, exact SharedResource two-key restriction, protected paths and revision 21 exceptions.
+- execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md at exact H82: immutable source copy, revision 21 metadata, Repo Scope/Protected Paths, original AC-1...45, test expectations and existing 12 slice boundaries/history.
+- execution/portfolio/master-development-plan.md: metadata, module inventory and sequencing; no MOD-0230 plan row found. No external plan row was supplied; no capability/MVP identity invented.
+- execution/registries/module-id-registry.md: MOD-0230 canonical same identity/name, build/test only and closed operational boundary.
+- execution/portfolio/delivery-capability-packs/DCP-004-pvg-urgent-w3-development-block.md: MOD-0230 closed build/test registration and operational ownership boundaries; no DCP edit/approval inferred.
+
+Mandatory module-pack-author context/rules
+- .antigravity/agents/module-pack-author.md.
+- .antigravity/rules/module-pack-standard.md: required metadata/sections/identity, version-bound review/HIGH, delivery slices, scope, help, lifecycle and evidence conditions.
+- execution/domains/developer-enablement/module-packs/DEV-0001-golden-reference-compact.md.
+- Actual Compact backend GetGoldenReferenceCompactListQuery.cs and Handlers/QueryHandlers/GetGoldenReferenceCompactListHandler.cs, plus frontend Index.cshtml and Create.cshtml; live directory/file sets listed. Reference is context; no refactor/deviation-free claim for inherited PVG source.
+- .antigravity/rules/views-organization.md, handler-design.md, erp-architecture.md, response-envelope.md, entity-base-template.md, routes.md, platform-lookups-reference-data.md.
+- Previously read always rules multi-tenancy, security-jwt, git-safety, code-style, docs-organization, cross-module-change-consent.
+- Previously read frontend-standards, frontend-js-standard, unauthorized-surface-standard, page-help-and-keyboard, localization-standard, dynamic-localization-standard, permission-key-standard, capability-pack-standard, module-self-registration-standard, record-coding-standard, read-only-audit workflow; DataTable touch-protocol location checked. No new record/entity/lookup/route/permission is proposed.
+
+Other existing owner authority (newly confirmed)
+- execution/domains/platform-shared-services/module-packs/MOD-0018-FU9-platform-governance-rbac-admin-ui.md: current frontmatter owner platform-team; §3 five RBAC screens, §4 path ownership/frontend-ui-ux, separate approved-step condition. Historical draft/unstarted notes were not treated as current implementation evidence.
+- execution/portfolio/delivery-capability-packs/DCP-001-access-governance.md: platform-team ownership and DCP cannot replace member pack authority.
+- execution/registries/module-implementation-status.md:53 actual RoleAssignments/UserRoleAssignments UI trace to FU9. No tracker edits or new progress claim.
+- services/Diten.Platform/.../AccessGovernanceManifestProvider.cs: real module access-governance and RoleAssignments/auth.roles.assign-permission.
+
+Real production consumers / preserved evidence
+- PvgCaseIntakeTriageManifestProvider.cs; four PVG views; CaseIntakeTriageIndex seven-language resources.
+- CurrentPage.cs, NavNameLocalizer.cs, DynamicModuleMenuViewComponent.cs, GetTenantNavigationMenuQueryHandler.cs, _LayoutTenantShell.cshtml, _PageHelpPanel.cshtml, PageHelpCatalog.cs.
+- RoleAssignments/_IndexL10n.cshtml, production perm-label.js, real resource families; existing page-help and role-label/family guards; targeted C# help/navigation test sources.
+- WP-0230-DL12-FE-v1.0.md six-file prompt, proving it cannot authorize/measure this new 27-file scope.
+- pvg-pr460-js-diagnosis-01 full diagnosis, Git-snapshot output, exact scope and seven-language proposal. Historical diagnosis content preserved; final rev22 help is replaced in the new content bundle with plain language per root steering.
+- pvg-pr460-ui-diagnosis-01/DIAGNOSIS.md and FACTS.json: one actual CI-14 French equality red, valid technical French term, exact proposed explanatory gloss, report-only inherited resx debt and Windows CR exit-2 limitation.
+- Real web-js stdout and actual JUnit previously parsed; real UI log facts bound by UI diagnosis. Existing raw hashes appear in the draft.
+
+Not performed / decisions still open
+- No new identity/preflight: same existing module ID and canonical name, no reservation/FU/module creation; not a missing discovery for a new module.
+- No owner/XMC/single-writer/content/family consent obtained by author; no ordinary prompt/HIGH/dispatch pass; no formal review/approval row produced or changed.
+- No domain/DCP/FU9 or approved pack rewrite; exact governance adoption/record location remains before-dispatch work, not authority from this draft.
+- No product implementation, test rerun, baseline/guard/ledger change, no repo writes, Git mutation, install or dispatch.
+- No operational/live acceptance, new availability, validation, supplier qualification, deployment or human merge consent claimed.
+- Actual model/effort setting independently unmeasured; no claim beyond inherited requested setting.

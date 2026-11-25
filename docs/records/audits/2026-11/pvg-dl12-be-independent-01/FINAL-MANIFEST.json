@@ -1,0 +1,333 @@
+{
+  "verdict": "UYGUN",
+  "evidence_level": "Independent E2 only; not E4/live/main Unix CI/FE or CT integration",
+  "reviewer": "/root/pvg_dl12_be_prompt_review_01",
+  "requested_model_effort": "inherited gpt-6.2-astra/high",
+  "actual_model": "verilemiyor",
+  "actual_effort": "verilemiyor",
+  "candidate": "67005d85137f61ffe8c24eabb46bcd2cf15b9d87",
+  "tree": "bcb43f47d3b2fd7af511dcadb677e879eb6ebc08",
+  "parent": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "ordinary_single_parent_commit": true,
+  "own_repo": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+  "own_final_clean": true,
+  "scope_paths": [
+    "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+    "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+    "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs"
+  ],
+  "source_audit": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\FINAL-SOURCE-IDENTITY-AUDIT.json",
+  "source_manifests": [
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\source-before.json",
+      "raw_sha256": "023cb442749081d763eef381f72540de7cf6720edab961a3d50794bf32ff850a",
+      "source_digest": "1e2aff01d80e0426e4a0bfdf42cffac0a94c57ad1d5c49415e958c8a8276b2ce",
+      "files": 26507,
+      "bytes": 448060205,
+      "git_line_ending_only_mismatches": 0
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\source-after-normal.json",
+      "raw_sha256": "cbfe60888804fd8c67b55baf79f7e1c2da357ff1cf8f7adb6ef90d1c9879c4cf",
+      "source_digest": "1e2aff01d80e0426e4a0bfdf42cffac0a94c57ad1d5c49415e958c8a8276b2ce",
+      "files": 26507,
+      "bytes": 448060205,
+      "git_line_ending_only_mismatches": 0
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\source-after-repeats.json",
+      "raw_sha256": "874bb705d15edbdd531bf4ad362ceb25835d61293a99626e7f1e4bad5e7360f2",
+      "source_digest": "1e2aff01d80e0426e4a0bfdf42cffac0a94c57ad1d5c49415e958c8a8276b2ce",
+      "files": 26507,
+      "bytes": 448060205,
+      "git_line_ending_only_mismatches": 0
+    }
+  ],
+  "new_named_methods": 11,
+  "new_expanded_cases": 60,
+  "two_store_balance": {
+    "InMemory": 30,
+    "Mongo": 30
+  },
+  "method_counts": {
+    "Field_policy_denial_does_not_disclose_draft_editability": 10,
+    "Update_requires_the_version_read_with_the_editability_snapshot": 10,
+    "Update_is_allowed_only_in_intake_created_and_intake_updated": 10,
+    "Update_refusals_for_another_tenant_or_a_caller_without_the_key_never_say_not_editable": 2,
+    "Field_policy_denial_does_not_disclose_record_existence": 8,
+    "Update_never_erases_triage_or_route_fields": 6,
+    "Concurrent_triage_between_update_read_and_replace_is_not_overwritten": 2,
+    "Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing": 6,
+    "Update_with_the_values_read_back_keeps_every_stored_field": 2,
+    "Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values": 2,
+    "Get_by_id_returns_the_fifteen_stored_fields": 2
+  },
+  "normal_api": {
+    "passed": 456,
+    "failed": 0,
+    "skipped": 0,
+    "trx_raw_sha256": "22a50f41fe8908715b6260fe101b07825e7d2a8d69b804adaa849a74353133ed"
+  },
+  "normal_regpv": {
+    "passed": 211,
+    "failed": 0,
+    "skipped": 0,
+    "trx_raw_sha256": "b1de4d23bb08b9257ea5f1dff177d6e019cc142dac89941ebb3c9acab7eb8fdc"
+  },
+  "old_api_cases_retained": 395,
+  "old_mongo_cases_retained": 35,
+  "win_targets": 3,
+  "author_mutants_individually_audited": 21,
+  "author_mutant_audit": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\AUTHOR-MUTANT-AUDIT.json",
+  "independent_compiled_repeats": [
+    {
+      "label": "10-race-newer-version",
+      "target": "Concurrent_triage_between_update_read_and_replace_is_not_overwritten",
+      "original_raw_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "mutant_raw_sha256": "c5f0af041c8e17bed81d0d4af9265ef3401485efc70f1284e79d4cb1f7d712e6",
+      "patch_raw_sha256": "6804c4d4255d7db11811bf9c876e9ebe7666152a9fd2499b26cac09c0bd9d750",
+      "red_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-red\\manifest.json",
+      "green_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-restored-green\\manifest.json",
+      "red_cases": 2,
+      "assertion_failures": 2,
+      "restored_green_cases": 2
+    },
+    {
+      "label": "14-notfound-before-policy",
+      "target": "Field_policy_denial_does_not_disclose_record_existence",
+      "original_raw_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "mutant_raw_sha256": "6cca06382e07115f93bc56a125b5d6466348dead6826e763a71769fac675f36c",
+      "patch_raw_sha256": "001eb99cae68058851014da58a4af77d33569d57834f9d3ad836bb6049a16575",
+      "red_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-red\\manifest.json",
+      "green_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-restored-green\\manifest.json",
+      "red_cases": 8,
+      "assertion_failures": 8,
+      "restored_green_cases": 8
+    },
+    {
+      "label": "03-outcome-marker-removed",
+      "target": "Update_never_erases_triage_or_route_fields",
+      "original_raw_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "mutant_raw_sha256": "7746a112a79ea4ade4b6358330cc89e323c249ab96a3dd903f659a597eaf7be8",
+      "patch_raw_sha256": "678c28984e6261c88a34f876d21781e06dc17d98febc515da826edbc29c4b6d0",
+      "red_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-red\\manifest.json",
+      "green_manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-restored-green\\manifest.json",
+      "red_cases": 6,
+      "assertion_failures": 2,
+      "restored_green_cases": 6
+    }
+  ],
+  "actual_runs": [
+    {
+      "label": "normal-api",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-api\\manifest.json",
+      "manifest_raw_sha256": "986342039c586611d7ce009a652abc53413c2d63699849b28ac876d6428e47d8",
+      "exit_code": 0,
+      "counts": {
+        "Passed": 456
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-api\\results\\result.trx",
+      "trx_raw_sha256": "22a50f41fe8908715b6260fe101b07825e7d2a8d69b804adaa849a74353133ed",
+      "mongo_count": 5
+    },
+    {
+      "label": "normal-regpv",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-regpv\\manifest.json",
+      "manifest_raw_sha256": "fa84e083a427000b20b3f42fe8c938965a8971c9c58de61b7c1d8cd8e65f42f5",
+      "exit_code": 0,
+      "counts": {
+        "Passed": 211
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-regpv\\results\\result.trx",
+      "trx_raw_sha256": "b1de4d23bb08b9257ea5f1dff177d6e019cc142dac89941ebb3c9acab7eb8fdc",
+      "mongo_count": 0
+    },
+    {
+      "label": "repeat-03-outcome-marker-removed-red",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-red\\manifest.json",
+      "manifest_raw_sha256": "660703a7fdffdf6d7093b8cf9131f1ffe4c4b69ca6d98e1df4806878386aed61",
+      "exit_code": 1,
+      "counts": {
+        "Failed": 2,
+        "Passed": 4
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-red\\results\\result.trx",
+      "trx_raw_sha256": "f0dd8d8df3f397bf2112725fd5ccb6fc6c4f798910d3f71e217e70259b41b7e3",
+      "mongo_count": 1
+    },
+    {
+      "label": "repeat-03-outcome-marker-removed-restored-green",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-restored-green\\manifest.json",
+      "manifest_raw_sha256": "811b92313b26ed5014f0ca7a8e60650bece17f590f09fac62a0433df057b44fa",
+      "exit_code": 0,
+      "counts": {
+        "Passed": 6
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-03-outcome-marker-removed-restored-green\\results\\result.trx",
+      "trx_raw_sha256": "9f3180f9d3fa8d6d19b4448aab54a98408836e7c773b6315044bda90444fcfea",
+      "mongo_count": 1
+    },
+    {
+      "label": "repeat-10-race-newer-version-red",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-red\\manifest.json",
+      "manifest_raw_sha256": "ace094c96c565d54a58b90793f45d92651bee599a1736872e2cbcdfe784220ce",
+      "exit_code": 1,
+      "counts": {
+        "Failed": 2
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-red\\results\\result.trx",
+      "trx_raw_sha256": "81de14536f86ea165b3c305d59acfb00a5db6c1e267500cc0112eeba5528e901",
+      "mongo_count": 1
+    },
+    {
+      "label": "repeat-10-race-newer-version-restored-green",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-restored-green\\manifest.json",
+      "manifest_raw_sha256": "0afc88ef5a483717c551700d80133d54d1ceac72166d9e0b19237db0a4416ae2",
+      "exit_code": 0,
+      "counts": {
+        "Passed": 2
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-10-race-newer-version-restored-green\\results\\result.trx",
+      "trx_raw_sha256": "197dd74e2196eaccaefa47689061d27f2e8514cd6587e6bd153d861ac1cd575e",
+      "mongo_count": 1
+    },
+    {
+      "label": "repeat-14-notfound-before-policy-red",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-red\\manifest.json",
+      "manifest_raw_sha256": "b35fa3e5311e1dfedf0dd509744b412b6cd9613881f13da1032d7049448c8e8c",
+      "exit_code": 1,
+      "counts": {
+        "Failed": 8
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-red\\results\\result.trx",
+      "trx_raw_sha256": "0867caef8e29d0c678c0d1f6684f81893fc96e2130e36a8d1c7fdc2ed5f2ae38",
+      "mongo_count": 1
+    },
+    {
+      "label": "repeat-14-notfound-before-policy-restored-green",
+      "manifest": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-restored-green\\manifest.json",
+      "manifest_raw_sha256": "53254cba3c5c4513f90518e8478fd3d0da162d8599150f8214e1591340dd7b20",
+      "exit_code": 0,
+      "counts": {
+        "Passed": 8
+      },
+      "trx": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repeat-14-notfound-before-policy-restored-green\\results\\result.trx",
+      "trx_raw_sha256": "c6fc7e2ba5275f8c4b608ef96dafa6539984d7f438ecd944ab52db662d2d85a5",
+      "mongo_count": 1
+    }
+  ],
+  "normal_checks": [
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\scripts\\check_trx_no_skipped.py",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-api\\results\\result.trx"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+      "start": "2026-11-20T21:34:21.992164+00:00",
+      "end": "2026-11-20T21:34:22.101366+00:00",
+      "exit_code": 0,
+      "stdout_raw_sha256": "fb98d717d3a0683d72122f8b1c9897143c1afe7a6e0cbdb65a9412d04d292587",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-api\\results\\result.trx",
+        "--suite",
+        "pvg-api"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+      "start": "2026-11-20T21:34:22.102925+00:00",
+      "end": "2026-11-20T21:34:23.734849+00:00",
+      "exit_code": 0,
+      "stdout_raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\scripts\\check_trx_no_skipped.py",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-regpv\\results\\result.trx"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+      "start": "2026-11-20T21:34:23.736894+00:00",
+      "end": "2026-11-20T21:34:23.852594+00:00",
+      "exit_code": 0,
+      "stdout_raw_sha256": "dd731aad187876579fedb0a2df2fd650386729af05207c7a6fed37387ca715e2",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-regpv\\results\\result.trx",
+        "--suite",
+        "pvg-regpv-base"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+      "start": "2026-11-20T21:34:23.854753+00:00",
+      "end": "2026-11-20T21:34:25.433527+00:00",
+      "exit_code": 0,
+      "stdout_raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "ct_capture": {
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-BE.py",
+      "--repo",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+      "--base",
+      "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+      "--api-trx",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-api\\results\\result.trx",
+      "--regpv-trx",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\normal-regpv\\results\\result.trx",
+      "--api-assembly",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll",
+      "--regpv-assembly",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo\\services\\Diten.PvgService\\tests\\Diten.PvgService.RegPvBase.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.RegPvBase.Tests.dll",
+      "--out",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\ct-capture.json"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-independent-01\\12a068852a924b1cb419284dae1abeda\\repo",
+    "start": "2026-11-20T21:34:25.435423+00:00",
+    "end": "2026-11-20T21:34:29.857398+00:00",
+    "exit_code": 0,
+    "stdout_raw_sha256": "3f91733f46f77b37f3a88588979a2d9c202bb27ed51f0f25c067cbcdf63db347",
+    "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "ct_capture_raw_sha256": "7fad8fc5daa7ae58c4a5c2084b7acd316c368c6381e9c37948c97bf9427a943e",
+  "ct_acceptance_passed": true,
+  "cleanup": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\FINAL-CLEANUP.json",
+  "runtime_assembly_binding": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\RUNTIME-ASSEMBLY-BINDINGS.json",
+  "author_original_manifest_raw_sha256": "4979e406dadeb0217cbdaadf11d09ba382937fcb0b6bdb08d2fea834b18fa69f",
+  "author_original_manifest_bytes": 88050,
+  "author_original_manifest_raw_CR_count": 1440,
+  "author_lossless_envelope": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\AUTHOR-FINAL-RAW.json",
+  "verifier_only_correction": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-independent-01\\REPEAT-VALIDATOR-CORRECTION.json",
+  "open_critical": 0,
+  "open_blocking": 0,
+  "limits": [
+    "Main Unix CI/final H closure pending",
+    "FE connected no-loss implementation/acceptance pending",
+    "CT merge/integration not performed by this reviewer",
+    "E4/live/operational runtime remains closed",
+    "Author unchanged dependency snapshots without separate runtime-output metadata are labeled in audit; changed source/test core DLL snapshots have explicit output hash bindings. Independent fresh own normal run covers complete final source."
+  ],
+  "generated_utc": "2026-11-20T21:39:55.535135+00:00"
+}

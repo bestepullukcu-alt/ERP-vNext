@@ -1,0 +1,97 @@
+{
+  "kind": "saved pre-ACL baseline; not a new test run",
+  "wrapper_lf_sha256": "f4e386487608e06a13ffd520ebaab9a81102af86d42c1758dce279d20c982d5d",
+  "repository": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "trx_path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-win-01\\stopped-v1.2\\pvg-prep-win-api.trx",
+  "trx_raw_sha256": "c3b30fb5a2ce4881d6a24e60480b2c4c6cdac69d1178a0455a6791b65c559404",
+  "trx_lf_sha256": "1f7a5f2188bf8eb691c8c654dc9ce3a1713926a5abf9b538a9f6cdbb73f18846",
+  "counters": {
+    "total": "395",
+    "executed": "395",
+    "passed": "394",
+    "failed": "1",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "result_count": 395,
+  "target_results": {
+    "Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation": [
+      {
+        "executionId": "6b4a0366-ab59-4238-9c7f-a74a33fcc8d5",
+        "testId": "57470346-841a-1c5f-f9ec-222a3c997c70",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0197594",
+        "startTime": "2026-11-20T16:09:52.6410937+04:00",
+        "endTime": "2026-11-20T16:09:52.6411214+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "6b4a0366-ab59-4238-9c7f-a74a33fcc8d5"
+      }
+    ],
+    "Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod": [
+      {
+        "executionId": "69e2929d-c371-43e4-bb53-9177ddb5d41c",
+        "testId": "4be9aab4-455d-006a-d6a1-07e098debe6b",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0019710",
+        "startTime": "2026-11-20T16:09:52.6452723+04:00",
+        "endTime": "2026-11-20T16:09:52.6452725+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "69e2929d-c371-43e4-bb53-9177ddb5d41c"
+      }
+    ],
+    "Configuration_scan_fails_closed_on_inaccessible_directory": [
+      {
+        "executionId": "6b871a3a-d059-4a2c-8e4f-6072a2f1d9b1",
+        "testId": "988b1eae-c9e1-373d-774e-d86ebb267047",
+        "testName": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0047826",
+        "startTime": "2026-11-20T16:09:54.9504873+04:00",
+        "endTime": "2026-11-20T16:09:54.9504877+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Failed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "6b871a3a-d059-4a2c-8e4f-6072a2f1d9b1"
+      }
+    ]
+  },
+  "real_mongo_test_count": 35,
+  "commands": [
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\check_trx_no_skipped.py",
+        "--suite",
+        "pvg-api",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-win-01\\stopped-v1.2\\pvg-prep-win-api.trx"
+      ],
+      "exit_code": 0,
+      "stdout": "[skipped=0] ok — every test ran or was an allowed skip: C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-win-01\\stopped-v1.2\\pvg-prep-win-api.trx\n",
+      "stderr": ""
+    }
+  ],
+  "acceptance_passed": false,
+  "baseline_source": {
+    "head": "58920519a17e8f4c085738642b33e36689bc8fee",
+    "patch_sha256": "bd7ebf58ac4866fdba94729d0dfb29f688ec87e8a26d7cc80d1f7bbb9c50617f",
+    "original_raw_trx_sha256": "c3b30fb5a2ce4881d6a24e60480b2c4c6cdac69d1178a0455a6791b65c559404"
+  },
+  "limits": "Normal capture does not independently prove ACL rollback, process cleanup, method-only scope or six sabotage groups; those still require raw source/runtime evidence and independent E2."
+}

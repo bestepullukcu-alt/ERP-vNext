@@ -1,0 +1,38 @@
+{
+  "kind": "Initial pre-L10N JS baseline; not final FE-ready baseline or feature acceptance",
+  "snapshot_commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "relevant_sources_equal_ref": "f3f718b7c6da16c500aea2eca9ca13da1d78cb4b",
+  "source_files": 33,
+  "source_unchanged": true,
+  "node": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+  "node_version": "v22.23.5",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git\\frontend\\Diten.Web\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "tests/pvg-case-intake-triage-ui.test.js",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-initial-js-baseline-01\\vitest.json",
+    "--no-cache",
+    "--maxWorkers=1",
+    "--minWorkers=1"
+  ],
+  "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\src\\frontend\\Diten.Web",
+  "pid": 35100,
+  "exit_code": 0,
+  "started": "2026-11-20T19:41:28.630341+00:00",
+  "finished": "2026-11-20T19:41:37.704010+00:00",
+  "node_path_library_root": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git\\frontend\\Diten.Web\\node_modules",
+  "real_worktree_sources_or_git_untouched": true,
+  "stdout_raw_sha256": "cccbd79f5257f9c2e33d800098d869884d51a6d45d7a533e4d1c21eb61129495",
+  "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "vitest_totals": {
+    "success": true,
+    "numTotalTests": 34,
+    "numPassedTests": 34,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "numTodoTests": 0
+  },
+  "vitest_raw_sha256": "64a4b27e216222aff89bafa5d69c897d9140917b687a3a34b2c93e70df5aa616"
+}

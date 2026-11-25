@@ -1,0 +1,34 @@
+{
+  "recorded_utc": "2026-11-23T12:22:09.200331+00:00",
+  "candidate": "3af28aa145ee175d82ec8f0b188f2eee46b6d4ff",
+  "parent": "b0dcca109997320e55659d7f41c489396338e15c",
+  "tree": "409a5bf61d393588fb2fcb53aa23a296a4c13091",
+  "scope": {
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml": {
+      "base_git": "9bcad38d4e4771454e7d3ac3e424f1bf034c25b6",
+      "candidate_git": "8d4b731fccfbe5c59b59330a375a7bae0671c6a3",
+      "candidate_sha256": "d3abf326b49ec31111dfee7ea995031fe05fca074dbc67ccdc1d3258e819ce4c",
+      "exact_single_assignment_only": true
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml": {
+      "base_git": "8140717c198bdea2c92e4192a68f81f7ff8cd9d5",
+      "candidate_git": "f4a02929c2431ec2e6c7ac745e14224cfcfeb4c8",
+      "candidate_sha256": "3773de839dc006ec4793b5547053c9cd63c36abbbcec37a28e00a13b9e3cb3e0",
+      "exact_single_assignment_only": true
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml": {
+      "base_git": "5ace0423c748ab63d2f45c6f224aacca76b7d5c3",
+      "candidate_git": "56031129df1b986a8718bdb48e9209f0a52c61ac",
+      "candidate_sha256": "3fe8498e55ad34dbc46c1f9e58f18c7759e2eeec77f1c7bdaf7f94d978ff1d15",
+      "exact_single_assignment_only": true
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml": {
+      "base_git": "14cf84254b50fbe6a36a54dde34e09db381bdb6e",
+      "candidate_git": "bc08a413ee97fcee57a2f3e99aa0f1cf1721de4f",
+      "candidate_sha256": "de7ca795314916a50cafe9f0a736d23593bc7bf71beb083c9aea822ff3877575",
+      "exact_single_assignment_only": true
+    }
+  },
+  "worker_clean": true,
+  "kind": "CT exact committed scope audit only; independent runtime E2 pending"
+}

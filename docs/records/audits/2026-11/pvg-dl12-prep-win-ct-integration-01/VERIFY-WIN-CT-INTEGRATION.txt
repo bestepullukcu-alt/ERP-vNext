@@ -1,0 +1,33 @@
+PASS - BIRLESIK CT WINDOWS ENTEGRASYON KAPISI OLCULDU
+CT INTEGRATED kararini CT verir.
+commit: 0b03b35075caba7e353e64f6f9fc7936f53d0d87
+tree: bebcdcfe886f4abcbfc15f2a74711333093e47c8
+parents: 754ae2724cf847383ecc6829850f1aadc3d614b2 + fee7d0132e3862ded7025465e311f263e068f7aa
+model: verilemiyor (istenen gpt-6.2-astra); effort: verilemiyor (istenen high).
+
+Yeni tam archive + fresh bin/obj; tam API suite bir kez compile/run exit0:395/395PASS0FAIL0SKIP;35realMongo;3namedtargetPASS.
+Strict skip CLI0; actual known_failures check --suite pvg-api0; unchanged WINv2 CTproducer0 acceptance_passed=true.
+CTproducer --base 754ae2724cf847383ecc6829850f1aadc3d614b2; exact3 WIN testsource farki. Helper LFSHA256 f4e386487608e06a13ffd520ebaab9a81102af86d42c1758dce279d20c982d5d
+Candidate fee7 kaynak3 dosya ayni; related API/application/store/project/guard/ledger hashes source-before.json; fullsnapshot before/after 26443 rawfile ayni.
+Gercek scratch .git init + LF-only read-only alternates + core.longpaths=true + owned read-tree/HEAD/index. Source HEAD/tree/ls-files/status ve index stage/tree/working semantigi esit.
+Gercek repo index/ref/stage/commit/kod/queue/pack yazimi yok. CTmetadata ilerleyebilir; sabit globalHEAD iddiasi yok.
+
+Mongo: own5PID 2428,32296,26076,15848,36048; loopback private ports;27017 kullanilmadi; finalPID0/port0/datadir0/ACLroot0.
+Original ACL testinin deny/precondition/actualscan/SDDL restore ve rootcleanup assertionlari Passed. Bu entegrasyonda mutant tekrar yok.
+Fresh DLL SHA256 c4daf2079a838fca140fa2eb7acafe4f86ed42066a0cd4fa34ba13de761dfbdb; mtimefreshcompile sonrasi;395TRX teststorage ayni freshDLL;TRXstart DLLsonrasi.
+TRX rawSHA256 e222ad1acdb19205f3128a64f6653578c7454993f320fcad5753d1440d2c9ac1
+TRX LFSHA256 4a92fc1e824f8a82e31976d2428cd0b6f29f27e0c1363a7c6d6a1363538559b6
+Fullsnapshot manifest SHA256 d96badcbd4dcc35f684b9af6cc0453a5853f202f7c565248678b97ebe57f669c
+combined-summary.json SHA256 3221c8ad297cfb8dbeddc506be93d4fa8cd8b87270970737537a1e495c1559c8
+
+ACTUAL argv JSON:
+["C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe", "test", "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj", "-c", "Debug", "--no-restore", "--logger", "trx;LogFileName=win-independent.trx", "--results-directory", "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-integration\\pvg-win-ct-work-1795202196361"]
+cwd: C:\Users\epenc\AppData\Local\Temp\pvg-win-ct-work-1795202196361\src
+exit:0; seconds:47.111
+Diger restore/guard/producer tamargv/exit/PID/logSHA actual-commands.json. Processlocal SDK8.0.428/certfalse/TEMP/TMP/cache/nodeReuseoff source-before.json.
+Offline restore mevcut packageFolders cache + kendi bos localfeed; csproj/NuGetconfig/feed/runtimeconfig/source edit yok.
+
+Sinir: Windows CTcombined normalintegration olcumu; LinuxCI/live/E4/fullfeature/data-loss acceptance degil. RegPvBase/Web/mutant kosusu yok. ReporterContact/Evidence no-loss/complete-detail anaDL12de acik kalir.
+Ilk sandbox-temp script yolu dis surece gorunmedigi icin testbaslamadan actualLocalTemp orchestrator kullanildi; runtime RED veya rerun yok.
+Hamrapor/komut/TRX/JSON kamuokunabilir Temp: C:\Users\epenc\AppData\Local\Temp\pvg-win-ct-integration\pvg-win-ct-work-1795202196361
+Buyuk snapshot/index/runner ve rawGitcontext ayri Temp: C:\Users\epenc\AppData\Local\Temp\pvg-win-ct-work-1795202196361

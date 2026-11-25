@@ -1,0 +1,8 @@
+{
+  "source": "Tool result write_stdin session57354/chunk1b853a; exact stderr copied from returned tool output",
+  "exit_code": 1,
+  "stage": "Preflight only; before Node copy, restore, compile or normal tests",
+  "stderr": "Traceback (most recent call last):\n  File \"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\integration-runner.py\", line 53, in <module>\n    for row in tracked: assert sha((snapshot/row['path']).read_bytes())==row['frozen_lf_sha256']\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError",
+  "bytes_repaired": "none",
+  "resolution_artifact": "snapshot-raw-lf-binding.json"
+}

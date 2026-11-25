@@ -1,0 +1,17 @@
+hedef: execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md @ aee011817efff53055e129eb09a25ccbc89e00a3ad341377573e2141f5f4b800
+model: gpt-6.2-astra
+effort: high
+reviewer_session: 01a1f849-c6bd-7ba3-b788-6ebf7a7551e9
+kaynak_commit: b60aabc77fde43e38d56353754bd2d4150b89fe8
+
+F-1 | ORTA | domain-config.md:183, “M must directly parent H” diyerek Git ebeveynliğini ters tarif ediyor. Pack:1605–1606 ve onaylı öneri:110–116, H’nin sentetik merge commit’i M’nin doğrudan ebeveynlerinden biri olmasını istiyor. Domain metni harfiyen uygulanırsa geçerli otomatik PR kanıtı reddedilir ve gereksiz ikinci matrix koşusu doğabilir. İki belgede de koşul `H ∈ parents(M)` olarak yazılmalı. | açık | K5 | 2026-11-23
+F-2 | ORTA | Pack:1683–1688 ve 2054–2069, güncel güvenlik davranışını eski kiracı başlığı, eski izin anahtarları ve yalnız `[Authorize]` kullanan MVC olarak tanımlıyor. Arşivdeki PvgCaseIntakeTriageEndpoints.cs:605–614, Gateway kiracısını doğrulanmış `tenant_id` ile eşleştiriyor. PvgIntakeDraftApplicationService.cs:7–11 kanonik anahtarları kullanıyor. PharmacovigilanceCaseIntakeTriageController.cs:59–182 içindeki 11 eylemin tamamı sayfa veya JSON izin denetiminden geçiyor. Bu bölümlerdeki “today” ve “implementation pending” ifadeleri DL-12 doğrulamasına yanlış başlangıç koşulu veriyor. Eski ölçüm tarihlenmeli ve güncel davranış kaynakla belirtilmeli. | açık | K5 | 2026-11-23
+F-3 | ORTA | Pack:890–893, kayıt düzeltmesini korunmuş bağımsız Web TRX’ine bağlıyor. WP-0230-DL12-REGISTRY-01.py:29–32,43–48 dosya yolunu ve komut sonucunu kaydediyor, kullanılan TRX’in kimliğini doğrulamıyor. known_failures.py:239–240 içindeki `--suite` açık ledger kayıtlarını süzüyor. Diten.Web.Tests için açık satır bulunmadığından başka bir süitin geçerli yeşil TRX’i de bu kontrolden geçebilir. Bağımsız Web koşusunun TRX özeti kaynak kaydına bağlanmalı ve kabulde okunan baytlarla eşleştirilmeli. Mevcut validator ve beş hücrelik yazma sınırı korunabilir. | açık | K5 | 2026-11-23
+
+ZIP’in 8.549.079 baytlık boyutu, SHA-256 özeti, manifestteki 306 dosyanın tamamı ve bildirilen pack/domain özetleri eşleşti. Blueprint_Data satır 231, MOD-0230 ile Case Intake & Triage adını doğruluyor. Revizyon 21’de AC-1–45 ve DL-1–12 eksiksiz sıralanıyor. İnsan karar kaydı tek ACL metodu ile ayrı kayıt işçisinin beş `fixed` hücresini açıkça kapsıyor. Beş hücrenin kimlikleri ve kaynak ledger blob’u arşivle eşleşti.
+
+Önceki önerinin F-1–F-3 koşulları AC-45’e taşınmış. F-4’ün kaynak ağacı ve aynı koşuya ait TRX şartı pack’te doğru, domain metnindeki yön hatası yukarıda açık. Donmuş patch bellekte uygulandığında iki kayıtlı Windows disk özeti de eşleşti. Temiz işçide aktarım normal HIGH kapısının 0 sonucundan sonra geliyor. Altı ayrı RED/GREEN kanıtı bağımsız E2 çıktısı. Mevcut Windows TRX’i 394 geçen, 1 başarısız ve 0 atlanan test gösteriyor. Operasyon ve yayın kapıları kapalı.
+
+Eksik inceleme girdileri: Revizyon 20’nin tam pack/domain baytları ZIP’te bulunmadığından AC-1–44 ve dilim tablosunun önceki sürümle bayt eşitliği doğrulanamadı. Önceki sahip onayının asıl dosyası, bağımsız Web TRX’i, REGISTRY-BLOCKER.md ve REGISTRY-PROPOSAL-REVIEW.md de arşivde yok. Ek insan onayı arşivdeki karar kaydından okundu. Tam .NET referans paketi incelenmedi. Build, test, restore, ACL deneyi, sabotaj veya CI çalıştırılmadı. Açık ENGEL yok. Hüküm yalnız belirtilen revizyon 21 baytlarına aittir.
+
+sonuç: KOŞULLU

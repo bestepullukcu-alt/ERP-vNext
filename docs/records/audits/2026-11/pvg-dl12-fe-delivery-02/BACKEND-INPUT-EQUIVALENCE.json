@@ -1,0 +1,1192 @@
+{
+  "note": "v2 backend actual invocations retain original six-file input snapshots. V3 changes only frontend form.js and its JS test; neither is an API/Reg compiled input. No backend result has been relabeled as a v3 six-file invocation. These unchanged backend results may be supplied to immutable FE capture, which checks exact compiled sources/storage/freshness and real CLI results.",
+  "groups": {
+    "pvg-api": {
+      "phase": "final-v2-api-actual",
+      "actual_trx_sha256": "923908a058b5a84ffe227dcb842b448b69d4d41268ed5fc490eb0e1ac8bc2014",
+      "test_cases": 456,
+      "exact_baseline_multiset_preserved": true,
+      "compiled_source_count": 143,
+      "compiled_sources_all_unchanged": true,
+      "frontend_paths_in_compiled_closure": [],
+      "compiled_sources": [
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ConfigurationSecretsProvider.cs",
+          "baseline_lf_sha256": "b118f061555db2a0473f32f71bac1ca5ddbc49806453843d91f48fb4068b848f",
+          "current_lf_sha256": "b118f061555db2a0473f32f71bac1ca5ddbc49806453843d91f48fb4068b848f"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj",
+          "baseline_lf_sha256": "19ec252014f3fba09b7e3dd0366552d96a3478dc978be8374da6d1377988a30e",
+          "current_lf_sha256": "19ec252014f3fba09b7e3dd0366552d96a3478dc978be8374da6d1377988a30e"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRedactor.cs",
+          "baseline_lf_sha256": "c87de8a71f946cc5dfbdbe0487f43c50f0ec928280d8809ddeed9ce5175c4d96",
+          "current_lf_sha256": "c87de8a71f946cc5dfbdbe0487f43c50f0ec928280d8809ddeed9ce5175c4d96"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRequirementValidator.cs",
+          "baseline_lf_sha256": "364c4803ad729c6994414be0c61bc6b788352d03e47bffdc8329e0565421d791",
+          "current_lf_sha256": "364c4803ad729c6994414be0c61bc6b788352d03e47bffdc8329e0565421d791"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretRotationResolver.cs",
+          "baseline_lf_sha256": "15b6d9a8c60ab654c41cef6b4c7047441ebca4c016f0e5889a2ed9374de5d86f",
+          "current_lf_sha256": "15b6d9a8c60ab654c41cef6b4c7047441ebca4c016f0e5889a2ed9374de5d86f"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/ISecretsProvider.cs",
+          "baseline_lf_sha256": "15b20a5b3b583f66e8f75cbf34f994df9b4f6f64223e389a6d91de37a95197d2",
+          "current_lf_sha256": "15b20a5b3b583f66e8f75cbf34f994df9b4f6f64223e389a6d91de37a95197d2"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtSecretRotationOptions.cs",
+          "baseline_lf_sha256": "ccdfefd621b39f94d7906a7a64a650132164afe45475c301e5554a2c7899fb8c",
+          "current_lf_sha256": "ccdfefd621b39f94d7906a7a64a650132164afe45475c301e5554a2c7899fb8c"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtSecretRotationResolver.cs",
+          "baseline_lf_sha256": "dbce0abb76e59d8f8871252dc104680df5daa5ec5be5cfdf999810e070bf3dfc",
+          "current_lf_sha256": "dbce0abb76e59d8f8871252dc104680df5daa5ec5be5cfdf999810e070bf3dfc"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs",
+          "baseline_lf_sha256": "6aeb051c7750c41994b4b8d9a912fa8c8cbdd94a7637da441ee8897ad956d700",
+          "current_lf_sha256": "6aeb051c7750c41994b4b8d9a912fa8c8cbdd94a7637da441ee8897ad956d700"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/RequiredSecretDefinition.cs",
+          "baseline_lf_sha256": "d68a444a23ea8a0985de03fa7a138f16e361f87f7c7c1af14d5bbfa2ada02184",
+          "current_lf_sha256": "d68a444a23ea8a0985de03fa7a138f16e361f87f7c7c1af14d5bbfa2ada02184"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRedactionOptions.cs",
+          "baseline_lf_sha256": "57271717a8cc81eeff4ea6f14f471d70eec86ba8aa4a26c1118d0a865678da96",
+          "current_lf_sha256": "57271717a8cc81eeff4ea6f14f471d70eec86ba8aa4a26c1118d0a865678da96"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRedactor.cs",
+          "baseline_lf_sha256": "b78abc31852c4cd2324ab3a790615ae1bd5cf23298541676f47ca0a330d5f230",
+          "current_lf_sha256": "b78abc31852c4cd2324ab3a790615ae1bd5cf23298541676f47ca0a330d5f230"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretRequirementValidator.cs",
+          "baseline_lf_sha256": "35788a543d74d184bc09a803b0cfd75695e15f84af84147c45ce9b334d2ed0bc",
+          "current_lf_sha256": "35788a543d74d184bc09a803b0cfd75695e15f84af84147c45ce9b334d2ed0bc"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretServiceCollectionExtensions.cs",
+          "baseline_lf_sha256": "809bced41724ce87aaf13d406bad1b152ea165a1422a67c949511f91092bd339",
+          "current_lf_sha256": "809bced41724ce87aaf13d406bad1b152ea165a1422a67c949511f91092bd339"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretValidationException.cs",
+          "baseline_lf_sha256": "54b90099120dfeaaba693011dafe4c4feba4dd1ad0bf063e78f44d286c9fbbb4",
+          "current_lf_sha256": "54b90099120dfeaaba693011dafe4c4feba4dd1ad0bf063e78f44d286c9fbbb4"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretValidationResult.cs",
+          "baseline_lf_sha256": "b47dda97466984e8069f55ddc72c369f88f5e50be79114cac95596b4e2d34a41",
+          "current_lf_sha256": "b47dda97466984e8069f55ddc72c369f88f5e50be79114cac95596b4e2d34a41"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/SecretsProviderOptions.cs",
+          "baseline_lf_sha256": "a2d9e1a2da627876b8a9a6827e1594d71135c53907e37f4095f8866a1016f339",
+          "current_lf_sha256": "a2d9e1a2da627876b8a9a6827e1594d71135c53907e37f4095f8866a1016f339"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+          "baseline_lf_sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604",
+          "current_lf_sha256": "12985a174dc55d6f519f2205bf7b35d0123d6d7dfa7fe3fe34f2f3028ba30604"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleManifestDocument.cs",
+          "baseline_lf_sha256": "d56a69327f048efafd96d8f78dffa1338063444ec0b1a2621d0c872f2a8d41f9",
+          "current_lf_sha256": "d56a69327f048efafd96d8f78dffa1338063444ec0b1a2621d0c872f2a8d41f9"
+        },
+        {
+          "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleRegistrationRetry.cs",
+          "baseline_lf_sha256": "042a25881c9eba2d7f7fc1f14180e6b5ef176fcfc0df8e4071a4bbf78b43af92",
+          "current_lf_sha256": "042a25881c9eba2d7f7fc1f14180e6b5ef176fcfc0df8e4071a4bbf78b43af92"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj",
+          "baseline_lf_sha256": "afc878f0a4d3c4594c774a49871ce69f6442de8eb20f3bdcaaa2a4629fbc8f19",
+          "current_lf_sha256": "afc878f0a4d3c4594c774a49871ce69f6442de8eb20f3bdcaaa2a4629fbc8f19"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/IModuleManifestProvider.cs",
+          "baseline_lf_sha256": "777381ee6dbec42d50fed06fa5e6a17613e0e7358abbf038ebaf75216393b1d5",
+          "current_lf_sha256": "777381ee6dbec42d50fed06fa5e6a17613e0e7358abbf038ebaf75216393b1d5"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgCaseIntakeTriageManifestProvider.cs",
+          "baseline_lf_sha256": "932ff4d51e4813ada22cd9145a108c564bad1beb66d4d6755ed6aa2048b8276a",
+          "current_lf_sha256": "932ff4d51e4813ada22cd9145a108c564bad1beb66d4d6755ed6aa2048b8276a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationEnvironment.cs",
+          "baseline_lf_sha256": "1915656726b8f4897718fff728595b81e4bf02da4637ceccde32d8950c7ebb48",
+          "current_lf_sha256": "1915656726b8f4897718fff728595b81e4bf02da4637ceccde32d8950c7ebb48"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationHostedService.cs",
+          "baseline_lf_sha256": "2f390a02f37d09e46ac5ae32665ac3a913a8b2f5db6510345fbf0980f8146aa9",
+          "current_lf_sha256": "2f390a02f37d09e46ac5ae32665ac3a913a8b2f5db6510345fbf0980f8146aa9"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationServiceCollectionExtensions.cs",
+          "baseline_lf_sha256": "583b2cab741fb5274d92ce65136c6728a8f39ec04dd2822f1b6f20cf2085879c",
+          "current_lf_sha256": "583b2cab741fb5274d92ce65136c6728a8f39ec04dd2822f1b6f20cf2085879c"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/Program.cs",
+          "baseline_lf_sha256": "f09920706646dd51f87c15d26decbdab4b663463a42a68a98dcbb0796aaaf9a1",
+          "current_lf_sha256": "f09920706646dd51f87c15d26decbdab4b663463a42a68a98dcbb0796aaaf9a1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+          "baseline_lf_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e",
+          "current_lf_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+          "baseline_lf_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a",
+          "current_lf_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingApplicationService.cs",
+          "baseline_lf_sha256": "db57f5427c00d51c860c5c0b6ec614b41e2e5bdbc4478708e83fe3920d37a358",
+          "current_lf_sha256": "db57f5427c00d51c860c5c0b6ec614b41e2e5bdbc4478708e83fe3920d37a358"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingCommands.cs",
+          "baseline_lf_sha256": "6bdb6491ee29acd1d9facaec2e84f65a1af5e1a1d09d4d8f9c59f4784dfd4ab6",
+          "current_lf_sha256": "6bdb6491ee29acd1d9facaec2e84f65a1af5e1a1d09d4d8f9c59f4784dfd4ab6"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingContexts.cs",
+          "baseline_lf_sha256": "cf41755b5dea89c14e89f7fccb6bbf8cef16ad06714f8ace4ec9cb055a023a09",
+          "current_lf_sha256": "cf41755b5dea89c14e89f7fccb6bbf8cef16ad06714f8ace4ec9cb055a023a09"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingGuardContext.cs",
+          "baseline_lf_sha256": "4ce5c8f27727c5cc87e527d7f41a43cf24da274e2d2cac63c48349e1844dab83",
+          "current_lf_sha256": "4ce5c8f27727c5cc87e527d7f41a43cf24da274e2d2cac63c48349e1844dab83"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingMutationResult.cs",
+          "baseline_lf_sha256": "6fc611ad0218fc68dfbb324e5b81cdf169907d1ce0794d6245fe154c6b8d61d5",
+          "current_lf_sha256": "6fc611ad0218fc68dfbb324e5b81cdf169907d1ce0794d6245fe154c6b8d61d5"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueries.cs",
+          "baseline_lf_sha256": "db6fd517b778df88fd7f4ac68df296416fded34ccc7d1a8a8c5bd223a0b6a8c1",
+          "current_lf_sha256": "db6fd517b778df88fd7f4ac68df296416fded34ccc7d1a8a8c5bd223a0b6a8c1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueryResult.cs",
+          "baseline_lf_sha256": "25131b1f8defba132b138a375e19a37ed1e65f7c07b73e8c76f22a5d53e04d95",
+          "current_lf_sha256": "25131b1f8defba132b138a375e19a37ed1e65f7c07b73e8c76f22a5d53e04d95"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingReasonCodes.cs",
+          "baseline_lf_sha256": "5704e0c711c4589e8ae802292a5268b9dec7b6a9481277dd81e7eda812a082ad",
+          "current_lf_sha256": "5704e0c711c4589e8ae802292a5268b9dec7b6a9481277dd81e7eda812a082ad"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingResult.cs",
+          "baseline_lf_sha256": "b713298f16e36d883043f8a45467e1627d6b5c844a865bb40f214b0e3aa78f96",
+          "current_lf_sha256": "b713298f16e36d883043f8a45467e1627d6b5c844a865bb40f214b0e3aa78f96"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationFailure.cs",
+          "baseline_lf_sha256": "4f262d1b5f56ce6aa8b2cb7783dc83fb906ed52eab8f31dbf870d6151774f3d4",
+          "current_lf_sha256": "4f262d1b5f56ce6aa8b2cb7783dc83fb906ed52eab8f31dbf870d6151774f3d4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationResult.cs",
+          "baseline_lf_sha256": "48d993a9f2e70c27497f68b3c871671daa4af127d7f19f497a995643bc7dd339",
+          "current_lf_sha256": "48d993a9f2e70c27497f68b3c871671daa4af127d7f19f497a995643bc7dd339"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidator.cs",
+          "baseline_lf_sha256": "f7a1620b3884132bd9b91b12abf0db8fa12e6d6835fad2f25671cc6153d830c2",
+          "current_lf_sha256": "f7a1620b3884132bd9b91b12abf0db8fa12e6d6835fad2f25671cc6153d830c2"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/Diten.PvgService.Application.csproj",
+          "baseline_lf_sha256": "eaab895a70eaf6f80d520440b364821b198ab2bc88e707f0d2c254d478d715f9",
+          "current_lf_sha256": "eaab895a70eaf6f80d520440b364821b198ab2bc88e707f0d2c254d478d715f9"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/InMemoryMeddraCodingApplicationService.cs",
+          "baseline_lf_sha256": "29da396dbcb77b1bfbc7387ea104dc8568982a00aa289abd72fe7b193156b88f",
+          "current_lf_sha256": "29da396dbcb77b1bfbc7387ea104dc8568982a00aa289abd72fe7b193156b88f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/MeddraCodingApplicationContracts.cs",
+          "baseline_lf_sha256": "4c3c8b804ab6ccf81b3918bf5ba30204e432cda47d220fbf38dc5a78a0fd1ed0",
+          "current_lf_sha256": "4c3c8b804ab6ccf81b3918bf5ba30204e432cda47d220fbf38dc5a78a0fd1ed0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/CreateIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "e3be7202b7d8ff18bbe58bf0058094a4c25de00f2501fa75e800874ee39f2c2c",
+          "current_lf_sha256": "e3be7202b7d8ff18bbe58bf0058094a4c25de00f2501fa75e800874ee39f2c2c"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftByIdQuery.cs",
+          "baseline_lf_sha256": "340d63d6319685a92661859f123a2a43fc7731334e0e7c1ca71934c316aa7a13",
+          "current_lf_sha256": "340d63d6319685a92661859f123a2a43fc7731334e0e7c1ca71934c316aa7a13"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftListQuery.cs",
+          "baseline_lf_sha256": "86161f1da798007e779dbfbeef10fc7ccfa1c0298ee2c29b564994106323bc34",
+          "current_lf_sha256": "86161f1da798007e779dbfbeef10fc7ccfa1c0298ee2c29b564994106323bc34"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgEvidenceLinkPort.cs",
+          "baseline_lf_sha256": "830269f4197f40b9bed6e17060872fe3fe3b6856f30a6c69a785606217334bdb",
+          "current_lf_sha256": "830269f4197f40b9bed6e17060872fe3fe3b6856f30a6c69a785606217334bdb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgFieldSecurityPolicy.cs",
+          "baseline_lf_sha256": "c3717c75eef8e75b7d265041eaecf7cf82f26b4b31b16c192f593a74dfbccdcf",
+          "current_lf_sha256": "c3717c75eef8e75b7d265041eaecf7cf82f26b4b31b16c192f593a74dfbccdcf"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgIntakeDraftStore.cs",
+          "baseline_lf_sha256": "af080238b64291547f770761372d00964cd257a605b51d3e7b5d10a260caf5cd",
+          "current_lf_sha256": "af080238b64291547f770761372d00964cd257a605b51d3e7b5d10a260caf5cd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgPermissionGate.cs",
+          "baseline_lf_sha256": "540457d8900e089427b75895518b5312d44c19ef116961ae6633e29a9ea41e1b",
+          "current_lf_sha256": "540457d8900e089427b75895518b5312d44c19ef116961ae6633e29a9ea41e1b"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgWorkflowTransitionGate.cs",
+          "baseline_lf_sha256": "1e188c2162d550c6536c8cea76986e05a958d62aeef5d611a1d91be9bd595767",
+          "current_lf_sha256": "1e188c2162d550c6536c8cea76986e05a958d62aeef5d611a1d91be9bd595767"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgActorContext.cs",
+          "baseline_lf_sha256": "fac4c4a968f3950047cc627d52d4b37ac5261ba1b0edf45b692abca660cd36bb",
+          "current_lf_sha256": "fac4c4a968f3950047cc627d52d4b37ac5261ba1b0edf45b692abca660cd36bb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationOutcome.cs",
+          "baseline_lf_sha256": "3ea2c52b2d96d748f5ef19065e00b82227dd61a17e0938ca3e03514b81ff80bd",
+          "current_lf_sha256": "3ea2c52b2d96d748f5ef19065e00b82227dd61a17e0938ca3e03514b81ff80bd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+          "baseline_lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+          "current_lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationResult.cs",
+          "baseline_lf_sha256": "e4017b8b01bbc372bf9d4607ec091e4d45316325d9847686bd23e49e97751921",
+          "current_lf_sha256": "e4017b8b01bbc372bf9d4607ec091e4d45316325d9847686bd23e49e97751921"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationSuccessMetadata.cs",
+          "baseline_lf_sha256": "be92060a134e1d049e431a34d3df64e8afb81cd5876962450c6f282ffe3c5e5f",
+          "current_lf_sha256": "be92060a134e1d049e431a34d3df64e8afb81cd5876962450c6f282ffe3c5e5f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgAuditIntent.cs",
+          "baseline_lf_sha256": "cf9a0ae7dd91d2e9625c19faf0e5a1b6a810ff88c4a8660c183b43400ba9a664",
+          "current_lf_sha256": "cf9a0ae7dd91d2e9625c19faf0e5a1b6a810ff88c4a8660c183b43400ba9a664"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCorrelationContext.cs",
+          "baseline_lf_sha256": "5638949df7666f22ea544179fe89cebcd629057b6e915e76ad487c32fa10e8a0",
+          "current_lf_sha256": "5638949df7666f22ea544179fe89cebcd629057b6e915e76ad487c32fa10e8a0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCreateIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "8c96d6240a04d6c4c377be2b3811234051d2a68e6eea5deffab7dfdc485dce4f",
+          "current_lf_sha256": "8c96d6240a04d6c4c377be2b3811234051d2a68e6eea5deffab7dfdc485dce4f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgEvidenceLinkRequest.cs",
+          "baseline_lf_sha256": "2a9810ec5d62a771b8f8a20d4980be88fc61744d868be10308895204d83dede8",
+          "current_lf_sha256": "2a9810ec5d62a771b8f8a20d4980be88fc61744d868be10308895204d83dede8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgFieldSecurityRequest.cs",
+          "baseline_lf_sha256": "e166245e490a5d08f3fa1ad79ecc09a5dc0f77b9248e0252b18f196d79071df8",
+          "current_lf_sha256": "e166245e490a5d08f3fa1ad79ecc09a5dc0f77b9248e0252b18f196d79071df8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+          "baseline_lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+          "current_lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftMutationResult.cs",
+          "baseline_lf_sha256": "2884151af3304804df20e1fe68cc768c6ba1744df70de977e25b71ef9bb1be9f",
+          "current_lf_sha256": "2884151af3304804df20e1fe68cc768c6ba1744df70de977e25b71ef9bb1be9f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftQueryResult.cs",
+          "baseline_lf_sha256": "9b5c2ab5c51c5ad636732cd535ba463892371f07cc0e021017d40b8645abdd97",
+          "current_lf_sha256": "9b5c2ab5c51c5ad636732cd535ba463892371f07cc0e021017d40b8645abdd97"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftSummary.cs",
+          "baseline_lf_sha256": "bbddf07f5faacf1410e1f378fdc79e1fb8ce0dd3c69244cfa5ab633c6bbd7687",
+          "current_lf_sha256": "bbddf07f5faacf1410e1f378fdc79e1fb8ce0dd3c69244cfa5ab633c6bbd7687"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftValidator.cs",
+          "baseline_lf_sha256": "a0fd788e0b5f33f28d2b390bfe4f88a9702e975f9d055719b8c1447e1a9cb405",
+          "current_lf_sha256": "a0fd788e0b5f33f28d2b390bfe4f88a9702e975f9d055719b8c1447e1a9cb405"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeProductLineRequest.cs",
+          "baseline_lf_sha256": "83abe1d659ab1bfa9ed2393c5ead8ff6e6b7f33138b2c623ab1f4ca7da2404c1",
+          "current_lf_sha256": "83abe1d659ab1bfa9ed2393c5ead8ff6e6b7f33138b2c623ab1f4ca7da2404c1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionDecision.cs",
+          "baseline_lf_sha256": "595e1b980af11edb087ab945ff2dcb80992489e199cc51a7bfea34f65b4b2e39",
+          "current_lf_sha256": "595e1b980af11edb087ab945ff2dcb80992489e199cc51a7bfea34f65b4b2e39"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionReasonCodes.cs",
+          "baseline_lf_sha256": "d61af1e10e5652ef59b892633b0d6fd56d08bc38e6ada5e64eb1b4a13ba92936",
+          "current_lf_sha256": "d61af1e10e5652ef59b892633b0d6fd56d08bc38e6ada5e64eb1b4a13ba92936"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionRequest.cs",
+          "baseline_lf_sha256": "a1eb6c01cc370bde0eb6babe5281e144959c6b6d4f9789d34300f23773bc3875",
+          "current_lf_sha256": "a1eb6c01cc370bde0eb6babe5281e144959c6b6d4f9789d34300f23773bc3875"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPortDecision.cs",
+          "baseline_lf_sha256": "cbe49539bec8edc18cf779ee1540c217cdde99bdaba0cfbd9d835e60baa7778a",
+          "current_lf_sha256": "cbe49539bec8edc18cf779ee1540c217cdde99bdaba0cfbd9d835e60baa7778a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgRouteIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "0246f42c5711985b95c131f422d655c47ae2975664ae8287133948d69e4b39c4",
+          "current_lf_sha256": "0246f42c5711985b95c131f422d655c47ae2975664ae8287133948d69e4b39c4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgServerTenantContext.cs",
+          "baseline_lf_sha256": "92e7b79653ee3f00a62eb5f82955158addd57e26f35e0baf1845ba09d79a7f84",
+          "current_lf_sha256": "92e7b79653ee3f00a62eb5f82955158addd57e26f35e0baf1845ba09d79a7f84"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgTriageIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "fbf60955885988d7962d40817a22e17c386c55d73761877ecefa234cd87a6a46",
+          "current_lf_sha256": "fbf60955885988d7962d40817a22e17c386c55d73761877ecefa234cd87a6a46"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgUpdateIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "1b332602323e8dd673b642cb6b822e24079ce1621b190aa2df503330721123b3",
+          "current_lf_sha256": "1b332602323e8dd673b642cb6b822e24079ce1621b190aa2df503330721123b3"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationFailure.cs",
+          "baseline_lf_sha256": "2e0fcf1ab7ee2648cd02e2496f4a41ad74cdfc5b69158cb154551c50ece98743",
+          "current_lf_sha256": "2e0fcf1ab7ee2648cd02e2496f4a41ad74cdfc5b69158cb154551c50ece98743"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationReasonCodes.cs",
+          "baseline_lf_sha256": "61178b78cce18178cda5f583cf813967568b5e2d69d69572d7528dba78e785d4",
+          "current_lf_sha256": "61178b78cce18178cda5f583cf813967568b5e2d69d69572d7528dba78e785d4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationResult.cs",
+          "baseline_lf_sha256": "9b7f465747fb3cd9c49e697d41dd549c94107a979b71ed43f6fea0b774eac7cc",
+          "current_lf_sha256": "9b7f465747fb3cd9c49e697d41dd549c94107a979b71ed43f6fea0b774eac7cc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgWorkflowTransitionRequest.cs",
+          "baseline_lf_sha256": "670a32082881ef4328052c2b27d452737d26ccf13faa8961df2a6a53f9fd8404",
+          "current_lf_sha256": "670a32082881ef4328052c2b27d452737d26ccf13faa8961df2a6a53f9fd8404"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/RouteIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "b752f74de8072d8837a6ae0c492a25ebeab5f5bb0f4bbbf624db793596581bb1",
+          "current_lf_sha256": "b752f74de8072d8837a6ae0c492a25ebeab5f5bb0f4bbbf624db793596581bb1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/TriageIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "c88d298fd49232b82e9270990ef961205f823b3948da7160479760776621dc33",
+          "current_lf_sha256": "c88d298fd49232b82e9270990ef961205f823b3948da7160479760776621dc33"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/UpdateIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "c232dd15a51bf986e151bac5902dfd72f9bb71c995f8630d219e121359075f1a",
+          "current_lf_sha256": "c232dd15a51bf986e151bac5902dfd72f9bb71c995f8630d219e121359075f1a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/InMemorySignalManagementService.cs",
+          "baseline_lf_sha256": "7017540719df6692164ca94c344acca71b0e9b74611963bf3f21e82cff8572dc",
+          "current_lf_sha256": "7017540719df6692164ca94c344acca71b0e9b74611963bf3f21e82cff8572dc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/SignalManagementApplicationContracts.cs",
+          "baseline_lf_sha256": "5d4dfe70cdccfb8735e35bdc90e9dc781f5e7126c0f7abc9928082422150a080",
+          "current_lf_sha256": "5d4dfe70cdccfb8735e35bdc90e9dc781f5e7126c0f7abc9928082422150a080"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/Mod0230HandoffReference.cs",
+          "baseline_lf_sha256": "b8cd96eee16354c38c4d873493ec2cb75126f16c498105f54b62ff891f18a622",
+          "current_lf_sha256": "b8cd96eee16354c38c4d873493ec2cb75126f16c498105f54b62ff891f18a622"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMaster.cs",
+          "baseline_lf_sha256": "da293f59c5adf819c122ffe4b284657d6fc321e104b60c35c91314185d0cdbdc",
+          "current_lf_sha256": "da293f59c5adf819c122ffe4b284657d6fc321e104b60c35c91314185d0cdbdc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMasterStatus.cs",
+          "baseline_lf_sha256": "079710bcc53ad18b24c0228ec68bfb86f8f70ec8ff7e2fb5c4066c7c1d79ad49",
+          "current_lf_sha256": "079710bcc53ad18b24c0228ec68bfb86f8f70ec8ff7e2fb5c4066c7c1d79ad49"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumAssessment.cs",
+          "baseline_lf_sha256": "c2668f6644a5d7966057d47aa40650c94992a58ad16047083e81e62c896bdd69",
+          "current_lf_sha256": "c2668f6644a5d7966057d47aa40650c94992a58ad16047083e81e62c896bdd69"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumLifecycleState.cs",
+          "baseline_lf_sha256": "485d62738f9089c108fed46d4ddc5733d8a9c1781703ca4edbe24c15780c11af",
+          "current_lf_sha256": "485d62738f9089c108fed46d4ddc5733d8a9c1781703ca4edbe24c15780c11af"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/Diten.PvgService.Domain.csproj",
+          "baseline_lf_sha256": "dfb15367c50f9bc35fca38db93c7eec37fe6b791cd0ebfa5c578c423ff1805fa",
+          "current_lf_sha256": "dfb15367c50f9bc35fca38db93c7eec37fe6b791cd0ebfa5c578c423ff1805fa"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/MeddraCoding/MeddraCodingDomainContracts.cs",
+          "baseline_lf_sha256": "fb57b1b76e1e200b0994c06fc704d99e5b2d728c3d5bfd835ce13196013d2186",
+          "current_lf_sha256": "fb57b1b76e1e200b0994c06fc704d99e5b2d728c3d5bfd835ce13196013d2186"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgFieldSensitivity.cs",
+          "baseline_lf_sha256": "d2d02c48d2a2812cdfab2e45ebe3b1a03f36375ef4a465b5bff990b996787e7f",
+          "current_lf_sha256": "d2d02c48d2a2812cdfab2e45ebe3b1a03f36375ef4a465b5bff990b996787e7f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeField.cs",
+          "baseline_lf_sha256": "fd3ccbe2060f54d2826b3356610f2731debc31bab45b87b8a6db11865b6e0555",
+          "current_lf_sha256": "fd3ccbe2060f54d2826b3356610f2731debc31bab45b87b8a6db11865b6e0555"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeFieldDefinition.cs",
+          "baseline_lf_sha256": "0475a2136f2f00fd9ab1a151edb1dc972202cd25b4187a5e94de58e7bdda69ae",
+          "current_lf_sha256": "0475a2136f2f00fd9ab1a151edb1dc972202cd25b4187a5e94de58e7bdda69ae"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOperation.cs",
+          "baseline_lf_sha256": "1aff64cdb2d25b4fd6ca6ac74d751bf90ce0be2687af82d3f30606950aa24c4c",
+          "current_lf_sha256": "1aff64cdb2d25b4fd6ca6ac74d751bf90ce0be2687af82d3f30606950aa24c4c"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOptionSets.cs",
+          "baseline_lf_sha256": "36ff46944d5e98e8eca101cb55e039c426f6b5986973c9687afc3ac79f2bafcb",
+          "current_lf_sha256": "36ff46944d5e98e8eca101cb55e039c426f6b5986973c9687afc3ac79f2bafcb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeProductLine.cs",
+          "baseline_lf_sha256": "56f2ce5abf9e1a188bb9254336fca10b17a42f0821d2f31504f0f8466b7f978e",
+          "current_lf_sha256": "56f2ce5abf9e1a188bb9254336fca10b17a42f0821d2f31504f0f8466b7f978e"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeStatus.cs",
+          "baseline_lf_sha256": "03cf598ac848434c74fc89641f6bac74519a3ac22a110c7f34bb1bd6e618daa2",
+          "current_lf_sha256": "03cf598ac848434c74fc89641f6bac74519a3ac22a110c7f34bb1bd6e618daa2"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterCrmSearchState.cs",
+          "baseline_lf_sha256": "ac8e112b3d876621afac7a64ca3dd5506de5b5491498ab0a83942ea9f898d7dd",
+          "current_lf_sha256": "ac8e112b3d876621afac7a64ca3dd5506de5b5491498ab0a83942ea9f898d7dd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterSource.cs",
+          "baseline_lf_sha256": "7114221b83ed9970186b7213899b3203981da74342534f2d6ad72e110f525d71",
+          "current_lf_sha256": "7114221b83ed9970186b7213899b3203981da74342534f2d6ad72e110f525d71"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgSafeReasonCodes.cs",
+          "baseline_lf_sha256": "6054e423e54296b0fd0afeba9b4dec7e791ae51463f2b2b2b750bc3366aae2e4",
+          "current_lf_sha256": "6054e423e54296b0fd0afeba9b4dec7e791ae51463f2b2b2b750bc3366aae2e4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgTriageOutcome.cs",
+          "baseline_lf_sha256": "f289aca392eb1a4a128b44174d455b55a2c028f6041bedd983c930fac05beb56",
+          "current_lf_sha256": "f289aca392eb1a4a128b44174d455b55a2c028f6041bedd983c930fac05beb56"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/SafetyCaseIntake.cs",
+          "baseline_lf_sha256": "f92e278ad02e5e385d8aed934e12a0d85864168aa187b1d01bbfba3a8c825d80",
+          "current_lf_sha256": "f92e278ad02e5e385d8aed934e12a0d85864168aa187b1d01bbfba3a8c825d80"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/SignalManagement/SignalManagementDomainContracts.cs",
+          "baseline_lf_sha256": "8a3e2ad8cb609dd08f53983ce9adcef92bae40ccd701f6e8b0de9f89a7307aa3",
+          "current_lf_sha256": "8a3e2ad8cb609dd08f53983ce9adcef92bae40ccd701f6e8b0de9f89a7307aa3"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/Diten.PvgService.Infrastructure.csproj",
+          "baseline_lf_sha256": "21abde17bcdb2ff07f10d5aa10f4795f7ae2b8da0362217bcce29fe3a3f356be",
+          "current_lf_sha256": "21abde17bcdb2ff07f10d5aa10f4795f7ae2b8da0362217bcce29fe3a3f356be"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllEvidenceLinkPort.cs",
+          "baseline_lf_sha256": "4cd1e95bc78740489ebdd1eaac2a02b95f106ad04ba43ff74d912d20db5cab37",
+          "current_lf_sha256": "4cd1e95bc78740489ebdd1eaac2a02b95f106ad04ba43ff74d912d20db5cab37"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllFieldSecurityPolicy.cs",
+          "baseline_lf_sha256": "6d92de9185f8744c99739663aa24e26d0088745b6d41d2e2bc612250dbcdf729",
+          "current_lf_sha256": "6d92de9185f8744c99739663aa24e26d0088745b6d41d2e2bc612250dbcdf729"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs",
+          "baseline_lf_sha256": "77afc596af88f44c1fb364013679d468464179e6c9e49b69a76ef2cd9334e4b8",
+          "current_lf_sha256": "77afc596af88f44c1fb364013679d468464179e6c9e49b69a76ef2cd9334e4b8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllWorkflowTransitionGate.cs",
+          "baseline_lf_sha256": "6e0a096fcea70be1dedcdf4a532b304b1aba7ad2f4f94766fda9f5d2d08e1767",
+          "current_lf_sha256": "6e0a096fcea70be1dedcdf4a532b304b1aba7ad2f4f94766fda9f5d2d08e1767"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs",
+          "baseline_lf_sha256": "baa6973cbdc7ec61ed1b16d042533f88fe4a908bc643f356f5d881efebb8ade4",
+          "current_lf_sha256": "baa6973cbdc7ec61ed1b16d042533f88fe4a908bc643f356f5d881efebb8ade4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/PvgIntakeDraftIndexCatalog.cs",
+          "baseline_lf_sha256": "b70d2e820f227fce5b91462df3a81745e5d61ab1a89ed050cdd1601ceb2cab3a",
+          "current_lf_sha256": "b70d2e820f227fce5b91462df3a81745e5d61ab1a89ed050cdd1601ceb2cab3a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/Diten.PvgService.Persistence.csproj",
+          "baseline_lf_sha256": "dc25a8a3cdcd4ba9050c14c77104194586ea850aee361e4df15326117e82ca47",
+          "current_lf_sha256": "dc25a8a3cdcd4ba9050c14c77104194586ea850aee361e4df15326117e82ca47"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgIntakeDraftDocument.cs",
+          "baseline_lf_sha256": "b64772594119d41f9bfee7366c4292b18124d68f3559a16143a375b854727d28",
+          "current_lf_sha256": "b64772594119d41f9bfee7366c4292b18124d68f3559a16143a375b854727d28"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgIntakeDraftDocumentMapper.cs",
+          "baseline_lf_sha256": "75f3364a38f9469fe85666b9b37525d58593295b59e1a8041ecb21d82e1c765e",
+          "current_lf_sha256": "75f3364a38f9469fe85666b9b37525d58593295b59e1a8041ecb21d82e1c765e"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoContext.cs",
+          "baseline_lf_sha256": "6ad350b638785c8ac9cd065d08df5e343ff5c29ee64f09a3ed1e5c0111dbb8fa",
+          "current_lf_sha256": "6ad350b638785c8ac9cd065d08df5e343ff5c29ee64f09a3ed1e5c0111dbb8fa"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoIntakeDraftStore.cs",
+          "baseline_lf_sha256": "3ef6fbc45a34d963b2d6c01247c0b4a292c4abac73a9a787b3cb71244238e3a0",
+          "current_lf_sha256": "3ef6fbc45a34d963b2d6c01247c0b4a292c4abac73a9a787b3cb71244238e3a0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoSchemaBootstrap.cs",
+          "baseline_lf_sha256": "6e703691a5a406346245ddeea2ea7c17fea17402810c8150a04057e3f6bed467",
+          "current_lf_sha256": "6e703691a5a406346245ddeea2ea7c17fea17402810c8150a04057e3f6bed467"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoStoreReadiness.cs",
+          "baseline_lf_sha256": "ae7ae785f791ebeedff55897e68687685a6296b2052d643cbab871a7e8da7bac",
+          "current_lf_sha256": "ae7ae785f791ebeedff55897e68687685a6296b2052d643cbab871a7e8da7bac"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgPersistenceServiceCollectionExtensions.cs",
+          "baseline_lf_sha256": "1df856a2eda92ada2922eab525520f19ead45a999979733a6efe5f1158b534b2",
+          "current_lf_sha256": "1df856a2eda92ada2922eab525520f19ead45a999979733a6efe5f1158b534b2"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+          "baseline_lf_sha256": "09842861bc5bd092e5fdae93c5848e2e23561e990076f73bc4ae50cfdc4e6a8b",
+          "current_lf_sha256": "09842861bc5bd092e5fdae93c5848e2e23561e990076f73bc4ae50cfdc4e6a8b"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/ModuleRegistration/PvgCaseIntakeManifestTests.cs",
+          "baseline_lf_sha256": "e9f8eb6a5e8ae228c57b8cdc159a4c6c218b8fdf8fc856dad8a9efb6244136d8",
+          "current_lf_sha256": "e9f8eb6a5e8ae228c57b8cdc159a4c6c218b8fdf8fc856dad8a9efb6244136d8"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/ModuleRegistration/PvgManifestChecks.cs",
+          "baseline_lf_sha256": "ce21fdb0e105c66e7d6e4baa8a6cb07cfa42dfe48d6fa58f67fc49415f8068e6",
+          "current_lf_sha256": "ce21fdb0e105c66e7d6e4baa8a6cb07cfa42dfe48d6fa58f67fc49415f8068e6"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/ModuleRegistration/PvgModuleRegistrationTests.cs",
+          "baseline_lf_sha256": "675f2edcc498de4f9e4a0191da6501827c646905ccb23ed198bfc4b441900ae4",
+          "current_lf_sha256": "675f2edcc498de4f9e4a0191da6501827c646905ccb23ed198bfc4b441900ae4"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/ModuleRegistration/PvgRegistrationTestSupport.cs",
+          "baseline_lf_sha256": "4b0dbbbe2d10215462442a3fefa07cf637b5be9abf79193705dfa8d0e7e2bade",
+          "current_lf_sha256": "4b0dbbbe2d10215462442a3fefa07cf637b5be9abf79193705dfa8d0e7e2bade"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/ModuleRegistration/PvgRegistrationVariablesInitializer.cs",
+          "baseline_lf_sha256": "d99765233b978593ad9922ab655ebc1a58128a7efb0300313a51d77998581d51",
+          "current_lf_sha256": "d99765233b978593ad9922ab655ebc1a58128a7efb0300313a51d77998581d51"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoApiHost.cs",
+          "baseline_lf_sha256": "4b489542e816d720bb460842ced0469a9a72be00f5d19a3fd8feb65967df7755",
+          "current_lf_sha256": "4b489542e816d720bb460842ced0469a9a72be00f5d19a3fd8feb65967df7755"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoApiTests.cs",
+          "baseline_lf_sha256": "f9bcfa7843b9cc301dc730202093f4e31adb560d4d7d6491802f0a42e5216a0c",
+          "current_lf_sha256": "f9bcfa7843b9cc301dc730202093f4e31adb560d4d7d6491802f0a42e5216a0c"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoDedicatedTests.cs",
+          "baseline_lf_sha256": "86e7e92869b799a545491f97cfb90e04fb704128c4463cd37f455afd12e22c16",
+          "current_lf_sha256": "86e7e92869b799a545491f97cfb90e04fb704128c4463cd37f455afd12e22c16"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+          "baseline_lf_sha256": "12edde7bad0da61cac83efb2d0b5aebdefde37258ae081e7b7ebb1a97494ab56",
+          "current_lf_sha256": "12edde7bad0da61cac83efb2d0b5aebdefde37258ae081e7b7ebb1a97494ab56"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStoreTests.cs",
+          "baseline_lf_sha256": "ff9784528714398abe382af08afc0773453fcc6f6c682bc1ff29c865cea1e331",
+          "current_lf_sha256": "ff9784528714398abe382af08afc0773453fcc6f6c682bc1ff29c865cea1e331"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestData.cs",
+          "baseline_lf_sha256": "e3c657642fbade19c1ebf64d7aca9b291615bdd55a43c5e6a499f583e496f93d",
+          "current_lf_sha256": "e3c657642fbade19c1ebf64d7aca9b291615bdd55a43c5e6a499f583e496f93d"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+          "baseline_lf_sha256": "6981496b72735be360ed41e45771faae9a3c99f41ba10c49bcfe37a499d6eea7",
+          "current_lf_sha256": "6981496b72735be360ed41e45771faae9a3c99f41ba10c49bcfe37a499d6eea7"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+          "baseline_lf_sha256": "f1dd99c82066961d4d16b59740e6e0f3a9b8b46cf880db61a44f0b9d1a925ac0",
+          "current_lf_sha256": "f1dd99c82066961d4d16b59740e6e0f3a9b8b46cf880db61a44f0b9d1a925ac0"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeApiContractTests.cs",
+          "baseline_lf_sha256": "0bdc49053f7dcacd1928c3aa377dbdd7d2877a662c82650dcef2e8f13e13811f",
+          "current_lf_sha256": "0bdc49053f7dcacd1928c3aa377dbdd7d2877a662c82650dcef2e8f13e13811f"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeAuthenticationTests.cs",
+          "baseline_lf_sha256": "b55561c5dc00be3bb1c64174ef29af12deaf19005516f7e540760351a3acb92e",
+          "current_lf_sha256": "b55561c5dc00be3bb1c64174ef29af12deaf19005516f7e540760351a3acb92e"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+          "baseline_lf_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4",
+          "current_lf_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeOptionsTests.cs",
+          "baseline_lf_sha256": "bd292a34a7ed907e307bc87beaea37b0e094b6ba618c90854524573610de1bf6",
+          "current_lf_sha256": "bd292a34a7ed907e307bc87beaea37b0e094b6ba618c90854524573610de1bf6"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs",
+          "baseline_lf_sha256": "69894a7758505726fdeaa7efbd7c1993e620c661614dbaee16afdaeaddd0171c",
+          "current_lf_sha256": "69894a7758505726fdeaa7efbd7c1993e620c661614dbaee16afdaeaddd0171c"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+          "baseline_lf_sha256": "816eb80ade69d4823570cdb0574fa082ba906ee5bb8b868e6b559677dd856e83",
+          "current_lf_sha256": "816eb80ade69d4823570cdb0574fa082ba906ee5bb8b868e6b559677dd856e83"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceHostEnvironmentTests.cs",
+          "baseline_lf_sha256": "84e8400d73ab2523086ae99b79716ec6734b531ed0078e9036f1bc1d55050713",
+          "current_lf_sha256": "84e8400d73ab2523086ae99b79716ec6734b531ed0078e9036f1bc1d55050713"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceRuntimeApprovalTests.cs",
+          "baseline_lf_sha256": "2e631d191bb4ee448c4fa3b3cab05424ec367083a50ba0077c9ac8d06c25e226",
+          "current_lf_sha256": "2e631d191bb4ee448c4fa3b3cab05424ec367083a50ba0077c9ac8d06c25e226"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgTestIdentity.cs",
+          "baseline_lf_sha256": "17a46c0ee371c23b2612506dcdc64dac6545a1df1a8d6d9eb493085f2593a7b1",
+          "current_lf_sha256": "17a46c0ee371c23b2612506dcdc64dac6545a1df1a8d6d9eb493085f2593a7b1"
+        }
+      ]
+    },
+    "pvg-regpv-base": {
+      "phase": "final-v2-regpv",
+      "actual_trx_sha256": "31cb36f383904feb13fadbc18de7cbcc2df32f4b57cc42e1e1df4c8bc84746b5",
+      "test_cases": 211,
+      "exact_baseline_multiset_preserved": true,
+      "compiled_source_count": 90,
+      "compiled_sources_all_unchanged": true,
+      "frontend_paths_in_compiled_closure": [],
+      "compiled_sources": [
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingApplicationService.cs",
+          "baseline_lf_sha256": "db57f5427c00d51c860c5c0b6ec614b41e2e5bdbc4478708e83fe3920d37a358",
+          "current_lf_sha256": "db57f5427c00d51c860c5c0b6ec614b41e2e5bdbc4478708e83fe3920d37a358"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingCommands.cs",
+          "baseline_lf_sha256": "6bdb6491ee29acd1d9facaec2e84f65a1af5e1a1d09d4d8f9c59f4784dfd4ab6",
+          "current_lf_sha256": "6bdb6491ee29acd1d9facaec2e84f65a1af5e1a1d09d4d8f9c59f4784dfd4ab6"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingContexts.cs",
+          "baseline_lf_sha256": "cf41755b5dea89c14e89f7fccb6bbf8cef16ad06714f8ace4ec9cb055a023a09",
+          "current_lf_sha256": "cf41755b5dea89c14e89f7fccb6bbf8cef16ad06714f8ace4ec9cb055a023a09"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingGuardContext.cs",
+          "baseline_lf_sha256": "4ce5c8f27727c5cc87e527d7f41a43cf24da274e2d2cac63c48349e1844dab83",
+          "current_lf_sha256": "4ce5c8f27727c5cc87e527d7f41a43cf24da274e2d2cac63c48349e1844dab83"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingMutationResult.cs",
+          "baseline_lf_sha256": "6fc611ad0218fc68dfbb324e5b81cdf169907d1ce0794d6245fe154c6b8d61d5",
+          "current_lf_sha256": "6fc611ad0218fc68dfbb324e5b81cdf169907d1ce0794d6245fe154c6b8d61d5"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueries.cs",
+          "baseline_lf_sha256": "db6fd517b778df88fd7f4ac68df296416fded34ccc7d1a8a8c5bd223a0b6a8c1",
+          "current_lf_sha256": "db6fd517b778df88fd7f4ac68df296416fded34ccc7d1a8a8c5bd223a0b6a8c1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueryResult.cs",
+          "baseline_lf_sha256": "25131b1f8defba132b138a375e19a37ed1e65f7c07b73e8c76f22a5d53e04d95",
+          "current_lf_sha256": "25131b1f8defba132b138a375e19a37ed1e65f7c07b73e8c76f22a5d53e04d95"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingReasonCodes.cs",
+          "baseline_lf_sha256": "5704e0c711c4589e8ae802292a5268b9dec7b6a9481277dd81e7eda812a082ad",
+          "current_lf_sha256": "5704e0c711c4589e8ae802292a5268b9dec7b6a9481277dd81e7eda812a082ad"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingResult.cs",
+          "baseline_lf_sha256": "b713298f16e36d883043f8a45467e1627d6b5c844a865bb40f214b0e3aa78f96",
+          "current_lf_sha256": "b713298f16e36d883043f8a45467e1627d6b5c844a865bb40f214b0e3aa78f96"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationFailure.cs",
+          "baseline_lf_sha256": "4f262d1b5f56ce6aa8b2cb7783dc83fb906ed52eab8f31dbf870d6151774f3d4",
+          "current_lf_sha256": "4f262d1b5f56ce6aa8b2cb7783dc83fb906ed52eab8f31dbf870d6151774f3d4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationResult.cs",
+          "baseline_lf_sha256": "48d993a9f2e70c27497f68b3c871671daa4af127d7f19f497a995643bc7dd339",
+          "current_lf_sha256": "48d993a9f2e70c27497f68b3c871671daa4af127d7f19f497a995643bc7dd339"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidator.cs",
+          "baseline_lf_sha256": "f7a1620b3884132bd9b91b12abf0db8fa12e6d6835fad2f25671cc6153d830c2",
+          "current_lf_sha256": "f7a1620b3884132bd9b91b12abf0db8fa12e6d6835fad2f25671cc6153d830c2"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/Diten.PvgService.Application.csproj",
+          "baseline_lf_sha256": "eaab895a70eaf6f80d520440b364821b198ab2bc88e707f0d2c254d478d715f9",
+          "current_lf_sha256": "eaab895a70eaf6f80d520440b364821b198ab2bc88e707f0d2c254d478d715f9"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/InMemoryMeddraCodingApplicationService.cs",
+          "baseline_lf_sha256": "29da396dbcb77b1bfbc7387ea104dc8568982a00aa289abd72fe7b193156b88f",
+          "current_lf_sha256": "29da396dbcb77b1bfbc7387ea104dc8568982a00aa289abd72fe7b193156b88f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/MeddraCodingApplicationContracts.cs",
+          "baseline_lf_sha256": "4c3c8b804ab6ccf81b3918bf5ba30204e432cda47d220fbf38dc5a78a0fd1ed0",
+          "current_lf_sha256": "4c3c8b804ab6ccf81b3918bf5ba30204e432cda47d220fbf38dc5a78a0fd1ed0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/CreateIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "e3be7202b7d8ff18bbe58bf0058094a4c25de00f2501fa75e800874ee39f2c2c",
+          "current_lf_sha256": "e3be7202b7d8ff18bbe58bf0058094a4c25de00f2501fa75e800874ee39f2c2c"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftByIdQuery.cs",
+          "baseline_lf_sha256": "340d63d6319685a92661859f123a2a43fc7731334e0e7c1ca71934c316aa7a13",
+          "current_lf_sha256": "340d63d6319685a92661859f123a2a43fc7731334e0e7c1ca71934c316aa7a13"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftListQuery.cs",
+          "baseline_lf_sha256": "86161f1da798007e779dbfbeef10fc7ccfa1c0298ee2c29b564994106323bc34",
+          "current_lf_sha256": "86161f1da798007e779dbfbeef10fc7ccfa1c0298ee2c29b564994106323bc34"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgEvidenceLinkPort.cs",
+          "baseline_lf_sha256": "830269f4197f40b9bed6e17060872fe3fe3b6856f30a6c69a785606217334bdb",
+          "current_lf_sha256": "830269f4197f40b9bed6e17060872fe3fe3b6856f30a6c69a785606217334bdb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgFieldSecurityPolicy.cs",
+          "baseline_lf_sha256": "c3717c75eef8e75b7d265041eaecf7cf82f26b4b31b16c192f593a74dfbccdcf",
+          "current_lf_sha256": "c3717c75eef8e75b7d265041eaecf7cf82f26b4b31b16c192f593a74dfbccdcf"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgIntakeDraftStore.cs",
+          "baseline_lf_sha256": "af080238b64291547f770761372d00964cd257a605b51d3e7b5d10a260caf5cd",
+          "current_lf_sha256": "af080238b64291547f770761372d00964cd257a605b51d3e7b5d10a260caf5cd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgPermissionGate.cs",
+          "baseline_lf_sha256": "540457d8900e089427b75895518b5312d44c19ef116961ae6633e29a9ea41e1b",
+          "current_lf_sha256": "540457d8900e089427b75895518b5312d44c19ef116961ae6633e29a9ea41e1b"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgWorkflowTransitionGate.cs",
+          "baseline_lf_sha256": "1e188c2162d550c6536c8cea76986e05a958d62aeef5d611a1d91be9bd595767",
+          "current_lf_sha256": "1e188c2162d550c6536c8cea76986e05a958d62aeef5d611a1d91be9bd595767"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgActorContext.cs",
+          "baseline_lf_sha256": "fac4c4a968f3950047cc627d52d4b37ac5261ba1b0edf45b692abca660cd36bb",
+          "current_lf_sha256": "fac4c4a968f3950047cc627d52d4b37ac5261ba1b0edf45b692abca660cd36bb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationOutcome.cs",
+          "baseline_lf_sha256": "3ea2c52b2d96d748f5ef19065e00b82227dd61a17e0938ca3e03514b81ff80bd",
+          "current_lf_sha256": "3ea2c52b2d96d748f5ef19065e00b82227dd61a17e0938ca3e03514b81ff80bd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+          "baseline_lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+          "current_lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationResult.cs",
+          "baseline_lf_sha256": "e4017b8b01bbc372bf9d4607ec091e4d45316325d9847686bd23e49e97751921",
+          "current_lf_sha256": "e4017b8b01bbc372bf9d4607ec091e4d45316325d9847686bd23e49e97751921"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationSuccessMetadata.cs",
+          "baseline_lf_sha256": "be92060a134e1d049e431a34d3df64e8afb81cd5876962450c6f282ffe3c5e5f",
+          "current_lf_sha256": "be92060a134e1d049e431a34d3df64e8afb81cd5876962450c6f282ffe3c5e5f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgAuditIntent.cs",
+          "baseline_lf_sha256": "cf9a0ae7dd91d2e9625c19faf0e5a1b6a810ff88c4a8660c183b43400ba9a664",
+          "current_lf_sha256": "cf9a0ae7dd91d2e9625c19faf0e5a1b6a810ff88c4a8660c183b43400ba9a664"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCorrelationContext.cs",
+          "baseline_lf_sha256": "5638949df7666f22ea544179fe89cebcd629057b6e915e76ad487c32fa10e8a0",
+          "current_lf_sha256": "5638949df7666f22ea544179fe89cebcd629057b6e915e76ad487c32fa10e8a0"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCreateIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "8c96d6240a04d6c4c377be2b3811234051d2a68e6eea5deffab7dfdc485dce4f",
+          "current_lf_sha256": "8c96d6240a04d6c4c377be2b3811234051d2a68e6eea5deffab7dfdc485dce4f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgEvidenceLinkRequest.cs",
+          "baseline_lf_sha256": "2a9810ec5d62a771b8f8a20d4980be88fc61744d868be10308895204d83dede8",
+          "current_lf_sha256": "2a9810ec5d62a771b8f8a20d4980be88fc61744d868be10308895204d83dede8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgFieldSecurityRequest.cs",
+          "baseline_lf_sha256": "e166245e490a5d08f3fa1ad79ecc09a5dc0f77b9248e0252b18f196d79071df8",
+          "current_lf_sha256": "e166245e490a5d08f3fa1ad79ecc09a5dc0f77b9248e0252b18f196d79071df8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+          "baseline_lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+          "current_lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftMutationResult.cs",
+          "baseline_lf_sha256": "2884151af3304804df20e1fe68cc768c6ba1744df70de977e25b71ef9bb1be9f",
+          "current_lf_sha256": "2884151af3304804df20e1fe68cc768c6ba1744df70de977e25b71ef9bb1be9f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftQueryResult.cs",
+          "baseline_lf_sha256": "9b5c2ab5c51c5ad636732cd535ba463892371f07cc0e021017d40b8645abdd97",
+          "current_lf_sha256": "9b5c2ab5c51c5ad636732cd535ba463892371f07cc0e021017d40b8645abdd97"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftSummary.cs",
+          "baseline_lf_sha256": "bbddf07f5faacf1410e1f378fdc79e1fb8ce0dd3c69244cfa5ab633c6bbd7687",
+          "current_lf_sha256": "bbddf07f5faacf1410e1f378fdc79e1fb8ce0dd3c69244cfa5ab633c6bbd7687"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftValidator.cs",
+          "baseline_lf_sha256": "a0fd788e0b5f33f28d2b390bfe4f88a9702e975f9d055719b8c1447e1a9cb405",
+          "current_lf_sha256": "a0fd788e0b5f33f28d2b390bfe4f88a9702e975f9d055719b8c1447e1a9cb405"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeProductLineRequest.cs",
+          "baseline_lf_sha256": "83abe1d659ab1bfa9ed2393c5ead8ff6e6b7f33138b2c623ab1f4ca7da2404c1",
+          "current_lf_sha256": "83abe1d659ab1bfa9ed2393c5ead8ff6e6b7f33138b2c623ab1f4ca7da2404c1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionDecision.cs",
+          "baseline_lf_sha256": "595e1b980af11edb087ab945ff2dcb80992489e199cc51a7bfea34f65b4b2e39",
+          "current_lf_sha256": "595e1b980af11edb087ab945ff2dcb80992489e199cc51a7bfea34f65b4b2e39"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionReasonCodes.cs",
+          "baseline_lf_sha256": "d61af1e10e5652ef59b892633b0d6fd56d08bc38e6ada5e64eb1b4a13ba92936",
+          "current_lf_sha256": "d61af1e10e5652ef59b892633b0d6fd56d08bc38e6ada5e64eb1b4a13ba92936"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionRequest.cs",
+          "baseline_lf_sha256": "a1eb6c01cc370bde0eb6babe5281e144959c6b6d4f9789d34300f23773bc3875",
+          "current_lf_sha256": "a1eb6c01cc370bde0eb6babe5281e144959c6b6d4f9789d34300f23773bc3875"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPortDecision.cs",
+          "baseline_lf_sha256": "cbe49539bec8edc18cf779ee1540c217cdde99bdaba0cfbd9d835e60baa7778a",
+          "current_lf_sha256": "cbe49539bec8edc18cf779ee1540c217cdde99bdaba0cfbd9d835e60baa7778a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgRouteIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "0246f42c5711985b95c131f422d655c47ae2975664ae8287133948d69e4b39c4",
+          "current_lf_sha256": "0246f42c5711985b95c131f422d655c47ae2975664ae8287133948d69e4b39c4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgServerTenantContext.cs",
+          "baseline_lf_sha256": "92e7b79653ee3f00a62eb5f82955158addd57e26f35e0baf1845ba09d79a7f84",
+          "current_lf_sha256": "92e7b79653ee3f00a62eb5f82955158addd57e26f35e0baf1845ba09d79a7f84"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgTriageIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "fbf60955885988d7962d40817a22e17c386c55d73761877ecefa234cd87a6a46",
+          "current_lf_sha256": "fbf60955885988d7962d40817a22e17c386c55d73761877ecefa234cd87a6a46"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgUpdateIntakeDraftRequest.cs",
+          "baseline_lf_sha256": "1b332602323e8dd673b642cb6b822e24079ce1621b190aa2df503330721123b3",
+          "current_lf_sha256": "1b332602323e8dd673b642cb6b822e24079ce1621b190aa2df503330721123b3"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationFailure.cs",
+          "baseline_lf_sha256": "2e0fcf1ab7ee2648cd02e2496f4a41ad74cdfc5b69158cb154551c50ece98743",
+          "current_lf_sha256": "2e0fcf1ab7ee2648cd02e2496f4a41ad74cdfc5b69158cb154551c50ece98743"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationReasonCodes.cs",
+          "baseline_lf_sha256": "61178b78cce18178cda5f583cf813967568b5e2d69d69572d7528dba78e785d4",
+          "current_lf_sha256": "61178b78cce18178cda5f583cf813967568b5e2d69d69572d7528dba78e785d4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationResult.cs",
+          "baseline_lf_sha256": "9b7f465747fb3cd9c49e697d41dd549c94107a979b71ed43f6fea0b774eac7cc",
+          "current_lf_sha256": "9b7f465747fb3cd9c49e697d41dd549c94107a979b71ed43f6fea0b774eac7cc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgWorkflowTransitionRequest.cs",
+          "baseline_lf_sha256": "670a32082881ef4328052c2b27d452737d26ccf13faa8961df2a6a53f9fd8404",
+          "current_lf_sha256": "670a32082881ef4328052c2b27d452737d26ccf13faa8961df2a6a53f9fd8404"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/RouteIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "b752f74de8072d8837a6ae0c492a25ebeab5f5bb0f4bbbf624db793596581bb1",
+          "current_lf_sha256": "b752f74de8072d8837a6ae0c492a25ebeab5f5bb0f4bbbf624db793596581bb1"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/TriageIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "c88d298fd49232b82e9270990ef961205f823b3948da7160479760776621dc33",
+          "current_lf_sha256": "c88d298fd49232b82e9270990ef961205f823b3948da7160479760776621dc33"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/UpdateIntakeDraftCommand.cs",
+          "baseline_lf_sha256": "c232dd15a51bf986e151bac5902dfd72f9bb71c995f8630d219e121359075f1a",
+          "current_lf_sha256": "c232dd15a51bf986e151bac5902dfd72f9bb71c995f8630d219e121359075f1a"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/InMemorySignalManagementService.cs",
+          "baseline_lf_sha256": "7017540719df6692164ca94c344acca71b0e9b74611963bf3f21e82cff8572dc",
+          "current_lf_sha256": "7017540719df6692164ca94c344acca71b0e9b74611963bf3f21e82cff8572dc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/SignalManagementApplicationContracts.cs",
+          "baseline_lf_sha256": "5d4dfe70cdccfb8735e35bdc90e9dc781f5e7126c0f7abc9928082422150a080",
+          "current_lf_sha256": "5d4dfe70cdccfb8735e35bdc90e9dc781f5e7126c0f7abc9928082422150a080"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/Mod0230HandoffReference.cs",
+          "baseline_lf_sha256": "b8cd96eee16354c38c4d873493ec2cb75126f16c498105f54b62ff891f18a622",
+          "current_lf_sha256": "b8cd96eee16354c38c4d873493ec2cb75126f16c498105f54b62ff891f18a622"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMaster.cs",
+          "baseline_lf_sha256": "da293f59c5adf819c122ffe4b284657d6fc321e104b60c35c91314185d0cdbdc",
+          "current_lf_sha256": "da293f59c5adf819c122ffe4b284657d6fc321e104b60c35c91314185d0cdbdc"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMasterStatus.cs",
+          "baseline_lf_sha256": "079710bcc53ad18b24c0228ec68bfb86f8f70ec8ff7e2fb5c4066c7c1d79ad49",
+          "current_lf_sha256": "079710bcc53ad18b24c0228ec68bfb86f8f70ec8ff7e2fb5c4066c7c1d79ad49"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumAssessment.cs",
+          "baseline_lf_sha256": "c2668f6644a5d7966057d47aa40650c94992a58ad16047083e81e62c896bdd69",
+          "current_lf_sha256": "c2668f6644a5d7966057d47aa40650c94992a58ad16047083e81e62c896bdd69"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumLifecycleState.cs",
+          "baseline_lf_sha256": "485d62738f9089c108fed46d4ddc5733d8a9c1781703ca4edbe24c15780c11af",
+          "current_lf_sha256": "485d62738f9089c108fed46d4ddc5733d8a9c1781703ca4edbe24c15780c11af"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/Diten.PvgService.Domain.csproj",
+          "baseline_lf_sha256": "dfb15367c50f9bc35fca38db93c7eec37fe6b791cd0ebfa5c578c423ff1805fa",
+          "current_lf_sha256": "dfb15367c50f9bc35fca38db93c7eec37fe6b791cd0ebfa5c578c423ff1805fa"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/MeddraCoding/MeddraCodingDomainContracts.cs",
+          "baseline_lf_sha256": "fb57b1b76e1e200b0994c06fc704d99e5b2d728c3d5bfd835ce13196013d2186",
+          "current_lf_sha256": "fb57b1b76e1e200b0994c06fc704d99e5b2d728c3d5bfd835ce13196013d2186"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgFieldSensitivity.cs",
+          "baseline_lf_sha256": "d2d02c48d2a2812cdfab2e45ebe3b1a03f36375ef4a465b5bff990b996787e7f",
+          "current_lf_sha256": "d2d02c48d2a2812cdfab2e45ebe3b1a03f36375ef4a465b5bff990b996787e7f"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeField.cs",
+          "baseline_lf_sha256": "fd3ccbe2060f54d2826b3356610f2731debc31bab45b87b8a6db11865b6e0555",
+          "current_lf_sha256": "fd3ccbe2060f54d2826b3356610f2731debc31bab45b87b8a6db11865b6e0555"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeFieldDefinition.cs",
+          "baseline_lf_sha256": "0475a2136f2f00fd9ab1a151edb1dc972202cd25b4187a5e94de58e7bdda69ae",
+          "current_lf_sha256": "0475a2136f2f00fd9ab1a151edb1dc972202cd25b4187a5e94de58e7bdda69ae"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOperation.cs",
+          "baseline_lf_sha256": "1aff64cdb2d25b4fd6ca6ac74d751bf90ce0be2687af82d3f30606950aa24c4c",
+          "current_lf_sha256": "1aff64cdb2d25b4fd6ca6ac74d751bf90ce0be2687af82d3f30606950aa24c4c"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOptionSets.cs",
+          "baseline_lf_sha256": "36ff46944d5e98e8eca101cb55e039c426f6b5986973c9687afc3ac79f2bafcb",
+          "current_lf_sha256": "36ff46944d5e98e8eca101cb55e039c426f6b5986973c9687afc3ac79f2bafcb"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeProductLine.cs",
+          "baseline_lf_sha256": "56f2ce5abf9e1a188bb9254336fca10b17a42f0821d2f31504f0f8466b7f978e",
+          "current_lf_sha256": "56f2ce5abf9e1a188bb9254336fca10b17a42f0821d2f31504f0f8466b7f978e"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeStatus.cs",
+          "baseline_lf_sha256": "03cf598ac848434c74fc89641f6bac74519a3ac22a110c7f34bb1bd6e618daa2",
+          "current_lf_sha256": "03cf598ac848434c74fc89641f6bac74519a3ac22a110c7f34bb1bd6e618daa2"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterCrmSearchState.cs",
+          "baseline_lf_sha256": "ac8e112b3d876621afac7a64ca3dd5506de5b5491498ab0a83942ea9f898d7dd",
+          "current_lf_sha256": "ac8e112b3d876621afac7a64ca3dd5506de5b5491498ab0a83942ea9f898d7dd"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterSource.cs",
+          "baseline_lf_sha256": "7114221b83ed9970186b7213899b3203981da74342534f2d6ad72e110f525d71",
+          "current_lf_sha256": "7114221b83ed9970186b7213899b3203981da74342534f2d6ad72e110f525d71"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgSafeReasonCodes.cs",
+          "baseline_lf_sha256": "6054e423e54296b0fd0afeba9b4dec7e791ae51463f2b2b2b750bc3366aae2e4",
+          "current_lf_sha256": "6054e423e54296b0fd0afeba9b4dec7e791ae51463f2b2b2b750bc3366aae2e4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgTriageOutcome.cs",
+          "baseline_lf_sha256": "f289aca392eb1a4a128b44174d455b55a2c028f6041bedd983c930fac05beb56",
+          "current_lf_sha256": "f289aca392eb1a4a128b44174d455b55a2c028f6041bedd983c930fac05beb56"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/SafetyCaseIntake.cs",
+          "baseline_lf_sha256": "f92e278ad02e5e385d8aed934e12a0d85864168aa187b1d01bbfba3a8c825d80",
+          "current_lf_sha256": "f92e278ad02e5e385d8aed934e12a0d85864168aa187b1d01bbfba3a8c825d80"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/SignalManagement/SignalManagementDomainContracts.cs",
+          "baseline_lf_sha256": "8a3e2ad8cb609dd08f53983ce9adcef92bae40ccd701f6e8b0de9f89a7307aa3",
+          "current_lf_sha256": "8a3e2ad8cb609dd08f53983ce9adcef92bae40ccd701f6e8b0de9f89a7307aa3"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/Diten.PvgService.Infrastructure.csproj",
+          "baseline_lf_sha256": "21abde17bcdb2ff07f10d5aa10f4795f7ae2b8da0362217bcce29fe3a3f356be",
+          "current_lf_sha256": "21abde17bcdb2ff07f10d5aa10f4795f7ae2b8da0362217bcce29fe3a3f356be"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllEvidenceLinkPort.cs",
+          "baseline_lf_sha256": "4cd1e95bc78740489ebdd1eaac2a02b95f106ad04ba43ff74d912d20db5cab37",
+          "current_lf_sha256": "4cd1e95bc78740489ebdd1eaac2a02b95f106ad04ba43ff74d912d20db5cab37"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllFieldSecurityPolicy.cs",
+          "baseline_lf_sha256": "6d92de9185f8744c99739663aa24e26d0088745b6d41d2e2bc612250dbcdf729",
+          "current_lf_sha256": "6d92de9185f8744c99739663aa24e26d0088745b6d41d2e2bc612250dbcdf729"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs",
+          "baseline_lf_sha256": "77afc596af88f44c1fb364013679d468464179e6c9e49b69a76ef2cd9334e4b8",
+          "current_lf_sha256": "77afc596af88f44c1fb364013679d468464179e6c9e49b69a76ef2cd9334e4b8"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllWorkflowTransitionGate.cs",
+          "baseline_lf_sha256": "6e0a096fcea70be1dedcdf4a532b304b1aba7ad2f4f94766fda9f5d2d08e1767",
+          "current_lf_sha256": "6e0a096fcea70be1dedcdf4a532b304b1aba7ad2f4f94766fda9f5d2d08e1767"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs",
+          "baseline_lf_sha256": "baa6973cbdc7ec61ed1b16d042533f88fe4a908bc643f356f5d881efebb8ade4",
+          "current_lf_sha256": "baa6973cbdc7ec61ed1b16d042533f88fe4a908bc643f356f5d881efebb8ade4"
+        },
+        {
+          "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/PvgIntakeDraftIndexCatalog.cs",
+          "baseline_lf_sha256": "b70d2e820f227fce5b91462df3a81745e5d61ab1a89ed050cdd1601ceb2cab3a",
+          "current_lf_sha256": "b70d2e820f227fce5b91462df3a81745e5d61ab1a89ed050cdd1601ceb2cab3a"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/DenyAllRegPvBasePortTests.cs",
+          "baseline_lf_sha256": "b8668a2407462df61e3342210cfb7b8291c5ab4822f2cecea116bc47f067a767",
+          "current_lf_sha256": "b8668a2407462df61e3342210cfb7b8291c5ab4822f2cecea116bc47f067a767"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj",
+          "baseline_lf_sha256": "a43df55abea8db80871abcae06e0d9144dfdfdb9191149578ded0498aa404003",
+          "current_lf_sha256": "a43df55abea8db80871abcae06e0d9144dfdfdb9191149578ded0498aa404003"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgApplicationContractShapeTests.cs",
+          "baseline_lf_sha256": "b34263b4b35668f857ed2ba0679190508998707c2c7ebbdd0969e2be745a3885",
+          "current_lf_sha256": "b34263b4b35668f857ed2ba0679190508998707c2c7ebbdd0969e2be745a3885"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDomainValidationTests.cs",
+          "baseline_lf_sha256": "89ebf75248b877d140d7f6d5bfb1aaa78aacd1a86023d25ffed3dfe5e072d46d",
+          "current_lf_sha256": "89ebf75248b877d140d7f6d5bfb1aaa78aacd1a86023d25ffed3dfe5e072d46d"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.Revision04.cs",
+          "baseline_lf_sha256": "f91fa6cd362489b54944150d4f18626d14b1fb45871ccf78694291b6bf6d4b38",
+          "current_lf_sha256": "f91fa6cd362489b54944150d4f18626d14b1fb45871ccf78694291b6bf6d4b38"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+          "baseline_lf_sha256": "4af91c09a59607c7e612a4c90f89d0084190c6cc9b9a4cb589dd133db1343713",
+          "current_lf_sha256": "4af91c09a59607c7e612a4c90f89d0084190c6cc9b9a4cb589dd133db1343713"
+        },
+        {
+          "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftPersistenceBoundaryTests.cs",
+          "baseline_lf_sha256": "9ed054a46d66d0c50c4aedeb653a3922491f64d537415a17a4dcb244abf10352",
+          "current_lf_sha256": "9ed054a46d66d0c50c4aedeb653a3922491f64d537415a17a4dcb244abf10352"
+        }
+      ]
+    }
+  }
+}

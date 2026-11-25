@@ -1,0 +1,38 @@
+[
+  {
+    "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+    "head_lf_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+    "disk_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45",
+    "unchanged": true
+  },
+  {
+    "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+    "head_lf_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+    "disk_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87",
+    "unchanged": true
+  },
+  {
+    "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+    "head_lf_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+    "disk_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a",
+    "unchanged": true
+  },
+  {
+    "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+    "head_lf_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a",
+    "disk_sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4",
+    "unchanged": true
+  },
+  {
+    "path": "frontend/Diten.Web/package.json",
+    "head_lf_sha256": "023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129",
+    "disk_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6",
+    "unchanged": true
+  },
+  {
+    "path": "frontend/Diten.Web/package-lock.json",
+    "head_lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+    "disk_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e",
+    "unchanged": true
+  }
+]

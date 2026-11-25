@@ -1,0 +1,62 @@
+{
+  "started_at_utc": "2026-11-20T11:42:50.173295+00:00",
+  "duration_seconds": 12.891,
+  "command": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy; sys.stdout.reconfigure(encoding='utf-8',newline='\\n'); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name='__main__')",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--discover",
+    "Case Intake & Triage"
+  ],
+  "exit_code": 3,
+  "check_command": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy; sys.stdout.reconfigure(encoding='utf-8',newline='\\n'); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name='__main__')",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--check-report",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-rev20-discovery-02\\discovery-report.txt"
+  ],
+  "check_exit_code": 0,
+  "check_stdout": "RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı\n",
+  "producer_copies": [
+    {
+      "repository_path": ".antigravity/scripts/verify_module_id.py",
+      "copy_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+      "blob_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f",
+      "copy_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f"
+    },
+    {
+      "repository_path": "scripts/ct_queue.py",
+      "copy_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\scripts\\ct_queue.py",
+      "blob_sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2",
+      "copy_sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2"
+    }
+  ],
+  "checkout_producer_sha256": "ae87a56615f581d6b648d31cfd636e97c0e8dba9f2b759d0ca1307b73482b51a",
+  "checkout_crlf": 1065,
+  "crlf_normalized_equals_git_blob": true,
+  "report_body_sha256": "ce6c78b5e30d5aa8a9600ebd1bbaa10c1cd85a6b576cf9b178f4f2c67dcde36a",
+  "report_raw_sha256": "9a817c9d230f9985e117740d19d95eaceecc9b13e047aae56823e112940a0daa",
+  "report_bytes": 65205,
+  "report_line_count": 602,
+  "report_crlf_count": 0,
+  "producer_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f",
+  "producer_head": "cc27da0a5dca2b554601a659103383c9cd985aa1",
+  "producer_sha_matches_producer_commit_blob": true,
+  "head_start": "cc27da0a5dca2b554601a659103383c9cd985aa1",
+  "head_end": "cc27da0a5dca2b554601a659103383c9cd985aa1",
+  "previous_report_unchanged": true,
+  "previous_checkout_producer_unchanged": true,
+  "findings_count": 31,
+  "refs_line": "İNCELENEN REF'LER: 534",
+  "result_line": "sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı",
+  "truncation": "full subprocess stdout captured; producer-defined summaries and 70-character task previews preserved, no output slicing",
+  "model": "inherited GPT/Codex; exact model and effort unavailable",
+  "agent": "/root/pvg_dl12_readiness"
+}

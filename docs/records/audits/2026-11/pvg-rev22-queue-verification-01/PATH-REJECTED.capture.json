@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "C:/Users/epenc/AppData/Local/Programs/Python/Python313/python.exe",
+    "-B",
+    "scripts/run_record.py",
+    "verify",
+    "docs\\records\\audits\\2026-11\\pvg-rev22-queue-validation-01\\run-record-v1.json"
+  ],
+  "exit_code": 1,
+  "stdout_sha256": "7abeb5087339b3a574750748f6390485b496db31836c7d6479350390b2a89939",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "actual_queue_command_exit": 0,
+  "not_a_validated_acceptance_run_record": true
+}

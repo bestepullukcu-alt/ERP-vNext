@@ -1,0 +1,11 @@
+# MOD-0230 DL-12 — mekanik düzeltme sonrası inceleme kararı
+
+2026-11-20. Kaynak7df5adce29943a999f7a4a4551ee87dad5637c97, pack186ad9675e2f5219d240080f93012c54f266561f6ce70451f96aaeddb242aa01.
+
+Belge · Diyalog resmî sonucu KOŞULLU, açık üç orta koşul; geçmişsiz son bakış UYGUN. İkisinde de engelleyici yok. Ham raporlar `2026-11-20-rev20-formal-dialogue-03.md` ve `2026-11-20-rev20-formal-blind-03.md`, talep26 aynı inceleme dizininde. Her iki inceleyen de son arşivin285 girdisini/hashlerini doğruladı; gerçek kaynak incelemesi sınırlarını ham raporda beyan etti. Diyalog gerçek slices işlevini yeni baytlarda çalıştırıp12dilim gördü; geçmişsiz inceleyen parser kaynağını okuyarak karşılaştırdı, çalıştırmış iddia etmedi.
+
+Karar · Diyalogdaki üç koşul round2 ile aynıdır; CT kaynağı daha önce karşılaştırıp kabul ettiği `ROUND-02-DECISION.md` kararını aynen sürdürür. Güncel JWT/tenant/actor/permission sözleşmesi PREP'lerde korunur; eski tarihsel notlar üretim emri değildir. SourceReference gömülü CR/LF'nin gerçek API→dokunulmamış Edit üzerinden kayıpsızlığı ve DOM sabotajı; izinli pozitif liste 200/ID/minimal öğe/tüm yanıtta ayrıntı sızmaması ölçüsü ana feature iş emrinde açıkça bağlanacak. PREP izinli yollarında üretim bu alanlara yazılamaz. Koşullar açık, K5 takip/2026-11-23 iç hedef; kapatılmadı, insan taahhüdü değil.
+
+Karar · Kullanıcının aynı rev20 kapsam onayı sürer; tek üç baytlık heading prefix kapsam/AC/kanıt/yol/iş kuralı değiştirmez. Önceki729 HIGH satırı gerçek dilim kapısını geçmemiş olarak geçmişte kalır. Yeni kesin hash'in resmî satırları ve gerçek araçtan HIGH satırı birlikte append-only kaydedilip normal onay/dağıtım kapıları ölçülecek. İki işçi v1.0 negatif prompt incelemesi korunur, yeni prompt v1.1 değişen HEAD/hash/kaynak ve WEB cache/komut koşullarını tekrar bağımsız incelemeye bağlar. Başlangıç izni kapı çıkış0'dan sonra; operasyon kapalı.
+
+Belge · v1.0 prompt dosyalarının sonundaki ek boş satırlar, bağımsız prompt incelemesinin SHA bağlarını bozmamak için geçmişte birebir korundu. cca31f85b commit'inde `git diff --cached --check` bu iki dosyada yalnız EOF boş satırı bildirdi; diğer dosyalar temizdi. Bu rapor uyarıyı gizlemez. v1.1 tek LF ile sonlanacak. Önceki kaynak/ham rapor baytları değiştirilmez.

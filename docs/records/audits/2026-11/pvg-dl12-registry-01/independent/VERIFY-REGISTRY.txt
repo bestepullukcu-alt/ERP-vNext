@@ -1,0 +1,14 @@
+WP-0230-DL12-REGISTRY-01 — bağımsız E2 doğrulama
+
+Karar: UYGUN. Engelleyici/yüksek/orta açık bulgu yok; yalnız yönetişim kayıt düzeltmesi.
+İstenen model gpt-6.2-astra / effort high; gerçek model ve effort doğrulanamaz.
+
+Aday dal feature/pvg/mod-0230-dl12-registry; başlangıç ve son HEAD 7dbdfd4f47f8361319c1c3f533036ad43a867f71, ilk/son git status boş. Ebeveyn fff584a3675fb0273872b0dca9896d26da749f8f ve yalnız bir normal commit ölçüldü. Tek değişen dosya tests/known-failures.tsv; fiziksel satır 4–8, suite TenantArchitecture.ArchitectureTests / status fixed olan tam beş kayıtta yalnız rerun_trigger hücresindeki tek ,*.xml kaldırıldı. Header, diğer sütunlar, diğer satırlar, token sırası ve kayıt kimlikleri aynı. Bağımsız hücre karşılaştırması initial-and-scope.json içindedir; git diff --check exit0.
+
+Değişmemiş gerçek üretici kendi aday ağacında Python -B ile bir kez çalıştırıldı, exit0 ve 5.276 saniye. Gerçek argv/cwd actual-run.json içinde; ham stdout/stderr yanındadır. Alt CLI validate exit0 / OK registry; korunmuş bağımsız Web TRX için check --suite Diten.Web.Tests exit0, bütün sınıflandırma sayaçları 0. exact_five_cell_diff=true, acceptance_passed=true. Eski tek XML öğesini yalnız bellekte geri koyma üretim known_failures.validate fonksiyonunda gerçek tracked yollarla RED: line 4: glob '*.xml' matches no tracked path. Kaynak dosyaya sabotaj yazılmadı.
+
+Üretici canonical-LF SHA256 1fe0e58cf55d7566dee5a994b636a54dc128819a769743b5634a262a2ed5e0f9. Ledger baseline LF SHA256 5192f9a681a3057de3b68dbd43962c281cf5a55cb96b857cf444c52605976504; aday LF SHA256 5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b. Üretici, production known_failures.py, gerçek DocsPathGuardTests XML scan, items JSON ve immutable Web TRX hem baseline/head Git bloblarıyla aynı hem ilk/son disk raw hashleri değişmez; tamamı initial-and-scope.json içinde kayıtlıdır.
+
+TRX source_commit a2586b89dd87dd99a51e85ff29560fc5fd1656cc. Beklenen/önce/sonra canonical-LF SHA256 üçü de d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91; matches_before_after=true. Üreticinin a258 ledger baseline'i ile fff584 ledger baseline'inin eşitliği ayrıca doğrulandı. Worker final-green.json içindeki yedi anlamlı kontrol grubu bağımsız sonuçla aynı; bu eşitlik independent koşunun yerine kullanılmadı.
+
+Bu iş mevcut 62/62 Web TRX'inin gerçek sınıflandırmasını yeniden açar; Web testi yeniden çalıştırılmadı. Yeni ürün davranışı, full DL-12/no-loss/complete-detail E2, E4, Linux CI veya operasyon başarısı iddia edilmez. Dosya/stage/commit/push/queue/pack/guard değişikliği yapılmadı; yalnız bu yeni dış kanıt dizinine yazıldı. İlk sandbox git status erişim hatası dar escalation ile gerçek status okunarak çözüldü. Üretici sonrasında doğrulayıcının varsayılan Windows encoding'iyle JSON okuması hata verdi; mevcut çıktı UTF-8 ile tekrar okunup doğrulandı, üretici veya test tekrar koşulmadı.

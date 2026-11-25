@@ -1,0 +1,11 @@
+PQG RAPORU v1
+prompt-sha256: 91579bd5efa030488c0d219cd60242440d1fb4ad08e59ca2e241f3d12f2c6938
+kip: DAĞITIM DENETİMİ
+wp: WP-0230-DL12-REGISTRY-01 · prompt PVG-WP-0230-DL12-REGISTRY-01-P v1.2 · risk HIGH · sınıf yönetişim
+kaynak-paketi-sha256: 7859db7b871a3b3af8d4efd94c327370b7327e65117bd75b4c7675d745b8c1cc · 20 dosya
+BİLGİ sözleşme: 2 alıntı Expected HEAD'de birebir denetlendi
+BİLGİ kuyruk: DAĞITILABİLİR WP-0230-DL12-REGISTRY-01: READY
+BİLGİ YÜRÜRLÜK: yerel origin/main 2de950edcaeb9d8a153465e5f29d7c71eeb31144 — kayıtlı
+sonuç: geçti
+çıkış: 0
+rapor-sha256: 8701fb97bb809c16c1b87564c3855b9ed5582a1d94b10a895b2e1c8269128712

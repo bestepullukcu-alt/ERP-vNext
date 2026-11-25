@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserContext, UserContext.CurrentUserContext>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, AnyPermissionAuthorizationHandler>();   // MOD-0140 DL-3: [HasAnyPermission]
 
         return services;
     }

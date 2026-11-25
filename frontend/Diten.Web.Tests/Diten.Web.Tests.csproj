@@ -21,5 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diten.Web\Diten.Web.csproj" />
+    <ProjectReference Include="../../services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj" Aliases="pvgapi" />
   </ItemGroup>
 </Project>

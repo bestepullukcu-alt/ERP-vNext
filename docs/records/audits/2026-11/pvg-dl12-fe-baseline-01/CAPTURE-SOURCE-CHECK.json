@@ -1,0 +1,59 @@
+{
+  "kind": "Executed isolated exact-source helper expressions + actual optimized-Python failclosed, not full capture/test acceptance",
+  "at_utc": "2026-11-20T21:57:15.284964+00:00",
+  "capture_source_sha256": "39c7064c77846c375db69aaf0d6e8342324286764d8047e1820ac6274c303813",
+  "optimized_guard": {
+    "exit": 1,
+    "stderr_sha256": "1bb6819a8a1222476b8e7bd0696b7daf2ed7ebc1fb46a3a5fffbf485b0dd4cb5"
+  },
+  "actual_batch_keys": 400,
+  "individually_compared_keys": 13,
+  "batch_blob_bytes": 5754432,
+  "bounded_names": [
+    {
+      "kind": "web",
+      "sample": "X.PvgCaseIntakeTriageWebTests.Some_exact_test",
+      "expected": true,
+      "observed": true
+    },
+    {
+      "kind": "web",
+      "sample": "X.PvgCaseIntakeTriageWebTests.Some_exact_test_fake_suffix",
+      "expected": false,
+      "observed": false
+    },
+    {
+      "kind": "web",
+      "sample": "X.PvgCaseIntakeTriageWebTests.Some_exact_testprefix",
+      "expected": false,
+      "observed": false
+    },
+    {
+      "kind": "web",
+      "sample": "X.PvgCaseIntakeTriageWebTests.Some_exact_test(value: 1)",
+      "expected": true,
+      "observed": true
+    },
+    {
+      "kind": "js",
+      "sample": "suite pvg exact mandatory test",
+      "expected": true,
+      "observed": true
+    },
+    {
+      "kind": "js",
+      "sample": "suite pvg exact mandatory test_fake_suffix",
+      "expected": false,
+      "observed": false
+    },
+    {
+      "kind": "js",
+      "sample": "suite pvg exact mandatory testprefix",
+      "expected": false,
+      "observed": false
+    }
+  ],
+  "baseline_unpinned": true,
+  "full_capture_run": false,
+  "ct_head": "3181483a8432055179e7a4360ff8512de3a46251"
+}

@@ -1,0 +1,59 @@
+{
+  "frozen_merge_head": "788047137bdc3d127771434608d28b8f205611a6",
+  "parents": [
+    "91307b7ed170fa0d3287c472ee886c639e7fad51",
+    "15791333afa89e447210b8d877dc5407693e9b5b"
+  ],
+  "candidate": "15791333afa89e447210b8d877dc5407693e9b5b",
+  "base": "58920519a17e8f4c085738642b33e36689bc8fee",
+  "live_ct_at_start": "788047137bdc3d127771434608d28b8f205611a6",
+  "worker_status": "",
+  "nine_sources": [
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "frozen_lf_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "candidate_raw_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "frozen_lf_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "candidate_raw_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87"
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "frozen_lf_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "candidate_raw_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+      "frozen_lf_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a",
+      "candidate_raw_sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4"
+    },
+    {
+      "path": "frontend/Diten.Web/package.json",
+      "frozen_lf_sha256": "023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129",
+      "candidate_raw_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6"
+    },
+    {
+      "path": "frontend/Diten.Web/package-lock.json",
+      "frozen_lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+      "candidate_raw_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e"
+    },
+    {
+      "path": ".github/workflows/phase1-gates.yml",
+      "frozen_lf_sha256": "c5e112e8416dd112401a71241306332173690a5c3cd53bed1bf5bfb0b75357fa",
+      "candidate_raw_sha256": "f524a30b83a9c9e9fb67250e64e167f0577d4cfc117e9980b9f5912db11c7f46"
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "frozen_lf_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "candidate_raw_sha256": "166a37426dddd1f8d7184303abdca2342d8201e9663cc5e7ba2df39bed440094"
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "frozen_lf_sha256": "1fb91c728c5579a7a4a3b51af97a1d917b86bb9cb83852f495899fcad4bd425c",
+      "candidate_raw_sha256": "50b13829202fc3f0cc21d456e6d3934519020ae984b9113e6808b3e7eb705200"
+    }
+  ],
+  "ledger_lf_sha256": "5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b"
+}

@@ -1,0 +1,69 @@
+{
+  "wrapper_lf_sha256": "8e4ab7509122c3aab1ae4f0dc8421484838f4e419f4272bec7cc596dbf19dcc2",
+  "repository": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "measured_head": "dd051eebde36c6ad61fcbc7fe2560dc24bb341cc",
+  "sources": [
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "present": true,
+      "raw_sha256": "d91895e2493ee5482df95d2ec9a799407c7ce6f8dbb60aaa423c65f441817d27",
+      "lf_sha256": "5a55e34a63f9ade8207bf95d46b52b13dce920f64aef29b4dd0d3d34494f6769"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "present": true,
+      "raw_sha256": "6008f2559234a638d6c2f698c9281563958ccf6b805b9d398bf7006f0c803171",
+      "lf_sha256": "8287dde0ea15fb75b6a574545c215f32134ac0f3309a0574d2b2b0dec3345b3a"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "present": true,
+      "raw_sha256": "95c76e0f68125532798b3ab10d110d387bd4787fac8c6f3f5d28a18dd51b2fb4",
+      "lf_sha256": "97ab735c298869751990aad4bb02b38860e680796ccd676735f7e4d08a3903d9"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+      "present": true,
+      "raw_sha256": "6bea14469b71c99bbb9d083e0c0e2318f7d7adb59e57e4c39b497dbc076f1dd4",
+      "lf_sha256": "a757eb2e1ae197e2907d40f4a668aa24e18c1e1bd9f753a21203de4dbd005e38"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+      "present": false,
+      "raw_sha256": null,
+      "lf_sha256": null
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+      "present": true,
+      "raw_sha256": "0ea6753aa2ef3b2a20a6332e29b35bd896985c84df370923e9d73a4f387f6132",
+      "lf_sha256": "a5b6efa34e24f15404db31adbe4731dba7fbd4d034c29d4ffbdcf3a296aefcbe"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs",
+      "present": true,
+      "raw_sha256": "48d9a77c8a8940a652123d2d6e4bd0aa3a308a120f7f7eda9705f0079dc96ab9",
+      "lf_sha256": "0af0d510e224e3c2c11ca3ed51bbbaafe4ce06cb02c98ed00eda944feb031087"
+    }
+  ],
+  "commands": [],
+  "kind": "Saved source-bound observations; not a new test run or BE behavior RED",
+  "baseline_ref": "dd051eebde36c6ad61fcbc7fe2560dc24bb341cc",
+  "regpv_existing_passed": 211,
+  "prior_web_loss_observations": [
+    {
+      "test": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+      "outcome": "Passed",
+      "observation": "Existing connected no-loss gap; not a BE-only test"
+    },
+    {
+      "test": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_reaches_the_real_store",
+      "outcome": "Passed",
+      "observation": "Existing connected no-loss gap; not a BE-only test"
+    }
+  ],
+  "new_feature_test_absent": true,
+  "be_scope_sources_same_as_saved_baseline": true,
+  "acceptance_passed": false,
+  "limits": "Capture alone does not prove method-only edits, policy/snapshot/race/DTO/no-loss behavior, two-store use, compiling sabotages or cleanup. Independent source/runtime E2 is mandatory; final browser no-loss is FE. Saved baseline is GREEN existing RegPvBase plus observed connected gap, not a newly executed BE RED."
+}

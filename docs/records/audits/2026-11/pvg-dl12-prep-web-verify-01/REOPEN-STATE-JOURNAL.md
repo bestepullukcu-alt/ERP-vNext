@@ -1,0 +1,17 @@
+# Web doğrulama devamı — durum geçişleri
+
+Kayıt zamanı UTC; işçi olayları CT’ye daha önce iletildi. Aşağıdaki saatler geçmişe atılmış işçi başlangıç/bitirme saatleri değildir; gözlenen kanıtın kuyrukta işlenme zamanıdır.
+
+- 2026-11-20T18:04:23.169987+00:00 — READY → DISPATCHED: Mevcut15791333 tesliminin salt-okunur bağımsız doğrulaması yeniden atandı; ürün yazımı/yeniden dağıtımı değil; DoR3b5 ve registryCTmerge0/0, önceki normal dağıtım kaydı korunur.
+
+- 2026-11-20T18:04:38.447294+00:00 — DISPATCHED → IN_PROGRESS: Bağımsız doğrulayıcı kendi salt-okunur incelemesini başlattı;15791333 temiz ve üç dosya hashleri ölçüldü, ürün dosyası değiştirilmedi.
+
+- 2026-11-20T18:04:56.495913+00:00 — IN_PROGRESS → REPORTED: Mevcut yazılı işçi15791333 raporu/PUBLISH-MANIFEST/VERIFY-WEB korunmuş; aynı baytların yeniden ölçüm sonuçları alındı, yeni kod veya yeni geçmiş test sonucu üretilmedi.
+
+- 2026-11-20T18:05:10.039824+00:00 — REPORTED → VERIFYING: Yazardan farklı pvg_dl12_prep_web_verify aynı15791333 için bağımsız yeniden doğrulamaya atandı; kayıt engeli kalktı, öncekiE2 koşusu kaynak bağıyla inceleniyor; yeni ürün yazımı yok.
+
+- 2026-11-20T18:05:59.772243+00:00 — VERIFYING → VERIFIED: Bağımsız yeniden doğrulama UYGUN, açık bulgu yok. İşçi157 temiz; dokuz hash ve üç yol aynı. CT ürün kodu farkı0;43 kalıcı ve13 dış kanıt bağı, immutable TRX korunmuş. Güncel CT gerçek known_failures kontrolü0; rapor reopen/VERIFY-WEB-REOPEN.txt. Yeni test koşusu değildir.
+
+- 2026-11-20T18:06:31.320455+00:00 — VERIFIED → INTEGRATION_READY: Bağımsız yeniden doğrulanmış15791333 tek üç-dosyalı aday CT dalına no-ff merge gerektirir; registrykapısı0, DL4E/DL7C/DL10R1 entegre. Birleşim sonrası taze62test/0skip/knownfail0 beklenir.
+
+- 2026-11-20T18:18:56.672948+00:00 — INTEGRATION_READY → INTEGRATED: CTmerge78804713 taze tam kaynak snapshotında bağımsız62/62PASS,0fail/0skip,gerçekknownfail0; yeniassembly/TRX/sourcebağı,0canlıPID. Kanıt pvg-dl12-prep-web-integration-01/VERIFY-WEB-INTEGRATION.txt. Ana no-loss/E4/Linux/livekapalı.

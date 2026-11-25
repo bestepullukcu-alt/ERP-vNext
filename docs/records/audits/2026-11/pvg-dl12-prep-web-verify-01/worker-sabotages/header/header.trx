@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="c1a3f192-7ddd-4b59-a0a1-4e89f9f0330d" name="epenc@GMGRAPHIC 2026-11-20 16:18:19" runUser="GMGRAPHIC\epenc" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T16:18:19.2852464+04:00" queuing="2026-11-20T16:18:19.2852469+04:00" start="2026-11-20T16:18:05.3377454+04:00" finish="2026-11-20T16:18:19.2951750+04:00" />
+  <TestSettings name="default" id="d1e48b09-193f-4a1f-87f0-c8d8efa542bc">
+    <Deployment runDeploymentRoot="epenc_GMGRAPHIC_2026-11-20_16_18_19" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="8156dfb2-2903-46ab-9920-9325323db045" testId="ca589cd0-4f66-b547-25b6-f804edcb5077" testName="Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token" computerName="GMGRAPHIC" duration="00:00:11.1268008" startTime="2026-11-20T16:18:19.1496383+04:00" endTime="2026-11-20T16:18:19.1496666+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8156dfb2-2903-46ab-9920-9325323db045">
+      <Output>
+        <StdOut>Reaped browser PID 35192.</StdOut>
+        <ErrorInfo>
+          <Message>MVC request token header differs from Razor.</Message>
+          <StackTrace>   at Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.ConnectedEditAsync(String fault) in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kanıt\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web.Tests\Controllers\PvgCaseIntakeTriageWebTests.cs:line 902&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token" storage="c:\users\epenc\appdata\local\temp\pvg-dl12-prep-kanıt\wp-0230-dl12-prep-web-1795176414809\snapshot\frontend\diten.web.tests\bin\debug\net8.0\diten.web.tests.dll" id="ca589cd0-4f66-b547-25b6-f804edcb5077">
+      <Execution id="8156dfb2-2903-46ab-9920-9325323db045" />
+      <TestMethod codeBase="C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kanıt\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web.Tests\bin\Debug\net8.0\Diten.Web.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests" name="Connected_edit_submission_preserves_browser_antiforgery_request_token" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="ca589cd0-4f66-b547-25b6-f804edcb5077" executionId="8156dfb2-2903-46ab-9920-9325323db045" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Bir Listede Olmayan Sonuçlar" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Yüklenen Tüm Sonuçlar" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.34)&#xD;
+[xUnit.net 00:00:00.51]   Discovering: Diten.Web.Tests&#xD;
+[xUnit.net 00:00:01.81]   Discovered:  Diten.Web.Tests&#xD;
+[xUnit.net 00:00:01.82]   Starting:    Diten.Web.Tests&#xD;
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]&#xD;
+      Start processing HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/status&#xD;
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]&#xD;
+      Sending HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/status&#xD;
+warn: Diten.Web.Services.TenantStatus.TenantStatusGateway[0]&#xD;
+      Tenant liveness check failed for 7b2c51f0-0000-4000-8000-0000000000b2; failing open.&#xD;
+      System.Net.Http.HttpRequestException: Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�. (127.0.0.1:9)&#xD;
+       ---&gt; System.Net.Sockets.SocketException (10061): Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�.&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)&#xD;
+         at System.Net.Sockets.Socket.&lt;ConnectAsync&gt;g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         --- End of inner exception stack trace ---&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)&#xD;
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)&#xD;
+         at Diten.Web.Services.TenantStatus.TenantStatusGateway.GetTenantLivenessAsync(Guid tenantId, CancellationToken ct) in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kan�t\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web\Services\TenantStatus\TenantStatusGateway.cs:line 65&#xD;
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]&#xD;
+      Start processing HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/branding&#xD;
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]&#xD;
+      Sending HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/branding&#xD;
+warn: Diten.Web.Services.Branding.BrandingGateway[0]&#xD;
+      Failed to fetch tenant branding for 7b2c51f0-0000-4000-8000-0000000000b2; falling back to platform default.&#xD;
+      System.Net.Http.HttpRequestException: Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�. (127.0.0.1:9)&#xD;
+       ---&gt; System.Net.Sockets.SocketException (10061): Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�.&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)&#xD;
+         at System.Net.Sockets.Socket.&lt;ConnectAsync&gt;g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         --- End of inner exception stack trace ---&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)&#xD;
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)&#xD;
+         at Diten.Web.Services.Branding.BrandingGateway.GetTenantBrandingAsync(Guid tenantId, CancellationToken ct) in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kan�t\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web\Services\Branding\BrandingGateway.cs:line 44&#xD;
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]&#xD;
+      Start processing HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/branding&#xD;
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]&#xD;
+      Sending HTTP request GET http://127.0.0.1:9/api/internal/tenants/7b2c51f0-0000-4000-8000-0000000000b2/branding&#xD;
+warn: Diten.Web.Services.Branding.BrandingGateway[0]&#xD;
+      Failed to fetch tenant branding for 7b2c51f0-0000-4000-8000-0000000000b2; falling back to platform default.&#xD;
+      System.Net.Http.HttpRequestException: Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�. (127.0.0.1:9)&#xD;
+       ---&gt; System.Net.Sockets.SocketException (10061): Hedef makine etkin olarak reddetti�inden ba�lant� kurulamad�.&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)&#xD;
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)&#xD;
+         at System.Net.Sockets.Socket.&lt;ConnectAsync&gt;g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         --- End of inner exception stack trace ---&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)&#xD;
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)&#xD;
+         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)&#xD;
+         at Diten.Web.Services.Branding.BrandingGateway.GetTenantBrandingAsync(Guid tenantId, CancellationToken ct) in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kan�t\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web\Services\Branding\BrandingGateway.cs:line 44&#xD;
+warn: Diten.Web.ViewComponents.DynamicModuleMenuViewComponent[0]&#xD;
+      dynamic_module_menu.empty Reason=http_404 TenantId=7b2c51f0-0000-4000-8000-0000000000b2 CorrelationId=0HNQ701BRN500 Detail=Not Found. The tenant's dynamic sidebar rendered NO groups.&#xD;
+[xUnit.net 00:00:13.00]       MVC request token header differs from Razor.&#xD;
+[xUnit.net 00:00:13.00]       Stack Trace:&#xD;
+[xUnit.net 00:00:13.00]         C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-kanıt\WP-0230-DL12-PREP-WEB-1795176414809\snapshot\frontend\Diten.Web.Tests\Controllers\PvgCaseIntakeTriageWebTests.cs(902,0): at Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.ConnectedEditAsync(String fault)&#xD;
+[xUnit.net 00:00:13.00]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:13.00]       Output:&#xD;
+[xUnit.net 00:00:13.00]         Reaped browser PID 35192.&#xD;
+[xUnit.net 00:00:13.01]   Finished:    Diten.Web.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="GMGRAPHIC" outcome="Error" timestamp="2026-11-20T16:18:19.1465974+04:00">
+        <Text>[xUnit.net 00:00:13.00]     Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

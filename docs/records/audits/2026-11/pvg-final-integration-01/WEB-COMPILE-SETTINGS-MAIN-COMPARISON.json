@@ -1,0 +1,68 @@
+{
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "origin_main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "evaluated_projects": 9,
+  "tracked_build_settings": [
+    {
+      "path": "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "H_blob": "bb43c17afa5a8b514511ca1b88ceb100ab987aa8",
+      "origin_main_blob": "7280f04df4aa05d84eb18279e91e6c4ff7f172b2",
+      "same_blob": false
+    },
+    {
+      "path": "frontend/Diten.Web/Diten.Web.csproj",
+      "H_blob": "fed6a53ce9b70b6aae18f842d727ddbdfe4da34f",
+      "origin_main_blob": "fed6a53ce9b70b6aae18f842d727ddbdfe4da34f",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj",
+      "H_blob": "a0a0400cef18e60e52391b1b243d5d883e553d0e",
+      "origin_main_blob": "a0a0400cef18e60e52391b1b243d5d883e553d0e",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+      "H_blob": "e8cd5992321c0e092003d80fe662bf886174668b",
+      "origin_main_blob": "e8cd5992321c0e092003d80fe662bf886174668b",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj",
+      "H_blob": "84a034132062570363a934d1e93402714af67459",
+      "origin_main_blob": "74cefb51e90c9042db1b540dc68cf55948b585df",
+      "same_blob": false
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/Diten.PvgService.Application.csproj",
+      "H_blob": "f60a5b50892d23f4140adb0ddbd14a80a3092155",
+      "origin_main_blob": "f60a5b50892d23f4140adb0ddbd14a80a3092155",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/Diten.PvgService.Domain.csproj",
+      "H_blob": "bfa77a1116215ad2f90d990da1d5f2c903aa263b",
+      "origin_main_blob": "bfa77a1116215ad2f90d990da1d5f2c903aa263b",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/Diten.PvgService.Infrastructure.csproj",
+      "H_blob": "8debb7418bdf1bd8c2d254033c144a48184e19a6",
+      "origin_main_blob": "8debb7418bdf1bd8c2d254033c144a48184e19a6",
+      "same_blob": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/Diten.PvgService.Persistence.csproj",
+      "H_blob": "c6e8feee4de47f7f33932edbda0e495874d35915",
+      "origin_main_blob": null,
+      "same_blob": false
+    }
+  ],
+  "changed_build_settings": [
+    "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+    "services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj",
+    "services/Diten.PvgService/src/Diten.PvgService.Persistence/Diten.PvgService.Persistence.csproj"
+  ],
+  "external_imports_sha_bound_by": "attempt-02-actual-full-web/Diten.Web.Tests-compile-closure.json",
+  "limits": "Source comparison only; no origin/main build or test was run. The actual integrated assembly contains changed PVG inputs, so identical Returns test/product blobs do not imply equivalent full assemblies or origin/main PASS."
+}

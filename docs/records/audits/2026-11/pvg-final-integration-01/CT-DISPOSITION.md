@@ -1,0 +1,15 @@
+# PVG build/test dalgası — CT son değerlendirme taslağı
+
+Ölçülen kaynak: `51c58549b7c2e7a0a232e74a15054f9b2b8b51dd`, `chore/ct/pvg-ct-01`. Bu metin yayımlama veya kabul izni değildir.
+
+CT, ürün kodu yazmadan ayrı işçilerin kesin, bağımsız incelenmiş commit’lerini merge commit ile aynı dala birleştirdi. DL-12 BE/L10N/FE ve üç hazırlık işi INTEGRATED; parent IN_PROGRESS. FE altı Git blob’u kesin aday fbcb3353 ile aynı; önceki BE/L10N blob’ları ve rev21 pack/domain/donmuş üretici değişmedi.
+
+Bağımsız FE teknik E2 UYGUN/açık0: kendi API456/Reg211/PVGWeb78/JS39, hata/skip0; kendi11 ayrı derlenen negatif kontrol RED→özgün GREEN; gerçek capture6CLI0. Hashler bütünlük kanıtıdır; kişi kimliği veya kriptografik imza değildir.
+
+Birleşik kökte genel mimari FAIL: 230Passed/1Failed/0Skip. Tek symlink vakası Windows CreateSymbolicLink ayrıcalığı yokluğunda fixture kurulurken başarısız. Test, proje ve53 ilgili fixture/build girdisi main58eb ile birebir; main runtime ölçülmedi. Sonucu yeşile çeviren test/izin/skip/ledger değişikliği yapılmadı.26 ownJob boş/zorlamasız,26657kaynak/root/index/HEAD değişmez, symlink vakasının fixture dizini yok; kaynak/build/cache kanıtları korunuyor.237ham kayıt/45271059bayt CT tarafından yeniden hash doğrulandı.
+
+Genel Web FAIL:4585testte4584Passed/1Failed/0Skip; PVG78’in tamamı Passed ve önceki bağımsız78 kimlik çokluğu birebir. Tek hata MOD-0186 iade ekranı JavaScript metin karşılaştırmasıdır; test ve ürün JS main ile aynı, kodlama nedeni yalnız hipotez, main runtime koşulmadı.9derleme projesi/3728girdi, gerçek DLL→TRX tazeliği doğrulandı;69 ownJob boş/zorlamasız,26657root/özel kaynak ve bağımlılık ağaçları aynı.279ham dosya/143306783bayt CT yeniden hash doğrulamalı. Test işlemi exit1 ile kendiliğinden kapandı; zorlamalı sonlandırma yok; ek dotnet-stack kurulumu/bağlantısı yapılmadı. Son kuyruk denetimi aynı H51 üzerinde0hata/0uyarı/exit0; doğru GH PATH ve ağ erişimiyle eski altı kabul doğrulandı. İlk geçici NuGet XML utf8 yazımı yüzünden test başlamadan duran iki hazırlık denemesi ayrı korunur; yalnız utf-8 literal düzeltmesi bağımsız byte-delta incelemesinden geçti. İlk root kuyruk komutunda eksik gh PATH ve ilk paket komutunda yanlış sıkı main okuması da gerçek başarısız ölçümler olarak kayda alınır. Doğru dal onayı kapısı HIGH/tam iki UYGUN/exit0; main insan adımı son tek PR’da ölçülür.
+
+Karar sınırı: yalnız bulguları açık tek taslak PR hazırlanabilir. Linux exact-source CI/Phase1 ve listedeki farklı HIGH yetkili insanın merge commit’i beklenir. Bu dalgaya yeni ACCEPTED/E4/canlı kullanım/modül DONE verilmiyor; mevcut altı ACCEPTED satırı korunur; SharedResource eski açık denetim sonucu ayrı kayıttadır. Worktree arşivi ancak main erişilebilirliği ve korunmamış iş bulunmadığı ölçüldükten sonra yapılır. Push/PR için ayrıca kesin son dal+SHA onayı alınır.
+
+Yerel genel Web ve mimari yalnız yukarıdaki H51 kaynak sürümünde koşuldu. Daha sonraki kayıt/metadata commit’i için otomatik runtime PASS aktarılmaz. Kesin son PR SHA’sı için CI ayrıca ölçülür; derleme girdisi eşitliği yalnız kaynak karşılaştırmasıdır.

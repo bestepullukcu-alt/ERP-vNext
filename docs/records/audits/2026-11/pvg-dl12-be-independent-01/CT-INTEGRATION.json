@@ -1,0 +1,52 @@
+{
+  "kind": "CT no-ff source integration, combined actual runtime baseline follows",
+  "at_utc": "2026-11-20T21:48:00.998841+00:00",
+  "merge_commit": "0f9bedbbe0f6bc64ecbfbabfb8f751dcf728c381",
+  "merge_tree": "56f16aa89b4c03f62960ad39853379cf27c1c5f7",
+  "parents": [
+    "2ba8020aca05fb43bc49d46248125449c2b6f8cd",
+    "67005d85137f61ffe8c24eabb46bcd2cf15b9d87"
+  ],
+  "candidate": "67005d85137f61ffe8c24eabb46bcd2cf15b9d87",
+  "paths": [
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "git_blob_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "git_blob_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "git_blob_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+      "git_blob_sha256": "4af91c09a59607c7e612a4c90f89d0084190c6cc9b9a4cb589dd133db1343713",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+      "git_blob_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+      "git_blob_sha256": "12edde7bad0da61cac83efb2d0b5aebdefde37258ae081e7b7ebb1a97494ab56",
+      "candidate_equal": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs",
+      "git_blob_sha256": "69894a7758505726fdeaa7efbd7c1993e620c661614dbaee16afdaeaddd0171c",
+      "candidate_equal": true
+    }
+  ],
+  "pack_domain_unchanged": true,
+  "seven_l10n_candidate_files_unchanged": true,
+  "ct_clean_after_merge": true,
+  "limits": "Candidate independent API456/Reg211 is not merged runtime run. Next fresh four-suite baseline at committed INTEGRATED H, FE stays PLANNED. No FE acceptance/CI/live/publication."
+}

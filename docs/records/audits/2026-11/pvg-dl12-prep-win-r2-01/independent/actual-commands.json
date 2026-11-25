@@ -1,0 +1,324 @@
+[
+  {
+    "name": "sdk-version",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 16020,
+    "exit": 0,
+    "start_epoch": 1795201275.5646117,
+    "seconds": 0.17,
+    "log_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+  },
+  {
+    "name": "mongo-version",
+    "argv": [
+      "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 16648,
+    "exit": 0,
+    "start_epoch": 1795201275.7350192,
+    "seconds": 0.075,
+    "log_sha256": "03d73207a5508d9f88f233c9188b1537cf7937a2e419bac681d56ced2f093ee6"
+  },
+  {
+    "name": "restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 28792,
+    "exit": 0,
+    "start_epoch": 1795201275.811362,
+    "seconds": 1.886,
+    "log_sha256": "eddd7dfedda069c0caf76c49cb65dc197a7e62865ad4443e5d42ae6479b2105c"
+  },
+  {
+    "name": "normal-full",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore",
+      "--logger",
+      "trx;LogFileName=win-independent.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 1768,
+    "exit": 0,
+    "start_epoch": 1795201277.699283,
+    "seconds": 46.295,
+    "log_sha256": "3c29a37746d9d2ee4c0fd0fcccd14a0b0a8754b1848e237acbde35182d3ffd4c"
+  },
+  {
+    "name": "skip-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\scripts\\check_trx_no_skipped.py",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 12516,
+    "exit": 0,
+    "start_epoch": 1795201325.0693796,
+    "seconds": 0.121,
+    "log_sha256": "0c8dbbb5abf6abb213dd78827911e5f2d8554162fe4ebdf275e08ba12b07d501"
+  },
+  {
+    "name": "known-failures-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\scripts\\known_failures.py",
+      "check",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx",
+      "--suite",
+      "pvg-api"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 10876,
+    "exit": 0,
+    "start_epoch": 1795201325.1918325,
+    "seconds": 1.562,
+    "log_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+  },
+  {
+    "name": "ct-producer",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-PREP-WIN-v2.0.py",
+      "--repo",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+      "--trx",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx",
+      "--out",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\ct-capture.json",
+      "--base",
+      "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+      "--assembly",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+    "pid": 16500,
+    "exit": 0,
+    "start_epoch": 1795201326.7554119,
+    "seconds": 20.472,
+    "log_sha256": "05ad27baca1071157eb0ffb3551c30987da1e032fafccfe776ca39524edeea6b"
+  },
+  {
+    "name": "G5-restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5\\src",
+    "pid": 28236,
+    "exit": 0,
+    "start_epoch": 1795201594.796404,
+    "seconds": 1.404,
+    "log_sha256": "336fb735f9c0e184b4df813fff836150bd5717cd4b9bf62f1c4449072f223222"
+  },
+  {
+    "name": "G5-build",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "build",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5\\src",
+    "pid": 33584,
+    "exit": 0,
+    "start_epoch": 1795201596.2018363,
+    "seconds": 6.111,
+    "log_sha256": "1af02886c49740823f05aab31679d5d059dcfbb53c9ffb2d958e2a4bfc70812a"
+  },
+  {
+    "name": "G5-red",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-build",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~Configuration_scan_fails_closed_on_inaccessible_directory",
+      "--logger",
+      "trx;LogFileName=red.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5\\src",
+    "pid": 16952,
+    "exit": 1,
+    "start_epoch": 1795201602.3146327,
+    "seconds": 2.213,
+    "log_sha256": "519ef0a3c9d485c5519dba76ffc9a32bab68a45882419d2be0da2b5b506dccaa"
+  },
+  {
+    "name": "G5-green-build",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "build",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5\\src",
+    "pid": 31748,
+    "exit": 0,
+    "start_epoch": 1795201604.533298,
+    "seconds": 3.228,
+    "log_sha256": "0c3788f24d78e26807ff3a3bef7853436696094b3846df85d632341ab5f4188f"
+  },
+  {
+    "name": "G5-green",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-build",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~Configuration_scan_fails_closed_on_inaccessible_directory",
+      "--logger",
+      "trx;LogFileName=green.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G5\\src",
+    "pid": 12020,
+    "exit": 0,
+    "start_epoch": 1795201607.7629716,
+    "seconds": 2.099,
+    "log_sha256": "45e6a8ff026254edf7441a70811926023e41fd73ee05f23419a6b2d49592af06"
+  },
+  {
+    "name": "G6-restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6\\src",
+    "pid": 35752,
+    "exit": 0,
+    "start_epoch": 1795201669.1851666,
+    "seconds": 1.651,
+    "log_sha256": "5040993b1e057aa885b17572b95f082b66f189651df11c6cd166f02ae72e6f10"
+  },
+  {
+    "name": "G6-build",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "build",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6\\src",
+    "pid": 33556,
+    "exit": 0,
+    "start_epoch": 1795201670.8376164,
+    "seconds": 6.331,
+    "log_sha256": "e1c4f0e4e2cf3bc08d9e5b52466455fc9098521e581d65d33a59804f76f1166a"
+  },
+  {
+    "name": "G6-red",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-build",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~Configuration_scan_fails_closed_on_inaccessible_directory",
+      "--logger",
+      "trx;LogFileName=red.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6\\src",
+    "pid": 2896,
+    "exit": 1,
+    "start_epoch": 1795201677.1702774,
+    "seconds": 2.161,
+    "log_sha256": "babcbf69adf24e5762b878498f705bd889a796d4db291fc61b4d15ff2405c989"
+  },
+  {
+    "name": "G6-green-build",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "build",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6\\src",
+    "pid": 20692,
+    "exit": 0,
+    "start_epoch": 1795201679.335295,
+    "seconds": 2.892,
+    "log_sha256": "b6c7a15610f04db3955073bb74bb77906bac841148084ca83dd04f7791f3fbf5"
+  },
+  {
+    "name": "G6-green",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-build",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~Configuration_scan_fails_closed_on_inaccessible_directory",
+      "--logger",
+      "trx;LogFileName=green.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\G6\\src",
+    "pid": 23216,
+    "exit": 0,
+    "start_epoch": 1795201682.2288988,
+    "seconds": 2.162,
+    "log_sha256": "bff346d25b72ca58249e4254528cd71ddea00b2ed6725d3c5f75849a2194f4a1"
+  }
+]

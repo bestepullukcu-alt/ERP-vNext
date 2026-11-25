@@ -1,0 +1,51 @@
+{
+  "group": "G6",
+  "build": [
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "build",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+    "-c",
+    "Debug"
+  ],
+  "test": [
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "test",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+    "-c",
+    "Debug",
+    "--no-build",
+    "--no-restore",
+    "--filter",
+    "FullyQualifiedName~Configuration_scan_fails_closed_on_inaccessible_directory",
+    "--logger",
+    "trx;LogFileName=mutant.trx",
+    "--results-directory",
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\G6"
+  ],
+  "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\PvgServiceApiHostTests.cs",
+  "original_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+  "mutant_sha256": "86f5bca11ade634e3b7c97217ac3535dd9f866a08dd6c553d43e6656a36c706b",
+  "green_test": {
+    "executionId": "90f47ae4-96e2-42eb-b2b9-cbada38bce3e",
+    "testId": "988b1eae-c9e1-373d-774e-d86ebb267047",
+    "testName": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory",
+    "computerName": "GMGRAPHIC",
+    "duration": "00:00:00.0156364",
+    "startTime": "2026-11-20T22:33:13.9695020+04:00",
+    "endTime": "2026-11-20T22:33:13.9695026+04:00",
+    "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+    "outcome": "Passed",
+    "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+    "relativeResultsDirectory": "90f47ae4-96e2-42eb-b2b9-cbada38bce3e"
+  },
+  "green_trx_sha256": "259115c0c5503edf40a3088f9d8a26bd1d70f8f249f7e9ba1646ba567d72ead6",
+  "build_exit": 0,
+  "assembly_sha256": "f9bea0c54a63e2a318e3cb29c30ad4609e2837853455a84c288c2b5ceed40420",
+  "test_exit": 1,
+  "assertion": "var denied = Assert.Throws<UnauthorizedAccessException>(() => PvgConfigurationScanner.Scan(fixture.Root));",
+  "line": 1901,
+  "message": "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(System.UnauthorizedAccessException)",
+  "stack": "   at Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory() in C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\G6\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\PvgServiceApiHostTests.cs:line 1901\r\n   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)\r\n   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)",
+  "red_trx_sha256": "408567801887cd2e6945a2068825f0e94b6310f961594f17aa6f7c7c7b2f5ef6",
+  "fixture_roots_left": 0
+}

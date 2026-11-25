@@ -1,0 +1,33 @@
+{
+  "measured_utc": "2026-11-21T16:49:40.846587+00:00",
+  "actual_web_rebuild_record": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-web-genuine-rebuild\\RESULT.json",
+  "backend_compile_closure_equivalence_record": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\BACKEND-v2-v3-CLOSURE-EQUIVALENCE.json",
+  "api_143_and_regpv_90_inputs_unchanged": true,
+  "original_v2_runs_not_relabelled_v3": true,
+  "test_assemblies": [
+    {
+      "phase": "final-v2-api-actual",
+      "archived_assembly_record": {
+        "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll",
+        "sha256": "9aaafa0634c190258c7a9c9a263c11300d0de7375160b60578cd03fb3d03c536",
+        "bytes": 635904,
+        "mtime_ns": 1795277399099264400
+      },
+      "post_web_rebuild_sha256": "9aaafa0634c190258c7a9c9a263c11300d0de7375160b60578cd03fb3d03c536",
+      "post_web_rebuild_mtime_ns": 1795277399099264400,
+      "same_hash_and_mtime": true
+    },
+    {
+      "phase": "final-v2-regpv",
+      "archived_assembly_record": {
+        "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git\\services\\Diten.PvgService\\tests\\Diten.PvgService.RegPvBase.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.RegPvBase.Tests.dll",
+        "sha256": "518f4ea38b2b05c772336a1960dd9ae20b8aabcb2bebbbfcc4a3d7bfe00c9ff8",
+        "bytes": 247296,
+        "mtime_ns": 1795277589823694200
+      },
+      "post_web_rebuild_sha256": "518f4ea38b2b05c772336a1960dd9ae20b8aabcb2bebbbfcc4a3d7bfe00c9ff8",
+      "post_web_rebuild_mtime_ns": 1795277589823694200,
+      "same_hash_and_mtime": true
+    }
+  ]
+}

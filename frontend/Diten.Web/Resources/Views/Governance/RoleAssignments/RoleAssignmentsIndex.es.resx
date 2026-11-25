@@ -198,4 +198,10 @@
     <value>El rol ya tiene este permiso. Actualice la página.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Quitar este permiso no dejaría ninguna otra cuenta activa que pueda agregar usuarios. Primero conceda ese derecho a otro usuario.</value></data>
+  <data name="ActionVerb_Triage" xml:space="preserve">
+    <value>Realizar Triaje</value>
+  </data>
+  <data name="ActionVerb_Route" xml:space="preserve">
+    <value>Derivar</value>
+  </data>
 </root>

@@ -1,0 +1,27 @@
+
+.NET 8.0 sürümüne hoş geldiniz!
+---------------------
+SDK Sürümü: 8.0.428
+
+----------------
+Bir ASP.NET Core HTTPS geliştirme sertifikası yüklendi.
+Sertifikaya güvenmek için 'dotnet dev-certs https --trust' çalıştırın
+Bilgi edinmek için bkz. https://aka.ms/dotnet-https
+
+----------------
+İlk uygulamanızı yazın: https://aka.ms/dotnet-hello-world
+Yenilikleri öğrenin: https://aka.ms/dotnet-whats-new
+Belgeleri keşfedin: https://aka.ms/dotnet-docs
+Sorunları bildirin ve GitHub'da kaynak bulun: https://github.com/dotnet/core
+Kullanılabilir komutları görmek için 'dotnet --help' komutunu kullanın veya şu adresi ziyaret edin: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------
+  Geri yüklenecek projeler belirleniyor...
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj geri yüklendi (98 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Application\Diten.PvgService.Application.csproj geri yüklendi (106 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj geri yüklendi (106 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj geri yüklendi (98 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\frontend\Diten.Web\Diten.Web.csproj geri yüklendi (6,7 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj geri yüklendi (6,7 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Persistence\Diten.PvgService.Persistence.csproj geri yüklendi (19,83 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Api\Diten.PvgService.Api.csproj geri yüklendi (19,83 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-web\ERP-vNext-git\frontend\Diten.Web.Tests\Diten.Web.Tests.csproj geri yüklendi (21,09 sn içinde).

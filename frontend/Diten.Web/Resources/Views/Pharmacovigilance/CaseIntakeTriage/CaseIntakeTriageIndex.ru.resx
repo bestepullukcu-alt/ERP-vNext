@@ -115,4 +115,5 @@
   <data name="RemoveReporterLink" xml:space="preserve"><value>Удалить Связь</value></data>
   <data name="ReporterLinkRemovalNote" xml:space="preserve"><value>Связь будет удалена при сохранении.</value></data>
   <data name="OptionsLoadFailed" xml:space="preserve"><value>Не удалось прочитать списки вариантов. Сохранение недоступно.</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Эту запись больше нельзя редактировать.</value></data>
 </root>

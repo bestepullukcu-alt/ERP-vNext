@@ -1,0 +1,124 @@
+diff --git a/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs b/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs
+index bf4f6528d..8a8c69ab0 100644
+--- a/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs
++++ b/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs
+@@ -151,8 +151,7 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
+ 
+         Port = PvgMongoTestHarness.ResolvePort(port);
+         _root = Path.Combine(Path.GetTempPath(), "diten-pvg-intake-mongo-" + Guid.NewGuid().ToString("N"));
+-        var data = Path.Combine(_root, "data");
+-        Directory.CreateDirectory(data);
++        Directory.CreateDirectory(Path.Combine(_root, "data"));
+ 
+         var start = new ProcessStartInfo(binary)
+         {
+@@ -161,22 +160,7 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
+             RedirectStandardOutput = true,
+             RedirectStandardError = true
+         };
+-        var arguments = new List<string>
+-        {
+-            "--bind_ip", "127.0.0.1",
+-            "--port", Port.ToString(),
+-            "--dbpath", data,
+-            "--logpath", Path.Combine(_root, "mongod.log"),
+-            "--nounixsocket",
+-            "--wiredTigerCacheSizeGB", "0.25",
+-            "--setParameter", "enableTestCommands=1"
+-        };
+-        if (ReplicaSet)
+-        {
+-            arguments.AddRange(["--replSet", PvgMongoTestHarness.ReplicaSetName, "--oplogSize", "128"]);
+-        }
+-
+-        foreach (var argument in arguments)
++        foreach (var argument in BuildLaunchArguments(Port, _root, ReplicaSet, OperatingSystem.IsWindows()))
+         {
+             start.ArgumentList.Add(argument);
+         }
+@@ -218,6 +202,30 @@ internal sealed class PvgOwnedMongod : IAsyncDisposable
+         }
+     }
+ 
++    internal static List<string> BuildLaunchArguments(int port, string root, bool replicaSet, bool isWindows)
++    {
++        var arguments = new List<string>
++        {
++            "--bind_ip", "127.0.0.1",
++            "--port", port.ToString(),
++            "--dbpath", Path.Combine(root, "data"),
++            "--logpath", Path.Combine(root, "mongod.log"),
++            "--wiredTigerCacheSizeGB", "0.25",
++            "--setParameter", "enableTestCommands=1"
++        };
++        if (!isWindows)
++        {
++            arguments.Add("--nounixsocket");
++        }
++
++        if (replicaSet)
++        {
++            arguments.AddRange(["--replSet", PvgMongoTestHarness.ReplicaSetName, "--oplogSize", "128"]);
++        }
++
++        return arguments;
++    }
++
+     private async Task WaitAsync(Func<Task<bool>> ready)
+     {
+         var deadline = DateTime.UtcNow.AddSeconds(40);
+diff --git a/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs b/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs
+index 259864acd..081258660 100644
+--- a/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs
++++ b/services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs
+@@ -195,6 +195,37 @@ public sealed class PvgPersistenceBoundaryScanTests
+         }
+     }
+ 
++    [Fact]
++    public void Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation()
++    {
++        const int port = 27123;
++        var root = Path.Combine(Path.GetTempPath(), "pvg-mongo-argument-fixture");
++
++        var windowsArguments = PvgOwnedMongod.BuildLaunchArguments(port, root, replicaSet: true, isWindows: true);
++        var unixArguments = PvgOwnedMongod.BuildLaunchArguments(port, root, replicaSet: true, isWindows: false);
++
++        Assert.DoesNotContain("--nounixsocket", windowsArguments);
++        Assert.Contains("--nounixsocket", unixArguments);
++        foreach (var arguments in new[] { windowsArguments, unixArguments })
++        {
++            AssertArgument(arguments, "--bind_ip", "127.0.0.1");
++            AssertArgument(arguments, "--port", "27123");
++            AssertArgument(arguments, "--dbpath", Path.Combine(root, "data"));
++            AssertArgument(arguments, "--logpath", Path.Combine(root, "mongod.log"));
++            AssertArgument(arguments, "--wiredTigerCacheSizeGB", "0.25");
++            AssertArgument(arguments, "--setParameter", "enableTestCommands=1");
++            AssertArgument(arguments, "--replSet", PvgMongoTestHarness.ReplicaSetName);
++            AssertArgument(arguments, "--oplogSize", "128");
++        }
++
++        static void AssertArgument(List<string> arguments, string flag, string expectedValue)
++        {
++            var index = arguments.IndexOf(flag);
++            Assert.InRange(index, 0, arguments.Count - 2);
++            Assert.Equal(expectedValue, arguments[index + 1]);
++        }
++    }
++
+     [Fact]
+     public void Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod()
+     {
+@@ -210,8 +241,10 @@ public sealed class PvgPersistenceBoundaryScanTests
+         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(null, _ => true));
+         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(" ", _ => true));
+         Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary("mongod", _ => true));
+-        Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary("/opt/none/mongod", _ => false));
+-        Assert.Equal("/opt/fake/mongod", PvgMongoTestHarness.ResolveBinary("/opt/fake/mongod", _ => true));
++        var missingBinary = OperatingSystem.IsWindows() ? @"C:\opt\none\mongod.exe" : "/opt/none/mongod";
++        var existingBinary = OperatingSystem.IsWindows() ? @"C:\opt\fake\mongod.exe" : "/opt/fake/mongod";
++        Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(missingBinary, _ => false));
++        Assert.Equal(existingBinary, PvgMongoTestHarness.ResolveBinary(existingBinary, _ => true));
+     }
+ }
+ 

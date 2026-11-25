@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Diten.PvgService.Application.RegPvBase;
 using Diten.PvgService.Domain.RegPvBase;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -382,13 +383,77 @@ public sealed record PvgCaseIntakeUpdateRequest(
 }
 
 public sealed record PvgCaseIntakeTriageRequest(
-    PvgTriageOutcome? TriageOutcome,
+    [property: JsonConverter(typeof(PvgTriageOutcomeRequestConverter))] PvgTriageOutcome? TriageOutcome,
     string? TriageReasonCode,
     string? TriageReason,
     long? ExpectedVersion = null)
 {
     public PvgTriageIntakeDraftRequest ToApplicationRequest() =>
         new(TriageOutcome, TriageReasonCode, TriageReason);
+}
+
+// AC-39 (G-24): the triage form sends the outcome as text ("Triaged", "Rejected", "Duplicate"). This converter is
+// attached to the TriageOutcome property only (no host-wide JSON option, no attribute on the enum). A JSON string binds
+// only when it is exactly an enum name (ordinal, case-sensitive): the framework enum parser would also accept numeric
+// text and comma-joined names ("Triaged, Rejected" becomes Duplicate), so it is not used. Any other string is a binding
+// failure (JsonException), so the request is refused with a 400 before the permission gate. JSON null and a JSON number
+// read as they did with the plain enum (null passes; an integer converts to the enum, defined or not); any other token
+// type is a binding failure. The converter throws JsonException only.
+public sealed class PvgTriageOutcomeRequestConverter : JsonConverter<PvgTriageOutcome?>
+{
+    public override bool HandleNull => true;
+
+    public override PvgTriageOutcome? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.Null:
+                return null;
+            case JsonTokenType.String:
+                var text = reader.GetString();
+                if (string.Equals(text, nameof(PvgTriageOutcome.Triaged), StringComparison.Ordinal))
+                {
+                    return PvgTriageOutcome.Triaged;
+                }
+
+                if (string.Equals(text, nameof(PvgTriageOutcome.Rejected), StringComparison.Ordinal))
+                {
+                    return PvgTriageOutcome.Rejected;
+                }
+
+                if (string.Equals(text, nameof(PvgTriageOutcome.Duplicate), StringComparison.Ordinal))
+                {
+                    return PvgTriageOutcome.Duplicate;
+                }
+
+                throw new JsonException();
+            case JsonTokenType.Number:
+                if (reader.TryGetInt32(out var number))
+                {
+                    return (PvgTriageOutcome)number;
+                }
+
+                throw new JsonException();
+            default:
+                throw new JsonException();
+        }
+    }
+
+    public override void Write(Utf8JsonWriter writer, PvgTriageOutcome? value, JsonSerializerOptions options)
+    {
+        if (value is null)
+        {
+            writer.WriteNullValue();
+        }
+        else if (Enum.IsDefined(value.Value))
+        {
+            writer.WriteStringValue(value.Value.ToString());
+        }
+        else
+        {
+            writer.WriteNumberValue((int)value.Value);
+        }
+    }
 }
 
 public sealed record PvgCaseIntakeRouteRequest(string? RouteTargetQueue, long? ExpectedVersion = null)
@@ -453,7 +518,22 @@ public sealed record PvgCaseIntakeDraftResponse(
     string ReporterCrmSearchState,
     string? ReporterNameOrInitials,
     string? ReporterProfession,
-    string? ReporterCountry)
+    string? ReporterCountry,
+    string IntakeChannel,
+    string SourceType,
+    string? SourceReference,
+    DateTimeOffset ReceivedAtUtc,
+    string ReporterType,
+    string? ReporterContactSummary,
+    string? PatientSubjectCode,
+    DateOnly? EventOnsetDate,
+    string AdverseEventNarrative,
+    string Seriousness,
+    string IntakePriority,
+    string? TriageOutcome,
+    string? TriageReason,
+    string? RouteTargetQueue,
+    IReadOnlyList<string> EvidenceLinkReferences)
 {
     public static PvgCaseIntakeDraftResponse From(PvgIntakeDraftSummary summary, SafetyCaseIntake intake) =>
         new(
@@ -470,7 +550,22 @@ public sealed record PvgCaseIntakeDraftResponse(
             intake.ReporterCrmSearchState.ToString(),
             intake.ReporterNameOrInitials,
             intake.ReporterProfession,
-            intake.ReporterCountry);
+            intake.ReporterCountry,
+            intake.IntakeChannel,
+            intake.SourceType,
+            intake.SourceReference,
+            intake.ReceivedAtUtc,
+            intake.ReporterType,
+            intake.ReporterContactSummary,
+            intake.PatientSubjectCode,
+            intake.EventOnsetDate,
+            intake.AdverseEventNarrative,
+            intake.Seriousness,
+            intake.IntakePriority,
+            intake.TriageOutcome?.ToString(),
+            intake.TriageReason,
+            intake.RouteTargetQueue,
+            intake.EvidenceLinkReferences);
 }
 
 public sealed record PvgCaseIntakeApiResponse(

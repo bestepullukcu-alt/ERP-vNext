@@ -1,0 +1,17 @@
+{
+  "frozen_head": "fbfcf0a46a66e2f8947c765a7778e73022928178",
+  "live_ct_head_at_end": "ad0602889f96995934639ed6ca758f1ce5c8d4b2",
+  "all_frozen_source_bytes_unchanged": true,
+  "source_count": 26227,
+  "seven_be_paths_bound": true,
+  "related_source_count": 90,
+  "same_fixed_ledger_and_guard_items_before_after": true,
+  "actual_count": 211,
+  "failed": 0,
+  "skipped": 0,
+  "skip_check_exit": 0,
+  "known_failures_exit": 0,
+  "no_feature_write": true,
+  "normal_invocations": 1,
+  "scope": "Unchanged BE pre-dispatch baseline only; feature remains BLOCKED; not feature E2/completion or no-loss acceptance."
+}

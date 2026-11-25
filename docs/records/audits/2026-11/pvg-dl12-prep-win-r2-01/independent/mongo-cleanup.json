@@ -1,0 +1,67 @@
+[
+  {
+    "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-tmp\\diten-pvg-intake-mongo-48eeca1db7e7434ab8706fac4fd37f1f",
+    "pid": 11328,
+    "port": 64634,
+    "data": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i2-1795201003887/normal-tmp/diten-pvg-intake-mongo-48eeca1db7e7434ab8706fac4fd37f1f/data",
+    "data_present_during_run": true,
+    "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+    "loopback": true,
+    "replica": true,
+    "first_observed_epoch": 1795201294.248426,
+    "root_removed_after_run": true,
+    "port_closed_after_run": true
+  },
+  {
+    "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-tmp\\diten-pvg-intake-mongo-726e78ce674e486b8523071f91a467d8",
+    "pid": 17764,
+    "port": 64764,
+    "data": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i2-1795201003887/normal-tmp/diten-pvg-intake-mongo-726e78ce674e486b8523071f91a467d8/data",
+    "data_present_during_run": true,
+    "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+    "loopback": true,
+    "replica": true,
+    "first_observed_epoch": 1795201301.3472729,
+    "root_removed_after_run": true,
+    "port_closed_after_run": true
+  },
+  {
+    "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-tmp\\diten-pvg-intake-mongo-7b81deb54c2446bca192996ca16ccad8",
+    "pid": 22832,
+    "port": 64787,
+    "data": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i2-1795201003887/normal-tmp/diten-pvg-intake-mongo-7b81deb54c2446bca192996ca16ccad8/data",
+    "data_present_during_run": true,
+    "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+    "loopback": true,
+    "replica": false,
+    "first_observed_epoch": 1795201305.4773145,
+    "root_removed_after_run": true,
+    "port_closed_after_run": true
+  },
+  {
+    "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-tmp\\diten-pvg-intake-mongo-664454fedebb4e42a7ab804c25e2b1e7",
+    "pid": 34432,
+    "port": 49613,
+    "data": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i2-1795201003887/normal-tmp/diten-pvg-intake-mongo-664454fedebb4e42a7ab804c25e2b1e7/data",
+    "data_present_during_run": true,
+    "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+    "loopback": true,
+    "replica": true,
+    "first_observed_epoch": 1795201313.2285545,
+    "root_removed_after_run": true,
+    "port_closed_after_run": true
+  },
+  {
+    "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-tmp\\diten-pvg-intake-mongo-a648137627e54d959b1ebd19cc833595",
+    "pid": 35492,
+    "port": 49638,
+    "data": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i2-1795201003887/normal-tmp/diten-pvg-intake-mongo-a648137627e54d959b1ebd19cc833595/data",
+    "data_present_during_run": true,
+    "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+    "loopback": true,
+    "replica": true,
+    "first_observed_epoch": 1795201321.8256307,
+    "root_removed_after_run": true,
+    "port_closed_after_run": true
+  }
+]

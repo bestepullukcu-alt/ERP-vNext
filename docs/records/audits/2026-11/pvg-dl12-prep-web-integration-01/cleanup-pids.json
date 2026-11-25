@@ -1,0 +1,26 @@
+{
+  "browser_pids": [
+    10824,
+    16308,
+    21288,
+    23024,
+    24828,
+    26712,
+    29604,
+    29764,
+    30008,
+    31220,
+    33400,
+    36544
+  ],
+  "browser_pid_count": 12,
+  "root_process_pids": [
+    20168,
+    10072,
+    15584,
+    17552,
+    5976,
+    18876
+  ],
+  "note": "External liveness check after this runner exits is required; no topic-wide kill."
+}

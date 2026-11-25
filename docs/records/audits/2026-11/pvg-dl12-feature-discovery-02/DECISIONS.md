@@ -1,0 +1,44 @@
+# DL-12 — kanonik keşif ve kapsam kararı v1.1
+
+2026-11-21 (Asia/Baku). Gerçek üretici 2026-11-20T19:59:32–19:59:52UTC, HEAD8650802eb2d2cec91b687a603de9b3bac984e408 üzerinde yeniden çalıştı: exit3/check-report0,34 BULGU/538 ref/11 görev kaynağı. Tüm non-ref satırları kesilmeden okundu,538 ref sayıldı. Ham stdout değiştirilmedi; discovery-capture.json gerçek argv/zaman/iki üretici kopyasının Git blob ve raw SHA eşitliğini taşır. Rapor gövde SHA b9dd8c2f751a22c40c2a88a8c382473df864a9cae3b562e5215c2ae3a78f8ccc, ham SHA afb28c26db1d50b95823193cf0e73e743b62094e1ff97b79cc6f945d2147465a.
+
+Önceki discovery-01 ve v1.0 normal1 ham kanıtları korunur. Kanonik araç72d27f77dcf4… ve ct_queue ac0e3d683025… Git blob'ları dış LF aynasında byte-byte eşit doğrulanarak runpy ile gerçek repo üzerinde çalıştırıldı; korunan üretici/guard değiştirilmedi. REPORT-CONTRACT-CHECK.json gerçek üretim parser/report_contract ve gerçek git-show okuyucusuyla eski raporda tek RED, yeni raporda sıfır bulgu ölçer. Bu dar ön kontrol normal dağıtım0 yerine geçmez.
+
+Tek kapsam mevcut onaylı MOD-0230 DL-12: BE+L10N paralel, ardından FE. Rev21 pack ea4ff430…/domain2411fa95…, iki UYGUN ve HIGH3689138497 değişmez. Yeni sahip/onay kararı yok. Tarihsel refs içindeki ownerTBD/eski pack bugünkü yetki değildir. Operasyon/OD-PVG-14, MOD-0019 canlı maskeleme ve E4/live kapıları açık kalır. REGISTRY-01 sorguda ayrı BULGU değildir, kendi bağımsız kanıtıyla INTEGRATED. İlk29 bulgu kimliği/sırası aynı; parent29 yeni duruşla açıklanır,30–34 güncel karar aşağıdadır. Yeni MOD/FU/HR işi açılmaz.
+
+Kısmi sınır: raporun EKSİK satırları geçerlidir; görünmeyen makineler, commit edilmemiş işler/kayıtsız sohbetler ve son fetch sonrası uzak durum doğrulanmadı. Ham son-fetch11:31 üretici çıktısı değiştirilmedi; gerçek worktree FETCH_HEAD18:59:50UTC/origin-main58eb6fa… main-sync-02 ile ayrıca ölçülmüştür.538 ref önceki536'ya temiz BE/L10N dallarını ekler. Ham kesilmiş BULGU satırındaki trailing space üretici verisidir; düzeltmek hash'i bozacağı için korunur ve diğer CT dosyaları ayrıca whitespace kontrolünden geçer.
+
+Keşif kararı 1: parent — Blueprint MOD-0230 Case Intake & Triage bu hazırlıkların mevcut üst modülüdür; yeni kimlik yok.
+Keşif kararı 2: parent — Registry aynı MOD-0230 kimliğini doğrular; ayrı modül veya alias açılmaz.
+Keşif kararı 3: parent — Mevcut pack aynı yetki belgesidir; eski dallardaki kopyalar yeni iş izni değildir. Son kapsamın resmî inceleme ve HIGH kaydı olmadan worker yok.
+Keşif kararı 4: yeni — HR case-management başka servistir ve yalnız ad benzerliğidir; bu PVG işine dahil edilmez, dosyalarına dokunulmaz veya yeni HR modülü oluşturulmaz.
+Keşif kararı 5: parent — Mevcut PVG5011 route ailesi bu modüle aittir; route/Gateway değişikliği bu hazırlıkların dışında kalır.
+Keşif kararı 6: parent — PVG-M1-01 mevcut INSPECTION_REQUIRED keşif/inceleme kaydıdır; aynı MOD-0230 altında ilerlenir, ayrı yetenek veya mükerrer modül açılmaz.
+Keşif kararı 7: parent — PVG-M1-02 mevcut INSPECTED keşif/inceleme kaydıdır; aynı MOD-0230 altında ilerlenir, ayrı yetenek veya mükerrer modül açılmaz.
+Keşif kararı 8: parent — Mevcut operasyonel runtime karar kaydı ayrı kapıdır; sınırlı build/test hazırlığı onu kapatmaz ve canlı kullanım izni vermez.
+Keşif kararı 9: child — WP-0230-DL2A aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 10: child — WP-0230-DL2B aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 11: child — WP-0230-DL3 aynı modülün SUPERSEDED eski teslimidir; yeniden dağıtılmaz. Mevcut düzeltme/ardıl kayıtlar korunur, bu hazırlık onun eski geniş kapsamını üstlenmez.
+Keşif kararı 12: child — WP-0230-DL8 aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 13: child — WP-0230-DL3A aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 14: child — WP-0230-DL3B aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 15: child — WP-0230-DL4A aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 16: child — WP-0230-DL3C aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 17: child — WP-0230-DL6 aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 18: child — WP-0230-DL3D aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 19: child — WP-0230-DL4B aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 20: child — WP-0230-DL7A aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 21: child — WP-0230-DL4D aynı modülün ACCEPTED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 22: child — WP-0230-DL7B aynı modülün REWORK eski teslimidir; yeniden dağıtılmaz. Mevcut düzeltme/ardıl kayıtlar korunur, bu hazırlık onun eski geniş kapsamını üstlenmez.
+Keşif kararı 23: child — WP-0230-DL7B-R1 aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 24: child — WP-0230-DL7C aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 25: child — WP-0230-DL10 aynı modülün REWORK eski teslimidir; yeniden dağıtılmaz. Mevcut düzeltme/ardıl kayıtlar korunur, bu hazırlık onun eski geniş kapsamını üstlenmez.
+Keşif kararı 26: child — WP-0230-DL10-R1 aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 27: child — WP-0230-DL11 aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 28: child — WP-0230-DL4E aynı modülün INTEGRATED mevcut teslimidir; baseline/bağımlılık olarak korunur. Yalnız onaylı DL12 hazırlık yolları yazılır, eski kabul veya canlı kanıt değişmez.
+Keşif kararı 29: parent — Mevcut WP-0230-DL12 aynı onaylı DL-12 üst koordinasyon kaydıdır. v1.0 normal kapıları keşif aracı bayt kimliği nedeniyle1 verdi; bu rapor üreticiyi kanonik Git baytlarından yeniden çalıştırır. Parent ve BE/L10N yalnız yenilenen DoR/inceleme/normal0 ile ilerler; kabul veya operasyon izni yoktur.
+Keşif kararı 30: child — PREP-WIN aynı modülün mevcut hazırlığıdır; fee7d013/addfab teslimi bağımsız E2 UYGUN ve CT no-ff0b03b350 ardından birleşik395/395 PASS,35Mongo/3hedef,0skip/knownfail/producer0 ile INTEGRATED. Kanıt b2651a11 ve prep-win-ct-integration-01 kaydındadır. Eski WIP korunur; mükerrer Windows işi açılmaz.
+Keşif kararı 31: child — PREP-WEB mevcut üç dosyalık hazırlıktır;15791333 CT78804713 içindedir, bağımsız ve taze birleşik62/62,0skip/knownfail0 ile INTEGRATED. Transport başarısı veri-koruma kabulü sayılmaz; yeni Web hazırlığı açılmaz.
+Keşif kararı 32: child — WP-0230-DL12-BE aynı onaylı DL-12 içinde yedi backend/test yoludur. v1.0 normal1 yalnız keşif aracı kimliği nedenli; şu an BLOCKED, kod yok. Güncel kanonik keşif/DoR ve kesin v1.1 kaynak/prompt incelemesi, gerçek normal0 sonrası L10N ile paralel ilerler. Başka modül/FE kapsamı yok.
+Keşif kararı 33: child — WP-0230-DL12-L10N aynı DL-12 için yedi sayfa RESX dosyasında tek DraftNotEditable anahtarıdır. Aynı keşif girdisi nedeniyle BLOCKED ve RESX yazılmadı. Yeni DoR/kesin v1.1/normal0 gerekir; BE ile kesişmez, SharedResource/JS/bridge yazılmaz.
+Keşif kararı 34: child — WP-0230-DL12-FE aynı DL-12 kapsamında altı frontend yolunda PLANNED ardıl iştir. BE ve L10N bağımsız doğrulanıp CT entegrasyonundan sonra kendi güncel DoR/kaynak/prompt/normal0 ile başlar; mükerrer ekran veya modül yok.

@@ -1,0 +1,60 @@
+Baseline portable tools
+.NET SDK:
+ Version:           8.0.428
+ Commit:            742a7a66c3
+ Workload version:  8.0.400-manifests.a830daf1
+ MSBuild version:   17.11.71+2613e0705
+
+Çalışma Zamanı Ortamı:
+ OS Name:     Windows
+ OS Version:  10.0.26200
+ OS Platform: Windows
+ RID:         win-x64
+ Base Path:   C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\sdk\8.0.428\
+
+.NET iş yükleri yüklendi:
+Yeni bildirimler yüklenirken loose manifests kullanılacak şekilde yapılandırıldı.
+Görüntülenecek yüklü iş yükü yok.
+
+Host:
+  Version:      8.0.34
+  Architecture: x64
+  Commit:       b455eab3a0
+
+.NET SDKs installed:
+  8.0.428 [C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\sdk]
+
+.NET runtimes installed:
+  Microsoft.AspNetCore.App 8.0.34 [C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\shared\Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 8.0.34 [C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\shared\Microsoft.NETCore.App]
+  Microsoft.WindowsDesktop.App 8.0.34 [C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8\shared\Microsoft.WindowsDesktop.App]
+
+Other architectures found:
+  None
+
+Environment variables:
+  DOTNET_ROOT       [C:\Users\epenc\AppData\Local\Temp\pvg-ct-tools-20261120\dotnet8]
+
+global.json file:
+  Not found
+
+Learn more:
+  https://aka.ms/dotnet/info
+
+Download .NET:
+  https://aka.ms/dotnet/download
+Node v22.23.5
+db version v7.0.43
+Build Info: {
+    "version": "7.0.43",
+    "gitVersion": "ef5a7d3480b59feae13d564376129fc4ceee6177",
+    "modules": [],
+    "allocator": "tcmalloc",
+    "environment": {
+        "distmod": "windows",
+        "distarch": "x86_64",
+        "target_arch": "x86_64"
+    }
+}
+Visible processors 12
+{"NumberOfCores":6,"NumberOfLogicalProcessors":12,"LoadPercentage":4}

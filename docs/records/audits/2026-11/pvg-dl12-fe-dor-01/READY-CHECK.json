@@ -1,0 +1,95 @@
+{
+  "at_utc": "2026-11-20T22:42:30.903013+00:00",
+  "before_head": "de44aa2cc6237e49975198c52d812a34ec4ea69b",
+  "baseline_source_ref": "3181483a8432055179e7a4360ff8512de3a46251",
+  "baseline_sha256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649",
+  "capture_sha256": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203",
+  "sources": [
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "lf_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "lf_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "lf_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "lf_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "lf_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "lf_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "lf_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "lf_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37"
+    },
+    {
+      "path": "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "lf_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "lf_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml",
+      "lf_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318"
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "lf_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969"
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "lf_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "lf_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a"
+    }
+  ],
+  "worker": {
+    "path": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-web/ERP-vNext-git",
+    "branch": "feature/pvg/mod-0230-dl12-fe",
+    "checked_before_ready": "de44aa2cc6237e49975198c52d812a34ec4ea69b",
+    "clean": true
+  },
+  "guard_argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/ct_queue.py",
+    "guard",
+    "--queue",
+    "pvg",
+    "--expect-sha256",
+    "b4439cc6f3876b0f338a7ee04586735c1f1fcc3c87e6a3e54bdd4cc3c5788139",
+    "--expect-rows",
+    "42"
+  ],
+  "guard_exit": 0,
+  "guard_stdout": "AYNI sha256=b4439cc6f3876b0f338a7ee04586735c1f1fcc3c87e6a3e54bdd4cc3c5788139 rows=42\r\nguard bir dosya kilidi değildir: yalnız okuma anı ile yazma anı arasındaki değişikliği gösterir.\r\n",
+  "scope": "Same approved six frontend paths, no new scope/approval/runtime authority",
+  "next": "Commit DoR then ff-only worker to that exact H; freeze independent-reviewed prompt and require actual normal gate0 before code/test"
+}

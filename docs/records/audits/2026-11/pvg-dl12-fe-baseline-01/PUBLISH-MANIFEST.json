@@ -1,0 +1,81 @@
+{
+  "kind": "CT publication of actual same-H baseline; not feature acceptance",
+  "at_utc": "2026-11-20T22:34:54.886833+00:00",
+  "source_ref": "3181483a8432055179e7a4360ff8512de3a46251",
+  "published": [
+    {
+      "name": "BASELINE.json",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\BASELINE.json",
+      "original_bytes": 1449474,
+      "original_raw_sha256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649",
+      "canonical_lf_bytes": 1449474,
+      "canonical_lf_sha256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649"
+    },
+    {
+      "name": "pvg-api.trx",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api.trx",
+      "original_bytes": 822381,
+      "original_raw_sha256": "045ff641950853f4df14298fa280650394c42f46ede6794cb8470ad69732499f",
+      "canonical_lf_bytes": 819623,
+      "canonical_lf_sha256": "a8290bb8ceaf1b8705f02b7c1358ae5f1e7b9e5456b97e0a15994e59581433c4"
+    },
+    {
+      "name": "pvg-regpv-base.trx",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base.trx",
+      "original_bytes": 376600,
+      "original_raw_sha256": "59f99b8f00beb60c8b25eed579c67895839da67d92d7e7ec966eddabd1ce5e69",
+      "canonical_lf_bytes": 375312,
+      "canonical_lf_sha256": "3f5cfd13e23f0df8689b468663e549f89ff837c98478f9a5f2dd6aef2ee2ea8f"
+    },
+    {
+      "name": "Diten.Web.Tests.trx",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests.trx",
+      "original_bytes": 380350,
+      "original_raw_sha256": "5e12bc0e034fd3542641d4f97d39b2ea3cf8bbed66e3c5743865187d2211b04e",
+      "canonical_lf_bytes": 379904,
+      "canonical_lf_sha256": "b1d103fee95736bf901c2fb7081fa8655b245c18f3679a6fd1a4e7d4849db9b7"
+    },
+    {
+      "name": "vitest.json",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\vitest.json",
+      "original_bytes": 13191,
+      "original_raw_sha256": "7cefc5013772510051bdf4cdab746d4dd0ed18b71697a282464d5588fb39ca79",
+      "canonical_lf_bytes": 13191,
+      "canonical_lf_sha256": "7cefc5013772510051bdf4cdab746d4dd0ed18b71697a282464d5588fb39ca79"
+    },
+    {
+      "name": "OUTCOME.json",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\OUTCOME.json",
+      "original_bytes": 157,
+      "original_raw_sha256": "9bf4d54bebef0dca38b41e980aab8d7d18640119d0d90db1c0a5121f973c6f2f",
+      "canonical_lf_bytes": 157,
+      "canonical_lf_sha256": "9bf4d54bebef0dca38b41e980aab8d7d18640119d0d90db1c0a5121f973c6f2f"
+    },
+    {
+      "name": "CLEANUP.json",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\cleanup-finally.json",
+      "original_bytes": 186242,
+      "original_raw_sha256": "7dd2b1d0e5c8e0c8daccfccd911b5aca65e37c133b30306fecb473c64300b5a1",
+      "canonical_lf_bytes": 186242,
+      "canonical_lf_sha256": "7dd2b1d0e5c8e0c8daccfccd911b5aca65e37c133b30306fecb473c64300b5a1"
+    },
+    {
+      "name": "DEPENDENCIES.json",
+      "original_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\dependency-binding.json",
+      "original_bytes": 829,
+      "original_raw_sha256": "5009c24a22fd1ec1ba247ba1009f692eb9258e1d87ec88e7d260dce8780aabf8",
+      "canonical_lf_bytes": 829,
+      "canonical_lf_sha256": "5009c24a22fd1ec1ba247ba1009f692eb9258e1d87ec88e7d260dce8780aabf8"
+    }
+  ],
+  "compiled_source_counts": {
+    "pvg-api": 143,
+    "pvg-regpv-base": 90,
+    "Diten.Web.Tests": 3728
+  },
+  "all_six_actual_cli_exit0": true,
+  "all_source_and_real_head_index_unchanged": true,
+  "unforced_own_cleanup": true,
+  "original_evidence": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence",
+  "limits": "Canonical LF views are published with separate original raw hashes/paths. Exact original logs/TRX/DLL/source snapshots remain outside. Baseline is existing GREEN only; no new FE assertion RED or behavior acceptance/CI/live."
+}

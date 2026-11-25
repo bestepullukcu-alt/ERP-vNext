@@ -1,0 +1,110 @@
+[
+  {
+    "run": {
+      "name": "canned200",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "-p:BuildProjectReferences=false",
+        "--filter",
+        "FullyQualifiedName~Connected_edit_submission_reaches_the_real_store",
+        "--logger",
+        "trx;LogFileName=canned200.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\snapshot",
+      "pid": 7828,
+      "exit": 1,
+      "seconds": 22.082,
+      "log_sha256": "28f4d2d513b4cb4bd07affb5fbae82a32666935bdcb8a8d4c4b0a05f5a1be99b"
+    },
+    "source_sha256": "bbf92f8d59b7662b8f5090780c1da38ed9f12d4f1ca10afdc6a058d010f68772",
+    "counters": {
+      "total": "1",
+      "executed": "1",
+      "passed": "0",
+      "failed": "1",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "results": [
+      {
+        "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_reaches_the_real_store",
+        "outcome": "Failed",
+        "duration": "00:00:11.2010836",
+        "stdout": "Reaped browser PID 5296.\r\nChild failure SuppressUpdate, API updates 0, stored version 1.",
+        "error": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure : SuppressUpdate"
+      }
+    ],
+    "sha256": "c95bc72e915c8fcdcc95c294ba969f4de9a6e81e0cfe0e8c60e78d0e1ece04c2"
+  },
+  {
+    "run": {
+      "name": "tokenrepair",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "-p:BuildProjectReferences=false",
+        "--filter",
+        "FullyQualifiedName~Connected_edit_with_an_unusable_request_token_is_refused_by_mvc&DisplayName~InvalidToken",
+        "--logger",
+        "trx;LogFileName=tokenrepair.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\snapshot",
+      "pid": 25688,
+      "exit": 1,
+      "seconds": 20.204,
+      "log_sha256": "9165f2d275b6dd623a436d1609a929628f937a80ca7078307c9eefbfdfc74ba1"
+    },
+    "source_sha256": "6eb0b4b12430180364870259db981c2fd9d4ebc2331c463ad3fcab10173eac90",
+    "counters": {
+      "total": "1",
+      "executed": "1",
+      "passed": "0",
+      "failed": "1",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "results": [
+      {
+        "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"InvalidToken\")",
+        "outcome": "Failed",
+        "duration": "00:00:10.3483562",
+        "stdout": "Reaped browser PID 32516.",
+        "error": "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200"
+      }
+    ],
+    "sha256": "24038ee101e69006bcde14c30fd27cf20d8f894d598e1701d8f71f76d5fa513e"
+  }
+]

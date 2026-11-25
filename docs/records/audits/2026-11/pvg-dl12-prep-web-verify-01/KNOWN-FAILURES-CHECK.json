@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "python",
+    "scripts/known_failures.py",
+    "check",
+    "docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01\\independent.trx",
+    "--suite",
+    "Diten.Web.Tests"
+  ],
+  "exit_code": 2,
+  "stdout": "HATA line 4: glob '*.xml' matches no tracked path\nHATA line 5: glob '*.xml' matches no tracked path\nHATA line 6: glob '*.xml' matches no tracked path\nHATA line 7: glob '*.xml' matches no tracked path\nHATA line 8: glob '*.xml' matches no tracked path\nDUR: tests/known-failures.tsv / tests/known-failures-items.json geçersiz ya da belirsiz — sınıflandırma ve tekrar önerisi yapılmaz (python3 scripts/known_failures.py validate).\n",
+  "stderr": "",
+  "trx_raw_sha256": "8a07396ceb66120190b20d99d9ee7ac0d51b6e6c4af42ab4724bed1e1d184232"
+}

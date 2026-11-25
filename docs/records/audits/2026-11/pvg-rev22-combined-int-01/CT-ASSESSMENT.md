@@ -1,0 +1,7 @@
+# Rev22 combined INT — CT karşılığı
+
+2026-11-23. Değişmemiş dış rapor/manifest/ZIP hashleri rootta doğrulandı. InputH6361654/tree9c91fbd aynı27approvedproductscope;4view3af+23sharedba132blobları korunur. İki yazarından ayrı QA actual35GET/168exacttext/14action/644DOMvaluecheck ve48freshC#0fail0skip ölçtü. Main h5 vehelp-title ayrısource/DOMselectorleridir; sevenlang/arRTL/source28RESX→7loadedDLL/PDB29PE bağları var. Realcontroller/view/model/shell/helper/ResourceManager/producerJSconsumer kullanılmış, callerPageCode/Items/localizer/fakepayload/cachedHTML/productionkopyası yok. Rapor Role-family eşlemesini actiontone/icon olarak sınırlar, grant veya scopechip davranışını genişletmez.
+
+TürkçeCreatePurpose kaynakdüğümü tekbaşınaözelkopyadaçıkarıldı; actualHTTP200/build0 ve doğruheader/code varken semanticDOM42. Requiredpurpose geri konuncabuild0/HTTP200/DOM0 ve7satelliteSHAilkbaselineileaynı. Infra/syntax veya beklenenJSON'u değiştirerekRED/restore yok. 18945sourceblob closure ve19PDBdoc, mutation0/ownedcleanup ölçümleri rapor sınırında kabul edildi; canlıDB/patient/runtime başarı iddiası yok.
+
+UYGUN kritik0/engelleyici0 yalnız bu salt-okunur birleşik yüzey için kabul edildi. Native Windows fullJS5577/13FAIL ve globalresxreportFAIL korunur. SonSHArequiredLinuxCI/fullJS/Phase1/uic/AC45samejobfullTRX+source binding, farklıHIGHinsan mainmerge, E4/E5 veoperasyon açık. Sonrakidocmeta commitleriinputHruntime ölçümüdiyeetiketlenmez, ürünblob eşitliği ayrıcaölçülür. YeniACCEPTED/DONE/yayın/operasyon onayı verilmedi.

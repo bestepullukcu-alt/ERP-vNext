@@ -1,0 +1,1503 @@
+{
+  "frozen_head": "fbfcf0a46a66e2f8947c765a7778e73022928178",
+  "trx_raw_sha256": "5a0a96385d5e3f4de6eabfee6ecd85e20c49391a7f3f5742dd769472325b1705",
+  "trx_lf_sha256": "f778cfe8fadab6a70308a130a24ca7c826fb60aaa6921ccec4ceba3ac9ec1ffb",
+  "counters": {
+    "total": "211",
+    "executed": "211",
+    "passed": "211",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "actual_expanded_test_count": 211,
+  "results": [
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_keeps_stored_reporter_source_and_search_state(searchState: ClosedByUserUnlink)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002576",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Route_denied_by_workflow_gate_blocks_before_evidence_and_preserves_route_target",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016007",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_accepts_each_value_of_the_pending_option_set(reportTypePendingQppvConfirmation: \"Spontaneous\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000586",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.DenyAllRegPvBasePortTests.FieldSecurityPolicy_denies_by_default_without_echoing_sensitive_inputs",
+      "outcome": "Passed",
+      "duration": "00:00:00.0051941",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Read_queries_require_actor_correlation_and_permission_before_field_policy_or_store_access",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010292",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_directory_outside_option_set_is_rejected(directory: \"crm\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002320",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"reporter-country\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002148",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Field_security_governance_candidates_cover_all_16_MOD_0230_user_facing_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011005",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Annex_field_sensitivity_and_free_text_flags_match_domain_definitions",
+      "outcome": "Passed",
+      "duration": "00:00:00.0099340",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_is_rejected_while_owner_contracts_are_absent(directory: \"Crm\", operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0034350",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_equal_to_received_default_or_earlier_is_stored_unchanged(row: \"earlier\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009785",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_with_selection_pair_is_rejected(row: \"both\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000662",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_with_selection_pair_is_rejected(row: \"directory\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002849",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_role_outside_option_set_is_rejected(productRole: \"suspect\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007216",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_is_rejected_while_owner_contracts_are_absent(directory: \"PersonDirectory\", operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018776",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_country_accepts_null_and_unknown_only_while_list_is_absent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015315",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Event_country_code_is_rejected_while_country_source_is_unsettled(eventCountry: \"UNKNOWN\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003108",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Successful_operations_preserve_correlation_for_guard_evaluation_and_emit_safe_observability_metadata",
+      "outcome": "Passed",
+      "duration": "00:00:00.0074483",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_outside_option_set_is_rejected(reportType: \"Unknown\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005532",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Intake_statuses_exclude_archive_void_export_delete_and_bulk_delete",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000970",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: GetList)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000794",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_gsku_without_global_product_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007741",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Catalog_declares_the_tenant_received_index_with_received_descending",
+      "outcome": "Passed",
+      "duration": "00:00:00.0033685",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Repository_rejects_tenant_mismatch_with_safe_reason_code_only",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026040",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Legacy_shaped_request_from_unauthorized_caller_gets_permission_outcome_without_validation_codes(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000697",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Concurrent_replace_with_same_expected_version_allows_exactly_one_success",
+      "outcome": "Passed",
+      "duration": "00:00:00.1504636",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_with_only_directory_or_only_id_is_rejected(row: \"id\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003275",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_denied_by_field_security_blocks_without_sensitive_echo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006190",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"report-type-outside-set\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001131",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"second-line\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002374",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_triage_and_route_audit_intents_carry_no_changed_fields(operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007089",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"513-product-name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001711",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Get_by_id_returns_current_version_after_update",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009949",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_without_product_lines_passes_field_validation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009129",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_denied_by_evidence_link_preserves_existing_draft_without_sensitive_echo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011566",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Application_service_slice_does_not_add_forbidden_operation_contracts",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010812",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_before_1900_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006608",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.ReplaceAsync_with_stale_version_returns_conflict_not_not_found",
+      "outcome": "Passed",
+      "duration": "00:00:00.0221246",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Queries_fail_closed_when_field_security_denies",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007674",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_without_reporter_selection_stores_manual_source",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008587",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"missing-event-country\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001332",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_directory_outside_option_set_is_rejected(directory: \"Ldap\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008511",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Event_country_code_is_rejected_while_country_source_is_unsettled(eventCountry: \"Unknown\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000768",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_equal_to_received_default_or_earlier_is_stored_unchanged(row: \"equal\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002184",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"reporter-type\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001806",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.DenyAllRegPvBasePortTests.EvidenceLinkPort_denies_by_default_without_echoing_sensitive_inputs",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006309",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_global_product_id_is_rejected_while_MOD0290_contract_is_absent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011547",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Supported_state_and_triage_outcome_contracts_remain_limited_to_annex_flow",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010496",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Command_and_query_contracts_do_not_accept_client_tenant_id",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005182",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_without_awareness_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006719",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"same-instant-other-offset\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001726",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Mutation_without_expected_version_is_version_conflict_and_leaves_store_unchanged(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0037231",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"missing-report-type\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001177",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_without_reporter_selection_on_linked_record_is_rejected(source: Crm)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002342",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"source-type\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001839",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.DenyAllRegPvBasePortTests.DenyAllAdapters_are_stateless_and_do_not_reference_persistence_or_network_libraries",
+      "outcome": "Passed",
+      "duration": "00:00:00.0048861",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Legacy_shaped_request_from_unauthorized_caller_gets_permission_outcome_without_validation_codes(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0050021",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Commands_queries_service_operations_and_dtos_do_not_expose_retention_or_forbidden_runtime_members",
+      "outcome": "Passed",
+      "duration": "00:00:00.0047811",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_ACTOR_CONTEXT_REQUIRED\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004564",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_denied_by_evidence_link_blocks_before_mutation_without_sensitive_echo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0299626",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"missing-awareness\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001145",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Event_country_code_is_rejected_while_country_source_is_unsettled(eventCountry: \"TR\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000794",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_with_suspect_or_concomitant_role_is_stored_with_as_reported_name(productRole: \"Concomitant\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002793",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_and_list_succeed_with_allowed_ports_and_return_safe_metadata_only",
+      "outcome": "Passed",
+      "duration": "00:00:00.0028461",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Event_country_code_is_rejected_while_country_source_is_unsettled(eventCountry: \"tr\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009278",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.DenyAllRegPvBasePortTests.Slice1_operations_exclude_archive_void_export_delete_and_bulk_delete",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008063",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Missing_permission_blocks_mutation_before_ports_and_audit_intent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006188",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.List_summary_returns_current_version",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026305",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Create_and_update_requests_carry_reporter_selection_pair_and_no_server_set_reporter_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020379",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"129-reporter-name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001192",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Supported_operations_and_permission_keys_remain_annex_bounded",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017238",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_WORKFLOW_TRANSITION_GATE_UNAVAILABLE\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000327",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.CountAsync_counts_the_tenants_drafts_with_and_without_status_filter",
+      "outcome": "Passed",
+      "duration": "00:00:00.0026492",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_sets_manual_clears_source_id_and_keeps_snapshot(source: PersonDirectory)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002580",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Application_result_success_contains_metadata_only",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005599",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Repository_mutations_are_tenant_scoped",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012259",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Create_validation_rejects_out_of_bounds_MOD_0230_fields_without_echoing_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020877",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: GetList, expectedSurface: \"list\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025243",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Trimmed_values_are_validated_and_stored_trimmed(operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003444",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_CORRELATION_CONTEXT_REQUIRED\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000251",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Annex_field_inventory_matches_domain_field_contract",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006479",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Create_validation_requires_baseline_fields_without_echoing_sensitive_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012018",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_accepts_each_value_of_the_pending_option_set(reportTypePendingQppvConfirmation: \"Other\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000587",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"no-change\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001313",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"seriousness\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002021",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002075",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"patient-subject-code\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001859",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Intake_field_definitions_match_the_34_revision04_intake_field_entries",
+      "outcome": "Passed",
+      "duration": "00:00:00.0112190",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"evidence-link-references\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003303",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"reporter-name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001898",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"event-onset-date\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002496",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"source-reference\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0140698",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Update_validation_requires_baseline_fields_without_echoing_sensitive_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002976",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Successful_mutations_emit_safe_audit_intent_metadata_only(operation: Update, expectedStatus: IntakeUpdated, expectedPermission: \"pvg.case-intake-triage.update\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0069323",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Triage_allowed_by_field_security_calls_workflow_evidence_and_mutates_safely",
+      "outcome": "Passed",
+      "duration": "00:00:00.0018371",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: Update, expectedSurface: \"update\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004362",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_is_rejected_while_owner_contracts_are_absent(directory: \"PersonDirectory\", operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001653",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_without_report_type_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010421",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Triage_denied_by_workflow_gate_blocks_before_mutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015553",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Revision04_fields_are_kept_through_update_triage_and_route",
+      "outcome": "Passed",
+      "duration": "00:00:00.0044853",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_product_lines_when_only_their_order_changes(row: \"reversed-order\", expectChanged: True)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022299",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"company-recipient\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001632",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Triage_validation_requires_safe_outcome_and_reason_code_without_echoing_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002601",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Repository_reads_are_tenant_scoped_without_cross_tenant_existence_leak",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024990",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_without_as_reported_name_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005840",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_outside_option_set_is_rejected(reportType: \"spontaneous\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001741",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_triage_and_route_do_not_leak_existence_through_workflow_denial(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003488",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_triage_and_route_audit_intents_carry_no_changed_fields(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003151",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"gsku-without-global-product\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002308",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Successful_mutations_emit_safe_audit_intent_metadata_only(operation: Route, expectedStatus: RoutePending, expectedPermission: \"pvg.case-intake-triage.route\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002445",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"product-role\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002001",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Route_denied_by_evidence_link_blocks_after_workflow_before_mutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016859",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_INTAKE_DRAFT_NOT_FOUND\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000356",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_without_event_country_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005742",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"selection-directory-outside-set\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001477",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_lines_and_reporter_texts_over_their_limits_are_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0020346",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Denied_missing_and_cross_tenant_paths_do_not_emit_audit_intent_or_sensitive_payload",
+      "outcome": "Passed",
+      "duration": "00:00:00.0016866",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_keeps_stored_reporter_source_and_search_state(searchState: Pending)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010541",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: Create, expectedSurface: \"create\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001248",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_denied_by_field_security_keeps_existing_status",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008817",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_with_offset_is_normalized_to_utc(operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0046658",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000392",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: GetById)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003751",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"intake-channel\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002133",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_with_offset_is_normalized_to_utc(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005725",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Public_create_and_update_requests_do_not_accept_client_tenant_id",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003373",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_triage_and_route_do_not_leak_existence_through_workflow_denial(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025212",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Approved_field_definitions_cover_the_16_MOD_0230_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0289202",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Slice1_contracts_are_present_for_create_update_triage_route_and_safe_reads",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003846",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_with_stale_version_returns_version_conflict_and_leaves_store_unchanged",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013473",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_accepts_each_value_of_the_pending_option_set(reportTypePendingQppvConfirmation: \"Solicited\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004000",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_without_reporter_selection_on_linked_record_is_rejected(source: PersonDirectory)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009146",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"65-lot-number\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000864",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_role_outside_option_set_is_rejected(productRole: \"Witness\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001982",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Persistence_indexes_are_tenant_first_and_do_not_create_global_unique_ids",
+      "outcome": "Passed",
+      "duration": "00:00:00.0092447",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"21-product-lines\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005559",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"missing-product-role\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031842",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004879",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: Route, expectedSurface: \"route\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024411",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"129-reporter-profession\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001542",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Permission_keys_belong_to_the_pvg_case_intake_triage_family",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005335",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: Triage, expectedSurface: \"triage\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0024078",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"intake-priority\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001811",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Supported_domain_operations_do_not_define_retention_legal_hold_archive_or_void_state",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007035",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Missing_server_tenant_context_fails_closed_without_tenant_echo",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001703",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Company_recipient_is_rejected_while_MOD0288_contract_is_absent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009821",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"reporter-country-code\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000909",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Triage_denied_by_evidence_link_blocks_after_workflow_before_mutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0036851",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"narrative-and-report-type\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002543",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021798",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Application_result_invalid_contains_validation_codes_without_submitted_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003208",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_with_selection_pair_is_rejected(row: \"id\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0050920",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_with_only_directory_or_only_id_is_rejected(row: \"directory\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010099",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_and_update_without_evidence_references_do_not_invoke_evidence_link",
+      "outcome": "Passed",
+      "duration": "00:00:00.0029767",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Legacy_shaped_request_from_unauthorized_caller_gets_permission_outcome_without_validation_codes(operation: Create)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001026",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Trimmed_values_are_validated_and_stored_trimmed(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012817",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Triage_validation_rejects_overlong_reason_without_echoing_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013471",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_sets_reporter_crm_search_state_pending",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007812",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_validation_runs_before_ports_and_mutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009286",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000775",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"missing-product-name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000864",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"awareness-after-received\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001154",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"reporter-contact-summary\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005103",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Manual_reporter_without_identifier_is_accepted_at_create",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006864",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_FIELD_SECURITY_POLICY_UNAVAILABLE\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000294",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_accepts_each_value_of_the_pending_option_set(reportTypePendingQppvConfirmation: \"Literature\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000712",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Safety_case_intake_and_field_contract_carry_product_list_without_suspect_product_text",
+      "outcome": "Passed",
+      "duration": "00:00:00.0027502",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Cross_tenant_read_and_write_return_safe_not_found_without_existence_leak",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009474",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftPersistenceBoundaryTests.Persistence_boundary_has_no_delete_bulk_delete_archive_void_or_export_methods",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009455",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Mutation_without_expected_version_is_version_conflict_and_leaves_store_unchanged(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004189",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Supported_mutations_do_not_change_retention_legal_hold_archive_void_or_sensitive_source_state",
+      "outcome": "Passed",
+      "duration": "00:00:00.0035831",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_sets_manual_clears_source_id_and_keeps_snapshot(source: Crm)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010347",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Application_request_shapes_cover_annex_fields_without_extra_user_payload_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006542",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Application_contract_slice_does_not_add_handlers_controllers_or_persistence_types",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022477",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"reporter-profession\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002642",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Mutation_without_expected_version_is_version_conflict_and_leaves_store_unchanged(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002169",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Remove_reporter_link_without_existing_link_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012458",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"product-name\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001237",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Triage_denied_by_field_security_blocks_before_workflow_evidence_and_mutation",
+      "outcome": "Passed",
+      "duration": "00:00:00.0011202",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"product-role-outside-set\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001421",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Invalid_correlation_blocks_mutation_before_permission_ports_and_audit_intent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005957",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Awareness_later_than_received_is_rejected",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012144",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: Route)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000871",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"earlier-awareness\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001988",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Route_validation_requires_server_context_and_queue_without_echoing_values",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013653",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"global-product-id\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001505",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Blocked_outputs_use_safe_reason_codes_without_retention_or_sensitive_value_echo(reasonCode: \"PVG_EVIDENCE_LINK_UNAVAILABLE\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005253",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"only-selection-directory\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001557",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Reporter_selection_is_rejected_while_owner_contracts_are_absent(directory: \"Crm\", operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0086148",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Report_type_accepts_each_value_of_the_pending_option_set(reportTypePendingQppvConfirmation: \"Study\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010242",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Successful_mutations_emit_safe_audit_intent_metadata_only(operation: Create, expectedStatus: IntakeCreated, expectedPermission: \"pvg.case-intake-triage.create\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001074",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Draft_request_shapes_do_not_accept_client_tenant_or_forbidden_operations",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004102",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Application_result_blocked_uses_reason_code_only",
+      "outcome": "Passed",
+      "duration": "00:00:00.0109948",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgApplicationContractShapeTests.Archive_void_export_delete_and_bulk_delete_contracts_do_not_exist",
+      "outcome": "Passed",
+      "duration": "00:00:00.0005032",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Triage_and_route_with_stale_version_return_version_conflict",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014471",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Audit_intent_contract_is_safe_build_test_metadata_only",
+      "outcome": "Passed",
+      "duration": "00:00:00.0070593",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Successful_mutations_emit_safe_audit_intent_metadata_only(operation: Triage, expectedStatus: Triaged, expectedPermission: \"pvg.case-intake-triage.triage\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008830",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.DenyAllRegPvBasePortTests.WorkflowTransitionGate_denies_by_default_without_echoing_sensitive_inputs",
+      "outcome": "Passed",
+      "duration": "00:00:00.0009332",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"received-at\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002109",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Product_line_with_suspect_or_concomitant_role_is_stored_with_as_reported_name(productRole: \"Suspect\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014899",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Missing_actor_blocks_mutation_before_permission_ports_and_audit_intent",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007381",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Business_operations_require_correlation_before_permission_ports_mutation_and_error_metadata(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0022456",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_changed_fields_without_values(row: \"lot-number\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001243",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Create_triage_and_route_audit_intents_carry_no_changed_fields(operation: Triage)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000887",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Event_country_unknown_is_accepted",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007950",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDomainValidationTests.Update_validation_rejects_unsupported_date_and_patient_code_shapes",
+      "outcome": "Passed",
+      "duration": "00:00:00.0010829",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_audit_intent_names_product_lines_when_only_their_order_changes(row: \"same-order\", expectChanged: False)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003006",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Legacy_shaped_request_from_unauthorized_caller_gets_permission_outcome_without_validation_codes(operation: Update)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007622",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"awareness-before-1900\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0000916",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Update_applies_the_create_field_rules(row: \"event-country-code\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007090",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.RegPvBase.Tests.PvgIntakeDraftApplicationServiceTests.Field_security_policy_unavailable_fails_closed_for_supported_MOD_0230_operations(operation: GetById, expectedSurface: \"detail\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030612",
+      "stdout": "",
+      "error": ""
+    }
+  ]
+}

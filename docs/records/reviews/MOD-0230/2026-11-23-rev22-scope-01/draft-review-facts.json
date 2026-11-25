@@ -1,0 +1,22 @@
+{
+  "reviewed_inputs": {
+    "MOD-0230-case-intake-triage.md": "69d7ed9e8ab1dd155aa0e868c0319b30e0b11ca19804b472a870f4e6e6c16435",
+    "rev21-to-rev22.diff": "89acb1b9bfe506a92d15b6a963c3bb55506f7b43e5defb842b2e339e9185bfbe",
+    "localized-content-rev22.json": "5157d2ec9e40bd835330f9117cbf6da08d13434391cb2ebb0680ee2c665c1d2a",
+    "scope-rev22.json": "a386b1bfe016bfdde6f129fef9dcc54efbc90595be87c5c7bb80141ae99105a9"
+  },
+  "baseline": "82bc773938baa6689f0089b89c765b60f4411932",
+  "original_recovery_equal": true,
+  "scope_files": 27,
+  "scope_unique_files": 27,
+  "groups": {
+    "shared resources writer": 23,
+    "PVG views writer": 4
+  },
+  "localized_additions": 154,
+  "replacement_count": 1,
+  "js_log_sha256": "9ec6872af734bdba2d7aa8563c714274a58703a6fd8d01232b892e09fd2ae7f1",
+  "tests_executed_by_reviewer": false,
+  "actual_model": "verilemiyor",
+  "actual_effort": "verilemiyor"
+}

@@ -4,6 +4,7 @@
 @model PvgCaseIntakeFormViewModel
 @inject IHtmlLocalizer<CaseIntakeTriageIndex> Localizer
 @{
+    ViewData["PageCode"] = "CASEINTAKETRIAGECREATE";
     ViewData["Title"] = Localizer["CreateTitle"].Value;
     ViewData["FormMode"] = "create";
     Layout = "_LayoutTenantShell";

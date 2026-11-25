@@ -1,0 +1,11 @@
+{
+  "scratch": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300",
+  "dotnet": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+  "node": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+  "packageFolders": {
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-kanıt\\WP-0230-DL12-PREP-WEB-1795176414809\\nuget": {}
+  },
+  "cpu_count": 12,
+  "requested_model_effort": "gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor"
+}

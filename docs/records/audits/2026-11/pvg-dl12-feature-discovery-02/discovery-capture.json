@@ -1,0 +1,46 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\");sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--discover",
+    "Case Intake & Triage"
+  ],
+  "exit_code": 3,
+  "check_argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\");sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--check-report",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-feature-discovery-02\\discovery-report.txt"
+  ],
+  "check_exit_code": 0,
+  "check_stdout": "RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı\n",
+  "started": "2026-11-20T19:59:32.410837+00:00",
+  "finished": "2026-11-20T19:59:52.975274+00:00",
+  "head_start": "8650802eb2d2cec91b687a603de9b3bac984e408",
+  "head_end": "8650802eb2d2cec91b687a603de9b3bac984e408",
+  "producer_copies": [
+    {
+      "path": ".antigravity/scripts/verify_module_id.py",
+      "mirror_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+      "canonical_git_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f",
+      "raw_mirror_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f"
+    },
+    {
+      "path": "scripts/ct_queue.py",
+      "mirror_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\scripts\\ct_queue.py",
+      "canonical_git_sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2",
+      "raw_mirror_sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2"
+    }
+  ],
+  "raw_sha256": "afb28c26db1d50b95823193cf0e73e743b62094e1ff97b79cc6f945d2147465a",
+  "report_sha256": "b9dd8c2f751a22c40c2a88a8c382473df864a9cae3b562e5215c2ae3a78f8ccc",
+  "ref_lines": 538
+}

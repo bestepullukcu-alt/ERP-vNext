@@ -1,0 +1,55 @@
+{
+  "kind": "Read-only source and exact known-failure registry comparison, no main runtime inference",
+  "H": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "origin_main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "test": "Diten.Web.Tests.JavaScript.ReturnDetailsBehaviorTests.DetailsJs_shows_names_not_ids_gates_the_holds_request_and_separates_not_found_from_error",
+  "blob_comparisons": [
+    {
+      "path": "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "H_blob": "bb43c17afa5a8b514511ca1b88ceb100ab987aa8",
+      "origin_main_blob": "7280f04df4aa05d84eb18279e91e6c4ff7f172b2",
+      "same_blob": false,
+      "H_lf_sha256": "1fb91c728c5579a7a4a3b51af97a1d917b86bb9cb83852f495899fcad4bd425c"
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/JavaScript/ReturnDetailsBehaviorTests.cs",
+      "H_blob": "d8790d4eea65ad7d8444ebbc548a634ce6a84bd1",
+      "origin_main_blob": "d8790d4eea65ad7d8444ebbc548a634ce6a84bd1",
+      "same_blob": true,
+      "H_lf_sha256": "57350da44428a3fd85885bffe9de115762a5bb37ad33ce1a3e213b4f9fc32110"
+    },
+    {
+      "path": "frontend/Diten.Web/Diten.Web.csproj",
+      "H_blob": "fed6a53ce9b70b6aae18f842d727ddbdfe4da34f",
+      "origin_main_blob": "fed6a53ce9b70b6aae18f842d727ddbdfe4da34f",
+      "same_blob": true,
+      "H_lf_sha256": "21d47492c987d6b1f0db32ddc58c4a77b711aba71ffe3c56c0ee029ad74a44c5"
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/details.js",
+      "H_blob": "b918dae43d40ce47b4aaad542dd3bd83d18a1723",
+      "origin_main_blob": "b918dae43d40ce47b4aaad542dd3bd83d18a1723",
+      "same_blob": true,
+      "H_lf_sha256": "9a138a537293b07670360046c52bbc186422c8d38c2b0e15a4e2c1e163491f09"
+    },
+    {
+      "path": "tests/known-failures-items.json",
+      "H_blob": "1d2de48fafe5b8ec53015a8bff2c802d48136560",
+      "origin_main_blob": "1d2de48fafe5b8ec53015a8bff2c802d48136560",
+      "same_blob": true,
+      "H_lf_sha256": "989a917cd54977d4c245c98006d42dad85585c329763085bbe0de50f81694e0d"
+    },
+    {
+      "path": "tests/known-failures.tsv",
+      "H_blob": "dbbcab82854dfa741f2e52f6823b023e0cf95878",
+      "origin_main_blob": "6038f88ef70db0bedfbde183527f8022b9ca0c64",
+      "same_blob": false,
+      "H_lf_sha256": "5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b"
+    }
+  ],
+  "project_diff": "diff --git a/frontend/Diten.Web.Tests/Diten.Web.Tests.csproj b/frontend/Diten.Web.Tests/Diten.Web.Tests.csproj\nindex 7280f04df..bb43c17af 100644\n--- a/frontend/Diten.Web.Tests/Diten.Web.Tests.csproj\n+++ b/frontend/Diten.Web.Tests/Diten.Web.Tests.csproj\n@@ -21,5 +21,6 @@\n \n   <ItemGroup>\n     <ProjectReference Include=\"..\\Diten.Web\\Diten.Web.csproj\" />\n+    <ProjectReference Include=\"../../services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj\" Aliases=\"pvgapi\" />\n   </ItemGroup>\n </Project>\n",
+  "exact_ledger_rows": [],
+  "exact_item_entry": null,
+  "observation": "Actual Node equality assertion failed; decoded console displays different characters. C# embedded Script expects middle dot U+00B7 and redirects StandardInput/Output/Error without explicit encoding. Windows redirected text encoding mismatch remains an inference, no reproducer or source modification was performed.",
+  "limits": "Matching blobs do not establish origin/main PASS or identical compiled input closure. Full unfiltered H run remains authoritative; unrelated module was not edited."
+}

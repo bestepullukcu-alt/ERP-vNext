@@ -1,0 +1,15 @@
+# PVG rev22 — yerel hazırlık ve açık yayın kapısı
+
+2026-11-23. İnsan onaylı exact27scope/XMC/content/singlewriter, d208pack/0aadomain/owner0fa ve formalHIGH0 ardından iki independentpromptv1.1normal0 geçti. Root ürün yazmadı. Views3af28aa bağımsızUYGUN sonrası noff300c5347;sharedba132012 bağımsızKOŞULLU/sourceblocker0 sonrası noff3fa685d1;tam27onaylıproductdosya aynıCTdalında. İkiWPINTEGRATED;6eskiACCEPTEDkorundu, parentDL12IN_PROGRESS. TekmevcutPR460 DRAFT/H82;newSHAhenüzyayımlanmadı.
+
+Birleşikölçüm H6361654b6df9334803c3651231c754fe1d0685ad/tree9c91fbd:4actualPVGsayfa×7dil28GET+7RoleGET hepsi200;168page/helptextonaylıJSONbirebir,14actionfamily/644DOMcheck,mutation0. Fresh48CSharp0fail0skip,19PDBdoc/29PE/28RESX→7satellite/sourcehash bağları. PrivateTürkçeCreatePurpose tekdüğümomitbuild0/HTTP200/DOM42;restorebuild0/HTTP200/DOM0,7DLLhashbaselineaynı. WriterlardanayrıQA UYGUN0critical0blocking. Ayrıntı ../pvg-rev22-combined-int-01/REVIEW.md. SaltokunursyntheticProfileA, canlıDB/patient/POST/liveruntimeölçümüyok.
+
+UIunchangedselector H82önce1yalnıznewFrenchlabel→canonicalLFH636sonra0,624PASS/388TABANkorunur. Guard/baseline/waiveryok. Strictqueuefullcheck source7810error0warningveLFproduceractualrunrecordverify0;ilkWindowsproducerhashFAILvebackslashpathspecdiagnosticskorundu. Current44rows sadece2state→INTEGRATED,productionshape0; bucontinuity finalHfullhistoryrerun iddiasıdeğildir.
+
+NativeWindowsFULLJSgerçekFAIL:5577case/5564PASS/13FAIL/0skip. Aynıfailed10file269caseH82/nativecandidatestatusbirebir;candidateLF11geçer2WindowsliteralpathFAILkalır. H82Linux3PVGassertioncandidatehedef/fullnativePASS,12newhelpguardPASS/removed0. Independent302targetJS/14Rolelabel/fourcriticalnegativepairsPASS. GlobalresxcheckerFAILfrEnglishsame44→43;34buildwarningskökenigenelsınıflandırılmadı. BunlarPASSsayılmadı. Başkamodül/CI/test/guard/ledger/dependencyfixyok;5394Webharitasıstatik,tamdynamicclosure/main/platformetkisizlikispatıdeğil.
+
+Sonadım bütünrecord/source/privacykontrolünden sonra exactfinalSHA için mevcutPR460push/updateaçıkizni. FinalSHArequiredLinuxCI/Phase1/UI/fullJSveAC45samejobtarget/fullTRX+commit/tree/checkout/event/runattempt bağları yenidenölçülmeli;oldH82CIyenikaynakyerinegeçmez. Pending/FAIL/unboundCI mainmerge/DONEengeli;listelifarklıHIGHinsanmergecommit gerekir,squash/rebaseyok. E4E5/validation/deploy/realpatient/operationalapprovalyok.
+
+Managedworktree arşivi mainreachability/korunmamışişyokluğu sonrası;oldWINWIPkorundu. FinalpublishSHA/privacyreceipt/PRbody dışyayınhazırlığı manifestinde sabitlenecek, bu rapor push/mergeizni değildir. SonrakiyalnızmetadataH ölçülmüşHruntimePASSsayılmaz;productblobeşitliğiayrıcaölçülür.
+
+Son yerel temizlik: kanıtları kaydedilmiş iki özel LF doğrulama klonu silindi. İki managedworker CT’den erişilebilir/temiz; ikisi de origin/main’den erişilebilir değil (actualexit1), bu nedenle S-95 kart§0/6 ve owneronayı gereği arşiv bekler. Diğerworktree/eskiWINWIP/sharedSDKfeed dokunulmadı. SOURCE-CONTINUITY currentproductsource ile ölçülmüşH636 aynılığını gösterir; yalnızmetadata kapanışı yeniHCIbaşarısı değildir.

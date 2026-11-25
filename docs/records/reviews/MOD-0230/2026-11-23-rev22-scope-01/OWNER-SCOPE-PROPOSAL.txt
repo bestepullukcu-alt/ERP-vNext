@@ -1,0 +1,42 @@
+Revizyon 22 — sahibin incelemesine sunulan dar kapsam
+DRAFT / ONAY BEKLİYOR / YENİ İŞ İÇİN BUILD KAPALI / OPERASYONEL KULLANIM KAPALI
+
+Amaç
+PR #460'ın gerçek CI çıktısındaki dört PVG yardım kodu, route/triage fiil etiketleri ve Fransızca alan adı eşitliği hatasını mevcut üretim bekçilerini değiştirmeden kapatmak. Bu taslak geliştirme izni veya bağımsız UYGUN/HIGH sonucu değildir.
+
+Tek öneri
+- Yedi PageHelpResource dosyası: dört sayfanın her biri için Purpose, Audience, Step1Title, Step1; 112 yeni değer.
+- Yedi SharedResource dosyası: dört sayfa başlığı; 28 yeni değer. Aynı Fransızca dosyada mevcut Nav.Domain.PHARMACOVIGILANCE değeri yalnız “Pharmacovigilance” → “Pharmacovigilance (surveillance des médicaments)”.
+- Yedi RoleAssignmentsIndex dosyası: ActionVerb_Triage ve ActionVerb_Route; 14 yeni değer.
+- Rol ekranının mevcut köprüsü: yalnız iki fiil eşlemesi. Mevcut perm-label ailesi: triage, success/bx-check-circle (decide satırı); route, dark/bx-user-check (assign/delegate satırı). Bunlar görsel sınıflandırma önerisidir, RBAC anlamı değişmez.
+- Dört PVG görünümü: yalnız kendi ViewData["PageCode"] ataması; Index/CREATE/EDIT/DETAILS kodları taslakta tek tek yazılı.
+Toplam: 27 üretim dosyası; 154 yeni çeviri değeri + bir mevcut Fransızca değer. Yeni modül/FU/dilim/plan kimliği yok. Test, CI, guard, borç defteri ve izin kodu değişikliği yok.
+
+Neden bu kapsam gerekli?
+Manifestte gizli sayfalar menüye gelmez; CurrentPage'in açık sayfa kodu olmadan yalnız resx eklemek gerçek yardım panelini düzeltmez. Yardım başlığı ayrıca Nav.Page anahtarını okur. Fiilleri yalnız çevirmek de yetmez; mevcut üretim eşleyicisi her ikisi için aile bulamaz ve var olan bekçi yeni kırmızı verir. Fransızca teknik terim geçerlidir; açıklayıcı ek, mevcut literal eşitlik denetimine uygun anlamlı bir adlandırma tercihidir.
+
+Kullanıcıya görünen yeni metin
+Yardım “build/CI/test pipeline” ayrıntılarını anlatmaz. Sayfanın amacını ve operasyonel kullanımın henüz açık olmadığını söyler. Create/Edit yalnız sentetik veri kullanılmasını ve gerçek hasta verisi girilmemesini belirtir; kaydetme/güncellemenin henüz kullanılamadığını açıklar. Mevcut kapalı triyaj/yönlendirme çalışıyormuş gibi anlatılmaz. Tam yedi dilli öneri localized-content-rev22.json içindedir; sözlük ve dosya sayısı değişmemiştir.
+
+Sahibin açıkça karara bağlaması gerekenler
+1. 27 dosya ve tam anahtar/ifade sınırı için bu yeni düzeltme kapsamı. Önceki “devam” talimatı ortak dosya/XMC izni sayılmadı.
+2. Dokuz RoleAssignments dosyası için mevcut sahibi platform-team olan MOD-0018-FU9 ile bağlı dar XMC izni; FU9'un sahipliği devrolmaz, kendi koşulları ve paketi değiştirilmez.
+3. On dört ortak Help/SharedResource dosyası için açık ortak yol sahibi/koordinatör onayı. FU9 §4 frontend-ui-ux uygulama rolünü tanımlar; bunun PVG'ye kendiliğinden yetki verdiği varsayılmaz.
+4. Tam 23 ortak dosyanın tamamına (Fransızca düzeltme dahil) tek yazıcı; dört PVG görünümüne ayrı tek yazıcı. İki küme ancak kendi normal kapılarından sonra paralel çalışabilir.
+5. Hash ile bağlı yedi dilli metinleri, Fransızca açıklamayı ve iki mevcut aile tercihini benimseme veya kesin alternatifler. Metin değişirse yeni hash/final sürüm incelemesi gerekir.
+6. Uyumlu son pack/domain yetkisi ve gerekiyorsa DCP-004 sahip sınırı doğrulaması; eski gömülü onay hash'leri son baytların onayı sayılmaz. Sonra yazardan bağımsız final inceleme/HIGH ve her işçinin sıradan kapsamlı prompt/dispatch kapısı gerekir.
+
+Sonraki iş akışı — bugün başlatılmadı
+İki ayrı normal prompt/gate → ayrı temiz checkout'larda 23 ve 4 dosyalı işçiler → bağımsız E2/scope/üretim tüketicisi ölçümü → CT'nin no-ff bütünleştirmesi ve birleşik bağımsız kontrolü → aynı PR #460'ın yeni son H üzerinde zorunlu CI kontrolü. Eski FE6 altı dosyalı üretici bu 27 dosyayı ölçmez. Yeni H, AC-45'in eski Unix/source-bound sonucunu geçersiz kılar; değişmemiş mevcut pvg-api/ubuntu-22.04 target/full TRX sözleşmesi son kaynağa bağlanmalıdır. Gerçek RED CI kaynağı korunur; GREEN değişmemiş üretim bekçileriyle taze özel LF clone'da ve son CI'da gösterilir. CR önkoşulu exit 2 başarı değildir.
+
+Koruma
+Eski pack gövdesi, tarihçe ve AC-1…AC-45 bayt düzeyinde korunmuştur. AC-46…AC-50 ek koşullardır; mevcut 12 dilim ve E4/E5 kabul eşikleri düşürülmemiştir. E2 INTEGRATED, canlı ACCEPTED/DONE değildir. Auth, şema, katalog, rota, API, store, audit, CI, guard, ledger ve operasyonel kapılar genişlemez.
+
+İnceleme dosyaları
+- MOD-0230-case-intake-triage.md — tam dış taslak.
+- rev21-to-rev22.diff — birleşik delta.
+- localized-content-rev22.json — 154 yeni + bir mevcut değer için kesin öneri.
+- scope-rev22.json — 27 kesin yol/anahtar/ifade ve 23+4 yazıcı ayrımı.
+- AUTHOR-CHECK.json — yazarın kendi mekanik kontrolü; bağımsız inceleme değildir.
+
+Repo dosyası, kuyruk, onay/inceleme satırı veya ürün kodu değiştirilmedi. Commit/push/PR değişikliği, kurulum veya test koşusu yapılmadı.

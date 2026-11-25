@@ -1,0 +1,281 @@
+--- execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md (revision 21 at H82)
++++ execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md (EXTERNAL revision 22 DRAFT)
+@@ -8,10 +8,11 @@
+ golden_reference: compact
+ data_mode: server
+ entity_base: EntityBase
+-status: ready-for-dev
+-build_gate: open
+-revision: 21
+-approval_status: approved
++status: draft
++build_gate: closed
++revision: 22
++approval_status: pending
++risk: HIGH
+ operational_runtime_gate: closed
+ owner: PVG paket sahibi
+ branch: feature/pvg/mod-0230-case-intake-triage
+@@ -23,6 +24,248 @@
+ ---
+ 
+ # MOD-0230 - Case Intake & Triage
++
++> **REVISION 22 DRAFT — CI-closure amendment only, 2026-11-23. NOT APPROVED / NO DISPATCH.**
++> This external review copy is `status: draft`, `approval_status: pending`, `build_gate: closed` and operational runtime
++> remains closed. For the NEW CI-closure work described immediately below, this banner and amendment override any
++> retained revision 21 `ready-for-dev`, open-build, approved or dispatch wording elsewhere in this copy. The historical
++> `approved: 2026-08-09` date is the initial approval date, not approval of revision 22. Earlier version-bound approvals,
++> acceptance history, DL-1...DL-12 definitions and AC-1...AC-45 remain preserved historical contracts; this draft neither
++> retrospectively revokes them nor transfers another module's authority. They cannot authorize the new 27-file work.
++> The user's instruction to continue previously approved work is NOT the missing exact XMC/shared-file consent.
++> No product worker may start this amendment until the owner's exact consent, final-version independent review,
++> fresh HIGH approval records, ordinary reviewed prompt(s) and passed dispatch gates all exist. No such result is claimed.
++
++## Revision 22 proposed CI-closure amendment (owner and formal gates pending)
++
++### Problem, identity and retained boundaries
++
++This is a contained correction to the EXISTING MOD-0230 Case Intake & Triage UI obligations, not a new module,
++FU, plan MVP, capability identity or thirteenth delivery slice. Existing identity/name and 25 form fields remain
++unchanged; `golden_reference: compact`, `data_mode: server`, `_LayoutTenantShell` and proxy/Gateway behavior stay.
++The live Compact pack/backend query+handler/frontend pages were read as context, not copied or refactored here.
++The repo master-development-plan has no MOD-0230 row/plan capability identity supplied for this correction:
++**plan satırı yok / plan kimliği yok**; registry MOD-0230 and this pack's existing twelve slices remain the mapping.
++No identity is created/reserved; a new-ID discovery/preflight is not applicable to this same-ID draft revision.
++
++Actual exact-H CI at `82bc773938baa6689f0089b89c765b60f4411932` (PR #460, run 45141578146) reports three JS assertion
++failures: four missing help page codes (CASEINTAKETRIAGE, CASEINTAKETRIAGECREATE, CASEINTAKETRIAGEEDIT,
++CASEINTAKETRIAGEDETAILS), and two untranslated verbs (`route`, `triage`) reached by the new PVG manifest. JS totals:
++5565 tests, 5562 passed, 3 failed across 2 files; 39 PVG UI tests pass. Existing UI compliance separately emits
++one new red: `CI-14 fr:equal:Nav.Domain.PHARMACOVIGILANCE`. These are observed failures, not waivers or a fabricated
++local RED. The exact-base Git reader at `58eb6fa901683296a0049a06910dc4b12e970950` has neither help gap nor untranslated
++verb; this is attribution from production readers, not a claim that all base CI passed.
++
++The seven-language new help uses plain page purposes, the currently closed availability in ordinary language, and
++synthetic-only/no-real-patient-data instructions on Create/Edit. It does not present CI, build pipelines, adapters,
++implementation details or a successful save as a product flow. Operational use, saving/updating and triage/routing
++are explicitly unavailable under the current closed gates. This text does not open them.
++
++### Exact proposed product scope — 27 files, two disjoint writer groups
++
++The table is EXHAUSTIVE for this amendment. All changes are conditional on the still-pending exact owner consent.
++The old Repo Scope/Protected Paths sections below remain unchanged. If approved, this subsection is the sole narrow
++exception for these NEW edits; nothing broadens earlier DL-12, SharedResource, CI or another module's authority.
++A path in the table is never whole-file permission: only the key/statement boundaries immediately after it apply.
++
++| Exact repository path | Sole proposed writer group |
++|---|---|
++| `frontend/Diten.Web/Resources/PageHelpResource.en.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.en.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.en.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.tr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.tr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.tr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.fr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.fr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.fr.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.es.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.es.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.es.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.zh.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.zh.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.zh.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.ar.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.ar.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ar.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/PageHelpResource.ru.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/SharedResource.ru.resx` | Shared single writer |
++| `frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ru.resx` | Shared single writer |
++| `frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml` | Shared single writer |
++| `frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js` | Shared single writer |
++| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml` | PVG views writer |
++| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml` | PVG views writer |
++| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml` | PVG views writer |
++| `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml` | PVG views writer |
++
++**Localized additions: exactly 154 values = 7 languages × (16 help + 4 page-name + 2 verb keys).** One additional
++EXISTING French value is replaced, giving 155 resource values affected in total. No resource key is removed/renamed.
++The `en,tr,fr,es,zh,ar,ru` files are all required in the three resource families, including tenant-facing RBAC labels.
++
++1. Each PageHelpResource file: ONLY `Help.{CODE}.Purpose`, `Help.{CODE}.Audience`, `Help.{CODE}.Step1Title` and
++   `Help.{CODE}.Step1` for the four normalized codes named above (16 keys per file, 112 values). Purpose/Audience plus
++   one titled step form the UXH-001 minimum real help. No optional Immediate/Related/Tour key, new tour, icon or
++   PageHelpCatalog entry is introduced; the existing default step icon is used. **Tur yok.**
++2. Each SharedResource file: ONLY four NEW keys `Nav.Page.CASEINTAKETRIAGE`, `Nav.Page.CASEINTAKETRIAGECREATE`,
++   `Nav.Page.CASEINTAKETRIAGEEDIT`, `Nav.Page.CASEINTAKETRIAGEDETAILS` (28 values). Proposed values reuse that language's
++   existing module `PageTitle`, `CreateTitle`, `EditTitle`, `DetailTitle` exactly, respectively. They are needed because
++   the real help heading calls `NavNameLocalizer.Page`; a generic help-panel heading is not the page's own title.
++   Additionally, ONLY in SharedResource.fr.resx, replace the existing `Nav.Domain.PHARMACOVIGILANCE` value
++   `Pharmacovigilance` with **`Pharmacovigilance (surveillance des médicaments)`**. The technical French term is valid;
++   this meaningful explanatory gloss meets the existing literal equality policy. It is a proposed UX choice, not an
++   ANSM-approved product label. Preserve the English and other five non-French domain values, all module labels and
++   every other existing value. No whitespace-only/case-only workaround or language exception.
++3. Each RoleAssignmentsIndex file: ONLY `ActionVerb_Triage` and `ActionVerb_Route` (14 values). The current resource
++   marker/localizer remains. Only two entries in RoleAssignments/_IndexL10n.cshtml's EXISTING `ActionVerbs` map:
++   `["triage"] = Localizer["ActionVerb_Triage"].Value` and `["route"] = Localizer["ActionVerb_Route"].Value`. No bridge
++   rewrite, parser/fallback/casing normalization change or additional exposed RBAC operation.
++4. perm-label.js: ONLY add the two WORDS to existing `ACTION_FAMILIES` rows. **Recommended, pending owner adoption:**
++   `triage` joins the existing row `tone: 'success', icon: 'bx-check-circle'` (already containing `decide`);
++   `route` joins `tone: 'dark', icon: 'bx-user-check'` (already containing `assign` and `delegate`). The production array
++   has no separate symbolic family-name field; these exact tone/icon rows identify it. Assessment decision versus
++   handover motivates the proposal. No new family, exception/fallback, action/key rename or RBAC/grant semantics.
++   Merely translating/bridging the verbs is incomplete: actual production `resolveFamily` currently returns null and
++   existing curated-verb guards would then turn red.
++5. Four PVG views: ONLY add `ViewData["PageCode"]` in the existing Razor setup block. Index → CASEINTAKETRIAGE;
++   Create → CASEINTAKETRIAGECREATE; Edit → CASEINTAKETRIAGEEDIT; Details → CASEINTAKETRIAGEDETAILS. Preserve layout,
++   routes, fields, form modes, scripts, permissions and UAS behavior. The existing `CurrentPage.Resolve` consumes
++   this override before menu matching; actual tenant navigation filters hidden descriptors and all PVG pages remain
++   `IsNavigationVisible: false`. No shared CurrentPage/NavNameLocalizer/menu/layout code is editable.
++
++The proposed COMPLETE final seven-language values and the single French before/after are hash-bound in
++`localized-content-rev22.json`, SHA-256 **5157d2ec9e40bd835330f9117cbf6da08d13434391cb2ebb0680ee2c665c1d2a**. The exact 27-path/key/statement and 23+4 writer manifest is
++`scope-rev22.json`, SHA-256 **a386b1bfe016bfdde6f129fef9dcc54efbc90595be87c5c7bb80141ae99105a9**. Both are in the external review bundle
++`C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-rev22-draft-01`. They are proposed content and scope, not evidence of implementation. Owner wording changes require a
++new content hash and final-version review, not silent worker improvisation. Evidence location/adoption into the
++approved review record must be settled before dispatch; file hashes remain the content bindings.
++
++### Slice attribution, authority and owner decisions
++
++No slice/AC evidence level is lowered and no prior acceptance row is reopened or rewritten by this draft.
++- **DL-7** owns the help text/page heading and four PageCode overrides, closure checks AC-46 and AC-49 below.
++  Its E4 minimum remains; build/test E2 for the change cannot close its deferred live acceptance (G-23 / KK-8).
++- **DL-6** owns PVG's permission-label obligation (AC-47/49), while the actual nine RBAC screen/resource/script paths
++  remain another module's files. Its E5 minimum remains; this amendment does not supply all DL-6 integration evidence.
++- **DL-11** owns the one French domain-label correction (AC-48/49) within its existing two-Nav-key surface, now explicitly
++  combined with the shared writer. Its historical INTEGRATED record is preserved. Its E5 minimum stays.
++- **DL-1** records the bounded new scope/gates; DL-12/AC-45 retain exact final-source CI closure (AC-50 cross-reference).
++  No thirteenth slice, new module/FU/WP identifier, new plan capability or unrelated feature is introduced.
++
++**Known other-module owner:** `execution/domains/platform-shared-services/module-packs/MOD-0018-FU9-platform-governance-rbac-admin-ui.md`
++frontmatter names `platform-team`; §3 lists tenant role-permission assignment and §4 assigns normal screen/JS/resource
++implementation to `frontend-ui-ux`. `DCP-001-access-governance.md` names platform-team, but explicitly cannot replace
++member pack authority. `module-implementation-status.md:53` maps actual RoleAssignments/UserRoleAssignments UI to FU9.
++Its dated body statements about unstarted/draft runtime are historical and not proof that today's production screen
++is absent. FU9's own separate approved-step conditions remain. The parent MOD-0018 excludes CRUD because this child
++owns it; that exclusion is NOT evidence of missing ownership or permission for PVG to take it over.
++
++| Approval/ownership item | Existing source / proposed decision | Current state |
++|---|---|---|
++| Nine RoleAssignments resource/bridge/family paths | MOD-0018-FU9, platform-team / frontend-ui-ux; exact narrow XMC consent record bound to this PVG exception and FU9 | **PENDING**; no ownership transfer or FU9 pack edit |
++| Seven PageHelpResource paths and seven SharedResource paths | Shared frontend resources; FU9 §4 identifies frontend-ui-ux implementation role but does not by itself grant PVG these 14 files; exact shared-path consenting owner/coordinator must be recorded | **PENDING**; no self-assigned canonical help/navigation owner |
++| Four module views | PVG paket sahibi; historical DL-7 root exists, current DL-12 prompt forbids these new edits | **PENDING** exact new view-writer scope |
++| Shared writer | One named worker ONLY for ALL 23 shared files, including the French existing-value change | **PENDING** explicit single-writer consent; no overlapping L10N/UI writer |
++| View writer | One different named worker ONLY for the four views; can run in parallel after its gates | **PENDING** explicit scope and writer |
++| Proposed content / family placements | Adopt the hash-bound 154 new values + French gloss + exact success/dark placements, or give precise replacements | **PENDING** human owner/language review |
++| Governance consistency | Matching exact domain-config exception/record and any applicable DCP-004 owner boundary confirmation must be resolved without changing operational policy; no authority is inferred from stale embedded baselines | **PENDING** final source pair and owner decision |
++| Exact-version formal/prompt/dispatch records | Independent author-separate final-byte review + HIGH approval, then separate ordinary prompts and normal gates for both writers | **PENDING**, no UYGUN/HIGH/dispatch pass is asserted |
++
++This is a narrow existing-owner correction, not a new cross-cutting capability/DCP. No new identity is necessary.
++A narrow owner consent record plus approved PVG pack exception must explicitly bind the existing FU9 ownership;
++it cannot silently rewrite/supersede FU9, domain shared ownership or DCP scope. If the existing governing vehicle
++cannot carry that exception, CT stops and obtains the appropriate existing owner's amendment before dispatch.
++All 23 shared files require explicit consent even where their edits are additive; the single French replacement
++must be included in that same writer's exact allowlist. The existing instruction to continue is not that consent.
++
++### Ordinary execution, integration and source-bound closure
++
++This subsection proposes a sequence; **NO worker is dispatched and NO queue/review/approval row is written here**.
++After all human/exact-version formal gates above pass, CT authors two separate ordinary scoped prompts, obtains the
++normal prompt/HIGH review and passed dispatch gate for EACH. They have disjoint file lists (23 shared / 4 PVG views),
++so they may run in parallel in isolated clean checkouts. No old DL12 FE/L10N/PREP prompt, queue state or authorization
++expands. Normal task-source registration is a later CT action; no new task ID is invented in this draft.
++
++The frozen FE6 six-file diff/evidence producer remains valid only for its historical six paths/source. It is NOT a
++valid new 27-file allowlist or closure proof. Use a new ordinary source-bound scope/diff evidence capture for these
++exact manifests; do not edit the old producer/guards to pretend it covers this amendment. Unlisted required writes
++(including test/CI/harness source) stop for a new bounded scope decision. Existing tests may be RUN read-only; no
++repository test/guard source is writable under the 27-path product allowance. An external private evidence harness
++may exercise existing rebuilt production types/views without becoming committed product/test code or granting
++production permissions; its source/output/hash/command must be reviewable and cannot replace the existing guards.
++
++Workers return complete diff, baseline/final hashes and E2 source-bound checks without mutating the CT checkout.
++Independent reviewer(s), separate from the relevant writer, verify scope and E2 including their negative evidence.
++Root CT integrates verified worker commits by non-fast-forward merge under the ordinary approved Git policy, then
++independently verifies the COMBINED resource/real-view behavior and exact 27-file delta. Root writes no product code.
++Any new source H invalidates older exact-source results; retest/review only the changed/final-source obligations as
++required, do not reuse a green result from a different tree. E2 INTEGRATED is not E4/E5 ACCEPTED/DONE.
++
++Use the **same existing PR #460**, preserving its review history. After authorized integration/push, required CI must
++run on the final exact H: `web-js-tests`, `ui-compliance`, Phase 1 and every other required check; no YAML, trigger,
++permission, baseline, guard, ledger, waiver, skip or matrix change. The actual earlier CI REDs remain the independent
++pre-fix evidence. Existing UI selector must turn GREEN in a fresh private LF Git clone (`core.autocrlf=false` before
++checkout) using real base and final H, unchanged `python -B scripts/uic_changed_pages.py --base <real-base-sha>`.
++The current Windows checkout's exit 2 (baseline CR precondition) is neither CI RED nor GREEN; never normalize the
++shared checkout, mask exit 2 or fabricate a passing candidate. Preserve complete before/after stdout/exit/hash/source.
++
++Even a resources/views-only new H invalidates the prior final-PR Unix/source binding demanded by **AC-45**. Preserve
++its wording and rerun/observe the existing service-tests `pvg-api / ubuntu-22.04` target/full TRX against the final
++source, 0 failed/0 skipped, with real checkout/event/run-attempt binding. For normal PR M, prove actual commit
++objects: final H is a direct parent of M, base-B relation and tree(M)==tree(H), plus the existing same-job TRX binding;
++head_sha alone is insufficient. Only if that source equivalence cannot be proved, use the existing unfiltered
++dispatch proof on the final CT ref C==H, without CI edits or an unnecessary extra matrix. Phase 1 / JS / UI green
++never substitutes for AC-45 Linux closure. Pending/red/unbound final evidence blocks PR merge and WP DONE.
++Operational runtime, production use, validation, deployment, new clinical workflows or real patient data remain closed.
++
++### Test expectations and ready-for-dev blockers for this amendment
++
++- Preserve AC-1...AC-45 verbatim. New AC-46...AC-50 below are additional obligations in the one existing Acceptance
++  Criteria section. These tests/checks are requirements, not execution claims.
++- Parse real XML: exactly the listed 154 unique additions and the one French old→new replacement; all original
++  key/value sets otherwise identical to H, all seven languages complete/nonempty, six non-English values not English
++  copies. Existing module title translations reused; no semantic/case/whitespace hack. Keep complete current
++  report-only resx-check FAIL if inherited unrelated debts remain; its status cannot waive the real selector.
++- Run unchanged existing JS tests `page-help-ledger.test.js`, `page-help-rule-contract.test.js`,
++  `role-assignments-label-ledger.test.js`, `role-assignments-perm-label.test.js`. Require 0 failed/0 skipped and retain
++  their source-bound commands/results. Then required CI web-js-tests proves the final integrated full suite.
++- Rebuild normal frontend resources; run existing CurrentPageTests, NavManifestL10nGuardTests, PageHelpShellTests and
++  PageHelpCatalogTests. Real four-view rendering/production CurrentPage.Resolve must demonstrate correct distinct
++  normalized data-page-code, each language's localized page heading/purpose/titled step with no PVG menu entry.
++  Merely grepping assignments or finding resource keys is insufficient. Use the existing synthetic test identity/
++  rendering seam, never permissive production auth/field/audit adapters; all denied page behavior stays unchanged.
++- Real production PermLabel/bridge output must show translated triage/route in all seven languages and the adopted
++  exact families; no raw slug, English fallback, permission/key/grant/checkbox-state/authorization change.
++- A critical new protection must have independent negative evidence in an external private scratch copy only:
++  omit one required help value/bridge mapping/family word or view override and show the corresponding unchanged
++  production guard or real render/consumer check fails; restore original approved candidate and show GREEN. A
++  failure of a hand-copied rule is not evidence. No sabotage, guard rewrite or extra repository test is committed.
++- The list Index touch requires the existing DataTable touch protocol/verifier as a READ-ONLY observation before
++  editing. Record any inherited Golden deviations and obtain the owner's defer/separate-fix decision as required;
++  do not widen this 27-path task, change the reference, or hide a baseline defect. No new table/form feature is added.
++- [ ] Exact human XMC/shared-file/single-writer/content/family decisions recorded, including FU9 owner.
++- [ ] Matching final pack/domain authority and author-separate review/HIGH record valid for their final bytes.
++- [ ] Both ordinary scoped prompts independently reviewed; each dispatch gate passed before its writer starts.
++- [ ] No overlaps; exact-path/key rules, real production consumers and combined independent E2 are ready to measure.
++All boxes are currently unproved. Draft preparation is not READY/VERIFIED/INTEGRATED/ACCEPTED/DONE or a new approval.
++
++### Source provenance for the review bundle
++
++- Frozen revision 21 source at H SHA-256 `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`;
++  domain SHA-256 `2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b`. Their older embedded approval-baseline
++  hashes remain historical and are not substituted for current formal records.
++- JS full real CI log SHA-256 `9ec6872af734bdba2d7aa8563c714274a58703a6fd8d01232b892e09fd2ae7f1`;
++  diagnosis `pvg-pr460-js-diagnosis-01/diagnosis-and-proposal.txt` SHA-256
++  `d36d82f1c6b1e878477444f1ff79c7775d0605bb67460733b5326981afcb9672`; static snapshot result SHA-256
++  `79cf652b500336d780ad98c84df82ee7c3ce08dc76513ac32fac9dc574516c0e`.
++- UI full real CI log SHA-256 `ca8edb6e962b75d7486e2a4e8d63cacf7b5bef7847213ec7f64761b9e8f933e8`;
++  `pvg-pr460-ui-diagnosis-01/DIAGNOSIS.md` SHA-256
++  `14a7c7dbb8901c6e13e602f9503cdb31bc0c7cf821178e05acf07b2c06e58b93`. Its French explanatory gloss is a design inference
++  supported by the stated primary French terminology sources; the language-equality guard is literal, not semantic.
++- Original JS text proposal SHA-256 `a9391e661ef7ea75ea428ec2523c0db75dd63c1dcca843272c214255ad3a98e9` is retained as
++  historical diagnosis only. The NEW plain-language final proposed content hash above supersedes its help wording
++  for this revision; key/value counts and file set remain 154 + 1 / 27. No older content hash authorizes worker text.
++
++<!-- End revision 22 proposed amendment; revision 21 body below is preserved verbatim. -->
+ 
+ > **Revision 21 ready-for-dev, 2026-11-20: two direct human-approved narrow additions.**
+ > `docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md` binds the user's direct consent to
+@@ -2335,6 +2578,13 @@
+ - [ ] AC-44 (zorunlu) — DL-12; revision 16 (`docs/records/audits/2026-11/pvg-wave10-verify-01/VERIFY-DL4E.md` D-1): AC-39 (a)'s test `Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate` (`services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs:33-48`) also asserts `harness.Store.ReadCalls == 0` (`Assert.Equal(0, harness.Store.ReadCalls)`) for each of its three rows, as AC-39 (b)'s test already does (`:69`); AC-39's text and the test's other assertions do not change. Sabotage: a store read (`FindByIdAsync`) added in `TriageDraftAsync` before the permission gate (`PvgIntakeDraftApplicationService.cs:249-269`) - the three rows turn red. Suite `pvg-api` 0 failed, 0 skipped.
+ - [ ] AC-45 (zorunlu) — DL-12 test-only environment preparation, revision 21: `Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation` in `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs` exercises the ACTUAL argument-building path consumed by `PvgMongoTestHarness.cs`: Unix includes --nounixsocket and Windows omits it; random loopback/non-27017 port, dedicated temporary data, fixed test database/tenant isolation, replica-set and transaction flags remain. On Windows run the existing real replica-set/store tests using an absolute installed DITEN_TEST_MONGOD, with 0 failed/0 skipped, and confirm its own process is stopped and its temporary data is isolated. In existing Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod ONLY the synthetic missing/positive binary-path fixtures may be constructed as platform-appropriate fully-qualified paths (the current /opt/fake/mongod positive fixture is not fully qualified on Windows). EVERY existing safety assertion remains: ResolveBinary retains Path.IsPathFullyQualified and existence checks, null/empty/relative/missing binaries fail closed, and port 27017/default-port addresses stay forbidden. No path normalization bypass, fallback, relaxed isolation or weaker cleanup. The test name and security expectations are unchanged. Sabotages: unconditional --nounixsocket fails the Windows argument case/real launch; dropping it fails the Unix argument case. No production host/store edit or unsafe fallback; no launch/test success is claimed by the administrative promotion. These measures are OUTPUT of WP-0230-DL12-PREP-WIN after its own ordinary product prompt/HIGH review, formal pack approval and dispatch gate, not a prerequisite for that same preparation dispatch. A missing binary, failing replica set or safety regression prevents PREP-WIN completion and main feature readiness; it never yields a skip/pass. Main feature dispatch requires both PREP WPs independently verified at E2 and integrated. Revision 21 additionally requires the Windows ACL/preserved-WIP/final-Linux contract in Edit Keeps Stored Data: ONLY Configuration_scan_fails_closed_on_inaccessible_directory BODY in PvgServiceApiHostTests.cs; current-SID/private ScanFixture/locked ListDirectory-only deny with independent original DACL copy and no external/inherited/global ACL or restore-right removal; both directory enumeration and actual scanner raise UnauthorizedAccessException from that same locked directory (ThrowsAny<Exception> is insufficient), accessible before/after scanner positives, finally original DACL/access-inheritance restoration and verified own-root cleanup even after failure, unchanged Unix chmod branch. No new dependencies, using/helper/fixture/scanner/host/store/config edits, skip or assertion relaxation. Full Windows API/target 0 failed/0 skipped and unchanged test counts, all Mongo guards/two targets/35 real Mongo tests and cleanup remain required. Independent E2 covers baseline 58920519a17e8f4c085738642b33e36689bc8fee through the final three-file candidate with all SIX separate compiling scratch RED/original GREEN/source-hash pairs: Windows flag unconditional, Unix flag dropped, missing/relative binary safeguards dropped, 27017 guard dropped, Windows deny removed, scanner fail-open with the denial precondition intact. No old case is replaced by the new two, no skip/count reduction or committed mutation. Freeze the old dirty tree unchanged with no checkpoint; only after new exact pack/domain formal/HIGH records and the clean replacement worker's normal HIGH prompt/gate 0 apply the saved exact two-file patch, verify raw snapshot and canonical-LF contents/hashes, then fix the sole new method; mismatch stops, no silent repair. Only the final verified commit can integrate after independent E2. Unix source preservation is not runtime PASS: final PR closure/WP DONE requires existing service-tests pvg-api/ubuntu-22.04 same-job target/full TRX 0 failed/0 skipped bound to final H and actual C. For normal synthetic M, real commit objects prove H ∈ parents(M) (H is a direct parent of M), the base-B relation and real tree(M)==tree(H), with checkout/event/run-attempt/TRX bindings; head_sha alone is insufficient. If unprovable, existing unfiltered workflow_dispatch on final CT ref must prove C==H with its same-job TRX; no YAML/step/permission expansion or unnecessary second matrix. New H or unequal source invalidates the prior result. This Linux closure does not block the earlier gated preparation/integration/feature entry, but pending/red/unbound evidence blocks final merge/DONE. Phase1 PVG build/Web test is no substitute. The separate five-row known-failures metadata worker is outside this product acceptance/write scope.
+ 
++
++- [ ] AC-46 (zorunlu) — DL-7; revision 22 DRAFT ONLY: the four existing hidden PVG pages carry their own real seven-language help. Exactly the 16 PageHelpResource keys and four SharedResource page keys named in the revision 22 amendment exist once, nonempty and properly localized in all seven languages; each actual Index/Create/Edit/Details Razor view sets only its own normalized PageCode. Rebuilt production CurrentPage.Resolve plus real view/help rendering without PVG menu entries produces each page's localized name, purpose, audience and one titled step. Existing layout, UAS/403, RBAC, routes, fields and closed availability remain unchanged. Resource presence or grepped assignments alone cannot pass. Existing page-help guards and production rendering/consumer checks turn RED with an omitted value or override in an external scratch copy, then GREEN after restoration; no test/guard edit, ledger row, ceiling increase or new tour. Operational use and saving/updating/triage/routing remain unavailable; synthetic-only/no-real-patient-data guidance matches the current gate.
++- [ ] AC-47 (zorunlu) — DL-6 obligation / MOD-0018-FU9-owned nine-file exception, revision 22 DRAFT ONLY: precisely ActionVerb_Triage and ActionVerb_Route in seven RoleAssignmentsIndex files plus the two existing-map bridge entries yield real translated role-screen verbs in every tenant language. Exactly two ACTION_FAMILIES word additions produce the owner-adopted existing rows; recommendation triage→success/bx-check-circle (decide row), route→dark/bx-user-check (assign/delegate row), adoption still pending. Existing label/family tests and production consumer checks fail on independently omitted mapping/family word in external scratch, then pass restored; no raw slug/English placeholder, new family/fallback, key/action rename, permission/grant/checkbox/RBAC semantics or other FU9 behavior change. Explicit platform-team/FU9 XMC owner consent is required before edits.
++- [ ] AC-48 (zorunlu) — DL-11, revision 22 DRAFT ONLY: only the existing French Nav.Domain.PHARMACOVIGILANCE value changes from Pharmacovigilance to Pharmacovigilance (surveillance des médicaments), in the same SharedResource writer's allowlist. All seven original module/domain keys remain unique/nonempty, English and other five non-French domain values unchanged. The unmodified production selector in a fresh private LF clone at real base/final H removes the actual prior CI-14 fr:equal red, produces no new red and exits 0; a current-checkout CR precondition exit 2 is never GREEN. Preserve real before/after full output/source/hash and French owner wording review. No case/space workaround, semantic exception, baseline, ledger, guard or workflow edit.
++- [ ] AC-49 (zorunlu) — DL-7/DL-6/DL-11 bounded CI closure, revision 22 DRAFT ONLY: final diff contains exactly the approved 27 product paths, exactly 154 new localized values plus the one allowed French existing-value replacement and only four PageCode/two bridge/two family-word additions. Every other original resource key/value and code behavior is preserved; no test/CI/guard/ledger/schema/catalog/routes/API/auth/store/audit change or operational permission. The shared 23-file single writer and disjoint four-view writer each require exact human consent, final-version independent HIGH records, an ordinary reviewed scoped prompt and passed dispatch gate. Author-separate reviewers verify source-bound E2 and negative evidence; CT integrates by ordinary no-ff and independently verifies combined production behavior. The historical FE6 producer cannot certify this scope. Existing complete required CI suites must pass on the final integrated source; no scope/method/skip waiver or synthetic success assertion replaces them. Prior DL evidence minima E4/E5 and live deferral remain unchanged.
++- [ ] AC-50 (zorunlu) — final PR #460 closure, revision 22 DRAFT ONLY; cross-reference unchanged AC-45: after authorized integration and push to a new final H, all required checks (including web-js-tests, ui-compliance and Phase 1) must pass on that final source, and the existing pvg-api/ubuntu-22.04 same-job target/full TRX must satisfy AC-45 with 0 failed/0 skipped. Actual H/M/B commit/tree/checkout/event/run-attempt/TRX proof is retained; old-H/source results are invalidated by any new H. Existing unfiltered dispatch C==H is a fallback only if normal PR source equivalence cannot be proved; no CI edit/extra routine matrix. Pending/red/unbound final evidence blocks merge/DONE. No operational/runtime/deployment authorization is supplied by this acceptance.
++
+ ## Gate State and Acceptance History
+ 
+ The lists below are recorded facts and gate states carried from earlier revisions of this pack; they are not acceptance criteria.

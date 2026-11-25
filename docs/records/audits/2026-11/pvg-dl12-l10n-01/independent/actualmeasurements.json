@@ -1,0 +1,1232 @@
+{
+  "kind": "Independent source/content verification only; no runtime/UI/build acceptance",
+  "reviewer": "/root/pvg_dl12_l10n_prompt_review_01",
+  "model": "verilemiyor; requested inherited gpt-6.2-astra",
+  "effort": "verilemiyor; requested high",
+  "base": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "head": "43f856f22f0549be1d61fab09d40086b755661ba",
+  "base_tree": "47c42a86d940992fca0f063f18c3667a3b23342f",
+  "head_tree": "72e59b13b99d4fa5ba7ccacb2544145128f4d7f2",
+  "branch": "feature/pvg/mod-0230-dl12-l10n",
+  "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+  "status": "",
+  "single_parent": [
+    "ab039c2c53d82edf8413bae4e3304d21b57e04e4"
+  ],
+  "commits": 1,
+  "commit_object": "tree 72e59b13b99d4fa5ba7ccacb2544145128f4d7f2\nparent ab039c2c53d82edf8413bae4e3304d21b57e04e4\nauthor ElikPenco <e.penciyev@grandmedical.eu> 1795207371 +0400\ncommitter ElikPenco <e.penciyev@grandmedical.eu> 1795207371 +0400\n\nl10n(pvg): add draft edit refusal in seven page resources\n",
+  "paths": [
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+  ],
+  "numstat": [
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+    "1\t0\tfrontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+  ],
+  "full_diff": "diff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx\nindex 2122e06bb..ba4f179ae 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>إزالة الارتباط</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>ستتم إزالة الارتباط عند الحفظ.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>تعذرت قراءة قوائم الخيارات. الحفظ غير متاح.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>لم يعد من الممكن تعديل هذا السجل.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx\nindex 7d4c5846a..27f9c7dba 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>Remove Link</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>The link will be removed when you save.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>The option lists could not be read. Saving is unavailable.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>This record can no longer be edited.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx\nindex 4e221c0bf..d12aee899 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>Quitar Vínculo</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>El vínculo se quitará al guardar.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>No se pudieron leer las listas de opciones. No es posible guardar.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>Este registro ya no se puede editar.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx\nindex 24d7fdc95..bf84e8911 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>Supprimer le Lien</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>Le lien sera supprimé lors de l'enregistrement.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>Les listes d'options n'ont pas pu être lues. L'enregistrement n'est pas disponible.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>Cet enregistrement ne peut plus être modifié.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx\nindex 3279fa390..f91f0d65a 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>Удалить Связь</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>Связь будет удалена при сохранении.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>Не удалось прочитать списки вариантов. Сохранение недоступно.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>Эту запись больше нельзя редактировать.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx\nindex a9f2b2abe..c19241775 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>Bağı Kaldır</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>Kaydettiğinizde bağ kaldırılacak.</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>Seçenek listeleri okunamadı. Kaydetme kullanılamıyor.</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>Bu kayıt artık düzenlenemez.</value></data>\n </root>\ndiff --git a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx\nindex 8bffc3e63..c0b588295 100644\n--- a/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx\n+++ b/frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx\n@@ -115,4 +115,5 @@\n   <data name=\"RemoveReporterLink\" xml:space=\"preserve\"><value>移除关联</value></data>\n   <data name=\"ReporterLinkRemovalNote\" xml:space=\"preserve\"><value>保存后将移除此关联。</value></data>\n   <data name=\"OptionsLoadFailed\" xml:space=\"preserve\"><value>无法读取选项列表。无法保存。</value></data>\n+  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>此记录已无法编辑。</value></data>\n </root>\n",
+  "diff_check_exit": 0,
+  "prompt_sha256": "501ed6f6cf4284984f4e0bf6c4554f1c065440ba4c1eddc1e3c084043ba69f8c",
+  "source_digest": "0a0d377739f39830eeed899290d7f5514b8c3b69254ff831855429e958d1a8ac",
+  "normal_gate_proof": {
+    "commit": "5fe5f148d8e839384f3a3e655e524a980d4fe84b",
+    "exit": 0,
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "-c",
+      "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+      "scripts/prompt_gate.py",
+      "check",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-L10N-v1.1.md",
+      "--queue",
+      "pvg"
+    ],
+    "report_raw_sha256": "60a7cf6fdb37cd5d59f99a51025199148b14c0b303c3d7376ba4ffd96973399c",
+    "footer": "c399a1af93108c9477442d2e8a683c7ecc8c41b44b5560b20194d6ee4210c303",
+    "source_head": "ab039c2c53d82edf8413bae4e3304d21b57e04e4"
+  },
+  "publication_files": [
+    {
+      "path": "docs\\records\\audits\\2026-11\\pvg-dl12-l10n-01\\RAW-WORKER-ARTIFACTS.json",
+      "bytes": 36842,
+      "raw_sha256": "cd10bfa3e3abd0a7d8d231fe161698901b321403c0ed56439d17f4a508257453"
+    },
+    {
+      "path": "docs\\records\\audits\\2026-11\\pvg-dl12-l10n-01\\PUBLISH-MANIFEST.json",
+      "bytes": 1042,
+      "raw_sha256": "1fd996aa9ecaade6d3a6cdb23b03a8b1b393d8219aab76485c5b4afe3ce37d1e"
+    },
+    {
+      "path": "docs\\records\\audits\\2026-11\\pvg-dl12-l10n-01\\WORKER-REPORT.md",
+      "bytes": 2330,
+      "raw_sha256": "9933b305fff62742d3757796c88837e1965279ace6a677033ed87c3673c73e90"
+    }
+  ],
+  "original_worker_artifacts": [
+    {
+      "name": "before.json",
+      "bytes": 6976,
+      "raw_sha256": "6621ea24e877279875402ef063e4661c8469021311a4cb4d0803ed3bb59f2fda",
+      "original_matches_envelope": true,
+      "publish_manifest_matches": true,
+      "CRLF": 111
+    },
+    {
+      "name": "after.json",
+      "bytes": 4323,
+      "raw_sha256": "1485e7c8e60939e853007eddfb79180a031e29ada681072bdeb242746afdd57e",
+      "original_matches_envelope": true,
+      "publish_manifest_matches": true,
+      "CRLF": 104
+    },
+    {
+      "name": "commands.json",
+      "bytes": 13745,
+      "raw_sha256": "828249a4acd47a7964d676f1abee8ab56d296543e64e7470941582904b4d32b1",
+      "original_matches_envelope": true,
+      "publish_manifest_matches": true,
+      "CRLF": 38
+    },
+    {
+      "name": "manifest.json",
+      "bytes": 1882,
+      "raw_sha256": "3134c13410d8cf334e3f479e382a6b2493b0bdd8e8e8daa6042c536608ff62b4",
+      "original_matches_envelope": true,
+      "publish_manifest_matches": true,
+      "CRLF": 30
+    }
+  ],
+  "recorded_worker_command_exits": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "recorded_failed_command": {
+    "index": 2,
+    "exit_code": 1,
+    "cmd": "$env:PATH='C:/Users/epenc/AppData/Local/Temp/pvg-ct-gh/bin;'+$env:PATH\n$OutputEncoding=[System.Text.UTF8Encoding]::new($false)\n@'\nfrom pathlib import Path\nimport hashlib, json, re, subprocess, xml.etree.ElementTree as ET\nev=Path(r'C:/Users/epenc/AppData/Local/Temp/pvg-dl12-l10n-evidence/WP-0230-DL12-L10N-1795207314259')\nbase='ab039c2c53d82edf8413bae4e3304d21b57e04e4'\nreview='85c49b14496ef09e2510dfb6d332667443eb4810'\nproof='5fe5f148d8e839384f3a3e655e524a980d4fe84b'\nprefix='docs/records/audits/2026-11/pvg-dl12-feature-prompts-02/'\nbranch='feature/pvg/mod-0230-dl12-l10n'\ndef git(*args): return subprocess.check_output(['git','--no-optional-locks',*args])\ndef show(commit,path): return git('show',commit+':'+path)\ndef digest(data): return hashlib.sha256(data).hexdigest()\ndef lf(data): return data.replace(b'\\r\\n',b'\\n')\ntexts={'en':'This record can no longer be edited.','tr':'Bu kayıt artık düzenlenemez.','fr':'Cet enregistrement ne peut plus être modifié.','es':'Este registro ya no se puede editar.','zh':'此记录已无法编辑。','ar':'لم يعد من الممكن تعديل هذا السجل.','ru':'Эту запись больше нельзя редактировать.'}\nkey='DraftNotEditable'\npaths={lang:'frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.'+lang+'.resx' for lang in texts}\ndef snapshot(b):\n members=ET.fromstring(b).findall('data')\n names=[n.attrib['name'] for n in members]\n return dict(raw_sha256=digest(b),lf_sha256=digest(lf(b)),count=len(members),unique=len(set(names)),duplicates=len(names)-len(set(names)),empty=sum(not (n.findtext('value') or '').strip() for n in members),new_key=key in names),names\ndef write_json(name,value): (ev/name).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\\n',encoding='utf-8')\nbefore=json.loads((ev/'before.json').read_text(encoding='utf-8'))\nassert git('rev-parse','HEAD').decode().strip()==base and git('branch','--show-current').decode().strip()==branch and not git('status','--porcelain=v1','--untracked-files=all')\nchanges={}\nfor lang,p in paths.items():\n raw=Path(p).read_bytes()\n assert digest(raw)==before['files'][lang]['raw_sha256']\n assert raw.count(b'</root>')==1\n nl=b'\\r\\n' if b'\\r\\n' in raw else b'\\n'\n assert raw.count(nl)==raw.count(b'\\n') and nl+b'</root>' in raw\n fragment=('  <data name=\"DraftNotEditable\" xml:space=\"preserve\"><value>'+texts[lang]+'</value></data>').encode()+nl\n changes[lang]=(raw,fragment,raw.replace(b'</root>',fragment+b'</root>'))\nfor lang,p in paths.items(): Path(p).write_bytes(changes[lang][2])\nafter={}; sets=[]\nfor lang,p in paths.items():\n old,fragment,expected=changes[lang]; raw=Path(p).read_bytes()\n assert raw==expected and raw.count(fragment)==1 and raw.replace(fragment,b'',1)==old\n nodes=ET.fromstring(raw).findall('data')\n assert [ET.tostring(n) for n in nodes[:-1]]==[ET.tostring(n) for n in ET.fromstring(old).findall('data')]\n new=nodes[-1]; assert new.attrib=={'name':key,'{http://www.w3.org/XML/1998/namespace}space':'preserve'} and new.findtext('value')==texts[lang]\n assert not re.search(r'[{}]|TODO|TBD',texts[lang]) and (lang=='en' or texts[lang]!=texts['en'])\n m,names=snapshot(raw); assert m['count']==m['unique']==112 and m['empty']==m['duplicates']==0\n sets.append(set(names)); after[lang]=dict(path=p,**m,value=texts[lang],old_members_and_order_preserved=True,old_bytes_recovered_exactly=True,placeholders=0)\nassert all(s==sets[0] for s in sets)\nassert set(git('diff','--name-only',base).decode().splitlines())==set(paths.values())\nassert sorted(git('diff','--numstat',base).decode().splitlines())==sorted('1\\t0\\t'+p for p in paths.values())\ngit('diff','--check',base)\nwrite_json('after.json',dict(key=key,parity=True,files=after))\nprint('Verified 111 -> 112, exact seven values, old members/order/bytes preserved, one inserted line each.')\n\n'@ | python -B -X utf8 -"
+  },
+  "files": [
+    {
+      "language": "en",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d",
+      "head_git_blob_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "current_raw_sha256": "c388f73549cc7506b38601c7094277084865701d8689282a66169aa22272cbdc",
+      "current_lf_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "recovered_old_raw_sha256": "0b086d59f042c26f01a74636d0b869948fd6e55dbcd5cfe91730317312e01b70",
+      "recovered_old_lf_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d",
+      "raw_bytes": 10541,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "This record can no longer be edited.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "tr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811",
+      "head_git_blob_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "current_raw_sha256": "6e114bc60dfa2697a635c8516e66a6110d35010d1fcf6e267c2cf1e73a6b23b7",
+      "current_lf_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "recovered_old_raw_sha256": "11675b4463bb74d241b55ce1e4c76073e6729e6daffa06f1ca305efa36da9104",
+      "recovered_old_lf_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811",
+      "raw_bytes": 10908,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "Bu kayıt artık düzenlenemez.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "fr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f",
+      "head_git_blob_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "current_raw_sha256": "21ba1cf5d45a37fa9ac2f991710beb00b3d3d96873c51e521253ae9e92fc198a",
+      "current_lf_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "recovered_old_raw_sha256": "ed8cd0b4772f2d1f88a586960da08c3a095e3af64eb7d5d8b0c9eb9c7556a780",
+      "recovered_old_lf_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f",
+      "raw_bytes": 11196,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "Cet enregistrement ne peut plus être modifié.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "es",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60",
+      "head_git_blob_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "current_raw_sha256": "1641c4c897baaea72cd10564c8ed1b5b70c34f68175a6cb544f5c107a2498370",
+      "current_lf_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "recovered_old_raw_sha256": "806e523188e5c9acaad65bfd6adb950af9b2dbb36c96bfadff37fb9723effce2",
+      "recovered_old_lf_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60",
+      "raw_bytes": 11174,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "Este registro ya no se puede editar.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "zh",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8",
+      "head_git_blob_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "current_raw_sha256": "8f792cb6443e3e8042f16b7a6fa63e2dd96505bceb7b9a65ef40c28507817817",
+      "current_lf_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "recovered_old_raw_sha256": "4d5c97e10b63e914dfbd227ed838783b25334f71a22a9b3b5d74b2a61fbae643",
+      "recovered_old_lf_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8",
+      "raw_bytes": 10530,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "此记录已无法编辑。",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "ar",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1",
+      "head_git_blob_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "current_raw_sha256": "ac8dde37cb427d8c41d417bc39070b135cc64cae80cf9391a2e62d086cd86774",
+      "current_lf_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "recovered_old_raw_sha256": "60605c2d5109f4abe63950ca926e1e46efeb7cfa0e02e27eea1586ca6301e59b",
+      "recovered_old_lf_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1",
+      "raw_bytes": 11983,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "لم يعد من الممكن تعديل هذا السجل.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    },
+    {
+      "language": "ru",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "added_line": 118,
+      "base_git_blob_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1",
+      "head_git_blob_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "current_raw_sha256": "8f169e2235da7975a1920f78e94dc3988b0dcbf3044027ab0e4fed51ed8c705c",
+      "current_lf_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "recovered_old_raw_sha256": "dc4f14015f0bbe501f18a8cdcfe408ef80d26a87a404f21a28a778730dcae579",
+      "recovered_old_lf_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1",
+      "raw_bytes": 12845,
+      "CRLF_count": 119,
+      "old_count": 111,
+      "new_count": 112,
+      "duplicates": 0,
+      "empty": 0,
+      "value": "Эту запись больше нельзя редактировать.",
+      "xml_space": "preserve",
+      "old_member_signatures_equal": true,
+      "old_internal_children_text_attributes_order_equal": true,
+      "canonical_byte_recovery": true,
+      "raw_byte_recovery": true,
+      "raw_hashes_match_worker": true,
+      "tail_differences": [
+        {
+          "index": 110,
+          "key": "OptionsLoadFailed",
+          "before_tail": "\n",
+          "after_tail": "\n  "
+        }
+      ]
+    }
+  ],
+  "all_old_keysets_equal": true,
+  "all_new_keysets_equal": true,
+  "old111_preserved": true,
+  "new_values_exact": true,
+  "review_verdict": "UYGUN",
+  "blocking_findings": 0,
+  "actual_commands": [
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "85c49b14496ef09e2510dfb6d332667443eb4810:execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-L10N-v1.1.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 15718,
+      "stdout_sha256": "501ed6f6cf4284984f4e0bf6c4554f1c065440ba4c1eddc1e3c084043ba69f8c",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "branch",
+        "--show-current"
+      ],
+      "exit": 0,
+      "stdout_bytes": 31,
+      "stdout_sha256": "386b98419d783ed25b6544a29a3fdadae24eca0c5331851a78749d980ee228d9",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout_bytes": 41,
+      "stdout_sha256": "98ced7d8278074fb7a5e3a6e9f926ccc972b4202eac03f2bbf381a41ed209d64",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "rev-list",
+        "--count",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4..43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 2,
+      "stdout_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 82,
+      "stdout_sha256": "d94794db358a179698ea7063a8e22b96137ea1af6a662bc26a19d8583dc4117f",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "rev-parse",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4^{tree}"
+      ],
+      "exit": 0,
+      "stdout_bytes": 41,
+      "stdout_sha256": "ecdba43ec87f32eedb8ed012eca07014c1e5f9c4cc98c8991846c48bdccdb31f",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "rev-parse",
+        "43f856f22f0549be1d61fab09d40086b755661ba^{tree}"
+      ],
+      "exit": 0,
+      "stdout_bytes": 41,
+      "stdout_sha256": "8871d13fbeccb9bc735cd54aa21af83574308e1542af158380d0433b1227592e",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "cat-file",
+        "-p",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 282,
+      "stdout_sha256": "eed72b98d26dd22c4b6b70aebcbeb88aefdca6af62575a82bead8750a96f485d",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--no-ext-diff",
+        "--numstat",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 728,
+      "stdout_sha256": "78ea7b2185424f36434342bf098b2e3693bf71ee8d3a12ebf35f665cff93f131",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--no-ext-diff",
+        "--name-only",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 700,
+      "stdout_sha256": "bdb527fe52347ec471b7e63c3433ad7cc00b7335e9ba7ce1fdc7e6de96d0cc52",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 6894,
+      "stdout_sha256": "2b0611ed59198cad2d1a274b3b598b103f04cd16f0a2dd1300db9a978f7c6f84",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--check",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+        "43f856f22f0549be1d61fab09d40086b755661ba"
+      ],
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--exit-code",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "5fe5f148d8e839384f3a3e655e524a980d4fe84b:docs/records/audits/2026-11/pvg-dl12-feature-prompts-02/L10N-NORMAL-GATE.capture.json"
+      ],
+      "exit": 0,
+      "stdout_bytes": 1447,
+      "stdout_sha256": "c10c7b8e1d82743e99267ce6385480470116a3fd5f0d345cf82920cde74d0b73",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "5fe5f148d8e839384f3a3e655e524a980d4fe84b:docs/records/audits/2026-11/pvg-dl12-feature-prompts-02/L10N-NORMAL-GATE.txt"
+      ],
+      "exit": 0,
+      "stdout_bytes": 1187,
+      "stdout_sha256": "60a7cf6fdb37cd5d59f99a51025199148b14c0b303c3d7376ba4ffd96973399c",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "5fe5f148d8e839384f3a3e655e524a980d4fe84b:docs/records/audits/2026-11/pvg-dl12-feature-prompts-02/L10N-NORMAL-GATE.stderr.txt"
+      ],
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:AGENTS.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 21877,
+      "stdout_sha256": "6aa0e1f5c1223340a473436ece2116d3fa78c68f56144ac85d909743631ac68a",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 468453,
+      "stdout_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:execution/domains/pharmacovigilance/domain-config.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 23686,
+      "stdout_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 3402,
+      "stdout_sha256": "0bae22a313b8b032bb5066ddc28854e59aa0001edb5fba69801e7656d976fdda",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 4697,
+      "stdout_sha256": "a9a1ec5dece8855baffec75ab2265de49599e139c5f8307c4d2690760eddb345",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/audits/2026-11/pvg-rev21-formal-review-01/APPROVAL-CHECK.txt"
+      ],
+      "exit": 0,
+      "stdout_bytes": 2253,
+      "stdout_sha256": "73be1eb36fd5bf43b83a078b883c33f19724bb147b57c72f3d322e21f2da3220",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:execution/approvals/approvals.tsv"
+      ],
+      "exit": 0,
+      "stdout_bytes": 71483,
+      "stdout_sha256": "a0ae244304d49bbda1b61c3f52be4e4a7bbbea9813e4c8ebe6511e9db0ae6a58",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:execution/approvals/reviews.tsv"
+      ],
+      "exit": 0,
+      "stdout_bytes": 182385,
+      "stdout_sha256": "a3f3461838ad05c2e4ed9f968e6587c8ee4ec4ee88f9aab792c6a9aea10ab81b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 1733,
+      "stdout_sha256": "9035bbc730c983fa790ea710602b5c79e2008759d77d81205f9ea36cbc1602d2",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 2653,
+      "stdout_sha256": "d24c17c284736b73876c401e6183751ab23f1335f71ce94440bf02106d602e34",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/audits/2026-11/pvg-dl12-feature-dor-01/READY-v1.1.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 2195,
+      "stdout_sha256": "57c0e22fa913399e188d1eeba67754b84bce14bfa6baf105ec43f1687c9465ad",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/roadmap/plans/pvg-mod0230-dl12-parallel-delivery-plan-2026-11-20.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 8766,
+      "stdout_sha256": "0764b043e613a6731f95e039e01a1d1ad95865e8b6880432ab89edbe9d8d5ae4",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:docs/records/audits/2026-11/pvg-dl12-feature-discovery-02/DECISIONS.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 9706,
+      "stdout_sha256": "76833072a6433fa485a512cc5dcfdfe3149fc2bb45c31101db0ff0adea1cc1e6",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/agents/l10n-agent.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 5723,
+      "stdout_sha256": "a822996573f67132ab96e23bf802304ee407d2fd5834c6eb000bb0b090aa1476",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/multi-tenancy.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 4760,
+      "stdout_sha256": "4ba429f6729e4d6a073cc992044c4672675334e9021bb6708243fa6c1fe530f5",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/security-jwt.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 2882,
+      "stdout_sha256": "1b99d7630fe883ff7babf1c6bdb9372215400d8c10580a12532698355a1996c5",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/git-safety.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 5001,
+      "stdout_sha256": "6618a2ce1169e641f6312a6ac3afde4af9fdea90ff12763cc558e9b2bb04f6c9",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/code-style.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 7831,
+      "stdout_sha256": "1d22691f317acddaafe8b24dbefa131cf9987bdccfe0aa352a6bc1ed14f24f63",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/docs-organization.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 8891,
+      "stdout_sha256": "d2470e111923e121758fd635c67b12875be3d816bffaa659aa0a37b046625519",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/cross-module-change-consent.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 4057,
+      "stdout_sha256": "ac5c6012cc9af7b1de8631e9ee1208776e7acb2f1cc6754cdca1811368dece2a",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/localization-standard.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 6729,
+      "stdout_sha256": "0d4c2dba2af6bfe31c6ab9e9adec3d6cc2601aac311c295c03d055676aff038b",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:.antigravity/rules/dynamic-localization-standard.md"
+      ],
+      "exit": 0,
+      "stdout_bytes": 7925,
+      "stdout_sha256": "148754a35395f6f4d6231f4fd2c5ce18842f95c6e4f4dba31cab7858ec8c20ff",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10310,
+      "stdout_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10682,
+      "stdout_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10954,
+      "stdout_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10943,
+      "stdout_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10308,
+      "stdout_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 11729,
+      "stdout_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 12577,
+      "stdout_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10310,
+      "stdout_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10422,
+      "stdout_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10682,
+      "stdout_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10789,
+      "stdout_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10954,
+      "stdout_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 11077,
+      "stdout_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10943,
+      "stdout_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 11055,
+      "stdout_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10308,
+      "stdout_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 10411,
+      "stdout_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 11729,
+      "stdout_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 11864,
+      "stdout_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 12577,
+      "stdout_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "--no-optional-locks",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+        "show",
+        "43f856f22f0549be1d61fab09d40086b755661ba:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx"
+      ],
+      "exit": 0,
+      "stdout_bytes": 12726,
+      "stdout_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "stderr": ""
+    }
+  ]
+}

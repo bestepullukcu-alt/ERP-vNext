@@ -1,0 +1,125 @@
+{
+  "published": [
+    {
+      "path": "VERIFY-BE-BASELINE.txt",
+      "raw_sha256": "034a27aa56138cd8c25feb08a35de95c82cc35624ec6488c953dd29ee654b88f",
+      "lf_sha256": "4015956c41226a99cb42d9bc0c38b7b86ee1518d63aaaa43907bbe5bd56036ba",
+      "bytes": 6389
+    },
+    {
+      "path": "actual-commands.json",
+      "raw_sha256": "817fd6cffa9df1db8b4a839e556b319c18107a80bfe59b79b2543d2597d23c64",
+      "lf_sha256": "453755930cef8ccdd50ef2cfa57e6982fcadef36df9b5c83411b2b9800d76040",
+      "bytes": 3418
+    },
+    {
+      "path": "assembly-freshness.json",
+      "raw_sha256": "51eb1eb95ffebffe93844518f01fbb96f5c3f99ef86fbc9c0028cc2a30a855f4",
+      "lf_sha256": "22879e5996f8fb26ea259a435d6bb63893a63c4dc638a1804a35ce6f5686c7e3",
+      "bytes": 1869
+    },
+    {
+      "path": "baseline-summary.json",
+      "raw_sha256": "1f5446d6438dd482fbfe35c5ef8bc06068cff44534b52b6895bd3cdc41fce34b",
+      "lf_sha256": "e53b6edfaeb74a6228c80be28d33a5b5b3edca6e3a9f20e315c34cfa757fc262",
+      "bytes": 1005
+    },
+    {
+      "path": "be-sources-match-web-codebase.json",
+      "raw_sha256": "f5069c48545d746fcfdae28a7919aaa0a861a3009f8311d9101b0b85bca0bf33",
+      "lf_sha256": "d49e4232b8f21ed9f4722966cd963e1dac0bf9b79271c410ac7bb1310421c3fb",
+      "bytes": 10201
+    },
+    {
+      "path": "cleanup-after.json",
+      "raw_sha256": "ffabd9967210491ce1aea80dc9d972c30c0b7806b904ec59196f80a287788cee",
+      "lf_sha256": "cefc2b26be82a023765834bc43df3dce65fa71f1114fb500c2c2a420992adf65",
+      "bytes": 231
+    },
+    {
+      "path": "dotnet-version.log",
+      "raw_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84",
+      "lf_sha256": "889bcd977affaed790bc08b12d1d934e807005b95d1678b47f137170447520c1",
+      "bytes": 9
+    },
+    {
+      "path": "evidence-manifest.json",
+      "raw_sha256": "d61eac9233f7e7bf53c5f223b06d89c46a669e892d10e58454890f12539442fd",
+      "lf_sha256": "e107ee22e99fb8f9320cc7c8137ffbf39f4bd25a1586969310228c53cbc536f0",
+      "bytes": 2633
+    },
+    {
+      "path": "existing-web-loss-binding.json",
+      "raw_sha256": "ec4d7a64f09cf816106eea86bd0d4ba8410448a71ab751d30cbf34fbf242b15b",
+      "lf_sha256": "b73067c9bdd268f4339ab684393497dd681e83a1405f5eb82b22f7ad3d60778c",
+      "bytes": 1248
+    },
+    {
+      "path": "known-failures-check.log",
+      "raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "lf_sha256": "ee0503e57a3a055b4e493f65cae4f205465ee87761cc68701d37bf6d8e2f4081",
+      "bytes": 101
+    },
+    {
+      "path": "regpvbase-baseline.trx",
+      "raw_sha256": "5a0a96385d5e3f4de6eabfee6ecd85e20c49391a7f3f5742dd769472325b1705",
+      "lf_sha256": "f778cfe8fadab6a70308a130a24ca7c826fb60aaa6921ccec4ceba3ac9ec1ffb",
+      "bytes": 365206
+    },
+    {
+      "path": "regpvbase-full.log",
+      "raw_sha256": "2cf90f6ad525cc0bd3fdfe03fa85896e77f68fc396afe3ab2d6cfe39edaf7111",
+      "lf_sha256": "c85c15488831503942eebc602b78fd8b862261db2b36c2beeef49bdbf72785e6",
+      "bytes": 1556
+    },
+    {
+      "path": "restore.log",
+      "raw_sha256": "073f782e843329db625105f6d1d2b0c74e2f8c81eeb267e9859bc7766b63394a",
+      "lf_sha256": "6a381ed2e2840e05baabf85588ca9b64619558b0264f6e68bbaa626dd8a88d87",
+      "bytes": 884
+    },
+    {
+      "path": "skip-check.log",
+      "raw_sha256": "019ca418451a3332218f5fc5b62d6e4237a9759c336e85eab0bec248596c2113",
+      "lf_sha256": "05e2c775aaa8c9608f480a355913a424c59e99c14e9e202f1df1c52f2983bc4e",
+      "bytes": 151
+    },
+    {
+      "path": "source-after.json",
+      "raw_sha256": "3ee7dfd7d7eba119e610a1ea0c7a69a557de140c41e0238308ffd53d44fa69ee",
+      "lf_sha256": "601839f72217b342b6e6106b84526c883b72cbd2c2023fd0a3b2436e1bab64b2",
+      "bytes": 630
+    },
+    {
+      "path": "source-before.json",
+      "raw_sha256": "6662089428025063e33e925effdb1bde9d12e7561412fd8cbb1646bbf3ff1d5e",
+      "lf_sha256": "81b79dd934ca1f87061e655a95ca2cce52c519580f425c362a3b0758c28e78af",
+      "bytes": 23505
+    },
+    {
+      "path": "trx-summary.json",
+      "raw_sha256": "ec9087b1e46971acadb194313469dbd0815950aaac0adee818f4ef868596e71a",
+      "lf_sha256": "517bb983ab31b2c360b700ca479c251995bb36f2994e14a73eb7ccf6af147f13",
+      "bytes": 62098
+    }
+  ],
+  "preserved": [
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-baseline-01\\full-snapshot-manifest.json",
+      "raw_sha256": "612e0ea7ae82f31e4ea1a50a072cee90a8445b51538357648a1f252220cc3f83",
+      "bytes": 6091292
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-baseline-01\\full-snapshot-manifest.json.gz",
+      "raw_sha256": "5704cb41957c69b935952a78bd52438f5024bbe41bda0572f3eb4ca1b9387f1c",
+      "bytes": 1345396
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-be-baseline-01\\baseline-runner.py",
+      "raw_sha256": "b9d79182c87091d0611163a7ec1cc996693583a68e465e26aa4fb1c0b3c1e2e1",
+      "bytes": 10021
+    }
+  ],
+  "source_commit": "fbfcf0a46a66e2f8947c765a7778e73022928178",
+  "scope": "Current unchanged RegPvBase baseline211PASS; no new feature/no-loss E2; saved WebFalse reused explicitly"
+}

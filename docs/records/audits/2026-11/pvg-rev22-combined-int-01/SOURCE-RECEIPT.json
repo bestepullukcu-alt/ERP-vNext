@@ -1,0 +1,32 @@
+{
+  "input_H": "6361654b6df9334803c3651231c754fe1d0685ad",
+  "input_tree": "9c91fbd3d1781a13a107f1e31f54656d7c57d28a",
+  "external_root": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\int22-71df",
+  "review_sha256": "45a9d1abbb31eed09f98fed799f295869edea4cef908f8c4382b8a2c67c4d58a",
+  "manifest_sha256": "5dde9d4b18c77999580c50f827d54b75332d35007c851422f111f28a84d4079f",
+  "zip_sha256": "ea31cc86f4e67183fd7d7eaaa91ae119203db7e4896dad8fc31b3fd5e337b5a9",
+  "PVG_200": 28,
+  "Role_200": 7,
+  "exact_visible_texts": 168,
+  "exact_actions": 14,
+  "all_DOM_value_checks": 644,
+  "writes": 0,
+  "fresh_CSharp_passed": 48,
+  "fresh_CSharp_failed": 0,
+  "fresh_CSharp_skipped": 0,
+  "trx_sha256": "7ed5110984edf962e82f7fb1b368f94836ec11f6d3419cc9bbd739fa92852cee",
+  "Purpose_tr_Create_negative": {
+    "omit_build": 0,
+    "omit_HTTP": 200,
+    "omit_DOM": 42,
+    "restore_build": 0,
+    "restore_HTTP": 200,
+    "restore_DOM": 0,
+    "seven_satellite_restore_SHA_equal": true
+  },
+  "verdict": "UYGUN local readonly combined consumers only",
+  "critical": 0,
+  "blocking": 0,
+  "native_full_JS_exit": 1,
+  "new_final_H_LinuxCI_AC45_pending": true
+}

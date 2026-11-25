@@ -18,6 +18,10 @@ public static class SupplierContractChecks
     public const string Frozen120RelativePath =
         "services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Suppliers/Contract/Fixtures/supplier-v1.2.0.openapi.yaml";
 
+    /// <summary>MOD-0140 DL-3: 1.3.0 as frozen on main by DL-1 (PR #289) — the base the 1.4.0 diff test measures against.</summary>
+    public const string Frozen130RelativePath =
+        "services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Suppliers/Contract/Fixtures/supplier-v1.3.0.openapi.yaml";
+
     /// <summary>The nine 1.2.0 tenant operations plus the two 1.3.0 eligibility operations.</summary>
     public static readonly string[] TenantOperations =
     [

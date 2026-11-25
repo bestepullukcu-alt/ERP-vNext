@@ -1,0 +1,107 @@
+{
+  "kind": "Measured DoR recovery; not dispatch",
+  "at_utc": "2026-11-20T20:05:13.293090+00:00",
+  "source_head": "8650802eb2d2cec91b687a603de9b3bac984e408",
+  "previous_ready_head": "f3f718b7c6da16c500aea2eca9ca13da1d78cb4b",
+  "pack_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+  "domain_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+  "be_existing_sources": [
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "sha256": "5a55e34a63f9ade8207bf95d46b52b13dce920f64aef29b4dd0d3d34494f6769",
+      "same_as_previous_ready": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "sha256": "8287dde0ea15fb75b6a574545c215f32134ac0f3309a0574d2b2b0dec3345b3a",
+      "same_as_previous_ready": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "sha256": "97ab735c298869751990aad4bb02b38860e680796ccd676735f7e4d08a3903d9",
+      "same_as_previous_ready": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+      "sha256": "a757eb2e1ae197e2907d40f4a668aa24e18c1e1bd9f753a21203de4dbd005e38",
+      "same_as_previous_ready": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+      "sha256": "a5b6efa34e24f15404db31adbe4731dba7fbd4d034c29d4ffbdcf3a296aefcbe",
+      "same_as_previous_ready": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs",
+      "sha256": "0af0d510e224e3c2c11ca3ed51bbbaafe4ce06cb02c98ed00eda944feb031087",
+      "same_as_previous_ready": true
+    }
+  ],
+  "new_be_test_absent": true,
+  "l10n": [
+    {
+      "language": "en",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "keys": 111,
+      "sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "tr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "keys": 111,
+      "sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "fr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "keys": 111,
+      "sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "es",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "keys": 111,
+      "sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "zh",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "keys": 111,
+      "sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "ar",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "keys": 111,
+      "sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1",
+      "same_as_previous_ready": true
+    },
+    {
+      "language": "ru",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "keys": 111,
+      "sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1",
+      "same_as_previous_ready": true
+    }
+  ],
+  "guard_argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/ct_queue.py",
+    "guard",
+    "--queue",
+    "pvg",
+    "--expect-sha256",
+    "0a0825b75780a6b8834a88c7f8e421ec452f63cc942669b3c2258132551ebb41",
+    "--expect-rows",
+    "42"
+  ],
+  "guard_exit": 0,
+  "guard_stdout": "AYNI sha256=0a0825b75780a6b8834a88c7f8e421ec452f63cc942669b3c2258132551ebb41 rows=42\r\nguard bir dosya kilidi değildir: yalnız okuma anı ile yazma anı arasındaki değişikliği gösterir.\r\n",
+  "guard_stderr": ""
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "receipt",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingReceipt\")",
+    "exit": 1,
+    "result": "RED",
+    "duration": 18.45,
+    "sha256": "a053e99f335bf2f30d8055289de9833b5bbc89b8917b224abbe49711665291d6",
+    "trx_sha256": "f5e9e0b3d64e6f5014436b0e46ff4f5149589d5aad035e7b5ba0729b037c6c0c",
+    "log_sha256": "9025ff735eb2ff4692a4aff92ae270630571285c157adbc7e5243a6c6d73f31a"
+  },
+  {
+    "name": "update",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_reaches_the_real_store",
+    "exit": 1,
+    "result": "RED",
+    "duration": 19.03,
+    "sha256": "bbf92f8d59b7662b8f5090780c1da38ed9f12d4f1ca10afdc6a058d010f68772",
+    "trx_sha256": "ba1e40653e06852e2e7a0a7b37745f76166b036e34a9e822341c6b68f2c3ad5c",
+    "log_sha256": "5309d97ca97a340c4363662b2262ab7d8a365f32a11cb766174546ceb1bb3aed"
+  },
+  {
+    "name": "header",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+    "exit": 1,
+    "result": "RED",
+    "duration": 22.78,
+    "sha256": "7c16ac19240e1a4900b6d1e6b5a9c7d42a438da9db5e3346b9e066a99058bf01",
+    "trx_sha256": "15141de5016669166d566414ebea4d162e20ae65af71dfad61c636ee4f36f36a",
+    "log_sha256": "d597a68e391b93fa61edc1ca493db5ca0b79508a08c8f2b16d7e35d44ec2c419"
+  },
+  {
+    "name": "form",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+    "exit": 1,
+    "result": "RED",
+    "duration": 20.49,
+    "sha256": "be169bab665f95b89f34b01404edaa2de0b8a1a0886bd060d0c75333f721c87a",
+    "trx_sha256": "1b55c6f86d596a5903e5e6966c45a0cb7706f60885364d72845a96d0288dc057",
+    "log_sha256": "3d0af5736bfba0db94d99661388c2b977845297e3c9e5fdc07f291c5831d24ac"
+  },
+  {
+    "name": "repair",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"InvalidToken\")",
+    "exit": 1,
+    "result": "RED",
+    "duration": 19.36,
+    "sha256": "6eb0b4b12430180364870259db981c2fd9d4ebc2331c463ad3fcab10173eac90",
+    "trx_sha256": "1b236d0f3e74869b40f78652b46b89c5f9dfa2caf1934e1c99cc7e1fc96dafc9",
+    "log_sha256": "fcbe6f680e3b0001a382814484d19d2541d13d88f2b8d71dd27b3450b73c45f3"
+  },
+  {
+    "name": "browser-header",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+    "exit": 1,
+    "result": "RED",
+    "duration": 18.5,
+    "sha256": "0d7d1fb7b162271258cf0c7281b2e63d2dedc11294732d7fe040dfd81f89c1cf",
+    "trx_sha256": "22335d4d9539e8638e0ce31e1fcb8d48b46f67bda543d3717108086d0019db97",
+    "log_sha256": "4a6e4781761d2fffcb871ba497e9390e8fef539b699e96a610a1be90fa096c13"
+  },
+  {
+    "name": "browser-form",
+    "method": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+    "exit": 1,
+    "result": "RED",
+    "duration": 23.54,
+    "sha256": "5a079f5aa4156e1827119467d0c8e3a46dcd43ba882751d431fb03dbca3eac0c",
+    "trx_sha256": "f1f62827982ea104ad4d7e1da24e1869ca959b0ac743e774458d1d1b2b1f85ae",
+    "log_sha256": "e85e79a41866f293feb8fa4d05d200948e0e4708b4a865a968b16c6c5dcdedfa"
+  }
+]

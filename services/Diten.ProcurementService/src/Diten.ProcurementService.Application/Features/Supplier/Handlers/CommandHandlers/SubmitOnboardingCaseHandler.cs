@@ -1,43 +1,39 @@
 using Diten.Shared.Core;
 using Diten.ProcurementService.Application.Features.Supplier.Commands;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using Diten.ProcurementService.Domain.Entities;
-using Diten.ProcurementService.Domain.Repositories;
 using MediatR;
 
 namespace Diten.ProcurementService.Application.Features.Supplier.Handlers.CommandHandlers;
 
-public sealed class SubmitOnboardingCaseHandler : IRequestHandler<SubmitOnboardingCaseCommand, Response<OnboardingCaseDto>>
+/// <summary>
+/// submitOnboardingCase — behaviour unchanged by DL-3 (the real MOD-0023 workflow and its central record are DL-4, §7;
+/// the command stays UNMARKED until then — the one unmarked write command of <c>Features.Supplier</c>, §16). The screening
+/// result and documents are the supplier's (K-3: one result per firm); the onboarding status and approval are the caller
+/// company's relationship.
+/// </summary>
+public sealed class SubmitOnboardingCaseHandler(ISupplierStore store) : IRequestHandler<SubmitOnboardingCaseCommand, Response<OnboardingCaseDto>>
 {
-    private readonly ISupplierRepository _repository;
-
-    public SubmitOnboardingCaseHandler(ISupplierRepository repository)
-    {
-        _repository = repository;
-    }
-
     public async Task<Response<OnboardingCaseDto>> Handle(SubmitOnboardingCaseCommand request, CancellationToken cancellationToken)
     {
-        // Cross-tenant / cross-LE → null → 404 (UNKNOWN_SUPPLIER).
-        var entity = await _repository.GetBySupplierIdAsync(request.SupplierId, cancellationToken);
-        if (entity is null)
+        // Cross-tenant / cross-LE / no relationship → 404 (UNKNOWN_SUPPLIER).
+        var current = await store.FindAsync(request.SupplierId, cancellationToken);
+        if (current is null)
         {
             return Response<OnboardingCaseDto>.Fail("UNKNOWN_SUPPLIER", 404);
         }
 
         // ── Idempotent onboarding (MOD-0140 §8): aynı key ile replay → yeniden işlenmez, mevcut case döner ──
         if (!string.IsNullOrWhiteSpace(request.IdempotencyKey)
-            && string.Equals(entity.OnboardingIdempotencyKey, request.IdempotencyKey, StringComparison.Ordinal))
+            && string.Equals(current.OnboardingIdempotencyKey, request.IdempotencyKey, StringComparison.Ordinal))
         {
-            return Response<OnboardingCaseDto>.Success(SupplierMapping.ToOnboardingCase(entity));
+            return Response<OnboardingCaseDto>.Success(SupplierMapping.ToOnboardingCase(current));
         }
-
-        var expectedVersion = entity.Version;
-        var submitForApproval = request.SubmitForApproval ?? false;
 
         // ── Dokümanlar (evidenceRef only; binary SAKLANMAZ) — verildiyse set eder ──
         if (request.Documents is not null)
         {
-            entity.Documents = request.Documents
+            current.Documents = request.Documents
                 .Select(d => new SupplierDocument { Type = d.Type, EvidenceRef = d.EvidenceRef })
                 .ToList();
         }
@@ -45,38 +41,31 @@ public sealed class SubmitOnboardingCaseHandler : IRequestHandler<SubmitOnboardi
         // ── KYC / sanctions outcome (MVP deterministik değerlendirme; gerçek entegrasyon follow-up) ──
         if (request.Kyc is not null)
         {
-            entity.KycOutcome = string.IsNullOrWhiteSpace(request.Kyc.LegalName)
-                ? KycOutcome.ManualReview
-                : KycOutcome.Passed;
-            entity.SanctionsOutcome = SanctionsOutcome.Clear;
+            current.KycOutcome = string.IsNullOrWhiteSpace(request.Kyc.LegalName) ? KycOutcome.ManualReview : KycOutcome.Passed;
+            current.SanctionsOutcome = SanctionsOutcome.Clear;
         }
 
-        // ── Onaya gönderim → InReview + MOD-0023 workflow instance referansı ──
-        if (submitForApproval)
+        // ── Onaya gönderim → InReview + workflow instance referansı (the MOD-0023 client is DL-4) ──
+        if (request.SubmitForApproval ?? false)
         {
-            entity.OnboardingStatus = OnboardingStatus.InReview;
-            entity.Approval = new OnboardingApproval
+            current.OnboardingStatus = OnboardingStatus.InReview;
+            current.Approval = new SupplierRelationshipApproval
             {
-                WorkflowInstanceId = entity.Approval?.WorkflowInstanceId ?? GenerateWorkflowInstanceId(),
-                DecidedBy = null,
-                DecidedAt = null
+                WorkflowInstanceId = current.Approval?.WorkflowInstanceId ?? GenerateWorkflowInstanceId(),
+                SubmissionRound = current.Approval?.SubmissionRound
             };
         }
-        else if (entity.OnboardingStatus == OnboardingStatus.Draft)
-        {
-            entity.OnboardingStatus = OnboardingStatus.Draft;
-        }
 
-        entity.OnboardingIdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey;
+        current.OnboardingIdempotencyKey = string.IsNullOrWhiteSpace(request.IdempotencyKey) ? null : request.IdempotencyKey;
 
-        var ok = await _repository.UpdateAsync(entity, expectedVersion, cancellationToken);
-        if (!ok)
+        var saved = await store.SaveMasterAsync(current, cancellationToken);
+        if (saved is null)
         {
             // Onboarding contract'ında 409 yok; eşzamanlı değişim → işlenemez (VALIDATION_FAILED 422).
             return Response<OnboardingCaseDto>.Fail("VALIDATION_FAILED", 422);
         }
 
-        return Response<OnboardingCaseDto>.Success(SupplierMapping.ToOnboardingCase(entity));
+        return Response<OnboardingCaseDto>.Success(SupplierMapping.ToOnboardingCase(saved));
     }
 
     private static string GenerateWorkflowInstanceId()

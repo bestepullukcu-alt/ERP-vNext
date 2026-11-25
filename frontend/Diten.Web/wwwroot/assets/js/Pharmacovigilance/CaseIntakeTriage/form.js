@@ -27,6 +27,13 @@
     const addProductLineButton = document.getElementById('pvg-add-product-line');
     const maxProductLines = 20;
     let versionReady = !isEdit;
+    let storedDraft = null;
+    const storedControls = new WeakMap();
+    const editableFields = [
+        'IntakeChannel', 'SourceType', 'SourceReference', 'ReceivedAtUtc', 'ReporterType', 'ReporterContactSummary',
+        'PatientSubjectCode', 'EventOnsetDate', 'AdverseEventNarrative', 'Seriousness', 'IntakePriority', 'AwarenessAtUtc',
+        'EventCountry', 'ReportType', 'ReporterNameOrInitials', 'ReporterProfession', 'ReporterCountry'
+    ];
     let optionsReady = false;
     let options = null;
     let nextLineIndex = 0;
@@ -259,25 +266,130 @@
     }
 
     function prefillFromDraft(draft) {
-        if (!draft) return;
-        setFieldValue(awarenessAtEl, draft.awarenessAtUtc ? toUtcInputValue(draft.awarenessAtUtc) : '');
-        selectStored(reportTypeEl, draft.reportType, reportTypeName);
-        selectStored(eventCountryEl, draft.eventCountry, countryName);
-        selectStored(reporterCountryEl, draft.reporterCountry, countryName);
-        setFieldValue(document.getElementById('ReporterNameOrInitials'), draft.reporterNameOrInitials);
-        setFieldValue(document.getElementById('ReporterProfession'), draft.reporterProfession);
-        (draft.productLines || []).forEach(line => {
+        storedDraft = draft;
+        editableFields.forEach(field => {
+            const input = document.getElementById(field);
+            const value = draft[field.charAt(0).toLowerCase() + field.slice(1)];
+            if (input?.tagName === 'SELECT') selectStored(input, value, code => L[`${field}${code}`] || code);
+            else setFieldValue(input, ['ReceivedAtUtc', 'AwarenessAtUtc'].includes(field) ? toUtcInputValue(value) : value);
+            rememberControl(input, value);
+        });
+        // Display delimiters and textarea line endings never replace the accepted stored sequence.
+        const evidence = document.getElementById('EvidenceLinkReferencesRaw');
+        setFieldValue(evidence, draft.evidenceLinkReferences.join('\n'));
+        rememberControl(evidence, draft.evidenceLinkReferences.slice());
+        draft.productLines.forEach(line => {
             const row = addProductLine();
             if (!row) return;
             selectStored(lineField(row, 'ProductRole'), line.productRole, productRoleName);
-            setFieldValue(lineField(row, 'ProductNameAsReported'), line.productNameAsReported);
-            setFieldValue(lineField(row, 'LotNumber'), line.lotNumber);
+            ['ProductRole', 'ProductNameAsReported', 'LotNumber'].forEach(field => {
+                const input = lineField(row, field);
+                const value = line[field.charAt(0).toLowerCase() + field.slice(1)];
+                if (field !== 'ProductRole') setFieldValue(input, value);
+                rememberControl(input, value);
+            });
         });
         if (['Crm', 'PersonDirectory'].includes(draft.reporterSource)) {
             setFieldValue(selectionDirectoryEl, draft.reporterSource);
             setFieldValue(selectionIdEl, draft.reporterSourceId);
             reporterLinkEl?.classList.remove('d-none');
         }
+    }
+
+    function rememberControl(input, value) {
+        if (!input) return;
+        // Capture AFTER the browser's input/textarea/date sanitization. A deliberate edit wins even when cleared.
+        const state = { raw: value, displayed: input.value, changed: false };
+        storedControls.set(input, state);
+        const changed = () => { state.changed = true; };
+        input.addEventListener('input', changed);
+        input.addEventListener('change', changed);
+    }
+
+    function controlValue(input, fallback) {
+        if (!input) return fallback;
+        const state = storedControls.get(input);
+        return state && !state.changed && input.value === state.displayed ? state.raw : input.value;
+    }
+
+    function updateValues() {
+        const payload = {};
+        editableFields.forEach(field => {
+            const input = document.getElementById(field);
+            const raw = storedDraft[field.charAt(0).toLowerCase() + field.slice(1)];
+            let value = controlValue(input, raw);
+            const state = input && storedControls.get(input);
+            if (['ReceivedAtUtc', 'AwarenessAtUtc'].includes(field) && input
+                && (!state || state.changed || input.value !== state.displayed)) {
+                value = input.value ? `${input.value}${input.value.length === 16 ? ':00' : ''}Z` : null;
+            }
+            if (field === 'EventOnsetDate' && value === '') value = null;
+            payload[field] = value;
+        });
+        payload.ProductLines = productLineRows().filter(row => !isEmptyLine(row)).map(row => ({
+            ProductRole: controlValue(lineField(row, 'ProductRole'), null),
+            ProductNameAsReported: controlValue(lineField(row, 'ProductNameAsReported'), null),
+            LotNumber: controlValue(lineField(row, 'LotNumber'), null)
+        }));
+        const evidence = controlValue(document.getElementById('EvidenceLinkReferencesRaw'), storedDraft.evidenceLinkReferences);
+        payload.EvidenceLinkReferences = Array.isArray(evidence) ? evidence
+            : [...new Set(evidence.split(/[,\r\n]/).map(value => value.trim()).filter(Boolean))];
+        payload.ExpectedVersion = Number(versionEl?.value);
+        if (selectionDirectoryEl?.value) payload.ReporterSelectionDirectory = selectionDirectoryEl.value;
+        if (selectionIdEl?.value) payload.ReporterSelectionId = selectionIdEl.value;
+        if (removeLinkEl?.value) payload.RemoveReporterLink = removeLinkEl.value === 'true';
+        return payload;
+    }
+
+    function validDay(value) {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+        const [year, month, day] = value.split('-').map(Number);
+        const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+        const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        return year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= days[month - 1];
+    }
+
+    function validInstant(value) {
+        if (typeof value !== 'string') return false;
+        const parts = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,7})?(Z|[+-](\d{2}):(\d{2}))$/.exec(value);
+        if (!parts || !validDay(parts[1]) || Number(parts[2]) > 23 || Number(parts[3]) > 59 || Number(parts[4]) > 59) return false;
+        if (parts[5] !== 'Z' && (Number(parts[6]) > 14 || Number(parts[7]) > 59 || (Number(parts[6]) === 14 && Number(parts[7]) !== 0))) return false;
+        const parsed = new Date(value);
+        // Validate the representable UTC range only; retain the original string/ticks for submission.
+        return Number.isFinite(parsed.getTime()) && parsed.getUTCFullYear() >= 1 && parsed.getUTCFullYear() <= 9999;
+    }
+
+    function completeDetail(body) {
+        const draft = body?.draft;
+        const plain = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+            && Object.prototype.toString.call(value) === '[object Object]';
+        const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
+        const text = value => typeof value === 'string' && value.trim().length > 0;
+        const nullable = value => value === null || typeof value === 'string';
+        const members = [
+            'intakeDraftId', 'status', 'version', 'productLines', 'awarenessAtUtc', 'companyRecipientPersonId',
+            'eventCountry', 'reportType', 'reporterSource', 'reporterSourceId', 'reporterCrmSearchState',
+            'reporterNameOrInitials', 'reporterProfession', 'reporterCountry', 'intakeChannel', 'sourceType',
+            'sourceReference', 'receivedAtUtc', 'reporterType', 'reporterContactSummary', 'patientSubjectCode',
+            'eventOnsetDate', 'adverseEventNarrative', 'seriousness', 'intakePriority', 'triageOutcome', 'triageReason',
+            'routeTargetQueue', 'evidenceLinkReferences'
+        ];
+        if (!plain(draft) || !members.every(key => own(draft, key))) return false;
+        if (!text(draft.intakeDraftId) || draft.intakeDraftId !== form.dataset.intakeDraftId
+            || !Number.isSafeInteger(draft.version) || draft.version <= 0 || draft.version !== versionOf(body)) return false;
+        if (!['status', 'eventCountry', 'reportType', 'reporterSource', 'reporterCrmSearchState', 'intakeChannel', 'sourceType',
+            'reporterType', 'adverseEventNarrative', 'seriousness', 'intakePriority'].every(key => text(draft[key]))) return false;
+        if (!['sourceReference', 'reporterContactSummary', 'patientSubjectCode', 'companyRecipientPersonId', 'reporterSourceId',
+            'reporterNameOrInitials', 'reporterProfession', 'reporterCountry', 'triageOutcome', 'triageReason', 'routeTargetQueue']
+            .every(key => nullable(draft[key]))) return false;
+        if (draft.eventOnsetDate !== null && !validDay(draft.eventOnsetDate)) return false;
+        if (!validInstant(draft.receivedAtUtc) || !validInstant(draft.awarenessAtUtc)) return false;
+        if (!Array.isArray(draft.evidenceLinkReferences) || !draft.evidenceLinkReferences.every(nullable)) return false;
+        if (!Array.isArray(draft.productLines) || draft.productLines.length > maxProductLines || !draft.productLines.every(line =>
+            plain(line) && ['productRole', 'globalProductId', 'productNameAsReported', 'presentationGskuId', 'lotNumber'].every(key => own(line, key))
+            && text(line.productRole) && text(line.productNameAsReported)
+            && ['globalProductId', 'presentationGskuId', 'lotNumber'].every(key => nullable(line[key])))) return false;
+        return true;
     }
 
     function setFieldValue(input, value) {
@@ -297,7 +409,7 @@
             });
             const body = await responseJson(response);
             const version = versionOf(body);
-            if (!response.ok || isBlocked(body) || version === null) {
+            if (!response.ok || isBlocked(body) || version === null || !completeDetail(body)) {
                 showAlert(safeMessage(body, response.status));
                 return;
             }
@@ -318,6 +430,7 @@
     }
 
     async function postForm(url, formData) {
+        if (isEdit) formData.set('UpdateValuesJson', JSON.stringify(updateValues()));
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -366,6 +479,9 @@
             : reason;
         if (status === 409 && [reason, ...(Array.isArray(validation) ? validation.map(safeCode) : [])].includes('PVG_INTAKE_DRAFT_VERSION_CONFLICT')) {
             return t('VersionConflict');
+        }
+        if (status === 409 && [reason, ...(Array.isArray(validation) ? validation.map(safeCode) : [])].includes('PVG_INTAKE_DRAFT_NOT_EDITABLE')) {
+            return t('DraftNotEditable');
         }
         if (status === 409) {
             return `${t('ControlledBlock')}: ${codes || reason || t('ReasonCode')}`;

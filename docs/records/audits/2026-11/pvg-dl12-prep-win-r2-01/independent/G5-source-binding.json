@@ -1,0 +1,11 @@
+{
+  "tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "source": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+  "original_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+  "mutant_sha256": "b575de6582165e6b085d366963638e9ab77a00896a3ef2b9cb594635986ca052",
+  "single_replacement": {
+    "old": "directory.SetAccessControl(acl);",
+    "new": "// Independent mutation: deny application removed."
+  },
+  "expected_assertion_line": 1900
+}

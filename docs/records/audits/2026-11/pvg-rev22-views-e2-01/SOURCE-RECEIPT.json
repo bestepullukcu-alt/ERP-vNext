@@ -1,0 +1,49 @@
+{
+  "candidate": "3af28aa145ee175d82ec8f0b188f2eee46b6d4ff",
+  "parent": "b0dcca109997320e55659d7f41c489396338e15c",
+  "tree": "409a5bf61d393588fb2fcb53aa23a296a4c13091",
+  "external_root": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\e2v-3af28aa-41b6",
+  "review_sha256": "22025ba697b6e61ffd223bd30306fc911d1bc9b092bb9ce4c7d1743ea89791be",
+  "bundle_sha256": "8e658de43f4a19d95f75945c307eff49086960512841899ba5d3146b430560b7",
+  "manifest_sha256": "4b30926f0cdfa7882098ec5b2c65fa42f414f6681f3fec7230fe62c5663176ab",
+  "fresh_targeted_TRX_sha256": "b67468c198606bd9433aad775fa3be8f7bc494a061e3c4ad81de2ffabcf4c02f",
+  "fresh_passed": 48,
+  "fresh_failed": 0,
+  "fresh_skipped": 0,
+  "reported_critical": 0,
+  "reported_blocking": 0,
+  "static_scope": {
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml": {
+      "base_sha": "61061203707ec41405f1e5046d26879b9b7d37ae7c4018b4d9ccaa80451dba41",
+      "final_sha": "d3abf326b49ec31111dfee7ea995031fe05fca074dbc67ccdc1d3258e819ce4c",
+      "disk_sha": "b4919c9773db3992ea9f1df5deb4f49f1f454eee0b0645802517c8958e0fd115",
+      "line": 5,
+      "base_blob": "9bcad38d4e4771454e7d3ac3e424f1bf034c25b6",
+      "blob": "8d4b731fccfbe5c59b59330a375a7bae0671c6a3"
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml": {
+      "base_sha": "542bedb4626607ee3af0e21fdc41fa4f4a4915e2343a516eb4c0f012397ba59a",
+      "final_sha": "3773de839dc006ec4793b5547053c9cd63c36abbbcec37a28e00a13b9e3cb3e0",
+      "disk_sha": "50a7b2ec8f6e620609eab62f766c8e08aedd546d527a720fc7fe76f7a217af5f",
+      "line": 7,
+      "base_blob": "8140717c198bdea2c92e4192a68f81f7ff8cd9d5",
+      "blob": "f4a02929c2431ec2e6c7ac745e14224cfcfeb4c8"
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml": {
+      "base_sha": "c72df56c62a744ecc7bdc8833bc085246a191a669b78dcb1a074f84a5ced1e19",
+      "final_sha": "3fe8498e55ad34dbc46c1f9e58f18c7759e2eeec77f1c7bdaf7f94d978ff1d15",
+      "disk_sha": "4c5b09453c8f4d2bfc1e3adb60fa007410a39fc3f8ebb12d0796c1380c33ec78",
+      "line": 7,
+      "base_blob": "5ace0423c748ab63d2f45c6f224aacca76b7d5c3",
+      "blob": "56031129df1b986a8718bdb48e9209f0a52c61ac"
+    },
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml": {
+      "base_sha": "adc5ecbfbfec1136df7f4b8a52e8dc77e61110b906a6ea721e270580851b9e1c",
+      "final_sha": "de7ca795314916a50cafe9f0a736d23593bc7bf71beb083c9aea822ff3877575",
+      "disk_sha": "71a0037639ca5e157204a1f7a4238cbe2348ae548733cc12bb97f1359897fb4a",
+      "line": 5,
+      "base_blob": "14cf84254b50fbe6a36a54dde34e09db381bdb6e",
+      "blob": "bc08a413ee97fcee57a2f3e99aa0f1cf1721de4f"
+    }
+  }
+}

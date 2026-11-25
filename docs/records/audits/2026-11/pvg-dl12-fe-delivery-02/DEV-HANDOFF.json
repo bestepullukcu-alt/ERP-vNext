@@ -1,0 +1,518 @@
+{
+  "kind": "WP-0230-DL12-FE DEV handoff, independent exact-C E2 pending",
+  "status": "DEV_READY_FOR_INDEPENDENT_E2",
+  "created_utc": "2026-11-21T16:55:21.033488+00:00",
+  "task": "/root/pvg_dl12_fe_continuation_02",
+  "requested_model_effort": "gpt-6.2-astra/high inherited",
+  "actual_model_effort": "verilemiyor",
+  "frozen_full_WP": {
+    "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-FE-v1.0.md",
+    "lf_sha256": "d02639654b0551cb572e5b91738e98b2320d9e0ee7ba44890bf5a40917ba6789",
+    "location_note": "CT dispatch prompt is in CT checkout, not worker base6d; do not FF worker"
+  },
+  "first_head": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "final_candidate": {
+    "head": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+    "tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+    "parent": "6d845de19296d919620503a4024ddcaa0bda42dc",
+    "branch": "feature/pvg/mod-0230-dl12-fe",
+    "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+    "clean": true,
+    "ordinary_single_local_commit": true,
+    "six_committed_paths": [
+      "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+    ],
+    "final_v3_sources_unchanged": true,
+    "capture02_raw_sha256": "1820ed1c9dd7dae4ea1cce47df682d0ea7178c58e024ad192198ffb12d61f573"
+  },
+  "final_six_sources": [
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "raw_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "lf_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "bytes": 24991
+    },
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "raw_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "lf_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "bytes": 25995
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "lf_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "bytes": 112393
+    },
+    {
+      "path": "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "raw_sha256": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+      "lf_sha256": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+      "bytes": 72009
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "raw_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "lf_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "bytes": 15407
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml",
+      "raw_sha256": "21577524dd76d169beab33bc2052139cefb7804c2ea08ffbb1e112f600ff1819",
+      "lf_sha256": "21577524dd76d169beab33bc2052139cefb7804c2ea08ffbb1e112f600ff1819",
+      "bytes": 2703
+    }
+  ],
+  "behavior": [
+    "Edit prefills all editable scalars/evidence/products and preserves untouched raw null/empty/whitespace/CRLF/null array items/order/duplicates/raw offsets and100ns ticks through actual FormData/MVC/API full replacement. Deliberate edits win; DateOnly clear sends null.",
+    "29 own detail members and5 own nested product members checked;12 explicit nullable members and []products accepted. Missing/malformed detail/collections fail closed with forced-submit0updates. UTCyear guard validates only; no tick derivation.",
+    "Only UpdateDraft/IFormCollection+private Update-local parser changed; api/update prefix and api/triage suffix including Create/shared inputs/Clean/SplitReferences/TryNormalizeUtc unchanged. Unknown/metadata/duplicate/type-invalid inputs refused; API and owner/link/field/version policies unchanged.",
+    "Razor only two Edit required indicators/attributes plus DraftNotEditable bridge.",
+    "Actual new chains use fresh real API create/newid/firstGET/store, actual Razor/session/token, production JS Node/jsdom, ordered FormData, real MVC, existing Gateway adapter, real API/app/InMemory store, full reread equality. Immutable suite-owned host/keyed per-id metrics, bounded4 rows, all awaited/cleaned; old fault/deny/timeout path owns isolated hosts."
+  ],
+  "bounds": {
+    "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-SOURCE-BOUNDS-02.json",
+    "sha256": "33d07233f9913cc8e6dd9d90becf2efc8b6d306064c84530e8531e5f37edf23d",
+    "bytes": 1183
+  },
+  "staging": {
+    "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-STAGING.json",
+    "sha256": "8c1b12206735f25927442bf21006c8529acc70417b64ca14445165fa6608f45e",
+    "bytes": 799
+  },
+  "full_staged_diff": {
+    "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-STAGED-SIX-PATH-DIFF.patch",
+    "sha256": "3fb7048877570c41d5c49c45c271afb82b87aff53af2d4449e393c742220e349",
+    "bytes": 89106
+  },
+  "old_product_red": {
+    "record": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-v3-OLD-PRODUCT-RED-02.json",
+      "sha256": "50507fea567c5f0da4375a669578c9f2aeda6de552ee60bb8f7a6167727f9a91",
+      "bytes": 9606
+    },
+    "final_csharp_test_hash": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+    "final_js_test_hash": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+    "actual_csharp_target_assertion_failed": 1,
+    "actual_js_selected_assertions_failed": 5,
+    "js34_unselected_not_final_suite_skip": true,
+    "exact_old_four_product_and_final_two_test_hashes": "Each phase source-before/after.json; scratch six v3 files restored afterward"
+  },
+  "normal_cases": {
+    "web": 78,
+    "js": 39,
+    "api": 456,
+    "regpv": 211,
+    "old_web62_and_js34_retained": true,
+    "api_regpv_exact_multisets": true,
+    "final_skips": 0
+  },
+  "normal_and_target_jobs": [
+    {
+      "phase": "final-v3-web-after-rebuild",
+      "actual_exit": 0,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-web-after-rebuild\\RESULT.json",
+        "sha256": "b0fce62356fa48ac736e537f53c456a1991eab097c40ad11e4f193f8d33f73af",
+        "bytes": 4262
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-web-after-rebuild\\actual-commands.json",
+        "sha256": "06d84b38eb5fa6e8bf11762a4fdc8f14cf0e8d94cf1267060d4840d3a6a76f02",
+        "bytes": 1667
+      }
+    },
+    {
+      "phase": "final-v3-js",
+      "actual_exit": 0,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-js\\RESULT.json",
+        "sha256": "f41c96390eecd6b6b2623fd7150fce6b77cd52977139efb2924913d78a5c1392",
+        "bytes": 1782
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-js\\actual-commands.json",
+        "sha256": "2fd41d65bdecd640dc93d838f5e6f087d5bd9b377ff60a73dfa2d9461b2cd201",
+        "bytes": 1469
+      }
+    },
+    {
+      "phase": "final-v2-api-actual",
+      "actual_exit": 0,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v2-api-actual\\RESULT.json",
+        "sha256": "262630c57a236521c9e4d1375e08769cc48834b3af8bd1931abdbee3bb594646",
+        "bytes": 1439
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v2-api-actual\\actual-commands.json",
+        "sha256": "f541ca0144bda977fe3574549b441ad386907a31327d84eb062cd4858faf85a2",
+        "bytes": 1601
+      }
+    },
+    {
+      "phase": "final-v2-regpv",
+      "actual_exit": 0,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v2-regpv\\RESULT.json",
+        "sha256": "270a7690e6543aa0e46b81690a4d6723359445c479909369d98ef3933b73f8b5",
+        "bytes": 1524
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v2-regpv\\actual-commands.json",
+        "sha256": "5b4ad68b6ff88fa98929de5f2520efb1e62231db77b77dbe9df1aaf638e77c83",
+        "bytes": 1606
+      }
+    },
+    {
+      "phase": "final-v3-web-genuine-rebuild",
+      "actual_exit": 0,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-web-genuine-rebuild\\RESULT.json",
+        "sha256": "9dce9ab4eddfb2a05f0e415c747ddf6684aee5405746745fa3c70d64726e041b",
+        "bytes": 2600
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-web-genuine-rebuild\\actual-commands.json",
+        "sha256": "01e40980a017a38e1ab4d4c7d2b6a92d9e7a0c18e681a0d6f4c3cef22b098a60",
+        "bytes": 1374
+      }
+    },
+    {
+      "phase": "final-v3-old-product-red-02",
+      "actual_exit": 1,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-old-product-red-02\\RESULT.json",
+        "sha256": "8016ebd9169d6b7c3a7061e3e61cb38573a92103deb88be80bdbf6797cebef7c",
+        "bytes": 2984
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-old-product-red-02\\actual-commands.json",
+        "sha256": "4fe4ba80325c948e18b0e6026aebe9cb98aef4f11d436a9d37595ea25eb13499",
+        "bytes": 1798
+      }
+    },
+    {
+      "phase": "final-v3-js-old-product-red-02",
+      "actual_exit": 1,
+      "result": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-js-old-product-red-02\\RESULT.json",
+        "sha256": "0b3d880a5951098982028cdaf2683800c15e3ac2bd8606d3172ba8d4a079ed25",
+        "bytes": 2986
+      },
+      "actual_commands": {
+        "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-js-old-product-red-02\\actual-commands.json",
+        "sha256": "b353ea84fba458fcd9eea2529c47e6ee35822d10920549435931ac29fabefc84",
+        "bytes": 1735
+      }
+    }
+  ],
+  "backend_reuse": {
+    "closure": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\BACKEND-v2-v3-CLOSURE-EQUIVALENCE.json",
+      "sha256": "3173269bc4bad63bc35c23ce206a513e8baa44eeb72fdee86ad4a03ebb6b9f83",
+      "bytes": 79795
+    },
+    "post_web_rebuild_identity": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\BACKEND-POST-WEB-REBUILD-ARTIFACT-IDENTITY.json",
+      "sha256": "63ac4b6b2d1e1a8bf63f8a3a30c590bca6290e992df46612175ff5a5074c7423",
+      "bytes": 1859
+    },
+    "api_inputs": 143,
+    "regpv_inputs": 90,
+    "original_v2_runs_raw_TRX_Diten_DLLs_retained_not_relabelled_v3": true
+  },
+  "corpus_shape_receipts": {
+    "web_phase": "final-v3-web-after-rebuild",
+    "trx_sha256": "021627e39799af86b07ba71679ec1c764710f4f422aec6a7e78060347cc1c7ae",
+    "final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+    "web_cases_passed": 78,
+    "receipt_count": 176,
+    "distinct_fresh_ids": 174,
+    "corpus_exact_47": true,
+    "shape_exact_112": true,
+    "atomic_receipt_hashes_valid": true,
+    "batch_complete_and_four_concurrent": true,
+    "shape_actual_api_and_store_zero_write_and_equality": true,
+    "positive_actual_full_equality_four_carriers_and_single_write": true
+  },
+  "full_receipts": {
+    "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\ASSERTION-RECEIPTS-final-v3-web-after-rebuild.json",
+    "sha256": "f1429798629ed02efbf02bfc273637593002d94086e56188c4687817137e2cbb",
+    "bytes": 139442
+  },
+  "corpus_missing_extra_duplicates": [
+    [],
+    [],
+    []
+  ],
+  "shape_missing_extra_duplicates": [
+    [],
+    [],
+    []
+  ],
+  "tokens": "Normal real MissingToken and InvalidToken both MVC400/APIupdates0/storeWrites0/ReplaceCalls0/full snapshot unchanged. Four boundaries compare real Razor token exactly; all four also separately sabotaged in actual connected C# runs.",
+  "mutants": {
+    "coverage": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-v3-GUARD-COVERAGE.json",
+      "sha256": "69a6299f5b6e908e4962a1e4e87877a199c254838b5a3bb7227552ad57fa9b78",
+      "bytes": 533894
+    },
+    "groups": {
+      "js-mutants-v3": 18,
+      "compiled-mutants-v3": 10,
+      "compiled-browser-boundaries-v3": 2
+    },
+    "total": 30,
+    "all_final_tuple_single_delta_assertion_red_then_original_green": true,
+    "build_proof": "Combined dotnet test RED exit1, actual compiled DLL/storage/TRX/build output and zero C# errors prove successful build phase and real xUnit assertion RED. No separately unexecuted build exit0 claimed.",
+    "critical_guard_phases": [
+      {
+        "guard": "prefill-contact",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-01-prefill-contact",
+        "restored": "v3-js-restore-01-prefill-contact"
+      },
+      {
+        "guard": "prefill-event-date",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-02-prefill-event-date",
+        "restored": "v3-js-restore-02-prefill-event-date"
+      },
+      {
+        "guard": "prefill-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-03-prefill-evidence",
+        "restored": "v3-js-restore-03-prefill-evidence"
+      },
+      {
+        "guard": "not-editable-mapping",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-04-not-editable-mapping",
+        "restored": "v3-js-restore-04-not-editable-mapping"
+      },
+      {
+        "guard": "raw-received-ticks",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-05-raw-received-ticks",
+        "restored": "v3-js-restore-05-raw-received-ticks"
+      },
+      {
+        "guard": "raw-awareness-ticks",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-06-raw-awareness-ticks",
+        "restored": "v3-js-restore-06-raw-awareness-ticks"
+      },
+      {
+        "guard": "overwrite-user-empty",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-07-overwrite-user-empty",
+        "restored": "v3-js-restore-07-overwrite-user-empty"
+      },
+      {
+        "guard": "summary-version-only-gate",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-08-summary-version-only-gate",
+        "restored": "v3-js-restore-08-summary-version-only-gate"
+      },
+      {
+        "guard": "repair-missing-member",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-09-repair-missing-member",
+        "restored": "v3-js-restore-09-repair-missing-member"
+      },
+      {
+        "guard": "accept-malformed-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-10-accept-malformed-evidence",
+        "restored": "v3-js-restore-10-accept-malformed-evidence"
+      },
+      {
+        "guard": "filter-null-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-11-filter-null-evidence",
+        "restored": "v3-js-restore-11-filter-null-evidence"
+      },
+      {
+        "guard": "coerce-null-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-12-coerce-null-evidence",
+        "restored": "v3-js-restore-12-coerce-null-evidence"
+      },
+      {
+        "guard": "reorder-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-13-reorder-evidence",
+        "restored": "v3-js-restore-13-reorder-evidence"
+      },
+      {
+        "guard": "reject-valid-null-evidence",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-14-reject-valid-null-evidence",
+        "restored": "v3-js-restore-14-reject-valid-null-evidence"
+      },
+      {
+        "guard": "browser-token-header-drop",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-15-browser-token-header-drop",
+        "restored": "v3-js-restore-15-browser-token-header-drop"
+      },
+      {
+        "guard": "browser-token-member-drop",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-16-browser-token-member-drop",
+        "restored": "v3-js-restore-16-browser-token-member-drop"
+      },
+      {
+        "guard": "event-date-clear-empty-string",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-17-event-date-clear-empty-string",
+        "restored": "v3-js-restore-17-event-date-clear-empty-string"
+      },
+      {
+        "guard": "utc-range-guard",
+        "group": "js-mutants-v3",
+        "red": "v3-js-mutant-18-utc-range-guard",
+        "restored": "v3-js-restore-18-utc-range-guard"
+      },
+      {
+        "guard": "update-clean-restored",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-01-update-clean-restored",
+        "restored": "v3-compiled-restore-01-update-clean-restored"
+      },
+      {
+        "guard": "update-split-references-restored",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-02-update-split-references-restored",
+        "restored": "v3-compiled-restore-02-update-split-references-restored"
+      },
+      {
+        "guard": "overwrite-user-nonempty",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-03-overwrite-user-nonempty",
+        "restored": "v3-compiled-restore-03-overwrite-user-nonempty"
+      },
+      {
+        "guard": "edit-source-required",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-04-edit-source-required",
+        "restored": "v3-compiled-restore-04-edit-source-required"
+      },
+      {
+        "guard": "edit-patient-required",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-05-edit-patient-required",
+        "restored": "v3-compiled-restore-05-edit-patient-required"
+      },
+      {
+        "guard": "mvc-token-header-drop",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-06-mvc-token-header-drop",
+        "restored": "v3-compiled-restore-06-mvc-token-header-drop"
+      },
+      {
+        "guard": "mvc-token-member-drop",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-07-mvc-token-member-drop",
+        "restored": "v3-compiled-restore-07-mvc-token-member-drop"
+      },
+      {
+        "guard": "missing-receipt-guard-drop",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-08-missing-receipt-guard-drop",
+        "restored": "v3-compiled-restore-08-missing-receipt-guard-drop"
+      },
+      {
+        "guard": "fixed-success-receipt",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-09-fixed-success-receipt",
+        "restored": "v3-compiled-restore-09-fixed-success-receipt"
+      },
+      {
+        "guard": "repair-missing-corrupt-tokens",
+        "group": "compiled-mutants-v3",
+        "red": "v3-compiled-mutant-10-repair-missing-corrupt-tokens",
+        "restored": "v3-compiled-restore-10-repair-missing-corrupt-tokens"
+      },
+      {
+        "guard": "browser-token-header-drop",
+        "group": "compiled-browser-boundaries-v3",
+        "red": "v3-browser-boundary-mutant-01-browser-token-header-drop",
+        "restored": "v3-browser-boundary-restore-01-browser-token-header-drop"
+      },
+      {
+        "guard": "browser-token-member-drop",
+        "group": "compiled-browser-boundaries-v3",
+        "red": "v3-browser-boundary-mutant-02-browser-token-member-drop",
+        "restored": "v3-browser-boundary-restore-02-browser-token-member-drop"
+      }
+    ]
+  },
+  "frozen_capture": {
+    "artifact": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-CT-CAPTURE-02.json",
+      "sha256": "1820ed1c9dd7dae4ea1cce47df682d0ea7178c58e024ad192198ffb12d61f573",
+      "bytes": 148401
+    },
+    "actual_command": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-CT-CAPTURE-02-COMMAND.json",
+      "sha256": "f124ff2a2f3eaf8062441253addbb3b86f05f2b69a6e8a59f1de2327eec1d530",
+      "bytes": 2183
+    },
+    "exit": 0,
+    "acceptance_passed": true,
+    "six_actual_cli_exits": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "web_DLL_after_all_six_sources": true,
+    "six_source_hashes_match_commit_blobs": true
+  },
+  "source_DLL_TRX_runtime_binding": "Normal phase source-before/after, assemblies.json, copied assembly-Diten*.dll, runner identity and actual commands. Capture02 binds actual test storage/DLL paths. Guard coverage binds every patch/source tuple/testhash/command/compiled DLL/TRX or Vitest/cleanup.",
+  "cleanup": {
+    "mongo_acl": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v2-api-actual\\MONGO-CLEANUP.json",
+      "sha256": "0e4333d1b5aee9d12d1682ae6a18879049c2e11b679709f69e9de63cea858e1a",
+      "bytes": 2947
+    },
+    "own_runtime": {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-OWN-RUNTIME-CLEANUP.json",
+      "sha256": "e65c5d5a6801374e8867e0692941bf4e537a6bcaa7eea51312a92ed0c5d252f1",
+      "bytes": 15554
+    },
+    "own_nonce_processes_at_final_cleanup": 0,
+    "own_runtime_dirs_removed": true,
+    "successful_final_jobs_and_all60_mutant_phase_jobs_empty_unforced": true,
+    "historical_forced_bootstrap_attempt_separate": true,
+    "no_global_pid_kill": true,
+    "raw_and_scratch_clones_retained_for_review": true,
+    "worker_not_deleted_by_DEV": true
+  },
+  "historical_non_acceptance": [
+    "Predecessor interrupted160-row C# has partial assertions only, no final TRX/cleanup.",
+    "Early freezes/v1/v2 retain actual source hashes; not finalv3.",
+    "final-v2-api empty no-op lacks TRX and rejected; final-v2-api-actual is real restored456 run.",
+    "DateOnly clear repro actual502 preceded narrow JSnull fix; fixed connected target and full normal prove final behavior.",
+    "V2 compiled batch superseded at natural payload boundary; unpaired phase3 RED historical.",
+    "Capture01 only freshness false despite6CLI0; real nonincremental rebuild+t freshfull78 yielded capture02true. No mtime/producer alteration.",
+    "final-v3-old-product-red failed bootstrap before stdout/TRX; own Job forced empty, not assertionRED. Successful -02 retry is final old-product proof.",
+    "FINAL-SOURCE-BOUNDS.json wrong route selector omitted api/; actual correct-marker comparison -02 passes."
+  ],
+  "limits": [
+    "Independent exact-C E2 and CT no-ff integration pending. DEV does not mark CT ACCEPTED/module complete/main merged.",
+    "Fresh FE chain measured actual InMemory store; BE two-store evidence separate. API456 did run its Mongo fixtures and cleanup.",
+    "No full Web/Phase1/architecture/Linux CI/PR/publish/second-human main merge/live operational approval claimed.",
+    "Only six authorized paths committed; API/RESX/CI/permission/protected/other modules unchanged."
+  ],
+  "raw_manifest_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\FINAL-RAW-MANIFEST.json"
+}

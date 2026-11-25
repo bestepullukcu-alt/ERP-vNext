@@ -1,0 +1,1 @@
+ENGEL koşu kaydının araç özeti kod commit'indeki scripts/run_record.py ile aynı değil

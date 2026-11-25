@@ -1,0 +1,50 @@
+{
+  "files": [
+    {
+      "path": "VERIFY-WEB-REOPEN.txt",
+      "raw_sha256": "9d698907398739b31b72a9e1ddad83642a70b9d5c1cd266b0a264fdff47fa4a3",
+      "lf_sha256": "360fc313d3a6debc39e8e85a9013a106577709319d25023f94a4e2020b9ce92f"
+    },
+    {
+      "path": "known-failures-current.json",
+      "raw_sha256": "9770a45a888173b7233e8dc287a3d1fc5f171edc58f24d8e8a239893e8cc7a41",
+      "lf_sha256": "17185639dbf9e186869aedbe96f7ad5ff59b022133bbce87c0a5d4bd01e25332"
+    },
+    {
+      "path": "source-and-publication-binding.json",
+      "raw_sha256": "e4327e88e49daf534f6650787c5e022102726859af605db18521aa0d83b3a741",
+      "lf_sha256": "832118425967a28b11dd1c2f174c1ad4f786ffe68c7867e5619d85612abd15f8"
+    },
+    {
+      "path": "ct-concurrent-metadata.json",
+      "raw_sha256": "6b94694b60eb71c665b2ec259d541d53e0e4e4b0c07f8fd4f27edaa110b251a6",
+      "lf_sha256": "f196472cf88ce340d57a08a6b0680dda106656af88501d2e9914f5fca1b50dc8"
+    },
+    {
+      "path": "evidence-manifest.json",
+      "raw_sha256": "292764f2d09cb293ffe1e583860ed507bd9870648595373b1549dd5dde21e188",
+      "lf_sha256": "1258794c70068e7ca5f96e8887cb7b90a7e804174ea8f5e94872916f9b14c6d7"
+    },
+    {
+      "path": "current-check.stdout.txt",
+      "raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "lf_sha256": "ee0503e57a3a055b4e493f65cae4f205465ee87761cc68701d37bf6d8e2f4081"
+    },
+    {
+      "path": "current-check.stderr.txt",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "unpublished_raw_preserved": [
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-web-reopen-1795197788131254400\\commands.json",
+      "sha256": "11de06feca7f3e83f16f44ded0e2bca2ce0c727b2149c2f07325607a95fca1cd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-web-reopen-1795197788131254400\\known-failures.stdout.txt",
+      "sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+    }
+  ],
+  "limits": "No Web rerun; source-bound historical62 and9RED. CT fresh post-merge test still required."
+}
