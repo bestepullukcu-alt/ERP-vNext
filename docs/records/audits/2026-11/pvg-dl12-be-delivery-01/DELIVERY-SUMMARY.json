@@ -1,0 +1,141 @@
+{
+  "work_package": "WP-0230-DL12-BE",
+  "first_head": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "final_head": "67005d85137f61ffe8c24eabb46bcd2cf15b9d87",
+  "final_tree": "bcb43f47d3b2fd7af511dcadb677e879eb6ebc08",
+  "branch": "feature/pvg/mod-0230-dl12-be",
+  "paths": [
+    "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+    "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+    "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs"
+  ],
+  "source_hashes": [
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "raw_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "lf_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "raw_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+      "lf_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0"
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "raw_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e",
+      "lf_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs",
+      "raw_sha256": "4af91c09a59607c7e612a4c90f89d0084190c6cc9b9a4cb589dd133db1343713",
+      "lf_sha256": "4af91c09a59607c7e612a4c90f89d0084190c6cc9b9a4cb589dd133db1343713"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+      "raw_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4",
+      "lf_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoStartRefusalTests.cs",
+      "raw_sha256": "12edde7bad0da61cac83efb2d0b5aebdefde37258ae081e7b7ebb1a97494ab56",
+      "lf_sha256": "12edde7bad0da61cac83efb2d0b5aebdefde37258ae081e7b7ebb1a97494ab56"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeTriageBindingTests.cs",
+      "raw_sha256": "69894a7758505726fdeaa7efbd7c1993e620c661614dbaee16afdaeaddd0171c",
+      "lf_sha256": "69894a7758505726fdeaa7efbd7c1993e620c661614dbaee16afdaeaddd0171c"
+    }
+  ],
+  "new_method_rows": {
+    "Update_never_erases_triage_or_route_fields": {
+      "InMemory": 3,
+      "Mongo": 3
+    },
+    "Field_policy_denial_does_not_disclose_draft_editability": {
+      "InMemory": 5,
+      "Mongo": 5
+    },
+    "Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing": {
+      "Mongo": 3,
+      "InMemory": 3
+    },
+    "Update_is_allowed_only_in_intake_created_and_intake_updated": {
+      "Mongo": 5,
+      "InMemory": 5
+    },
+    "Field_policy_denial_does_not_disclose_record_existence": {
+      "Mongo": 4,
+      "InMemory": 4
+    },
+    "Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values": {
+      "Mongo": 1,
+      "InMemory": 1
+    },
+    "Update_requires_the_version_read_with_the_editability_snapshot": {
+      "InMemory": 5,
+      "Mongo": 5
+    },
+    "Get_by_id_returns_the_fifteen_stored_fields": {
+      "InMemory": 1,
+      "Mongo": 1
+    },
+    "Concurrent_triage_between_update_read_and_replace_is_not_overwritten": {
+      "Mongo": 1,
+      "InMemory": 1
+    },
+    "Update_with_the_values_read_back_keeps_every_stored_field": {
+      "InMemory": 1,
+      "Mongo": 1
+    },
+    "Update_refusals_for_another_tenant_or_a_caller_without_the_key_never_say_not_editable": {
+      "Mongo": 1,
+      "InMemory": 1
+    }
+  },
+  "api_count": 456,
+  "regpv_count": 211,
+  "new_cases": 60,
+  "old_mongo": 35,
+  "win_targets": 3,
+  "failed": 0,
+  "skipped": 0,
+  "ct_capture_sha": "7c362a704dc8dba046a20c238f8d4e34688c84c3a6bda5c24f8180fba28207e1",
+  "normal_api_trx_sha": "2480dea084582fdd9355bf282383df9b098f9d53ea04137a3b882f53a785b3d1",
+  "normal_regpv_trx_sha": "47238ddd4976c279e96336779f45c039349ecfc32de5c628cc644213bd702170",
+  "mutation_count": 21,
+  "all_11_named_methods_have_assertion_red": [
+    "Concurrent_triage_between_update_read_and_replace_is_not_overwritten",
+    "Field_policy_denial_does_not_disclose_draft_editability",
+    "Field_policy_denial_does_not_disclose_record_existence",
+    "Get_by_id_refused_by_field_security_returns_none_of_the_fifteen_values",
+    "Get_by_id_returns_the_fifteen_stored_fields",
+    "Update_is_allowed_only_in_intake_created_and_intake_updated",
+    "Update_never_erases_triage_or_route_fields",
+    "Update_of_a_triaged_or_routed_draft_is_refused_and_changes_nothing",
+    "Update_refusals_for_another_tenant_or_a_caller_without_the_key_never_say_not_editable",
+    "Update_requires_the_version_read_with_the_editability_snapshot",
+    "Update_with_the_values_read_back_keeps_every_stored_field"
+  ],
+  "regpv_evidence_reused": true,
+  "final_test_source_sha": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4",
+  "commit_actor": "ElikPenco",
+  "final_clean": true,
+  "limitations": [
+    "Independent E2/CT integration pending",
+    "FE/browser-prefill/no-loss pending",
+    "Final-H source-bound Unix CI pending",
+    "Live/E4/operational runtime closed"
+  ],
+  "limits": [
+    "Independent E2/CT integration pending",
+    "FE/browser-prefill/no-loss pending",
+    "Final-H source-bound Unix CI pending",
+    "Live/E4/operational runtime closed"
+  ],
+  "manifest_raw_sha256": "4979e406dadeb0217cbdaadf11d09ba382937fcb0b6bdb08d2fea834b18fa69f",
+  "independent_verification": "pending; worker-reported results are not CT acceptance"
+}

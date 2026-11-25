@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-registry\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\evidence\\WP-0230-DL12-REGISTRY-01.py",
+    "--repo",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-registry\\ERP-vNext-git",
+    "--out",
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-registry-independent-1795197410009686200\\independent-green.json"
+  ],
+  "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-registry\\ERP-vNext-git",
+  "exit": 0,
+  "seconds": 5.276,
+  "stdout_sha256": "f5fd2e34f3250cfdd8e04d155ba22f3faaa34cb3c53d8fd9f5aa68e9a382bf72",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

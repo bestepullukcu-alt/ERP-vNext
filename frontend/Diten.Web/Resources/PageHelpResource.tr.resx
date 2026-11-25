@@ -2442,4 +2442,52 @@
   <data name="Help.BANKS.Step3" xml:space="preserve">
     <value>Bir metin alanının dışında, açık bir iletişim kutusu ya da yan panel yokken “?” tuşu bu yardımı sayfanın kısayollarıyla açar.</value>
   </data>
+  <data name="Help.CASEINTAKETRIAGE.Purpose" xml:space="preserve">
+    <value>Vaka kabul taslaklarını inceleyin. Operasyonel kullanım henüz açık değildir.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Audience" xml:space="preserve">
+    <value>Yetkili farmakovijilans vaka kabul inceleyicileri.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1Title" xml:space="preserve">
+    <value>Mevcut taslakları inceleyin</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGE.Step1" xml:space="preserve">
+    <value>Filtreleri kullanın, ardından varsa bir taslağın ayrıntılarını açın. Erişim engellenirse gösterilen nedeni okuyun ve sorumlu yöneticiyle iletişime geçin.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Purpose" xml:space="preserve">
+    <value>Yalnızca sentetik verilerle bir vaka kabul taslağı hazırlayın. Operasyonel kullanım henüz açık değildir.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Audience" xml:space="preserve">
+    <value>Yetkili farmakovijilans vaka kabul inceleyicileri.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1Title" xml:space="preserve">
+    <value>Taslak alanlarını inceleyin</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGECREATE.Step1" xml:space="preserve">
+    <value>Yalnızca sentetik veri kullanın; gerçek hasta verisi girmeyin. Kaydetme işlemi henüz kullanılamaz. Gösterilen nedeni okuyun ve yardıma ihtiyacınız varsa sorumlu yöneticiyle iletişime geçin.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Purpose" xml:space="preserve">
+    <value>Bir vaka kabul taslağının yüklenen değerlerini değiştirmeden önce inceleyin. Operasyonel kullanım henüz açık değildir.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Audience" xml:space="preserve">
+    <value>Yetkili farmakovijilans vaka kabul inceleyicileri.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1Title" xml:space="preserve">
+    <value>Yüklenen değerleri inceleyin</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEEDIT.Step1" xml:space="preserve">
+    <value>Yalnızca sentetik veri kullanın ve yüklenen tüm değerleri inceleyin. Güncelleme işlemi henüz kullanılamaz; engellenen istek değişiklikleri kaydetmez.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Purpose" xml:space="preserve">
+    <value>Bir vaka kabul taslağının triyaj ve yönlendirme durumunu inceleyin. Operasyonel kullanım henüz açık değildir.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Audience" xml:space="preserve">
+    <value>Yetkili farmakovijilans vaka kabul inceleyicileri.</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1Title" xml:space="preserve">
+    <value>Durumu inceleyin</value>
+  </data>
+  <data name="Help.CASEINTAKETRIAGEDETAILS.Step1" xml:space="preserve">
+    <value>Bir eylem seçmeden önce taslağın durumunu inceleyin. Triyaj ve yönlendirme işlemleri henüz kullanılamaz.</value>
+  </data>
 </root>

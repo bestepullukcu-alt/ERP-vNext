@@ -1,0 +1,1191 @@
+{
+  "kind": "Actual architecture v2 raw artifact paths; no binary copied into Git",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "artifacts": [
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\DEPENDENCY-AND-LEDGER-CLASSIFICATION.json",
+      "bytes": 25913,
+      "raw_sha256": "122e4cd98533620585893fd6bf899a6ef62efc7ed8aed441b9e205bcb829094a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\DocsPathGuardTests.H-source-excerpt.txt",
+      "bytes": 5103,
+      "raw_sha256": "214c1009d17782259ce67ca1438fe9683af2302d93a100d35998bd4309260984"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\FAILURE-CLASSIFICATION.json",
+      "bytes": 5554,
+      "raw_sha256": "2ae9fb5b938e1c3a88100a073ef4840370c604eec7307fa7b6790dac97c821d9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\INVOCATION.json",
+      "bytes": 1761,
+      "raw_sha256": "86a29ed3868726fb2c5c1330c5e53ad5c9b6da7b838f557f036571f087e6e7cc"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\root-source-after.json",
+      "bytes": 7492648,
+      "raw_sha256": "3908bceee05a2638f64aa2ce36abfbc7c788ccdceac0db36bf74cfcdbdd6cfd4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\root-source-before.json",
+      "bytes": 7492648,
+      "raw_sha256": "3908bceee05a2638f64aa2ce36abfbc7c788ccdceac0db36bf74cfcdbdd6cfd4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\runner.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\runner.stdout",
+      "bytes": 286,
+      "raw_sha256": "0edf8286993023d713b68ebe5f0e948a4b205f8af55779ece1912e1b9a2ac1ac"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\000-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\000-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "ef8ef7d91b059d351046ad40872e0ff9e4637829e36d5a6e2961b1c019badccd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\001-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\001-git.stdout",
+      "bytes": 19,
+      "raw_sha256": "917b1c6507dbafe681faeb48cc831ac806b6b9915749222fd6271279ecd12b44"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\002-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\002-git.stdout",
+      "bytes": 135,
+      "raw_sha256": "216ab4e77978d17ba436db9e9a14d84fcd2bb0c21900383a4f98ead152e809b0"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\003-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\003-git.stdout",
+      "bytes": 17018,
+      "raw_sha256": "8ae68f3813eeafb0a0bdee1833bd8b90e966f627b648903cc5466c70b1fad176"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\004-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\004-git.stdout",
+      "bytes": 651,
+      "raw_sha256": "97788df22a7770dc0e18a9e00467f0f573aa9f160073247a35684d579866e3e8"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\005-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\005-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "d7669c0ff4467c6aaacb30dadf9589007d3b43ac60f74de368cd7fc9004bd596"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\006-sdk-version.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\006-sdk-version.stdout",
+      "bytes": 9,
+      "raw_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\007-python3-identity.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\007-python3-identity.stdout",
+      "bytes": 447,
+      "raw_sha256": "92e2d6956cd1f7acd29b2ddf3e17f0ca96a72f4f80938e93bf04d11b6e0145b9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\008-clone.stderr",
+      "bytes": 118,
+      "raw_sha256": "760bf899d76f68c7d536ecf42731234da6f323f0c93971b94a111a53aa705ff2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\008-clone.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\009-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\009-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\010-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\010-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\011-git.stderr",
+      "bytes": 96,
+      "raw_sha256": "28524e0e99ab3abc28dd8538eeb8d6a32a30956c6130902f1ce3356949154694"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\011-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\012-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\012-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "ef8ef7d91b059d351046ad40872e0ff9e4637829e36d5a6e2961b1c019badccd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\013-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\013-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "ef8ef7d91b059d351046ad40872e0ff9e4637829e36d5a6e2961b1c019badccd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\014-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\014-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\015-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\015-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\016-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\016-git.stdout",
+      "bytes": 3895449,
+      "raw_sha256": "37a82d4543ad3693e568314d7caa05cf6aca7fcc525467d46360ce93f6ff7068"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\017-restore.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\017-restore.stdout",
+      "bytes": 275,
+      "raw_sha256": "025ca1fca8432bf4f5c43ce73806b0e42f06c810dc8993c061a365f0b7f35fbc"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\018-full-architecture.stderr",
+      "bytes": 153,
+      "raw_sha256": "da20d6d7560eec66528bb907b51e01ecf699961a4581d2cdd24012e7d08f8b69"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\018-full-architecture.stdout",
+      "bytes": 2166,
+      "raw_sha256": "4425fc13ec73b52afe17668ac0a53176dc61629b785c405811e19cbec4073893"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\019-strict-skip-check.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\019-strict-skip-check.stdout",
+      "bytes": 175,
+      "raw_sha256": "79a22a51b865e31053ad32179ec513f094cf111937f66b403deffd134fcb274d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\020-known-failures-check.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\020-known-failures-check.stdout",
+      "bytes": 725,
+      "raw_sha256": "042e6ef86ad809ea6c96b23fb1a49e7a85a57719e83a11df52441e87efa39322"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\021-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\021-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "ef8ef7d91b059d351046ad40872e0ff9e4637829e36d5a6e2961b1c019badccd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\022-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\022-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\023-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\023-git.stdout",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\024-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\024-git.stdout",
+      "bytes": 3895449,
+      "raw_sha256": "37a82d4543ad3693e568314d7caa05cf6aca7fcc525467d46360ce93f6ff7068"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\025-git.stderr",
+      "bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\025-git.stdout",
+      "bytes": 41,
+      "raw_sha256": "ef8ef7d91b059d351046ad40872e0ff9e4637829e36d5a6e2961b1c019badccd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\actual-commands.json",
+      "bytes": 32486,
+      "raw_sha256": "f88bdca2cd9f2ff6484da38302ab56fbc60eeb6c51792b9d4cba3fa674fa9957"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\actual-test-summary.json",
+      "bytes": 40196,
+      "raw_sha256": "68056d8ea48d17a0a780bd9d8c3adefbb2c361acc750a121c26726fb0660c461"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\architecture.trx",
+      "bytes": 413167,
+      "raw_sha256": "1ac1b43fe851eba8e15f1d7d7548bc341c34183b8c37c10d0a57b2f6ea5c5dc7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\canonical-project-binding.json",
+      "bytes": 366,
+      "raw_sha256": "490b5074fdc9556dacd5093d23309094b71e6c173bd32bcc4c38a1da38aa9683"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\compile-inputs.json",
+      "bytes": 5037,
+      "raw_sha256": "807009715472ec6f4a060ca597b739dd9a0932aeb8888586de0a1b91afa11fee"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\RESULT.json",
+      "bytes": 857,
+      "raw_sha256": "ccee58a86e2b8ac7e64469bf40ee75ad30eb0aaca7edc4e1df3eded7885b4003"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\source-after.json",
+      "bytes": 8478765,
+      "raw_sha256": "3cab8866a16f8fb083783c7e053b54e1e99071e433218a88997c0c16c892f3d7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\evidence\\source-before.json",
+      "bytes": 8478765,
+      "raw_sha256": "3cab8866a16f8fb083783c7e053b54e1e99071e433218a88997c0c16c892f3d7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\000-git\\config.json",
+      "bytes": 502,
+      "raw_sha256": "48aa58fc6918899a7402de6c7bcf82c9dc01cf7decdcc1c8daa2c8d62dca5d17"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\000-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "0fe6899f329ce83f639ddfb0e781e12384eb455149ef359ea9b5bf278fd8048e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\000-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "113b90f5d0d1ce37e0b75c6b8ac7c6b2adc98f5a9193744352b21994c4222582"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\001-git\\config.json",
+      "bytes": 509,
+      "raw_sha256": "0a63e21fb731f56a1ff88572f690223b62beddbac9953936302b1f850035be3f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\001-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "f41df5a65df9b4bc9ebd9d63f484f4ecf7c71c94bf4508f44803781ab847eae2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\001-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "b09c1e53acb54593bbea86252eb0d84dc8556df2b18953365ebfa5aa9c58f5c2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\002-git\\config.json",
+      "bytes": 543,
+      "raw_sha256": "de1d881ed3eb4ecbf8954eb1b690c76dda893ea7f67e3636fb965587e6cbd342"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\002-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "a7954287a9d6bb06a12337a8df0fbb8a54951939cb53db9516f4971171f5de39"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\002-git\\ready.json",
+      "bytes": 58,
+      "raw_sha256": "9e0fff260671032f7a653b9513013791832262faf6cbbe4ebaae4eb58ca0166f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\003-git\\config.json",
+      "bytes": 593,
+      "raw_sha256": "7f59106bb50ca61049813188510ee096a959c320c910cb5e84bd5aca41c6e8f2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\003-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "4318da0b41c6580ab54bfca869d2c6f31370772a5d4b637d058fac6456280885"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\003-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "d34f7c010b045539e38a071ac48ad530ff5f977240946b056ace9bfa59e15bb8"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\004-git\\config.json",
+      "bytes": 633,
+      "raw_sha256": "14be4331eb887fe33185f5a15cb470f4ce752ad358e2d3a81813ed52ef4a5eca"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\004-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "6b3ab949100704e2dcbc1a0e28f9b986ec5250d01a86320a117318b38e8609fe"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\004-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "4880f81bc105fb73571001bb896fd01785222243a47d1eb5fd9e6b8438ccf215"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\005-git\\config.json",
+      "bytes": 638,
+      "raw_sha256": "96ab5fda13a1df6b8e7be890411e5f3aa26d2bc806d3c0186b8b4bad2b8000f4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\005-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "983d0421fcf38779049661e56dfb07169632f7ce3d472ff3cbed51caddae71d5"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\005-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "7e8ebf7b8ceeccf3d5158b391adfd52a6fe89e695ba9f98aeee537f14c15cc8b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\006-sdk-version\\config.json",
+      "bytes": 543,
+      "raw_sha256": "06aba3302a4231741f5daffdd1030ffd196592cf0ccdf040caadf34dd1dc7688"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\006-sdk-version\\go.json",
+      "bytes": 45,
+      "raw_sha256": "09fd268aed8c93b46b2200f780b320b0d5a8d79376f657c3614b9ccbca3e21c9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\006-sdk-version\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "77c49936808c818ea56e9f0c7657af5e57f88fe959685c65507bf6aef5c31e40"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\007-python3-identity\\config.json",
+      "bytes": 607,
+      "raw_sha256": "f649a2f0bc988e138f69c412890a7c53928ff86de1d60db326f111bf9d3015e3"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\007-python3-identity\\go.json",
+      "bytes": 45,
+      "raw_sha256": "761f2f5c48a27cc73c1a5d4925fb3b65ec9f084a7c8bd02be96bcfbf4af9e24b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\007-python3-identity\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "a1b41d90fd7d37bba8eb1254625be9efc6917b47f904b4bd14e9150552c2b60f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\008-clone\\config.json",
+      "bytes": 703,
+      "raw_sha256": "07b9a583b26d5bca8e018d4dced6369f91322b3b652c97406753c2920abc6f32"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\008-clone\\go.json",
+      "bytes": 45,
+      "raw_sha256": "e11990ad8e2c4952b6ba76b250325f4904f0ab23aa20949da7c2867ca2173940"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\008-clone\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "2eaa43e2588f94710c0987f3d579144f49f3fa2e8381c9ade17249e95976236f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\009-git\\config.json",
+      "bytes": 587,
+      "raw_sha256": "e2c1e6b83fbdd668a17bd29a56c8eba8d1d9d726609fe39dd86816cb628e018f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\009-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "5362c37250fb165182b2815d5e46c23d72dfbc13bd02e96680ee2a0564d93d0d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\009-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "486a5810a2e8d848683d6438bf4d5004f3a2f51b6910e37dd1998d07c9a4f72b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\010-git\\config.json",
+      "bytes": 587,
+      "raw_sha256": "920b94b84a11b3c058c1bedcd5fdb7aa7d6cf22b4549f464ccfcc324144396f7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\010-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "54eac0493420278d5f67c7e8cbb3b12e5b8cfd648e85209d68635436341c8e33"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\010-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "ef5ade3f37df3e5ce3a5625bf5b145a037e5f66e9ac4288130249a39e259721b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\011-git\\config.json",
+      "bytes": 619,
+      "raw_sha256": "9c10d0803589284ef9e9bd2a6bcec5db0c5b9b967d172d979965ac954cadb45e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\011-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "53b751160fa258e05b48d99b30a94826787522e95562c14989e11a403c90ec66"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\011-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "a03074e1a8a4b6cd7c42a1668f6f1ae3fe50cecbf4066a3cfdec9cca484dd2a7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\012-git\\config.json",
+      "bytes": 572,
+      "raw_sha256": "02241251d98e404842af889b31b7ab57dfa6865c8e5301b270a881e636cbf367"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\012-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "3a22f8ed4081103150dbf45bf0dc48dc11db47ffdee24a6db2daf7ae94bbdc51"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\012-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "142f8440442f0aa1ddba94156096275f156e6eafe40b67b8eb1372d8e87c5900"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\013-git\\config.json",
+      "bytes": 572,
+      "raw_sha256": "94b538c9c7ddbdd90f84392b79ea8f6b839f036d08338667809db38892c6cf69"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\013-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "577d0f06327e4d6c1a0f17fd181defa9a2fd7de0601117367fa56a8e5ec1ed74"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\013-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "1176826c950ad82eacf48a660cbe9904b25eaa8c3e55a6c4137d941e86a162f1"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\014-git\\config.json",
+      "bytes": 601,
+      "raw_sha256": "50792c6720ed0c0784f1a158c7728b2b86e5d107acc5d2be43fbdddf67e041b0"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\014-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "104bdefd1aad8bb224f72ccede7fc8253ec335879db97fad6d187925228fc65e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\014-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "5f49ad0c86e7ca2d2171793914dd7fe7eed59ff5b0697ad03b759b6e5db24c82"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\015-git\\config.json",
+      "bytes": 613,
+      "raw_sha256": "186c645a64ecf54839f31ee47429f2b5689a2203698b88dc56672a1d0b7d7f95"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\015-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "d926b8f0a053a88d6da5574b6dd1b65f9e467d8c2138661526766e4a62e97f9f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\015-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "45bae0fb9a5c31fcf3d7e9a993bb8b8cedf913c7852e059680f4fbc5a908b189"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\016-git\\config.json",
+      "bytes": 618,
+      "raw_sha256": "6a80e3e8d4e753041454bdb9719b93926d050dea2dd7101ad32137d9e1c24e90"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\016-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "1a9b2d1bc6a004d4203068af25a2f1b41eee2370887303b004a325b3ee14bad6"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\016-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "42d9cd10f4ce23b107c42bfa4e664304584ffc5807851426f1187b2ba63aaee7"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\017-restore\\config.json",
+      "bytes": 886,
+      "raw_sha256": "b53b58a333d79f36dce3352751f184e0b63d6db792959bf89731725590bcc520"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\017-restore\\go.json",
+      "bytes": 45,
+      "raw_sha256": "fedb49257f32a6417b0b853963961b6364b9c9c7ce487e0a5486a3bf25f4c3e1"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\017-restore\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "8aa5d87a5496a5d7f9098ebd2b285fb55608d161997c26425597edd344f39028"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\018-full-architecture\\config.json",
+      "bytes": 962,
+      "raw_sha256": "7d33a8e974af503846d8522412213731d0d5de8176372bd0abda6fe0056c31a0"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\018-full-architecture\\go.json",
+      "bytes": 45,
+      "raw_sha256": "2b9261bdd60820735fad92ae2ee97b5f1b49279a6649ee89f1fa70ffc3b00a3c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\018-full-architecture\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "49ff5957590ecb742079d9a723373619e4a2024025d555b24e8719b1c8ec976d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\019-strict-skip-check\\config.json",
+      "bytes": 635,
+      "raw_sha256": "4894f5b0a48e133363ad0b9bfab46ed2b54a076ca0b95f456b0766bcbb0dad69"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\019-strict-skip-check\\go.json",
+      "bytes": 45,
+      "raw_sha256": "a91fa9d6d9a9199ef01b7d969cfdaa695b31d91dc264cd475f612ec4f1173f66"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\019-strict-skip-check\\ready.json",
+      "bytes": 58,
+      "raw_sha256": "f10920e1a8bfb8c1a4ff9380ceeca4e6400cd18460001b74a6a4a7372713e5fe"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\020-known-failures-check\\config.json",
+      "bytes": 695,
+      "raw_sha256": "2238265a69c908e1934daf95e64aa423ebfd32796903fda61c5277f3072f947a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\020-known-failures-check\\go.json",
+      "bytes": 45,
+      "raw_sha256": "791fb9662d066b12ff456041fcb94a197e26d63473f87e3f8b1cadc1af0da627"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\020-known-failures-check\\ready.json",
+      "bytes": 58,
+      "raw_sha256": "968ffe6586da920f91169d008d24c58a4ba144a59590ffe34b10c8520679b54c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\021-git\\config.json",
+      "bytes": 572,
+      "raw_sha256": "8e66c71476778c5aa1c499981159de4f53e9d29ff471d43d349e0a64d3a54309"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\021-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "78eef5732304235ad27ccc08241f3729d639b1f7e652d816bd7864b6122446c2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\021-git\\ready.json",
+      "bytes": 58,
+      "raw_sha256": "bb335c56ac4a7aea3a4bd1bf031005ce6a8c6eae686ce2ae825f86181d767b90"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\022-git\\config.json",
+      "bytes": 601,
+      "raw_sha256": "00453e447eff1e09cf953e048e3e23958e72c77cafc270a777a9200567960d86"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\022-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "49d5a945bf9b97297bc7306608e9c77ab25067b823f347d754ecc31b3534c0d4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\022-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "f4ca1b876c4969e6cdfd7e7e3a66b081f0aebc02d2383b66b928ad042e6ffffd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\023-git\\config.json",
+      "bytes": 613,
+      "raw_sha256": "c14ce976af8d43e31364959db52f849a5bdea812bf979256a33a8b817e34fd06"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\023-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "7a32bfad9486f23c3517e5a9c7e4835bb3441cabfbf7bb64cd24e632665c4c5f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\023-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "43a696900ba4452294839eac638857aa67a401634e4dd1a8b26766a07981280b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\024-git\\config.json",
+      "bytes": 618,
+      "raw_sha256": "96b3400118f6b34d8bf5bb237c7e3c46db6b4888c217bb434abc590744ad9f37"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\024-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "cd1f9c71a4e88d4b8c50a7555db16fab0bc69e73590d75ba00285ec89a63822b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\024-git\\ready.json",
+      "bytes": 58,
+      "raw_sha256": "1e9db99d7d6c704d114a2187608ca31660a7448274c7af5927d6c0f6673605a5"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\025-git\\config.json",
+      "bytes": 502,
+      "raw_sha256": "7859abd99018e05638cbbf392e017d1311524835534dbe2a34021c70deaf8388"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\025-git\\go.json",
+      "bytes": 45,
+      "raw_sha256": "b32662c0ffe84fd816066506087b072e7d88f84b616968d244545b13d44d0f17"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\025-git\\ready.json",
+      "bytes": 59,
+      "raw_sha256": "9f5f5b6888ad521077e909a99aaff09bc35943c02ecec22779e55608453b0168"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\jobs\\job-bootstrap-v2.py",
+      "bytes": 464,
+      "raw_sha256": "d07dc72cc31501d5546a6983a3a5d189183e1da85629b8270ad11ee0c7d4f621"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\cs\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16304,
+      "raw_sha256": "355785dfa21e88286f2635da3d2149f9f7c82b1e3b0f98956dd58049415eddb1"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\cs\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "82ddd17b1fc73b02d628f09d5c1610c657a331f3c51ddb2d51ea7049fdba02af"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\cs\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20928,
+      "raw_sha256": "b1bd7d9d8399f9eeaf875bba5e260e4da9081a31cefb4361fffa3e2ab71361de"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\cs\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20408,
+      "raw_sha256": "e03229ff09e42018db9dbeda583793e3b05c17dfe1f9b280286c5b9c1841afa9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\cs\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 23584,
+      "raw_sha256": "b59e7068838011be992cf961ca877b7db2f54d38bc4d552a3c174e4cb49a1c20"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\de\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "6aee3f6e9ef58382e4bc4b7354e96c6c5e8aff4d7258c8f56214b30bc3abc552"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\de\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "f00db8bcde3c269b7a78ac54e7810c0eee33a6842e8a3045c2f860873b8137d2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\de\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20920,
+      "raw_sha256": "6e77f99a20a2ff5567945d7ee77cf4a6d3564059fe5768284813954496e45b65"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\de\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20920,
+      "raw_sha256": "1c923d399cc0efc82390165d86e20d3d14d40eb10e30a3d02fece8792413635f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\de\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24112,
+      "raw_sha256": "5f7e21a093be3d0ef5d0a8b00436261af6aa05258ebc24f583a36e3ba4ed81fb"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\es\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "073b4f88caed7dbb206fb33b1f82296f5bc424a9414bdc7bed56991bd34c5a7a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\es\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "84b1253b9e670bcdd55f93a845f96d6c122df97346ec500f803ae88a4f02222c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\es\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20928,
+      "raw_sha256": "e6dce94c65ba95f97d26fa7b566311840055ed68f0a1d1a6ae3a4423b48f69af"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\es\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20912,
+      "raw_sha256": "794478597c4e64247c61dbcedaeffae4d6863ec142b48d80b0b2be8a6f59e522"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\es\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24096,
+      "raw_sha256": "de851807fd106a1a153bc0a757d5012479b9030c2a81867083becf5de31117f4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\fr\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "4bac7e62d8ce739406e8c351f8a16aad29c7a926859abdc57060b8cdb7837bdd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\fr\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "5751ad6752c5702daa2b3d2214184700d88ec110a20b685324b9b55dcd1ea0e2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\fr\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20928,
+      "raw_sha256": "ecc5f42ce61eeeee240f666180608e087f633e0bb99156cf8473664ff704f1dd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\fr\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20920,
+      "raw_sha256": "8bca5c794667688b031eeb9284085aa463d429489b0139762644a77c2b29ea1c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\fr\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24112,
+      "raw_sha256": "38c6201875faf8e44f810aaf1c1b366b16265748331fdb280be926e5678d71db"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\it\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "d3b863c3d5e26553aeccf3f04efed0d7c79d606e64fc420208009bf74ace15b8"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\it\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "b069af42e3ecca7c36d175e640801e6c14b26eebbd00e2b9cb8cebd7820d4afb"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\it\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20920,
+      "raw_sha256": "d0dd3edeab8d2d31d02ad6f8d254dc91265ba02b5d274477daef9aec9efafb8a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\it\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 21024,
+      "raw_sha256": "a4210cac0a2091404c7ea6f355bcf7a50006e1542840728bd3f2903977f064bd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\it\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24104,
+      "raw_sha256": "fa650c6d44f8e368d92db4541b84e4a489f8e95dceb9e4b00b4910861bce9af0"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ja\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "36365630e31e5359316341c34d845f1775eaacfe9b1b59d10ce8a3f538fec0d3"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ja\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 17336,
+      "raw_sha256": "8c3b4e01291cb33675d9f2bff1116787d874573b9e250ab79ffd8a270a1e0fa2"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ja\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 21944,
+      "raw_sha256": "332113071a8e17a9dbb0d428e69c51c9f0f4511c05f85b27d217d7478c15d620"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ja\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 21536,
+      "raw_sha256": "dcddf062fa4f302cd62d5629ed35ee6eec7ba258160ba08095abc76db3c6f152"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ja\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24608,
+      "raw_sha256": "e5e88c6a6a4fb7cc1e4e16a5d0d1debd788e5d7d63deac054c89d6f92f5f2889"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ko\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "b77f62d2ce0f5bf9c2e9b61ca848e41dbe2dadd13846876fae77f8f818cc1219"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ko\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "722048171911a0b89595bbe4947f586c9d4617d12fc93be4d9fe12aa20bf08be"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ko\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 21440,
+      "raw_sha256": "c6c8133ce38e39e7270645c8acae2cb93b4cf227f7b2b798245b5999ceaded0d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ko\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 21032,
+      "raw_sha256": "8bb3602667f6b77faab345caa3dce431bc0bed697995c223f3ebadc6b9cc1355"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ko\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24096,
+      "raw_sha256": "f6e4169b2e95e19d71ecba14f763f03bfb8e610a2232a7a9734ddb815175618a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.TestPlatform.CommunicationUtilities.dll",
+      "bytes": 136632,
+      "raw_sha256": "f49dbb9a8e6136ea3e753b1986f2e5c0b23a74bb18d6938b75a3834f361c1281"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.TestPlatform.CoreUtilities.dll",
+      "bytes": 97216,
+      "raw_sha256": "ebd9b8f45403ed68bd5b75ef033216967dab2300e8ec6d51dac94b74e4e0398e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.TestPlatform.CrossPlatEngine.dll",
+      "bytes": 315328,
+      "raw_sha256": "ba72f55bbcac8e906718656e03b311016996d1b2d3f9371c5d5e7936c7e218f8"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.TestPlatform.PlatformAbstractions.dll",
+      "bytes": 53176,
+      "raw_sha256": "a1dbd7f90ad0cb3e1cf636fc3ae66ad18739bdfb97189cc7196e0911904ce54f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.TestPlatform.Utilities.dll",
+      "bytes": 67008,
+      "raw_sha256": "0430041cdbd566c8d3e791072634e0de06b5690436ec62f7d0d6e5705cf360d3"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.VisualStudio.CodeCoverage.Shim.dll",
+      "bytes": 17440,
+      "raw_sha256": "c5347fca17fbcfac9e2629579f29ee45e8538cf24ac87171d84899ac4d0db65f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.VisualStudio.TestPlatform.Common.dll",
+      "bytes": 247728,
+      "raw_sha256": "c8b869b598856047d0d6d7fdf4853465a179706cfb03d4b3e7828b6f70d9e6a9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll",
+      "bytes": 224696,
+      "raw_sha256": "d386e1a57f5046b519d6ebbd1df3699cd313f0b27ce83c448019bd520f1d6a7d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\Newtonsoft.Json.dll",
+      "bytes": 695336,
+      "raw_sha256": "72cf291d4bab0edd08a9b07c6173e1e7ad1abb7ab727fd7044bf6305d7515661"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\NuGet.Frameworks.dll",
+      "bytes": 116672,
+      "raw_sha256": "d72b1c0dcdc1003a32f1114cafd8c6a0d9fabb0dee553a2190fa43d354e0f527"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pl\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "26581a5a9a04683e61bec781c72bb4d59e145f3fd9b1f93785d09669eeafadbf"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pl\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "6ddd4d8d7bd25c7eedb5d888ca9e01ba2ac62ea84735db70f064d87134250f7e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pl\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 21440,
+      "raw_sha256": "bda7b88fba21bc0e0e0fbd36be8deb83250387c88c4ca42ca469c4c89835ffdf"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pl\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 21024,
+      "raw_sha256": "5233b9d106721fd388a689bdce6915f52484e002fdd7c32342474a6b42829346"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pl\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24096,
+      "raw_sha256": "dd9da98d62883ef2ee8855996c37dd064b53fc01285b3682952f3abc2d034d1f"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pt-BR\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16320,
+      "raw_sha256": "c3748f86b84b37c8b93e6291cca69cc4662231789c649f4202afbd274b08021c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pt-BR\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16824,
+      "raw_sha256": "57b2199bc2307fbb08b8601617df3e773d117341613a9f4621229741d5ba931b"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pt-BR\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20912,
+      "raw_sha256": "afca0b30e3441360ef8ee54e491f2f8187712577cd497429e4160526eedec936"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pt-BR\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 21024,
+      "raw_sha256": "00a65db9f0f1cba189ec0bedc574e17ea39a56c202bd1e4ea44d4099cc7c8150"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\pt-BR\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 24096,
+      "raw_sha256": "401601f7ae2087c3bfd59cf30f68eadc58829566e5b16cf31302b3bb8f9cf9f4"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ru\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 17344,
+      "raw_sha256": "5af8ae2d24b6653dab05f1f4129e88b66406da3efe2b8a3a90c82786eac2b1c6"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ru\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 17336,
+      "raw_sha256": "d2ae1ff91042404532f86c9def3aa66dba13aa8e8ec9980097d60e24544f2478"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ru\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 22968,
+      "raw_sha256": "cb1b2641f87d1be038c590a66d4b9ce9293ddbdc739975f2814d693136c81b48"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ru\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 23072,
+      "raw_sha256": "605497f7376b6b5500fca4841031e1387e218f29651ff9b4c40532d564296582"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\ru\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 26144,
+      "raw_sha256": "1e3fbc700d17810be164aae6fccb67fb2f1eda1b6c1ec993503575d6e27b3bd9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\TenantArchitecture.ArchitectureTests.deps.json",
+      "bytes": 72770,
+      "raw_sha256": "8c583d404195f455bc5afb432b97f5e42f6cfde2bebf004b9e4a628a4efe40c8"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\TenantArchitecture.ArchitectureTests.dll",
+      "bytes": 338944,
+      "raw_sha256": "f8bdc569fbcbd3a2551da06cf8c117e52418fdb30d93b292b51671a5e16e3a0d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\TenantArchitecture.ArchitectureTests.pdb",
+      "bytes": 72648,
+      "raw_sha256": "9267adbe54d9b26b5a0d9f04b6a4b33d29b0eabea8befe8c5ef7b41ae6bc5b5d"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\TenantArchitecture.ArchitectureTests.runtimeconfig.json",
+      "bytes": 268,
+      "raw_sha256": "162d81f468bec570ec15e527433f4de5d5729ffe338ab79b22671f38760d34bd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\testhost.dll",
+      "bytes": 48576,
+      "raw_sha256": "a3cd45ba265180096b9b79100f64554dce11c63041e3d1c6ac8227f7f8fb67ae"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\testhost.exe",
+      "bytes": 169496,
+      "raw_sha256": "e59f87e50234b96463c556d580e202d0d88d9f98e7c76f1b0989efabae3de067"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\tr\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "a91bce0dfca97088100abe695bbd1afe4f4cea7e1a7b3ba0d9c01dcabcb4fe53"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\tr\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16816,
+      "raw_sha256": "164104b902de7d3d4c7b77604cee70e1ca4174df392f6032f0271374ba98a317"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\tr\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20928,
+      "raw_sha256": "bd22f3dd265b5088cc1c480719d6207445888653445a06693e12431bdea7a164"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\tr\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20520,
+      "raw_sha256": "3332b4ca04e7a03a55b396659e47f2740d0029da0bd6c3a2d129b1c3dc2778df"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\tr\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 23584,
+      "raw_sha256": "8f648337a71eceef7f5d316dfc0aa3c4ba45718a0a8332ebeb0f8ea668205424"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.abstractions.dll",
+      "bytes": 21928,
+      "raw_sha256": "3166dc70323fb30ccf1cedb0fe86f2ad122c46d254542342d90386efc4c9285c"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.assert.dll",
+      "bytes": 136224,
+      "raw_sha256": "bda69eee8a61eb8262de11b7383f7d064da99677e98a0459da6cd10fe4f969f9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.core.dll",
+      "bytes": 63520,
+      "raw_sha256": "aa1e79ca077140995ead8f86d1b091be1697f2639cd40524537b773e9f2facce"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.execution.dotnet.dll",
+      "bytes": 263200,
+      "raw_sha256": "34a13e030b29902440970ea666c74746a96eefb0359c00809f20478cc7a2b910"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.runner.reporters.netcoreapp10.dll",
+      "bytes": 81952,
+      "raw_sha256": "e6410390ad2ecee42e61bc2ff76dee3d741529fc0d2ad9c96c39d66a9278d3e5"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.runner.utility.netcoreapp10.dll",
+      "bytes": 234016,
+      "raw_sha256": "db1cee7898cef2b1955b4eef8ef01dfc4daf87a37a411a9027a32447e7eb3de9"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\xunit.runner.visualstudio.dotnetcore.testadapter.dll",
+      "bytes": 178208,
+      "raw_sha256": "f22578eb8fcf238471bc82a611cd1339a2afe34f27fbbad98e9bd6219f366413"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hans\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16320,
+      "raw_sha256": "e9a8d58821eb49556b242b973d6758aabc3b31793909fe5502aa6598aa23fe7e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hans\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "742500a4861972fc87c016f611eca28404179eee6aa9785c974751cab65f691e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hans\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 19896,
+      "raw_sha256": "ae22fd8a5857baf8f4d7f833df0d93218d9e9c467e5405325e4f1b5a6c28badd"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hans\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20000,
+      "raw_sha256": "29693b7975d5be24fb8ed12f1716ee3ada3579e462ed66e2c6ee7acbc124b5c1"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hans\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 23080,
+      "raw_sha256": "8ba3114f5389b497b5807ff2b8cce1eac209e2c0fc5b6f7e7c21f51699d36f28"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hant\\Microsoft.TestPlatform.CommunicationUtilities.resources.dll",
+      "bytes": 16312,
+      "raw_sha256": "a21d172fbe5b82aee1bd0cbc614eee929c4de26dacff893e06ea08c20267cd1e"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hant\\Microsoft.TestPlatform.CoreUtilities.resources.dll",
+      "bytes": 16832,
+      "raw_sha256": "7fc7fc0528cd6a3a000b3768eab38ccae06455b39e08449d8ebbfccdd202cfa1"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hant\\Microsoft.TestPlatform.CrossPlatEngine.resources.dll",
+      "bytes": 20416,
+      "raw_sha256": "859c26b30976e87c611e80906e09663d946caf2b42b6fd06ff52e77e9b5c9c18"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hant\\Microsoft.VisualStudio.TestPlatform.Common.resources.dll",
+      "bytes": 20000,
+      "raw_sha256": "6e86ccbdb497a8df1f9bb965185a77e9d152caf4e2e9b74b34639a0b12f7046a"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\TenantArchitecture.ArchitectureTests\\bin\\Debug\\net8.0\\zh-Hant\\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll",
+      "bytes": 23072,
+      "raw_sha256": "c25cebb9fb2ea0522311e607d370da90a2dc0298a5180aba0c5c8758b2ab2e55"
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\NuGet.Config",
+      "bytes": 309,
+      "raw_sha256": "cb385c99fce022c99751c8f3f68a83990f34c94b1c45e3e7e94c97dff6f55411"
+    },
+    {
+      "path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-architecture-runner-ready-01\\architecture_runner_DRAFT_v2.py",
+      "bytes": 15126,
+      "raw_sha256": "71adfaad2eeacdcf7c6f97df6dd8afa0a0947fc38fef2c077f9350b9aa82ca29"
+    }
+  ]
+}

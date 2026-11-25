@@ -1,0 +1,39 @@
+{
+  "repository": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-registry\\ERP-vNext-git",
+  "initial_head": "fff584a3675fb0273872b0dca9896d26da749f8f",
+  "branch": "feature/pvg/mod-0230-dl12-registry",
+  "initial_status": "clean",
+  "files": {
+    "tests/known-failures.tsv": {
+      "raw_sha256": "8105b4ca2d944000c62b29256808f118e3a64d66b8eb024b9bb662f2934b8fe7",
+      "lf_sha256": "5192f9a681a3057de3b68dbd43962c281cf5a55cb96b857cf444c52605976504",
+      "git_blob": "6038f88ef70db0bedfbde183527f8022b9ca0c64"
+    },
+    "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-REGISTRY-01.py": {
+      "raw_sha256": "2e2d05019bb7974e79d37403bea931ac6b1a833b29c7389a1d74f7f615f106b4",
+      "lf_sha256": "1fe0e58cf55d7566dee5a994b636a54dc128819a769743b5634a262a2ed5e0f9",
+      "git_blob": "f689ae605245d14c69de6fd920918f57d5c9d3ed"
+    },
+    "scripts/known_failures.py": {
+      "raw_sha256": "a445175cdf995d928b176760d8ffa75b57d08f3d74de49741c8ca43cb24acf78",
+      "lf_sha256": "55abd9ac2f6e7dc2ccc2ec8890c68b26d25878d33d906e44b6aac1bc8e9a0771",
+      "git_blob": "633b704e1225b2d8732711205505485b6bcd0dde"
+    },
+    "tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs": {
+      "raw_sha256": "8cdda88adafbd54066275b79d046a2a41c121fe21a37edcbb405ed92cdd34cc1",
+      "lf_sha256": "30739a5bdd6bce0ff5b965bb21fed2f685739342641fbeddcfa8d29838510618",
+      "git_blob": "009a2003c3eaea2837e7b4cc1bb98e36c8e3d4ea"
+    },
+    "tests/known-failures-items.json": {
+      "raw_sha256": "7d3b08428aa4cccd10ab00cca3fb0453604fd9184bf0ba8129d83aed369acf21",
+      "lf_sha256": "989a917cd54977d4c245c98006d42dad85585c329763085bbe0de50f81694e0d",
+      "git_blob": "1d2de48fafe5b8ec53015a8bff2c802d48136560"
+    },
+    "docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/independent.trx": {
+      "raw_sha256": "5af55ad6fb7102b8a336e9925cfb9b0066ad08b2aa04ffd8c823de706134a640",
+      "lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+      "git_blob": "5b72d596dc0e5ce416a7856db7c5e06f5cbc23a7"
+    }
+  },
+  "evidence_directory": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-registry-worker-01"
+}

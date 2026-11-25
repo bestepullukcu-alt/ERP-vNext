@@ -1,0 +1,19 @@
+{
+  "kind": "Final ordinary prompt source tuple after READY; not dispatch/GO",
+  "workers": [
+    {
+      "role": "shared",
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-shared/ERP-vNext-git",
+      "branch": "feature/pvg/mod-0230-r22-shared-ci",
+      "head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+      "status": "CLEAN"
+    },
+    {
+      "role": "views",
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-views/ERP-vNext-git",
+      "branch": "feature/pvg/mod-0230-r22-page-help",
+      "head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+      "status": "CLEAN"
+    }
+  ]
+}

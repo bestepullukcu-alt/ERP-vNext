@@ -1,0 +1,16 @@
+# MOD-0230 DL-12 — son sürüm inceleme kararı
+
+Tarih: 2026-11-20. CT kaynak commit: `3fcc08ddce520d0d277f275cb1b5662f88d60eb5`.
+Paket SHA256: `729ac90976f8038b7d6e7c39b0348a51be485999ae7e094c46aea87264bcdab5`.
+
+Belge · Resmî diyalog incelemesi UYGUN; geçmişsiz bağımsız son bakış KOŞULLU, sıfır engelleyici ve üç açık orta bulgu. İki ham rapor `docs/records/reviews/MOD-0230/2026-11-20-rev20-formal-{dialogue,blind}-02.md` dosyalarında korunur. Eski sürümün olumsuz raporları ve defter satırları değiştirilmez. Model/effort görünürlüğü ham raporlarla sınırlıdır; blind oturumunda istenen gpt-6.2-astra/high, gerçek değer verilemiyor.
+
+Karar · CT üç bulguyu kaynakla karşılaştırıp kabul etti. Bunlar hazırlık işçilerinin yazabileceği dosyalar dışında kalan ana DL-12 geliştirme ve kabul ölçüleridir; PREP-WIN ve PREP-WEB için engel oluşturmaz. Açık bulgular kapatılmış gösterilmez. Ana DL-12 dağıtımından önce tarihsel sözleşme notu netleştirilecek ve aşağıdaki iki ek negatif/pozitif ölçü iş emrinde açıkça bağlanacaktır. Paket revizyonu bu kayıtta değiştirilmedi; yeni ürün veya dosya kapsamı eklenmedi.
+
+1. F-1: `PvgCaseIntakeTriageEndpoints.cs` mevcut kodu doğrulanmış `tenant_id` ile `X-Tenant-Id` eşleşmesini arıyor, aktörü doğrulanmış principal'dan alıyor. `PvgIntakeDraftApplicationService.cs` güncel `pvg.case-intake-triage.*` ailesini kullanıyor. DL4B kuyrukta entegre. Eski başlık/JWT/izin notları güncel uygulama emri sayılmayacak. İki PREP bu üretim yüzeylerini değiştiremez; ana iş prompt'u mevcut güvenlik sözleşmesini koruyacak.
+2. F-2: Validator SourceReference için kırpılmış uzunluğu kontrol ediyor; uygulama özgün metni saklıyor. Tek satırlı HTML input mevcut değerin gömülü CR/LF'sini dönüştürebilir. Ana geliştirme, gerçek API ile oluşturulmuş bu geçerli değerin dokunulmamış Edit üzerinden birebir korunmasını ve DOM değerine geri dönüş sabotajının testi düşürmesini ölçecek. Bu, zaten onaylı kabul edilmiş değerlerin kayıpsız korunması kapsamındadır; mevcut başarı iddiası değildir.
+3. F-3: Mevcut API sözleşme testindeki reddedilmiş liste yanıtı pozitif listenin alan sızdırmadığını kanıtlamaz. Ana işte aynı kiracı/izinli başarılı liste 200, beklenen ID ve yalnız intakeDraftId/status/version öğe sözleşmesiyle birlikte ölçülecek; ayrıntı alanları yanıtın tamamında bulunmayacak. Boş/ret yanıtı pozitif kanıt sayılmayacak.
+
+Karar · Takip sahibi K5 (CT); 2026-11-23 iç takip hedefidir, insan taahhüdü değildir. Ana DL-12 kuyrukta BLOCKED kalır. İki hazırlık işi kendi normal HIGH prompt/dağıtım kapısından geçmeden başlamaz. Kaynak kod, test veya CI bu CT kaydıyla değiştirilmedi. Build, restore, npm ci, çalışma testi, sabotaj ve GitHub Linux CI bu inceleme aşamasında koşulmadı. Operasyon kapalıdır.
+
+Karar · Sahip onayı `pvg-mod0230-rev20-owner-approval-01.md` ve bu CT sohbetindeki doğrudan “onaylıyorum” beyanına dayanır. GitHub CLI hesabı/yazar ElikPenco (K5); Beste beyanı insan kapsam onayıdır, doğrulanmış GitHub giriş kimliği değildir. Son tek PR'ın main birleştirmesi bağımsız, HIGH yetkili insan kontrolüne tabidir. Hazırlıklar ayrı işçi worktree'lerinde, CT'ye doğrulanan merge commit'lerle toplanacak; işçi dalları push edilmez. Temizlik main'e güvenli entegrasyondan sonra yapılır.

@@ -18,5 +18,6 @@
     <ProjectReference Include="..\..\src\Diten.PvgService.Api\Diten.PvgService.Api.csproj" />
     <ProjectReference Include="..\..\src\Diten.PvgService.Application\Diten.PvgService.Application.csproj" />
     <ProjectReference Include="..\..\src\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Diten.PvgService.Persistence\Diten.PvgService.Persistence.csproj" />
   </ItemGroup>
 </Project>

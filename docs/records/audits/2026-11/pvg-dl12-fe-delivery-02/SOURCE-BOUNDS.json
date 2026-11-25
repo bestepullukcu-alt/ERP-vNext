@@ -1,0 +1,19 @@
+{
+  "base": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "branch": "feature/pvg/mod-0230-dl12-fe",
+  "six_exact_paths": [
+    "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+    "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+    "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+    "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+  ],
+  "no_untracked_or_staged": true,
+  "six_raw_hashes_equal_v3": true,
+  "controller_prefix_before_update_unchanged": true,
+  "controller_suffix_from_triage_and_all_shared_helpers_unchanged": true,
+  "exact_start_marker": "    [HttpPost(\"api/update/{intakeDraftId}\")]",
+  "exact_end_marker": "    [HttpPost(\"api/triage/{intakeDraftId}\")]",
+  "prior_record_limit": "FINAL-SOURCE-BOUNDS.json used incorrect route markers missing api/; false checks there mean selector setup failure, not a product comparison. This record performs actual matching assertions."
+}

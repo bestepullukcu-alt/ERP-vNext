@@ -1,0 +1,50 @@
+{
+  "kind": "CT accepts evidence integrity and source integration; general gates remain FAIL",
+  "at_utc": "2026-11-21T18:10:50.797704+00:00",
+  "tested_source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "latest_origin_main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "fe_candidate": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "fe_noff_merge": "3881b13b4a7238326d41e1b777916c248a34cdaf",
+  "independent_FE_technical_E2": "UYGUN;open0;ownAPI456/Reg211/Web78/JS39/11negativepairs/6CLI0",
+  "integrated_full_Web": {
+    "passed": 4584,
+    "failed": 1,
+    "skipped": 0,
+    "PVG78_all_passed_and_identity_multiset_preserved": true,
+    "job_count": 69,
+    "empty_unforced": true
+  },
+  "integrated_full_architecture": {
+    "passed": 230,
+    "failed": 1,
+    "skipped": 0,
+    "job_count": 26,
+    "empty_unforced": true
+  },
+  "pack_deferred_exit": 0,
+  "queue_validate_exit": 0,
+  "queue_errors": 0,
+  "queue_warnings": 0,
+  "ct_verified_architecture_raw_files": 237,
+  "ct_verified_architecture_raw_bytes": 45271059,
+  "ct_verified_web_raw_files": 279,
+  "ct_verified_web_raw_bytes": 143306783,
+  "root_and_private_26657_sources_index_HEAD_and_dependencies_unchanged": true,
+  "wording_crosscheck_recommendations_accepted": [
+    "Preserve historical6ACCEPTED; no new acceptance",
+    "Separate testedH51 and futuremetadataPRhead",
+    "Both general FAIL verdicts explicit",
+    "test exit1 self-terminated, no forced kill",
+    "Only failing symlink fixture absent; source/build/cache retained"
+  ],
+  "diagnostic_tool_install_or_attach_performed": false,
+  "publication_authorized": false,
+  "state": "BE/L10N/FE and3preparations INTEGRATED; parent IN_PROGRESS; historical6ACCEPTED retained",
+  "remaining_gates": [
+    "Owner exactfinalbranch+SHA push/draftPR authorization",
+    "Exactsource Linux CI/Phase1 plus review of two local general failures",
+    "Listed different HIGH-enabled human merge commit",
+    "Separate operational/E4 decisions; no moduleDONE"
+  ],
+  "worktree_cleanup": "After actual main reachability and absence of unpreserved work; none archived in this wave"
+}

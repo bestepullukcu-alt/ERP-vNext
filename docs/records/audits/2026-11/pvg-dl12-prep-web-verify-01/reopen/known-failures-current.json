@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\known_failures.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01\\independent.trx",
+    "--suite",
+    "Diten.Web.Tests"
+  ],
+  "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "exit": 0,
+  "seconds": 1.562,
+  "stdout_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

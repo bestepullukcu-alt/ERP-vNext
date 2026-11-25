@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\prompt_gate.py",
+    "pack",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-FE-v1.0.md"
+  ],
+  "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "exit_code": 2,
+  "stdout_bytes": 65,
+  "stdout_sha256": "0dd05e3a49d2f9e797ee173b22b30a9e939d46ef93d0f01e1be71d76699e2aa0",
+  "stderr_bytes": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

@@ -1,0 +1,15 @@
+{
+  "revision": 20,
+  "source_commit": "486521d11c5ddaec2294b94e9114b4c3875a4fd6",
+  "pack_sha256": "7f612c2c7d714a487318f0a39313e324f8c1afc1d7414dfa4b3e6e9eddcb2b4c",
+  "domain_sha256": "b8771b0b3701a0aa331da68fe4f1a34980d054880cc622effaa3f1654af9ee4a",
+  "criteria_count": 45,
+  "parser_problems": [],
+  "old_format": false,
+  "unchanged_AC_1_39_43_44": true,
+  "all_AC_technical_identifiers_unchanged": true,
+  "product_path_sets_unchanged": true,
+  "product_test_CI_unchanged": true,
+  "formal_review_written": false,
+  "build_tests_run": false
+}

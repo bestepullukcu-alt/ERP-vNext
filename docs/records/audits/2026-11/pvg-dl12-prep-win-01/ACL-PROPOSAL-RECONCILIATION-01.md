@@ -1,0 +1,11 @@
+# Windows ACL önerisi — bağımsız koşulların CT değerlendirmesi
+
+2026-11-20. İlk öneri a948cf45, bağımsız ayrı sohbet incelemesi KOŞULLU/0 engelleyici/3 orta koşul; ham çıktı `docs/records/reviews/MOD-0230/2026-11-20-windows-acl-scope-review-01.md`. CT üç bulguyu kaynakla karşılaştırıp kabul etti; paket yazarı yalnız öneri dosyasını güncelledi.
+
+1. F1: mevcut private test scanner'ı DirectoryInfo.EnumerateFileSystemInfos çağrısındaki erişim hatasını yukarı iletiyor; Assert.ThrowsAny başka hata ile yanlış yeşil olabilir. Öneri artık hem önkoşulda hem scanner çağrısında gerçek kilitli dizinden UnauthorizedAccessException ister. Üretim veya private scanner helper'ı değişmez; yalnız hedef test gövdesi.
+2. F2: mevcut service-tests.yml pvg-api/ubuntu-22.04 işi gerçek API testlerini çalıştırır; Phase1 yalnız API build ve Web testleriyle bunun yerine geçmez. Windows E2 çıktı/entegrasyon aşaması ile gerçek aynı final PR HEAD'inde Unix/API sıfır hata/skip kapanışı ayrıldı. Olmayan PR koşusu PREP veya ana feature geliştirmesine önkoşul yapılmaz. Unix sonucu başarısız/beklemedeyken final PR main'e birleştirilmez; Unix çalışma başarısı şimdiden iddia edilmez.
+3. F3: mevcut iki WIP ve yeni ACL metodu birlikte 58920519 baseline'den final adaya ölçülür. Eski dört platform/guard sabotajı ile yeni iki ACL sabotajı tek tek derlenen RED ve özgün GREEN/hash çiftleriyle zorunlu; taşıma checkpoint'i veya yalnız yeni satırları ölçmek yeterli değildir.
+
+Karar · CT önceki checkpoint onay talebini geri çekti. Kullanıcı ayrı worktree'leri zaten yetkilendirdi. Kirli eski WIP ağacı korunacak; yeni kesin pack/HIGH/prompt kontrollerinden sonra temiz replacement ağacına doğrulanmış patch aktarılacak. Eşlik kanonik LF içerikle de ölçülecek. Kırmızı tam suite sonrası yerel checkpoint istisnası istenmeyecek veya uygulanmayacak. İstenen yeni insan onayı yalnız tek üçüncü dosyanın tek Windows ACL test metodudur.
+
+Belge · Yeni öneri SHA256 cde6effd06f482a1e5a3027d842d41856fea7679dfe34109603e5409eb0a5d47. Bu CT değerlendirmesi bağımsız yeni sürüm hükmü veya sahip onayı değildir; değişen öneri tekrar bağımsız incelenecek. Approved pack186ad967, domain914c0c1d ve ürün kodu değişmedi. PREP-WIN BLOCKED; WEB bağımsız E2 doğrulaması sürüyor; operasyon kapalı.

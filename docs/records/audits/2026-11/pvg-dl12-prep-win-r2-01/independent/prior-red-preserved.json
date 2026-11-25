@@ -1,0 +1,7 @@
+{
+  "prior_directory": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-prep-win-r2-evidence/i-1795200401331",
+  "prior_trx_raw_sha256": "64066a4903e444b66a2f5398835dfd718c51a85c0ad957312933880d0295b756",
+  "prior_result": "395/394PASS/1FAIL/0skip; physical .git prerequisite failed",
+  "retry_reason": "Root-authorized genuine isolated Git context, no product source edit",
+  "normal_runs_in_this_new_context": 1
+}

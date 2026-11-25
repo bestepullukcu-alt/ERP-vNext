@@ -1,0 +1,26 @@
+[
+  {
+    "ProcessId": 20592,
+    "ParentProcessId": 33584,
+    "CreationDate": "2026-11-20T23:06:37.03066+04:00",
+    "Name": "dotnet.exe",
+    "ExecutablePath": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "CommandLine": "\"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe\" \"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\sdk\\8.0.428\\MSBuild.dll\" /nologo /nodemode:1 /nodeReuse:true /low:false"
+  },
+  {
+    "ProcessId": 28792,
+    "ParentProcessId": 33584,
+    "CreationDate": "2026-11-20T23:06:37.030779+04:00",
+    "Name": "dotnet.exe",
+    "ExecutablePath": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "CommandLine": "\"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe\" \"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\sdk\\8.0.428\\MSBuild.dll\" /nologo /nodemode:1 /nodeReuse:true /low:false"
+  },
+  {
+    "ProcessId": 36820,
+    "ParentProcessId": 33584,
+    "CreationDate": "2026-11-20T23:06:37.03091+04:00",
+    "Name": "dotnet.exe",
+    "ExecutablePath": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+    "CommandLine": "\"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe\" \"C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\sdk\\8.0.428\\MSBuild.dll\" /nologo /nodemode:1 /nodeReuse:true /low:false"
+  }
+]

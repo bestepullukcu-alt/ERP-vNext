@@ -1,0 +1,1 @@
+{"acceptance_passed": true, "command_exit_codes": [0, 0], "guard_red": true}

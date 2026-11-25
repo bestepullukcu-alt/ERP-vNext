@@ -1,0 +1,14 @@
+{
+  "raw_exit": 3,
+  "stdout_sha256": "6460d3655b60b0dc82aa9a5c8005c55301e651b3cca38735756120634c55e2b5",
+  "stdout_bytes": 64659,
+  "stderr_bytes": 0,
+  "check_report_exit": 0,
+  "source_head": "bd3a1c6390d92e1a2e3cc9a8a3052641d2fe63df",
+  "retry_reasons": [
+    "initial terminal output truncated",
+    "capture omitted isolated PYTHONPATH; report preserved",
+    "Windows stdout CRLF rejected; actual unmodified producer rerun with sys.stdout newline LF"
+  ],
+  "producer_source_modified": false
+}

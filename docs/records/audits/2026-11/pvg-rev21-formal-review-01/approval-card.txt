@@ -1,0 +1,81 @@
+# Onay kartı (CT-APR-01)
+
+- paket: `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md`
+- paket SHA-256: `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`
+- id: MOD-0230
+- name: Case Intake & Triage
+- status: ready-for-dev
+- approval_status: approved
+- owner: PVG paket sahibi
+- domain: pharmacovigilance
+- service: Diten.PvgService
+
+## 🔴 Risk (hesaplanan): HIGH
+- 'Build Authorization (Non-Production) - 2' altında değişti: Earlier-version approvals do not transfer. The direct 2026-11-20 owner
+- 'Build Authorization (Non-Production) - 2' altında değişti: Earlier-version approvals do not transfer. The direct 2026-11-20 owner
+- 'Build Authorization (Non-Production) - 2' altında değişti: - DL-12 revision 20 has direct human scope/build-test consent: its exa
+- 'Build Authorization (Non-Production) - 2' altında değişti: - DL-12 revision 21 has direct human scope/build-test consent: its exa
+- 'Repo Scope' altında değişti: revision 20 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existen
+- 'Repo Scope' altında değişti: revision 21 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existen
+- 'Repo Scope' altında değişti: - `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServi
+- 'Repo Scope' altında değişti: DISPATCH-GATED revision 21 exception: PREP-WIN may change ONLY the BOD
+- 'Repo Scope' altında değişti: Configuration_scan_fails_closed_on_inaccessible_directory for the Wind
+- 'Repo Scope' altında değişti: defined below. Its DL-3 ownership remains; no other test, using block,
+- 'Repo Scope' altında değişti: is editable. No production/config/store/host change. New exact-version
+- 'Repo Scope' altında değişti: worker prompt/gate are required. This exception is not whole-file or w
+
+## Repo Scope
+Authorized for the build/test gate:
+- `execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md`
+- `services/Diten.PvgService/**` - MOD-0230 slice 1 code lives in `src/*/RegPvBase/**`, `src/Diten.PvgService.Api/**`,
+  since revision 14 `src/Diten.PvgService.Persistence/**` (DL-10, the only project that references the Mongo driver),
+  since revision 15 `src/Diten.PvgService.Api/ModuleRegistration/**` (DL-11),
+  `tests/Diten.PvgService.Api.Tests/**`, and `tests/Diten.PvgService.RegPvBase.Tests/**`. The MOD-0231 / MOD-0232 /
+  MOD-0234 folders in the same service belong to their own packs.
+- `services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/PvgIntakeDraftApplicationServiceTests.cs` - OWNER-APPROVED / DISPATCH-GATED
+  revision 21 DL-12 scope: in Cross_tenant_mutations_do_not_leak_existence_through_evidence_link_denial,
+  change ONLY the Update row's permission-only call-log/no-field expectations to permission then the existing
+  update field-policy calls before not-found, under the owner-adopted pre-read policy order. Preserve the
+  not-found/safe/no-record/no-workflow/no-evidence assertions and Triage/Route rows. No other test/helper changes.
+  Human consent is recorded above; bounded preparation follows that record. Exact-version formal review/HIGH
+  records and a passed prompt/dispatch gate remain required before product-worker dispatch.
+- `services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs` - OWNER-APPROVED /
+  DISPATCH-GATED revision 21 exception: PREP-WIN may change ONLY the BODY of
+  Configuration_scan_fails_closed_on_inaccessible_directory for the Windows private-fixture ACL/test assertions
+  defined below. Its DL-3 ownership remains; no other test, using block, helper, ScanFixture or scanner implementation
+  is editable. No production/config/store/host change. New exact-version formal review/HIGH records and normal
+  worker prompt/gate are required. This exception is not whole-file or whole-DL-3 authority.
+- `tests/known-failures.tsv` - separate owner-approved ADMINISTRATIVE correction only, by a separate worker, NOT
+  PREP-WIN, PREP-WEB or the module feature worker: remove the literal ,*.xml token ONLY from rerun_trigger in the
+  five exact fixed rows identified below, under existing CT work package WP-0230-DL12-REGISTRY-01. No other row/cell,
+  status/fingerprint/owner/review data or product/test/
+  guard code change, no test suppression. Its own reviewed normal prompt/gate and single writer still apply.
+- `frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs` - the same-origin MVC proxy
+  controller (actual file name; WP-0230-07 still names it `CaseIntakeTriageController.cs`).
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/**`
+- `frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml` - OWNER-APPROVED / DISPATCH-GATED revision 21
+  DL-12 scope: only the Edit-mode required attributes and matching required indicators for SourceReference and
+
+## Açık kararlar
+- build_gate: open
+- > `status: ready-for-dev`, `build_gate: open`, `approval_status: approved` express human scope consent; they do NOT
+- > with no open blocking finding in `docs/records/reviews/MOD-0230/2026-11-20-rev19-separate-chat-01.md`; F-6 ... F-9
+- > formal exact-version review/HIGH approval remains OPEN. These are contract corrections, not implementation evidence.
+- > `ce3be60cf`, returns unsigned owner contracts to open state, and lists every owner decision under "Open Decisions
+- > **Revision 11 (2026-10-27).** The owner approved the waiting part of four open decisions; the owner holds the
+- > room. Records in the "Open Decisions" table. Only gate preconditions and decision states changed (Open Decisions,
+- > "Dependencies" row, OD-PVG-9 facts); how PvgService enters it stays open (DEPO-01 open items: D-2); the store already
+- > as an unknown id, and its test is renamed (KK-11); AC-6 gains one sentence, and the cross-tenant 404 is written as open until
+- > measurement, is allowed; the operational runtime gate stays closed (KK-6). Open to the owner at this approval:
+- > (4) Aligned: G-25 (owning slice) and the Build-Gate Gaps intro, "Build Authorization" (authorized list), the "Open
+- > | **Build / test** | **OPEN** since 2026-08-09 | Backend code and tests in `services/Diten.PvgService/**`; starting the API host in local / dev / CI on its co
+- | G-23 | No working live screen exists under the build/test gate | `IPvgPermissionGate` has one production implementation, `DenyAllPermissionGate`, registered i
+- and forged-Bearer requests reaching the API; production-profile Gateway behaviour was not measured. The open security
+- ## Open Decisions (Owner Decision Pending)
+- `docs/records/decisions/2026-10/pvg-mod0230-open-decisions-01.md@4fe62fdc3`. The last column states the result. Four
+- are not actionable until that approval is recorded, and the acceptance criteria that depend on them stay open.
+- module owner's approval, and it does not open the operational runtime gate.
+- | OD-PVG-9 | Audit write path for K2-class commands | G-5. AUD-001 §4.3 K2: for GxP records, no audit record means no operation. AUD-001 §5 K4: PVG has no audit
+- | OD-PVG-11 | `ReporterCountry` = "unknown" and unchanged stored codes once the country list exists (revision 05) | Review 04 F-3. EK-1 (`pvg-mod0230-intake-fie
+
+card_sha256: c959bb4b7ba2bbad17762de3828aa4f5c3ccc75419ea8f8d6929f150331202c8

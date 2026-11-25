@@ -1,0 +1,56 @@
+{
+  "kind": "Independent author old-product RED source tuple and raw outcome check",
+  "runs": [
+    {
+      "phase": "final-v3-old-product-red-02",
+      "six_old_product_plus_final_test_tuple_valid": true,
+      "source_before_after_equal": true,
+      "actual_exit": 1,
+      "job_empty_unforced": true,
+      "selector": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "--logger",
+        "trx;LogFileName=fe-web.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-old-product-red-02",
+        "--disable-build-servers",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false",
+        "--filter",
+        "FullyQualifiedName~Edit_optional_source_reference_and_patient_code_match_service_validation"
+      ]
+    },
+    {
+      "phase": "final-v3-js-old-product-red-02",
+      "six_old_product_plus_final_test_tuple_valid": true,
+      "source_before_after_equal": true,
+      "actual_exit": 1,
+      "job_empty_unforced": true,
+      "selector": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/pvg-case-intake-triage-ui.test.js",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\final-v3-js-old-product-red-02\\vitest.json",
+        "--no-cache",
+        "--maxWorkers=1",
+        "--minWorkers=1",
+        "-t",
+        "pvg edit (form prefills every|save without|save sends an optional|distinguishes explicit|refusal after triage)"
+      ]
+    }
+  ],
+  "actual_csharp_result": "One named actual connected test failed its untouched accepted form-validity assertion, total1 failed1 skip0; combined build ran and testDLL/TRX retained",
+  "actual_js_result": "Five selected new named JS cases failed real assertions.34 other cases unselected by explicit testNamePattern; this is not final acceptance run or a skip waiver",
+  "test_hash_csharp": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+  "test_hash_js": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+  "all2430_file_hashes_previously_validated": "AUTHOR-PROOF-CHECK.json@f0c7421102c7f7de4d2599e7176d4add4046733ec57305ddbe126b31a818f1c6",
+  "limits": "Read existing author raw proof; not an independent runtime rerun; historical forced bootstrap failure excluded"
+}

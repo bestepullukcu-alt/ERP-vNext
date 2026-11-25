@@ -1,0 +1,7 @@
+# Registry yönetişim işçisi — kesin prompt v1.2
+
+2026-11-20. İlk v1.1 bağımsız incelemesi iki talimat çelişkisini yakaladı: eski kısa başlangıç SHA'sı ve onay kaydında olmayan tek tek test listesine atıf. İkisi kabul edildi, eski prompt/ham görüş korunuyor. İlk dosya Windows text yazımıyla CRLF olmuştu: ham SHA70004e6e, LF SHA3cea9656. Gerçek S-54 denemesi çıkış1 verdi: hash, iki tamam olmayan kontrol ve iki açık engelleyici. İşçi bu sürümü almadı.
+
+Yeni v1.2 gerçek RAW LF baytlarıdır (CR0), SHA-256 `91579bd5efa030488c0d219cd60242440d1fb4ad08e59ca2e241f3d12f2c6938`. Başlangıç her yerde `fff584a3675fb0273872b0dca9896d26da749f8f`; test kimlikleri onayın işaretlediği exact ledger satır4–8/blob6038f88 ile karşılaştırılır. Kabul betiği1fe0e58c, TRXbağıd8e4459f,20source/digest7859db7b ve beş-hücre scope aynı. Baseline-red-v1.1.json doğru kaynak adı olarak korunur. Diğer sürüm farkı v etiketi ve belirtilen iki talimattır.
+
+Bağımsız inceleyen pvg_dl12_prep_web_verify UYGUN/0kritik/0engelleyici verdi. Gerçek `prompt_gate.py review-check` v1.2 **çıkış0**; bu dağıtım izni değildir. S-54 denemesinde okuyucu/guard değiştirilmedi. Normal `check --queue pvg --review <kayıt>@<commit>` henüz bekleniyor. Registry ağacı ff-only ile kesin FFF sürümüne alındı, ilk/son temiz; normal kapı0 olmadan ledger yazılmaz. CT'deki eski DOR690/ilk kaynak paketleri tarihsel hazırlıktır; dağıtım yalnız bu yeni ExpectedHEAD ve v1.2'ye bağlıdır.

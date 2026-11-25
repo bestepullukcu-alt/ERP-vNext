@@ -1,0 +1,434 @@
+{
+  "kind": "Independent source-bound technical E2 review",
+  "work_package": "WP-0230-DL12-FE",
+  "module": "MOD-0230",
+  "technical_e2_review": "UYGUN",
+  "open_technical_blockers": 0,
+  "observed_utc": "2026-11-21T17:31:11.5157954Z",
+  "verifier": "/root/pvg_dl12_fe_independent_02",
+  "implementer": "/root/pvg_dl12_fe_continuation_02",
+  "requested_model_effort": "inherited gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor",
+  "candidate": {
+    "commit": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+    "tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+    "sole_parent": "6d845de19296d919620503a4024ddcaa0bda42dc",
+    "branch": "feature/pvg/mod-0230-dl12-fe",
+    "worker": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-web/ERP-vNext-git",
+    "ordinary_single_commit": true,
+    "final_observed_clean": true,
+    "final_diff_check_exit": 0,
+    "six_raw_LF_and_committed_source_pins": "CANDIDATE-SOURCE-v3.json@e923eea5f1b83ff6c292d230bbfa313b573e5bed5139b8d024e29dec060f1613"
+  },
+  "authority": {
+    "WP_LF_SHA256": "d02639654b0551cb572e5b91738e98b2320d9e0ee7ba44890bf5a40917ba6789",
+    "pack_LF_SHA256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+    "domain_LF_SHA256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+    "capture_LF_SHA256": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203",
+    "committed_baseline_LF_SHA256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649",
+    "corpus_SHA256": "003eb12bd41eb6f7028accaed82a76e070862d4fa7678652e73ab3ba139a9adc",
+    "source80": "Read-only byte inventory PREPARATION-SOURCE80.json; relevant contract/source sections and full WP reviewed; no repeated discovery/gate"
+  },
+  "source_bounds": [
+    "Exactly six authorized paths; controller diff only Update action and private Update-local parser",
+    "Create/shared input/Clean/SplitReferences/TryNormalizeUtc, auth/header/tenant/route/generic proxy unchanged",
+    "form.js Edit prefill/full-detail/no-loss submission plus one localized refusal mapping; Create behavior preserved",
+    "_Form only two Edit optional required attributes/indicators; one DraftNotEditable bridge; no RESX/API/dependency/CI/protected source change"
+  ],
+  "actual_normal": {
+    "evidence": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-e2-02/0095e32e5bc5471398cee753173520c3/evidence",
+    "reviewed_runner_SHA256": "cbf806d93fa60ebe2cbe4a53f2fa6b2a48fa54485dd836220fcdb7b8218cb792",
+    "overall_exit": 0,
+    "web_target_class_passed": 78,
+    "JS_target_file_passed": 39,
+    "full_API_passed": 456,
+    "full_RegPvBase_passed": 211,
+    "failed": 0,
+    "skipped": 0,
+    "old_Web62_JS34_retained": true,
+    "API_Reg_exact_baseline_multisets_retained": true,
+    "normal_summary_SHA256": "3205af60bd53892b57076ddb7ffb7069169341e6d180e18b76718d4ebcc47e1b",
+    "frozen_capture_SHA256": "9e6c5e0bf6d957be614c238ab463c2aa5c6a01ee5afa98641bb8c34e0089147d",
+    "frozen_capture_actual_exit": 0,
+    "mechanical_capture_passed": true,
+    "actual_skip_known_failure_CLI_count": 6,
+    "all_six_actual_CLI_exit_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "actual_MSBuild_transitive_source_DLL_TRX_storage_time_bound": true,
+    "all_26600_tracked_source_bytes_and_Git_blob_OIDs_bound": true,
+    "raw_Git_OID_raw_SHA256_canonicalLF_separate": true
+  },
+  "actual_connected_coverage": {
+    "store": "Actual production InMemory repository behind pass-through per(tenant,id) ObservedStore counters; fresh real API create/id/firstGET/Razor/session/token/Node22/jsdom/orderedFormData/MVC/Gateway mapping/API/store/reread",
+    "actual_SHA_receipts": 176,
+    "new_actual_fresh_record_ids": 174,
+    "corpus_cases": 47,
+    "shape_cases": 112,
+    "other_connected_receipts": 15,
+    "batch_receipts": 2,
+    "matrix_fresh_ids": 159,
+    "missing_extra_duplicate_case_names": [
+      [],
+      [],
+      []
+    ],
+    "all_29_own_and_5_nested_members_reviewed": true,
+    "all_12_nullable_null_vs_missing_and_explicit_empty_arrays": true,
+    "unknown_valid_select_strings_and_raw_text_CRLF_null_empty_arrays_order_duplicates": true,
+    "timestamps_1_to_7_fraction_Z_positive_negative_offsets_exact_UTCticks": true,
+    "four_token_carriers_presence_and_exact_equality": true,
+    "Missing_Invalid_tokens_real_MVC400_zero_APIupdates_direct_storewrites_replacecalls_full_equality": true,
+    "shape_forced_valid_submit_zero_APIupdates_direct_storewrites_replacecalls_full_equality": true,
+    "optional_string_clear_nonempty_and_DateOnly_clear_null_newday": true,
+    "bounded4_awaitall_perid_metrics_no_payload_token_receipt_repair": true,
+    "raw_token_JWT_values_not_logged": true,
+    "FE_two_store_runtime_claim": false
+  },
+  "guard_evidence": {
+    "author_raw_manifest_SHA256": "7429b906455d54150a97eaad50984dd1654f44091b5350018963fcb14d4706eb",
+    "author_handoff_SHA256": "b1bf5998b5c7f2dec9ddbad9e3273cc1efd77c9b3acfc6ad4744d662cd362098",
+    "author_raw_files_independently_hash_checked": 2430,
+    "author_raw_bytes_checked": 1580346719,
+    "author_pairs_semantically_and_raw_verified": 30,
+    "author_pair_groups": "18 production-JS/Vitest +10 compiled C# +2 actual connected browser token boundaries",
+    "own_separate_compiled_pairs": 11,
+    "own_pairs": [
+      {
+        "guard": "browser-header",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "b9de24981e0c84749f034ec751ac5f44c67d413141a46469e1e9aec4aeb4372d",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "0eed9e6e48519c0d65215c3fd1c1770139d6a0c3734fb2e2d471080733fbf8be",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "a3dbd8b150193a2b39a62fa43a2d6a78f6cf427cbe8ea16b54ef40ad13965fc6",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "Browser request token header differs from Razor."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "fe9213b976ea9e396d32a22178ed110713b1c1e84b2ffe7c56a0f4b59875db55",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "browser-member",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "37623c768cdbc8a8c0b04940aee04cf3892b076dce7e2fc910de46290b74b628",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "a56c739add826b9b4d1f57258ec7705bc33b442ccfd5e0d194ec475a84b56325",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "ab9c3488e51000a4a5d25b9addbce3a918bc99a7a29217fe69a5008742660884",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "Browser form token member differs from Razor."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "e02704871e76aea2d70bf2312d55ac1db6f78e63ee85b3325c82156d255b4869",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "mvc-header",
+        "single_patch_path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+        "patch_sha256": "7bc7db0f563bb3d1922334304b05a7f85d5152748069e49f7dcf1b38f7850b8a",
+        "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "mutant_source_sha256": "07b292c59e4cb57386a4357f7353408a6109a7edde4bd61f68a54f2814453f4d",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "07b292c59e4cb57386a4357f7353408a6109a7edde4bd61f68a54f2814453f4d",
+        "actual_red_test_DLL_sha256": "ca9b057a4b5c8ca54fa4ddc6d23c12f69e0a43619080cd038e5c5e82a372469c",
+        "red_TRX_sha256": "7ee339b8a28e370ecf4693150e23a2508bca26154cfd7da28417f4cd651373c4",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "MVC request token header differs from Razor."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "669875301fb3fa9de181262e101ea4d9effb227e199e01202dd2efcdab4f4f4c",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "mvc-member",
+        "single_patch_path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+        "patch_sha256": "f3ec4ab029c1d4463cddd14935d0b63108ef3c3aa2f53c0218bfe666eeeac515",
+        "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "mutant_source_sha256": "00467d4865598504d621f8e0a49aaff4bebc7287721529d27a1b32a93a4d0f30",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "00467d4865598504d621f8e0a49aaff4bebc7287721529d27a1b32a93a4d0f30",
+        "actual_red_test_DLL_sha256": "fa87b910899c205706b81f90a2a7c3bc8995b9a58a752376d11e29a746d0a4bd",
+        "red_TRX_sha256": "362e70404ce070d5f0ac1f2bfb673e7daae93bedfbc749f20afec94d9a3a7393",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "MVC form token member differs from Razor."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "fb30a5692ab96e6a3f1cea6e3ccadea2e62626e53c156f4b881d3ebacbe94871",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "repair-invalid-tokens",
+        "single_patch_path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+        "patch_sha256": "177b6f19e379ae6cc3a7e9e51ddf393686f9905e883997d45ab5a12b40a37e73",
+        "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "mutant_source_sha256": "b5646dda823d1bad9ca47a588b2a3c57fd5950ebceca07eb798ee244550dba48",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "b5646dda823d1bad9ca47a588b2a3c57fd5950ebceca07eb798ee244550dba48",
+        "actual_red_test_DLL_sha256": "6c410c5d7e10044b9cea56711f7b5693483e02e61ec8dccbdeb81fd094c2643d",
+        "red_TRX_sha256": "6494737fff1ee9027e51c97e47e209d54064e68b58f24f4bcbd60d7138559908",
+        "red_actual_exit": 1,
+        "red_failed_cases": 2,
+        "red_failure_messages": [
+          "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200",
+          "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200"
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "9ee259a8e005a37cfa39bb4469a2d5951f4be62221ed9924f0dd2ee4b0e99881",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"InvalidToken\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"MissingToken\")"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "missing-receipt",
+        "single_patch_path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+        "patch_sha256": "4eb19e5fed0d14b23687399d8c2f24bf1b0da6f963a74d47761190962b2ca3ab",
+        "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "mutant_source_sha256": "7ee11a57600e3cfdaf9b5bc127fe30c5d026a43db201c0ada66e3f5ab43f436c",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "7ee11a57600e3cfdaf9b5bc127fe30c5d026a43db201c0ada66e3f5ab43f436c",
+        "actual_red_test_DLL_sha256": "36109e2c4aaec5bfe295097b906e512d6b99aab92f740aee8706e3e12754a81a",
+        "red_TRX_sha256": "0b51b9c00848392414a5cc8f08695fa67ca784f890282e2ab7b7435b575c30ea",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure)"
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "f1a06e4c50f96db7c9adc715e24d94e5b03da6e0339bce96d7791f844e9a1390",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingReceipt\")"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "canned-200-no-update-leg",
+        "single_patch_path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+        "patch_sha256": "8eee27471221f75659214a18577b91c4348641e9ab20892fe70d88908e7ff1ae",
+        "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "mutant_source_sha256": "ee4e7b2e59b2666e7fd08151a24b0bb72dd9d39b38679c3151f4025a0d5d393a",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "ee4e7b2e59b2666e7fd08151a24b0bb72dd9d39b38679c3151f4025a0d5d393a",
+        "actual_red_test_DLL_sha256": "4f9fd6775b7ef18c4d543fc81912dea430b3cb5f4585df32fdab8fd5a0643730",
+        "red_TRX_sha256": "b02cad625411025fea86c947b45f935b186cf25917f6a84ca299f251dfde7692",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure : SuppressUpdate"
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "139e5562b409eb24d93e1eba874f201d85b2adfa164deeecf890de9a2360cd9b",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "received-ticks",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "8ad4722d85767d6f22c4ab10ba4e34bbb6913b0592d05d335cbb0e83e69d8cee",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "7eee0b11efa6023c70e21886ec60720fba830c68b166cfbdb67e6e64893dabbf",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "89fe74cf737f3c790b81f62af595b37a2e1295b3cce250a281461897168e91b4",
+        "red_actual_exit": 1,
+        "red_failed_cases": 4,
+        "red_failure_messages": [
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "3a2c7e077d146b3eb65ff64dab2af91ee5fa21c4459ee9efffe1743fde94855e",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-mixed-offsets\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks--0400\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks-Z\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks-+0530\")"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "awareness-ticks",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "c8c8eada64345209a29b8d1925a8b6182215562f6e5539f6fcc1c62d3666053b",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "476ee57589d9e2ebb8b3138ebdc7d9a7c0d534aefeefb66ed82b7cc7c635b659",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "e399ab4acc0d80efd5aa900acb4215b983b6f0023edef4f4a430960529b95ed7",
+        "red_actual_exit": 1,
+        "red_failed_cases": 4,
+        "red_failure_messages": [
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status.",
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "18d01598192e68d3c08f4a9d382125af9ecbf5643f47405b0c756bf1dfec3b31",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks-+0530\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks-Z\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-seven-ticks--0400\")",
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_preserves_subsecond_received_and_awareness_instants(caseName: \"timestamp-mixed-offsets\")"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "filter-null-evidence",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "31987853ecef6996699f764fa7c33842b696ae1dc1ceb5e1aa5f2ea8d97e5c02",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "7db83bf009645d0cba1b42593832ff1c039cecdc2b58f9c2bd244f3c53c5a32f",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "3188dbdfe3d6559d4c8741f2b2ac14de27af4968deeab4a7283884064ae43d81",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "6e6763afc8abd115f47b534fb97a5f24e868e7a0ce5a798de8937c979d470061",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Mvc_update_preserves_untouched_stored_text_and_reference_sequence"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      },
+      {
+        "guard": "date-clear",
+        "single_patch_path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+        "patch_sha256": "4e8cc83dadbffeeda31c21350c741c1883ecbe7087e20e75a678ef121e55c78f",
+        "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+        "mutant_source_sha256": "f82f3ccbe5348b20a42cc4d69fe6a9e5d82d63c00a4ac172169d86038561b39a",
+        "baseline_final_test_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "actual_red_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "red_TRX_sha256": "7a5fc1b4846eedcf0b8568b170190f59369af0e780c25720f7c9fb7ed6b59bbe",
+        "red_actual_exit": 1,
+        "red_failed_cases": 1,
+        "red_failure_messages": [
+          "Assert.Equal() Failure: Values differ\r\nExpected: 200\r\nActual:   502"
+        ],
+        "restored_green_test_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+        "restored_green_test_DLL_sha256": "cdc7a80ff3d2db491293c864c2f52b7a080fc5af73ef8329c1922cd2b6f63c9e",
+        "restored_green_TRX_sha256": "b93c256e184b8ea58e0131930f7a64bdd84d90202410de68677eb64d2ca373ad",
+        "restored_green_actual_exit": 0,
+        "restored_case_names": [
+          "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Edit_round_trip_clears_only_the_optional_field_the_user_emptied(field: \"EventOnsetDate\")"
+        ],
+        "evidence_root": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-neg-02/37054539b3274f29af10421572de9920/evidence"
+      }
+    ],
+    "proof_qualification": "C# fault-injection actual source/DLL hashes differ from final baseline0aa and are labelled separately. Combined dotnet test exit1 proves completed build phase/DLL/real TRX assertion or declared guard failure; no separate unexecuted build exit0 invented. Canned actual200 without the update leg failed declared BrowserFailure.SuppressUpdate, not an xUnit assertion. Own source-after hashes verify bytes unchanged; timestamp fields remain the source-before capture, no separate postmtime claim."
+  },
+  "cleanup": {
+    "normal_complete_success": true,
+    "normal_Jobs_empty_unforced": 110,
+    "repeat_Jobs_empty_unforced": 54,
+    "successful_phase_forced_Job_terminations": 0,
+    "actual_backend_Mongo_processes": 5,
+    "all_original_PID_birth_handles_exited_ports_closed_own_data_removed": true,
+    "ACL_own_roots_and_private_fixture_roots_remaining": [],
+    "normal_26600_source_bytes_and_worker_bytes_index_HEAD_unchanged": true,
+    "repeat_all_26600_source_bytes_restored": true,
+    "both_private_dependency_copies_posthash_unchanged": true,
+    "original_worker_source_ref_index_writes": 0,
+    "product_fixes_by_verifier": 0
+  },
+  "resolved_findings": [
+    {
+      "id": "STATIC-01",
+      "issue": "Optional EventOnsetDate user-clear sent empty string",
+      "actual_repro_status": 502,
+      "initial_400": "Historical source hypothesis only, not claimed as actual",
+      "closure": "Final update-local JS sends null; author actual2 datechains and own revert RED502→restoredGREEN200/storeNULL/all-other-values unchanged",
+      "status": "closed_on_exact_C"
+    },
+    {
+      "id": "UTC-range",
+      "issue": "Finite JS instants could overflow DateTimeOffset representable UTC years",
+      "closure": "Validation-only UTCyear1..9999 plus actualJS boundary positives/two forced-submit negatives; no raw timestamp replacement or new business-date restriction",
+      "status": "closed_on_exact_C"
+    }
+  ],
+  "historical_setups": {
+    "own_attempts": "INDEPENDENT-SETUP-ATTEMPTS.json@0f1cfe704507124ebc3e4ce807ac3a0853c5be6119b05768262aeacba6cdfb92",
+    "classification": "Archive core.autocrlf rawOID rejection before tests; then deep private-path Windows compiler Process.Start error before API tests. Preserved failures, never product RED/PASS. Fixed only canonical archive command and short owned TEMP; guards unchanged.",
+    "author_history": "Old forced bootstrap, old capture freshnessfalse and API no-op/noTRX attempt are preserved and excluded. Genuine final author old-product RED binds final0aa/87d2; five JS selected and one C# real assertion failed; unselected34 JS are not final-suite skips."
+  },
+  "evidence_records": {
+    "postcheck": "FINAL-POSTCHECK.json@b779c287eed7fd30a067ab37841a6b2ff1ea3ca3a9f08961e471d203f4123b2c",
+    "author_proof": "AUTHOR-PROOF-CHECK.json@f0c7421102c7f7de4d2599e7176d4add4046733ec57305ddbe126b31a818f1c6",
+    "author_oldRED": "AUTHOR-OLD-RED-CHECK.json@96076102f16caf0cdd17cd7a488af562b66dead8ee9f1b2dde7ea7197134d93e",
+    "author_backend_reuse": "AUTHOR-BACKEND-REUSE-CHECK.json@a08aeaaa7546d92bf62babdab7c2c6d64351285bfeaaded7694ecfaf82aaf9fd",
+    "independent_raw_manifest": "INDEPENDENT-RAW-MANIFEST.json@41bf224c6ff26b8ab4f3e798cd6ac20cb3aad7f51fb115516cc0c9109f861e8c",
+    "independent_indexed_files": 898,
+    "independent_indexed_bytes": 2453577973
+  },
+  "limits": [
+    "Technical E2 review only, no CT ACCEPTED or WP DONE decision",
+    "FE connected store measured InMemory; backend full API separately includes35 actual Mongo tests",
+    "Actual final integrated-source full Web/architecture and Linux service-tests/Phase1 CI remain CT closure work; not claimed here",
+    "No E4/live/operational approval, push/PR/main merge or worktree archive performed or authorized by this review",
+    "Any changed product source/test hash or candidate invalidates this exact-source conclusion"
+  ]
+}

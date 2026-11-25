@@ -1,0 +1,16 @@
+{
+  "tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "bound_commit": "fee7d0132e3862ded7025465e311f263e068f7aa",
+  "worker_head_now": "fee7d0132e3862ded7025465e311f263e068f7aa",
+  "index_equals_tree": true,
+  "unstaged_diff": false,
+  "frozen_source_files_unchanged": 26190,
+  "worker_raw_sources_unchanged": true,
+  "normal_395_passed": true,
+  "mongo_35_passed": true,
+  "targets_3_passed": true,
+  "producer_exit": 0,
+  "normal_invocations": 1,
+  "independent_G5_G6_RED_GREEN": true,
+  "unix_runtime_not_measured": true
+}

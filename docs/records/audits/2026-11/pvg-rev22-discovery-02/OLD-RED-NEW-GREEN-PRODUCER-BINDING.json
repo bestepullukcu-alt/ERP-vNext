@@ -1,0 +1,21 @@
+{
+  "kind": "Actual unmodified production report_contract comparison; naturally failing original vs fresh canonical producer; not full dispatch0",
+  "records": [
+    {
+      "report": "docs/records/audits/2026-11/pvg-rev22-discovery-01/DISCOVERY.txt",
+      "embedded_sha256": "5e17d72f0696e918089225db0d565364a82f44b7abb302eb44ae4ff511e94fff",
+      "integrity_valid": true,
+      "production_report_contract_problems": [
+        "keşif: rapordaki araç sha256 ae87a56615f5 üretici commit'indeki aracın değil (72d27f77dcf4)"
+      ]
+    },
+    {
+      "report": "docs/records/audits/2026-11/pvg-rev22-discovery-02/DISCOVERY.txt",
+      "embedded_sha256": "0f52bf703e10a143af4d81ce895819c5de690e344e8a1a6e4d6ec558929463bb",
+      "integrity_valid": true,
+      "production_report_contract_problems": []
+    }
+  ],
+  "protected_script_changed": false,
+  "report_hash_manually_rewritten": false
+}

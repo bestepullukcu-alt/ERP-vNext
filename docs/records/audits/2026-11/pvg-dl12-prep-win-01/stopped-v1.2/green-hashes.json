@@ -1,0 +1,12 @@
+[
+  {
+    "Algorithm": "SHA256",
+    "Hash": "F8A91D03AB788143A62B2578F774D74C76B847E3A3FBB7A513F6EDF06A78B053",
+    "Path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-win\\ERP-vNext-git\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs"
+  },
+  {
+    "Algorithm": "SHA256",
+    "Hash": "763B3305F1207D7228E099437BABC87BAFB8140D43956B46B6AAF8933BBA068A",
+    "Path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-win\\ERP-vNext-git\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgPersistenceBoundaryScanTests.cs"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "success": false,
+  "source_ref": "ecbcecd9342759c5b3fc4ae0ea48ba2c44cd2aa2",
+  "acceptance_passed": false,
+  "baseline_emitted": false,
+  "error": "TimeoutError('descendant job not empty after payload exit')"
+}

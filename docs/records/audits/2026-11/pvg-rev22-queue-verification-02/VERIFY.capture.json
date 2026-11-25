@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "C:/Users/epenc/AppData/Local/Programs/Python/Python313/python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/run_record.py",
+    "verify",
+    "docs/records/audits/2026-11/pvg-rev22-queue-validation-02/run-record-v1.json"
+  ],
+  "exit": 0,
+  "stdout_sha256": "9910323caedb0ff96868b5714b8f5f770ddd79cbd9caea098c5af9e44b2bbac4",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "actual_queue_command_exit": 0,
+  "native_out_original_files_only": true
+}

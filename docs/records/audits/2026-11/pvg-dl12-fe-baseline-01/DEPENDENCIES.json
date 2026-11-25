@@ -1,0 +1,13 @@
+{
+  "lock_lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+  "node_binary_sha256": "247e9693d316da9857e44990e5e11709f596f18112251b8026ec6eed80bdf38a",
+  "dotnet_binary_sha256": "d20cc5cd62faf6a593a19149cb7b6ecd7d3ce7b06c19e6682767eb09e83ff6a2",
+  "mongo_binary_sha256": "4c77acf7b6dadc4222a00239bda820ad74e8ff7382e1069fd1e150a522ad5003",
+  "external_node_modules": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git\\frontend\\Diten.Web\\node_modules",
+  "versions": {
+    "vitest": "2.1.9",
+    "jsdom": "26.1.0"
+  },
+  "nuget_cache": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-kanıt\\WP-0230-DL12-PREP-WEB-1795176414809\\nuget",
+  "note": "No npm install; existing libraries read only. Lock parity/version recording alone is not complete dependency integrity."
+}

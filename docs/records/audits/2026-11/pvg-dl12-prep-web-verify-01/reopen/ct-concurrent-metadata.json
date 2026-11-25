@@ -1,0 +1,10 @@
+{
+  "first_reviewed_head": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+  "actual_cli_head": "dfa4df19de00428700285baee2abc52d0f481297",
+  "changed_paths_between": [
+    "docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/REOPEN-STATE-JOURNAL.md",
+    "execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv",
+    "execution/domains/pharmacovigilance/work-packs/CT-TRACKING.md"
+  ],
+  "product_code_paths_changed": []
+}

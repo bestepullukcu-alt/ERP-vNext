@@ -1,0 +1,13 @@
+# Windows v2.0 talimatı — CT inceleme karşılığı
+
+2026-11-20. Kesin başlangıç: managed r2 dalı feature/pvg/mod-0230-dl12-prep-win-r2,3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a; root ve işçi salt okunur fiilen temizliği ölçtü. Registry7dbdfd4 CTa1c0a33f ile entegre, gerçek birleşik validate/check0. Eski dirty WIN ağacı ve iki ham hash değişmedi; WIP-CHAIN kaydı korunur.
+
+Normal HIGH ürün promptu v2.0 raw LF SHA2f02a2c1f462f1f09d9faa409a636d28ed3e3868082782cbd7b51e740f56f442; gerçek pack komutu0,38 kaynak digest3f94813e3a164e12bfda7fbbdef884fd6b66daf5e1c102c097f22b6ff5d740ff. İlk sandbox pack ExpectedHEAD yok dedi; gerçek sorun dar Git erişimiydi, aynı komut escalation ile0 verdi. Bu ölçüm kaynak bulma/izin, dağıtım izni değil.
+
+Bağımsız pvg_rev20_final_heading_review UYGUN, kritik0/engelleyici0; altı zorunlu sözleşme/dosya/onay/kabul/durma/risk kontrolü mevcut. İstenen model gpt-6.2-astra/high; gerçekruntime kimliği doğrulanamıyor. Ham rapor5351bayt LF, SHA6a174a5aa0620d23ec084dbfe1eb2c45a7c867280bf3dad216cacad594eaa7eb. İnceleyenin privateTemp kaynağı sonraki araç çağrısında görünmedi; aynı inceleyen kendi ilk ham metninden byte-eşit dosyayı publicTemp altında yeniden oluşturdu, önce/sonra boyut/hash eşitliği ölçtü. Root public dosyayı aynı hashle birebir kopyaladı; görüşü değiştirmedi.
+
+Root gerçek `python -B scripts/prompt_gate.py review-check <WIN-v2.0-prompt> <PROMPT-REVIEW-DL12-PREP-WIN-v2.0.md>` çalıştırdı: çıkış0; prompt/sourcehash eşleşti, kaydın kendi kuralları geçti. CT kaynak karşılaştırmasıyla görüşü kabul eder: onaylı üç test yolu, üçüncü dosyada tek gövde, donmuşpatch, özgünACL finally, gerçekUA/scanner/pozitifler,395/35/3target,6grup7derlenenmutant, helper’ın bağımsız kanıtlamadığı sınırlar ve finalUnixkaynakbağı doğru. Bu kaynak incelemesidir, runtime/ACL/test başarısı değil.
+
+Normal `check --queue pvg --review yol@commit` ayrıca çalışıp0 vermeden işçi başlamaz. Yeni insan kararı istenmez: doğrudan rev20onayı ve ek-kapsamonayı bu dar rev21 kapsamını zaten yetkilendirmiştir. Push/PR/main merge/operasyon kapalı; final kesinSHA onayı ve bağımsız insan merge kapısı korunur.
+
+Web aday15791333 bağımsız yeniden UYGUN sonrası CTmerge788047137bdc3d127771434608d28b8f205611a6 ile üç kaynak yolunda birleşti; taze external788 snapshotında gerçek62normaltest henüz devam ediyor. INTEGRATION_READY, sonuç gelmeden INTEGRATED iddiası yok. Windows worker başlangıcı3b5 olarak sabittir; Web test/CI kaynakları WIN ürün yazma kapsamına dahil değildir. Ana DL12 iki PREP entegrasyonunu beklediği için BLOCKED kalır; teknik bağımlılık, yeni sahip onayı eksikliği değildir.

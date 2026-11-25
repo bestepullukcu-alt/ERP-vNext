@@ -1,0 +1,10 @@
+{
+  "at_utc": "2026-11-20T21:54:13.409537+00:00",
+  "source_head": "ecbcecd9342759c5b3fc4ae0ea48ba2c44cd2aa2",
+  "corpus_sha256": "003eb12bd41eb6f7028accaed82a76e070862d4fa7678652e73ab3ba139a9adc",
+  "embedded_wire_hashes_checked": 241,
+  "unique_cases": 47,
+  "first_gets29members": 94,
+  "proposal_disposition": "CT accepts corpus as real API feasibility/connected replay material, no FE acceptance.47 payloads are coverage within normative categories, reporting may parameterize without pruning. Exact source/DLL bound to BE67 already merged. Four framework assembly differences remain explicit.",
+  "publication_or_operational_authority": false
+}

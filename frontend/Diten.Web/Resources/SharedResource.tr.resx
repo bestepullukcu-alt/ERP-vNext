@@ -1279,6 +1279,8 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Güvenlik Stoğu Optimizasyonu</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Talep Planlama</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Farmakovijilans</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Vaka Girişi ve Triyaj</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
     <value>Depo Operasyonları</value>
   </data>
@@ -1347,5 +1349,17 @@
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Dalga Planlama</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Vaka Girişi ve Triyaj</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Giriş Taslağı Oluştur</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Giriş Taslağını Güncelle</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Giriş Taslağı Ayrıntıları</value>
   </data>
 </root>

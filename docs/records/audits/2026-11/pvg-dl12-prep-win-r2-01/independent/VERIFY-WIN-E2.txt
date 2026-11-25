@@ -1,0 +1,45 @@
+UYGUN / WIN BAGIMSIZ E2 PASS
+WP-0230-DL12-PREP-WIN v2.0; inceleyen /root/pvg_dl12_prep_web_verify
+Model: verilemiyor (istenen gpt-6.2-astra); effort: verilemiyor (istenen high).
+Kaynak TREE: addfabdae2d2a0e415b4ce77383bbc806ca9f59a
+Bagli commit: fee7d0132e3862ded7025465e311f263e068f7aa; parent: 3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a
+Worker son HEAD ayni, status temiz; commit tree esitligi yeniden olculdu. CT metadata eszamanli ilerledi; CT global temiz/degismez iddiasi yok.
+
+Normal: actual compile/run exit0; 395/395 Passed,0 Failed,0 Skipped;35 real Mongo ve3 named target Passed.
+Gercek strict skip CLI0; producer suite=pvg-api skip CLI0; known_failures check --suite pvg-api0; degismemis CT producer0 acceptance_passed=true.
+Yeni real Git context normal kosu sayisi1. Ilk fiziksel .git eksikligiyle394/1 RED korunur; altyapi duzeltmesi dis scratch genuine .git init + read-only alternates + kendi HEAD/ref/index. Bos/sahte .git marker kullanilmadi.
+Scratch longpaths/alternates ve runner preflight hatalari test oncesi kaydedilip yalniz kendi altyapisinda duzeltildi; normal test tekrar edilmedi.
+Kendi index raw byte hashleri cache/stat nedeniyle farkli; index-semantic-binding.json cached/tree/working/ls-files esitligini kanitlar. Gercek worker index once/sonra f367417ed240f89844f81df70210579743e0e7bfda0a401f7c33620826544c30; gercek repo index/ref yazimi yapilmadi.
+
+Scope: tam3test kaynagi. Ucuncu dosyada yalniz Configuration_scan_fails_closed_on_inaccessible_directory govdesi; Unix SetUnixFileMode cagrilari/assertionlar ve dis govde byte esit.
+Windows ACL: private GUID fixture root/ancestor reparse kontrolu, current SID only ListDirectory deny, immutable SDDL once capture, actual enumeration+actual scanner UnauthorizedAccessException, finally exact SDDL restore ve positive accessibility, fixture absence assertions.
+Kaynak oncesi/sonrasi26190 dosya rehash ayni; worker3 raw SHA ayni. Related production API/application/store hashes source-before.json ve full manifestte. WIP chain raw/LF ayni.
+
+G5 deny apply removed: compile0, actual assertionRED exit1 line1900; restored original compile0/targetGREEN exit0.
+G6 IgnoreInaccessible false->true: compile0, actual assertionRED exit1 line1901; deny precondition korunmus; restored original compile0/targetGREEN exit0.
+Her RED tek assertion failure, compile failure degil. Original normal-src byte degismedi.
+Diger5 worker mutant: G1/G2/G3a/G3b/G4 exactsinglemutation/source+assemblyhash/build0/assertionRED1/originalnormalGREEN bagi 13650 kaynak satiri dosyasi karsilastirmasiyla incelendi; yeniden kosu degil.
+
+Temizlik: own5Mongo PID11328,17764,22832,34432,35492 bitti; own5 port kapali/datadir yok; normal/G5/G6 ACLfixture0.
+Kendi build parent/time/exe bagi olculen3MSBuild node20592,28792,36820 temizlendi; final live observed ownPID0. Topic-wide kill yapilmadi.
+Ilk sandbox CIM olcumu reddedildi; dar salt-okunur elevated actual query ile tekrar olculdu, final-cleanup.json bunu aciklar.
+
+TRX rawSHA256 9dc3a313ae15dcbb7ddd5c61d44a6d51b2b948317c73a38cc4d07f98e14b27a6
+TRX LFSHA256 dd643e18882df811415d350c6b1a13d8afcf6944cfad996e2ede17f544420841
+Fresh assembly SHA256 17ebfce1533925ab3ea31029b1f8afabbcb93c49d9e7f66b9e363e9b92de1549; all395 storage bound; mtime after fresh compile start and before TRX start.
+Fullsnapshot manifest SHA256 4e32e35f924aba65744024c0152a51f12f072dc32dd3565cf5f93e5bb86637e1
+Producer LFSHA256 f4e386487608e06a13ffd520ebaab9a81102af86d42c1758dce279d20c982d5d
+E2-summary.json SHA256 285440048621fc5410f6b9b4fc6c43825a4d79630f0c7446b1a62c6f1a772067
+
+ACTUAL normal argv (JSON exact):
+["C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe", "test", "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj", "-c", "Debug", "--no-restore", "--logger", "trx;LogFileName=win-independent.trx", "--results-directory", "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887"]
+cwd: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\i2-1795201003887\normal-src
+exit:0; seconds:46.295
+Tum restore/build/test/guard/producer argv,PID,exit,logSHA: actual-commands.json ve E2-summary.json; process-local SDK/certfalse/TEMP/TMP/NugetCache runner dosyalarinda. Globalconfig/feed/profile/gercek uygulama degismedi.
+Offline restore --source kendi bos localfeed --ignore-failed-sources -p:NuGetAudit=false; paketler mevcut packageFolders cache. csproj/nugetconfig/feed dosyasina edit yok.
+
+Acik engelleyici:0; kritik:0. Giderilen altyapi RED saklidir.
+Sinirlar: Windows candidate PREP E2; Linux/runtime/live/E4/CTINTEGRATED/fullfeature/data-loss acceptance veya dagitim izni degil. Unix runtime olculmedi. ReporterContact/Evidence no-loss/complete-detail mainDL12de acik kalir.
+Kaniti okuma koku: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\i2-1795201003887
+Onceki RED korunmus: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\i2-1795201003887\prior-failed-normal
+Gercek raw tum dizin dosya hashleri evidence-manifest.json.

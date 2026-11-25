@@ -1,0 +1,7 @@
+{
+  "kind": "Actual unmodified prompt_gate.report_contract result before full rerun; not normaldispatch",
+  "report_sha256": "0f52bf703e10a143af4d81ce895819c5de690e344e8a1a6e4d6ec558929463bb",
+  "report_raw_sha256": "d922c1e9cf39ed2662db1821e9ac5edb0745134f8683bdeff95f3e6ecc165079",
+  "problems": [],
+  "producer_git_source_hash": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f"
+}

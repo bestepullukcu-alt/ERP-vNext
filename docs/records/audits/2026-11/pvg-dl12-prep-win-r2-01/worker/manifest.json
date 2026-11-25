@@ -1,0 +1,313 @@
+{
+  "wp": "WP-0230-DL12-PREP-WIN",
+  "version": "2.0",
+  "model": "gpt-6.2-astra",
+  "effort": "not independently visible",
+  "base": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+  "commit": null,
+  "head": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+  "staged_tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "branch": "feature/pvg/mod-0230-dl12-prep-win-r2",
+  "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-win-r2\\ERP-vNext-git",
+  "status": "three verified files staged; commit blocked by automatic approval review",
+  "sources": [
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+      "raw_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "lf_sha256": "6981496b72735be360ed41e45771faae9a3c99f41ba10c49bcfe37a499d6eea7",
+      "mtime_ns": 1795199498933920700
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+      "raw_sha256": "763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a",
+      "lf_sha256": "f1dd99c82066961d4d16b59740e6e0f3a9b8b46cf880db61a44f0b9d1a925ac0",
+      "mtime_ns": 1795199498935426700
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+      "raw_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+      "lf_sha256": "816eb80ade69d4823570cdb0574fa082ba906ee5bb8b868e6b559677dd856e83",
+      "mtime_ns": 1795199520720946000
+    }
+  ],
+  "normalTRX": "259115c0c5503edf40a3088f9d8a26bd1d70f8f249f7e9ba1646ba567d72ead6",
+  "counters": {
+    "total": "395",
+    "executed": "395",
+    "passed": "395",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "mongo": {
+    "Store": 19,
+    "Api": 10,
+    "Dedicated": 6
+  },
+  "targets": {
+    "Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation": [
+      {
+        "executionId": "e96a9a2e-3425-42ad-9d43-eae1424b3f5d",
+        "testId": "57470346-841a-1c5f-f9ec-222a3c997c70",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0196622",
+        "startTime": "2026-11-20T22:33:09.9790634+04:00",
+        "endTime": "2026-11-20T22:33:09.9791071+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "e96a9a2e-3425-42ad-9d43-eae1424b3f5d"
+      }
+    ],
+    "Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod": [
+      {
+        "executionId": "7478fb33-76a3-4238-baee-122aa41827c3",
+        "testId": "4be9aab4-455d-006a-d6a1-07e098debe6b",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0041284",
+        "startTime": "2026-11-20T22:33:10.0006389+04:00",
+        "endTime": "2026-11-20T22:33:10.0006390+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "7478fb33-76a3-4238-baee-122aa41827c3"
+      }
+    ],
+    "Configuration_scan_fails_closed_on_inaccessible_directory": [
+      {
+        "executionId": "90f47ae4-96e2-42eb-b2b9-cbada38bce3e",
+        "testId": "988b1eae-c9e1-373d-774e-d86ebb267047",
+        "testName": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0156364",
+        "startTime": "2026-11-20T22:33:13.9695020+04:00",
+        "endTime": "2026-11-20T22:33:13.9695026+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "90f47ae4-96e2-42eb-b2b9-cbada38bce3e"
+      }
+    ]
+  },
+  "assembly": {
+    "path": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-win-r2\\ERP-vNext-git\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll",
+    "sha256": "34d81cda8e6e8c3ac4f365092ae659bd1ae660d3aaca4f13f0de7e2741ffa60b",
+    "mtime_ns": 1795199587785166300,
+    "newer_than_sources": true
+  },
+  "freshness": {
+    "start": "2026-11-20T22:33:08.6013944+04:00",
+    "finish": "2026-11-20T22:33:42.3734947+04:00",
+    "started_after_compiled_assembly": true
+  },
+  "processes": [
+    {
+      "pid": 32772,
+      "creation": "2026-11-20T22:33:19.935812+04:00",
+      "port": "55760",
+      "data": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal\\tmp\\diten-pvg-intake-mongo-e9541a1609654a21879f512bfc205fb6\\data",
+      "loopback": true,
+      "replica": true,
+      "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "dataPresent": true,
+      "exited": true,
+      "removed": true
+    },
+    {
+      "pid": 13900,
+      "creation": "2026-11-20T22:33:38.960685+04:00",
+      "port": "60197",
+      "data": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal\\tmp\\diten-pvg-intake-mongo-2508daa74d8140909264e0b82d7ca1e4\\data",
+      "loopback": true,
+      "replica": true,
+      "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "dataPresent": true,
+      "exited": true,
+      "removed": true
+    },
+    {
+      "pid": 23156,
+      "creation": "2026-11-20T22:33:30.601811+04:00",
+      "port": "60169",
+      "data": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal\\tmp\\diten-pvg-intake-mongo-7d9a92f68aa8447e940045a5d24c8295\\data",
+      "loopback": true,
+      "replica": true,
+      "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "dataPresent": true,
+      "exited": true,
+      "removed": true
+    },
+    {
+      "pid": 27812,
+      "creation": "2026-11-20T22:33:10.075369+04:00",
+      "port": "59784",
+      "data": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal\\tmp\\diten-pvg-intake-mongo-378f2aea20a745e09d387c6a253e0408\\data",
+      "loopback": true,
+      "replica": true,
+      "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "dataPresent": true,
+      "exited": true,
+      "removed": true
+    },
+    {
+      "pid": 36036,
+      "creation": "2026-11-20T22:33:23.281869+04:00",
+      "port": "60145",
+      "data": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal\\tmp\\diten-pvg-intake-mongo-f8137038428a415d900892bda7fdfa97\\data",
+      "loopback": true,
+      "replica": false,
+      "binary": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+      "dataPresent": true,
+      "exited": true,
+      "removed": true
+    }
+  ],
+  "mutant_summary": [
+    {
+      "group": "G1",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+      "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "mutant_sha256": "4fb78c9c94c63abcf0991ded1f25b42b1afd0d4b5b41e852100857048800e615",
+      "line": 207,
+      "assertion": "Assert.DoesNotContain(\"--nounixsocket\", windowsArguments);",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "4b04018806d6171c7be8942133cfab8c2aabb6b60352a94f5c50a14aac8df115",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G2",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+      "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "mutant_sha256": "3e30514b6a8ca5f049bb2e695a5b394202171cf6749674aee7eef76a44a8b33f",
+      "line": 208,
+      "assertion": "Assert.Contains(\"--nounixsocket\", unixArguments);",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "d7a85d410a3dd5e28ebc13e7a76e0f7e1389b3155dd0b68f201dc6d9e08299a5",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G3a",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+      "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "mutant_sha256": "e40b41cd66f4534021515c18477228807885a32c1fdfbb788db3e22d5387d66c",
+      "line": 243,
+      "assertion": "Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(\"mongod\", _ => true));",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "f4e20f507dd7a8edeb35de98667ffde1446e2336975e67cf4fb7e81e13ce7e24",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G3b",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+      "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "mutant_sha256": "1fe35ef61471b9fb9ce1eec76e1f4cd4dd3bb41897a36c1cd3ebbf90e6574022",
+      "line": 246,
+      "assertion": "Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveBinary(missingBinary, _ => false));",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "b289b43aaeefb35c450e67f673f0aa8e881f155fb59d65a558b9361ff08276eb",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G4",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs",
+      "original_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "mutant_sha256": "ae3684eb77d2abc568e2ddc1103ee0adc32a3c8fbf361b928851ba3ad5859099",
+      "line": 233,
+      "assertion": "Assert.Throws<InvalidOperationException>(() => PvgMongoTestHarness.ResolveAddressPort(\"mongodb://127.0.0.1:27017\"));",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "ba0173e0a68591a328115ec6e092865d07445db2f6f90889ff843209b4b6119e",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G5",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\PvgServiceApiHostTests.cs",
+      "original_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+      "mutant_sha256": "9cc40ca02c67f15f38d364fb688bb9414e3b67ed368a2fc8dc7f7f371a8012dc",
+      "line": 1900,
+      "assertion": "Assert.Throws<UnauthorizedAccessException>(() => Directory.EnumerateFileSystemEntries(locked).ToArray());",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "2cb2f67195025660a871aaf1dba84d11a53262233933f7c9b959b38598d86be2",
+      "fixture_roots_left": 0
+    },
+    {
+      "group": "G6",
+      "source": "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\PvgServiceApiHostTests.cs",
+      "original_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+      "mutant_sha256": "86f5bca11ade634e3b7c97217ac3535dd9f866a08dd6c553d43e6656a36c706b",
+      "line": 1901,
+      "assertion": "var denied = Assert.Throws<UnauthorizedAccessException>(() => PvgConfigurationScanner.Scan(fixture.Root));",
+      "build_exit": 0,
+      "test_exit": 1,
+      "red_trx_sha256": "408567801887cd2e6945a2068825f0e94b6310f961594f17aa6f7c7c7b2f5ef6",
+      "fixture_roots_left": 0
+    }
+  ],
+  "files": {
+    "normal-capture.json": "9f2415cf890212148e3bac04040600835f45910f4ad1c38bdc57825b590ad46c",
+    "archive.json": "8c925c4e2df7af9d5a07e9820847fa94f571b903dd7f8d32393cd554826ab09f",
+    "measure-mutants.py": "ddbd99a0fa730e31bbc62ec3b2e7104e9297941d7eee7c8a5f723d8383a0fe1a",
+    "mutation-results.json": "f90242acb3d9782dd062d9eeb4992f4040e8dc1de8d6597d1454d4203d9d6e1a",
+    "normal/command.json": "10cab0105ef977d5710d873c621c3cc7705a58b2191426a6a7c502f54e8558f6",
+    "normal/processes.json": "52d4338e4c12e97db8d33ad2e5a18b3d5df53d176da0602ccbb580100d26ea08",
+    "normal/exit.txt": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+    "normal/stdout.txt": "9fe5dbcb71308366e9ae9ff2847b5bf5349f1fe4ad3b6705f42ddf10bb665551",
+    "normal/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normal/pvg-prep-win-r2-api.trx": "259115c0c5503edf40a3088f9d8a26bd1d70f8f249f7e9ba1646ba567d72ead6",
+    "G1/mutation.diff": "7d96c445442e7a79a87ca03e4517e49daf6d3b379968f7879672e69853a1ae83",
+    "G1/result.json": "9ee0716b2b6695b8c5603e5311d4ef1f7849d1a00530ed5a1dd8cf1749983853",
+    "G1/build.log": "9c850771839047d94ce507cf7ba67ed72e09b94045e52cb94bc4a2c87d2719a8",
+    "G1/test.log": "5d031a7695a11f7694485d95644546a064e630d111ba694dd2f878d2e44511b8",
+    "G1/mutant.trx": "4b04018806d6171c7be8942133cfab8c2aabb6b60352a94f5c50a14aac8df115",
+    "G2/mutation.diff": "17286234a245b6000cff7be64b424798e4443c7a1f443ab74ce51c1d59c8dd5a",
+    "G2/result.json": "1faf52eb9d4bd45da27bf23932eb3fa5d6792418f295500e1da11b08bbfdecb8",
+    "G2/build.log": "ea52f31e9ec3a01e0cc19a2c228f765bf58a787082216f00f1ce65ab2ec76e91",
+    "G2/test.log": "0ba79434fabc92f475954df13ff3a4b27e2d04e6cae7a28cf94145215da5959d",
+    "G2/mutant.trx": "d7a85d410a3dd5e28ebc13e7a76e0f7e1389b3155dd0b68f201dc6d9e08299a5",
+    "G3a/mutation.diff": "fa9caf62573ee4216e29a7f004ca5497a2a6e657dc31ef12319aac638490911e",
+    "G3a/result.json": "ffaf22f5464f86cc87606224562d0e34d8a907a561c2cf88d140bc0f07861ca5",
+    "G3a/build.log": "d133014769d99989b8cdb9e922a2bd06480eccd2dbfabd72633782c5e5f119d1",
+    "G3a/test.log": "8945362235b95ebbe8281dc8f6e722a9874be7140822fe89c1695c6d426a2aa6",
+    "G3a/mutant.trx": "f4e20f507dd7a8edeb35de98667ffde1446e2336975e67cf4fb7e81e13ce7e24",
+    "G3b/mutation.diff": "1aee6a060537351983981c55904884ebe780e6700ce6bff012fa7bea7e2ae225",
+    "G3b/result.json": "8efa7572c38899e7bc2b466a33baf7980a8fbb555df40a9555dab64e2e3ad06e",
+    "G3b/build.log": "5c214aa118ec18d7382df9b50b955daa883e5a7fdc81168ce86c6e7dbf7f9869",
+    "G3b/test.log": "afc46739961fdc2ac90f96e277d37dbcf5d339d8e4760db44205972dee4c9c5b",
+    "G3b/mutant.trx": "b289b43aaeefb35c450e67f673f0aa8e881f155fb59d65a558b9361ff08276eb",
+    "G4/mutation.diff": "172b5538191c5948de57f7243db8540b0e7724e4b2f71295d6131d672c18939a",
+    "G4/result.json": "d6697da072435fd413d8a3f39983e9aa09ff5bb3b4c9cd32b4b791ab6f79393e",
+    "G4/build.log": "0a182a7fb4600324a197e0ee998863cef13b51f26df32f3efd834c92502a1af5",
+    "G4/test.log": "6770aa8b4f3505ace5ffc34532f64aed653523f3e1f76aee99118fec15f487b3",
+    "G4/mutant.trx": "ba0173e0a68591a328115ec6e092865d07445db2f6f90889ff843209b4b6119e",
+    "G5/mutation.diff": "2d36d498d6f6c1d3088b75e159fc42d0c0e2ba9afd81c1fbea28ba48b15bda56",
+    "G5/result.json": "db7188bfd7642965992e0b73e7c20dcbd179bcd6e0ffb00a91fd0e7d64d72a61",
+    "G5/build.log": "6484882bc39d94ded3031d3eb6573be7b07af65801bae6ac7e50321d2fafe8a0",
+    "G5/test.log": "4f0c2ae312905670c6a86f4128309f3008879c7e68408f99a56e8a3c021f953f",
+    "G5/mutant.trx": "2cb2f67195025660a871aaf1dba84d11a53262233933f7c9b959b38598d86be2",
+    "G6/mutation.diff": "cc311559d29b834fb6933775321636ba9c7b13041fd5df493360c21178a345a7",
+    "G6/result.json": "d47005df438dc1960c5e8856b360d8907a78325aafcc3d1e3d85ff2f4703ef29",
+    "G6/build.log": "ea3aac3b18c6c1e791d2f381d88e503f8d8d754665e765a8e4923646ee60faf1",
+    "G6/test.log": "45e4e37116406226ea5197ef6bade30a9c56d321f4e015660bbab189a5b341ee",
+    "G6/mutant.trx": "408567801887cd2e6945a2068825f0e94b6310f961594f17aa6f7c7c7b2f5ef6"
+  },
+  "frozen_patch_sha256": "bd7ebf58ac4866fdba94729d0dfb29f688ec87e8a26d7cc80d1f7bbb9c50617f",
+  "unix_runtime": "pending final PR",
+  "independent_E2": "pending CT"
+}

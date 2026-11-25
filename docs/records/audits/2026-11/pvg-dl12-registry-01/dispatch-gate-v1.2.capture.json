@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy; sys.stdout.reconfigure(encoding=\"utf-8\",newline=\"\\n\"); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\prompt_gate.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-REGISTRY-01-v1.2.md",
+    "--queue",
+    "pvg",
+    "--review",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-DL12-REGISTRY-v1.2.md@21d1d0908a55b3b5aea1e27380fb689e485cd35d"
+  ],
+  "started_utc": "2026-11-20T17:17:22.313723+00:00",
+  "finished_utc": "2026-11-20T17:35:28.332736+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "3577b61cdaa6f23a233b639080043d99556f9d4f549d8a3901649e8f597d3c24",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "prompt_raw_sha256": "91579bd5efa030488c0d219cd60242440d1fb4ad08e59ca2e241f3d12f2c6938"
+}

@@ -1,0 +1,87 @@
+[
+  {
+    "name": "dotnet-version",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot",
+    "pid": 16616,
+    "exit": 0,
+    "start_epoch": 1795199224.093596,
+    "seconds": 0.148,
+    "log_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+  },
+  {
+    "name": "restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot",
+    "pid": 34744,
+    "exit": 0,
+    "start_epoch": 1795199224.242904,
+    "seconds": 1.763,
+    "log_sha256": "073f782e843329db625105f6d1d2b0c74e2f8c81eeb267e9859bc7766b63394a"
+  },
+  {
+    "name": "regpvbase-full",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore",
+      "--logger",
+      "trx;LogFileName=regpvbase-baseline.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot",
+    "pid": 18192,
+    "exit": 0,
+    "start_epoch": 1795199226.007258,
+    "seconds": 9.976,
+    "log_sha256": "2cf90f6ad525cc0bd3fdfe03fa85896e77f68fc396afe3ab2d6cfe39edaf7111"
+  },
+  {
+    "name": "skip-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot\\scripts\\check_trx_no_skipped.py",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\regpvbase-baseline.trx"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\snapshot",
+    "pid": 8028,
+    "exit": 0,
+    "start_epoch": 1795199236.0200956,
+    "seconds": 0.136,
+    "log_sha256": "019ca418451a3332218f5fc5b62d6e4237a9759c336e85eab0bec248596c2113"
+  },
+  {
+    "name": "known-failures-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\known_failures.py",
+      "check",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-be-baseline-1795199143989\\regpvbase-baseline.trx",
+      "--suite",
+      "Diten.PvgService.RegPvBase.Tests"
+    ],
+    "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "pid": 13112,
+    "exit": 0,
+    "start_epoch": 1795199236.3367074,
+    "seconds": 1.732,
+    "log_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+  }
+]

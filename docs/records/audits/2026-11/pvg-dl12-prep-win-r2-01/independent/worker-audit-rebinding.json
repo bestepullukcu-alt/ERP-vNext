@@ -1,0 +1,18 @@
+{
+  "same_immutable_tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "bound_commit_tree_equal": "fee7d0132e3862ded7025465e311f263e068f7aa",
+  "all_manifest_source_file_bytes_equal_between_contexts": true,
+  "file_count": 26190,
+  "audited_groups": [
+    "G1",
+    "G2",
+    "G3a",
+    "G3b",
+    "G4"
+  ],
+  "source_files_compared_each": 13650,
+  "audit_sha256": "aabf67ab7af21a5a6b7392d3a61a74a1885fbbba26b6ad041e008005965c145b",
+  "prior_red_not_overridden": true,
+  "prior_red_directory": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i-1795200401331",
+  "scope": "Reused completed read-only source/build/assertion/GREEN audit on identical source TREE; new normal and G5/G6 measurements remain separate."
+}

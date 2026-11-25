@@ -1,0 +1,9 @@
+# MOD-0230 rev22 — gerçek normal kapı reddi ve keşif kaynağı düzeltmesi
+
+2026-11-23 · rootCT · v1.0 iki işçi normal kapısı ayrı ayrı çıkış1 verdi. Ham raporlar ve integrity0 kontrolleri aynı dizinde değişmeden korunur. Tek ENGEL: keşif raporundaki Windows CRLF araç SHA ae87a56615f5, raporun üretici commit'indeki kanonik LF araç SHA72d27f77dcf4 ile eşleşmiyordu. Bu CT hazırlık hatasıdır; ilk prompt incelemeleri kaynak paketi ve semantik sınırları incelemiş olsa da gerçek kapının bu bağını kaçırmıştır. İlk UYGUN ve integrity0 sonuçları normal dağıtım0 değildir.
+
+Korumalı root scriptine, guardlara veya rapor hash alanına dokunulmadı. H82 için zaten hazırlanmış temiz özel LF klonundaki değişmemiş script, root CT kaynağını okuyarak gerçek keşif02 üretti. Kanonik script SHA72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f üretici b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf Git blobuyla eşleşir. Embedded rapor0f52bf703e10a143af4d81ce895819c5de690e344e8a1a6e4d6ec558929463bb;35bulgu/541ref;35karar DECISIONS.md içinde. Shared ortak modüllü READY satırı otomatik bulgulara girmediğinden ayrıca doğrudan okundu. Görünmeyen dış işler için tam mükerrersizlik iddiası yok.
+
+Gerçek üretim prompt_gate.report_contract eski raporda1problem, yeni raporda0problem verdi; OLD-RED-NEW-GREEN-PRODUCER-BINDING.json doğal olumsuz/olumlu karşılaştırmayı saklar. Bu dar kontrol normal dağıtım kapısının yerine geçmez. Sıradaki ordinary v1.1 promptlar yeni rapor/35karar ve bu kayıtla bağlanacak, kaynak/producer bağları ucuz önkontrolde ölçülecek, ayrı HIGH inceleme ve gerçek normal0 koşulacaktır.
+
+Rev22 exact27 kapsam, d20813b2 pack,0aa1706e domain, insan XMC/içerik/singlewriter onayı ve resmî HIGHcheck0 değişmedi. İki yeni WP READY kalır; ürün/build/test/GO/DISPATCHED/IN_PROGRESS yok. İşçi yerel commit ve CT noff entegrasyonu zaten izinli; yeniSHA push/mainmerge/operasyon kapalıdır. Yeni kapsam onayı gerekmiyor.

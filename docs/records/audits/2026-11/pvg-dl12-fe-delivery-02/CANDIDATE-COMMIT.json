@@ -1,0 +1,19 @@
+{
+  "head": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+  "parent": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "branch": "feature/pvg/mod-0230-dl12-fe",
+  "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-web\\ERP-vNext-git",
+  "clean": true,
+  "ordinary_single_local_commit": true,
+  "six_committed_paths": [
+    "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+    "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+    "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+    "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+  ],
+  "final_v3_sources_unchanged": true,
+  "capture02_raw_sha256": "1820ed1c9dd7dae4ea1cce47df682d0ea7178c58e024ad192198ffb12d61f573"
+}

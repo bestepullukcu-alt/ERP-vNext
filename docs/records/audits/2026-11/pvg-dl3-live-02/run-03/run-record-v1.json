@@ -1,0 +1,31 @@
+{
+ "argv": [
+  "bash",
+  "-c",
+  "bash execution/domains/pharmacovigilance/work-packs/scripts/dl3_host_smoke.sh && dotnet test services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj --logger 'console;verbosity=normal' --filter 'FullyQualifiedName~Repository_configuration_files_never_enable_operational_runtime'"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-dl3-live-02/run-03/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 14653,
+   "path": "docs/records/audits/2026-11/pvg-dl3-live-02/run-03/stdout.txt",
+   "sha256": "a45e3c389f46af48d67957b2b9ddb7f386b87f4753ff6ec9e376b4aaf92bc829"
+  }
+ ],
+ "commit": "64f7a10fe3e4da41262931cb781afb6f5f71c562",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-01T21:17:29Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/pvg-dl3-live-02/run-03",
+ "started_utc": "2026-11-01T21:15:15Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "43679f1aeaaefe05b21e63c91e30a9afae9a344c"
+}

@@ -470,6 +470,19 @@ describe("PVG case intake list on the list component (real DataTables, fake netw
 });
 
 // The three browser forms, executed against a fake network: the record version, and a conflict as a controlled failure.
+const completeStoredDraft = (overrides = {}) => ({
+  intakeDraftId: "D-1", status: "IntakeCreated", version: 7,
+  intakeChannel: "Portal", sourceType: "Spontaneous", sourceReference: "  source,\r\nref  ",
+  receivedAtUtc: "2020-03-01T13:30:00.1234567+05:30", awarenessAtUtc: "2020-03-01T03:00:00.7654321-04:00",
+  reporterType: "Consumer", reporterContactSummary: "  contact,\r\nsummary  ", patientSubjectCode: " patient ",
+  eventOnsetDate: "2020-02-01", adverseEventNarrative: "narrative", seriousness: "Serious", intakePriority: "Routine",
+  productLines: [{ productRole: "Suspect", globalProductId: null, productNameAsReported: "product", presentationGskuId: null, lotNumber: "lot" }],
+  companyRecipientPersonId: null, eventCountry: "unknown", reportType: "Spontaneous", reporterSource: "Manual",
+  reporterSourceId: null, reporterCrmSearchState: "Pending", reporterNameOrInitials: "S.Y.",
+  reporterProfession: "profession", reporterCountry: "unknown", triageOutcome: null, triageReason: null, routeTargetQueue: null,
+  evidenceLinkReferences: ["ref-A", null, "", null, "ref,A\r\nB", "ref-A"], ...overrides
+});
+
 describe("PVG case intake record version on save, triage and route (executed)", () => {
   const conflict = { outcome: "Blocked", reasonCode: "PVG_INTAKE_DRAFT_VERSION_CONFLICT", items: [] };
   const texts = { VersionConflict: "The record changed after you read it.", ErrorOccurred: "Something went wrong.", ControlledBlock: "Blocked", ReasonCode: "Reason", Triaged: "Triaged", Routed: "Routed", Loading: "Loading" };
@@ -504,7 +517,7 @@ describe("PVG case intake record version on save, triage and route (executed)", 
     const editCalls = [];
     const edit = run("form.js", editCalls, [
       optionsAnswer(),
-      answer(200, { outcome: "Succeeded", items: [{ intakeDraftId: "D-1", version: 7 }] }),
+      answer(200, { outcome: "Succeeded", items: [{ intakeDraftId: "D-1", version: 7 }], draft: completeStoredDraft({ sourceReference: "REF-1" }) }),
       answer(409, conflict)
     ]);
     await until(() => document.getElementById("ExpectedVersion").value === "7");
@@ -654,6 +667,7 @@ describe("PVG case intake form fields and option source (executed against the re
     .replace(/^@\{[\s\S]*?^\}\n/m, "")
     .replace('@(isEdit ? Localizer["UpdateDraft"] : Localizer["SaveDraft"])', "Save")
     .replace(/@title/g, "Title")
+    .replaceAll('required="@(!isEdit)"', mode === "edit" ? "" : "required")
     .replace("@Html.AntiForgeryToken()", '<input name="__RequestVerificationToken" type="hidden" value="synthetic-token" />')
     .replace('data-mode="@mode"', `data-mode="${mode}"`)
     .replace('data-intake-draft-id="@intakeDraftId"', `data-intake-draft-id="${id}"`)
@@ -951,6 +965,7 @@ describe("PVG case intake form fields and option source (executed against the re
   });
 
   const linkedDraft = overrides => ({
+    ...completeStoredDraft(),
     reporterSource: "Crm",
     reporterSourceId: "c-1",
     awarenessAtUtc: "2026-10-20T10:00:30+03:00",
@@ -966,6 +981,118 @@ describe("PVG case intake form fields and option source (executed against the re
   // jsdom answers a datetime-local value with seconds as "...:30.000"; a browser gives its shortest form, "...:30".
   const asTheBrowserWrites = value => value.replace(/\.000$/, "");
   const syntheticOptions = () => answer(200, { reportTypes: ["SyntheticType"], productRoles: ["SyntheticRole"], unknownCountry: "SyntheticUnknown" });
+
+  const postedUpdate = body => JSON.parse(body.get("UpdateValuesJson"));
+  const editableKeys = ["IntakeChannel", "SourceType", "SourceReference", "ReceivedAtUtc", "ReporterType", "ReporterContactSummary",
+    "PatientSubjectCode", "EventOnsetDate", "AdverseEventNarrative", "Seriousness", "IntakePriority", "AwarenessAtUtc",
+    "EventCountry", "ReportType", "ReporterNameOrInitials", "ReporterProfession", "ReporterCountry"];
+  const expectedUpdate = draft => ({
+    ...Object.fromEntries(editableKeys.map(key => [key, draft[key[0].toLowerCase() + key.slice(1)]])),
+    ProductLines: draft.productLines.map(line => ({ ProductRole: line.productRole, ProductNameAsReported: line.productNameAsReported, LotNumber: line.lotNumber })),
+    EvidenceLinkReferences: draft.evidenceLinkReferences, ExpectedVersion: draft.version
+  });
+  const storedFixture = () => completeStoredDraft({
+    intakeChannel: "StoredChannel", sourceType: "StoredSource", reporterType: "StoredReporter",
+    seriousness: "StoredSeriousness", intakePriority: "StoredPriority", reportType: "StoredReport", eventCountry: "StoredCountry"
+  });
+
+  it("pvg edit form prefills every editable field from the stored draft", async () => {
+    const draft = storedFixture();
+    mount({ mode: "edit", id: "D-1", replies: [options(), recordAnswer(draft)] });
+    await ready();
+    for (const key of editableKeys.filter(key => !["ReceivedAtUtc", "AwarenessAtUtc"].includes(key))) {
+      let expected = draft[key[0].toLowerCase() + key.slice(1)] ?? "";
+      expected = expected.replace(/\r\n?/g, "\n");
+      if (["SourceReference", "PatientSubjectCode", "ReporterNameOrInitials", "ReporterProfession"].includes(key)) expected = expected.replace(/\n/g, "");
+      expect(byId(key).value, key).toBe(expected);
+    }
+    expect(asTheBrowserWrites(byId("ReceivedAtUtc").value)).toBe("2020-03-01T08:00");
+    expect(asTheBrowserWrites(byId("AwarenessAtUtc").value)).toBe("2020-03-01T07:00");
+    expect(byId("EvidenceLinkReferencesRaw").value).toBe(draft.evidenceLinkReferences.join("\n").replace(/\r\n?/g, "\n"));
+    expect(rows()).toHaveLength(1);
+    for (const [field, value] of Object.entries({ ProductRole: "Suspect", ProductNameAsReported: "product", LotNumber: "lot" }))
+      expect(lineInput(rows()[0], field).value).toBe(value);
+  });
+
+  it("pvg edit save without a change sends back every stored value", async () => {
+    const draft = storedFixture();
+    const { calls } = mount({ mode: "edit", id: "D-1", replies: [options(), recordAnswer(draft), saved()] });
+    await ready();
+    expect(form().checkValidity()).toBe(true);
+    submit();
+    await until(() => calls.length === 3);
+    expect(postedUpdate(calls[2].init.body)).toEqual(expectedUpdate(draft));
+    expect(calls[2].init.headers.RequestVerificationToken).toBe("synthetic-token");
+    expect(calls[2].init.body.getAll("__RequestVerificationToken")).toEqual(["synthetic-token"]);
+    expect(anyForbiddenKey(calls[2].init.body)).toEqual([]);
+  });
+
+  it("pvg edit save sends an optional field the user emptied as empty", async () => {
+    for (const field of ["ReporterContactSummary", "SourceReference", "PatientSubjectCode", "EventOnsetDate"]) {
+      const draft = completeStoredDraft();
+      const { calls } = mount({ mode: "edit", id: "D-1", replies: [options(), recordAnswer(draft), saved()] });
+      await ready();
+      expect(form().checkValidity()).toBe(true);
+      typeInto(byId(field), "");
+      submit();
+      await until(() => calls.length === 3);
+      expect(postedUpdate(calls[2].init.body)).toEqual({ ...expectedUpdate(draft), [field]: field === "EventOnsetDate" ? null : "" });
+    }
+  });
+
+  it("pvg edit distinguishes explicit nullable values from absent or malformed detail", async () => {
+    const nullable = ["sourceReference", "reporterContactSummary", "patientSubjectCode", "eventOnsetDate", "companyRecipientPersonId",
+      "reporterSourceId", "reporterNameOrInitials", "reporterProfession", "reporterCountry", "triageOutcome", "triageReason", "routeTargetQueue"];
+    const accepted = nullable.map(key => completeStoredDraft({ [key]: null }));
+    accepted.push(completeStoredDraft({ evidenceLinkReferences: [] }), completeStoredDraft({ evidenceLinkReferences: [null] }),
+      completeStoredDraft({ evidenceLinkReferences: ["ref-A", null, "", null, "ref-A"] }), completeStoredDraft({ productLines: [] }));
+    // DateTimeOffset representation boundaries, independent of server business-date policy.
+    for (const instant of ["0001-01-01T00:00:00Z", "0001-01-01T14:00:00+14:00", "9999-12-31T23:59:59.9999999Z", "9999-12-31T09:59:59.9999999-14:00"])
+      accepted.push(completeStoredDraft({ receivedAtUtc: instant, awarenessAtUtc: instant }));
+    for (const draft of accepted) {
+      const { calls } = mount({ mode: "edit", id: "D-1", replies: [options(), recordAnswer(draft), saved()] });
+      await until(() => calls.length === 2);
+      await tick();
+      expect(saveButton().disabled).toBe(false);
+      expect(form().checkValidity()).toBe(true);
+      submit();
+      await until(() => calls.length === 3);
+      expect(postedUpdate(calls[2].init.body)).toEqual(expectedUpdate(draft));
+    }
+    const rejected = Object.keys(completeStoredDraft()).map(key => {
+      const draft = completeStoredDraft(); delete draft[key]; return draft;
+    });
+    rejected.push(completeStoredDraft({ evidenceLinkReferences: null }), completeStoredDraft({ evidenceLinkReferences: [42] }),
+      completeStoredDraft({ evidenceLinkReferences: [{}] }), completeStoredDraft({ productLines: null }),
+      completeStoredDraft({ receivedAtUtc: "2020-02-30T08:00:00Z" }), completeStoredDraft({ awarenessAtUtc: "2020-03-01T08:00:00.12345678Z" }));
+    rejected.push(completeStoredDraft({ receivedAtUtc: "0001-01-01T00:00:00+14:00" }),
+      completeStoredDraft({ awarenessAtUtc: "9999-12-31T23:59:59.9999999-14:00" }));
+    for (const draft of rejected) {
+      const { calls } = mount({ mode: "edit", id: "D-1", replies: [options(), recordAnswer(draft), saved()] });
+      await until(() => calls.length === 2);
+      await tick();
+      expect(saveButton().disabled).toBe(true);
+      fillCreateFields();
+      expect(form().checkValidity()).toBe(true);
+      submit();
+      await tick();
+      expect(calls).toHaveLength(2);
+    }
+  }, 15000);
+
+  it("pvg edit refusal after triage shows the not-editable sentence", async () => {
+    const sentence = "This draft has been triaged and cannot be edited.";
+    const { calls, location } = mount({ mode: "edit", id: "D-1", l10n: { ...texts, DraftNotEditable: sentence },
+      replies: [options(), recordAnswer(completeStoredDraft()), answer(409, { outcome: "Blocked", reasonCode: "PVG_INTAKE_DRAFT_NOT_EDITABLE" })] });
+    await ready();
+    expect(form().checkValidity()).toBe(true);
+    submit();
+    await until(() => calls.length === 3 && alertShown());
+    expect(alertBox().textContent).toBe(sentence);
+    expect(alertBox().textContent).not.toContain("PVG_INTAKE_DRAFT_NOT_EDITABLE");
+    expect(alertBox().textContent).not.toBe(texts.VersionConflict);
+    expect(location.assign).not.toHaveBeenCalled();
+  });
 
   it("pvg edit form sends back the stored reporter selection", async () => {
     let { calls } = mount({ mode: "edit", id: "D-1", replies: [syntheticOptions(), recordAnswer(linkedDraft()), saved()] });

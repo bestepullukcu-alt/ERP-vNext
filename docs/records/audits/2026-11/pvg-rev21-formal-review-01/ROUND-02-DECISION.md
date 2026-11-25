@@ -1,0 +1,11 @@
+# Rev21 kesin sürüm — CT son inceleme karşılığı
+
+2026-11-20. Son pack LF SHA-256 `ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4`, domain `2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b`, kaynak a9ac48c063b5a800fbaafa9958c9aba193117e5b. İnsan ek kapsam onayı değişmedi; bu düzeltmeler yeni business/yol izni yaratmaz.
+
+Diyalog 03 ve geçmişsiz son bakış02 sonuçları **UYGUN**,0açık bulgu. CT her iki ham dosyayı gerçek `pack_approval.parse_findings` ile okudu:0hata,0bulgu. Diyalog02 aynı içerik/hükmü vermişti; kapanan F-1/F-2/F-3 paragrafları satırbaşında F- ile başladığı için okuyucu üç biçim hatası verdi. Ham02 korunur; inceleyen yalnız paragraf etiketlerini düzelterek tam03'ü yeniden verdi. CT ham görüşü kendisi düzenlemedi, okuyucu gevşetilmedi.
+
+Önceki F1-ebeveynlik düzeltmesi kabul edilip gerçek iki belgede H ∈ parents(M) olarak ölçüldü. F2 tarihsel auth notları mevcut2026-10-21/ce3be60cf kaynağına bağlandı; güncel verifiedtenant/header/canonicalpermission/MVC11action sözleşmesi kaynakla ayrıldı. F3 CT kabul üreticisi1fe0e58c gerçek WebTRX'inin a258Gitblob'una before/afterLF içerik/hash bağını normal CLI/5hücre/tek-token guard koşuluna ekledi. Tek test metodu ve beş hücre sınırı, AC1–44 ve12dilimtablosu korundu. Tam rev20 snapshotları, doğrudan önceki sahip onayı ve eksik mevcut inceleme kaynakları ikinci resmî ZIP'lerde yer aldı. CT326/327manifestin tamamını ve iki hash'i ölçtü; iki inceleyen kendi ölçülerini ayrı bildirdi.
+
+Kapanan bulguların ilk ham görüşleri ve reddedilen review-row denemeleri korunur. Bunlar geçerli yeni review/HIGH satırı yerine kullanılmaz. Son görüşlerde belirtilen ZIP dışı kural/araç/.NET refpack ve çalıştırılmayan ACL/test/CI sınırları saklıdır; görüşten runtime/E2/operasyon başarısı çıkarılmaz. CT ilgili gerçek üretim araçlarını kendi kapılarında ayrıca çalıştırır. Eski dirty WIN ağacı değişmez; yeni formal/HIGH kayıtları ve temiz replacement normal prompt0 olmadan patch/ACL çalışması yok. Tüm altı ayrı RED/GREEN, Windows fullAPI0skip, bağımsız üç-dosyaE2 ve sonPR kaynak-bağlı Unix/Phase1 şartları aynen kalır.
+
+Sonraki adım yalnız gerçek review-row üretimi, append-only defter, aynı insan onayına bağlı HIGH row/card/check ve ayrı worker prompt kapılarıdır. Bu kayıt push/PR/main merge veya operational kullanım izni değildir. CT ürün kodu yazmadı.

@@ -1,0 +1,1111 @@
+{
+  "kind": "Independent read-only author raw/hash/provenance/patch/result validation; semantic conclusions separately reviewed",
+  "manifest_raw_sha256": "7429b906455d54150a97eaad50984dd1654f44091b5350018963fcb14d4706eb",
+  "files_validated": 2430,
+  "bytes_validated": 1580346719,
+  "all_thirty_pairs_valid": true,
+  "guards": [
+    {
+      "group": "js-mutants-v3",
+      "guard": "prefill-contact",
+      "single_patch_sha256": "40dae750b029391d2fd0e8c57d1df72615bf61ab6c518b77293b378bf06fcd2d",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "5be57f945db56fe3e18ac8198486037dca7a6923f9f6a8dd855951015f95f589",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-01-prefill-contact",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 4,
+          "messages": [
+            "AssertionError: ReporterContactSummary: expected '' to be '  contact,\\nsummary  ' // Object.is equality",
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-01-prefill-contact",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "prefill-event-date",
+      "single_patch_sha256": "499a5780b8b5c4fe6376a54c59435bf8d38378455b7e3e026c317e2ca426e99b",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "b1e872837bb9f908936c2490d44fbda931aa7723f28c6cfd0858f1c252a2b888",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-02-prefill-event-date",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 4,
+          "messages": [
+            "AssertionError: EventOnsetDate: expected '' to be '2020-02-01' // Object.is equality",
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-02-prefill-event-date",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "prefill-evidence",
+      "single_patch_sha256": "6a69384373672c028ada12abad0c19fda12dc2258dba25625ee8eac4846dae05",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "f3406f8b4e3d2bc97fb827573db714f8808f972f0ab12cbd84eff0464ac86f19",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-03-prefill-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected '' to be 'ref-A\\n\\n\\n\\nref,A\\nB\\nref-A' // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-03-prefill-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "not-editable-mapping",
+      "single_patch_sha256": "5a2b8ceff2468cebba270e0ad6330f1c6471e21631a4e2490968ce8cffa46ab5",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "ade04275d5b2b51ca84060f41e250bee9ae545ca8a8e44f1af3599d4beac16e8",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-04-not-editable-mapping",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected 'Blocked: PVG_INTAKE_DRAFT_NOT_EDITABLE' to be 'This draft has been triaged and canno…' // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-04-not-editable-mapping",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "raw-received-ticks",
+      "single_patch_sha256": "8ad4722d85767d6f22c4ab10ba4e34bbb6913b0592d05d335cbb0e83e69d8cee",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "7eee0b11efa6023c70e21886ec60720fba830c68b166cfbdb67e6e64893dabbf",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-05-raw-received-ticks",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-05-raw-received-ticks",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "raw-awareness-ticks",
+      "single_patch_sha256": "c8c8eada64345209a29b8d1925a8b6182215562f6e5539f6fcc1c62d3666053b",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "476ee57589d9e2ebb8b3138ebdc7d9a7c0d534aefeefb66ed82b7cc7c635b659",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-06-raw-awareness-ticks",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-06-raw-awareness-ticks",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "overwrite-user-empty",
+      "single_patch_sha256": "7c05494082fdfac97ebda225438c73b2cc9565e9eafdfef8ed0e262c7b012e2b",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "9cd1869632031728f2d7e6853df52ed23712b95778980e5df3e4237fa4656005",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-07-overwrite-user-empty",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-07-overwrite-user-empty",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "summary-version-only-gate",
+      "single_patch_sha256": "912fb325f57e8d5fcc4146d9f249e637b927dbf4894acae0a1775e20f1ff67fb",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "3a98040f92ee01b25963a9a9ffdcef042d4d5f17f76a6fe464e5c2b220fbf483",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-08-summary-version-only-gate",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-08-summary-version-only-gate",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "repair-missing-member",
+      "single_patch_sha256": "495d1948ff863cdcd280ff378d9c3359b52a6a3ec75373a70add945da1fb4c16",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "513c013a1be23f8a329e76478de6d9e4d7a09a292be8902a0ce9494cca5960a1",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-09-repair-missing-member",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-09-repair-missing-member",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "accept-malformed-evidence",
+      "single_patch_sha256": "9e50a80ebf23233b2cac1a6ba633df9594a0e363cb115f0866bb0af5785c5b74",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "63d4376953110d396177978f1df84806353d3cb9e348bbea4eebeb36be83f492",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-10-accept-malformed-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-10-accept-malformed-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "filter-null-evidence",
+      "single_patch_sha256": "31987853ecef6996699f764fa7c33842b696ae1dc1ceb5e1aa5f2ea8d97e5c02",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "7db83bf009645d0cba1b42593832ff1c039cecdc2b58f9c2bd244f3c53c5a32f",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-11-filter-null-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-11-filter-null-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "coerce-null-evidence",
+      "single_patch_sha256": "1a8718d5d90329dedb3b781fd19ffeaba9e02f595bf8de730d5b43aba1483a5d",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "3ad9085f97a555eb50bbdd188ef6ecace573cbb4180d91972485055f938a3a0d",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-12-coerce-null-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-12-coerce-null-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "reorder-evidence",
+      "single_patch_sha256": "832879a9bba9cefbf8ad13f810a1058a2fb4f14756e7002394d42e9e88cd3442",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "73d5a82d6fcddf0af4a42a989de1548efbf922a808650ba1dd5b1a832b0b6642",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-13-reorder-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "AssertionError: expected { …(20) } to deeply equal { …(20) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }",
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-13-reorder-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "reject-valid-null-evidence",
+      "single_patch_sha256": "3bb3544dcca93fb3a690104f953001ca70537fc2ec0775cba148ac928b1e0f89",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "fa65be62665e0dc29776b2964f2d63dfcde5b08f1f6bff7d7d16a5eebcb4e8e1",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-14-reject-valid-null-evidence",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 8,
+          "messages": [
+            "Error: timed out",
+            "Error: timed out",
+            "Error: timed out",
+            "Error: timed out",
+            "AssertionError: expected true to be false // Object.is equality",
+            "Error: timed out",
+            "Error: timed out",
+            "Error: timed out"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-14-reject-valid-null-evidence",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "browser-token-header-drop",
+      "single_patch_sha256": "b9de24981e0c84749f034ec751ac5f44c67d413141a46469e1e9aec4aeb4372d",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "0eed9e6e48519c0d65215c3fd1c1770139d6a0c3734fb2e2d471080733fbf8be",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-15-browser-token-header-drop",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected undefined to be 'synthetic-token' // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-15-browser-token-header-drop",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "browser-token-member-drop",
+      "single_patch_sha256": "37623c768cdbc8a8c0b04940aee04cf3892b076dce7e2fc910de46290b74b628",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "a56c739add826b9b4d1f57258ec7705bc33b442ccfd5e0d194ec475a84b56325",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-16-browser-token-member-drop",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 2,
+          "messages": [
+            "AssertionError: expected 'using System.Globalization;\\nusing Sy…' not to match /\\bdelete\\s*\\(/i",
+            "AssertionError: expected [] to deeply equal [ 'synthetic-token' ]"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-16-browser-token-member-drop",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "event-date-clear-empty-string",
+      "single_patch_sha256": "4e8cc83dadbffeeda31c21350c741c1883ecbe7087e20e75a678ef121e55c78f",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "f82f3ccbe5348b20a42cc4d69fe6a9e5d82d63c00a4ac172169d86038561b39a",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-17-event-date-clear-empty-string",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 1,
+          "messages": [
+            "AssertionError: expected { IntakeChannel: 'Portal', …(19) } to deeply equal { IntakeChannel: 'Portal', …(19) }"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-17-event-date-clear-empty-string",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "js-mutants-v3",
+      "guard": "utc-range-guard",
+      "single_patch_sha256": "42d7c6e5bc0628565988c7004b78bc82ed631bd3c7eb1e06a3147a417c4bc6c2",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "ea8d1855847275515872698b7467b5cea484ed1e33ed29672b22198762fbdbde",
+      "runs": [
+        {
+          "phase": "v3-js-mutant-18-utc-range-guard",
+          "actual_exit": 1,
+          "cases": 39,
+          "failed": 3,
+          "messages": [
+            "Error: timed out",
+            "Error: timed out",
+            "AssertionError: expected false to be true // Object.is equality"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        },
+        {
+          "phase": "v3-js-restore-18-utc-range-guard",
+          "actual_exit": 0,
+          "cases": 39,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual Node/Vitest/production form.js",
+          "source_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "update-clean-restored",
+      "single_patch_sha256": "614ba9d893fae117cc74d2ded0de2831670551bc58af3ba0188c4420ef4f0a9d",
+      "base_source_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "mutant_source_sha256": "387a76dec9749bfcd3260a4b2f8576469a8c7c8aa0e0555331e0e27d1c8969f4",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-01-update-clean-restored",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "7d4d9a845a9534bdc4fa91e2ac25f3debd9352fcba238bba9145659a4fb30ff7",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-01-update-clean-restored",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "update-split-references-restored",
+      "single_patch_sha256": "5b9989a8ea0961bfbda46124e16ba6f5f4c1923cc89e649ee388bb8b33204f9e",
+      "base_source_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "mutant_source_sha256": "61b6b0ecf0365916838b06e5a6a3ab4253fb1f7597bc47df70cd4aada4d5f776",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-02-update-split-references-restored",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "f99738c2d05d12c7579e1f408899c33a48d7b1b0b7891b1e8416478ba78f7b15",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-02-update-split-references-restored",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "overwrite-user-nonempty",
+      "single_patch_sha256": "b0a9f9f2a1ecb45fd2176ad494be8dba0acdd8ea4f2ad001b966607ac08d30a6",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "d7e847f17daa9e7b638b3d323543a0bc9b22435a12d31c5911a1649a1dbc67f2",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-03-overwrite-user-nonempty",
+          "actual_exit": 1,
+          "cases": 4,
+          "failed": 1,
+          "messages": [
+            "The actual stored record differs from the first stored GET baseline beyond the deliberate edit/status."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-03-overwrite-user-nonempty",
+          "actual_exit": 0,
+          "cases": 4,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "edit-source-required",
+      "single_patch_sha256": "7e9f55931fd158cc2ce315d85bc39c295ce1ffa471a3d6bb3595017dd3a68f47",
+      "base_source_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "mutant_source_sha256": "6aec338e893438ac6d392c78809fdcbbc02c7f4a5aa2573e3edf695124199a05",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-04-edit-source-required",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Untouched accepted stored detail failed actual browser validity."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-04-edit-source-required",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "edit-patient-required",
+      "single_patch_sha256": "e6e334c4e88de0db3e54d43518f208bd1bb6bc147a9c70caab7f21cab363456e",
+      "base_source_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "mutant_source_sha256": "35c09c3d0b352d976df06fd11434a2c3007baa59945c20ed8cc3f70b808f2a34",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-05-edit-patient-required",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Untouched accepted stored detail failed actual browser validity."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-05-edit-patient-required",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "mvc-token-header-drop",
+      "single_patch_sha256": "7bc7db0f563bb3d1922334304b05a7f85d5152748069e49f7dcf1b38f7850b8a",
+      "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "mutant_source_sha256": "07b292c59e4cb57386a4357f7353408a6109a7edde4bd61f68a54f2814453f4d",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-06-mvc-token-header-drop",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "MVC request token header differs from Razor."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "955f3d87611bd5a88ea5a6c531460a0b9020a47d413848626f4c5e017fcc86be",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-06-mvc-token-header-drop",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "mvc-token-member-drop",
+      "single_patch_sha256": "f3ec4ab029c1d4463cddd14935d0b63108ef3c3aa2f53c0218bfe666eeeac515",
+      "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "mutant_source_sha256": "00467d4865598504d621f8e0a49aaff4bebc7287721529d27a1b32a93a4d0f30",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-07-mvc-token-member-drop",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "MVC form token member differs from Razor."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "65b1dbe05ebc98c9908d3e842349e891a207cc4af9ec747390afbb60a214a179",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-07-mvc-token-member-drop",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "missing-receipt-guard-drop",
+      "single_patch_sha256": "6e583d956bdcd88ac6df7057c28df9e77f4a2b988ec619ef964e63e768de60bd",
+      "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "mutant_source_sha256": "cf870d51599b60885dded59dab1161a93376c50203b1c8657b7e4e4a3eb6219f",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-08-missing-receipt-guard-drop",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure)"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "b39fc1ffd6797f2327b47a200c87345739f4e43b73cc48fddb2a06c9b57c2c84",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-08-missing-receipt-guard-drop",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "fixed-success-receipt",
+      "single_patch_sha256": "671921d717d808819d4f6c36c6493f76a8edf4f54367d0b35de6721c2886a19f",
+      "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "mutant_source_sha256": "115f7b63db0bba012a23aa2f3e97d465c3fe1a83cef4b4f48224075a17fb61f0",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-09-fixed-success-receipt",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Assert.Throws() Failure: No exception was thrown\r\nExpected: typeof(Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests+BrowserFailure)"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "9f57771942a08b1a3cbb6afbbc22372dd59da3731354a8c84736930e4ffb4a13",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-09-fixed-success-receipt",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-mutants-v3",
+      "guard": "repair-missing-corrupt-tokens",
+      "single_patch_sha256": "823f4d425aee6c5ae7c349f4d28a6e61e2fe92686771403453076b45f1479920",
+      "base_source_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "mutant_source_sha256": "ab1f11eed9e81f8673c827938289d8df9edf083cb2cc8e51acc36b86d09ba52f",
+      "runs": [
+        {
+          "phase": "v3-compiled-mutant-10-repair-missing-corrupt-tokens",
+          "actual_exit": 1,
+          "cases": 2,
+          "failed": 2,
+          "messages": [
+            "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200",
+            "Assert.Equal() Failure: Values differ\r\nExpected: 400\r\nActual:   200"
+          ],
+          "source_changes": [
+            "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "4b39cd4ddc80f6d4e217f54053f06261b168b6e3f3e68d0b898ae66c1978dda6",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-compiled-restore-10-repair-missing-corrupt-tokens",
+          "actual_exit": 0,
+          "cases": 2,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-browser-boundaries-v3",
+      "guard": "browser-token-header-drop",
+      "single_patch_sha256": "b9de24981e0c84749f034ec751ac5f44c67d413141a46469e1e9aec4aeb4372d",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "0eed9e6e48519c0d65215c3fd1c1770139d6a0c3734fb2e2d471080733fbf8be",
+      "runs": [
+        {
+          "phase": "v3-browser-boundary-mutant-01-browser-token-header-drop",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Browser request token header differs from Razor."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-browser-boundary-restore-01-browser-token-header-drop",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    },
+    {
+      "group": "compiled-browser-boundaries-v3",
+      "guard": "browser-token-member-drop",
+      "single_patch_sha256": "37623c768cdbc8a8c0b04940aee04cf3892b076dce7e2fc910de46290b74b628",
+      "base_source_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "mutant_source_sha256": "a56c739add826b9b4d1f57258ec7705bc33b442ccfd5e0d194ec475a84b56325",
+      "runs": [
+        {
+          "phase": "v3-browser-boundary-mutant-02-browser-token-member-drop",
+          "actual_exit": 1,
+          "cases": 1,
+          "failed": 1,
+          "messages": [
+            "Browser form token member differs from Razor."
+          ],
+          "source_changes": [
+            "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+          ],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        },
+        {
+          "phase": "v3-browser-boundary-restore-02-browser-token-member-drop",
+          "actual_exit": 0,
+          "cases": 1,
+          "failed": 0,
+          "messages": [],
+          "source_changes": [],
+          "job_empty_unforced": true,
+          "runtime": "actual built Web tests/Node/Razor/MVC/API/InMemory",
+          "dll_sha256": "3c9d2493f01e9d73a2283711f3dc62e0308b54ec4db329be3e05047b2cfb991b",
+          "all_storage_bound": true
+        }
+      ]
+    }
+  ],
+  "limitations": "Does not rerun tests. Timed-out JS assertions are never sufficient; each accepted JS mutant also has a concrete AssertionError. Combined dotnet-test exit1 is assertion RED with successful build/output/DLL/TRX, not a fabricated separate build exit0. Historical infrastructure failures are excluded from successful pairs."
+}

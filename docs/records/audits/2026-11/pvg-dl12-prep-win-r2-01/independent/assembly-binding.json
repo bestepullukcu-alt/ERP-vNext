@@ -1,0 +1,10 @@
+{
+  "tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "commit_tree_equal": "fee7d0132e3862ded7025465e311f263e068f7aa",
+  "assembly": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll",
+  "assembly_sha256": "17ebfce1533925ab3ea31029b1f8afabbcb93c49d9e7f66b9e363e9b92de1549",
+  "assembly_mtime_epoch": 1795201288.9223428,
+  "fresh_build_start_epoch": 1795201277.699283,
+  "all_395_trx_storage_bound": true,
+  "manifest_sha256": "4e32e35f924aba65744024c0152a51f12f072dc32dd3565cf5f93e5bb86637e1"
+}

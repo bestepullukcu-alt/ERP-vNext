@@ -1,0 +1,116 @@
+[
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\evidence-manifest.json",
+    "raw_sha256": "70cb1170a1d333cda5aca0890139eecff09ac03e85a899c29de193ea96846730",
+    "lf_sha256": "ef08c97f77edae9b8e11707605a27cfa565f4bbb8abde5134ad9c1682ce728bf",
+    "bytes": 1328
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\final-green.json",
+    "raw_sha256": "1d4e4921042317e3b6cc6aadb15150dfa50bffe0816ae8cf3fa940e8bbb790ee",
+    "lf_sha256": "7968622f5628d78412a158b2283e6f0803af4cbe4f19c3cfd4a8b1b526c77841",
+    "bytes": 2144
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\five-cell-diff.json",
+    "raw_sha256": "dbc4659aeccc7490d489efd4f8fc10658603ce9d75df4e323126afd139efe39b",
+    "lf_sha256": "c87350f8a690ac7447d479197eb613596b6c10e5e11b1bb451c6fbc51ba3bfb6",
+    "bytes": 2949
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\handoff.json",
+    "raw_sha256": "d3a208113aa8c55580fc8e56d1d2f07948a65c94706518091fb1a56c46b8b748",
+    "lf_sha256": "b2f6ff09898dd8f255f898f272b37e453714e38a7e3ef3fbc0cd7b326c691307",
+    "bytes": 617
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\initial.json",
+    "raw_sha256": "b17fafc32894f9559dd7d3a42ef4edc7eaa1673c4c867c4a8ac82fc76a0fcb8e",
+    "lf_sha256": "3633ef9febd5899f164440282cb7e45872f70490a17343cb8ab343815f376b50",
+    "bytes": 2213
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\post-measurement.json",
+    "raw_sha256": "1bc4168dfc5a6246ffd53ef60eccc79ae08733acf7222dbbdd99d7874000e179",
+    "lf_sha256": "83eec14de050ba6fab8443192599cf2d89e2b40d511538b7479cc4e4f8f78bdb",
+    "bytes": 1679
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\producer-run.json",
+    "raw_sha256": "c0d5e3258784a68e6e1abf2107a0a21e60f2b752a0975609259d04a9381d55ad",
+    "lf_sha256": "468727829b75c8c3e976e46d9b8caf572f247ced03f2f4cc6f823a65ed9e7863",
+    "bytes": 715
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\producer.stderr.txt",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\producer.stdout.txt",
+    "raw_sha256": "f5fd2e34f3250cfdd8e04d155ba22f3faaa34cb3c53d8fd9f5aa68e9a382bf72",
+    "lf_sha256": "e099d17b258d01dfc49b446fee4656484c6ca69a92d2000174ab292392d1f63f",
+    "bytes": 78
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\staged.patch",
+    "raw_sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e",
+    "lf_sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e",
+    "bytes": 6470
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\worker\\working.patch",
+    "raw_sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e",
+    "lf_sha256": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e",
+    "bytes": 6470
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\actual-run.json",
+    "raw_sha256": "9c7371a2fb3ad1be0b93f1a899ccd6978c43d4ca3bf194decec00411d2311f1f",
+    "lf_sha256": "44ab2f55798f127aaa0d707416b2b633924efd901fce34d875c5f1b89a1e645b",
+    "bytes": 807
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\evidence-manifest.json",
+    "raw_sha256": "a7d917ad6673e13c0ec8605b5caa2dc89fa0392c5c5acccfcd50003103ceb73a",
+    "lf_sha256": "1b9b723c329cdf89e800fe83937b9f6b8f7b1f69c34c8f7582c806b379434814",
+    "bytes": 741
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\final.json",
+    "raw_sha256": "c4ecf33d16d2752c9ee0ce7661d31e6a945a12e4e56c649a72b6d3ab1618fd91",
+    "lf_sha256": "7e737a547ba0a817d071ca3844bbdcf5b0dcc82bcade03b639fc887a11032e50",
+    "bytes": 974
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\independent-green.json",
+    "raw_sha256": "1d4e4921042317e3b6cc6aadb15150dfa50bffe0816ae8cf3fa940e8bbb790ee",
+    "lf_sha256": "7968622f5628d78412a158b2283e6f0803af4cbe4f19c3cfd4a8b1b526c77841",
+    "bytes": 2144
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\initial-and-scope.json",
+    "raw_sha256": "d5441a5f00642e92ad0af58cfbe03d1de222b095ef8bc37eb9f8ff0db8663be2",
+    "lf_sha256": "05f29801879c455f31b0622f459f77c883a175c36d46b3bdc8fc884552b83d1e",
+    "bytes": 4690
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\producer.stderr.txt",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bytes": 0
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\producer.stdout.txt",
+    "raw_sha256": "f5fd2e34f3250cfdd8e04d155ba22f3faaa34cb3c53d8fd9f5aa68e9a382bf72",
+    "lf_sha256": "e099d17b258d01dfc49b446fee4656484c6ca69a92d2000174ab292392d1f63f",
+    "bytes": 78
+  },
+  {
+    "path": "docs\\records\\audits\\2026-11\\pvg-dl12-registry-01\\independent\\VERIFY-REGISTRY.txt",
+    "raw_sha256": "1eb47520db8faeb7fef6a648a92d719979b1b4c00e64bc696ffe9ad3284f1a40",
+    "lf_sha256": "7d0c223973bff40dd1f71140c7b58cfd58b01e5abda7a83ef891ce8d92f4c7f2",
+    "bytes": 3094
+  }
+]

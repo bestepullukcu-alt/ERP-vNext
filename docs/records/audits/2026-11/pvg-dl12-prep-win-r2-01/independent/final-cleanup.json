@@ -1,0 +1,16 @@
+{
+  "measurement": "Final successful Win32_Process and TCP listener snapshot after exact own MSBuild-node cleanup",
+  "liveObservedOwnPids": [],
+  "ownMongoPids": [
+    11328,
+    17764,
+    22832,
+    34432,
+    35492
+  ],
+  "ownMongoRootsRemaining": [],
+  "ownMongoPortsStillListening": [],
+  "privateAclRootsRemaining": [],
+  "earlierSandboxCimQueryDenied": true,
+  "note": "Initial query lacked CIM access; narrow elevated actual query succeeded. One recycled recorded PID was an independently identified own G5 build-node child; three exact own MSBuild nodes were cleaned, see own-msbuild-cleanup.json. All own mongod processes exited through fixture cleanup."
+}

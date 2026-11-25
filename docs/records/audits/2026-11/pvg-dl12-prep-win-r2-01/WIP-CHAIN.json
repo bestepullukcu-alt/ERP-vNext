@@ -1,0 +1,20 @@
+{
+  "old_tree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-prep-win\\ERP-vNext-git",
+  "old_head": "58920519a17e8f4c085738642b33e36689bc8fee",
+  "old_files": [
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+      "raw_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "lf_sha256": "6981496b72735be360ed41e45771faae9a3c99f41ba10c49bcfe37a499d6eea7"
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+      "raw_sha256": "763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a",
+      "lf_sha256": "f1dd99c82066961d4d16b59740e6e0f3a9b8b46cf880db61a44f0b9d1a925ac0"
+    }
+  ],
+  "patch_path": "docs\\records\\audits\\2026-11\\pvg-dl12-prep-win-01\\stopped-v1.2\\worker-wip.diff",
+  "patch_raw_sha256": "bd7ebf58ac4866fdba94729d0dfb29f688ec87e8a26d7cc80d1f7bbb9c50617f",
+  "patch_bytes": 6166,
+  "source_claim": "Only read/hash performed; no old-tree stage/commit/patch/cleanup"
+}

@@ -1,0 +1,62 @@
+Managed worktree preparation / DoR CANDIDATE ONLY — no READY/GO
+Requested model/effort: inherited gpt-6.2-astra/high. Actual: verilemiyor.
+
+Authorization and task boundary
+User/root authorized create_worktree-app preparation of two separate managed checkouts from the committed rev22 source, plus read-only baseline/single-writer/Index-touch observations. This is not product dispatch. No branch, commit, product edit, queue edit, pack/domain edit, install, archive, cleanup of other worktrees or GO occurred. Both create operations completed and attached the worktrees to the original parent chat; registrationError=null.
+
+Measured tuples
+- Planned role pvg_r22_shared_writer
+  Worktree: C:\Users\epenc\.codex\worktrees\pvg-r22-shared\ERP-vNext-git
+  HEAD: 6571d2cbbe8e6bd7db99ed420f05f381f9df51d9
+  Branch: DETACHED (symbolic-ref exit1)
+  git status --short: empty before and after all measurements
+  Owned exact path count: 23
+  Git common directory: C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git/.git
+- Planned role pvg_r22_views_writer
+  Worktree: C:\Users\epenc\.codex\worktrees\pvg-r22-views\ERP-vNext-git
+  HEAD: 6571d2cbbe8e6bd7db99ed420f05f381f9df51d9
+  Branch: DETACHED (symbolic-ref exit1)
+  git status --short: empty before and after all measurements
+  Owned exact path count: 4
+  Git common directory: C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git/.git
+
+Pair single-writer / source observations
+The canonical owner-adopted scope.json SHA is c1238043f7bced900b9b59224ada56e5cc5c9776a2be9c3a5c46077038d477ed. Its 27 exact paths split into 23 shared-resource/RoleAssignments paths (French existing value included) and four PVG views. Set intersection is empty. These are planned worker scopes; this does not inventory every other developer/agent's active writes, and no existing dirty worktree was inspected or altered. CT must exclude overlapping active writers before later GO.
+All 27 files exist at the same committed source and are LF-equivalent to their actual Git blobs. MANAGED-WORKTREE-BASELINE.json records each canonical Git SHA-256/blob id and RAW disk SHA-256/CR observation separately; raw checkout bytes are not mislabeled canonical LF. All proposed new resource keys are absent; the existing French domain label is still Pharmacovigilance; each of the four views has no ViewData["PageCode"] assignment. No candidate product change has been applied.
+
+Creation operation receipts
+shared: 0272f4d7-5bae-4e5e-bcf2-f6505c7f813b, completed / attached.
+views: 3677f229-fcfa-457b-bf06-52ed163ff0fa, completed / attached.
+Creation tool: mcp__codex_app__create_worktree, sourceRoot=root CT, ref=6571d2cbbe8e6bd7db99ed420f05f381f9df51d9. No git worktree add was used by this worker.
+
+Read-access environment
+Default sandbox could not chdir/read the newly created paths (Permission denied). The exact read-only git/hash/verifier measurements then succeeded through automatically approved require_escalated execution. No action was rejected and no user confirmation loop occurred. This measures preparation/read access only, not product write access or GO. The eventual gated workers must resolve their normal scoped access preflight before implementation/tests. This agent kept all root reads at explicit root workdir; app guidance said this child cannot switch its app working directory automatically.
+
+Index DataTable touch-protocol observation (not a test suite)
+Rule .antigravity/rules/frontend-datatable-template.md:151-164 requires the existing verifier and a numbered gap report when Index/_DataTable/_Filter/index.js is touched. Here only the verifier ran, before any authorized later edit:
+python -B .antigravity/scripts/verify_datatable_page.py . --area Pharmacovigilance --module CaseIntakeTriage --reference compact --api-profile proxy --format gaps
+Cwd: pvg-r22-views/ERP-vNext-git, exact source above.
+Actual exit: 1 (NOT PASS); stderr empty. stdout SHA-256 f0d5b69ff2e80615475f14b8dce56bd3c504898b49d48eb1c18dcafc0bd77381.
+Real factory observation: DitenDataTable.createList dataMode=server, 15/15 mechanics verified. Actual numbered gaps, classified against the ALREADY OWNER-DECIDED OD-PVG-10 categories and unchanged AC-14:
+1. Server mode export declaration missing — export, including BL-452 server-export.
+2. BulkDelete bridge key missing — bulk-delete wiring.
+3. BulkDeleteConfirm bridge key missing — bulk-delete confirmation wiring.
+4. AreYouSure bridge key missing — shared confirmation wiring for the excluded delete/bulk action surface.
+5. Export bridge key missing — export.
+6. Import bridge key missing — import.
+7. Select-all header missing — select-all.
+8. Bulk action config missing — bulk-delete/selection wiring.
+9. Bulk selection handler missing — bulk-delete/selection wiring.
+10. Bulk endpoint binding missing — bulk-delete.
+11. Bulk delete trigger missing — bulk-delete.
+12. Clear-selection wiring missing — clear-selection.
+No data-mode, _TableSkeleton, _Filter include, _IndexL10n include or form-view-model gap is emitted; those five non-exception categories remain absent. This is a source-based mapping of the real output to the existing pack decision, not a new waiver or a modified verifier. OD-PVG-10 (owner 2026-10-21, revision13 category wording) already adopts these excluded-feature categories rather than a pinned gap count; AC-14 preserves this exact treatment. Therefore the existing owner answer is reused for these same categories, not asked again as a routine promotion choice. If the later actual Index change emits a gap outside those categories, stop/report a new scope decision; never silently fix it or alter guards. No bulk/export/import/table expansion is authorized in rev22.
+The real full stdout is INDEX-DATATABLE-GAPS.stdout.txt and unmodified producer argv/time/hash are in MANAGED-WORKTREE-BASELINE.json. No new count ceiling, ledger row or PASS claim was created.
+
+DoR candidate assessment
+MEASURED NOW: canonical same MOD-0230 identity and exact human owner/XMC/scope/content/single-writer record at source; two disjoint managed paths; detached clean fixed source; 27-path original hashes; Index known-category output; no product changes. Scope is the frozen pack/domain pair 8d44e327... / 0aa1706e..., with its 154 new localized values + one existing French correction, not whole-file access.
+NOT MEASURED/PASSED BY THIS PREPARATION: final-source formal author-separate review/HIGH approval; final approved-source update of these checkouts; named worker branches; final ordinary exact prompts/sourcepacks/reviews; new WP READY DoR decision; actual normal dispatch0; exclusive active-writer clearance; implementation/baseline tests; E2/acceptance/CI/AC45 Linux closure. Formal review may be underway elsewhere; this preparation does not claim its result.
+The two checkouts deliberately remain DETACHED at6571d2cb. After formal authority is finalized, CT may advance them through the ordinary approved path to the final source and measure tuples anew. That later HEAD replaces these preparation tuples and invalidates any older exact-source prompt binding. No worker role started merely because these managed directories exist.
+
+Baseline summary
+27 unique paths; 23 shared +4 views; disjoint=true; RAW files containing CR=27; all LF-equivalent-to-Git=true; final status of both checkouts clean.

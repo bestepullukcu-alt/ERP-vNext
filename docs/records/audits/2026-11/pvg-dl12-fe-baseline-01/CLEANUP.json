@@ -1,0 +1,4959 @@
+{
+  "monitor_thread_stopped": true,
+  "monitor_errors": [],
+  "jobs": [
+    {
+      "name": "000-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213364.2489154,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 21648,
+      "bootstrap_creation_ft": 134396869642521040,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213364.409106,
+      "stdout_raw_sha256": "007bc5af1752553db764f17e7a635020a819d63dff529304df455d4f3435958f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "001-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213364.4105852,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22588,
+      "bootstrap_creation_ft": 134396869644128973,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213364.546933,
+      "stdout_raw_sha256": "917b1c6507dbafe681faeb48cc831ac806b6b9915749222fd6271279ecd12b44",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "002-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "merge-base",
+        "--is-ancestor",
+        "67005d85137f61ffe8c24eabb46bcd2cf15b9d87",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213364.5482714,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 20364,
+      "bootstrap_creation_ft": 134396869645503970,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213364.6997488,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "003-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "merge-base",
+        "--is-ancestor",
+        "43f856f22f0549be1d61fab09d40086b755661ba",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213364.7013004,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 18708,
+      "bootstrap_creation_ft": 134396869647034798,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213364.8418694,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "004-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "merge-base",
+        "--is-ancestor",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213364.843327,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 21192,
+      "bootstrap_creation_ft": 134396869648673196,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.0149453,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "005-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.016356,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 25200,
+      "bootstrap_creation_ft": 134396869650413001,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.2340567,
+      "stdout_raw_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "006-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:execution/domains/pharmacovigilance/domain-config.md"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.2380314,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 32900,
+      "bootstrap_creation_ft": 134396869652407435,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.3783662,
+      "stdout_raw_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "007-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.379997,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 19248,
+      "bootstrap_creation_ft": 134396869653824895,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.5260503,
+      "stdout_raw_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "008-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:execution/domains/pharmacovigilance/domain-config.md"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.5297258,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22304,
+      "bootstrap_creation_ft": 134396869655360536,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.682477,
+      "stdout_raw_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "009-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-path",
+        "index"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.6848128,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 33776,
+      "bootstrap_creation_ft": 134396869656869897,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.8244576,
+      "stdout_raw_sha256": "216ab4e77978d17ba436db9e9a14d84fcd2bb0c21900383a4f98ead152e809b0",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "010-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.837893,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 26804,
+      "bootstrap_creation_ft": 134396869658407989,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213365.97533,
+      "stdout_raw_sha256": "b4439cc6f3876b0f338a7ee04586735c1f1fcc3c87e6a3e54bdd4cc3c5788139",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "011-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213365.9777274,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 14792,
+      "bootstrap_creation_ft": 134396869659800441,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.1198394,
+      "stdout_raw_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "012-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.1218696,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 32100,
+      "bootstrap_creation_ft": 134396869661249086,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.2663794,
+      "stdout_raw_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "013-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.2690635,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 3112,
+      "bootstrap_creation_ft": 134396869662718986,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.412565,
+      "stdout_raw_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "014-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.4149015,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 34384,
+      "bootstrap_creation_ft": 134396869664175533,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.557664,
+      "stdout_raw_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "015-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.5597327,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 34924,
+      "bootstrap_creation_ft": 134396869665620706,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.7046635,
+      "stdout_raw_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "016-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.7064004,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22328,
+      "bootstrap_creation_ft": 134396869667086958,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.8462477,
+      "stdout_raw_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "017-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.8480818,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35092,
+      "bootstrap_creation_ft": 134396869668510296,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213366.9877465,
+      "stdout_raw_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "018-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213366.9899316,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 30016,
+      "bootstrap_creation_ft": 134396869669921256,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213367.1295378,
+      "stdout_raw_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "019-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213367.1327639,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 20320,
+      "bootstrap_creation_ft": 134396869671358767,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213367.272538,
+      "stdout_raw_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "020-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213367.2755075,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35276,
+      "bootstrap_creation_ft": 134396869672779943,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213367.4151347,
+      "stdout_raw_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "021-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213367.4170105,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 3168,
+      "bootstrap_creation_ft": 134396869674197305,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213367.558123,
+      "stdout_raw_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "022-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "ab039c2c53d82edf8413bae4e3304d21b57e04e4:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213367.5600522,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11280,
+      "bootstrap_creation_ft": 134396869675623236,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213367.711004,
+      "stdout_raw_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "023-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "archive",
+        "--format=tar",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213367.754505,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 14376,
+      "bootstrap_creation_ft": 134396869677585570,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213371.2345448,
+      "stdout_raw_sha256": "9d20e17a8e12460d7987132e9c8d7989cc8a5f626c0d975ad8264968a37eed0c",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "024-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "3181483a8432055179e7a4360ff8512de3a46251^{tree}"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213424.773243,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 24324,
+      "bootstrap_creation_ft": 134396870247769280,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213424.9184587,
+      "stdout_raw_sha256": "5ce12d5f83520a94c1dcb850c14c689211ec6f0fe18053b8414c2715954973ee",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "025-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213446.0106466,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 19464,
+      "bootstrap_creation_ft": 134396870460156669,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213446.1849205,
+      "stdout_raw_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "026-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213446.187017,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11732,
+      "bootstrap_creation_ft": 134396870461897807,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213446.4497478,
+      "stdout_raw_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "027-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213446.4525566,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 36732,
+      "bootstrap_creation_ft": 134396870464571581,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213446.8440957,
+      "stdout_raw_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "028-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213446.8492439,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35020,
+      "bootstrap_creation_ft": 134396870468568299,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213447.1367285,
+      "stdout_raw_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "029-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213447.1429622,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 13012,
+      "bootstrap_creation_ft": 134396870471492522,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213447.4350684,
+      "stdout_raw_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "030-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213447.4400208,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 27712,
+      "bootstrap_creation_ft": 134396870474504826,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213447.6588228,
+      "stdout_raw_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "031-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213447.6615274,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 10376,
+      "bootstrap_creation_ft": 134396870476650457,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213447.838933,
+      "stdout_raw_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "032-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213447.8420744,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 15196,
+      "bootstrap_creation_ft": 134396870478461853,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.0216477,
+      "stdout_raw_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "033-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.0248337,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11760,
+      "bootstrap_creation_ft": 134396870480282909,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.1947806,
+      "stdout_raw_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "034-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.1976027,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 28424,
+      "bootstrap_creation_ft": 134396870482018867,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.3592772,
+      "stdout_raw_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "035-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.361921,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11084,
+      "bootstrap_creation_ft": 134396870483650354,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.516859,
+      "stdout_raw_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "036-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.5192475,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 6860,
+      "bootstrap_creation_ft": 134396870485220297,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.6656663,
+      "stdout_raw_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "037-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.6680238,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 23248,
+      "bootstrap_creation_ft": 134396870486750500,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.815936,
+      "stdout_raw_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "038-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.8186595,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35072,
+      "bootstrap_creation_ft": 134396870488214756,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213448.9650805,
+      "stdout_raw_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "039-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213448.9673498,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 26548,
+      "bootstrap_creation_ft": 134396870489713586,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213449.1276877,
+      "stdout_raw_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "040-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "show",
+        "3181483a8432055179e7a4360ff8512de3a46251:frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213449.1305518,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 14320,
+      "bootstrap_creation_ft": 134396870491333415,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213449.296645,
+      "stdout_raw_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "041-scratch-init",
+      "argv": [
+        "git",
+        "init",
+        "--quiet",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac",
+      "start_epoch": 1795213449.3033867,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 21164,
+      "bootstrap_creation_ft": 134396870493064207,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213449.4948583,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "042-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-common-dir"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213449.4977715,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 3152,
+      "bootstrap_creation_ft": 134396870495008395,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213449.654955,
+      "stdout_raw_sha256": "5a3becb29e1aa56aca1d6f43095b5ff28f984421c12a93a33ad284fc59616a2f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "043-scratch-config",
+      "argv": [
+        "git",
+        "config",
+        "core.longpaths",
+        "true"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213449.6582572,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 12748,
+      "bootstrap_creation_ft": 134396870496616365,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213449.8476722,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "044-scratch-config",
+      "argv": [
+        "git",
+        "config",
+        "core.autocrlf",
+        "true"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213449.8522203,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 20104,
+      "bootstrap_creation_ft": 134396870498554299,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213450.0091922,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "045-scratch-read-tree",
+      "argv": [
+        "git",
+        "read-tree",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213450.0145104,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 20116,
+      "bootstrap_creation_ft": 134396870500187324,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213451.1596882,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "046-scratch-update-ref",
+      "argv": [
+        "git",
+        "update-ref",
+        "--no-deref",
+        "HEAD",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213451.1718175,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 24684,
+      "bootstrap_creation_ft": 134396870511775388,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213451.4102535,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "047-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213451.4127564,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35768,
+      "bootstrap_creation_ft": 134396870514187120,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213458.7365897,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "048-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213458.7392228,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 31608,
+      "bootstrap_creation_ft": 134396870587419228,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213458.8822381,
+      "stdout_raw_sha256": "007bc5af1752553db764f17e7a635020a819d63dff529304df455d4f3435958f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "049-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "ls-files",
+        "-z"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213458.885196,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 8036,
+      "bootstrap_creation_ft": 134396870588888202,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.05145,
+      "stdout_raw_sha256": "ca936f0441343e2fda7f563e644a4713cde27d6c0599805973d6afcab9b82955",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "050-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "3181483a8432055179e7a4360ff8512de3a46251"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213459.0658357,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 25524,
+      "bootstrap_creation_ft": 134396870590700141,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.2785554,
+      "stdout_raw_sha256": "ca936f0441343e2fda7f563e644a4713cde27d6c0599805973d6afcab9b82955",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "051-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213459.29193,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 28488,
+      "bootstrap_creation_ft": 134396870592955334,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.4527388,
+      "stdout_raw_sha256": "ce341612e0a31dd51cbe43d0c7f1240f246e32bd4d7f71335bd6a621c1765ccb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "052-dotnet-version",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213459.4692204,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 29652,
+      "bootstrap_creation_ft": 134396870594730802,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.699871,
+      "stdout_raw_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "053-node-version",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213459.702463,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 30492,
+      "bootstrap_creation_ft": 134396870597053453,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.8183563,
+      "stdout_raw_sha256": "6aff48828de66fbac1ebde4c0c96dd197aa1013dc9964508988344265818e783",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "054-mongo-version",
+      "argv": [
+        "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-main\\.tools\\mongodb\\mongodb-win32-x86_64-windows-7.0.43\\bin\\mongod.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213459.8208625,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 5396,
+      "bootstrap_creation_ft": 134396870598236806,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213459.945356,
+      "stdout_raw_sha256": "03d73207a5508d9f88f233c9188b1537cf7937a2e419bac681d56ced2f093ee6",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "055-npm-version",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node_modules\\npm\\bin\\npm-cli.js",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213459.9477832,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 26036,
+      "bootstrap_creation_ft": 134396870599504311,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213460.274322,
+      "stdout_raw_sha256": "d49bd31f65cb736f4045946e1c8365657cfed300dc0e4f173af5e93ab4500e1a",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "056-node-private-module-positive",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--no-global-search-paths",
+        "-e",
+        "const j=require.resolve('jsdom');const v=require.resolve('vitest/package.json');const d=require('jsdom');if(typeof d.JSDOM!=='function')throw Error('JSDOM missing');console.log(JSON.stringify({execPath:process.execPath,nodeVersion:process.version,jsdomResolved:j,jsdomVersion:require('jsdom/package.json').version,vitestResolved:v,vitestVersion:require('vitest/package.json').version}));"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web",
+      "start_epoch": 1795213479.9953508,
+      "timeout_seconds": 30,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 17152,
+      "bootstrap_creation_ft": 134396870799992110,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213481.3409538,
+      "stdout_raw_sha256": "95d6c8720629333c682350d98c5aebc89c505169a25213da979fdfad05577bd2",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "057-node-test-bin-negative-before-build",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--no-global-search-paths",
+        "-e",
+        "let missing=false;try{require.resolve('jsdom')}catch(e){if(e.code!=='MODULE_NOT_FOUND')throw e;missing=true}if(!missing)throw Error('MissingJsdom context gained dependency fallback');console.log(JSON.stringify({missingJsdom:true,cwd:process.cwd()}));"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web.Tests\\bin\\Debug\\net8.0",
+      "start_epoch": 1795213481.3473074,
+      "timeout_seconds": 30,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 27532,
+      "bootstrap_creation_ft": 134396870813509295,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213481.5002966,
+      "stdout_raw_sha256": "4caa3f1b00d81646eadbc83940a8e62cae1a6e87cc9d07232200899bfa65bd56",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "058-vitest",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--no-global-search-paths",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web\\node_modules\\vitest\\vitest.mjs",
+        "run",
+        "tests/pvg-case-intake-triage-ui.test.js",
+        "--reporter=json",
+        "--outputFile=C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\vitest.json",
+        "--no-cache",
+        "--maxWorkers=1",
+        "--minWorkers=1"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web",
+      "start_epoch": 1795213481.504263,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 2464,
+      "bootstrap_creation_ft": 134396870815082042,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 9,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 9,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213488.1558666,
+      "stdout_raw_sha256": "4d181fb3f792fe56cab82bcf0b7dfd8ae6263e79d5a45ad4e9861bdafc129fae",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "059-pvg-api-restore",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "restore",
+        "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+        "--source",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\empty-feed",
+        "--ignore-failed-sources",
+        "-p:NuGetAudit=false",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213488.1663854,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 5564,
+      "bootstrap_creation_ft": 134396870881693904,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 12,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 12,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213490.8812535,
+      "stdout_raw_sha256": "b8a8611dd4a277ee83d54b1be035533a9adbf565098ebe47d51b629ec9f3c84f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "060-pvg-api-tests",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "--logger",
+        "trx;LogFileName=pvg-api.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false",
+        "--disable-build-servers"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213490.885399,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22740,
+      "bootstrap_creation_ft": 134396870908895843,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 63,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 63,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213559.2940845,
+      "stdout_raw_sha256": "8912a32238cf07a3c1c5edac44c92ba2fe13b6b135621239aca60efcc7fbd315",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "061-evaluate-pvg-api-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213559.3168817,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 10020,
+      "bootstrap_creation_ft": 134396871593213222,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213560.036868,
+      "stdout_raw_sha256": "57231c97329664527ff03cc2dfbfcd559d394b9bdbcd15f3efb2650b1621cad8",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "062-preprocess-pvg-api-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Diten.PvgService.Api.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-1-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213560.0411794,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11916,
+      "bootstrap_creation_ft": 134396871600458903,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213560.7969456,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "063-evaluate-pvg-api-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Persistence\\Diten.PvgService.Persistence.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213560.9596446,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 9636,
+      "bootstrap_creation_ft": 134396871609630204,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213561.5980742,
+      "stdout_raw_sha256": "7818b108dbc32b040510e15c06c585354d472f3542db92c8229d0e53d5bdb2cb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "064-preprocess-pvg-api-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Persistence\\Diten.PvgService.Persistence.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-2-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213561.6018848,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 21528,
+      "bootstrap_creation_ft": 134396871616052113,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213562.645656,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "065-evaluate-pvg-api-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\Diten.BuildingBlocks.Security.Secrets\\Diten.BuildingBlocks.Security.Secrets.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213562.8735516,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35392,
+      "bootstrap_creation_ft": 134396871628778820,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213563.612702,
+      "stdout_raw_sha256": "36c0c34e5e9bb81e1cfced6dec033bbd8698d4c46d7924bbef043b8fe9c62138",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "066-preprocess-pvg-api-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\Diten.BuildingBlocks.Security.Secrets\\Diten.BuildingBlocks.Security.Secrets.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-3-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213563.615736,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 8952,
+      "bootstrap_creation_ft": 134396871636412301,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213564.3835967,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "067-evaluate-pvg-api-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213564.5592072,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22304,
+      "bootstrap_creation_ft": 134396871645624896,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213565.297413,
+      "stdout_raw_sha256": "866b89d2dca65674178563e707630b500ae7a45e9d4bcd0e36e2b8bdea5b2e8e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "068-preprocess-pvg-api-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-4-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213565.300682,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 9508,
+      "bootstrap_creation_ft": 134396871653038704,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213566.0192564,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "069-evaluate-pvg-api-5",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213566.1791828,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 29188,
+      "bootstrap_creation_ft": 134396871661839378,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213566.883588,
+      "stdout_raw_sha256": "68598fd56be6e4cbd3ba3d7c1ffae55c872387ef74e4e69b35e67ce6b3e6be5c",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "070-preprocess-pvg-api-5",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-5-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213566.888517,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 3376,
+      "bootstrap_creation_ft": 134396871668924581,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213567.7377198,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "071-evaluate-pvg-api-6",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213567.9607878,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 25588,
+      "bootstrap_creation_ft": 134396871679656149,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213568.6741037,
+      "stdout_raw_sha256": "b724ba13e5eaf26ef452c103833fb11b53a320a52f3dfa0483dc8b2fb0ec8414",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "072-preprocess-pvg-api-6",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-6-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213568.6777916,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 15160,
+      "bootstrap_creation_ft": 134396871686822673,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213569.3480437,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "073-evaluate-pvg-api-7",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Api\\Diten.PvgService.Api.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213569.4847307,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 27436,
+      "bootstrap_creation_ft": 134396871694880147,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213570.158467,
+      "stdout_raw_sha256": "487a8d033485c85e7f5d37a51dbe8dff29709eb982a4b406a0ea5ed3609f1b3e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "074-preprocess-pvg-api-7",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Api\\Diten.PvgService.Api.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-7-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213570.1616464,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 16752,
+      "bootstrap_creation_ft": 134396871701649367,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213570.8967283,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "075-evaluate-pvg-api-8",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\src\\Diten.BuildingBlocks.ModuleRegistration.Abstractions\\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213571.1196582,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 29224,
+      "bootstrap_creation_ft": 134396871711228270,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213571.7329068,
+      "stdout_raw_sha256": "6acc324fdda3d43b7b50318eb40c5c59ae1a883c4115c49834954dd1ad817f57",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "076-preprocess-pvg-api-8",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\src\\Diten.BuildingBlocks.ModuleRegistration.Abstractions\\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api-project-8-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213571.735455,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 28200,
+      "bootstrap_creation_ft": 134396871717396815,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213572.3926306,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "077-pvg-api-skip",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\check_trx_no_skipped.py",
+        "--suite",
+        "pvg-api",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api.trx"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213572.5606475,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 35228,
+      "bootstrap_creation_ft": 134396871725643595,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213572.78389,
+      "stdout_raw_sha256": "703026c402c6a1c829552ca111fcd0668d1c434f68ef0aebdebcba868c87b202",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "078-pvg-api-known-failures",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-api.trx",
+        "--suite",
+        "pvg-api"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213572.7878354,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 25680,
+      "bootstrap_creation_ft": 134396871727924176,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213574.798056,
+      "stdout_raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "079-pvg-regpv-base-restore",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "restore",
+        "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj",
+        "--source",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\empty-feed",
+        "--ignore-failed-sources",
+        "-p:NuGetAudit=false",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213574.811888,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11844,
+      "bootstrap_creation_ft": 134396871748174142,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 6,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 6,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213577.1408308,
+      "stdout_raw_sha256": "30763e8d1fe147f972a4788cce17f0a860921bf40d3541cf95d382c04da5d87a",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "080-pvg-regpv-base-tests",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "--logger",
+        "trx;LogFileName=pvg-regpv-base.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false",
+        "--disable-build-servers"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213577.1457272,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 30016,
+      "bootstrap_creation_ft": 134396871771502366,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 9,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 9,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213586.7920763,
+      "stdout_raw_sha256": "603a4c33165368f6bbc42365ae3a8741a0b4ab89d9251a5c794166e5e2d522ad",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "081-evaluate-pvg-regpv-base-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.RegPvBase.Tests\\Diten.PvgService.RegPvBase.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213586.8050654,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 32820,
+      "bootstrap_creation_ft": 134396871868093739,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213587.583347,
+      "stdout_raw_sha256": "8e01a3b178df3b72ececc626ce6cd19efbc89525e3974d5d965f56e8fba9724d",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "082-preprocess-pvg-regpv-base-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\tests\\Diten.PvgService.RegPvBase.Tests\\Diten.PvgService.RegPvBase.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base-project-1-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213587.5867348,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 14572,
+      "bootstrap_creation_ft": 134396871875901050,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213588.3515427,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "083-evaluate-pvg-regpv-base-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213588.5231135,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 23428,
+      "bootstrap_creation_ft": 134396871885270978,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213589.2230318,
+      "stdout_raw_sha256": "866b89d2dca65674178563e707630b500ae7a45e9d4bcd0e36e2b8bdea5b2e8e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "084-preprocess-pvg-regpv-base-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base-project-2-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213589.2276044,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 19976,
+      "bootstrap_creation_ft": 134396871892321701,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213590.484987,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "085-evaluate-pvg-regpv-base-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213590.666618,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 30912,
+      "bootstrap_creation_ft": 134396871906709670,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213591.5059876,
+      "stdout_raw_sha256": "68598fd56be6e4cbd3ba3d7c1ffae55c872387ef74e4e69b35e67ce6b3e6be5c",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "086-preprocess-pvg-regpv-base-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base-project-3-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213591.5120413,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 2648,
+      "bootstrap_creation_ft": 134396871915164392,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213592.6136081,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "087-evaluate-pvg-regpv-base-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213592.8240123,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 1328,
+      "bootstrap_creation_ft": 134396871928277499,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213593.59575,
+      "stdout_raw_sha256": "b724ba13e5eaf26ef452c103833fb11b53a320a52f3dfa0483dc8b2fb0ec8414",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "088-preprocess-pvg-regpv-base-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base-project-4-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213593.600909,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 17492,
+      "bootstrap_creation_ft": 134396871936053038,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213594.414669,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "089-pvg-regpv-base-skip",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\check_trx_no_skipped.py",
+        "--suite",
+        "pvg-regpv-base",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base.trx"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213594.5931168,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 17568,
+      "bootstrap_creation_ft": 134396871945968037,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213594.814209,
+      "stdout_raw_sha256": "c1caaf0ec3f78eaefe96bc3008f79f053e6ec3e071045ff07317351f875d4517",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "090-pvg-regpv-base-known-failures",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\pvg-regpv-base.trx",
+        "--suite",
+        "pvg-regpv-base"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213594.8170984,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 16640,
+      "bootstrap_creation_ft": 134396871948203417,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213596.4597976,
+      "stdout_raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "091-Diten.Web.Tests-restore",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "restore",
+        "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+        "--source",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\empty-feed",
+        "--ignore-failed-sources",
+        "-p:NuGetAudit=false",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213596.4664876,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 5376,
+      "bootstrap_creation_ft": 134396871964701943,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 14,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 14,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213599.7227666,
+      "stdout_raw_sha256": "7bef688dab05feeda908cb716e145aa3d278d3059256c47e3bb602e549161402",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "092-Diten.Web.Tests-tests",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "test",
+        "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+        "-c",
+        "Debug",
+        "--no-restore",
+        "--logger",
+        "trx;LogFileName=Diten.Web.Tests.trx",
+        "--results-directory",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence",
+        "--filter",
+        "FullyQualifiedName~PvgCaseIntakeTriageWebTests",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false",
+        "--disable-build-servers"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213599.7277234,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 5908,
+      "bootstrap_creation_ft": 134396871997326681,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 54,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 54,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213910.1845138,
+      "stdout_raw_sha256": "96dd31e2b51fdfe4babe8f3f5a35da2804e0d9c6d5af68a65e93e4a895b72c63",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "093-evaluate-Diten.Web.Tests-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web.Tests\\Diten.Web.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213910.201164,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 6328,
+      "bootstrap_creation_ft": 134396875102339855,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213911.1259315,
+      "stdout_raw_sha256": "b968ec1c03c9c528207d1b9d970b8663f243130519c6f2bdbf3b04bb9ab4e751",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "094-preprocess-Diten.Web.Tests-1",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web.Tests\\Diten.Web.Tests.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-1-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213911.1325202,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 29888,
+      "bootstrap_creation_ft": 134396875111381909,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213912.0431988,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "095-evaluate-Diten.Web.Tests-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Api\\Diten.PvgService.Api.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213912.4250546,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 2308,
+      "bootstrap_creation_ft": 134396875124302786,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213913.29804,
+      "stdout_raw_sha256": "487a8d033485c85e7f5d37a51dbe8dff29709eb982a4b406a0ea5ed3609f1b3e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "096-preprocess-Diten.Web.Tests-2",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Api\\Diten.PvgService.Api.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-2-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213913.303787,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 19792,
+      "bootstrap_creation_ft": 134396875133082461,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213914.4439347,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "097-evaluate-Diten.Web.Tests-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\src\\Diten.BuildingBlocks.ModuleRegistration.Abstractions\\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213914.8007803,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 32556,
+      "bootstrap_creation_ft": 134396875148076978,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213915.5994093,
+      "stdout_raw_sha256": "6acc324fdda3d43b7b50318eb40c5c59ae1a883c4115c49834954dd1ad817f57",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "098-preprocess-Diten.Web.Tests-3",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\src\\Diten.BuildingBlocks.ModuleRegistration.Abstractions\\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-3-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213915.6043127,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11148,
+      "bootstrap_creation_ft": 134396875156097233,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213916.4691608,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "099-evaluate-Diten.Web.Tests-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\Diten.BuildingBlocks.Security.Secrets\\Diten.BuildingBlocks.Security.Secrets.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213916.6590981,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 8976,
+      "bootstrap_creation_ft": 134396875166678759,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213917.4826434,
+      "stdout_raw_sha256": "36c0c34e5e9bb81e1cfced6dec033bbd8698d4c46d7924bbef043b8fe9c62138",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "100-preprocess-Diten.Web.Tests-4",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.Building.Blocks\\Diten.BuildingBlocks.Security.Secrets\\Diten.BuildingBlocks.Security.Secrets.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-4-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213917.4912643,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 30808,
+      "bootstrap_creation_ft": 134396875174986672,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213918.3301396,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "101-evaluate-Diten.Web.Tests-5",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Persistence\\Diten.PvgService.Persistence.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213918.4958234,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 2612,
+      "bootstrap_creation_ft": 134396875184991601,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213919.2215772,
+      "stdout_raw_sha256": "7818b108dbc32b040510e15c06c585354d472f3542db92c8229d0e53d5bdb2cb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "102-preprocess-Diten.Web.Tests-5",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Persistence\\Diten.PvgService.Persistence.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-5-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213919.225282,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 33052,
+      "bootstrap_creation_ft": 134396875192285341,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213919.9587336,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "103-evaluate-Diten.Web.Tests-6",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213920.119616,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 10404,
+      "bootstrap_creation_ft": 134396875201231464,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213920.806963,
+      "stdout_raw_sha256": "866b89d2dca65674178563e707630b500ae7a45e9d4bcd0e36e2b8bdea5b2e8e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "104-preprocess-Diten.Web.Tests-6",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Infrastructure\\Diten.PvgService.Infrastructure.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-6-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213920.8109717,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 23944,
+      "bootstrap_creation_ft": 134396875208156579,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213921.5471442,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "105-evaluate-Diten.Web.Tests-7",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213921.6923356,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 31592,
+      "bootstrap_creation_ft": 134396875216964666,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213922.406059,
+      "stdout_raw_sha256": "68598fd56be6e4cbd3ba3d7c1ffae55c872387ef74e4e69b35e67ce6b3e6be5c",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "106-preprocess-Diten.Web.Tests-7",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Application\\Diten.PvgService.Application.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-7-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213922.409473,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 15812,
+      "bootstrap_creation_ft": 134396875224135955,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213923.1232073,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "107-evaluate-Diten.Web.Tests-8",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213923.2957501,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 18756,
+      "bootstrap_creation_ft": 134396875233006261,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213924.0716214,
+      "stdout_raw_sha256": "b724ba13e5eaf26ef452c103833fb11b53a320a52f3dfa0483dc8b2fb0ec8414",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "108-preprocess-Diten.Web.Tests-8",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\services\\Diten.PvgService\\src\\Diten.PvgService.Domain\\Diten.PvgService.Domain.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-8-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213924.0749238,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 26560,
+      "bootstrap_creation_ft": 134396875240786231,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213924.8944523,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "109-evaluate-Diten.Web.Tests-9",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web\\Diten.Web.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-getItem:Compile,ProjectReference,EmbeddedResource,RazorGenerate,RazorComponent,Content,AdditionalFiles,AnalyzerConfigFiles",
+        "-getProperty:MSBuildAllProjects,MSBuildProjectFullPath,DirectoryBuildPropsPath,DirectoryBuildTargetsPath,TargetFramework,WebPublishProfileFile",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213925.04791,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 11504,
+      "bootstrap_creation_ft": 134396875250742580,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213928.9428446,
+      "stdout_raw_sha256": "60365a29b6b88a53c2389f37794ec1fabe0b113fd7469bf53ff65893dedbc3bc",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "110-preprocess-Diten.Web.Tests-9",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "msbuild",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web\\Diten.Web.csproj",
+        "-nologo",
+        "-p:Configuration=Debug",
+        "-preprocess:C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests-project-9-preprocessed.xml",
+        "-nodeReuse:false",
+        "-p:UseSharedCompilation=false",
+        "-p:UseRazorBuildServer=false"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213929.0199523,
+      "timeout_seconds": 180,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22548,
+      "bootstrap_creation_ft": 134396875290253507,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213931.4444668,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "111-Diten.Web.Tests-skip",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\check_trx_no_skipped.py",
+        "--suite",
+        "Diten.Web.Tests",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests.trx"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213934.6563115,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22668,
+      "bootstrap_creation_ft": 134396875346606294,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213934.8716948,
+      "stdout_raw_sha256": "3e513c203b7a229e074456ae3d9ccbc5ea6042a688cfe6204b09a8fcbb0f3050",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "112-Diten.Web.Tests-known-failures",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\evidence\\Diten.Web.Tests.trx",
+        "--suite",
+        "Diten.Web.Tests"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213934.8797317,
+      "timeout_seconds": 1800,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 23848,
+      "bootstrap_creation_ft": 134396875348838538,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 32,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213936.434467,
+      "stdout_raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "113-node-test-bin-negative-after-build",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--no-global-search-paths",
+        "-e",
+        "let missing=false;try{require.resolve('jsdom')}catch(e){if(e.code!=='MODULE_NOT_FOUND')throw e;missing=true}if(!missing)throw Error('MissingJsdom context gained dependency fallback');console.log(JSON.stringify({missingJsdom:true,cwd:process.cwd()}));"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src\\frontend\\Diten.Web.Tests\\bin\\Debug\\net8.0",
+      "start_epoch": 1795213936.4515033,
+      "timeout_seconds": 30,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 22808,
+      "bootstrap_creation_ft": 134396875364550631,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 2,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213936.6013877,
+      "stdout_raw_sha256": "4caa3f1b00d81646eadbc83940a8e62cae1a6e87cc9d07232200899bfa65bd56",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "114-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "diff",
+        "--exit-code",
+        "--"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213950.4468887,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 15396,
+      "bootstrap_creation_ft": 134396875504521517,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213968.6294885,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "115-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "diff",
+        "--cached",
+        "--exit-code",
+        "3181483a8432055179e7a4360ff8512de3a46251",
+        "--"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213968.6325946,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 32840,
+      "bootstrap_creation_ft": 134396875686362078,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213968.7817674,
+      "stdout_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "116-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+        "ls-files",
+        "--stage",
+        "-z"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\src",
+      "start_epoch": 1795213968.7847266,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 21192,
+      "bootstrap_creation_ft": 134396875688033855,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213968.9796457,
+      "stdout_raw_sha256": "ce341612e0a31dd51cbe43d0c7f1240f246e32bd4d7f71335bd6a621c1765ccb",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "117-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213968.9992654,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 27564,
+      "bootstrap_creation_ft": 134396875690045649,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213969.1351106,
+      "stdout_raw_sha256": "007bc5af1752553db764f17e7a635020a819d63dff529304df455d4f3435958f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "118-git",
+      "argv": [
+        "git",
+        "-C",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+      "start_epoch": 1795213987.6002133,
+      "timeout_seconds": 60,
+      "payload_released": true,
+      "ownership_assigned": true,
+      "job_empty_after": true,
+      "forced_own_job_termination": false,
+      "bootstrap_pid": 14992,
+      "bootstrap_creation_ft": 134396875876038578,
+      "accounting_before_payload": {
+        "active": 1,
+        "total": 1,
+        "terminated": 0
+      },
+      "exit": 0,
+      "accounting_before_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "accounting_after_cleanup": {
+        "active": 0,
+        "total": 3,
+        "terminated": 0
+      },
+      "bootstrap_exit_after_cleanup": 0,
+      "end_epoch": 1795213987.724868,
+      "stdout_raw_sha256": "007bc5af1752553db764f17e7a635020a819d63dff529304df455d4f3435958f",
+      "stderr_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "every_launched_job_empty": true,
+  "forced_own_job_terminations": 0,
+  "observed_mongo": [
+    {
+      "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\runtime\\diten-pvg-intake-mongo-83c275c391784d7796dff7a8381ede1d",
+      "pid": 1524,
+      "port": 64066,
+      "data": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-baseline-runner-prepare-01/f6dd517fafa943d69625e23e16005cac/runtime/diten-pvg-intake-mongo-83c275c391784d7796dff7a8381ede1d/data",
+      "data_present": true,
+      "creation_ft": 134396871183107175,
+      "root_removed": true,
+      "original_pid_exited": true,
+      "port_closed": true
+    },
+    {
+      "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\runtime\\diten-pvg-intake-mongo-1e6fe1e5bdbe4842939ea3cf490e9b7e",
+      "pid": 23012,
+      "port": 60497,
+      "data": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-baseline-runner-prepare-01/f6dd517fafa943d69625e23e16005cac/runtime/diten-pvg-intake-mongo-1e6fe1e5bdbe4842939ea3cf490e9b7e/data",
+      "data_present": true,
+      "creation_ft": 134396871352382670,
+      "root_removed": true,
+      "original_pid_exited": true,
+      "port_closed": true
+    },
+    {
+      "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\runtime\\diten-pvg-intake-mongo-6bc3f1183122414d996a57a786021f02",
+      "pid": 34104,
+      "port": 57341,
+      "data": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-baseline-runner-prepare-01/f6dd517fafa943d69625e23e16005cac/runtime/diten-pvg-intake-mongo-6bc3f1183122414d996a57a786021f02/data",
+      "data_present": true,
+      "creation_ft": 134396871395614314,
+      "root_removed": true,
+      "original_pid_exited": true,
+      "port_closed": true
+    },
+    {
+      "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\runtime\\diten-pvg-intake-mongo-2b4988645f4740539e24d550fc78d69f",
+      "pid": 5744,
+      "port": 61809,
+      "data": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-baseline-runner-prepare-01/f6dd517fafa943d69625e23e16005cac/runtime/diten-pvg-intake-mongo-2b4988645f4740539e24d550fc78d69f/data",
+      "data_present": true,
+      "creation_ft": 134396871468808160,
+      "root_removed": true,
+      "original_pid_exited": true,
+      "port_closed": true
+    },
+    {
+      "root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-fe-baseline-runner-prepare-01\\f6dd517fafa943d69625e23e16005cac\\runtime\\diten-pvg-intake-mongo-49d00c5a901b45e9b5d434fa0d9f2372",
+      "pid": 34488,
+      "port": 64959,
+      "data": "C:/Users/epenc/AppData/Local/Temp/pvg-fe-baseline-runner-prepare-01/f6dd517fafa943d69625e23e16005cac/runtime/diten-pvg-intake-mongo-49d00c5a901b45e9b5d434fa0d9f2372/data",
+      "data_present": true,
+      "creation_ft": 134396871556159408,
+      "root_removed": true,
+      "original_pid_exited": true,
+      "port_closed": true
+    }
+  ],
+  "node_dependency_trees_unchanged": true,
+  "remaining_private_roots": [],
+  "sources_unchanged": true,
+  "real_index_unchanged": true,
+  "real_head_unchanged": true,
+  "complete_success_cleanup": true
+}

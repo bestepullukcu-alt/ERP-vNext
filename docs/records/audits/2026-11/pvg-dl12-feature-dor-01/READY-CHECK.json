@@ -1,0 +1,66 @@
+{
+  "utc": "2026-11-20T19:24:28.066385+00:00",
+  "source_head": "b2651a119d3d0f43f0febb8926b3422ca01e9c2d",
+  "hash_checks": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+    "execution/domains/pharmacovigilance/domain-config.md": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+    "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-BE.py": "a21820922d34f6588740aba98724a1b10b3db4dccc5261abcbe3aa7eb3fbb8ed"
+  },
+  "be_six_sources_equal_saved_baseline": true,
+  "new_be_test_absent": true,
+  "l10n": [
+    {
+      "language": "en",
+      "keys": 111,
+      "lf_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d"
+    },
+    {
+      "language": "tr",
+      "keys": 111,
+      "lf_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811"
+    },
+    {
+      "language": "fr",
+      "keys": 111,
+      "lf_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f"
+    },
+    {
+      "language": "es",
+      "keys": 111,
+      "lf_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60"
+    },
+    {
+      "language": "zh",
+      "keys": 111,
+      "lf_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8"
+    },
+    {
+      "language": "ar",
+      "keys": 111,
+      "lf_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1"
+    },
+    {
+      "language": "ru",
+      "keys": 111,
+      "lf_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1"
+    }
+  ],
+  "states": [
+    {
+      "wp": "WP-0230-DL12",
+      "previous": "BLOCKED",
+      "state": "READY"
+    },
+    {
+      "wp": "WP-0230-DL12-BE",
+      "previous": "PLANNED",
+      "state": "READY"
+    },
+    {
+      "wp": "WP-0230-DL12-L10N",
+      "previous": "PLANNED",
+      "state": "READY"
+    }
+  ],
+  "limits": "DoR readiness only; normal prompt reviews/gates and separate actual worker dispatch remain required."
+}

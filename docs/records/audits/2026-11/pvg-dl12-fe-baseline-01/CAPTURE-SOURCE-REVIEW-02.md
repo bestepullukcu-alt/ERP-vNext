@@ -1,0 +1,19 @@
+# FE capture v2 — bağımsız kaynak takip incelemesi
+
+Sonuç: UYGUN (ön SOURCE REVIEW). Açık kritik/engelleyici bulgu: 0. Pin hâlâ None; bu hüküm tam producer veya ürün acceptance0 değildir.
+
+İnceleyen /root/pvg_dl12_be_prompt_review_01; CT yazarı ayrı root oturumudur. İstenen inherited gpt-6.2-astra/high; gerçek model/effort verilemiyor. Exact v2:13.858 bayt, raw/LF SHA39c7064c77846c375db69aaf0d6e8342324286764d8047e1820ac6274c303813. Önceki kaynak8c13290cc878866615724572bf300888b720f7e35b55bfdf25962de2bec72716 korundu.
+
+Üç bulgunun kapanışı:
+
+- F-1: __debug__ kontrolü argparse/baseline okumasından önce açık RuntimeError verir. Kendi subprocess'imde exact dosya python -B -O ile erken exit1 verdi; stderr ham hash ve argv kaydedildi. Bu yalnız giriş guard negatifidir, full producer run değildir.
+- F-2: C# eşlemesi sınıf+metot sınırını ve isteğe bağlı Theory argümanlarını sona kadar bağlar; method_fake_suffix/methodprefix sayılmaz. JS, exact fullName veya describe prefix'inden sonra tam zorunlu adla bitişi ister; keyfi son ek kabul edilmez. Root RESULT.json'daki normal/prefix/suffix saf ifade kontrolleri bu exact kaynak hashine bağlıdır; davranış testi diye sunulmaz.
+- F-3: Başlangıç baseline blob'u bir batch, bütün frozen/compiled/artifact girdileri ikinci toplu batch ile okunur. (commit,path) cache ve set dedup nedeniyle suite/ref döngüleri binlerce Git spawn üretmez; normal erişimler cache hit'tir. Timeout'lar sınırlıdır ve check=True başarısız Git komutunu reddeder. Önceki per-path spawn maliyeti kapandı; gerçek baseline closure ve tam capture süresi henüz ölçülmedi.
+
+Batch protokolü: request UTF8 ve tam40hex commit ile commit:path satırlarıdır; CR/LF içeren yollar reddedilir. Yanıt başlığı üç alan/40hex/blob olmalı; size>=0, tam content uzunluğu, separator newline ve sonda trailing byte olmaması denetlenir. Missing/tree/malformed header, truncated content, eksik separator veya ekstra çıktı exception/başarısız çıkışla durur; üretim akışı bunu yutup PASS'e dönüştürmez. İçerik bayt sayısıyla dilimlendiği için binary ve gömülü newline veri olarak kalır. Kısmi cache oluşsa bile istisna dışarı yayılır, devam eden acceptance yolu yoktur.
+
+Kendi salt-okunur exact AST helper çağrımda gerçek Git H3181483a8432055179e7a4360ff8512de3a46251 üzerinde AGENTS.md ve boşluklu Blueprint.xlsx binary blob'u tekil git show ile birebir eşleşti; eksik yol reddedildi. Repoda non-ASCII yol sayısı0 olduğundan gerçek non-ASCII path koşusu iddia edilmez. UTF8 encoding kaynakta doğru; path karakterleri header split'e katılmıyor. Root'un bağımsız helper kaydı400gerçek key/iki ref/13tekil karşılaştırma bildirir; bunu full producer/E2 sonucu diye kullanmadım.
+
+Ters fark kontrolünde yalnız yeni guard/cache/blob erişimleri, bounded-name eşlemeleri ve timeout ekleri geri alınınca önceki ham kaynak birebir elde edildi. Böylece altı yol, baseline/schema/frozen/compiled-source kontrolleri, Web62/JS34 korunumu, API/Reg case multisetleri, source/DLL/TRX storage/mtime kontrolleri, altı actual CLI, acceptance ifadesi ve no-loss/E2 sınırları değişmemiştir. Corpus/token/metot/cleanup davranışları hâlâ bağımsız actual E2 ister; isim/count/hash kontrolü bunları kanıtlamaz. Same-run actual source-before/after, argv, DLL/TRX hash kayıtları işçi ve bağımsız doğrulamada ayrıca zorunludur; imzasız receipt kriptografik kanıt sayılmaz.
+
+Tam producer, fake baseline veya ürün test suite çalıştırılmadı; kaynak/metadata/runner değiştirilmedi. Kendi çıktı dizinine guard ham stdout/stderr, HELPER-CHECK, DELTA-CHECK ve bu kayıt yazıldı. BASELINE/pin tamamlanınca mevcut gerçek GREEN run → eksik feature adları/altı diff nedeniyle producer RED, ardından açık structural corruption negatifleri ölçülmeli. Gerçek pozitif0 ancak FE uygulaması sonrasındaki gerçek koşuyla beklenir. Bu inceleme o çıktıları varsaymaz.

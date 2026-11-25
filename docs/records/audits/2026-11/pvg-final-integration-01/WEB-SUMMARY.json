@@ -1,0 +1,69 @@
+{
+  "kind": "Completed actual unfiltered full Web integration runtime",
+  "recorded_at_utc": "2026-11-21T18:04:43.602603+00:00",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "integrated_worker_head": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "full_web_pass": false,
+  "actual_test_exit": 1,
+  "outcomes": {
+    "Passed": 4584,
+    "Failed": 1
+  },
+  "total": 4585,
+  "skipped": 0,
+  "strict_skip_exit": 0,
+  "known_failure_exit": 1,
+  "failed_test_names": [
+    "Diten.Web.Tests.JavaScript.ReturnDetailsBehaviorTests.DetailsJs_shows_names_not_ids_gates_the_holds_request_and_separates_not_found_from_error"
+  ],
+  "pvg_78_pass": true,
+  "pvg_78_exact_previous_independent_name_multiset": true,
+  "pvg_assertion_receipts_sha_valid": 176,
+  "raw_trx_sha256": "b292c2a99db9c4b8b68e3b07ee3ed6b190b40bfc861ff1ad7c4501d1aea5ad73",
+  "lf_trx_sha256": "24095cbb4ecdeaf81061ce33242dc1bd071ee6c8a99ef830060452536ef7ca2f",
+  "dll_sha256": "909cb76b8ee89c8a7988b7e41439bd0ff53f395ca7c2cc5777d15f3cd1090b9a",
+  "dll_storage": [
+    "c:\\users\\epenc\\appdata\\local\\temp\\pvg-final-full-web\\84e850957f93401d8296171b6ab57601\\src\\frontend\\diten.web.tests\\bin\\debug\\net8.0\\diten.web.tests.dll"
+  ],
+  "dll_mtime_ns": 1795283219283981700,
+  "trx_start": "2026-11-21T21:47:00.273032+04:00",
+  "trx_finish": "2026-11-21T22:01:26.119294+04:00",
+  "source_to_dll_to_actual_trx_storage_freshness_verified": true,
+  "evaluated_compile_projects": 9,
+  "tracked_compile_inputs": 3728,
+  "scratch_tracked_source_files": 26657,
+  "root_tracked_source_files": 26657,
+  "root_and_private_sources_unchanged": true,
+  "root_head_and_index_unchanged": true,
+  "original_nuget_original_node_private_node_hash_trees_unchanged": true,
+  "actual_jobs": 69,
+  "all_jobs_empty": true,
+  "forced_job_terminations": 0,
+  "runtime_result_error": null,
+  "prior_attempt": {
+    "kind": "Infrastructure restore XML encoding declaration failure before any tests",
+    "jobs": 47,
+    "all_jobs_empty": true,
+    "forced_job_terminations": 0,
+    "no_tests": true,
+    "not_product_red_or_pass": true,
+    "retained": true
+  },
+  "observer_limits": [
+    "LIVE-OBSERVATION-01.json is null from sandbox process visibility/CIM denial; it proves no process state.",
+    "LIVE-OBSERVATION-03.json is null from observer timestamp parsing; use 02/04/05/06 for actual birth/CPU observations.",
+    "CPU/descendant observations never establish individual test progress."
+  ],
+  "model": "verilemiyor",
+  "effort": "verilemiyor",
+  "limits": [
+    "Full Web gate is FAIL even though PVG78 passed and strict skip check returned0.",
+    "No out-of-scope product/test/encoding edits, skips, waivers or further test retries.",
+    "Matching Returns source blobs with origin/main establish source equality only, not origin/main runtime PASS.",
+    "No E4, live validation, CI, PR readiness, main merge or operational acceptance claim.",
+    "Hashes establish artifact integrity; no cryptographic or person signature is claimed.",
+    "Private source/bin/cache and raw temporary work are retained; only owned Jobs are asserted empty."
+  ],
+  "compile_settings_main_comparison": "COMPILE-SETTINGS-MAIN-COMPARISON.json",
+  "postprocessing_note": "Initial collector used interim64Jobcount and stopped before summary; partial external run-01 retained. Final completed runner has69Jobs, validated from terminal actual-commands; no tests/builds were repeated by collector."
+}

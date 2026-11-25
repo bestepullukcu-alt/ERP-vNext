@@ -1,0 +1,7 @@
+# Test — CT capture v1.1 gerçek taban kontrolü
+
+İlk v1.0 çağrısı Path indeksleme TypeError'ı yüzünden JSON/CLI üretmeden durdu; özgün kaynak ve dış actual-baseline-01 stderr saklanır, planlı RED değildir. v1.1 yalnız tek Path join düzeltmesi ve sürüm etiketidir; bağımsız SOURCE UYGUN0, acceptance eşikleri aynı. Dört ürün suite'i yeniden çalıştırılmadı; aynı doğrulanmış H318 actual sonuçları/DLL'leri kullanıldı.
+
+V1.1 tam normal capture 22:40:25–40UTC çıktı1 ve JSON üretti: Web62/JS34/API456/Reg211 eski case multisetleri/freshness/storage doğru; altı gerçekCLI0. Yeni6C#/4JS henüz yok ve changedpaths0; bu nedenle acceptancefalse beklenen mekanik tabandır, yeni davranış assertionRED'i değildir. Completed runtime kaynağı H318 sabit tarihsel kayıttır; private clone yalnız koşu bittikten sonra ecb7719 metadata/producer commitine detached alındı, productsource/DLL bytes aynı ve temiz kaldı.
+
+Üç actual structural negatif: optimizePython frozen kaynakla erkenexit1/noJSON; dış kopyada yalnız yanlışbaselinepin erkenexit1/noJSON; değiştirilmiş dışTRXstorage, web all_storage_bound true→false veexit1. Sonuncusunda wholebaseline zatenRED olduğundan acceptance GREEN→RED gibi sunulmaz; ölçülen binding alanının reddidir. Özgün kaynak/DLL'ler değişmedi. CAPTURE-CHECK.json actualargv/exit/zaman/hashes ve dış dosyaları bağlar; CAPTURE-BASELINE.json tamnormal çıktıdır. Gerçek pozitif0 ve no-loss davranış kanıtı FE işi sonrasını bekler.

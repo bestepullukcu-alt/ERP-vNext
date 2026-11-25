@@ -1,0 +1,31 @@
+{
+  "kind": "Cheap exact-source structural preflight; not dispatch/HIGH approval",
+  "prompts": [
+    {
+      "role": "shared",
+      "prompt_path": "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL7-CI-SHARED-01-v1.0.md",
+      "prompt_sha256": "11f3482f777d8f05dafe871bbadbd49d31173f9b7eb5fc4f8d5e81119b62ce95",
+      "bytes": 34388,
+      "source_count": 105,
+      "quotes_verified": 4,
+      "source_head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+      "scope_count": 23,
+      "preflight": "parse/check_sources/check_contract/check_risk only; not full normal gate or HIGH review",
+      "source_pack_sha256": "ae17bce1312b5fdc63c7858edd112392639e6db7b730146dbfa23f780e2adb6e",
+      "actual_pack_exit_code": 0
+    },
+    {
+      "role": "views",
+      "prompt_path": "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL7-CI-VIEWS-01-v1.0.md",
+      "prompt_sha256": "a9052d0d3926192863d031d7bedecd38f00cfc8d0effc4bfdcbc94b070762627",
+      "bytes": 31740,
+      "source_count": 75,
+      "quotes_verified": 4,
+      "source_head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+      "scope_count": 4,
+      "preflight": "parse/check_sources/check_contract/check_risk only; not full normal gate or HIGH review",
+      "source_pack_sha256": "6b32bb54dcf7e6aa9e05ce644ca84b960ac9c38603e9afee8929bcf8ee24793b",
+      "actual_pack_exit_code": 0
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "recorded_utc": "2026-11-23T13:05:55.777249+00:00",
+  "tested_integration_H": "6361654b6df9334803c3651231c754fe1d0685ad",
+  "before_final_metadata_H": "833fba33fa7288b585501a7307abaf3ff4d278f8",
+  "product_test_guard_CI_delta_since_integration_measurement": [],
+  "H82_delta_exact27": [
+    "frontend/Diten.Web/Resources/PageHelpResource.ar.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.en.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.es.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.fr.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.ru.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.tr.resx",
+    "frontend/Diten.Web/Resources/PageHelpResource.zh.resx",
+    "frontend/Diten.Web/Resources/SharedResource.ar.resx",
+    "frontend/Diten.Web/Resources/SharedResource.en.resx",
+    "frontend/Diten.Web/Resources/SharedResource.es.resx",
+    "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+    "frontend/Diten.Web/Resources/SharedResource.ru.resx",
+    "frontend/Diten.Web/Resources/SharedResource.tr.resx",
+    "frontend/Diten.Web/Resources/SharedResource.zh.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ar.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.en.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.es.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.fr.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ru.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.tr.resx",
+    "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.zh.resx",
+    "frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml",
+    "frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js"
+  ],
+  "authority_pins": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+    "execution/domains/pharmacovigilance/domain-config.md": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+    "docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md": "0fa566c24df9a3d0910e1ebd1b4febc68711d92ca22e64dbc754535fe217e0d7"
+  },
+  "kind": "Git input identity continuity, not finalHruntime or CI PASS",
+  "native_full_JS_exit": 1,
+  "final_required_LinuxCI_AC45_pending": true
+}

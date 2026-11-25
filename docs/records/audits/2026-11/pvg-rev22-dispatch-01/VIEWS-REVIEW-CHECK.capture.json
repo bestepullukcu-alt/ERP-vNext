@@ -1,0 +1,18 @@
+{
+  "kind": "Actual prompt review-record check; not normal dispatch",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "review-check",
+    "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL7-CI-VIEWS-01-v1.0.md",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-REV22-VIEWS-v1.0.md"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "5dbfa7a7ace9b3dd916abdd6a0cd65aa9313747ab183c7d58435e19d06a4fbbc",
+  "stderr": "",
+  "prompt_sha256": "a9052d0d3926192863d031d7bedecd38f00cfc8d0effc4bfdcbc94b070762627",
+  "review_sha256": "bbd3ba3c1b388b012765e57442063681b1a62d1bf7c538e60890afdfe5809daf"
+}

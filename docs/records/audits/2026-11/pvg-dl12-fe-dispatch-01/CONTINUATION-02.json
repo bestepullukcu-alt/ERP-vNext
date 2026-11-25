@@ -1,0 +1,25 @@
+{
+  "kind": "Existing dispatched WP continuation after interrupted turn; no new scope or success claim",
+  "observed_utc": "2026-11-21T15:15:37.834045+00:00",
+  "root_head": "396061bba44a813fa62917910563c2d16ab38206",
+  "wp": "WP-0230-DL12-FE",
+  "state_unchanged": "IN_PROGRESS",
+  "prior_agent": "/root/pvg_dl12_fe_implementation",
+  "continuation_agent": "/root/pvg_dl12_fe_continuation_02",
+  "requested_model_effort": "inherited gpt-6.2-astra/high",
+  "actual_model_effort": "verilemiyor",
+  "worker_head": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "worker_branch": "feature/pvg/mod-0230-dl12-fe",
+  "expected_dirty_paths": [
+    "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+    "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js"
+  ],
+  "product_paths_applied": false,
+  "frozen_prompt_sha256": "d02639654b0551cb572e5b91738e98b2320d9e0ee7ba44890bf5a40917ba6789",
+  "normal_gate_proof_commit": "6679972f4f6fd312ac3daeda520435fd8ac16ef4",
+  "partial_evidence": "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-fe-evidence/1fca73071c67446ea91e7361b5b58074",
+  "partial_red_limit": "Prior worker observed real JS/xUnit assertion failures on old product. Interrupted red-csharp-canonical has raw source/argv/stdout but no final TRX/cleanup receipt, so no completed aggregate or unforced-cleanup claim. First rawCRLF-vs-LF setup failure is not assertion RED. Continuation must inspect and preserve evidence/WIP before new work.",
+  "process_observation_limit": "Narrow unique evidence-path process query returned only querying pwsh. This snapshot alone is not historical Job cleanup proof. Worker must verify own bootstrap birth/descendants before restart; stale PIDs must never be killed blindly.",
+  "root_product_writes": false,
+  "push_pr_authorized": false
+}

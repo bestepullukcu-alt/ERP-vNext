@@ -1,0 +1,54 @@
+{
+  "kind": "Verified local dependency materialization only; no npm install/download/restore/build/test/host/product/GO",
+  "recorded_utc": "2026-11-23T10:02:09.465244+00:00",
+  "source_dependency_pins": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-full-web-integration-ready-01\\DEPENDENCY-PINS.json",
+  "source_dependency_pins_sha256": "53d0e78fb672b7281c2d0fafb076f919c772839dd1a56a8239c1e99bbe458bdb",
+  "nuget_source": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-kanıt\\WP-0230-DL12-PREP-WEB-1795176414809\\nuget",
+  "nuget_pinned_files_verified": 2085,
+  "nuget_nupkg_count": 87,
+  "lock_lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+  "node": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+  "node_raw_sha256": "247e9693d316da9857e44990e5e11709f596f18112251b8026ec6eed80bdf38a",
+  "dotnet": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+  "dotnet_raw_sha256": "d20cc5cd62faf6a593a19149cb7b6ecd7d3ce7b06c19e6682767eb09e83ff6a2",
+  "python": "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "versions_from_verified_pins": {
+    "vitest": "2.1.9",
+    "jsdom": "26.1.0"
+  },
+  "workers": [
+    {
+      "role": "shared",
+      "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-shared\\ERP-vNext-git",
+      "head": "6571d2cbbe8e6bd7db99ed420f05f381f9df51d9",
+      "branch": "feature/pvg/mod-0230-r22-shared-ci",
+      "node_modules": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-shared\\ERP-vNext-git\\frontend\\Diten.Web\\node_modules",
+      "node_files_verified": 3481,
+      "node_bytes_verified": 48437254,
+      "private_environment_root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-shared-env-9wiogggg",
+      "nuget_packages": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-shared-env-9wiogggg\\nuget",
+      "dotnet_cli_home": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-shared-env-9wiogggg\\dotnet-home",
+      "temp": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-shared-env-9wiogggg\\tmp",
+      "evidence": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-shared-env-9wiogggg\\evidence",
+      "status_porcelain": ""
+    },
+    {
+      "role": "views",
+      "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git",
+      "head": "6571d2cbbe8e6bd7db99ed420f05f381f9df51d9",
+      "branch": "feature/pvg/mod-0230-r22-page-help",
+      "node_modules": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git\\frontend\\Diten.Web\\node_modules",
+      "node_files_verified": 3481,
+      "node_bytes_verified": 48437254,
+      "private_environment_root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-views-env-34r_fel1",
+      "nuget_packages": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-views-env-34r_fel1\\nuget",
+      "dotnet_cli_home": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-views-env-34r_fel1\\dotnet-home",
+      "temp": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-views-env-34r_fel1\\tmp",
+      "evidence": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-views-env-34r_fel1\\evidence",
+      "status_porcelain": ""
+    }
+  ],
+  "unlisted_generated_source_node_cache_not_copied": true,
+  "source_nuget_not_written": true,
+  "ignored_destination_only": true
+}

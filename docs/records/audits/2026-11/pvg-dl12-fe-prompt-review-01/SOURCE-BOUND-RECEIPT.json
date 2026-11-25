@@ -1,0 +1,822 @@
+{
+  "expected_head": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "worker_branch": "feature/pvg/mod-0230-dl12-fe",
+  "worker_status": "clean",
+  "source_count": 80,
+  "sources": [
+    {
+      "path": ".antigravity/agents/frontend-ui-ux.md",
+      "git_blob": "9561dd983e9286d19dcbddbe291ee0122b4e031e",
+      "git_bytes": 17920,
+      "git_sha256": "745a3a931a3a4a16fc70537ea574e6f63a7c5b3d5e20b6dac0d527a9eb85f8f0",
+      "root_raw_sha256": "daa41e60cc0e2d071dc7e8e2856f2a80a184eed74b9470494024d48a1bac70c9",
+      "worker_raw_sha256": "daa41e60cc0e2d071dc7e8e2856f2a80a184eed74b9470494024d48a1bac70c9",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/agents/testing-agent.md",
+      "git_blob": "b8bbffbb84b09fa19bbc51d2d915ec796057d1ce",
+      "git_bytes": 6049,
+      "git_sha256": "c6204179360ca340391905a774e9d9dedf60dae915e56befbb1e4c31c111056d",
+      "root_raw_sha256": "561a6f9fa63e3e202ccdf76e35f1bf838ea5f95478d48c5ead7dff94c866be93",
+      "worker_raw_sha256": "561a6f9fa63e3e202ccdf76e35f1bf838ea5f95478d48c5ead7dff94c866be93",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/business-module-enforcement-standard.md",
+      "git_blob": "c74780b975cebb50b6a6b3bccddadffcf49696af",
+      "git_bytes": 18560,
+      "git_sha256": "c5881e2e7350f6e0f909a0f95bdb8c099e0037df0e2b77c0b6359b5c042ff22a",
+      "root_raw_sha256": "3fee99f76fafe180b871c2f03aad37a04587025c57edcc5688647debbc6623fb",
+      "worker_raw_sha256": "3fee99f76fafe180b871c2f03aad37a04587025c57edcc5688647debbc6623fb",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/code-style.md",
+      "git_blob": "dd89464c42e4a093d2d6f0da303cf765985df87c",
+      "git_bytes": 7831,
+      "git_sha256": "1d22691f317acddaafe8b24dbefa131cf9987bdccfe0aa352a6bc1ed14f24f63",
+      "root_raw_sha256": "92e72d40029336bbb69291604f96eacc142a1c6500678aa596d2e95a388d978e",
+      "worker_raw_sha256": "92e72d40029336bbb69291604f96eacc142a1c6500678aa596d2e95a388d978e",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/configuration-safety.md",
+      "git_blob": "6060b696157b85364f92f819bfcb853e64a6a7fa",
+      "git_bytes": 839,
+      "git_sha256": "31c0784ec9a25629b8408b2b10bae0a5e5b27f9c4160cd5c75a357d9ea7bd8d9",
+      "root_raw_sha256": "8d0596b8fb01ebb9a24614bf91e9388079a2f1823db57c2ed7dc0ee01fb37800",
+      "worker_raw_sha256": "8d0596b8fb01ebb9a24614bf91e9388079a2f1823db57c2ed7dc0ee01fb37800",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/cross-module-change-consent.md",
+      "git_blob": "2bc797a84fc06078cdf24fc6dc7964d4ed3e9e01",
+      "git_bytes": 4057,
+      "git_sha256": "ac5c6012cc9af7b1de8631e9ee1208776e7acb2f1cc6754cdca1811368dece2a",
+      "root_raw_sha256": "6e3d7675c3e3f2c3ac8ced1258a91908df9ce9332b4e8e4745c95cee11bd8802",
+      "worker_raw_sha256": "6e3d7675c3e3f2c3ac8ced1258a91908df9ce9332b4e8e4745c95cee11bd8802",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/data-scope-enforcement.md",
+      "git_blob": "deef92a253bca17a2c06b744f5e1f9c598088f56",
+      "git_bytes": 9862,
+      "git_sha256": "7f9036a1f49e419c448e4a4e53b3dc92f68beb5735063402c0d0d11321950114",
+      "root_raw_sha256": "20c7abc012cc67842ca2f4e94d5f10bb0496d305ffe053a6d6fd4380b0f02f14",
+      "worker_raw_sha256": "20c7abc012cc67842ca2f4e94d5f10bb0496d305ffe053a6d6fd4380b0f02f14",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/dev-runbook.md",
+      "git_blob": "3799ed9ac1b81597b3ed5cc9cc69f976294fca05",
+      "git_bytes": 4869,
+      "git_sha256": "adf358009fd9161905a8575a9513c3bbdcdc36b0a31f3e722c723aff0b1f8de2",
+      "root_raw_sha256": "cc00c57861a79634cfca4e2e23b5162ed4105a8a7d98ead77d1899edea68d43c",
+      "worker_raw_sha256": "cc00c57861a79634cfca4e2e23b5162ed4105a8a7d98ead77d1899edea68d43c",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/docs-organization.md",
+      "git_blob": "102f158077a0e27eb2dbf7255b37918fa476f905",
+      "git_bytes": 8891,
+      "git_sha256": "d2470e111923e121758fd635c67b12875be3d816bffaa659aa0a37b046625519",
+      "root_raw_sha256": "c9d363f5eb7275e5c0ccf460abaa6d03fb16f862d6cbb7f4df9711bdbca0cacb",
+      "worker_raw_sha256": "c9d363f5eb7275e5c0ccf460abaa6d03fb16f862d6cbb7f4df9711bdbca0cacb",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/dynamic-localization-standard.md",
+      "git_blob": "797bde6a73ff68f5e1e6e726592dc9ec3b582a8d",
+      "git_bytes": 7925,
+      "git_sha256": "148754a35395f6f4d6231f4fd2c5ce18842f95c6e4f4dba31cab7858ec8c20ff",
+      "root_raw_sha256": "46c1549b179bdca3eae12e352ef8d36c683c2dae4863dd0a086b57eb561feb12",
+      "worker_raw_sha256": "46c1549b179bdca3eae12e352ef8d36c683c2dae4863dd0a086b57eb561feb12",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/frontend-form-template.md",
+      "git_blob": "8211947a94992464f39090f4e6debcc4d57f24d5",
+      "git_bytes": 17127,
+      "git_sha256": "c8d797f33f92af652b6386dc2ea41f33b5d738ede61b5c41f38a9dd442af5f82",
+      "root_raw_sha256": "ddf9e257528b4078c3a711433b1a635139189dc8b8fd7006d2d14290ab8bcece",
+      "worker_raw_sha256": "ddf9e257528b4078c3a711433b1a635139189dc8b8fd7006d2d14290ab8bcece",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/frontend-js-standard.md",
+      "git_blob": "f5ee2ab29584df4ee2c083a8da5ad7a59692bb32",
+      "git_bytes": 63681,
+      "git_sha256": "f2e91a9ad3af1a5cc6b24cf0b9603b5cafad097ce9e20162a1115993ce0987f8",
+      "root_raw_sha256": "2d48c902e51503e45b50db2876e19423dd71c5166064e90d3388571a76400695",
+      "worker_raw_sha256": "2d48c902e51503e45b50db2876e19423dd71c5166064e90d3388571a76400695",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/frontend-standards.md",
+      "git_blob": "f350df8f602507bc5dacb72b4712bf31cdc3e6a6",
+      "git_bytes": 18198,
+      "git_sha256": "5c93dc25f8d3dc6f1ef90af994cf0d465659c276794e7966173ef6bccd90cb1d",
+      "root_raw_sha256": "b94e6217b83eb34c0dd74c0090079ace8457ad1894b4d263fbdc32d4dea7870d",
+      "worker_raw_sha256": "b94e6217b83eb34c0dd74c0090079ace8457ad1894b4d263fbdc32d4dea7870d",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/git-safety.md",
+      "git_blob": "52868ae1af8269657cebabdd8dc72cb2486d191d",
+      "git_bytes": 5001,
+      "git_sha256": "6618a2ce1169e641f6312a6ac3afde4af9fdea90ff12763cc558e9b2bb04f6c9",
+      "root_raw_sha256": "91e467e3243ab5e8b32bc890854508a6af0bf53e30e66b189dbd1cfb969ae74a",
+      "worker_raw_sha256": "91e467e3243ab5e8b32bc890854508a6af0bf53e30e66b189dbd1cfb969ae74a",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/localization-standard.md",
+      "git_blob": "263c43f6a943e6fd5bf9ad089b7defcec4a61e06",
+      "git_bytes": 6729,
+      "git_sha256": "0d4c2dba2af6bfe31c6ab9e9adec3d6cc2601aac311c295c03d055676aff038b",
+      "root_raw_sha256": "13d4df5894c596c98d98bbf9c470a8fd3f57fde954a8f9db0b167c548d3ca2ea",
+      "worker_raw_sha256": "13d4df5894c596c98d98bbf9c470a8fd3f57fde954a8f9db0b167c548d3ca2ea",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/logging-observability.md",
+      "git_blob": "b1fb753923cda67c9188e09f2eb1ec93c90d857c",
+      "git_bytes": 2452,
+      "git_sha256": "b5d80d85532f00e7b4fb678744b6e58cbb2d70c90cd7240292e76c4b11a9a5df",
+      "root_raw_sha256": "f8f3e6cc495ce9126b633b6039ffba4943d0330e35b091b09294b796b4567803",
+      "worker_raw_sha256": "f8f3e6cc495ce9126b633b6039ffba4943d0330e35b091b09294b796b4567803",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/multi-tenancy.md",
+      "git_blob": "0375cd4722022e3c2226f8b3743b7a09fbf5aded",
+      "git_bytes": 4760,
+      "git_sha256": "4ba429f6729e4d6a073cc992044c4672675334e9021bb6708243fa6c1fe530f5",
+      "root_raw_sha256": "026b3c612c4bc4402215a34b56e4459a924deb2e9e16840175811f10f296413e",
+      "worker_raw_sha256": "026b3c612c4bc4402215a34b56e4459a924deb2e9e16840175811f10f296413e",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/page-help-and-keyboard.md",
+      "git_blob": "a2dcd5eab951ccfbad30470a3b9e197ff844014b",
+      "git_bytes": 15288,
+      "git_sha256": "0cfabc585bf49752ce6bd9bb51a84e7586c5874e94737d0cb0141642b919782a",
+      "root_raw_sha256": "3ad2ef47ff9dd82d9b3a3f942e1e1f3e99aa29c7d010dd0827d887192098a929",
+      "worker_raw_sha256": "3ad2ef47ff9dd82d9b3a3f942e1e1f3e99aa29c7d010dd0827d887192098a929",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/permission-key-standard.md",
+      "git_blob": "ed78655d978ba0b29c92e661a8dd426ee4dfb7c0",
+      "git_bytes": 23235,
+      "git_sha256": "48baf85ef0df36868d7b645c33ab5c949b66dfc57c8b760da2229399299159c7",
+      "root_raw_sha256": "d073e986cc52fad2916d72d950fea53582af1f87c7d9fee4bbcd0f2dd38be94c",
+      "worker_raw_sha256": "d073e986cc52fad2916d72d950fea53582af1f87c7d9fee4bbcd0f2dd38be94c",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/ports.md",
+      "git_blob": "76faeee114941923e873e49e9c85f4fe0dcf12d4",
+      "git_bytes": 2941,
+      "git_sha256": "aefcc526d5e00ad4b97ad3af09017cbd33f3fde81cb1fdbcd1132afc986572f2",
+      "root_raw_sha256": "af43592ced2deb5df01675ad0e5241b659ff52cd79c5ee4ffa755f39c1fa4964",
+      "worker_raw_sha256": "af43592ced2deb5df01675ad0e5241b659ff52cd79c5ee4ffa755f39c1fa4964",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/premium-modal-standard.md",
+      "git_blob": "c1154b8086d7dbf68ef607527b14de58f29a9fd7",
+      "git_bytes": 5255,
+      "git_sha256": "3c15f254bb3d44c41313e4158cc50399eebd817203d29e9b8c5b5a660fef7dd8",
+      "root_raw_sha256": "d1d7c9da9d7f7a563ca288f673cb8c09aaf1515c526d134c80abfb73d4de7aa2",
+      "worker_raw_sha256": "d1d7c9da9d7f7a563ca288f673cb8c09aaf1515c526d134c80abfb73d4de7aa2",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/routes.md",
+      "git_blob": "da21fe16ae0e6608e03954f62413cb23494bc0b6",
+      "git_bytes": 6855,
+      "git_sha256": "5aff3926b57e4c54b493863191243c7507b630316fd53a24bb8ab8062418f7f3",
+      "root_raw_sha256": "5e3c183f3cc8d68349aa3acaf445a834881820bd78874d50dc5b8a507edef581",
+      "worker_raw_sha256": "5e3c183f3cc8d68349aa3acaf445a834881820bd78874d50dc5b8a507edef581",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/security-jwt.md",
+      "git_blob": "8693b95babf4a9741f472878037e58fa7b9aa752",
+      "git_bytes": 2882,
+      "git_sha256": "1b99d7630fe883ff7babf1c6bdb9372215400d8c10580a12532698355a1996c5",
+      "root_raw_sha256": "ac26349504eabae651c7f04ea8e81daaf188750ee00e5bda55ce3a4aed8e0aa0",
+      "worker_raw_sha256": "ac26349504eabae651c7f04ea8e81daaf188750ee00e5bda55ce3a4aed8e0aa0",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/unauthorized-surface-standard.md",
+      "git_blob": "958362ef3109c7ddf65789b33f805c4a71204847",
+      "git_bytes": 5147,
+      "git_sha256": "16f9fab927f45420c934b12d28f3a4673661cbdc30da6a5c3b22b924c3657331",
+      "root_raw_sha256": "5660d48a70a200eef05825f75a242cb82f2c3027509578eae66f484f3482f043",
+      "worker_raw_sha256": "5660d48a70a200eef05825f75a242cb82f2c3027509578eae66f484f3482f043",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": ".antigravity/rules/views-organization.md",
+      "git_blob": "09e92745f3471ae46a21ffd54b8c08783ee10aea",
+      "git_bytes": 5992,
+      "git_sha256": "11931b056b96dda46749beb3cd5ac9100a12d81ca07241485a23a3bf5c83f1ca",
+      "root_raw_sha256": "6e322fcca28e34c5ede8cf1076a770a60a689a6c71469c5a60b834a668e30659",
+      "worker_raw_sha256": "6e322fcca28e34c5ede8cf1076a770a60a689a6c71469c5a60b834a668e30659",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "AGENTS.md",
+      "git_blob": "cc048001792ae88d473da270814174138df6b4ee",
+      "git_bytes": 21877,
+      "git_sha256": "6aa0e1f5c1223340a473436ece2116d3fa78c68f56144ac85d909743631ac68a",
+      "root_raw_sha256": "1327a93c86f33d6140d6d04ce5cc8a8ef59345b38cb8c82a982b09f4a248c432",
+      "worker_raw_sha256": "1327a93c86f33d6140d6d04ce5cc8a8ef59345b38cb8c82a982b09f4a248c432",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-be-independent-01/CT-INTEGRATION.json",
+      "git_blob": "7dd22d3266b9732dda992333aa2ec185b6b9a346",
+      "git_bytes": 2509,
+      "git_sha256": "e6533877d5cea336ee3770f6976417d9eca7d877df8088ecfc19210f047ec839",
+      "root_raw_sha256": "e6533877d5cea336ee3770f6976417d9eca7d877df8088ecfc19210f047ec839",
+      "worker_raw_sha256": "f04bca42bee708ef45a4aaa8592310a74dc41672efa9ea315dd1ac9bbde78d66",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-be-independent-01/REVIEW.md",
+      "git_blob": "5bcbf8898cd77e54936c5fbaf536007b90c7afce",
+      "git_bytes": 7975,
+      "git_sha256": "4e9aec18294af1b11e39c51179b2580cf6f69b0d076242e2ab5554e8d20cc04e",
+      "root_raw_sha256": "4e9aec18294af1b11e39c51179b2580cf6f69b0d076242e2ab5554e8d20cc04e",
+      "worker_raw_sha256": "9338a9ff102f953cd6179eff3484e94943ebee384ce0d2e4e20129c8b95c4745",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-baseline-01/BASELINE.json",
+      "git_blob": "b1e9c96291e243d73b306079b512ab7a4d03ccb5",
+      "git_bytes": 1449474,
+      "git_sha256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649",
+      "root_raw_sha256": "53575b230ff0dbd6d317e0bedc31d880219d6a9ecd961e353b277dc64e485649",
+      "worker_raw_sha256": "64904eb10280a0c3bad403ece9bdf7c1b52c55687da4a820bf24f3b0a686b18c",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-baseline-01/CAPTURE-BASELINE.json",
+      "git_blob": "84905e6ebc1ac9236c63e09096072068fef4f71e",
+      "git_bytes": 145176,
+      "git_sha256": "813901ff1dc10dd54f7008cb63c3c9fdfa6fc09e3e27e43eedc77bae3e6431c5",
+      "root_raw_sha256": "813901ff1dc10dd54f7008cb63c3c9fdfa6fc09e3e27e43eedc77bae3e6431c5",
+      "worker_raw_sha256": "4a5db69915536aec441ca925f0299d94023fc6bde1585dcd091a7fce31214e3f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-baseline-01/CAPTURE-CHECK.json",
+      "git_blob": "e4f93572289bb342f99a8a58ac502414577d744e",
+      "git_bytes": 11213,
+      "git_sha256": "41ea09394590ba0f7697cab7c1afc5588298180d3729e5c60609353aa4d039c9",
+      "root_raw_sha256": "41ea09394590ba0f7697cab7c1afc5588298180d3729e5c60609353aa4d039c9",
+      "worker_raw_sha256": "04e94c0897bd51ceadfec8a8864a0686318e749e686314dfb7bc3fed0a4482b5",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-baseline-01/CT-REVIEW.md",
+      "git_blob": "bcc3b2de31cac4e8e2612c8806876058308c5dbd",
+      "git_bytes": 1408,
+      "git_sha256": "fb7371792392e05d221ff8cae9143382fc4590bc9822e2d854d8247ac4c032ae",
+      "root_raw_sha256": "fb7371792392e05d221ff8cae9143382fc4590bc9822e2d854d8247ac4c032ae",
+      "worker_raw_sha256": "0155c0cd19dad78130fb7de8283e014992d87768ea669d975375b072c547a32f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-corpus-01/FE-CORPUS-HANDOFF.md",
+      "git_blob": "63e7750f39a5272fcf661e945c248b48db5195e1",
+      "git_bytes": 3676,
+      "git_sha256": "12350366b2194b27bb174d6d60e8e7228356be8b75d6732acf7ebc45f5de7c78",
+      "root_raw_sha256": "12350366b2194b27bb174d6d60e8e7228356be8b75d6732acf7ebc45f5de7c78",
+      "worker_raw_sha256": "26c5a39cd040d1fe8868140d8919bc0f9964400d724c0d9bbac3a43cc10a3b30",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-corpus-01/FE-CORPUS.json",
+      "git_blob": "6f1e9a0b0bb1c46305a39ab2d38fbf1f11c78fe7",
+      "git_bytes": 324841,
+      "git_sha256": "003eb12bd41eb6f7028accaed82a76e070862d4fa7678652e73ab3ba139a9adc",
+      "root_raw_sha256": "003eb12bd41eb6f7028accaed82a76e070862d4fa7678652e73ab3ba139a9adc",
+      "worker_raw_sha256": "a4a2644db8664d690264a69885f08849c1a65d0148062147d7fdfdd15176aacd",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-corpus-01/FE-READINESS-DELTA.md",
+      "git_blob": "013444bc73a6b8e971710771aba0877de418bb29",
+      "git_bytes": 3507,
+      "git_sha256": "ed3960d1128f855ac71a4802fcda2bf90a1099c4a86c72064d3ea4b1f88d7233",
+      "root_raw_sha256": "ed3960d1128f855ac71a4802fcda2bf90a1099c4a86c72064d3ea4b1f88d7233",
+      "worker_raw_sha256": "baaaf42adadb751eefc95e4fb83841344ca1e39371f1fa6c5d8f9f2db4eef38b",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-discovery-01/DECISIONS.md",
+      "git_blob": "7413dfd88c8f13d3b089cbd41388a8c5393599db",
+      "git_bytes": 7879,
+      "git_sha256": "820f3aadceff658df479dd1034f919781ed0cdb4b390aff90d307abf3a4f5fd7",
+      "root_raw_sha256": "820f3aadceff658df479dd1034f919781ed0cdb4b390aff90d307abf3a4f5fd7",
+      "worker_raw_sha256": "f2e236c14493531b31865727d28eed7cb9e8951bfa2c1fe07f2aeb7cdc109af4",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-dor-01/READY-CHECK.json",
+      "git_blob": "3c71d7aacd6b1b41291043eff59fa52cce03299a",
+      "git_bytes": 4665,
+      "git_sha256": "c8d9409df76a64841da5c9ae2d03be8e9ade8deb3465cc76b731286e7b54d4e7",
+      "root_raw_sha256": "c8d9409df76a64841da5c9ae2d03be8e9ade8deb3465cc76b731286e7b54d4e7",
+      "worker_raw_sha256": "9affaa8f35f5d22489a42d4f58d69c9f0910de020caae6f104f3b1a17aa96532",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-fe-dor-01/READY.md",
+      "git_blob": "9dce3530ee25b9b30fcdfb4de9dec4fa1c6bad1c",
+      "git_bytes": 2397,
+      "git_sha256": "5c55ba65543ead0d4263e40850ea348e5c8cf781fff6c52c55a46535b2eb37fb",
+      "root_raw_sha256": "5c55ba65543ead0d4263e40850ea348e5c8cf781fff6c52c55a46535b2eb37fb",
+      "worker_raw_sha256": "d68cd7f28d0f980c8b8ce7da46eac08aee4d36895cc4a91411b96d8c4c667b5b",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-feature-dor-01/FE-READINESS.txt",
+      "git_blob": "931e91aab0d0c015822d70b2fad11635a075d872",
+      "git_bytes": 13768,
+      "git_sha256": "58c784cac61b97de32c4df765e31f7a7675f1c716c07ff47a6ed898a480f4417",
+      "root_raw_sha256": "58c784cac61b97de32c4df765e31f7a7675f1c716c07ff47a6ed898a480f4417",
+      "worker_raw_sha256": "feaa977bf10194fbc0e286576a6f7fe91b3df221739825a5deb4091cdd7298d7",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-feature-dor-01/PLAN.md",
+      "git_blob": "b76a35dd59ac65d60b6a3dda9386951957564dbe",
+      "git_bytes": 2653,
+      "git_sha256": "d24c17c284736b73876c401e6183751ab23f1335f71ce94440bf02106d602e34",
+      "root_raw_sha256": "d24c17c284736b73876c401e6183751ab23f1335f71ce94440bf02106d602e34",
+      "worker_raw_sha256": "cb99d4f91b2432456063ac38934a9bcf02c7bf38245b1fe5245b8b84b1e62a1f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-dl12-l10n-01/CT-INTEGRATION.json",
+      "git_blob": "03c87224e9e1d49037b2afbb43920e915f656f65",
+      "git_bytes": 3990,
+      "git_sha256": "f7ffa304297abab76a30133bdda05fe24ac822b225c7f606b0da4a1dc4abc45c",
+      "root_raw_sha256": "f7ffa304297abab76a30133bdda05fe24ac822b225c7f606b0da4a1dc4abc45c",
+      "worker_raw_sha256": "d2c47b011c2a6337421a8bab3349ac8ac118a5c65c71dda8df8c58b816f01bc3",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev21-formal-review-01/APPROVAL-CHECK.txt",
+      "git_blob": "2b0ddd9e2d6975cd837006ded85caf04d763b52f",
+      "git_bytes": 2253,
+      "git_sha256": "73be1eb36fd5bf43b83a078b883c33f19724bb147b57c72f3d322e21f2da3220",
+      "root_raw_sha256": "73be1eb36fd5bf43b83a078b883c33f19724bb147b57c72f3d322e21f2da3220",
+      "worker_raw_sha256": "5a510c59b491d90555d2f21e2b6d2005ca65f88715dd8e0ca5f4b1fd9726c556",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/decisions/2026-11/pvg-mod0230-extra-scope-approval-01.md",
+      "git_blob": "7112788df879269f6ceae0e057a9f3eb0d32faf7",
+      "git_bytes": 4697,
+      "git_sha256": "a9a1ec5dece8855baffec75ab2265de49599e139c5f8307c4d2690760eddb345",
+      "root_raw_sha256": "a9a1ec5dece8855baffec75ab2265de49599e139c5f8307c4d2690760eddb345",
+      "worker_raw_sha256": "b65bd1172e098fa6607d7537acaa2ade55aabf528396e39b03b197b0dcf93b9f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/decisions/2026-11/pvg-mod0230-g25-karar-01.md",
+      "git_blob": "8c7f98a9befde82c9db7f954ca4dcc9b073f3ac9",
+      "git_bytes": 1733,
+      "git_sha256": "9035bbc730c983fa790ea710602b5c79e2008759d77d81205f9ea36cbc1602d2",
+      "root_raw_sha256": "6af685202e4fd0f4e400d248106b8abe325a8cf8ac0edb359818cdb706cae702",
+      "worker_raw_sha256": "6af685202e4fd0f4e400d248106b8abe325a8cf8ac0edb359818cdb706cae702",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/records/decisions/2026-11/pvg-mod0230-rev20-owner-approval-01.md",
+      "git_blob": "5d296af112679721726a3eaee87bac1d0bcf12b0",
+      "git_bytes": 3402,
+      "git_sha256": "0bae22a313b8b032bb5066ddc28854e59aa0001edb5fba69801e7656d976fdda",
+      "root_raw_sha256": "0bae22a313b8b032bb5066ddc28854e59aa0001edb5fba69801e7656d976fdda",
+      "worker_raw_sha256": "2521af6d275c98a44b3230a430d0dbed89509dee7a6723618e56ba5bb289b62f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "docs/roadmap/plans/pvg-mod0230-dl12-parallel-delivery-plan-2026-11-20.md",
+      "git_blob": "3625ddcf796afd78ef960613bd0503d2201982b0",
+      "git_bytes": 8766,
+      "git_sha256": "0764b043e613a6731f95e039e01a1d1ad95865e8b6880432ab89edbe9d8d5ae4",
+      "root_raw_sha256": "0764b043e613a6731f95e039e01a1d1ad95865e8b6880432ab89edbe9d8d5ae4",
+      "worker_raw_sha256": "84bf06dbb243b3a8e8653abeaef227b8815d42b2344d3ba153fb1d86a40f8891",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "execution/approvals/approvals.tsv",
+      "git_blob": "407f2823ea121b3150821e7e8e2be2397d4a97dd",
+      "git_bytes": 71483,
+      "git_sha256": "a0ae244304d49bbda1b61c3f52be4e4a7bbbea9813e4c8ebe6511e9db0ae6a58",
+      "root_raw_sha256": "3413597eab9dde87a3340c431fd2183b8e308957e97a68273c2ec26efe77a4bf",
+      "worker_raw_sha256": "2525b57555bfd8577c162855a0a4504769d048fb46772a99cc7a800ffbfa4721",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "execution/approvals/reviews.tsv",
+      "git_blob": "e53ec6bd7495332a1186d6d138b98535196db031",
+      "git_bytes": 182385,
+      "git_sha256": "a3f3461838ad05c2e4ed9f968e6587c8ee4ec4ee88f9aab792c6a9aea10ab81b",
+      "root_raw_sha256": "1761425727aa14a951f9a4446cabb120c00b5b103806448aed802ceb7e7f13b1",
+      "worker_raw_sha256": "1761425727aa14a951f9a4446cabb120c00b5b103806448aed802ceb7e7f13b1",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "execution/domains/pharmacovigilance/domain-config.md",
+      "git_blob": "e019cdcfbf1f26716096bd96c3ed4670b0a26fc4",
+      "git_bytes": 23686,
+      "git_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+      "root_raw_sha256": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+      "worker_raw_sha256": "f6961b05795dd5db79d8b2d872ce3d99c3117c7fea681a257604ca45d2c6cdaa",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+      "git_blob": "11c14a20cc32a6ebfe369dcaceb62157d892a87e",
+      "git_bytes": 468453,
+      "git_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+      "root_raw_sha256": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+      "worker_raw_sha256": "7048a6f4241021984ce305e47b0301b21a4cdf1ef37f52e2712da33d39f01b97",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-FE-v1.1.py",
+      "git_blob": "45d71c6b4b98e3903c3f14d2d829dc78b0581ce4",
+      "git_bytes": 13844,
+      "git_sha256": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203",
+      "root_raw_sha256": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203",
+      "worker_raw_sha256": "75ae01d7afa9292db1f49f0875d3c6ed31621567c2296c66137a57a5432c829f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "git_blob": "d64aaf89f9cb9f28e8367a1c0e7410ffabf572a8",
+      "git_bytes": 77590,
+      "git_sha256": "6c1bae70da3b0d4aacff8237973b408218fee8cef04744941e72684be6974ffb",
+      "root_raw_sha256": "166a37426dddd1f8d7184303abdca2342d8201e9663cc5e7ba2df39bed440094",
+      "worker_raw_sha256": "166a37426dddd1f8d7184303abdca2342d8201e9663cc5e7ba2df39bed440094",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "git_blob": "bb43c17afa5a8b514511ca1b88ceb100ab987aa8",
+      "git_bytes": 1227,
+      "git_sha256": "1fb91c728c5579a7a4a3b51af97a1d917b86bb9cb83852f495899fcad4bd425c",
+      "root_raw_sha256": "50b13829202fc3f0cc21d456e6d3934519020ae984b9113e6808b3e7eb705200",
+      "worker_raw_sha256": "50b13829202fc3f0cc21d456e6d3934519020ae984b9113e6808b3e7eb705200",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "git_blob": "31aec9afff4be2235cdaf3d1eeeaee1f402c4ccd",
+      "git_bytes": 21656,
+      "git_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e",
+      "root_raw_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45",
+      "worker_raw_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "git_blob": "ba4f179ae11557546ecca5c91d93f4b449ef617b",
+      "git_bytes": 11864,
+      "git_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "root_raw_sha256": "ac8dde37cb427d8c41d417bc39070b135cc64cae80cf9391a2e62d086cd86774",
+      "worker_raw_sha256": "ac8dde37cb427d8c41d417bc39070b135cc64cae80cf9391a2e62d086cd86774",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "git_blob": "27f9c7dba45f73f8605befea744f1bb176df6a32",
+      "git_bytes": 10422,
+      "git_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "root_raw_sha256": "c388f73549cc7506b38601c7094277084865701d8689282a66169aa22272cbdc",
+      "worker_raw_sha256": "c388f73549cc7506b38601c7094277084865701d8689282a66169aa22272cbdc",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "git_blob": "d12aee899a51b952d86771b077e1ce888a40036a",
+      "git_bytes": 11055,
+      "git_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "root_raw_sha256": "1641c4c897baaea72cd10564c8ed1b5b70c34f68175a6cb544f5c107a2498370",
+      "worker_raw_sha256": "1641c4c897baaea72cd10564c8ed1b5b70c34f68175a6cb544f5c107a2498370",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "git_blob": "bf84e8911e2cad5309872be47fc6126dec497644",
+      "git_bytes": 11077,
+      "git_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "root_raw_sha256": "21ba1cf5d45a37fa9ac2f991710beb00b3d3d96873c51e521253ae9e92fc198a",
+      "worker_raw_sha256": "21ba1cf5d45a37fa9ac2f991710beb00b3d3d96873c51e521253ae9e92fc198a",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "git_blob": "f91f0d65a546d6065aac96954ecdc7a0fb7270c4",
+      "git_bytes": 12726,
+      "git_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "root_raw_sha256": "8f169e2235da7975a1920f78e94dc3988b0dcbf3044027ab0e4fed51ed8c705c",
+      "worker_raw_sha256": "8f169e2235da7975a1920f78e94dc3988b0dcbf3044027ab0e4fed51ed8c705c",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "git_blob": "c19241775fc8e0c3f7ad9d3379b1fc61f2b17586",
+      "git_bytes": 10789,
+      "git_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "root_raw_sha256": "6e114bc60dfa2697a635c8516e66a6110d35010d1fcf6e267c2cf1e73a6b23b7",
+      "worker_raw_sha256": "6e114bc60dfa2697a635c8516e66a6110d35010d1fcf6e267c2cf1e73a6b23b7",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "git_blob": "c0b5882958556e919a6042547134ec1ca71f1928",
+      "git_bytes": 10411,
+      "git_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "root_raw_sha256": "8f792cb6443e3e8042f16b7a6fa63e2dd96505bceb7b9a65ef40c28507817817",
+      "worker_raw_sha256": "8f792cb6443e3e8042f16b7a6fa63e2dd96505bceb7b9a65ef40c28507817817",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+      "git_blob": "8140717c198bdea2c92e4192a68f81f7ff8cd9d5",
+      "git_bytes": 773,
+      "git_sha256": "542bedb4626607ee3af0e21fdc41fa4f4a4915e2343a516eb4c0f012397ba59a",
+      "root_raw_sha256": "ee95ade3b1c498b1101305810209cba939b407fcb76737d783bef917e288678f",
+      "worker_raw_sha256": "ee95ade3b1c498b1101305810209cba939b407fcb76737d783bef917e288678f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+      "git_blob": "5ace0423c748ab63d2f45c6f224aacca76b7d5c3",
+      "git_bytes": 769,
+      "git_sha256": "c72df56c62a744ecc7bdc8833bc085246a191a669b78dcb1a074f84a5ced1e19",
+      "root_raw_sha256": "f437c5e4254acd9af791db015c6730432f4e8a123b90d362c57d964a7cadcb6b",
+      "worker_raw_sha256": "f437c5e4254acd9af791db015c6730432f4e8a123b90d362c57d964a7cadcb6b",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "git_blob": "0d0558a7df79a9a7f313ba03297ab23bfcc23fd6",
+      "git_bytes": 15345,
+      "git_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8",
+      "root_raw_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87",
+      "worker_raw_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml",
+      "git_blob": "007a658b3bd92d30a5b15cb134ae7009a848069b",
+      "git_bytes": 2639,
+      "git_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318",
+      "root_raw_sha256": "a0697005c4634e2c9f98957de7e289dbf5873e4f46310d42ed123da0bb69df66",
+      "worker_raw_sha256": "a0697005c4634e2c9f98957de7e289dbf5873e4f46310d42ed123da0bb69df66",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/package-lock.json",
+      "git_blob": "ce8697a2342a7c8fcc04aa00fac2235047487a51",
+      "git_bytes": 71077,
+      "git_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14",
+      "root_raw_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e",
+      "worker_raw_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/package.json",
+      "git_blob": "190af8add326b46cbb87f4a5217b05f12d37e657",
+      "git_bytes": 395,
+      "git_sha256": "023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129",
+      "root_raw_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6",
+      "worker_raw_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "git_blob": "32d86a737a76ddf5758d930d5727f9f9954d44d5",
+      "git_bytes": 63602,
+      "git_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0",
+      "root_raw_sha256": "e5b7379b6e04ec57b9a0c6eeb180161e0881c1faa3636a3bb67f9ea832ee860f",
+      "worker_raw_sha256": "e5b7379b6e04ec57b9a0c6eeb180161e0881c1faa3636a3bb67f9ea832ee860f",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "git_blob": "0177301d9f7b53fea9d04f4ecfd9ab6865a176a8",
+      "git_bytes": 17209,
+      "git_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969",
+      "root_raw_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a",
+      "worker_raw_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.l10n.js",
+      "git_blob": "eee14aa40b7da956ff74045ff1600dfb26e2e336",
+      "git_bytes": 752,
+      "git_sha256": "bcdad5ed2a111eb9fb99ce016597893525e66a4f5a74626c33025d9a839d629c",
+      "root_raw_sha256": "a0ef8dec9afe3dee1115b9068f329bef9495858d484134e86bd38f904d08f7cb",
+      "worker_raw_sha256": "a0ef8dec9afe3dee1115b9068f329bef9495858d484134e86bd38f904d08f7cb",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "scripts/check_trx_no_skipped.py",
+      "git_blob": "d4510a75a8f872d3593db1d76eb67580533b36ec",
+      "git_bytes": 7396,
+      "git_sha256": "83e6ad704716a50c76e1f513da50a2e9c7478394d2c4410ef6a95649e9cbfaec",
+      "root_raw_sha256": "425208e89155cef74ee173dd73e7c480791f15386bb4d9a0bd71bf801ec63c63",
+      "worker_raw_sha256": "425208e89155cef74ee173dd73e7c480791f15386bb4d9a0bd71bf801ec63c63",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "scripts/known_failures.py",
+      "git_blob": "633b704e1225b2d8732711205505485b6bcd0dde",
+      "git_bytes": 44530,
+      "git_sha256": "55abd9ac2f6e7dc2ccc2ec8890c68b26d25878d33d906e44b6aac1bc8e9a0771",
+      "root_raw_sha256": "a445175cdf995d928b176760d8ffa75b57d08f3d74de49741c8ca43cb24acf78",
+      "worker_raw_sha256": "a445175cdf995d928b176760d8ffa75b57d08f3d74de49741c8ca43cb24acf78",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "git_blob": "3a3b26246f7c68ae6caf5836cdbdd33299c17718",
+      "git_bytes": 25799,
+      "git_sha256": "2d942615a490be52d14885f583466320df1562d3f1ae0cd0a33088989e1cf91e",
+      "root_raw_sha256": "d20062123ae383b6765b52847d492126a3f317022630d2620f4009a40c311d82",
+      "worker_raw_sha256": "d20062123ae383b6765b52847d492126a3f317022630d2620f4009a40c311d82",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+      "git_blob": "311177b4ca4522be0480650b09dee117e210e622",
+      "git_bytes": 16006,
+      "git_sha256": "ca040ac3cc017195337ffee24c73ea45befc64ad80c0f00a16efcebdcc8ed62a",
+      "root_raw_sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4",
+      "worker_raw_sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgIntakeDraftStore.cs",
+      "git_blob": "766900bb2156aa2d19938024bd6cfdec98eacfbd",
+      "git_bytes": 2238,
+      "git_sha256": "af080238b64291547f770761372d00964cd257a605b51d3e7b5d10a260caf5cd",
+      "root_raw_sha256": "5849a4dbd0286fae86d56b342a25a1531c783735ffee94ef8acc5c89f7dabebd",
+      "worker_raw_sha256": "5849a4dbd0286fae86d56b342a25a1531c783735ffee94ef8acc5c89f7dabebd",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "git_blob": "f60c75605c702bee5581bfe3b6105058d1730226",
+      "git_bytes": 349,
+      "git_sha256": "a80e9c50c664a1737aaa63a62255ae588bf7275070ed465c13bb6fde4b7683c0",
+      "root_raw_sha256": "1838b41b59191466244d792c231916bfcb41bbb13f5480abe56e99b5fb0fbdd2",
+      "worker_raw_sha256": "1838b41b59191466244d792c231916bfcb41bbb13f5480abe56e99b5fb0fbdd2",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "git_blob": "64bed02b54400f79c9eecb5cf653b0a2daf807bd",
+      "git_bytes": 36596,
+      "git_sha256": "92a8eb7af91624f50ce6952965e3d40fc28ee2cdce05e41a0588d44e8cb7228a",
+      "root_raw_sha256": "c1b5ad4a9fdf6ff819be5a845a818079ae32211b9c9d694a4fb5b8d2a79f50b5",
+      "worker_raw_sha256": "c1b5ad4a9fdf6ff819be5a845a818079ae32211b9c9d694a4fb5b8d2a79f50b5",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftValidator.cs",
+      "git_blob": "42e4e33955e8e0aac78f31e91bd1080855e5bb36",
+      "git_bytes": 17512,
+      "git_sha256": "a0fd788e0b5f33f28d2b390bfe4f88a9702e975f9d055719b8c1447e1a9cb405",
+      "root_raw_sha256": "6c0f15368280ec26a423fceeb71e51588239c3b04ba802c1c4141d96b7c8951c",
+      "worker_raw_sha256": "6c0f15368280ec26a423fceeb71e51588239c3b04ba802c1c4141d96b7c8951c",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgCaseIntakeEditKeepsStoredDataTests.cs",
+      "git_blob": "533820b56acb1a3a64f8cf7953b17cd9d239624b",
+      "git_bytes": 35986,
+      "git_sha256": "9539aa404b55d08d2953837fdb505c7d9de80f55bbc918f3e8049c5e20c60fb4",
+      "root_raw_sha256": "e926bd580e4c8874aada8859770ad0e0ae810cb5ae64a9836d849ac9ed6de692",
+      "worker_raw_sha256": "e926bd580e4c8874aada8859770ad0e0ae810cb5ae64a9836d849ac9ed6de692",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    },
+    {
+      "path": "tests/known-failures.tsv",
+      "git_blob": "dbbcab82854dfa741f2e52f6823b023e0cf95878",
+      "git_bytes": 3668,
+      "git_sha256": "5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b",
+      "root_raw_sha256": "d921ea1f9dd1241661cadd364f6461dfb4bb05580e693e29783235e9fc1bf0f4",
+      "worker_raw_sha256": "d921ea1f9dd1241661cadd364f6461dfb4bb05580e693e29783235e9fc1bf0f4",
+      "root_lf_matches_git": true,
+      "worker_lf_matches_git": true
+    }
+  ],
+  "pre_read9_lf_unchanged": {
+    "AGENTS.md": true,
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": true,
+    "execution/domains/pharmacovigilance/domain-config.md": true,
+    "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs": true,
+    "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js": true,
+    "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs": true,
+    "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js": true,
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml": true,
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml": true
+  },
+  "git_batch_exit": 0,
+  "no_product_tests_run": true,
+  "no_normal_dispatch_check_run": true
+}

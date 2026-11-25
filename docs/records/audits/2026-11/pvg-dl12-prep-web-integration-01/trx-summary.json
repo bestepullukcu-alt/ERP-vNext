@@ -1,0 +1,459 @@
+{
+  "frozen_head": "788047137bdc3d127771434608d28b8f205611a6",
+  "trx_raw_sha256": "60af6356d2421069dd7875ac408b910cfc7f228da357c8fa5dc087f1b670089e",
+  "trx_lf_sha256": "e2772c5aebfba847c54eabbfba7753af6329a8b99650e20ea42b8ce82fe3f4b5",
+  "counters": {
+    "total": "62",
+    "executed": "62",
+    "passed": "62",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "results": [
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Every_screen_draws_the_bridge_then_the_loader_then_its_own_script(page: \"Index\", key: \"pvg.case-intake-triage.read\", script: \"index.js\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.7222969",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Every_case_intake_action_checks_its_key_first",
+      "outcome": "Passed",
+      "duration": "00:00:00.0031220",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_keeps_the_total_and_the_filtered_count_apart",
+      "outcome": "Passed",
+      "duration": "00:00:00.0017961",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"CreateDraft\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002905",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Form_inputs_carry_the_expected_version_to_the_api",
+      "outcome": "Passed",
+      "duration": "00:00:00.0025891",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0&length=-1\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002962",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"Malformed\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6820015",
+      "stdout": "Reaped browser PID 10824.\r\nChild failure Malformed, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Proxy_sends_bearer_tenant_and_correlation_only_from_the_verified_principal",
+      "outcome": "Passed",
+      "duration": "00:00:00.0030169",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.The_read_proxy_paths_carry_the_verified_identity_and_are_401_without_a_tenant(action: \"Detail\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003057",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"draw=3&start=25&length=25&search%5Bvalue%5D=x&colu\"···, gatewayQuery: \"pageNumber=2&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001728",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=50&length=25\", gatewayQuery: \"pageNumber=3&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001450",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0004073",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"UpdateDraft\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0019212",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"Timeout\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.0785141",
+      "stdout": "Reaped browser PID 29764.\r\nChild failure Timeout, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingNode\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.0453135",
+      "stdout": "Child failure MissingNode, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Every_screen_draws_the_bridge_then_the_loader_then_its_own_script(page: \"Create\", key: \"pvg.case-intake-triage.create\", script: \"form.js\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6387093",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Without_the_read_key_the_case_intake_page_is_the_shared_403_without_its_skeleton",
+      "outcome": "Passed",
+      "duration": "00:00:11.9544587",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=200&length=500\", gatewayQuery: \"pageNumber=3&pageSize=100\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.1210190",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"RouteDraft\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0006096",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.The_read_proxy_paths_carry_the_verified_identity_and_are_401_without_a_tenant(action: \"Options\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0023114",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"EarlyEnd\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.4277556",
+      "stdout": "Reaped browser PID 33400.\r\nChild failure EarlyEnd, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.A_page_without_counts_is_a_gateway_error_not_a_zero",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013153",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"SuppressUpdate\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.0806127",
+      "stdout": "Reaped browser PID 26712.\r\nChild failure SuppressUpdate, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0&length=25&status=%20Triaged%20\", gatewayQuery: \"pageNumber=1&pageSize=25&status=Triaged\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007756",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"StartFailure\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.4043205",
+      "stdout": "Reaped browser PID 21288.\r\nChild failure StartFailure, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Options_action_checks_the_read_key_first_and_passes_only_codes",
+      "outcome": "Passed",
+      "duration": "00:00:00.0048061",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_preserves_browser_antiforgery_request_token",
+      "outcome": "Passed",
+      "duration": "00:00:13.2935742",
+      "stdout": "Reaped browser PID 16308.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Form_inputs_carry_the_revision04_fields_with_api_names",
+      "outcome": "Passed",
+      "duration": "00:00:00.0056450",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=100&length=100\", gatewayQuery: \"pageNumber=2&pageSize=100\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001778",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Create_form_post_binds_the_product_lines_through_the_mvc_model_binder",
+      "outcome": "Passed",
+      "duration": "00:00:14.8580636",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Without_a_verified_tenant_claim_the_call_is_401_even_if_the_cookie_token_names_a_tenant",
+      "outcome": "Passed",
+      "duration": "00:00:00.0014678",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingJsdom\")",
+      "outcome": "Passed",
+      "duration": "00:00:08.1491269",
+      "stdout": "Reaped browser PID 30008.\r\nChild failure MissingJsdom, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0021040",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=abc&length=25\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001822",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"Detail\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001476",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=-5&length=25\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001552",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.A_refusal_of_the_api_is_passed_on_with_its_status_and_body",
+      "outcome": "Passed",
+      "duration": "00:00:00.0008586",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Both_date_inputs_of_the_form_accept_seconds(field: \"ReceivedAtUtc\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6184242",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.The_form_bridge_is_drawn_with_the_camelCase_keys_the_loader_expects",
+      "outcome": "Passed",
+      "duration": "00:00:07.4658270",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Without_the_key_a_page_action_neither_redirects_nor_writes_view_data",
+      "outcome": "Passed",
+      "duration": "00:00:00.0012468",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Remove_link_with_a_selection_pair_is_refused_without_a_gateway_call",
+      "outcome": "Passed",
+      "duration": "00:00:00.0039683",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"Options\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0123631",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=9223372036854775807&length=100\", gatewayQuery: \"pageNumber=1000000&pageSize=100\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0002325",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"MissingReceipt\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.3114830",
+      "stdout": "Reaped browser PID 29604.\r\nChild failure MissingReceipt, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0&length=0\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001839",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0&length=25&status=%20\", gatewayQuery: \"pageNumber=1&pageSize=25\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003066",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"InvalidToken\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.1050947",
+      "stdout": "Reaped browser PID 31220.\r\nMVC status 400, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"TriageDraft\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0007182",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.The_bridge_carries_the_shared_RecordSaved_text",
+      "outcome": "Passed",
+      "duration": "00:00:07.4053216",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Proxy_never_sends_response_only_or_unverifiable_fields",
+      "outcome": "Passed",
+      "duration": "00:00:00.0015399",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Every_screen_draws_the_bridge_then_the_loader_then_its_own_script(page: \"Details\", key: \"pvg.case-intake-triage.read\", script: \"details.js\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.9786830",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.The_controller_has_exactly_the_actions_this_test_maps_to_a_key",
+      "outcome": "Passed",
+      "duration": "00:00:00.0032544",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=99999999999999999999999&length=100\", gatewayQuery: \"pageNumber=1000000&pageSize=100\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001533",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Both_date_inputs_of_the_form_accept_seconds(field: \"AwarenessAtUtc\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.5402769",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_maps_start_and_length_to_page_number_and_clamped_page_size(browserQuery: \"start=0&length=500\", gatewayQuery: \"pageNumber=1&pageSize=100\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001420",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_answers_the_list_component_envelope_from_the_api_counts(apiAnswer: \"{\\\"outcome\\\":\\\"Succeeded\\\",\\\"items\\\":[{\\\"intakeDra\"···)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0003776",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.List_proxy_answers_the_list_component_envelope_from_the_api_counts(apiAnswer: \"{\\\"Outcome\\\":\\\"Succeeded\\\",\\\"Items\\\":[{\\\"IntakeDra\"···)",
+      "outcome": "Passed",
+      "duration": "00:00:00.0013052",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Case_intake_json_actions_without_their_key_answer_403_without_a_gateway_call(action: \"List\")",
+      "outcome": "Passed",
+      "duration": "00:00:00.0001182",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_submission_reaches_the_real_store",
+      "outcome": "Passed",
+      "duration": "00:00:09.4788759",
+      "stdout": "Reaped browser PID 24828.\r\nAPI detail reads 1, updates 1, stored version 1 -> 2.\r\nUntouched reporter contact preserved: False. Untouched evidence list preserved: False.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_with_an_unusable_request_token_is_refused_by_mvc(fault: \"MissingToken\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.3694342",
+      "stdout": "Reaped browser PID 23024.\r\nMVC status 400, API updates 0, stored version 1.",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Every_screen_draws_the_bridge_then_the_loader_then_its_own_script(page: \"Edit\", key: \"pvg.case-intake-triage.update\", script: \"form.js\")",
+      "outcome": "Passed",
+      "duration": "00:00:07.6437175",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.Web.Tests.Controllers.PvgCaseIntakeTriageWebTests.Connected_edit_test_fails_when_browser_runtime_or_update_leg_is_unavailable(fault: \"BridgeFailure\")",
+      "outcome": "Passed",
+      "duration": "00:00:09.5025719",
+      "stdout": "Reaped browser PID 36544.\r\nChild failure BridgeFailure, API updates 0, stored version 1.",
+      "error": ""
+    }
+  ]
+}

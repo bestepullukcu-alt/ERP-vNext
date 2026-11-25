@@ -1,0 +1,63 @@
+{
+  "kind": "Actual CT no-ff source integration; technical E2 accepted, final root integration runtime pending",
+  "at_utc": "2026-11-21T17:36:41.291242+00:00",
+  "merge_commit": "3881b13b4a7238326d41e1b777916c248a34cdaf",
+  "merge_tree": "35dc4347ca3bab58bb39f2413050a722aa2d86c4",
+  "parents": [
+    "4769ebd7f024aadf3e644bc9a1419198b5416223",
+    "fbcb33533daacb9ae5b3b215736ad14d2b466c11"
+  ],
+  "candidate": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "candidate_tree": "b309be6634ca8a3b8808564f6b1e883aad189365",
+  "clean_after_merge": true,
+  "paths": [
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "git_blob": "ae5569d4169066c358e3e53b3af3e4cd393c2407",
+      "git_lf_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "candidate_blob_equal": true
+    },
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "git_blob": "466dd73499ce65db1acb41f62b41c159c5b5acba",
+      "git_lf_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "candidate_blob_equal": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "git_blob": "c0d52d17ccd4b7526f8cc8f5db1653e808a6dec4",
+      "git_lf_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "candidate_blob_equal": true
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml",
+      "git_blob": "271a24269ecefde8a76e907da378b5599214eba3",
+      "git_lf_sha256": "21577524dd76d169beab33bc2052139cefb7804c2ea08ffbb1e112f600ff1819",
+      "candidate_blob_equal": true
+    },
+    {
+      "path": "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "git_blob": "2bf10ac5d661f8355cf674a9dd7f272b73f704cc",
+      "git_lf_sha256": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+      "candidate_blob_equal": true
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "git_blob": "c9109913fb3b9f8f29c60b085c379b5295b3c314",
+      "git_lf_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "candidate_blob_equal": true
+    }
+  ],
+  "frozen_lf_hashes": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4",
+    "execution/domains/pharmacovigilance/domain-config.md": "2411fa9500c7696b0751767be23661bc3db6c87468821ac43f7e9d56ba62ef8b",
+    "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-FE-v1.1.py": "f903508747bd4f4f12a1d6bf2ff65433d721ed49b9db78c7b341656ba9ecd203"
+  },
+  "prior_BE_L10N_blobs_unchanged": true,
+  "independent_raw_review_sha256": "d5a9b68637c834f055726ea5ab0af7ddc48625adc8372e6b0b96d18b18e122fe",
+  "independent_technical_verdict": "UYGUN; open technical blockers 0",
+  "limits": [
+    "Full unfiltered Web and architecture at integrated root H pending",
+    "Not ACCEPTED/E4, operational use, publication, main merge or worktree cleanup authorization"
+  ]
+}

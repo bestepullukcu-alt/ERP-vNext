@@ -1,0 +1,19 @@
+CT KANIT ÜRETİCİSİ KAYNAK İNCELEMESİ v1
+sonuç: UYGUN
+hedef: execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-BE.py
+hedef-ham-ve-lf-sha256: 8e4ab7509122c3aab1ae4f0dc8421484838f4e419f4272bec7cc596dbf19dcc2
+ilk-incelenen-sha256: c531eae7c7848eea0fede0f39597b942d31dce0557e3fd44963e9b8f3faf7988
+inceleyen: /root/pvg_rev20_final_heading_review
+model: verilemiyor; istenen gpt-6.2-astra
+effort: verilemiyor; istenen high
+kaynak-paket-lf-sha256: ea4ff430d0b2f5f07c8c2482f34311e7897452be597b69b16b822da277b6f7f4
+plan-lf-sha256: 0764b043e613a6731f95e039e01a1d1ad95865e8b6880432ab89edbe9d8d5ae4
+baseline-ref: dd051eebde36c6ad61fcbc7fe2560dc24bb341cc
+bulgu F-1: kapandı — İlk c531 sürümünün saved mode :43-47 bölümü yalnız yeni sınıfın yokluğunu zorunlu tutuyor, eksik mevcut kaynakları continue ile atlıyordu; altı kaynaktan biri yokken be_scope_sources_same_as_saved_baseline=True iddiası üretilebilirdi. Yeni sürüm :44, sources[4] dışındaki altı girdinin tamamı için present=True assert eder; :46-49 hepsinin canonical-LF hashini immutable baseline ile karşılaştırır. Bu ek tek satır çıkarılınca ilk c531 hash'i birebir elde edildi. Kaynak varlığı bulgusu kaynak incelemesiyle kapandı; ürün dosyası silinerek deney yapılmadı.
+normal-kip: İki gerçek tam TRX, dört mevcut CLI sonucu0, yedi yolun tam diff/presence kümesi, yeni test sınıfı ve altı isim grubunun varlığı, API396+yeni sınıf vaka sayısı, RegPvBase211, eski Mongo35, üç WIN hedefi ve kaynak/DLL/TRX-storage/tazelik bağı tutarlı. API396 hesabı WIN395 + AC43 tek yeni InlineData'dır; AC44 mevcut üç Theory girdisine yalnız ReadCalls assertion'ı ekler. İsim/sayı/assembly varlığı davranış kabulü sayılmıyor.
+kayıtlı-kip: Immutable Git TRX hashleri ve altı BE kaynak bağı, mevcut Web reporter/evidence=False gözlemleri ile yeni sınıfın yokluğunu kaydeder; acceptance=false ve exit1 tasarımı korunur. Bu yeni BE assertion RED testi veya BE'nin tüm browser açığını tek başına düzeltmesi iddiası değildir.
+e2-sınırı: Metot/diff sınırları, policy/snapshot/race/DTO/no-loss davranışı, iki gerçek store, compiling sabotajlar ve cleanup bağımsız kaynak/runtime E2 gerektirir. Yeni testlerin mevcut üretime karşı önce derlenen assertion RED ile ölçülmesi ayrı normal prompt yükümlülüğüdür; compile failure RED ve kırmızı commit kabul edilmez.
+yeni-kayıt: checks/be-saved-baseline-v1.1.json ham SHA256 628b1f19609c4f366444ea2d79e32b37730192f6fe42db1071d29674bc2f3121 okundu; wrapper hash'i yeni8e4, altı mevcut kaynak present=True, yeni sınıf absent, RegPvBase211 ve acceptance_passed=false içeriyor. Koşu yeniden çalıştırılmadı.
+eski-eş-kayıtlar: CT-CAPTURE-BASELINE.md SHA256 d73df70370fe8cf55d1fb01c7c933999bed2ccd5bb6eb1dc31e5ca47c5bf9793 ve CT-CAPTURE-BASELINE.json SHA256 90d81ce93db7c623413eac98227b67bf47eec711772e9fd7acd4c6106b369765 eski c531 üreticisini anlatıyor; yeni8e4 kaydı diye kullanılmamalı. CT yeni helper hash'i ve ölçülen kaydı ayrıca bağlayacak.
+açık-somut-bulgu: 0
+ölçüm-sınırı: Yalnız kaynak/hash/korunmuş kayıt incelemesi. Test, build, ACL, Mongo, normal-mode veya saved-mode üretici çalıştırması, sahte TRX, ürün/pack/queue değişikliği ve işçi başlatma yapılmadı. Bu bir WP prompt inceleme kaydı, dispatch izni veya BE E2 değildir. Hüküm yalnız kesin8e4 kaynak baytlarına aittir.

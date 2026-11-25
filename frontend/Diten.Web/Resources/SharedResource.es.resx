@@ -1221,6 +1221,8 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>Optimización del stock de seguridad</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>Planificación de la demanda</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>Farmacovigilancia</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>Recepción de Casos y Triaje</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
     <value>Operaciones de Almacén</value>
   </data>
@@ -1289,5 +1291,17 @@
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>Planificación de olas</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>Recepción de Casos y Triaje</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>Crear Borrador de Recepción</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>Actualizar Borrador de Recepción</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>Detalles del Borrador de Recepción</value>
   </data>
 </root>

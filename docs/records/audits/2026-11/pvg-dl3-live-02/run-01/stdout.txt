@@ -1,0 +1,74 @@
+== pre-check: machine load (build starts only when the 1-minute load average is <= 12)
+uptime: 23:49  up 12 days, 14:23, 1 user, load averages: 12.25 19.93 18.24
+load 12.25 > 12: waiting 30s, then measuring again
+uptime: 23:49  up 12 days, 14:24, 1 user, load averages: 9.34 18.50 17.78
+load 9.34 <= 12: ok
+== pre-check: port 5011 must be free
+port 5011 free
+== run-time identity (JwtSettings values stay in /var/folders/1x/lwl5wtmx2rqdb8srq1t66nwh0000gn/T/tmp.ZpESfQ921e, mode 700; values are never printed)
+identity ready: 4 random JwtSettings values (secret length 64)
+== build (API project only; a build failure is a setup failure, never a refusal)
+    0 Hata
+
+Geçen Süre 00:00:11.99
+== case 1: Development (JwtSettings from run time; no flags)
+-- case dev: started 'dotnet run --no-build' pid 81160 (my child, started Sun Nov  1 23:49:58 2026)
+[PASS] 1a development /health/live :: expected: HTTP 200, status=live, no secret or connection value in the body :: actual: HTTP 200; status=live mode=local-dev-ci-build-test operationalRuntimeAuthorized=false nonProductionAdaptersEnabled=false; secret/connection scan: clean
+[PASS] 1b development /health/ready :: expected: HTTP 200, status=ready (non-production adapters on), no secret or connection value in the body :: actual: HTTP 200; status=ready mode=local-dev-ci-build-test operationalRuntimeAuthorized=false nonProductionAdaptersEnabled=true; secret/connection scan: clean
+-- stop: kill -TERM 81160 (dotnet run, started Sun Nov  1 23:49:58 2026, my child; it forwards the signal to the host app pid 81237)
+[PASS] 1c development host log :: expected: none of the 4 run-time JwtSettings values appears in the host output :: actual: clean (5 log lines scanned)
+== case 1d: Development, UseNonProductionAdapters=false (AC-8 part 2: /health/ready in every environment)
+-- case devnoadapters: started 'dotnet run --no-build' pid 81618 (my child, started Sun Nov  1 23:50:03 2026)
+[PASS] 1d development without adapters /health/ready :: expected: HTTP 503, status=not-ready, exactly the 5 safe dependency codes, no secret or connection value :: actual: HTTP 503; status=not-ready mode=local-dev-ci-build-test operationalRuntimeAuthorized=false nonProductionAdaptersEnabled=false codes=PVG_DEPENDENCY_EVIDENCE_LINK,PVG_DEPENDENCY_FIELD_SECURITY,PVG_DEPENDENCY_INTAKE_STORE,PVG_DEPENDENCY_PERMISSION_GATE,PVG_DEPENDENCY_WORKFLOW_GATE; secret/connection scan: clean
+-- stop: kill -TERM 81618 (dotnet run, started Sun Nov  1 23:50:03 2026, my child; it forwards the signal to the host app pid 81694)
+== case 2: Production without adapters
+-- case 2a: started 'dotnet run --no-build' pid 81916 (my child, started Sun Nov  1 23:50:07 2026)
+[PASS] 2a production, no flags :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+-- case 2b: started 'dotnet run --no-build' pid 82082 (my child, started Sun Nov  1 23:50:08 2026)
+[PASS] 2b production, authorized + well-formed reference, no adapters (AC-8 part 1) :: expected: start refused: exit != 0, host never listens, message 'required dependencies are not registered' and exactly the 5 safe dependency codes :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup refused; required dependencies are not registered: PVG_DEPENDENCY_FIELD_SECURITY, PVG_DEPENDENCY_WORKFLOW_GATE, PVG_DEPENDENCY_EVIDENCE_LINK, PVG_DEPENDENCY_PERMISSION_GATE, PVG_DEPENDENCY_INTAKE_STORE"
+== case 3: ASPNETCORE_ENVIRONMENT unset / empty / blank (code: blank = Production, owner decision K3)
+-- case 3a: started 'dotnet run --no-build' pid 82266 (my child, started Sun Nov  1 23:50:10 2026)
+[PASS] 3a environment variable unset :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+-- case 3b: started 'dotnet run --no-build' pid 82449 (my child, started Sun Nov  1 23:50:11 2026)
+[PASS] 3b environment variable empty :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+-- case 3c: started 'dotnet run --no-build' pid 82615 (my child, started Sun Nov  1 23:50:13 2026)
+[PASS] 3c environment variable whitespace only :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+== case 3d: 'Production ' with a trailing space (code passes a non-blank name through untrimmed)
+-- case padded: started 'dotnet run --no-build' pid 82806 (my child, started Sun Nov  1 23:50:14 2026)
+[PASS] 3d environment 'Production ' (trailing space) :: expected: starts as NOT production-like (PvgServiceApiHost.cs:170-173: name not trimmed): HTTP 200, non-production adapters on :: actual: HTTP 200; status=ready mode=local-dev-ci-build-test operationalRuntimeAuthorized=false nonProductionAdaptersEnabled=true; secret/connection scan: clean
+-- stop: kill -TERM 82806 (dotnet run, started Sun Nov  1 23:50:14 2026, my child; it forwards the signal to the host app pid 82877)
+== case 4: Production, OperationalRuntimeAuthorized=true, approval reference missing or malformed (AC-10)
+-- case 4a: started 'dotnet run --no-build' pid 83113 (my child, started Sun Nov  1 23:50:17 2026)
+[PASS] 4a authorized, no approval reference :: expected: start refused: exit != 0, host never listens, message contains 'approval reference' :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup requires an operational runtime approval reference."
+-- case 4b: started 'dotnet run --no-build' pid 83291 (my child, started Sun Nov  1 23:50:18 2026)
+[PASS] 4b authorized, whitespace-only approval reference :: expected: start refused: exit != 0, host never listens, message contains 'approval reference' :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup requires an operational runtime approval reference."
+-- case 4c: started 'dotnet run --no-build' pid 83448 (my child, started Sun Nov  1 23:50:20 2026)
+[PASS] 4c authorized, malformed approval reference (value must not be echoed) :: expected: start refused: exit != 0, host never listens, message contains 'approval reference' :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup requires an operational runtime approval reference."
+== case 5: Production, UseNonProductionAdapters=true
+-- case 5a: started 'dotnet run --no-build' pid 83647 (my child, started Sun Nov  1 23:50:23 2026)
+[PASS] 5a production, adapters flag only (not authorized) :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+-- case 5b: started 'dotnet run --no-build' pid 83849 (my child, started Sun Nov  1 23:50:25 2026)
+[PASS] 5b production, authorized + well-formed reference + adapters flag :: expected: start refused: exit != 0, host never listens, message contains 'cannot use non-production adapters' :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup cannot use non-production adapters."
+== case 6: other start refusals the code has and a smoke can reach
+-- case 6a: started 'dotnet run --no-build' pid 84033 (my child, started Sun Nov  1 23:50:26 2026)
+[PASS] 6a Development + Pvg:Runtime:ProductionLike=true :: expected: start refused: exit != 0, host never listens, message contains 'operational runtime is not authorized' :: actual: exit=134; msg="System.InvalidOperationException: PVG operational runtime is not authorized for production-like startup."
+-- case 6b: started 'dotnet run --no-build' pid 84221 (my child, started Sun Nov  1 23:50:28 2026)
+[PASS] 6b Development + ProductionLike + authorized + well-formed reference (dependency check applies) :: expected: start refused: exit != 0, host never listens, message 'required dependencies are not registered' and exactly the 5 safe dependency codes :: actual: exit=134; msg="System.InvalidOperationException: PVG production-like startup refused; required dependencies are not registered: PVG_DEPENDENCY_FIELD_SECURITY, PVG_DEPENDENCY_WORKFLOW_GATE, PVG_DEPENDENCY_EVIDENCE_LINK, PVG_DEPENDENCY_PERMISSION_GATE, PVG_DEPENDENCY_INTAKE_STORE"
+-- case 6c: started 'dotnet run --no-build' pid 84438 (my child, started Sun Nov  1 23:50:29 2026)
+[PASS] 6c Development + unparsable bool (OperationalRuntimeAuthorized) :: expected: start refused: exit != 0, host never listens, message contains 'Failed to convert configuration value' :: actual: exit=134; msg="System.InvalidOperationException: Failed to convert configuration value at 'Pvg:Runtime:OperationalRuntimeAuthorized' to type 'System.Boolean'."
+-- 6c observation: the unparsable flag value is echoed in the crash output (a flag value, not a secret)
+-- case 6d: started 'dotnet run --no-build' pid 84650 (my child, started Sun Nov  1 23:50:30 2026)
+[PASS] 6d ASPNETCORE_URLS set but empty (Development) :: expected: start refused: exit != 0, host never listens, message contains 'Parameter 'urls'' :: actual: exit=134; msg="System.ArgumentException: The value cannot be an empty string or composed entirely of whitespace. (Parameter 'urls')"
+-- case 6e: started 'dotnet run --no-build' pid 84844 (my child, started Sun Nov  1 23:50:32 2026)
+[PASS] 6e ASPNETCORE_URLS with an unsupported scheme (Development; framework refusal, binds nothing) :: expected: start refused: exit != 0, host never listens :: actual: exit=134; msg="System.InvalidOperationException: Unrecognized scheme in server address 'ftp://127.0.0.1:5011'. Only 'http://' and 'https://' are supported."
+== not measured (no PASS/FAIL line)
+-- NOT REACHABLE  rev-14 persistence refusals (PVG_PERSISTENCE_*; AC-13 (c), AC-35 (d)(e)): 0 files under services/Diten.PvgService/src/Diten.PvgService.Api mention them; the pack describes DL-10, the code at this commit has no such key. A Mongo store would also need a connection, which this smoke must not make.
+-- NOT REACHABLE  production-like host that starts: no configuration registers real adapters, and the adapters flag is refused in production-like, so 2b/6b is the only outcome (AC-8 part 1 holds for all five at once).
+-- NOT REACHABLE  one dependency missing out of five: only the test-only configureServices hook can remove a single registration (PvgServiceApiHost.cs:36,51); configuration cannot.
+-- NOT REACHABLE  Kestrel 'address already in use': would need another process on 5011; this script stops instead when the port is busy.
+-- NOT A REFUSAL   missing JwtSettings: the key list stays empty and protected endpoints answer 401 (PvgServiceApiHost.cs:104-106).
+-- NOT A HOST TEST AC-9 / the CI scan of ApprovalReference values in committed files: static tests, run with dotnet test.
+== post-check: port 5011 must be free
+port 5011 free
+== cases: 20 PASS, 0 FAIL
+== exit 0

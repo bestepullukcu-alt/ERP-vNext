@@ -1,0 +1,44 @@
+{
+  "worker_base": "6d845de19296d919620503a4024ddcaa0bda42dc",
+  "files": [
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js",
+      "raw_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "lf_sha256": "4910e17421f4a6c6d8476ddea12032ef2ffe9c0eaa59aeabba618dcdf1089eca",
+      "bytes": 24991
+    },
+    {
+      "path": "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs",
+      "raw_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "lf_sha256": "1b7ffe7d4cea66826ee21fd79e3085c4b3f50ee32edb61042af2ef1773d30257",
+      "bytes": 25995
+    },
+    {
+      "path": "frontend/Diten.Web.Tests/Controllers/PvgCaseIntakeTriageWebTests.cs",
+      "raw_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "lf_sha256": "0aa87c4b54883f0133dff5b2b26c6ffce3f839977fe465cca51055ae360bf0df",
+      "bytes": 112393
+    },
+    {
+      "path": "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js",
+      "raw_sha256": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+      "lf_sha256": "87d239ff676a6729f617b9f26a1907faf61609cf7e46375c77304785feba16bd",
+      "bytes": 72009
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml",
+      "raw_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "lf_sha256": "4485240f3cf44f8f072bc6c68df20af804fb1029b87528b9eefc092868bfde05",
+      "bytes": 15407
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml",
+      "raw_sha256": "21577524dd76d169beab33bc2052139cefb7804c2ea08ffbb1e112f600ff1819",
+      "lf_sha256": "21577524dd76d169beab33bc2052139cefb7804c2ea08ffbb1e112f600ff1819",
+      "bytes": 2703
+    }
+  ],
+  "candidate_commit": null,
+  "status": "v3 source freeze: only JS validation UTCyear range and meaningful guard tests; submission rawticks unchanged; C#finaltest0aaunchanged",
+  "supersedes": "CANDIDATE-SOURCE-v2.json; all prior results retain their original input hashes"
+}

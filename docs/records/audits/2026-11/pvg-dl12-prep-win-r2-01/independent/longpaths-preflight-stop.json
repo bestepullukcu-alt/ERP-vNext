@@ -1,0 +1,7 @@
+{
+  "stage": "Before SDK/build/test/ACL/Mongo",
+  "test_runs_before_fix": 0,
+  "diagnosis": "Scratch default core.longpaths was missing; real repo has true. Per-command core.longpaths=true status and diff are empty.",
+  "source_bytes_unchanged": true,
+  "resolution": "Only owned scratch Git config gets core.longpaths=true; original real repository config unchanged."
+}

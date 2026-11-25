@@ -1,0 +1,43 @@
+{
+  "kind": "Actual FE predecessor-integrated discovery, uncommitted external proof",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--discover",
+    "Case Intake & Triage"
+  ],
+  "start": "2026-11-20T21:49:29.816752+00:00",
+  "end": "2026-11-20T21:49:50.277220+00:00",
+  "exit_code": 3,
+  "head": "ecbcecd9342759c5b3fc4ae0ea48ba2c44cd2aa2",
+  "producer_copies": [
+    {
+      "path": ".antigravity/scripts/verify_module_id.py",
+      "mirror_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+      "git_blob_raw_sha256": "72d27f77dcf4aa6c40cf6bd6c44808fe79b15c9911f4cae835da637e0763368f"
+    },
+    {
+      "path": "scripts/ct_queue.py",
+      "mirror_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\scripts\\ct_queue.py",
+      "git_blob_raw_sha256": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2"
+    }
+  ],
+  "raw_sha256": "662399580f54b7ded1f7328fa3e9ce9f0c1fa4ce4e2a69cb88c1ab32c96ab8dc",
+  "check_argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\discovery-producer-lf\\.antigravity\\scripts\\verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--check-report",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-fe-discovery-01\\discovery-report.txt"
+  ],
+  "check_exit_code": 0,
+  "check_stdout": "RAPOR GEÇERLİ: sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı\n",
+  "ref_lines": 538
+}

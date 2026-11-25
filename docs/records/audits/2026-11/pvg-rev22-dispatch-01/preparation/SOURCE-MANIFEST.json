@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "file": "MANAGED-WORKTREE-BASELINE.json",
+      "raw_source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-rev22-gate-prep-01/MANAGED-WORKTREE-BASELINE.json",
+      "raw_sha256": "19d66e8d01bd27040c76e7af1568ef25456ae14d2ecc256f7aac933dfd6a49ce",
+      "lf_sha256": "19d66e8d01bd27040c76e7af1568ef25456ae14d2ecc256f7aac933dfd6a49ce"
+    },
+    {
+      "file": "WORKTREE-DOR-CANDIDATE.txt",
+      "raw_source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-rev22-gate-prep-01/WORKTREE-DOR-CANDIDATE.txt",
+      "raw_sha256": "39b3e6a03c4774c76e1a174509cde6d9580898c0565db84522d89d10783c6726",
+      "lf_sha256": "39b3e6a03c4774c76e1a174509cde6d9580898c0565db84522d89d10783c6726"
+    },
+    {
+      "file": "INDEX-DATATABLE-GAPS.stdout.txt",
+      "raw_source": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-pr460-rev22-gate-prep-01/INDEX-DATATABLE-GAPS.stdout.txt",
+      "raw_sha256": "f0d5b69ff2e80615475f14b8dce56bd3c504898b49d48eb1c18dcafc0bd77381",
+      "lf_sha256": "f0d5b69ff2e80615475f14b8dce56bd3c504898b49d48eb1c18dcafc0bd77381"
+    }
+  ],
+  "prepared_only": true,
+  "product_go": false
+}

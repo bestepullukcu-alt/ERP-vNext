@@ -1,0 +1,28 @@
+{
+  "kind": "Independent read-only author backend source equivalence and post-Web binary identity check",
+  "candidate": "fbcb33533daacb9ae5b3b215736ad14d2b466c11",
+  "groups": [
+    {
+      "suite": "pvg-api",
+      "inputs": 143,
+      "all_current_worker_canonicalLF_matches_original": true,
+      "frontend_inputs": 0,
+      "original_phase": "final-v2-api-actual",
+      "original_TRX_sha256": "923908a058b5a84ffe227dcb842b448b69d4d41268ed5fc490eb0e1ac8bc2014",
+      "cases": 456,
+      "not_relabelled_v3": true
+    },
+    {
+      "suite": "pvg-regpv-base",
+      "inputs": 90,
+      "all_current_worker_canonicalLF_matches_original": true,
+      "frontend_inputs": 0,
+      "original_phase": "final-v2-regpv",
+      "original_TRX_sha256": "31cb36f383904feb13fadbc18de7cbcc2df32f4b57cc42e1e1df4c8bc84746b5",
+      "cases": 211,
+      "not_relabelled_v3": true
+    }
+  ],
+  "all_current_test_DLL_hashes_equal_archived": true,
+  "limits": "Original actual API/Reg invocations remain labelled v2. V3 modified only frontend form.js and its JS test, absent from both compiled closures. Independent actual fresh API/Reg runs are separate."
+}

@@ -1,0 +1,57 @@
+{
+  "kind": "Observed preparation and CT invocation failures retained; none counted as product assertion RED or PASS",
+  "at_utc": "2026-11-21T17:58:24.929639+00:00",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "setup_attempts": [
+    {
+      "attempt": "architecture",
+      "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+      "phase": "Private NuGet.Config restore only; no build/test/TRX",
+      "observed_error": "XML declaration encoding utf8 not accepted by NuGet/.NET",
+      "actual_exit": 1,
+      "source_and_unforced_job_cleanup_verified": true,
+      "source_result_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-architecture\\67ec69269e60478f8fcb82c5c94b86e4\\evidence\\RESULT.json",
+      "raw_sha256": "20c4c42a3c5346439b16419260f512515392c88dbc955230b0c9913c106409b4",
+      "raw_base64": "ewogICJraW5kIjogIkFjdHVhbCByZXF1aXJlZCBmdWxsIGFyY2hpdGVjdHVyZSBzdWl0ZSBvbmx5IiwKICAic291cmNlX2hlYWQiOiAiNTFjNTg1NDliN2MyZTdhMGEyMzJlNzRhMTUwNTRmOWIyYjhiNTFkZCIsCiAgImFyY2hpdGVjdHVyZV9wYXNzIjogZmFsc2UsCiAgInRlc3Rfc3VpdGVfZ3JlZW4iOiBmYWxzZSwKICAic291cmNlX2FuZF91bmZvcmNlZF9qb2JfY2xlYW51cF92ZXJpZmllZCI6IHRydWUsCiAgImVycm9yIjogIkFzc2VydGlvbkVycm9yKCgncGF5bG9hZCBmYWlsZWQnLCAxKSkiLAogICJ3b3JrIjogIkM6XFxVc2Vyc1xcZXBlbmNcXEFwcERhdGFcXExvY2FsXFxUZW1wXFxwdmctZmluYWwtYXJjaGl0ZWN0dXJlXFw2N2VjNjkyNjllNjA0NzhmOGZjYjgyYzVjOTRiODZlNCIsCiAgInJvb3RfcHJvZHVjdF9lZGl0cyI6IGZhbHNlLAogICJoZWxwZXJfc2hhMjU2IjogIjJiNWEyZTViNGQ1ZmVhMDhhMTNmZmYyNTNjNWZlNjM5NzU5MjJjNTQ2NWJhYjhlOWU4ODEyODVjN2UzMTNjY2MiLAogICJydW5uZXJfc2hhMjU2IjogIjRkZGU4MDZlNTMyNmJiZDY4YjQ0ODI1NmJiOWMzZDE2MzEzY2M5YzYyNzRhNDc3NmYxNDAyZDRlZDYxYzZjODMiLAogICJtb2RlbCI6ICJ2ZXJpbGVtaXlvciIsCiAgImVmZm9ydCI6ICJ2ZXJpbGVtaXlvciIsCiAgImxpbWl0cyI6ICJObyBhdXRvbWF0aWMgYWNjZXB0YW5jZSBvZiBhIGxhdGVyIG1ldGFkYXRhLW9ubHkgSEVBRC4gQ29tcGFyZSBhY3R1YWwgaW5wdXQgaWRlbnRpdGllcyBleHBsaWNpdGx5IG9yIHJlcnVuL29idGFpbiBleGFjdC1oZWFkIENJLiBLbm93bi1mYWlsdXJlIGNoZWNrMCBuZXZlciB0dXJucyBhIHJlZCBzdWl0ZSBncmVlbi4gTm90IERMLTEyIGJlaGF2aW9yL29wZXJhdGlvbmFsIGFjY2VwdGFuY2UuIgp9Cg=="
+    },
+    {
+      "attempt": "full_web",
+      "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+      "phase": "Private NuGet.Config restore only; no build/test/TRX",
+      "observed_error": "XML declaration encoding utf8 not accepted by NuGet/.NET",
+      "actual_exit": 1,
+      "source_and_unforced_job_cleanup_verified": true,
+      "source_result_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-full-web\\37b84c1cff48421e8d27c98f14155a6a\\evidence\\RESULT.json",
+      "raw_sha256": "76bb5b6d0724bd9588b0a7ee438ea4384fe0ebb06737e660d66c19468d0e7606",
+      "raw_base64": "ewogICJraW5kIjogIkFjdHVhbCByZXF1aXJlZCB1bmZpbHRlcmVkIGZ1bGwgV2ViIGludGVncmF0aW9uIHN1aXRlIG9ubHkiLAogICJzb3VyY2VfaGVhZCI6ICI1MWM1ODU0OWI3YzJlN2EwYTIzMmU3NGExNTA1NGY5YjJiOGI1MWRkIiwKICAiZnVsbF93ZWJfcGFzcyI6IGZhbHNlLAogICJ0ZXN0X3N1aXRlX2dyZWVuIjogZmFsc2UsCiAgInNvdXJjZV9hbmRfdW5mb3JjZWRfam9iX2NsZWFudXBfdmVyaWZpZWQiOiB0cnVlLAogICJlcnJvciI6ICJBc3NlcnRpb25FcnJvcigoJ3BheWxvYWQgZmFpbGVkJywgMSkpIiwKICAid29yayI6ICJDOlxcVXNlcnNcXGVwZW5jXFxBcHBEYXRhXFxMb2NhbFxcVGVtcFxccHZnLWZpbmFsLWZ1bGwtd2ViXFwzN2I4NGMxY2ZmNDg0MjFlOGQyN2M5OGYxNDE1NWE2YSIsCiAgInJvb3RfcHJvZHVjdF9lZGl0cyI6IGZhbHNlLAogICJoZWxwZXJfc2hhMjU2IjogIjJiNWEyZTViNGQ1ZmVhMDhhMTNmZmYyNTNjNWZlNjM5NzU5MjJjNTQ2NWJhYjhlOWU4ODEyODVjN2UzMTNjY2MiLAogICJydW5uZXJfc2hhMjU2IjogImZlYjE4MmRmMmRhYzYyNThiZTZkM2NmNTE5ZDllNjI5YjE2MjUwZTM3ZjY5NDM2NWRmZDFiNGNmNDk0OTYwMjQiLAogICJtb2RlbCI6ICJ2ZXJpbGVtaXlvciIsCiAgImVmZm9ydCI6ICJ2ZXJpbGVtaXlvciIsCiAgImxpbWl0cyI6ICJObyBhdXRvbWF0aWMgYWNjZXB0YW5jZSBvZiBhIGxhdGVyIG1ldGFkYXRhLW9ubHkgSEVBRC4gQ29tcGFyZSBhY3R1YWwgaW5wdXQgaWRlbnRpdGllcyBleHBsaWNpdGx5IG9yIHJlcnVuL29idGFpbiBleGFjdC1oZWFkIENJLiBLbm93bi1mYWlsdXJlIGNoZWNrMCBuZXZlciB0dXJucyBhIHJlZCBzdWl0ZSBncmVlbi4gV29ya2VyLW9ubHkgZnJvemVuIEZFIGNhcHR1cmUgaXMgbm90IHVzZWQgb24gcm9vdCBIOyBub3QgYXV0b21hdGljIERMLTEyIEU0L0RPTkUvb3BlcmF0aW9uYWwgYWNjZXB0YW5jZS4iCn0K"
+    }
+  ],
+  "reviewed_repairs": [
+    {
+      "lane": "architecture",
+      "old_runner_sha256": "4dde806e5326bbd68b448256bb9c3d16313cc9c6274a4776f1402d4ed61c6c83",
+      "new_runner_sha256": "71adfaad2eeacdcf7c6f97df6dd8afa0a0947fc38fef2c077f9350b9aa82ca29"
+    },
+    {
+      "lane": "full_web",
+      "old_runner_sha256": "feb182df2dac6258be6d3cf519d9e629b16250e37f694365dfd1b4cf49496024",
+      "new_runner_sha256": "984597cf1e4a3bf1237e010d9bd121aa502677fe1443900f4cf25838ad5a56f7"
+    }
+  ],
+  "only_repair": "External runner ET.tostring XML encoding literal utf8 -> utf-8; all other bytes equal; AST0; no source/config global or test guard changes",
+  "ct_initial_queue_invocation": {
+    "exit_code": 1,
+    "errors": 6,
+    "observed_cause": "gh executable absent from root invocation PATH ([WinError 2]); historical acceptance human step unavailable",
+    "raw_tool_chunk": "2a89e9",
+    "raw_stdout_file_captured": false,
+    "corrected_network_and_gh_path_retry": "Completed exit0,0errors0warnings at unchangedH51; see QUEUE.capture.json"
+  },
+  "ct_pack_reading": {
+    "initial_sandbox_network_exit": 1,
+    "strict_main_reading_exit": 1,
+    "strict_main_reading_not_branch_dispatch_gate": true,
+    "correct_S115_deferred_exit": 0,
+    "human_main_merge_still_pending": true
+  }
+}

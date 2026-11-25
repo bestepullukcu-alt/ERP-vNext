@@ -1,0 +1,2396 @@
+{
+  "tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "bound_commit_tree": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "counters": {
+    "total": "395",
+    "executed": "395",
+    "passed": "395",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "results": [
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U27\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'empty':{'environmentVariables':{'ASP\"···, isViolation: True, expectedScope: \"empty\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Get_by_id_of_another_tenants_draft_returns_no_draft_fields",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"charts/x/values.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Tenant_header_and_token_claim_mismatch_is_denied(row: \"claim-absent\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Unreachable_mongo_store_refuses_start",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \" \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_writes_a_defined_outcome_by_name_and_an_undefined_one_as_the_number(outcome: Triaged, expectedOutcomeJson: \"\\\"Triaged\\\"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"unsigned\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Mongo_store_refuses_start_without_transaction_support",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_business_endpoints_return_consistent_reason_codes_before_service_when_context_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_without_operational_runtime_authorization",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_store_round_trips_every_SafetyCaseIntake_field",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_remove_reporter_link_and_selection_pair_is_rejected(row: \"id-only\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_host_build_is_refused_like_production(environmentName: \"\", operationalRuntimeAuthorized: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Mongo_store_writes_CreatedBy_and_UpdatedBy_from_the_validated_subject",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgEvidenceLinkPort), expectedCode: \"PVG_DEPENDENCY_EVIDENCE_LINK\", environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_count_with_and_without_status_matches_the_in_memory_store(kind: Mongo)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Unauthorized_caller_with_invalid_body_gets_permission_outcome_without_validation_codes(operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_client_validity_result_is_rejected(row: \"validityResult-json-null\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_with_a_missing_or_different_tenant_is_refused_without_codes(row: \"header-missing\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_refuses_a_non_integer_number_and_every_other_token_with_a_json_exception(outcomeJson: \"3000000000\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0230-0001\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"malformed-id\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-1'}}}\", expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-1\\\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_matches_upper_case_flag_key_under_turkish_culture",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O15\", relativePath: \"src/x/Dockerfile.api\", content: \"FROM scratch\\nENTRYPOINT ['dotnet', 'Diten.PvgServ\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"mongo\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Mongo_store_is_refused_on_a_production_like_host(row: \"Production\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_remove_reporter_link_round_trips_manual_source(source: Crm)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Mongo_store_is_refused_on_a_production_like_host(row: \"DevelopmentProductionLike\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Body_createdBy_and_updatedBy_never_reach_the_store",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_without_a_valid_token_is_401(row: \"no-bearer\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Create_and_update_requests_do_not_accept_CreatedBy_or_UpdatedBy",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.No_committed_configuration_carries_the_registration_values",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"expired\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_only_one_reporter_selection_field_is_rejected(row: \"directory-only\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"node_modules/p/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_client_validity_result_is_rejected(row: \"validityMissingCriteria\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"void\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_stop_cancels_the_pending_push",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O4\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dev':{'environmentVariables':{'ASPNE\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \" Triaged\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U7\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - DOTNE\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0231-001\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate(outcome: \"Duplicate\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Store_contract_and_mongo_store_have_no_delete_bulk_delete_archive_void_or_export_member",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_without_approval_reference_is_refused(reference: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Mongo_store_writes_UpdatedBy_from_the_validated_subject_on_triage_and_route(operation: \"triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_matches_upper_case_adapters_flag_name_under_turkish_culture",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"GET-list\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Ready_returns_503_when_the_selected_mongo_store_stops_answering",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"company-recipient\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Explicit_environment_names_keep_their_meaning(environmentName: \"Staging\", expectedProductionLike: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Actor_comes_from_token_subject_and_actor_type(row: \"no-actor-type\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_unparseable_json",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Triage_and_route_with_stale_version_return_409_version_conflict(operation: \"Route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_store_creates_exactly_the_catalog_indexes_each_starting_with_TenantId",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Get_by_id_returns_draft_fields_only_after_field_security_allows",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_api_response_contract_exposes_safe_observability_error_model_only",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_a_null_or_numeric_outcome_still_reaches_the_permission_gate(outcomeJson: \"1\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_remove_reporter_link_round_trips_manual_source(source: PersonDirectory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Tenant_header_and_token_claim_mismatch_is_denied(row: \"header-missing\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_remove_reporter_link_is_rejected(row: \"false\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U6\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgRegistrationVariablesInitializerTests.Test_assembly_clears_the_registration_variables_before_any_host_starts",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U8\", relativePath: \"Dockerfile\", content: \"FROM scratch\\nENV Pvg__Runtime__UseNonProductionAd\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"TestResults/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O13\", relativePath: \"k8s/deployment.yaml\", content: \"env:\\n  - name: Pvg__Runtime__OperationalRuntimeAu\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_host_build_is_refused_like_production(environmentName: \" \", operationalRuntimeAuthorized: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U12\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      ASPNETCORE_ENVIRONMEN\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/Properties/launchSettings.json\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_without_approval_reference_values_passes(decisionsDirectoryExistsButIsEmpty: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_refuses_a_non_integer_number_and_every_other_token_with_a_json_exception(outcomeJson: \"[]\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"INMEMORY\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".claude/worktrees/w/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U26\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','env':{'ASPNETCOR\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_non_production_adapters_even_when_runtime_authorized",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_200_when_all_required_dependencies_resolve(environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_reporter_source_or_source_id_is_rejected(row: \"source-id\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_endpoints_are_defined_for_local_dev_ci_host",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgPermissionGate), expectedCode: \"PVG_DEPENDENCY_PERMISSION_GATE\", environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"bulk-delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U17\", relativePath: \".vscode/launch.json\", content: \"{'configurations':[{'name':'pvg','env':{'Pvg__Runt\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"1\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_list_orders_by_received_descending_then_draft_id_and_pages(kind: InMemory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \" RTA-MOD0230-001\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"export\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Program_source_reads_urls_only_from_aspnetcore_urls_variable_text",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"company-recipient\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".env\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_host_build_is_refused_like_production(environmentName: \" \", operationalRuntimeAuthorized: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Actor_comes_from_token_subject_and_actor_type(row: \"both\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"no-record-launch-settings\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dev':{'environmentVariables':{'ASPNE\"···, expectedScope: \"dev\", recordPathA: \"\", recordA: \"\", recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".github/workflows/ci.yml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_remove_reporter_link_is_rejected(row: \"true\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"inmemory\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_segment_is_reserved_and_never_read_as_an_intake_draft_id(row: \"PUT\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"text-value-not-in-set\", relativePath: \".env\", content: \"Pvg__Runtime__ApprovalReference=${{ secrets.PVG_RE\"···, expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgFieldSecurityPolicy), expectedCode: \"PVG_DEPENDENCY_FIELD_SECURITY\", environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_only_one_reporter_selection_field_is_rejected(row: \"id-only\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"bulk\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgFieldSecurityPolicy), expectedCode: \"PVG_DEPENDENCY_FIELD_SECURITY\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_list_breaks_equal_received_times_by_draft_id_with_and_without_a_status_filter(kind: Mongo)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U28\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      ASPNETCORE_ENVIRONMEN\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O3\", relativePath: \"appsettings.json\", content: \"{'pvg':{'runtime:operationalruntimeauthorized':'TR\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"rta-mod0230-001\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_authorized_startup_does_not_register_non_production_adapters",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Unauthorized_caller_with_invalid_body_gets_permission_outcome_without_validation_codes(operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"lot-number\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Program_top_level_statements_only_call_create_web_host_builder",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U5\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_response_only_fields_is_rejected(field: \"reporterSourceId\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_list_breaks_equal_received_times_by_draft_id_with_and_without_a_status_filter(kind: InMemory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_page_permissions_match_the_controller_gates",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"event-country\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U14\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dev':{'environmentVariables':{'ASPNE\"···, isViolation: True, expectedScope: \"bare\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_response_only_fields_is_rejected(field: \"reporterSource\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U2\", relativePath: \"appsettings.Production.json\", content: \"{'Pvg:Runtime:UseNonProductionAdapters':false}\", isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_ReplaceAsync_with_stale_version_returns_conflict_not_not_found(kind: Mongo)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Mongo_store_writes_UpdatedBy_from_the_validated_subject_on_triage_and_route(operation: \"route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"reporter-name\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Wrong_case_or_empty_store_value_is_refused_on_a_production_like_host(value: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Non_production_start_does_not_require_approval_reference",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Triage_and_route_with_stale_version_return_409_version_conflict(operation: \"Triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_triage_route_templates_and_endpoint_names_do_not_expose_forbidden_surfaces",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate(outcome: \"Rejected\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Malformed_mongo_connection_string_refuses_start_without_echoing_the_value",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Wrong_case_or_empty_store_value_is_refused_on_a_production_like_host(value: \"MONGO\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U23\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"export\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_segment_is_reserved_and_never_read_as_an_intake_draft_id(row: \"GET\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Only_the_persistence_project_references_the_Mongo_driver",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".github/x.yml\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"lot-number\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_concurrent_replace_of_the_same_version_has_one_winner",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_excludes_docs_records_tree",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flag_pattern_is_culture_invariant",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_posts_the_manifest_once_to_the_internal_endpoint",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"deploy/x.yml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.List_with_101_drafts_returns_second_page_and_total_counts",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"product-name\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_response_only_fields_is_rejected(field: \"validityMissingCriteria\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Explicit_environment_names_keep_their_meaning(environmentName: \"PRODUCTION\", expectedProductionLike: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Unauthorized_caller_with_invalid_body_gets_permission_outcome_without_validation_codes(operation: \"Route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Explicit_environment_names_keep_their_meaning(environmentName: \"Production\", expectedProductionLike: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U10\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      Pvg__Runtime__UseNonP\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"void\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Program_environment_name_comes_only_from_aspnetcore_environment_variable",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_treats_upper_case_production_environment_name_as_production_under_turkish_culture",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_makes_no_call_on_a_production_like_host",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_refuses_a_non_integer_number_and_every_other_token_with_a_json_exception(outcomeJson: \"{}\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Program_urls_come_only_from_aspnetcore_urls_variable_or_the_local_default",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/data.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Runtime_options_treat_blank_environment_name_as_production_like(environmentName: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Program_source_reads_environment_name_only_from_aspnetcore_environment_variable_text",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U1\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'UseNonProductionAdapters':true\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.No_committed_configuration_selects_the_mongo_store",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U20\", relativePath: \"appsettings.Development.json\", content: \"{'Pvg':{'Runtime':{'UseNonProductionAdapters':true\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_store_writes_IsDeleted_false_and_no_DeletedAt_on_create",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_refuses_a_non_integer_number_and_every_other_token_with_a_json_exception(outcomeJson: \"true\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_values_come_only_from_the_environment",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgEvidenceLinkPort), expectedCode: \"PVG_DEPENDENCY_EVIDENCE_LINK\", environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"other-id-record\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_writes_a_defined_outcome_by_name_and_an_undefined_one_as_the_number(outcome: Rejected, expectedOutcomeJson: \"\\\"Rejected\\\"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"no-record-dockerfile\", relativePath: \"Dockerfile\", content: \"FROM scratch\\nENV Pvg__Runtime__ApprovalReference \"···, expectedScope: \"file\", recordPathA: \"\", recordA: \"\", recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_stops_after_success_or_a_refusal",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_endpoint_methods_and_public_dtos_do_not_expose_retention_or_forbidden_operations",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"reporter-name\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_route_metadata_allows_only_approved_methods_per_template",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Wrong_case_or_empty_store_value_is_refused_on_a_production_like_host(value: \"mongo\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_count_with_and_without_status_matches_the_in_memory_store(kind: InMemory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U9\", relativePath: \"k8s/deployment.yaml\", content: \"env:\\n  - name: Pvg__Runtime__UseNonProductionAdap\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Program_reads_approval_reference_from_configuration",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgPermissionGate), expectedCode: \"PVG_DEPENDENCY_PERMISSION_GATE\", environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_segment_is_reserved_and_never_read_as_an_intake_draft_id(row: \"POST-triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_business_endpoints_return_safe_tenant_reason_code_before_service_when_tenant_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"archive\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_is_not_assignable_not_baseline_and_hidden",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O20\", relativePath: \"appsettings.json\", content: \"{'Other':{'Runtime':{'OperationalRuntimeAuthorized\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_well_formed_approval_reference_passes_the_approval_check",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".vscode/launch.json\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_without_approval_reference_is_refused(reference: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_is_set_as_production_on_the_host_builder(environmentName: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_200_when_all_required_dependencies_resolve(environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_client_validity_result_is_rejected(row: \"validityResult\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgIntakeDraftStore), expectedCode: \"PVG_DEPENDENCY_INTAKE_STORE\", environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"Unknown\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Public_case_intake_request_shapes_do_not_accept_tenant_id",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_stale_version_returns_409_version_conflict",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"GET-item\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"no-record-json\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"\", recordA: \"\", recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Tenant_header_and_token_claim_mismatch_is_denied(row: \"header-uppercase\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".github/workflows/ci.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U13\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'bare':{'environmentVariables':{'Pvg_\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Store_edge_cases_are_the_same_on_both_stores(kind: Mongo)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O8\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      Pvg__Runtime__Operati\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"void\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"helm/x/values.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"undeterminable-value\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','runtimeArgs':['r\"···, expectedScope: \"pvg\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_revision04_fields_round_trips_codes_and_ids",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Draft_survives_a_host_restart_on_the_mongo_store",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_without_approval_reference_values_passes(decisionsDirectoryExistsButIsEmpty: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".git/config\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"k8s/x.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Unauthorized_caller_with_invalid_body_gets_permission_outcome_without_validation_codes(operation: \"Triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"mongo-db\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U24\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dev':{'environmentVariables':{'ASPNE\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0230-001\\n\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_the_outcome_as_the_form_sends_it_reaches_the_permission_gate(outcome: \"Triaged\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"bulk-delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_writes_a_defined_outcome_by_name_and_an_undefined_one_as_the_number(outcome: 4, expectedOutcomeJson: \"4\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Mongo_replace_is_lost_when_its_transaction_commit_fails",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_stops_after_the_bounded_attempts",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Setup_method_host_maps_health_and_case_intake_routes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"report-type\", operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Injected_diten_headers_have_no_effect",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U31\", relativePath: \".env\", content: \"# ASPNETCORE_ENVIRONMENT is Development\\nPvg__Runt\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_logs_the_safe_code_of_each_state",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_ReplaceAsync_with_stale_version_returns_conflict_not_not_found(kind: InMemory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_reporter_crm_search_state_is_rejected",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Tenant_header_and_token_claim_mismatch_is_denied(row: \"claim-mismatch\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_declares_exactly_the_five_keys_and_each_is_a_real_constant",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_without_a_valid_token_is_401(row: \"other-key\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"bulk\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgEvidenceLinkPort), expectedCode: \"PVG_DEPENDENCY_EVIDENCE_LINK\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"wrong-audience\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Mongo_connection_string_is_read_through_the_secrets_provider",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"export\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoDedicatedTests.Mongo_write_is_lost_when_its_transaction_commit_fails",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Repository_configuration_scan_covers_committed_configuration_files_of_the_current_worktree",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Token_signed_with_previous_secret_is_accepted",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_host_build_is_refused_like_production(environmentName: \"\", operationalRuntimeAuthorized: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_remove_reporter_link_is_rejected(row: \"absent\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_when_decisions_directory_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"archive\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_triage_and_route_with_current_version_succeed_and_return_new_version(operation: \"Put\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgWorkflowTransitionGate), expectedCode: \"PVG_DEPENDENCY_WORKFLOW_GATE\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"triaged\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Repository_configuration_files_never_enable_operational_runtime_or_production_non_production_adapters",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"event-country\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_store_never_reads_counts_or_replaces_a_soft_deleted_draft",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O16\", relativePath: \".env\", content: \"Pvg__Runtime__OperationalRuntimeAuthorized = 'true\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O1\", relativePath: \"appsettings.Development.json\", content: \"{'Pvg':{'Runtime':{'OperationalRuntimeAuthorized':\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_carries_the_recorded_values",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"docker-compose.override.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O6\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','runtimeExecutabl\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"no-record-env\", relativePath: \".env\", content: \"Pvg__Runtime__ApprovalReference=RTA-MOD0230-001\\n\", expectedScope: \"file\", recordPathA: \"\", recordA: \"\", recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"wrong-issuer\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Valid_token_reaches_the_service_with_server_resolved_context",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"POST-route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Pvg_host_registers_only_the_named_hosted_services",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"two-records-same-id\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta-a.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···, recordPathB: \"docs/records/decisions/2026-11/rta-b.md\", recordB: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U29\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U22\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"docker-compose.yml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U15\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dotnet':{'environmentVariables':{'DO\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"appsettings.json\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"bulk-delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Program_create_web_host_builder_refuses_production_like_build_without_required_dependencies",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_request_context_fails_closed_when_tenant_actor_or_correlation_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U11\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  a:\\n    env:\\n      ASPNETCORE_ENVIRONMEN\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_urls_are_refused_by_the_host_builder(urls: \" \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Explicit_environment_names_keep_their_meaning(environmentName: \"Development\", expectedProductionLike: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".claude/launch.json\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O22\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','runtimeArgs':['r\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_urls_are_refused_by_the_host_builder(urls: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_reporter_source_or_source_id_is_rejected(row: \"source-string\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_accepts_approval_reference_with_approved_record",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O9\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    steps:\\n      - run: echo 'Pvg__R\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.List_counts_only_the_callers_tenant",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Runtime_options_treat_upper_case_production_as_production_like_under_turkish_culture(environmentName: \"production\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/Dockerfile.api\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"draft-record\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: draft\\nruntime_approval_id: RTA-MOD02\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgFieldSecurityPolicy), expectedCode: \"PVG_DEPENDENCY_FIELD_SECURITY\", environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_matches_upper_case_approval_reference_key_under_turkish_culture",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_client_validity_result_is_rejected(row: \"validityResult-direct-null\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Create_and_update_map_every_revision04_field_to_the_application_request(operation: \"Create\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.Cross_tenant_get_and_put_on_the_mongo_store_answer_like_an_unknown_id",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_does_not_follow_a_redirect",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgWorkflowTransitionGate), expectedCode: \"PVG_DEPENDENCY_WORKFLOW_GATE\", environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_endpoint_holds_no_copy_of_the_option_codes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Development_host_wires_health_application_services_and_deny_adapters",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_pages_are_exactly_the_four_frontend_view_routes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_with_a_missing_or_different_tenant_is_refused_without_codes(row: \"header-differs\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"Postgres\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O10\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      Pvg__Runtime__Operati\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_is_set_as_production_on_the_host_builder(environmentName: \"\\t\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"id-only-in-body\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"docs/records/decisions/2026-10/rta.md\", recordA: \"---\\nstatus: approved\\n---\\n# RTA\\nruntime_approva\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Actor_comes_from_token_subject_and_actor_type(row: \"no-subject\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_triage_and_route_with_current_version_succeed_and_return_new_version(operation: \"Route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U16\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'plike':{'environmentVariables':{'ASP\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgPermissionGate), expectedCode: \"PVG_DEPENDENCY_PERMISSION_GATE\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_list_orders_by_received_descending_then_draft_id_and_pages(kind: Mongo)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_without_approval_reference_is_refused(reference: \" \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O11\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - Pvg__\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/.git/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_write_transactions_start_with_the_snapshot_read_concern",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_without_approval_reference_is_refused(reference: \"\\t\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Pvg_database_holds_only_the_named_collections",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_read_endpoints_fail_closed_before_service_when_actor_or_correlation_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0230-٠٠١\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0230-1\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Runtime_options_treat_upper_case_production_as_production_like_under_turkish_culture(environmentName: \"PRODUCTION\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Approval_reference_check_follows_the_existing_refusals",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_makes_no_call_without_key_or_url",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"product-name\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U30\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    command: --ASPNETCORE_ENVIR\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O18\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - Pvg__\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_triage_endpoints_define_only_approved_local_dev_ci_routes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"compose.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Create_and_update_map_every_revision04_field_to_the_application_request(operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"no-record-workflow\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      Pvg__Runtime__Approva\"···, expectedScope: \"file\", recordPathA: \"\", recordA: \"\", recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"Triaged, Rejected\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U25\", relativePath: \".github/workflows/ci.yml\", content: \"jobs:\\n  b:\\n    env:\\n      ASPNETCORE_ENVIRONMEN\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgWorkflowTransitionGate), expectedCode: \"PVG_DEPENDENCY_WORKFLOW_GATE\", environmentName: \"Development\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_answer_is_the_same_for_every_tenant_and_reads_no_store",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O12\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Runtime_options_treat_blank_environment_name_as_production_like(environmentName: \"\\t\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_root_is_the_current_worktree_root",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Validation_failure_on_revision04_field_returns_code_without_value(row: \"report-type\", operation: \"Update\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O5\", relativePath: \"Properties/launchSettings.json\", content: \"{'profiles':{'dev':{'commandLineArgs':'--urls http\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_triage_or_route_ids(reservedWord: \"bulk\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgCaseIntakeManifestTests.Case_intake_manifest_actions_are_the_buttons_the_ui_shows",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"bin/Debug/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O17\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'OperationalRuntimeAuthorized':\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_returns_exactly_the_option_set_codes_in_ordinal_order",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O2\", relativePath: \"appsettings.json\", content: \"{'Pvg:Runtime:OperationalRuntimeAuthorized':'true'\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/appsettings.Production.json\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_remove_reporter_link_and_selection_pair_is_rejected(row: \"both\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_authorized_host_build_refuses_without_required_dependencies",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_blocked_observability_responses_do_not_echo_trace_headers_or_request_values",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_approval_reference_without_approved_record(caseId: \"record-outside-decisions\", relativePath: \"appsettings.json\", content: \"{'Pvg':{'Runtime':{'ApprovalReference':'RTA-MOD023\"···, expectedScope: \"file\", recordPathA: \"docs/records/notes/rta.md\", recordA: \"---\\nstatus: approved\\nruntime_approval_id: RTA-MO\"···, recordPathB: \"\", recordB: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U32\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','runtimeArgs':['r\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U3\", relativePath: \"appsettings.Development.json\", content: \"{'Pvg':{'Runtime':{'ProductionLike':true,'UseNonPr\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_refuses_a_non_integer_number_and_every_other_token_with_a_json_exception(outcomeJson: \"1.5\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_triage_and_route_with_current_version_succeed_and_return_new_version(operation: \"Triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_response_only_fields_is_rejected(field: \"validityResult\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"garbage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceRuntimeApprovalTests.Production_like_authorized_start_with_malformed_approval_reference_is_refused(reference: \"RTA-MOD0230-001 \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_is_set_as_production_on_the_host_builder(environmentName: \" \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/prod.env\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_remove_reporter_link_and_selection_pair_is_rejected(row: \"directory-only\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Runtime_options_treat_blank_environment_name_as_production_like(environmentName: \" \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Missing_jwt_settings_reject_every_request_with_401",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O21\", relativePath: \"k8s/deployment.yaml\", content: \"env:\\n  - name: Pvg__Runtime__OperationalRuntimeAu\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.List_with_status_filter_returns_filtered_count",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_failure_changes_neither_start_nor_readiness",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_a_null_or_numeric_outcome_still_reaches_the_permission_gate(outcomeJson: \"null\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Health_ready_returns_503_with_safe_codes_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgIntakeDraftStore), expectedCode: \"PVG_DEPENDENCY_INTAKE_STORE\", environmentName: \"Staging\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Put_with_response_only_fields_is_rejected(field: \"reporterCrmSearchState\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"POST\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"Mongo \")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Store_edge_cases_are_the_same_on_both_stores(kind: InMemory)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"docs/x.yml\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U19\", relativePath: \".env\", content: \"Pvg__Runtime__UseNonProductionAdapters=true\\n\", isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_replace_advances_UpdatedAt_and_keeps_CreatedAt",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O19\", relativePath: \"Dockerfile\", content: \"FROM scratch\\nENV Pvg__Runtime__OperationalRuntime\"···, isViolation: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStoreTests.Mongo_store_never_reads_counts_or_replaces_another_tenants_draft",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Only_the_Api_and_MOD0230_test_projects_reference_the_persistence_project",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U18\", relativePath: \".claude/launch.json\", content: \"{'configurations':[{'name':'pvg','runtimeArgs':['r\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_start_returns_before_the_push_finishes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoApiTests.In_memory_store_is_the_default_and_mongo_is_opt_in",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"POST-triage\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Expired_token_within_clock_skew_is_accepted",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"Dockerfile\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.Triage_with_an_unknown_outcome_text_is_refused_with_a_4xx(outcomeText: \"TRIAGED\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"archive\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceHostEnvironmentTests.Blank_environment_name_is_set_as_production_on_the_host_builder(environmentName: \"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Tenant_header_and_token_claim_mismatch_is_denied(row: \"claim-not-guid\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_without_bearer_is_rejected_with_401(endpoint: \"PUT\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_paths_return_not_found_without_error_payload_echo(reservedWord: \"delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U21\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - ASPNE\"···, isViolation: False, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_non_production_adapters_only_for_production_like_scope(caseId: \"U4\", relativePath: \"docker-compose.yml\", content: \"services:\\n  api:\\n    environment:\\n      - Pvg__\"···, isViolation: True, expectedScope: null)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_create_endpoint_fails_closed_before_service_when_context_is_missing",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Public_case_intake_request_shapes_cover_annex_fields_without_extra_user_payload_fields",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeTriageBindingTests.The_converter_writes_a_defined_outcome_by_name_and_an_undefined_one_as_the_number(outcome: Duplicate, expectedOutcomeJson: \"\\\"Duplicate\\\"\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.Persistence.PvgMongoStartRefusalTests.Unknown_store_value_refuses_start(value: \"MONGO\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refusal_message_carries_only_safe_dependency_codes",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"src/x/obj/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O7\", relativePath: \".vscode/launch.json\", content: \"// yorum\\n{'configurations':[{'name':'pvg','env':{\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_flags_operational_runtime_flag_in_every_supported_form(caseId: \"O14\", relativePath: \"Dockerfile\", content: \"FROM scratch\\nENV Pvg__Runtime__OperationalRuntime\"···, isViolation: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Case_intake_reserved_operation_words_are_not_accepted_as_detail_or_update_ids(reservedWord: \"delete\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeAuthenticationTests.Request_with_invalid_bearer_is_rejected_with_401(kind: \"other-key\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_attempt_timeout_defaults_to_five_seconds",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \"deployment/x.yaml\", selected: True)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeApiContractTests.Post_with_reporter_source_or_source_id_is_rejected(row: \"source-number\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.ModuleRegistration.PvgModuleRegistrationTests.Case_intake_registration_logs_neither_key_nor_url",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgCaseIntakeOptionsTests.Options_segment_is_reserved_and_never_read_as_an_intake_draft_id(row: \"POST-route\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Production_like_startup_refuses_when_a_required_dependency_is_missing(missingDependency: typeof(Diten.PvgService.Application.RegPvBase.IPvgIntakeDraftStore), expectedCode: \"PVG_DEPENDENCY_INTAKE_STORE\")",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    },
+    {
+      "name": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_walks_and_selects_required_file_kinds(relativePath: \".git/appsettings.json\", selected: False)",
+      "outcome": "Passed",
+      "stdout": "",
+      "error": ""
+    }
+  ],
+  "raw_sha256": "e222ad1acdb19205f3128a64f6653578c7454993f320fcad5753d1440d2c9ac1",
+  "lf_sha256": "4a92fc1e824f8a82e31976d2428cd0b6f29f27e0c1363a7c6d6a1363538559b6"
+}

@@ -1,0 +1,78 @@
+{
+  "kind": "Actual final local architecture validation result",
+  "verdict": "FAIL",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "runner_sha256": "71adfaad2eeacdcf7c6f97df6dd8afa0a0947fc38fef2c077f9350b9aa82ca29",
+  "helper_sha256": "2b5a2e5b4d5fea08a13fff253c5fe63975922c5465bab8e9e881285c7e313ccc",
+  "actual_exit": 1,
+  "test_exit": 1,
+  "total": 231,
+  "outcomes": {
+    "Passed": 230,
+    "Failed": 1
+  },
+  "strict_skip_exit": 0,
+  "known_failure_exit": 1,
+  "known_failure_result": "YENI1: symlink case not registered; DUZELDI2: both old audit tests actually Passed",
+  "failed_test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: \"symlink\")",
+  "failure_kind": "Windows environment privilege prerequisite at File.CreateSymbolicLink; no runtime guard assertion reached for this row",
+  "failed_test_source_line": 472,
+  "exact_test_fixture_project_dependency_git_entries_equal_to_main": 53,
+  "origin_main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "main_tests_run": false,
+  "failed_fixture_absent": true,
+  "raw_trx_sha256": "1ac1b43fe851eba8e15f1d7d7548bc341c34183b8c37c10d0a57b2f6ea5c5dc7",
+  "dll_raw_sha256": "f8bdc569fbcbd3a2551da06cf8c117e52418fdb30d93b292b51671a5e16e3a0d",
+  "trx_start": "2026-11-21T21:44:27.039471+04:00",
+  "trx_finish": "2026-11-21T21:44:57.305353+04:00",
+  "storage": [
+    "c:\\users\\epenc\\appdata\\local\\temp\\pvg-final-architecture\\287f8086c79e46c9be962bec020fcb81\\src\\tests\\architecture\\tenantarchitecture.architecturetests\\bin\\debug\\net8.0\\tenantarchitecture.architecturetests.dll"
+  ],
+  "root_tracked_file_count": 26657,
+  "root_tracked_bytes": 471273250,
+  "root_before_after_digest": "7629665f5e2ada69b99490b45e49376a95dd51ca53bb94881018d246e872cc93",
+  "root_source_rawbytes_unchanged": true,
+  "root_index_unchanged": true,
+  "root_head_unchanged": true,
+  "clone_tracked_file_count": 26657,
+  "clone_sources_unchanged": true,
+  "own_command_count": 26,
+  "all_own_jobs_empty_unforced": true,
+  "own_runtime_remaining_entries": [
+    {
+      "name": "246a3c77-0c3e-46ca-a22d-ffe54060a46a",
+      "kind": "directory"
+    },
+    {
+      "name": "725633c7-d2d6-4ba9-bab2-c580f12a341c",
+      "kind": "directory"
+    },
+    {
+      "name": "c3c38f7c-094d-4c63-8ebf-a38cc0b0acec",
+      "kind": "directory"
+    },
+    {
+      "name": "ddb03e25-3f44-450b-9136-fc8abe3b7ebe",
+      "kind": "directory"
+    },
+    {
+      "name": "MSBuildTemp",
+      "kind": "directory"
+    },
+    {
+      "name": "NuGetScratch",
+      "kind": "directory"
+    }
+  ],
+  "global_privilege_or_config_changes": false,
+  "product_test_guard_skip_or_ledger_edits": false,
+  "load_retry": false,
+  "first_infra_failure_retained": "C:/Users/epenc/.codex/visualizations/2026/11/20/01a1f7d8-bf54-7703-ae91-a8ba29312b0d/verification-raw/pvg-final-architecture-run-01/897021dbd9994387b44d451fee1561d0/FIRST-FAILURE-SUMMARY.json",
+  "raw_catalogue": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-final-architecture-run-02\\50f93ee96cbe4851a9c3e7749083f17f\\RAW-CATALOGUE.json",
+  "raw_catalogue_sha256": "6f3623a259ffd6363b2bcaa657da4f63ffc59671eb682302841efde0d918b4ea",
+  "raw_artifact_count": 237,
+  "model": "verilemiyor",
+  "effort": "verilemiyor",
+  "limits": "Overall architecture FAIL. No main-runtime inference, waiver, skip, privilege workaround or additional retry. Cache/build/source preserved as evidence, not lane CLOSED. Exact-H Linux CI remains a separate unresolved gate; no E4, DONE, deployment, push, PR or main merge approval.",
+  "recorded_utc": "2026-11-21T17:47:50.572512+00:00"
+}

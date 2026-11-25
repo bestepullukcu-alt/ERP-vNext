@@ -1,0 +1,11 @@
+{
+  "tree": "addfabdae2d2a0e415b4ce77383bbc806ca9f59a",
+  "source": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+  "original_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+  "mutant_sha256": "86f5bca11ade634e3b7c97217ac3535dd9f866a08dd6c553d43e6656a36c706b",
+  "single_replacement": {
+    "old": "IgnoreInaccessible = false",
+    "new": "IgnoreInaccessible = true"
+  },
+  "expected_assertion_line": 1901
+}

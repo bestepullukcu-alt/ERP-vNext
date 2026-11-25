@@ -1,0 +1,20 @@
+{
+  "cpu": {
+    "NumberOfCores": 6,
+    "NumberOfLogicalProcessors": 12,
+    "LoadPercentage": 18
+  },
+  "sdk": "8.0.428",
+  "mongo": "db version v7.0.43",
+  "exe": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+  "argv": [
+    "test",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+    "-c",
+    "Debug",
+    "--logger",
+    "trx;LogFileName=pvg-prep-win-r2-api.trx",
+    "--results-directory",
+    "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\normal"
+  ]
+}

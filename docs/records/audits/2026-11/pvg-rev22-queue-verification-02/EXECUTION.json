@@ -1,0 +1,31 @@
+{
+  "kind": "Actual re-execution after first run-record producer CRLF-vs-GitLF failure; first native result and rejection preserved",
+  "clone": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-qv-lf-4r4608bf",
+  "commit": "781ffe8eef92054265d7eedbe182c736584a191d",
+  "main": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "started_utc": "2026-11-23T12:32:32.808702+00:00",
+  "canonical_producer_pins": {
+    "scripts/run_record.py": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf",
+    "scripts/ct_queue.py": "ac0e3d683025a82c1b2ffaf732aa5231637b4df29ffd214bf20c4d7a33ad38c2"
+  },
+  "root_not_frozen_by_this_clone_run": true,
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/run_record.py",
+    "run",
+    "--out",
+    "docs/records/audits/2026-11/pvg-rev22-queue-validation-02",
+    "--",
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/ct_queue.py",
+    "validate",
+    "--queue",
+    "pvg"
+  ],
+  "completed_utc": "2026-11-23T12:52:25.120879+00:00",
+  "runner_exit": 0,
+  "verify_exit": 0,
+  "command_exit": 0
+}

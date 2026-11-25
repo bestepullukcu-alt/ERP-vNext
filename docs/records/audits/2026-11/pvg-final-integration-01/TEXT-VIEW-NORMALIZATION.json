@@ -1,0 +1,11 @@
+{
+  "kind": "Declared whitespace-normalized text view only; original command output remains lossless",
+  "view_path": "PACK.stdout.txt",
+  "source_raw_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\checks\\final-gates-H51\\PACK.stdout.txt",
+  "source_raw_sha256": "6c8b62bc490a7427c423a95d96f6ff24a2974ea38569c229fa371d5751872749",
+  "prior_LF_view_sha256": "9c237c1c2932db64a592d3e5667e9dfdf5a4c2c34af1059b8269b08fdd492e48",
+  "published_LF_trimmed_view_sha256": "08b588b4eb36df41e28dabdd0b63dc0f304b04d554ee4cc7e97c09d524665513",
+  "trimmed_line_count": 2,
+  "normalization": "Only trailing spaces/tabs removed from the readable strict-main stdout view to meet Git whitespace check; original raw CLI remains in RAW-ARTIFACTS.json",
+  "strict_main_reading_is_not_S115_branch_gate": true
+}
