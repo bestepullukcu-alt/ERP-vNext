@@ -38,3 +38,70 @@ Onay kanıtı: Beste (Treasury hattının sahibi ve kayıt kodu standardının s
 2. **D148/2 — tutarlılık:** kod tarafı zaten `AGR` kullanıyor (`services/Diten.Platform/src/Diten.Platform.Domain/Features/RecordCodes/RecordCodeTypeCatalog.cs`, MOD-0217, `mdm.contracts.create`; `Mdm` bağlaması `BNK, BAC, AGR`); main'deki standart satırı `CTR` diyordu. `CTR`, MOD-0144 Procurement sözleşmelerinin kodu olarak kalır (D94/1).
 3. **D148/3 — ad alanı notu (Y-36):** `AGR` harfleri QMS belge listesindeki "Agreement" belge türüyle aynıdır (`GMG-COM-AGR-0001` gibi); kayıt kodu ad alanı ayrıdır, çakışma yoktur.
 4. **D148/4 — sınır:** satırdaki "kod yok" ifadesi onaylanan metnin parçasıdır ve değiştirilmedi; kod servisi main'de olduğundan bu ifadenin güncellenmesi kural sahibinin kararıdır. Uyarlayıcı kopyası yok (`sync_adapters.py --check`: 33 uyarlayıcı eşleşiyor). PR'ı Beste onaylar ve birleştirir.
+
+## D149 — D144 sahip teyidi: MOD-0018 sahibi (Ali) `crm.account.lookup-validation` bağımlı anahtarını teyit etti (2026-11-19)
+
+> **Numara notu (2026-11-23, INT-MAIN-SYNC-01, Beste karar 2=a):** main'deki D148 ile çakıştığı için D148 → D149; commit 94d3cd2ac mesajındaki 'D148' bu kararı kastediyor. İçerik değişmedi.
+
+Onay kanıtı: Ali (MOD-0018 sahibi) yazılı cevabı, Beste (`bestepullukcu-alt`, K2; Treasury hattının devralan sahibi, devir PR #442) tarafından 2026-11-19'da MVP-1 / MVP-5 Control Tower sohbetine aktarıldı: "MOD-0018-FU27 D144: Teyit ediyorum — crm.account.lookup-validation yalnız rol 14 ve 16'ya bağımlı anahtar olarak eklenir." Bu kayıt onay satırı değildir.
+
+1. **D149/1 — teyit:** D144/1 (bağımlı anahtar yalnız rol 14 `TreasuryArOperator` ve rol 16 `TreasuryArOperationsManager`) ve D144/2 (bağımlı anahtar sayısı 7 → 8) MOD-0018 sahibi tarafından teyit edildi. D144/4'teki "sahip teyidi" adımı kapandı; takip tablosundan düşer.
+2. **D149/2 — sıra:** FU27 (`2153140c…`, `draft`) için kalan adımlar: güncel sürüme bağlı bağımsız inceleme satırı (CT-APR-02; 2026-11-09 inceleme dosyası `docs/records/reviews/MOD-0018-FU27/2026-11-09-2153140c.md` bu sürüm içindir — sürüm değişmediyse satırı araçla yazılır), ardından CT-APR-01 onay satırı (yazan ≠ onaylayan; FU27 MOD-0018 eki olduğu için onaylayan MOD-0018 sahibi Ali / `GMG-ERP`), D80/2. Paket metni, AC'ler ve `status` bu kayıtla değişmez.
+3. **D149/3 — sınır:** D144/4'teki ara dönem kuralı (kiracı yöneticisi izni bu iki role elle verebilir) FU27 kodu gelene kadar geçerli kalır.
+
+## D150 — TRM-S4 (MOD-0217) öne alındı; DCP-011 2026-11-23 revizyonu (D145/2 sırası, F-1) (2026-11-23)
+
+Kaynak: Beste (Platform sahibi, Treasury CT işi bizde — r10), 2026-11-23: "WP-0217: öne alalım". Bu kayıt onay satırı değildir.
+
+1. **D150/1 — sıra:** TRM-S4 (MOD-0217 DL-1) §8 dilim sırasında TRM-S1 / TRM-S2 / TRM-S3'ün sonraki dilimlerini **beklemez**; WP-0289-DL1
+   kabulünden sonra sıradaki Treasury dilimi olarak açılır. D145/2'deki "§8 teslim sırası" koşulu MOD-0217 için bu sırayla okunur;
+   diğer üyelerin sırası (TRM-S2 MOD-0126 DL-1'den sonra; TRM-S3 MOD-0140 1.3.0'dan sonra) değişmedi.
+2. **D150/2 — kalan bağlar:** MOD-0217'nin kendi dilim kapıları (Ready-for-dev Checklist '— DL-1 için' maddeleri; MOD-0023 iş akışı
+   bağı DL-3 kapısında, öne alma onu değiştirmez) ve sürüme bağlı onay satırı (`46b25e6c…`) aynen geçerli. RCS-001 kayıt kodu portu MOD-0289 ile tektir: MOD-0289 DL-1'i
+   açtı, MOD-0217 tüketir (paket Repo Scope); ikinci tanım yazılmaz.
+3. **D150/3 — F-1:** 2026-11-16 bağımsız incelemenin (`docs/records/reviews/DCP-011/2026-11-16-293fdab5.md`) F-1 düşük bulgusu
+   (üye olmayanlar tablosunda MOD-0220 "belge PASS; §22 `proposed`") bu revizyonda güncel duruma çekildi: §22 onaylı (`1b1a0680…`,
+   onay satırı main'de), teslim `MDM-0220-DL1` (D146; MDM kuyruğunda `DISCOVERED`).
+4. **D150/4 — sınır:** üyeler, kod alanı üyeleri, AC aralıkları, kapsam dışılar ve paket metinleri değişmedi; ürün kodu yok. Bu DCP sürümü
+   için yeni bağımsız inceleme (CT-APR-02) ve onay satırı (CT-APR-01, onaylayan `bestepullukcu-alt`) gerekir; o satır main'e girene kadar
+   `293fdab5…` sürümü (D145) geçerlidir ve MOD-0217 kodu yine yalnız o sürümün koşullarıyla yazılabilir.
+
+## D151 — K4: dört finans paketinin düşük bulguları bir sonraki gerçek revizyona (2026-11-23)
+
+Kaynak: Beste, 2026-11-23 (CT önerisi kabul: "tamam uygun"). Bu kayıt onay satırı değildir.
+
+1. **D151/1 — bulgular:** 2026-11-06 bağımsız incelemelerinin F-1 / F-2 düşük bulguları (paket başına 2, toplam 8):
+   `docs/records/reviews/MOD-0126/2026-11-06-4fc00697.md`, `MOD-0119/2026-11-06-c6e72989.md`, `MOD-0120/2026-11-06-bbdc0ae1.md`,
+   `MOD-0124/2026-11-06-c9935483.md` — F-1 SEC-002 maddesinde D132/1 döneminden kalan XMC-001 / aday modu ifadeleri (aynı maddedeki D139
+   kapanışı onları geçersiz kılıyor), F-2 D139 revizyon notu (5 Kasım) ile karar kaydı (6 Kasım) tarih farkı.
+2. **D151/2 — karar:** bulgular şimdi işlenmez; şimdi işlemek dört paketin sürüme bağlı onay satırlarını (`4fc00697…`, `c6e72989…`,
+   `bbdc0ae1…`, `c9935483…`) yalnız metin düzeltmesi için geçersiz kılar. Her paketin bir sonraki gerçek revizyonunda kapatılır; inceleme
+   dosyalarındaki 2026-11-20 son tarihi bu kararla "paketin bir sonraki revizyonu" olur. Davranış, AC ve kapsam etkisi yok (incelemelerin
+   kendi değerlendirmesi).
+
+## D152 — WP-0217-DL1 hazırlık kararları (K-1…K-6, P-6 / P-7 / P-8 / P-9) (2026-11-23)
+
+Kaynak: Beste, 2026-11-23 — CT önerileri kabul ("önerilerin ile devam et"). Taslak: WP-0217-DL1 v0.1 (CT scratch; depoya dağıtım günü alınır).
+Bu kayıt onay satırı değildir; paket metni, AC'ler ve `status` değişmez.
+
+1. **D152/1 — K-1 manifest modül kodu:** `contract-lifecycle-management-clm` (paket slug'ı; MOD-0289 deseni). FU27 DL-3 / DL-4 aynı değeri kullanır;
+   Ali'ye bildirilir.
+2. **D152/2 — K-2:** D141/2–3 deseni MOD-0217'ye de uygulanır: `Contract` / `ContractVersion` `MdmDocumentClassMaps` içinde `StrictByDesignRoots`'a,
+   koleksiyonlar teslim deposu ve `AuditIntentTenantPartitionDiscoveryRepository` listesine eklenir (yalnız ekleme; MOD-0290 dosyalarında D147
+   kapsamı dışına çıkılmaz — gerekirse DUR).
+3. **D152/3 — K-3 `MasterDataAuditOperation` üye adları:** `ContractCreated`, `ContractUpdated`, `ContractDeleted`, `ContractVersionCreated`,
+   `ContractVersionUpdated`, `ContractVersionValueWritten`, `ContractValueRead` (yalnız ekleme, var olan numaralar değişmez).
+4. **D152/4 — K-4 okuma niyeti:** Platform `AuditOperation` enum'una yalnız ekleme olarak `Read` değeri eklenir; `ContractValueRead` → `Read`.
+   Platform sahibi kararı (Beste). Eşleme ve enum eki P-9 eş işinde yapılır.
+5. **D152/5 — K-5 AC-23 Mongo değişkeni:** paketin "suite'in kendi URI değişkeni" ifadesi var olan `DITEN_TEST_MONGOD` + `DITEN_REQUIRE_OWNED_MONGO=1`
+   ile karşılanır (27017 reddi `MdmTestMongo`'da).
+6. **D152/6 — K-6 uygulayıcı:** WP-0217-DL1 kodunu merkez geliştirici oturumu yazar (Treasury işi bizde — r10); MDM sahibi Ali'ye bilgi verilir
+   (paketteki Y-2 TBD bu kararla kapanır).
+7. **D152/7 — P-6 / P-7:** WP-0289-DL1 deseni: DL-1 kabulü FU27 DL-3 / DL-4 kodunu beklemez; `mdm.contracts.*` izinlerinin rol şablonu bağı FU27
+   gelince yapılır, o zamana kadar kiracı yöneticisi izinleri elle verir (D144/4 ara dönem kuralı deseni). FU27 kapıları FU27'nin kendi kabulünde
+   kapanır.
+8. **D152/8 — P-8:** dev ortamında MDM kayıt kodu kimlik bilgisi `AGR`'yi zaten taşıyor (başlatma betiği, BPT / BNK / BAC / AGR) — kapalı.
+9. **D152/9 — P-9:** Platform merkezi denetim eşlemesine Contract / ContractVersion satırları (D152/3–4) eş iş olarak açılır:
+   `P12-PLATFORM-CONTRACT-AUDIT-MAP-01` (P-12 dersi: DL-1 kabulünden önce hatta olur).
+10. **D152/10 — sıra:** D150 onay satırı + WP-0289-DL1 kabul kaydı main'den temiz bir docs dalıyla PR'a gider (Beste onayı); WP-0217-DL1 Expected
+    HEAD o PR'ın main'e girdiği commit olur.
