@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.ProcurementService.Application.Common;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using Diten.ProcurementService.Application.Interfaces;
 using Diten.ProcurementService.Domain.Repositories;
 using Diten.ProcurementService.Persistence.Repositories;
@@ -25,8 +26,9 @@ public static class DependencyInjection
             new("Mongo:ConnectionString", "Procurement.Persistence", SecretRequirementKind.ConnectionString)
         ]);
 
-        // V3 GUID subtype-4 (MOD-0140 §8) — Guid'ler standart (subtype 4) UUID olarak temsil edilir.
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        // V3 GUID subtype-4 (MOD-0140 §8) — Guid'ler standart (subtype 4) UUID olarak temsil edilir. TryRegister: a second host
+        // in the same process (the real-host tests start several) must not fail on an already registered serializer.
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing in appsettings.json.");
@@ -40,9 +42,24 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
         // MOD-0140 DL-2: okuma anahtarı Suppliers:Model (varsayılan PerLegalEntity; tanınmayan değer açılışı durdurur).
-        services.AddSingleton(SupplierModelSwitch.FromConfiguration(configuration));
+        var supplierModel = SupplierModelSwitch.FromConfiguration(configuration);
+        services.AddSingleton(supplierModel);
 
-        services.AddScoped<ISupplierRepository, SupplierRepository>();
+        // MOD-0140 DL-3 (K-3): the switch SELECTS the supplier store. PerLegalEntity (default, roll-back) → today's per-company
+        // `suppliers` through SupplierRepository; TenantShared → supplier_masters + supplier_company_relationships, and the other
+        // Procurement modules' code lookups (ISupplierRepository) read the same model through a read-only adapter (XMC-001).
+        services.AddScoped<SupplierRepository>();
+        switch (supplierModel.Model)
+        {
+            case SupplierModel.TenantShared:
+                services.AddScoped<ISupplierStore, TenantSharedSupplierStore>();
+                services.AddScoped<ISupplierRepository, TenantSharedSupplierLookup>();
+                break;
+            default:
+                services.AddScoped<ISupplierRepository>(sp => sp.GetRequiredService<SupplierRepository>());
+                services.AddScoped<ISupplierStore>(sp => new PerLegalEntitySupplierStore(sp.GetRequiredService<SupplierRepository>()));
+                break;
+        }
         services.AddScoped<IRfxRepository, RfxRepository>();
         services.AddScoped<IRequisitionRepository, RequisitionRepository>();
         services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();

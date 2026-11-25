@@ -914,6 +914,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>İçerik Kapsamı</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>İçerik Seti</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Uygunluk</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>Ana Kayıt</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Ziyaret Sıklığı Politikası</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>Vakalar</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>Tüketim Beyanları</value></data>

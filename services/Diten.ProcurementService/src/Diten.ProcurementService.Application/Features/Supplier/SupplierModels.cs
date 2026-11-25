@@ -52,11 +52,21 @@ public sealed record SupplierDetailDto(
     int Version,
     string ContractVersion);
 
-/// <summary>validateSuppliers tek satır sonucu (bilinmeyen → known:false, status:null).</summary>
+/// <summary>
+/// validateSuppliers tek satır sonucu (bilinmeyen → known:false, status:null). MOD-0140 DL-3 (1.3.0, §3.2): the 1.2.0 fields
+/// stay as they were (<c>supplierId</c> = the requested value) and five properties are added, written on EVERY row (null
+/// when there is no relationship): <c>supplierMasterId</c>, <c>relationshipExists</c>, <c>onboardingStatus</c>,
+/// <c>purchasingEnabled</c>, <c>eligibleForTransactions</c>. Invariant: <c>known == relationshipExists</c>.
+/// </summary>
 public sealed record SupplierValidationResultDto(
     string SupplierId,
     bool Known,
-    SupplierStatus? Status);
+    SupplierStatus? Status,
+    Guid? SupplierMasterId = null,
+    bool RelationshipExists = false,
+    OnboardingStatus? OnboardingStatus = null,
+    bool? PurchasingEnabled = null,
+    bool EligibleForTransactions = false);
 
 /// <summary>validateSuppliers yanıtı (contract {results, contractVersion}).</summary>
 public sealed record SupplierValidateResponseDto(
@@ -119,3 +129,50 @@ public sealed record OnboardingSubmitRequest(
 /// <summary>validateSuppliers request body.</summary>
 public sealed record ValidateSuppliersRequest(
     List<string> SupplierIds);
+
+// ══ MOD-0140 DL-3 — eligibility (1.3.0, §3.1) and relationship (1.4.0, K-1) surfaces ══
+
+/// <summary>
+/// <c>SupplierEligibility</c> (§3.1): every value comes from the CALLER company's relationship only. Null-able fields are
+/// always written (value null); <c>supplierId</c> is always the canonical code.
+/// </summary>
+public sealed record SupplierEligibilityDto(
+    string SupplierId,
+    Guid? SupplierMasterId,
+    bool RelationshipExists,
+    SupplierStatus? Status,
+    OnboardingStatus? OnboardingStatus,
+    bool? PurchasingEnabled,
+    bool EligibleForTransactions,
+    string ContractVersion);
+
+/// <summary><c>listEligibleSuppliers</c> envelope — the <c>listSuppliers</c> fields.</summary>
+public sealed record EligibleSupplierListDto(
+    IReadOnlyList<SupplierEligibilityDto> Items,
+    string? NextCursor,
+    string ContractVersion);
+
+/// <summary>1.4.0 <c>SupplierRelationship</c> — the caller company's relationship (only its own).</summary>
+public sealed record SupplierRelationshipDto(
+    string SupplierId,
+    Guid SupplierMasterId,
+    Guid RelationshipId,
+    SupplierStatus Status,
+    OnboardingStatus OnboardingStatus,
+    string? PaymentTermsCode,
+    bool PurchasingEnabled,
+    DateTimeOffset? PurchasingSince,
+    string? SourceSystem,
+    string? ExternalRef,
+    IReadOnlyList<string> LegacySupplierCodes,
+    int Version,
+    string ContractVersion);
+
+/// <summary>1.4.0 <c>RelationshipStatusChange</c> request body.</summary>
+public sealed record RelationshipStatusChangeRequest(SupplierStatus Status);
+
+/// <summary>1.4.0 <c>RelationshipPaymentTerms</c> request body (a code — no bank data, K-8).</summary>
+public sealed record RelationshipPaymentTermsRequest(string? PaymentTermsCode);
+
+/// <summary>The 409 <c>DUPLICATE_SUPPLIER</c> details: the existing supplier's code ("link it to this company", K-6).</summary>
+public sealed record SupplierDuplicateDetails(string SupplierId);

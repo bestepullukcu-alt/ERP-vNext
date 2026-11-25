@@ -848,6 +848,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>نطاق المحتوى</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>السجل الرئيسي</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>الحالات</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>إقرارات الاستهلاك</value></data>

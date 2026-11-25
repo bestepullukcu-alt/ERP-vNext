@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.CentralAudit;
+using Diten.ProcurementService.Api.CentralAudit;
 using Diten.ProcurementService.Api.ModuleRegistration;
 using Diten.ProcurementService.Application;
 using Diten.BuildingBlocks.Security.Secrets;
@@ -28,6 +30,13 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
 ]);
 builder.Services.AddInfrastructure();
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+
+// BL-501 (AUD-001 K4; MOD-0140 DL-3, §7, §21): every marked write command also lands in Platform's central audit log —
+// outbox in this database, written in the command's OWN Mongo transaction (the supplier stores enlist it). RequireEnlistment:
+// a marked command that succeeds without enlisting (an idempotent replay) files nothing; the flag is service-wide, so a
+// MOD-0141…0145 command marked later must enlist too (notified to their owners, §7). PlatformRegistration:BaseUrl /
+// InternalApiKey unset → events accumulate, warning + /health/central-audit. After AddApplication (MediatR first).
+builder.Services.AddCentralAudit<ProcurementCentralAuditScope>(builder.Configuration, "Diten.ProcurementService", options => options.RequireEnlistment = true);
 
 // ── Module self-registration: push MOD-0140 manifest to Platform at startup (best-effort, idempotent). ──
 builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
@@ -153,3 +162,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+/// <summary>MOD-0140 DL-3: the real-host tests (WebApplicationFactory) start this program.</summary>
+public partial class Program;

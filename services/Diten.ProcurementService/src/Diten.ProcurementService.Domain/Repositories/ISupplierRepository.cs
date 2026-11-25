@@ -39,4 +39,7 @@ public interface ISupplierRepository
     Task<int> BulkDeleteAsync(IReadOnlyList<Guid> ids, CancellationToken cancellationToken = default);
 
     Task<bool> ExistsByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default);
+
+    /// <summary>MOD-0140 DL-3: the existing record with this tax number (tenant+LE), for the 409 body's <c>supplierId</c>.</summary>
+    Task<Supplier?> GetByTaxIdAsync(string taxId, Guid? excludeId, CancellationToken cancellationToken = default);
 }

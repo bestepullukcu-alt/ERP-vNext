@@ -19,6 +19,7 @@
             Include="..\Diten.ProcurementService.Application\Diten.ProcurementService.Application.csproj" />
         <ProjectReference
             Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit\Diten.BuildingBlocks.CentralAudit.csproj" />
     </ItemGroup>
 
 </Project>

@@ -848,6 +848,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>内容范围</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>内容集</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>资格</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>主数据记录</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>访问频率策略</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>案例</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>消耗申报</value></data>
