@@ -9,6 +9,15 @@ namespace Diten.PlanningService.Cycles.Tests;
 
 public sealed class AcceptedDemandHistoryMongoIntegrationTests
 {
+    private sealed class FixedBaseUnitChecker(string baseUnit) : IHistoryRowReferenceChecker
+    {
+        public Task<HistoryReferenceResult> CheckAsync(Guid tenantId, Guid legalEntityId,
+            Guid skuId, string skuLevel, string warehouseId, DateOnly occurredOn,
+            string originalUomId, CancellationToken cancellationToken) => Task.FromResult(
+            new HistoryReferenceResult(HistoryReferenceState.Verified, baseUnit, 1m,
+                "fixture", "v1.1"));
+    }
+
     private sealed class FailingAuditWriter : IHistoryAcceptanceAuditWriter
     {
         public Task AppendAsync(IClientSessionHandle session, DemandHistoryAcceptanceAudit audit,
@@ -280,6 +289,107 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
         Assert.True(after.Weeks[0].UnitVerificationPending);
         Assert.Equal(AcceptedWeekState.VerifiedZeroDemand, after.Weeks[1].State);
         Assert.Empty(after.Weeks[1].Events);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task ConvertedRow_PersistsOriginalAndRoundedBaseWithAudit()
+    {
+        var (context, _) = Open();
+        var (batch, row, audit) = await SeedAsync(context);
+        batch.Rows[0].OriginalQuantity = 1m;
+        batch.Rows[0].BaseQuantity = 0.3333m;
+        batch.Rows[0].ConversionFactor = 1m / 3m;
+        batch.Rows[0].ConversionNumerator = 1m;
+        batch.Rows[0].ConversionDenominator = 3m;
+        batch.Rows[0].ConversionContractId = "PRODUCT-MASTER-BUNDLE/getSkuUom/test";
+        batch.Rows[0].ConversionContractVersion = "v1.1";
+        await context.HistoryImportBatches.ReplaceOneAsync(x => x.Id == batch.Id, batch);
+        row.OriginalQuantity = 1m;
+        row.BaseQuantity = 0.3333m;
+        row.AcceptedQuantity = 0.3333m;
+        row.ConversionFactor = 1m / 3m;
+        row.ConversionNumerator = 1m;
+        row.ConversionDenominator = 3m;
+        row.ConversionContractId = batch.Rows[0].ConversionContractId!;
+        row.ConversionContractVersion = "v1.1";
+        row.ContentSha256 = AcceptedHistoryFingerprint.Compute(row);
+        audit.ContentSha256 = row.ContentSha256;
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(batch, row, audit, default)).Outcome);
+        var saved = await store.GetAsync(batch.TenantId, batch.LegalEntityId, row.Id, default);
+        Assert.NotNull(saved);
+        Assert.Equal(1m, saved.Row.OriginalQuantity);
+        Assert.Equal("CASE", saved.Row.OriginalUomId);
+        Assert.Equal(0.3333m, saved.Row.AcceptedQuantity);
+        Assert.Equal("EA", saved.Row.AcceptedUomId);
+        Assert.Equal(1m, saved.Row.ConversionNumerator);
+        Assert.Equal(3m, saved.Row.ConversionDenominator);
+        Assert.Equal(row.ContentSha256, saved.Audit.ContentSha256);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task LegacyRow_BaseComparisonChangesEffectiveWarningWithoutRewritingAcceptance()
+    {
+        var (context, _) = Open();
+        var (batch, row, audit) = await SeedAsync(context, pending: true);
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(batch, row, audit, default)).Outcome);
+        var originalHash = row.ContentSha256;
+
+        var matching = await new AcceptedWeeklyHistoryMongoReader(context,
+            new FixedBaseUnitChecker("CASE")).ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 12), 1, default);
+        var different = await new AcceptedWeeklyHistoryMongoReader(context,
+            new FixedBaseUnitChecker("EA")).ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 12), 1, default);
+
+        Assert.False(Assert.Single(matching.Weeks).UnitVerificationPending);
+        Assert.True(Assert.Single(different.Weeks).UnitVerificationPending);
+        Assert.Equal(AcceptedWeekState.VerifiedDemand, different.Weeks[0].State);
+        var persisted = await store.GetAsync(batch.TenantId, batch.LegalEntityId, row.Id, default);
+        Assert.True(persisted!.Row.UnitVerificationPending);
+        Assert.Equal(originalHash, persisted.Row.ContentSha256);
+        Assert.Equal(originalHash, persisted.Audit.ContentSha256);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task DifferentOriginalUnitsWithSameVerifiedBaseShareOneUnitSlot()
+    {
+        var (context, _) = Open();
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        var first = await SeedAsync(context);
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(first.Batch, first.Row, first.Audit, default)).Outcome);
+
+        var second = await SeedAsync(context, first.Batch.TenantId,
+            first.Batch.LegalEntityId, first.Row.SkuId, unit: "EA");
+        second.Batch.Rows[0].BaseQuantity = 5m;
+        second.Batch.Rows[0].ConversionFactor = 1m;
+        await context.HistoryImportBatches.ReplaceOneAsync(x => x.Id == second.Batch.Id,
+            second.Batch);
+        second.Row.BaseQuantity = 5m;
+        second.Row.AcceptedQuantity = 5m;
+        second.Row.ConversionFactor = 1m;
+        second.Row.ContentSha256 = AcceptedHistoryFingerprint.Compute(second.Row);
+        second.Audit.ContentSha256 = second.Row.ContentSha256;
+
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(second.Batch, second.Row, second.Audit, default)).Outcome);
+        var page = await store.ListAsync(first.Batch.TenantId, first.Batch.LegalEntityId,
+            0, 50, default);
+        Assert.Equal(2, page.Count);
+        Assert.Equal(new[] { "CASE", "EA" }, page.Select(x => x.Row.OriginalUomId)
+            .OrderBy(x => x).ToArray());
+        Assert.All(page, item => Assert.Equal("EA", item.Row.AcceptedUomId));
+        Assert.Equal(1, await context.AcceptedHistoryUnitSlots.CountDocumentsAsync(x =>
+            x.TenantId == first.Batch.TenantId && x.LegalEntityId == first.Batch.LegalEntityId &&
+            x.SkuId == first.Row.SkuId));
     }
 
     [ManualDraftMongoFact]

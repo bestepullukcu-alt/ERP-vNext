@@ -9,7 +9,7 @@
     var canRead = ViewData["CanReadHistory"] as bool? == true;
     var keys = new[] { "HistorySelectCompany", "HistoryEmpty", "HistoryUnavailable",
         "HistorySku", "HistoryWarehouse", "HistoryDate", "HistoryUnit", "HistoryQuantity",
-        "HistoryUnitPending", "HistoryBatch", "HistoryDecision", "HistoryActor",
+        "HistoryUnitPending", "HistoryUnitMismatch", "HistoryBatch", "HistoryDecision", "HistoryActor",
         "HistoryAt", "HistoryPrevious", "HistoryNext", "HistoryLoading" };
     var labels = keys.ToDictionary(key => key, key => Localizer[key].Value);
 }

@@ -60,6 +60,7 @@
   <data name="HistoryUnit" xml:space="preserve"><value>Принятая единица</value></data>
   <data name="HistoryQuantity" xml:space="preserve"><value>Принятое количество</value></data>
   <data name="HistoryUnitPending" xml:space="preserve"><value>Единица не проверена через MOD-0290</value></data>
+  <data name="HistoryUnitMismatch" xml:space="preserve"><value>Принятая единица отличается от текущей базовой</value></data>
   <data name="HistoryBatch" xml:space="preserve"><value>Партия импорта</value></data>
   <data name="HistoryDecision" xml:space="preserve"><value>Решение</value></data>
   <data name="HistoryActor" xml:space="preserve"><value>Кем принято</value></data>
