@@ -848,6 +848,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>نطاق المحتوى</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>مجموعة المحتوى</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>الأهلية</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>السجل الرئيسي</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>سياسة تكرار الزيارات</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>الحالات</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>إقرارات الاستهلاك</value></data>
@@ -1219,6 +1220,8 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>تحسين مخزون الأمان</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>اليقظة الدوائية</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>استقبال الحالات والفرز</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
     <value>عمليات المستودع</value>
   </data>
@@ -1287,5 +1290,17 @@
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>تخطيط الموجات</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>استقبال الحالات والفرز</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>إنشاء مسودة استقبال</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>تحديث مسودة الاستقبال</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>تفاصيل مسودة الاستقبال</value>
   </data>
 </root>

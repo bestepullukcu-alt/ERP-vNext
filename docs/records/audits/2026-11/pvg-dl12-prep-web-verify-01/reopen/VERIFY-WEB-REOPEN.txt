@@ -1,0 +1,26 @@
+WP-0230-DL12-PREP-WEB — durmuş bağımsız doğrulamanın devamı
+
+Karar: UYGUN. Aynı kapsam ve değişmemiş 15791333afa89e447210b8d877dc5407693e9b5b adayının CT no-ff merge incelemesine ilerlemesi uygundur. Bu INTEGRATED, yeni dispatch veya final DL-12 kabulü değildir. Post-merge fresh birleşik62 test / 0 fail / 0 skip ve known-failures exit0 ayrı CT entegrasyon kapısı olarak kalır.
+
+Önce docs/records/audits/2026-11/pvg-dl12-prep-win-r2-01/DOR.md okundu. Rev21 WEB kapsamı değiştirmiyor; aday önceki geçerli rev20 normal dispatch altında zaten teslim edilmiş aynı üç dosyalı kayıttır. Bu S53 kapsamındaki dağıtılmamış eski promptun yeniden kullanımı değil, durmuş bağımsız doğrulamanın devamıdır. Yeni değişiklik yetkisi çıkarılmadı.
+
+İncelenen CT HEAD3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a; aday HEAD15791333afa89e447210b8d877dc5407693e9b5b / feature/pvg/mod-0230-dl12-prep-web; aday ilk/son status boş. Ortak merge-base58920519a17e8f4c085738642b33e36689bc8fee. CT589→current services/frontend/gateway/.github değişen yol sayısı0. Aday yalnız önceki aynı üç Web test/csproj/workflow yolunda farklı. Önceki source-before.json içindeki dokuz raw ve Git-LF hash'i yeniden ölçüldü, hepsi aynı; altı üretim kaynağı baseline ile aynı. Diff-check0.
+
+CT global temizliği iddia edilmez: ilk geçişte scripts/__pycache__/ önceden untracked idi; doğrulama sırasında untracked execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL12-PREP-WIN-v2.0.md eklendi. Root bunun kendi yetkili paralel paketleme işi olduğunu açıkça doğruladı. İlk harness global-status eşitliği kontrolü bu nedenle durdu; hiçbir dosyaya dokunulmadı. Webscope/hash bağı esas alınarak son kontrol tamamlandı. CT tracked product diff'i ve hedef code hashleri değişmedi; iki geçişteki gerçek known-failures check0 çıktı dosyaları korunuyor.
+
+PUBLISH-MANIFEST kalıcı kanıtlarının Git-LF hashleri ve13 taşınmış dış yardımcı kaynak raw hashleri tekrar doğrulandı. Korunmuş normal TRX immutablea2586b89dd87dd99a51e85ff29560fc5fd1656cc ve incelenen CT Git kaynağıyla aynı içerikte: LFSHA256d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91. Mevcut CT gerçek known_failures.py check --suite Diten.Web.Tests korunmuş TRX üzerinde exit0 verdi; TRX disk baytları CLI öncesi/sonrası aynı.
+
+62/62,0fail/0skip ve yedi işçi+iki bağımsız mutant RED ÖNCEKİ ölçümlerdir. Bu aşamada yalnız sonuç/hash bağları yeniden okundu; Web testi veya sabotaj tekrar çalıştırılmadı. Reporter-contact/evidence korunmaması ve diğer no-loss/complete-detail gereksinimleri ana feature'a açık kalır. E4, Linux CI veya live başarısı iddia edilmez.
+
+İstenen model gpt-6.2-astra / effort high; gerçek model ve effort doğrulanamaz. Yeni açık engelleyici/yüksek/orta bulgu yok. Code/queue/pack/.antigravity/worker/stage/commit/push değişikliği veya merge yapılmadı. Yalnız bu dış Temp kanıt dizinine yazıldı. Tam gerçek komut argv/exit bilgileri commands.json, son CLI komutu known-failures-current.json; kaynak/yayın bağı source-and-publication-binding.json; dosya SHA256 değerleri evidence-manifest.json içindedir.
+
+Son bağ: İlk incelenen CT3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a sonrasında yetkili CT paketleme commit’iyle gerçek son CLI HEAD dfa4df19de00428700285baee2abc52d0f481297 oldu. Bu HEAD’de kontrol başlangıcı/sonu aynı; services/frontend/gateway/.github kod farkı hâlâ0. Ara metadata yolları ct-concurrent-metadata.json içinde; CT global clean iddiası yok. Worker HEAD/status/hashleri değişmedi.
+
+Gerçek tam CLI argv:
+["C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe", "-B", "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\known_failures.py", "check", "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01\\independent.trx", "--suite", "Diten.Web.Tests"]
+exit: 0
+Kanıt dizini: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-web-reopen-1795197788131254400
+known-failures-current.json SHA256 9770a45a888173b7233e8dc287a3d1fc5f171edc58f24d8e8a239893e8cc7a41
+source-and-publication-binding.json SHA256 e4327e88e49daf534f6650787c5e022102726859af605db18521aa0d83b3a741
+commands.json SHA256 11de06feca7f3e83f16f44ded0e2bca2ce0c727b2149c2f07325607a95fca1cd
+ct-concurrent-metadata.json SHA256 6b94694b60eb71c665b2ec259d541d53e0e4e4b0c07f8fd4f27edaa110b251a6

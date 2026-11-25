@@ -30,6 +30,8 @@ public sealed class PvgCaseIntakeAuthenticationTests
     private const string CorrelationId = "corr-fake-1";
     private const string ListPath = PvgCaseIntakeTriageEndpoints.RoutePrefix;
 
+    private const string SeedActor = "seed-actor-fake";
+
     private static readonly string Secret = NewKey();
     private static readonly string PreviousSecret = NewKey();
     private static readonly string OtherSecret = NewKey();
@@ -523,6 +525,7 @@ public sealed class PvgCaseIntakeAuthenticationTests
             {
                 ids.Add(await Store.AddAsync(
                     new PvgPersistenceTenantScope(tenant),
+                    SeedActor,
                     StoredIntake(tenant, narrative, new DateTimeOffset(2020, 3, 1, 8, 0, 0, TimeSpan.Zero).AddMinutes(index))));
             }
 

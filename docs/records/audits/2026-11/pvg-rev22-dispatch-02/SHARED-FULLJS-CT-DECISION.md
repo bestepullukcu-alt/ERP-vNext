@@ -1,0 +1,11 @@
+# Rev22 shared — full native JS failure and bounded candidate continuation
+
+2026-11-23T12:33:21.145167+00:00 · rootCT. Actual unchanged fullJS on Windows:5577cases,5564pass,13fail,0skip/pending/todo; preserve exit1. Worker stopped without stage/commit, then CT requested ONLY bounded failed-file diagnostics and no full rerun.
+
+Measured H82 Windows failed-file269case/status multiset equals native candidate269, with13FAIL. Candidate canonicalGitLF same269:11assertions becomeGREEN,2remain pathseparator literal comparison failures, with actual expected/received raw. Ten unchanged guard files and5394Web source/file hashes bind this observation; candidate has no canonical Web diff outside exact23paths. Fullsuite case multiset removed0/added12, all12fournewhelpcode×3rulecasesPASS. H82 three PVGassertions nowPASS. Exact raw/argv/closures remain worker evidence; CT does not label an unmeasured main/platform result inherited or universally prove all failures unrelated.
+
+Authority: approved d208 pack Test expectations requires unchanged four targeted JS files0fail0skip THEN requiredCI web-js-tests finalintegratedfullsuite. Localtargeted302pass, real7cultureRoleconsumer14pass/fournegativepairs are component results; nativefull1 remainsFULLFAIL. FinalCI full0/AC49/AC45 closure is OPEN and blocks mainmerge/DONE. No globalledger, guard, test, assertion, dependency, CI or XMC source is altered, no skip/countdrop/waiver.
+
+The prompt's newfailure stop was handled: these13statuses match measured H82sameWindows. CT therefore continued ONLY exact23 ordinary PARTIAL-CANDIDATE localcommit under existing human scope/commit authority. This is not fullsuitePASS, technical E2 acceptance, integration, finalCI closure or operational permission. Independent exactcommitE2 and combined4views×7lang/Role remain necessary. Candidate reportedba132012ef03c1b9c55c754c2b3e2406727106c0/treee4d497bcaeaf3642ef82bcca77a2c34466dfcdf3/parentb0dcca/clean; sealed delivery pending.
+
+Son teslim açıklığı:5394Webdosya kimliği STATİK Git/raw haritasıdır; ek readobserver yalnızpackage.json kaydı üretmiştir. Eksiksiz dinamik dosya/bağımlılık kapanışı kanıtlanmış değildir. H82/native269case-status birebir gözlemi bu dar gerçek koşulara aittir; evrensel etkisizlik/main/runtime iddiası yok.

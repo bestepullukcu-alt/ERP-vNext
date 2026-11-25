@@ -1,0 +1,36 @@
+{
+  "time": "2026-11-20T16:32:10.6281427+04:00",
+  "browserPids": [
+    5296,
+    7352,
+    11456,
+    12956,
+    16320,
+    17824,
+    20484,
+    23472,
+    32440,
+    32516,
+    33696,
+    34964,
+    35852,
+    35936
+  ],
+  "browserPidCount": 14,
+  "rootAndObservedProcessPids": [
+    7828,
+    12044,
+    15428,
+    21648,
+    24452,
+    25688,
+    29452,
+    33268,
+    36700,
+    36788
+  ],
+  "matchingLiveProcesses": [],
+  "matchingLiveCount": 0,
+  "killedByVerifier": [],
+  "note": "Yalnız kendi TRX/run metadata PIDleri sorgulandı; süreç kapatma komutu çalıştırılmadı."
+}

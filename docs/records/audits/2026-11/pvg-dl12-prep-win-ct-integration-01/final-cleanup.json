@@ -1,0 +1,19 @@
+{
+  "measurement": "Successful final Win32_Process/TCP snapshot",
+  "ownMongoPids": [
+    2428,
+    32296,
+    26076,
+    15848,
+    36048
+  ],
+  "recordedOwnPidMatches": [],
+  "liveOwnProcesses": [],
+  "ownedBuildNodeMatches": [],
+  "ownMongoRootsRemaining": [],
+  "ownMongoPortsStillListening": [],
+  "aclRootsRemaining": [],
+  "privateMongoRootsRemaining": [],
+  "processesKilled": 0,
+  "note": "Only exact own recorded PIDs, ports, private paths and parent/time/exe-bound build child candidates observed. No process terminated."
+}

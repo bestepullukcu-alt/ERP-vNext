@@ -1,0 +1,25 @@
+  Geri yüklenecek projeler belirleniyor...
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj geri yüklendi (96 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Application\Diten.PvgService.Application.csproj geri yüklendi (102 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj geri yüklendi (96 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj geri yüklendi (103 ms içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj geri yüklendi (12,62 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Persistence\Diten.PvgService.Persistence.csproj geri yüklendi (12,7 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Api\Diten.PvgService.Api.csproj geri yüklendi (12,71 sn içinde).
+  C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Diten.PvgService.Api.Tests.csproj geri yüklendi (12,71 sn içinde).
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\bin\Debug\net8.0\Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.PvgService.Domain -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Domain\bin\Debug\net8.0\Diten.PvgService.Domain.dll
+  Diten.BuildingBlocks.Security.Secrets -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\bin\Debug\net8.0\Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.PvgService.Application -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Application\bin\Debug\net8.0\Diten.PvgService.Application.dll
+  Diten.PvgService.Infrastructure -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Infrastructure\bin\Debug\net8.0\Diten.PvgService.Infrastructure.dll
+  Diten.PvgService.Persistence -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Persistence\bin\Debug\net8.0\Diten.PvgService.Persistence.dll
+  Diten.PvgService.Api -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\src\Diten.PvgService.Api\bin\Debug\net8.0\Diten.PvgService.Api.dll
+  Diten.PvgService.Api.Tests -> C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll
+C:\Users\epenc\.codex\worktrees\pvg-dl12-prep-win-r2\ERP-vNext-git\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll (.NETCoreApp,Version=v8.0) için test çalıştırması
+VSTest sürümü 17.11.2 (x64)
+
+Test yürütmesi başlatılıyor, lütfen bekleyin...
+Toplam 1 test dosyası belirtilen desenle eşleşti.
+Sonuç Dosyası: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\normal\pvg-prep-win-r2-api.trx
+
+Başarılı!  - Başarısız:     0, Başarılı:   395, Atlanan:     0, Toplam:   395, Süre: 32 s - Diten.PvgService.Api.Tests.dll (net8.0)

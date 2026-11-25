@@ -1,0 +1,9 @@
+# Rev22 shared exactcommitE2 — CT karşılığı
+
+2026-11-23. Değişmemiş ham rapor ve dışmanifest/ZIP SHA'ları rootta doğrulandı. Rootun okuduğu ürün farkı23 dosya/467ekleme3çıkarma:154XMLdeğer+1Frenchreplacement,2bridge map ve2existingfamilyword sınırını koruyor. Bağımsız inceleyen bütün21XMLeskiGitbaytlarına geri dönüşü ve onaylıcontent/28titleparityyi ölçmüş; tamdiffexactba132012 stagedileaynı. Ürün/test/guard/CI/sahiplik kaydırması yok.
+
+FreshnormalSDKWeb.Testsbuild0/34warnings/0error, gerçek7cultureRoleGET→compiledRazor→productionloader/PermLabel14localizedlabel/tone/icon ve302unchangedtargettest0skip kanıtı source/PDB/PE/MVID/actualargv bağlarıyla kabul edildi. Dört bağımsız singlemutant gerçekguardassertionsRED1→restore0; infra/syntaxRED değil. Ayrı dışprobe Csc hedefi yalnızharness source'u normalResolveReferences ilederliyor; gerçekproductionWeb/Razorbuild targetsiz önceayrı, aynı8DLL normaloutput/testcopy/runtimehashes eşit. Probe fakeproducer veya productioncompileyerine kullanılmamış. 34warning için genelkökneden/inheritance iddiası yapılmıyor.
+
+KOŞULLU UYGUN yalnız23pathPARTIALcomponent/yerelentegrasyon sırası için kabul edildi: kapsam critical0/blocker0. RootnativefullJS1/13FAIL'ı PASS saymaz. AynıH82/native269case-status eşitliği, LF11green/2Windowsliteralpaths ve12newhelpguard allPASS ölçümleri bounded;5394sourcefileharitasıSTATİK, eksiksizdynamicclosure/main/platformetkisizlik kanıtıdeğil. Globalresxreport1(frEnglishsame44→43) korunur. FinalmergedCI web-js full0/requiredPhase1/uic/AC45 vecombined28+Role bekler. Üstpack Testexpectations localfour0 THENrequiredCI finalfull0 ayrımı ordinaryPARTIALcommit/noff'a izinverir; yeniwaiver/skip/guardfix/XMC veya scopeonayı yok.
+
+Bu darE2 sonrası yalnızizinli noff entegrasyonuna geçilir. YeniACCEPTED/DONE, mainmerge, yayın veyaoperasyon onayı verilmez. Ham ilkfullFAIL ve sonrakitargeted tanı hiçbirzaman yenidenetiketlenmez.

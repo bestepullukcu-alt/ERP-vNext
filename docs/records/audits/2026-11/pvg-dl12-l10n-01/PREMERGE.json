@@ -1,0 +1,18 @@
+{
+  "root_head": "34c9f9ef32746ffea59eca84f7d2d7f8182cf845",
+  "candidate": "43f856f22f0549be1d61fab09d40086b755661ba",
+  "base": "ab039c2c53d82edf8413bae4e3304d21b57e04e4",
+  "worker_clean": true,
+  "root_clean": true,
+  "seven_target_blobs_unchanged_from_base_on_CT": true,
+  "paths": [
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+  ],
+  "independent_review": "UYGUN0; REVIEW78f57b24…/measurements268337ca…"
+}

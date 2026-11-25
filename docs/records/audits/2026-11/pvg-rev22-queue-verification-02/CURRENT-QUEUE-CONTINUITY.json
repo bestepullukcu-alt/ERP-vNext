@@ -1,0 +1,32 @@
+{
+  "kind": "Full strict check and producer verification0 at781; current ACTUAL structure_errors0 plus rowcontinuity; NOTfullhistoryrerun at finalH",
+  "validated_source": "781ffe8eef92054265d7eedbe182c736584a191d",
+  "current_source": "c3ac9c05346e776cc8d450aac957995cedb3b449",
+  "row_count": 44,
+  "only_row_field_deltas": {
+    "WP-0230-DL7-CI-SHARED-01": {
+      "state": [
+        "IN_PROGRESS",
+        "INTEGRATED"
+      ]
+    },
+    "WP-0230-DL7-CI-VIEWS-01": {
+      "state": [
+        "IN_PROGRESS",
+        "INTEGRATED"
+      ]
+    }
+  },
+  "other_rows_fields_unchanged": true,
+  "production_structure_problems": [],
+  "counts": {
+    "INSPECTION_REQUIRED": 4,
+    "INSPECTED": 1,
+    "DISCOVERED": 10,
+    "INTEGRATED": 19,
+    "SUPERSEDED": 1,
+    "ACCEPTED": 6,
+    "REWORK": 2,
+    "IN_PROGRESS": 1
+  }
+}

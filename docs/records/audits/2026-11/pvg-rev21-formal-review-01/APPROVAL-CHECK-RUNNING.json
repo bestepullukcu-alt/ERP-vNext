@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "pack_approval.py",
+    "check",
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "--ref",
+    "3689138497673bcbc609398d30414824c91e9688",
+    "--deferred"
+  ],
+  "pid": 35168,
+  "started_utc": "2026-11-20T17:26:17.632754+00:00",
+  "helper_sha256": "5eef646f870f73043c528180c0369c8a9d2b777a365eef142f54b6ad05fd0040"
+}

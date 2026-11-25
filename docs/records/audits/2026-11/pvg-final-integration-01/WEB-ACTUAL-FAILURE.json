@@ -1,0 +1,12 @@
+{
+  "test": "Diten.Web.Tests.JavaScript.ReturnDetailsBehaviorTests.DetailsJs_shows_names_not_ids_gates_the_holds_request_and_separates_not_found_from_error",
+  "outcome": "Failed",
+  "module": "MOD-0186 SupplyChain Returns (source header)",
+  "error_message": "node:internal/modules/run_main:123\r\n    triggerUncaughtException(\r\n    ^\r\n\r\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\r\n+ actual - expected\r\n\r\n+ 'C-1 ┬À Acme'\r\n- 'C-1 ´┐¢ Acme'\r\n       ^\r\n\r\n    at file:///C:/Users/epenc/AppData/Local/Temp/pvg-final-full-web/84e850957f93401d8296171b6ab57601/src/[eval1]:27:10\r\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) {\r\n  generatedMessage: true,\r\n  code: 'ERR_ASSERTION',\r\n  actual: 'C-1 ┬À Acme',\r\n  expected: 'C-1 ´┐¢ Acme',\r\n  operator: 'strictEqual',\r\n  diff: 'simple'\r\n}\r\n\r\nNode.js v22.23.5\r\n",
+  "stack_trace": "   at Diten.Web.Tests.JavaScript.ReturnDetailsBehaviorTests.DetailsJs_shows_names_not_ids_gates_the_holds_request_and_separates_not_found_from_error() in C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-full-web\\84e850957f93401d8296171b6ab57601\\src\\frontend\\Diten.Web.Tests\\JavaScript\\ReturnDetailsBehaviorTests.cs:line 84\r\n--- End of stack trace from previous location ---",
+  "registered_at_H": false,
+  "exact_source_comparison": "RETURNS-FAILURE-SOURCE-COMPARISON.json",
+  "observed": "Node strict equality failed; console displays different encoded characters for actual and expected customer separator.",
+  "inferred_cause": "Redirected C# stdin/stdout/stderr encoding mismatch on Windows is a source-supported hypothesis, not a separately reproduced or proven cause.",
+  "no_main_runtime_inference": true
+}

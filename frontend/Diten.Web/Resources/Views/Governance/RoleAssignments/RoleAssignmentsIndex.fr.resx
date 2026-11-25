@@ -198,4 +198,10 @@
     <value>Le rôle dispose déjà de cette autorisation. Actualisez la page.</value>
   </data>
   <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Retirer cette autorisation ne laisserait aucun autre compte actif pouvant ajouter des utilisateurs. Accordez d'abord ce droit à un autre utilisateur.</value></data>
+  <data name="ActionVerb_Triage" xml:space="preserve">
+    <value>Effectuer le Triage</value>
+  </data>
+  <data name="ActionVerb_Route" xml:space="preserve">
+    <value>Orienter</value>
+  </data>
 </root>

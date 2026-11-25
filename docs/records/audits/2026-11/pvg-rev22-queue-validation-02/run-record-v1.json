@@ -1,0 +1,34 @@
+{
+ "argv": [
+  "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "-B",
+  "scripts/ct_queue.py",
+  "validate",
+  "--queue",
+  "pvg"
+ ],
+ "artifacts": [
+  {
+   "bytes": 0,
+   "path": "docs/records/audits/2026-11/pvg-rev22-queue-validation-02/stderr.txt",
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "bytes": 64,
+   "path": "docs/records/audits/2026-11/pvg-rev22-queue-validation-02/stdout.txt",
+   "sha256": "7060216fa08269595acc1b56be148b94d165ba25045dace1de535997914106be"
+  }
+ ],
+ "commit": "781ffe8eef92054265d7eedbe182c736584a191d",
+ "cwd": ".",
+ "exit": 0,
+ "finished_utc": "2026-11-23T12:52:24Z",
+ "format": "run-record-v1",
+ "out": "docs/records/audits/2026-11/pvg-rev22-queue-validation-02",
+ "started_utc": "2026-11-23T12:32:33Z",
+ "tool": {
+  "path": "scripts/run_record.py",
+  "sha256": "37bd43bae3296df1a569f73aa29d1bc15732ab703177321989aa171354ef09cf"
+ },
+ "tree": "49ae56de2aa35bf65153bbbac927f1011c1990ca"
+}

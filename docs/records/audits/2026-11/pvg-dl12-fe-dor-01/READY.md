@@ -1,0 +1,11 @@
+# Ekran — MOD-0230 DL-12 FE DoR
+
+BE67 aday bağımsızE2 UYGUN0/API456/Reg211/21author+3independent negativecontrol sonrası CTnoff0f9bed ile entegre. L10N43 bağımsızUYGUN0/noff77ecab,7sayfa XML112/parity/yalnızDraftNotEditable entegre. WIN/Web/registry hazırlıkları korunur. Rev21 pack/domain ve iki formalUYGUN/HIGH368913…/insanonay aynı; yenionaybeklenmiyor. Tek yazıcı FE, mevcut temiz yönetilen Web worktree yeni FE dalında kullanılır; eskiL10N43refi korunur. Root ürün kodu yazmaz.
+
+Yeni actual post-BE/L10N baseline ayrı dört grup: API456/Reg211/Webmodül62/JS34,0fail/skip; eski vaka kimlikleri korunur; altı gerçekCLI0, same-H kaynak→ilgiliDLL→TRXstorage/Times/hash, unforcedownJob/Mongo/ACL cleanup0 ve rootHEAD/index/sourceunchanged. Önceki runner infrastructure duruşları tarihsel kalır; başarılı sonuç diye taşınmaz. Mevcut InMemory connected Web akışı geçerlidir; bu FE için yeniMongo harness zorunluluğu yok, BE/probe iki-store sonucuna FE iki-store etiketi konmaz. Corpus47payload/94createGET saklı verinin fizibilitesidir; freshconnected eşitlik gerekir.
+
+CT evidence producer immutable yol/hash ve gerçek baselineJSON pinine bağlı. ExistingGREEN baseline normal captureexit1 ile tamamlandı: yeni6C#/4JS namedcase ve altıyoldeğişiklik henüzyok; bu mekanikRED gerçek yeni davranışRED yerine geçmez. Structural negatifler gerçek komutlarla doğrulandı. Pozitifacceptance0 ancak FE ürün/test uygulaması sonrası kendi taze koşusunda beklenir; producer isim/count/hash/CLI denetimi bağımsızE2/değer/token/receipt/sabotaj/metotsınırı/cleanup kanıtı değildir.
+
+CT kararı: yalnız WP-0230-DL12-FE PLANNED→READY,42rowguard doğruhash/0. Tam altı yol packteki update-local JS/MVC, iki test, Edit-only required iki alan ve tekbridge; Create/auth/route/error/sharedcaller/API/RESX/csproj/CI/diğermodüller korunur. READY dağıtım veya ürün kabulü değildir. DoRcommit sonrası worker ff-only güncellenir, finalprompt kendi exactH/branch/clean+sourcepack/capturehash ile bağımsızincelenir, gerçeknormalcheck0 sonrası dağıtılır. Ençok2aktifaltçalışma.
+
+Tek finalPR, kesin CTdalı/SHA yayınsözü, gerçek finalLinux/Phase1/architecture ve bağımsızlisteliinsanmainmerge kapıları açık. Operasyon/live/E4 yok. Mainreachability/korunmamışiş kontrolü olmadan managedworktree arşivi yok.

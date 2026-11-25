@@ -1,0 +1,51 @@
+{
+  "base": "a2586b89dd87dd99a51e85ff29560fc5fd1656cc",
+  "repository": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "exact_five_cell_diff": true,
+  "source_sha256": "1fe0e58cf55d7566dee5a994b636a54dc128819a769743b5634a262a2ed5e0f9",
+  "ledger_lf_sha256": "5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b",
+  "commands": [
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\known_failures.py",
+        "validate"
+      ],
+      "exit_code": 0,
+      "stdout": "OK registry\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\docs\\records\\audits\\2026-11\\pvg-dl12-prep-web-verify-01\\independent.trx",
+        "--suite",
+        "Diten.Web.Tests"
+      ],
+      "exit_code": 0,
+      "stdout": "ÖZET BİLİNEN=0 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0\n",
+      "stderr": ""
+    }
+  ],
+  "trx_identity": {
+    "path": "docs/records/audits/2026-11/pvg-dl12-prep-web-verify-01/independent.trx",
+    "source_commit": "a2586b89dd87dd99a51e85ff29560fc5fd1656cc",
+    "expected_lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+    "before_lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+    "after_lf_sha256": "d8e4459f1779fee3cdcd68b49cecf6949d13f00df459dbc136a11633c8646e91",
+    "matches_before_after": true
+  },
+  "in_memory_single_old_token_sabotage": {
+    "production_function": "known_failures.validate",
+    "real_tracked_paths": true,
+    "guard_red": true,
+    "problems": [
+      "line 4: glob '*.xml' matches no tracked path"
+    ]
+  },
+  "acceptance_passed": true
+}

@@ -1,0 +1,46 @@
+{
+  "versions": [
+    {
+      "name": "dotnet-version",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\snapshot",
+      "pid": 15428,
+      "exit": 0,
+      "seconds": 0.135,
+      "log_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+    },
+    {
+      "name": "node-version",
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+        "--version"
+      ],
+      "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\snapshot",
+      "pid": 36788,
+      "exit": 0,
+      "seconds": 0.028,
+      "log_sha256": "6aff48828de66fbac1ebde4c0c96dd197aa1013dc9964508988344265818e783"
+    }
+  ],
+  "restore": {
+    "name": "restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-web-independent-1795177566591193300\\snapshot",
+    "pid": 21648,
+    "exit": 0,
+    "seconds": 2.906,
+    "log_sha256": "4c9d3e567694e8cd64ef93d2c95e77a2eb3b79b1bb8f877b392d93b224436e3a"
+  },
+  "npm_install": "not rerun: copied preinstalled exact-lock node_modules; no hidden install"
+}

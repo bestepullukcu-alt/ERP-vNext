@@ -1,0 +1,10 @@
+{
+  "actual-run.json": "9c7371a2fb3ad1be0b93f1a899ccd6978c43d4ca3bf194decec00411d2311f1f",
+  "exact.diff": "328a7c52850f3880823c721c5aceebe177ea4e5c015b1089dea191891bb9952e",
+  "final.json": "c4ecf33d16d2752c9ee0ce7661d31e6a945a12e4e56c649a72b6d3ab1618fd91",
+  "independent-green.json": "1d4e4921042317e3b6cc6aadb15150dfa50bffe0816ae8cf3fa940e8bbb790ee",
+  "initial-and-scope.json": "d5441a5f00642e92ad0af58cfbe03d1de222b095ef8bc37eb9f8ff0db8663be2",
+  "producer.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "producer.stdout.txt": "f5fd2e34f3250cfdd8e04d155ba22f3faaa34cb3c53d8fd9f5aa68e9a382bf72",
+  "VERIFY-REGISTRY.txt": "1eb47520db8faeb7fef6a648a92d719979b1b4c00e64bc696ffe9ad3284f1a40"
+}

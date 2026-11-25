@@ -1,0 +1,5 @@
+# İlk JavaScript başlangıç ölçümü
+
+2026-11-20. Gerçek kurulu Node22.23.5/Vitest ile mevcut PVG UI test dosyası bir kez çalıştı:34/34PASS,0FAIL/0skip/todo. Gerçek argv/exit/PID/zamanlar command.json, tam Vitest JSON ve33kaynak raw/LF hashleri kayıttadır. Dış CT snapshot0b03b350 yeniden kullanıldı; ilgili33kaynak f3f718b7 ile aynı ve ölçüm sonrası değişmemiştir. Kurulu bağımlılıklar salt-okunur NODE_PATH ile sağlandı, kendi dış sonuç dizini kullanıldı; gerçek worktree/Git değişmedi. Test/guard/kural/ürün yazılmadı.
+
+Bu başlangıç L10N değişikliğinden ÖNCEDİR. BE/L10N teslimi veya son FE-ready baseline değildir. Eski testlerin GREEN olması kayıpsız düzenlemenin veya complete-detail kapısının çalıştığını kanıtlamaz. Yeni normatif davranış testleri ve gerçek karşıt örnekler sonraki FE işinde, önce yeni bağımlılık sürümü üzerinde üretilir. API/RegPvBase/Web/E2/live kabulü bu ölçümden çıkarılmaz. Çalışan normal dağıtım kapıları sırasında bu kayıt commit edilmedi; kesin source-pack ve worker ExpectedHEAD değişmez.

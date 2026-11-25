@@ -1,0 +1,47 @@
+{
+  "kind": "Preparation tuple after formal authority adoption; WP state remains PLANNED until separate DoR decision; no GO",
+  "workers": [
+    {
+      "role": "shared",
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-shared/ERP-vNext-git",
+      "branch": "feature/pvg/mod-0230-r22-shared-ci",
+      "head": "7265acb09b61ac819f1d3d1e3c8fb4110ac31cbe",
+      "status": "CLEAN",
+      "pins": {
+        "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": {
+          "git_lf_sha256": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+          "raw_disk_sha256": "1cf4eb8f38c24219a3c16f5049709f3cefdc115ec06627d50898e67888731356"
+        },
+        "execution/domains/pharmacovigilance/domain-config.md": {
+          "git_lf_sha256": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+          "raw_disk_sha256": "1be6eeaa7a66e12913a505cd1b5792f8ffbfd999ae6fd2e1a3ec329b9e2cb6d0"
+        },
+        "docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md": {
+          "git_lf_sha256": "0fa566c24df9a3d0910e1ebd1b4febc68711d92ca22e64dbc754535fe217e0d7",
+          "raw_disk_sha256": "90be8a58f94924925e22e9a5e489774c2aec356513ed3c92a1d030a8e0d0f546"
+        }
+      }
+    },
+    {
+      "role": "views",
+      "worktree": "C:/Users/epenc/.codex/worktrees/pvg-r22-views/ERP-vNext-git",
+      "branch": "feature/pvg/mod-0230-r22-page-help",
+      "head": "7265acb09b61ac819f1d3d1e3c8fb4110ac31cbe",
+      "status": "CLEAN",
+      "pins": {
+        "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": {
+          "git_lf_sha256": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+          "raw_disk_sha256": "1cf4eb8f38c24219a3c16f5049709f3cefdc115ec06627d50898e67888731356"
+        },
+        "execution/domains/pharmacovigilance/domain-config.md": {
+          "git_lf_sha256": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+          "raw_disk_sha256": "1be6eeaa7a66e12913a505cd1b5792f8ffbfd999ae6fd2e1a3ec329b9e2cb6d0"
+        },
+        "docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md": {
+          "git_lf_sha256": "0fa566c24df9a3d0910e1ebd1b4febc68711d92ca22e64dbc754535fe217e0d7",
+          "raw_disk_sha256": "90be8a58f94924925e22e9a5e489774c2aec356513ed3c92a1d030a8e0d0f546"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Ekran — bağımsız exact-C teknik E2 sonucu
+
+CT, ayrı incelemecinin UYGUN sonucunu exact fbcb33533daacb9ae5b3b215736ad14d2b466c11/treeb309be6634ca8a3b8808564f6b1e883aad189365 için kabul eder: açık teknik engel0, tüm6sourcepin ve ordinaryparent6d eşittir. Tamreview30818B hamSHA d5a9b68637c834f055726ea5ab0af7ddc48625adc8372e6b0b96d18b18e122fe root tarafından tam okunmuştur. Bu hash kimlik/kripto imza beyanı değildir. İstenen model gpt-6.2-astra/high, gerçek model/effort verilemiyor; implementer ve verifier ayrı ajanlardır.
+
+Kendi fresh API456/Reg211/Web78/JS39,0fail/0skip/6CLI0; 47+112 gerçekmatris/176hashreceipt/174freshid ve doğrudan0/1storewrites doğrulandı. Yazarın2430raw dosyası/30çifti semantik ve bayt kimliğiyle, ayrıca11 gerçek ayrı derlenen singlepatch/restored GREEN tekrarıyla denetlendi. Canned200/no-actual-MVC-updateleg gözlemi declared BrowserFailure.SuppressUpdate RED’idir; xUnit assertion diye etiketlenmez. SonC#baseline0aa, C#harnessfault mutasyonlarının farklı testhash/DLL’leri açıkça ayrı tutulur; ayrı çalıştırılmamış buildexit0 yoktur.
+
+DateOnly temizleme ve UTCyear sınırı bulguları aynı onaylı kapsamda kapandı. İlkiki bağımsız setup hatası rawOID/smudge ve derinWindowsCWD derleme altyapısıdır; test/ürün başarısı diye sunulmaz. Kısa özelTEMP/canonicalarchive dışında guard/global/proje/ürün değişikliği yapılmadı. Successfulnormal110+repeat54Job empty/unforced0,5Mongo kimlik/port/data temiz, ACLroot yok;26600sourcebytes+workerindex/HEAD ve node dependency posthash eşit.
+
+CT sonucu yalnız teknik VERIFIED/integration readiness için yeterlidir. No-ff merge, sonrootH fullWeb/architecture, finalLinux/Phase1CI/ikinciinsan mainmerge ve E4/live/operasyon ayrı kapılardır. Root ürün kodu yazmadı. LF görünümleri ve originalrawenvelope açık etiketlidir; bulk2,45GB dış katalogda korunur. Bu kayıt lane CLOSED ya da WP/module DONE değildir.

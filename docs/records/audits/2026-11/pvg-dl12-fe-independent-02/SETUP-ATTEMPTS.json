@@ -1,0 +1,38 @@
+{
+  "kind": "Preserved independent setup attempts before successful full normal run",
+  "attempts": [
+    {
+      "id": "f30a78c94e8b4e269b0be3e0718a22ec",
+      "evidence": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-fe-independent-02\\runtime-full-four\\f30a78c94e8b4e269b0be3e0718a22ec\\evidence",
+      "success": false,
+      "failure": "",
+      "classification": "source archive CRLF smudge rejected before restore/build/test",
+      "job_count": 21,
+      "every_job_empty": true,
+      "forced_job_terminations": 0,
+      "worker_index_unchanged": true,
+      "worker_head_unchanged": true,
+      "all_tracked_worker_bytes_unchanged": null,
+      "all_tracked_scratch_bytes_unchanged": null,
+      "full_cleanup_success": false,
+      "not_product_red_or_pass": true
+    },
+    {
+      "id": "4fe903af6bf349ea9d58a4e8a9aa21b8",
+      "evidence": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-fe-independent-02\\runtime-full-four\\4fe903af6bf349ea9d58a4e8a9aa21b8\\evidence",
+      "success": false,
+      "failure": "('payload failed', 1)",
+      "classification": "Windows Roslyn process launch invalid-parameter at deep path; API tests/TRX/Mongo absent; JS39 prior setup check passed, not final acceptance",
+      "job_count": 57,
+      "every_job_empty": true,
+      "forced_job_terminations": 0,
+      "worker_index_unchanged": true,
+      "worker_head_unchanged": true,
+      "all_tracked_worker_bytes_unchanged": true,
+      "all_tracked_scratch_bytes_unchanged": true,
+      "full_cleanup_success": false,
+      "not_product_red_or_pass": true
+    }
+  ],
+  "limitation": "First source byte inventory was not completed, so worker/scratch per-file no-change is unknown there; read-only Git Jobs, HEAD/index no-change and unforced empty Jobs were observed. Second attempt has complete source-byte no-change. Neither is a final product suite outcome."
+}

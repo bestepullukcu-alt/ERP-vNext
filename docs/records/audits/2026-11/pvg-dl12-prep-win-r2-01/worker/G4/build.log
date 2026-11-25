@@ -1,0 +1,23 @@
+  Geri yüklenecek projeler belirleniyor...
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Application\Diten.PvgService.Application.csproj geri yüklendi (97 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Infrastructure\Diten.PvgService.Infrastructure.csproj geri yüklendi (97 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj geri yüklendi (90 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Domain\Diten.PvgService.Domain.csproj geri yüklendi (90 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj geri yüklendi (296 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Persistence\Diten.PvgService.Persistence.csproj geri yüklendi (324 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Api\Diten.PvgService.Api.csproj geri yüklendi (324 ms içinde).
+  C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Diten.PvgService.Api.Tests.csproj geri yüklendi (325 ms içinde).
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\bin\Debug\net8.0\Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.PvgService.Domain -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Domain\bin\Debug\net8.0\Diten.PvgService.Domain.dll
+  Diten.BuildingBlocks.Security.Secrets -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\bin\Debug\net8.0\Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.PvgService.Application -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Application\bin\Debug\net8.0\Diten.PvgService.Application.dll
+  Diten.PvgService.Infrastructure -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Infrastructure\bin\Debug\net8.0\Diten.PvgService.Infrastructure.dll
+  Diten.PvgService.Persistence -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Persistence\bin\Debug\net8.0\Diten.PvgService.Persistence.dll
+  Diten.PvgService.Api -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\src\Diten.PvgService.Api\bin\Debug\net8.0\Diten.PvgService.Api.dll
+  Diten.PvgService.Api.Tests -> C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G4\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:20.54

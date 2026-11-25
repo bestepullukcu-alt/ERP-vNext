@@ -115,4 +115,5 @@
   <data name="RemoveReporterLink" xml:space="preserve"><value>Supprimer le Lien</value></data>
   <data name="ReporterLinkRemovalNote" xml:space="preserve"><value>Le lien sera supprimé lors de l'enregistrement.</value></data>
   <data name="OptionsLoadFailed" xml:space="preserve"><value>Les listes d'options n'ont pas pu être lues. L'enregistrement n'est pas disponible.</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Cet enregistrement ne peut plus être modifié.</value></data>
 </root>

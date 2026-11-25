@@ -1,0 +1,54 @@
+{
+  "frozen_head": "788047137bdc3d127771434608d28b8f205611a6",
+  "git_dir_read_only_existing": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git/.git/worktrees/ERP-vNext-git",
+  "git_work_tree": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+  "git_index_file": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\frozen-788-index",
+  "resolved_index": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\frozen-788-index",
+  "index_inside_own_temp_verified": true,
+  "index_sha256": "82078ac87d5923ad37b7564c08e8e0e2258be5348926d1032e9afed09677d538",
+  "index_file_count": 26199,
+  "ls_files_equals_frozen_tree": true,
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "--git-path",
+        "index"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "read-tree",
+        "788047137bdc3d127771434608d28b8f205611a6"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-files",
+        "-z"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "788047137bdc3d127771434608d28b8f205611a6"
+      ],
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "scope": "Only new external GIT_INDEX_FILE written; no real CT/worker index/ref/commit or source modification."
+}

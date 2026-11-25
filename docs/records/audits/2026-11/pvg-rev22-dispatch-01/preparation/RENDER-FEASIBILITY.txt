@@ -1,0 +1,70 @@
+MOD-0230 rev22 — gerçek dört görünüm / yedi dil render kanıtı hazırlık planı
+2026-11-23. Salt-okunur kaynak incelemesi; probe/feasibility PASS, uygulama veya native çeviri sertifikası değildir.
+İstenen model/effort: inherited gpt-6.2-astra / high; gerçek model/effort: verilemiyor.
+Ölçülen root HEAD: 11b43eca708ef5bd3a5ba234fadf63c4765cfe73. 61d23ff8951f96a29854c23bd035dc42b3004a09→HEAD frontend/Diten.Web ve frontend/Diten.Web.Tests farkı yok.
+CT'nin reviews.tsv değişikliği korundu. Bu hazırlıkta kaynak, test, CI, worktree, ayar değiştirilmedi; SDK/build/restore/test/host çalıştırılmadı.
+
+1. Mevcut seam ve sınırı
+LayoutRenderer.cs:21 internal sınıftır; public generic RenderAsync/RenderWithClaimsAsync çağrıları sınıfın dışından normal C# erişimine açık değildir.
+Ayrıca :36–37 iki kültürü en yapar; :53 istek yolunu MDM'ye, :60 action'ı Index'e sabitler, :62 model vermeyen ViewDataDictionary kurar.
+Reflection ile bu metodu çağırmak bu sınırlamaları çözmez. Önceden CurrentUICulture=fr ayarlamak metot içinde tekrar en olur.
+PageHelpShellTests.cs:53–77 ViewData[PageCode] enjekte eder ve Lskus görünümünü kullanır; PVG'nin kendi atamasını kanıtlamaz.
+CurrentPageTests.cs:59–69 üretim CurrentPage.Resolve çağrısını doğrular; gerçek PVG view/layout ve 7 dil kanıtı değildir.
+PVG WebTests.GetAsync:1908–1914 de Accept-Language=en sabitler; olduğu gibi reuse edilmemeli.
+Reuse edilebilen yapı: gerçek WebApplicationFactory<Program>, normal DI/Razor/localizer, sentetik kimlik fixture örüntüsü ve gerçek HTTP GET.
+Program.cs:561 public partial Program; Web.csproj ve Web.Tests.csproj net8.0; mevcut Mvc.Testing bağımlılığı 8.0.11.
+
+2. Önerilen dış private harness — gerçek HTTP yolu
+Dış executable ayrı isimli EntryPoint.Main kullansın; top-level Program üretip uygulamanın global Program tipini gölgelemesin.
+WebApplicationFactory<global::Program> gerçek Web girişini/TestServer'ı çalıştırsın; dinleyen Kestrel veya gerçek servis başlatmasın.
+UseEnvironment(Development), UseContentRoot(<yalnız-kendi-izole-checkout>/frontend/Diten.Web), doğru ApplicationName/WebRoot açık kaydedilsin.
+WebTests.HostOver:1743–1756 örüntüsündeki UseSetting ile yalnız fixture JWT secret/issuer/audience ve ağ bağımlılıkları bağlansın.
+Random fixture signing key ve kısa ömürlü signed token; tenant_id/sub/actor_type=tenant_user ve GET'in gerektirdiği gerçek permission claim'leri.
+Üretim permission snapshot, RequirePage, JWT bridge, auth scheme veya policy değiştirilmez; seed/grant yapılmaz; tüm istekler yalnız GET.
+HttpClient test handler gerçek ağ çıkışını kapatsın. Menü endpoint'ine boş data listesi vererek menüden PageCode elde edilmeyen koşulu açıkça kurabilir.
+Diğer dış istekler kapalı/izlenen kalsın; handler yardım HTML'i, PageCode veya çeviri yanıtı üretmesin. Bu Platform canlı menü kabulü değildir.
+Factory/client dispose edilmeli; bir sınırlı host ve ardışık 28 GET yeterlidir; önceki inotify basıncı nedeniyle satır başına yeni host yaratılmamalı.
+Client BaseAddress=https://tenant.test; AllowAutoRedirect=false, HandleCookies=false. admin.* veya /platform yolu kullanılmasın.
+Program.cs:178–215 tenant için yedi kültürü açar; normal query provider ile ?culture=<lang>&ui-culture=<lang> kullanılsın.
+Signed access_token cookie her istekte açık verilsin; özel cookie jar/culture taşınması ve Accept-Language=en sabitlemesi olmasın.
+
+3. Dört gerçek rota, typed model ve PageCode
+GET /Pharmacovigilance/CaseIntakeTriage → controller:58–60, read; Index kendi görünümü.
+GET /Pharmacovigilance/CaseIntakeTriage/Create → :62–65, create; gerçek PvgCaseIntakeFormViewModel.
+GET /Pharmacovigilance/CaseIntakeTriage/Edit/<sentetik-id> → :67–76, update; gerçek model ve IntakeDraftId.
+GET /Pharmacovigilance/CaseIntakeTriage/Details/<sentetik-id> → :79–88, read; controller ViewData[IntakeDraftId] verir.
+GET rotaları API store yazısı gerektirmez; JavaScript çalıştırılması veya POST bu yardım-render kanıtının parçası değildir.
+Harness ViewData[PageCode], Context.Items[Diten.PageCode], sahte localizer veya kopyalanmış Razor kurmaz.
+ViewCode dört görünümün kendi onaylı setup atamasından gelmeli; _LayoutTenantShell:445,698 gerçek CurrentPage.Resolve çağırır.
+_PageHelpPanel:27–46 gerçek Purpose/Audience/Step1/Step1Title ve NavNames.Page başlığını, :53 erişim-denied bastırmasını çalıştırır.
+NavNameLocalizer.cs:38–55 gerçek SharedResource anahtarını çözer; Program.cs:53–59 ResourcesPath/ViewLocalization kayıtlarını korur.
+Controller/model yolunu kullanmak LayoutRenderer'ın null-model, sabit-action ve en sorunlarını dış harness içinde repo koduna dokunmadan aşar.
+
+4. Normal SDK8/assembly ve gelecekteki argv taslağı — şimdi çalıştırılmadı
+Dış proje net8.0/C#12 executable; Microsoft.AspNetCore.App framework reference + gerçek Web.csproj ProjectReference kullanabilir.
+Dış harness için yalnız mevcut 8.0.11 Mvc.Testing sürümü/cache'i; Web.Tests paketlerini veya PVG API hostunu bu render için yeniden tasarlama.
+Web'in global Program tipine gerekirse ProjectReference alias=webapp ve WebApplicationFactory<webapp::Program> ile açık eriş.
+Normal SDK8 build, gerçek Razor derlemesini ve yedi culture satellite assembly'yi üretmeli; sahte resource DLL veya kopuk csc wildcard derlemesi yok.
+SDK8'in makinede varlığı/projenin cache-assets yeterliliği bu hazırlıkta ölçülmedi. Eksikse PASS yok; bu görev kurulum/restore izni değildir.
+Gelecekte onaylı doğrulayıcının kaydedeceği argv şekli: [<doğrulanmış-dotnet8>, build, <kendi-checkout>/frontend/Diten.Web/Diten.Web.csproj, -c, Debug, --no-restore].
+Sonra [<doğrulanmış-dotnet8>, build, <dış>/PvgR22RenderEvidence.csproj, -c, Debug, --no-restore]; hazır assets yoksa dur ve normal kapıya bildir.
+Çalıştırma: [<doğrulanmış-dotnet8>, <dış-bin>/PvgR22RenderEvidence.dll, --source-root, <kendi-checkout>, --head, <combined-final-H>, --cultures, en,tr,fr,es,zh,ar,ru, --pages, Index,Create,Edit,Details, --output, <dış-evidence>].
+Bu argv yalnız öneridir; gerçek executable/SDK/runtime/config/ContentRoot/assembly location/hash ve argv dizisi koşuda kaydedilmeden sonuç yok.
+
+5. Ölçüm ve negatif kanıt
+Her 28 yanıtta HTTP200, HTML lang, doğru distinct data-page-code ve help-title/purpose/audience/titled-step gerçek DOM metinleri karşılaştırılsın.
+Beklenti kaynağı hash-bağlı owner localized-content.json olsun; beklenen metni yalnız aynı localizer'dan okuyup kendisiyle eşitleme.
+HTML entity decoding uygulanmalı; üretim çıktı üretimi/localization/Normalize/CurrentPage/PermLabel kuralı harness'e kopyalanmamalı.
+Harness yalnız host kurma, fixture claim/query, HTTP alma, DOM gözlemi ve assertion kodunu yazabilir; gerçek view/helper/localizer yerini alamaz.
+Menüde PVG yokken panel kodu mevcut olmalı. Ayrı denied GET'lerde gerçek RequirePage403/skeleton yokluğu korunmalı; bunun için yetki atlatma yok.
+Dış scratch kopyada tek gerçek görünüm override'ını kaldırmak ilgili render check'i kırmızı; tek help value kaldırmak ilgili dil check'ini kırmızı yapmalı.
+Her ayrı mutasyon/senaryo derlenmiş gerçek kaynakta ölçülüp özgün final candidate geri gelince yeşil gösterilmeli; committed sabotaj/test/guard edit yok.
+
+6. İş ayrımı ve kaynak bağı
+Views worker yalnız dört atama/diff ve kendi izole view E2'sini verir; shared worker 23 dosya/XML/bridge/PermLabel7dil kendi E2'sini verir.
+Tek taraflı ağaçta final 4view×7lang sonucu ilan edilmez. Tam28 render/no-injected-PageCode kanıtı ancak iki iş bağımsız doğrulanıp CT'de birleşince.
+Her rapor final git H/tree/clean-status, scoped diff, source/resource hashleri, actual DLL+satellite hashleri, loaded assembly MVID/location ve harness source hashini taşımalı.
+Harness aynı checkout'tan yeniden üretilen DLL'yi yüklediğini göstermeli; eski bin/obj kopyası veya başka worktree assembly'siyle yeşil sonuç kaynak bağı sayılmaz.
+Önerilen çıktı: tam argv/exit/stdout/stderr, 28 row JSON + gerçek response HTML/hash, expected-content hash, her negatif/final-restore çiftinin kaynak/hash bağı.
+Bu E2 ürün/güvenlik/operasyon kabulü veya yeni yetki değildir; AC45/Linux/required final-H CI ve E4/E5 kapıları aynen sürer.
+Sonuç: en sabit helper engeli 27 izinli ürün yolu dışında repo değişikliği istemeden, dış HTTP evidence harness yaklaşımıyla ele alınabilir; uygulanabilirlik henüz çalıştırılarak kanıtlanmadı.

@@ -1,0 +1,28 @@
+{
+  "author": "/root/pvg_revision17_proposal",
+  "requested_model": "gpt-6.2-astra",
+  "requested_effort": "high",
+  "actual_model_effort": "verilemiyor",
+  "pack_sha256": "aee011817efff53055e129eb09a25ccbc89e00a3ad341377573e2141f5f4b800",
+  "domain_sha256": "c3f94d54d17b58862c64e5aca24ca78dd777adc5da2b81efcd91bd96c478f6fa",
+  "acceptance_count": 45,
+  "parse_problems": [],
+  "slices": [
+    "DL-1",
+    "DL-2",
+    "DL-3",
+    "DL-4",
+    "DL-5",
+    "DL-6",
+    "DL-7",
+    "DL-8",
+    "DL-9",
+    "DL-10",
+    "DL-11",
+    "DL-12"
+  ],
+  "ac_1_to_44_unchanged": true,
+  "delivery_table_rows_unchanged": true,
+  "operational_runtime": "closed",
+  "formal_approval_and_dispatch": "pending for these new bytes"
+}

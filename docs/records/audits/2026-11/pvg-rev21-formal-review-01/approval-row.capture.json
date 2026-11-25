@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "pack_approval.py",
+    "row",
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "--ref",
+    "a53656cdeb8dff40839e5e86ed708d812ad00f19",
+    "--author",
+    "ElikPenco",
+    "--approver",
+    "bestepullukcu-alt",
+    "--risk",
+    "HIGH",
+    "--reason",
+    "Direct owner approval of one ACL test method and separate five fixed registry cells; exact revision 21 independently reviewed; operational gate closed",
+    "--deferred",
+    "--date",
+    "2026-11-20",
+    "--note",
+    "onayla · 01a1f7d8-bf54-7703-ae91-a8ba29312b0d · 2026-11-20 · extra-scope-approval-01.md direct human consent; Beste self-declaration not GitHub identity proof; deferred human merge"
+  ],
+  "entrypoint": "unchanged pack_approval.main",
+  "same_process_read_cache": true,
+  "started_utc": "2026-11-20T17:20:58.064863+00:00",
+  "finished_utc": "2026-11-20T17:21:01.605579+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "dcf81bfa4e130a910ae239e0c58642fc3ae3523e137db40de7ef4d283fb71d09",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

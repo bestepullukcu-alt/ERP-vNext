@@ -1,0 +1,32 @@
+{
+  "time": "2026-11-20T22:17:06.5642360+04:00",
+  "browserPids": [
+    10824,
+    16308,
+    21288,
+    23024,
+    24828,
+    26712,
+    29604,
+    29764,
+    30008,
+    31220,
+    33400,
+    36544
+  ],
+  "browserPidCount": 12,
+  "rootPids": [
+    20168,
+    10072,
+    15584,
+    17552,
+    5976,
+    18876,
+    35204,
+    34896
+  ],
+  "matchingLiveProcesses": [],
+  "matchingLiveCount": 0,
+  "killedByVerifier": [],
+  "note": "Yalnız kendi test çıktısı ve koşu kaydındaki PIDler sorgulandı; tüm child süreçler fixture tarafından reap edildi."
+}

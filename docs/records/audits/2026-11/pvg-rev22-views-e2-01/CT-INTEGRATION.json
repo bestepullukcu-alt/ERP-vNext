@@ -1,0 +1,22 @@
+{
+  "kind": "Authorized CT no-ff integration only; not acceptance/finalCI/operational approval",
+  "before": "4f871689267c133aeb75b5f194dc6cdc5edd9148",
+  "candidate": "3af28aa145ee175d82ec8f0b188f2eee46b6d4ff",
+  "merge": "300c53476b757ddd130373a74b8520a2f4222e52",
+  "parents": [
+    "4f871689267c133aeb75b5f194dc6cdc5edd9148",
+    "3af28aa145ee175d82ec8f0b188f2eee46b6d4ff"
+  ],
+  "product_paths": [
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+    "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml"
+  ],
+  "candidate_blob_equality": true,
+  "candidate_review_sha256": "22025ba697b6e61ffd223bd30306fc911d1bc9b092bb9ce4c7d1743ea89791be",
+  "source_pack_and_domain_unchanged": true,
+  "combined_28_render_pending": true,
+  "native_full_JS_exit": 1,
+  "final_requiredCI_AC45_pending": true
+}

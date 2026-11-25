@@ -1,60 +1,104 @@
 using Diten.Shared.Core;
 using Diten.ProcurementService.Application.Features.Supplier.Commands;
-using Diten.ProcurementService.Domain.Repositories;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using MediatR;
 
 namespace Diten.ProcurementService.Application.Features.Supplier.Handlers.CommandHandlers;
 
-public sealed class UpdateSupplierHandler : IRequestHandler<UpdateSupplierCommand, Response<SupplierDetailDto>>
+/// <summary>PATCH without <c>master.update</c> (§14, K-1) — relationship fields only under <c>TenantShared</c>.</summary>
+public sealed class UpdateSupplierHandler(ISupplierStore store) : IRequestHandler<UpdateSupplierCommand, Response<SupplierDetailDto>>
 {
-    private readonly ISupplierRepository _repository;
-
-    public UpdateSupplierHandler(ISupplierRepository repository)
-    {
-        _repository = repository;
-    }
-
     public async Task<Response<SupplierDetailDto>> Handle(UpdateSupplierCommand request, CancellationToken cancellationToken)
     {
-        // Cross-tenant / cross-LE → null → 404 (UNKNOWN_SUPPLIER; cross-LE write engellenir).
-        var entity = await _repository.GetBySupplierIdAsync(request.SupplierId, cancellationToken);
-        if (entity is null)
+        // Cross-tenant / cross-LE / no relationship → 404 (UNKNOWN_SUPPLIER; cross-LE write engellenir).
+        var current = await store.FindAsync(request.SupplierId, cancellationToken);
+        if (current is null)
         {
             return Response<SupplierDetailDto>.Fail("UNKNOWN_SUPPLIER", 404);
         }
 
         // ── Optimistic concurrency (If-Match/rowVersion): stale → 409, sessiz overwrite YOK ──
-        if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != entity.Version)
+        if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != current.Version)
         {
             return Response<SupplierDetailDto>.Fail("CONCURRENCY_CONFLICT", 409);
         }
 
-        var taxId = string.IsNullOrWhiteSpace(request.TaxId) ? null : request.TaxId!.Trim();
-
-        // ── Duplicate aktif TaxId (tenant+LE, kendi kaydı hariç) → 409 ──
-        if (taxId is not null
-            && !string.Equals(taxId, entity.TaxId, StringComparison.Ordinal)
-            && await _repository.ExistsByTaxIdAsync(taxId, entity.Id, cancellationToken))
+        if (!store.IsTenantShared)
         {
-            return Response<SupplierDetailDto>.Fail("DUPLICATE_SUPPLIER", 409);
+            // PerLegalEntity: each company has its own record — the common fields change with `update`, as today (§14).
+            return await SupplierMasterWrite.ApplyAsync(store, current, request.Name, request.Country, request.TaxId, request.Contacts,
+                request.SourceSystem, request.ExternalRef, cancellationToken);
         }
 
-        var expectedVersion = entity.Version;
+        if (SupplierWriteRules.ChangesCommonFields(current, request.Name, request.Country, request.TaxId, request.Contacts))
+        {
+            return Response<SupplierDetailDto>.Fail("MASTER_UPDATE_FORBIDDEN", 403);
+        }
 
-        entity.Name = request.Name.Trim();
-        entity.Country = CreateSupplierHandler.NormalizeCountry(request.Country);
-        entity.TaxId = taxId;
-        entity.Contacts = CreateSupplierHandler.MapContacts(request.Contacts);
-        entity.SourceSystem = request.SourceSystem;
-        entity.ExternalRef = request.ExternalRef;
+        current.SourceSystem = request.SourceSystem;
+        current.ExternalRef = request.ExternalRef;
+        var saved = await store.SaveRelationshipAsync(current, cancellationToken);
+        return saved is null
+            ? Response<SupplierDetailDto>.Fail("CONCURRENCY_CONFLICT", 409)
+            : Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(saved));
+    }
+}
 
-        // Version filtresi ile uygula; arada değiştiyse (lost race) → 409.
-        var ok = await _repository.UpdateAsync(entity, expectedVersion, cancellationToken);
-        if (!ok)
+/// <summary>PATCH with <c>master.update</c> (§14, K-1) — the common fields and the relationship fields.</summary>
+public sealed class UpdateSupplierMasterHandler(ISupplierStore store) : IRequestHandler<UpdateSupplierMasterCommand, Response<SupplierDetailDto>>
+{
+    public async Task<Response<SupplierDetailDto>> Handle(UpdateSupplierMasterCommand request, CancellationToken cancellationToken)
+    {
+        var current = await store.FindAsync(request.SupplierId, cancellationToken);
+        if (current is null)
+        {
+            return Response<SupplierDetailDto>.Fail("UNKNOWN_SUPPLIER", 404);
+        }
+
+        if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != current.Version)
         {
             return Response<SupplierDetailDto>.Fail("CONCURRENCY_CONFLICT", 409);
         }
 
-        return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(entity));
+        return await SupplierMasterWrite.ApplyAsync(store, current, request.Name, request.Country, request.TaxId, request.Contacts,
+            request.SourceSystem, request.ExternalRef, cancellationToken);
+    }
+}
+
+/// <summary>The common-field write both PATCH commands use: duplicate tax number → 409 naming the other supplier.</summary>
+internal static class SupplierMasterWrite
+{
+    public static async Task<Response<SupplierDetailDto>> ApplyAsync(
+        ISupplierStore store, SupplierSnapshot current, string name, string? country, string? taxIdRaw,
+        List<SupplierContactInput>? contacts, string? sourceSystem, string? externalRef, CancellationToken ct)
+    {
+        var normalizedCountry = SupplierWriteRules.NormalizeCountry(country);
+        var taxId = SupplierWriteRules.NormalizeTaxId(taxIdRaw);
+        var taxKeyChanged = !string.Equals(taxId, current.TaxId, StringComparison.Ordinal)
+                            || !string.Equals(normalizedCountry, current.Country, StringComparison.Ordinal);
+        if (taxId is not null && taxKeyChanged
+            && await store.FindDuplicateTaxIdAsync(normalizedCountry, taxId, current.MasterId, ct) is { } other)
+        {
+            return CreateSupplierHandler.Duplicate(other);
+        }
+
+        current.Name = name.Trim();
+        current.Country = normalizedCountry;
+        current.TaxId = taxId;
+        current.Contacts = SupplierWriteRules.MapContacts(contacts);
+        current.SourceSystem = sourceSystem;
+        current.ExternalRef = externalRef;
+
+        try
+        {
+            var saved = await store.SaveMasterAsync(current, ct);
+            return saved is null
+                ? Response<SupplierDetailDto>.Fail("CONCURRENCY_CONFLICT", 409)
+                : Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(saved));
+        }
+        catch (SupplierDuplicateException ex)
+        {
+            return ex.ExistingSupplierId is { } code ? CreateSupplierHandler.Duplicate(code) : Response<SupplierDetailDto>.Fail("DUPLICATE_SUPPLIER", 409);
+        }
     }
 }

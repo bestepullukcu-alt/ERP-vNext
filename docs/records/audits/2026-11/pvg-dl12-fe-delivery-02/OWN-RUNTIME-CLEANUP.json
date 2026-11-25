@@ -1,0 +1,567 @@
+{
+  "measured_utc": "2026-11-21T16:53:00.0195727Z",
+  "own_root": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82",
+  "own_process_query_excluding_current_shell": [],
+  "process_match_count": 0,
+  "no_pid_kill": true,
+  "runtime_removals": [
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\runtime",
+      "file_count": 0,
+      "bytes": null,
+      "entries": [
+        {
+          "Name": "1ccf337d-4f48-43d6-914e-ec2cb16550b4",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1fe04657-5256-4cad-9aa7-a6fec649bb72",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "29bf467b-b740-46c8-860d-759eeec9f78b",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "306c4374-351d-4c62-8a3c-01472852598f",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "348f0e9b-b79c-4d58-82e9-89ae1edd6448",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "369c7399-68ee-4ffb-9e79-1c976bcb5928",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "5cba28ea-8f97-4da5-bfbd-8364d927873a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "77cc2ab5-b1a7-4f8b-a0b4-c1019516b381",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "90965a7c-5d9e-406e-aae4-069e6a3ce390",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "97ebee20-1868-40e4-8156-56bd7a9ffd44",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "a312e90a-2a06-441a-ba31-07686a20ffd7",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "d8fc81d7-9f76-48de-abde-bb89dbf3f016",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "e2a26b4a-fea5-431b-8105-f6f2a90e72ed",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "fd6d6a5c-1a1c-434a-a5ce-ee2a662c2a83",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "MSBuildTemp",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "NuGetScratch",
+          "Length": null,
+          "Attributes": 16
+        }
+      ],
+      "removed": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-fe-evidence\\489a012f050f47f7a888e8a82d33fc82\\runtime2",
+      "file_count": 0,
+      "bytes": null,
+      "entries": [
+        {
+          "Name": "015d3d7c-fc65-463d-808a-b9e7648d03ce",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "02c0648e-4e55-4f9f-9888-9e9f114c964d",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "053e4324-c3cf-418e-ab0e-973523eec586",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "05741e3c-9313-4348-a9b8-920f3e033eea",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "05d4ef7c-c2c8-433b-ab90-ef46f78c7b6e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "060e0f9a-4e61-4e50-b8ca-ea0983a7a20a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "0a6f8ca6-6559-495f-b613-3e7a70a8fdc8",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1a040c52-cf5c-476e-b371-3c05afa244d0",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1ab760bf-e89b-467d-acf3-0d3db46820d1",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1bcd453f-9ae9-4b0a-824f-61ef6e3ae24c",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1e85c3db-e859-46d4-938f-9037c5986051",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "1f305661-a700-4f80-ae36-e1ecc37a06ed",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "26ba3b0a-7a2d-46a3-b227-681cb8e14240",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "296acebe-8940-442a-80a6-45b3010af1d7",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "2de94896-08bc-4c99-985d-0b02c5e6fc6e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "340516b3-50dd-45ad-9e6d-d055b73a6e80",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "395054cf-5e87-45c1-a563-2f35cc5add7a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "3b9a61d5-0d02-4a6f-bb2d-e07198458fb5",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "3d63e614-b4cd-4204-9994-3baec41e3830",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "3d968a9c-da21-4c75-8eff-09850ce5035a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "3eb52017-62d6-4dfc-9a0b-83a3c3eed518",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "48b5a00f-f12c-49e2-bbdb-f4b152882c1f",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "49ad9ac3-adf8-4d55-816a-b618d8f04b99",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "4ad9d93e-f29d-4673-b40e-28575fcf9d1e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "4af714eb-f1b1-4f68-b30d-7a3efb464888",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "4d03451c-ddb1-4e91-ac37-9dc5f5f59b12",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "4e6ab62f-a079-47bf-b81a-184081a95775",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "513d2794-5d3e-49f7-bd61-b074d2540a32",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "54b73053-6466-43ba-bf75-bdab3445100e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "571338f7-33b8-4dfe-b91c-bb6032efbe0e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "5aa30716-9e01-4f9e-ae4a-f04e629cb607",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "5c9bccfa-0e2e-40cf-bc11-628da0a0fc6b",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "5d771816-8964-4377-9b68-6c8f5d204361",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "5e2510e1-2d95-4fab-849f-cbc8e8b83ed4",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "60d8e6c1-6138-4f15-bf04-f5e1e7d2d361",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "6440bb7a-00d2-4cca-8e10-cb755e2edeb7",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "6654d56d-3618-4c7f-a146-aff0de355366",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "68334f96-8880-4cb1-b895-29dd46da34f7",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "69b665c1-7640-450d-9e56-89bf10976b89",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "6d188f1a-5912-4122-b034-550087b82ad1",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "708e0b0c-1a26-4a70-ab0b-6f7ca0ebc912",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "75286f61-67ba-4517-94e7-d66b981d72d2",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "77bd0d4a-da9b-454e-9f26-b6bd74090231",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "7c50d2c0-a900-458f-956c-0beda68e57e5",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "7eadb215-f59c-478d-80c6-f2222e0e58b4",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "7ffa5652-cdde-420f-adac-ca4e96b48c48",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "805bf901-088c-4609-9cd7-40ea44d87bde",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "8210cfa7-0a87-46dc-90da-62decd7e50e4",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "833bafa9-12d2-477b-b9f2-5c1f4c0abac3",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "8baab64e-a4ef-41d7-ba07-020bf9a7b46c",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "919fd1b6-d344-47fe-bfec-556ddc7f2b9e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "9314e86a-7dcf-4fee-8694-4984078cb168",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "94266846-d4f1-4e3f-9956-c6f3f76deb95",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "952c6453-77c6-40e9-ad8e-a97dc69b9f40",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "95665f16-09e1-4fdb-bc81-2103f3721fb6",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "96539669-2849-48a1-bc19-caecdf56530f",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "9cb8fcc3-2303-46ba-9b72-8ccbffe40fc3",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "9db9d599-2125-4bf9-84df-194df557a223",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "9e4286bd-53d8-43d2-a9d0-e4c0143cb0e2",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "9f5b92d9-bc95-4485-93b3-df64c8b49076",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "a4492cfa-a5fd-4e37-bbc1-4241cf3f7d2c",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "a506a3a8-f76a-4c18-be2e-6a2a1231d972",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "a8cf4f77-d6f7-4e83-bbf6-4ca3ee7dffb6",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "abb495b3-56ef-42a2-9395-ed436603a15f",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "ae2c4d80-f7f2-46dc-8e25-fc088c5a7d07",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "ae49e936-2556-44c8-a4e6-7b069db10818",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "af3773df-7edc-4aad-a960-02913490c88b",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "b1cc0c6a-ca96-455e-acd4-c688483210ef",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "b2501e4e-e286-4a3e-a295-82fa39f76e3a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "b28d61a0-b56f-4607-8b26-ab6b5e7952bb",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "bb246619-bdf6-474c-ad78-905d16113c01",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "c16468d8-49ae-4b6f-b488-637f8210bd91",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "c1adc0d3-e18e-4483-9498-307fc15237e0",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "c1ea96d9-9b6b-4d46-89b2-dfa6f18cbaf8",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "c25e67e8-af20-464c-8f68-5a234df96112",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "c6972061-96d1-4b1a-9b8a-8d12cabb70a0",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "cbc0474e-9092-4bdf-9a63-a0b83a9fc2ff",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "ce41374a-edcd-4b04-b5a7-8d320de88d7e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "d58c9b66-d086-4a17-bde9-51b622a3a8aa",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "d71b8f8f-49dd-45b5-b488-5f6ffeb10c0e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "dc06f77f-dd27-4c9f-96af-d3f4c71ea45e",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "dd02fe3d-db1b-47e8-ac15-a723bcabd61d",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "e1e256e9-a506-4fab-98b7-4ee14e0e65cc",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "e7513296-1509-4fad-9f9d-5dd3ac972099",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "e986bc3d-4e30-44d8-b510-062719376c86",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "ec4ecc94-d26c-47ec-8172-10cf06320d4f",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "ef895e42-13b2-42d2-88c5-76d077d5e690",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "f36ef695-3ab5-448c-8758-56e2fca4812a",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "f5696b55-1c27-48fb-b94f-7dd2844d266c",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "f738035c-a585-4bf3-bf33-4038ce24c3ad",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "MSBuildTemp",
+          "Length": null,
+          "Attributes": 16
+        },
+        {
+          "Name": "NuGetScratch",
+          "Length": null,
+          "Attributes": 16
+        }
+      ],
+      "removed": true
+    }
+  ],
+  "raw_evidence_and_source_clones_retained": true,
+  "worker_untouched": true
+}

@@ -105,6 +105,7 @@ public sealed class PvgCaseIntakeApiContractTests
         {
             await harness.Store.AddAsync(
                 new PvgPersistenceTenantScope(TenantA),
+                "seed-actor-fake",
                 StoredIntake(TenantA, PvgIntakeStatus.IntakeCreated, FixtureReceivedAtUtc.AddMinutes(index)));
         }
 
@@ -155,12 +156,12 @@ public sealed class PvgCaseIntakeApiContractTests
         var scopeB = new PvgPersistenceTenantScope(TenantB);
         for (var index = 0; index < 2; index++)
         {
-            await harness.Store.AddAsync(scopeA, StoredIntake(TenantA, PvgIntakeStatus.IntakeCreated, FixtureReceivedAtUtc));
+            await harness.Store.AddAsync(scopeA, "seed-actor-fake", StoredIntake(TenantA, PvgIntakeStatus.IntakeCreated, FixtureReceivedAtUtc));
         }
 
         for (var index = 0; index < 3; index++)
         {
-            await harness.Store.AddAsync(scopeB, StoredIntake(TenantB, PvgIntakeStatus.IntakeCreated, FixtureReceivedAtUtc));
+            await harness.Store.AddAsync(scopeB, "seed-actor-fake", StoredIntake(TenantB, PvgIntakeStatus.IntakeCreated, FixtureReceivedAtUtc));
         }
 
         var listA = await harness.ListAsync(TenantA);
@@ -883,7 +884,7 @@ public sealed class PvgCaseIntakeApiContractTests
         }
 
         public async Task<string> AddLinkedAsync(PvgReporterSource source, string sourceId) =>
-            await Store.AddAsync(new PvgPersistenceTenantScope(TenantA), LinkedIntake(TenantA, source, sourceId));
+            await Store.AddAsync(new PvgPersistenceTenantScope(TenantA), "seed-actor-fake", LinkedIntake(TenantA, source, sourceId));
 
         public async Task<PvgPersistedIntakeDraft> StoredAsync(string id)
         {

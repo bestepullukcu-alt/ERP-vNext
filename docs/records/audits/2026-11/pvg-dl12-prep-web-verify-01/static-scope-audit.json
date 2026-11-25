@@ -1,0 +1,5 @@
+{
+  "workflow_exact_two_steps_only": true,
+  "single_aliased_project_reference_only": true,
+  "diff_check_exit": 0
+}

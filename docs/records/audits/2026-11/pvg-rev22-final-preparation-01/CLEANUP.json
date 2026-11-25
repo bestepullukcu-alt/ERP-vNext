@@ -1,0 +1,51 @@
+{
+  "recorded_utc": "2026-11-23T13:04:33.901488+00:00",
+  "only_named_generated_private_clones_removed": [
+    {
+      "private_clone": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-uic-nu1li15d",
+      "source_head": "6361654b6df9334803c3651231c754fe1d0685ad",
+      "private_common_git_confirmed": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-uic-nu1li15d\\.git",
+      "reparse_points": 0,
+      "status_before": [],
+      "all_native_outputs_preserved": true,
+      "deleted": true
+    },
+    {
+      "private_clone": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-qv-lf-4r4608bf",
+      "source_head": "781ffe8eef92054265d7eedbe182c736584a191d",
+      "private_common_git_confirmed": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-r22-qv-lf-4r4608bf\\.git",
+      "reparse_points": 0,
+      "status_before": [
+        "?? docs/records/audits/2026-11/pvg-rev22-queue-validation-02/run-record-v1.json",
+        "?? docs/records/audits/2026-11/pvg-rev22-queue-validation-02/stderr.txt",
+        "?? docs/records/audits/2026-11/pvg-rev22-queue-validation-02/stdout.txt"
+      ],
+      "all_native_outputs_preserved": true,
+      "deleted": true
+    }
+  ],
+  "managed_workers_preserved_until_main": [
+    {
+      "kind": "views",
+      "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-views\\ERP-vNext-git",
+      "head": "3af28aa145ee175d82ec8f0b188f2eee46b6d4ff",
+      "clean": true,
+      "CT_reachable": true,
+      "main_reachable": false,
+      "archived": false,
+      "reason": "S-95/approvedplan: only CT branch, archive after main reachability; no unpreserved WIP cleanup"
+    },
+    {
+      "kind": "shared",
+      "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-r22-shared\\ERP-vNext-git",
+      "head": "ba132012ef03c1b9c55c754c2b3e2406727106c0",
+      "clean": true,
+      "CT_reachable": true,
+      "main_reachable": false,
+      "archived": false,
+      "reason": "S-95/approvedplan: only CT branch, archive after main reachability; no unpreserved WIP cleanup"
+    }
+  ],
+  "other_workers_and_old_WIN_WIP_untouched": true,
+  "shared_sdk_node_gh_dependency_feed_untouched": true
+}

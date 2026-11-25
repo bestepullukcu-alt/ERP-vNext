@@ -1,0 +1,61 @@
+{
+  "kind": "Lossless INVALID01 nativeCRLF and metadata-path-error observations; no hash field rewritten; proper POSIXspec verify rejected solely producer hash",
+  "files": [
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-validation-01/run-record-v1.json",
+      "raw_bytes": 991,
+      "raw_sha256": "d5886a4d719cc6210ccca1c59aaab170a65eaaaa5877938363fb5a47e01ed13e",
+      "raw_base64": "ewogImFyZ3YiOiBbCiAgIkM6L1VzZXJzL2VwZW5jL0FwcERhdGEvTG9jYWwvUHJvZ3JhbXMvUHl0aG9uL1B5dGhvbjMxMy9weXRob24uZXhlIiwKICAiLUIiLAogICJzY3JpcHRzL2N0X3F1ZXVlLnB5IiwKICAidmFsaWRhdGUiLAogICItLXF1ZXVlIiwKICAicHZnIgogXSwKICJhcnRpZmFjdHMiOiBbCiAgewogICAiYnl0ZXMiOiAwLAogICAicGF0aCI6ICJkb2NzL3JlY29yZHMvYXVkaXRzLzIwMjYtMTEvcHZnLXJldjIyLXF1ZXVlLXZhbGlkYXRpb24tMDEvc3RkZXJyLnR4dCIsCiAgICJzaGEyNTYiOiAiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIKICB9LAogIHsKICAgImJ5dGVzIjogNjQsCiAgICJwYXRoIjogImRvY3MvcmVjb3Jkcy9hdWRpdHMvMjAyNi0xMS9wdmctcmV2MjItcXVldWUtdmFsaWRhdGlvbi0wMS9zdGRvdXQudHh0IiwKICAgInNoYTI1NiI6ICI3MDYwMjE2ZmEwODI2OTU5NWFjYzFiNTZiZTE0OGI5NGQxNjViYTI1MDQ1ZGFjZTFkZTUzNTk5NzkxNDEwNmJlIgogIH0KIF0sCiAiY29tbWl0IjogIjc4MWZmZThlZWY5MjA1NDI2NWQ3ZWVkYmUxODJjNzM2NTg0YTE5MWQiLAogImN3ZCI6ICIuIiwKICJleGl0IjogMCwKICJmaW5pc2hlZF91dGMiOiAiMjAyNi0xMS0yM1QxMjoyNzoxMVoiLAogImZvcm1hdCI6ICJydW4tcmVjb3JkLXYxIiwKICJvdXQiOiAiZG9jcy9yZWNvcmRzL2F1ZGl0cy8yMDI2LTExL3B2Zy1yZXYyMi1xdWV1ZS12YWxpZGF0aW9uLTAxIiwKICJzdGFydGVkX3V0YyI6ICIyMDI2LTExLTIzVDEyOjA1OjM4WiIsCiAidG9vbCI6IHsKICAicGF0aCI6ICJzY3JpcHRzL3J1bl9yZWNvcmQucHkiLAogICJzaGEyNTYiOiAiNTRjM2I2NDcwNjViNTIyMTAyZTFkMTJjZmRiZTUyMmM1OGUwMDk2MDYwYTM5MjQ0MzAxYmMyMmIxYmEyMTBiMiIKIH0sCiAidHJlZSI6ICI0OWFlNTZkZTJhYTM1YmY2NTE1M2JiYmFjOTI3ZjEwMTFjMTk5MGNhIgp9Cg==",
+      "canonical_git_lf_sha256": "d5886a4d719cc6210ccca1c59aaab170a65eaaaa5877938363fb5a47e01ed13e"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-validation-01/stdout.txt",
+      "raw_bytes": 64,
+      "raw_sha256": "7060216fa08269595acc1b56be148b94d165ba25045dace1de535997914106be",
+      "raw_base64": "T0sgcHZnICjDp2FsxLHFn21hIGHEn2FjxLEpOiAwIGhhdGEsIDAgdXlhcsSxOyB0YWJhbiBjMjc2ODZmZjMNCg==",
+      "canonical_git_lf_sha256": "6816a95afd22acfa1caf711c52a4adfbd9b76aaf8b41c4169ce758cb38778d03"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-validation-01/stderr.txt",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_base64": "",
+      "canonical_git_lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-verification-01/PATH-REJECTED.stdout.txt",
+      "raw_bytes": 216,
+      "raw_sha256": "7abeb5087339b3a574750748f6390485b496db31836c7d6479350390b2a89939",
+      "raw_base64": "RU5HRUwga2/Fn3Uga2F5ZMSxIGtlbmRpIGRpemluaW5kZSBkZcSfaWwgKGRvY3NccmVjb3Jkc1xhdWRpdHNcMjAyNi0xMVxwdmctcmV2MjItcXVldWUtdmFsaWRhdGlvbi0wMVxydW4tcmVjb3JkLXYxLmpzb24pDQpFTkdFTCBrb8WfdSBrYXlkxLFuxLFuIGFyYcOnIMO2emV0aSBrb2QgY29tbWl0J2luZGVraSBzY3JpcHRzL3J1bl9yZWNvcmQucHkgaWxlIGF5bsSxIGRlxJ9pbA0K",
+      "canonical_git_lf_sha256": "600591c0b2cf9ba353358882fab3528b5dfd973375b73af692a9ad9559765d75"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-verification-01/PATH-REJECTED.stderr.txt",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_base64": "",
+      "canonical_git_lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-verification-01/PATH-REJECTED.capture.json",
+      "raw_bytes": 509,
+      "raw_sha256": "622df84204765bf9db11e70a39415b1f0b785a6995481d09da18a975d631cee3",
+      "raw_base64": "ewogICJhcmd2IjogWwogICAgIkM6L1VzZXJzL2VwZW5jL0FwcERhdGEvTG9jYWwvUHJvZ3JhbXMvUHl0aG9uL1B5dGhvbjMxMy9weXRob24uZXhlIiwKICAgICItQiIsCiAgICAic2NyaXB0cy9ydW5fcmVjb3JkLnB5IiwKICAgICJ2ZXJpZnkiLAogICAgImRvY3NcXHJlY29yZHNcXGF1ZGl0c1xcMjAyNi0xMVxccHZnLXJldjIyLXF1ZXVlLXZhbGlkYXRpb24tMDFcXHJ1bi1yZWNvcmQtdjEuanNvbiIKICBdLAogICJleGl0X2NvZGUiOiAxLAogICJzdGRvdXRfc2hhMjU2IjogIjdhYmViNTA4NzMzOWIzYTU3NDc1MDc0OGY2MzkwNDg1YjQ5NmRiMzE4MzZjN2Q2NDc5MzUwMzkwYjJhODk5MzkiLAogICJzdGRlcnJfc2hhMjU2IjogImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLAogICJhY3R1YWxfcXVldWVfY29tbWFuZF9leGl0IjogMCwKICAibm90X2FfdmFsaWRhdGVkX2FjY2VwdGFuY2VfcnVuX3JlY29yZCI6IHRydWUKfQo=",
+      "canonical_git_lf_sha256": "622df84204765bf9db11e70a39415b1f0b785a6995481d09da18a975d631cee3"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-verification-01/VERIFY-REJECTED.stdout.txt",
+      "raw_bytes": 93,
+      "raw_sha256": "281431e6c37885342c2c9c594beb61d356d418cfb65d1cea47829ce5585f169b",
+      "raw_base64": "RU5HRUwga2/Fn3Uga2F5ZMSxbsSxbiBhcmHDpyDDtnpldGkga29kIGNvbW1pdCdpbmRla2kgc2NyaXB0cy9ydW5fcmVjb3JkLnB5IGlsZSBheW7EsSBkZcSfaWwK",
+      "canonical_git_lf_sha256": "281431e6c37885342c2c9c594beb61d356d418cfb65d1cea47829ce5585f169b"
+    },
+    {
+      "path": "docs/records/audits/2026-11/pvg-rev22-queue-verification-01/VERIFY-REJECTED.stderr.txt",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_base64": "",
+      "canonical_git_lf_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

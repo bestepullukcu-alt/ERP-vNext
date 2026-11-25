@@ -1,0 +1,18 @@
+{
+  "kind": "Integrity verification of actual FAIL report, not a passing dispatch",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    ".antigravity/scripts/verify_module_id.py",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+    "--check-report",
+    "docs\\records\\audits\\2026-11\\pvg-rev22-dispatch-01\\VIEWS-NORMAL-GATE.txt"
+  ],
+  "exit_code": 0,
+  "stdout": "RAPOR GEÇERLİ: sonuç: engel — 1 bulgu\n",
+  "stderr": "",
+  "normal_actual_exit": 1,
+  "report_raw_sha256": "1abe072836aa43f49f8cc53b3f40d15494a3c228810c988a91c3274995bb0295"
+}

@@ -1,0 +1,5 @@
+PROMPT İNCELEME DENEMESİ v1 — dağıtım izni değil (kayıt commit'lenmedi)
+prompt-sha256: b81004a094db43d8d6380f364ba4742e7ee5b14ef6b5a2a1012e23d7527f63d0
+kaynak-paketi-sha256: d7f51b5d7120f9ed50870912a9e4e48d1e8ef27b6c729adc690b3d99c946aaf0 · 29 dosya
+sonuç: kaydın kendi kuralları geçti — commit'leyin, sonra check --review YOL@COMMIT ile dağıtım denetimi
+çıkış: 0

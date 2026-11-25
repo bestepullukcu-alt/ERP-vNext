@@ -1,0 +1,54 @@
+{
+  "kind": "Actual ordinary NORMAL dispatch check; --prepare absent; product not started",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/prompt_gate.py",
+    "check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL7-CI-SHARED-01-v1.0.md",
+    "--queue",
+    "pvg",
+    "--review",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-REV22-SHARED-v1.0.md@b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf"
+  ],
+  "started_utc": "2026-11-23T10:28:05.942361+00:00",
+  "completed_utc": "2026-11-23T10:51:42.538180+00:00",
+  "exit_code": 1,
+  "stdout_sha256": "f6dddc2d90519c4bade261905fe90d369455a9bcc7a17c9d09abe06a3b8338af",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "before_root_head": "b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf",
+  "after_root_head": "b8ffc608986b2b5cfacdf229e7a90eb1fe198ecf",
+  "before_source_sha256": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+    "execution/domains/pharmacovigilance/domain-config.md": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+    "execution/approvals/approvals.tsv": "afabd189e1ccecb94be0a60679b1475c75543f25c175005f0da248072545bcf4",
+    "execution/approvals/reviews.tsv": "c2af7062bcf7bb80763f13b915bf1fc2e370e576b5cb078017dfc555742c1ce7",
+    "execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv": "8475ef22ae3b835882359dd5cae126ffd5343b6c6c135368e5c1de3c7fc31c68",
+    "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL7-CI-SHARED-01-v1.0.md": "11f3482f777d8f05dafe871bbadbd49d31173f9b7eb5fc4f8d5e81119b62ce95",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-REV22-SHARED-v1.0.md": "cc7ff2ff109a34735c31d188a0291f89a1437db144077d8f0d809f07a525aac7"
+  },
+  "after_source_sha256": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+    "execution/domains/pharmacovigilance/domain-config.md": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+    "execution/approvals/approvals.tsv": "afabd189e1ccecb94be0a60679b1475c75543f25c175005f0da248072545bcf4",
+    "execution/approvals/reviews.tsv": "c2af7062bcf7bb80763f13b915bf1fc2e370e576b5cb078017dfc555742c1ce7",
+    "execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv": "8475ef22ae3b835882359dd5cae126ffd5343b6c6c135368e5c1de3c7fc31c68",
+    "execution/domains/pharmacovigilance/work-packs/prompts/WP-0230-DL7-CI-SHARED-01-v1.0.md": "11f3482f777d8f05dafe871bbadbd49d31173f9b7eb5fc4f8d5e81119b62ce95",
+    "docs/records/reviews/MOD-0230/PROMPT-REVIEW-REV22-SHARED-v1.0.md": "cc7ff2ff109a34735c31d188a0291f89a1437db144077d8f0d809f07a525aac7"
+  },
+  "before_worker": {
+    "head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+    "branch": "feature/pvg/mod-0230-r22-shared-ci",
+    "status": ""
+  },
+  "after_worker": {
+    "head": "58b374d02ca4b022334b0a2563ddc7df11eb0116",
+    "branch": "feature/pvg/mod-0230-r22-shared-ci",
+    "status": ""
+  },
+  "root_head_unchanged": true,
+  "source_unchanged": true,
+  "worker_unchanged": true
+}

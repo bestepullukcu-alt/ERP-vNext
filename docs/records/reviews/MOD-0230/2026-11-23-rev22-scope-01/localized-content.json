@@ -1,0 +1,223 @@
+{
+  "status": "DRAFT; owner and language review pending; no implementation authority",
+  "additions_by_language": {
+    "en": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "Consult intake drafts. Operational use is not yet available.",
+        "Help.CASEINTAKETRIAGE.Audience": "Authorized pharmacovigilance intake reviewers.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "Review the available drafts",
+        "Help.CASEINTAKETRIAGE.Step1": "Use the filters, then open a draft’s details when available. If access is blocked, read the displayed reason and contact the responsible administrator.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "Prepare an intake draft using synthetic data only. Operational use is not yet available.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "Authorized pharmacovigilance intake reviewers.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "Review the draft fields",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "Use synthetic data only; do not enter real patient data. Saving is not yet available. Read any displayed reason and contact the responsible administrator if you need help.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "Review the loaded values of an intake draft before changing them. Operational use is not yet available.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "Authorized pharmacovigilance intake reviewers.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "Review the loaded values",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "Use synthetic data only and review all loaded values. Updating is not yet available; a blocked request does not save changes.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "Inspect an intake draft’s triage and routing status. Operational use is not yet available.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "Authorized pharmacovigilance intake reviewers.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "Review the status",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "Review the draft’s status before choosing an action. Triage and routing are not yet available."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "Case Intake & Triage",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "Create Intake Draft",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "Update Intake Draft",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "Intake Draft Details"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "Triage",
+        "ActionVerb_Route": "Route"
+      }
+    },
+    "tr": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "Vaka kabul taslaklarını inceleyin. Operasyonel kullanım henüz açık değildir.",
+        "Help.CASEINTAKETRIAGE.Audience": "Yetkili farmakovijilans vaka kabul inceleyicileri.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "Mevcut taslakları inceleyin",
+        "Help.CASEINTAKETRIAGE.Step1": "Filtreleri kullanın, ardından varsa bir taslağın ayrıntılarını açın. Erişim engellenirse gösterilen nedeni okuyun ve sorumlu yöneticiyle iletişime geçin.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "Yalnızca sentetik verilerle bir vaka kabul taslağı hazırlayın. Operasyonel kullanım henüz açık değildir.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "Yetkili farmakovijilans vaka kabul inceleyicileri.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "Taslak alanlarını inceleyin",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "Yalnızca sentetik veri kullanın; gerçek hasta verisi girmeyin. Kaydetme işlemi henüz kullanılamaz. Gösterilen nedeni okuyun ve yardıma ihtiyacınız varsa sorumlu yöneticiyle iletişime geçin.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "Bir vaka kabul taslağının yüklenen değerlerini değiştirmeden önce inceleyin. Operasyonel kullanım henüz açık değildir.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "Yetkili farmakovijilans vaka kabul inceleyicileri.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "Yüklenen değerleri inceleyin",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "Yalnızca sentetik veri kullanın ve yüklenen tüm değerleri inceleyin. Güncelleme işlemi henüz kullanılamaz; engellenen istek değişiklikleri kaydetmez.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "Bir vaka kabul taslağının triyaj ve yönlendirme durumunu inceleyin. Operasyonel kullanım henüz açık değildir.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "Yetkili farmakovijilans vaka kabul inceleyicileri.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "Durumu inceleyin",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "Bir eylem seçmeden önce taslağın durumunu inceleyin. Triyaj ve yönlendirme işlemleri henüz kullanılamaz."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "Vaka Girişi ve Triyaj",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "Giriş Taslağı Oluştur",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "Giriş Taslağını Güncelle",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "Giriş Taslağı Ayrıntıları"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "Triyaj Yap",
+        "ActionVerb_Route": "Yönlendir"
+      }
+    },
+    "fr": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "Consultez les brouillons de réception des cas. L’utilisation opérationnelle n’est pas encore disponible.",
+        "Help.CASEINTAKETRIAGE.Audience": "Personnes autorisées à examiner la réception des cas de pharmacovigilance.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "Examiner les brouillons disponibles",
+        "Help.CASEINTAKETRIAGE.Step1": "Utilisez les filtres, puis ouvrez les détails d’un brouillon s’ils sont disponibles. Si l’accès est bloqué, lisez le motif affiché et contactez l’administrateur responsable.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "Préparez un brouillon de réception d’un cas avec des données synthétiques uniquement. L’utilisation opérationnelle n’est pas encore disponible.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "Personnes autorisées à examiner la réception des cas de pharmacovigilance.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "Examiner les champs du brouillon",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "Utilisez uniquement des données synthétiques ; ne saisissez aucune donnée réelle de patient. L’enregistrement n’est pas encore disponible. Lisez tout motif affiché et contactez l’administrateur responsable si vous avez besoin d’aide.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "Vérifiez les valeurs chargées d’un brouillon de réception d’un cas avant de les modifier. L’utilisation opérationnelle n’est pas encore disponible.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "Personnes autorisées à examiner la réception des cas de pharmacovigilance.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "Vérifier les valeurs chargées",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "Utilisez uniquement des données synthétiques et vérifiez toutes les valeurs chargées. La mise à jour n’est pas encore disponible ; une demande bloquée n’enregistre aucune modification.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "Examinez l’état du triage et de l’orientation d’un brouillon de réception d’un cas. L’utilisation opérationnelle n’est pas encore disponible.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "Personnes autorisées à examiner la réception des cas de pharmacovigilance.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "Vérifier le statut",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "Vérifiez le statut du brouillon avant de choisir une action. Le triage et l’orientation ne sont pas encore disponibles."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "Réception des Cas et Triage",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "Créer un Brouillon de Réception",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "Mettre à Jour le Brouillon de Réception",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "Détails du Brouillon de Réception"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "Effectuer le Triage",
+        "ActionVerb_Route": "Orienter"
+      }
+    },
+    "es": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "Consulte los borradores de recepción de casos. El uso operativo aún no está disponible.",
+        "Help.CASEINTAKETRIAGE.Audience": "Revisores autorizados de recepción de casos de farmacovigilancia.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "Revisar los borradores disponibles",
+        "Help.CASEINTAKETRIAGE.Step1": "Utilice los filtros y abra los detalles de un borrador cuando estén disponibles. Si el acceso está bloqueado, lea el motivo mostrado y contacte con el administrador responsable.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "Prepare un borrador de recepción de un caso únicamente con datos sintéticos. El uso operativo aún no está disponible.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "Revisores autorizados de recepción de casos de farmacovigilancia.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "Revisar los campos del borrador",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "Utilice únicamente datos sintéticos; no introduzca datos reales de pacientes. La función de guardar aún no está disponible. Lea cualquier motivo mostrado y contacte con el administrador responsable si necesita ayuda.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "Revise los valores cargados de un borrador de recepción de un caso antes de modificarlos. El uso operativo aún no está disponible.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "Revisores autorizados de recepción de casos de farmacovigilancia.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "Revisar los valores cargados",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "Utilice únicamente datos sintéticos y revise todos los valores cargados. La actualización aún no está disponible; una solicitud bloqueada no guarda los cambios.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "Inspeccione el estado del triaje y la derivación de un borrador de recepción de un caso. El uso operativo aún no está disponible.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "Revisores autorizados de recepción de casos de farmacovigilancia.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "Revisar el estado",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "Revise el estado del borrador antes de elegir una acción. El triaje y la derivación aún no están disponibles."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "Recepción de Casos y Triaje",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "Crear Borrador de Recepción",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "Actualizar Borrador de Recepción",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "Detalles del Borrador de Recepción"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "Realizar Triaje",
+        "ActionVerb_Route": "Derivar"
+      }
+    },
+    "zh": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "查看病例接收草稿。目前尚不能用于实际业务。",
+        "Help.CASEINTAKETRIAGE.Audience": "获授权的药物警戒病例接收审核人员。",
+        "Help.CASEINTAKETRIAGE.Step1Title": "查看可用草稿",
+        "Help.CASEINTAKETRIAGE.Step1": "使用筛选条件，然后在有可用草稿时打开其详情。如果访问被阻止，请阅读显示的原因并联系负责的管理员。",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "仅使用合成数据准备病例接收草稿。目前尚不能用于实际业务。",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "获授权的药物警戒病例接收审核人员。",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "查看草稿字段",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "仅使用合成数据，请勿输入真实患者数据。目前尚不能保存。请阅读显示的原因，如需帮助，请联系负责的管理员。",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "更改病例接收草稿之前，请检查已加载的值。目前尚不能用于实际业务。",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "获授权的药物警戒病例接收审核人员。",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "检查已加载的值",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "仅使用合成数据，并检查所有已加载的值。目前尚不能更新；被阻止的请求不会保存更改。",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "检查病例接收草稿的分诊和转交状态。目前尚不能用于实际业务。",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "获授权的药物警戒病例接收审核人员。",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "检查状态",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "选择操作前，请检查草稿状态。目前尚不能执行分诊和转交操作。"
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "病例接收与分诊",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "创建接收草稿",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "更新接收草稿",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "接收草稿详情"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "分诊",
+        "ActionVerb_Route": "转交"
+      }
+    },
+    "ar": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "اطّلع على مسودات استقبال الحالات. الاستخدام التشغيلي غير متاح بعد.",
+        "Help.CASEINTAKETRIAGE.Audience": "المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "مراجعة المسودات المتاحة",
+        "Help.CASEINTAKETRIAGE.Step1": "استخدم عوامل التصفية، ثم افتح تفاصيل المسودة عند توفرها. إذا حُظر الوصول، فاقرأ السبب المعروض واتصل بالمسؤول المختص.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "أعدّ مسودة استقبال حالة باستخدام بيانات اصطناعية فقط. الاستخدام التشغيلي غير متاح بعد.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "مراجعة حقول المسودة",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "استخدم بيانات اصطناعية فقط؛ ولا تُدخل بيانات مرضى حقيقية. الحفظ غير متاح بعد. اقرأ أي سبب معروض واتصل بالمسؤول المختص إذا احتجت إلى مساعدة.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "راجع القيم المحمّلة لمسودة استقبال حالة قبل تغييرها. الاستخدام التشغيلي غير متاح بعد.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "مراجعة القيم المحمّلة",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "استخدم بيانات اصطناعية فقط وراجع جميع القيم المحمّلة. التحديث غير متاح بعد؛ والطلب المحظور لا يحفظ التغييرات.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "افحص حالة الفرز والتوجيه لمسودة استقبال حالة. الاستخدام التشغيلي غير متاح بعد.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "المراجعون المخولون بمراجعة استقبال حالات التيقظ الدوائي.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "مراجعة الحالة",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "راجع حالة المسودة قبل اختيار إجراء. الفرز والتوجيه غير متاحين بعد."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "استقبال الحالات والفرز",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "إنشاء مسودة استقبال",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "تحديث مسودة الاستقبال",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "تفاصيل مسودة الاستقبال"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "إجراء الفرز",
+        "ActionVerb_Route": "توجيه"
+      }
+    },
+    "ru": {
+      "PageHelpResource": {
+        "Help.CASEINTAKETRIAGE.Purpose": "Просматривайте черновики приёма случаев. Операционное использование пока недоступно.",
+        "Help.CASEINTAKETRIAGE.Audience": "Уполномоченные специалисты по проверке приёма случаев фармаконадзора.",
+        "Help.CASEINTAKETRIAGE.Step1Title": "Просмотреть доступные черновики",
+        "Help.CASEINTAKETRIAGE.Step1": "Используйте фильтры, затем откройте сведения о черновике, если они доступны. Если доступ заблокирован, прочитайте указанную причину и обратитесь к ответственному администратору.",
+        "Help.CASEINTAKETRIAGECREATE.Purpose": "Подготовьте черновик приёма случая, используя только синтетические данные. Операционное использование пока недоступно.",
+        "Help.CASEINTAKETRIAGECREATE.Audience": "Уполномоченные специалисты по проверке приёма случаев фармаконадзора.",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title": "Проверить поля черновика",
+        "Help.CASEINTAKETRIAGECREATE.Step1": "Используйте только синтетические данные; не вводите реальные данные пациентов. Сохранение пока недоступно. Прочитайте указанную причину и при необходимости обратитесь за помощью к ответственному администратору.",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose": "Проверьте загруженные значения черновика приёма случая перед их изменением. Операционное использование пока недоступно.",
+        "Help.CASEINTAKETRIAGEEDIT.Audience": "Уполномоченные специалисты по проверке приёма случаев фармаконадзора.",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title": "Проверить загруженные значения",
+        "Help.CASEINTAKETRIAGEEDIT.Step1": "Используйте только синтетические данные и проверьте все загруженные значения. Обновление пока недоступно; заблокированный запрос не сохраняет изменения.",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose": "Проверьте статус триажа и маршрутизации черновика приёма случая. Операционное использование пока недоступно.",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience": "Уполномоченные специалисты по проверке приёма случаев фармаконадзора.",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title": "Проверить статус",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1": "Проверьте статус черновика перед выбором действия. Триаж и маршрутизация пока недоступны."
+      },
+      "SharedResource": {
+        "Nav.Page.CASEINTAKETRIAGE": "Приём Случаев и Триаж",
+        "Nav.Page.CASEINTAKETRIAGECREATE": "Создать Черновик Приёма",
+        "Nav.Page.CASEINTAKETRIAGEEDIT": "Обновить Черновик Приёма",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS": "Сведения о Черновике Приёма"
+      },
+      "RoleAssignmentsIndex": {
+        "ActionVerb_Triage": "Выполнить Триаж",
+        "ActionVerb_Route": "Направить"
+      }
+    }
+  },
+  "existing_value_changes": [
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+      "key": "Nav.Domain.PHARMACOVIGILANCE",
+      "old_value": "Pharmacovigilance",
+      "proposed_value": "Pharmacovigilance (surveillance des médicaments)"
+    }
+  ]
+}

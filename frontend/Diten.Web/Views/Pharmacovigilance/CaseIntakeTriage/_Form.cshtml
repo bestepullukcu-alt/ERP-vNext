@@ -67,8 +67,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="SourceReference">@Localizer["SourceReference"] <span class="text-danger">*</span></label>
-                            <input class="form-control" id="SourceReference" name="SourceReference" maxlength="128" required />
+                            <label class="form-label" for="SourceReference">@Localizer["SourceReference"] @if (!isEdit) { <span class="text-danger">*</span> }</label>
+                            <input class="form-control" id="SourceReference" name="SourceReference" maxlength="128" required="@(!isEdit)" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="ReceivedAtUtc">@Localizer["ReceivedAtUtc"] <span class="text-danger">*</span></label>
@@ -103,8 +103,8 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label" for="PatientSubjectCode">@Localizer["PatientSubjectCode"] <span class="text-danger">*</span></label>
-                            <input class="form-control" id="PatientSubjectCode" name="PatientSubjectCode" maxlength="128" required />
+                            <label class="form-label" for="PatientSubjectCode">@Localizer["PatientSubjectCode"] @if (!isEdit) { <span class="text-danger">*</span> }</label>
+                            <input class="form-control" id="PatientSubjectCode" name="PatientSubjectCode" maxlength="128" required="@(!isEdit)" />
                         </div>
                         <div class="col-12">
                             <label class="form-label" for="ReporterContactSummary">@Localizer["ReporterContactSummary"]</label>

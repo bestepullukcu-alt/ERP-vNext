@@ -1,0 +1,28 @@
+{
+  "frozen_head": "788047137bdc3d127771434608d28b8f205611a6",
+  "manifest_sha256": "7cc0bbbceeb83da4417e871b0879f0cfcb99fd7b7fe45058f8202d289d36b730",
+  "source_preexisting_bin_obj": false,
+  "build_start_epoch": 1795198295.81342,
+  "assemblies": [
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot\\frontend\\Diten.Web.Tests\\bin\\Debug\\net8.0\\Diten.Web.Tests.dll",
+      "sha256": "03eefd6fdcec69537ea7c0934054c2169cf9e1e3d8adec20952bd9e3dee0780d",
+      "mtime_epoch": 1795198376.6434734,
+      "created_in_fresh_snapshot": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot\\frontend\\Diten.Web\\bin\\Debug\\net8.0\\Diten.Web.dll",
+      "sha256": "a293b7428673ed38dca965563cde65b534939a667b2a36b7f0f1de26e5473c96",
+      "mtime_epoch": 1795198368.7272785,
+      "created_in_fresh_snapshot": true
+    },
+    {
+      "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot\\services\\Diten.PvgService\\src\\Diten.PvgService.Api\\bin\\Debug\\net8.0\\Diten.PvgService.Api.dll",
+      "sha256": "aa802c826149d4d6a8fc7d5f0cd28a8962ac9984b7aaac24c16dca10f15e071e",
+      "mtime_epoch": 1795198309.7315714,
+      "created_in_fresh_snapshot": true
+    }
+  ],
+  "trx_test_storage_count": 62,
+  "all_storage_points_to_fresh_test_assembly": true
+}

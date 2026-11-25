@@ -1,0 +1,102 @@
+[
+  {
+    "name": "dotnet-version",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 20168,
+    "exit": 0,
+    "start_epoch": 1795198290.4831867,
+    "seconds": 0.365,
+    "log_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+  },
+  {
+    "name": "node-version",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\node22\\node-v22.23.5-win-x64\\node.exe",
+      "--version"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 10072,
+    "exit": 0,
+    "start_epoch": 1795198290.850431,
+    "seconds": 0.051,
+    "log_sha256": "6aff48828de66fbac1ebde4c0c96dd197aa1013dc9964508988344265818e783"
+  },
+  {
+    "name": "restore",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "restore",
+      "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "--source",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\empty-feed",
+      "--ignore-failed-sources",
+      "-p:NuGetAudit=false"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 15584,
+    "exit": 0,
+    "start_epoch": 1795198290.904325,
+    "seconds": 4.907,
+    "log_sha256": "88802db4d20cb9cdb291d30c96fdbb5a6827a08ff9941a652c8cc4ac5d2ed93e"
+  },
+  {
+    "name": "integration-tests",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe",
+      "test",
+      "frontend/Diten.Web.Tests/Diten.Web.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore",
+      "--filter",
+      "FullyQualifiedName~PvgCaseIntakeTriageWebTests",
+      "--logger",
+      "trx;LogFileName=integration.trx",
+      "--results-directory",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 17552,
+    "exit": 0,
+    "start_epoch": 1795198295.81342,
+    "seconds": 289.361,
+    "log_sha256": "ca9ecf70b240309eb2197b777fb5f58b9787df800dbad7ee33fb424657b3facf"
+  },
+  {
+    "name": "skip-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot\\scripts\\check_trx_no_skipped.py",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\integration.trx"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 5976,
+    "exit": 0,
+    "start_epoch": 1795198585.3395026,
+    "seconds": 0.163,
+    "log_sha256": "ab79e9894f567bfbac8fecf134945fd76853458aa7a131a55669b34e1ee63c59"
+  },
+  {
+    "name": "known-failures-check",
+    "argv": [
+      "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "-B",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot\\scripts\\known_failures.py",
+      "check",
+      "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\integration.trx",
+      "--suite",
+      "Diten.Web.Tests"
+    ],
+    "cwd": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-web-integration-1795198103864\\snapshot",
+    "pid": 18876,
+    "exit": 0,
+    "start_epoch": 1795198585.5241795,
+    "seconds": 1.732,
+    "log_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+  }
+]

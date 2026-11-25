@@ -1,0 +1,29 @@
+{
+  "kind": "Actual authorized post-BE-L10N baseline attempt, immutable v3",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-fe-baseline-runner-prepare-01\\baseline_runner_DRAFT_v3.py",
+    "--repo",
+    "C:/Users/epenc/.codex/worktrees/pvg-ct-handoff/ERP-vNext-git",
+    "--source-head",
+    "ecbcecd9342759c5b3fc4ae0ea48ba2c44cd2aa2",
+    "--be-delivery",
+    "67005d85137f61ffe8c24eabb46bcd2cf15b9d87",
+    "--l10n-delivery",
+    "43f856f22f0549be1d61fab09d40086b755661ba",
+    "--be-verified-trx",
+    "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-be-independent-01/12a068852a924b1cb419284dae1abeda/normal-api/results/result.trx",
+    "--be-verified-trx-sha256",
+    "22a50f41fe8908715b6260fe101b07825e7d2a8d69b804adaa849a74353133ed",
+    "--regpv-verified-trx",
+    "C:/Users/epenc/AppData/Local/Temp/pvg-dl12-be-independent-01/12a068852a924b1cb419284dae1abeda/normal-regpv/results/result.trx",
+    "--regpv-verified-trx-sha256",
+    "b1de4d23bb08b9257ea5f1dff177d6e019cc142dac89941ebb3c9acab7eb8fdc",
+    "--execute-reviewed-draft"
+  ],
+  "start_utc": "2026-11-20T21:49:08.221728+00:00",
+  "runner_sha256": "6ec9b196cee59a394b115285128db686b3b1ce8926118b427e3994ae592410dc",
+  "prior_private_dirs": [],
+  "pid": 11212
+}

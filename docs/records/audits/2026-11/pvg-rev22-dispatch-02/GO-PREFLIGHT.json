@@ -1,0 +1,55 @@
+{
+  "recorded_utc": "2026-11-23T12:01:57.977012+00:00",
+  "kind": "Fresh known common-Git worktrees exact27 scoped dirty observation; not global external-writer absence",
+  "scope_count": 27,
+  "worktrees": [
+    {
+      "path": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-ct-handoff/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-web/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-win/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-dl12-prep-win-r2/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-dl12-registry/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-r22-shared/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/.codex/worktrees/pvg-r22-views/ERP-vNext-git",
+      "scoped_dirty": "",
+      "exit_code": 0
+    },
+    {
+      "path": "C:/Users/epenc/Documents/Codex/2026-09-29/https-github-com-bestepullukcu-alt-erp/work/ERP-vNext-mod0188-evidence",
+      "scoped_dirty": "",
+      "exit_code": 0
+    }
+  ],
+  "normal_both_exit": 0,
+  "workers_head": "b0dcca109997320e55659d7f41c489396338e15c",
+  "workers_tracked_clean": true
+}

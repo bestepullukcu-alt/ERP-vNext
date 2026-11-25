@@ -1,0 +1,168 @@
+{
+  "kind": "Exact reviewed publication copies; LF views except explicitly declared trimmed strict-stdout view; original raw identities are lossless; manifest excludes itself",
+  "tested_source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "repository_target": "docs/records/audits/2026-11/pvg-final-integration-01",
+  "files": [
+    {
+      "path": "ARCHITECTURE-CLASSIFICATION.json",
+      "bytes": 25913,
+      "canonical_git_bytes_sha256": "122e4cd98533620585893fd6bf899a6ef62efc7ed8aed441b9e205bcb829094a"
+    },
+    {
+      "path": "ARCHITECTURE-PUBLISH-MANIFEST.json",
+      "bytes": 2699,
+      "canonical_git_bytes_sha256": "e3939c35ff33a5980e1508d13fb14c9a82a9d1c776f7049ca045103d52d92bea"
+    },
+    {
+      "path": "ARCHITECTURE-RAW-ARTIFACTS.json",
+      "bytes": 137439,
+      "canonical_git_bytes_sha256": "55182b7565afad69d52f88766d322ce44adb08a566f022b46edb81f55dbf934b"
+    },
+    {
+      "path": "ARCHITECTURE-RAW-CATALOGUE.json",
+      "bytes": 73019,
+      "canonical_git_bytes_sha256": "6f3623a259ffd6363b2bcaa657da4f63ffc59671eb682302841efde0d918b4ea"
+    },
+    {
+      "path": "ARCHITECTURE-SUMMARY.json",
+      "bytes": 3687,
+      "canonical_git_bytes_sha256": "a0bf733433c9d36c0f00791273d63e2be17d330bb1d0646b613721be74f7b3ff"
+    },
+    {
+      "path": "architecture.trx",
+      "bytes": 411743,
+      "canonical_git_bytes_sha256": "4149b0b889aa09662e7a49f1f4dddcd17496352fb854bda1739f7ddb677c4b90"
+    },
+    {
+      "path": "CT-DISPOSITION.md",
+      "bytes": 3346,
+      "canonical_git_bytes_sha256": "57d992eaafaada321e69d7978f639b31f2846589b34239681a18062f03be87b0"
+    },
+    {
+      "path": "CT-RECEIPT.json",
+      "bytes": 2108,
+      "canonical_git_bytes_sha256": "0e68abadaa36507a9a851836588cde5285ba0a58b8ec23559d03e3445db926ce"
+    },
+    {
+      "path": "full-web.trx",
+      "bytes": 13564111,
+      "canonical_git_bytes_sha256": "24095cbb4ecdeaf81061ce33242dc1bd071ee6c8a99ef830060452536ef7ca2f"
+    },
+    {
+      "path": "PACK-DEFERRED.capture.json",
+      "bytes": 672,
+      "canonical_git_bytes_sha256": "6d8ddaab7b27ec101ab5755cc3759619d9a70a0a67eb1b42cdc3ef2d03fda8fe"
+    },
+    {
+      "path": "PACK-DEFERRED.stdout.txt",
+      "bytes": 2217,
+      "canonical_git_bytes_sha256": "ca65a71856f8efaf39d2e8238414b1c8fdbc0adacac919ec7ccdf2dd39eed411"
+    },
+    {
+      "path": "PACK.capture.json",
+      "bytes": 646,
+      "canonical_git_bytes_sha256": "32c77d5c851b816b1b5998b09a82d26da3937bbc66e1fcd09be38d424d60fbc3"
+    },
+    {
+      "path": "PACK.sandbox-network-failure.json",
+      "bytes": 5587,
+      "canonical_git_bytes_sha256": "83a98eaee559d55105216422b6b219b8a695b124b181f94e6403c032ca791d49"
+    },
+    {
+      "path": "PACK.stdout.txt",
+      "bytes": 2620,
+      "canonical_git_bytes_sha256": "08b588b4eb36df41e28dabdd0b63dc0f304b04d554ee4cc7e97c09d524665513"
+    },
+    {
+      "path": "PREPARATION-HISTORY.json",
+      "bytes": 5221,
+      "canonical_git_bytes_sha256": "cc97fa07cc0f975091c3d426346fd832b544ab539c79d1f3900416d5a58db547"
+    },
+    {
+      "path": "QUEUE.capture.json",
+      "bytes": 604,
+      "canonical_git_bytes_sha256": "15fbafa58514c04f15633152e40ac614cb1dc0142be2d596c6275056efa03a6f"
+    },
+    {
+      "path": "QUEUE.stdout.txt",
+      "bytes": 63,
+      "canonical_git_bytes_sha256": "6816a95afd22acfa1caf711c52a4adfbd9b76aaf8b41c4169ce758cb38778d03"
+    },
+    {
+      "path": "RAW-ARTIFACTS.json",
+      "bytes": 451339,
+      "canonical_git_bytes_sha256": "5bc4e407944c36ee83c81688c099bd5d9aad1eaa3fc8cf1f058cc966176ae704"
+    },
+    {
+      "path": "TEXT-VIEW-NORMALIZATION.json",
+      "bytes": 845,
+      "canonical_git_bytes_sha256": "355b4e7ec1565fc787da85dd89e9f284fb792b045a63d7f47b4802e28cb25d42"
+    },
+    {
+      "path": "TRX-RAW-LINE-ENDINGS.json",
+      "bytes": 492907,
+      "canonical_git_bytes_sha256": "63ab13b2cfd708b1df34688e257ebeb1c653d30deeadc4edbd98bed3f3e3c967"
+    },
+    {
+      "path": "WEB-ACTUAL-FAILURE.json",
+      "bytes": 1763,
+      "canonical_git_bytes_sha256": "b960fa42ce8eb902f005daee48d3c76d8cc533f6ad0bd0cd1041334ccb317dd2"
+    },
+    {
+      "path": "WEB-ACTUAL-JOBS.json",
+      "bytes": 92433,
+      "canonical_git_bytes_sha256": "dccb2806a3f3e5643a2c6c7abb679a719f775e937fbd71f3177fff1cedd0e36e"
+    },
+    {
+      "path": "WEB-ACTUAL-TEST-SUMMARY.json",
+      "bytes": 740199,
+      "canonical_git_bytes_sha256": "8346fe7196ffd2f502e813e949f59cdebd078f6055680088442d287194af1f32"
+    },
+    {
+      "path": "WEB-COMPILE-SETTINGS-MAIN-COMPARISON.json",
+      "bytes": 3225,
+      "canonical_git_bytes_sha256": "848668d2d033bfa7b3433459e0ba7ab7c088f4e970f6b757aea739b1ca5733df"
+    },
+    {
+      "path": "WEB-PAYLOAD-PUBLISH-MANIFEST.json",
+      "bytes": 1333,
+      "canonical_git_bytes_sha256": "2222517dfe1b5fc231e67e63c7ac7b5f31776097c4dbd76424a4686f6a3526a3"
+    },
+    {
+      "path": "WEB-PVG-78-IDENTITY.json",
+      "bytes": 13345,
+      "canonical_git_bytes_sha256": "0455276af812a65616b5ec6b9fc99722223fb29e69325a01df856de78c8e3111"
+    },
+    {
+      "path": "WEB-PVG-ASSERTION-RECEIPTS.json",
+      "bytes": 153443,
+      "canonical_git_bytes_sha256": "39238d9e2fae24b9c7be9accabb5ffdbf0c83d00832573be6a71d385e3baaddd"
+    },
+    {
+      "path": "WEB-RAW-MANIFEST.json",
+      "bytes": 53096,
+      "canonical_git_bytes_sha256": "953f14371d5b74c73a567b465d80b83d62fcb4a7c8854d46b56ffd81e45309f5"
+    },
+    {
+      "path": "WEB-RETURNS-SOURCE-COMPARISON.json",
+      "bytes": 3445,
+      "canonical_git_bytes_sha256": "aafa8f7157ac468840ed6bfca420e1ee7785a091f78eeb6fed73b239d4976356"
+    },
+    {
+      "path": "WEB-SUMMARY.json",
+      "bytes": 3441,
+      "canonical_git_bytes_sha256": "2b4402ff0da65e91560a56c2ab74f8821c845eea0002f22d04a7ee519f838b18"
+    },
+    {
+      "path": "WEB-TERMINAL-PUBLISH-MANIFEST.json",
+      "bytes": 4968,
+      "canonical_git_bytes_sha256": "c2446181ed816485029b2af5e66abe812729bab566024f7cd429dcf3ab311db7"
+    },
+    {
+      "path": "WORDING-CROSSCHECK.json",
+      "bytes": 5441,
+      "canonical_git_bytes_sha256": "b93522af6ce36b2075baa5ca46b4e65158f10571ab46c1d9be2accde2da71efb"
+    }
+  ],
+  "file_count_without_self": 32
+}

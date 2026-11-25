@@ -1,0 +1,11 @@
+{
+  "commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "frozen_source_files_unchanged": 26443,
+  "index_raw_after_sha256": "55278a6a1f86fd18fe891c232730bf3da3cab6c4e2a33f7199b8ad19bf6d804f",
+  "stage_entries_unchanged": true,
+  "cached_working_diff_empty": true,
+  "normal_invocations": 1,
+  "observed_CT_HEAD": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "real_repo_index_ref_writes": false
+}

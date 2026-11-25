@@ -1,0 +1,25 @@
+{
+  "note": "Actual review-row calls rejected first-round raw reports: uppercase severity word outside an F-n line. No TSV row was produced or appended. Raw opinions are preserved; final-version reviewers must return S-59 machine-compatible text. Tool rendering contained encoding replacement characters; this is the returned tool text, not a raw-byte claim.",
+  "results": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "2e8b4d",
+        "wall_time_seconds": 1.0949623,
+        "exit_code": 1,
+        "original_token_count": 25,
+        "output": "okunamad� � bozuk bulgu sat�r� 15: Eksik inceleme girdileri: Revizyon 20�nin tam pack/domain ba\r\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "69640b",
+        "wall_time_seconds": 1.1094514,
+        "exit_code": 1,
+        "original_token_count": 25,
+        "output": "okunamad� � bozuk bulgu sat�r� 11: Tasar�m de�erlendirmesi: �ncelenen kaynaklarda ek bir ENGEL \r\n"
+      }
+    }
+  ]
+}

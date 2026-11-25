@@ -1,5 +1,6 @@
 using Diten.ProcurementService.Application.Features.Supplier;
 using Diten.ProcurementService.Application.Features.Supplier.Commands;
+using Diten.ProcurementService.Application.Features.Supplier.Store;
 using Diten.ProcurementService.Application.Features.Supplier.Handlers.CommandHandlers;
 using Diten.ProcurementService.Application.Features.Supplier.Handlers.QueryHandlers;
 using Diten.ProcurementService.Application.Features.Supplier.Queries;
@@ -34,7 +35,7 @@ public sealed class SupplierBackendTests
     public async Task Duplicate_active_taxId_is_refused_409()
     {
         var (_, repo) = NewFixture();
-        var handler = new CreateSupplierHandler(repo);
+        var handler = new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo));
 
         var first = await handler.Handle(NewCreate(taxId: "1234567890"), default);
         Assert.True(first.IsSuccessful);
@@ -66,11 +67,11 @@ public sealed class SupplierBackendTests
     public async Task Stale_update_is_refused_409_concurrency()
     {
         var (_, repo) = NewFixture();
-        var created = await new CreateSupplierHandler(repo).Handle(NewCreate(), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo)).Handle(NewCreate(), default);
         var code = created.Data!.SupplierId;
         Assert.Equal(0, created.Data.Version);
 
-        var update = new UpdateSupplierHandler(repo);
+        var update = new UpdateSupplierHandler(new PerLegalEntitySupplierStore(repo));
 
         // First update at version 0 succeeds → version becomes 1.
         var firstOk = await update.Handle(new UpdateSupplierCommand { SupplierId = code, Name = "Renamed", ExpectedVersion = 0 }, default);
@@ -89,10 +90,10 @@ public sealed class SupplierBackendTests
     public async Task Onboarding_happy_path_records_outcomes_documents_and_approval()
     {
         var (_, repo) = NewFixture();
-        var created = await new CreateSupplierHandler(repo).Handle(NewCreate(), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo)).Handle(NewCreate(), default);
         var code = created.Data!.SupplierId;
 
-        var onboard = new SubmitOnboardingCaseHandler(repo);
+        var onboard = new SubmitOnboardingCaseHandler(new PerLegalEntitySupplierStore(repo));
         var result = await onboard.Handle(new SubmitOnboardingCaseCommand
         {
             SupplierId = code,
@@ -134,10 +135,10 @@ public sealed class SupplierBackendTests
     public async Task ValidateSuppliers_marks_unknown_ids_known_false()
     {
         var (_, repo) = NewFixture();
-        var created = await new CreateSupplierHandler(repo).Handle(NewCreate(), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo)).Handle(NewCreate(), default);
         var known = created.Data!.SupplierId;
 
-        var handler = new ValidateSuppliersHandler(repo);
+        var handler = new ValidateSuppliersHandler(new PerLegalEntitySupplierStore(repo));
         var result = await handler.Handle(new ValidateSuppliersQuery(new List<string> { known, "SUP-9999" }), default);
 
         Assert.True(result.IsSuccessful);
@@ -153,17 +154,17 @@ public sealed class SupplierBackendTests
     public async Task Soft_deleted_supplier_is_not_returned()
     {
         var (_, repo) = NewFixture();
-        var created = await new CreateSupplierHandler(repo).Handle(NewCreate(), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo)).Handle(NewCreate(), default);
         var code = created.Data!.SupplierId;
 
-        var del = await new DeleteSupplierHandler(repo).Handle(new DeleteSupplierCommand(code), default);
+        var del = await new DeleteSupplierHandler(new PerLegalEntitySupplierStore(repo)).Handle(new DeleteSupplierCommand(code), default);
         Assert.True(del.IsSuccessful);
 
-        var byId = await new GetSupplierByIdHandler(repo).Handle(new GetSupplierByIdQuery(code), default);
+        var byId = await new GetSupplierByIdHandler(new PerLegalEntitySupplierStore(repo)).Handle(new GetSupplierByIdQuery(code), default);
         Assert.False(byId.IsSuccessful);
         Assert.Equal(404, byId.StatusCode);
 
-        var list = await new GetSupplierListHandler(repo).Handle(new GetSupplierListQuery(), default);
+        var list = await new GetSupplierListHandler(new PerLegalEntitySupplierStore(repo)).Handle(new GetSupplierListQuery(), default);
         Assert.DoesNotContain(list.Data!.Items, i => i.SupplierId == code);
     }
 
@@ -175,16 +176,16 @@ public sealed class SupplierBackendTests
         var repoA = new FakeSupplierRepository(store, TenantA, LeA);
         var repoB = new FakeSupplierRepository(store, TenantA, LeB);
 
-        var created = await new CreateSupplierHandler(repoA).Handle(NewCreate(), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repoA)).Handle(NewCreate(), default);
         var code = created.Data!.SupplierId;
 
         // Same store, same tenant, DIFFERENT legal entity → invisible.
-        var readB = await new GetSupplierByIdHandler(repoB).Handle(new GetSupplierByIdQuery(code), default);
+        var readB = await new GetSupplierByIdHandler(new PerLegalEntitySupplierStore(repoB)).Handle(new GetSupplierByIdQuery(code), default);
         Assert.False(readB.IsSuccessful);
         Assert.Equal(404, readB.StatusCode);
 
         // Control: the owning LE can read it (isolation is not vacuously hiding everything).
-        var readA = await new GetSupplierByIdHandler(repoA).Handle(new GetSupplierByIdQuery(code), default);
+        var readA = await new GetSupplierByIdHandler(new PerLegalEntitySupplierStore(repoA)).Handle(new GetSupplierByIdQuery(code), default);
         Assert.True(readA.IsSuccessful);
     }
 
@@ -196,16 +197,16 @@ public sealed class SupplierBackendTests
         var repoA = new FakeSupplierRepository(store, TenantA, LeA);
         var repoB = new FakeSupplierRepository(store, TenantA, LeB);
 
-        var created = await new CreateSupplierHandler(repoA).Handle(NewCreate(name: "Original"), default);
+        var created = await new CreateSupplierHandler(new PerLegalEntitySupplierStore(repoA)).Handle(NewCreate(name: "Original"), default);
         var code = created.Data!.SupplierId;
 
-        var writeB = await new UpdateSupplierHandler(repoB).Handle(
+        var writeB = await new UpdateSupplierHandler(new PerLegalEntitySupplierStore(repoB)).Handle(
             new UpdateSupplierCommand { SupplierId = code, Name = "Tampered" }, default);
         Assert.False(writeB.IsSuccessful);
         Assert.Equal(404, writeB.StatusCode);
 
         // The record under LE-A is untouched.
-        var readA = await new GetSupplierByIdHandler(repoA).Handle(new GetSupplierByIdQuery(code), default);
+        var readA = await new GetSupplierByIdHandler(new PerLegalEntitySupplierStore(repoA)).Handle(new GetSupplierByIdQuery(code), default);
         Assert.Equal("Original", readA.Data!.Name);
     }
 
@@ -214,7 +215,7 @@ public sealed class SupplierBackendTests
     public async Task Create_is_idempotent_on_idempotency_key()
     {
         var (store, repo) = NewFixture();
-        var handler = new CreateSupplierHandler(repo);
+        var handler = new CreateSupplierHandler(new PerLegalEntitySupplierStore(repo));
 
         var first = await handler.Handle(NewCreate(idem: "idem-1"), default);
         var second = await handler.Handle(NewCreate(idem: "idem-1"), default);

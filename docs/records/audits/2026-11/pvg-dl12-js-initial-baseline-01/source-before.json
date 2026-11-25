@@ -1,0 +1,134 @@
+{
+  "frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs": {
+    "raw_sha256": "8537f883d08a18c93cd9a5436c47020d1bb769ec6ea2202790e1db2ab925bb45",
+    "lf_sha256": "a83605bb905a14055dccf4ee6b0f51b22dfae14f3b41648e1507ec0607b11b3e"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.ar.resx": {
+    "raw_sha256": "75fd448c47eeef8ca0c8f51aa9a24aabf06420299505b9565a68092e2f782cdc",
+    "lf_sha256": "f27168ed94a55b10ae54491663384e7826251264ea378dea0f031495125be2d0"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.en.resx": {
+    "raw_sha256": "d86f7c876c4493da8fecaab0177a9897edba0a226496a39946feb5d360839b96",
+    "lf_sha256": "1416ba6ce45a1fc8dae10594a905d31ed223a2c82398549fb37ab068b7fd777e"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.es.resx": {
+    "raw_sha256": "61247e9ac4104e2c93db7bae64723ed38a40018e18b779b51de0fedc8a1fa73a",
+    "lf_sha256": "400f22f99f86e340e336479de53ad70cbf389439bf74287396cb9a1ed70c431b"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.fr.resx": {
+    "raw_sha256": "32e533309209141ba0cc17e8c26ef6f03e2599c1681ef9a18f14f8bc912ab03b",
+    "lf_sha256": "a8a6351fe0140acf8e23acb246a23fbe66808148b57fac4d8e0fe5cea13cf694"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.ru.resx": {
+    "raw_sha256": "f862a6ee044f63e4c3b977635633cd2cb719badf2f39a81caa017954e43254bc",
+    "lf_sha256": "d20a53bcc87452c9be3d7ba67c2e67024a27d45f7cad544b918cf058eaa07f7d"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.tr.resx": {
+    "raw_sha256": "c4c97896262575289f94fa5e533211fefc546cca9fdc5e80b41c014c4f6d1ef2",
+    "lf_sha256": "6aa82aa064b1ea6b263d932ae2c5ee27893f3b107d6687c789e3a8ed10f28919"
+  },
+  "frontend/Diten.Web/Resources/SharedResource.zh.resx": {
+    "raw_sha256": "fe88f3ad64d31ae7f3b1c20c65a523a4bb5745262dfd8f48fe3a78343cfe89be",
+    "lf_sha256": "45b9c0a52b838098c76e05d9ae87ee68d19f5259d3f75a74ce7e9b18f312f4d5"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx": {
+    "raw_sha256": "60605c2d5109f4abe63950ca926e1e46efeb7cfa0e02e27eea1586ca6301e59b",
+    "lf_sha256": "337fb3e74c03aea9f2b6b6dd21a21d731613ca2c32761a5fca48a9b387e86df1"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx": {
+    "raw_sha256": "0b086d59f042c26f01a74636d0b869948fd6e55dbcd5cfe91730317312e01b70",
+    "lf_sha256": "363f3a6f2b75a30deeacf431db7c98171ec28043f7014ac5248ccdf5f4e4dd7d"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx": {
+    "raw_sha256": "806e523188e5c9acaad65bfd6adb950af9b2dbb36c96bfadff37fb9723effce2",
+    "lf_sha256": "740d19552a2ca92870326e82600719fee1fe537de85f507bad902af4afe26e60"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx": {
+    "raw_sha256": "ed8cd0b4772f2d1f88a586960da08c3a095e3af64eb7d5d8b0c9eb9c7556a780",
+    "lf_sha256": "1eddcc40bd378a87dcb2df87ed257e5e27220f134bb95cc00ebf517a6b6f617f"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx": {
+    "raw_sha256": "dc4f14015f0bbe501f18a8cdcfe408ef80d26a87a404f21a28a778730dcae579",
+    "lf_sha256": "6c7cb4297038c9dd3358a2f12ea906a5ca7e95b0f939c22ccb7964a6694811d1"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx": {
+    "raw_sha256": "11675b4463bb74d241b55ce1e4c76073e6729e6daffa06f1ca305efa36da9104",
+    "lf_sha256": "4280b7001b4b8a7c41a3f3b457dd156d64d8b53146f89ce9d2fa7805c952c811"
+  },
+  "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx": {
+    "raw_sha256": "4d5c97e10b63e914dfbd227ed838783b25334f71a22a9b3b5d74b2a61fbae643",
+    "lf_sha256": "5c8720568842dfd33388c3ad84d604155076e2d9e1563485947fbdcdcda5c6b8"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.cs": {
+    "raw_sha256": "4d4666004c21d7e51d49521c5d2bc6cc45161bc7df167c943bb78938861dcfd4",
+    "lf_sha256": "ce62d34d200d8edd993b3320033d41a7ec8fc5c53e09239c4f6b438e6afa3ede"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml": {
+    "raw_sha256": "ee95ade3b1c498b1101305810209cba939b407fcb76737d783bef917e288678f",
+    "lf_sha256": "542bedb4626607ee3af0e21fdc41fa4f4a4915e2343a516eb4c0f012397ba59a"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml": {
+    "raw_sha256": "fdc93d13aae7c85926cb328db9c47a2a7bb49bc332f8bbe609ebfba2a2d27fec",
+    "lf_sha256": "adc5ecbfbfec1136df7f4b8a52e8dc77e61110b906a6ea721e270580851b9e1c"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml": {
+    "raw_sha256": "f437c5e4254acd9af791db015c6730432f4e8a123b90d362c57d964a7cadcb6b",
+    "lf_sha256": "c72df56c62a744ecc7bdc8833bc085246a191a669b78dcb1a074f84a5ced1e19"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml": {
+    "raw_sha256": "fb9511a8c6a9896a49d9d1977c19307eb794dc663b80f1de9e55fafa8769d02f",
+    "lf_sha256": "61061203707ec41405f1e5046d26879b9b7d37ae7c4018b4d9ccaa80451dba41"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_DataTable.cshtml": {
+    "raw_sha256": "ecee237ecba01c3918d29a9887bf19b562b74dc516bde8a1922ec99b1a27a5d7",
+    "lf_sha256": "843f775c25d2f92b8b753f5cf513d5292343535f8a54dac5bdbbb2d396b8e389"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Filter.cshtml": {
+    "raw_sha256": "cd08c5417a56aa9a33e45b0ab86fb91057f0436d938650ff6a063f2b178b9d04",
+    "lf_sha256": "c25cc8ac2f84ed14cb1049bd08552b33fcfdb1936afb3427ef87c8de7111b2cc"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_Form.cshtml": {
+    "raw_sha256": "29a7bf025d97a4c4cc6ada072291be3de943bfea8521cb67dd4b57d9c6e31f87",
+    "lf_sha256": "256d1fb40c324b7c08c3691c823350a369de0fd1be231b0dc521dd39e606cbe8"
+  },
+  "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/_IndexL10n.cshtml": {
+    "raw_sha256": "a0697005c4634e2c9f98957de7e289dbf5873e4f46310d42ed123da0bb69df66",
+    "lf_sha256": "41bc9105972c3713599040df3d9c4c5ccbd060446c44400d974b9d37ab1d1318"
+  },
+  "frontend/Diten.Web/package-lock.json": {
+    "raw_sha256": "8bcd01cae020edc8e022c3f144c0f1fe8cadb77565b298abc3cc3e41b58ec46e",
+    "lf_sha256": "38884f0740febbaa7c5196311bf9f3d277580bb160c2f8adb30bad12397abd14"
+  },
+  "frontend/Diten.Web/package.json": {
+    "raw_sha256": "5c48c32fa289f795eee88e7457397d78364c8c5a5a75fc1cedaf7d924d59f7c6",
+    "lf_sha256": "023312ced60db89be09e03eb308d04cc1bbd839ff54da8376c47ee292c43f129"
+  },
+  "frontend/Diten.Web/tests/pvg-case-intake-triage-ui.test.js": {
+    "raw_sha256": "e5b7379b6e04ec57b9a0c6eeb180161e0881c1faa3636a3bb67f9ea832ee860f",
+    "lf_sha256": "118d4b465acf5303b1b9c9a917d2eccb16035507774cabd208158b0c952134a0"
+  },
+  "frontend/Diten.Web/vitest.config.js": {
+    "raw_sha256": "72dab6dc57fdadd4a9ee7aeea3aa7ca7f559b992cf8433bdef6ea98748e9ae1a",
+    "lf_sha256": "39ac5726c4e8a538bfd7d125588d75502abe4ee98939294431fc856d273b1495"
+  },
+  "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/details.js": {
+    "raw_sha256": "6195a9c44037fab15c58eaa842014edb5ac631d7410867c583341a33fea688e7",
+    "lf_sha256": "19cf557f11ad9ee0135ab059f7a7d8392007928ee461e7f1ff55e5feadf11679"
+  },
+  "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/form.js": {
+    "raw_sha256": "6a6bdd528964b43555eb90ea568d31dcb42aa570d633701a0b2a65e1fcba7e9a",
+    "lf_sha256": "7b7af5727ee64f52d709692f6a62e8015b12e5821b6f7ed808c3f0df51510969"
+  },
+  "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.js": {
+    "raw_sha256": "a139e1dc08cedfee0f8afcb806766fdd9308f71a272076dc52b124f9bd152fab",
+    "lf_sha256": "85b7334848049bcdb092e80732957f8f23212fc88e790adf420ada7438cfba9a"
+  },
+  "frontend/Diten.Web/wwwroot/assets/js/Pharmacovigilance/CaseIntakeTriage/index.l10n.js": {
+    "raw_sha256": "a0ef8dec9afe3dee1115b9068f329bef9495858d484134e86bd38f904d08f7cb",
+    "lf_sha256": "bcdad5ed2a111eb9fb99ce016597893525e66a4f5a74626c33025d9a839d629c"
+  },
+  "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOptionSets.cs": {
+    "raw_sha256": "4ae9cad4353391cc18d7684c00bb3a0e4d2093a6c8116fb4d2cf5345e9b3e210",
+    "lf_sha256": "36ff46944d5e98e8eca101cb55e039c426f6b5986973c9687afc3ac79f2bafcb"
+  }
+}

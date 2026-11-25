@@ -115,4 +115,5 @@
   <data name="RemoveReporterLink" xml:space="preserve"><value>Bağı Kaldır</value></data>
   <data name="ReporterLinkRemovalNote" xml:space="preserve"><value>Kaydettiğinizde bağ kaldırılacak.</value></data>
   <data name="OptionsLoadFailed" xml:space="preserve"><value>Seçenek listeleri okunamadı. Kaydetme kullanılamıyor.</value></data>
+  <data name="DraftNotEditable" xml:space="preserve"><value>Bu kayıt artık düzenlenemez.</value></data>
 </root>

@@ -1,0 +1,13 @@
+{
+  "observed_utc": "2026-11-20 22:33:00 UTC",
+  "tool": "mcp__codex_app__wait_threads",
+  "timeoutMs": 0,
+  "threadId": "01a1f8a1-ced1-7f10-bc22-e0e36291741b",
+  "hostId": "local",
+  "status": "idle",
+  "completedTurn": "01a1fab0-f436-7523-80c1-e0ca99af3741",
+  "completedAt": 1795207399,
+  "cursor": "b07924f7-c8f7-46a9-99f1-b5040a8f4a3c:3",
+  "reportedCandidate": "43f856f22f0549be1d61fab09d40086b755661ba",
+  "meaning": "Previous L10N writer completed/idle; suitable existing managed worktree may be reused after clean branch/source checks. No new thread or worker dispatch."
+}

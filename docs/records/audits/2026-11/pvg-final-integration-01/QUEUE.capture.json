@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/ct_queue.py",
+    "validate",
+    "--queue",
+    "pvg"
+  ],
+  "start_utc": "2026-11-21T17:53:56.270390+00:00",
+  "end_utc": "2026-11-21T18:09:19.736972+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "7060216fa08269595acc1b56be148b94d165ba25045dace1de535997914106be",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "gh_path_explicit": true,
+  "prior_invocation_missing_gh_path": true
+}

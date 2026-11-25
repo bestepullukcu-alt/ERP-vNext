@@ -1,0 +1,17 @@
+{
+  "wp": "WP-0230-DL12-REGISTRY-01",
+  "initial_head": "fff584a3675fb0273872b0dca9896d26da749f8f",
+  "final_head": "7dbdfd4f47f8361319c1c3f533036ad43a867f71",
+  "branch": "feature/pvg/mod-0230-dl12-registry",
+  "worktree": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-dl12-registry\\ERP-vNext-git",
+  "final_status": "clean",
+  "staged_paths": [],
+  "commit_subject": "fix(governance): remove stale XML rerun triggers",
+  "committed_paths": [
+    "tests/known-failures.tsv"
+  ],
+  "tsv_git_blob": "dbbcab82854dfa741f2e52f6823b023e0cf95878",
+  "push": false,
+  "pr": false,
+  "web_tests_rerun": false
+}

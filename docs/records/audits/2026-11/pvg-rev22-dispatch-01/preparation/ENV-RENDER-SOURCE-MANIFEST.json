@@ -1,0 +1,17 @@
+{
+  "kind": "Preparation provenance only; render plan not executed",
+  "files": [
+    {
+      "file": "DEPENDENCY-MATERIALIZATION.json",
+      "raw_source": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-pr460-rev22-gate-prep-01\\DEPENDENCY-MATERIALIZATION.json",
+      "raw_sha256": "edcb00282598cbb5458393468a04943cb378baa44ad9afe89e453688e55c1efa",
+      "lf_sha256": "edcb00282598cbb5458393468a04943cb378baa44ad9afe89e453688e55c1efa"
+    },
+    {
+      "file": "RENDER-FEASIBILITY.txt",
+      "raw_source": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\gate-prep-01\\RENDER-FEASIBILITY.txt",
+      "raw_sha256": "1d30762937bbdd171a6c314e666eb571650d361fc7960f6b8869f631c6c7dc93",
+      "lf_sha256": "aebef8f42eaeba1bd2fe03220da6768e5477249fd66764cb057134aa6d4f5020"
+    }
+  ]
+}

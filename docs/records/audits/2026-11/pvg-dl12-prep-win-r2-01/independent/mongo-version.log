@@ -1,0 +1,12 @@
+db version v7.0.43
+Build Info: {
+    "version": "7.0.43",
+    "gitVersion": "ef5a7d3480b59feae13d564376129fc4ceee6177",
+    "modules": [],
+    "allocator": "tcmalloc",
+    "environment": {
+        "distmod": "windows",
+        "distarch": "x86_64",
+        "target_arch": "x86_64"
+    }
+}

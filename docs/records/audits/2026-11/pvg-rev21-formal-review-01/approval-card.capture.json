@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "pack_approval.py",
+    "card",
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "--ref",
+    "a53656cdeb8dff40839e5e86ed708d812ad00f19",
+    "--deferred"
+  ],
+  "entrypoint": "unchanged pack_approval.main",
+  "same_process_read_cache": true,
+  "started_utc": "2026-11-20T17:17:22.498175+00:00",
+  "finished_utc": "2026-11-20T17:20:58.063993+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "9ef73316f5335d967fac5faebf43164bd758336c4f099ce40177283c90bb7e22",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

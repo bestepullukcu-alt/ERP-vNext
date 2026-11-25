@@ -1,0 +1,16 @@
+{
+  "kind": "Actual unmodified production functions, cheap preflight only; not normal dispatch",
+  "expected_head": "b0dcca109997320e55659d7f41c489396338e15c",
+  "prompt_sha256": "8d8973839cfbbe137ce2e2391e5296ea6e7d20cbecbdf9cba84e7d2395bd2660",
+  "source_pack_sha256": "ca328db3ee19cc76eb98b8fd1c79cad13eb6120d8a85ff8bb19eb92a91ff880c",
+  "file_count": 107,
+  "quote_count": 4,
+  "contract_info": [],
+  "checks": {
+    "format": [],
+    "sources": [],
+    "risk": [],
+    "contract": [],
+    "discovery": []
+  }
+}

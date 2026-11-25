@@ -1,0 +1,80 @@
+{
+  "kind": "Actual merged CT source/XML integration; not runtime/bridge acceptance",
+  "at_utc": "2026-11-20T20:54:01.994378+00:00",
+  "merge_commit": "77ecab323fc731d157cedeae63d653bb604517db",
+  "merge_tree": "a6997706e22dc77198169acbb029ebc481112003",
+  "parents": [
+    "2fe060411f784cd98abf0c28e48d43ebe55fb12c",
+    "43f856f22f0549be1d61fab09d40086b755661ba"
+  ],
+  "candidate": "43f856f22f0549be1d61fab09d40086b755661ba",
+  "paths": [
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+    "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx"
+  ],
+  "clean_after_merge": true,
+  "xml": [
+    {
+      "language": "en",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "keys": 112,
+      "git_lf_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "raw_sha256": "c388f73549cc7506b38601c7094277084865701d8689282a66169aa22272cbdc",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "tr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "keys": 112,
+      "git_lf_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "raw_sha256": "6e114bc60dfa2697a635c8516e66a6110d35010d1fcf6e267c2cf1e73a6b23b7",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "fr",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "keys": 112,
+      "git_lf_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "raw_sha256": "21ba1cf5d45a37fa9ac2f991710beb00b3d3d96873c51e521253ae9e92fc198a",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "es",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "keys": 112,
+      "git_lf_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "raw_sha256": "1641c4c897baaea72cd10564c8ed1b5b70c34f68175a6cb544f5c107a2498370",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "zh",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "keys": 112,
+      "git_lf_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "raw_sha256": "8f792cb6443e3e8042f16b7a6fa63e2dd96505bceb7b9a65ef40c28507817817",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "ar",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "keys": 112,
+      "git_lf_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "raw_sha256": "ac8dde37cb427d8c41d417bc39070b135cc64cae80cf9391a2e62d086cd86774",
+      "candidate_bytes_equal": true
+    },
+    {
+      "language": "ru",
+      "path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "keys": 112,
+      "git_lf_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "raw_sha256": "8f169e2235da7975a1920f78e94dc3988b0dcbf3044027ab0e4fed51ed8c705c",
+      "candidate_bytes_equal": true
+    }
+  ],
+  "pack_domain_unchanged": true
+}

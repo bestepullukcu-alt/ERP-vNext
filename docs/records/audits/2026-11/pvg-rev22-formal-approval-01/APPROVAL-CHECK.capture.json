@@ -1,0 +1,36 @@
+{
+  "kind": "Actual final revision22 deferred pack approval check; not worker dispatch/acceptance",
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "-c",
+    "import sys,runpy;sys.stdout.reconfigure(encoding=\"utf-8\",newline=chr(10));sys.argv=sys.argv[1:];runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+    "scripts/pack_approval.py",
+    "check",
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "--ref",
+    "72b451b605ebea41092a4f6da61a11c9c7ad8fc1",
+    "--deferred"
+  ],
+  "started_utc": "2026-11-23T09:57:46.888594+00:00",
+  "completed_utc": "2026-11-23T10:01:17.250784+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "ca77fc2f8d87ee578759348cfc652156170a443fb92b82b0fda6e545bffe9d62",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "before_head": "72b451b605ebea41092a4f6da61a11c9c7ad8fc1",
+  "after_head": "72b451b605ebea41092a4f6da61a11c9c7ad8fc1",
+  "before_source_sha256": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+    "execution/domains/pharmacovigilance/domain-config.md": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+    "execution/approvals/approvals.tsv": "afabd189e1ccecb94be0a60679b1475c75543f25c175005f0da248072545bcf4",
+    "execution/approvals/reviews.tsv": "c2af7062bcf7bb80763f13b915bf1fc2e370e576b5cb078017dfc555742c1ce7",
+    "execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv": "a73813845d6010d3d2de47f919b1dda019eab255f9c40c79b40376e5c6e01cea"
+  },
+  "after_source_sha256": {
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md": "d20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b",
+    "execution/domains/pharmacovigilance/domain-config.md": "0aa1706ebd4fd1d434b7b9fec78e8c8043c7340076f3d935544dd4853d5f2298",
+    "execution/approvals/approvals.tsv": "afabd189e1ccecb94be0a60679b1475c75543f25c175005f0da248072545bcf4",
+    "execution/approvals/reviews.tsv": "c2af7062bcf7bb80763f13b915bf1fc2e370e576b5cb078017dfc555742c1ce7",
+    "execution/domains/pharmacovigilance/work-packs/CT-QUEUE.tsv": "a73813845d6010d3d2de47f919b1dda019eab255f9c40c79b40376e5c6e01cea"
+  }
+}

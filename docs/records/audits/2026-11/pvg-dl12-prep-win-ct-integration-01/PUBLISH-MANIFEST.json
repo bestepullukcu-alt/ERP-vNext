@@ -1,0 +1,172 @@
+{
+  "source_commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "source_tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "published": [
+    {
+      "path": "actual-commands.json",
+      "raw_sha256": "923be87351a6a8dd2d5a6153e99306892b0a4de8e0b5d83677e514c22b1d7172",
+      "lf_sha256": "93a0dc57aa5f0a3ab47e8392576191b1a862c657507440c5e9b0cdee2534f2cf",
+      "bytes": 5201
+    },
+    {
+      "path": "assembly-binding.json",
+      "raw_sha256": "b5684a05662ad82138020310379faa5f32046135232e843ab39ea8625aba7a13",
+      "lf_sha256": "418445b2c89ff4b0e6a23caa290a2d1e66269db65055d014b2b0152877a5bf19",
+      "bytes": 651
+    },
+    {
+      "path": "combined-summary.json",
+      "raw_sha256": "3221c8ad297cfb8dbeddc506be93d4fa8cd8b87270970737537a1e495c1559c8",
+      "lf_sha256": "3221c8ad297cfb8dbeddc506be93d4fa8cd8b87270970737537a1e495c1559c8",
+      "bytes": 9256
+    },
+    {
+      "path": "ct-capture.json",
+      "raw_sha256": "330fdffb597554e36ddb7c4e3c56799a105c4648df11463cb99b1df45ec8bfc8",
+      "lf_sha256": "330fdffb597554e36ddb7c4e3c56799a105c4648df11463cb99b1df45ec8bfc8",
+      "bytes": 6942
+    },
+    {
+      "path": "ct-producer.log",
+      "raw_sha256": "05ad27baca1071157eb0ffb3551c30987da1e032fafccfe776ca39524edeea6b",
+      "lf_sha256": "2327989bb0f1cf1aa4cda0af52c5db8a77d1442cd32b1d7d7b08b517ad9626bb",
+      "bytes": 89
+    },
+    {
+      "path": "final-cleanup.json",
+      "raw_sha256": "4d05a799581116d893e6007cd4c3db2593056c433ca49ef5631870a147473718",
+      "lf_sha256": "4d05a799581116d893e6007cd4c3db2593056c433ca49ef5631870a147473718",
+      "bytes": 535
+    },
+    {
+      "path": "git-context-binding.json",
+      "raw_sha256": "3cbf39a287052895f6db640d0471739bee5164cbc39b9a9cb5b751da7e0c5881",
+      "lf_sha256": "3cbf39a287052895f6db640d0471739bee5164cbc39b9a9cb5b751da7e0c5881",
+      "bytes": 4362
+    },
+    {
+      "path": "isolated-index.json",
+      "raw_sha256": "ddb29de9d5564823c803c49e654813499b9349e3f37093a1c288b5efa447c420",
+      "lf_sha256": "8d802c7e48a9a6fdc05520f92f3fd4313d8180328872a74ac011febd1f97a6ba",
+      "bytes": 594
+    },
+    {
+      "path": "known-failures-check.log",
+      "raw_sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e",
+      "lf_sha256": "ee0503e57a3a055b4e493f65cae4f205465ee87761cc68701d37bf6d8e2f4081",
+      "bytes": 101
+    },
+    {
+      "path": "mongo-cleanup.json",
+      "raw_sha256": "3593f707cfe057dafea2c9a9861d399c978173261d38192f1e431ab95bbb7e93",
+      "lf_sha256": "0dbf9cdb67b734777429c9fbb7bc9341b5e25a864c1a8fcfc53527a8b54fb6c2",
+      "bytes": 3769
+    },
+    {
+      "path": "mongo-observed-running.json",
+      "raw_sha256": "2d06db2f3d1373e287d95ccd8631dd0e7bb1e82157a073c5f73cba0f51fe6b8e",
+      "lf_sha256": "0709d4f6862f1378fa1b9dc27bbef3989d36f80041cf53e75bbe82a06dc3217d",
+      "bytes": 3404
+    },
+    {
+      "path": "mongo-version.log",
+      "raw_sha256": "03d73207a5508d9f88f233c9188b1537cf7937a2e419bac681d56ced2f093ee6",
+      "lf_sha256": "d41f899d67c9f143e6479791f0077ca8b0abd3c4b39c723a37dd5a45cc8ae01c",
+      "bytes": 301
+    },
+    {
+      "path": "normal-full.log",
+      "raw_sha256": "ac06f10df90c82cb973d1463d357350cdc9bd841eaadba69b4fd1b026bc50dd5",
+      "lf_sha256": "f1c1f5cb539902219264ac1980f0f8255ca4baef86c9d9d80cf51ec9a65ec6a8",
+      "bytes": 2412
+    },
+    {
+      "path": "normal-trx-summary.json",
+      "raw_sha256": "c00640c3a52f0541c1a7905ede8645823f504e100cfbf2adf4732c5990311267",
+      "lf_sha256": "98941d59f2e0ac355b5d638ee690e0078bbf1e5ea82436e22543421bb96de4bc",
+      "bytes": 109865
+    },
+    {
+      "path": "restore.log",
+      "raw_sha256": "bf4f797210d917f0ea5ffac84bc06b69a457adcd27b53eda93be8089b54e59d9",
+      "lf_sha256": "64ac5f56752f131c0e1497a7e8991f722715d9d61783b8c4925189381d243ccb",
+      "bytes": 1687
+    },
+    {
+      "path": "sdk-version.log",
+      "raw_sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84",
+      "lf_sha256": "889bcd977affaed790bc08b12d1d934e807005b95d1678b47f137170447520c1",
+      "bytes": 9
+    },
+    {
+      "path": "skip-check.log",
+      "raw_sha256": "aa1e89e5fb54aeb7d93de57b708ae5c13d820c52cce1c15e21d648f24a03c975",
+      "lf_sha256": "01052c026171eef9491de5e20a0004043d470acf9bff0d1584b8e56020cb41d2",
+      "bytes": 166
+    },
+    {
+      "path": "source-after.json",
+      "raw_sha256": "444a436022a76b8df60511036e8193e9935c862afcebe179cdc7c4bd37f8a453",
+      "lf_sha256": "ef984d31987c0cdaf56ed0fc1e5e08ec39445f3fc1ebf90c27dbaebca8e9af7e",
+      "bytes": 466
+    },
+    {
+      "path": "source-before.json",
+      "raw_sha256": "ce62723599669330a444485f19a7b85a4dc85f20ecce3a8e7be148208a5787e1",
+      "lf_sha256": "ec935ecadd07e6cb6f23decaaed2f9b93d8ddc25e6db0306ae015f6c973c2d37",
+      "bytes": 26913
+    },
+    {
+      "path": "VERIFY-WIN-CT-INTEGRATION.txt",
+      "raw_sha256": "f02903db55dd54d4d0650ef0c435fd3ea1fe7f43f349a703536be40c3bae3320",
+      "lf_sha256": "f02903db55dd54d4d0650ef0c435fd3ea1fe7f43f349a703536be40c3bae3320",
+      "bytes": 3393
+    },
+    {
+      "path": "win-independent.trx",
+      "raw_sha256": "e222ad1acdb19205f3128a64f6653578c7454993f320fcad5753d1440d2c9ac1",
+      "lf_sha256": "4a92fc1e824f8a82e31976d2428cd0b6f29f27e0c1363a7c6d6a1363538559b6",
+      "bytes": 684311
+    },
+    {
+      "path": "evidence-manifest.json",
+      "raw_sha256": "8405dfdaf016ea6d895c26badedfa5051c5f9035d8e31de7458500adf6a46cbc",
+      "lf_sha256": "8405dfdaf016ea6d895c26badedfa5051c5f9035d8e31de7458500adf6a46cbc",
+      "bytes": 3712
+    }
+  ],
+  "external": [
+    {
+      "path": "full-snapshot-manifest.json",
+      "raw_sha256": "d96badcbd4dcc35f684b9af6cc0453a5853f202f7c565248678b97ebe57f669c",
+      "lf_sha256": "ab475d11e6a03b94a29b0dfe452f8518f49859476e8d41b9fddc3e279cd50a20",
+      "bytes": 6140731,
+      "preserved_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-win-ct-integration-01\\full-snapshot-manifest.json"
+    },
+    {
+      "path": "bootstrap.py",
+      "preserved_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-win-ct-integration-01\\orchestration\\bootstrap.py",
+      "bytes": 4464,
+      "raw_sha256": "0a1cd8b98570556e8d0238af5aac7241a084a14f645ce0ff5c7ac06efb30f5bf"
+    },
+    {
+      "path": "finalize.py",
+      "preserved_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-win-ct-integration-01\\orchestration\\finalize.py",
+      "bytes": 7657,
+      "raw_sha256": "597f9c490839c86d41242bde54bdfa90834301e490b7c5afd31ff4ebd1f5e8e0"
+    },
+    {
+      "path": "raw-git-context.json",
+      "preserved_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-win-ct-integration-01\\orchestration\\raw-git-context.json",
+      "bytes": 2601862,
+      "raw_sha256": "b4aa8c8e9d5c10b06bb056ccb0db5a8b40f83cc441da6683b3883b450baa9c52"
+    },
+    {
+      "path": "runner.py",
+      "preserved_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-win-ct-integration-01\\orchestration\\runner.py",
+      "bytes": 14064,
+      "raw_sha256": "d7657f23fd648e67d0048f4e8830b92109cba452fbc62f30eff850f8f819e45c"
+    }
+  ],
+  "kind": "Unchanged actual combined Windows integration proof; not live/Linux/feature acceptance"
+}

@@ -1,0 +1,20 @@
+WP-0230-DL12-PREP-WIN — bağımsız E2 duruşu
+
+Karar: FAIL / STOP. Yeni bağımsız full Windows koşusu395 sonuç/394PASS/1FAIL/0skip, normal komutexit1 (47.559s, test çıktısı31s). Tek başarısız test Configuration_scan_root_is_the_current_worktree_root; gerçek mesaj: The scan root must itself hold .git (a file in a worktree). Değişmemiş test PvgServiceApiHostTests.cs:1563–1572 snapshot kökünde fiziksel.git dosyası veya dizini ister. Git archive bu metadatayı taşımaz; ayrı frozen-index ortamı bu filesystem assertion'ını karşılamamıştır. Bu yeni runtime RED sonrası producer, skip/known-failures ve bağımsız G5/G6 çalıştırılmadı; normal test tekrar edilmedi. Hiçbir test/helper/guard/threshold veya snapshot kaynak baytı yamalanmadı.
+
+Ölçülen immutable kaynak TREEaddfabdae2d2a0e415b4ce77383bbc806ca9f59a bir Git tree nesnesidir, commit diye adlandırılmadı. Root'un sonradan oluşturduğu normal commitfee7d0132e3862ded7025465e311f263e068f7aa tree'sinin birebir eşitliği ve parent3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a bağı ayrı ölçüldü. Worker index verilen tree'ye eşit, unstaged fark yok; son workerHEADfee7/clean. Bu metadata bağının eklenmesi nedeniyle koşu tekrarlanmadı. Üç raw/LF kaynak hash'i WIP zinciriyle aynı, üçüncü dosyada only-method-body ve Unix çağrıları korunmuş; kendi snapshot tam manifest dosyalarının hepsi ve worker üç raw hash'i koşu sonrası değişmedi.
+
+Yeni koşuda35 gerçek Mongo testi ve üç named target (platform argument, binary/27017 guard, ACL inaccessible-directory) PASS. ACL deny/scan/finally restore/SDDL eşitliği/after-access/fixture cleanup assertion'ları gerçek hedef testte geçti. Beş kendi mongod PID/port/datadir private process-local normal-tmp altında canlı loglardan gözlendi; binary gerçek7.0.43, loopback ve random non-dev portlar doğrulandı. Son PID sorgusunda0 canlı eşleşme, beş datadir kökü yok, bütün beş port kapalı, pvg-dl3b ACL fixture kökü0. Süreç öldürülmedi. Kaynak/assembly/TRX tazeliği gerçek yeni DLL ve395 storage yolu üzerinden ölçüldü; bunlar tek failing root-metadata assertion'ını görmezden gelmek için kullanılmaz.
+
+Diğer beş worker subrun G1/G2/G3a/G3b/G4 salt okunur bağımsız denetlendi: her scratch'ta13650 tracked source/config/script dosyası ile kıyas, yalnız tek tam beklenen mutasyon; raw source ve assembly/TRX hash eşitliği, gerçek build0, beklenen assertion satırında RED1 ve raw259115c0…395PASS normal TRX içindeki aynı target GREEN bağı doğrulandı. Bu inceleme worker-five-mutant-audit.json ve worker-audit/ ham kopyalarında; başarısız kendi normal koşumun yerine geçmez. Bağımsız G5/G6 henüz yok.
+
+Çözüm için test/guard veya ürün kodu gevşetilmemeli. Yeni talimat altında fiziksel.git varlığını da sağlayan gerçek izole snapshot Git metadata'sı; frozen TREE/index/GIT_WORK_TREE ve read-only ortak objectstore bağı birlikte kurulup önkoşulda ölçülebilir. Bu adım veya yeni normal koşu bu duruşta uygulanmadı. Yeni repo/yol/scope yetkisi çıkarılmadı. Root sonraki bağımsız talimatı belirler.
+
+SDK8.0.428 ve Mongo7.0.43 sürüm komutları gerçek, mevcut task NuGet cache'i assets'ten ölçülüp offline restore2.149s/exit0 ile kullanıldı. DOTNET_GENERATE_ASPNET_CERTIFICATE=false ve diğer ayarlar yalnız süreç ortamında; gerçek CT/worker index/ref/commit/kaynak/queue/pack/CI veya eski dirty tree değiştirilmedi. İstenen gpt-6.2-astra/high; gerçek model/effort verilemiyor. Linux/live/E4/main-feature başarısı yok. E2 tamamlanmadı.
+
+Gerçek normal argv:
+["C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8\\dotnet.exe", "test", "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj", "-c", "Debug", "--no-restore", "--logger", "trx;LogFileName=win-independent.trx", "--results-directory", "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i-1795200401331"]
+Kanıt dizini: C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\i-1795200401331
+TRX raw SHA256 64066a4903e444b66a2f5398835dfd718c51a85c0ad957312933880d0295b756
+TRX canonical-LF SHA256 fc93548c8c650fb6b99fdc45411f9fb8000a4af652c99c519118aa2e7c40ff4b
+Full source manifest SHA256 41d6c56dec9162e20362f42ecf2bd8221a23433b3f80dbe5be4cefbb29444350

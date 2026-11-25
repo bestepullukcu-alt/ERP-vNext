@@ -1,0 +1,47 @@
+{
+  "baseline_head": "fff584a3675fb0273872b0dca9896d26da749f8f",
+  "changes": [
+    {
+      "physical_row": 4,
+      "suite": "TenantArchitecture.ArchitectureTests",
+      "test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance",
+      "column": "rerun_trigger",
+      "before": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.xml,*.resx",
+      "after": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.resx"
+    },
+    {
+      "physical_row": 5,
+      "suite": "TenantArchitecture.ArchitectureTests",
+      "test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: \"roadmap-active-tool\")",
+      "column": "rerun_trigger",
+      "before": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.xml,*.resx",
+      "after": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.resx"
+    },
+    {
+      "physical_row": 6,
+      "suite": "TenantArchitecture.ArchitectureTests",
+      "test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: \"roadmap-neighbor\")",
+      "column": "rerun_trigger",
+      "before": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.xml,*.resx",
+      "after": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.resx"
+    },
+    {
+      "physical_row": 7,
+      "suite": "TenantArchitecture.ArchitectureTests",
+      "test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: \"roadmap-wrong-hash\")",
+      "column": "rerun_trigger",
+      "before": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.xml,*.resx",
+      "after": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.resx"
+    },
+    {
+      "physical_row": 8,
+      "suite": "TenantArchitecture.ArchitectureTests",
+      "test": "TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders",
+      "column": "rerun_trigger",
+      "before": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.xml,*.resx",
+      "after": "docs/*,tests/architecture/*,*.cs,*.cshtml,*.js,*.py,*.sh,*.ps1,*.json,*.csproj,*.css,*.html,*.yaml,*.yml,*.resx"
+    }
+  ],
+  "after_raw_sha256": "d921ea1f9dd1241661cadd364f6461dfb4bb05580e693e29783235e9fc1bf0f4",
+  "after_lf_sha256": "5a1a02ea3cdad99c0b22af4b6c8e4d759ff68888a6e27ae422062f1b9b16a70b"
+}

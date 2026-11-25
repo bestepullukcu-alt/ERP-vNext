@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "scripts/pack_approval.py",
+    "check",
+    "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "--deferred"
+  ],
+  "start_utc": "2026-11-21T17:46:09.832742+00:00",
+  "end_utc": "2026-11-21T17:50:19.557021+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "3c6968a40271c41c3d618a71bc5f81cf8044e04b195ac84b06339afa997fa56a",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "strict_main_reading_is_not_branch_dispatch_gate": true
+}

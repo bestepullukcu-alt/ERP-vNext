@@ -1,0 +1,42 @@
+{
+  "time": "2026-11-20T16:29:29.8285553+04:00",
+  "processors": [
+    {
+      "NumberOfCores": 6,
+      "NumberOfLogicalProcessors": 12,
+      "LoadPercentage": 14
+    }
+  ],
+  "taskProcesses": [
+    {
+      "ProcessId": 36700,
+      "ParentProcessId": 32096,
+      "Name": "pwsh.exe",
+      "CreationDate": "2026-11-20T16:26:06.193341+04:00"
+    },
+    {
+      "ProcessId": 29452,
+      "ParentProcessId": 36700,
+      "Name": "python.exe",
+      "CreationDate": "2026-11-20T16:26:06.490056+04:00"
+    },
+    {
+      "ProcessId": 12044,
+      "ParentProcessId": 33268,
+      "Name": "dotnet.exe",
+      "CreationDate": "2026-11-20T16:27:50.80558+04:00"
+    },
+    {
+      "ProcessId": 24452,
+      "ParentProcessId": 12044,
+      "Name": "testhost.exe",
+      "CreationDate": "2026-11-20T16:27:51.110837+04:00"
+    },
+    {
+      "ProcessId": 31188,
+      "ParentProcessId": 32096,
+      "Name": "pwsh.exe",
+      "CreationDate": "2026-11-20T16:29:29.489447+04:00"
+    }
+  ]
+}

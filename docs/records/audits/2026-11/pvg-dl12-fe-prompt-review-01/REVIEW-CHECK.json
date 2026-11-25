@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+    "-B",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\scripts\\prompt_gate.py",
+    "review-check",
+    "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git\\execution\\domains\\pharmacovigilance\\work-packs\\prompts\\WP-0230-DL12-FE-v1.0.md",
+    "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\verification-raw\\pvg-dl12-fe-prompt-review-01\\PROMPT-REVIEW-DL12-FE-v1.0.md"
+  ],
+  "cwd": "C:\\Users\\epenc\\.codex\\worktrees\\pvg-ct-handoff\\ERP-vNext-git",
+  "exit_code": 0,
+  "stdout_sha256": "ef0f4d0bc2d6aa2df6a72d067813df4a81305f695d5ea8eebd1a763c38ca52c1",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "prompt_sha256": "d02639654b0551cb572e5b91738e98b2320d9e0ee7ba44890bf5a40917ba6789",
+  "review_sha256": "5970325e8418ecdee8e89ed147b4e5104353681591cd41d2fd47230187e3ee6c",
+  "not_normal_dispatch_check": true
+}

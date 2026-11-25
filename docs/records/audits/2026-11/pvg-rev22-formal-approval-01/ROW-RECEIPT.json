@@ -1,0 +1,43 @@
+{
+  "kind": "Exact producer row adopted after two UYGUN raw reports committed; actual check remains pending",
+  "producer": {
+    "argv": [
+      "python",
+      "-B",
+      "scripts/pack_approval.py",
+      "row",
+      "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+      "--ref",
+      "11b43eca7",
+      "--author",
+      "ElikPenco",
+      "--approver",
+      "bestepullukcu-alt",
+      "--risk",
+      "HIGH",
+      "--reason",
+      "Direct owner-approved revision22 exact27-path help/nav/RoleAssignments presentation scope; preserved operational boundary; exact final independent reviews recorded",
+      "--deferred",
+      "--date",
+      "2026-11-23",
+      "--note",
+      "onayla · 01a1f7d8-bf54-7703-ae91-a8ba29312b0d · 2026-11-23 · direct onaylıyorum; rev22-owner-approval-01; exact27 paths/content/single-writer XMC consent; historical Beste K2 self-declaration not GitHub identity proof; new-SHA publication not authorized; independent human main merge pending"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "5d02838a7547bcdae324a1ea6a3836a56bb934d2e025897df335640f915dd667",
+    "stderr": "",
+    "network_context": "require_escalated; GH authenticated task binary PATH",
+    "state": "Producer row only; append after checking final peer review rows"
+  },
+  "approval_row": "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md\td20813b2a4290bc299d29c4c72fbb7c64c095908294213b820533e6fafeafd0b\tapprove\tHIGH\tDirect owner-approved revision22 exact27-path help/nav/RoleAssignments presentation scope; preserved operational boundary; exact final independent reviews recorded\tElikPenco\tbestepullukcu-alt\t2026-11-23\t27cbcf1b7840ee0eef158d16c6aafcc5d46d1dca6a170d6620f05e939258bc4e\tonayla · 01a1f7d8-bf54-7703-ae91-a8ba29312b0d · 2026-11-23 · direct onaylıyorum; rev22-owner-approval-01; exact27 paths/content/single-writer XMC consent; historical Beste K2 self-declaration not GitHub identity proof; new-SHA publication not authorized; independent human main merge pending",
+  "earlier_candidate_not_adopted": {
+    "external_file": "APPROVAL-ROW-CANDIDATE.txt",
+    "card_sha256": "873dc4e475efadd183ac6190a74eb226b91a3ca768f2404ab20f09c03b76c7a5",
+    "context": "Earlier ref/network-restricted process; not adopted. Final actual deferred check must validate the adopted row in its own source context."
+  },
+  "blind_findings_sha256": "4cd1aa714a9f8cbca9b6d8fa76a1fbdb97512d53d4fe5663806232c13a33a96f",
+  "dialogue_findings_sha256": "f9aaf3386d3b0e0f575d7f26059cc37311bab44b34952f29ea4580a740e04b65",
+  "new_product_go": false,
+  "new_sha_publication_authorized": false,
+  "independent_human_main_merge_pending": true
+}

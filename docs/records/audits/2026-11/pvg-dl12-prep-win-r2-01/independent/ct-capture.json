@@ -1,0 +1,146 @@
+{
+  "kind": "capture of supplied normal run",
+  "wrapper_lf_sha256": "f4e386487608e06a13ffd520ebaab9a81102af86d42c1758dce279d20c982d5d",
+  "repository": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src",
+  "trx_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx",
+  "trx_raw_sha256": "9dc3a313ae15dcbb7ddd5c61d44a6d51b2b948317c73a38cc4d07f98e14b27a6",
+  "trx_lf_sha256": "dd643e18882df811415d350c6b1a13d8afcf6944cfad996e2ede17f544420841",
+  "counters": {
+    "total": "395",
+    "executed": "395",
+    "passed": "395",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "result_count": 395,
+  "target_results": {
+    "Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation": [
+      {
+        "executionId": "91abb59a-36cf-43e5-84f4-fefefec52379",
+        "testId": "57470346-841a-1c5f-f9ec-222a3c997c70",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0029279",
+        "startTime": "2026-11-20T23:01:30.8094656+04:00",
+        "endTime": "2026-11-20T23:01:30.8094657+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "91abb59a-36cf-43e5-84f4-fefefec52379"
+      }
+    ],
+    "Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod": [
+      {
+        "executionId": "ec6671a6-8e6b-40b3-8a52-d5dffc802eb5",
+        "testId": "4be9aab4-455d-006a-d6a1-07e098debe6b",
+        "testName": "Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_test_harness_refuses_port_27017_and_fails_without_mongod",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0026288",
+        "startTime": "2026-11-20T23:01:30.8122255+04:00",
+        "endTime": "2026-11-20T23:01:30.8122258+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "ec6671a6-8e6b-40b3-8a52-d5dffc802eb5"
+      }
+    ],
+    "Configuration_scan_fails_closed_on_inaccessible_directory": [
+      {
+        "executionId": "63412754-658d-4ff4-a275-9b3fbdb30e78",
+        "testId": "988b1eae-c9e1-373d-774e-d86ebb267047",
+        "testName": "Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory",
+        "computerName": "GMGRAPHIC",
+        "duration": "00:00:00.0336272",
+        "startTime": "2026-11-20T23:01:34.2900889+04:00",
+        "endTime": "2026-11-20T23:01:34.2900898+04:00",
+        "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+        "outcome": "Passed",
+        "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+        "relativeResultsDirectory": "63412754-658d-4ff4-a275-9b3fbdb30e78"
+      }
+    ]
+  },
+  "real_mongo_test_count": 35,
+  "commands": [
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\scripts\\check_trx_no_skipped.py",
+        "--suite",
+        "pvg-api",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx"
+      ],
+      "exit_code": 0,
+      "stdout": "[skipped=0] ok — every test ran or was an allowed skip: C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\epenc\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+        "-B",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\scripts\\known_failures.py",
+        "check",
+        "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\win-independent.trx",
+        "--suite",
+        "pvg-api"
+      ],
+      "exit_code": 0,
+      "stdout": "ÖZET BİLİNEN=0 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0\n",
+      "stderr": ""
+    }
+  ],
+  "source_scope": {
+    "base": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+    "changed": [
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+      "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs"
+    ],
+    "only_three_paths": true,
+    "sources": [
+      {
+        "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+        "raw_sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+        "lf_sha256": "6981496b72735be360ed41e45771faae9a3c99f41ba10c49bcfe37a499d6eea7",
+        "mtime_ns": 1795201009000000000
+      },
+      {
+        "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+        "raw_sha256": "763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a",
+        "lf_sha256": "f1dd99c82066961d4d16b59740e6e0f3a9b8b46cf880db61a44f0b9d1a925ac0",
+        "mtime_ns": 1795201009000000000
+      },
+      {
+        "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+        "raw_sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+        "lf_sha256": "816eb80ade69d4823570cdb0574fa082ba906ee5bb8b868e6b559677dd856e83",
+        "mtime_ns": 1795201009000000000
+      }
+    ]
+  },
+  "assembly": {
+    "path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-win-r2-evidence\\i2-1795201003887\\normal-src\\services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\bin\\Debug\\net8.0\\Diten.PvgService.Api.Tests.dll",
+    "sha256": "17ebfce1533925ab3ea31029b1f8afabbcb93c49d9e7f66b9e363e9b92de1549",
+    "mtime_ns": 1795201288922342800,
+    "newer_than_sources": true
+  },
+  "trx_run_freshness": {
+    "start": "2026-11-20T23:01:29.3938975+04:00",
+    "finish": "2026-11-20T23:02:03.7956016+04:00",
+    "started_after_compiled_assembly": true
+  },
+  "acceptance_passed": true,
+  "limits": "Normal capture does not independently prove ACL rollback, process cleanup, method-only scope or six sabotage groups; those still require raw source/runtime evidence and independent E2."
+}

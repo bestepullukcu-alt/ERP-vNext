@@ -1,0 +1,10 @@
+{
+  "zip_path": "C:\\Users\\epenc\\.codex\\visualizations\\2026\\11\\20\\01a1f7d8-bf54-7703-ae91-a8ba29312b0d\\reviews\\pvg-rev21-formal-round1\\MOD-0230-review-b60aabc77.zip",
+  "zip_sha256": "3d3b3243f9642ab1b6f0fadd71773656610106403d2db714b44fbc6917c77226",
+  "zip_bytes": 8536867,
+  "manifest_files": 305,
+  "common_findings_present": false,
+  "pack_sha256": "aee011817efff53055e129eb09a25ccbc89e00a3ad341377573e2141f5f4b800",
+  "domain_sha256": "c3f94d54d17b58862c64e5aca24ca78dd777adc5da2b81efcd91bd96c478f6fa",
+  "source_commit": "b60aabc77fde43e38d56353754bd2d4150b89fe8"
+}

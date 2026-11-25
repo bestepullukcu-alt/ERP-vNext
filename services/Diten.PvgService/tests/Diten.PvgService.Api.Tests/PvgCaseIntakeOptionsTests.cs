@@ -339,22 +339,24 @@ public sealed class PvgCaseIntakeOptionsTests
 
         public ValueTask<string> AddAsync(
             PvgPersistenceTenantScope tenantScope,
+            string actorId,
             SafetyCaseIntake intake,
             CancellationToken cancellationToken = default)
         {
             Interlocked.Increment(ref _callCount);
-            return inner.AddAsync(tenantScope, intake, cancellationToken);
+            return inner.AddAsync(tenantScope, actorId, intake, cancellationToken);
         }
 
         public ValueTask<PvgIntakeDraftReplaceResult> ReplaceAsync(
             PvgPersistenceTenantScope tenantScope,
             string intakeDraftId,
             long? expectedVersion,
+            string actorId,
             SafetyCaseIntake intake,
             CancellationToken cancellationToken = default)
         {
             Interlocked.Increment(ref _callCount);
-            return inner.ReplaceAsync(tenantScope, intakeDraftId, expectedVersion, intake, cancellationToken);
+            return inner.ReplaceAsync(tenantScope, intakeDraftId, expectedVersion, actorId, intake, cancellationToken);
         }
 
         public ValueTask<PvgPersistedIntakeDraft?> FindByIdAsync(
@@ -446,6 +448,7 @@ public sealed class PvgCaseIntakeOptionsTests
             {
                 ids.Add(await Store.AddAsync(
                     new PvgPersistenceTenantScope(tenant),
+                    "seed-actor-fake",
                     StoredIntake(tenant, narrative, new DateTimeOffset(2020, 3, 1, 8, 0, 0, TimeSpan.Zero).AddMinutes(index))));
             }
 

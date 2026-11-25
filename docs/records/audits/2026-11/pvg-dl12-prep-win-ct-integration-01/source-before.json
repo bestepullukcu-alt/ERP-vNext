@@ -1,0 +1,577 @@
+{
+  "commit": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "parents": [
+    "754ae2724cf847383ecc6829850f1aadc3d614b2",
+    "fee7d0132e3862ded7025465e311f263e068f7aa"
+  ],
+  "tree": "bebcdcfe886f4abcbfc15f2a74711333093e47c8",
+  "exact_three_changes_from_first_parent": [
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+    "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs"
+  ],
+  "candidate_three_sources_identical": true,
+  "related_source_hashes": [
+    {
+      "path": "execution/domains/pharmacovigilance/work-packs/evidence/WP-0230-DL12-PREP-WIN-v2.0.py",
+      "sha256": "d8e55e779082ce4136dd0b624236324fc06c5bf3f0dcfb99403a1ec79aba69d3",
+      "bytes": 6191
+    },
+    {
+      "path": "scripts/check_trx_no_skipped.py",
+      "sha256": "425208e89155cef74ee173dd73e7c480791f15386bb4d9a0bd71bf801ec63c63",
+      "bytes": 7546
+    },
+    {
+      "path": "scripts/known_failures.py",
+      "sha256": "a445175cdf995d928b176760d8ffa75b57d08f3d74de49741c8ca43cb24acf78",
+      "bytes": 45237
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/Diten.PvgService.Api.csproj",
+      "sha256": "50721efd760033d11c56982224a1e9982ac01bf7bf827e8639071c88be237adf",
+      "bytes": 1176
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/IModuleManifestProvider.cs",
+      "sha256": "48281fb657e1723489e14b441055c37de780d79f3afc9fad0381a0c7b48c5236",
+      "bytes": 339
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgCaseIntakeTriageManifestProvider.cs",
+      "sha256": "337be5cb553e980ae498c96a2c8d754e4c8542d23d23d166bfe0775aeb00076b",
+      "bytes": 8022
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationEnvironment.cs",
+      "sha256": "5f35c98f06a9a2e4a599d4cd5df9ae3f53afa18e3e32292ecb2e9d5a534b4b88",
+      "bytes": 1136
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationHostedService.cs",
+      "sha256": "9246328a6ecc76b71c81080026d270093fd325c6c6a7cb0795c0500410b6666a",
+      "bytes": 9515
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/ModuleRegistration/PvgModuleRegistrationServiceCollectionExtensions.cs",
+      "sha256": "b7d6647601e11633dd4fdc6ec9e9ad031ca0e21b540f3485f4f3e9bde7c133a9",
+      "bytes": 1618
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/Program.cs",
+      "sha256": "bc82fa18f95d3a73a0cd0cfe074da18b344ed8e4872c4b483cbdede5b15f0a7b",
+      "bytes": 682
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgCaseIntakeTriageEndpoints.cs",
+      "sha256": "95c76e0f68125532798b3ab10d110d387bd4787fac8c6f3f5d28a18dd51b2fb4",
+      "bytes": 25457
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Api/PvgServiceApiHost.cs",
+      "sha256": "7c62a54337b30759ee9cba2cb83b4c5f46897223c378b0eb3b230fef6afae4b4",
+      "bytes": 16375
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingApplicationService.cs",
+      "sha256": "dd055392a11d2c8dea438ea1c395af1f6e251900424cf3caa13d8ccdcb874496",
+      "bytes": 6887
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingCommands.cs",
+      "sha256": "441f38e44a779f71c46c2ce10c0518a9f3bc59414d45b553ff381b7828758a14",
+      "bytes": 1074
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingContexts.cs",
+      "sha256": "a42b5bcb6b8bd62f2ceab80ed411a3b851cafb78a5aa271e7e593bebda7cea21",
+      "bytes": 542
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingGuardContext.cs",
+      "sha256": "c58dca90e94d9f9def44e4f17231f2f69d30435a0c3d1d3f5f212cb5b793b222",
+      "bytes": 1139
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingMutationResult.cs",
+      "sha256": "228e04e96ec0dcecd444060934af74b54e14b7b137f77b41b3041291a186b021",
+      "bytes": 182
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueries.cs",
+      "sha256": "820feea8b5addc9d13be80b83f47ec2a0657710d76a0f37eff09cb47abd107da",
+      "bytes": 998
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingQueryResult.cs",
+      "sha256": "6fde1ea34a2d52fc04896f911827a080100ab301f6f4e75bcaf905de724500ff",
+      "bytes": 205
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingReasonCodes.cs",
+      "sha256": "3520f3a6c65107f996d6d7d19c36ce8cdcb73a92b235f802b4536018f53b4031",
+      "bytes": 1751
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingResult.cs",
+      "sha256": "83020308f15c15886adb2e29dd119d6c20dafddcc65c29efcc6e66e0efa6e3c2",
+      "bytes": 1530
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationFailure.cs",
+      "sha256": "2b6bf4b1bb765bf215d92518ba8f00a5ba2fba98c70c755dcc7e9c6f48ff1f2a",
+      "bytes": 150
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidationResult.cs",
+      "sha256": "499bdcd56ccecc6b85def5628740e0385cb2969747447d3dbb1d4d12b6ddf513",
+      "bytes": 310
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/CaseProcessing/PvgCaseProcessingValidator.cs",
+      "sha256": "932959b16198725a5066c57f42ccc46e770accaa9d90fe57f767d3de55bb2091",
+      "bytes": 9226
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/Diten.PvgService.Application.csproj",
+      "sha256": "b19d66c4cff5808a85090b28c64f533651fe08902e95cacd2319023190aa4304",
+      "bytes": 336
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/InMemoryMeddraCodingApplicationService.cs",
+      "sha256": "63d3e1da46706e7cf696da745659efaa5442120e90983d98564959471163dfe0",
+      "bytes": 5936
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/MeddraCoding/MeddraCodingApplicationContracts.cs",
+      "sha256": "be2c52022d525845e0e548e1546366c098e7f32492d4c5505005e64e5f4d731e",
+      "bytes": 13341
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/CreateIntakeDraftCommand.cs",
+      "sha256": "4517211835391c32bbdf4288849bd9e1dcc35eeae04664507f3cdad8feafee32",
+      "bytes": 267
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftByIdQuery.cs",
+      "sha256": "88eaaf8f4f6ea68b1748b7c3f457ae087bd61e423e78edbcf4e29f4aa8b56ef6",
+      "bytes": 253
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/GetIntakeDraftListQuery.cs",
+      "sha256": "367dc97cc17b23d2cd8e0e0f5269b31fbaa647f38b6830427ebf87841addb96e",
+      "bytes": 340
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgEvidenceLinkPort.cs",
+      "sha256": "180c61bf9d598be109c7b954c9db1a920c135fac97b5f22287e4ac326aba18eb",
+      "bytes": 243
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgFieldSecurityPolicy.cs",
+      "sha256": "a7ddc6ac260d86bae8f1b1f4ae7df90bcb6505fb9bdee94bcbef139fb4423426",
+      "bytes": 247
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgIntakeDraftStore.cs",
+      "sha256": "5849a4dbd0286fae86d56b342a25a1531c783735ffee94ef8acc5c89f7dabebd",
+      "bytes": 2305
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgPermissionGate.cs",
+      "sha256": "d287ad492049678a11a3cb88ecaccc7c00d91ad25d70b1af0f833149821f3475",
+      "bytes": 245
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/IPvgWorkflowTransitionGate.cs",
+      "sha256": "cc615e7bc8b3b6618647404b633fc9ee64b998249626f8cc6fef8f1a0f602ac8",
+      "bytes": 255
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgActorContext.cs",
+      "sha256": "ddbbc57bdffc46376141d335a7f64392508bb7b90d85cd9494f86b0ceeceb43e",
+      "bytes": 126
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationOutcome.cs",
+      "sha256": "ab5eb6d4fef97dbb42b50f166077675fd41cfe060a81d647567bb0b4967b0c0b",
+      "bytes": 149
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationReasonCodes.cs",
+      "sha256": "6008f2559234a638d6c2f698c9281563958ccf6b805b9d398bf7006f0c803171",
+      "bytes": 274
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationResult.cs",
+      "sha256": "d1be841869fb1e895935af1d1ab17ab5225705c485f9ccd4395867be04456240",
+      "bytes": 870
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgApplicationSuccessMetadata.cs",
+      "sha256": "c81ea38b57323be197c76013613ee07426679a5b46e03cdd74870d789ea86a14",
+      "bytes": 251
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgAuditIntent.cs",
+      "sha256": "a999da8567ab5e5b26ba63678c0dedca44ea018d5908971f0fbf719a8e367cbc",
+      "bytes": 366
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCorrelationContext.cs",
+      "sha256": "a6f21f36d9625139456d3ccd48b4f812d5631f7725ca37a9c25db406b83f7550",
+      "bytes": 120
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgCreateIntakeDraftRequest.cs",
+      "sha256": "1965c16b26c74c56647dd846167929fcacc89ad9acd046793cf3509fa91446c6",
+      "bytes": 861
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgEvidenceLinkRequest.cs",
+      "sha256": "ae5e0fd3b7c0a0681f211e62fd2b78684a5652cae3fe5bf61843d96c98e050c0",
+      "bytes": 304
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgFieldSecurityRequest.cs",
+      "sha256": "35ae113423c0dd498bcdcf6d985cca1a1d6c9259918d6c22c2188ca10315cb30",
+      "bytes": 320
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftApplicationService.cs",
+      "sha256": "d91895e2493ee5482df95d2ec9a799407c7ce6f8dbb60aaa423c65f441817d27",
+      "bytes": 36843
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftMutationResult.cs",
+      "sha256": "6ca2058587294919122c0fed50a24a42b7f93dae5ebb4b536c7b8c03de1dd587",
+      "bytes": 229
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftQueryResult.cs",
+      "sha256": "b99f513d66b3545dd779fdcf48c90111b2d9b5a890d2a50d82584d58147d9393",
+      "bytes": 329
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftSummary.cs",
+      "sha256": "06751f12709521e8a04dc70ae457edc25be328bf71fa2f06cc9e34ae0268ad0c",
+      "bytes": 218
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeDraftValidator.cs",
+      "sha256": "6c0f15368280ec26a423fceeb71e51588239c3b04ba802c1c4141d96b7c8951c",
+      "bytes": 18008
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgIntakeProductLineRequest.cs",
+      "sha256": "befb63bcf045996f59a672013beeebed8f9fb929a3e3a66349ba561610e8f8d5",
+      "bytes": 254
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionDecision.cs",
+      "sha256": "e54e42fc5d6fa7e72d92f42808ff554f68531b0ef485ea3a3fb5aaf1c5b97593",
+      "bytes": 325
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionReasonCodes.cs",
+      "sha256": "0bf85714da726dabc6602a2e7b6070722df13bda8c638581dfc2ce66cb6099ad",
+      "bytes": 430
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPermissionRequest.cs",
+      "sha256": "5b069639d533a126f7b210e74e99f5af023d99f15c92525de9471c29df54533c",
+      "bytes": 282
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgPortDecision.cs",
+      "sha256": "d61fec50d6d83bbd920da64bc0d292fa0d76fdc385c0e00b50cb844e29baa4a4",
+      "bytes": 695
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgRouteIntakeDraftRequest.cs",
+      "sha256": "b9bcbf9b24449783027ce06e9b510527384c7975bc5a55022b2a61e6ea4d58d7",
+      "bytes": 129
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgServerTenantContext.cs",
+      "sha256": "274667de0fdc126eed2007cc7183b3c55d6e72137ecdb457308d1338f2430b10",
+      "bytes": 116
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgTriageIntakeDraftRequest.cs",
+      "sha256": "bd3b114fea7ffb992290417a82bc745f81952fa0946ffbfb6694993f9e947441",
+      "bytes": 245
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgUpdateIntakeDraftRequest.cs",
+      "sha256": "264d697a7861e8cc274d4da9e759a85cc01050d18ca14e76cd1d26ca614c6057",
+      "bytes": 892
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationFailure.cs",
+      "sha256": "49f0f27865549d3912b8615bd08322223a6c024d16622ef766a98cbb65004e9b",
+      "bytes": 183
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationReasonCodes.cs",
+      "sha256": "9d24d0479b8b9987071dfb55235e5ea3c3b50505083ecdabb0fcae46f91a258e",
+      "bytes": 1153
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgValidationResult.cs",
+      "sha256": "c246ef76bb9a21c3b6a25815a315e39ee7019366866b61c7cf0d2c33d5c89b91",
+      "bytes": 263
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/PvgWorkflowTransitionRequest.cs",
+      "sha256": "9bf56dc1427edcd8893443b0c88cfe46dd4cc59cb31a93c89272163bccf52395",
+      "bytes": 353
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/RouteIntakeDraftCommand.cs",
+      "sha256": "6d1473523886a05f4c50bce1b3a888589a1a18ce8eaadd870498320a1e088a0d",
+      "bytes": 327
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/TriageIntakeDraftCommand.cs",
+      "sha256": "b74d12c87ee1a3aa249b59217c3709759a215a4d1e49f101fdcb8ebd66fb41f9",
+      "bytes": 329
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/RegPvBase/UpdateIntakeDraftCommand.cs",
+      "sha256": "843e859d0734b5ec06cf52343bd74c8b1787bbf78307b481e990a4cb861924bf",
+      "bytes": 329
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/InMemorySignalManagementService.cs",
+      "sha256": "6ce2ff6d0b0041b2d0693667612a07fd4f44372a1a8d7ddb4bea3c7895c9f37f",
+      "bytes": 9547
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Application/SignalManagement/SignalManagementApplicationContracts.cs",
+      "sha256": "087fd01213faa8a271ed95363692911dc9be8a981594a833de840cb5a58a1aec",
+      "bytes": 17824
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/Mod0230HandoffReference.cs",
+      "sha256": "61f510da3d1d0f3da6adcd029e3c1b4f0db4a4063f5c38149fe58b5bbc61e846",
+      "bytes": 313
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMaster.cs",
+      "sha256": "d6ebf4cb95c7691e150baab03220309dc26d56ec32a87fe91a5b2176f2358dcf",
+      "bytes": 1582
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SafetyCaseMasterStatus.cs",
+      "sha256": "e2562d3225d15366a5335ad40d369e5dfc231677d31df7a1e619647e59ce4e4d",
+      "bytes": 326
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumAssessment.cs",
+      "sha256": "628a608bebb0e47c26a93a44c669edec30c7493c7a9299c9c61b31484c829b15",
+      "bytes": 674
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/CaseProcessing/SignalMinimumLifecycleState.cs",
+      "sha256": "915bb38c91513aca8d3fb521ccbfa684c584685dd5bcafa90b3bc09cf77cc7d9",
+      "bytes": 386
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/Diten.PvgService.Domain.csproj",
+      "sha256": "0c8774da4f6f49fb6579de656f6fb41d99ef3c8178ef8945068c40e4e4d22897",
+      "bytes": 211
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/MeddraCoding/MeddraCodingDomainContracts.cs",
+      "sha256": "046456ee140e6139ea0c34b9e2c1638b9a2b5a137e872ea75fb770e09092be74",
+      "bytes": 1727
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgFieldSensitivity.cs",
+      "sha256": "f4f0ab0a21f2908b6d4770264d15d2ca6cc5670815f151e5fdc8af68ca88cf80",
+      "bytes": 188
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeField.cs",
+      "sha256": "cfe32382ac110275f3fbbe9341b807c7c2ffe6ef091601f7768614d7b222d030",
+      "bytes": 1022
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeFieldDefinition.cs",
+      "sha256": "710dceffeb5958f899ef5df9f2ca538bdc814b310f958d27f8a0ba00c46b4182",
+      "bytes": 3495
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOperation.cs",
+      "sha256": "3fb679385d3acaf7182816fc310536ca375fbf687348035fbea18bb3bbd636c3",
+      "bytes": 188
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeOptionSets.cs",
+      "sha256": "4ae9cad4353391cc18d7684c00bb3a0e4d2093a6c8116fb4d2cf5345e9b3e210",
+      "bytes": 934
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeProductLine.cs",
+      "sha256": "8236e9ec6c7cb2b077a483a62fab0d2f02d1ec1bad0ba3fb091d1eca6321a487",
+      "bytes": 240
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgIntakeStatus.cs",
+      "sha256": "8eb526f969fc2773f71c30323e5bf5cfc30f308449d4d47ea1b237a62ece8fc5",
+      "bytes": 228
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterCrmSearchState.cs",
+      "sha256": "54d020b732d4378c9cb9b19c1e8c115fcd836a051dcfb3bf7d7d5c9308942104",
+      "bytes": 158
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgReporterSource.cs",
+      "sha256": "a485a62db452d9e0aefdc959af69929167a184f9c28f133ac33cfb84a8b6df74",
+      "bytes": 141
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgSafeReasonCodes.cs",
+      "sha256": "28c04466df93b52fe03b9206fa2af19e348ccbed6f372ccb6ba9c33aff3336af",
+      "bytes": 382
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/PvgTriageOutcome.cs",
+      "sha256": "fc5ce1f58b70b34e27453cf018a7da7079e75f00f4527af23e7d3d62ae185997",
+      "bytes": 140
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/RegPvBase/SafetyCaseIntake.cs",
+      "sha256": "7f0e32b67b5c61efe8f0c0b9c950f6054791a7641db0adc030aa742c36833b4a",
+      "bytes": 3019
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Domain/SignalManagement/SignalManagementDomainContracts.cs",
+      "sha256": "dcffaf5e1128812ecc27935816e185ad3b9ae209edc6eb78292281f7442d3136",
+      "bytes": 1803
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/Diten.PvgService.Infrastructure.csproj",
+      "sha256": "26e0aea021f6a4ea0c8fae551c10bee26d88d71365d0a60d1918d92d7950a7ac",
+      "bytes": 346
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllEvidenceLinkPort.cs",
+      "sha256": "7d78c9a3e5dcbfbaa7d78067b4b6710980025c36c7b8cd9c455235b7d7bcef07",
+      "bytes": 402
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllFieldSecurityPolicy.cs",
+      "sha256": "d847552d5741f23e3f01595ac3502e95a7d5cbfeef2abeace1f9070213ab0cac",
+      "bytes": 410
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllPermissionGate.cs",
+      "sha256": "d235e7bca84a917185a06a71816eeb5eee311b6a7e7d5afe59ba74418e8fdb25",
+      "bytes": 419
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/DenyAllWorkflowTransitionGate.cs",
+      "sha256": "9064b19b3786cdeb6ed567d0047707a97dc21e0c993a5e8acb89bfa0a5459bb9",
+      "bytes": 426
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/InMemoryPvgIntakeDraftRepository.cs",
+      "sha256": "ec2132db0cf6851759cd89a1d0c30a48f11df35b7d916ba8a64346fdd239e620",
+      "bytes": 9406
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Infrastructure/RegPvBase/PvgIntakeDraftIndexCatalog.cs",
+      "sha256": "f464d451d029e5d66c56c51161ecb5e3562a413bf91ef7fae6bd560ffcec3d5a",
+      "bytes": 1483
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/Diten.PvgService.Persistence.csproj",
+      "sha256": "d197653e5edc946946ad317aedfab624ddf04b9f3bcf1c64a42209867ac9acc8",
+      "bytes": 1193
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgIntakeDraftDocument.cs",
+      "sha256": "a3194e875d43be515b05d3074d85f5dafffcf11e1d4c146cd8565a4e4ec8fdf5",
+      "bytes": 3986
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgIntakeDraftDocumentMapper.cs",
+      "sha256": "bfd71918536aca2f53f507849174ae0dfc5a1ca209a19f1dc16fd378011ef1a6",
+      "bytes": 6702
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoContext.cs",
+      "sha256": "97348491c7076c8d859f1214b34efb2cc8eb358b9d7a431456f92e5d8a5005d5",
+      "bytes": 2814
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoIntakeDraftStore.cs",
+      "sha256": "0e458aba01407a55420b6747b9593e44b67482811184b4f455ff1c0ac8e734d6",
+      "bytes": 11472
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoSchemaBootstrap.cs",
+      "sha256": "d89c87474c92ae2f2bc5487698226bc5ad3d02a399bdcb64ca9670117b64919e",
+      "bytes": 5535
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgMongoStoreReadiness.cs",
+      "sha256": "e4f395506c363c021e29d8fac9e72a53f972e98b2df446f78a05e03bf185fc60",
+      "bytes": 1392
+    },
+    {
+      "path": "services/Diten.PvgService/src/Diten.PvgService.Persistence/PvgPersistenceServiceCollectionExtensions.cs",
+      "sha256": "0c08b0cf62def477ff79fb41670eb1fad60ab24014d24b6f214bdede22dc1499",
+      "bytes": 4556
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj",
+      "sha256": "278406f96cb884227448f0f04b57acc86839823b73e10050ced69ef9e74bf666",
+      "bytes": 1187
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgMongoTestHarness.cs",
+      "sha256": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+      "bytes": 15302
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Persistence/PvgPersistenceBoundaryScanTests.cs",
+      "sha256": "763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a",
+      "bytes": 20240
+    },
+    {
+      "path": "services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/PvgServiceApiHostTests.cs",
+      "sha256": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9",
+      "bytes": 129901
+    },
+    {
+      "path": "tests/known-failures-items.json",
+      "sha256": "7d3b08428aa4cccd10ab00cca3fb0453604fd9184bf0ba8129d83aed369acf21",
+      "bytes": 15697
+    },
+    {
+      "path": "tests/known-failures.tsv",
+      "sha256": "d921ea1f9dd1241661cadd364f6461dfb4bb05580e693e29783235e9fc1bf0f4",
+      "bytes": 3676
+    }
+  ],
+  "observed_CT_HEAD": "0b03b35075caba7e353e64f6f9fc7936f53d0d87",
+  "requested_model": "gpt-6.2-astra",
+  "requested_effort": "high",
+  "actual_model": "verilemiyor",
+  "actual_effort": "verilemiyor",
+  "environment": {
+    "DOTNET_ROOT": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-ct-tools-20261120\\dotnet8",
+    "DOTNET_CLI_HOME": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\dotnet-home",
+    "DOTNET_MULTILEVEL_LOOKUP": "0",
+    "DOTNET_GENERATE_ASPNET_CERTIFICATE": "false",
+    "NUGET_PACKAGES": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-dl12-prep-kanıt\\win-58920519-01\\cache\\nuget\\packages",
+    "TEMP": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\runtime",
+    "TMP": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-win-ct-work-1795202196361\\runtime",
+    "MSBUILDDISABLENODEREUSE": "1",
+    "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER": "1"
+  }
+}

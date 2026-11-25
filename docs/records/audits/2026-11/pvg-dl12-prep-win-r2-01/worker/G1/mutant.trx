@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="7040036d-ba6c-4400-b4cb-503b0a22c618" name="epenc@GMGRAPHIC 2026-11-20 22:34:58" runUser="GMGRAPHIC\epenc" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T22:34:58.7909281+04:00" queuing="2026-11-20T22:34:58.7909284+04:00" start="2026-11-20T22:34:57.9501920+04:00" finish="2026-11-20T22:34:58.7983026+04:00" />
+  <TestSettings name="default" id="93c1da8e-ef09-492f-9811-47217d382db3">
+    <Deployment runDeploymentRoot="epenc_GMGRAPHIC_2026-11-20_22_34_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="9d633b97-b3ea-4e5f-b083-906596e0d5c6" testId="57470346-841a-1c5f-f9ec-222a3c997c70" testName="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation" computerName="GMGRAPHIC" duration="00:00:00.0090944" startTime="2026-11-20T22:34:58.6859214+04:00" endTime="2026-11-20T22:34:58.6859402+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9d633b97-b3ea-4e5f-b083-906596e0d5c6">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.DoesNotContain() Failure: Item found in collection&#xD;
+                                                            ↓ (pos 12)&#xD;
+Collection: [···, "--setParameter", "enableTestCommands=1", "--nounixsocket", "--replSet", "pvgintake", ···]&#xD;
+Found:      "--nounixsocket"</Message>
+          <StackTrace>   at Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation() in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G1\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Persistence\PvgPersistenceBoundaryScanTests.cs:line 207&#xD;
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation" storage="c:\users\epenc\appdata\local\temp\pvg-dl12-prep-win-r2-evidence\g1\src\services\diten.pvgservice\tests\diten.pvgservice.api.tests\bin\debug\net8.0\diten.pvgservice.api.tests.dll" id="57470346-841a-1c5f-f9ec-222a3c997c70">
+      <Execution id="9d633b97-b3ea-4e5f-b083-906596e0d5c6" />
+      <TestMethod codeBase="C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G1\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests" name="Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="57470346-841a-1c5f-f9ec-222a3c997c70" executionId="9d633b97-b3ea-4e5f-b083-906596e0d5c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Bir Listede Olmayan Sonuçlar" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Yüklenen Tüm Sonuçlar" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.34)&#xD;
+[xUnit.net 00:00:00.11]   Discovering: Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.23]   Discovered:  Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.23]   Starting:    Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.29]       Assert.DoesNotContain() Failure: Item found in collection&#xD;
+[xUnit.net 00:00:00.29]                                                                   ↓ (pos 12)&#xD;
+[xUnit.net 00:00:00.29]       Collection: [···, "--setParameter", "enableTestCommands=1", "--nounixsocket", "--replSet", "pvgintake", ···]&#xD;
+[xUnit.net 00:00:00.29]       Found:      "--nounixsocket"&#xD;
+[xUnit.net 00:00:00.29]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.29]         C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G1\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\Persistence\PvgPersistenceBoundaryScanTests.cs(207,0): at Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation()&#xD;
+[xUnit.net 00:00:00.29]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+[xUnit.net 00:00:00.30]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.30]   Finished:    Diten.PvgService.Api.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="GMGRAPHIC" outcome="Error" timestamp="2026-11-20T22:34:58.6842123+04:00">
+        <Text>[xUnit.net 00:00:00.29]     Diten.PvgService.Api.Tests.Persistence.PvgPersistenceBoundaryScanTests.Pvg_mongo_launch_arguments_follow_the_host_platform_without_weakening_isolation [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

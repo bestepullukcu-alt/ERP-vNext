@@ -848,6 +848,7 @@
   <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>内容范围</value></data>
   <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>内容集</value></data>
   <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>资格</value></data>
+  <data name="Perm.Entity.MASTER" xml:space="preserve"><value>主数据记录</value></data>
   <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>访问频率策略</value></data>
   <data name="Perm.Entity.CASES" xml:space="preserve"><value>案例</value></data>
   <data name="Perm.Entity.CONSUMPTIONS" xml:space="preserve"><value>消耗申报</value></data>
@@ -1219,6 +1220,8 @@
   <data name="Nav.Module.SAFETYSTOCKOPTIMIZATION" xml:space="preserve"><value>安全库存优化</value></data>
   <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
   <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>需求计划</value></data>
+  <data name="Nav.Domain.PHARMACOVIGILANCE" xml:space="preserve"><value>药物警戒</value></data>
+  <data name="Nav.Module.CASEINTAKETRIAGE" xml:space="preserve"><value>病例接收与分诊</value></data>
   <data name="Nav.Module.PUTAWAYPICKINGPACKING" xml:space="preserve">
     <value>仓库作业</value>
   </data>
@@ -1287,5 +1290,17 @@
   </data>
   <data name="Nav.Module.WAVEPLANNING" xml:space="preserve">
     <value>波次计划</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGE" xml:space="preserve">
+    <value>病例接收与分诊</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGECREATE" xml:space="preserve">
+    <value>创建接收草稿</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEEDIT" xml:space="preserve">
+    <value>更新接收草稿</value>
+  </data>
+  <data name="Nav.Page.CASEINTAKETRIAGEDETAILS" xml:space="preserve">
+    <value>接收草稿详情</value>
   </data>
 </root>

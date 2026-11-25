@@ -1,0 +1,57 @@
+{
+  "kind": "read-only XML/source comparison; not render/native language/test PASS",
+  "source_head": "3cb5131f0d89a3a2219c1fe594f868e2758aa794",
+  "approved_content_sha256": "875b6a025a64bac11cb923092015858d5e6b7615b2d684a7172ffb2327b405e4",
+  "comparisons": 28,
+  "title_key_map": {
+    "CASEINTAKETRIAGE": "PageTitle",
+    "CASEINTAKETRIAGECREATE": "CreateTitle",
+    "CASEINTAKETRIAGEEDIT": "EditTitle",
+    "CASEINTAKETRIAGEDETAILS": "DetailTitle"
+  },
+  "languages": [
+    {
+      "language": "en",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.en.resx",
+      "git_sha256": "c84acdcf5f0f3b69d8eadbe2d90ee06f05aabf182c1afed62c4a62d7f58ffeba",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "tr",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.tr.resx",
+      "git_sha256": "bed24e9c64a072f00c6c8cdb9c7a0b7edb553e9d55464c5a37fc168b1c554e0e",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "fr",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.fr.resx",
+      "git_sha256": "7a34297b156f66a4bd2c2b5c48e68f229e6cb897bca9084b0c8c6bcbd07bf2a1",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "es",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.es.resx",
+      "git_sha256": "81f09e201114702145470871f1a4dd0efd4ab1dc68fa52e7a635286f5b97dc46",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "zh",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.zh.resx",
+      "git_sha256": "e153dac3a7c1b9c97920eff85fb02184f378b6e309fe36cfee92f2ba3befbe37",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "ar",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ar.resx",
+      "git_sha256": "834f7262c58f10cac74963b1e4d440935d174480772ae41b42eedd1105dfbc55",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    },
+    {
+      "language": "ru",
+      "source_path": "frontend/Diten.Web/Resources/Views/Pharmacovigilance/CaseIntakeTriage/CaseIntakeTriageIndex.ru.resx",
+      "git_sha256": "98ea5b3ad0162cf83c3ead6c942cfef2d668428215ab7c47ee0b492a8168b322",
+      "all_four_approved_nav_titles_equal_existing_page_titles": true
+    }
+  ],
+  "actual_multilingual_render_required_after_integration": true
+}

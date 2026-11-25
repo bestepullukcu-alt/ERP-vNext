@@ -1,0 +1,78 @@
+{
+  "actual-commands.json": {
+    "bytes": 3418,
+    "sha256": "817fd6cffa9df1db8b4a839e556b319c18107a80bfe59b79b2543d2597d23c64"
+  },
+  "assembly-freshness.json": {
+    "bytes": 1869,
+    "sha256": "51eb1eb95ffebffe93844518f01fbb96f5c3f99ef86fbc9c0028cc2a30a855f4"
+  },
+  "baseline-runner.py": {
+    "bytes": 10021,
+    "sha256": "b9d79182c87091d0611163a7ec1cc996693583a68e465e26aa4fb1c0b3c1e2e1"
+  },
+  "baseline-summary.json": {
+    "bytes": 1005,
+    "sha256": "1f5446d6438dd482fbfe35c5ef8bc06068cff44534b52b6895bd3cdc41fce34b"
+  },
+  "be-sources-match-web-codebase.json": {
+    "bytes": 10201,
+    "sha256": "f5069c48545d746fcfdae28a7919aaa0a861a3009f8311d9101b0b85bca0bf33"
+  },
+  "cleanup-after.json": {
+    "bytes": 231,
+    "sha256": "ffabd9967210491ce1aea80dc9d972c30c0b7806b904ec59196f80a287788cee"
+  },
+  "dotnet-version.log": {
+    "bytes": 9,
+    "sha256": "f2b6fa0c5e7ae5edd939389eef1878aad8f9f436f76375b72f3fc2f2cd5e1d84"
+  },
+  "existing-web-loss-binding.json": {
+    "bytes": 1248,
+    "sha256": "ec4d7a64f09cf816106eea86bd0d4ba8410448a71ab751d30cbf34fbf242b15b"
+  },
+  "full-snapshot-manifest.json": {
+    "bytes": 6091292,
+    "sha256": "612e0ea7ae82f31e4ea1a50a072cee90a8445b51538357648a1f252220cc3f83"
+  },
+  "full-snapshot-manifest.json.gz": {
+    "bytes": 1345396,
+    "sha256": "5704cb41957c69b935952a78bd52438f5024bbe41bda0572f3eb4ca1b9387f1c"
+  },
+  "known-failures-check.log": {
+    "bytes": 101,
+    "sha256": "6d9aa8d1033d68f4ebd982a9ef35dd35413b94c088ca55b3a3bb4a79ae2b360e"
+  },
+  "regpvbase-baseline.trx": {
+    "bytes": 365206,
+    "sha256": "5a0a96385d5e3f4de6eabfee6ecd85e20c49391a7f3f5742dd769472325b1705"
+  },
+  "regpvbase-full.log": {
+    "bytes": 1556,
+    "sha256": "2cf90f6ad525cc0bd3fdfe03fa85896e77f68fc396afe3ab2d6cfe39edaf7111"
+  },
+  "restore.log": {
+    "bytes": 884,
+    "sha256": "073f782e843329db625105f6d1d2b0c74e2f8c81eeb267e9859bc7766b63394a"
+  },
+  "skip-check.log": {
+    "bytes": 151,
+    "sha256": "019ca418451a3332218f5fc5b62d6e4237a9759c336e85eab0bec248596c2113"
+  },
+  "source-after.json": {
+    "bytes": 630,
+    "sha256": "3ee7dfd7d7eba119e610a1ea0c7a69a557de140c41e0238308ffd53d44fa69ee"
+  },
+  "source-before.json": {
+    "bytes": 23505,
+    "sha256": "6662089428025063e33e925effdb1bde9d12e7561412fd8cbb1646bbf3ff1d5e"
+  },
+  "trx-summary.json": {
+    "bytes": 62098,
+    "sha256": "ec9087b1e46971acadb194313469dbd0815950aaac0adee818f4ef868596e71a"
+  },
+  "VERIFY-BE-BASELINE.txt": {
+    "bytes": 6389,
+    "sha256": "034a27aa56138cd8c25feb08a35de95c82cc35624ec6488c953dd29ee654b88f"
+  }
+}

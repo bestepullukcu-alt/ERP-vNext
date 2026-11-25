@@ -1,0 +1,9 @@
+{
+  "head": "3b5cf01df7def7cc3f4eb00a664dba04f46d3e0a",
+  "archive_sha256": "670d6b3a5ff2d62193ab03567113f11102be6e4c525512d705d385b69589bf09",
+  "original": {
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgMongoTestHarness.cs": "f8a91d03ab788143a62b2578f774d74c76b847e3a3fbb7a513f6edf06a78b053",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\Persistence\\PvgPersistenceBoundaryScanTests.cs": "763b3305f1207d7228e099437babc87bafb8140d43956b46b6aaf8933bba068a",
+    "services\\Diten.PvgService\\tests\\Diten.PvgService.Api.Tests\\PvgServiceApiHostTests.cs": "d1d855789e25723acf2b50103cf55149ca9e4cf15b99829a2c361862aec116d9"
+  }
+}

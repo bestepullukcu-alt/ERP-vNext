@@ -1,0 +1,30 @@
+{
+  "kind": "Actual unfiltered Web payload views only; terminal postchecks not yet accepted",
+  "source_head": "51c58549b7c2e7a0a232e74a15054f9b2b8b51dd",
+  "actual_test_exit": 1,
+  "total": 4585,
+  "passed": 4584,
+  "failed": 1,
+  "skipped": 0,
+  "actual_PVG_78_names_and_multiplicities_match_independent_E2": true,
+  "views": [
+    {
+      "view_path": "full-web.trx",
+      "representation": "canonical LF view; not original raw SHA",
+      "source_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-full-web\\84e850957f93401d8296171b6ab57601\\evidence\\full-web.trx",
+      "raw_bytes": 13591831,
+      "raw_sha256": "b292c2a99db9c4b8b68e3b07ee3ed6b190b40bfc861ff1ad7c4501d1aea5ad73",
+      "lf_bytes": 13564111,
+      "lf_sha256": "24095cbb4ecdeaf81061ce33242dc1bd071ee6c8a99ef830060452536ef7ca2f"
+    },
+    {
+      "view_path": "WEB-ACTUAL-TEST-SUMMARY.json",
+      "representation": "canonical LF view; not original raw SHA",
+      "source_path": "C:\\Users\\epenc\\AppData\\Local\\Temp\\pvg-final-full-web\\84e850957f93401d8296171b6ab57601\\evidence\\actual-test-summary.json",
+      "raw_bytes": 740199,
+      "raw_sha256": "8346fe7196ffd2f502e813e949f59cdebd078f6055680088442d287194af1f32",
+      "lf_bytes": 740199,
+      "lf_sha256": "8346fe7196ffd2f502e813e949f59cdebd078f6055680088442d287194af1f32"
+    }
+  ]
+}

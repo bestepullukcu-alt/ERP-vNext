@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="4bb43779-36c6-45fe-801e-08a3500fb40b" name="epenc@GMGRAPHIC 2026-11-20 22:39:13" runUser="GMGRAPHIC\epenc" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-20T22:39:13.9577714+04:00" queuing="2026-11-20T22:39:13.9577718+04:00" start="2026-11-20T22:39:13.0471270+04:00" finish="2026-11-20T22:39:13.9643857+04:00" />
+  <TestSettings name="default" id="0ecdf483-f9b4-4399-866e-ab30647c64ef">
+    <Deployment runDeploymentRoot="epenc_GMGRAPHIC_2026-11-20_22_39_13" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="edcdb4f8-c515-427c-8795-2293abec2fe8" testId="988b1eae-c9e1-373d-774e-d86ebb267047" testName="Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory" computerName="GMGRAPHIC" duration="00:00:00.0374656" startTime="2026-11-20T22:39:13.8493851+04:00" endTime="2026-11-20T22:39:13.8494100+04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="edcdb4f8-c515-427c-8795-2293abec2fe8">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Throws() Failure: No exception was thrown&#xD;
+Expected: typeof(System.UnauthorizedAccessException)</Message>
+          <StackTrace>   at Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory() in C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G6\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\PvgServiceApiHostTests.cs:line 1901&#xD;
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory" storage="c:\users\epenc\appdata\local\temp\pvg-dl12-prep-win-r2-evidence\g6\src\services\diten.pvgservice\tests\diten.pvgservice.api.tests\bin\debug\net8.0\diten.pvgservice.api.tests.dll" id="988b1eae-c9e1-373d-774e-d86ebb267047">
+      <Execution id="edcdb4f8-c515-427c-8795-2293abec2fe8" />
+      <TestMethod codeBase="C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G6\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\bin\Debug\net8.0\Diten.PvgService.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.PvgService.Api.Tests.PvgServiceApiHostTests" name="Configuration_scan_fails_closed_on_inaccessible_directory" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="988b1eae-c9e1-373d-774e-d86ebb267047" executionId="edcdb4f8-c515-427c-8795-2293abec2fe8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Bir Listede Olmayan Sonuçlar" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Yüklenen Tüm Sonuçlar" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="1" executed="1" passed="0" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.34)&#xD;
+[xUnit.net 00:00:00.12]   Discovering: Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.27]   Discovered:  Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.27]   Starting:    Diten.PvgService.Api.Tests&#xD;
+[xUnit.net 00:00:00.36]       Assert.Throws() Failure: No exception was thrown&#xD;
+[xUnit.net 00:00:00.36]       Expected: typeof(System.UnauthorizedAccessException)&#xD;
+[xUnit.net 00:00:00.36]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.36]         C:\Users\epenc\AppData\Local\Temp\pvg-dl12-prep-win-r2-evidence\G6\src\services\Diten.PvgService\tests\Diten.PvgService.Api.Tests\PvgServiceApiHostTests.cs(1901,0): at Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory()&#xD;
+[xUnit.net 00:00:00.36]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)&#xD;
+[xUnit.net 00:00:00.36]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.37]   Finished:    Diten.PvgService.Api.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="GMGRAPHIC" outcome="Error" timestamp="2026-11-20T22:39:13.8467041+04:00">
+        <Text>[xUnit.net 00:00:00.36]     Diten.PvgService.Api.Tests.PvgServiceApiHostTests.Configuration_scan_fails_closed_on_inaccessible_directory [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

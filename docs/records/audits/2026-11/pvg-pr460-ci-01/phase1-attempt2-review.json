@@ -1,0 +1,91 @@
+{
+  "kind": "Read-only actual Phase1 attempt2 source-bound evidence; earlier attempt1 failure retained",
+  "recorded_utc": "2026-11-23T09:22:06.176031+00:00",
+  "requested_model_effort": "inherited parent / high",
+  "actual_model": "verilemiyor",
+  "actual_effort": "verilemiyor",
+  "run_id": 45141578014,
+  "run_attempt": 2,
+  "job_id": 137587863018,
+  "event": "pull_request",
+  "status": "completed",
+  "conclusion": "success",
+  "H": "82bc773938baa6689f0089b89c765b60f4411932",
+  "B": "58eb6fa901683296a0049a06910dc4b12e970950",
+  "C_from_real_checkout_log": "d4aff06421eaf9e3a64f8d462b671cee40c1f88e",
+  "commit_object_type": "commit",
+  "actual_parents": [
+    "58eb6fa901683296a0049a06910dc4b12e970950",
+    "82bc773938baa6689f0089b89c765b60f4411932"
+  ],
+  "tree_C": "2b1bf19163ba07c304dd214ef22d91ab03bb20a3",
+  "tree_H": "2b1bf19163ba07c304dd214ef22d91ab03bb20a3",
+  "metadata_sha256": "4fa4efb3ccafaa473d9c116e0a46ed1749cb48d6aef08f0d82b0ea4868f60771",
+  "attempt2_log_sha256": "7fa38652a5359d76ce81ff49af359557379a54c7e0bdb1c1fd9590adea64b731",
+  "attempt2_log_bytes": 726057,
+  "attempt2_exit_cli": 0,
+  "attempt2_summaries": {
+    "tenancy": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "architecture": {
+      "total": 231,
+      "passed": 231,
+      "failed": 0,
+      "skipped": 0
+    },
+    "web": {
+      "total": 4585,
+      "passed": 4585,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "raw_source_and_summary_rows": [
+    {
+      "raw_log_line": 175,
+      "text": "phase1\tCheckout\t2026-11-23T09:04:35.3306804Z HEAD is now at d4aff064 Merge 82bc773938baa6689f0089b89c765b60f4411932 into 58eb6fa901683296a0049a06910dc4b12e970950"
+    },
+    {
+      "raw_log_line": 178,
+      "text": "phase1\tCheckout\t2026-11-23T09:04:35.3461541Z d4aff06421eaf9e3a64f8d462b671cee40c1f88e"
+    },
+    {
+      "raw_log_line": 2786,
+      "text": "phase1\tRun Phase 1 Gates\t2026-11-23T09:13:49.8317291Z Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 592 ms - TenantArchitecture.TenancyTests.dll (net8.0)"
+    },
+    {
+      "raw_log_line": 2794,
+      "text": "phase1\tRun Phase 1 Gates\t2026-11-23T09:14:04.4832247Z Passed!  - Failed:     0, Passed:   231, Skipped:     0, Total:   231, Duration: 11 s - TenantArchitecture.ArchitectureTests.dll (net8.0)"
+    },
+    {
+      "raw_log_line": 2841,
+      "text": "phase1\tRun Phase 1 Gates\t2026-11-23T09:17:07.7397370Z Passed!  - Failed:     0, Passed:  4585, Skipped:     0, Total:  4585, Duration: 2 m 18 s - Diten.Web.Tests.dll (net8.0)"
+    },
+    {
+      "raw_log_line": 2842,
+      "text": "phase1\tRun Phase 1 Gates\t2026-11-23T09:17:08.2175988Z [phase1] gates passed"
+    }
+  ],
+  "attempt1_preserved": {
+    "path": "phase1-failed-steps.stdout.txt",
+    "sha256": "0f0fe48862a37f1ad72df07870450da87731a817ea6d003ee3db6a71158128ce",
+    "web": {
+      "total": 4585,
+      "passed": 4583,
+      "failed": 2,
+      "skipped": 0
+    },
+    "failure1": "Inventory.MvpOneTabCaseTests.The_rendered_expiry_tabs_draw_their_text_untransformed: inotify128/openFDlimit IOException during host startup",
+    "failure2": "Lists.SandopPlansPageRenderTests.A_malformed_scope_reaches_the_workspace_as_empty_so_the_script_fails_closed: expected data-legal-entity-id empty missing; cause unproven"
+  },
+  "interpretation": "Same committed source passed on retry. No code change, fix, PVG exoneration, baseline-inherited failure or identified root cause is established. Any new final H invalidates reuse for final-source closure.",
+  "service_evidence_reference": "SOURCE-BOUND-PVG-CI.json (root-produced independent existing service binding; not rerun or reclassified here)",
+  "local_expected_dirty_state": "?? docs/records/decisions/2026-11/pvg-mod0230-rev22-owner-approval-01.md\n?? docs/records/reviews/MOD-0230/2026-11-23-rev22-scope-01/",
+  "direct_H_parent": true,
+  "direct_B_parent": true,
+  "tree_equal": true
+}

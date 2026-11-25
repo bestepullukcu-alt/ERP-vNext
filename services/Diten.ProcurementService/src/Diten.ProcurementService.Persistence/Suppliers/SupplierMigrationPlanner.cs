@@ -227,6 +227,10 @@ public static class SupplierMigrationPlanner
                 SanctionsOutcome = s.OnboardingCase.SanctionsOutcome,
                 Documents = s.OnboardingCase.Documents.Select(Copy).ToList()
             },
+        // K-4 (Revizyon 9, Cihan 2026-11-02): today every supplier can be bought from — the migrated relationship is a
+        // purchasing relationship since the old record was created (PurchasingEnabled is not part of eligibility, S-1).
+        PurchasingEnabled = true,
+        PurchasingSince = s.CreatedAt,
         SourceSystem = s.SourceSystem,
         ExternalRef = s.ExternalRef,
         IdempotencyKey = s.IdempotencyKey,

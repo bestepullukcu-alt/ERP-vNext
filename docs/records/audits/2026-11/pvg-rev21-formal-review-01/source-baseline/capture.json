@@ -1,0 +1,18 @@
+[
+  {
+    "source_commit": "6902667db14e9ba2f0bd5518fccf228608913260",
+    "source_path": "execution/domains/pharmacovigilance/module-packs/MOD-0230-case-intake-triage.md",
+    "snapshot_file": "pack-rev20.snapshot.txt",
+    "git_lf_sha256": "186ad9675e2f5219d240080f93012c54f266561f6ce70451f96aaeddb242aa01",
+    "bytes": 451065,
+    "authority": "historical evidence only; canonical authority remains execution/domain pack"
+  },
+  {
+    "source_commit": "6902667db14e9ba2f0bd5518fccf228608913260",
+    "source_path": "execution/domains/pharmacovigilance/domain-config.md",
+    "snapshot_file": "domain-rev20.snapshot.txt",
+    "git_lf_sha256": "914c0c1dab0979d3ec48e3d4f6e08646ad0bf4494f9b73a97fa27bca4c5ead9c",
+    "bytes": 18582,
+    "authority": "historical evidence only; canonical authority remains execution/domain pack"
+  }
+]

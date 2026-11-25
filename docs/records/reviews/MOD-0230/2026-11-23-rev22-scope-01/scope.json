@@ -1,0 +1,408 @@
+{
+  "status": "REVISION 22 DRAFT ONLY; not consent/dispatch",
+  "baseline": "82bc773938baa6689f0089b89c765b60f4411932",
+  "files": [
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.en.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.en.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.en.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.tr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.tr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.tr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.fr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer",
+      "existing_value_changes": [
+        {
+          "path": "frontend/Diten.Web/Resources/SharedResource.fr.resx",
+          "key": "Nav.Domain.PHARMACOVIGILANCE",
+          "old_value": "Pharmacovigilance",
+          "proposed_value": "Pharmacovigilance (surveillance des médicaments)"
+        }
+      ]
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.fr.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.es.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.es.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.es.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.zh.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.zh.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.zh.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.ar.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.ar.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ar.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/PageHelpResource.ru.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Help.CASEINTAKETRIAGE.Purpose",
+        "Help.CASEINTAKETRIAGE.Audience",
+        "Help.CASEINTAKETRIAGE.Step1Title",
+        "Help.CASEINTAKETRIAGE.Step1",
+        "Help.CASEINTAKETRIAGECREATE.Purpose",
+        "Help.CASEINTAKETRIAGECREATE.Audience",
+        "Help.CASEINTAKETRIAGECREATE.Step1Title",
+        "Help.CASEINTAKETRIAGECREATE.Step1",
+        "Help.CASEINTAKETRIAGEEDIT.Purpose",
+        "Help.CASEINTAKETRIAGEEDIT.Audience",
+        "Help.CASEINTAKETRIAGEEDIT.Step1Title",
+        "Help.CASEINTAKETRIAGEEDIT.Step1",
+        "Help.CASEINTAKETRIAGEDETAILS.Purpose",
+        "Help.CASEINTAKETRIAGEDETAILS.Audience",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1Title",
+        "Help.CASEINTAKETRIAGEDETAILS.Step1"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/SharedResource.ru.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "Nav.Page.CASEINTAKETRIAGE",
+        "Nav.Page.CASEINTAKETRIAGECREATE",
+        "Nav.Page.CASEINTAKETRIAGEEDIT",
+        "Nav.Page.CASEINTAKETRIAGEDETAILS"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Resources/Views/Governance/RoleAssignments/RoleAssignmentsIndex.ru.resx",
+      "change": "add only listed resource keys",
+      "keys": [
+        "ActionVerb_Triage",
+        "ActionVerb_Route"
+      ],
+      "scope": "shared; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Governance/RoleAssignments/_IndexL10n.cshtml",
+      "change": "add exactly two ActionVerbs mappings",
+      "mappings": {
+        "triage": "ActionVerb_Triage",
+        "route": "ActionVerb_Route"
+      },
+      "scope": "Access Governance shared screen; exact new owner/XMC-001 exception required",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/wwwroot/assets/js/Governance/RoleAssignments/perm-label.js",
+      "change": "add exactly two words to existing ACTION_FAMILIES",
+      "mappings": {
+        "triage": {
+          "tone": "success",
+          "icon": "bx-check-circle",
+          "analogy": "decide"
+        },
+        "route": {
+          "tone": "dark",
+          "icon": "bx-user-check",
+          "analogy": "assign/delegate"
+        }
+      },
+      "scope": "Access Governance shared behavior; exact new owner/XMC-001 exception required; semantic presentation recommendation, not approved",
+      "writer_group": "shared resources writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Index.cshtml",
+      "change": "add exactly one ViewData[\"PageCode\"] assignment in existing Razor setup block",
+      "value": "CASEINTAKETRIAGE",
+      "scope": "PVG-owned historical DL-7 path; not current DL-12 allowance; exact new worker scope required",
+      "writer_group": "PVG views writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Create.cshtml",
+      "change": "add exactly one ViewData[\"PageCode\"] assignment in existing Razor setup block",
+      "value": "CASEINTAKETRIAGECREATE",
+      "scope": "PVG-owned historical DL-7 path; not current DL-12 allowance; exact new worker scope required",
+      "writer_group": "PVG views writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Edit.cshtml",
+      "change": "add exactly one ViewData[\"PageCode\"] assignment in existing Razor setup block",
+      "value": "CASEINTAKETRIAGEEDIT",
+      "scope": "PVG-owned historical DL-7 path; not current DL-12 allowance; exact new worker scope required",
+      "writer_group": "PVG views writer"
+    },
+    {
+      "path": "frontend/Diten.Web/Views/Pharmacovigilance/CaseIntakeTriage/Details.cshtml",
+      "change": "add exactly one ViewData[\"PageCode\"] assignment in existing Razor setup block",
+      "value": "CASEINTAKETRIAGEDETAILS",
+      "scope": "PVG-owned historical DL-7 path; not current DL-12 allowance; exact new worker scope required",
+      "writer_group": "PVG views writer"
+    }
+  ],
+  "production_file_count": 27,
+  "test_file_count": 0,
+  "localized_value_count": 154,
+  "explicitly_unchanged": [
+    "manifest page/permission registration and hidden/unassignable flags",
+    "permission seed/grants/keys",
+    "service/controller/route/DTO/storage/audit behavior",
+    "existing tests/guard sources and all ledgers/waivers",
+    "PageHelpCatalog related pages/icons/tours",
+    "layouts and global .antigravity paths"
+  ],
+  "existing_value_change_count": 1,
+  "writer_groups": {
+    "shared resources writer": 23,
+    "PVG views writer": 4
+  }
+}
