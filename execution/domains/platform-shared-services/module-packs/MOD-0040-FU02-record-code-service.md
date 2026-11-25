@@ -17,34 +17,110 @@ parent: MOD-0040
 parent_meaning: Blueprint 8.8 MOD-0040 Canonical ID & Correlation Standard — repodaki MOD-0040 / MOD-0040-FU01 takma adları değil
 backlog: BL-565
 rule: RCS-001
-consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217, MOD-0178
+consumer_module: MOD-0126, MOD-0119, MOD-0120, MOD-0124, MOD-0289, MOD-0217, MOD-0178, MOD-0024 (DL-4, süreç içi), MOD-0361 (DL-4, süreç içi)
 contract_draft: docs/analysis/contracts/drafts/record-code-allocate-v1.0-proposal.md
-revision: r15 — bağımsız inceleme r14 KOŞULLU (0 ENGEL, 2 ORTA, 8 DÜŞÜK; hedef r14 sha256 1395202f, bulgu dosyası docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md, özet 8cc7dcb7) F-1…F-10 kapatıldı (Bölüm 19.7); sahip cevabı Q-8…Q-16 = A ve A-20 CT kararı kabul (docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25) → 24.2 karar; A-18 kalıcı kilit kararı (sahip kararları 04 eki, f827bf948) 24, 18.1, üst uyarı ve code_start'a işlendi; yeni AC yok, AC-67 / AC-68 / AC-69 / AC-72 / AC-73 / AC-74 adımları ve S-114…S-116 eklendi; DL-1 / DL-2 metni yalnız A-18 atıflarında değişti; künye ready-for-dev, approval_status pending — r15 onay satırı yok; r14 — DL-3 paket revizyonu (İKİSİ DE motoru — öneri, elle kod sahiplenmesi, gerekçeli değişiklik, kullanım kilidi, değişiklik geçmişi; RCS-001 §2, §5.8, §5.9, §5.10, §6); r13 onaylı (sha256 325e0624, approvals.tsv satır 73 sahip + 74 Ali, 2026-11-11) ve DL-2 VERIFIED (docs/records/audits/2026-11/mod-0040-fu02-dl2-fix01-ct-acceptance-2026-11-12.md); yeni AC-62…AC-75, sabotaj S-93…S-113, açık sorular Q-8…Q-16 (Bölüm 24.2), açık karar A-20 (DL-3 defter belirteci); ölçüm türü TTY (Görev Türü, MOD-0024) — Q-8 Ayle yazıldı; DL-1 ve DL-2 metni (AC-1…AC-61, S-1…S-92) ve sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmedi; künye ready-for-dev, approval_status pending — r14 onay satırı yok, DL-3 kodu r14'ün CT-APR-02 incelemesi ve r14 sha256'sına yazılan CT-APR-01 onay satırıyla açılır; r13 — bağımsız inceleme 04 tur 1 KOŞULLU (0 ENGEL, 4 ORTA, 9 DÜŞÜK; hedef r12 sha256 d29f9c5e, bulgu dosyası docs/records/reviews/MOD-0040-FU02/2026-11-10-d29f9c5e.md, özet 25888259) F-1…F-13 kapatıldı; sahip kararları 03 (Q-1 A, Q-2 A, Q-3 A, Q-4 A, Q-5 teyit, Q-6 A, Q-7 onay — docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-03.md) ve 04 (F-1 dar ayrı arayüz + XMC ek onayı InMemoryTenantOrganizationRepositories.cs, F-2 (b) ikinci okuma, F-4 A-18 = DL-2 canlıya alma kapısı — …-04.md) işlendi → K-16, K-17; Q-6 A gereği künye ready-for-dev, approval_status pending (onay satırı yok, kod izni yok); değişen bölümler künye, üst uyarı, 0 (ön kontrol r13), 0.1 (K-15 notu, K-16, K-17), 2.4, 3, 4.4, 5 (DL-2), 6, 7, 7.1, 8.13, 8.14, 8.15, 8.16 (yeni, sürüm notu), 11, 12, 13, 14, 16 (DL-2 giriş notu, AC-51…AC-61), 17 (test tablosu iki satır; S-78, S-80, S-82, S-84, S-85, S-87 metni; yeni S-88…S-92), 18, 18.1, 19.5 (yeni), 20 (FU-RCS-20), 21.4, 23 (DL-2 satırı), 24 (A-8, A-18), 24.1; DL-1 metni (AC-1…AC-47, S-1…S-73) ve sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmedi, yeni AC yok; r12 — DL-2 paket revizyonu (ORG / POS süreç içi bağlanma); girdi sahip kararı A-8 = LegalEntity (Beste 2026-11-10, docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-02.md @ 6609910c8) → K-15; DL-1 CT doğrulaması docs/records/audits/2026-11/mod-0040-fu02-dl1-ct-acceptance-2026-11-04.md; DL-1 metni (AC-1…AC-47, S-1…S-73) değişmedi, yalnız AC-9'a DL-2 notu; yeni AC-48…AC-61, S-74…S-87, açık sorular Q-1…Q-7; sözleşme RECORD-CODE-ALLOCATE 1.0.0 (FROZEN) değişmedi; künye draft — kod izni yok, yeni inceleme ve onay gerekir; r11 — r10 incelemeleri KOŞULLU (inceleme 03 tur 8, bulgu dosyası 2026-11-02-42b32c0a.md, özet 96476fa0; son bakış 01 tur 5, 2026-11-02-42b32c0a-son-bakis.md, özet fb4cf83e), aynı orta bulgu (AC-17 yarış ölçümü yürütücüyle kurulamaz); sahip kararı Beste 2026-11-02 "B — r11: yarış testi çıkarılır, ölçüm sıralı yapılır"; r11 = sıralı ölçüm + ilk kilit sınırı (Bölüm 8.6) + son bakış tur 5 F-2, F-3; yeni inceleme ve yeni onay gerekir; kapsam genişlemedi; r10 — r9 onaylı (approvals.tsv satırı 466aacfc9, r9 sha256 5fed433c); r10 = bağımsız son bakış 01 tur 4 düşük bulguları (bulgu dosyası 2026-11-02-5fed433c-son-bakis.md, özet 0e25482b, F-1…F-7), yeni onay gerekir; kapsam genişlemedi, yeni karar açılmadı; r9 — r8 sahip onayı (Beste, 2026-11-02, «onayla») + iki inceleme UYGUN (inceleme 03 tur 6, özet f9c26991; son bakış 01 tur 3, özet ec0346bb); r9 = ready-for-dev künyesi (pack_approval S-49: draft künyeli sürümün onay satırı kodu yetkilendirmez) + iki incelemenin düşük bulgularının kapanışı (tur 6 F-1, son bakış tur 3 F-1…F-7); kapsam genişlemedi, yeni karar açılmadı; r8 — sahip kararı Beste 2026-11-02 "düzelt, bir tur daha": bağımsız son bakış 01 tur 2 KOŞULLU (1 ORTA, 8 DÜŞÜK; hedef r7 pack sha256 fb151036, bulgu dosyası 2026-11-02-fb151036-son-bakis.md, özet 8a63c4e5) F-1…F-9 ve inceleme 03 tur 5 UYGUN (2 DÜŞÜK; 2026-11-02-fb151036.md, özet e6dd4cd8) F-1…F-2 işlendi; r7 — bağımsız son bakış 01 KOŞULLU (0 ENGEL, 3 ORTA, 9 DÜŞÜK; hedef r6 pack sha256 4b4c3db1, bulgu dosyası 2026-11-02-4b4c3db1-son-bakis.md, özet a52313ba) bulguları F-1…F-12 ve sahip kararı K-13 (F-3) ile inceleme 03 tur 4 UYGUN (2 DÜŞÜK; bulgu dosyası 2026-11-02-4b4c3db1.md, özet f4049860) bulguları F-1…F-2 işlendi; r6 — bağımsız inceleme 03 tur 3 KOŞULLU (0 ENGEL, 1 ORTA, 0 DÜŞÜK; hedef r5 pack sha256 bcd62d6c, bulgu dosyası 2026-11-02-bcd62d6c.md, özet ace6292b) bulgusu F-1 sahip kararı (a) ile işlendi (hizalama retleri denetime yazılır); r5 — bağımsız inceleme 03 tur 2 KOŞULLU (0 ENGEL, 1 ORTA, 4 DÜŞÜK; hedef r4 pack sha256 127ec6f2, bulgu dosyası 2026-11-02-127ec6f2.md, özet e2dbb0d8) bulguları F-1…F-5 ve CT kararı (F-1 yolu) işlendi; r4 — bağımsız inceleme 03 tur 1 KOŞULLU (0 ENGEL, 2 ORTA, 8 DÜŞÜK; hedef r3 pack sha256 010fe1c2, bulgu dosyası 2026-11-02-010fe1c2.md, özet 47c28da0) bulguları F-1…F-10 işlendi; r3 — bağımsız inceleme 02 KOŞULLU (0 ENGEL, 2 ORTA, 9 DÜŞÜK; hedef e49a67359, pack blob b18184f0, bulgu dosyası özeti 46aeb4a5) bulguları F-1…F-11 işlendi; r2 — inceleme 01 UYGUN DEĞİL (bulgu dosyası özeti 277fd253) bulguları ve sahip kararları K-8r, K-9…K-12 işlendi
-code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay satırı olmadan kod izni yoktur; DL-1 kodu r11 onayıyla yazıldı (CT kabulü 2026-11-04); DL-2 kodu r13 onayıyla yazıldı (approvals.tsv satır 73 / 74, sha256 325e0624; CT kabulü 2026-11-12, VERIFIED); DL-3 kodu r15'in CT-APR-02 incelemesini ve r15 sha256'sına yazılan CT-APR-01 onay satırını bekler (r15 onayıyla kod izni; Bölüm 18.1 DL-3 kapıları); A-18 karara bağlandı (kalıcı MDM kısa kod kilidi, sahip kararları 04 eki, f827bf948) — DL-2'nin canlıya alma kapısı karar düzeyinde kapalı, MDM kilidi uygulanana kadar ara dönem kilidi ve operasyon talimatı birlikte korur (Bölüm 18.1, K-17)
+revision: r18 — r17 bağımsız incelemesi KOŞULLU (0 ENGEL, 1 ORTA, 3 DÜŞÜK; hedef r17 sha256 f4a52ff2, bulgu dosyası docs/records/reviews/MOD-0040-FU02/2026-11-14-f4a52ff2.md) F-1…F-4 ve sahip kararları (Beste 2026-11-14, docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md ek "MOD-0040-FU02 r17 incelemesi kararları", satır 141-153, commit 3f57d2f60) işlendi (Bölüm 19.10): F-1 (c) — DL-4'ten önce açılmış (tohumlar dahil) planın kodu güncellemede değişirse eski kod aynı koordinatör işleminde deftere Legacy kökenli satır olarak yazılıp emekliye ayrılır, yeni kod Manual sahiplik + gerekçe; değişmeyen eski kodlar deftere alınmaz (Q-22 A korunur); PLN'de 409 RECORD_CODE_IMMUTABLE kalktı; TTY değişmez; motora eklemeli RecordCodeClaimOrigin.Legacy ve değişiklik isteğine eklemeli LegacyAdoption (yalnız platform kolu); F-2 — plan güncellemesinde boş kod bugünkü gibi 400 "Code is required." (kod kuralı güncelleme doğrulayıcısında kalır — UpdateSubscriptionPlanCommandValidator.cs XMC ek onayı açık, Bölüm 18.1); F-3 — izdüşüm atfı GlobalApplicabilityStateRepository.cs:33; F-4 — F-1 ile kapandı (AC-90 hizalandı); A-22 kapandı — PPM'in kullanacağı Platform tarafı uçları (sözleşme eki + Platform kodu) PPM ekibi yazar, XMC-001 DL-11 revizyonunda dosya listesiyle sahip onayı, merkez yalnız inceleme / kabul ölçümü; r17 yorumları Q-24 (1) CodeReason, Q-24 (3) PLN daralmaları ve Q-25 MISMATCH genişletmesi CT kabul (karar kaydı); yeni AC yok, AC kimliği silinmedi; AC-82, AC-88, AC-90 hizalandı; yeni sabotaj S-136, S-137, S-138; künye ready-for-dev, approval_status pending — r18 onay satırı yok; r17 — DL-4 sahip kararları işlendi (Beste 2026-11-14, docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md ek "MOD-0040-FU02 r16 DL-4 kararları Q-17…Q-26", commit 0a2518a53): Q-17 PPM (MOD-0117) merkezde yapılmaz — DL-11 PPM sahibi ekibin, bu paketin payı yalnız sözleşme eki / tüketici kaydı / kabul ölçümü, ekibe verilecek bilgi Bölüm 8.19, yeni açık karar A-22 (Platform tarafı HTTP yüzeyinin uygulayıcısı); Q-18 A, Q-19 A, Q-20 A, Q-21 C, Q-22 A, Q-23 A, Q-26 onay ve A-21 (CT) önerilerle aynı → karar dili, XMC-001 satırları sahip onaylı; Q-24 B (öneriden farklı) — PLN güncellemesi kodu değiştirebilir, bugünkü normalleştirici aynen, CodeChange üyesi ve boşluk / alt çizgi reddi yok, değişiklik yine motordan (gerekçe, tekillik, defter, denetim; eski plan kodları değişmez); Q-25 B (öneriden farklı) — grup öneki tanımlı değilse TTY formu kodu ve gerekçeyi zorunlu tutar, canlıya alma kapısı kalktı; AC-83, AC-84, AC-88, AC-90 ve S-122, S-125, S-129 hizalandı, yeni sabotaj S-134, S-135, yeni AC yok, AC kimliği silinmedi; r16 hazırlık aracının 2 ÖNEMLİ bulgusu (Bölüm 8.14 eski satır atıfları) atıf düzeltmesiyle kapandı, DL-2 metni anlamca değişmedi; künye ready-for-dev, approval_status pending — r17 onay satırı yok, r16 incelenmedi ve onaylanmadı; r16 — DL-4 paket revizyonu (Platform kapsamı ve İKİSİ DE tüketicilerinin bağlanması — Görev Türü TTY, MOD-0024; Abonelik Planı PLN, MOD-0361); girdi CT iş paketi WP-0040-FU02-DL4 (30c313eb4), DL-3 CT kabulü (VERIFIED 2026-11-14, 07ad98464) ve sahip kararları 2026-11-13; yeni AC-76…AC-91, sabotaj S-117…S-132 (DL-3 hizalaması S-133), açık sorular Q-17…Q-26 (Bölüm 24.3; hepsi CT önerisiyle yazıldı, hiçbiri karar değil) ve açık karar A-21; PPM (MOD-0117) CT önerisiyle DL-11'e ayrıldı (Q-17); DL-3 kabul sapmaları hizalandı (tarih alanları DateTime UTC, AC-68 emekli kod örneği, kilit filtresi kodu taşır — CT kararı F-1@97058ee5); r15 incelemesi F-2 kapandı (Q-9 kayıt düzeltmesi 8ffc78333); DL-1…DL-3 AC ve sabotaj kimlikleri silinmedi; sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmez; künye ready-for-dev, approval_status pending — r16 onay satırı yok, DL-4 kod izni yok; r15 — bağımsız inceleme r14 KOŞULLU (0 ENGEL, 2 ORTA, 8 DÜŞÜK; hedef r14 sha256 1395202f, bulgu dosyası docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md, özet 8cc7dcb7) F-1…F-10 kapatıldı (Bölüm 19.7); sahip cevabı Q-8…Q-16 = A ve A-20 CT kararı kabul (docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25) → 24.2 karar; A-18 kalıcı kilit kararı (sahip kararları 04 eki, f827bf948) 24, 18.1, üst uyarı ve code_start'a işlendi; yeni AC yok, AC-67 / AC-68 / AC-69 / AC-72 / AC-73 / AC-74 adımları ve S-114…S-116 eklendi; DL-1 / DL-2 metni yalnız A-18 atıflarında değişti; künye ready-for-dev, approval_status pending — r15 onay satırı yok; r14 — DL-3 paket revizyonu (İKİSİ DE motoru — öneri, elle kod sahiplenmesi, gerekçeli değişiklik, kullanım kilidi, değişiklik geçmişi; RCS-001 §2, §5.8, §5.9, §5.10, §6); r13 onaylı (sha256 325e0624, approvals.tsv satır 73 sahip + 74 Ali, 2026-11-11) ve DL-2 VERIFIED (docs/records/audits/2026-11/mod-0040-fu02-dl2-fix01-ct-acceptance-2026-11-12.md); yeni AC-62…AC-75, sabotaj S-93…S-113, açık sorular Q-8…Q-16 (Bölüm 24.2), açık karar A-20 (DL-3 defter belirteci); ölçüm türü TTY (Görev Türü, MOD-0024) — Q-8 Ayle yazıldı; DL-1 ve DL-2 metni (AC-1…AC-61, S-1…S-92) ve sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmedi; künye ready-for-dev, approval_status pending — r14 onay satırı yok, DL-3 kodu r14'ün CT-APR-02 incelemesi ve r14 sha256'sına yazılan CT-APR-01 onay satırıyla açılır; r13 — bağımsız inceleme 04 tur 1 KOŞULLU (0 ENGEL, 4 ORTA, 9 DÜŞÜK; hedef r12 sha256 d29f9c5e, bulgu dosyası docs/records/reviews/MOD-0040-FU02/2026-11-10-d29f9c5e.md, özet 25888259) F-1…F-13 kapatıldı; sahip kararları 03 (Q-1 A, Q-2 A, Q-3 A, Q-4 A, Q-5 teyit, Q-6 A, Q-7 onay — docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-03.md) ve 04 (F-1 dar ayrı arayüz + XMC ek onayı InMemoryTenantOrganizationRepositories.cs, F-2 (b) ikinci okuma, F-4 A-18 = DL-2 canlıya alma kapısı — …-04.md) işlendi → K-16, K-17; Q-6 A gereği künye ready-for-dev, approval_status pending (onay satırı yok, kod izni yok); değişen bölümler künye, üst uyarı, 0 (ön kontrol r13), 0.1 (K-15 notu, K-16, K-17), 2.4, 3, 4.4, 5 (DL-2), 6, 7, 7.1, 8.13, 8.14, 8.15, 8.16 (yeni, sürüm notu), 11, 12, 13, 14, 16 (DL-2 giriş notu, AC-51…AC-61), 17 (test tablosu iki satır; S-78, S-80, S-82, S-84, S-85, S-87 metni; yeni S-88…S-92), 18, 18.1, 19.5 (yeni), 20 (FU-RCS-20), 21.4, 23 (DL-2 satırı), 24 (A-8, A-18), 24.1; DL-1 metni (AC-1…AC-47, S-1…S-73) ve sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmedi, yeni AC yok; r12 — DL-2 paket revizyonu (ORG / POS süreç içi bağlanma); girdi sahip kararı A-8 = LegalEntity (Beste 2026-11-10, docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-02.md @ 6609910c8) → K-15; DL-1 CT doğrulaması docs/records/audits/2026-11/mod-0040-fu02-dl1-ct-acceptance-2026-11-04.md; DL-1 metni (AC-1…AC-47, S-1…S-73) değişmedi, yalnız AC-9'a DL-2 notu; yeni AC-48…AC-61, S-74…S-87, açık sorular Q-1…Q-7; sözleşme RECORD-CODE-ALLOCATE 1.0.0 (FROZEN) değişmedi; künye draft — kod izni yok, yeni inceleme ve onay gerekir; r11 — r10 incelemeleri KOŞULLU (inceleme 03 tur 8, bulgu dosyası 2026-11-02-42b32c0a.md, özet 96476fa0; son bakış 01 tur 5, 2026-11-02-42b32c0a-son-bakis.md, özet fb4cf83e), aynı orta bulgu (AC-17 yarış ölçümü yürütücüyle kurulamaz); sahip kararı Beste 2026-11-02 "B — r11: yarış testi çıkarılır, ölçüm sıralı yapılır"; r11 = sıralı ölçüm + ilk kilit sınırı (Bölüm 8.6) + son bakış tur 5 F-2, F-3; yeni inceleme ve yeni onay gerekir; kapsam genişlemedi; r10 — r9 onaylı (approvals.tsv satırı 466aacfc9, r9 sha256 5fed433c); r10 = bağımsız son bakış 01 tur 4 düşük bulguları (bulgu dosyası 2026-11-02-5fed433c-son-bakis.md, özet 0e25482b, F-1…F-7), yeni onay gerekir; kapsam genişlemedi, yeni karar açılmadı; r9 — r8 sahip onayı (Beste, 2026-11-02, «onayla») + iki inceleme UYGUN (inceleme 03 tur 6, özet f9c26991; son bakış 01 tur 3, özet ec0346bb); r9 = ready-for-dev künyesi (pack_approval S-49: draft künyeli sürümün onay satırı kodu yetkilendirmez) + iki incelemenin düşük bulgularının kapanışı (tur 6 F-1, son bakış tur 3 F-1…F-7); kapsam genişlemedi, yeni karar açılmadı; r8 — sahip kararı Beste 2026-11-02 "düzelt, bir tur daha": bağımsız son bakış 01 tur 2 KOŞULLU (1 ORTA, 8 DÜŞÜK; hedef r7 pack sha256 fb151036, bulgu dosyası 2026-11-02-fb151036-son-bakis.md, özet 8a63c4e5) F-1…F-9 ve inceleme 03 tur 5 UYGUN (2 DÜŞÜK; 2026-11-02-fb151036.md, özet e6dd4cd8) F-1…F-2 işlendi; r7 — bağımsız son bakış 01 KOŞULLU (0 ENGEL, 3 ORTA, 9 DÜŞÜK; hedef r6 pack sha256 4b4c3db1, bulgu dosyası 2026-11-02-4b4c3db1-son-bakis.md, özet a52313ba) bulguları F-1…F-12 ve sahip kararı K-13 (F-3) ile inceleme 03 tur 4 UYGUN (2 DÜŞÜK; bulgu dosyası 2026-11-02-4b4c3db1.md, özet f4049860) bulguları F-1…F-2 işlendi; r6 — bağımsız inceleme 03 tur 3 KOŞULLU (0 ENGEL, 1 ORTA, 0 DÜŞÜK; hedef r5 pack sha256 bcd62d6c, bulgu dosyası 2026-11-02-bcd62d6c.md, özet ace6292b) bulgusu F-1 sahip kararı (a) ile işlendi (hizalama retleri denetime yazılır); r5 — bağımsız inceleme 03 tur 2 KOŞULLU (0 ENGEL, 1 ORTA, 4 DÜŞÜK; hedef r4 pack sha256 127ec6f2, bulgu dosyası 2026-11-02-127ec6f2.md, özet e2dbb0d8) bulguları F-1…F-5 ve CT kararı (F-1 yolu) işlendi; r4 — bağımsız inceleme 03 tur 1 KOŞULLU (0 ENGEL, 2 ORTA, 8 DÜŞÜK; hedef r3 pack sha256 010fe1c2, bulgu dosyası 2026-11-02-010fe1c2.md, özet 47c28da0) bulguları F-1…F-10 işlendi; r3 — bağımsız inceleme 02 KOŞULLU (0 ENGEL, 2 ORTA, 9 DÜŞÜK; hedef e49a67359, pack blob b18184f0, bulgu dosyası özeti 46aeb4a5) bulguları F-1…F-11 işlendi; r2 — inceleme 01 UYGUN DEĞİL (bulgu dosyası özeti 277fd253) bulguları ve sahip kararları K-8r, K-9…K-12 işlendi
+code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay satırı olmadan kod izni yoktur; DL-1 kodu r11 onayıyla yazıldı (CT kabulü 2026-11-04); DL-2 kodu r13 onayıyla yazıldı (approvals.tsv satır 73 / 74, sha256 325e0624; CT kabulü 2026-11-12, VERIFIED); DL-3 kodu r15 onayıyla yazıldı (reviews.tsv r15 UYGUN, approvals.tsv satır 97, sha256 c4499f37; commit 07ad98464; CT kabulü 2026-11-14, VERIFIED); DL-4 kodu r18'in CT-APR-02 incelemesini ve r18 sha256'sına yazılan CT-APR-01 onay satırını bekler (r17 incelendi — KOŞULLU, onaylanmadı); Bölüm 24.3 Q-17…Q-26 karara bağlandı (sahip kararları 2026-11-14), r17 incelemesinin F-1…F-4 ve A-22 kararları işlendi (r18) ve Bölüm 5 DL-4 XMC-001 satırları sahip onaylı — r18'in tek liste dışı dosyası UpdateSubscriptionPlanCommandValidator.cs (F-2) için XMC-001 ek onayı açık (Bölüm 18.1 DL-4 kapıları); DL-11 (PPM) PPM sahibi ekibin dilimidir — PPM'in kullanacağı Platform tarafı uçları (sözleşme eki + Platform kodu) PPM ekibi yazar (A-22), bu paketin payı DL-11 revizyonu, inceleme ve kabul ölçümü (Bölüm 8.19); A-18 karara bağlandı (kalıcı MDM kısa kod kilidi, sahip kararları 04 eki, f827bf948) — DL-2'nin canlıya alma kapısı karar düzeyinde kapalı, MDM kilidi uygulanana kadar ara dönem kilidi ve operasyon talimatı birlikte korur (Bölüm 18.1, K-17)
+status_note: r18 r17 incelemesinin (KOŞULLU) F-1…F-4 bulgularını ve sahip kararlarını (F-1 c, F-2 400 korunur, A-22 PPM ekibi; Q-24 (1), (3) ve Q-25 MISMATCH yorumları CT kabul) işler ama onaysızdır; DL-4 kodu r18'in CT-APR-02 incelemesi ve r18 sha256'sına CT-APR-01 onay satırı olmadan başlamaz; XMC-001 (MOD-0024, MOD-0361) yalnız Bölüm 5 DL-4 listesiyle sahip onaylı, UpdateSubscriptionPlanCommandValidator.cs ek onayı açık; DL-11 (PPM) PPM sahibi ekibin, Platform tarafını da PPM ekibi yazar (A-22); DL-1…DL-3 için yeni izin gerekmez (DL-3 VERIFIED 2026-11-14)
 ---
 
 # MOD-0040-FU02 — Record Code Service (ortak kayıt kodu servisi, RCS-001)
 
-> **Künye `ready-for-dev` (r15) ama bu sürüm henüz onaysızdır ve DL-3 için hiçbir kod izni vermez.** `status: ready-for-dev`,
-> `approval_status: pending`. **r13 onaylıdır** (sha256 `325e0624…4176`; `execution/approvals/approvals.tsv` satır 73 sahip
-> «onayla» 2026-11-10, satır 74 Ali «onayla» 2026-11-11) ve DL-2 kodu o onayla yazılıp CT tarafından doğrulandı
-> (`docs/records/audits/2026-11/mod-0040-fu02-dl2-ct-acceptance-2026-11-12.md` KOŞULLU →
-> `docs/records/audits/2026-11/mod-0040-fu02-dl2-fix01-ct-acceptance-2026-11-12.md` VERIFIED). r15 DL-1 ve DL-2 için yeni izin
-> gerektirmez; **DL-3 kodu** r15'in kendi CT-APR-02 incelemesini ve **r15'in** sha256'sına yazılan CT-APR-01 onay satırını bekler
-> (S-49; Bölüm 18.1 DL-3 kapıları; r14'ün incelemesi KOŞULLU, r14 onaylanmadı). DL-1 kodu r11'in onayıyla yazıldı ve CT tarafından
-> doğrulandı (r11 sha256 `62f352de…cc2d`). **DL-2 canlıya alma kapısı:** A-18 **karara bağlandı** — kalıcı kilit: bir şirkette ilk
-> kayıt kodu üretildikten sonra MDM kısa kodu değiştirilemez; uygulama yeri MDM (Ali), o güne kadar ara dönem kilidi ve operasyon
-> talimatı (sahip kararları 04 eki, `docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-04.md:14-22`, commit `f827bf948`;
-> Bölüm 18.1, 24).
+> **Künye `ready-for-dev` (r18) ama bu sürüm henüz onaysızdır ve DL-4 için hiçbir kod izni vermez.** `status: ready-for-dev`,
+> `approval_status: pending`. **r15 onaylıdır** (sha256 `c4499f37…ab47`; `execution/approvals/reviews.tsv` r15 UYGUN satırı,
+> `execution/approvals/approvals.tsv` satır 97 Ali «onayla» 2026-11-13) ve DL-3 kodu o onayla yazılıp CT tarafından doğrulandı
+> (`07ad98464`; `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` "MOD-0040-FU02 DL-3", VERIFIED 2026-11-14).
+> **r13 onaylıdır** (sha256 `325e0624…4176`; `execution/approvals/approvals.tsv` satır 73 / 74) ve DL-2 kodu doğrulandı
+> (`docs/records/audits/2026-11/mod-0040-fu02-dl2-fix01-ct-acceptance-2026-11-12.md` VERIFIED); DL-1 kodu r11 onayıyla yazıldı
+> (r11 sha256 `62f352de…cc2d`). r18 DL-1, DL-2 ve DL-3 için yeni izin gerektirmez. **DL-4 kodu** r18'in kendi CT-APR-02
+> incelemesini ve **r18'in** sha256'sına yazılan CT-APR-01 onay satırını bekler (S-49; Bölüm 18.1 DL-4 kapıları); r17 incelendi
+> (KOŞULLU) ve onaylanmadı — r18 onun yerine geçer. Bölüm 24.3'teki Q-17…Q-26 karara bağlandı, r17 incelemesinin kararları işlendi
+> (Bölüm 19.10) ve Bölüm 5 "DL-4" XMC-001 satırları sahip onaylıdır (sahip kararları 2026-11-14); r18'in tek liste dışı XMC dosyası
+> (`UpdateSubscriptionPlanCommandValidator.cs`, F-2) için ek onay açıktır (Bölüm 18.1). **DL-2 canlıya alma kapısı:** A-18 karara
+> bağlandı — kalıcı kilit (sahip kararları 04 eki, `docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-04.md:14-22`, commit
+> `f827bf948`; Bölüm 18.1, 24); A-18 DL-4'ün TTY / PLN kısmını etkilemez (ikisi de MDM kısa kodunu kullanmaz — Bölüm 2.6).
 > **Onaylanan sürüm**, `execution/approvals/approvals.tsv`'de bu paket yolu için yazılmış **son satırın** sha256'sına eşit olan
 > sürümdür; bu dosyanın sha256'sı o satırla tutmuyorsa bu sürüm onaysızdır (r11, son bakış 01 tur 5 F-3). Bu paket, aynı sürümünün
 > **CT-APR-02 bağımsız incelemesi** (`execution/approvals/reviews.tsv` + bulgu dosyası) ve **CT-APR-01 onay satırı**
 > (`execution/approvals/approvals.tsv`, paketin bu sürümünün SHA-256'sına bağlı) main'e girmeden ve künye
 > `ready-for-dev` olmadan hiçbir kod, yapılandırma, gizli bilgi ya da veri değişikliğini yetkilendirmez. Bir WP paketin
-> tamamını alamaz; dilim tablosundaki (Bölüm 23) bir ya da birkaç dilimi alır. DL-2 yazılı ve doğrulanmıştır (Q-1…Q-7 karar,
-> Bölüm 24.1). **DL-3 r14'te yazıldı, r15'te inceleme bulgularıyla kapandı** (Bölüm 2.5, 4.5, 8.17, 16 "DL-3", 21.5); soruları
-> Q-8…Q-16 sahip kararıyla kapandı (hepsi A, Bölüm 24.2) — maddelerdeki "Q-n A" işaretleri bu kararı gösterir (r14'te "önerisi" diye yazılıydı). DL-4
-> ve sonrası yazılmadı — her biri kendi paket revizyonu ve onayıyla açılır.
+> tamamını alamaz; dilim tablosundaki (Bölüm 23) bir ya da birkaç dilimi alır. DL-2 ve DL-3 yazılı ve doğrulanmıştır (Q-1…Q-7
+> Bölüm 24.1, Q-8…Q-16 Bölüm 24.2). **DL-4 r16'da yazıldı** (Bölüm 2.6, 4.6, 5 "DL-4", 8.18, 16 "DL-4", 21.6, 24.3), r17'de sahip
+> kararlarıyla ve r18'de r17 incelemesinin kararlarıyla hizalandı; PPM bağlanması **DL-11**'dir ve PPM sahibi ekibin işidir — Platform
+> tarafı uçları da PPM ekibi yazar (Q-17, A-22 kararları; merkezin payı ve ekibe verilecek bilgi Bölüm 8.19). DL-5…DL-11 yazılmadı — her
+> biri kendi paket revizyonu ve onayıyla açılır.
+>
+> **Revizyon r18 (2026-11-14) — r17 bağımsız incelemesinin kararları (F-1…F-4, A-22); künye `ready-for-dev`, onay yok.** Girdiler:
+> (1) r17'nin CT-APR-02 bağımsız incelemesi **KOŞULLU** (0 ENGEL, 1 ORTA, 3 DÜŞÜK; hedef r17 sha256 `f4a52ff2…3f45`, commit `c79d0a40c`;
+> bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-11-14-f4a52ff2.md`); (2) sahip kararları
+> `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:141-153` (ek "MOD-0040-FU02 r17 incelemesi kararları", Beste
+> 2026-11-14, commit `3f57d2f60`). **Kararlar ve işlenişi (Bölüm 19.10):** **F-1 = (c)** — DL-4'ten önce açılmış (tohumlar dahil)
+> abonelik planının kodu güncellemede değiştirilirse değişiklik gerekçeyle deftere alınır: eski kod aynı koordinatör işleminde deftere
+> `Legacy` kökenli sahiplik satırı olarak yazılır ve emekliye ayrılır, yeni kod `Manual` sahiplik + gerekçe; değiştirilmeyen eski kodlar
+> deftere alınmaz (Q-22 A korunur); PLN'de 409 `RECORD_CODE_IMMUTABLE` kalktı. Motor tarafı eklemelidir: `RecordCodeClaimOrigin.Legacy = 3`
+> ve `InProcessRecordCodeChangeRequest`'in son üyesi `LegacyAdoption` — yalnız platform kolunda geçerli, kiracı kolunda 400 (TTY'nin Q-22
+> A'sı değişmez; defter alımının genel hali DL-6'da kalır, FU-RCS-22) — Bölüm 2.6, 3, 4.5, 4.6, 8.18 madde 1, 5, 6, 8. **F-2** — plan
+> güncellemesinde boş kod bugünkü gibi 400 "Code is required." (`SubscriptionPlanRequestValidator.cs:21`): kod kuralı güncelleme
+> doğrulayıcısında aynen kalır, yalnız oluşturmadan kalkar; r17'deki "boş kod saklı kodu korur" metni kaldırıldı. Kuralın taşınacağı
+> `UpdateSubscriptionPlanCommandValidator.cs` Q-26 listesinde yoktu → XMC-001 ek onayı açık (Bölüm 5, 18.1). **F-3** — izdüşümün kodu
+> taşıdığı atıf `GlobalApplicabilityStateRepository.cs:33`'e düzeltildi (denetim satırının atfı `GlobalApplicabilityAuditChange.cs:46`
+> ayrıca kaldı). **F-4** — F-1 ile kapandı: eski kodlu planda kod değişikliği artık 409 değil, AC-90 hizalandı. **A-22 = PPM ekibi** — PPM'in
+> kullanacağı Platform tarafı kayıt kodu uçlarını (sözleşme eki + Platform kodu) PPM ekibi yazar; Platform koduna dokunma XMC-001 kapsamındadır,
+> DL-11 revizyonunda dosya listesiyle sahip onayı alınır; merkez yalnız inceleme / kabul ölçümü (Bölüm 8.19, 18.1, 20 FU-RCS-28, 23, 24).
+> **r17 yorumları:** Q-24 (1) `CodeReason`, Q-24 (3) PLN daralmaları (üst sınır 40, nokta reddi) ve Q-25 `GROUP_PREFIX_MISMATCH` genişletmesi
+> **CT kabul (karar kaydı)**; Q-24 (2) F-1 (c) ile, Q-24 (5) F-2 ile yerini kararlara bıraktı (Bölüm 24.3). **AC / sabotaj:** yeni AC yok, AC
+> kimliği silinmedi; AC-82 (kiracı kolu `LegacyAdoption` reddi), AC-88 (eski plan kodu değişikliği, boş kod 400) ve AC-90 (eski kod notu,
+> düzenlemede kod zorunlu) hizalandı; yeni sabotaj **S-136** (eski kod deftere alınmadan değişir — eski kod yeniden verilebilir), **S-137**
+> (kiracı kolu `LegacyAdoption`'ı kabul eder) ve **S-138** (güncellemede kod kuralı kalkar); S-129 ve S-131 metni hizalandı. Sözleşme
+> RECORD-CODE-ALLOCATE 1.0.0, DL-1…DL-3 kabul ölçütleri ve TTY davranışı değişmedi. Kimlik ön kontrolü r18 için yeniden koşuldu → çıkış 0
+> (Bölüm 0). **Değişen bölümler:** künye (`revision`, `code_start`, `status_note`); üst uyarı; 0 (ön kontrol r18); 2.6; 3;
+> 4.5; 4.6; 5 ("DL-4"); 7 (DL-11 satırı); 8.18 (madde 1, 3 ve 6'da yorum işaretleri, 5, 5a yeni, 6, 8); 8.19; 11; 12; 13; 16 (DL-4 girişi,
+> AC-82, AC-88, AC-90); 17 (test tablosu, S-129, S-131, S-136…S-138); 18; 18.1; 19.8 (yalnız F-3 atfı); 19.10 (yeni); 20 (FU-RCS-03,
+> FU-RCS-22, FU-RCS-23, FU-RCS-28); 21.6; 22; 23 (DL-4, DL-11 satırları, dilim sırası); 24 (A-22); 24.3.
+>
+> **Revizyon r17 (2026-11-14) — DL-4 sahip kararları (Q-17…Q-26, A-21); künye `ready-for-dev`, onay yok.** Girdiler: (1) sahip
+> kararları `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139` (ek "MOD-0040-FU02 r16 DL-4 kararları
+> Q-17…Q-26", Beste 2026-11-14, commit `0a2518a53`); (2) r16 üzerinde `scripts/pack_readiness.py --base HEAD` çıktısı (0 ENGEL,
+> 2 ÖNEMLİ — Bölüm 8.14'teki iki eski satır atfı). r16'nın bağımsız incelemesi yapılmadı; r17 onun yerine incelenir. **Kararlar:**
+> Q-17 — PPM (MOD-0117) merkezde yapılmaz, PPM sahibi ekip kendi servisinde bağlar; DL-11'de bu paketin payı yalnız sözleşme eki,
+> tüketici kaydı ve kabul ölçümüdür — ekibe verilecek bilgi yeni **Bölüm 8.19**'da, Platform tarafı HTTP yüzeyinin uygulayıcısı yeni
+> açık karar **A-22**; Q-18 A, Q-19 A, Q-20 A, Q-21 C, Q-22 A, Q-23 A, Q-26 onay ve A-21 (CT) r16 önerileriyle aynıdır → metin "öneri"
+> dilinden "karar" diline çevrildi, XMC-001 satırları sahip onaylı; **Q-24 B** (öneriden farklı) — PLN güncellemesi kodu bugünkü gibi
+> değiştirebilir, bugünkü normalleştirici aynen uygulanır, `CodeChange` üyesi ve boşluk / alt çizgi reddi yoktur; kod değişikliği yine
+> motordan geçer (gerekçe — eklemeli düz `CodeReason`; tekillik; sahiplik defteri; Tablo F-P; koordinatörün tek işlemi; sayaç değişmez;
+> eski plan kodları değişmez — Q-22 A) — Bölüm 8.18 madde 6; **Q-25 B** (öneriden farklı) — grup öneki tanımlı değilse TTY formu kodu ve
+> gerekçeyi zorunlu tutar, sunucu kuralı değişmez, DL-4'ün canlıya alma kapısı kalktı — Bölüm 8.18 madde 3, 11, 18.1. **AC / sabotaj:**
+> yeni AC yok, AC kimliği silinmedi; AC-83, AC-84, AC-88, AC-90 ve S-122 (etiket), S-125, S-129 hizalandı; yeni sabotaj **S-134** (PLN
+> normalleştirme sırası) ve **S-135** (TTY formunun zorunlu kod dalı); AC-88'in güncelleme başarı kodu ölçülen 204'e düzeltildi
+> (`services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/UpdateSubscriptionPlanCommandHandler.cs:71`).
+> **Atıf düzeltmesi (DL-2 metni anlamca değişmedi):** Bölüm 8.14'teki iki atıf DL-2 kodu sonrası HEAD'de yeniden ölçüldü (Bölüm 19.9).
+> Kimlik ön kontrolü r17 için çıkış 0. DL-1 / DL-2 / DL-3 kabul ölçütleri ve sözleşme RECORD-CODE-ALLOCATE 1.0.0 değişmedi. **Değişen
+> bölümler:** künye (`revision`, `code_start`, `status_note`); üst uyarı; 0; 2.5 (son cümle); 2.6; 3; 4 (giriş); 4.4 (r16 notunda bir
+> kelime); 4.6; 5 ("DL-4"); 6; 7; 8.7; 8.14 (yalnız iki atıf); 8.17 (son cümle); 8.18; 8.19 (yeni); 11; 12; 13; 14; 16 (DL-4 girişi, AC
+> etiketleri, AC-83, AC-84, AC-88, AC-90); 17 (test tablosu satırı, S-122, S-125, S-129, S-134, S-135); 18; 18.1; 19.8 (r17 notu); 19.9
+> (yeni); 20 (FU-RCS-03, -04, -22, -26, -27; FU-RCS-28 yeni); 21.6; 22; 23 (DL-4, DL-11 satırları, dilim sırası); 24 (A-21, A-22 yeni);
+> 24.3.
+>
+> **Revizyon r16 (2026-11-14) — DL-4 paket revizyonu (TTY ve PLN tüketicilerinin bağlanması, Platform kapsamı); künye
+> `ready-for-dev`, onay yok.** Girdiler: (1) CT iş paketi `execution/domains/platform-shared-services/work-packs/WP-0040-FU02-DL4-consumer-binding.md`
+> (`30c313eb4`; girdi maddeleri D-1…D-11, XMC listesi, CT notu — eşlemesi Bölüm 19.8); (2) DL-3 CT kabul kaydı (yukarıda) ve
+> sapmaları; (3) sahip kararları `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md` (Q-8…Q-16 = A, Q-9
+> düzeltmesi `8ffc78333`, r15 inceleme F-1 CT kararı, A-18); (4) r15 bağımsız incelemesi
+> (`docs/records/reviews/MOD-0040-FU02/2026-11-13-c4499f37.md`, özet `97058ee5…`, UYGUN, 2 DÜŞÜK) F-1 ve F-2. r16 = DL-4'ün kod
+> izni verilebilir hâle getirilmesi: kapsam (Bölüm 2.6), kiracısız taban (Bölüm 4.6), dosya listesi ve XMC-001 satırları (Bölüm 5
+> "DL-4"), tüketici bağlanması (Bölüm 8.18), ekranlar ve dil (Bölüm 9, 11), kabul ölçütleri **AC-76…AC-91**, sabotaj
+> **S-117…S-132**, denetim (Bölüm 21.6), açık sorular **Q-17…Q-26** ve açık karar **A-21** (Bölüm 24, 24.3). **CT önerisi (Q-17,
+> sahibin seçimini bekler):** PPM (MOD-0117, `portfolio-delivery`, künye `review`) DL-4'ten ayrılır → **DL-11** (Q-8 B'nin reddi
+> emsali: dilim büyüklüğü; ayrıca başka domain'in servisi); DL-4 = PLN + TTY. Mimari sorular (Q-18 kiracısız taban, Q-19
+> platform-global denetim yolu, Q-20 tüketici tutarlılığı) kodda ölçüldü; seçenekleri ve gerekçeli tek CT önerisi Bölüm 24.3'te.
+> Hiçbiri seçilmiş sayılmaz — seçim öneriden farklıysa ilgili AC'ler r17'de değişir. **DL-3 hizalaması (kabul sapmaları; kod
+> değişmez):** tarih alanları `DateTime` (UTC) (Bölüm 4.5); AC-68 emekli kod örneği ölçülen eşdeğerle; kilit filtresi ön okunan
+> kodu taşır (Bölüm 4.5, 8.17, AC-70; sabotaj S-133). DL-1 / DL-2 / DL-3 kabul ölçütleri ve sabotaj kimlikleri **silinmedi,
+> yeniden numaralanmadı**; sözleşme RECORD-CODE-ALLOCATE 1.0.0 (FROZEN) değişmez. Ölçümler bu çalışma ağacında (`30c313eb4`;
+> DL-1, DL-2, DL-3 kodu tabanda). **Değişen bölümler:** künye (`status_note` yeni, `consumer_module`); üst uyarı; 0; 2.5 (son
+> paragraf); 2.6 (yeni); 3; 4 (giriş); 4.4; 4.5; 4.6 (yeni); 5 ("DL-4" yeni); 6; 7; 8.7; 8.17; 8.18 (yeni); 9; 10; 11; 12; 13; 14;
+> 15; 16 (AC-25 notu, AC-68, AC-70, DL-4 AC-76…AC-91); 17; 18; 18.1; 19.8 (yeni); 20; 21.6 (yeni); 22; 23 (DL-4 satırı, DL-11
+> satırı yeni, dilim sırası); 24 (A-21); 24.2 (Q-9); 24.3 (yeni).
 >
 > **Revizyon r15 (2026-11-13) — r14 bağımsız incelemesinin bulguları; künye `ready-for-dev`, onay yok.** Girdiler: (1) **bağımsız
 > inceleme r14** (`docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md`, özet `8cc7dcb7…`; hedef r14 sha256 `1395202f…61fc`;
@@ -186,7 +262,7 @@ code_start: yok — CT-APR-02 bağımsız inceleme kaydı ve CT-APR-01 onay sat�
 | Adım | Sonuç (2026-10-30, `origin/main @ 6d49f5823`) |
 |---|---|
 | Blueprint araması | `Blueprint_Data` satırı **MOD-0040**: Module Name `Canonical ID & Correlation Standard`; Domain `1) Platform & Shared Services`; Suite `Integration & Interoperability`; Capability Group `Interface Governance`; Wave `W-2`; SoR `Canonical ID definitions, correlation rules (standard)`; Placement `Control-Plane Standard`; SoR Notes: "Historical project alias: MOD-0040 was once used for Tenant Organization Foundation. That legacy meaning is retired; canonical MOD-0040 remains Canonical ID & Correlation Standard." (Blueprint 8.8, sha256 `edbcb725…5939`) |
-| Ön kontrol | `python3 -P -E -X utf8 .antigravity/scripts/verify_module_id.py . --check-id MOD-0040-FU02 --name "Record Code Service" --parent MOD-0040` → `OK  MOD-0040-FU02: proven against Blueprint/registry.` · **çıkış 0** (2026-10-30; **r10 için yeniden koşuldu** 2026-11-02, `466aacfc9`, Python 3.12.10 → aynı çıktı, çıkış 0 — son bakış 01 tur 4 F-7; **r11 için yeniden koşuldu** 2026-11-02, `4288ae40e`, Python 3.12.10 → aynı çıktı, çıkış 0; **r12 için yeniden koşuldu** 2026-11-10, `a9fd192ba`, Python 3.12.10 → aynı çıktı, çıkış 0 — DL-2 yeni kimlik açmaz; **r13 için yeniden koşuldu** 2026-11-10, `91d72310e`, Python 3.12.10 → aynı çıktı, çıkış 0; **r14 için yeniden koşuldu** 2026-11-13, `8931275d2` çalışma kopyası, Python 3.12.10 → aynı çıktı, çıkış 0 — DL-3 yeni kimlik açmaz; **r15 için yeniden koşuldu** 2026-11-13, aynı çıktı, çıkış 0) |
+| Ön kontrol | `python3 -P -E -X utf8 .antigravity/scripts/verify_module_id.py . --check-id MOD-0040-FU02 --name "Record Code Service" --parent MOD-0040` → `OK  MOD-0040-FU02: proven against Blueprint/registry.` · **çıkış 0** (2026-10-30; **r10 için yeniden koşuldu** 2026-11-02, `466aacfc9`, Python 3.12.10 → aynı çıktı, çıkış 0 — son bakış 01 tur 4 F-7; **r11 için yeniden koşuldu** 2026-11-02, `4288ae40e`, Python 3.12.10 → aynı çıktı, çıkış 0; **r12 için yeniden koşuldu** 2026-11-10, `a9fd192ba`, Python 3.12.10 → aynı çıktı, çıkış 0 — DL-2 yeni kimlik açmaz; **r13 için yeniden koşuldu** 2026-11-10, `91d72310e`, Python 3.12.10 → aynı çıktı, çıkış 0; **r14 için yeniden koşuldu** 2026-11-13, `8931275d2` çalışma kopyası, Python 3.12.10 → aynı çıktı, çıkış 0 — DL-3 yeni kimlik açmaz; **r15 için yeniden koşuldu** 2026-11-13, aynı çıktı, çıkış 0; **r16 için yeniden koşuldu** 2026-11-14, `30c313eb4` çalışma kopyası, Python 3.12.10 → aynı çıktı, çıkış 0 — DL-4 yeni kimlik açmaz; **r17 için yeniden koşuldu** 2026-11-14, `6b8566366` çalışma kopyası, Python 3.12.10 → aynı çıktı, çıkış 0 — r17 yeni kimlik açmaz; **r18 için yeniden koşuldu** 2026-11-14, `3f57d2f60` çalışma kopyası, Python 3.12.10 → aynı çıktı, çıkış 0 — r18 yeni kimlik açmaz) |
 | Keşif | `… --discover "record code"` → `KEŞİF RAPORU v2`; ÖZET: blueprint 0 · sor 0 · registry 0 · paket 0 · gateway 0 · görev 3 · BİLGİ 0; **çıkış 3** ("inceleme gerekli"); rapor-sha256 `21e60a99332f19ae59b1bcb00b355b15f036302809ff4b3bb38dcf8cef617c49`; 447 ref incelendi |
 | Keşif bulguları (3, görev) | `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` Q234 (MOD-0183 form alanı), Q406 (kanıtsız paket uyarısı), Q503 (MOD-0186 DL-1) — üçü de "record" / "code" kelimelerinden eşleşti; kayıt kodu servisiyle ilgisi yok (karar: **mükerrer değil**, gerekçe: konu başka modül) |
 | Blueprint ek araması | `Blueprint_Data` içinde `number range / numbering / document sequence / code generat / record code / business reference / identifier` deseni: yalnız MOD-0290 (`identifier` kelimesi, ürün kimliği ailesi — RCS-001 §4 KALSIN). Numaralandırma için ayrı Blueprint modülü yok |
@@ -374,7 +450,78 @@ MOD-0117), PLN (MOD-0361, Platform kapsamı) → DL-4; Tüzel Kişilik kısa kod
 bağlayan dilim (DL-4) / içe aktarma (DL-6) — FU-RCS-22; motorun HTTP yüzeyi (süreç dışı tüketiciler PPM ve MDM için) ve sözleşmede
 yeri → onları bağlayan dilim; `LegalEntity` kapsamlı İKİSİ DE türü DL-3 kataloğunda olmadığı için önizlemenin LegalEntity kolu
 (MDM okuması) → o türü açan dilim; Platform kapsamı → DL-4 (K-11); ekranlar ve yerelleştirilmiş metin → tüketici dilimi (TTY kiracı
-kabuğundadır → 7 dil, `.antigravity/rules/localization-standard.md:8-9`); yönetici ekranları (2 dil) → DL-10.
+kabuğundadır → 7 dil, `.antigravity/rules/localization-standard.md:8-9`); yönetici ekranları (2 dil) → DL-10. **r16:** bu paragrafın DL-4'e bıraktıkları Bölüm 2.6'da yazıldı; PPM DL-11'e ayrıldı — PPM sahibi ekibin (Q-17 kararı, r17; Bölüm 8.19).
+
+### 2.6 In scope (DL-4 — r16, r17 sahip kararları, r18 inceleme kararları; kod izni yok, Bölüm 18.1 DL-4 kapıları)
+
+RCS-001 §3'ün İKİSİ DE tüketicilerinden ikisi bağlanır. Motor DL-3'tür; DL-4 onu **tüketicinin** komutuna ve ekranına bağlar ve
+Platform kapsamını (K-11'in DL-4'e bıraktığı iş) süreç içi açar. **Dilim sınırı sahip kararıdır** (Q-17, Beste 2026-11-14; karar kaydı
+`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139`): DL-4 = TTY + PLN ve merkez yapar; PPM'i merkez
+yapmaz → DL-11, PPM sahibi ekibin (Bölüm 8.19). Aşağıda "Q-n" işaretli her madde Bölüm 24.3'teki bir sahip / CT kararıdır (r17);
+"F-n" işaretliler r17 incelemesinin sahip kararlarıdır (r18; karar kaydı satır 141-153, Bölüm 19.10).
+
+- **Görev Türü — `TTY` (MOD-0024, kiracı kabuğu; XMC-001 sahip onaylı, Q-26):**
+  - **Oluşturma:** kod boşsa sistem kodu (`GMG-TTY-000001`, DL-3 sistem sahiplenmesi); kod yazılmışsa elle kod + gerekçe (Q-9 A;
+    DL-3 `RecordCodeManualCode` kuralları). Görev türü kaydı ve sahiplik satırı **tek Mongo işleminde** (Q-20 A kararı, Bölüm 8.18).
+    Bugünkü elle kod kuralı (kırp + büyük harf, `services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Services/TaskTypeRules.cs:39`;
+    en çok 40, `:17`) yeni kayıtta motor kuralına geçer — boşluk / alt çizgi reddedilir, Türkçe harf ASCII'ye çevrilir; davranış
+    değişikliği, sürüm notu (Bölüm 8.18 madde 8).
+  - **Güncelleme** kodu bugünkü gibi değiştirmez (400 `TASK_TYPE_CODE_IMMUTABLE`, `TaskTypeRules.ValidateCodeUnchanged`). **Gerekçeli
+    kod değişikliği** yeni uçtan: `PUT /api/v1/tasks/task-types/{id}/code` (`ExpectedCurrentCode`, `NewCode`, `Reason`,
+    `ExpectedVersion`) → DL-3 değişikliği ve görev türü kaydının kodu tek işlemde.
+  - **Öneri ve geçmiş:** `GET /api/v1/tasks/task-types/code-preview` (oluşturma formunun yer tutucusu) ve
+    `GET /api/v1/tasks/task-types/{id}/code-history` (ayrıntı ekranı).
+  - **Kullanım kilidi (Q-21 C kararı):** kod değişikliği ucu, türün görevi varsa (silinmişler dahil) kodu kilitler ve 409
+    `RECORD_CODE_LOCKED` döner; görev oluşturma işleyicisi değişmez (Bölüm 8.18 madde 4).
+  - **Eski kodlar (Q-22 A kararı; FU-RCS-22):** bugünkü görev türü kodları sahiplik defterine **alınmaz** ve **değişmez** (RCS-001 §2
+    "Mevcut kodlar değiştirilmez", `.antigravity/rules/record-coding-standard.md:42-43`; DL-2 Q-1 / Q-2 A emsali): sahiplik satırı
+    olmayan türde kod değişikliği 409 `RECORD_CODE_IMMUTABLE`. Sistem kodunun desene uyan eski kodla çakışması DL-2 Bölüm 8.15
+    deseniyle atlanır (en çok 3, sonra 409 `RECORD_CODE_COLLISION`); yeni elle kod eski kodlarla tüketicinin yoklamasından geçer
+    (409 `RECORD_CODE_TAKEN`). Canlı veride desene uyan kod sayımı DL-4 kabul kapısıdır.
+  - **Grup öneki tanımlı değilse (Q-25 B kararı, r17; r16 önerisi A'dan farklı):** hizalanmamış kiracıda kodsuz oluşturma ve önizleme
+    409 `GROUP_PREFIX_MISSING` (DL-1 adım 11; sunucu kuralı değişmez, sistem kodu verilmez). Görev türü formu bu durumda kodu **zorunlu**
+    tutar: kullanıcı kodu elle girer; RCS-001 elle kod kuralları (DL-3 `RecordCodeManualCode` — normalleştirme, 2–40, desen yasağı) ve
+    gerekçe (10–500; Q-9 A, Q-10 A) uygulanır (Bölüm 8.18 madde 3, Bölüm 11). **Canlıya alma kapısı değildir** — r16'daki kapı kalktı
+    (Bölüm 18.1); hizalama DL-1 yönetici ucuyla istendiğinde yapılır, sonra form sistem kodunu önerir.
+  - **Ekran:** görev türü ekranları kiracı kabuğundadır (`_LayoutTenantShell`) → **7 dil** (Bölüm 9, 11).
+- **Abonelik Planı — `PLN` (MOD-0361 / CAND-CAP-0002-FU02, Platform yönetici kabuğu; XMC-001 sahip onaylı, Q-26):**
+  - **Platform kapsamı süreç içi açılır:** öneksiz `PLN-000001` (RCS-001 §5.3); satırlar kiracısız ayrı koleksiyonlarda (Q-18 A kararı,
+    Bölüm 4.6); denetim mevcut platform-global denetim kiracısıyla (`AuditTenantIds.PlatformSystemTenantId`, `TargetTenantId = null`;
+    Q-19 A kararı, Bölüm 8.18 madde 2) işlem içi kapıdan.
+  - **Oluşturma:** kod boşsa `PLN-000001`; yazılmışsa bugünkü normalleştiriciden (kırp, boşluk / alt çizgi → `-`, büyük harf — Q-24 B)
+    ve ardından motorun elle kod kuralından geçen kod + gerekçe. Plan kaydı, sahiplik satırı, platform sayacı ve iki denetim satırı
+    (küresel uygulanabilirlik koordinatörünün bugünkü satırı + Tablo E-P) koordinatörün tek işleminde
+    (`services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/CreateSubscriptionPlanCommandHandler.cs:49`).
+  - **Güncelleme kodu değiştirebilir (Q-24 B kararı, r17; r16 önerisi A'dan farklı):** bugünkü davranış korunur — güncelleme `Code`'u
+    yazar (`UpdateSubscriptionPlanCommandHandler.cs:61`), bugünkü normalleştirici aynen uygulanır, ayrı `CodeChange` üyesi ve boşluk /
+    alt çizgi reddi yoktur. Normalleştirilmiş kod saklı koddan farklıysa bu bir **gerekçeli kod değişikliğidir** ve RCS-001 gereği motordan
+    geçer: gerekçe (eklemeli düz `CodeReason`), biçim / desen, tekillik (defter + eski plan kodları), eski sahiplik emekli + yeni sahiplik,
+    Tablo F-P ve koordinatörün denetim satırı — hepsi koordinatörün tek işleminde (izdüşüm kodu taşır —
+    `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/GlobalApplicabilityStateRepository.cs:33`; denetim
+    satırının önce / sonra `Code`'u `GlobalApplicabilityAuditChange.cs:46`); sayaç değişmez; yeni komut açılmaz (Bölüm 8.18 madde 6).
+    Boş kodlu güncelleme bugünkü gibi 400 "Code is required." (F-2 kararı, r18 — `SubscriptionPlanRequestValidator.cs:21`; kural
+    güncelleme doğrulayıcısında kalır).
+  - **Eski plan kodları** (tohum `FREE`, `STARTER`, `PROFESSIONAL`, `ENTERPRISE` ve DL-4 öncesi açılmışlar; F-1 (c) kararı, r18): kod
+    değişmedikçe deftere **alınmaz** (Q-22 A korunur — yalnız ad / fiyat değişen güncelleme deftere dokunmaz). Güncellemede kod
+    **değiştirilirse** değişiklik gerekçeyle deftere alınır: eski kod aynı koordinatör işleminde deftere `Legacy` kökenli sahiplik satırı
+    olarak yazılır ve emekliye ayrılır (`ReplacedByCode` = yeni kod), yeni kod `Manual` sahiplik + gerekçe; Tablo F-P önce = eski kod
+    (Bölüm 8.18 madde 5, 6). Eski kod bundan sonra hiçbir plana verilmez (§5.8; tekillik defterde). PLN'de 409 `RECORD_CODE_IMMUTABLE`
+    yoktur. Motorun bu kolu yalnız platform kolundadır; TTY eski kodları Q-22 A ile değişmez kalır.
+  - **Aktör:** yalnız `platform_admin` (denetimde `PlatformAdministrator`); `partner_admin` ve kiracı kullanıcısı reddedilir; motorun
+    platform kolu kiracı savunması yerine platform bağlamı savunması uygular (Bölüm 8.18 madde 2).
+  - **Ekran:** Platform yönetici kabuğu (`_LayoutPlatformAdmin`) → **2 dil** (`en`, `tr`; Bölüm 9, 11).
+- **Değişmeyenler:** HTTP iç ucu ve sözleşme 1.0.0 (Platform kapsamı HTTP'de kapalı kalır — 422 / 403, Bölüm 8.7); kimlik bilgisi
+  eşlemesi; Gateway (Bölüm 15); yeni izin anahtarı yok (Bölüm 14); DL-1 ayırma işleyicisi ve DL-3 kilit işleyicisi.
+- **A-18 etkisi (ölçüldü; çıkarım ayrı):** `TTY` Group, `PLN` Platform kapsamlıdır; ikisi de MDM tüzel kişilik kısa kodunu kullanmaz →
+  A-18 / ara dönem kilidi (Bölüm 8.13) DL-4'ü etkilemez. PPM LegalEntity kapsamı alırsa A-18 DL-11'in canlıya alma kapısı olur (çıkarım;
+  bugün PPM varlıklarında tüzel kişilik alanı yok — Bölüm 8.19).
+
+**DL-4 dışında:** PPM `PFL` / `PRG` / `PRJ` / `INI` / `INV` (MOD-0117, Diten.PpmService, süreç dışı) → **DL-11, PPM sahibi ekibin**
+(Q-17 kararı): PPM kodunu ekip kendi servisinde yazar; PPM'in kullanacağı Platform tarafı uçlarını (sözleşme eki + Platform kodu) da PPM
+ekibi yazar (A-22 kararı, r18; XMC-001) — bu paketin payı DL-11 revizyonu, inceleme ve kabul ölçümüdür (Bölüm 8.19); eski kodların
+sahiplik defterine **genel** alınması → DL-6 (Q-22 A kararı; PLN'de yalnız kod değişikliği anındaki alım DL-4'tedir — F-1 c); kodu kayda
+bağlama / kullanılmayan kod raporu (FU-RCS-04) → DL-10 (Q-23 A kararı); PLN kullanım kilidi (FU-RCS-27); tohumların motora bağlanması
+(FU-RCS-23); arka plan çağıranları → DL-9; yönetici ekranları → DL-10.
 
 ## 3. Owned Objects
 
@@ -422,6 +569,20 @@ kabuğundadır → 7 dil, `.antigravity/rules/localization-standard.md:8-9`); y�
 | Yardımcı (**DL-3**) | `RecordCodeInProcessGuard` | süreç içi kiracı / aktör savunması ve izin hükmü (boş anahtar kapalı) — DL-2 portunun kuralıyla aynı; DL-2 dosyasına bağlanmaz (FU-RCS-21) |
 | Neden kodları (**DL-3**) | `RECORD_CODE_MANUAL_FORMAT_INVALID` (400), `RECORD_CODE_PATTERN_RESERVED` (400), `RECORD_CODE_REASON_REQUIRED` (400), `RECORD_CODE_UNCHANGED` (400), `RECORD_CODE_NOT_ASSIGNED` (404), `RECORD_CODE_TAKEN` (409), `RECORD_CODE_ALREADY_ASSIGNED` (409), `RECORD_CODE_CONFLICT` (409), `RECORD_CODE_LOCKED` (409); DL-2'nin `RECORD_CODE_IMMUTABLE` (409) OTOMATİK türlerde yeniden kullanılır | `RecordCodeReasonCodes.cs`; RECORD-CODE-ALLOCATE sözleşmesine **girmez** (iç uç bunları üretmez) |
 | Denetim çağrısı (**DL-3**) | `RecordCodeAuditIntent.EnqueueClaimedAsync` / `.EnqueueChangedAsync` / `.EnqueueLockedAsync` (işlem içi) / `.EnqueueAssignmentRefusalAsync` (ret yazıcısıyla, ayrı kısa işlem) | yeni belirteçler; CT defter kararı **A-20** (Bölüm 21.5) |
+| Entity (**DL-4**, Q-18 A kararı) | `RecordCodePlatformCounter`, `RecordCodePlatformClaim` | `GlobalEntity` (kiracı alanı yok); Bölüm 4.6 |
+| Değer (**DL-4**, eklemeli) | `RecordCodeTypeDefinition.PlatformBinding` (`RecordCodePlatformBinding(Caller, RequiredPermission)`, varsayılan `null`) | yalnız `PLN` satırında dolu; `AllowedCaller` / `RequiredPermission` alanları `null` kalır (Bölüm 4.4 r16 notu) |
+| Repository (**DL-4**) | `IRecordCodePlatformCounterRepository`, `IRecordCodePlatformClaimRepository` | yalnız platform bağlamında çalışır (Bölüm 4.6); sahiplik deposu DL-3 yöntem adlarını `tenantId` parametresiz taşır |
+| İstisna (**DL-4**, Domain) | `RecordCodePlatformScopeViolationException` | `RecordCodeExceptions.cs`'e eklenir; `Exception`'dan türer; platform deposu kiracı bağlamında çağrılırsa → 500, iç cümle gönderilmez |
+| Port (eklemeli, **DL-4**, Q-20 A kararı) | `IInProcessRecordCodeAssignments.ClaimWithinAsync(IPlatformTransactionSession, …)`, `.ChangeWithinAsync(IPlatformTransactionSession, …)`; iki istek kaydına eklemeli son üye `ExternalCodeTaken`; **r18 (F-1 c):** `InProcessRecordCodeChangeRequest`'e ondan sonra eklemeli son üye `RecordCodeLegacyAdoption? LegacyAdoption = null` | tüketicinin işlemine katılır; DL-3'ün beş yöntemi değişmez (Bölüm 8.18) |
+| Değer (**DL-4**, r18, F-1 c kararı) | `RecordCodeLegacyAdoption(DateTime RecordCreatedAtUtc)` | `IInProcessRecordCodeAssignments.cs`'te; yalnız platform kolunda geçerli — aktif sahiplik satırı olmayan kaydın saklı kodunu (`ExpectedCurrentCode`) değişiklik anında `Legacy` satırı olarak deftere alır; kiracı kolunda doluysa 400 `RECORD_CODE_REQUEST_INVALID` (Bölüm 8.18 madde 1, 5) |
+| Enum değeri (eklemeli, **DL-4**, r18, F-1 c kararı) | `RecordCodeClaimOrigin.Legacy = 3` | motor dışında verilmiş, deftere sonradan alınan kod (JSON'da ad `Legacy`); DL-4'te yalnız PLN kod değişikliği anında, emekli olarak yazılır; aynı değer DL-6'nın genel alımında kullanılır (FU-RCS-22); `System` / `Manual` değişmez |
+| Çekirdek (**DL-4**) | `RecordCodeAssignmentWriter` | sahiplenme / değişikliğin işlem içi çekirdeği; DL-3 işleyicileri ve oturumlu yöntemler aynı çekirdeği çağırır |
+| Komut (**DL-4**, MOD-0024, XMC) | `ChangeTaskTypeCodeCommand` | `TaskItemCommands.cs`'e eklenir; `IAuditableCommand` / `ITransactionOwnedAuditCommand` değil (denetim motorun Tablo F satırı) |
+| Sorgu (**DL-4**, XMC) | `GetTaskTypeCodePreviewQuery`, `GetTaskTypeCodeHistoryQuery` (MOD-0024); `GetSubscriptionPlanCodePreviewQuery`, `GetSubscriptionPlanCodeHistoryQuery` (MOD-0361) | okuma; denetlenmez |
+| Dar depo arayüzü (**DL-4**, MOD-0024, XMC) | `ITaskTypeTransactionalWriter` (`CreateAsync(IPlatformTransactionSession, TaskType, …)`, `UpdateCodeAsync(IPlatformTransactionSession, Guid id, string code, int expectedVersion, …)`), `ITaskTypeUsageReader` (`HasTasksAsync(Guid typeId, …)`, silinmişler dahil) | `ITaskRepositories.cs`'te ayrı arayüzler; `ITaskTypeRepository` değişmez (K-17 F-1 emsali) |
+| Uç (**DL-4**, MOD-0024, XMC) | `GET task-types/code-preview`, `GET task-types/{id:guid}/code-history`, `PUT task-types/{id:guid}/code` (`TasksController`, `[HasPermission(TaskPermissions.TaskTypesManage)]`) | Bölüm 14 |
+| Uç (**DL-4**, MOD-0361, XMC) | `GET code-preview`, `GET {id:guid}/code-history` (`SubscriptionPlansController`); kod değişikliği mevcut `PUT {id:guid}` isteğinin `Code` alanıyla, gerekçe eklemeli düz `CodeReason`'da (Q-24 B, r17; `CodeChange` üyesi yok) | Bölüm 14 |
+| Neden kodları (**DL-4**) | yeni sabit yok — DL-2 `RECORD_CODE_IMMUTABLE` / `RECORD_CODE_COLLISION`, DL-3 kodları ve MOD-0024'ün `TASK_TYPE_CODE_IMMUTABLE` / `TASK_CONCURRENCY_CONFLICT` sabitleri tüketici uçlarında aynen | Bölüm 12 |
 
 ## 4. Entity Fields
 
@@ -429,7 +590,7 @@ Ortak taban `BaseEntity` (`services/Diten.Platform.Common/src/Diten.Platform.Com
 **`TenantScopedEntity`** (`EntityVariations.cs:8-11`, `required Guid TenantId`). r1'deki `HybridEntity` kaldırıldı
 (inceleme 01 F-2): Platform kapsamı DL-1'de yok (K-11), kiracısız satır da yoktur; `HybridRepository`'nin "`TenantId` null
 **veya** mevcut kiracı" filtresi (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:96-109`)
-bu özellikte kullanılmaz. DL-4 kiracısız satırın tabanını ayrıca kararlaştırır.
+bu özellikte kullanılmaz. DL-4 kiracısız satırın tabanını ayrıca kararlaştırır. **r16 / r17:** DL-4'ün kararı (Q-18 A, sahip kararları 2026-11-14) Bölüm 4.6'dadır: kiracısız satırlar ayrı `GlobalEntity` koleksiyonlarında; buradaki üç koleksiyonun tabanı ve kiracı yüklemi değişmez.
 
 **Kiracı yüklemi kuralı (inceleme 01 F-2/F-3; r3 inceleme 02 F-1 ile düzeltildi).** Üç deponun **her** okuma ve yazma
 yöntemi `Guid tenantId`'yi açık parametre olarak alır ve filtre **tam eşitliktir** `TenantId == tenantId`. Depo şu üç
@@ -593,7 +754,7 @@ arasındaki her sapmayı kırmızı yapar.
 | `BNK` | Banka | OTOMATİK | MOD-0289 | **yalnız Group** | Mdm | `mdm.banks.create` |
 | `BAC` | Banka Hesabı | OTOMATİK | MOD-0289 | LegalEntity (şirket hesabı) **ve** Group (tedarikçi hesabı) | Mdm | `mdm.bank-accounts.create` |
 | `AGR` | Sözleşme | OTOMATİK | MOD-0217 | LegalEntity (yöneten şirket) | Mdm | `mdm.contracts.create` |
-| `PLN` | Abonelik Planı | İKİSİ DE (§5.3) | Platform | Platform (DL-4) | yok (DL-4) | DL-4'te |
+| `PLN` | Abonelik Planı | İKİSİ DE (§5.3) | Platform | Platform | DL-1…DL-3: yok · **DL-4 (r16): `AllowedCaller` yine `null`; eklemeli `PlatformBinding.Caller = Diten.Platform` — yalnız süreç içi port, platform kolu**; HTTP bağlaması yok | **DL-4:** `PlatformBinding.RequiredPermission = platform.subscription-plans.create` (`SubscriptionPlansController.Create` anahtarı; platform aktöründe anahtar ayırt edici değildir — Bölüm 14) |
 | `TTY` (**DL-3**, r14; Q-8 A) | Görev Türü | İKİSİ DE (§3) | MOD-0024 | **yalnız Group** (RCS-001 §5.3) | **`Diten.Platform` — yalnız süreç içi port** (DL-3 motoru), HTTP bağlaması yok | `platform.tasks.task-types.manage` (`TaskPermissions.TaskTypesManage`) |
 
 İzin adları MOD-0018-FU27 taslağındaki anahtarlardır (`execution/domains/platform-shared-services/module-packs/MOD-0018-FU27-treasury-permission-onboarding.md`,
@@ -634,6 +795,17 @@ değişikliği değildir; katalog RCS-001 §3'e bağlıdır" (`docs/analysis/con
 sürümde "bağlanmamış İKİSİ DE" diye daraltılır (FU-RCS-20'ye eklendi). Katalog `Class` alanı her satırda RCS-001 §3'teki sınıfla
 aynıdır (`TTY` → `İKİSİ DE`); DL-1'in "PLN dışındaki her satır OTOMATİK" testi bu yüzden AC-62 ile değişir.
 
+**r16 (DL-4) — `PLN`.** Bugünkü satır (`services/Diten.Platform/src/Diten.Platform.Domain/Features/RecordCodes/RecordCodeTypeCatalog.cs:45`)
+kapsam `Platform`, çağıran `null`, izin `null` taşır ve DL-1 / DL-2 testleri bunu sabitler (`RecordCodeTypeCatalogTests.AC09_each_type_allows_exactly_its_scopes_and_PLN_has_no_caller`,
+`InProcessRecordCodeAllocatorTests.AC48_a_type_whose_catalogue_caller_is_not_the_platform_is_sent_with_no_allowed_type`; ölçüldü). Bu yüzden
+tasarım `AllowedCaller` / `RequiredPermission` alanlarına **dokunmaz**: `RecordCodeTypeDefinition`'a eklemeli, varsayılanı `null` olan bir son üye
+`PlatformBinding` (`Caller`, `RequiredPermission`) eklenir ve yalnız `PLN` satırında `("Diten.Platform", "platform.subscription-plans.create")`
+olur. Sonuç: HTTP iç ucu (adım 7, kimlik bilgisi eşlemesi) ve kiracı kolunun süreç içi yolları (DL-2 portu, DL-3 kiracı kolu — ikisi de
+`AllowedCaller`'a bakar) `PLN`'i bugünkü gibi 403 `RECORD_CODE_FORBIDDEN` ile reddeder; HTTP'de izinli bir türle `prefixScope = Platform`
+yine 422 `RECORD_CODE_SCOPE_INVALID`'dir (Bölüm 8.7; sözleşme 1.0.0 değişmez). Yalnız motorun platform kolu `PlatformBinding`'e bakar
+(Bölüm 8.18 madde 2). Platform aktöründe `[HasPermission]` anahtarı ayırt edici değildir (Bölüm 14); katalog anahtarı izin kataloğu ve
+yansıma eşitliği (AC-76) için durur, koruma `platform_admin` savunmasıdır.
+
 ### 4.5 RecordCodeClaim — `record_code_claims` (İKİSİ DE sahiplik defteri; DL-3, r14)
 
 Bir İKİSİ DE kaydının kodu bu defterde, kaydın kimliğine bağlı **sahiplik satırı** olarak durur. Tüketici kendi kaydında kodun
@@ -647,11 +819,11 @@ aynı `RecordCodeTenantPredicate.Ensure` — `services/Diten.Platform/src/Diten.
 | `TenantId` | Guid | evet | token kiracısı |
 | `RecordType` | string | evet | katalogda, sınıfı `İKİSİ DE` (DL-3'te yalnız `TTY`) |
 | `RecordId` | Guid | evet | tüketici kaydının kimliği; `Guid.Empty` yasak (400 `RECORD_CODE_REQUEST_INVALID`) |
-| `Code` | string | evet | `System`: DL-1 kalıbı `^[A-Z]{2,5}-[A-Z]{3}-[0-9]{6,}$`; `Manual`: `RecordCodeManualCode` kuralları (Bölüm 8.17) — ikisi hiçbir zaman örtüşmez (§5.9 yasağı) |
-| `Origin` | `RecordCodeClaimOrigin` | evet | `System` (sistem kodu, DL-1 ayırması) · `Manual` (kullanıcının yazdığı) |
+| `Code` | string | evet | `System`: DL-1 kalıbı `^[A-Z]{2,5}-[A-Z]{3}-[0-9]{6,}$`; `Manual`: `RecordCodeManualCode` kuralları (Bölüm 8.17) — ikisi hiçbir zaman örtüşmez (§5.9 yasağı); **r18** `Legacy` (yalnız platform satırında, Bölüm 4.6): kaydın saklı kodu olduğu gibi (`Ordinal`), biçim denetlenmez — motordan önce verilmiştir |
+| `Origin` | `RecordCodeClaimOrigin` | evet | `System` (sistem kodu, DL-1 ayırması) · `Manual` (kullanıcının yazdığı) · **r18** `Legacy` (motordan önce verilmiş eski kod; DL-4'te yalnız PLN kod değişikliği anında, Bölüm 8.18 madde 5) |
 | `Status` | `RecordCodeClaimStatus` | evet | `Active` → `Retired` tek yön; geri dönüş yok |
-| `Reason` | string? | `Manual`'da evet | kırpılmış gerekçe; `System`'de `null` |
-| `ClaimedAtUtc` / `ClaimedBy` | DateTimeOffset / Guid | evet | UTC; token `sub` |
+| `Reason` | string? | `Manual`'da evet | kırpılmış gerekçe; `System`'de ve `Legacy`'de `null` (değişikliğin gerekçesi yeni `Manual` satırındadır) |
+| `ClaimedAtUtc` / `ClaimedBy` | DateTime (UTC, BSON tarih) / Guid | evet | UTC; token `sub` — **r16:** `DateTime` (DL-3 kabulü; bölüm sonundaki not) |
 | `RetiredAtUtc` / `RetiredBy` / `ReplacedByCode` | — | emeklilikte evet | bir kez yazılır (yalnız `Active` → `Retired` geçişinde) |
 | `LockedAtUtc` / `LockedBy` | — | hayır | kullanım kilidi; bir kez yazılır (`$ifNull`), silinmez |
 | `CorrelationId` | string | evet | isteğin korelasyonu |
@@ -662,8 +834,49 @@ emekli kod da doludur (§5.8, §6); `ux_record_code_claims_tenant_type_record_ac
 `(TenantId, RecordType, RecordId, ClaimedAtUtc)` — geçmiş sorgusu. Profil `SchemaProfile.RecordCodes` (DL-1'in profili; yeni profil
 yok). **Silme yok** (soft delete dahil; `IsDeleted` daima `false`): emekli satır geçmişin kendisidir. Güncelleme yalnız iki
 koşullu yazımdır — `RetireIfActiveAsync` (filtre `TenantId`, `RecordType`, `RecordId`, `Code == beklenen`, `Status == Active`,
-`LockedAtUtc == null`) ve `LockIfUnlockedAsync` (filtre `TenantId`, `RecordType`, `RecordId`, `Status == Active`; `LockedAtUtc`
+`LockedAtUtc == null`) ve `LockIfUnlockedAsync` (filtre `TenantId`, `RecordType`, `RecordId`, `Status == Active`, **`Code == ön okunan kod`** — r16, CT kararı; `LockedAtUtc`
 yalnız boşsa yazılır; dönüş `Matched`, `LockedNow` — DL-1 `LockResult` deseni, Bölüm 3).
+
+**r16 — DL-3 kabul hizalaması (kod değişmez; `07ad98464`).** (a) Tarih alanları (`ClaimedAtUtc`, `RetiredAtUtc`, `LockedAtUtc`) `DateTime`
+(UTC) tutulur, `DateTimeOffset` değil (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/RecordCodes/RecordCodeClaim.cs:28`): bu
+serviste `DateTimeOffset` serileştiricisi kayıtlı değildir; değer `[ticks, offset]` dizisi olarak saklanır, ne geçmişi sıralar ne `$ifNull`
+alır (DL-3 commit iletisi; DL-1 tarih emsali). CT kabul etti (`docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md`).
+(b) Kilit filtresi ön okunan kodu taşır (`IRecordCodeClaimRepository.LockIfUnlockedAsync`'in `expectedCode` parametresi,
+`services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IRecordCodeRepositories.cs:124`): ön okumayla kilit arasına giren bir
+değişiklikten sonra çağıranın görmediği yeni kod kilitlenmez; eşleşmezse satır yeniden okunur, 409 `RECORD_CODE_CONFLICT` (CT kararı, r15
+incelemesi F-1, `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md`; AC-70, S-133).
+
+### 4.6 Kiracısız (Platform) satırlar — `record_code_platform_counters`, `record_code_platform_claims` (DL-4, r16; Q-18 A kararı)
+
+Platform kapsamlı kayıt (bugün yalnız `PLN`) bir kiracıya ait değildir. Karar (Q-18 A): kiracısız satırlar **ayrı iki koleksiyonda**, `GlobalEntity`
+tabanıyla durur (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/EntityVariations.cs:3-6`; kiracı alanı yok); Bölüm
+4.1–4.5'in koleksiyonları, tabanları (`TenantScopedEntity`) ve kiracı yüklemi **değişmez**. Gerekçe: (a) kiracı kapsamlı okumalar kiracısız
+satırı yapısal olarak göremez (AC-25) — ayrım filtreye değil koleksiyona dayanır; (b) `HybridRepository`'nin "`TenantId` null **veya**
+mevcut kiracı" filtresi (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:96-109`) AC-25 sabotajının
+tarif ettiği sızıntının kendisidir; (c) mevcut koleksiyonlarda bir gözcü kiracı kimliği (ör. `AuditTenantIds.PlatformSystemTenantId`)
+Bölüm 4'teki kiracı yükleminin (c) kuralına (`tenantId ≠ ITenantContext.TenantId` → ret) adlı istisna ister.
+
+| Koleksiyon ve alanlar | Index ve kural |
+|---|---|
+| `RecordCodePlatformCounter` — `RecordType` (`^[A-Z]{3}$`, katalogda `PlatformBinding` taşıyan tür), `LastNumber` (long; `$inc` 1; azalmaz, sıfırlanmaz) | `ux_record_code_platform_counters_type` `(RecordType)` unique |
+| `RecordCodePlatformClaim` — Bölüm 4.5'in alanları **`TenantId` hariç** (`Id`, `RecordType`, `RecordId`, `Code`, `Origin`, `Status`, `Reason`, `ClaimedAtUtc` / `ClaimedBy`, `RetiredAtUtc` / `RetiredBy` / `ReplacedByCode`, `LockedAtUtc` / `LockedBy`, `CorrelationId`); tarihler `DateTime` (UTC) | `ux_record_code_platform_claims_type_code` `(RecordType, Code)` unique, kısmi değil (emekli dahil); `ux_record_code_platform_claims_type_record_active` `(RecordType, RecordId)` unique, kısmi `Status == Active`; `ix_record_code_platform_claims_type_record_time` `(RecordType, RecordId, ClaimedAtUtc)` |
+
+- Profil `SchemaProfile.RecordCodes` (yeni profil yok). Silme yok (soft delete dahil). Güncelleme yalnız DL-3'teki iki koşullu yazım
+  (emeklilik; kilit — filtre kodu taşır).
+- **Platform bağlam yüklemi:** iki platform deposunun her yöntemi `ITenantContext.IsPlatformContext == true` ister; değilse
+  `RecordCodePlatformScopeViolationException` atar ve hiçbir şey okumaz / yazmaz (DL-1 `RecordCodeTenantPredicateViolationException`
+  deseni). Kiracı depoları bu koleksiyonlara erişmez.
+- **Ayırma defteri yok:** platform sistem kodunun sayaç `$inc`'i ve sahiplik satırı tüketicinin tek işlemindedir (Bölüm 8.18 madde 2);
+  iptal sayaç artışını da geri alır (boşluk kalmaz). Tekrar koruması `(RecordType, RecordId)` aktif index'idir; kayıt kimliği anahtardır,
+  idempotency anahtarı gerekmez.
+- **`Legacy` satırı (r18, F-1 c kararı):** aktif sahiplik satırı olmayan (DL-4 öncesi, tohum dahil) planın kodu güncellemede değişince
+  yazılır — `Code` = işlemde okunan saklı kod (biçim denetimi yok; bugünkü normalleştiricinin çıktısı, en çok 50), `Origin = Legacy`,
+  `Reason = null`, `ClaimedAtUtc` = planın oluşturma anı (`CreatedAt`, UTC — geçmiş `ClaimedAtUtc` + `Id` sırasıyla döner,
+  `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/RecordCodeRepositories.cs:485`; eski satırın yeni satırdan
+  önce gelmesi için; eski kodun gerçek yazılma anı bilinmez — **r18 yorumu**, Bölüm 24.3 Q-22 notu), `ClaimedBy` = değişikliği yapan
+  kullanıcı (deftere alan), `CorrelationId` isteğinki. Satır `Active` eklenir ve aynı işlemde DL-3'ün koşullu emekliliğiyle `Retired` olur
+  (yeni yazım yolu yok; "yalnız ekleme / tek emeklilik / tek kilit" kuralı korunur). Index'ler değişmez: eski kod `ux_…_type_code` ile
+  bundan sonra doludur (§5.8).
 
 ## 5. Repo Scope
 
@@ -981,6 +1194,135 @@ eklenmesi, `tests/architecture/audit-ledger/CT-DECISIONS.md` satırı ve gerekir
 (A-10 emsali; bugünkü satır `tests/architecture/audit-ledger/Diten.Platform.md:16`). **r15:** CT kararı kabul (2026-11-13); satır **CT kabul
 koşusundan önce** yazılır (F-8@8cc7dcb7).
 
+### DL-4 (r16) — tam dosya yolları
+
+N = yeni, M = yalnız belirtilen değişiklik; **XMC** = başka modülün dosyası — **sahip onaylı (karar kaydı, Q-26, 2026-11-14)**, yalnız
+bu listeyle sınırlı; liste dışı dokunuş yine sorulur (XMC-001). Kompozisyon dosyalarının SHA-256'sı sabitlenmez (module-pack-standard §13).
+Liste sahip kararlarıyla yazıldı (Q-17, Q-18 A, Q-20 A, Q-21 C, Q-22 A, Q-24 B, Q-25 B). Yollar `30c313eb4`'te ölçüldü; **r17:** Q-24 B ve
+Q-25 B aynı dosyalarda kalır — XMC listesi değişmedi; tek ek bu paketin yeni test dosyası `TaskTypeRecordCodeFormTests.cs` (başka modülün
+mevcut dosyası değil). **r18:** F-1 (c) bu paketin dosyalarına iki eklemeli değişiklik getirir (`RecordCodeClaimOrigin.cs`,
+`IInProcessRecordCodeAssignments.cs`) ve çekirdeğe eski kod kolunu ekler; F-2 kod kuralını güncelleme doğrulayıcısında tutar — kuralın
+taşındığı `UpdateSubscriptionPlanCommandValidator.cs` Q-26 listesinde **yoktu** → XMC-001 ek onayı açık (Bölüm 18.1 DL-4 başlama kapısı).
+
+**Bu paketin dosyaları (MOD-0040-FU02).**
+
+Domain (`services/Diten.Platform/src/Diten.Platform.Domain/`):
+
+- M `Features/RecordCodes/RecordCodeTypeCatalog.cs` — yalnız `RecordCodeTypeDefinition`'a eklemeli, varsayılanı `null` son üye
+  `RecordCodePlatformBinding? PlatformBinding` (`Caller`, `RequiredPermission`) ve `PLN` satırına bağlama; `PLN`'in `AllowedCaller` /
+  `RequiredPermission` alanları `null` kalır; başka satır değişmez (Bölüm 4.4 r16 notu).
+- M `Features/RecordCodes/RecordCodeExceptions.cs` — yalnız `RecordCodePlatformScopeViolationException`.
+- N `Entities/RecordCodes/RecordCodePlatformCounter.cs`, `Entities/RecordCodes/RecordCodePlatformClaim.cs`
+- M `Repositories/IRecordCodeRepositories.cs` — yalnız `IRecordCodePlatformCounterRepository`, `IRecordCodePlatformClaimRepository`;
+  mevcut beş arayüz değişmez.
+- M (r18, F-1 c) `Enums/RecordCodes/RecordCodeClaimOrigin.cs` — yalnız eklemeli `Legacy = 3`; `System` / `Manual` değişmez.
+
+Application (`services/Diten.Platform/src/Diten.Platform.Application/`):
+
+- M `Contracts/RecordCodes/IInProcessRecordCodeAssignments.cs` — yalnız eklemeli `ClaimWithinAsync`, `ChangeWithinAsync` ve iki istek
+  kaydının eklemeli son üyesi `ExternalCodeTaken` (Bölüm 8.18 madde 1); **r18 (F-1 c):** değişiklik isteğine ondan sonra eklemeli son üye
+  `LegacyAdoption` ve yeni değer `RecordCodeLegacyAdoption(DateTime RecordCreatedAtUtc)`.
+- N `Features/RecordCodes/RecordCodeAssignmentWriter.cs` — sahiplenme / değişikliğin işlem içi çekirdeği (kiracı ve platform kolu);
+  **r18:** platform kolunda eski kod alımı (`Legacy` satırı + DL-3 emekliliği, Bölüm 8.18 madde 5).
+- M `Features/RecordCodes/InProcessRecordCodeAssignments.cs` — oturumlu yöntemler ve platform kolu komut kurulumu.
+- M `Features/RecordCodes/RecordCodeInProcessGuard.cs` — yalnız `DefendPlatform` ve platform izin hükmü; kiracı kolu değişmez (DL-3
+  AC-73 eşlik testi değişmeden yeşil).
+- M `Features/RecordCodes/Handlers/CommandHandlers/ClaimRecordCodeHandler.cs`, `ChangeRecordCodeHandler.cs` — işlem gövdesi çekirdeğe
+  taşınır, platform kolu ve dış yoklama eklenir; kiracı kolunun davranışı değişmez (DL-3 AC-62…AC-75 testleri değişmeden yeşil).
+- M `Features/RecordCodes/Handlers/QueryHandlers/PreviewRecordCodeHandler.cs`, `GetRecordCodeHistoryHandler.cs` — yalnız platform kolu.
+- M `Features/RecordCodes/RecordCodeAuditIntent.cs` — yalnız DL-3'ün dört yönteminin kayıt kiracısı ve hedef alan eklemeli aşırı
+  yüklemeleri (yöntem adları aynı → defter değişmez; Bölüm 21.6).
+- M `DependencyInjection.cs` — yalnız `RecordCodeAssignmentWriter` kaydı.
+- **Değişmez:** `LockRecordCodeHandler.cs`, `AllocateRecordCodeHandler.cs`, DL-2 dosyaları (`InProcessRecordCodeAllocator.cs`,
+  `IInProcessRecordCodeAllocator.cs`).
+
+Infrastructure (`services/Diten.Platform/src/Diten.Platform.Infrastructure/`):
+
+- M `Persistence/Repositories/RecordCodeRepositories.cs` — yalnız iki platform deposu.
+- M `Persistence/Schema/PlatformSchemaManifest.RecordCodes.cs` — yalnız iki koleksiyon ve dört index'i (Bölüm 4.6).
+- M `Persistence/Schema/PlatformCollections.cs` — yalnız iki koleksiyon adı.
+- M `DependencyInjection.cs` — yalnız iki depo kaydı.
+
+Testler:
+
+- N `services/Diten.Platform/tests/Diten.Platform.Application.Tests/RecordCodes/TaskTypeRecordCodeHttpTests.cs`,
+  `SubscriptionPlanRecordCodeHttpTests.cs`, `PlatformRecordCodeMongoTests.cs`
+- M `…/RecordCodes/RecordCodeTypeCatalogTests.cs` — yalnız yeni AC-76 / AC-85 testleri; mevcut testler değişmez.
+- M `…/RecordCodes/InternalRecordCodesHttpTests.cs` — yalnız AC-76 testi.
+- M `…/RecordCodes/InProcessRecordCodeAssignmentsTests.cs` — yalnız AC-89 / AC-91 testleri; **r18:** AC-82 kiracı kolu `LegacyAdoption`
+  reddi testi.
+- N `frontend/Diten.Web/tests/task-type-record-code-form.test.js`, `frontend/Diten.Web/tests/subscription-plan-record-code-form.test.js`
+- N (r17, Q-25 B) `frontend/Diten.Web.Tests/Controllers/TaskTypeRecordCodeFormTests.cs` — yalnız AC-83 form adımı (yansıma; MOD-0024'ün
+  mevcut Web testleri değişmez)
+
+**XMC — MOD-0024 Görev Türü (Q-26; sahip onaylı — karar kaydı).**
+
+- M `services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs` — yalnız üç eylem: `GET task-types/code-preview`,
+  `GET task-types/{id:guid}/code-history`, `PUT task-types/{id:guid}/code`; üçü de `[HasPermission(TaskPermissions.TaskTypesManage)]`.
+- M `services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Commands/TaskItemCommands.cs` — yalnız `ChangeTaskTypeCodeCommand`.
+- M `…/Features/Tasks/Queries/TaskItemQueries.cs` — yalnız `GetTaskTypeCodePreviewQuery`, `GetTaskTypeCodeHistoryQuery`.
+- M `…/Features/Tasks/Handlers/CommandHandlers/TaskTypeHandlers.cs` — `CreateTaskTypeHandler` kodu motordan alır (oturumlu, Bölüm 8.18
+  madde 3); yeni `ChangeTaskTypeCodeHandler`; `UpdateTaskTypeHandler` ve `SetTaskTypeActiveHandler` değişmez.
+- M `…/Features/Tasks/Handlers/QueryHandlers/TaskTypeQueryHandlers.cs` — yalnız iki sorgu işleyicisi.
+- M `…/Features/Tasks/Services/TaskTypeRules.cs` — yalnız `ValidateShape`'te oluşturma kodunun zorunluluğu kalkar; `ValidateCodeUnchanged`
+  değişmez.
+- M `…/Features/Tasks/TaskModels.cs` — `CreateTaskTypeRequest.Code` isteğe bağlı (`string?`) ve eklemeli `CodeReason`;
+  `CreateTaskTypeResultDto`'ya eklemeli `Code`; yeni `ChangeTaskTypeCodeRequest(ExpectedCurrentCode, NewCode, Reason, ExpectedVersion)`.
+- M `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ITaskRepositories.cs` — yalnız iki dar arayüz
+  (`ITaskTypeTransactionalWriter`, `ITaskTypeUsageReader`; Bölüm 3); `ITaskTypeRepository` değişmez.
+- M `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/TaskRepositories.cs` — yalnız iki dar arayüzün
+  uygulanması.
+- M Web: `frontend/Diten.Web/Controllers/TaskTypesController.cs`, `frontend/Diten.Web/Models/TaskTypes/TaskTypeEditViewModel.cs`,
+  `frontend/Diten.Web/Views/Tasks/TaskTypes/_Form.cshtml`, `frontend/Diten.Web/Views/Tasks/TaskTypes/Edit.cshtml`,
+  `frontend/Diten.Web/Views/Tasks/TaskTypes/Details.cshtml`,
+  `frontend/Diten.Web/Resources/Views/Tasks/TaskTypes/TaskTypesIndex.{en,tr,fr,es,zh,ar,ru}.resx`. **r17 (Q-25 B):** denetleyici
+  önizleme cevabını form durumuna çevirir, görünüm modeli `CodeRequired` taşır, `_Form.cshtml` zorunlu kod dalını çizer, dil dosyalarına
+  `RecordCodeManualRequired` (Bölüm 11).
+- M testler — yalnız kurucu bağımlılığı ve istek gövdesi (sınama amacı değişmez): `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tasks/TaskTypeConcurrencyTests.cs`,
+  `TaskTypeDeliverableRequirementTests.cs`, `TaskTypeEffectivenessGateHttpTests.cs`, `TaskTypeEffectivenessGateMongoTests.cs`,
+  `TaskTypeReviewMeetingRequirementTests.cs` (ölçüldü: beşi `CreateTaskTypeHandler` / `UpdateTaskTypeHandler` kurar ya da
+  `CreateTaskTypeCommand` gönderir); gerekirse `…/Tasks/TaskTestDoubles.cs` (yalnız iki dar arayüzün sahtesi). Web testleri
+  (`frontend/Diten.Web.Tests/Controllers/TaskTypeConcurrencyFormTests.cs`, `TaskTypeClosureOutcomeEditorTests.cs`,
+  `TaskTypeEffectivenessMessagesFormTests.cs`, `TaskTypeReviewMeetingRequirementFormTests.cs`, `frontend/Diten.Web/tests/task-types-active-gate.test.js`,
+  `task-type-closure-outcome-editor.test.js`) değişmeden yeşil kalmalıdır; biri değişirse adıyla kabul kaydına yazılır (XMC).
+- **Değişmez (korunan, Bölüm 6):** `CreateTaskItemHandler.cs` (Q-21 C kararı; A seçilseydi XMC listesine o dosya ve onu kuran 10 test
+  dosyası girerdi — Bölüm 19.8), `TaskSupportingEntities.cs`, `ITaskTypeRepository` gövdesi, görev türü liste ekranı dosyaları.
+
+**XMC — MOD-0361 / CAND-CAP-0002-FU02 Abonelik Planı (Q-26; sahip onaylı — karar kaydı).**
+
+- M `services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/SubscriptionPlansController.cs` — yalnız iki eylem:
+  `GET code-preview` (`[HasPermission("platform.subscription-plans.create")]`), `GET {id:guid}/code-history` (`…read`).
+- M `services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/CreateSubscriptionPlanCommandHandler.cs`
+  — kod motordan, koordinatör gövdesinde (Bölüm 8.18 madde 6).
+- M `…/Features/SubscriptionPlans/Handlers/CommandHandlers/UpdateSubscriptionPlanCommandHandler.cs` — kod değişikliği kolu (r17, Q-24 B): normalleştirilmiş farklı kod koordinatör işleminde motorun `ChangeWithinAsync`'iyle (Bölüm 8.18 madde 6); bugünkü `ExistsByCodeAsync` tekillik denetimi motorun adım 13'üne geçer; **r18 (F-1 c):** istek her zaman `LegacyAdoption = new(plan.CreatedAt.UtcDateTime)` taşır — eski planda (aktif sahiplik yok) motor eski kodu deftere alır, 409 `RECORD_CODE_IMMUTABLE` kolu yoktur.
+- M `…/Features/SubscriptionPlans/SubscriptionPlanContracts.cs` — `CreateSubscriptionPlanRequest.Code` isteğe bağlı ve eklemeli `CodeReason`;
+  `UpdateSubscriptionPlanRequest`'e eklemeli düz `CodeReason` (r17, Q-24 B; `CodeChange` üyesi yok).
+- M `…/Features/SubscriptionPlans/Validators/SubscriptionPlanRequestValidator.cs` — yalnız kod kuralı (`:19-23`) bu ortak dosyadan kalkar →
+  oluşturmada boş kod sistem kodu alır, elle kod retleri işleyicide verilir ki denetime yazılsın (DL-2 inceleme 04 F-6 emsali).
+- M (r18, F-2; **liste dışı — XMC-001 ek onayı açık**, Bölüm 18.1) `…/Features/SubscriptionPlans/Validators/UpdateSubscriptionPlanCommandValidator.cs` —
+  yalnız ortak dosyadan kalkan kod kuralı (`NotEmpty` "Code is required." + normalleştirilmiş 2–50) güncelleme doğrulayıcısına **aynen**
+  taşınır: güncellemede boş kod bugünkü gibi 400 (`ValidationProblemDetails`); `CreateSubscriptionPlanCommandValidator.cs` değişmez.
+- N `…/Features/SubscriptionPlans/Queries/GetSubscriptionPlanCodePreviewQuery.cs`, `GetSubscriptionPlanCodeHistoryQuery.cs`;
+  N `…/Features/SubscriptionPlans/Handlers/QueryHandlers/GetSubscriptionPlanCodePreviewHandler.cs`, `GetSubscriptionPlanCodeHistoryHandler.cs`
+  (Golden Reference adı — ek yok; modülün mevcut `…CommandHandler` adları yeniden adlandırılmaz, Bölüm 10).
+- M Web: `frontend/Diten.Web/Controllers/Platform/SubscriptionPlansController.cs` (görünüm modeli bu dosyada),
+  `frontend/Diten.Web/Views/Platform/SubscriptionPlans/_Form.cshtml`, `frontend/Diten.Web/Views/Platform/SubscriptionPlans/Edit.cshtml`,
+  `frontend/Diten.Web/Resources/Views/Platform/SubscriptionPlans/SubscriptionPlansIndex.{en,tr}.resx`.
+- M testler — gerekirse, yalnız istek gövdesi: `services/Diten.Platform/tests/Diten.Platform.Application.Tests/GlobalApplicability/GlobalApplicabilityAuditChangeHandlerTests.cs`,
+  `…/Persistence/TransactionOwnedAuditDeliveryMongoTests.cs`, `…/Tenants/PartnerAdminScopeHttpMongoTests.cs` (ölçüldü: plan
+  oluşturma / güncelleme gönderenler).
+- **Değişmez (korunan, Bölüm 6):** `SeedDefaultSubscriptionPlansCommandHandler.cs` (FU-RCS-23), `SubscriptionPlanCodeNormalizer.cs`
+  (değişmez; r17, Q-24 B: oluşturma ve güncelleme yolunda motordan **önce** aynen çağrılır, tohum da kullanmaya devam eder), `GlobalApplicabilityTransactionCoordinator.cs`,
+  `ISubscriptionPlanRepository.cs`, `GlobalApplicabilityTransactionalArchitectureTests.cs`, `TransactionOwnedAuditCommands.cs` (yeni plan
+  komutu açılmaz — Q-24).
+
+**Değişmez (paylaşılan; AC-91 `git diff` ile ölçer):** `docs/analysis/contracts/record-code-allocate.md`, `gateway/Diten.ApiGateway/ocelot.json`,
+`TrustedRecordCodeCredentialAuthenticator.cs`, `CanonicalTransactionalAuditOutboxWriter.cs`, `AuditOutboxWriteRequest.cs`,
+`TransactionOwnedAuditSourceServices.cs`, `services/Diten.PpmService/**` (MOD-0117 — DL-11, PPM sahibi ekibin; bu paket dokunmaz).
+
+**DL-4'ün dışında, CT / sahip adımı (geliştirici yazmaz):** DL-4 kodu yeni bir `RecordCodeAuditIntent` belirteci açarsa defter satırı
+(A-21 CT kararı: açılmaz — aşırı yükleme; açılırsa A-20 emsali); RCS-001 §3 `TTY` ve "Abonelik Planı" satırlarının "uyumsuz" notu (FU-RCS-24, Ali — `.antigravity`).
+
 ## 6. Protected Paths
 
 - `.antigravity/**` — RCS-001 §3 değişikliği Ali'nin (A-3).
@@ -1015,6 +1357,12 @@ koşusundan önce** yazılır (F-8@8cc7dcb7).
   `ITransactionOwnedAuditCommand` değildir, listeye ad eklenmez), `CanonicalTransactionalAuditOutboxWriter.cs`,
   `ITransactionalAuditRefusalWriter.cs`, `TransactionOwnedAuditSourceServices.cs` (küme büyümez — `Diten.Platform` zaten içinde).
   `IRecordCodeCounterRepository` arayüz gövdesi (okuma ayrı dar arayüzdedir). Sözleşme `docs/analysis/contracts/record-code-allocate.md`.
+- **DL-4 (r16):** Bölüm 5 "DL-4" XMC listesinde olmayan her MOD-0024 ve MOD-0361 dosyası — adıyla: `CreateTaskItemHandler.cs`,
+  `TaskSupportingEntities.cs`, `ITaskTypeRepository` arayüz gövdesi, `SeedDefaultSubscriptionPlansCommandHandler.cs`,
+  `GlobalApplicabilityTransactionCoordinator.cs`, `GlobalApplicabilityTransactionalArchitectureTests.cs`, görev türü ve plan liste
+  ekranları; denetim altyapısı (`CanonicalTransactionalAuditOutboxWriter.cs`, `AuditOutboxWriteRequest.cs`, `TransactionOwnedAuditCommands.cs`,
+  `TransactionOwnedAuditSourceServices.cs`, `AuditTenantIds.cs` — yalnız okunur); `services/Diten.PpmService/**` (MOD-0117, başka domain —
+  DL-11, PPM sahibi ekibin); sözleşme; `ocelot.json`; DL-2 dosyaları; `AllocateRecordCodeHandler.cs`, `LockRecordCodeHandler.cs`.
 
 ## 7. Dependencies
 
@@ -1047,6 +1395,12 @@ koşusundan önce** yazılır (F-8@8cc7dcb7).
 | **DL-3 bağımlılığı — grup öneki ayarı** (TTY `Group` kapsamı) | DL-1 hizalama ucu ve kilidi var (Bölüm 4.3); bir kiracıda hizalama yapılmamışsa TTY sistem kodu 409 `GROUP_PREFIX_MISSING` alır | DL-3 testleri hizalanmış kiracıyla kurulur; canlıda TTY'yi açan DL-4'ün önkoşuludur, DL-3'ün değil |
 | **DL-3 bağımlılığı — yeni defter belirteçleri** (`RecordCodeAuditIntent.EnqueueClaimedAsync/…/EnqueueAssignmentRefusalAsync` → `platform-islem-ici`) | defterde yok (`tests/architecture/audit-ledger/Diten.Platform.md:16`) | **A-20 — CT kararı kabul (2026-11-13); defter satırı CT kabul koşusundan önce yazılır** (A-10 emsali; r15, F-8@8cc7dcb7); kod yazımını bekletmez |
 | **DL-4 bağımlılığı (bilgi)** — İKİSİ DE tüketicileri | TTY: MOD-0024 (`TaskType.Code` bugün elle girilir, değişmez, en çok 40 karakter — `services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Services/TaskTypeRules.cs:17`); PPM `PFL` / `PRG` / `PRJ` / `INI` / `INV`: MOD-0117, Diten.PpmService (süreç dışı); PLN: MOD-0361 (`SubscriptionPlan`, `GlobalEntity`, Platform kapsamı); Tüzel Kişilik: MOD-0220 (MDM, DL-5) | DL-3'ü bekletmez; DL-4 DL-3'ü bekler (Bölüm 23) |
+| **DL-4 bağımlılığı — DL-3 kodu** | VERIFIED (`07ad98464`, 2026-11-14; `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md`); bu ağaçta tabanda (`git merge-base --is-ancestor 07ad98464 HEAD` başarılı) | **başlama koşulu — sağlandı** |
+| **DL-4 bağımlılığı — MOD-0024 dosyaları (XMC-001)** | görev türü oluşturma / güncelleme MOD-0024'ün kodudur (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs:855-870`, `TaskTypeHandlers.cs`); künyeler `owner: platform-team` / `ali.tufanoglu` | **Q-26 — sahip onaylı** (karar kaydı; yalnız Bölüm 5 "DL-4" listesi); DL-4 kodunu artık bekletmez |
+| **DL-4 bağımlılığı — MOD-0361 dosyaları (XMC-001)** | plan oluşturma / güncelleme (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/SubscriptionPlansController.cs:69-83`, `CreateSubscriptionPlanCommandHandler.cs`, `UpdateSubscriptionPlanCommandHandler.cs`); `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU02-tenant-subscription-plan-catalog.md` künye `status: approved`, `owner: module-pack-author` | **Q-26 — sahip onaylı** (karar kaydı; yalnız Bölüm 5 "DL-4" listesi); DL-4 kodunu artık bekletmez |
+| **DL-4 — grup öneki hizalanmamış kiracı (r17, Q-25 B)** | DL-1 hizalama ucu var (Bölüm 4.3); hizalanmamış kiracıda TTY sistem kodu 409 `GROUP_PREFIX_MISSING` | **Q-25 B kararı:** canlıya alma kapısı **değil** — form kodu ve gerekçeyi zorunlu tutar (elle kod, Bölüm 8.18 madde 3, 11); kodu ve canlıya almayı bekletmez |
+| **DL-4 — A-18 (MDM kısa kod kalıcı kilidi)** | `TTY` Group, `PLN` Platform — MDM kısa kodu kullanılmaz (Bölüm 2.6) | **etkilemez**; PPM LegalEntity kapsamı alırsa DL-11'in canlıya alma kapısı (çıkarım; bugün PPM varlıklarında tüzel kişilik alanı yok — Bölüm 8.19) |
+| **DL-11 — MOD-0117 (PPM), PPM sahibi ekibin dilimi (r17, Q-17 kararı)** | `execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md` künye `status: review`, `service: Diten.PpmService`, domain `portfolio-delivery` | PPM bağlanmasını PPM sahibi ekip kendi servisinde yapar; Platform tarafı uçlarını (sözleşme eki + Platform kodu) da PPM ekibi yazar (A-22 kararı, r18; XMC-001 — DL-11 revizyonunda dosya listesiyle sahip onayı); bu paketin payı DL-11 revizyonu, inceleme ve kabul ölçümü (Bölüm 8.19); DL-4'ü bekletmez |
 | **DL-9 bağımlılığı** — arka plan çağıranları için servis kimliği token'ı (P3) | Auth servis kimliği token'ı bugün yalnız `Diten.MDM` hedef kitlesine verilir (`ServiceIdentityTokenAudiencePolicy`) | **bu paketin kodu değil** (r4 F-8). Bağlı paket: **MOD-0033-FU02** Service Identity Token Issuance Foundation (`execution/domains/platform-shared-services/module-packs/MOD-0033-FU02-service-identity-token-issuance-foundation.md`, `service: Diten.AuthService`, `status: review`); Platform kayıt kodu hedef kitlesinin onun revizyonu mu yeni FU'su mu olacağı **TBD** (kimlik uydurulmaz). Sahip rolü: künyedeki `auth-security-owner` / `api-consumer-credential-owner` + Ali (Auth) + Beste (Platform yürütücüsünün P3'ü kabulü). DL-1'i bekletmez |
 
 ### 7.1 Tüketici yükümlülükleri (tüketici paketlerine yazılır; bu paketin AC'si değildir)
@@ -1377,6 +1731,11 @@ merkezi denetim kutusu boş `TenantId`'yi reddeder (`AuditOutboxWriteRequest.cs:
 (Bölüm 21) kiracısız satırı bugün yazamaz; HTTP'de Platform kapsamlı tüketici de yok. DL-4: PLN bağlanmasıyla birlikte
 kiracısız sayaç/defter tabanı, platform-global denetim yolu ve süreç içi port kararlaştırılır (AC-25).
 
+**r16 (DL-4).** Platform kapsamı **yalnız süreç içi** açılır (PLN, Bölüm 8.18 madde 2): kiracısız satırlar ayrı koleksiyonlarda (Q-18 A
+kararı, Bölüm 4.6), denetim mevcut platform-global denetim kiracısıyla (Q-19 A kararı). HTTP iç ucunda bu bölümün kuralı **değişmez**
+(izinli türle `prefixScope = Platform` → 422, `PLN` → 403; sözleşme 1.0.0) — HTTP'de Platform kapsamlı tüketici yoktur. Sözleşmenin
+"DL-4'te açılır" notu bir sonraki eklemeli sürümde "süreç içi açıldı, HTTP'de kapalı" diye güncellenir (FU-RCS-20).
+
 ### 8.8 Veri kapsamı (SEC-002) — kapsam cümlesi
 
 v1'de kiracı çapında satır döndüren sorgu yoktur (yönetici `GET`'i tek satırlık kiracı ayarıdır, Platform aktörüne;
@@ -1505,7 +1864,7 @@ Bölüm 8.6) port tarafından **yakalanmaz**.
 ve başarı denetim satırı böylece kayda bağlıdır (TC-7'nin süreç içi karşılığı).
 
 **İşlem ilişkisi — iki ayrı yazım, sabit sıra (ayırma başarısızsa kayıt oluşmaz).** ORG / POS yazımı bugün işlem dışıdır
-(`CreateOrganizationUnitCommandHandler.cs:87`, `CreatePositionCommandHandler.cs:54` → `TenantRepository.CreateAsync`, tek
+(`CreateOrganizationUnitCommandHandler.cs:118`, `CreatePositionCommandHandler.cs:90` → `TenantRepository.CreateAsync`, tek
 `InsertOneAsync`, `…/Persistence/Repositories.cs:81-91`) ve merkezi denetimi `AuditBehavior` işleyiciden sonra yazar. Ayırma kendi
 işlemindedir (Bölüm 8.6: defter + denetim kutusu tek işlem, sayaç işlem dışında). Sıra:
 
@@ -1546,8 +1905,8 @@ işlemindedir (Bölüm 8.6: defter + denetim kutusu tek işlem, sayaç işlem d�
   (503 `AUDIT_RECORD_UNAVAILABLE` / 500 `AUDIT_INTENT_INVALID`; AC-54 (d)).
 
 **Kısa kod kilidi (Bölüm 8.13) ORG / POS'ta nasıl görünür.** Adım 11 aynıdır: LegalEntity kapsamında şirketin **herhangi bir
-türdeki** en son ayırmasının öneki MDM'in bugünkü kısa koduyla karşılaştırılır (`FindLatestPrefixForLegalEntityAsync(tenantId,
-legalEntityId)` türden bağımsızdır — `AllocateRecordCodeHandler.cs:177-187`). Sonuç: Treasury'nin `MYG` ile `PAY` aldığı şirketin
+türdeki** en son ayırmasının öneki MDM'in bugünkü kısa koduyla karşılaştırılır (`FindLatestPrefixForLegalEntityAsync(tenantId, legalEntityId)`
+türden bağımsızdır — `AllocateRecordCodeHandler.cs:178-188`; r17: satırlar DL-2 kodu sonrası yeniden ölçüldü, Bölüm 19.9). Sonuç: Treasury'nin `MYG` ile `PAY` aldığı şirketin
 MDM kodu `MYX`'e çevrilirse o şirkette **Organizasyon Birimi ve Pozisyon oluşturma da** 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED` alır;
 kayıt oluşmaz, sayaç ilerlemez, ayırma reddi `Failed` yazılır (`platform.record-code.allocation-refused`, `EvaluationStep = 11`,
 `Prefix` = MDM'in bugünkü kodu), hata logu, merkezi `Failed` oluşturma satırı. Form `reason_code`'u yerelleştirilmiş metinle
@@ -1766,7 +2125,9 @@ aynıdır; DL-3 üretim kodu o dosyaya bağlanmaz (başlama koşulu DL-1). İki 
   yarışan kilit / değişiklik); (b) yeni sahiplik (`Origin = Manual`, `Reason`); (c) Tablo F. Hepsi birlikte commit olur ya da hiçbiri
   olmaz. **Sistem kodu değişikliğin hedefi olamaz** (yeni kod her zaman elle koddur; §5.9 yasağı sistem desenini reddeder).
 - **Kilit:** tek işlemde `LockIfUnlockedAsync`; `Matched == false` (aktif satır ön okumadan sonra emekliye ayrıldı) → işlem iptal,
-  409 `RECORD_CODE_CONFLICT` — başarı sayılmaz (r15, F-2@8cc7dcb7; S-116).
+  409 `RECORD_CODE_CONFLICT` — başarı sayılmaz (r15, F-2@8cc7dcb7; S-116). **r16 (DL-3 kodunda var; CT kararı, r15 inceleme F-1):**
+  filtre ön okunan kodu da taşır (`Code ==`); ön okumayla kilit arasına giren bir değişiklikten sonra yeni kod kilitlenmez, satır yeniden
+  okunur ve 409 `RECORD_CODE_CONFLICT` döner (AC-70, S-133).
 - **E11000** (sahiplik ekleme yarışı; r15, F-1@8cc7dcb7 ile düzeltildi): depo `RecordCodeClaimConflictException(IndexName)` atar; işlem
   iptal edilir ve işleyici **hangi index bildirilmiş olursa olsun** satırı yeni kısa bir işlem gövdesinde **oturumlu**
   `FindActiveAsync(session, tenantId, recordType, recordId)` ile yeniden okur (kazananın commit'i görünür): aktif satır **bu kaydın** ve kodu istenen (normalleştirilmiş) koda eşitse — sistem kodunda köken `System` — **200
@@ -1801,7 +2162,293 @@ değişiklikte zorunludur; sistem kodunda gerekçe gönderilirse 400 `RECORD_COD
 **Tüketici kaydı ile tutarlılık (DL-4'ün işi; Q-16 A).** Motor kodun geçmişinin kaynağıdır; tüketici kendi kaydında kopyasını
 tutar ve motordan **sonra** yazar. Motor başarılı, tüketici yazımı düştüyse tüketici `GetHistoryAsync` / aktif satırla kendi kaydını
 onarır; tüketici yazımını motorun işlemine katmak (oturumlu port) DL-4'te tüketiciyle birlikte karara bağlanır. DL-3 bu ilişkiyi
-ölçmez (tüketici yok).
+ölçmez (tüketici yok). **r16 / r17:** DL-4'ün kararı oturumlu port (Q-20 A) — Bölüm 8.18 madde 1.
+
+### 8.18 DL-4 — tüketici bağlanması: oturumlu port, platform kolu, kilit, eski kodlar (r16; r17 sahip kararları; r18 inceleme kararları)
+
+Bu bölümün seçimleri Bölüm 24.3'teki sahip / CT kararlarıdır (Beste 2026-11-14; karar kaydı
+`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139`). Q-24 ve Q-25'te seçim r16 önerisinden farklıydı (B);
+madde 3, 6 ve 8 r17'de buna göre yazıldı. Diğer maddelerin içeriği r16'daki gibidir, yalnız "öneri" dili "karar" oldu. **r18:** r17
+incelemesinin sahip kararları (`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:141-153`) madde 1, 5, 6 ve 8'e
+işlendi — F-1 (c) PLN eski kodunun değişiklik anında deftere alınması, F-2 boş kodlu güncellemede 400, F-3 izdüşüm atfı.
+
+**1. Oturumlu port (Q-20 A kararı).** `IInProcessRecordCodeAssignments`'a **eklemeli** iki yöntem:
+
+```csharp
+Task<Response<RecordCodeClaimResult>> ClaimWithinAsync(
+    IPlatformTransactionSession session, InProcessRecordCodeClaimRequest request, CancellationToken ct);
+Task<Response<RecordCodeChangeResult>> ChangeWithinAsync(
+    IPlatformTransactionSession session, InProcessRecordCodeChangeRequest request, CancellationToken ct);
+```
+
+İki istek kaydı eklemeli, varsayılanı `null` bir son üye alır: `Func<string, CancellationToken, Task<bool>>? ExternalCodeTaken` (tüketicinin
+defter dışı eski kod yoklaması, madde 5). **r18 (F-1 c):** `InProcessRecordCodeChangeRequest` ondan sonra eklemeli, varsayılanı `null` bir
+son üye daha alır: `RecordCodeLegacyAdoption? LegacyAdoption` (`RecordCodeLegacyAdoption(DateTime RecordCreatedAtUtc)`) — aktif sahiplik
+satırı olmayan kaydın saklı kodunu değişiklik anında deftere alma izni (madde 5); yalnız platform kolunda geçerlidir. DL-3'ün beş yöntemi ve
+davranışı **değişmez**. Oturumlu yöntemler değerlendirme sırasını (Bölüm
+8.17) aynen uygular; farklar: (a) adım 15'teki yazımlar (sahiplik satırı, emeklilik, Tablo E / F) tüketicinin verdiği oturumla, tüketicinin
+işleminde yapılır — tüketici kendi kaydını aynı işlemde yazar, hepsi birlikte commit olur ya da hiçbiri olmaz; (b) sistem kodunda DL-1
+ayırması (`AllocateRecordCodeCommand`, `ISender`) bugünkü gibi **kendi** işlemindedir (Mongo'da iç içe işlem yoktur) — tüketici işlemi
+düşerse ayrılan kod bir boşluk olarak kalır (§5.8), yeni denemenin yeni kayıt kimliği yeni numara alır; (c) ret satırları ret yazıcısıyla
+ayrı kısa işlemde yazılır (DL-3 gibi) ve motor ret sonucunu döner — tüketici işlem gövdesini **hiçbir şey yazmadan** bitirir; (d) sahiplik
+eklemesindeki E11000 tüketicinin işlemini iptal ettirir: motor `RecordCodeClaimConflictException`'ı tüketici işleyicisinin yakaladığı bir
+sonuca çevirir (`ux_…_code` → 409 `RECORD_CODE_TAKEN`, `ux_…_record_active` → 409 `RECORD_CODE_ALREADY_ASSIGNED`); oturumlu yolda **tekrar
+kolu yoktur** çünkü kayıt kimliği yenidir (oluşturma) ya da değişiklik kendi aktif satırını emekliye ayırır.
+
+**2. Platform kolu (Q-18 A, Q-19 A kararları).** Katalog satırında `PlatformBinding` varsa (bugün yalnız `PLN`) motor platform koluna girer:
+
+- **Savunma** `RecordCodeInProcessGuard.DefendPlatform`: `ITenantContext.IsPlatformContext == true` (ara katman `/api/platform/*`
+  isteğinde kurar — `services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs:304-307`, `:129`),
+  `ActorType == platform_admin` (`OrdinalIgnoreCase`), `UserId ≠ Guid.Empty`; değilse hiçbir şey göndermeden 403 `RECORD_CODE_FORBIDDEN`,
+  ret satırı yok, uyarı logu. Kiracı kolunun savunması değişmez ve `PLN`'i reddeder (kiracı kolu `AllowedCaller`'a bakar, `null` → adım 3,
+  403 `RECORD_CODE_FORBIDDEN`; DL-3 AC-73 değişmez). Platform kolu `TTY` gibi kiracı türlerini kabul etmez (`PlatformBinding` yok → 403).
+- **Adımlar:** 1 (kiracı aktif) yoktur; 2, 3 (`PlatformBinding.Caller`), 4 (platform aktöründe anahtar ayırt edici değildir — Bölüm 14;
+  koruma savunmadır), 5–13 DL-3 ile aynı, depo platform deposu; 14 önek yok — kod `PLN-{n, en az 6 hane}`, biçim
+  `RecordCodeFormat.IsValidPlatformCode`; sayaç platform sayacı, `$inc` **tüketicinin işleminde** (iptal sayacı da geri alır); 15
+  tüketicinin işlemi.
+- **Denetim (Q-19 A kararı):** kayıt kiracısı `AuditTenantIds.PlatformSystemTenantId` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Audit/AuditTenantIds.cs:5`),
+  `Intent.TargetTenantId = null`. Yazıcı bunu bugün kabul eder: kutunun boş kiracı reddi yalnız `Guid.Empty` içindir
+  (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Audit/AuditOutboxWriteRequest.cs:28-30`), yazıcının hedef reddi de
+  (`services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/CanonicalTransactionalAuditOutboxWriter.cs:119`; `null` hedef
+  geçer). Emsal: küresel uygulanabilirlik koordinatörü aynı iki alanla işlem içi yazar
+  (`services/Diten.Platform/src/Diten.Platform.Application/Features/GlobalApplicability/GlobalApplicabilityTransactionCoordinator.cs:154`, `:165`)
+  ve abonelik planı komutları bugün böyle denetlenir. Yazıcı, kaynak servis kümesi ve `TransactionOwnedAuditCommands` **değişmez**. Aktör
+  `platform_admin` → `PlatformAdministrator` (kapı çözer, K-8r). Retler aynı kayıt kiracısıyla ret yazıcısından.
+- **Yeni belirteç yok (A-21, CT kararı):** `RecordCodeAuditIntent`'in DL-3 yöntemleri kayıt kiracısını ve hedefi parametre alan eklemeli
+  aşırı yüklemelerle platform kolunu taşır; yöntem adları aynı kaldığından defter (`tests/architecture/audit-ledger/Diten.Platform.md`)
+  değişmez. Kod buna rağmen yeni bir ad açarsa A-21'in kapısı doğar (A-20 emsali, Bölüm 18.1).
+
+**3. TTY bağlanması (MOD-0024; XMC-001 sahip onaylı, Q-26).**
+
+- **Oluşturma** (`CreateTaskTypeHandler`): bugünkü biçim / sınıf / toplantı / kapanış sonucu kuralları (kod hariç) ve etkinlik kapısı
+  (`TaskTypeEffectivenessGate.CheckAsync` — dış servis çağrısı işlemden **önce**) → `IPlatformTransactionExecutor.ExecuteAsync` gövdesi:
+  (a) `ClaimWithinAsync(session, new("TTY", type.Id, request.Code, request.CodeReason, ExternalCodeTaken: tüketici yoklaması))`; ret →
+  gövde hiçbir şey yazmadan ret döner; (b) başarıda `type.Code = sonuç.Code`; (c) `ITaskTypeTransactionalWriter.CreateAsync(session, type)`.
+  Görev türü kimliği kayıttan önce bellidir (`BaseEntity.Id` başlangıç değeri `Guid.NewGuid()`,
+  `services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/BaseEntity.cs:5`). Bugün yazım oturumsuzdur
+  (`services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskTypeHandlers.cs:103`).
+- **Kod kuralı:** `TaskTypeRules.ValidateShape` oluşturma kodunu artık zorunlu tutmaz (boş = sistem kodu); biçim ve uzunluk motordadır
+  (`RecordCodeManualCode`, 2–40 — bugünkü 40 üst sınırıyla aynı); `TaskTypeRules.NormalizeCode` oluşturma yolunda kullanılmaz; güncelleme
+  kuralı `ValidateCodeUnchanged` değişmez (400 `TASK_TYPE_CODE_IMMUTABLE`).
+- **Grup öneki tanımlı değilse (Q-25 B kararı, r17).** Sunucu kuralı **değişmez**: kodsuz oluşturma ve önizleme 409 `GROUP_PREFIX_MISSING`
+  (ayar etkin `OrgPrefix`'ten farklıysa 409 `GROUP_PREFIX_MISMATCH`; DL-1 adım 11 / DL-3 adım 14), görev türü yazılmaz, sistem kodu
+  verilmez. Tüketici ekranı bu durumda kodu **zorunlu** tutar: Web denetleyicisi `Create` GET'inde önizlemeyi okur ve cevabı özel statik bir
+  yardımcıyla form durumuna çevirir — 409 `GROUP_PREFIX_MISSING` → `CodeRequired = true`: form kod ve gerekçe girişlerini zorunlu işaretler
+  (`required`, `*`), sistem kodu yer tutucusu göstermez, yerelleştirilmiş `RecordCodeManualRequired` uyarısını gösterir; kullanıcının yazdığı
+  kod DL-3 elle kod kurallarından (normalleştirme, 2–40, desen yasağı — Q-11 A, Q-12 A) ve gerekçe kuralından (10–500 — Q-9 A, Q-10 A)
+  geçer, motorun tekillik denetimi (defter + dış yoklama) aynen. 409 `GROUP_PREFIX_MISMATCH` aynı form davranışını alır (**çıkarım:** iki
+  durumda da sistem kodu verilemez; karar metni yalnız "tanımlı değilse" der — Bölüm 24.3 Q-25 notu; **CT kabul**, karar kaydı satır
+  152-153, r18). Önizleme başka bir nedenle
+  başarısızsa (ör. 503) kod isteğe bağlı kalır, yer tutucu gösterilmez ve kayıtta sunucunun cevabı gösterilir. Kodsuz POST yine 409
+  alır (form denetimini atlayan istemciye karşı sunucu sınırı). **Canlıya alma kapısı değildir:** hizalanmamış kiracıda görev türü elle
+  kodla açılmaya devam eder.
+- **Gerekçeli değişiklik** (`ChangeTaskTypeCodeHandler`, `PUT …/task-types/{id}/code`): tür kiracı deposundan okunur (yoksa 404
+  `TASK_NOT_FOUND`); türün aktif sahiplik satırı yoksa → 409 `RECORD_CODE_IMMUTABLE` (eski kod, madde 5); kilit denetimi (madde 4);
+  işlem gövdesi: `ChangeWithinAsync(session, …)` + `ITaskTypeTransactionalWriter.UpdateCodeAsync(session, id, yeniKod, expectedVersion)` —
+  sürüm eşleşmezse işlem iptal, 409 `TASK_CONCURRENCY_CONFLICT`; Tablo F aynı işlemde.
+- **Öneri / geçmiş uçları** motorun `PreviewAsync` / `GetHistoryAsync`'ini çağıran sorgulardır; denetlenmez.
+
+**4. TTY kullanım kilidi (Q-21 C kararı).** Görevler türü kimlikle anar (`TaskItem.TaskTypeId`,
+`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tasks/TaskItem.cs:313`) ve kodu taşımaz; kod değişikliği görevlerin gösterilen
+tür kodunu değiştirir — MOD-0024'ün bugünkü değişmezlik gerekçesi (`TaskSupportingEntities.cs:586-589`). Karar: kod değişikliği ucu,
+değişiklikten önce `ITaskTypeUsageReader.HasTasksAsync(typeId)` (silinmiş görevler dahil) okur; görev varsa `LockAsync("TTY", typeId)`
+(Tablo G) ve 409 `RECORD_CODE_LOCKED`. `CreateTaskItemHandler` değişmez. **Kabul edilen sınır:** ilk görev kod değişikliğiyle aynı anda
+açılırsa (okumadan sonra, commit'ten önce) değişiklik geçebilir; o görev türün yeni kodunu gösterir, veri bütünlüğü kimlikle korunur.
+Reddedilen A seçeneği (görev açılınca kilit) bu sınırı kapatırdı ama `CreateTaskItemHandler`'a kurucu bağımlılığı ekler; onu kuran **10**
+test dosyası değişirdi (ölçüldü, Bölüm 19.8).
+
+**5. Eski kodlar ve çakışma savunması (Q-22 A kararı; FU-RCS-22; r18 F-1 c kararı).** Sahiplik satırı olmayan (bugün açılmış) kayıtların
+kodu **deftere alınmaz** (RCS-001 §2); TTY'de **değişmez** de (409 `RECORD_CODE_IMMUTABLE`, madde 3). PLN'de kod değişikliği anında
+deftere alınır (aşağıda, F-1 c). Tüketici, motora `ExternalCodeTaken` yoklamasını verir: TTY'de "kiracıda bu kodu taşıyan görev
+türü var mı, emekliler dahil" (bugünkü tekillik sorgusu, `TaskTypeHandlers.cs:64-70`); PLN'de oturumlu `ExistsByCodeAsync(session, code)`
+(`services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ISubscriptionPlanRepository.cs:24`). Motor: **elle kodda** adım 13 = defter
+`CodeExistsAsync` **veya** yoklama → 409 `RECORD_CODE_TAKEN`; **sistem kodunda** ayrılan kod yoklamada doluysa ayırma
+`{tür küçük harf}:{RecordId:N}:2`, sonra `:3` anahtarıyla tekrarlanır (DL-2 Bölüm 8.15 deseni; her deneme ayrı DL-1 satırı, boşluk),
+üçüncü denemeden sonra 409 `RECORD_CODE_COLLISION`; PLN sistem kodunda platform sayacı aynı işlemde bir daha artırılır (en çok 3).
+Yoklama verilmezse (`null`) motor yalnız defteri arar (DL-3 davranışı). **Canlı sayım:** kabul kaydı kiracı başına
+`^[A-Z]{2,5}-TTY-[0-9]{6,}$` desenine uyan görev türü kodu ve `^PLN-[0-9]{6,}$` desenine uyan plan kodu sayısını yazar (Bölüm 18.1).
+
+**5a. PLN eski kodunun değişiklik anında deftere alınması (F-1 c kararı, r18; karar kaydı satır 145-148).** DL-4'ten önce açılmış (tohum
+dahil) bir planın kodu güncellemede değiştirilirse değişiklik gerekçeyle deftere alınır; değiştirilmeyen eski kodlar deftere alınmaz
+(Q-22 A korunur). Motor tarafı `ChangeWithinAsync`'in **platform kolundadır** ve DL-3 değişiklik sırasını (Bölüm 8.17) şu farkla uygular:
+
+- **Adım 6 (istek):** `LegacyAdoption` **kiracı kolunda** doluysa → 400 `RECORD_CODE_REQUEST_INVALID`, hiçbir şey yazılmaz, Tablo H satırı
+  (TTY'nin Q-22 A'sı korunur; defter alımının genel hali DL-6'dadır — FU-RCS-22). Platform kolunda `RecordCreatedAtUtc` şimdiki andan küçük
+  değilse → aynı 400 (geçmiş sırası için, Bölüm 4.6).
+- **Adım 7 (aktif satır, oturumla okunur):** aktif satır **varsa** DL-3 kolu aynen koşar ve `LegacyAdoption` etkisizdir (tüketici planın
+  defter durumunu bilmeden her istekte gönderir — sessiz yok sayma değil, tanımlı davranış). Aktif satır **yoksa**: `LegacyAdoption`
+  `null` → 404 `RECORD_CODE_NOT_ASSIGNED` (DL-3); dolu → **eski kod alımı**: eski kod = `ExpectedCurrentCode` (tüketicinin koordinatör
+  işleminde okuduğu saklı kod; boşsa 400 `RECORD_CODE_REQUEST_INVALID`). Eski kod defterde (tür başına, emekliler dahil) zaten varsa → 409
+  `RECORD_CODE_CONFLICT` (defter ile kayıt tutarsız; hiçbir şey yazılmaz — DL-6 / operasyon konusudur). Adım 8 (beklenen kod) ve adım 9
+  (kilit) bu kolda yoktur (satır yok; PLN'de kilit yok — FU-RCS-27).
+- **Adım 10–13 aynen:** gerekçe 10–500 (400 `RECORD_CODE_REASON_REQUIRED`); yeni kodun biçimi ve desen yasağı (400
+  `RECORD_CODE_MANUAL_FORMAT_INVALID` / `RECORD_CODE_PATTERN_RESERVED`); yeni kod eski koddan farklı (400 `RECORD_CODE_UNCHANGED`); yeni kod
+  defterde ya da dış yoklamada doluysa 409 `RECORD_CODE_TAKEN`. Eski kodun kendisi biçim denetiminden geçmez (motordan önce verilmiştir).
+- **Adım 15 (tüketicinin işlemi, tek işlem):** (i) `Legacy` satırı `Active` eklenir (`Code` = eski kod, `Reason = null`, `ClaimedAtUtc` =
+  `RecordCreatedAtUtc`, `ClaimedBy` = kullanıcı — Bölüm 4.6); (ii) DL-3 değişiklik çekirdeği aynen: `RetireIfActiveAsync` (beklenen kod =
+  eski kod) satırı `Retired` yapar (`RetiredAtUtc` = şimdi, `RetiredBy` = kullanıcı, `ReplacedByCode` = yeni kod); (iii) yeni satır `Active`
+  / `Manual` + `Reason`; (iv) Tablo F-P (önce = eski kod, sonra = yeni kod, gerekçe; `RetiredClaimId` = `Legacy` satırının kimliği). Ayrı
+  bir sahiplenme satırı (Tablo E-P) yazılmaz — deftere alım değişikliğin parçasıdır, olay `platform.record-code.changed`'dir. Sayaç
+  değişmez.
+- **Çakışmalar:** `Legacy` satırı eklemesinde E11000 (herhangi index) → işlem iptal, 409 `RECORD_CODE_CONFLICT`; emeklilik eşleşmezse
+  DL-3 kuralı (409 `RECORD_CODE_CONFLICT`); yeni satır eklemesinde `ux_…_type_code` → 409 `RECORD_CODE_TAKEN` (DL-3 kuralı,
+  `ChangeRecordCodeHandler.cs:166-170`). Aynı eski planın eşzamanlı iki ilk değişikliğinde Mongo yazma çakışması (WriteConflict 112 /
+  `TransientTransactionError`) birinin gövdesini iptal eder ve yürütücü gövdeyi baştan koşturur
+  (`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/PlatformTransactionExecutor.cs:50-56`, `:109-114`); yeniden koşuda
+  plan ve defter yeniden okunur — kazananın satırı artık aktiftir, ikinci istek DL-3 koluna girer (beklenen kod = kazananın kodu) ya da kod
+  aynıysa değişiklik yoktur. Bu, bugünkü plan güncellemesinin "son yazan kazanır" davranışıdır (planda sürüm denetimi yok —
+  `UpdateSubscriptionPlanCommandHandler.cs:34-69`); defterde hiçbir kodun iki aktif satırı ve hiçbir eski kodun iki satırı olmaz (index'ler).
+- **Neden yalnız değişiklik anında:** değişmeyen eski kod plan koleksiyonunda durdukça dış yoklama onu korur (madde 5); kod değişince plan
+  koleksiyonu eski kodu artık taşımaz — defter satırı olmazsa eski kod başka bir plana verilebilirdi (§5.8 ihlali). Alım bu boşluğu kapatır;
+  genel alım (değişmeyen eski kodlar, TTY) DL-6'da kalır.
+
+**6. PLN bağlanması (MOD-0361; XMC-001 sahip onaylı, Q-26; Q-24 B kararı, r17; F-1 c, F-2 kararları, r18).** Sahip kararı: PLN'de bugünkü davranış korunur —
+güncelleme kodu değiştirebilir, bugünkü normalleştirici aynen uygulanır, ayrı `CodeChange` üyesi ve boşluk / alt çizgi reddi yoktur.
+RCS-001'in İKİSİ DE kuralları (§2 gerekçe zorunlu, denetimde eski / yeni kod + gerekçe; §5.8 kod yeniden kullanılmaz; §5.9 desen yasağı;
+§5.10 ASCII; §6 tekillik) bu yolda da motorla sağlanır: kod değişikliği sayaç, sahiplik defteri ve denetimle tutarlıdır.
+
+- **Normalleştirme (tek sıra):** tüketici önce bugünkü `SubscriptionPlanCodeNormalizer.Normalize`'ı uygular — kırp, boşluk / alt çizgi →
+  `-`, ardışık `-` teke, baştaki / sondaki `-` atılır, `ToUpperInvariant`
+  (`services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/SubscriptionPlanCodeNormalizer.cs:15-29`; dosya
+  değişmez) — ve sonucu motora elle kod olarak verir; motorun `RecordCodeManualCode` kuralı ondan **sonra** koşar (Türkçe harf → ASCII,
+  `^[A-Z0-9]+(?:-[A-Z0-9]+)*\z`, 2–40, desen yasağı — Bölüm 8.17). Normalleştiricinin çıktısında boşluk ve alt çizgi kalmadığından motorun
+  bu iki reddi PLN'de tetiklenmez (sahip kararı). Normalleştiricinin dokunmadığı işaretler (nokta, `/` vb.) RCS-001 §5.10 gereği 400
+  `RECORD_CODE_MANUAL_FORMAT_INVALID`; `PLN 000123` ve `PLN_000123` normalleştirmeden sonra `PLN-000123` olduğu için 400
+  `RECORD_CODE_PATTERN_RESERVED`. **Motora tür başına normalleştirme eklenmez:** r16'daki B seçeneği metni "motor tür başına normalleştirme
+  alır" diyordu; aynı sonuç tüketicinin bugünkü dosyasını motordan önce çağırmakla alınır ve motor değişmez (**r17 yorumu (4)**, Bölüm 24.3
+  Q-24 notu). Bugünkü üst sınır 50 (`SubscriptionPlanRequestValidator.cs:22`) motorun 2–40 sınırına (Q-12 A) iner: yeni elle kod ve
+  değişiklikte 41–50 karakter 400 `RECORD_CODE_MANUAL_FORMAT_INVALID`; değişmeyen eski kodlar yeniden doğrulanmaz (kod aynı geldiğinde motor
+  çağrılmaz) ve eski kod değişikliğinde yalnız **yeni** kod bu kurala uyar (madde 5a) — sürüm notu (madde 8). Daralmalar (üst sınır 40,
+  nokta reddi) r17 yorumu (3)'tür — **CT kabul (karar kaydı satır 152-153, r18)**.
+- **Oluşturma:** koordinatör gövdesinde (`CreateSubscriptionPlanCommandHandler.cs:49`) bugünkü kod tekillik denetiminin (`:53`) yerine
+  `ClaimWithinAsync(session, new("PLN", plan.Id, normalleştirilmiş kod ya da null, request.CodeReason, ExternalCodeTaken))`; boş kod →
+  sistem kodu `PLN-…`; başarıda `plan.Code = sonuç.Code`; ret → `GlobalApplicabilityMutation(…, false)` ile hiçbir şey yazılmaz.
+- **Güncelleme (Q-24 B; F-2 kararı, r18):** boş kod bugünkü gibi **400 "Code is required."** — kod kuralı (`NotEmpty` + normalleştirilmiş
+  2–50, `SubscriptionPlanRequestValidator.cs:19-23`) güncelleme doğrulayıcısında aynen kalır (aşağıda "Doğrulayıcı"); cevap bugünkü
+  `ValidationProblemDetails`, işleyici çağrılmaz, denetim satırı bugünkü gibi yazılmaz (karar kaydı satır 149: "bugünkü davranış korunur").
+  r17'deki "boş kod saklı kodu korur" yorumu (Q-24 (5)) kaldırıldı. Dolu `request.Code` aynı normalleştiriciden geçer. Koordinatör gövdesi
+  planı oturumla okur (`UpdateSubscriptionPlanCommandHandler.cs:34`), sonra:
+  - normalleştirilmiş kod saklı koda `Ordinal` eşit → kod değişikliği yok, motor çağrılmaz; dolu `CodeReason` → 400
+    `RECORD_CODE_REQUEST_INVALID`, hiçbir şey yazılmaz (sessiz yok sayma yok — DL-3 adım 6 kuralı); diğer alanlar bugünkü gibi;
+  - farklı → aynı koordinatör işleminde `ChangeWithinAsync(session, new("PLN", plan.Id, ExpectedCurrentCode: işlemde okunan saklı kod,
+    NewCode: normalleştirilmiş kod, Reason: request.CodeReason, ExternalCodeTaken, LegacyAdoption: new(plan.CreatedAt.UtcDateTime)))`.
+    Planın **aktif platform sahiplik satırı yoksa** (eski plan: tohum `FREE` … ve DL-4 öncesi açılmış her plan) motor eski kodu aynı
+    işlemde deftere alır (`Legacy` satırı, emekli) ve değişikliği yazar — madde 5a, F-1 c; PLN'de 409 `RECORD_CODE_IMMUTABLE` kolu **yoktur**
+    (r17'deki kol kalktı). Aktif satır varsa DL-3 kolu. İki durumda da: gerekçe 10–500 (yoksa 400
+    `RECORD_CODE_REASON_REQUIRED`); biçim / desen (adım 11); tekillik — defterde aynı türde emekliler dahil her kod ve dış yoklamada eski
+    plan kodları (adım 13, 409 `RECORD_CODE_TAKEN`; bugünkü `ExistsByCodeAsync(session, normalizedCode, plan.Id)` denetimi, `:36`, bunun yerine
+    geçer); başarıda eski sahiplik (DL-3 satırı ya da yeni `Legacy` satırı) `Retired` (`ReplacedByCode` = yeni kod), yeni sahiplik `Active` /
+    `Manual` + `Reason`; `plan.Code = sonuç.Code`; plan, izdüşüm (`_state.UpsertSubscriptionPlanAsync`; izdüşüm kodu taşır —
+    `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/GlobalApplicabilityStateRepository.cs:33`, F-3),
+    koordinatörün `UpdateSubscriptionPlanCommand` denetim satırı (önce / sonra kod dahil — `GlobalApplicabilityAuditChange.cs:46`) ve Tablo
+    F-P **tek işlemde** commit olur ya da hiçbiri olmaz; motor reddi → `GlobalApplicabilityMutation(…, false)`, hiçbir şey yazılmaz (eski
+    planda `Legacy` satırı da yazılmaz).
+  - **Sayaç:** elle kod ve kod değişikliği platform sayacına dokunmaz (DL-3 kuralı); sayaç yalnız kodsuz oluşturmada ilerler.
+  - **Eşzamanlılık:** beklenen kod koordinatör işleminde okunan saklı koddur; aynı işlem denemesinde araya giren bir değişiklik
+    `RetireIfActiveAsync` filtresini tutturmaz → 409 `RECORD_CODE_CONFLICT` (DL-3 değişiklik kuralı), plan değişmez; Mongo yazma çakışmasında
+    yürütücü gövdeyi yeniden koşturur ve değerlendirme yeniden okunan durumla yapılır (madde 5a).
+- **Yeni komut ve ayrı üye yok:** değişiklik bugünkü `UpdateSubscriptionPlanCommand`'ın `Code` alanıyla gelir; istek kaydına yalnız
+  eklemeli düz `CodeReason` (oluşturmadaki adla aynı) eklenir. Plan komutları `ITransactionOwnedAuditCommand`'dır ve korunan
+  `TransactionOwnedAuditCommands.Authorized` listesinde (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Audit/TransactionOwnedAuditCommands.cs:43-47`)
+  ve `GlobalApplicabilityTransactionalArchitectureTests.ExactCommands`'tadır — değişmez.
+- **Gerekçe alanı neden var (r17 yorumu (1) — CT kabul, karar kaydı satır 152-153, r18):** sahip kararı ayrı `CodeChange` üyesini kaldırır;
+  RCS-001 §2 İKİSİ DE değişikliğinde gerekçeyi zorunlu tutar ve karar metni bunu kaldırmaz. Düz `CodeReason` iki kuralı birlikte karşılar
+  (Bölüm 24.3 Q-24 notu). F-1 (c) karar metni de eski kodun değişikliğini "gerekçeyle (RCS-001 §2, 10–500)" diye yazar.
+- **Doğrulayıcı (r18, F-2):** kod kuralı (`SubscriptionPlanRequestValidator.cs:19-23`) ortak doğrulayıcıdan kalkar ve
+  `UpdateSubscriptionPlanCommandValidator.cs`'e **aynen** taşınır (XMC-001 ek onayı açık — Bölüm 5, 18.1): oluşturmada boş kod sistem kodu alır
+  ve elle kod retleri işleyicide verilir ki denetime yazılsın; güncellemede boş kod ve normalleştirilmiş 2–50 dışı kod bugünkü gibi 400
+  (`ValidationProblemDetails`). Normalleştirilmiş 41–50 karakterli **farklı** kod doğrulayıcıdan geçer, motorda 400
+  `RECORD_CODE_MANUAL_FORMAT_INVALID`; aynı kalan 41–50 karakterli eski kod motora gitmez (kabul).
+- **Tohum** (`SeedDefaultSubscriptionPlansCommandHandler.cs:36`, `FREE` …) değişmez; tohum kodları eski kod sayılır (FU-RCS-23) — kod
+  güncellemede değişince madde 5a ile deftere alınır (F-1 c; karar metni "tohumlar dahil").
+- **Kullanım kilidi yok:** kiracıya bağlanmış planın kodu da gerekçeyle değişebilir (bugünkü davranış; FU-RCS-27).
+
+**7.** Hız sınırı yok (DL-2 / DL-3 gerekçesi: kimlik bilgisi yok, her çağrı kullanıcı başlatır). Arka plan çağıranı yok (DL-9).
+
+**8. Sürüm notu (DL-4; Bölüm 8.16 deseni, kabul kaydına yazılır).** Görev türü: boş kod sistem kodu alır; grup öneki tanımlı olmayan
+kiracıda form kodu ve gerekçeyi zorunlu tutar (Q-25 B); elle kod gerekçe ister; karakter kuralı daraldı (boşluk, alt çizgi, nokta
+reddedilir; Türkçe harf ASCII'ye çevrilir); kod, görev açılmamışsa gerekçeyle değişebilir. Abonelik planı: boş kod `PLN-…` alır; elle kod
+gerekçe ister; güncelleme kodu bugünkü gibi değiştirebilir ve boşluk / alt çizgi bugünkü gibi `-`'ye çevrilir (Q-24 B), ama kod
+değişikliği gerekçe ister ve kod geçmişine yazılır; eski planların (tohum dahil) kodu da gerekçeyle değişebilir — ilk değişiklikte eski
+kod kod geçmişine "eski kod" olarak yazılır ve bir daha hiçbir plana verilemez (F-1 c); boş kodlu güncelleme bugünkü gibi 400 "Code is
+required." (F-2); üst sınır 50'den 40'a iner (yalnız yeni ya da değişen kodda); Türkçe harf ASCII'ye çevrilir, diğer işaretler (nokta vb.) reddedilir; `PLN-` + 6 hane desenine uyan elle kod
+reddedilir.
+
+### 8.19 DL-11 — PPM bağlanması: PPM sahibi ekibe verilecek bilgi ve bu paketin payı (r17; Q-17 kararı; r18 A-22 kararı)
+
+**Karar (Q-17, Beste 2026-11-14; `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:125-126`).** PPM (MOD-0117)
+bağlanmasını merkez yapmaz. PPM sahibi geliştirici ekip kendi servisinde (Diten.PpmService, domain `portfolio-delivery`) yapar ve bunu
+MOD-0117'nin kendi paket revizyonuyla ya da FU'suyla yazar (hangisi olacağı ve kimliği PPM sahibinin DCP-002 ön kontrolüyle — **TBD**).
+**A-22 kararı (Beste 2026-11-14; karar kaydı satır 150-151, r18):** PPM'in kullanacağı Platform tarafı kayıt kodu uçlarını — **sözleşme eki
+ve Platform kodu** — da **PPM ekibi** yazar. Platform koduna (Diten.Platform) dokunma XMC-001 kapsamındadır: DL-11 revizyonunda dosya
+listesiyle sahip onayı alınır; liste dışı dokunuş yine sorulur. **Merkez yalnız inceleme ve kabul ölçümü yapar.** Bu yüzden bu paketin
+DL-11 payı: DL-11 paket revizyonu (PPM ekibinin sözleşme ekini ve Platform dosya listesini anar, XMC-001 onayını kaydeder, kabul
+ölçütlerini yazar), sözleşme eki ve Platform kodu incelemesi, kabul ölçümü. CT bu bölümden ekibe verilecek el kitabı metnini üretir
+(FU-RCS-28). Bu bölüm kod izni vermez; ölçümler `6b8566366`'da, çıkarımlar ayrıca işaretli.
+
+**HTTP yüzeyi ve sözleşme eki gerekir mi — evet (ölçüldü):**
+
+1. PPM türleri İKİSİ DE'dir: `PFL` / `PRG` / `PRJ` (PPM D-10) ve `INI` / `INV` (`.antigravity/rules/record-coding-standard.md:55-56`);
+   sınıf öneri + gerekçeli değişiklik + AUD-001 eski / yeni kod + gerekçe ister (RCS-001 §2).
+2. İKİSİ DE motoru bugün **yalnız süreç içidir** (`IInProcessRecordCodeAssignments`, Bölüm 8.17; Q-15 A); PPM ayrı süreçtir.
+3. Var olan iç uç `POST /api/internal/record-codes/allocate` (RECORD-CODE-ALLOCATE 1.0.0, FROZEN) yalnız OTOMATİK sistem kodu ayırır;
+   öneri, elle kod sahiplenmesi, gerekçeli değişiklik, kilit ve geçmiş yoktur; iç uçta bağlanmış İKİSİ DE türü 403 alır (DL-3 sonrası
+   `TTY` emsali, Bölüm 18.1 DL-3 kabul kapısı).
+
+Sonuç: PPM'in bağlanabilmesi için motorun **HTTP yüzeyi** ve onu tanımlayan **yeni bir sözleşme eki** gerekir; RECORD-CODE-ALLOCATE
+1.0.0 değişmez. CT önerisi: ayrı sözleşme (1.0.0 donmuştur, tüketicileri Treasury ve MDM etkilenmemelidir); biçim ve ad DL-11
+revizyonunda.
+
+**DL-11 iş bölüşümü (A-22 kararı, r18; DL-11 revizyonu ve onayı — kod izni o onayla):**
+
+| # | İş | Yazan | İnceleme / kabul |
+|---|---|---|---|
+| M-1 | Sözleşme eki: uçlar (öneri, sahiplenme, gerekçeli değişiklik, kilit, geçmiş), gövdeler, cevap zarfı (`Response<T>` — A-17 emsali), neden kodları (Bölüm 3 DL-3 satırı), idempotency, sürüm | **PPM ekibi** (A-22) | merkez inceler; yayınlanmadan PPM kodu başlamaz |
+| M-2 | HTTP yüzeyinin Platform tarafı (Diten.Platform `/api/internal/*`, kimlik P2 — Bölüm 8.2) | **PPM ekibi** (A-22) — Diten.Platform başka domain'in servisidir (AGENTS.md §4), dokunma **XMC-001**: DL-11 revizyonunda dosya listesiyle sahip onayı (Beste); liste dışı dokunuş yine sorulur | merkez inceler (kod incelemesi + Bölüm 8.2 kimlik ve Bölüm 21 denetim kuralları) |
+| M-3 | Tüketici kaydı: katalogda `PFL`, `PRG`, `PRJ`, `INI`, `INV` satırları (`AllowedCaller = "Diten.PpmService"`, PPM'in verdiği izin anahtarları, izinli kapsam); `TrustedRecordCodeCredentialAuthenticator.Consumers`'a PPM kimlik bilgisi bağlaması; `TransactionOwnedAuditSourceServices` kümesine `Diten.PpmService` (K-9) | **PPM ekibi** (A-22 — Platform kodu) | DL-1…DL-4'te korunan yollar; DL-11 revizyonunun XMC dosya listesinde adıyla açılır; merkez inceler; kimlik bilgisi değeri ortam gizli bilgisidir, depoya yazılmaz |
+| M-4 | Kabul ölçümü: CT kabul koşusu (PPM ekibinin testleri + Platform tarafı sözleşme testleri, gerçek HTTP) | — | **CT** (merkez) |
+| M-5 | RECORD-CODE-ALLOCATE §6'ya PPM türlerinin satırı ("allocate'te izinli çağıran yok → 403; İKİSİ DE yüzeyinde izinli") — FU-RCS-20 ile aynı sürüm | CT (mevcut donmuş sözleşmenin sahibi; A-22 metni PPM'in kullanacağı uçların eki içindir — **çıkarım**, DL-11 revizyonunda teyit) | CT |
+
+**PPM ekibinin payı (MOD-0117 tarafı; bu paketin AC'si değildir):**
+
+- **r18 (A-22):** sözleşme eki ve Platform tarafı uçları + tüketici kaydı (yukarıdaki M-1…M-3); Platform dosyalarına yalnız DL-11
+  revizyonunun XMC-001 listesiyle (sahip onaylı) dokunulur; Platform'un kuralları (kiracı izolasyonu, `[HasPermission]`, P2 kimliği, işlem içi
+  denetim — Bölüm 8.2, 14, 21) aynen geçerlidir.
+- Kendi Create / Update komutları, formları, kendi kaydına kod yazımı ve kendi testleri; ekranlar kiracı kabuğundaysa **7 dil**
+  (`.antigravity/rules/localization-standard.md`).
+- TC-1…TC-8 (Bölüm 7.1): kullanıcı token'ını iletmek, `X-Tenant-Id` göndermemek; sınırlı ve geri çekilen yeniden deneme; kendi sayacını ya
+  da yedek kodu üretmemek; `reason_code`'u 7 dilde çevirmek, İngilizce `errors[]` göstermemek.
+- Eski kodlar: bugünkü PPM kodları deftere alınmaz ve değişmez (Q-22 A emsali, RCS-001 §2); canlı veride desene uyan kod sayımı.
+- Gerekçe alanı: elle kod ve her kod değişikliği gerekçe ister (Q-9 A, Q-10 A: kırpılmış 10–500).
+- Kilit tetikleyicisi: hangi PPM olayının kodu kilitlediği (DL-3 `LockAsync` deseni) PPM sahibinin kararıdır.
+
+**PPM bugün (ölçüldü):**
+
+| Konu | Ölçüm |
+|---|---|
+| Kod alanı | `Portfolio`, `Program`, `Project`, `Initiative`, `InvestmentCase` `Code` taşır (`services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/Portfolio.cs:7`, aynı desen diğerlerinde); zorunlu, en çok **64** karakter (`Portfolio.cs:19`, `Initiative.cs:47`, `InvestmentCase.cs:158`) |
+| Değişiklik | güncelleme kodu gerekçesiz değiştirir (`Portfolio.cs:16-17`, `Update(actorId, code, …)`) — RCS-001 §3 satırındaki "uyumsuz" notu bunu anar |
+| Normalleştirme | kırp + Unicode NFC (`services/Diten.PpmService/src/Diten.PpmService.Application/Common/ApplicationGuard.cs:6`); büyük harf ve ASCII çevirisi yok |
+| Tekillik | kiracı başına, kendi kaydı hariç `CodeExistsAsync(tenantId, code, excludeId)` (`services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Services/PortfolioService.cs:17`, `:27`) |
+| Kayıt kimliği | kurucuda `Guid.NewGuid()` (`services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/EntityBase.cs:23`) — sahiplenmeden önce bellidir |
+| Şirket alanı | PPM varlıklarında tüzel kişilik alanı yok (Domain altında `LegalEntity` geçmiyor) → izinli kapsam büyük olasılıkla `Group` (**çıkarım**; karar DL-11 revizyonunda; `LegalEntity` seçilirse A-18 DL-11'in canlıya alma kapısı olur) |
+| `BenefitCommitment` | `Code` taşır ama RCS-001 §3'te türü yok → DL-11 kapsamı dışında (yeni tür = §3 satırı, `.antigravity`, Ali) |
+
+**DL-11 revizyonunda kararlaştırılacak tasarım noktaları (PPM ekibi + bu paket; kod izni yok):**
+
+| # | Nokta | Neden |
+|---|---|---|
+| P-1 | Tutarlılık: süreç dışı tüketicide oturumlu port (Q-20 A) yoktur. Motorun tekrar kolu (Bölüm 8.17 adım 7: aynı kayıt + aynı kod → 200 `Replayed`) ve sistem kodunun idempotency anahtarı (`{tür}:{RecordId:N}`) PPM'in **kayıt kimliğini sahiplenmeden önce üretip her yeniden denemede aynı tutmasını** ister; tutmazsa düşen yazımın elle kodu yanar (§5.8, Q-14 A — tekrar 409 `RECORD_CODE_TAKEN`) | Q-20 gerekçesi |
+| P-2 | Dış yoklama: süreç içi `ExternalCodeTaken` geri çağrısı HTTP'de olamaz; PPM'in eski kodlarıyla çakışma (elle kod ve sistem kodu) PPM'in ön yoklaması + kendi tekil index'i ve sözleşmede bir deneme / atlama alanıyla mı çözülür | Bölüm 8.18 madde 5 deseni HTTP'ye doğrudan taşınmaz |
+| P-3 | Uzunluk: PPM bugün 64, motor 2–40 (Q-12 A: "daha uzun gerekirse katalog tür başına sınır alır") | ölçüldü |
+| P-4 | İzinli kapsam (`Group` / `LegalEntity`) ve izin anahtarları (PKS-001; PPM'in anahtarları) | yukarıdaki "Şirket alanı" satırı |
+| P-5 | Normalleştirme: PPM bugün büyük harfe çevirmez; motor çevirir ve Türkçe harfi ASCII'ye çevirir (Q-11 A) — kullanıcıya sürüm notu | ölçüldü |
+| P-6 | Denetim: aktör kullanıcı (K-8r), `SourceService = Diten.PpmService` (K-9); yazım Platform'un işlem içi kapısında | DL-1 deseni |
+| P-7 | Kilit tetikleyicisi | PPM sahibi |
+| P-8 | Ağ yolu: iç uç Gateway'e açılmaz, servisten servise Platform 5057 (Bölüm 15; AGENTS.md §3) — Treasury deseni | ölçüldü |
+
+**Kapı:** DL-11 başlama kapısı Bölüm 18.1'dedir (MOD-0117 tarafının paket revizyonu ve onayı, bu paketin DL-11 revizyonu ve onayı, Platform
+dosya listesi için XMC-001 sahip onayı — A-22 kararı).
 
 ## 9. Layout & Shell Contract
 
@@ -1817,6 +2464,14 @@ taşıdığını ölçer.
 
 **DL-3 (r14).** Görünüm yok, layout yok (Q-15 A). Öneri ve gerekçeli değişiklik ekranı tüketicinin ekranıdır: TTY için
 MOD-0024'ün görev türü ekranı (kiracı kabuğu) DL-4'te bağlanır ve layout'unu o dilim yazar.
+
+**DL-4 (r16).** Bu paket yeni görünüm açmaz; iki tüketicinin var olan ekranlarını değiştirir (XMC-001, Bölüm 5 "DL-4"). Görev türü
+ekranları **`Layout = "_LayoutTenantShell"`** taşır (`frontend/Diten.Web/Views/Tasks/TaskTypes/Create.cshtml:7`,
+`frontend/Diten.Web/Views/Tasks/TaskTypes/Edit.cshtml:7`, `frontend/Diten.Web/Views/Tasks/TaskTypes/Details.cshtml:14`,
+`frontend/Diten.Web/Views/Tasks/TaskTypes/Index.cshtml:7`; ölçüldü); abonelik planı ekranları **`Layout = "_LayoutPlatformAdmin"`** taşır
+(`frontend/Diten.Web/Views/Platform/SubscriptionPlans/Create.cshtml:8`, `frontend/Diten.Web/Views/Platform/SubscriptionPlans/Edit.cshtml:8`,
+`frontend/Diten.Web/Views/Platform/SubscriptionPlans/Index.cshtml:7`; ölçüldü). DL-4'te layout **değişmez**; Bölüm 11'in dil kararı (TTY
+7 dil, PLN 2 dil) buna dayanır. AC-84 ve AC-90 bu satırların değişmediğini ölçer.
 
 ## 10. Backend File Convention
 
@@ -1871,6 +2526,26 @@ Features/RecordCodes/
 - Üç komut `AllocateRecordCodeCommand` gibi `IAuditableCommand` ve `ITransactionOwnedAuditCommand` **değildir**: `AuditBehavior` onları
   kayıtsız geçirir, denetim işleyicinin işlemindedir; `TransactionOwnedAuditCommands.Authorized` değişmez.
 
+**DL-4 (r16)** — Golden Reference adları; işleyicide `Command` / `Query` eki yok; `Validators/` yok:
+
+```text
+Features/RecordCodes/
+└── RecordCodeAssignmentWriter.cs        (işlem içi çekirdek — DL-3 işleyicileri ve oturumlu port aynı çekirdeği çağırır)
+Features/Tasks/                           (MOD-0024, XMC)
+├── Commands/TaskItemCommands.cs          + ChangeTaskTypeCodeCommand
+├── Queries/TaskItemQueries.cs            + GetTaskTypeCodePreviewQuery · GetTaskTypeCodeHistoryQuery
+└── Handlers/CommandHandlers/TaskTypeHandlers.cs   + ChangeTaskTypeCodeHandler
+    Handlers/QueryHandlers/TaskTypeQueryHandlers.cs + önizleme / geçmiş işleyicileri
+Features/SubscriptionPlans/               (MOD-0361, XMC)
+├── Queries/GetSubscriptionPlanCodePreviewQuery.cs · GetSubscriptionPlanCodeHistoryQuery.cs
+└── Handlers/QueryHandlers/GetSubscriptionPlanCodePreviewHandler.cs · GetSubscriptionPlanCodeHistoryHandler.cs
+```
+
+- **Adlı sapma (modülün kendi adı):** MOD-0361'in mevcut işleyicileri `…CommandHandler` ekini taşır (`CreateSubscriptionPlanCommandHandler.cs`);
+  yeni dosyalar Golden Reference adını alır, mevcut dosyalar yeniden adlandırılmaz.
+- `ChangeTaskTypeCodeCommand` `IAuditableCommand` / `ITransactionOwnedAuditCommand` **değildir**: kod denetimi motorun işlem içi Tablo F
+  satırıdır. PLN'de yeni komut yoktur (Bölüm 8.18 madde 6). `TransactionOwnedAuditCommands.Authorized` değişmez.
+
 ## 11. Frontend File Contract
 
 Yok. `golden_reference: none`, `form_field_count: 0`. Tarayıcı bu uçları çağırmaz. Sayfa yardımı (UXH-001) ve tur gerekmez.
@@ -1916,6 +2591,49 @@ tüketici ekranının kaynak dosyasındadır ve **dil sayısını o ekranın kab
 TTY ekranı kiracı kabuğunda → 7 dil (DL-4); Platform yönetici ekranları → 2 dil (DL-10). "2 dil" DL-3 için geçerli değildir —
 DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
 
+**DL-4 (r16) — tüketici ekranları (XMC-001, Q-26).** Bu paketin künyesi (`golden_reference: none`, `form_field_count: 0`) değişmez;
+ekranlar tüketicilerindir, dosya setleri değişmez (yeni görünüm dosyası yok).
+
+- **Görev türü (MOD-0024; `frontend/Diten.Web/Views/Tasks/TaskTypes/`, Compact düzen — `Create` / `Edit` / `Details` / `_Form`):**
+  oluşturmada kod girişi **isteğe bağlı** (bugün `required` ve `*`, `frontend/Diten.Web/Views/Tasks/TaskTypes/_Form.cshtml:78`, `:90`);
+  yer tutucu `GET …/task-types/code-preview` önerisidir (Web denetleyicisi `Create` GET'inde okur — JS yok). **Grup öneki tanımlı
+  değilse (Q-25 B, r17):** önizleme 409 `GROUP_PREFIX_MISSING` (ya da `GROUP_PREFIX_MISMATCH` — Bölüm 8.18 madde 3) dönerse görünüm modeli
+  `CodeRequired = true` taşır; form kod ve gerekçe girişlerini zorunlu işaretler (`required`, `*`), sistem kodu yer tutucusu göstermez ve
+  yerelleştirilmiş `RecordCodeManualRequired` uyarısını gösterir; dönüşüm Web denetleyicisinin özel statik yardımcısındadır (yansımayla
+  ölçülür, AC-83). Önizleme başka bir nedenle başarısızsa kod isteğe bağlı kalır, yer tutucu yok. Kod yazılırsa gerekçe alanı
+  (`CodeReason`; sınır sunucuda); düzenlemede kod salt okunur kalır
+  (`_Form.cshtml:85`), ayrı "Kodu değiştir" bölümü `Edit/{id}/Code`'a (POST, anti-forgery) yeni kod + gerekçe + gizli
+  `ExpectedCurrentCode` / `ExpectedVersion` gönderir; ayrıntı ekranında kod geçmişi tablosu (kod, köken, durum, gerekçe, kişi, zaman);
+  sahiplik satırı olmayan türde "eski kod — değiştirilemez" notu.
+  **Dil: 7 dil** (`en`, `tr`, `fr`, `es`, `zh`, `ar`, `ru`) — ekranlar kiracı kabuğunda (Bölüm 9) ve kaynak dosyası bugün yedi dilde
+  (`frontend/Diten.Web/Resources/Views/Tasks/TaskTypes/TaskTypesIndex.{en,tr,fr,es,zh,ar,ru}.resx`; ölçüldü);
+  `.antigravity/rules/localization-standard.md:8-9` kiracı modülüne 7 dil verir.
+- **Abonelik planı (MOD-0361; `frontend/Diten.Web/Views/Platform/SubscriptionPlans/` — `Create` / `Edit` / `_Form`):** oluşturmada TTY ile
+  aynı desen (kod isteğe bağlı, yer tutucu önizleme `PLN-…`, kod yazılınca gerekçe; PLN'de grup öneki yoktur); geçmiş tablosu düzenleme
+  ekranında (ayrıntı görünümü yok — ölçüldü); kod girişi bugün `required`, `maxlength="64"`
+  (`frontend/Diten.Web/Views/Platform/SubscriptionPlans/_Form.cshtml:54`) — oluşturmada `required` kalkar, **düzenlemede kalır** (F-2, r18:
+  boş kodlu güncelleme bugünkü gibi 400). **Düzenleme (Q-24 B, r17; F-1 c, r18):** kod girişi bugünkü gibi düzenlenebilir kalır; yanına
+  gerekçe girişi (`CodeReason`; kod değişince gönderilir, sınır sunucuda) eklenir; ayrı "Kodu değiştir" bölümü ve `CodeChange` **yoktur**;
+  sahiplik satırı olmayan (eski) planda kod girişi yine düzenlenebilir ve yanında eski kod notu (`RecordCodeLegacy` — PLN ailesinde metni
+  "bu kod kayıt kodu servisinden önce verildi; değiştirirseniz eski kod kod geçmişine yazılır ve bir daha kullanılamaz") görünür; geçmiş
+  ucu eski planda 404 `RECORD_CODE_NOT_ASSIGNED` döner ve tablo yerine not gösterilir. İlk değişiklikten sonra geçmiş iki satırdır; `Legacy`
+  kökenli satırın köken hücresi `RecordCodeOriginLegacy` ile yerelleştirilir (ham enum adı gösterilmez). **Dil: 2 dil** (`en`, `tr`) — Platform yönetici kabuğu (`_LayoutPlatformAdmin`) ve kaynak dosyası bugün iki dilde
+  (`frontend/Diten.Web/Resources/Views/Platform/SubscriptionPlans/SubscriptionPlansIndex.{en,tr}.resx`; ölçüldü);
+  `.antigravity/rules/localization-standard.md:8` Platform (Admin) modüllerine yalnız 2 dil verir.
+- **Anahtarlar** (iki kaynak ailesi, her dilde; `en` dışındaki her dilde değer `en` ile aynı bırakılmaz — `localization-standard.md:14`):
+  ekran metinleri `RecordCodeAssignedOnSave` ("boş bırakılırsa kod kayıtta sistem tarafından verilir"), `RecordCodeSuggested`,
+  `RecordCodeReason`, `RecordCodeHistory`, `RecordCodeLegacy`; `reason_code` eşlemesi `RecordCodeReasonRequired`
+  (`RECORD_CODE_REASON_REQUIRED`), `RecordCodeManualFormatInvalid`, `RecordCodePatternReserved`, `RecordCodeTaken`,
+  `RecordCodeAlreadyAssigned`, `RecordCodeConflict`, `RecordCodeLocked`, `RecordCodeUnchanged`, `RecordCodeImmutable`,
+  `RecordCodeCollision`, `RecordCodeNotAssigned`, `RecordCodeRequestInvalid`, `RecordCodePermissionMissing`, `RecordCodeForbidden`,
+  `RecordCodeUnavailable`; yalnız PLN ailesinde `RecordCodeOriginLegacy` (r18, F-1 c: geçmiş tablosunda "eski kod" kökeni); yalnız TTY
+  ailesinde `RecordCodeChange` ("Kodu değiştir" bölümü), `RecordCodeManualRequired` (r17, Q-25 B: "grup öneki tanımlı değil; kodu elle girin, gerekçe zorunlu"), `RecordCodeGroupPrefixMissing`, `RecordCodeGroupPrefixMismatch`, `RecordCodeTenantNotActive`.
+  Eşlenmeyen `reason_code` bugünkü davranışla gösterilir; kayıt kodu retlerinde İngilizce `errors[]` metni gösterilmez (TC-6).
+- **Değişmeyenler:** liste ekranları (`Index.cshtml`, `_DataTable.cshtml`, `_Filter.cshtml`, `wwwroot/assets/js/Tasks/TaskTypes/index.js`;
+  plan `Index.cshtml`) — liste ekranı dokunma protokolü (BL-440) tetiklenmez; layout satırları (Bölüm 9).
+- **Sayfa yardımı (UXH-001):** iki ekran ailesinde `PageHelp` / `page-help` işareti yok (aranıp bulunmadı, `30c313eb4`); yardım metni
+  değişikliği gerekmez.
+
 ## 12. Validation Rules
 
 | Alan | Zorunlu | Biçim / kural | DB düzeyi | Ön kontrol |
@@ -1936,6 +2654,13 @@ DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
 | `RecordId` (**DL-3**) | evet | Guid, `Guid.Empty` değil → değilse 400 `RECORD_CODE_REQUEST_INVALID` | `ux_record_code_claims_tenant_type_record_active` (aktif satırda tek) | aktif sahiplik araması (Bölüm 8.17 adım 7) |
 | `ExpectedCurrentCode` (**DL-3**, değişiklik) | evet | aktif koda **sıralı** (`Ordinal`) eşit; normalleştirme yok | `RetireIfActiveAsync` filtresi | farklı → 409 `RECORD_CODE_CONFLICT` |
 | Sistem kodu (**DL-3**, TTY) | — | `^[A-Z]{2,5}-TTY-[0-9]{6,}$`; önek = grup öneki (RCS-001 §5.3) | DL-1 defteri + `ux_record_code_claims_tenant_type_code` | DL-1 ayırması (Bölüm 8.17) |
+| TTY oluşturma `Code` (**DL-4**) | hayır (boş → sistem kodu); grup öneki tanımlı değilse **formda evet** (Q-25 B — sunucu kodsuz isteği 409 `GROUP_PREFIX_MISSING` ile reddeder) | dolu: DL-3 elle kod kuralı (kırp, Türkçe → ASCII, büyük harf; `^[A-Z0-9]+(?:-[A-Z0-9]+)*\z`, 2–40; desen yasağı) | `ux_record_code_claims_tenant_type_code` + `ux_task_types_tenant_code_active` (değişmez) | defter + dış yoklama (eski görev türü kodları, emekli türler dahil) → 409 `RECORD_CODE_TAKEN`; işleyicide, doğrulayıcı yok |
+| TTY / PLN oluşturma `CodeReason` (**DL-4**) | elle kodda evet; kodsuz istekte **gönderilmez** | kırpılmış 10–500 (Q-10 A) → değilse 400 `RECORD_CODE_REASON_REQUIRED`; kodsuz istekte dolu → 400 `RECORD_CODE_REQUEST_INVALID` | — | yalnız başarı satırına (Tablo E / E-P) |
+| TTY güncelleme `Code` (**DL-4**) | hayır | bugünkü kural değişmez: boş ya da saklı koda eşit → kabul; farklı → 400 `TASK_TYPE_CODE_IMMUTABLE` | — | kod değişikliği yalnız `PUT …/{id}/code` |
+| TTY kod değişikliği `ExpectedCurrentCode`, `NewCode`, `Reason`, `ExpectedVersion` (**DL-4**) | dördü de evet | DL-3 değişiklik kuralları (yukarıdaki DL-3 satırları); `ExpectedVersion` görev türünün `Version`'ına eşit | `RetireIfActiveAsync` filtresi + görev türü sürüm filtresi | sahiplik yok (eski kod) → 409 `RECORD_CODE_IMMUTABLE`; türün görevi var → kilit + 409 `RECORD_CODE_LOCKED`; sürüm farkı → 409 `TASK_CONCURRENCY_CONFLICT` |
+| PLN oluşturma `Code` (**DL-4**) | hayır (boş → `PLN-000001`) | dolu: önce bugünkü `SubscriptionPlanCodeNormalizer` (kırp, boşluk / alt çizgi → `-`, ardışık `-` teke, uçtaki `-` atılır, büyük harf — Q-24 B), sonra DL-3 elle kod kuralı (Türkçe → ASCII, `^[A-Z0-9]+(?:-[A-Z0-9]+)*\z`, 2–40, desen yasağı); doğrulayıcıda kod kuralı yok | `ux_record_code_platform_claims_type_code` | defter + dış yoklama (`ExistsByCodeAsync(session, …)`) → 409 `RECORD_CODE_TAKEN` |
+| PLN güncelleme `Code` ve `CodeReason` (**DL-4**, r17 Q-24 B; r18 F-1 c, F-2) | `Code` **evet** (bugünkü gibi; boş → 400 "Code is required.", güncelleme doğrulayıcısı — F-2); `CodeReason` yalnız kod değişirse evet | doğrulayıcı: bugünkü kod kuralı aynen (`NotEmpty`, normalleştirilmiş 2–50); `Code` oluşturmadaki normalleştirmeden geçer; saklı koda `Ordinal` eşit → kod değişikliği yok (dolu `CodeReason` → 400 `RECORD_CODE_REQUEST_INVALID`); farklı → gerekçeli değişiklik: DL-3 değişiklik kuralları (gerekçe 10–500, biçim, desen), beklenen kod = işlemde okunan saklı kod; eski planda (aktif sahiplik yok) eski kod aynı işlemde `Legacy` satırı olarak deftere alınıp emekliye ayrılır (Bölüm 8.18 madde 5a); `CodeChange` üyesi yok | `ux_record_code_platform_claims_type_code` + `ux_…_type_record_active` + `RetireIfActiveAsync` filtresi | defter + dış yoklama → 409 `RECORD_CODE_TAKEN`; eski kod defterde zaten var ya da `Legacy` eklemesinde E11000 → 409 `RECORD_CODE_CONFLICT`; araya giren değişiklik → 409 `RECORD_CODE_CONFLICT`; PLN'de 409 `RECORD_CODE_IMMUTABLE` yok (r18) |
+| PLN sistem kodu (**DL-4**) | — | `^[A-Z]{3}-[0-9]{6,}$` → `PLN-000001` (`RecordCodeFormat.IsValidPlatformCode`) | `ux_record_code_platform_counters_type`, `ux_record_code_platform_claims_type_code` | platform sayacı, tüketicinin işleminde; dış yoklamada doluysa en çok 3 artış |
 
 ## 13. Failure Path to Verify
 
@@ -2051,6 +2776,39 @@ DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
 - **İzinli çağıranı olmayan İKİSİ DE tür** (`PLN`) — 403 `RECORD_CODE_FORBIDDEN` (adım 3), `Denied` (AC-73).
 - **İç uçtan `TTY`** — 403 `RECORD_CODE_FORBIDDEN` (AC-62).
 
+**DL-4 (r16; r17 sahip kararlarıyla) — TTY ve PLN tüketicileri:**
+
+- **Kodsuz görev türü, hizalı kiracı** — 201 `GMG-TTY-000001`; sahiplik ve Tablo E görev türüyle aynı işlemde (AC-77).
+- **Görev türü işlemi iptal** — görev türü, sahiplik, Tablo E yok; DL-1 ayırması boşluk olarak kalır (AC-77, AC-79).
+- **Elle kod: gerekçesiz / biçimsiz / desenli / eski görev türü kodu / emekli sahiplik kodu** — 400 / 400 / 400 / 409 `RECORD_CODE_TAKEN` /
+  409 `RECORD_CODE_TAKEN`; görev türü yazılmaz (AC-78).
+- **Elle kodda görev türü eklemesi düşer** — 503; aynı kodla tekrar 201 (kod yanmaz) (AC-79).
+- **Güncellemede farklı kod** — 400 `TASK_TYPE_CODE_IMMUTABLE`, bugünkü gibi (AC-80).
+- **Kod değişikliği: eskimiş beklenen kod / sürüm farkı** — 409 `RECORD_CODE_CONFLICT` / 409 `TASK_CONCURRENCY_CONFLICT`; emeklilik geri
+  alınır (AC-80).
+- **Görevli türün kod değişikliği** — kilit (Tablo G) + 409 `RECORD_CODE_LOCKED` (AC-81).
+- **Eski kodlu türün kod değişikliği** — 409 `RECORD_CODE_IMMUTABLE`; geçmiş 404 `RECORD_CODE_NOT_ASSIGNED` (AC-82).
+- **Sistem kodu eski bir koda denk gelir** — atlama (`:2`, `:3`), üçüncüden sonra 409 `RECORD_CODE_COLLISION` (AC-82).
+- **Grup öneki yok / farklı** — kodsuz oluşturma ve önizleme 409 `GROUP_PREFIX_MISSING` / `GROUP_PREFIX_MISMATCH`; elle kod + gerekçe çalışır; form bu durumda kodu ve gerekçeyi zorunlu tutar (Q-25 B; AC-83).
+- **İzinsiz kullanıcı / başka kiracının türü** — 403 `PERM_DENIED` (çerçeve) / 404 tek gövde (AC-85).
+- **Kiracı okuması platform satırını arar** — görmez; platform deposu kiracı bağlamında istisna atar, hiçbir şey okunmaz / yazılmaz (AC-86).
+- **Kodsuz plan** — 201 `PLN-000001`; Tablo E-P platform denetim kiracısında, `TargetTenantId = null` (AC-87).
+- **Plan işlemi iptal** — plan, sahiplik, sayaç artışı ve iki denetim satırı yok (AC-87).
+- **Plan güncellemesinde farklı kod (Q-24 B)** — gerekçeyle 204, eski sahiplik emekli / yeni sahiplik ve Tablo F-P koordinatör işleminde;
+  gerekçesiz 400 `RECORD_CODE_REASON_REQUIRED`; dolu kod (defter ya da eski plan) 409 `RECORD_CODE_TAKEN`; işlem iptal → hiçbiri yazılmaz
+  (AC-88).
+- **Eski plan (tohum `FREE` dahil) kodunun değişikliği (F-1 c, r18)** — gerekçeyle 204; aynı işlemde `Legacy` satırı (emekli,
+  `ReplacedByCode` = yeni kod) + yeni `Manual` satır + Tablo F-P (önce = eski kod); eski kod sonra başka plana verilmez (409
+  `RECORD_CODE_TAKEN`); gerekçesiz 400 ve plan, defter değişmez; eski kod defterde zaten varsa 409 `RECORD_CODE_CONFLICT`; işlem iptal →
+  `Legacy` satırı da yok (AC-88).
+- **Plan güncellemesinde boş kod (F-2, r18)** — bugünkü gibi 400 "Code is required." (`ValidationProblemDetails`); plan değişmez (AC-88).
+- **Kiracı kolunda `LegacyAdoption` (r18)** — 400 `RECORD_CODE_REQUEST_INVALID`, defter değişmez; TTY eski kodu değişmez (AC-82).
+- **Boşluklu / alt çizgili elle plan kodu** — bugünkü gibi `-`'ye çevrilir; normalleştirmeden sonra desene uyan (`PLN_000123`) 400
+  `RECORD_CODE_PATTERN_RESERVED`; nokta vb. 400 `RECORD_CODE_MANUAL_FORMAT_INVALID` (AC-88).
+- **`partner_admin` ya da kiracı kullanıcısı plan kodu ister; `platform_admin` TTY ister** — 403 (politika / ara katman / port savunması);
+  motor çağrılmaz ya da hiçbir şey gönderilmez (AC-89).
+- **İç uçtan `PLN` ya da `prefixScope = Platform`** — 403 / 422, değişmez (AC-76).
+
 ## 14. Authorization Convention
 
 - **İç uç:** `[ApiController]`, `[AllowAnonymous]` (çerçeve düzeyinde), `[Route("api/internal/record-codes")]`; kapı
@@ -2102,6 +2860,15 @@ DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
   Kilit (adım 4 yok) Bölüm 8.17'deki gerekçeyle. Aktör: doğrulanmış `tenant_user` (`OrdinalIgnoreCase`) ve dolu `sub`; platform aktörü
   ve `partner_admin` port savunmasında 403. Denetim aktörü `TenantUser` + `sub`, kaynak servis `Diten.Platform`. Veri kapsamı (SEC-002):
   motor kiracı çapında satır döndürmez — geçmiş sorgusu tek kaydın satırlarıdır; tüketici kaydının kapsamını tüketici uç denetler (DL-4).
+- **DL-4 (r16) — tüketici uçları, yeni izin anahtarı yok.** TTY'nin üç yeni eylemi `TasksController`'da
+  `[HasPermission(TaskPermissions.TaskTypesManage)]` taşır (bugünkü `CreateTaskType` / `UpdateTaskType` anahtarı); motorun adım 4'ü aynı
+  anahtarı katalogdan sorar (AC-62, AC-85). PLN'in iki yeni eylemi `SubscriptionPlansController`'ın sınıf politikası `PlatformActor`'ı
+  (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/SubscriptionPlansController.cs:19`; denetleyicide
+  `PartnerAdminScope` yok → `partner_admin` reddedilir) ve mevcut `platform.subscription-plans.create` / `.read` anahtarlarını taşır; kod
+  değişikliği mevcut `PUT` eyleminin (`.update`) `Code` alanıyla, gerekçe `CodeReason`'da (Q-24 B, r17). Platform aktöründe anahtar ayırt edici değildir (yukarıdaki r7 notu); koruma
+  politika + motorun platform savunmasıdır (`platform_admin`, platform bağlamı, dolu `sub` — Bölüm 8.18 madde 2). PKS-001 izin kataloğu,
+  rol köprüsü ve izin etiketi dil dosyaları **değişmez**. Veri kapsamı (SEC-002): görev türü kiracı geneli kayıttır (MOD-0024'ün bugünkü
+  kuralı, değişmez); plan platform genelidir (Platform yöneticisi yüzeyi istisnası).
 
 ## 15. Gateway / API Routing Decision
 
@@ -2117,6 +2884,11 @@ DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
   iç uç Gateway'e açılmaz (AC-21 değişmez).
 - **DL-3 (r14):** Gateway değişikliği yok, yeni rota yok (Q-15 A); `ocelot.json`'a dokunulmaz. Motor yalnız süreç içidir;
   AC-21 (`record-codes` ya da `/internal` geçen rota yok) değişmeden yeşil kalır.
+- **DL-4 (r16):** Gateway değişikliği yok. TTY'nin yeni yolları mevcut `/api/v1/tasks/{everything}`
+  (`gateway/Diten.ApiGateway/ocelot.json:2048`), PLN'inkiler mevcut `/api/platform/subscription-plans/{everything}`
+  (`gateway/Diten.ApiGateway/ocelot.json:1571`) genel rotalarıyla ulaşılır (ölçüldü); `ocelot.json`'a dokunulmaz; yollarda `record-codes`
+  geçmez — AC-21 değişmeden yeşil. Web vekilleri (`frontend/Diten.Web/Controllers/TaskTypesController.cs`,
+  `frontend/Diten.Web/Controllers/Platform/SubscriptionPlansController.cs`) Gateway'e gider, servis portuna değil.
 
 ## 16. Acceptance Criteria
 
@@ -2173,7 +2945,7 @@ DL-2 Q-3'teki hatanın tekrarı olmasın diye adıyla yazıldı.
   Sabotaj: cevapta `code` → `recordCode` yapılınca sözleşme testi kırmızı.
 - [ ] AC-24 (zorunlu) — Üç koleksiyon `SchemaProfile.RecordCodes` ile kayıtlı, `TenantScopedEntity`, Bölüm 4'teki adlı index'ler (kiracı önce, unique olanlar unique) uygulanır; `PlatformSchemaManifestTests` yeşil; mevcut profiller değişmez.
   Sabotaj: `ux_record_code_allocations_tenant_code` unique bayrağı kaldırılınca şema testi ve eşzamanlı ayırmanın kod tekilliği testi kırmızı.
-- [ ] AC-25 (zorunlu) — **(DL-4, K-11)** `PLN` bağlanmasıyla Platform kapsamı açıldığında: yalnız izinli kapsamı `Platform` olan tür için, kiracısız sayaç/defter ve platform-global denetim kaydıyla öneksiz `PLN-000001` biçiminde kod verilir; kiracı kapsamlı okumalar kiracısız satırı görmez. DL-1'de bu madde uygulanmaz ve DL-1 kabulünde ölçülmez.
+- [ ] AC-25 (zorunlu) — **(DL-4, K-11)** `PLN` bağlanmasıyla Platform kapsamı açıldığında: yalnız izinli kapsamı `Platform` olan tür için, kiracısız sayaç/defter ve platform-global denetim kaydıyla öneksiz `PLN-000001` biçiminde kod verilir; kiracı kapsamlı okumalar kiracısız satırı görmez. DL-1'de bu madde uygulanmaz ve DL-1 kabulünde ölçülmez. **r16:** madde metni değişmez; DL-4'te AC-86 (kiracı okumaları kiracısız satırı görmez) ve AC-87 (öneksiz `PLN-000001`, kiracısız sayaç / sahiplik, platform-global denetim kaydı) ile ölçülür; aşağıdaki sabotajın somut biçimi S-127, denetim kolu S-128.
   Sabotaj: (DL-4) kiracı kapsamlı sorguya kiracısız satırı katan filtre konunca kiracı testi kırmızı.
 - [ ] AC-26 (zorunlu) — MDM 3 s'de cevap vermezse 503 `LEGAL_ENTITY_SOURCE_UNAVAILABLE` bütçe içinde döner; istek 5 s'yi aşmaz; günlüklerde sır, `Authorization`, JWT yok.
   Sabotaj: MDM bütçesi kaldırılınca geciktirilmiş sahte MDM'le zaman testi kırmızı.
@@ -2273,12 +3045,12 @@ A, 2026-11-13). **r15** bu maddelere yeni AC numarası açmadan r14 incelemesini
   Sabotaj: anahtar `RecordId` yerine yeni Guid'den türetilince "ikinci işlem düşer" adımı iki ayrı kod ve iki defter satırı görür; sahiplik satırı ayırmadan önce yazılınca ayırma reddi adımı bir sahiplik satırı görür — kırmızı (S-101).
 - [ ] AC-67 (zorunlu, DL-3; sabotaj S-102, S-103, S-114; RCS-001 §5.8, §6; Q-13 A) — **Elle kodlu sahiplenme ve benzersizlik:** `ClaimAsync(new("TTY", r1, "denetim", "Ekip kısaltması kullanılıyor"))` → 200 `{ code: "DENETIM", origin: "Manual" }`; sayaç belgesi ve defter satırı **yok**; `record_code_claims`'te `Active` / `Manual` satır, `Reason` kırpılmış metin; `audit_events`'te tek Tablo E satırı. Aynı kayıt aynı kodla tekrar → 200 `replayed: true`, yeni satır yok; aynı kayıt farklı kodla → 409 `RECORD_CODE_ALREADY_ASSIGNED`. Başka kayıt (`r2`) `DENETIM` ister → 409 `RECORD_CODE_TAKEN`; `r1`'in kodu değişip `DENETIM` emekliye ayrıldıktan sonra `r2` yine `DENETIM` ister → 409 `RECORD_CODE_TAKEN` (emekli kod dolu). **İki retin yolu ölçülür (r15, F-3@8cc7dcb7):** ret satırında `EvaluationStep = 13` ve sarmalayıcı `InsertAsync`'in **hiç çağrılmadığını** kaydeder — ret ön denetimde verilir, benzersiz index'e bırakılmaz. **Savunma E11000:** sarmalayıcı `r2`'nin `CodeExistsAsync` ön denetimini **bir kez** `false` döndürür; ekleme `ux_record_code_claims_tenant_type_code`'da E11000 alır; test, sarmalayıcının kaydettiği istisnanın `RecordCodeClaimConflictException` (`IndexName = ux_record_code_claims_tenant_type_code`) olduğunu ve iç istisnanın `MongoWriteException` + `ServerErrorCategory.DuplicateKey` olduğunu doğrular; cevap 409 `RECORD_CODE_TAKEN` (500 ya da 503 değil). Aynı yöntemle `…_tenant_type_record_active` E11000'i (aynı kayıt, farklı kod, ön denetim atlatılır) → 409 `RECORD_CODE_ALREADY_ASSIGNED`; iki E11000 retinde ret satırı `EvaluationStep = 15`. **Aynı kayıt + aynı kod, iki ön denetim atlatılır (r15, F-1@8cc7dcb7):** (a) **gerçek E11000** — `r1` `DENETIM` ile sahiplenmişken sarmalayıcı `r1`'in ikinci `DENETIM` isteğinde **oturumsuz** `FindActiveAsync` ön okumasını (`null`) ve `CodeExistsAsync`'i (`false`) **birer kez** atlatır; ekleme iki benzersiz index'i birden ihlal eder; cevap 200 `replayed: true`, `record_code_claims`'te `r1` için tek satır, ikinci Tablo E yok, ret satırı yok; Mongo'nun bildirdiği index adı (`RecordCodeClaimConflictException.IndexName`) kabul kaydına **ölçüm** olarak yazılır — cevap hangisinde de aynıdır; (b) **belirlenimli kollar** — aynı kurulumda sarmalayıcı `InsertAsync`'ten gerçek ekleme yapmadan `RecordCodeClaimConflictException(IndexName = ux_record_code_claims_tenant_type_code)` atar → 200 `replayed: true`; `IndexName = ux_record_code_claims_tenant_type_record_active` ile → 200 `replayed: true`; `r2` için `DENETIM` isteğinde kod-index kolu → 409 `RECORD_CODE_TAKEN` (aktif satır başka kaydın). Testler `RecordCodeAssignmentMongoTests.AC67_*` (yeni: `AC67_the_same_record_and_code_racing_twice_is_a_replay_whichever_index_reports`).
   Sabotaj: `CodeExistsAsync` filtresine `Status == Active` eklenince emekli kod adımı — ön denetim geçer, ekleme index'te E11000 alır; cevap yine 409 ama ret satırı `EvaluationStep = 15` ve `InsertAsync` çağrısı kaydedilir → kırmızı (r15, F-3); unique index kısmi (`Status == Active`) yapılınca E11000 adımı E11000 alamaz; depodaki E11000 → `RecordCodeClaimConflictException` çevirisi kaldırılınca yürütücü `PlatformTransactionUnavailableException` üretir ve E11000 adımı 503 alır; E11000 sonrası yeniden okuma **kod-index kolundan** kaldırılınca (b)'nin kod-index adımı 409 `RECORD_CODE_TAKEN` alır — kırmızı (S-102, S-103, S-114).
-- [ ] AC-68 (zorunlu, DL-3; sabotaj S-102, S-104, S-105; RCS-001 §2, AUD-001 §3) — **Gerekçeli değişiklik ve değişiklik geçmişi:** sistem koduyla sahiplenmiş kayıtta `ChangeAsync(new("TTY", r1, "GMG-TTY-000001", "denetim", "Ekip kısaltmasına geçildi"))` → 200 `{ previousCode: "GMG-TTY-000001", code: "DENETIM" }`; eski satır `Retired`, `RetiredAtUtc` dolu, `RetiredBy` = token `sub`, `ReplacedByCode = DENETIM`; yeni satır `Active` / `Manual`, `Reason` dolu; `audit_events`'te tek Tablo F satırı: `RequestType = ChangeRecordCodeCommand`, `Operation = Update`, `EntityType = RecordCodeClaim`, `EntityId = r1`, `BeforeState.Code = GMG-TTY-000001`, `AfterState.Code = DENETIM`, `Metadata.Reason`, `Metadata.RecordType = TTY`, `ActorType = TenantUser`, `ActorId = sub`, `OccurredAtUtc` dolu, `SourceService = Diten.Platform`, `Outcome = Succeeded` — RCS-001 §2'nin beş öğesi (eski kod, yeni kod, gerekçe, kişi, zaman) tek satırda. İkinci değişiklik `DENETIM` → `DENETIM-2` aynı biçimde; `GetHistoryAsync("TTY", r1)` üç satırı `ClaimedAtUtc` sırasıyla döner (kod, köken, durum, gerekçe, kişi, zamanlar). Ret: `ExpectedCurrentCode` eski → 409 `RECORD_CODE_CONFLICT`; yeni = aktif → 400 `RECORD_CODE_UNCHANGED`; kaydın kendi emekli kodu `GMG-TTY-000001` → 409 `RECORD_CODE_TAKEN` (Q-14 A) — ret satırında `EvaluationStep = 13`, sarmalayıcı `RetireIfActiveAsync` ve `InsertAsync` çağrısı kaydetmez (r15, F-3@8cc7dcb7); sistem desenli yeni kod → 400 `RECORD_CODE_PATTERN_RESERVED`; hepsinde satırlar değişmez ve `Failed` ret satırı. **Atomiklik:** (a) sarmalayıcı yeni sahiplik eklemesinde bir kez `MongoException` türevi atar → 503 `RECORD_CODE_UNAVAILABLE`; eski satır hâlâ `Active` (emeklilik geri alındı), yeni satır yok, Tablo F yok; (b) sahte işlem içi yazıcı `false` döner → 503, aynı sonuç. Testler `RecordCodeAssignmentMongoTests.AC68_*`.
+- [ ] AC-68 (zorunlu, DL-3; sabotaj S-102, S-104, S-105; RCS-001 §2, AUD-001 §3) — **Gerekçeli değişiklik ve değişiklik geçmişi:** sistem koduyla sahiplenmiş kayıtta `ChangeAsync(new("TTY", r1, "GMG-TTY-000001", "denetim", "Ekip kısaltmasına geçildi"))` → 200 `{ previousCode: "GMG-TTY-000001", code: "DENETIM" }`; eski satır `Retired`, `RetiredAtUtc` dolu, `RetiredBy` = token `sub`, `ReplacedByCode = DENETIM`; yeni satır `Active` / `Manual`, `Reason` dolu; `audit_events`'te tek Tablo F satırı: `RequestType = ChangeRecordCodeCommand`, `Operation = Update`, `EntityType = RecordCodeClaim`, `EntityId = r1`, `BeforeState.Code = GMG-TTY-000001`, `AfterState.Code = DENETIM`, `Metadata.Reason`, `Metadata.RecordType = TTY`, `ActorType = TenantUser`, `ActorId = sub`, `OccurredAtUtc` dolu, `SourceService = Diten.Platform`, `Outcome = Succeeded` — RCS-001 §2'nin beş öğesi (eski kod, yeni kod, gerekçe, kişi, zaman) tek satırda. İkinci değişiklik `DENETIM` → `DENETIM-2` aynı biçimde; `GetHistoryAsync("TTY", r1)` üç satırı `ClaimedAtUtc` sırasıyla döner (kod, köken, durum, gerekçe, kişi, zamanlar). Ret: `ExpectedCurrentCode` eski → 409 `RECORD_CODE_CONFLICT`; yeni = aktif → 400 `RECORD_CODE_UNCHANGED`; kaydın kendi emekli **elle** kodu → 409 `RECORD_CODE_TAKEN` (Q-14 A; **r16 — DL-3 kabul hizalaması:** ölçüm `GMG-TTY-000001` → `DENETIM` → `DENETIM-2` dizisinden sonra `DENETIM-2` → `DENETIM` ile yapılır — kaydın kendi emekli sistem kodu `GMG-TTY-000001` sistem desenindedir ve adım 11'de 400 `RECORD_CODE_PATTERN_RESERVED` alır, adım 13'e ulaşmaz; test `RecordCodeAssignmentMongoTests.AC68_a_stale_unchanged_taken_or_reserved_change_is_refused_and_changes_nothing`) — ret satırında `EvaluationStep = 13`, sarmalayıcı `RetireIfActiveAsync` ve `InsertAsync` çağrısı kaydetmez (r15, F-3@8cc7dcb7); sistem desenli yeni kod → 400 `RECORD_CODE_PATTERN_RESERVED`; hepsinde satırlar değişmez ve `Failed` ret satırı. **Atomiklik:** (a) sarmalayıcı yeni sahiplik eklemesinde bir kez `MongoException` türevi atar → 503 `RECORD_CODE_UNAVAILABLE`; eski satır hâlâ `Active` (emeklilik geri alındı), yeni satır yok, Tablo F yok; (b) sahte işlem içi yazıcı `false` döner → 503, aynı sonuç. Testler `RecordCodeAssignmentMongoTests.AC68_*`.
   Sabotaj: emeklilik ve yeni sahiplik ayrı işlemlere bölününce atomiklik adımı eski satırı `Retired` görür; Tablo F'ye `BeforeState` ya da `Metadata.Reason` yazılmayınca satır eşitliği adımı kırmızı (S-104, S-105).
 - [ ] AC-69 (zorunlu, DL-3; sabotaj S-106; RCS-001 §6) — **OTOMATİK türün kodu bu motorla verilmez ve değişmez:** `ORG` ve `POS` için (çağıranı `Diten.Platform`, kullanıcıda türün izni var) sahiplenme (elle ve sistem), değişiklik ve kilit → 409 `RECORD_CODE_IMMUTABLE`; `record_code_claims`, `record_code_counters`, `record_code_allocations` satırı yok; `Failed` ret satırı (`EvaluationStep = 5`). Test `RecordCodeAssignmentMongoTests.AC69_an_automatic_type_cannot_be_claimed_changed_or_locked`.
   Sabotaj: adım 5 (sınıf denetimi) kaldırılınca (r15, F-7@8cc7dcb7 ile düzeltildi) elle sahiplenme 200 alır ve bir sahiplik satırı doğar; sistem sahiplenmesi DL-1 ayırmasının adım 10'undan 422 `RECORD_CODE_SCOPE_INVALID` alır (`ORG` / `POS`'un tek kapsamı `LegalEntity`, motor `LegalEntityId` göndermez — DL-1 AC-8); değişiklik ve kilit 404 `RECORD_CODE_NOT_ASSIGNED` alır — 409 `RECORD_CODE_IMMUTABLE` bekleyen her adım kırmızı (S-106).
-- [ ] AC-70 (zorunlu, DL-3; sabotaj S-107, S-108; RCS-001 §5.4 deseni) — **Kullanım kilidi:** `LockAsync("TTY", r1)` → 200 `{ lockedNow: true }`, `LockedAtUtc` / `LockedBy` dolu, tek Tablo G satırı (`BeforeState.LockedAtUtc = null`); ikinci kilit → 200 `{ lockedNow: false }`, `LockedAtUtc` **aynı**, yeni denetim satırı yok; kilitli koda değişiklik → 409 `RECORD_CODE_LOCKED`, satırlar değişmez, `Failed` ret satırı; **ön denetimden sonra gelen kilit:** sarmalayıcı değişikliğin `FindActiveAsync` ön okumasından hemen sonra aynı kayıtta kilidi yazar (sıralı, bariyersiz) → emeklilik filtresi (`LockedAtUtc == null`) eşleşmez, cevap 409 `RECORD_CODE_LOCKED`, eski satır `Active`; kilit kullanıcıda türün iznini **istemez** (izinsiz bağlamla 200), ama port savunmasına ve adım 1–3, 5'e tabidir; kaydı olmayan kilit → 404. `IRecordCodeClaimRepository`'nin yöntem adları tam olarak `CodeExistsAsync`, `FindActiveAsync`, `InsertAsync`, `ListHistoryAsync`, `LockIfUnlockedAsync`, `RetireIfActiveAsync` (yansıma; `Unlock`, `Delete`, `Remove`, `Replace`, `Update`, `Set` ile başlayan üye yok). Testler `RecordCodeAssignmentMongoTests.AC70_*`, `RecordCodeAssignmentMongoTests.AC70_the_claim_store_can_only_add_retire_and_lock`.
-  Sabotaj: değişiklik işleyicisindeki kilit ön denetimi **ve** emeklilik filtresindeki `LockedAtUtc == null` kaldırılınca kilitli değişiklik adımı 200 alır; yalnız filtre kaldırılınca "ön denetimden sonra gelen kilit" adımı 200 alır; kilit güncellemesi `$ifNull` yerine düz `$set` olunca "`LockedAtUtc` aynı" adımı kırmızı (S-107, S-108).
+- [ ] AC-70 (zorunlu, DL-3; sabotaj S-107, S-108, S-133; RCS-001 §5.4 deseni) — **Kullanım kilidi:** `LockAsync("TTY", r1)` → 200 `{ lockedNow: true }`, `LockedAtUtc` / `LockedBy` dolu, tek Tablo G satırı (`BeforeState.LockedAtUtc = null`); ikinci kilit → 200 `{ lockedNow: false }`, `LockedAtUtc` **aynı**, yeni denetim satırı yok; kilitli koda değişiklik → 409 `RECORD_CODE_LOCKED`, satırlar değişmez, `Failed` ret satırı; **ön denetimden sonra gelen kilit:** sarmalayıcı değişikliğin `FindActiveAsync` ön okumasından hemen sonra aynı kayıtta kilidi yazar (sıralı, bariyersiz) → emeklilik filtresi (`LockedAtUtc == null`) eşleşmez, cevap 409 `RECORD_CODE_LOCKED`, eski satır `Active`; kilit kullanıcıda türün iznini **istemez** (izinsiz bağlamla 200), ama port savunmasına ve adım 1–3, 5'e tabidir; kaydı olmayan kilit → 404. **r16 (CT kararı, r15 inceleme F-1@97058ee5; DL-3 kodunda var):** kilit filtresi ön okunan kodu taşır (`Code ==`); kilidin ön okumasından hemen sonra kaydın kodu gerekçeli değişiklikle değişirse (sarmalayıcı, sıralı) filtre eşleşmez, satır yeniden okunur → 409 `RECORD_CODE_CONFLICT`, yeni kod **kilitlenmez** (test `RecordCodeAssignmentMongoTests.AC70_a_code_changed_after_the_lock_s_read_is_a_conflict_and_nothing_is_locked`). `IRecordCodeClaimRepository`'nin yöntem adları tam olarak `CodeExistsAsync`, `FindActiveAsync`, `InsertAsync`, `ListHistoryAsync`, `LockIfUnlockedAsync`, `RetireIfActiveAsync` (yansıma; `Unlock`, `Delete`, `Remove`, `Replace`, `Update`, `Set` ile başlayan üye yok). Testler `RecordCodeAssignmentMongoTests.AC70_*`, `RecordCodeAssignmentMongoTests.AC70_the_claim_store_can_only_add_retire_and_lock`.
+  Sabotaj: değişiklik işleyicisindeki kilit ön denetimi **ve** emeklilik filtresindeki `LockedAtUtc == null` kaldırılınca kilitli değişiklik adımı 200 alır; yalnız filtre kaldırılınca "ön denetimden sonra gelen kilit" adımı 200 alır; kilit güncellemesi `$ifNull` yerine düz `$set` olunca "`LockedAtUtc` aynı" adımı kırmızı (S-107, S-108); kilit filtresinden `Code ==` kaldırılınca "kilidin okumasından sonra değişen kod" adımı yeni kodu kilitler ve 200 alır — kırmızı (S-133).
 - [ ] AC-71 (zorunlu, DL-3; sabotaj S-102) — **Şema:** `record_code_claims` `SchemaProfile.RecordCodes` ile kayıtlı, `TenantScopedEntity`; üç adlı index Bölüm 4.5'teki anahtarlarla (kiracı önce): `ux_record_code_claims_tenant_type_code` unique ve **kısmi değil**, `ux_record_code_claims_tenant_type_record_active` unique ve kısmi (`Status == Active`), `ix_record_code_claims_tenant_type_record_time`; DL-1'in `AC24_the_three_collections_carry_their_named_tenant_first_indexes` testi değişmeden yeşil. Test `RecordCodeAssignmentMongoTests.AC71_the_claim_collection_carries_its_named_tenant_first_indexes`.
   Sabotaj: kod index'i kısmi yapılınca ya da anahtardan `RecordType` çıkarılınca index adımı kırmızı (S-102 ile birlikte koşar).
 - [ ] AC-72 (zorunlu, DL-3; sabotaj S-109, S-116) — **Kiracı izolasyonu.** **Kurulum K-72 (r15, F-2@8cc7dcb7; adıyla):** A ve B kiracıları aktif, ikisinin de grup öneki `GMG`'ye hizalı. Önce **B**'de: beş sistem sahiplenmesi (`b1`…`b5`) → B'nin `(B, GMG, TTY)` sayacı `LastNumber = 5`; kayıt `r` (paylaşılan Guid) elle `DENETIM`; yalnız B'de olan kayıt `rB` elle `SADECE-B`. Sonra **A**'da: aynı `r` Guid'i elle `DENETIM` (ikisi de 200 — benzersizlik kiracı başına); A'da sayaç belgesi yok. B'nin satırları her adımdan sonra doğrudan okunur. Ret gövdeleri olmayan kayıtla birebir aynıdır; `Denied` ret satırı **A'nın** kiracısındadır. **Adımlar ve her yüklemin kırmızı yaptığı adım** (S-109, kollar tek tek): (1) oturumsuz `FindActiveAsync` — A `LockAsync("TTY", rB)` → 404 `RECORD_CODE_NOT_ASSIGNED`; yüklem kalkınca ön okuma B'nin satırını bulur, kilit A'da eşleşmez → 409 `RECORD_CODE_CONFLICT` (≠ 404) → kırmızı; (2) oturumlu `FindActiveAsync` (E11000 sonrası yeniden okuma) — A `ClaimAsync("TTY", rB, "SADECE-B", …)`, sarmalayıcı `InsertAsync`'ten `IndexName = ux_record_code_claims_tenant_type_code` atar → 409 `RECORD_CODE_TAKEN`; yüklem kalkınca yeniden okuma B'nin aynı kayıt + aynı kodlu satırını bulur → 200 `replayed: true` → kırmızı; (3) `CodeExistsAsync` — A yeni kayıt `r3` için `SADECE-B` ister → 200; yüklem kalkınca 409 `RECORD_CODE_TAKEN` → kırmızı; (4) `RetireIfActiveAsync` — A `ChangeAsync("TTY", rB, "SADECE-B", "YENI-A", …)`, sarmalayıcı ön okumada B'nin satırının A kiracılı bir kopyasını **bir kez** döndürür → emeklilik A'da eşleşmez, yeniden okuma boş → 409 `RECORD_CODE_CONFLICT`, B'nin satırı `Active`; yüklem kalkınca B'nin satırı emekliye ayrılır ve A'ya `YENI-A` yazılır → 200 → kırmızı; (5) `LockIfUnlockedAsync` — A `LockAsync("TTY", rB)`, aynı ön okuma kopyası → kilit A'da eşleşmez → 409 `RECORD_CODE_CONFLICT`, B'nin `LockedAtUtc`'si boş; yüklem kalkınca B'nin satırı kilitlenir → 200 `lockedNow: true` → kırmızı (eşleşmezliği başarı sayan değişiklik de bu adımda 200 alır — S-116); (6) `ListHistoryAsync` — A `GetHistoryAsync("TTY", r)` → 1 satır (A'nın `ClaimedBy`'ı); yüklem kalkınca 2 satır → kırmızı; (7) `PeekLastNumberAsync` — A `PreviewAsync("TTY")` → `GMG-TTY-000001`; yüklem kalkınca B'nin sayacı okunur → `GMG-TTY-000006` → kırmızı. Ayrıca A, B'nin `rB`'si için değişiklik ve geçmiş ister (sarmalayıcısız) → 404, B'nin satırları değişmez. Depo kiracı yüklemi her yöntemde: `Guid.Empty`, platform bağlamı ve bağlam dışı kiracı → `RecordCodeTenantPredicateViolationException`, hiçbir şey okunmaz / yazılmaz (testler kodu değil **B'nin satırlarını** ve A'nın cevabını ölçer — DL-1 AC-31 deseni). Askıdaki kiracı: önizleme, sahiplenme (elle ve sistem), değişiklik, kilit ve geçmiş → 403 `RECORD_CODE_TENANT_NOT_ACTIVE`; yazma işlemlerinde `Denied` ret satırı; kural DL-1 adım 4 ile aynı cevabı verir (aynı askıdaki kiracıda `AllocateRecordCodeCommand` da 403 — parite). Testler `RecordCodeAssignmentMongoTests.AC72_*`.
@@ -2290,7 +3062,49 @@ A, 2026-11-13). **r15** bu maddelere yeni AC numarası açmadan r14 incelemesini
 - [ ] AC-75 (zorunlu, DL-3; sabotaj S-113) — **Takım ve değişmeyenler:** `dotnet build` Diten.Platform PASS; Platform'un tam test takımı filtresiz; DL-1 ve DL-2 kayıt kodu testleri — `RecordCodeTypeCatalogTests`'teki iki `TTY` satırı dışında — ve AC-23 (donmuş sözleşme) değişmeden yeşil; `Diten.Platform.Application` derlemesinde `ClaimRecordCodeCommand`, `ChangeRecordCodeCommand`, `LockRecordCodeCommand`, `PreviewRecordCodeQuery`, `GetRecordCodeHistoryQuery` için `IValidator<>` uygulaması yoktur (yansıma — AC-45 deseni; test `InProcessRecordCodeAssignmentsTests.AC75_the_assignment_requests_have_no_validator`) ve her ret `Response<T>` zarfında `reason_code` ile döner; atlanan test yok; main'deki bilinen kırmızılar aynı gün main'de ölçülüp ayrıca yazılır. Kabul kaydı `git diff` ile gösterir: Bölüm 5 "DL-3" **Değişmez** listesindeki dosyalar (MOD-0024 dosyaları, DL-2 dosyaları, sözleşme, denetim kapısı ve `TransactionOwnedAuditCommands.cs`, HTTP eşlemesi) değişmedi; DL-3 **üretim kodu** `InProcessRecordCodeAllocator` / `IInProcessRecordCodeAllocator` adlarını anmaz (DL-1 tabanına uygulanabilir); bu adları yalnız AC-73 eşlik testi anar (r15, F-4).
   Sabotaj: yeni bir testin `Skip` ile işaretlenmesi kabul kaydında kırmızı; DL-3 komutlarından birine FluentValidation doğrulayıcısı eklenince yansıma adımı kırmızı (S-113).
 
-**DL-4…DL-10.** Kabul ölçütleri her dilimin kendi paket revizyonunda yeni numarayla eklenir (numaralar silinmez,
+**DL-4 — TTY ve PLN tüketicileri, Platform kapsamı (r16).** Numaralar AC-75'ten devam eder; AC-25 (DL-1'den taşındı) metni değişmez,
+AC-86 ve AC-87 onu ölçer. Her madde **üretim koduyla** ölçülür: üretim kataloğu, üretim işleyicileri (tüketici uçları gerçek HTTP'den),
+üretim depoları gerçek Mongo replica set'te, üretim `CanonicalTransactionalAuditOutboxWriter` ve kutu işleyicisi; sahte yalnız principal /
+izin bağlamında ve depoyu **saran** kaydedici / hata enjekte eden sarmalayıcıda (DL-3 deseni — bariyer yok, sıralı). Maddeler Bölüm
+24.3'teki **sahip / CT kararlarıyla** yazıldı (r17; "Q-n" etiketi kararı anar). Q-24 ve Q-25'te seçim r16 önerisinden farklıydı (B):
+AC-83, AC-84, AC-88 ve AC-90 r17'de hizalandı. **r18:** r17 incelemesinin sahip kararlarıyla (F-1 c, F-2) AC-82, AC-88 ve AC-90
+hizalandı; yeni AC yok. Testler Bölüm 17'deki sınıflardadır; her maddenin sabotajı maddenin içinde ve Bölüm 17 sabotaj listesinde
+(S-117…S-132; r17: S-134, S-135; r18: S-136, S-137, S-138).
+
+- [ ] AC-76 (zorunlu, DL-4; sabotaj S-117; Q-18 / Q-19 A kararı) — **Katalog — `PLN` ve değişmeyen HTTP yüzeyi:** `RecordCodeTypeCatalog`'da `PLN` satırı `Class = "İKİSİ DE"`, `AllowedScopes = [Platform]`, `AllowedCaller = null`, `RequiredPermission = null` (DL-1 `AC09_…` değişmeden yeşil) ve `PlatformBinding = ("Diten.Platform", "platform.subscription-plans.create")`; bu anahtar `SubscriptionPlansController.Create` eylemindeki `[HasPermission]` değeriyle birebirdir (yansıma, sabit metin değil); başka hiçbir satırda `PlatformBinding` yoktur. `TrustedRecordCodeCredentialAuthenticator.Consumers` `PLN` içermez: iç uca her iki kimlik bilgisiyle `PLN` → 403 `RECORD_CODE_FORBIDDEN`; izinli bir türle (`PAY`, `BNK`) `prefixScope = Platform` → 422 `RECORD_CODE_SCOPE_INVALID` (DL-1 AC-8 değişmeden); sayaç, defter ve platform koleksiyonlarında satır yoktur. Testler `RecordCodeTypeCatalogTests.AC76_pln_is_a_platform_type_bound_to_the_in_process_platform_caller`, `RecordCodeTypeCatalogTests.AC76_the_pln_permission_is_the_plan_controller_key`, `InternalRecordCodesHttpTests.AC76_platform_scope_stays_closed_over_http`.
+  Sabotaj: `PLN` FinanceTreasury bağlamasına eklenince HTTP testi (403 yerine 422 / 200); `PLN` kapsamına `Group` eklenince kapsam adımı; `PlatformBinding.RequiredPermission` `platform.subscription-plans.read` yapılınca yansıma adımı kırmızı (S-117).
+- [ ] AC-77 (zorunlu, DL-4; sabotaj S-118; Q-20 A kararı) — **TTY oluşturma — sistem kodu:** grup öneki `GMG`'ye hizalı kiracıda `platform.tasks.task-types.manage` taşıyan kiracı kullanıcısı kodsuz `POST /api/v1/tasks/task-types` → 201, `CreateTaskTypeResultDto.Code = "GMG-TTY-000001"`; görev türü kaydının `Code`'u aynı; `record_code_claims`'te `RecordId` = görev türü kimliği, `Active` / `System`, `Reason = null`; `audit_events`'te Tablo A (DL-1 ayırması, kendi işleminde) ve Tablo E (görev türü yazımıyla **aynı** işlemde). İkinci kodsuz tür `GMG-TTY-000002`. **İptal:** `IPlatformTransactionFaultProbe.BeforeCommitAsync` görev türü işlemini düşürünce görev türü, sahiplik satırı ve Tablo E yoktur; DL-1 ayırma satırı kalır (boşluk, §5.8); cevap 503 `RECORD_CODE_UNAVAILABLE`. Testler `TaskTypeRecordCodeHttpTests.AC77_*`.
+  Sabotaj: Tablo E görev türü işleminin commit'inden sonra ayrı çağrıyla yazılınca iptal adımı Tablo E satırını görür — kırmızı (S-118).
+- [ ] AC-78 (zorunlu, DL-4; sabotaj S-119; Q-9 A, Q-22 A kararı) — **TTY oluşturma — elle kod ve gerekçe:** `Code = "denetim"`, `CodeReason = "Ekip kısaltması kullanılıyor"` → 201, kayıtta `DENETIM`; sahiplik `Active` / `Manual`, `Reason` kırpılmış metin; sayaç ve DL-1 defteri dokunulmaz; tek Tablo E. Retler (görev türü yazılmaz, sahiplik yok, motorun Tablo H satırı adım numarasıyla): gerekçesiz → 400 `RECORD_CODE_REASON_REQUIRED`; `"A_B"` → 400 `RECORD_CODE_MANUAL_FORMAT_INVALID`; 41 karakter → 400 `RECORD_CODE_MANUAL_FORMAT_INVALID` (bugünkü 40 sınırıyla aynı sonuç, kural motorda); `"GMG-TTY-000050"` → 400 `RECORD_CODE_PATTERN_RESERVED`; sahiplik satırı olmayan **eski** bir görev türü `DENETIM`'i taşıyorsa (emekli tür dahil) → 409 `RECORD_CODE_TAKEN` (dış yoklama, `EvaluationStep = 13`); başka bir türün emekli sahiplik kodu → 409 `RECORD_CODE_TAKEN`; kodsuz istekte dolu `CodeReason` → 400 `RECORD_CODE_REQUEST_INVALID`. Testler `TaskTypeRecordCodeHttpTests.AC78_*`.
+  Sabotaj: tüketici `ExternalCodeTaken` yoklamasını bağlamayınca (`null`) eski kod adımı motor ön denetimini geçer, görev türü index'inde E11000 alır ve 409 `RECORD_CODE_TAKEN` yerine 500 / 503 döner — kırmızı (S-119).
+- [ ] AC-79 (zorunlu, DL-4; sabotaj S-120; Q-20 A kararı) — **TTY atomikliği ve yeniden deneme:** (a) elle kodlu oluşturmada sarmalayıcı görev türü eklemesinde bir kez `MongoException` türevi atar → 503; görev türü, sahiplik ve Tablo E yok; aynı `DENETIM` ile tekrar → 201 (kod yanmadı); (b) sistem kodlu oluşturmada aynı hata → 503; DL-1 ayırma satırı `GMG-TTY-000001` kalır, yeni deneme yeni görev türü kimliğiyle `GMG-TTY-000002` alır; hiçbir kodun iki sahiplik satırı yoktur; (c) işlem içi kapı `false` → 503, (a) ile aynı sonuç. Testler `TaskTypeRecordCodeHttpTests.AC79_*`.
+  Sabotaj: elle kodlu sahiplenme oturumsuz `ClaimAsync` ile (tüketici işleminin dışında) yazılınca (a)'nın tekrar adımı 201 yerine 409 `RECORD_CODE_TAKEN` alır — kırmızı (S-120).
+- [ ] AC-80 (zorunlu, DL-4; sabotaj S-121; Q-20 A kararı) — **TTY gerekçeli kod değişikliği; güncelleme kodu değiştirmez:** `PUT /api/v1/tasks/task-types/{id}` farklı `Code` ile → 400 `TASK_TYPE_CODE_IMMUTABLE` (bugünkü kural, değişmez). `PUT /api/v1/tasks/task-types/{id}/code` `{ expectedCurrentCode: "GMG-TTY-000001", newCode: "denetim", reason: "Ekip kısaltmasına geçildi", expectedVersion }` → 200; görev türünün `Code`'u `DENETIM`, `Version` bir artar; eski sahiplik `Retired`, yeni `Active` / `Manual`; tek Tablo F (eski kod, yeni kod, gerekçe, kişi, zaman); `GET …/{id}/code-history` iki satır. Görev türü sürümü eşleşmezse (araya başka düzenleme girdi) → 409 `TASK_CONCURRENCY_CONFLICT`; emeklilik geri alınır, Tablo F yok. Eskimiş `expectedCurrentCode` → 409 `RECORD_CODE_CONFLICT`; gerekçesiz → 400 `RECORD_CODE_REASON_REQUIRED`; desenli yeni kod → 400 `RECORD_CODE_PATTERN_RESERVED`. Testler `TaskTypeRecordCodeHttpTests.AC80_*`.
+  Sabotaj: görev türü kod güncellemesi değişiklik işleminin dışında yazılınca sürüm farkı adımında sahiplik `DENETIM` olur, kayıt eski kodda kalır — kırmızı (S-121).
+- [ ] AC-81 (zorunlu, DL-4; sabotaj S-122; Q-21 C kararı) — **TTY kullanım kilidi:** sistem kodlu türle bir görev açıldıktan sonra (`POST /api/v1/tasks`, `taskTypeId`) kod değişikliği → kod değişikliği ucu türün görevi olduğunu (silinmişler dahil) okur, sahipliği kilitler (`LockedAtUtc` dolu, tek Tablo G) ve 409 `RECORD_CODE_LOCKED` döner; görev türü ve sahiplik kodu değişmez; ikinci deneme yine 409, yeni Tablo G yok (`LockedNow = false`). Görevi olmayan türün kodu değişir (AC-80). Görev oluşturma bugünkü gibi çalışır, `CreateTaskItemHandler` değişmez (`git diff`). Testler `TaskTypeRecordCodeHttpTests.AC81_*`.
+  Sabotaj: kod değişikliği ucundaki görev varlığı denetimi kaldırılınca görevli türün kodu değişir ve adım 409 yerine 200 alır — kırmızı (S-122).
+- [ ] AC-82 (zorunlu, DL-4; sabotaj S-123, S-137; Q-22 A kararı; RCS-001 §2; r18 F-1 c sınırı) — **TTY eski kodlar ve çakışma savunması:** sahiplik satırı olmayan eski tür (`CAPA`) için kod değişikliği → 409 `RECORD_CODE_IMMUTABLE`, kayıt ve defter değişmez, `Failed` ret satırı; geçmiş ucu → 404 `RECORD_CODE_NOT_ASSIGNED`; eski türün güncellemesi kodu değiştirmeden bugünkü gibi 200. **Kiracı kolu eski kod almaz (r18):** motorun kiracı kolunda `ChangeWithinAsync` `LegacyAdoption` doluyken (`TTY`, aktif satırı olmayan kayıt) → 400 `RECORD_CODE_REQUEST_INVALID` (`EvaluationStep = 6`), kiracı sahiplik deposuna ekleme ve emeklilik çağrısı yok (depoyu saran kaydedici), Tablo H ret satırı; F-1 (c) yalnız PLN'nin platform kolundadır. **Çakışma:** kiracıda sahiplik satırı olmayan `GMG-TTY-000001` kodlu eski tür varken kodsuz oluşturma — ayrılan `000001` dış yoklamada dolu, ayırma `tty:{id:N}:2` anahtarıyla tekrarlanır, kayıt `GMG-TTY-000002` alır; DL-1 defterinde iki satır (ilk numara boşluk). Eski `000001`, `000002`, `000003` doluysa üç denemeden sonra 409 `RECORD_CODE_COLLISION`, görev türü yazılmaz. Testler `TaskTypeRecordCodeHttpTests.AC82_*`, `InProcessRecordCodeAssignmentsTests.AC82_the_tenant_branch_refuses_a_legacy_adoption`.
+  Sabotaj: çakışma atlaması aynı ayırma anahtarını yeniden kullanınca (DL-2 S-92 emsali) "`000002`" adımı aynı `000001`'i geri alır, görev türü index'inde E11000 → kırmızı (S-123); kiracı kolu `LegacyAdoption`'ı kabul edip eski kod alımını koşturunca kiracı kolu adımı 400 yerine 200 alır ve kaydedici `Legacy` satırı eklemesini görür — kırmızı (S-137).
+- [ ] AC-83 (zorunlu, DL-4; sabotaj S-124, S-135; Q-25 B kararı, r17) — **Grup öneki önkoşulu, önizleme ucu ve elle kod zorunluluğu:** hizalanmamış kiracıda kodsuz oluşturma → 409 `GROUP_PREFIX_MISSING` (görev türü yok; sunucu kuralı değişmez); `GET /api/v1/tasks/task-types/code-preview` → aynı 409; elle kod + gerekçeyle oluşturma → 201, kayıtta normalleştirilmiş kod, sahiplik `Active` / `Manual`, tek Tablo E, sayaç ve DL-1 defteri dokunulmaz (AC-78 retleri aynen: gerekçesiz 400 `RECORD_CODE_REASON_REQUIRED`, `"A_B"` 400 `RECORD_CODE_MANUAL_FORMAT_INVALID`, `"GMG-TTY-000050"` 400 `RECORD_CODE_PATTERN_RESERVED`). `OrgPrefix` `GMX`, ayar `GMG` iken → 409 `GROUP_PREFIX_MISMATCH` (iki ana makine, DL-1 AC-35 deseni). Hizalı kiracıda önizleme iki kez → ikisi de `{ suggestedCode: "GMG-TTY-000001", isReserved: false }`; sayaç, defter, sahiplik ve `audit_outbox` satırı yok (DL-3 AC-65 ile aynı). **Form (Q-25 B):** Web denetleyicisinin önizleme cevabını form durumuna çeviren özel statik yardımcısı — önizleme 409 `GROUP_PREFIX_MISSING` ya da `GROUP_PREFIX_MISMATCH` → `CodeRequired = true`, yer tutucu yok, uyarı anahtarı `RecordCodeManualRequired`; önizleme 200 → `CodeRequired = false`, yer tutucu önerilen kod; önizleme 503 ya da başka ret → `CodeRequired = false`, yer tutucu yok. Bu bir canlıya alma kapısı değildir (Bölüm 18.1). Testler `TaskTypeRecordCodeHttpTests.AC83_*`, `TaskTypeRecordCodeFormTests.AC83_*` (yansıma — `TaskTypeConcurrencyFormTests` deseni).
+  Sabotaj: önizleme ucu sistem sahiplenmesi ya da `NextAsync` çağırınca "satır yok" adımı; ayar yokken yedek önek kullanılınca 409 adımı kırmızı (S-124); form yardımcısı önizlemenin 409 `GROUP_PREFIX_MISSING`'inde `CodeRequired = false` döndürünce (kod isteğe bağlı kalır, kullanıcı yalnız sunucu reddiyle karşılaşır) form adımı kırmızı (S-135).
+- [ ] AC-84 (zorunlu, DL-4; sabotaj S-125; Bölüm 11) — **TTY ekranı (7 dil):** `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `Index.cshtml` `Layout = "_LayoutTenantShell"` satırını değişmeden taşır; oluşturma formunda kod girişi hizalı kiracıda isteğe bağlıdır (`required`, `data-required` ve `*` yalnız `CodeRequired` dalında — koşulsuz yok), yer tutucusu önizlemenin önerdiği koddur; `CodeRequired` dalında kod ve gerekçe girişleri `required` ve `*` taşır ve `RecordCodeManualRequired` uyarısı görünür (Q-25 B, AC-83); kod yazılınca gerekçe alanı gönderilir; düzenleme ekranında kod salt okunur, ayrı "Kodu değiştir" bölümü `Edit/{id}/Code`'a gönderir; ayrıntı ekranı kod geçmişini gösterir, eski kodlu türde eski kod notu. Bölüm 11'deki anahtarlar `TaskTypesIndex.{en,tr,fr,es,zh,ar,ru}.resx`'in yedisinde de vardır ve `en` dışındaki her dilde değer `en`'den farklıdır; cevaptaki `reason_code` eşlenmiş bir anahtarsa yerelleştirilmiş metin gösterilir, İngilizce `errors[]` gösterilmez. Liste ekranı dosyaları ve `wwwroot/assets/js/Tasks/TaskTypes/index.js` değişmez. Test `task-type-record-code-form.test.js` (Web node; görünüm ve kaynak dosyası okuması).
+  Sabotaj: bir dil dosyasından bir anahtar silinince ya da `fr` değeri `en` ile aynı yapılınca kaynak adımı; kod girişine koşulsuz `required` konunca (`CodeRequired` dalı dışında) form adımı kırmızı (S-125).
+- [ ] AC-85 (zorunlu, DL-4; sabotaj S-126) — **TTY yetki ve kiracı izolasyonu:** üç yeni eylem `[HasPermission(TaskPermissions.TaskTypesManage)]` taşır (yansıma); anahtarı olmayan kiracı kullanıcısı → 403 `PERM_DENIED` (çerçeve), motor çağrılmaz; yeni izin anahtarı yoktur (PKS-001 kataloğu, rol köprüsü ve izin etiketi dil dosyaları `git diff`'te değişmez). A kiracısının kullanıcısı B'nin görev türü kimliğiyle kod değişikliği ya da geçmiş ister → 404 tek gövde (`TASK_NOT_FOUND`), B'nin kaydı ve sahiplik satırları değişmez (motorun kiracı yüklemi DL-3 AC-72 ile ölçülü). Testler `TaskTypeRecordCodeHttpTests.AC85_*`, `RecordCodeTypeCatalogTests.AC85_the_task_type_code_actions_carry_the_task_type_key`.
+  Sabotaj: kod değişikliği eyleminden `[HasPermission]` kaldırılınca yansıma adımı ve 403 adımı kırmızı (S-126).
+- [ ] AC-86 (zorunlu, DL-4; sabotaj S-127; Q-18 A kararı; AC-25'in "kiracı okumaları kiracısız satırı görmez" ölçümü) — **Kiracısız taban:** `record_code_platform_counters` ve `record_code_platform_claims` `GlobalEntity`, `SchemaProfile.RecordCodes`, Bölüm 4.6'daki adlı index'lerle kayıtlı; iki koleksiyonun belgelerinde `TenantId` alanı yok. Platform satırı `PLN-000001` varken kiracı sahiplik deposunun doğrudan `CodeExistsAsync(A, "PLN", "PLN-000001")` çağrısı `false`, `ListHistoryAsync(A, "PLN", planId)` boş; kiracı A'nın `PreviewAsync("TTY")` sonucu platform sayacından etkilenmez. Platform depolarının her yöntemi kiracı bağlamında (`IsPlatformContext == false`) `RecordCodePlatformScopeViolationException` atar ve hiçbir şey okumaz / yazmaz (testler istisnayı değil koleksiyonun satır sayısını ölçer). DL-1 AC-24 / AC-30 / AC-31 ve DL-3 AC-71 / AC-72 testleri değişmeden yeşil. Testler `PlatformRecordCodeMongoTests.AC86_*`.
+  Sabotaj (AC-25'in sabotajının somut biçimi): kiracı sahiplik deposunun `CodeExistsAsync`'ine platform koleksiyonunu katan bir `$unionWith` eklenince kiracı adımı `true` görür; platform deposunun bağlam savunması kaldırılınca kiracı bağlamı adımı satır yazar — kırmızı (S-127).
+- [ ] AC-87 (zorunlu, DL-4; sabotaj S-128; Q-19 A kararı; AC-25'in ana ölçümü) — **PLN oluşturma — öneksiz kod ve platform-global denetim:** `platform_admin` kodsuz `POST /api/platform/subscription-plans` → 201; plan kaydının `Code`'u `PLN-000001`, ikinci plan `PLN-000002`; `record_code_platform_claims`'te `RecordId` = plan kimliği, `Active` / `System`; `record_code_platform_counters` `LastNumber = 2`; aynı işlemden `audit_events`'e iki satır: küresel uygulanabilirlik koordinatörünün `CreateSubscriptionPlanCommand` satırı (bugünkü) ve Tablo E-P (`RequestType = ClaimRecordCodeCommand`, kayıt kiracısı `AuditTenantIds.PlatformSystemTenantId`, `TargetTenantId = null`, `ActorType = PlatformAdministrator`, `SourceService = Diten.Platform`, `Metadata.RecordType = PLN`, `Outcome = Succeeded`). Hiçbir kiracının `record_code_*` koleksiyonlarında satır yok. **İptal** (`BeforeCommitAsync`): plan, sahiplik, sayaç artışı ve iki denetim satırı birlikte yok — sayaç işlem içinde olduğundan boşluk da yok. Kod `RecordCodeFormat.IsValidPlatformCode`'a uyar. Testler `SubscriptionPlanRecordCodeHttpTests.AC87_*`.
+  Sabotaj: Tablo E-P'nin kayıt kiracısı `Guid.Empty` yapılınca kapı reddeder ve 201 adımı 503 alır; `TargetTenantId` token kiracısıyla doldurulunca alan eşitliği adımı; platform sayacı işlem dışında artırılınca iptal adımı `LastNumber` artışını görür — kırmızı (S-128).
+- [ ] AC-88 (zorunlu, DL-4; sabotaj S-129, S-134, S-136, S-138; Q-22 A, Q-24 B kararı, r17; F-1 c, F-2 kararı, r18) — **PLN elle kod, normalleştirme ve güncellemede gerekçeli kod değişikliği (eski planlar dahil):** oluşturma: `"Kurumsal Plus"` + gerekçe → 201 `KURUMSAL-PLUS` (bugünkü normalleştirici boşluğu `-`'ye çevirir — Q-24 B), tek Tablo E-P, sahiplik `Active` / `Manual`, platform sayacı değişmez; `"kurumsal_plus"` (başka planda `KURUMSAL-PLUS` varken) → 409 `RECORD_CODE_TAKEN`; `"Öğrenci"` + gerekçe → 201 `OGRENCI`; `"PLN 000123"` ve `"PLN_000123"` → 400 `RECORD_CODE_PATTERN_RESERVED` (normalleştirmeden sonra `PLN-000123`); `"Plan.Pro"` → 400 `RECORD_CODE_MANUAL_FORMAT_INVALID` (RCS-001 §5.10); normalleştirilmiş 41 karakter → 400 `RECORD_CODE_MANUAL_FORMAT_INVALID`; gerekçesiz elle kod → 400 `RECORD_CODE_REASON_REQUIRED`; başka planın emekli kodu → 409 `RECORD_CODE_TAKEN`; oluşturmada kod boş istek doğrulayıcıdan geçer (kod kuralı oluşturmadan kalktı). Güncelleme (`PUT /api/platform/subscription-plans/{id}`; başarı kodu bugünkü 204, `services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Handlers/CommandHandlers/UpdateSubscriptionPlanCommandHandler.cs:71`): aynı kodla yalnız ad değişikliği → 204, kod korunur, motor çağrılmaz, defterde yeni satır yok; **boş kod (F-2, r18):** `code` `null` ya da yalnız boşluk → 400, `ValidationProblemDetails` `errors` içinde "Code is required." (bugünkü cevap, `SubscriptionPlanRequestValidator.cs:21`'in metni), işleyici çağrılmaz, plan değişmez; `code = "___"` (normalleştirilmiş boş) → bugünkü 400 "Code must be between 2 and 50 characters after canonical normalization."; aynı kod + dolu `codeReason` → 400 `RECORD_CODE_REQUEST_INVALID`, plan değişmez; sistem kodlu (`PLN-000001`) planda `code = "kurumsal plus"` + `codeReason` → 204: plan kodu `KURUMSAL-PLUS`, küresel uygulanabilirlik izdüşümünün `Code`'u aynı, eski sahiplik `Retired` (`ReplacedByCode = KURUMSAL-PLUS`), yeni `Active` / `Manual` + `Reason`, tek Tablo F-P (eski kod, yeni kod, gerekçe, `PlatformAdministrator`) ve koordinatörün `UpdateSubscriptionPlanCommand` satırı aynı işlemde, platform sayacı değişmez, `GET …/{id}/code-history` iki satır; aynı değişiklik `codeReason`'sız → 400 `RECORD_CODE_REASON_REQUIRED`, plan (diğer alanlar dahil) değişmez; yeni kod sahiplik satırı olmayan eski bir planın koduysa → 409 `RECORD_CODE_TAKEN` (dış yoklama); **iptal** (`BeforeCommitAsync`) → plan, izdüşüm, sahiplik satırları ve iki denetim satırı eski hâlinde. **Eski plan (F-1 c, r18):** aktif sahiplik satırı olmayan tohum planı `FREE`'de yalnız ad değişikliği (kod aynı) → 204, platform defterinde plan için satır yok (Q-22 A); `code = "temel"` + `codeReason` → 204: plan kodu `TEMEL`, izdüşümün `Code`'u aynı; `record_code_platform_claims`'te plan için tam iki satır — `FREE` / `Legacy` / `Retired` (`Reason = null`, `ClaimedAtUtc` = planın `CreatedAt`'i (UTC), `RetiredBy` = kullanıcı, `ReplacedByCode = TEMEL`) ve `TEMEL` / `Manual` / `Active` + `Reason`; aynı işlemden tek Tablo F-P (önce `FREE`, sonra `TEMEL`, gerekçe, `PlatformAdministrator`, `Metadata.RetiredClaimId` = `Legacy` satırının kimliği) ve koordinatörün `UpdateSubscriptionPlanCommand` satırı; Tablo E-P yok; platform sayacı değişmez; `GET …/{id}/code-history` iki satır, sıra `FREE` → `TEMEL`, kökenler `Legacy`, `Manual`. Ardından yeni plan `code = "free"` + gerekçe → 409 `RECORD_CODE_TAKEN` (eski kod defterde dolu, §5.8). `FREE`'nin değişikliği `codeReason`'sız → 400 `RECORD_CODE_REASON_REQUIRED`, plan ve defter değişmez (`Legacy` satırı yok); eski planın değişikliği `BeforeCommitAsync` ile düşünce plan, izdüşüm, `Legacy` satırı, yeni satır ve iki denetim satırı yok; eski kod defterde zaten varken (test düzeni: platform defterine aynı türde başka kayıt için `PROFESSIONAL` satırı) `PROFESSIONAL` planının kod değişikliği → 409 `RECORD_CODE_CONFLICT`, plan ve defter değişmez. Bu akışın hiçbir adımı 409 `RECORD_CODE_IMMUTABLE` döndürmez. Testler `SubscriptionPlanRecordCodeHttpTests.AC88_*`.
+  Sabotaj: güncelleme işleyicisi farklı kodu motoru atlayıp plan koduna doğrudan yazınca (bugünkü atama korunur) değişiklik adımı defterde emeklilik ve Tablo F-P görmez; değişiklik koordinatör işleminin dışında yazılınca iptal adımı yeni sahiplik satırını ya da izdüşümde eski kodu görür — kırmızı (S-129); normalleştirici motorun desen yasağından sonra uygulanınca ya da hiç uygulanmayınca `"PLN_000123"` adımı 201 ya da 400 `RECORD_CODE_MANUAL_FORMAT_INVALID` alır — kırmızı (S-134); eski kod alımı atlanınca (yalnız yeni `Manual` satırı eklenir, `Legacy` satırı yazılmaz) iki satır adımı tek satır görür ve `"free"` ile yeni plan 409 yerine 201 alır — kırmızı (S-136); kod kuralı güncelleme doğrulayıcısına taşınmayınca (oluşturmayla birlikte kalkınca) boş kod adımı "Code is required." yerine 400 `RECORD_CODE_REASON_REQUIRED` / `RECORD_CODE_MANUAL_FORMAT_INVALID` ya da 204 alır — kırmızı (S-138).
+- [ ] AC-89 (zorunlu, DL-4; sabotaj S-130; Q-19 A kararı) — **PLN aktör ve bağlam:** platform kolunun savunması `ActorType = platform_admin` (`OrdinalIgnoreCase`), dolu `sub` ve `ITenantContext.IsPlatformContext == true` ister; değilse hiçbir şey göndermeden 403 `RECORD_CODE_FORBIDDEN` (sahte `ISender` çağrı sayısı 0, ret satırı yok). `partner_admin` token'ıyla plan oluşturma → 403 (bugünkü politika), motor çağrılmaz; kiracı kullanıcısı token'ı → 403 (ara katman). Kiracı kolu platform türünü kabul etmez: `tenant_user` ile `PLN` → 403 `RECORD_CODE_FORBIDDEN` (adım 3; DL-3 AC-73 değişmez); platform kolu kiracı türünü kabul etmez: `platform_admin` ile `TTY` → 403 `RECORD_CODE_FORBIDDEN`. Testler `InProcessRecordCodeAssignmentsTests.AC89_*`, `SubscriptionPlanRecordCodeHttpTests.AC89_*`.
+  Sabotaj: platform savunmasından `IsPlatformContext` kolu kaldırılınca kiracı bağlamlı `platform_admin` adımı; `PLN` kiracı savunmasından geçirilince `tenant_user` adımı kırmızı (S-130).
+- [ ] AC-90 (zorunlu, DL-4; sabotaj S-131; Bölüm 11; r18 F-1 c, F-2, F-4) — **PLN ekranı (2 dil):** `Create.cshtml` ve `Edit.cshtml` `Layout = "_LayoutPlatformAdmin"` satırını değişmeden taşır; oluşturmada kod isteğe bağlı (yer tutucu önizleme `PLN-…`; oluşturma dalında `required` yok), kod yazılınca gerekçe; düzenlemede kod girişi bugünkü gibi düzenlenebilir ve **zorunludur** (`required` kalır — F-2: boş kod 400) ve yanında gerekçe girişi (`CodeReason`) vardır — ayrı "Kodu değiştir" bölümü ve `codeChange` yok (Q-24 B, r17); **eski kodlu planda (aktif sahiplik yok) kod girişi salt okunur değildir** — kullanıcı kodu gerekçeyle değiştirebilir ve sunucu değişikliği kabul eder (F-1 c; r17'deki "değişirse 409" davranışı yok, F-4 kapandı); bu planda eski kod notu (`RecordCodeLegacy`, PLN metni: eski kod değişince kod geçmişine yazılır ve bir daha kullanılamaz) görünür ve geçmiş tablosu yerine not gösterilir; ilk değişiklikten sonra geçmiş tablosu düzenleme ekranında iki satırla, `Legacy` köken hücresi `RecordCodeOriginLegacy` ile; Bölüm 11'deki anahtarlar `SubscriptionPlansIndex.{en,tr}.resx`'in ikisinde de var, `tr` değeri `en`'den farklı; `reason_code` eşlemesi TTY ile aynı kural. Test `subscription-plan-record-code-form.test.js`.
+  Sabotaj: `SubscriptionPlansIndex.tr.resx`'ten bir anahtar (ör. `RecordCodeOriginLegacy`) silinince; oluşturma dalında plan kod girişine `required` geri konunca ya da düzenleme dalından `required` kaldırılınca; eski kodlu planda kod girişi `readonly` yapılınca kırmızı (S-131).
+- [ ] AC-91 (zorunlu, DL-4; sabotaj S-132) — **Takım ve değişmeyenler:** `dotnet build` Diten.Platform ve Diten.Web PASS; Platform'un tam test takımı filtresiz, Web node takımı ve `Diten.Web.Tests`; DL-1, DL-2, DL-3 kayıt kodu testleri değişmeden yeşil (DL-4 hiçbirini değiştirmez — `PLN` satırının mevcut alanları ve `AllowedCaller` kuralı korunur); Bölüm 5 "DL-4" **Değişmez** listesindeki dosyalar (sözleşme, `ocelot.json`, kimlik bilgisi eşlemesi, denetim kapısı, `TransactionOwnedAuditCommands.cs`, `AllocateRecordCodeHandler.cs`, `LockRecordCodeHandler.cs`, DL-2 dosyaları, `CreateTaskItemHandler.cs`, plan tohumu, `services/Diten.PpmService/**`) `git diff`'te değişmez; XMC dosyaları yalnız Bölüm 5 "DL-4" listesindekiler; atlanan test yok; bilinen 19 Platform Mongo ortam kırmızısının adları `ctv-0040dl2` tabanıyla aynı (yeni 0, kaybolan 0 — farklıysa adıyla, CT aynı gün main ile karşılaştırır); `Diten.Platform.Application` derlemesinde `ChangeTaskTypeCodeCommand` ve dört yeni sorgu için `IValidator<>` uygulaması yok (yansıma — AC-45 / AC-75 deseni). Testler `InProcessRecordCodeAssignmentsTests.AC91_the_dl4_requests_have_no_validator`; kabul kaydı.
+  Sabotaj: yeni bir testin `Skip` ile işaretlenmesi kabul kaydında; `ChangeTaskTypeCodeCommand`'a FluentValidation doğrulayıcısı eklenince yansıma adımı kırmızı (S-132).
+
+**DL-5…DL-11.** Kabul ölçütleri her dilimin kendi paket revizyonunda yeni numarayla eklenir (numaralar silinmez,
 yeniden numaralanmaz).
 
 ## 17. Test Expectations
@@ -2329,6 +3143,15 @@ yeniden numaralanmaz).
 | `RecordCodeAssignmentMongoTests` (N, **DL-3**) | gerçek Mongo replica set + üretim işleyicileri MediatR üzerinden + üretim `RecordCodeClaimRepository` / `RecordCodeCounterRepository` + üretim `CanonicalTransactionalAuditOutboxWriter` ve kutu işleyicisi + `ISender` kaydedicisi + sahiplik deposunu **saran** kaydedici / atlatıcı / hata enjekte eden sarmalayıcı (bariyer yok, sıralı) + iki ana makine (`OrgPrefix` `GMG` / `GMX`, AC-65 paritesi) | AC-63 (işleyici retleri), AC-64, AC-65…AC-72, AC-73 (yazma retleri), AC-74 |
 | `InProcessRecordCodeAssignmentsTests` (N, **DL-3**) | birim (sahte `ISender` çağrı sayımı, sahte `ITenantContext` / `ITenantAuthorizationContext` / `IActorPermissionContext`) + yansıma (doğrulayıcı yok) | AC-73, AC-75 (doğrulayıcı yok) |
 | Tam takım (Platform) + `AuditTrailStandardTests` (A-20 sonrası) (**DL-3**) | CI | AC-74 (defter), AC-75 |
+| `RecordCodeTypeCatalogTests` (M, **DL-4**) | birim + yansıma (`SubscriptionPlansController.Create` ve `TasksController`'ın yeni eylemlerinin `[HasPermission]` değeri) | AC-76, AC-85 (yansıma) |
+| `InternalRecordCodesHttpTests` (M, **DL-4**) | gerçek HTTP | AC-76 (`PLN` 403, `prefixScope = Platform` 422) |
+| `TaskTypeRecordCodeHttpTests` (N, **DL-4**) | gerçek HTTP (`TasksController` üretim yolu) + üretim `TenantResolutionMiddleware`, `AuditBehavior`, `CanonicalTransactionalAuditOutboxWriter` ve kutu işleyicisi + gerçek Mongo replica set + görev türü ve sahiplik deposunu saran kaydedici / hata enjekte eden sarmalayıcı + `IPlatformTransactionFaultProbe` (iptal) + iki ana makine (`OrgPrefix` `GMG` / `GMX`) | AC-77…AC-83, AC-85 |
+| `PlatformRecordCodeMongoTests` (N, **DL-4**) | gerçek Mongo + üretim platform ve kiracı depoları | AC-86 (AC-25) |
+| `SubscriptionPlanRecordCodeHttpTests` (N, **DL-4**) | gerçek HTTP (`SubscriptionPlansController`, `PlatformActor`) + üretim küresel uygulanabilirlik koordinatörü, yazıcı ve kutu işleyicisi + üretim doğrulama hattı (`ValidationBehavior`, güncelleme doğrulayıcısı — r18 F-2) + gerçek Mongo (tohum planları üretim tohumuyla — r18 F-1 c) + `IPlatformTransactionFaultProbe` | AC-87, AC-88, AC-89 (HTTP kolu) (AC-25) |
+| `InProcessRecordCodeAssignmentsTests` (M, **DL-4**) | birim (sahte `ISender` çağrı sayımı, sahte bağlamlar) + yansıma | AC-82 (r18: kiracı kolu `LegacyAdoption` reddi), AC-89 (platform savunması), AC-91 (doğrulayıcı yok) |
+| `task-type-record-code-form.test.js`, `subscription-plan-record-code-form.test.js` (N, **DL-4**) | Web node (görünüm + kaynak dosyası okuması) | AC-84, AC-90 |
+| `TaskTypeRecordCodeFormTests` (N, **DL-4**, r17) | yansıma — Web denetleyicisinin önizleme → form durumu yardımcısı (`TaskTypeConcurrencyFormTests` deseni) | AC-83 (form, Q-25 B) |
+| Tam takım (Platform + Web node + `Diten.Web.Tests`) (**DL-4**) | CI | AC-91 |
 
 **Sabotaj listesi (kabul kaydına koşu kanıtıyla; her satır tek tek uygulanıp geri alınır):**
 
@@ -2450,6 +3273,28 @@ yeniden numaralanmaz).
 | S-114 | (r15, F-1@8cc7dcb7) E11000 sonrası yeniden okuma kod-index (`ux_record_code_claims_tenant_type_code`) kolundan kaldırılır (kol doğrudan 409 `RECORD_CODE_TAKEN`) | `RecordCodeAssignmentMongoTests`: `AC67_the_same_record_and_code_racing_twice_is_a_replay_whichever_index_reports` (b) kod-index adımı 200 yerine 409 |
 | S-115 | (r15, F-4@8cc7dcb7) `RecordCodeInProcessGuard` `ActorType`'ı `StringComparison.Ordinal` ile karşılaştırır (DL-2 portundan ayrışır) | `InProcessRecordCodeAssignmentsTests`: `AC73_the_dl3_guard_and_the_dl2_port_give_the_same_verdict_over_one_table` `Tenant_User` satırı |
 | S-116 | (r15, F-2@8cc7dcb7) Kilitte `LockIfUnlockedAsync` `Matched == false` başarı sayılır (200, `LockedNow = false`) | `RecordCodeAssignmentMongoTests`: AC-72 adım (5) 409 yerine 200 |
+| S-117 | (r16, DL-4) `PLN` bir HTTP kimlik bilgisi bağlamasına eklenir / `PLN` kapsamına `Group` eklenir / `PlatformBinding.RequiredPermission` `platform.subscription-plans.read` yapılır | `InternalRecordCodesHttpTests.AC76_platform_scope_stays_closed_over_http`; `RecordCodeTypeCatalogTests.AC76_*` |
+| S-118 | (r16, DL-4) Tablo E görev türü işleminin commit'inden sonra ayrı çağrıyla yazılır | `TaskTypeRecordCodeHttpTests`: AC-77 iptal adımı Tablo E satırını görür |
+| S-119 | (r16, DL-4) Tüketici `ExternalCodeTaken` yoklamasını bağlamaz (`null`) | `TaskTypeRecordCodeHttpTests`: AC-78 eski görev türü kodu adımı 409 yerine 500 / 503 |
+| S-120 | (r16, DL-4) Elle kodlu sahiplenme oturumsuz `ClaimAsync` ile, tüketici işleminin dışında yazılır | `TaskTypeRecordCodeHttpTests`: AC-79 (a) tekrar adımı 201 yerine 409 `RECORD_CODE_TAKEN` |
+| S-121 | (r16, DL-4) Görev türü kod güncellemesi değişiklik işleminin dışında yazılır | `TaskTypeRecordCodeHttpTests`: AC-80 sürüm farkı adımı — sahiplik `DENETIM`, kayıt eski kodda |
+| S-122 | (r16, DL-4; Q-21 C kararı) Kod değişikliği ucundaki görev varlığı denetimi kaldırılır | `TaskTypeRecordCodeHttpTests`: AC-81 görevli tür adımı 409 yerine 200 |
+| S-123 | (r16, DL-4) Çakışma atlaması aynı ayırma anahtarını yeniden kullanır (DL-2 S-92 emsali) | `TaskTypeRecordCodeHttpTests`: AC-82 "`000002`" adımı |
+| S-124 | (r16, DL-4) Önizleme ucu sistem sahiplenmesi / `NextAsync` çağırır / ayar yokken yedek önek kullanır | `TaskTypeRecordCodeHttpTests`: AC-83 "satır yok" adımı / 409 adımı |
+| S-125 | (r16, DL-4; r17 Q-25 B) Bir dil dosyasından anahtar silinir / `fr` değeri `en` ile aynı yapılır / kod girişine koşulsuz `required` konur (`CodeRequired` dalı dışında) | `task-type-record-code-form.test.js` |
+| S-126 | (r16, DL-4) Kod değişikliği eyleminden `[HasPermission]` kaldırılır | `RecordCodeTypeCatalogTests.AC85_the_task_type_code_actions_carry_the_task_type_key`; `TaskTypeRecordCodeHttpTests`: AC-85 403 adımı |
+| S-127 | (r16, DL-4; AC-25 sabotajı) Kiracı sahiplik deposunun `CodeExistsAsync`'ine platform koleksiyonunu katan `$unionWith` eklenir / platform deposunun bağlam savunması kaldırılır | `PlatformRecordCodeMongoTests`: AC-86 kiracı adımı `true` görür / kiracı bağlamı adımı satır yazar |
+| S-128 | (r16, DL-4) Tablo E-P kayıt kiracısı `Guid.Empty` yapılır / `TargetTenantId` token kiracısıyla doldurulur / platform sayacı işlem dışında artırılır | `SubscriptionPlanRecordCodeHttpTests`: AC-87 201 adımı 503 / alan eşitliği adımı / iptal adımı `LastNumber` |
+| S-129 | (r16, DL-4; r17 Q-24 B; r18 F-1 c) Plan güncellemesinde farklı kod motoru atlayıp plan koduna doğrudan yazılır / kod değişikliği koordinatör işleminin dışında yazılır | `SubscriptionPlanRecordCodeHttpTests`: AC-88 değişiklik adımı (emeklilik ve Tablo F-P yok; eski planda `Legacy` satırı da yok) / iptal adımı (yeni sahiplik, `Legacy` satırı ya da izdüşümde eski kod) |
+| S-130 | (r16, DL-4) Platform savunmasından `IsPlatformContext` kolu kaldırılır / `PLN` kiracı savunmasından geçirilir | `InProcessRecordCodeAssignmentsTests.AC89_*` |
+| S-131 | (r16, DL-4; r18 F-1 c, F-2) `SubscriptionPlansIndex.tr.resx`'ten anahtar (ör. `RecordCodeOriginLegacy`) silinir / oluşturma dalında plan kod girişine `required` geri konur ya da düzenleme dalından kaldırılır / eski kodlu planda kod girişi `readonly` yapılır | `subscription-plan-record-code-form.test.js` |
+| S-132 | (r16, DL-4) Yeni bir test `Skip` ile işaretlenir / `ChangeTaskTypeCodeCommand`'a FluentValidation doğrulayıcısı eklenir | kabul kaydı (AC-91); `InProcessRecordCodeAssignmentsTests.AC91_the_dl4_requests_have_no_validator` |
+| S-133 | (r16, DL-3 hizalaması; CT kararı, r15 inceleme F-1@97058ee5) Kilit filtresinden `Code ==` (ön okunan kod) kaldırılır | `RecordCodeAssignmentMongoTests.AC70_a_code_changed_after_the_lock_s_read_is_a_conflict_and_nothing_is_locked` — yeni kod kilitlenir, 409 yerine 200 |
+| S-134 | (r17, DL-4; Q-24 B) PLN'de bugünkü normalleştirici motorun desen yasağından sonra uygulanır ya da hiç uygulanmaz | `SubscriptionPlanRecordCodeHttpTests`: AC-88 `"PLN_000123"` adımı 201 ya da 400 `RECORD_CODE_MANUAL_FORMAT_INVALID` |
+| S-135 | (r17, DL-4; Q-25 B) TTY form yardımcısı önizlemenin 409 `GROUP_PREFIX_MISSING`'inde `CodeRequired = false` döndürür | `TaskTypeRecordCodeFormTests.AC83_*` |
+| S-136 | (r18, DL-4; F-1 c) Platform kolunun eski kod alımı atlanır: aktif satırı olmayan planın değişikliğinde yalnız yeni `Manual` satırı eklenir, `Legacy` satırı yazılmaz (emeklilik adımı da atlanır) | `SubscriptionPlanRecordCodeHttpTests`: AC-88 eski plan adımı defterde iki yerine tek satır görür; `"free"` ile yeni plan 409 `RECORD_CODE_TAKEN` yerine 201 alır |
+| S-137 | (r18, DL-4; F-1 c sınırı, Q-22 A) Motorun kiracı kolu `LegacyAdoption`'ı reddetmez, eski kod alımını koşturur | `InProcessRecordCodeAssignmentsTests.AC82_the_tenant_branch_refuses_a_legacy_adoption`: 400 yerine 200 ve kaydedicide `Legacy` satırı eklemesi |
+| S-138 | (r18, DL-4; F-2) Plan kod kuralı güncelleme doğrulayıcısına taşınmaz (oluşturmayla birlikte kalkar) | `SubscriptionPlanRecordCodeHttpTests`: AC-88 boş kod adımı "Code is required." yerine 400 `RECORD_CODE_REASON_REQUIRED` / `RECORD_CODE_MANUAL_FORMAT_INVALID` ya da 204 |
 
 Diğer: kiracı izolasyonu gerçek HTTP + gerçek Mongo ile; soft delete yok; tarayıcı smoke yok; RESX yok; DataTable
 doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi replica set'ini kullanır.
@@ -2463,7 +3308,7 @@ doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi re
   karşılar; **onay satırı yazılmadı**. **r14:** `revision: r14`, künye `ready-for-dev`, `approval_status: pending`, `code_start`
   DL-3 için r14 onayını anar; r13'ün onay satırları yazıldı (`execution/approvals/approvals.tsv` satır 73 / 74, sha256 `325e0624`);
   **r14 onay satırı yazılmadı**. **r15:** `revision: r15`, künye `ready-for-dev`, `approval_status: pending`, `code_start` DL-3
-  için r15 onayını ve A-18 kararını anar; **r15 onay satırı yazılmadı**.
+  için r15 onayını ve A-18 kararını anar; **r15 onay satırı yazılmadı**. **r16:** `revision: r16`, künye `ready-for-dev`, `approval_status: pending`, `status_note` yeni, `code_start` DL-4 için r16 onayını, Q-17…Q-26 seçimlerini ve XMC-001 onayını anar; r15'in onay satırı yazıldı (`execution/approvals/approvals.tsv` satır 97); **r16 onay satırı yazılmadı**. **r17:** `revision: r17`, künye `ready-for-dev`, `approval_status: pending`, `status_note` ve `code_start` DL-4 için r17 onayını anar (Q-17…Q-26 karar, XMC-001 sahip onaylı); r16'nın incelemesi ve onay satırı yok; **r17 onay satırı yazılmadı**. **r18:** `revision: r18`, künye `ready-for-dev`, `approval_status: pending`, `status_note` ve `code_start` DL-4 için r18 onayını anar; r17 incelendi (KOŞULLU) ve onaylanmadı; **r18 onay satırı yazılmadı**.
 - [x] Layout & Shell: `shell: none` (Bölüm 9). Validation (Bölüm 12), Failure Path (Bölüm 13), Authorization (Bölüm 14),
   Gateway (Bölüm 15), Lookup kararı (Bölüm 7.1), Audited Events (Bölüm 21) yazılı.
 - [x] Kimlik ön kontrolü `OK`, çıkış 0 (Bölüm 0).
@@ -2505,8 +3350,31 @@ doğrulayıcısı uygulanmaz; Mongo testleri Platform test sabitleriyle kendi re
   r14 sha256'lı satır); r14 onaylanmadı. **r15:** bulgular F-1…F-10 kapandı (Bölüm 19.7); Q-8…Q-16 = A ve A-20 kabul (Bölüm 24.2);
   A-18 kararı işlendi; S-114…S-116; kimlik ön kontrolü r15 için yeniden koşuldu (2026-11-13) → çıkış 0; `pack_approval` → DL-1…DL-10,
   `ready-for-dev`.
-- [ ] **r15 CT-APR-02 bağımsız incelemesi** (açık ENGEL ve ORTA yok; inceleyenin önerisi fark incelemesi) ve **r15 sha256'sına yazılmış
-  CT-APR-01 onay satırı** (Q-8…Q-16 = A'yı adıyla anar) — yok; DL-3 kodu ikisini bekler. Q-9 kayıt metni düzeltmesi (Bölüm 18.1).
+- [x] **r15 CT-APR-02 bağımsız incelemesi** (açık ENGEL ve ORTA yok; inceleyenin önerisi fark incelemesi) ve **r15 sha256'sına yazılmış
+  CT-APR-01 onay satırı** (Q-8…Q-16 = A'yı adıyla anar) — **r16 notu:** ikisi de yazıldı (`execution/approvals/reviews.tsv` r15 UYGUN, bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-11-13-c4499f37.md`; `execution/approvals/approvals.tsv` satır 97); DL-3 kodu yazıldı ve doğrulandı (`07ad98464`, VERIFIED 2026-11-14); Q-9 kayıt metni düzeltmesi kapandı (`8ffc78333`).
+- [x] **DL-4 (r16):** kapsam (Bölüm 2.6), kiracısız taban (Bölüm 4.6), dosya listesi ve XMC-001 satırları (Bölüm 5 "DL-4"), tüketici
+  bağlanması (Bölüm 8.18), ekranlar ve dil (Bölüm 9, 11: TTY 7 dil, PLN 2 dil), AC-76…AC-91, S-117…S-132, denetim (Bölüm 21.6), sorular
+  Q-17…Q-26 (Bölüm 24.3), A-21; DL-3 kabul sapmaları hizalandı (Bölüm 4.5, AC-68, AC-70, S-133); sözleşme 1.0.0 değişmedi; kimlik ön
+  kontrolü r16 için çıkış 0 (Bölüm 0); `pack_approval.slices()` → `DL-1`…`DL-11` ve `ready-for-dev`; `scripts/pack_readiness.py --base HEAD`
+  → 0 ENGEL (Bölüm 19.8).
+- [ ] **r16 CT-APR-02 bağımsız incelemesi** (açık ENGEL ve ORTA yok) ve **r16 sha256'sına yazılmış CT-APR-01 onay satırı** — yok. **r17
+  notu:** r16 incelenmeden r17 yazıldı (sahip kararları 2026-11-14); bu madde aşağıdaki r17 maddesine devredildi.
+- [x] **DL-4 (r17):** Q-17…Q-26 ve A-21 karara çevrildi (Bölüm 24.3); Q-24 B (Bölüm 8.18 madde 6) ve Q-25 B (Bölüm 8.18 madde 3, 11)
+  işlendi; DL-11 PPM sahibi ekibin — bu paketin payı ve ekibe verilecek bilgi Bölüm 8.19; AC-83, AC-84, AC-88, AC-90 ve S-122, S-125,
+  S-129 hizalandı, yeni sabotaj S-134, S-135, yeni AC yok; yeni açık karar A-22 (DL-4'ü bekletmez); r16 hazırlık aracının 2 ÖNEMLİ
+  bulgusu atıf düzeltmesiyle kapandı (Bölüm 19.9); kimlik ön kontrolü r17 için çıkış 0 (Bölüm 0); `pack_approval.slices()` →
+  `DL-1`…`DL-11` ve `ready-for-dev`; `scripts/pack_readiness.py --base HEAD` → 0 ENGEL (Bölüm 19.9).
+- [x] **r17 CT-APR-02 bağımsız incelemesi yapıldı — KOŞULLU** (0 ENGEL, 1 ORTA, 3 DÜŞÜK; `docs/records/reviews/MOD-0040-FU02/2026-11-14-f4a52ff2.md`,
+  `execution/approvals/reviews.tsv` r17 sha256'lı satır `7f2a1498b`); r17 onaylanmadı. **r18 notu:** r17'nin onay satırı maddesi aşağıdaki r18
+  maddesine devredildi.
+- [x] **DL-4 (r18):** r17 incelemesinin F-1…F-4 bulguları sahip kararlarıyla kapandı (Bölüm 19.10): F-1 (c) Bölüm 2.6, 3, 4.5, 4.6, 8.18 madde
+  1, 5, 5a, 6, 8; F-2 Bölüm 5, 8.18 madde 6, 12; F-3 atıf; F-4 AC-90; A-22 kapandı (Bölüm 8.19, 18.1, 20, 23, 24); r17 yorumları Q-24 (1),
+  Q-24 (3), Q-25 MISMATCH CT kabul (Bölüm 24.3); AC-82, AC-88, AC-90 hizalandı, yeni sabotaj S-136…S-138, yeni AC yok; kimlik ön kontrolü
+  r18 için çıkış 0 (Bölüm 0); `pack_approval.slices()` → `DL-1`…`DL-11` ve `ready-for-dev`; `scripts/pack_readiness.py --base HEAD` → 0 ENGEL
+  (Bölüm 19.10).
+- [ ] **r18 CT-APR-02 bağımsız incelemesi** (açık ENGEL ve ORTA yok) ve **r18 sha256'sına yazılmış CT-APR-01 onay satırı** (Q-17…Q-26 ve r17
+  inceleme kararlarını — F-1 c, F-2, A-22 —, Bölüm 24.3'teki CT kabul edilen r17 yorumlarını ve r18 yorumunu (`Legacy` satırının
+  `ClaimedAtUtc`'si) adıyla anar) — yok; DL-4 kodu ikisini ve `UpdateSubscriptionPlanCommandValidator.cs` XMC-001 ek onayını bekler.
 - **r9 notu — CT kararı (MVP-1 CT, 2026-11-02):** A-1, A-11, A-12, A-16, A-17 ve sözleşme dondurma ready-for-dev önkoşulu değildir;
   DL-1 kabul / merge kapısıdır (Bölüm 18.1). Künye `ready-for-dev` / `pending` kalır. **Kararın izi (r10, son bakış 01 tur 4 F-3):** r9 commit'i `92beb1228` (taşımayı yazan sürüm), r9 inceleme satırı `3ceb760e8` (inceleme 03 tur 7) ve r9 onay satırı `466aacfc9` (`execution/approvals/approvals.tsv`; gerekçesi "A-1 / A-11 / A-12 / A-16 / A-17 / sözleşme dondurmanın DL-1 kapılarına taşınması (CT kararı, 92beb1228)" der).
 
@@ -2533,10 +3401,19 @@ Aşağıdakiler `ready-for-dev`'i bekletmez; dilim tablosundaki (Bölüm 23) kap
 | DL-2 **canlıya alma kapısı** (r13; inceleme 04 F-4, sahip kararı K-17; r15 F-5@8cc7dcb7) | **A-18 kararı** (MDM kalıcı kısa kod kullanım kilidi, sözleşme N-12) verilmiş ve kayda geçmiş olmalı — **r15: karar düzeyinde kapandı** (Beste 2026-11-13, sahip kararları 04 eki, `docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-04.md:14-22`, `f827bf948`): bir şirkette ilk kayıt kodu üretildikten sonra MDM kısa kodu değiştirilemez; MDM kilidi (Ali'nin MDM iş paketi) uygulanana kadar ara dönem kilidi (Bölüm 8.13) ve Ali'ye verilen operasyon talimatı (kayıt kodu üretilmiş şirketin kısa kodu MDM ekranından değiştirilmez) birlikte korur; Ali itiraz ederse karar yeniden açılır. Açık kalan: aşağıdaki bildirim ve MDM işinin teslimi. Gerekçe: DL-2'den sonra organizasyon birimi açılmış her şirket ara dönem kilidine girer; MDM'de kısa kod değişikliği o şirketin **bütün** LegalEntity kayıt kodlarını (Treasury `PAY` / `APD` / `ARI` / `CPS` / `CTP`, MDM `BAC` / `AGR`, ORG / POS) 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`'e düşürür; serbest kalan kodu alan başka şirket de durur (Bölüm 8.14 "iki yön"). **Bildirim:** canlıya almadan önce CT, Treasury CT'ye ve MDM sahibine (Ali) iki yönü, "aynı önek" durumunu, TC-8 metnini, kurtarma yolunu (MDM kodunu defterdeki son öneke geri almak) ve A-18 kararını yazılı bildirir; bildirim kaydı DL-2 kabul kaydına bağlanır. Kod yazımını bekletmez (K-17); merge'ün ayrıca bekleyip beklemediği sahip kararında yazılı değildir — **CT kararı, açık** (main'e giren kodun canlıya çıkış biçimine bağlı) | DL-2 canlıya alınmadan önce (A-18 kararı verildi; bildirim ve MDM işi açık); merge için CT kararı açık | A-18: MDM sahibi (Ali) + Beste (karar verildi); bildirim: CT |
 | DL-3 **başlama kapısı** (r14) | DL-1 kodu main'de | **sağlandı** — `origin/main`'de DL-1 kodu var (ölçüldü 2026-11-13; CT kabulü 2026-11-04). DL-3 DL-2'yi beklemez (Bölüm 2.5) | CT |
 | DL-3 **başlama kapısı** (r14; r15) | r15'in CT-APR-02 incelemesi (açık ENGEL / ORTA yok; r14'ün incelemesi KOŞULLU — `docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md`) ve r15 sha256'sına yazılmış CT-APR-01 onay satırı; künye `ready-for-dev` (r15'te sağlandı). **Onay satırı Q-8…Q-16 = A'yı adıyla anar** (r15, F-10@8cc7dcb7) | DL-3 kodundan önce | CT + Beste |
-| DL-3 **başlama kapısı** (r14; r15) | Q-8…Q-16 sahip cevabı (Bölüm 24.2) | **kapandı** — hepsi A (Beste 2026-11-13, "hepsinde öneri gibi"; kanıt `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25`; r15, F-10@8cc7dcb7). **Açık kalan tek iş:** kayıttaki Q-9 özeti («oluşturmada elle kod gerekçe istemez, yalnız sonraki değişiklik») Q-9'un **B** seçeneğini anlatıyor, aynı satırın «hepsi paketteki A önerisi» sözüyle çelişiyor — r15 sahibin sözüne (A: elle kod oluşturmada da gerekçeli) göre yazıldı; CT kaydı düzeltir ya da sahip B'yi teyit ederse yeni revizyon (AC-64, AC-67) | DL-3 kodundan önce | CT (kayıt düzeltmesi) + Beste (teyit) |
+| DL-3 **başlama kapısı** (r14; r15) | Q-8…Q-16 sahip cevabı (Bölüm 24.2) | **kapandı** — hepsi A (Beste 2026-11-13, "hepsinde öneri gibi"; kanıt `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25`; r15, F-10@8cc7dcb7). **r16:** kayıttaki Q-9 özeti düzeltildi — sahip A'yı teyit etti («A — oluşturmada da gerekçe», Beste 2026-11-13; `8ffc78333`, `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md` "Düzeltme — MOD-0040-FU02 Q-9"); kayıt metni düzeltmesi kapandı, AC-64 / AC-67 değişmez | DL-3 kodundan önce | CT (kayıt düzeltmesi) + Beste (teyit) |
 | DL-3 **kabul kapısı** (r14; r15 F-8@8cc7dcb7) | **A-20** — CT kararı **kabul** (2026-11-13, `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:25`); açık kalan defter satırının **yazılması**: `platform-islem-ici` iz satırına `RecordCodeAuditIntent.EnqueueClaimedAsync/EnqueueChangedAsync/EnqueueLockedAsync/EnqueueAssignmentRefusalAsync` belirteci, CT-DECISIONS satırı, `AuditTrailStandardTests` yeşil (A-10 emsali). `AuditTrailStandardTests` belirteç gelene kadar DL-3 dalında kırmızıdır; AC-74 ve AC-75 ancak onunla sağlanır | **CT kabul koşusundan önce** (kod yazımını bekletmez; merge'ü de doğal olarak bekletir) | CT |
 | DL-3 **kabul kapısı** (r15, F-9@8cc7dcb7) | Donmuş RECORD-CODE-ALLOCATE 1.0.0 §4 (`docs/analysis/contracts/record-code-allocate.md:123`) İKİSİ DE türlerini 422 `RECORD_TYPE_UNKNOWN` altında sayar; DL-3'ten sonra iç uçta `TTY` 403 `RECORD_CODE_FORBIDDEN` alır. CT bu farkı sözleşmenin açık noktalarına (§12) ya da değişiklik geçmişine (§14) **sürüm açmadan bilgi notu** olarak yazar (normatif metin FU-RCS-20 sürümünde değişir) ve tüketici CT'lerine (Treasury CT, MDM sahibi) bildirir; not ve bildirim DL-3 kabul kaydına bağlanır | DL-3 kabul kaydı | CT |
-| DL-4 **başlama kapısı** (r14 bilgi) | DL-3 kodu CT tarafından doğrulanmış ve DL-4'ün yazılacağı tabanda (Bölüm 23 dilim sırası: DL-4 DL-3'ü bekler); DL-4'ün kendi kapıları kendi revizyonunda | DL-4 kodundan önce | CT |
+| DL-4 **başlama kapısı** (r14 bilgi; r16) | DL-3 kodu CT tarafından doğrulanmış ve DL-4'ün yazılacağı tabanda (Bölüm 23 dilim sırası: DL-4 DL-3'ü bekler) | **sağlandı** — DL-3 VERIFIED (`07ad98464`, 2026-11-14; `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md`); bu ağaçta `git merge-base --is-ancestor 07ad98464 HEAD` başarılı | CT |
+| DL-4 **başlama kapısı** (r16; r17; r18) | **r18'in** CT-APR-02 incelemesi (açık ENGEL / ORTA yok) ve r18 sha256'sına yazılmış CT-APR-01 onay satırı; künye `ready-for-dev` (r18'de sağlandı). r16 incelenmedi, r17 incelendi (KOŞULLU) — ikisi de onaylanmadı, r18 onların yerine geçer; onay satırı Q-17…Q-26 kararlarını, r17 inceleme kararlarını (F-1 c, F-2, A-22) ve Bölüm 24.3'teki r17 / r18 yorumlarını adıyla anar | DL-4 kodundan önce | CT + Beste |
+| DL-4 **başlama kapısı** (r16; r17) | Q-17…Q-26 sahip / CT seçimleri (Bölüm 24.3) | **kapandı** — Beste 2026-11-14 (`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139`); Q-24 B ve Q-25 B öneriden farklıydı → r17'de işlendi | Beste + CT |
+| DL-4 **başlama kapısı** (r18) | r17 bağımsız incelemesinin sahip kararları (F-1, F-2, A-22; r17 yorumları) | **kapandı** — Beste 2026-11-14 (`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:141-153`, `3f57d2f60`); F-1 (c), F-2 (400 korunur), A-22 (PPM ekibi), Q-24 (1) / (3) ve Q-25 MISMATCH yorumları CT kabul → r18'de işlendi (Bölüm 19.10) | Beste + CT |
+| DL-4 **başlama kapısı** (r16; r17) | XMC-001 (Q-26): Bölüm 5 "DL-4" XMC satırlarındaki MOD-0024 ve MOD-0361 dosyalarına dokunma onayı; bu dosyalarda açık bir dalda iş olup olmadığı (sıra) | **onay kapandı** — sahip onaylı (karar kaydı satır 137-138), yalnız Bölüm 5 "DL-4" listesi, liste dışı dokunuş yine sorulur; **sıra** DL-4 WP'si güncellenirken CT ölçer | Beste (onay, kapandı); CT (sıra) |
+| DL-4 **başlama kapısı** (r18, F-2) | XMC-001 **ek onayı**: `services/Diten.Platform/src/Diten.Platform.Application/Features/SubscriptionPlans/Validators/UpdateSubscriptionPlanCommandValidator.cs` (MOD-0361) — yalnız ortak doğrulayıcıdan kalkan kod kuralının (`SubscriptionPlanRequestValidator.cs:19-23`) aynen taşınması (Bölüm 5). Q-26 onayı r16 listesiyle sınırlıydı; F-2 kararı ("400 korunur") bu dosyaya dokunmayı gerektirir ama dosyayı adlandırmaz | **açık** — DL-4 kodundan önce | Beste |
+| DL-4 **kabul kapısı** (r16) | Canlı veride kiracı başına `^[A-Z]{2,5}-TTY-[0-9]{6,}$` ve `^PLN-[0-9]{6,}$` desenine uyan eski kod sayımı (Q-22) kabul kaydında; bir (kiracı, önek, tür) için sayım 3'ü aşarsa devreye almadan önce CT'ye bildirim (DL-6); sürüm notu (Bölüm 8.18 madde 8) kabul kaydında ve kiracı / Platform yöneticilerine yazılı bildirimi (r17: Q-25 B'den sonra kaldırılan canlıya alma kapısından buraya taşındı) | DL-4 kabul kaydı | CT |
+| DL-4 **kabul kapısı** (r16; r17) | A-21 — **CT kararı: yeni belirteç açılmaz** (DL-3 yöntemlerinin aşırı yüklemesi, Bölüm 8.18 madde 2); kapı yalnız DL-4 kodu buna rağmen yeni bir `RecordCodeAuditIntent` belirteci açarsa doğar: defter satırı CT kabul koşusundan önce (A-20 emsali) | CT kabul koşusundan önce (kapı doğarsa) | CT |
+| ~~DL-4 **canlıya alma kapısı** (r16)~~ | **kaldırıldı (r17, Q-25 B kararı):** grup öneki hizalanmamış kiracıda form kodu ve gerekçeyi zorunlu tutar (elle kod; AC-83); hizalama canlıya almayı bekletmez. Yönetici bildirimi DL-4 kabul kapısına taşındı | — | — |
+| DL-11 **başlama kapısı** (r16; r17 Q-17 kararı; r18 A-22 kararı) | PPM bağlanması PPM sahibi ekibin (Bölüm 8.19): MOD-0117 paketi (ya da FU'su — kimlik PPM sahibinden) bağlanmayı yazmış, onaylı ve `ready-for-dev`; PPM ekibinin yazdığı sözleşme eki ve Platform tarafı (uçlar, tüketici kaydı — katalog satırları, kimlik bilgisi bağlaması, kaynak servis kümesi; A-22) için bu paketin DL-11 revizyonu (P-1…P-8, kabul ölçütleri, Platform dosya listesi) ve onayı; **Platform dosya listesine XMC-001 sahip onayı** (A-22 kararı: PPM ekibi Diten.Platform'a yalnız bu listeyle dokunur). A-22 karar düzeyinde kapandı | DL-11 paket revizyonundan önce | PPM sahibi ekip (yazım) + Beste (onay, XMC-001) + CT (inceleme, kabul ölçümü) |
 
 ## 19. Implementation Notes
 
@@ -2874,6 +3751,123 @@ Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md` (öze
 | F-9 | DÜŞÜK | Bölüm 18.1'e DL-3 kabul kapısı: sözleşme §4 farkı §12 / §14'e sürüm açmadan bilgi notu, Treasury CT ve MDM sahibine bildirim, ikisi DL-3 kabul kaydına bağlı |
 | F-10 | DÜŞÜK | Q-8…Q-16 = A ve A-20 kabul (`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25`) Bölüm 24.2'de karar; 18.1'de kanıt yeri; onay satırı Q-8…Q-16 = A'yı adıyla anar. Kayıttaki Q-9 özeti B'yi anlattığı için kayıt düzeltmesi açık iş (18.1) |
 
+### 19.8 r16 (DL-4) ölçüm kaynakları ve girdi eşlemesi
+
+Ölçüm ağacı: bu çalışma ağacı, `30c313eb4` (DL-1, DL-2, DL-3 kodu tabanda; `git merge-base --is-ancestor 07ad98464 HEAD` başarılı),
+2026-11-14. Kimlik ön kontrolü: `python3 -P -E -X utf8 .antigravity/scripts/verify_module_id.py . --check-id MOD-0040-FU02 --name "Record Code Service" --parent MOD-0040`
+→ `OK  MOD-0040-FU02: proven against Blueprint/registry.`, çıkış 0 (Python 3.12.10). Çıkarımlar "çıkarım", ölçülmeyenler "ölçülmedi" der.
+
+| İddia | Kaynak (ölçüldü) |
+|---|---|
+| Platform-global denetim deseni bugün var | `AuditTenantIds.PlatformSystemTenantId` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Audit/AuditTenantIds.cs:5`); koordinatör kayıt kiracısı + `TargetTenantId = null` (`services/Diten.Platform/src/Diten.Platform.Application/Features/GlobalApplicability/GlobalApplicabilityTransactionCoordinator.cs:154`, `:165`); merkezi yolda `IsPlatformGlobal` (`services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/AuditService.cs:158`); kutu yalnız `Guid.Empty` kiracıyı reddeder (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Audit/AuditOutboxWriteRequest.cs:28-30`); yazıcının hedef reddi yalnız `Guid.Empty` (`services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/CanonicalTransactionalAuditOutboxWriter.cs:119`) |
+| Kiracısız taban seçenekleri | `GlobalEntity` kiracı alanı taşımaz, `HybridEntity` `TenantId` null olabilir (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/EntityVariations.cs:3-18`); `HybridRepository` null **veya** kiracı filtresi (`services/Diten.Platform.Common/src/Diten.Platform.Common/Persistence/Repositories.cs:96-109`) |
+| PLN bugün | `SubscriptionPlan : GlobalEntity` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/SubscriptionPlan.cs:5`); oluşturma koordinatör işleminde (`CreateSubscriptionPlanCommandHandler.cs:49`); normalleştirici boşluk / alt çizgi → `-` (`SubscriptionPlanCodeNormalizer.cs:21`); güncelleme kodu değiştirir (`UpdateSubscriptionPlanCommandHandler.cs:61`); doğrulayıcı kodu zorunlu tutar, 2–50 (`SubscriptionPlanRequestValidator.cs:21-23`); tohum `FREE` … (`SeedDefaultSubscriptionPlansCommandHandler.cs:36`); izdüşüm kodu taşır (r18, F-3 düzeltmesi: `GlobalApplicabilityStateRepository.cs:33`; `GlobalApplicabilityAuditChange.cs:46` denetim satırının `Code`'udur); oturumlu depo (`services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ISubscriptionPlanRepository.cs:19-25`); plan komutları korunan listede (`services/Diten.Platform/src/Diten.Platform.Application/Contracts/Audit/TransactionOwnedAuditCommands.cs:43-47`) ve `GlobalApplicabilityTransactionalArchitectureTests.ExactCommands`'ta |
+| PLN uçları ve ekranı | `api/platform/subscription-plans` + `PlatformActor` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/Platform/SubscriptionPlansController.cs:18-19`), `.create` (`:70`), `.update` (`:78`); ara katman `/api/platform/*`'ta platform bağlamı kurar (`services/Diten.Platform.Common/src/Diten.Platform.Common/Tenancy/TenantResolutionMiddleware.cs:304-307`); ekran `_LayoutPlatformAdmin`, kaynak dosyası `en` / `tr` |
+| TTY bugün | `TaskType : TenantScopedEntity`, kod değişmez (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tasks/TaskSupportingEntities.cs:583`, `:586-589`); normalleştirme kırp + büyük harf (`TaskTypeRules.cs:39`), en çok 40 (`:17`), oluşturmada kod zorunlu (`ValidateShape`, `:67-79`), güncellemede değişmez (`:174`); tekillik emekli türler dahil (`TaskTypeHandlers.cs:64-70`), yazım oturumsuz (`:103`); index `ux_task_types_tenant_code_active` silinmemişlerde tekil (`PlatformSchemaManifest.WorkflowWorkCenter.cs:595`); `CreateTaskTypeCommand` merkezi denetim işareti taşımaz (`services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Commands/TaskItemCommands.cs:316-317`); neden kodları `TASK_TYPE_CODE_IMMUTABLE` / `TASK_TYPE_CODE_TAKEN` (`services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/TaskModels.cs:651-652`) |
+| TTY uçları ve ekranı | `api/v1/tasks` (`services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs:30`), `CreateTaskType` / `UpdateTaskType` `[HasPermission(TaskPermissions.TaskTypesManage)]` (`:855-857`, `:865-867`); Web vekili `ApiPath` (`frontend/Diten.Web/Controllers/TaskTypesController.cs:56`); ekranlar `_LayoutTenantShell`, kaynak dosyası yedi dilde; kod girişi oluşturmada `required` (`frontend/Diten.Web/Views/Tasks/TaskTypes/_Form.cshtml:90`), düzenlemede salt okunur (`:85`) |
+| Görevler türü kimlikle anar | `TaskItem.TaskTypeId` (`services/Diten.Platform/src/Diten.Platform.Domain/Entities/Tasks/TaskItem.cs:313`); tek atama yeri `CreateTaskItemHandler.cs:391`; `CreateTaskItemHandler`'ı kuran test dosyası **10** (`git grep -l "new CreateTaskItemHandler" -- 'services/Diten.Platform/tests/*'`) |
+| Gateway | `/api/v1/tasks/{everything}` (`gateway/Diten.ApiGateway/ocelot.json:2048`), `/api/platform/subscription-plans/{everything}` (`gateway/Diten.ApiGateway/ocelot.json:1571`) |
+| PPM | `execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md` künye `status: review`, `service: Diten.PpmService`; varlıklar `Portfolio`, `Program`, `Project`, `Initiative`, `InvestmentCase` (`services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/`) — kod kuralları ve izinli kapsam **ölçülmedi** (DL-11) |
+| DL-3 kabulü | `docs/records/audits/2026-11/mvp1-ct-acceptance-batch-2026-11-13.md` "MOD-0040-FU02 DL-3" (9420 / 9401 / 19 / 0; 19 kırmızı `ctv-0040dl2` ile aynı) |
+| r15 incelemesi | `docs/records/reviews/MOD-0040-FU02/2026-11-13-c4499f37.md` (UYGUN, 2 DÜŞÜK) |
+
+**WP girdi eşlemesi** (`execution/domains/platform-shared-services/work-packs/WP-0040-FU02-DL4-consumer-binding.md`, `30c313eb4`):
+
+| WP maddesi | r16 karşılığı |
+|---|---|
+| D-1 kiracısız satır tabanı | Bölüm 4.6; Q-18 (öneri A); AC-86 |
+| D-2 platform-global denetim yolu | Bölüm 8.18 madde 2, 21.6; Q-19 (öneri A); AC-87 |
+| D-3 PLN süreç içi port ve imza | Bölüm 4.4 r16 notu (`PlatformBinding`), 8.18 madde 1–2; AC-76, AC-87 |
+| D-4 TTY bağlanması | Bölüm 2.6, 8.18 madde 3–4; AC-77…AC-85; Q-21 (öneri C) |
+| D-5 oturumlu port mu onarım mı | Q-20 (öneri A); Bölüm 8.18 madde 1 |
+| D-6 eski kodlar ve canlı sayım | Q-22 (öneri A); Bölüm 8.18 madde 5; AC-82; Bölüm 18.1 kabul kapısı; FU-RCS-22 |
+| D-7 PPM kapsamı ve kuralları | DL-11 (Q-17 öneri A); ölçülmedi |
+| D-8 PPM HTTP yüzeyi ve sözleşme eki | DL-11 |
+| D-9 kodu kayda bağlama (FU-RCS-04) | Q-23 (öneri A — DL-4 dışında) |
+| D-10 TTY grup öneki önkoşulu | Q-25 (öneri A); Bölüm 18.1 canlıya alma kapısı; AC-83 |
+| D-11 TTY ekranı 7 dil | Bölüm 9, 11; AC-84 (PLN ekranı 2 dil — AC-90) |
+
+WP §6 (CT notu) maddeleri: paket sha256 ve onay satırı — r16 onaylanınca CT yazar; AC / sabotaj numaraları AC-76…AC-91, S-117…S-132 (DL-3
+hizalaması S-133); Repo Scope Bölüm 5 "DL-4"; XMC-001 onay kaynağı Q-26; kapılar Bölüm 18.1; PPM'in yeri DL-11 (Q-17); D-1…D-11 yukarıda.
+
+**r17 notu:** yukarıdaki eşleme r16 yazılırken yazıldı; "öneri" işaretli satırlar r17'de karara bağlandı (Bölüm 24.3): D-7 / D-8 →
+Bölüm 8.19 (PPM sahibi ekip; bu paketin payı sözleşme eki, tüketici kaydı, kabul ölçümü); D-10 → Q-25 B (canlıya alma kapısı kalktı,
+form kodu zorunlu tutar); D-3'ün PLN güncelleme kısmı → Q-24 B (Bölüm 8.18 madde 6). Kapanış tablosu Bölüm 19.9.
+
+**DL-3 kabul sapmalarının hizalanması** (kod değişmez):
+
+| Sapma (kabul kaydı) | r16 |
+|---|---|
+| Tarih alanları `DateTime` (UTC) | Bölüm 4.5 tablo satırı ve not (a) |
+| AC-68 örneği eşdeğer ölçümle | AC-68 metni: kaydın kendi emekli **elle** kodu (`DENETIM`); `GMG-TTY-000001` adım 11'de desen yasağına takılır |
+| Kilit filtresi ön okunan kodu taşır (CT kararı, r15 inceleme F-1) | Bölüm 4.5 not (b), 8.17, AC-70; sabotaj S-133 |
+| "Kodla uyuşmayan birkaç sabotaj tarifi eşdeğeriyle" | kabul kaydı hangi S-n olduğunu adlandırmaz; r16 S-93…S-116 metnini değiştirmez — CT geliştirici raporundaki eşdeğerleri kabul kaydına ekler, metin bir sonraki revizyonda hizalanır (FU-RCS-26) |
+
+**r15 bağımsız incelemesi** (`docs/records/reviews/MOD-0040-FU02/2026-11-13-c4499f37.md`, özet `97058ee5…`):
+
+| Bulgu | Önem | r16 |
+|---|---|---|
+| F-1@97058ee5 | DÜŞÜK | CT kararıyla kapanmıştı (kayıt), DL-3 kodunda; r16 metni hizaladı (Bölüm 4.5, 8.17, AC-70, S-133) |
+| F-2@97058ee5 | DÜŞÜK | Q-9 kayıt metni düzeltmesi Bölüm 18, 18.1 ve 24.2'de `8ffc78333` atfıyla kapatıldı. "Q-8 satırında Durum hücresi eksik" ölçümle doğrulanmadı: Q-8 satırı başlıkla aynı yedi hücreyi taşır (`|` sayımı 8 / 8) — değişiklik yok |
+
+### 19.9 r17 — sahip kararları Q-17…Q-26 ve r16 hazırlık bulguları
+
+r16'nın bağımsız incelemesi yapılmadı (inceleme kaydı yok); r17'nin girdileri sahip kararları
+(`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139`) ve r16 üzerinde hazırlık aracının çıktısıdır
+(`PYTHONUTF8=1 python scripts/pack_readiness.py --base HEAD <paket>` → 0 ENGEL, 2 ÖNEMLİ). Ölçümler `6b8566366` çalışma kopyasında.
+
+| Girdi | r17'de nerede |
+|---|---|
+| Q-17 (PPM merkezde yapılmaz) | Bölüm 2.6, 7, 8.19 (yeni), 18.1 DL-11, 20 FU-RCS-03 / FU-RCS-28, 23 DL-11; A-22 (yeni) |
+| Q-18 A, Q-19 A, Q-20 A, Q-21 C, Q-22 A, Q-23 A | metin "öneri"den "karar"a: Bölüm 2.6, 3, 4, 4.6, 5, 8.7, 8.17, 8.18, 13, 16 (AC etiketleri), 17 (S-122), 20, 23 |
+| Q-24 B | Bölüm 2.6, 3, 5, 8.18 madde 5, 6, 8, 11, 12, 13, 14, 21.6, 22; AC-88, AC-90; S-129, S-134 |
+| Q-25 B | Bölüm 2.6, 5, 7, 8.18 madde 3, 8, 11, 12, 13, 18.1 (canlıya alma kapısı kalktı), 23; AC-83, AC-84; S-125, S-135 |
+| Q-26 onay | Bölüm 5 "DL-4", 7, 18.1 — "sahip onaylı (karar kaydı)" |
+| A-21 (CT) | Bölüm 5, 8.18 madde 2, 18.1, 21.6, 24 |
+| Hazırlık aracı R3, satır 1768 (ÖNEMLİ): `CreatePositionCommandHandler.cs:54` çevresinde `TenantRepository.CreateAsync` alıntısı yok | **kapandı — atıf düzeltmesi.** DL-2 kodu oluşturma çağrısını kaydırdı; HEAD'de çağrılar `CreateOrganizationUnitCommandHandler.cs` satır 118 ve `CreatePositionCommandHandler.cs` satır 90 (ikisi de `CreateAsync`, işlem dışı tek ekleme). Bölüm 8.14'ün cümlesi ("yazım işlem dışıdır", "iki ayrı yazım, sabit sıra") DL-2 sonrası da doğru — anlam değişmedi |
+| Hazırlık aracı R3, satır 1810 (ÖNEMLİ): `AllocateRecordCodeHandler.cs:177` çevresinde alıntı yok | **kapandı — atıf düzeltmesi.** İki neden: (a) kod bir satır kaydı — `FindLatestPrefixForLegalEntityAsync` çağrısı satır 178, kilit bloğu 178–188; (b) önceki satırda açılıp bu satırda kapanan kod aralığı, aracın sonraki düz metni alıntı sanmasına yol açıyordu — aralık tek satıra alındı. Cümlenin anlamı (kilit türden bağımsızdır) değişmedi |
+
+### 19.10 r18 — r17 bağımsız incelemesi (KOŞULLU) kapanış tablosu ve sahip kararları
+
+Girdiler: r17'nin bağımsız incelemesi (`docs/records/reviews/MOD-0040-FU02/2026-11-14-f4a52ff2.md`; hedef r17 sha256 `f4a52ff2…3f45`,
+`c79d0a40c`; `execution/approvals/reviews.tsv` satırı `7f2a1498b`) ve sahip kararları
+(`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:141-153`, Beste 2026-11-14, `3f57d2f60`). Kod ölçümleri
+`3f57d2f60` çalışma kopyasında (DL-3 kodu `07ad98464` tabanda).
+
+| Bulgu / karar | Önem | Sahip kararı (kayıt satırı) | r18'de nerede |
+|---|---|---|---|
+| F-1 — Q-22 A ile Q-24 B'nin birlikte okunuşu bütün bugünkü planlarda kod değişikliğini kapatıyordu | ORTA | **(c)** ilk değişiklikte gerekçeyle deftere alım (145-148) | Bölüm 2.6 (eski plan kodları), 3 (`RecordCodeLegacyAdoption`, `RecordCodeClaimOrigin.Legacy`), 4.5 / 4.6 (`Legacy` satırı), 5 (dosyalar), 8.18 madde 1 (port üyesi), 5 / 5a (motor kolu), 6 (tüketici çağrısı; 409 `RECORD_CODE_IMMUTABLE` kolu kalktı), 8 (sürüm notu), 11 (eski kod notu, köken anahtarı), 12, 13, 21.6, 22; AC-82 (kiracı kolu sınırı), AC-88 (eski plan adımları); S-129 (metin), S-136, S-137; FU-RCS-22 / FU-RCS-23 ilişkisi Bölüm 20 |
+| F-2 — boş kodlu plan güncellemesinin kodu koruması bugünkü 400'ü değiştiriyordu | DÜŞÜK | **400 korunur** (149) | Bölüm 2.6, 5 (`UpdateSubscriptionPlanCommandValidator.cs`, XMC ek onayı), 8.18 madde 6 (güncelleme, doğrulayıcı), 8 (sürüm notu), 11 (düzenlemede `required` kalır), 12, 13, 18.1 (XMC kapısı); AC-88 (boş kod adımı), AC-90; S-131 (metin), S-138 |
+| F-3 — "izdüşüm kodu taşır" atfı yanlış dosya | DÜŞÜK | atıf düzeltmesi (153) | Bölüm 2.6 ve 8.18 madde 6: `GlobalApplicabilityStateRepository.cs:33` (`Code = NormalizeCode(plan.Code)`, ölçüldü); denetim satırının atfı `GlobalApplicabilityAuditChange.cs:46` ayrı kaldı |
+| F-4 — eski kodlu planda kod girişi düzenlenebilir ama değişiklik 409 alıyordu | DÜŞÜK | F-1 ile kapanır (148: AC-90 hizalanır) | AC-90 (eski kodlu planda kod girişi düzenlenebilir ve değişiklik kabul edilir; salt okunur değil), Bölüm 11; S-131 (`readonly` sabotajı) |
+| A-22 — PPM için Platform tarafı HTTP yüzeyinin uygulayıcısı | (açık karar) | **PPM ekibi** (150-151) | Bölüm 2.6, 8.19 (iş bölüşümü tablosu M-1…M-5), 18.1 DL-11, 20 FU-RCS-03 / FU-RCS-28, 23 DL-11, 24 A-22 (KAPANDI), 24.3 Q-17 notu |
+| r17 yorumu Q-24 (1) `CodeReason` | — | CT kabul (152-153) | Bölüm 8.18 madde 6, 24.3 |
+| r17 yorumu Q-24 (3) PLN daralmaları (üst sınır 40, nokta reddi) | — | CT kabul (152-153) | Bölüm 8.18 madde 6, 24.3 |
+| r17 yorumu Q-25 `GROUP_PREFIX_MISMATCH` genişletmesi (kayıttaki "(4) MISMATCH") | — | CT kabul (152-153) | Bölüm 8.18 madde 3, 24.3 |
+| r17 yorumu Q-24 (2) eski plan kodları değişmez | — | F-1 (c) ile yerini karara bıraktı | Bölüm 24.3 |
+| r17 yorumu Q-24 (5) boş kodlu güncelleme kodu korur | — | F-2 ile kaldırıldı | Bölüm 24.3 |
+
+**Kod ölçümleri (F-1 tasarımının dayanağı; `3f57d2f60`):** DL-3 değişiklik işleyicisi adım 7'de aktif satır yoksa 404 döner, adım 15'te
+`RetireIfActiveAsync` + `InsertAsync` + `EnqueueChangedAsync`'i tek işlemde çağırır; emeklilik eşleşmezse satır yeniden okunur ve 409
+`RECORD_CODE_LOCKED` / `RECORD_CODE_CONFLICT`, yeni satır eklemesinde E11000 409 `RECORD_CODE_TAKEN`
+(`services/Diten.Platform/src/Diten.Platform.Application/Features/RecordCodes/Handlers/CommandHandlers/ChangeRecordCodeHandler.cs:67-73`,
+`:131-170`); emeklilik filtresi `Code == beklenen`, `Status == Active`, `LockedAtUtc == null`
+(`services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/RecordCodeRepositories.cs:377-404`); geçmiş
+`ClaimedAtUtc`, sonra `Id` sırasıyla (`:485`); `RecordCodeClaimOrigin` bugün `System = 1`, `Manual = 2`
+(`services/Diten.Platform/src/Diten.Platform.Domain/Enums/RecordCodes/RecordCodeClaimOrigin.cs`); Tablo F'nin önce / sonra `Code`'u ve
+`RetiredClaimId`'si emekli satırdan alınır (`RecordCodeAuditIntent.cs:296-333`) — `Legacy` satırı emekli satır olduğundan Tablo F-P'nin
+alanları değişmez. Plan güncellemesinde sürüm denetimi yok (`UpdateSubscriptionPlanCommandHandler.cs:34-69`); işlem yürütücüsü yazma
+çakışmasında gövdeyi baştan koşturur (`PlatformTransactionExecutor.cs:50-56`, `:109-114`). Doğrulayıcı güncellemede de çalışır
+(`UpdateSubscriptionPlanCommandValidator.cs:10`, ortak `SubscriptionPlanRequestValidator`); doğrulama retleri `ValidationProblemDetails`
+olarak döner (`ValidationBehavior` — atar, `GlobalExceptionHandler` eşler). `ChangeWithinAsync` bugün kodda yoktur (DL-4'te eklenecek;
+inceleme de böyle ölçtü).
+
+**r18 yorumu (onay satırında anılır):** `Legacy` satırının `ClaimedAtUtc`'si planın `CreatedAt`'idir — eski kodun gerçek yazılma anı
+bilinmez (DL-4 öncesi güncelleme kodu serbestçe değiştirebiliyordu); değer geçmişin sırası için seçildi (Bölüm 4.6). `ClaimedBy` deftere
+alan kullanıcıdır.
+
+**Hazırlık aracı:** `PYTHONUTF8=1 python scripts/pack_readiness.py --base HEAD <paket>` r18 üzerinde → sonuç Bölüm 18'deki r18 maddesinde.
+
 ## 20. Follow-up Items
 
 | # | İş | Sahip | Dilim |
@@ -2881,13 +3875,13 @@ Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md` (öze
 | FU-RCS-01 | ORG / POS bağlanması (süreç içi port) — **r12'de yazıldı** (Bölüm 2.4, 8.14, 8.15; AC-48…AC-61); kod izni r12 (ya da ardılı) onayı + `ready-for-dev` künyesiyle | Beste | DL-2 |
 | FU-RCS-17 | MOD-0288 merkezi oluşturma denetimi `EntityId` ve kod taşımaz (`CreateOrganizationUnitCommand.cs:11-13`, `CreatePositionCommand.cs:11-13` — `GetAuditMetadata` işleyiciden önce okunur); kod bugün yalnız ayırma satırında (Tablo A) görünür. Merkezi satırın zenginleştirilmesi | MOD-0288 sahibi (TBD) | — |
 | FU-RCS-18 | Geliştirme tohumu `PositionSeed` elle kod yazar (`PositionSeed.cs:54`, `:65-69`); kullanılmayan `_CreateEditOffcanvas.cshtml` parçaları kod girişi taşır; `CodePlaceholder` / `InvalidCode` / `FinalCodePreview` anahtarları DL-2'den sonra kullanılmaz — temizlik | MOD-0288 sahibi (TBD) | — |
-| FU-RCS-20 | Sözleşme RECORD-CODE-ALLOCATE §6 `ORG`, `POS` satırının bir sonraki eklemeli sürümde "HTTP: izinli çağıran yok → 403; süreç içi (Platform): LegalEntity" diye güncellenmesi (`record-code-allocate.md:170`; inceleme 04 F-13, Bölüm 4.4). Kendi başına sürüm açtırmaz; HTTP davranışı değişmez. **r14 (DL-3) eki:** aynı sürümde §4 `RECORD_TYPE_UNKNOWN` tanımı ("KALSIN, İKİSİ DE, …", `record-code-allocate.md:123`) "bağlanmamış İKİSİ DE" diye daraltılır ve §6'ya `TTY` satırı ("HTTP: izinli çağıran yok → 403; süreç içi (Platform): Group") eklenir | CT (sözleşme) + Beste | sonraki sözleşme sürümü |
+| FU-RCS-20 | Sözleşme RECORD-CODE-ALLOCATE §6 `ORG`, `POS` satırının bir sonraki eklemeli sürümde "HTTP: izinli çağıran yok → 403; süreç içi (Platform): LegalEntity" diye güncellenmesi (`record-code-allocate.md:170`; inceleme 04 F-13, Bölüm 4.4). Kendi başına sürüm açtırmaz; HTTP davranışı değişmez. **r14 (DL-3) eki:** aynı sürümde §4 `RECORD_TYPE_UNKNOWN` tanımı ("KALSIN, İKİSİ DE, …", `record-code-allocate.md:123`) "bağlanmamış İKİSİ DE" diye daraltılır ve §6'ya `TTY` satırı ("HTTP: izinli çağıran yok → 403; süreç içi (Platform): Group") eklenir **r16 (DL-4) eki:** §6'ya `PLN` satırı ("HTTP: izinli çağıran yok → 403; süreç içi (Platform): Platform") ve Platform kapsamı notu "süreç içi açıldı, HTTP'de kapalı" | CT (sözleşme) + Beste | sonraki sözleşme sürümü |
 | FU-RCS-19 | Eski elle kodlarda silinmiş kaydın kodunun yeniden kullanımı (`ux_*_tenant_code_active` kısmi index'i ve `ExistsByCodeAsync`'in silinmişleri dışlaması — RCS-001 §5.8); DL-2 yalnız otomatik kodlarda kapatır | MOD-0288 sahibi (TBD) + Beste | — |
 | FU-RCS-02 | İKİSİ DE motoru: öneri + gerekçeli değişiklik + AUD-001; §5.9 — **r14'te yazıldı** (Bölüm 2.5, 4.5, 8.17; AC-62…AC-75), r15'te inceleme bulgularıyla kapandı; kod izni r15 onayıyla | Beste | DL-3 |
-| FU-RCS-03 | TTY, PPM (PPM sahibi Codex), PLN bağlanması + Platform kapsamı | Beste + PPM sahibi | DL-4 |
-| FU-RCS-04 | Kodu kayda bağlama / tüketme, kullanılmayan kod raporu — **r14:** İKİSİ DE türlerinde kod–kayıt bağı DL-3 sahiplik defterindedir (`RecordId`, Bölüm 4.5); OTOMATİK türler ve kullanılmayan kod raporu açık | Beste | DL-4 |
+| FU-RCS-03 | TTY ve PLN bağlanması + Platform kapsamı — **r16'da yazıldı** (Bölüm 2.6, 4.6, 8.18; AC-76…AC-91), **r17'de sahip kararlarıyla hizalandı** (Q-17…Q-26), **r18'de r17 incelemesinin kararlarıyla** (F-1 c, F-2, A-22); PPM: **PPM sahibi ekibin**, kendi servisinde (Q-17 kararı) — Platform tarafı uçları (sözleşme eki + Platform kodu) da PPM ekibinin (A-22, XMC-001); bu paketin DL-11 payı DL-11 revizyonu, inceleme ve kabul ölçümü (Bölüm 8.19) | Beste (DL-4); PPM sahibi ekip (yazım) + Beste (onay) / CT (inceleme, kabul) (DL-11) | DL-4 / DL-11 |
+| FU-RCS-04 | Kodu kayda bağlama / tüketme, kullanılmayan kod raporu — **r14:** İKİSİ DE türlerinde kod–kayıt bağı DL-3 sahiplik defterindedir (`RecordId`, Bölüm 4.5); OTOMATİK türler ve kullanılmayan kod raporu açık. **r17 — karar (Q-23 A, Beste 2026-11-14):** DL-4 dışında — OTOMATİK türlerde kod–kayıt bağı tüketici paketlerinin (Treasury, MDM) işi, kullanılmayan kod raporu yönetici ekranı (DL-10) | Beste | DL-10 |
 | FU-RCS-21 | Süreç içi savunma ve izin hükmünün iki kopyası (DL-2 `InProcessRecordCodeAllocator.HoldsRequiredPermission` + kiracı / aktör savunması; DL-3 `RecordCodeInProcessGuard`) teke indirilir: DL-2 portu DL-3 yardımcısını çağırır, davranış aynı kalır (DL-2 testleri değişmeden yeşil). **r15 (F-4@8cc7dcb7):** o güne kadar iki kopyanın aynı hükmü verdiğini AC-73'ün eşlik testi ölçer (DL-3 MVP-1 hattında yazılır, DL-2 orada var) | Beste | DL-2 ve DL-3 main'de buluşunca |
-| FU-RCS-22 | İKİSİ DE tüketicisinin **mevcut (eski) kodlarının** sahiplik defterine alınması (köken "eski", gerekçesiz, emekli değil) ve sistem kodunun desene uyan eski kodla çakışma savunması (DL-2 Bölüm 8.15 emsali) — tüketici bağlanırken; TTY canlı verisinde desene uyan kod sayımı | Beste + tüketici sahibi | DL-4 / DL-6 |
+| FU-RCS-22 | İKİSİ DE tüketicisinin **mevcut (eski) kodlarının** sahiplik defterine alınması (köken "eski", gerekçesiz, emekli değil) ve sistem kodunun desene uyan eski kodla çakışma savunması (DL-2 Bölüm 8.15 emsali) — tüketici bağlanırken; TTY canlı verisinde desene uyan kod sayımı. **r17 — karar (Q-22 A, Beste 2026-11-14):** DL-4'te eski kodlar deftere alınmaz ve değişmez (RCS-001 §2); DL-4 yalnız çakışma savunmasını (dış yoklama + en çok 3 atlama, Bölüm 8.18 madde 5) ve TTY / PLN canlı verisinde desene uyan kod sayımını (kabul kapısı) taşır; defter alımı DL-6. **r18 — F-1 (c) kararı (Beste 2026-11-14):** tek istisna PLN kod değişikliği anıdır — eski plan kodu (tohum dahil) değiştirildiği işlemde `Legacy` kökenli satırla deftere alınıp emekliye ayrılır (Bölüm 8.18 madde 5a); değişmeyen eski kodlar ve TTY eski kodları deftere alınmaz. **Genel alım DL-6'da kalır** ve DL-4'ün `RecordCodeClaimOrigin.Legacy` değerini kullanır (DL-6 satırı emekli olmadan `Active` kalır, gerekçesiz); DL-6 revizyonu DL-4'ün PLN'de yazdığı `Legacy` satırlarını yeniden almaz (zaten defterde) | Beste + tüketici sahibi | DL-4 (savunma, sayım, PLN değişiklik anı) / DL-6 (genel alım) |
 | FU-RCS-05 | Tüzel Kişilik kısa kodu önerisi + §5.4 kalıcı kilidi (MDM) — karar A-18; **bağımlılık**, bağlı paket MOD-0220 (revizyon mu FU mu: TBD) | MDM sahibi (MOD-0220 `mdm-domain-team`; paket kararı Ali) + Beste | DL-5 (karar 2026-11-06) |
 | FU-RCS-06 | İçe aktarma / yüksek su işareti; WMS geçici sayacından devam | Beste + MOD-0178 sahibi | DL-6 |
 | FU-RCS-07 | RCS-001 §3 `CTR` → `AGR` + izinli kapsam sütunu — **bağımlılık**, bağlı paket yok (kural dosyası; ayrı paket gerekip gerekmediği TBD, CT) | Ali (`.antigravity`) + Treasury PR'ı | DL-7 |
@@ -2899,6 +3893,12 @@ Bulgu dosyası `docs/records/reviews/MOD-0040-FU02/2026-11-13-1395202f.md` (öze
 | FU-RCS-14 | İkinci iş kiracısı farklı grup önekiyle gelirse belge `OrgPrefix`'in kiracı başına olması | Beste + MOD-0029 sahibi | — |
 | FU-RCS-15 | MDM lookup-validation v1.1 (`approvalStatus`) yayınlandığı sürümde okuyucunun "alan yok → 503" kuralına geçirilmesi (kod değişikliği) ve TC-3'ün kaldırılması; AC-36 o revizyonda güncellenir | MOD-0220 sahibi (yayın) + Beste (kod) | v1.1 yayını |
 | FU-RCS-16 | Grup önekinin kilitten sonra bilinçli değiştirilmesi (yeni önek, yeni sayaç, belge kodlarıyla birlikte) — sahip kararı | Beste + MOD-0029 sahibi | — |
+| FU-RCS-23 | Tohumlar motoru atlar — `PositionSeed` (FU-RCS-18) ve plan tohumu `SeedDefaultSubscriptionPlansCommandHandler` (`FREE` …); tohum kodları eski kod sayılır (Q-22); **r18 (F-1 c):** plan tohumunun kodu güncellemede değişince deftere alınır (Bölüm 8.18 madde 5a), tohum dosyası değişmez; tohumun motora bağlanması ya da yeni ortamda tohum sonrası sayım | Beste + MOD-0361 sahibi | — |
+| FU-RCS-24 | RCS-001 §3 `TTY` ve "Abonelik Planı" satırlarındaki "uyumsuz" durum notunun DL-4 kabulünden sonra güncellenmesi (`.antigravity`, korunan yol) | Ali (`.antigravity`) | DL-4 kabulü sonrası |
+| FU-RCS-25 | Görev türünün kendisi (oluşturma / güncelleme) bugün merkezi denetim işareti taşımıyor (`CreateTaskTypeCommand`, `UpdateTaskTypeCommand`); DL-4'te kod denetimi motorun satırıdır, türün diğer alanları değil — MOD-0024 sahibine bildirim | MOD-0024 sahibi (TBD) | — |
+| FU-RCS-26 | DL-3 sabotaj tariflerinin kodla hizalanması — DL-3 kabul kaydı "kodla uyuşmayan birkaç sabotaj tarifi eşdeğeriyle" der ama hangilerinin olduğunu adlandırmaz; CT geliştirici raporundan listeyi kabul kaydına ekler, metin bir sonraki revizyonda hizalanır. **r17:** liste kabul kaydında hâlâ yok (ölçüldü: kayıt yalnız "eşdeğeriyle" der); hizalama liste gelince | CT + Beste | liste gelince |
+| FU-RCS-27 | PLN kullanım kilidi (bir kiracı plana bağlanınca plan kodu kilitlenir mi) — DL-4'te tetiklenmez. **r17 (Q-24 B):** kilit olmadan kiracıya bağlanmış planın kodu da gerekçeyle değişebilir (bugünkü davranış) | Beste + MOD-0361 sahibi | — |
+| FU-RCS-28 | PPM sahibi ekibe bağlanma el kitabı — Bölüm 8.19'dan (sahiplik bölüşümü — **r18, A-22:** sözleşme eki ve Platform tarafı uçları da PPM ekibinin, Diten.Platform'a dokunma XMC-001 ile DL-11 revizyonunun dosya listesine sahip onayı, merkez yalnız inceleme / kabul ölçümü; HTTP yüzeyi ve sözleşme eki ihtiyacı, PPM'in bugünkü kod davranışı, P-1…P-8, TC-1…TC-8, Platform kuralları — Bölüm 8.2, 14, 21) CT üretir ve ekibe verir | CT | DL-11 öncesi |
 
 (FU-RCS-11 kapandı: askıdaki kiracı DL-1'e alındı — inceleme 01 F-12, AC-37.)
 
@@ -3132,6 +4132,32 @@ motor ikinci satır yazmaz.
 - K2 sınıfı değil (kimlik / yetki / kiracı durumu / GxP / KVKK-özel değil); yine de başarı yolu kayıt yoksa işlem yok biçimindedir
   (DL-1 ile aynı işlem içi kapı). BL-501 kullanılmaz.
 
+### 21.6 DL-4 (r16) — TTY ve PLN bağlanması
+
+Servisin denetim altyapısı vardır (`platform-islem-ici`, `a`, `tests/architecture/audit-ledger/Diten.Platform.md:16`; DL-3 belirteçleri
+A-20 ile `07ad98464`'te eklendi). DL-4 **yeni belirteç açmaz** (A-21, CT kararı — Bölüm 8.18 madde 2); kod buna rağmen yeni ad açarsa A-21'in kapısı doğar (A-20 emsali). Bütün yazma yolları
+`a`'dır (işlem içi kapı); istisna sınıfı yok.
+
+| Komut | Olay adı | Nesne (tür) | Yol | Önceki / sonraki ya da değişen alanlar | İstisna sınıfı + gerekçe |
+|---|---|---|---|---|---|
+| `CreateTaskTypeCommand` (MOD-0024; arayüz değişmez) | `platform.record-code.claimed` (Tablo E); sistem kodunda ayrıca DL-1 `platform.record-code.allocated` (Tablo A, kendi işleminde) | `RecordCodeClaim` (`EntityId` = görev türü kimliği) | a — işlem içi kapı, görev türü yazımıyla aynı işlem (oturumlu port) | Tablo E | — (görev türünün kendisi bugün denetlenmiyor — FU-RCS-25) |
+| `ChangeTaskTypeCodeCommand` (yeni, MOD-0024 dosyasında) | `platform.record-code.changed` (Tablo F) | `RecordCodeClaim` (`EntityId` = görev türü kimliği) | a — işlem içi kapı, görev türü kod güncellemesiyle aynı işlem | Tablo F | — |
+| görevli türde kod değişikliği isteği (kilit) | `platform.record-code.locked` (Tablo G) | `RecordCodeClaim` | a — DL-3 `LockAsync`, kendi işlemi; ardından 409 | Tablo G | — |
+| `CreateSubscriptionPlanCommand` (MOD-0361; `ITransactionOwnedAuditCommand`, değişmez) | koordinatörün bugünkü satırı + `platform.record-code.claimed` (**Tablo E-P**) | `SubscriptionPlan` + `RecordCodeClaim` | a — koordinatörün tek işlemi | Tablo E-P | — |
+| `UpdateSubscriptionPlanCommand` — `Code` alanında normalleştirilmiş farklı kod (r17, Q-24 B; komut değişmez, istek kaydına eklemeli `CodeReason`; r18 F-1 c: eski planda da) | koordinatörün bugünkü satırı (önce / sonra kod dahil) + `platform.record-code.changed` (**Tablo F-P**) | aynı | a — koordinatörün tek işlemi; eski planda `Legacy` satırı da aynı işlemde (ayrı olay yok — deftere alım değişikliğin parçası, Tablo F-P'nin `RetiredClaimId`'si `Legacy` satırıdır) | Tablo F-P (önce = eski kod) | — |
+| retler | DL-3 `platform.record-code.claim-refused` / `.change-refused` / `.lock-refused` (Tablo H) | `RecordCodeClaim` | a — ret yazıcısı, ayrı kısa işlem | Tablo H; platform kolunda kayıt kiracısı `AuditTenantIds.PlatformSystemTenantId` | — |
+| önizleme / geçmiş sorguları (TTY, PLN) | — | — | okuma — denetlenmez (AUD-001 §7) | — | — |
+
+**Tablo E-P / F-P** — Tablo E / F'nin alanları, şu farklarla: kayıt kiracısı (`TenantId`) = `AuditTenantIds.PlatformSystemTenantId`;
+`TargetTenantId = null`; aktör `PlatformAdministrator` (`platform_admin` principal'ı; kapı çözer — K-8r); `Metadata.RecordType = PLN`;
+`Metadata.AllocationIdempotencyKey` yok (platform sayacı, anahtar yok); kutu anahtarları DL-3 biçiminde (`record-code:claimed:{claimId:N}`,
+`record-code:changed:{newClaimId:N}`) — sahiplik kimliği küresel benzersiz Guid. `Category = PlatformConfiguration`, `SourceService =
+Diten.Platform`, `SourceModule = MOD-0040-FU02` (DL-3 ile aynı).
+
+- K2 sınıfı değil; başarı yolu "kayıt yoksa işlem yok" biçimindedir (işlem içi kapı). BL-501 kullanılmaz.
+- **r18 (F-2):** boş kodlu plan güncellemesi bugünkü doğrulama hattında 400 alır ve işleyiciye ulaşmaz — yazma yapılmaz, yeni
+  yazma yolu açılmaz; bugünkü gibi denetim satırı yoktur (DL-4 öncesi davranış, sahip kararı "bugünkü davranış korunur").
+
 ## 22. Record Codes
 
 Bu paket kendi kullanıcıya görünen kayıt türünü **açmaz**. Servisin verdiği türler ve kuralları Bölüm 4.4'tedir (RCS-001
@@ -3159,6 +4185,12 @@ Bu paket kendi kullanıcıya görünen kayıt türünü **açmaz**. Servisin ver
   — AC-63; ASCII ve Türkçe harf çevirisi (§5.10) — AC-63; ortak servis (§5.12) — motor; testler: "değiştirme gerekçesiz reddedilir"
   AC-64, "arşivli kodu yeniden kullanılamaz" AC-67 / AC-68, eşzamanlı iki sahiplenme farklı sonuç (E11000 savunması) AC-67, sistem
   kodu DL-1 sayacından (999999 → 7 hane DL-1 AC-7). `TTY` §3'te İKİSİ DE, önek `TTY`, grup öneki (§5.3).
+- **DL-4 (r16) — `TTY` ve `PLN` (RCS-001 §6 kontrol listesi):** sınıf İKİSİ DE (§3); önek `TTY` (grup öneki, §5.3) ve `PLN` (öneksiz,
+  §5.3 `PLN-000001`); ortak servis (§5.12) — tüketiciler kendi sayacını ve tekillik kuralını taşımaz (`TaskTypeRules.NormalizeCode` oluşturma yolundan
+  çıkar; PLN'de bugünkü `SubscriptionPlanCodeNormalizer` Q-24 B gereği motordan **önce** aynen uygulanır — biçim, desen ve tekillik motordadır); gerekçe zorunlu (AC-78, AC-80, AC-88); denetimde eski / yeni kod
+  + gerekçe (Tablo F / F-P); benzersizlik kiracı + tür başına, Platform'da tür başına — emekli dahil (AC-78, AC-86); eski kodlar korunur — TTY'de
+  değişmez (§2; AC-82), PLN'de kod değişikliği anında gerekçeyle deftere alınır ve eski kod bir daha verilmez (r18 F-1 c; §5.8; AC-88); §3'ün
+  "uyumsuz" notu DL-4 kabulünden sonra güncellenir (FU-RCS-24).
 
 ## 23. Teslim dilimleri
 
@@ -3167,17 +4199,18 @@ Bu paket kendi kullanıcıya görünen kayıt türünü **açmaz**. Servisin ver
 | DL-1 | v1 servis — ilk commit grubu aktör ölçümü; allocate iç ucu, atomik sayaç, LegalEntity ve Group kapsamları, OTOMATİK tür önek kaydı, şirket kısa kodu ve uygunluk okuması, kısa kod kullanım kilidi (ara dönem), idempotency, işlem içi denetim (aktör kullanıcı, kaynak servis, ayırma kimliğinden kutu anahtarı), ret kaydı, denetim yazıcısının eklemeli genişletmesi, kiracı izolasyonu ve askıdaki kiracı, kimlik bilgisi azaltıcıları ve hız sınırı, grup öneki hizalaması | Owned Objects, Entity Fields, Repo Scope, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes | AC-1…AC-24 ve AC-26…AC-47; AC-41 ilk commit grubu (başarısızsa geri alınır, dilim durur); Platform kapsamı tür izni geçtiyse 422 (K-11); hedef main 2026-11-06; sözleşme 2026-11-03'te donar; **merge kapısı** A-10 CT defter kararı ve A-12; **kabul kapısı** A-1, A-11, A-16, A-17, sözleşme dondurma (Bölüm 18.1; r9 CT kararı 2026-11-02) — kod yazımını bekletmez |
 | DL-2 | OTOMATİK mevcut modüllerin bağlanması — Organizasyon Birimi (ORG) ve Pozisyon (POS), süreç içi port | Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Layout & Shell Contract, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes, Follow-up Items | **r12:** AC-48…AC-61; A-8 kapandı (K-15, 2026-11-10); süreç içi port `IInProcessRecordCodeAllocator` (Bölüm 8.14), sözleşme 1.0.0 değişmez (HTTP'de ORG / POS 403); MOD-0288 dosyaları XMC-001 (Bölüm 5 "DL-2"). **r13:** Q-1…Q-7 kapandı ve XMC-001 onaylı (K-16, K-17); künye `ready-for-dev`; **başlama kapısı** yalnız r13 inceleme + r13 sha256'sına onay satırı (S-49, Q-6 A) ve FU03 / FU04 sıra ölçümü (CT); **kabul kapısı** eski kod sayımı (AC-55); **canlıya alma kapısı** A-18 + Treasury CT / MDM sahibi bildirimi (Bölüm 18.1, K-17); kod izni onay satırına kadar yok |
 | DL-3 | İKİSİ DE motoru — öneri, gerekçeli değişiklik, AUD-001 eski/yeni kod + gerekçe, RCS-001 §5.9 | Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Backend File Convention, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes, Follow-up Items | **r14:** AC-62…AC-75; süreç içi port `IInProcessRecordCodeAssignments` (Bölüm 8.17), sahiplik defteri `record_code_claims` (Bölüm 4.5), ölçüm türü `TTY` (Q-8 A; MOD-0024 dosyalarına dokunulmaz, XMC-001 satırı yok); sözleşme 1.0.0 değişmez; **r15:** r14 incelemesi KOŞULLU, F-1…F-10 kapandı; Q-8…Q-16 = A; **başlama kapısı** DL-1 main'de (sağlandı), r15 inceleme + r15 sha256'sına onay satırı, Q-9 kayıt metni düzeltmesi; **kabul kapısı** A-20 defter satırı (CT kararı kabul; CT kabul koşusundan önce) ve sözleşme §4 bilgi notu + tüketici bildirimi (Bölüm 18.1); r15 onayıyla kod izni |
-| DL-4 | Platform kapsamı ve İKİSİ DE modüllerinin bağlanması — Abonelik Planı (PLN, öneksiz kod), Görev Türü (TTY), PPM (PFL/PRG/PRJ/INI/INV) | Ownership and Boundaries, Runtime Constraints, Acceptance Criteria, Record Codes, Follow-up Items | AC-25 (K-11'den taşındı) ve bu dilimin revizyonunda eklenecekler; kiracısız satır tabanı ve platform-global denetim yolu burada kararlaştırılır; kod izni yok |
+| DL-4 | Platform kapsamı ve İKİSİ DE tüketicilerinin bağlanması — Görev Türü (TTY, MOD-0024) ve Abonelik Planı (PLN, öneksiz kod, MOD-0361); PPM DL-11'de, PPM sahibi ekibin (Q-17 kararı) | Ownership and Boundaries, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints, Layout & Shell Contract, Backend File Convention, Frontend File Contract, Validation Rules, Failure Path to Verify, Authorization Convention, Gateway / API Routing Decision, Acceptance Criteria, Test Expectations, Audited Events, Record Codes, Follow-up Items | **r16:** AC-25 (K-11'den taşındı; AC-86 / AC-87 ile ölçülür) ve AC-76…AC-91; kiracısız taban ayrı `GlobalEntity` koleksiyonları (Q-18 A, Bölüm 4.6), platform-global denetim mevcut platform denetim kiracısıyla (Q-19 A), oturumlu port (Q-20 A, Bölüm 8.18); sözleşme 1.0.0 değişmez. **r17:** Q-17…Q-26 karar (Q-24 B: PLN güncellemesi kodu değiştirebilir, normalleştirici aynen, değişiklik motorla; Q-25 B: grup öneki yoksa form kodu zorunlu tutar); XMC-001 sahip onaylı (Bölüm 5 "DL-4"); **başlama kapısı** DL-3 tabanda (sağlandı), r17 inceleme + r17 sha256'sına onay satırı; **kabul kapısı** canlı veride desene uyan eski kod sayımı, sürüm notu ve yönetici bildirimi, A-21 (yalnız yeni belirteç açılırsa); canlıya alma kapısı yok (Q-25 B). **r18:** r17 incelemesi KOŞULLU; F-1 (c) PLN eski kodu değişiklik anında deftere alınır (`Legacy`, emekli), F-2 boş kodlu güncelleme 400, A-22 PPM ekibi; AC-82, AC-88, AC-90 hizalandı, S-136…S-138; **başlama kapısı** r18 inceleme + r18 sha256'sına onay satırı + `UpdateSubscriptionPlanCommandValidator.cs` XMC-001 ek onayı; kod izni r18 onayına kadar yok |
 | DL-5 | Tüzel Kişilik kısa kodu önerisi ve RCS-001 §5.4 kalıcı kullanım kilidi (MDM tarafı) — **bağımlılık**: MDM kodu bağlı paket MOD-0220'nin (revizyon mu FU mu: TBD), bu paketin payı yalnız Platform azaltıcısının (Bölüm 8.13) kilit gelince gözden geçirilmesi | Dependencies, Follow-up Items | **başlama kapısı** A-18 (MDM sahibi Ali + Beste, 2026-11-06; Bölüm 18.1); kabul ölçütleri bu dilimin paket revizyonunda; o güne kadar ara dönem azaltıcısı DL-1'de; kod izni yok |
 | DL-6 | İçe aktarma ve sayaç yüksek su işareti (RCS-001 §5.11), WMS geçici sayacından devam | Runtime Constraints, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; FU-0178-RCS-01 önkoşulu; kod izni yok |
 | DL-7 | RCS-001 §3 tür başına izinli kapsam sütunu ve CTR → AGR satırı — **bağımlılık**: kural dosyası değişikliği, bağlı paket yok (TBD, CT); bu paketin payı yalnız katalog testindeki adlı istisnanın kaldırılması | Record Codes, Açık kararlar | sahip Ali (.antigravity) + Treasury PR'ı (A-3); DL-1'i bekletmez |
 | DL-8 | WMS türleri (PUT, PCK, OUT, PKG) kataloğa ve Inventory kimlik bilgisi | Entity Fields, Authorization Convention, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; FU-0178-RCS-02 önkoşul; kaynak servis kümesine Diten.InventoryService; kod izni yok |
 | DL-9 | Arka plan çağıranları için servis kimliği token'ı (P3) — **bağımlılık**: Auth kodu bağlı paket MOD-0033-FU02'nin (revizyon mu yeni FU mu: TBD); bu paketin payı Platform yürütücüsünün P3 token'ını kabul etmesi | Runtime Constraints, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; Auth sahip rolleri MOD-0033-FU02 künyesindeki + Ali; kod izni yok |
 | DL-10 | Platform yönetici ekranları (tür kataloğu, sayaç, defter, grup öneki) | Layout & Shell Contract, Frontend File Contract, Follow-up Items | kabul ölçütleri bu dilimin paket revizyonunda; 2 dil, `_LayoutPlatformAdmin`, SEC-002 kapsam cümlesi; kod izni yok |
+| DL-11 | PPM bağlanması — **PPM sahibi ekibin dilimi** (Q-17 kararı, r17): Portföy / Program / Proje / Girişim / Yatırım Dosyası (`PFL`, `PRG`, `PRJ`, `INI`, `INV`; MOD-0117, Diten.PpmService, süreç dışı); Platform tarafı uçları (sözleşme eki + Platform kodu) da PPM ekibinin (A-22, r18); bu paketin payı DL-11 revizyonu, inceleme ve kabul ölçümü | Ownership and Boundaries, Dependencies, Runtime Constraints, Follow-up Items | **r17:** PPM kodunu PPM sahibi ekip kendi servisinde, MOD-0117 revizyonunda ya da FU'sunda (kimlik TBD, PPM sahibi) yazar; ekibe verilecek bilgi Bölüm 8.19 (CT el kitabı, FU-RCS-28); **r18 (A-22 kararı):** PPM ekibi sözleşme ekini ve Diten.Platform tarafını da yazar — XMC-001, DL-11 revizyonunda dosya listesiyle sahip onayı; merkez yalnız inceleme / kabul ölçümü; **başlama kapısı** MOD-0117 tarafının onayı, bu paketin DL-11 revizyonu ve onayı, Platform dosya listesine XMC-001 sahip onayı (Bölüm 18.1); izinli kapsam, uzunluk, tutarlılık, dış yoklama ve HTTP yüzeyi P-1…P-8 olarak o revizyonda; kabul ölçütleri o revizyonda; kod izni yok |
 
 Dilim sırası: DL-1 tek başına teslim edilebilir ve ilk commit grubu aktör ölçümüdür (AC-41). DL-5, DL-7 ve DL-9'un ana
 işi başka sahiplerin kodudur ve bu paketin bağımlılığıdır (Bölüm 7, r4 F-8). DL-2, DL-3 ve DL-4 DL-1'i, DL-4 ayrıca DL-3'ü
-bekler (r14: DL-3 DL-2'yi beklemez — Bölüm 2.5). DL-6, MOD-0178'in FU-0178-RCS-01 geçişinden önce main'de olmalıdır. DL-7 DL-1'i bekletmez. DL-8, DL-6 ve
+bekler (r14: DL-3 DL-2'yi beklemez — Bölüm 2.5). **r16:** DL-4 DL-3'ü bekler (sağlandı — `07ad98464` tabanda); DL-11 (PPM, PPM sahibi ekip) DL-4'ü, MOD-0117 tarafının onayını ve Platform dosya listesinin XMC-001 onayını bekler (Q-17, A-22 kararları, Bölüm 8.19). DL-6, MOD-0178'in FU-0178-RCS-01 geçişinden önce main'de olmalıdır. DL-7 DL-1'i bekletmez. DL-8, DL-6 ve
 FU-0178-RCS-02'yi bekler. Tüketici kapıları: Treasury paketlerinin DL-1 kabulü bu paketin DL-1 kodunun main'de olmasını
 bekler (D59/1); MOD-0289 ve MOD-0217 için ayrıca MDM bağdaştırıcısı, TC-4 ve TC-5 (A-11).
 
@@ -3206,6 +4239,8 @@ bekler (D59/1); MOD-0289 ve MOD-0217 için ayrıca MDM bağdaştırıcısı, TC-
 | A-18 | RCS-001 §5.4 kısa kod kalıcı kullanım kilidi (MDM tarafı, DL-5) — MDM'de kısa kod bugün değiştirilebiliyor (`UpdateLegalEntityHandler.cs:36-37`) | MDM'de kilit · MDM'de değişiklikte uyarı · yalnız Platform azaltıcısı | **KAPANDI — MDM'de kalıcı kilit** (Beste 2026-11-13; sahip kararları 04 eki, `docs/records/decisions/2026-11/mod0040-fu02-owner-decisions-04.md:14-22`, commit `f827bf948`; r15, F-5@8cc7dcb7): bir şirkette ilk kayıt kodu üretildikten sonra MDM kısa kodu değiştirilemez; uygulama yeri MDM (`UpdateLegalEntityHandler.cs:36-37`, Ali'nin MDM iş paketi — XMC-001, CT dokunmaz); o güne kadar ara dönem Platform azaltıcısı (Bölüm 8.13, 409 `LEGAL_ENTITY_SHORT_CODE_CHANGED`) ve Ali'ye operasyon talimatı birlikte korur; Ali itiraz ederse yeniden açılır. **r13 (K-17, inceleme 04 F-4): DL-2'nin canlıya alma kapısıdır** — karar düzeyinde kapandı; açık kalan bildirim ve MDM işinin teslimi; merge için CT kararı açık (Bölüm 18.1). Sözleşme N-12 satırı bir sonraki sözleşme sürümünde "karar verildi" olur | MDM sahibi (Ali) + Beste | karar 2026-11-13; MDM işi: Ali (tarih sahipten) |
 | A-19 | MDM lookup-validation v1.1 (`approvalStatus`) yayını ve bu serviste "alan yok → 503" geçişi | — | açık bağımlılık; o güne kadar TC-3 zorunlu (FU-RCS-15) | MOD-0220 sahibi + Beste | TBD |
 | A-20 | (r14, DL-3) `platform-islem-ici` iz satırına `RecordCodeAuditIntent.EnqueueClaimedAsync/EnqueueChangedAsync/EnqueueLockedAsync/EnqueueAssignmentRefusalAsync` belirteci; CT-DECISIONS satırı; `AuditTrailStandardTests` yeşil | — | **KAPANDI — kabul** (CT kararı 2026-11-13, `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:25`; A-10 emsali — üç komut işleyicide, iş işlemiyle aynı işlemde yazar). Açık kalan yalnız defter satırının yazılması (r15, F-8@8cc7dcb7) | CT | defter satırı CT kabul koşusundan önce |
+| A-21 | (r16, DL-4) DL-4 kodu yeni bir `RecordCodeAuditIntent` belirteci açarsa `platform-islem-ici` iz satırına eklenmesi, CT-DECISIONS satırı, `AuditTrailStandardTests` yeşil | — | **KAPANDI — CT kararı** (r17; `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:139`): yeni belirteç açılmaz — DL-3'ün dört yöntemi platform kolunu eklemeli aşırı yüklemeyle taşır, adlar aynı (Bölüm 8.18 madde 2, 21.6); kod buna rağmen yeni belirteç açarsa A-20 emsali kapı doğar (Bölüm 18.1) | CT | DL-4 CT kabul koşusundan önce (kapı doğarsa) |
+| A-22 | (r17, DL-11) PPM için motorun HTTP yüzeyinin **Platform tarafı uygulaması** (Diten.Platform `/api/internal/*`) kimde — Q-17 kararı bu paketin payını "sözleşme / tüketici bağlama" diye yazar, uygulamayı adlandırmaz | merkez (sözleşmenin sunucu tarafı) · PPM ekibi (XMC-001 ile Diten.Platform'a dokunur) · ayrı paket | **KAPANDI — PPM ekibi** (Beste 2026-11-14; `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:150-151`, `3f57d2f60`; r18; CT önerisi "merkez"den farklı): PPM'in kullanacağı Platform tarafı kayıt kodu uçlarını (sözleşme eki + Platform kodu) PPM ekibi yazar; Platform koduna dokunma XMC-001 kapsamındadır ve DL-11 revizyonunda dosya listesiyle sahip onayı alınır; merkez yalnız inceleme / kabul ölçümü (Bölüm 8.19, 18.1). Açık kalan: DL-11 revizyonunda dosya listesi ve onayı | Beste + CT | karar 2026-11-14; dosya listesi onayı DL-11 paket revizyonunda |
 
 ### 24.1 DL-2 soruları (r12) — **r13: hepsi karar** (K-16)
 
@@ -3228,15 +4263,12 @@ satırıyla açılır (Bölüm 18.1).
 
 Sahip cevabı (Beste 2026-11-13, "hepsinde öneri gibi") ve CT kararı A-20 kabul: `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:22-25`
 (r15, F-10@8cc7dcb7). Seçilen cevaplar r14'ün önerisiyle aynıdır; bu yüzden AC'ler öz olarak değişmedi, r15 "önerisi" dilini
-"karar"a çevirdi. **Kayıt metninde bir çelişki var (açık iş, Bölüm 18.1):** kayıt Q-9'u «oluşturmada elle kod gerekçe istemez, yalnız
-sonraki değişiklik» diye özetliyor — bu Q-9'un **B** seçeneğidir — ama aynı cümle «hepsi paketteki A önerisi» diyor ve sahibin sözü
-«hepsinde öneri gibi»dir. r15 A ile yazıldı (elle kod oluşturmada da gerekçeli); CT kaydı düzeltir ya da sahip B'yi teyit ederse AC-64 /
-AC-67 yeni revizyonda değişir. Onay satırı Q-8…Q-16 = A'yı adıyla anar.
+"karar"a çevirdi. **r16 — kayıt düzeltmesi kapandı:** kayıttaki Q-9 özeti B'yi anlatıyordu; sahip A'yı teyit etti («A — oluşturmada da gerekçe», Beste 2026-11-13; `8ffc78333`). AC-64 / AC-67 değişmez. Onay satırı Q-8…Q-16 = A'yı adıyla anar.
 
 | # | Soru | Seçenekler | **Karar** ve gerekçe (r14'teki öneri; değişmedi) | Etkilediği | Sahip | Durum |
 |---|---|---|---|---|---|---|
 | Q-8 | DL-3 motoru hangi üretim türüyle ölçülür (bugün katalogda kullanılabilir İKİSİ DE türü yok: `PLN` Platform kapsamı ve çağıransız) | **A** `TTY` DL-3'te kataloğa girer (İKİSİ DE, Group, çağıran `Diten.Platform`, izin `platform.tasks.task-types.manage`); MOD-0024 dosyalarına dokunulmaz, bağlanma DL-4 · **B** DL-3 ile DL-4'ün TTY kısmı tek dilimde (motor ilk tüketicisiyle) · **C** motor test kataloğuyla ölçülür, üretim kataloğu değişmez | **A (karar, 2026-11-13)** — her AC üretim kataloğuyla ölçülür, MOD-0024 XMC onayı gerekmez; bedeli DL-1'in iki katalog testinin `TTY` satırı ve iç uçta `TTY`'nin 422 yerine 403 alması (sözleşme §13: yeni tür sözleşme değişikliği değildir). B dilimi büyütür ve XMC-001 onayı ister; C "kendi kopyasıyla ölçülen kural"dır (AGENTS Çekirdek 10) | AC-62; Bölüm 2.5, 4.4 | Beste | **kapandı** 2026-11-13 |
-| Q-9 | Kayıt **oluşturulurken** öneriden farklı (elle) kod yazmak gerekçe ister mi | **A** evet — elle kod her zaman gerekçeli · **B** hayır — gerekçe yalnız sonraki değişiklikte | **A (karar, 2026-11-13)** — RCS-001 §2: "Sistem önerir … Evet [değiştirebilir], ama gerekçe ZORUNLU"; önerilen kodu başka bir kodla değiştirmek oluşturma anında da bir değişikliktir; B, gerekçesiz elle kod için bir kapı açar (oluştur → hemen elle kodla oluştur) | AC-64, AC-67; Tablo E | Beste | **kapandı** 2026-11-13 (kayıt metni düzeltmesi açık) |
+| Q-9 | Kayıt **oluşturulurken** öneriden farklı (elle) kod yazmak gerekçe ister mi | **A** evet — elle kod her zaman gerekçeli · **B** hayır — gerekçe yalnız sonraki değişiklikte | **A (karar, 2026-11-13)** — RCS-001 §2: "Sistem önerir … Evet [değiştirebilir], ama gerekçe ZORUNLU"; önerilen kodu başka bir kodla değiştirmek oluşturma anında da bir değişikliktir; B, gerekçesiz elle kod için bir kapı açar (oluştur → hemen elle kodla oluştur) | AC-64, AC-67; Tablo E | Beste | **kapandı** 2026-11-13 (kayıt metni düzeltmesi kapandı — `8ffc78333`) |
 | Q-10 | Gerekçenin sınırı | **A** kırpılmış 10–500 karakter · **B** yalnız boş olmasın · **C** başka değer | **A (karar, 2026-11-13)** — "x" gibi bir gerekçe RCS-001'in amacını (izlenebilir değişiklik) boşa çıkarır; 500 denetim satırını şişirmeden bir cümleyi taşır. Değer sahibin | AC-64 | Beste | **kapandı** 2026-11-13 |
 | Q-11 | Elle kodun normalleştirilmesi (RCS-001 §5.10 "elle girişte Türkçe harf ASCII karşılığına çevrilir") | **A** kırp + Türkçe harf → ASCII + büyük harf; başka her işaret reddedilir · **B** hiç normalleştirme yok, birebir uymayan reddedilir (DL-1 / DL-2 dili) · **C** A + boşluğu `-`'ye çevir | **A (karar, 2026-11-13)** — §5.10 çeviriyi açıkça ister; boşluk / işaret çevrilmez çünkü sessiz dönüşüm kullanıcının yazdığını değiştirir (DL-2 `RECORD_CODE_SYSTEM_ASSIGNED` gerekçesi); cevap kaydedilen kodu döner | AC-63 | Beste | **kapandı** 2026-11-13 |
 | Q-12 | Elle kodun uzunluğu | **A** 2–40 · **B** başka aralık | **A (karar, 2026-11-13)** — 40 MOD-0024'ün bugünkü sınırıdır (`TaskTypeRules.CodeMaxLength`); 2 RCS-001 §5.4 kısa kod alt sınırıyla aynı. PPM sınırı DL-4'te ölçülür; daha uzun gerekirse katalog tür başına sınır alır | AC-63 | Beste | **kapandı** 2026-11-13 |
@@ -3244,3 +4276,28 @@ AC-67 yeni revizyonda değişir. Onay satırı Q-8…Q-16 = A'yı adıyla anar.
 | Q-14 | Bir kayıt **kendi** emekli koduna geri dönebilir mi | **A** hayır — emekli kod herkes için dolu · **B** evet — yalnız aynı kaydın kendi emekli kodu yeniden etkinleşir (gerekçeyle) | **A (karar, 2026-11-13)** — RCS-001 §5.8 "asla yeniden kullanılmaz" en basit okumasıyla; B geçmişte aynı kodun iki dönemini doğurur ve emekli satırı yeniden etkinleştirme yolu ister (defter yalnız ekleme / emeklilik / kilit). Yanlış değişiklik yeni bir kodla düzeltilir | AC-68 | Beste | **kapandı** 2026-11-13 |
 | Q-15 | DL-3'ün yüzeyi | **A** yalnız süreç içi port; HTTP, Gateway, ekran yok · **B** DL-3'te genel bir öneri ucu (`GET /api/platform/record-codes/preview`) + yeni izin anahtarı | **A (karar, 2026-11-13)** — DL-3'te tüketici yok; genel bir değişiklik ucu tüketici kaydını atlayıp kodu değiştirebilirdi (kod–kayıt tutarsızlığı); öneri ucu tüketici ekranının kendi controller'ında daha doğru yerde (kayıt kapsamı, `[HasPermission]`). B yeni anahtar → PKS-001 kataloğu, rol köprüsü ve 7 dil dosyası ister. Süreç dışı tüketiciler (PPM, MDM) için HTTP yüzeyi onları bağlayan dilimde, sözleşme ekiyle | Bölüm 2.5, 9, 14, 15; AC-73 | Beste | **kapandı** 2026-11-13 |
 | Q-16 | Tüketici kaydı ile motor arasındaki tutarlılık (motor başarılı, tüketicinin kendi yazımı düştü) | **A** DL-4'te tüketiciyle birlikte karar (oturumlu port ya da onarım) · **B** DL-3'te oturum alan port aşırı yüklemeleri | **A (karar, 2026-11-13)** — DL-3'te tüketici olmadığı için B ölçülemez (kullanılmayan kod); DL-2 aynı soruyu tüketici yanında çözdü (iki yazım, sabit sıra) | Bölüm 8.17 | Beste | **kapandı** 2026-11-13 |
+
+### 24.3 DL-4 soruları (r16) — **r17: hepsi karar** (Beste 2026-11-14; Q-24 ve Q-25 öneriden farklı); **r18: r17 incelemesinin kararları işlendi**
+
+Sahip cevabı (Beste 2026-11-14, tek tek seçim) ve CT kararı A-21: `docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:121-139`
+(commit `0a2518a53`; aşağıda "kayıt satır n" bu dosyanın satırıdır). Q-18…Q-23 ve Q-26'da seçilen cevap r16'nın önerisiyle aynıdır —
+ilgili AC'ler öz olarak değişmedi, r17 "öneri" dilini "karar"a çevirdi. Q-17'de seçim A'nın dilim sınırını alır ve PPM'in sahibini
+belirler (Bölüm 8.19). Q-24 ve Q-25'te seçim **B**'dir (r16 önerisi A) — bölümler ve AC'ler r17'de değişti. Hiçbir karar DL-1…DL-3'ün
+kodunu ya da kabulünü etkilemez. "r17 yorumu" notları kararın paket diline çevrilmesidir (karar metninde açıkça yazılı olmayan uygulama
+seçimleri); CT-APR-01 onay satırı onları adıyla anar. **r18:** r17'nin bağımsız incelemesinden sonra sahip seçti
+(`docs/records/decisions/2026-11/mvp5-wms-ct-owner-decisions-2026-11-13.md:141-153`, `3f57d2f60`; "kayıt satır 141-153"): F-1 (c) Q-22 ile
+Q-24'ün PLN'deki birlikte okunuşunu değiştirdi, F-2 Q-24 yorum (5)'i kaldırdı, A-22 Q-17'nin açık bıraktığı uygulayıcıyı belirledi; Q-24 (1),
+Q-24 (3) ve Q-25 yorumu **CT kabul (karar kaydı)**. Satırlardaki "r18" notları bunlardır.
+
+| # | Soru | Seçenekler | **Karar** ve gerekçe | Etkilediği | Sahip | Durum |
+|---|---|---|---|---|---|---|
+| Q-17 | DL-4'ün dilim sınırı: PPM (MOD-0117) DL-4'te mi | **A** DL-4 = TTY + PLN; PPM ayrı dilim **DL-11** ("DL-4b"), kapı MOD-0117 onayı + sahibin seçimi · **B** PPM DL-4 içinde (r15 dilim satırı) · **C** DL-4 = yalnız TTY; PLN + Platform kapsamı ayrı dilim | **A'nın dilim sınırı + PPM sahibi ekip (karar, 2026-11-14; kayıt satır 125-126)** — DL-4 = TTY + PLN ve merkez yapar; **PPM'i merkez yapmaz**: PPM sahibi geliştirici ekibe bağlanma metni verilir, ekip kendi servisinde yapar; DL-11'de bu paketin payı yalnız sözleşme / tüketici bağlama kapısıdır (r17 diliyle: sözleşme eki, tüketici kaydı, kabul ölçümü). r16 gerekçesi geçerli: PPM başka domain'in servisidir, süreç dışıdır ve motorun HTTP yüzeyi + sözleşme eki ister (Q-15 A). **r17 işlenişi:** ekibe verilecek bilgi Bölüm 8.19 (CT el kitabı, FU-RCS-28); Platform tarafı HTTP yüzeyinin uygulayıcısı karar metninde yazılı değil → A-22. **r18 — A-22 kapandı (kayıt satır 150-151):** PPM ekibi sözleşme ekini ve Platform tarafını da yazar (XMC-001, DL-11 revizyonunda dosya listesiyle sahip onayı); merkez yalnız inceleme / kabul ölçümü | Bölüm 2.6, 7, 8.19, 18.1, 20, 23 (DL-4, DL-11); A-22 | Beste | **kapandı** 2026-11-14 |
+| Q-18 | Kiracısız (Platform) satır tabanı | **A** ayrı `GlobalEntity` koleksiyonları (`record_code_platform_counters`, `record_code_platform_claims`) · **B** mevcut üç koleksiyon `HybridEntity`'ye geçer (`TenantId` null) · **C** mevcut koleksiyonlarda gözcü kiracı kimliği (ör. `AuditTenantIds.PlatformSystemTenantId`) | **A (karar, 2026-11-14; kayıt satır 127)** — kiracı yüklemi ve DL-1…DL-3'ün kiracı testleri hiç değişmez; AC-25'in "kiracı okumaları kiracısız satırı görmez" şartı filtreyle değil yapıyla sağlanır. B, `HybridRepository`'nin "null veya kiracı" filtresiyle AC-25 sabotajının tarif ettiği sızıntıyı tabana koyar ve üç varlığın tabanını değiştirir (DL-1 AC-24 / AC-30 değişir). C, kiracı yükleminin (c) kuralına adlı istisna ister | Bölüm 4.6; AC-86 | CT (mimari) + Beste | **kapandı** 2026-11-14 |
+| Q-19 | Platform-global denetim yolu (kutu `Guid.Empty` kiracıyı reddeder) | **A** mevcut platform-global denetim kiracısı `AuditTenantIds.PlatformSystemTenantId` + `TargetTenantId = null`, işlem içi kapıdan; yazıcı değişmez · **B** yazıcıya boş kiracıyı kabul eden yeni platform kapısı (paylaşılan bileşen değişikliği, MOD-0021, XMC) · **C** merkezi `AuditBehavior` + `IsPlatformGlobal`, işlem dışı | **A (karar, 2026-11-14; kayıt satır 128)** — ölçüldü: bu desen bugün var ve abonelik planı komutları onunla işlem içi denetleniyor (koordinatör `TenantId = AuditTenantIds.PlatformSystemTenantId`, `TargetTenantId = null`); kutu ve yazıcı yalnız `Guid.Empty`'yi reddeder, `null` hedef geçer. Yazıcı, kaynak servis kümesi, `TransactionOwnedAuditCommands` değişmez; yeni belirteç yok (A-21 doğmaz). B paylaşılan bileşeni gereksiz değiştirir; C "kayıt yoksa kod yok" kuralını (Bölüm 21) bozar | Bölüm 8.18 madde 2, 21.6; AC-87 | CT (denetim altyapısı) + Beste | **kapandı** 2026-11-14 |
+| Q-20 | Tüketici kaydı ile motor tutarlılığı (Q-16'nın DL-4'teki seçimi) | **A** oturumlu port — `ClaimWithinAsync` / `ChangeWithinAsync` tüketicinin işlemine katılır; kayıt + sahiplik + denetim tek işlem · **B** onarım — motor önce kendi işleminde, tüketici sonra; düşen tüketici yazımı `GetHistoryAsync` / aktif satırla onarılır | **A (karar, 2026-11-14; kayıt satır 129)** — B'de tüketici yazımı düşerse **elle kod** hiç var olmayan bir kayda sahiplenilmiş kalır ve §5.8 / Q-14 A gereği bir daha verilemez (aynı kodla tekrar 409 `RECORD_CODE_TAKEN`); oluşturmada her deneme yeni kayıt kimliği aldığından onarım bağlayacak kayıt bulamaz. A'da yalnız sistem kodu boşluk bırakabilir (§5.8 kabul eder). Bedel: DL-3 işleyicilerinin işlem gövdesi ortak çekirdeğe ayrılır (bu paketin dosyaları) ve MOD-0024'e oturumlu dar yazma arayüzü (XMC); MOD-0361'de oturumlu depo zaten var | Bölüm 8.18 madde 1, 3, 6; AC-77, AC-79, AC-80, AC-87, AC-88 | Beste + CT | **kapandı** 2026-11-14 |
+| Q-21 | TTY kullanım kilidinin tetikleyicisi | **A** görev açılınca kilit (`CreateTaskItemHandler`) + kod değişikliğinde görev sayımı · **B** yalnız görev açılınca · **C** yalnız kod değişikliği anında — görev varsa kilitle ve 409 | **C (karar, 2026-11-14; kayıt satır 130)** — görev oluşturma işleyicisi değişmez; görevler türü kimlikle anar ve kodu taşımaz, veri bütünlüğü kimlikle korunur; kabul edilen sınır: ilk görev değişiklikle aynı anda açılırsa o görev yeni kodu gösterebilir. A sınırı kapatır ama `CreateTaskItemHandler`'a kurucu bağımlılığı ekler ve onu kuran **10** test dosyası değişir (ölçüldü, Bölüm 19.8); B kilit yazımı düşerse kodu korumasız bırakır | Bölüm 8.18 madde 4; AC-81 | Beste | **kapandı** 2026-11-14 |
+| Q-22 | Eski kodlar (FU-RCS-22): bugünkü görev türü ve plan kodları | **A** deftere alınmaz, değişmez (RCS-001 §2); dış yoklama + en çok 3 atlama ile çakışma savunması; canlı veride desene uyan kod sayımı kabul kapısı; defter alımı DL-6 · **B** DL-4'te tembel alım — ilk değişiklikte eski kod köken "eski" satırıyla deftere girer, sonra gerekçeyle değişir · **C** DL-4'te toplu alım (göç) | **A (karar, 2026-11-14; kayıt satır 131)** — RCS-001 §2 "Mevcut kodlar değiştirilmez" bağlayıcıdır; DL-2 Q-1 / Q-2 A aynı seçimi yaptı. B ve C §2'ye aykırıdır (eski kodu değiştirilebilir yapar), yeni köken değeri ve eski kodların biçim istisnasını ister (bugünkü TTY kodlarında boşluk / alt çizgi olabilir). **r18 — PLN için daraltma (F-1 c, kayıt satır 145-148):** A, TTY'de ve değişmeyen eski kodlarda aynen kalır; abonelik planında ise eski kod güncellemede **değiştirilirse** B'nin tembel alımı yalnız o an uygulanır — eski kod `Legacy` kökenli satırla deftere yazılıp aynı işlemde emekliye ayrılır, yeni kod `Manual` + gerekçe (Bölüm 8.18 madde 5a). Bedeli r16'da adı geçen iki şeydir ve r18'de karşılandı: yeni köken değeri (`RecordCodeClaimOrigin.Legacy`, eklemeli) ve eski kodun biçim istisnası (`Legacy` satırının kodu doğrulanmaz). Q-22 gerekçesindeki "B §2'ye aykırı" okuması için inceleme, RCS-001 §2'nin "yalnız bundan sonra açılan kayıtlara uygulanır" cümlesinin (`record-coding-standard.md:42-43`) eski planın serbest değişikliğini de destekleyebileceğini not etti; sahip (c)'yi seçti. **r18 yorumu:** `Legacy` satırının `ClaimedAtUtc`'si planın `CreatedAt`'idir (Bölüm 4.6) | Bölüm 2.6, 4.6, 8.18 madde 5, 5a; AC-82, AC-88; FU-RCS-22 | Beste | **kapandı** 2026-11-14; r18 F-1 (c) ile PLN'de daraltıldı |
+| Q-23 | FU-RCS-04 (kodu kayda bağlama / tüketme, kullanılmayan kod raporu) DL-4'te mi | **A** DL-4 dışında — İKİSİ DE bağı zaten sahiplik defterinde (`RecordId`); OTOMATİK türlerin bağı tüketici paketlerinin işi; rapor yönetici ekranı (DL-10) · **B** DL-4'te | **A (karar, 2026-11-14; kayıt satır 132)** — DL-4 iki tüketiciyle zaten büyük; B yeni uç ve ekran ister ve DL-4'ün hiçbir AC'si ona bağlı değildir | Bölüm 20 FU-RCS-04 | Beste | **kapandı** 2026-11-14 |
+| Q-24 | PLN kod kuralları: güncelleme, değişiklik yolu ve normalleştirme | **A** güncelleme kodu değiştirmez (farklı kod 409 `RECORD_CODE_IMMUTABLE`); değişiklik yalnız `UpdateSubscriptionPlanCommand`'ın eklemeli `CodeChange` üyesiyle, gerekçeli; elle kod DL-3 kuralıyla (boşluk / alt çizgi reddedilir) · **B** bugünkü normalleştirici korunur (boşluk / alt çizgi → `-`); motor tür başına normalleştirme alır · **C** A, ama değişiklik için yeni komut ve uç | **B (karar, 2026-11-14; kayıt satır 133-134; r16 önerisi A'dan farklı)** — PLN'de bugünkü davranış korunur: güncelleme kodu değiştirebilir, bugünkü normalleştirici aynen; `CodeChange` ayrı alanı ve boşluk / alt çizgi reddi yok. **r17 işlenişi (Bölüm 8.18 madde 6):** kod değişikliği yine motordan geçer — sayaç, sahiplik defteri ve denetimle tutarlı (RCS-001 §2, §5.8, §5.9, §5.10, §6); normalleştirici motordan önce aynen, motor değişmez; yeni komut yok (korunan `TransactionOwnedAuditCommands.Authorized` ve `ExactCommands` değişmez). **r17 yorumları (onay satırında anılır) — r18 durumu:** (1) gerekçe zorunluluğu (RCS-001 §2) eklemeli düz `CodeReason` ile — karar ayrı `CodeChange` üyesini kaldırır, gerekçeyi kaldırmaz → **CT kabul (karar kaydı satır 152-153)**; (2) ~~eski plan kodları (tohum dahil) güncellemede de değişmez — Q-22 A ile birlikte okunuş (409 `RECORD_CODE_IMMUTABLE`)~~ → **yerini F-1 (c) kararına bıraktı** (kayıt satır 145-148): eski plan kodu değişirse değişiklik anında deftere alınır, PLN'de 409 `RECORD_CODE_IMMUTABLE` yok; (3) üst sınır 50 → 40 (Q-12 A) ve normalleştiricinin dokunmadığı işaretlerin reddi (RCS-001 §5.10) daralmadır, sürüm notunda → **CT kabul (karar kaydı satır 152-153)**; (4) seçenek metnindeki "motor tür başına normalleştirme" yerine tüketicinin normalleştiricisi motordan önce çağrılır (sonuç aynı, motor değişmez) → inceleme kabul edilebilir buldu, karar kaydında adı yok; onay satırında anılır; (5) ~~boş kodlu güncelleme kodu korur~~ → **F-2 kararıyla kaldırıldı** (kayıt satır 149): boş kod bugünkü gibi 400 "Code is required." | Bölüm 2.6, 5, 8.18 madde 5, 5a, 6, 8, 11, 12, 13, 14, 21.6, 22; AC-88, AC-90 | Beste | **kapandı** 2026-11-14; r18 yorumları F-1 (c), F-2 ile güncellendi |
+| Q-25 | TTY grup öneki önkoşulu | **A** canlıya alma kapısı — her canlı kiracıda grup öneki önce hizalanır; hizalanmamış kiracıda kodsuz oluşturma 409 `GROUP_PREFIX_MISSING`, elle kod çalışır · **B** hizalanmamış kiracıda form kodu zorunlu tutar (sistem kodu sunulmaz) — tüketicide ikinci dal | **B (karar, 2026-11-14; kayıt satır 135-136; r16 önerisi A'dan farklı)** — grup öneki tanımlı değilse TTY formu kodu zorunlu tutar (kullanıcı elle girer, RCS-001 elle kod kuralları ve gerekçesiyle); canlıya alma kapısı değil. **r17 işlenişi:** sunucu kuralı değişmez (kodsuz istek 409 `GROUP_PREFIX_MISSING` — form denetimini atlayan istemciye karşı sınır); form önizlemenin 409'unda kod ve gerekçeyi zorunlu tutar (Bölüm 8.18 madde 3, 11); Bölüm 18.1'deki DL-4 canlıya alma kapısı kalktı, yönetici bildirimi kabul kapısına taşındı. **r17 yorumu:** `GROUP_PREFIX_MISMATCH` (ayar var ama etkin `OrgPrefix`'ten farklı) aynı form davranışını alır — iki durumda da sistem kodu verilemez → **CT kabul (karar kaydı satır 152-153, r18)**; onay satırında anılır | Bölüm 2.6, 5, 7, 8.18 madde 3, 8, 11, 12, 13, 18.1, 23; AC-83, AC-84 | Beste + CT | **kapandı** 2026-11-14 |
+| Q-26 | XMC-001 — MOD-0024 ve MOD-0361 (CAND-CAP-0002-FU02) dosyalarına dokunma (Bölüm 5 "DL-4" XMC satırları) | onay · ret · kısmi | **onay (karar, 2026-11-14; kayıt satır 137-138)** — MOD-0024 ve MOD-0361 / CAND-CAP-0002 dosyalarına yalnız r16 Bölüm 5 "DL-4" listesiyle sınırlı dokunma; liste dışı dokunuş yine sorulur. r16 gerekçesi: yalnız listedeki dosyalar, başka dosya yok; ikisi de bu domain'in modülü (`platform-shared-services`); künyelerde kişi adı yok (MOD-0024 `owner: platform-team` / `ali.tufanoglu`, CAND-CAP-0002-FU02 `owner: module-pack-author`) — DL-2 Q-7 emsali merkez sahibi onaylar. MOD-0117 (PPM) bu listede yok — DL-11. **r17:** Q-24 B ve Q-25 B aynı dosyalarda kalır, XMC listesi değişmedi; bu paketin yeni test dosyası `TaskTypeRecordCodeFormTests.cs` başka modülün mevcut dosyası değildir | Bölüm 5, 6; DL-4 başlama kapısı | Beste | **onay kapandı** 2026-11-14 |
