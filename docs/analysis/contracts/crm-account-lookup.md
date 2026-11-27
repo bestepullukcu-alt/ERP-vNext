@@ -1,21 +1,28 @@
-# CRM-ACCOUNT-LOOKUP 1.0.0 — MOD-0149 müşteri doğrulama, seçici araması ve dış referans çözümleme sözleşmesi (FROZEN)
+# CRM-ACCOUNT-LOOKUP 1.1.0 — MOD-0149 müşteri doğrulama, seçici araması, sevkiyat adresi ve dış referans çözümleme sözleşmesi (FROZEN)
 
     contract       : CRM-ACCOUNT-LOOKUP
-    version        : 1.0.0
-    x-status       : FROZEN 1.0.0 (2026-11-05, commercial-suite sahibi Beste) — U-1 (§2) ve U-3 (§2a) donmuştur; değişiklik
-                     yalnız yeni sürümle ve yalnız ekleme (§10). U-2 bölümü (§3) DL-2 ile (MOD-0120 O-10) 1.x içinde ayrıca
-                     dondurulur; o güne kadar bağlayıcı taslaktır
+    version        : 1.1.0
+    x-status       : FROZEN 1.1.0 (2026-11-27, commercial-suite sahibi Beste) — U-1 (§2) ve U-3 (§2a) 1.0.0'da
+                     (2026-11-05), U-4 (§2b) 1.1.0'da donmuştur; değişiklik yalnız yeni sürümle ve yalnız ekleme (§10).
+                     U-2 bölümü (§3) DL-2 ile (MOD-0120 O-10) 1.x içinde ayrıca dondurulur; o güne kadar bağlayıcı taslaktır.
+                     U-4'ün kodu DL-3'tedir (x-implemented); bu dosyanın PR'ı DL-3 main'e girdikten sonra birleşir
     x-gates        : pack eki onayı PR #372 (merge 1e5aad3ff; pack sha256 2840220b…); DL-1 CT K13 kabulü 2026-11-05
-                     (WP-0149-AR-DL1 + FIX-1, CT bağımsız sabotajları kırmızı); DL-1 main'de PR #377 (merge 38f7ea08d)
+                     (WP-0149-AR-DL1 + FIX-1, CT bağımsız sabotajları kırmızı); DL-1 main'de PR #377 (merge 38f7ea08d).
+                     1.1.0: pack §32 onayı PR #421 (merge 5b95e90ab; pack sha256 8749bc2a…, CT-APR-01 2026-11-13, onaylayan
+                     GMG-ERP); DL-3 + DL-3b CT K13 kabulü 2026-11-27 (WP-0149-SHIPTO-DL3; 19 sabotaj + CT'nin iki bağımsız
+                     sabotajı kırmızı)
     x-owner        : MOD-0149 Customer 360 / Account Hierarchy (commercial-suite, Diten.CrmService, port 5061)
-    x-consumers    : MOD-0120 Accounts Receivable (`ICustomerReferencePort`). Adaylar (istek, bağlayıcı değil): MOD-0177
-                     Recall Readiness; MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics — §5a
+    x-consumers    : MOD-0120 Accounts Receivable (`ICustomerReferencePort`; U-1, U-3). Adaylar (istek, bağlayıcı değil):
+                     MOD-0178-FU01 — çıkış sevkiyatı formu v2 (U-3, U-4; WMS teyidi 2026-11-13); MOD-0177 Recall Readiness;
+                     MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics — §5a
     x-decisions    : Y-4/4b (uçlar + sözleşme eki kabul), Y-4/4c (`account-status` kümesi, faturalanabilir yalnız `active`)
                      — docs/records/audits/2026-10/treasury-intake-handover-review-01/SOURCE-ANSWERS-2026-10-27.md:35;
                      MOD-0120 O-3 (KARAR D29/1, seçenek (a)), O-4; K-1, K-2, K-3 (commercial-suite sahibi Beste, 2026-10-30);
                      K-8 (U-3, Beste 2026-11-04); K-11 (tenant_id'siz token reddi, Beste 2026-11-05) — K-1…K-6, K-8, K-11
                      kaydı docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md (taslak);
-                     K-7 = D112/2 (docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md)
+                     K-7 = D112/2 (docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md);
+                     1.1.0: K-12…K-19 ve Q-DEPOT-SOR (commercial-suite sahibi Beste, 2026-11-13; K-14 tüketici WMS) —
+                     docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md
     x-pattern      : LEGAL-ENTITY-LOOKUP 1.1.0 ve BANK-ACCOUNT-LOOKUP 1.0.0
                      (docs/analysis/contracts/drafts/legal-entity-lookup-validation-v1.1-proposal.md,
                      docs/analysis/contracts/drafts/bank-account-lookup-validation-v1.0-proposal.md)
@@ -26,13 +33,19 @@
                      satır numaraları bu sürümdendir
     x-implemented  : U-1, U-3 — origin/main 38f7ea08d: `AccountController.cs` (`lookup`, `{accountId:guid}/lookup-validation`),
                      `Api/Filters/RequireTokenTenantAttribute.cs` (K-11), `Application/Features/Account/AccountLookupContract.cs`;
-                     U-2 yok (DL-2)
+                     U-2 yok (DL-2). U-4 — `feature/crm/wp-0149-shipto-dl3` c8cc4f34e (7dade1db6 DL-3: `AccountController.cs`
+                     `{accountId:guid}/ship-to`, `GetAccountShipToQuery` / `GetAccountShipToHandler`, `AccountLookupContract.ToShipTo`;
+                     c8cc4f34e DL-3b: `CrmManifestProvider.cs` `crm.account-ship-to.read`); main'e girişi DL-3 PR'ı ile
     x-draft        : docs/analysis/contracts/drafts/crm-account-lookup-validation-v1.0-proposal.md @ sha256
                      ec5a10625d0662f4a84bc73dfd799eb7e80ab4b2c8643319d6b786fc1d14b8b0 (değişmedi; onaylı paket ve MOD-0120
                      kabulü ona bağlı). Bu dosya o metindir; yalnız başlık, künye, bu giriş paragrafı, §7'de iki cümle,
-                     §10'da yer cümlesi, §11 başlığı ve §12'ye eklenen satır farklıdır
+                     §10'da yer cümlesi, §11 başlığı ve §12'ye eklenen satır farklıdır. 1.1.0 eki:
+                     docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md @ sha256
+                     fb75840983bac16b01bcd366e563dd918ae68df1e3261618c98a402f477e363b — §2 → §2b, §4 → §5b, §6 → §9 (S- satırları),
+                     §5 → §10; taslağın §5 "donmada işleniş" listesiyle işlendi
 
-U-1 ve U-3 yazıldı ve main'de (38f7ea08d); U-2 yazılmadı (DL-2). Bu dosya pack ekinin dondurulmuş sözleşme hâlidir.
+U-1 ve U-3 yazıldı ve main'de (38f7ea08d); U-4 yazıldı (DL-3, c8cc4f34e); U-2 yazılmadı (DL-2). Bu dosya pack eklerinin
+(§30, §32) dondurulmuş sözleşme hâlidir.
 
 Ölçülen kaynaklar (satır numaraları numaralı okumadan, @4dbcd67a8; aşağıdaki dosyalar bf3b0cd57'den beri yalnız
 `Persistence/DependencyInjection.cs`'te değişti):
@@ -78,6 +91,7 @@ U-1 ve U-3 yazıldı ve main'de (38f7ea08d); U-2 yazılmadı (DL-2). Bu dosya pa
 | U-1 | `GET /api/crm/accounts/{accountId:guid}/lookup-validation` | hesap var mı, çağıranın kiracısında mı, durumu ne, faturalanabilir mi |
 | U-3 | `GET /api/crm/accounts/lookup?search={q}&page={p}&pageSize={n}&billableOnly={b}` | müşteri seçici araması: ad ya da koda göre sayfalı liste, öğe başına U-1'in doğrulama alanları |
 | U-2 | `GET /api/crm/accounts/external-references/resolve?sourceSystem={s}&externalId={e}` | dış referanstan hesabı bul + U-1'in doğrulama alanları (DL-2, ertelendi) |
+| U-4 | `GET /api/crm/accounts/{accountId:guid}/ship-to` | sevkiyat alıcısı kopyası: hesabın kimliği, kodu, adı, durumu ve teslimat adresleri listesi (1.1.0, §2b) |
 
 - Kiracı istemciden seçilmez: Gateway kiracıyı kullanıcının token'ından çözüp `X-Tenant-Id` başlığına yazar; CrmService kiracıyı bu başlıktan kurar ve token'daki `tenant_id` ile karşılaştırır (`services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs:21-59`;
   Gateway `Middleware/TenantResolutionMiddleware.cs:203-239`). Başlık ile token farklıysa **400**; kiracısız çağrı (başlık
@@ -89,9 +103,10 @@ U-1 ve U-3 yazıldı ve main'de (38f7ea08d); U-2 yazılmadı (DL-2). Bu dosya pa
   yolların bu sözleşmenin uçlarına kiracı seçtirmesini kapatır. Red yalnız bu uçlara bağlı bir filtrededir; CRM'in ortak
   kiracı ara katmanı bu ekle değişmez (pack §30.2, AC-AR-15); öteki CRM uçlarının `tenant_id`'siz token karşısındaki
   davranışı bu sözleşmenin konusu değildir (BL-324).
-- İzin: tek dar okuma anahtarı (§6); `crm.account.read` **gerekmez ve yetmez**.
+- İzin: iki dar okuma anahtarı (§6) — U-1 / U-2 / U-3 `crm.account.lookup-validation`, U-4 `crm.account-ship-to.read`;
+  biri ötekinin uçlarına yetmez; `crm.account.read` hiçbirine **gerekmez ve yetmez**.
 - Yalnız okuma: hiçbir uç kayıt yazmaz, denetim olayı üretmez (AUD-001 okuma; MOD-0149 §23 okuma olayı tanımlamaz).
-- Gateway: üç uç da mevcut `/api/crm/accounts/{everything}` rotasıyla taşınır (§8); `ocelot.json` bu sözleşmeyle değişmez.
+- Gateway: dört uç da mevcut `/api/crm/accounts/{everything}` rotasıyla taşınır (§8); `ocelot.json` bu sözleşmeyle değişmez.
 
 ## 2. U-1 — `lookup-validation`
 
@@ -158,6 +173,75 @@ ardışık sayfalar çakışmaz, kayıt atlanmaz). Eşleşme yoksa **200, boş l
             "page": 1, "pageSize": 20, "total": 1, "contractVersion": "crm-account-lookup/1.0" },
   "errors": null, "statusCode": 200, "isSuccessful": true }
 ```
+
+## 2b. U-4 — `ship-to` (sevkiyat adresi; 1.1.0, kararlar K-12…K-19)
+
+### 2b.1 Ortak kurallar (1.0'dan, değişmeden)
+
+- Kiracı token'dan; `X-Tenant-Id` ↔ token `tenant_id` uyuşmazlığı ve kiracısız çağrı **400** (§1).
+- `tenant_id` taşımayan token **400**, veri yok (K-11). U-4 aynı `RequireTokenTenant` filtresini taşır; CRM'in ortak kiracı
+  ara katmanı değişmez (pack §32.2: AC-AR-15 eylem kümesi {U-1, U-3, U-4}).
+- **404:** hesap yok / silinmiş / başka kiracıda — üçü aynı durum ve aynı gövde (§2.1 ile aynı gövde).
+- **Durum 404'e katılmaz:** `inactive`, `suspended`, `archived` vb. hesap 200 döner; `status` alanında görünür. Sevkiyata
+  izin verip vermemek tüketicinin kuralıdır (K-14).
+- 503: CRM deposunu okuyamazsa 503; varsayılan değer uydurmaz (§7). Tüketici her 5xx'i 503 sayar.
+- Yalnız okuma; kayıt yazmaz, denetim olayı üretmez.
+
+### 2b.2 200 gövdesi (`data`)
+
+| Alan (JSON) | Tip | Değer |
+|---|---|---|
+| `accountId` | string (UUID) | istenen kimlik |
+| `code` | string, boş değil | `Account.AccountCode` |
+| `name` | string, boş değil | `Account.AccountName` |
+| `status` | string, boş değil | `Account.Status` (MOD-0048 `account-status` değer kodu, §4) |
+| `defaultAddressId` | string \| null | listede varsayılan teslimat adresinin `addressId`'si; liste boşsa null |
+| `addresses` | dizi, her zaman var (boş olabilir) | teslimat adresleri; öğe alanları aşağıda |
+| `addresses[].addressId` | string, boş değil | adresin kalıcı kimliği. Hesabın ana adresi için sabit `"primary"`; ek teslimat adresleri (K-18) için UUID |
+| `addresses[].kind` | string | `primary` (hesabın ana adresi) \| `delivery` (ek teslimat adresi, K-18) |
+| `addresses[].label` | string \| null | kullanıcının verdiği ad; `primary` için null |
+| `addresses[].isDefault` | bool | tam bir öğe `true` (liste boş değilse) |
+| `addresses[].countryRef` | string \| null | kırpılmış; boşsa null. Küme: Reference Data `country` |
+| `addresses[].cityRef` | string \| null | kırpılmış; boşsa null. Küme: `city` |
+| `addresses[].districtRef` | string \| null | kırpılmış; boşsa null. Küme: `district` |
+| `addresses[].postalCode` | string \| null | kırpılmış; boşsa null. `primary`: `Account.PostalCode` (K-16; alan gelene kadar null). `delivery`: adresin posta kodu |
+| `addresses[].addressLine` | string \| null | kırpılmış; boşsa null; kesilmez |
+| `contractVersion` | string | `crm-account-lookup/1.1` |
+
+- **Sıra:** varsayılan öğe önce; sonra `label`'a göre (null olan önce, yani `primary`), sonra `addressId`'ye göre (sıradan,
+  büyük/küçük harfe duyarlı karşılaştırma).
+- **`primary` öğesi:** `Account.CountryRef`, `CityRef`, `DistrictRef`, `AddressLine` (K-16 sonrası `PostalCode`)'dan
+  kurulur. Bu alanların hepsi boşsa `primary` öğesi **listeye girmez**.
+- **İlk dilim (DL-3):** hesapta yalnız ana adres olduğundan liste en çok bir öğe taşır. Ek teslimat adresleri K-18 ile (pack
+  DL-4) geldiğinde liste büyür; gövde biçimi ve sürüm değişmez. **Silinmiş / pasif ek adres** listede yer almaz.
+- **Kod değerleri:** dönen değer saklanan koddur; yazmada küme doğrulaması DL-4 ile gelir (K-17). İçe aktarılmış eski
+  kayıtlarda kod kümedeki biçimde olmayabilir (K-20, açık); tüketici kümede olmayan kodu olduğu gibi gösterir (§5b).
+
+Gövde **taşımaz:** sorumlu kişi (ad / telefon / e-posta), notlar, üst hesap, dış referanslar, öznitelikler, logo,
+konum (enlem/boylam), `isBillable`. Görünen ad (ülke / şehir / ilçe adı) dönmez (K-15).
+
+Liste boş olabilir (adres girilmemiş hesap): 200 döner, tüketici kendi kuralını uygular.
+
+Örnek (200, K-18 sonrası; ilk dilimde yalnız `primary` öğesi olur):
+
+```json
+{ "data": { "accountId": "3c9a1f2e-7b4d-4e61-9a2c-5d8e0f1a2b3c", "code": "ACC-2026-000042",
+            "name": "Example Ecza Deposu", "status": "active", "defaultAddressId": "primary",
+            "addresses": [
+              { "addressId": "primary", "kind": "primary", "label": null, "isDefault": true,
+                "countryRef": "tr", "cityRef": "istanbul", "districtRef": null, "postalCode": null,
+                "addressLine": "Örnek Mah. Örnek Cad. No: 1" },
+              { "addressId": "9b1e4c7a-2d3f-4a5b-8c6d-7e8f9a0b1c2d", "kind": "delivery", "label": "Ankara şube",
+                "isDefault": false, "countryRef": "tr", "cityRef": "ankara", "districtRef": null,
+                "postalCode": "06000", "addressLine": "Örnek Sok. No: 5" } ],
+            "contractVersion": "crm-account-lookup/1.1" },
+  "errors": null, "statusCode": 200, "isSuccessful": true }
+```
+
+### 2b.3 Durum kodları
+
+200 · 400 (kiracı uyuşmazlığı / kiracısız / `tenant_id`'siz token) · 401 · 403 (anahtar yok) · 404 · 503. Rota kısıtı
+`:guid` uymazsa yönlendirme 404'tür.
 
 ## 3. U-2 — `external-references/resolve`
 
@@ -256,15 +340,35 @@ paketi bu sözleşmeye atıfla hizalanınca tüketici olur (sahip SCE) ve tablo 
 |---|---|---|---|
 | MOD-0120 Accounts Receivable (Treasury) | U-1, U-3; U-2 MOD-0120 O-10 ile (DL-2) | müşteri seçimi (U-3), kayıt öncesi uygunluk (U-1, §5) | ilk tüketici; Y-4/4b |
 | MOD-0177 Recall Readiness (MVP-1, Diten.InventoryService) | U-1 | geri çağırma ekranlarında müşteri adı ve kodu (`customerRef` = `Account.Id`, SHIPMENT-BUNDLE 3.5.0) | **aday (istek)** — MVP-1 isteği 2026-11-03 (`customerRef` SHIPMENT-BUNDLE 3.5.0). MOD-0177 paketi henüz hizalı değil: MVP-6 dalındaki sürüm (`origin/docs/sce/mvp6-dilim-b-packs-01`, :611-612) `CustomerRef`'i `shipToReference` / `DOC:` olarak tanımlıyor. Hizalanınca: 404'te kimlik tutulur, ad "bulunamadı" gösterilir |
-| MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics (MVP-6) | U-1, U-3 | alıcı seçimi ve doğrulaması, iadede müşteri adı | **aday (istek)** — paketleri bugün sözleşmesiz iç uçları (`GET /api/crm/accounts`, `/{id}`, `crm.account.read`; MOD-0183:841-846, MOD-0186:1086) kullanıyor; U-1 / U-3'e geçiş paket revizyonuyla; adres okuması U-3'te yok — seçici + adres sözleşmesi K-9 |
+| MOD-0183 Shipment Tracking / MOD-0186 Reverse Logistics (MVP-6) | U-1, U-3, U-4 | alıcı seçimi ve doğrulaması, alıcı adresi, iadede müşteri adı | **aday (istek)** — paketleri bugün sözleşmesiz iç uçları (`GET /api/crm/accounts`, `/{id}`, `crm.account.read`; MOD-0183:841-846, MOD-0186:1086) kullanıyor; U-1 / U-3 / U-4'e geçiş paket revizyonuyla (adres yüzeyi U-4 — K-9 kapandı) |
+| MOD-0178-FU01 — çıkış sevkiyatı formu v2 (WMS) | U-3, U-4 | alıcıyı CRM hesabından seçmek, kimlik + adres kopyası | **aday (istek)** — WMS isteği ve teyidi 2026-11-13 ("alanlar tasarımımızla birebir"); pasif hesap kuralı tüketicide (K-14); rolleri iki anahtarı WMS ekler |
 
 - **Çağrı yolu:** tüketici CRM'i **sunucu tarafında, Gateway (5000) üzerinden, oturumdaki kullanıcının token'ıyla** çağırır
   (emsal: MOD-0177'nin SHIPMENT okuması). Servis kimliğiyle (servis-servis token) çağrı bu sözleşmede tanımlı değildir;
   kiracı kullanıcının token'ındaki `tenant_id`'den gelir (Gateway başlığa yazar, CRM karşılaştırır; `tenant_id`'siz
   token reddedilir, K-11; §1). Tarayıcı CRM'i doğrudan çağırmaz.
 - **İzin ataması:** `crm.account.lookup-validation` her tüketicinin ilgili rollerine verilir (AR: MOD-0018-FU27; geri
-  çağırma, sevkiyat ve iade rolleri: kendi sahipleri). Anahtar atanmamış kullanıcı 403 alır (§5: 503).
+  çağırma, sevkiyat ve iade rolleri: kendi sahipleri). Sevkiyat rolleri ayrıca `crm.account-ship-to.read` alır (U-4, §6);
+  AR rolleri almaz. Anahtar atanmamış kullanıcı 403 alır (§5: 503).
 - Yeni bir tüketici bu tabloya eklenerek sözleşmeye girer (1.x içinde ekleme).
+
+## 5b. U-4 tüketici kuralları (öneri; tüketicinin paketinde bağlayıcı olur)
+
+| CRM cevabı | Tüketici |
+|---|---|
+| 200, `accountId` istenen, `contractVersion` `crm-account-lookup/1.` ile başlar, `name` dolu | kullanıcı listeden adres seçer (varsayılan önceden seçili); kopyayı al: `customerRef` = `accountId`, `addressId`, ad, kod, adres alanları (kod) + kendi çözdüğü görünen adlar |
+| 200, `addresses` boş | tüketicinin "adres eksik" kuralı (elle giriş ya da hata) |
+| 200, birden çok `isDefault = true` ya da `defaultAddressId` listede yok | geçersiz gövde → "alınamadı" |
+| 404 | "müşteri bulunamadı" (tüketicinin kodu) |
+| 400, 401, 403, 5xx, zaman aşımı, geçersiz gövde | "müşteri bilgisi alınamadı" — tüketicinin 503 karşılığı; kopya yazılmaz |
+
+- Kopya **o anın** değeridir: hesap sonradan değişirse sevkiyat değişmez. Tüketici adresi önbellekte tutup yeni
+  sevkiyata taşımaz; her seçimde U-4'ü yeniden çağırır.
+- Aktif olmayan hesap (K-14, tüketici kararı): yeni sevkiyatta yalnız `active` seçilir; seçimden sonra pasifleşen hesapta
+  mevcut sevkiyat sürer, tüketici kayıt ve "sevke hazır" adımında U-4'ü yeniden okur ve uyarır.
+- Görünen adlar (K-15): tüketici kodu Reference Data'dan (`country`, `city`, `district`) kullanıcının dilinde çözer; kod
+  kümede yoksa kodun kendisini gösterir. Kopyaya hem kod hem ad yazılması önerilir.
+- Çağrı yolu: §5a ile aynı — tüketicinin sunucusu, Gateway (5000) üzerinden, ekrandaki kullanıcının token'ıyla.
 
 ## 6. İzin — KARAR K-1 (commercial-suite sahibi, Beste, 2026-10-30)
 
@@ -279,17 +383,22 @@ paketi bu sözleşmeye atıfla hizalanınca tüketici olur (sahip SCE) ve tablo 
   eklendi (#360, 445eb32b1). Anahtar atanmamış kullanıcıyla çağrı 403 → tüketici 503 (§5).
 - Veri kapsamı: MVP kiracı kapsamı (MOD-0149 §16). Bölge / temsilci kapsamı (MOD-0018-FU15) ileride `crm.account.read`'e
   uygulanırsa bu anahtara uygulanıp uygulanmayacağı ayrı karardır; uygulanmazsa AR kiracı genelinde doğrular.
+- **U-4 anahtarı — KARAR K-13 (Beste, 2026-11-13): `crm.account-ship-to.read`** (PKS-001: 3 segment, kaynak
+  `account-ship-to`, Tier-1 eylem `read`). `crm.account.read` ve `crm.account.lookup-validation` U-4'e **yetmez**; bu
+  anahtar U-1 / U-3'e **yetmez**. Katalog: CRM manifest'inde `ApiPermissions` satırı, scope `Tenant` (DL-3b). Rol eşlemesi
+  MOD-0149 §16: CRM Admin alır (K-19), öteki CRM rolleri almaz; sevkiyat rolleri tüketicinin ataması. Veri kapsamı kiracı
+  geneli.
 
 ## 7. Hata modeli, 503, korelasyon
 
 - **Zarf:** CRM'in mevcut `Response<T>` zarfı (`data`, `errors`, `statusCode`, `isSuccessful`); emsallerdeki gibi
   `data` yalnız 200'de dolu. CRM zarfında makine-okur hata kodu alanı yoktur; tüketici **yalnız HTTP durum koduna**
   göre karar verir, `errors[]` metni sözleşmenin parçası değildir (yerelleştirilmez, değişebilir).
-- **Durum kodları:** 200 · 400 (U-3 ve U-2 girdisi; her uçta kiracı uyuşmazlığı ya da kiracısız çağrı, §1; U-1'de rota kısıtı `:guid` uymazsa yönlendirme 404'tür) · 401 · 403 ·
-  404 (U-1, U-2; U-3'te yok) · 409 (yalnız U-2) · 503.
+- **Durum kodları:** 200 · 400 (U-3 ve U-2 girdisi; her uçta kiracı uyuşmazlığı ya da kiracısız çağrı, §1; U-1 ve U-4'te rota kısıtı `:guid` uymazsa yönlendirme 404'tür) · 401 · 403 ·
+  404 (U-1, U-2, U-4; U-3'te yok) · 409 (yalnız U-2) · 503.
 - **503 (kaynak okunamıyor):** CRM kendi deposunu okuyamazsa (Mongo istisnası, zaman aşımı) **503** döner; 500 ya da
   varsayılan değer dönmez, "uygun" ya da "bulunamadı" uydurmaz. Gövdede `data` yok. U-1 ve U-3'te bu eşleme uygulandı
-  (DL-1); U-2'de DL-2 işidir. Tüketici her 5xx'i 503 sayar (§5).
+  (DL-1), U-4'te DL-3; U-2'de DL-2 işidir. Tüketici her 5xx'i 503 sayar (§5).
 - **Korelasyon:** tüketici `X-Correlation-Id` başlığını gönderir (emsal tüketici davranışı, CrmService'in kendi
   istemcileri de iletir). CRM başlığı yanıt gövdesine taşımaz; başlığın yokluğu hata değildir. Gelen başlığı günlük
   kapsamına koyan ara katman CrmService Api'de ölçülmedi/bulunmadı → sözleşme 1.0 korelasyonu **garanti etmez**;
@@ -303,7 +412,7 @@ paketi bu sözleşmeye atıfla hizalanınca tüketici olur (sahip SCE) ve tablo 
 
 Ölçüm (@4dbcd67a8, bf3b0cd57'den beri değişmedi): `ocelot.json:2970-2989` `/api/crm/accounts/{everything}` → `http://localhost:5061/api/crm/accounts/{everything}`,
 `UpstreamHttpMethod` GET dahil; `/api/crm/accounts` altında daha özel bir Upstream şablonu yok. `{everything}`
-`{id}/lookup-validation`'ı, `lookup`'ı ve `external-references/resolve`'u kapsar; sorgu dizesi Ocelot'ta varsayılan olarak
+`{id}/lookup-validation`'ı, `lookup`'ı, `{id}/ship-to`'yu (1.1.0) ve `external-references/resolve`'u kapsar; sorgu dizesi Ocelot'ta varsayılan olarak
 iletilir. Emsal: `AccountContactController.cs:13` ve `AccountRelationshipController.cs:13` aynı joker rotayla, yeni rota
 açmadan yayımlandı. Sonuç: **yeni Gateway rotası gerekmez**; `ocelot.json`'a dokunulmaz. Teyit integration-agent'ındır
 (yalnız not). Servis tarafında `lookup` ve `external-references/resolve` sabit yolları `{id:guid}` kısıtlı rotalarla çakışmaz.
@@ -331,6 +440,23 @@ dayandığı üretici dilimidir.
 | F-503 | CRM 503 | 503 | DL-1 |
 | F-403 | anahtar atanmamış kullanıcı (403) | 503 | DL-1 |
 
+**U-4 (1.1.0) fikstürleri** — üreticinin uyumu DL-3 testleriyle ölçülür (pack §32.7); tüketici kendi sınıflandırıcısına
+karşı koşar (§5b).
+
+| Fikstür | Durum | Beklenen | Dilim |
+|---|---|---|---|
+| S-OK | aktif hesap, dört alan dolu; ek teslimat adresi ve `Account.PostalCode` verisi yok | 200, tek öğe `primary`, `isDefault`, `defaultAddressId = "primary"`, alanlar kırpılmış, `postalCode` null, `contractVersion` 1.1 | DL-3 |
+| S-EMPTY | adres alanları boş / yalnız boşluk | 200, `addresses = []`, `defaultAddressId = null` | DL-3 |
+| S-PART | yalnız `CityRef` dolu | 200, tek öğe `primary`, öteki alanlar null | DL-3 |
+| S-MULTI | ana adres + iki ek adres, biri varsayılan, biri silinmiş | 200, iki öğe (silinen yok), tam bir `isDefault`, §2b.2 sıra kuralı | DL-4 |
+| S-ST-x | `status ∈ {active, inactive, draft, suspended, archived}` ve küme dışı bir kod (ör. `closed`) | 200, `status` saklandığı gibi, adres yine döner | DL-3 |
+| S-404 | yok / silinmiş / başka kiracı | 404, üç gövde bayt bayt aynı | DL-3 |
+| S-K11 | `tenant_id`'siz token | 400, `data` yok | DL-3 |
+| S-403a | yalnız `crm.account.read` | 403 | DL-3 |
+| S-403b | yalnız `crm.account.lookup-validation` | 403 | DL-3 |
+| S-PII | kişi ad / telefon / e-posta, not, dış referans, öznitelik dolu hesap | gövdede bu alanlardan hiçbiri yok (anahtar listesi tam eşleşme) | DL-3 |
+| S-503 | depo istisnası | 503, `data` yok | DL-3 |
+
 ## 10. Sürüm kuralı
 
 1.x yalnız ekleme (yeni alan, yeni isteğe bağlı parametre). Şunlar **büyük sürümdür**: 404 kararını genişletmek ya da
@@ -339,7 +465,16 @@ yeniden adlandırmak. `account-status` kümesine faturalanamaz bir kod eklemek 1
 bakar). MOD-0003 Data Contract Registry yoktur (D27/1): dondurulmuş metin bu dosyadır
 (`docs/analysis/contracts/crm-account-lookup.md`) ve MOD-0003 gelince oraya kaydedilir. JSON özellik sırası sözleşmenin parçası değildir.
 
-## 11. Kararlar (dondurma anındaki durum — açık K-9 ve K-10 dondurmayı engellemez; K-3 ve K-7'nin kalanı DL-2)
+- **Yeni uç ve yeni izin anahtarı da 1.x eklemesidir** (1.1.0 ile açıklandı) — mevcut uçların yolu, gövdesi, durum kodları
+  ve izni değişmediği sürece.
+- **`contractVersion` uç başınadır:** her uç, gövdesinin tanımlandığı küçük sürümü döner (U-1 / U-3 `crm-account-lookup/1.0`,
+  U-4 `crm-account-lookup/1.1`); tüketici yalnız `crm-account-lookup/1.` önekine bakar (§5); bir uç kendi gövdesi değişmedikçe
+  sürüm değerini değiştirmez.
+- U-4 için büyük sürüm: `addresses` ya da öğe alanlarını kaldırmak / yeniden adlandırmak, `"primary"` kimliğinin anlamını
+  değiştirmek, 404 kararına durumu katmak. Ek teslimat adresleri (K-18) ve posta kodu (K-16) aynı biçimle gelir: yalnız
+  listeye öğe eklenir.
+
+## 11. Kararlar (1.1.0 dondurma anındaki durum — açık K-10, K-17 ve K-20 dondurmayı engellemez; K-3 ve K-7'nin kalanı DL-2)
 
 | # | Karar | Sahip | CT önerisi |
 |---|---|---|---|
@@ -348,12 +483,22 @@ bakar). MOD-0003 Data Contract Registry yoktur (D27/1): dondurulmuş metin bu do
 | K-3 | U-2 409 karşısında tüketici davranışı | kural: commercial-suite (Beste); kod adı: MOD-0120 sahibi | **ÜRETİCİ KURALI 2026-10-30:** tahmin yok, işlem durur, kalıcı hata → öneri 422 ayrı kod (503 değil) |
 | K-4 | Gateway: mevcut joker rota yeterli mi (§8) | integration-agent | **KAPANDI (sahip) 2026-10-30:** yeterli; integration-agent teyidi yalnız not |
 | K-8 | MOD-0120 seçicisinin veri kaynağı | commercial-suite (Beste) | **KAPANDI 2026-11-04:** U-3 `lookup` aynı anahtarla, DL-1'de; MOD-0120:1146-1147 ve :1349-1350 hizalanır (Finans) |
-| K-9 | MVP-6 seçici + adres için sözleşmeli yüzey | commercial-suite (Beste) | **AÇIK:** U-3 adres taşımaz; adres okuması bugün sözleşmesiz `GET /api/crm/accounts/{id}` (`crm.account.read`). Öneri: DL-1 sonrası 1.x eki |
+| K-9 | MVP-6 seçici + adres için sözleşmeli yüzey | commercial-suite (Beste) | **KAPANDI 2026-11-27 (1.1.0):** adres yüzeyi U-4 (§2b); MVP-6'nın sözleşmesiz `GET /api/crm/accounts/{id}`'den U-4'e geçişi kendi paket işi |
 | K-10 | Gelen `X-Correlation-Id`'nin CRM günlük kapsamına bağlanması (§7) | commercial-suite (K2) | **AÇIK:** 1.0 garanti etmez; DL-1 uygulayıcısı paylaşılan ara katmanı ölçer, varsa bağlar; yoksa K2 sonraki ek ya da platform işi olarak karar verir. Dondurmayı engellemez |
 | K-11 | `tenant_id` taşımayan token'la çağrı | commercial-suite (Beste) | **KAPANDI 2026-11-05:** reddedilir — başlık olsa bile 400, veri yok (§1; pack AC-AR-15) |
 | K-7 | U-2'nin MOD-0120'deki kullanım yeri | MOD-0120 sahibi | **KAPANDI** (MOD-0120 sahibi, 2026-10-30): bu sürümde U-2'yi çağıran akış yok — `CustomerId` müşteri seçiciden `Account.Id` olarak gelir ve U-1 ile doğrulanır; U-2'yi kullanacak içe aktarma ve eski kayıt taşıma MOD-0120 O-10 ile bu sürümün dışında, banka eşleştirme pakette yok. **DL-2 O-10'a kadar ertelendi;** DL-1 ve sözleşme belgesi bu sürümün önkoşulu. `sourceSystem` listesi O-10'da belirlenir; büyük/küçük harf kuralı sözleşmede (§3.1) bağlayıcı. K-3'teki tüketici hata kodu O-10 kapsamında MOD-0120'ye girer. |
+| K-12 | U-4 tasarımı: 1.1 içinde ayrı uç; U-1 / U-3'e adres eklenmez | commercial-suite (Beste) | **KAPANDI 2026-11-13** |
+| K-13 | U-4 izin anahtarı | commercial-suite (Beste) | **KAPANDI 2026-11-13:** `crm.account-ship-to.read` (§6) |
+| K-14 | Aktif olmayan hesaba sevkiyat | tüketici (WMS) | **TÜKETİCİ KARARI 2026-11-13:** yalnız `active` seçilir; sonradan pasifleşende sevkiyat sürer, yeniden okuma + uyarı; CRM'den yalnız `status` (§5b) |
+| K-15 | Görünen adı kim çözer | commercial-suite | **ÖNERİ:** tüketici, Reference Data'dan (§5b) |
+| K-16 | Ana adrese posta kodu | commercial-suite (Beste) | **KAPANDI 2026-11-13:** eklenecek (pack DL-4); biçim değişmez |
+| K-17 | Ülke / şehir / ilçe kodlarının yazmada doğrulanması | commercial-suite (Beste) | **AÇIK → pack DL-4** (yalnız yeni / değişen alan, K-23); U-4 saklananı döner |
+| K-18 | Çoklu teslimat adresi | commercial-suite (Beste) | **KAPANDI 2026-11-13:** yapılacak (pack DL-4); gövde bugünden liste |
+| K-19 | U-4 anahtarını alan CRM rolleri | commercial-suite (Beste) | **KAPANDI 2026-11-13:** CRM Admin alır; öteki CRM rolleri almaz |
+| K-20 | İçe aktarılmış hesaplarda saklanan adres kodlarının biçimi (ölçüm 2026-11-27, yerel geliştirme verisi: `CountryRef = "TR"` ↔ küme `tr`; `CityRef = "TR-34-ISTANBUL"` ↔ küme `istanbul`; 43.375 kaydın hepsi kurala göre eşlenebilir) | commercial-suite (Beste) | **AÇIK:** öneri tek seferlik veri düzeltmesi (önce kuru çalıştırma) + içe aktarma betiğinin düzeltilmesi; o güne kadar U-4 saklananı döner (§2b.2) |
 
-Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md` (taslak; sahip okuması CT-APR-01 ile); K-7 = D112/2
+Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup-owner-decisions-01.md` (taslak; sahip okuması CT-APR-01 ile);
+K-12…K-19 `docs/records/decisions/2026-11/mod0149-ship-to-owner-decisions-01.md`; K-7 = D112/2
 (`docs/records/decisions/2026-10/treasury-intake-owner-decisions-05.md`).
 
 ## 12. Değişiklik geçmişi
@@ -384,3 +529,9 @@ Kayıt: K-1…K-6, K-8 ve K-11 `docs/records/decisions/2026-11/mod0149-ar-lookup
 - 1.0.0 FROZEN (2026-11-05, commercial-suite sahibi Beste) — DL-1 (U-1, U-3) CT K13 kabulü ve PR #377 ile main'e
   girişi (38f7ea08d) sonrası U-1 ve U-3 donduruldu; metin taslak `ec5a1062…` ile aynı, yalnız durum ve uygulama
   bilgisi güncellendi. U-2 (§3) DL-2'ye kadar bağlayıcı taslak; K-9 ve K-10 açık (1.x eki ya da ayrı iş).
+- 1.1.0 FROZEN (2026-11-27, commercial-suite sahibi Beste) — U-4 `ship-to` (§2b) ve anahtar `crm.account-ship-to.read`
+  (§6, K-13) eklendi; taslak `docs/analysis/contracts/drafts/crm-account-lookup-v1.1-ship-to-proposal.md` (r7) işlendi:
+  §1 uç tablosu ve iki anahtar cümlesi, §2b, §5a (MOD-0178-FU01 adayı; MOD-0183 / MOD-0186'ya U-4), §5b, §6, §7, §8, §9
+  (S- fikstürleri), §10 (1.x kapsamı ve uç başına `contractVersion`), §11 (K-9 kapandı; K-12…K-20). Dondurmada kesinleşen
+  ayrıntı: §2b.2 sıra kuralında `label` null olan önce. U-1 / U-3 gövdeleri, `contractVersion` değerleri ve izinleri
+  değişmedi. Pack §32 onayı PR #421; DL-3 CT K13 kabulü 2026-11-27.
