@@ -69,3 +69,31 @@ Sahip: Beste (MVP-5 WMS CT oturumu `ca7382cf`).
   eklenir. X-2 tek adımdır: denetim defteri (`tests/architecture/audit-ledger/Diten.Platform.md` :16) ile `AuditTrailStandardTests.AcceptedTrails`
   sabit satırı aynı commit'te güncellenir (`AcceptedTrails_ArePinned_ALedgerCellCannotGrantCredit` ikisini eşit ister). DL-1 WP'si bu
   satırı adıyla taşır; paket metni bir sonraki içerik revizyonunda hizalanır (r3 onayı geçersiz olmasın diye).
+- **2026-11-14 — DL-1 başlangıcı (Beste, XMC-001 "Evet"):** MOD-0179 DL-1 için yalnız eklemeli dokunuşlar onaylı: X-4 (Inventory
+  `Program.cs` manifest bloğu), X-5 (`SingleSystemOfRecordArchitectureTests` koleksiyon bildirimi), X-6 (`CentralAuditDeclarationTests`
+  sayıları, DL-1 +12), X-8 (Gateway `Mod0178WarehouseRouteTests` uç sayısı, DL-1 +17; integration-agent rolüyle), X-9 (manifest bütünlük
+  dışlama listesi) ve pakette olmayan X-W (Web `Nav.Module.THIRDPARTYLOGISTICS` 7 dil + `NavManifestL10nGuardTests` PagelessUntil
+  `THIRD-PARTY-LOGISTICS`; MOD-0180 / MOD-0182 emsali). CT kararları B-1…B-8 WP-0179-DL1'deki önerilerle kabul. Dilim sırası tutuldu:
+  MOD-0182 DL-1 VERIFIED (2026-11-14) → MOD-0179 DL-1.
+
+## Ek — DL-1 XMC-001 X-P (Beste, 2026-11-14)
+
+- **X-P onaylı:** `services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Architecture/SingleSystemOfRecordArchitectureTests.cs`
+  (`No_Model_B_Product_type_is_used`) hariç listesine yalnız
+  `services/Diten.InventoryService/src/Diten.InventoryService.Domain/ThirdPartyLogistics/Enums/ThirdPartyEnums.cs` yolu eklenir (yalnız ekleme,
+  yorumla; MOD-0182 `scanStepFiles` emsali, 2026-11-13). Paketin kablo adı `Product` (§4.3) aynen kalır; 0179'da `Product` sözcüğü yalnız bu
+  dosyada geçer. Satır, eşleme commit'iyle aynı commit'te; sabotaj: hariç satırını kaldır → test kırmızı.
+
+## Ek — DL-1 Perm.Entity satırları (Beste, 2026-11-14)
+
+- **XMC-001 onaylı:** `frontend/Diten.Web/Resources/SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`'e yalnız ekleme üç `Perm.Entity.*`
+  satırı — 3PL kanallar, eşlemeler, iş ortakları (kanonik anahtarı vitest `role-assignments-label-ledger` belirler; yeni fiil yok).
+  Neden: 0179 DL-1 hatta alınınca (`3bc3a6746`) etiket bekçisi 27/28 ("channels, mappings, partners"). Barkod X-10 ve tedarikçi bağı S-1
+  emsali. Uygulama 0179 oturumunda, ayrı küçük commit; vitest 28/28 + sabotaj.
+
+## Ek — T-2 ücret sınırları (Beste, 2026-11-20)
+
+- Natig'in 3PL ücret mutabakatı sınırları bu kayda yazılacaktı (CT kabul kaydı 2026-11-17, MOD-0179 DL-1 notu). Sınır metni depoda yok.
+- **Sahip kararı (Beste, 2026-11-20):** ücret sınırları şimdi yazılmaz; MVP-6 tarafı "sonra yapalım" demişti (sahibin hatırladığı biçimiyle).
+  T-2 aynen geçerli: ücret / fatura mutabakatı v1'de yok, yalnız genişleme noktası var. Sınırlar FU-0179-FEES (v2) paketinde, Treasury bilgi
+  notuyla (FU-0179-TREASURY-NOTE) birlikte yazılır. CT kabul kaydındaki açık madde bu ekle kapanır.

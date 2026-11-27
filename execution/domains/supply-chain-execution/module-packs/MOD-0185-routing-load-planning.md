@@ -7,7 +7,9 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "2026-09-18 explicit user Phase1.5, promotion and bounded mock-first DEV approval; effective section28 supersedes historical proposals. Pending-only outbox; no operational rollout. Tenant UI scope (list + create) owner-approved 2026-10-04 (section 30); UI DEV released to R-4b; independent UI VER open."
+approval_status: pending
+revision: "r1 (2026-11-27) — §31 (new): the load's correlation root is the service's and no later command or replay is compared with it (option C of MOD-0183 r11, as applied to Returns by MOD-0186 r11/r12, applied to Loads; mandate: Beste 2026-11-27 'devam edelim' on D7, docs/records/decisions/2026-11/ct-owner-decisions-2026-11-27.md §3; precedent docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md). The root stays the X-Correlation-Id the service received on createLoadPlan (behind the Gateway: the Gateway's; already so, LoadRepository.cs:40); transitionLoad and idempotent replay no longer compare the request's correlation with it; 409 CORRELATION_ROOT_MISMATCH leaves the Loads operations and, as MOD-0186 DL-6 already removed it from Returns, the contract. Cause (CT measurement 2026-11-27 on main 85e3b1eec, inference from code, not live): LoadRepository.cs:17 and :45 answer 409 behind the Gateway on every transition and on every replay, including the create retry of the Loads form, because the Gateway replaces the form's correlation. New rules LR-1…LR-9, AC LC-1…LC-9 with sabotages, slice DL-2, SHIPMENT-BUNDLE 3.8.0 proposed (CT decision, shared with MOD-0187 r1) with loads-semantics-v3.2.0.md. Changed outside §31: front matter, §7, §16 (correlation item), §30.3 (replay sentence note), slice table (new). The text before r1 is the baseline LF sha256 88716c8a493ab1be67bb26cfc0a6be5638c804dd578de7f5661c53f31f31a859 (main 85e3b1eec); this pack had no numbered revision before r1. Identity preflight re-run 2026-11-27: OK."
+status_note: "2026-09-18 explicit user Phase1.5, promotion and bounded mock-first DEV approval; effective section28 supersedes historical proposals. Pending-only outbox; no operational rollout. Tenant UI scope (list + create) owner-approved 2026-10-04 (section 30); UI DEV released to R-4b; independent UI VER open. r1 (2026-11-27, §31: correlation root behind the Gateway, option C; slice DL-2): ready-for-dev / approval_status pending — needs an independent review (CT-APR-02) and a CT-APR-01 row before code; that approval covers DL-2 only. DL-2 also waits for MOD-0186 DL-6 and the SHIPMENT-BUNDLE / Loads annex version of §31.2."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -74,6 +76,7 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
 | MOD-0184 Carrier | Required before runtime | Carrier must exist and be Active; contract/reference only |
 | MOD-0183 Shipment | Required reference | Eligible shipment states only; no shipment SoR mutation |
 | `SHIPMENT-BUNDLE` v1 | Frozen | Load schema, transitions, event and mock authority |
+| SHIPMENT-BUNDLE 3.8.0 (proposed) + Loads annex `loads-semantics-v3.2.0.md` (r1, §31.2) | Not written; proposal and patch are MVP-6 CT work, written before DL-2 development and checked with `git apply --check` (LC-9); number and base are a CT decision (§31.7 O-185-2) | DL-2 does not merge before both are on the line and after MOD-0186 DL-6 (3.6.0); single writer MVP-6 CT; this pack touches no contract file |
 | Warehouse outbound | Frozen read-only upstream seam exists | No inbound return, receiving or automatic ingress implied; see §21 |
 
 ## 8. Runtime Constraints
@@ -124,7 +127,7 @@ Use the `SHIPMENT-BUNDLE` `/loads**` surface. Gateway changes belong only to a l
 - [x] Future implementation consumes verified MOD-0184 and MOD-0183 seams by contract. — **✅ MET** (`LoadReferenceTests.*`; Q151-02; G5 run; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Load commands/responses/events match frozen v1 examples and schemas. — **✅ MET** (live commands/responses (`LoadEventCorrelationTests.Live_responses…`) and all 7 event envelopes validate against `LifecycleEventEnvelope` — 2026-10-19; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Invalid transitions and duplicate assignment are atomic failures. — **✅ MET** (`LoadLifecycleTests.EverySourceTargetPair…`, `LoadConcurrencyTests.CompetingCreates…`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
-- [x] Correlation UUID is preserved from command through all load events. — **✅ MET** (`LoadEventCorrelationTests.Every_load_event_type_carries_the_root` (7/7 types, 2026-10-19); G5 run 6/6; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] The load's correlation root (the create's correlation) is preserved through all load events while later commands carry their own trace (r1, §31 LR-1, LR-3). — **↻ RE-MEASURE (r1)** (old evidence: `LoadEventCorrelationTests.Every_load_event_type_carries_the_root` (7/7 types, 2026-10-19); G5 run 6/6; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md` — measured with every transition sent under the root; under r1 re-measured by LC-3, LC-4 and LC-8)
 
 ## 17. Test Expectations
 
@@ -650,6 +653,10 @@ retries until it closes: the create's correlation is the new Load's root (`Creat
 under a different root answers 409 `CORRELATION_ROOT_MISMATCH` (`LoadRepository.cs:16`). On 409 `IDEMPOTENCY_KEY_REUSED` or
 `CORRELATION_ROOT_MISMATCH` the form stops, keeps the inputs and never mints a key to get past it. A 201 with `idempotentReplay: true` is
 shown as completed and the list reloads.
+**r1 (§31 LR-5, LR-9):** behind the Gateway the form's correlation never reaches the service (the Gateway mints its own), so this replay rule
+turned every create retry into 409. From DL-2 a replay is recognised by key and fingerprint only, `CORRELATION_ROOT_MISMATCH` leaves the
+page and the form stops only on 409 `IDEMPOTENCY_KEY_REUSED`. The form still keeps one key and one correlation per opened form (the
+correlation is the call's trace).
 
 ### 30.4 Localization, states, access
 
@@ -662,3 +669,147 @@ load runs; a failed load is an alert in place of the table, worded as a read fai
 - **LIVE-185:** the create reads Carrier and Shipment references live with the caller's token (`LoadReferenceReader`), so a creator also
   needs `supplychain.carriers.read` and `supplychain.shipments.read`, and Carrier's provider must be registered for the first to exist.
 - **ROOT-UI-01:** a transition UI needs its own approved scope. Independent UI VER remains open.
+
+## 31. Correlation root behind the Gateway (r1)
+
+> **Revision r1 — `ready-for-dev`, `approval_status: pending`.** Option C of MOD-0183 r11 (pack section "Correlation root behind the
+> Gateway (r11)", Natig 2026-11-15), as MOD-0186 r11/r12 §36 applied it to Returns (Beste 2026-11-20 and 2026-11-24,
+> `docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md`), applied to Loads. Mandate: Beste, 2026-11-27,
+> "devam edelim" on D7 (`docs/records/decisions/2026-11/ct-owner-decisions-2026-11-27.md` §3; `docs/roadmap/plans/mvp6-development-plan-v10.3.md`
+> D7). Needs an independent review (CT-APR-02) and a CT-APR-01 row before any code; that approval covers DL-2 only. Code facts below are
+> measured on `main` `85e3b1eec` (2026-11-27; the Loads sources are byte-identical on the MVP-1 line); the claim that the rule fails
+> behind the Gateway is an inference from code, not a live measurement.
+
+**Cause.** The Gateway does not adopt a caller's `X-Correlation-Id`: it removes the caller's header and forwards a value it minted
+(`gateway/Diten.ApiGateway/Observability/EdgeCorrelation.cs:16-17`, `CorrelationPropagationDelegatingHandler.cs:24-27`). Unlike Returns
+and Claims, a Load's root was never the shipment's: it is the correlation the service received on `createLoadPlan` (`CreateLoadHandler`
+passes `context.CorrelationId`; `LoadRepository.cs:40` stores it; annex `loads-semantics-v3.1.0.md:217`), so create works behind the
+Gateway. What breaks is every later comparison with that root (prefix `services/Diten.SupplyChainService/src/Diten.SupplyChainService.`):
+
+| Place | Check |
+|---|---|
+| `Persistence/Features/Loads/LoadRepository.cs:17` | replay: the receipt's stored correlation ≠ request → 409 `CORRELATION_ROOT_MISMATCH` (create and transition; reached from `:32` and the post-commit recovery `:91`) |
+| `Persistence/Features/Loads/LoadRepository.cs:45` | transition: the load's `CorrelationRoot` ≠ request → 409 |
+
+Behind the Gateway each request carries a new Gateway correlation, so every `transitionLoad` answers 409, and every replay does too —
+including the create retry of the Loads form after an unknown outcome (§30.3: the form keeps one correlation per opened form, but the
+Gateway replaces it). There is no Loads transition UI (ROOT-UI-01), so today the defect is reachable through the API and through the form's
+retry. The tests do not see it because `LoadTestContext` (`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadContractTests.cs:75`)
+sends the create's correlation on every later call, and `LoadReplayTests.cs:19`, `:22` assert the old rule.
+
+**Decision.** Option C, as for Shipments (MOD-0183 r11) and Returns (MOD-0186 r11): the service decides the root and does not compare later
+correlations with it. Confirming C for Loads is open item O-185-1 (Beste).
+
+### 31.1 Rules
+
+| # | Rule |
+|---|---|
+| LR-1 | The load's root is the `X-Correlation-Id` the service received on `createLoadPlan` (behind the Gateway: the Gateway's), stored as `LoadPlan.CorrelationRoot` at create (`LoadRepository.cs:40`, unchanged), never changed, never taken from `X-Client-Correlation-Id` and never derived from a Shipment root. Loads created before DL-2 keep their root; nothing is back-filled. |
+| LR-2 | `transitionLoad` does not compare the request's correlation with the load's root (`LoadRepository.cs:45` removed). A different correlation is not a refusal. No other check moves: scope, permissions, lifecycle (`:46`), reference observation (`:50`), assignment and release rules, and the 404 for a missing, foreign or soft-deleted load. |
+| LR-3 | Every load event and outbox envelope and every `loads_audit` row carries the stored root: the envelope's `correlationId` (`:72`, today the request value `root`) and the audit's `CorrelationRoot` (`:70`, today the request value) are written from `load.CorrelationRoot`. On create the two are equal. `causationId` (the previous event id, `:47`) is unchanged. |
+| LR-4 | The request's correlation is the command's trace: it is the response `X-Correlation-Id` and `error.correlationId` (`Api/Features/Loads/LoadContextMiddleware.cs:46-47`), it is written on that command's idempotency receipt in the existing field (`LoadRepository.cs:68`; field name kept, no migration, read as the trace) and on its log lines (`LoadContextMiddleware.cs:92`). |
+| LR-5 | Replay: a receipt is found by (tenant, legal entity, operation, target-or-create, key). Same fingerprint → the original result with `idempotentReplay: true` and the **current** request's correlation in the header; the correlation is not compared (`LoadRepository.cs:17` root clause removed). Different fingerprint → 409 `IDEMPOTENCY_KEY_REUSED` as today. Same rule as MOD-0183 R11-5 and MOD-0186 RR-5. |
+| LR-6 | No caller value decides a root or gates a write: `X-Client-Correlation-Id` is not read by the service. The 400 for a missing or non-UUID `X-Correlation-Id` (`LoadContextMiddleware.cs:59`) is unchanged; its generated trace is never a root. |
+| LR-7 | 409 `CORRELATION_ROOT_MISMATCH` leaves `createLoadPlan` and `transitionLoad`: no Loads path returns it. After MOD-0186 DL-6 (Returns, 3.6.0) no other operation declares the code, so it leaves the contract (31.2 L-3) and, in the same change, `ContractErrorCodes.CorrelationRootMismatch` (`Application/Common/ContractErrorCodes.cs:38`, `:110`); `ContractErrorCodeParityTests` stays green in both directions. This is why DL-2 runs after DL-6 (`ReturnReceiptCoordinator.cs:50` uses the constant until DL-6). |
+| LR-8 | Web adapter: it keeps forwarding the page's per-form UUID as `X-Correlation-Id` (`frontend/Diten.Web/Controllers/SupplyChainLoadsController.cs:140-143`); that value is the call's trace, not a root. The file comment `:13-17` changes. The answer log lines (`:95-100`) also write the `X-Correlation-Id` of the Gateway's response — the value the browser receives (`CopyCorrelationHeader`, `:170-173`) and the root on create — so the support reference the user sees is in the adapter log. |
+| LR-9 | UI code set: `CORRELATION_ROOT_MISMATCH` leaves the Loads page map, comment and branch (`wwwroot/assets/js/SupplyChain/Loads/index.js:274`, `:338`, `:450` — the form stops only on `IDEMPOTENCY_KEY_REUSED`), `index.l10n.js:25`, `Views/SupplyChain/Loads/_IndexL10n.cshtml:84`, the `ErrCorrelationRootMismatch` key of the 7 `LoadsIndex` languages (`Resources/Views/SupplyChain/Loads/LoadsIndex.{en,tr,fr,es,zh,ar,ru}.resx:63`) and the Web tests that list it (`frontend/Diten.Web.Tests/Forms/LoadFormContractTests.cs:14`, `JavaScript/LoadIndexBehaviorTests.cs:18`), in DL-2, together with the contract version of 31.2. |
+
+### 31.2 Contract versions needed
+
+No contract file is touched here. Single writer MVP-6 CT. **Proposed number: SHIPMENT-BUNDLE 3.8.0**, one minor shared with MOD-0187 r1
+(Claims, same defect) — because 3.6.0 is MOD-0186 Returns and 3.7.0 is MOD-0183 warehouse intake (CT decision
+`docs/records/decisions/2026-11/shipment-bundle-version-assignment-ct-decision-01.md`), and the change has the same shape and the same
+justified semver exception as 3.6.0 (removing an error the server no longer sends after the slice breaks no client; the only clients are the
+Web Loads adapter and page, which drop it in the same slice, LR-9). Base: the version on the line when the patch is written (3.7.0 under the
+current order). Number, base, and one shared or two separate versions are CT decisions (O-185-2). The proposal and patch are CT work,
+written before DL-2 development and measured with `git apply --check` on the line DL-2 merges into; LC-9 measures DL-2 against that patch.
+Places below are measured on the 3.6.0 result (CT scratch copy of the 3.6.0 patch on 3.5.1, 2026-11-27); they move with 3.7.0.
+
+| # | Place | Change |
+|---|---|---|
+| L-1 | `createLoadPlan` (`:712-713`) and `transitionLoad` (`:1092-1093`, `:1099-1103`, `:1465`) `x-loads-semantics` and descriptions | annex v3.1.0 → v3.2.0; a 3.8.0 paragraph states LR-1…LR-6 (root = the create's received correlation; later commands and replays not compared) |
+| L-2 | `components/parameters/CorrelationId` (`:3336-3343`) | its "Loads ve Claims yollari degismez" sentence becomes: on Loads paths the "envelope correlation = request correlation" rule holds only for `createLoadPlan` |
+| L-3 | 409 of `createLoadPlan` (`:831-838`) and of `transitionLoad` (`:1333-1340`) | the `CORRELATION_ROOT_MISMATCH` example leaves both; the 409 status stays (`IDEMPOTENCY_KEY_REUSED`; on create also `SHIPMENT_ALREADY_ASSIGNED`). The code then appears nowhere in the contract → LR-7 constant removal |
+| L-4 | Loads annex `loads-semantics-v3.1.0.md` | a new file `loads-semantics-v3.2.0.md` (v3.1.0 kept) replaces `:69-70` (precedence "receipt: root → fingerprint", "target → root → lifecycle"), `:85-86` (different-root row; root error precedence), `:101-105` (the `CORRELATION_ROOT_MISMATCH` error example), `:129-131` (replay table: same root; different correlation → 409), `:139` ("a fresh transition with a different correlation is refused") and the D185-ROOT-ACQ-01 sentences that say a root gates a transition (`:211`, `:215`). It keeps `:150` (every event carries the create's correlation) and `LoadSummary.lifecycleCorrelationId` (optional, nullable; still the stored root, no longer needed by any client — O-185-3) |
+
+DocsPathGuard: the YAML target is re-pinned to the 3.8.0 digest in a separate owner record (3.5.0 / 3.5.1 / 3.6.0 pattern).
+**Dependency:** DL-2 does not merge before the new SHIPMENT-BUNDLE and annex versions are on the line it merges into, and not before MOD-0186
+DL-6. CT proposal: the patch lands in the same commit as the service change. Gateway routes are unchanged.
+
+### 31.3 Not changed
+
+Lifecycle and arrows, permissions (`supplychain.loads.*`), scope and 404 rules, stop and assignment rules, carrier and shipment reference
+rules (LIVE-185), event types and payloads, status codes other than LR-7, the §30 screen other than LR-9, every MOD-0183, MOD-0186 and
+MOD-0187 file. No transition UI is added (ROOT-UI-01 stays a separate scope).
+
+### 31.4 Other modules
+
+MOD-0187 r1 (Claims) fixes the same defect and is proposed to share 3.8.0 (O-185-2). MOD-0186 DL-6 must be on the line first (LR-7).
+
+### 31.5 Acceptance and sabotage
+
+Service tests under `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/` (`LoadTestContext`); Web tests in
+`frontend/Diten.Web.Tests/`. **Gateway-like calls:** in every LC row each request after the create carries a new correlation, as the
+Gateway does. Each sabotage turns its row red on production code.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| LC-1 | Create with correlation c1: 201; stored `CorrelationRoot` = c1; `LoadCreated` envelope `correlationId` = c1 (unchanged behaviour, now asserted) | S-LC-1: storing anything but the request correlation at `LoadRepository.cs:40` turns it red |
+| LC-2 | Transitions Planned, Tendered, Accepted, Dispatched, Completed (and the Cancelled path with its assignment release) each with a new correlation c2, c3…: 200, not 409 | S-LC-2: restoring `:45` turns it red |
+| LC-3 | Every envelope and every `loads_audit` row of LC-1 and LC-2 carries c1; each command's receipt carries its own request correlation; each response `X-Correlation-Id` and `error.correlationId` equals that request's correlation | S-LC-3: writing the request correlation into the envelope (`:72`) or the audit (`:70`) turns it red |
+| LC-4 | §16 item: the 7 event types carry the load's root while each transition is sent with a new correlation (`LoadEventCorrelationTests.Every_load_event_type_carries_the_root` rewritten so) | as LC-3 |
+| LC-5 | Replay of create and transition with the same key and body and a new correlation: original result, `idempotentReplay: true`, header = the new correlation, no second write, receipt, audit, event or assignment; a changed body → 409 `IDEMPOTENCY_KEY_REUSED`. `LoadReplayTests.cs:19`, `:22` become "a different correlation is accepted" / "a changed body is 409 `IDEMPOTENCY_KEY_REUSED`" | S-LC-5: restoring the root clause of `:17` turns it red |
+| LC-6 | Post-commit recovery (`:91`, commit outcome unknown) returns the original result under a new correlation, not 409 | S-LC-6: as S-LC-5, through the commit probe |
+| LC-7 | Web: the Loads page and adapter name no `CORRELATION_ROOT_MISMATCH`; after 409 `IDEMPOTENCY_KEY_REUSED` the form stays blocked; the adapter answer log line carries the page's trace and the Gateway response's `X-Correlation-Id` (fixture: different values) | S-LC-7: putting the code back into the page map turns the list test red; leaving the response correlation out of the log line turns the adapter test red |
+| LC-8 | Through the real Gateway (lane stack): create, then Planned and Tendered on that load succeed through the API; a create retried from the form with the same key answers 201 `idempotentReplay: true`; a caller-sent `X-Client-Correlation-Id` changes nothing; the stored root equals the Gateway's create correlation | — (E4 evidence) |
+| LC-9 | The SHIPMENT-BUNDLE / `loads-semantics` proposal and patch the CT writes for 31.2 applied byte-for-byte; all contract example tests green; `ContractErrorCodeParityTests` green with `CorrelationRootMismatch` removed; the 7 `LoadsIndex` languages stay in parity | Any contract or annex byte that differs from the CT patch, a leftover constant (parity red) or a leftover UI reference turns it red |
+
+The full SupplyChain and Web test assemblies run unfiltered; the phase-1 gates and the Python script tests run before any PR.
+
+### 31.6 Owned files (DL-2)
+
+Prefix S as in §25. Changed: `S.Persistence/Features/Loads/LoadRepository.cs`, `S.Application/Common/ContractErrorCodes.cs` (only the
+`CorrelationRootMismatch` constant and its list entry; shared file — the same-change exception of 31.2, as MOD-0183 DL-8 §5); tests
+`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/{LoadReplayTests.cs, LoadEventCorrelationTests.cs, LoadContractTests.cs (LoadTestContext only, if a per-call correlation helper is needed)}`
+and new `…/Loads/LoadCorrelationRootTests.cs`. Web: `frontend/Diten.Web/Controllers/SupplyChainLoadsController.cs` (comment and log lines),
+the LR-9 files (`wwwroot/assets/js/SupplyChain/Loads/{index.js, index.l10n.js}`, `Views/SupplyChain/Loads/_IndexL10n.cshtml`,
+`Resources/Views/SupplyChain/Loads/LoadsIndex.{en,tr,fr,es,zh,ar,ru}.resx`) with `frontend/Diten.Web.Tests/{Forms/LoadFormContractTests.cs, JavaScript/LoadIndexBehaviorTests.cs}`
+and the Loads controller tests. Contract files (31.2) only by applying the CT patch. Not written by DL-2: `gateway/**`, service `Program.cs`,
+any Shipment, Returns or Claims source.
+
+**Audited Events (AUD-001):** DL-2 adds no write command; the `CreateLoadPlanCommand` and `TransitionLoadCommand` audit rows are unchanged
+(the module-local `loads_audit` row keeps its fields; only the `CorrelationRoot` value source changes, LR-3).
+
+### 31.7 Open items
+
+- **O-185-1 (Beste):** confirm option C for Loads (the 2026-11-27 "devam edelim" covers the D7 fix; this pack proposes C as for Returns).
+- **O-185-2 (CT / Beste):** contract number and grouping — the same question as MOD-0187 O-187-2 (proposal: one 3.8.0 for Claims and Loads,
+  base 3.7.0 under the current order; the CT re-decides the order if MOD-0183 DL-5 is still gated when DL-2 is ready).
+- **O-185-3 (CT):** `LoadSummary.lifecycleCorrelationId` (D185-ROOT-ACQ-01) stays in the contract as an optional field; no client needs it
+  after r1. Proposal: keep it (removing a field is not additive); a later version may deprecate it.
+
+### 31.8 Revision r1 — what changed and why
+
+| Place | Before r1 | r1 |
+|---|---|---|
+| Front matter | no `revision`, no `approval_status` | `revision` r1, `approval_status: pending`, `status_note` r1 sentence |
+| §7 | — | SHIPMENT-BUNDLE 3.8.0 (proposed) + `loads-semantics-v3.2.0.md` row |
+| §16 correlation item | ✅ MET (every command under the root) | ↻ RE-MEASURE by LC-3, LC-4, LC-8 |
+| §30.3 | replay under a different root → 409 | r1 note: replay by key and fingerprint; the code leaves the page (LR-5, LR-9) |
+| §31, slice table | — | new |
+
+No other section changes meaning. Earlier text describing the same-root rule (§23 rows "Correlation" and "Same key/payload, different
+correlation", §26, annex D185 citations) is history; where it conflicts with §31, §31 governs from DL-2 on.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | yük planı çekirdeği ve ekranı (önceki sürümlerde kabul edildi) | Owned Objects, Entity Fields, Effective bounded Phase1.5 / ready-for-dev release — 2026-09-18, Tenant UI scope — MVP6-LOADS-UI-SCOPE-PREP-01 (approved 2026-10-04) | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-2 | yük korelasyon kökü servisin (C yolu, r1) | Correlation root behind the Gateway (r1), Rules, Contract versions needed, Acceptance and sabotage, Owned files (DL-2) | E4 | plan kimliği yok | plan satırı yok |
+
+DL-1 names the work accepted before r1 (§28, §30); it is not re-opened. DL-2 (r1) covers LC-1…LC-9 and re-measures the §16 correlation
+item. It needs the SHIPMENT-BUNDLE and Loads annex versions of 31.2 on its line before merge and starts after MOD-0186 DL-6. It changes no
+Shipment, Returns or Claims file. Until DL-2 ships, every Loads transition and every replay (including the form's create retry) behind the
+Gateway answers 409 (inference from code, §31). Plan columns: the MVP-6 plan (`mvp6-development-plan-v10.3.md`, rows D7 and MOD-0185)
+gives no capability id. CT-APR-01 note for r1: "only DL-2"; evidence level is a proposal.
