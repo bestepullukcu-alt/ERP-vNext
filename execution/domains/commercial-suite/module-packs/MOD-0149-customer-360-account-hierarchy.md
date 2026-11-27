@@ -1083,8 +1083,10 @@ Compact dosya düzeni (§13) — `Features/AccountDeliveryAddress/` altında Com
 
 ### 33.5 Teslimat adresleri — U-4 genişlemesi
 
-- `addresses` sırası: önce `primary` (ana adresin dört alanından ya da `PostalCode`'dan en az biri doluysa), sonra aktif ve
-  silinmemiş teslimat adresleri (varsayılan önce, sonra ad).
+- `addresses` içeriği: `primary` (ana adresin dört alanından ya da `PostalCode`'dan en az biri doluysa) ve aktif, silinmemiş
+  teslimat adresleri. **Sıra sözleşmenin kuralıdır** (CRM-ACCOUNT-LOOKUP 1.1.0 §2b.2): varsayılan öğe önce; sonra `label`'a
+  göre (null olan, yani `primary`, önce); sonra `addressId`'ye göre (sıradan karşılaştırma). Varsayılan bir teslimat adresiyse
+  `primary` ikinci sıradadır.
 - Teslimat öğesi: `addressId` = adres kimliği (UUID, `D` biçimi), `kind = "delivery"`, `label` = ad, `isDefault`,
   `countryRef`, `cityRef`, `districtRef`, `postalCode`, `addressLine`. Ana adres öğesinde `postalCode` = `Account.PostalCode`.
 - `defaultAddressId`: varsayılan teslimat adresi varsa onun kimliği; yoksa `primary` öğe varsa `"primary"`; liste boşsa null.
@@ -1105,7 +1107,7 @@ Compact dosya düzeni (§13) — `Features/AccountDeliveryAddress/` altında Com
 - [ ] **AC-DA-6** Eşzamanlılık: eski `ExpectedVersion` ile güncelleme 409, veri değişmez.
 - [ ] **AC-DA-7** Doğrulama (K-17, K-23): yeni adreste ve yeni hesapta kümede olmayan ülke / şehir / ilçe kodu 400; güncellemede yalnız değişen kod doğrulanır — saklanan geçersiz kod değişmeden gelirse kayıt kabul edilir, değişen geçersiz kod 400; set yayımlanmamışsa kontrollü hata.
 - [ ] **AC-DA-8** `Account.PostalCode`: oluştur ve güncelle taşır, kırpılır, boş → null, ≤ 20; `UpdateAccountCommand`'da alan gönderilmezse saklanan korunur, boş dize temizler.
-- [ ] **AC-DA-9** U-4 (§33.5): ana adres + iki aktif teslimat adresi (biri varsayılan) + bir pasif + bir silinmiş adresli hesapta liste sırası, `kind`, `addressId`, `label`, `postalCode`, `isDefault` ve `defaultAddressId` doğru; pasif ve silinmiş yok; varsayılan teslimat yokken `defaultAddressId = "primary"`; yalnız teslimat adresi olan (ana adres boş) hesapta `primary` öğe yok. AC-ST-1…10 aynen yeşil.
+- [ ] **AC-DA-9** U-4 (§33.5): ana adres + iki aktif teslimat adresi (biri varsayılan) + bir pasif + bir silinmiş adresli hesapta liste sırası (1.1.0 §2b.2: varsayılan teslimat adresi önce, sonra `primary`, sonra ad), `kind`, `addressId`, `label`, `postalCode`, `isDefault` ve `defaultAddressId` doğru; pasif ve silinmiş yok; varsayılan teslimat yokken `defaultAddressId = "primary"`; yalnız teslimat adresi olan (ana adres boş) hesapta `primary` öğe yok. AC-ST-1…10 aynen yeşil.
 - [ ] **AC-DA-10** Denetim: her yazma komutu §33.3'teki işlem ve `AccountDeliveryAddress` varlık türüyle merkezi denetim bildirimi taşır; kayıtta adres metni yok; mimari AuditTrail testleri yeşil, CRM borcu artmaz.
 - [ ] **AC-DA-11** Ekran: hesap detayında Teslimat adresleri bölümü (liste + form + onay); izinsiz kullanıcıya eylem düğmesi çizilmez; hesap formunda posta kodu; 7 dilde tüm metinler (eksik anahtar 0); yardım adımı 7 dil; 375 px.
 - [ ] **AC-DA-12** Değişmezlik: U-1 / U-3 gövdeleri ve testleri, hesap listesi / detay / içe aktarma testleri tabanla aynı; mobil hesap güncelleme sözleşmesi (CRM-ACC-EDIT) testleri yeşil; `dotnet build` PASS.
