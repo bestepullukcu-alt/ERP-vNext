@@ -7,6 +7,8 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
+approval_status: pending
+revision: "r2 (2026-11-25) — §22 composition uptake gate re-stated for Demand v2 after the MOD-0189 bound-run contract 1.0.0 was frozen (execution/domains/supply-chain-execution/work-packs/WP-MOD0189-BOUND-RUN-CONTRACT.md; owner decisions K-1…K-12, Beste, docs/records/decisions/2026-11/mod0188-demand-v2-field-names-owner-decisions-01.md; commit 66b165806). The gate stays BLOCKED; its DEMAND v1.1 criterion and the 'MOD-0188 reserved / planned, no pack' bullet stay as r1 text and are read through the r2 gate (G-1…G-6). New §25 changelog. No r1 business rule, AC, owned path or hash changed. r1 (text at HEAD d4377ac56, LF sha256 eb942e08…) — owner-promoted isolated pack with §21–§24; revision label given retroactively by r2. r2 is a draft: no independent review (CT-APR-02) and no version-bound approval row (CT-APR-01, approver Beste) yet; it grants no code scope."
 status_note: "Owner-promoted isolated pack 6a57769c… (2026-09-22) bound to CT-accepted bounded work package MVP6-MOD0190-401-DISPOSITION-CT-02 (§22). Common-checkout integration, gateway/shared registration, live DEMAND/Workflow/Event Bus, UI, E5/G5 and rollout remain open."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
@@ -274,6 +276,30 @@ Accepted rows A01–A09, F01–F04A, T01–T02 and R01 are satisfied only within
 **Contract drift after acceptance (open, not decided here):** canonical SANDOP-CAPACITY is now 3.0.0 (YAML `5213b5353267ad4c25d150975d6f38422bced72f678c02271b0cccf6e768adab`, annex `f9d9d5553d70e1c54af3e03924600f4c8f426de50355ae861a4d3d5cef21ee64`). The publication patch changed metadata, the annex pointer and the Capacity `createCapacityScenario` 409 only; the six S&OP operations were not edited. The MOD-0190 evidence remains bound to 2.0.0 until a CT/owner disposition re-pins it.
 
 **Still open:** common-checkout integration, gateway and shared permission registration, live DEMAND/Workflow/Event Bus delivery, UI, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.
+
+**r2 (2026-11-25) — Demand v2 uptake gate (draft; owner decision pending; the gate stays BLOCKED):**
+
+Measured facts that changed since r1 (HEAD `d4377ac56`):
+
+- MOD-0188 now has a pack: `execution/domains/supply-chain-execution/module-packs/MOD-0188-demand-planning.md` (`ready-for-dev`, `Diten.PlanningService` 5068, approval row `execution/approvals/approvals.tsv:104`). The registry row still reads `reserved / planned` (`execution/registries/module-id-registry.md:333`); correcting it belongs to the registry owner, not to this pack. The r1 bullet "The producer MOD-0188 is `reserved / planned` and has no pack" is r1 history.
+- No DEMAND v1.1 is planned. DEMAND v1 stays FROZEN and unchanged, and new MOD-0188 / MOD-0189 flows use v2 (MOD-0188 AC-D29 and §15). The r1 criterion "a DEMAND v1.1 returns plan ID, version and checksum" therefore cannot be met as written and is read as G-1 below.
+- The Demand v2 producer contract `services/Diten.PlanningService/contracts/drafts/demand-v2.openapi.yaml` is `2.0.0-draft.1`, DRAFT (not frozen, not published). The frozen MOD-0189 bound-run contract 1.0.0 is an in-service binding for MOD-0189 runs (K-7); it is not a producer API for MOD-0190.
+- Composition today: `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:122-133` composes S&OP and Capacity only with a non-production demand fixture seed; production carries none, so both stay uncomposed.
+
+Demand v2 identity names (producer draft; the bound-run contract uses the same vocabulary): plan identity → `revisionId` (bound-run `demandRevisionId`); version → `stateVersion` (bound-run `demandStateVersion`) and/or `contentVersion` (bound-run `demandContentVersion`); checksum → `IntegrityProof { definitionId, digest }` (bound-run `demandIntegrity`, K-1; `definitionId` is `MOD0188-CANONICAL-1/SHA-256` or `MOD0188-CANONICAL-2/SHA-256`).
+
+Uptake gate — every row is required; none is met today:
+
+| # | Condition | State |
+|---|---|---|
+| G-1 | The Demand v2 producer contract is frozen by a central decision, with revision identity, version and `IntegrityProof` readable by a consumer outside `Diten.PlanningService` | open — DRAFT `2.0.0-draft.1` |
+| G-2 | Owner decision on the mapping of MOD-0190's `demandPlanId` / `demandPlanVersion` / `sourceChecksum` to `revisionId` / (`stateVersion` or `contentVersion`) / `IntegrityProof` | open question (Beste) |
+| G-3 | SANDOP-CAPACITY consumer change decided: frozen 3.0.0 carries `demandPlanId`, `demandPlanVersion` and `sourceChecksum` as opaque strings (`docs/analysis/contracts/sandop-capacity.openapi.yaml`); carrying `definitionId` or a typed version needs a new contract version shared with MOD-0192 | open question (Beste) |
+| G-4 | Transport and identity of the cross-service read: MOD-0190 runs in `Diten.SupplyChainService` (5066), the producer in `Diten.PlanningService` (5068). Gateway (`/api/v2/demand/{everything}` exists, `gateway/Diten.ApiGateway/ocelot.json:11-17`) or a direct service call; user JWT or service token; which permission (MOD-0188 §14 describes `demand.plans.consume` for the MOD-0189 service identity) | open question (Beste) |
+| G-5 | A real Demand v2 reader replaces `IDemandFixtureReader`, so a composed host never runs on an empty fixture set (the K4 rule above) | open |
+| G-6 | What a recorded snapshot or sign-off means when its revision later becomes `Superseded` or `Invalidated` (MOD-0190 keeps its own provenance and stores no series) | open question (Beste) |
+
+Fixed by the bound-run contract and not changed here: bound historical reading is for MOD-0189 runs only; MOD-0190 gets no `Superseded` content read (bound-run §7, §11). MOD-0190 reads only what the producer API grants once frozen; the bound-run names are cited only so both consumers share one vocabulary. This r2 gate also governs the uptake sentence in §23.10, which still names DEMAND v1.1 as r1 text.
 
 ## 23. Tenant UI scope (UI-REVISION-01) — GoldenReferenceSlim
 
@@ -574,3 +600,8 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 2. Closed: DCP-009 §21.1 no longer excludes MOD-0190 (applied DCP-009 text SHA-256 `ab728d67662037cd6bb73a8f5ad89f82c8fac64f2faf364d72d874cd21328fdf`; approved in `docs/records/decisions/2026-09/mvp6-text-patch-q83-signoff-owner-decision-01.md` (SHA-256 `d27458e19cda13c7453bd3c5378c22286078b3551f081ae5d91f0db1aff381da`)).
 3. The S&OP UI is scoped (§23) but not built; routes and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
 4. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 25. Changelog
+
+- **r2 (2026-11-25) — Demand v2 uptake gate, draft.** Author: module-pack-author agent (Claude, WMS CT session); approver: Beste (author ≠ approver). Source: `execution/domains/supply-chain-execution/work-packs/WP-MOD0189-BOUND-RUN-CONTRACT.md` 1.0.0 FROZEN and `docs/records/decisions/2026-11/mod0188-demand-v2-field-names-owner-decisions-01.md` K-1…K-12 (commit `66b165806`); measured at HEAD `d4377ac56`. Added: künye `approval_status` and `revision`; the r2 block at the end of §22; this section. Nothing of r1 deleted; no AC, owned path, hash or business rule changed. Identity preflight re-run 2026-11-25: OK. Open questions: G-2, G-3, G-4, G-6 (§22 r2).
+- **r1 (text at HEAD `d4377ac56`, LF sha256 `eb942e08bd15d1805bc866ce24892ff38cb75b909a0421cc5d54fd1eeeea091b`)** — owner-promoted isolated pack (§21–§24). Revision label given retroactively by r2.

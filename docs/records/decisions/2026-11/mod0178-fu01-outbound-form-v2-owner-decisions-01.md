@@ -91,3 +91,11 @@ Taslak dosya CRM dalındadır (`docs/analysis/contracts/drafts/crm-account-looku
   taslak MOD-0178'i "aday" yazar ("MOD-0178 paketi bugün bu okumayı içermez") — tüketici paket MOD-0178-FU01'dir (r4, ready-for-dev);
   CRM'e donmada x-consumers ve §5a'ya "MOD-0178-FU01 (MOD-0178 çıkış sevkiyatı formu v2)" yazılması iletilir. Pakete işleniş: sonraki
   içerik revizyonunda (§19 açık kalanlar, Q-13 satırı).
+
+## Ek — 2026-11-20: Q-11 Reference Data adı (Beste)
+
+- CT ölçümü (2026-11-20, kabul kaydı): dev `country` kümesinde `label_<dil>` öznitelikleri yok; ülke adları yedi dilde de kümenin tek
+  etiketiyle (Türkçe) geliyor.
+- **Karar (b):** ülke / şehir / ilçe adı **kümenin kendi etiketiyle** gösterilir: `label_<dil>` varsa o, yoksa kümenin etiketi
+  (`ReferenceValueDto.TextFor`, bugünkü kod). Paketin "7 dilde ad yoksa en'e düşülür" önerisi uygulanmaz; çok dilli etiket yükleme Reference
+  Data'nın işidir, FU01'in kabul kapısı değildir. Q-11 kapandı. Pakete işleniş: sonraki içerik revizyonunda (§19.5 Q-11 satırı).

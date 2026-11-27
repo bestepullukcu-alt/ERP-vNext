@@ -54,6 +54,10 @@ Platform & Shared Services (PSS) domain'i, Diten ERP vNext ekosistemi için tena
 - **Persistence:** MongoDB tek instance, multi-tenant logical isolation (TenantId zorunlu). Ref: [.antigravity/rules/multi-tenancy.md](../../../.antigravity/rules/multi-tenancy.md), [mongo-indexing.md](../../../.antigravity/rules/mongo-indexing.md)
 - **Event Bus:** In-process MediatR (lightweight internal seam). Cross-service broker ertelenmiştir.
 - **Vault:** appsettings + environment variables (thin abstraction). External vault (NEW-001) ertelenmiştir.
+  Genişleme (MOD-0012-FU01, 2026-11-14, CT Q-12): kiracı başına çalışma zamanında yazılan sırlar Platform'da MongoDB'de **zarf
+  şifrelemeyle** saklanır (kayıt DEK + kiracı KEK, AES-256-GCM); ana anahtar (KEK) yine yalnız ortam değişkeninden / `ISecretsProvider`
+  üzerinden okunur ve `IKeyEncryptionKeyProvider` dikişi KMS / HSM'e açıktır. Dış kasa ürünü (NEW-001) hâlâ ertelenmiştir; değer
+  okuma (resolve) yalnız izinli servis jetonuyla, Gateway rotası olmadan (paket §8).
 - **Workflow (MOD-0023):** Approvals-focused MVP; BPMN motoru ertelenmiştir.
 - **Observability:** `ILogger` + correlation ID middleware. External SIEM/APM ertelenmiştir.
 - **Lokalizasyon:** Platform tarafı için yalnızca `en` + `tr` (cross-cutting kural; bkz [master-plan §7.15](../../../docs/reference/modules/platform/master-plan.md)).

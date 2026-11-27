@@ -7,7 +7,9 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack d035d420… (PACK-ACTIVATE-01, 2026-09-20) bound to CT-accepted bounded work package MVP6-MOD0187-CT-ACCEPT-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+approval_status: pending
+revision: "r1 (2026-11-27) — §34 (new): the claim's correlation root is the service's (option C of MOD-0183 r11, as applied to Returns by MOD-0186 r11/r12, applied to Claims; mandate: Beste 2026-11-27 'devam edelim' on D7, docs/records/decisions/2026-11/ct-owner-decisions-2026-11-27.md §3; precedent docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md). The root is the X-Correlation-Id the service received on createClaim (behind the Gateway: the Gateway's); createClaim no longer compares it with the shipment's lifecycleCorrelationId, transitionClaim and idempotent replay do not compare the request's correlation with any root; 409 CLAIM_CORRELATION_MISMATCH leaves the Claims operations and, as no other operation declares it, the contract; the Web adapter sends its own trace and no longer needs the root. Cause (CT measurement 2026-11-27 on main 85e3b1eec, inference from code, not live): ClaimRepository.cs:32, :71, :102 answer 409 behind the Gateway on every create, transition and replay; the ReturnsClaimsHttpHost.cs:112-117 stub echoes the request's correlation as the shipment root, so the tests did not see it. New rules CLR-1…CLR-9, AC CLC-1…CLC-9 with sabotages, slice DL-2, SHIPMENT-BUNDLE 3.8.0 proposed (CT decision) with claims-semantics-v3.1.0.md. Changed outside §34: front matter, §7, §8, §16 (correlation item), §32.4 (adapter headers note), §32.8 (CLAIM_CORRELATION_MISMATCH row), §32.11 (CU-VS1), slice table (new). The text before r1 is the baseline LF sha256 251512c7e0687dfb4147379a2e938f1f21655d5fe3221d37cd2d2abce5906ec1 (main 85e3b1eec); this pack had no numbered revision before r1. Identity preflight re-run 2026-11-27: OK."
+status_note: "Owner-promoted isolated pack d035d420… (PACK-ACTIVATE-01, 2026-09-20) bound to CT-accepted bounded work package MVP6-MOD0187-CT-ACCEPT-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open. r1 (2026-11-27, §34: correlation root behind the Gateway, option C; slice DL-2): ready-for-dev / approval_status pending — needs an independent review (CT-APR-02) and a CT-APR-01 row before code; that approval covers DL-2 only. DL-2 also waits for the SHIPMENT-BUNDLE / Claims annex version of §34.2."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -71,12 +73,13 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
 | MOD-0183 Shipment/POD | Required before runtime | Claim must reference an existing eligible shipment |
 | MOD-0184 Carrier | Optional reference | No Carrier mutation or local copy |
 | `SHIPMENT-BUNDLE` v1 | Frozen | Claim schema/lifecycle/event/mock authority |
+| SHIPMENT-BUNDLE 3.8.0 (proposed) + Claims annex `claims-semantics-v3.1.0.md` (r1, §34.2) | Not written; proposal and patch are MVP-6 CT work, written before DL-2 development and checked with `git apply --check` (CLC-9); number and base are a CT decision (§34.7 O-187-2) | DL-2 does not merge before both are on the line; single writer MVP-6 CT; this pack touches no contract file |
 | Warehouse outbound | Frozen read-only upstream seam exists | No inbound return, receiving or automatic ingress implied; see §21 |
 
 ## 8. Runtime Constraints
 
-Prospective amounts use decimal strings, never float. Mutations are tenant/LE scoped, idempotent and carry UUID
-correlation unchanged into events. Settlement state records an operational outcome and does not execute payment; no settlement-reference input is defined.
+Prospective amounts use decimal strings, never float. Mutations are tenant/LE scoped, idempotent and carry the claim's UUID
+correlation root unchanged into events (r1: the root is the correlation the service received on `createClaim`, §34 CLR-1; the request correlation of a later command is its trace, CLR-4; the envelope `correlationId` is no link to the shipment — the link is `shipmentId`). Settlement state records an operational outcome and does not execute payment; no settlement-reference input is defined.
 This draft grants no runtime authority.
 
 ## 9. Layout & Shell Contract
@@ -123,7 +126,7 @@ Use frozen `SHIPMENT-BUNDLE` `/claims**`; only a separate integration-agent WP m
 - [x] Shipment/POD is consumed through MOD-0183 contract/reference only. — **✅ MET** (`ClaimReferenceTests`; BOUNDARY-REFS 0 namespace refs; Q151-02 and G5 runs; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Amount precision and lifecycle transitions are deterministic and atomic. — **✅ MET** (`ClaimAmountTests.*`, `ClaimLifecycleTests.CanTransition_All49Pairs…`, `ClaimAtomicityTests`; `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
 - [x] Settled status does not create a payment/AP/AR record. — **✅ MET** (`ClaimSettlementBoundaryTests.Settled_and_closed_write_only_claim_collections…` (2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
-- [x] Correlation ID remains unchanged through all claim events. — **✅ MET** (`ClaimSettlementBoundaryTests.Every_claim_event_type_carries_the_shipment_root` (7/7, 2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`)
+- [ ] The claim's correlation root is carried on every claim event (r1: the root stored at createClaim, §34 CLR-1, CLR-3). — **↻ RE-MEASURE (r1)** (old evidence measured the inherited Shipment root: `ClaimSettlementBoundaryTests.Every_claim_event_type_carries_the_shipment_root` (7/7, 2026-10-19); `docs/records/audits/2026-10/mvp6-pack16-evidence-audit-01/REPORT.md`; under r1 re-measured by CLC-4 and CLC-8)
 
 ## 17. Test Expectations
 
@@ -593,6 +596,9 @@ Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UU
 `lifecycleCorrelationId`** for create/transition; `Idempotency-Key` = browser per-intent key forwarded exactly. Optional
 `X-Tenant-Id`/`X-Legal-Entity-Id` and scope query keys are never sent. Antiforgery on every POST.
 The browser-supplied `shipmentId` on a transition is a lookup hint only; the backend root check (409 `CLAIM_CORRELATION_MISMATCH`) is authoritative.
+**r1 (§34 CLR-8, CLR-9):** from DL-2 the adapter sends its own trace as `X-Correlation-Id` on create and transition, as for GET, and no
+longer reads `lifecycleCorrelationId`; the backend checks no root and `CLAIM_CORRELATION_MISMATCH` leaves. The paragraph above and the
+Q279 measurement below describe the rule before DL-2.
 
 **Measured 2026-10-03 (Q279, ledger rows Q279 and Q285 in `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`):** the root rule
 above is enforced by the backend for every caller of `createClaim`, not only this adapter. Against a started service, a create with a
@@ -655,7 +661,7 @@ dialog, manual `Swal.fire`, or inline handler (form surface: gap §32.13 G-MODAL
 | `CLAIM_NOT_FOUND` (404) | One identical safe-not-found text + support reference for unknown, foreign-scope and soft-deleted targets; action closed; list reload; hidden surfaces inert and not keyboard-reachable; late responses never re-expose them |
 | `CLAIM_SHIPMENT_INELIGIBLE`, `CLAIM_CARRIER_MISMATCH`, `CLAIM_AMOUNT_INVALID`, `CLAIM_APPROVAL_AMOUNT_INVALID`, `CLAIM_APPROVED_AMOUNT_NOT_ALLOWED` (422) | Specific localized message; inputs kept |
 | `INVALID_CLAIM_TRANSITION` (422) | Stale-state conflict + support reference + reload |
-| `CLAIM_CORRELATION_MISMATCH` (409) | "Request no longer matches the shipment record"; no automatic new key |
+| `CLAIM_CORRELATION_MISMATCH` (409) | **r1: no longer sent by any Claims operation (§34 CLR-7).** The row, the adapter's published-code entry (`SupplyChainClaimsController.cs:44`), the page map and branch and the `ErrClaimCorrelationMismatch` text of the 7 `ClaimsIndex` languages leave in DL-2, in the same slice as the contract version that removes the code (§34.2, CLR-9). Until then the old text ("Request no longer matches the shipment record"; no automatic new key) stays |
 | `IDEMPOTENCY_KEY_REUSED` (409) | Stop retry; new user intent required |
 | `CLAIM_REFERENCE_INVALID` (502) | Reference data invalid; no retry loop |
 | `CLAIM_REFERENCE_INCOMPLETE`, `CLAIM_REFERENCE_UNAVAILABLE`, `CLAIM_STORAGE_UNAVAILABLE` (503) | Temporarily unavailable; same-key retry; unknown commit never shown as rolled back |
@@ -708,7 +714,7 @@ Full row text with HTTP/browser/DB expectations, owner, evidence type and depend
 
 | ID | Criterion | Readiness |
 |---|---|---|
-| CU-VS1 | Early vertical slice: real-Auth actor resolves a Dispatched Shipment (non-null root, no carrier), creates a claim `250.00 EUR`; 201 Open with Gateway `X-Correlation-Id` = Shipment root; +1 claim/receipt/audit/Pending outbox; reload shows `250.00` | BLOCKED (target, gateway, G-SHIPREAD, seed) |
+| CU-VS1 | Early vertical slice: real-Auth actor resolves a Dispatched Shipment (non-null root, no carrier), creates a claim `250.00 EUR`; 201 Open with the Gateway's `X-Correlation-Id` as the claim's root (r1, §34 CLR-1; before r1: = Shipment root); +1 claim/receipt/audit/Pending outbox; reload shows `250.00` | BLOCKED (target, gateway, G-SHIPREAD, seed) |
 | CU-01…CU-03 | Same-origin chain; list query parity; envelope/absent fields | BLOCKED (gateway) / READY |
 | CU-04…CU-06 | Exact amount text; skeleton/empty/error; UAS-001 no read | READY |
 | CU-07, CU-08 | Create CTA gating (BLOCKED G-SHIPREAD); action gating matrix with 403 zero-write | BLOCKED / READY |
@@ -830,3 +836,160 @@ The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navi
 2. `CREATE` and every row action also need `supplychain.shipments.read` (G-SHIPREAD); the single-key action model cannot express that conjunction.
 3. The Claims UI is approved (§32) but not built; the route and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
 4. Runtime tests R-02…R-04 need a native executor and the integrated target.
+
+## 34. Correlation root behind the Gateway (r1)
+
+> **Revision r1 — `ready-for-dev`, `approval_status: pending`.** Option C of MOD-0183 r11 (pack section "Correlation root behind the
+> Gateway (r11)", Natig 2026-11-15), as MOD-0186 r11/r12 §36 applied it to Returns (Beste 2026-11-20 and 2026-11-24,
+> `docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md`), applied to Claims. Mandate: Beste, 2026-11-27,
+> "devam edelim" on D7 (`docs/records/decisions/2026-11/ct-owner-decisions-2026-11-27.md` §3; `docs/roadmap/plans/mvp6-development-plan-v10.3.md`
+> D7). Needs an independent review (CT-APR-02) and a CT-APR-01 row before any code; that approval covers DL-2 only. Code facts below are
+> measured on `main` `85e3b1eec` (2026-11-27; the Claims sources are byte-identical on the MVP-1 line); the claim that the rule fails
+> behind the Gateway is an inference from code, not a live measurement.
+
+**Cause.** The Gateway does not adopt a caller's `X-Correlation-Id`: it removes the caller's header and forwards a value it minted
+(`gateway/Diten.ApiGateway/Observability/EdgeCorrelation.cs:16-17`, `CorrelationPropagationDelegatingHandler.cs:24-27`); the caller's
+value travels apart on `X-Client-Correlation-Id`. This is a security decision and stays. The Claims service still requires the request's
+correlation to equal a root (prefix `services/Diten.SupplyChainService/src/Diten.SupplyChainService.`):
+
+| Place | Check |
+|---|---|
+| `Persistence/Features/Claims/ClaimRepository.cs:32` | replay: the receipt's stored correlation ≠ request → 409 `CLAIM_CORRELATION_MISMATCH` (create and transition; reached from `:65`, `:94` and the post-commit recovery `:169`) |
+| `Persistence/Features/Claims/ClaimRepository.cs:71` | create: the shipment's `lifecycleCorrelationId` (`snapshot.Root`) ≠ request → 409 |
+| `Persistence/Features/Claims/ClaimRepository.cs:102` | transition: the claim's `CorrelationRoot` ≠ request → 409 |
+
+The Web adapter sends the Shipment root as `X-Correlation-Id` on create and transition (`frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs:233`
+`ClaimRootResolution.From`, `:247` header = `root.Root`; log lines `:250-251`, `:257-258` write the root), and the Gateway replaces it, so
+behind the Gateway every create, transition and replay answers 409. The service tests do not see it: the HTTP host's Claims reader stub
+echoes the request's correlation back as the shipment root (`services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Common/ReturnsClaimsHttpHost.cs:112-117`,
+file comment `:41-45`). Q279 (§32.4, 2026-10-03) measured the old rule without the Gateway.
+
+**Decision.** Option C, as for Shipments (MOD-0183 r11) and Returns (MOD-0186 r11): the service decides the root. Options A (match on
+`X-Client-Correlation-Id`) and B (a body field) are not chosen, for the reasons recorded in MOD-0183 r11. Confirming C for Claims is open
+item O-187-1 (Beste).
+
+### 34.1 Rules
+
+| # | Rule |
+|---|---|
+| CLR-1 | The claim's root is the `X-Correlation-Id` the service received on `createClaim` (behind the Gateway: the Gateway's). It is stored as `Claim.CorrelationRoot` at create (`ClaimRepository.cs:76` already stores the request's value; with CLR-2 it is no longer forced to equal the shipment's), never changed, never derived from the shipment and never taken from `X-Client-Correlation-Id`. The link to the shipment stays `ShipmentId`. Claims created before DL-2 keep the root they have (the shipment's); nothing is back-filled. |
+| CLR-2 | `createClaim` does not compare the shipment's `lifecycleCorrelationId` with the request (`ClaimRepository.cs:71` removed); `transitionClaim` does not compare the request's correlation with the claim's root (`:102` removed). A different correlation is not a refusal. No other check moves: scope, permissions, lifecycle, carrier, amount rules, `RequireIndexes`, and the reference reader's `CLAIM_REFERENCE_INCOMPLETE` (503) / `CLAIM_REFERENCE_INVALID` (502) for a missing or malformed shipment root (`Infrastructure/Features/Claims/ClaimReferenceReader.cs:10-11`, `:49-50`) stay as they are (O-187-3). |
+| CLR-3 | Every claim event and outbox envelope and every `claims_audit` row carries the stored root: the envelope's `correlationId` (`ClaimRepository.cs:132`, today the request value `root`) and the audit's `CorrelationRoot` (`:127`, today the request value) are written from `claim.CorrelationRoot`. On create the two are equal. `causationId` is unchanged. |
+| CLR-4 | The request's correlation is the command's trace: it is the response `X-Correlation-Id` and `error.correlationId` (`Api/Features/Claims/ClaimContextMiddleware.cs:50-51`), it is written on that command's idempotency receipt in the existing field (`ClaimRepository.cs:119`; field name kept, no migration, read as the trace) and on its log lines (`ClaimContextMiddleware.cs:109`). The shipment read keeps its own fresh trace (`ClaimReferenceReader.cs:96`, unchanged). |
+| CLR-5 | Replay: a receipt is found by (tenant, legal entity, operation, target-or-create, key). Same fingerprint → the original result with `idempotentReplay: true` and the **current** request's correlation in the header; the correlation is not compared (`ClaimRepository.cs:32` removed; the comment `:63` "root is checked before fingerprint" changes). Different fingerprint → 409 `IDEMPOTENCY_KEY_REUSED` as today. Same rule as MOD-0183 R11-5 and MOD-0186 RR-5. |
+| CLR-6 | No caller value decides a root or gates a write: `X-Client-Correlation-Id` is not read by the service. The 400 `INVALID_REQUEST` for a missing or non-UUID `X-Correlation-Id` (`ClaimContextMiddleware.cs:68`) is unchanged; its generated trace (`:50`) is never a root. |
+| CLR-7 | 409 `CLAIM_CORRELATION_MISMATCH` leaves `createClaim` and `transitionClaim`: no Claims path returns it. No other operation declares the code, so it leaves the contract (34.2 K-3) and, in the same change, `ContractErrorCodes.ClaimCorrelationMismatch` (`Application/Common/ContractErrorCodes.cs:95`, `:121`) and its message entry (`Api/Features/Claims/ClaimContractError.cs:21`); `ContractErrorCodeParityTests` stays green in both directions. |
+| CLR-8 | Web adapter: `X-Correlation-Id` on every Claims call is the adapter's trace for that call (as for GET today, `SupplyChainClaimsController.cs:182`, `:302`). It no longer reads `lifecycleCorrelationId`; `ClaimRootResolution` (`Models/SupplyChain/Claims/ClaimViewModels.cs:126`) and its adapter-originated 503 / 502 mapping (`SupplyChainClaimsController.cs:233-240`) leave the mutation path. The answer log line writes the adapter's trace together with the `X-Correlation-Id` of the Gateway's response (the correlation the service received; on create, the claim's root), read before the adapter replaces the response header with its trace (`:256`), so the support reference the user sees reaches the service log and the claim's root without the Gateway request log (MOD-0186 RR-8 wording). The shipment pre-read stays for its 404 mapping (O-187-4). The browser never had the root and still does not. |
+| CLR-9 | UI code set: `CLAIM_CORRELATION_MISMATCH` leaves the adapter's published-code list (`SupplyChainClaimsController.cs:44`) and comment (`:133`), the page map and branch comment (`wwwroot/assets/js/SupplyChain/Claims/index.js:81`, `:657`), `index.l10n.js:112`, `Views/SupplyChain/Claims/_IndexL10n.cshtml:124`, the `ErrClaimCorrelationMismatch` key of the 7 `ClaimsIndex` languages (`Resources/Views/SupplyChain/Claims/ClaimsIndex.{en,tr,fr,es,zh,ar,ru}.resx:95`) and the Web tests that list it (`frontend/Diten.Web.Tests/Forms/ClaimFormContractTests.cs:250`, `JavaScript/ClaimIndexBehaviorTests.cs:152`), in DL-2, together with the contract version of 34.2. |
+
+### 34.2 Contract versions needed
+
+No contract file is touched here. Single writer MVP-6 CT. **Proposed number: SHIPMENT-BUNDLE 3.8.0**, one minor shared with MOD-0185 r1
+(Loads, same defect) — because 3.6.0 is MOD-0186 Returns and 3.7.0 is MOD-0183 warehouse intake (CT decision
+`docs/records/decisions/2026-11/shipment-bundle-version-assignment-ct-decision-01.md`), and the change has the same shape and the same
+justified semver exception as 3.6.0 (removing an error the server no longer sends after the slice breaks no client; the only client is the
+Web Claims adapter and page, which drop it in the same slice, CLR-9). Base: the version on the line when the patch is written (3.7.0 under
+the current order). The number, the base, and one shared or two separate versions are CT decisions (O-187-2). The proposal and patch are CT
+work, written before DL-2 development and measured with `git apply --check` on the line DL-2 merges into; CLC-9 measures DL-2 against
+that patch. Places below are measured on the 3.6.0 result (CT scratch copy of the 3.6.0 patch on 3.5.1, 2026-11-27); they move with 3.7.0.
+
+| # | Place | Change |
+|---|---|---|
+| K-1 | `createClaim` and `transitionClaim` descriptions (`:3003-3011`, `:3027-3035`) and the `queryClaims` description (`:2701-2709`) | annex v3.0.0 → v3.1.0; the embedded JSON's `"root": [409, "CLAIM_CORRELATION_MISMATCH"]` leaves; a 3.8.0 paragraph states CLR-1…CLR-6 (root = the correlation the service received on `createClaim`; later commands and replays not compared) |
+| K-2 | `components/parameters/CorrelationId` (`:3336-3343`) | its "Loads ve Claims yollari degismez" sentence becomes: on Claims paths the "envelope correlation = request correlation" rule holds only for `createClaim` |
+| K-3 | 409 of `createClaim` (`:2862-2868`) and of `transitionClaim` (`:3186-3192`) | the `CLAIM_CORRELATION_MISMATCH` example leaves both; the 409 status stays (`IDEMPOTENCY_KEY_REUSED`). The code then appears nowhere in the contract → CLR-7 constant removal |
+| K-4 | Claims annex `claims-semantics-v3.0.0.md` | a new file `claims-semantics-v3.1.0.md` (v3.0.0 kept) replaces `:8` ("different valid UUID→409 CLAIM_CORRELATION_MISMATCH"), `:125` (create needs the Shipment-root seam), `:138-139` (root check before fingerprint), `:141-147` (create uses the Shipment root; transitions/replays must match; same-root replay), `:179` (code row), `:188-191` (H02, H03, "wrong root+changed payload"). It keeps the 503 / 502 shipment-root rules for create (O-187-3) and says: the `correlationId` of a claim envelope carries no link to the shipment; the link is `shipmentId` only; claims created before DL-2 carry the shipment's root |
+
+DocsPathGuard: the YAML target is re-pinned from the base's digest to the 3.8.0 digest in a separate owner record (3.5.0 / 3.5.1 / 3.6.0
+pattern). **Dependency:** DL-2 does not merge before the new SHIPMENT-BUNDLE version and annex version are on the line it merges into;
+CT proposal: the patch lands in the same commit as the service change, so the contract never omits a code the server still sends.
+Gateway routes are unchanged.
+
+### 34.3 Not changed
+
+Lifecycle and arrows, permissions (`supplychain.claims.*`, G-SHIPREAD), scope and 404 rules, amounts and decimal rules, carrier rules,
+event types and payloads, status codes other than CLR-7, the §32 screens other than CLR-9, every MOD-0183, MOD-0185 and MOD-0186 file.
+
+### 34.4 Other modules
+
+MOD-0186 DL-6 changes only the Returns stub of the shared `ReturnsClaimsHttpHost.cs` (`StubReturnReferenceReader`, `:104-108`); DL-2 changes
+only the Claims stub (`StubClaimReferenceReader`, `:112-117`) and must run after DL-6 (34.6). MOD-0185 r1 (Loads) fixes the same defect
+for Loads and is proposed to share 3.8.0 (O-187-2).
+
+### 34.5 Acceptance and sabotage
+
+Service tests under `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/` and the HTTP host; Web tests in
+`frontend/Diten.Web.Tests/`. **Gateway-like host:** in every CLC row the Claims reader stub of `ReturnsClaimsHttpHost` returns a shipment
+root fixed when the host is built, never the request's correlation, and each request carries a new correlation, as the Gateway does.
+Each sabotage turns its row red on production code.
+
+| AC | Measurable acceptance | Sabotage |
+|---|---|---|
+| CLC-1 | Create over HTTP with correlation c1 while the shipment's root is s0 ≠ c1: 201; stored `CorrelationRoot` = c1; `ClaimOpened` envelope `correlationId` = c1 | S-CLC-1: restoring `ClaimRepository.cs:71` turns it red |
+| CLC-2 | Transitions Investigating, Approved (with amount), Settled, Closed (and the Rejected and Withdrawn paths) each with a new correlation c2, c3…: 200, not 409 | S-CLC-2: restoring `:102` turns it red |
+| CLC-3 | Every envelope and every `claims_audit` row of CLC-1 and CLC-2 carries c1; each command's receipt carries its own request correlation; each response `X-Correlation-Id` and `error.correlationId` equals that request's correlation. Replaces the assertion of `ClaimSettlementBoundaryTests.Every_claim_event_type_carries_the_shipment_root` (§16) | S-CLC-3: writing the request correlation into the envelope (`:132`) or the audit (`:127`) turns it red |
+| CLC-4 | §16 item: the 7 event types carry the claim's root (CLC-3 over all types) | as CLC-3 |
+| CLC-5 | Replay of create and transition with the same key and body and a new correlation: original result, `idempotentReplay: true`, header = the new correlation, no second write, receipt, audit or event; a changed body → 409 `IDEMPOTENCY_KEY_REUSED`. `ClaimReplayTests.cs:39` (`wrongRoot` → 409) becomes "a different correlation is accepted" | S-CLC-5: restoring `:32` turns it red |
+| CLC-6 | Host self-test: two requests with different correlations to the Claims reader stub return the same fixed shipment root, different from both | S-CLC-6: making the stub echo `context.CorrelationId` again turns it red |
+| CLC-7 | Web adapter: create and transition send the adapter's trace; the fixture shipment's `lifecycleCorrelationId` appears in no outgoing header, log line or response; the adapter originates no 503 / 502 root code; the answer log line carries the trace with the `X-Correlation-Id` of the Gateway's response (fixture: a value different from the trace); the browser receives the trace | S-CLC-7: sending the root as `X-Correlation-Id` turns it red; S-CLC-7b: leaving the Gateway response's `X-Correlation-Id` out of the answer log line turns it red |
+| CLC-8 | Through the real Gateway (lane stack): create, then Investigating, Approved and Settled on that claim succeed; a caller-sent `X-Client-Correlation-Id` changes nothing; the stored root equals the Gateway's create correlation (also measures CU-VS1's root clause and the §16 item) | — (E4 evidence) |
+| CLC-9 | The SHIPMENT-BUNDLE / `claims-semantics` proposal and patch the CT writes for 34.2 applied byte-for-byte; all contract example tests green; `ContractErrorCodeParityTests` green with `ClaimCorrelationMismatch` removed; no Claims UI file, adapter list or test names `CLAIM_CORRELATION_MISMATCH`; the 7 `ClaimsIndex` languages stay in parity | Any contract or annex byte that differs from the CT patch, a leftover constant (parity red) or a leftover UI reference turns it red |
+
+The full SupplyChain and Web test assemblies run unfiltered; the phase-1 gates and the Python script tests run before any PR.
+
+### 34.6 Owned files (DL-2)
+
+Prefix S as in §25. Changed: `S.Persistence/Features/Claims/ClaimRepository.cs`, `S.Application/Common/ContractErrorCodes.cs` (only the
+`ClaimCorrelationMismatch` constant and its list entry; shared file — the same-change exception of 34.2, as MOD-0183 DL-8 §5),
+`S.Api/Features/Claims/ClaimContractError.cs` (`:21` only); tests `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/{ClaimReplayTests.cs, ClaimSettlementBoundaryTests.cs}`,
+new `…/Claims/ClaimCorrelationRootTests.cs`, and `…/Common/ReturnsClaimsHttpHost.cs` (Claims stub and the file comment only). Web:
+`frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs`, `frontend/Diten.Web/Models/SupplyChain/Claims/ClaimViewModels.cs`
+(`ClaimRootResolution`, if no other user remains), and the CLR-9 files (`wwwroot/assets/js/SupplyChain/Claims/{index.js, index.l10n.js}`,
+`Views/SupplyChain/Claims/_IndexL10n.cshtml`, `Resources/Views/SupplyChain/Claims/ClaimsIndex.{en,tr,fr,es,zh,ar,ru}.resx`) with
+`frontend/Diten.Web.Tests/{Forms/ClaimFormContractTests.cs, JavaScript/ClaimIndexBehaviorTests.cs}` and the Claims controller tests.
+Contract files (34.2) only by applying the CT patch. Not written by DL-2: `gateway/**`, service `Program.cs`, any Shipment, Returns or
+Loads source, the Returns stub. **Order:** DL-2 starts after MOD-0186 DL-6 is on its line (shared host file; 3.8.0 builds on 3.6.0).
+
+**Audited Events (AUD-001):** DL-2 adds no write command; the `CreateClaimCommand` and `TransitionClaimCommand` audit rows are unchanged
+(the module-local `claims_audit` row keeps its fields; only the `CorrelationRoot` value source changes, CLR-3).
+
+### 34.7 Open items
+
+- **O-187-1 (Beste):** confirm option C for Claims (the 2026-11-27 "devam edelim" covers the D7 fix; this pack proposes C as for Returns).
+- **O-187-2 (CT / Beste):** the contract number and grouping. Proposal: one SHIPMENT-BUNDLE 3.8.0 for Claims and Loads (one patch, one
+  review, one DocsPathGuard re-pin, the parity change once), with a justified semver exception as 3.6.0. Base 3.7.0 under the current
+  order; if MOD-0183 DL-5 (3.7.0) is still gated when DL-2 is ready, the CT re-decides the order (3.7.0 is only assigned, not written).
+- **O-187-3 (CT / Beste):** `CLAIM_REFERENCE_INCOMPLETE` (503) and `CLAIM_REFERENCE_INVALID` (502) still refuse a create when the
+  shipment detail has no valid `lifecycleCorrelationId`, although the claim no longer uses it. Proposal: keep them in r1 (CLR-2, no other
+  check moves) and decide in the annex version, as MOD-0186 O-R11-2.
+- **O-187-4 (CT):** the adapter's shipment pre-read now only maps a 404 the backend gives anyway. Proposal: keep it in DL-2; removing it is
+  a later clean-up (as MOD-0186 O-R11-3).
+
+### 34.8 Revision r1 — what changed and why
+
+| Place | Before r1 | r1 |
+|---|---|---|
+| Front matter | no `revision`, no `approval_status` | `revision` r1, `approval_status: pending`, `status_note` r1 sentence |
+| §7 | — | SHIPMENT-BUNDLE 3.8.0 (proposed) + `claims-semantics-v3.1.0.md` row |
+| §8 | "carry UUID correlation unchanged into events" | the claim's root; request correlation = trace; envelope correlation is no link to the shipment |
+| §16 correlation item | ✅ MET (shipment root) | ↻ RE-MEASURE by CLC-3, CLC-4, CLC-8 |
+| §32.4 | adapter sends the Shipment root | r1 note: adapter's trace from DL-2 (CLR-8, CLR-9) |
+| §32.8 `CLAIM_CORRELATION_MISMATCH` row | 409 shown | no longer sent; leaves with DL-2 and the contract |
+| §32.11 CU-VS1 | Gateway `X-Correlation-Id` = Shipment root | the Gateway's correlation is the claim's root |
+| §34, slice table | — | new |
+
+No other section changes meaning. Earlier text describing the Shipment-root rule (§23 rows, §28–§31, annex D187-05 citations, Q279) is
+history; where it conflicts with §34, §34 governs from DL-2 on.
+
+## Teslim dilimleri
+
+| dilim | ad | kapsadığı bölümler | gerekli kanıt seviyesi | plan yetenek kimliği | plan MVP |
+|---|---|---|---|---|---|
+| DL-1 | talep çekirdeği ve ekranı (önceki sürümlerde kabul edildi) | Owned Objects, Entity Fields, Accepted bounded scope binding, Tenant UI scope (UI-REVISION-01) — GoldenReferenceSlim | önceki sürümde | plan kimliği yok | plan satırı yok |
+| DL-2 | talep korelasyon kökü servisin (C yolu, r1) | Correlation root behind the Gateway (r1), Rules, Contract versions needed, Acceptance and sabotage, Owned files (DL-2) | E4 | plan kimliği yok | plan satırı yok |
+
+DL-1 names the work accepted before r1 (isolated core and UI, §31, §32); it is not re-opened. DL-2 (r1) covers CLC-1…CLC-9 and re-measures
+the §16 correlation item and the root clause of CU-VS1. It needs the SHIPMENT-BUNDLE and Claims annex versions of 34.2 on its line before
+merge and starts after MOD-0186 DL-6. It changes no Shipment, Returns or Loads file. Until DL-2 ships, every Claims create, transition and
+replay behind the Gateway answers 409 (inference from code, §34). Plan columns: the MVP-6 plan (`mvp6-development-plan-v10.3.md`, rows D7
+and MOD-0187) gives no capability id. CT-APR-01 note for r1: "only DL-2"; evidence level is a proposal.

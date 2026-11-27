@@ -1,0 +1,214 @@
+diff --git a/docs/analysis/contracts/shipment-bundle.openapi.yaml b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -12,7 +12,7 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.5.1
++  version: 3.6.0
+   x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+@@ -20,6 +20,8 @@
+     - INVENTORY
+     - "CONSUMES: WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)"
+   x-contract-version: v1
++  x-changelog:
++    - "3.6.0 — minor with a justified semver exception (MOD-0186 r12 §36, RR-1…RR-9; owner decisions Beste 2026-11-20 C path and 2026-11-24 O-R11-1 option C; docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md). Returns only: createReturn stores the X-Correlation-Id it receives as the return's root; transitionReturn, the §34 Received path and replays no longer compare the request's correlation with a root; the CORRELATION_ROOT_MISMATCH example leaves the 409 of createReturn and transitionReturn; the Returns annex is returns-semantics-v3.1.0.md (v3.0.0 kept as history). Exception: removing a declared error example is not additive, yet this is a minor version because from MOD-0186 DL-6 on no Returns path sends the code, so no consumer can receive it and removing it breaks none; the only consumers that name it for Returns (the Web Returns adapter and page) drop it in the same DL-6 change (RR-9). Loads keeps CORRELATION_ROOT_MISMATCH. No path, parameter, schema, status code or other error code changed. Versions before 3.6.0 have no line here."
+ servers:
+   - url: /api/shipment-bundle
+ security:
+@@ -1648,8 +1650,8 @@
+                     contractVersion: v1
+       description: '
+
+-        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+-        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
++        Returns normative semantics for SHIPMENT-BUNDLE 3.6.0. Normative returns-semantics-v3.1.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and the return''s correlation root. No Inventory/Warehouse HTTP, worker or
+         publisher.'
+     post:
+       tags:
+@@ -1837,13 +1839,6 @@
+               schema:
+                 $ref: '#/components/schemas/Error'
+               examples:
+-                CORRELATION_ROOT_MISMATCH:
+-                  value:
+-                    error:
+-                      code: CORRELATION_ROOT_MISMATCH
+-                      message: CORRELATION ROOT MISMATCH
+-                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                    contractVersion: v1
+                 IDEMPOTENCY_KEY_REUSED:
+                   value:
+                     error:
+@@ -2021,9 +2016,16 @@
+                     contractVersion: v1
+       description: '
+
+-        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+-        replay, entitlement, manual receiving and inherited Shipment root. No Inventory/Warehouse HTTP, worker or
+-        publisher.'
++        Returns normative semantics for SHIPMENT-BUNDLE 3.6.0. Normative returns-semantics-v3.1.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and the return''s correlation root. No Inventory/Warehouse HTTP, worker or
++        publisher.
++
++        3.6.0 (MOD-0186 r12 §36, RR-1…RR-5): the X-Correlation-Id the service receives on this request is the return''s
++        root, stored once and never changed; behind the Gateway it is the Gateway''s correlation. It is not compared with
++        the shipment''s lifecycleCorrelationId and never taken from X-Client-Correlation-Id; the link to the shipment is
++        shipmentId only. A replay with the same Idempotency-Key and body returns the original result with
++        idempotentReplay=true; the request''s correlation is not compared and the response X-Correlation-Id is the current
++        request''s. CORRELATION_ROOT_MISMATCH is no longer a 409 of this operation.'
+   /returns/{returnId}:
+     get:
+       tags: [Returns]
+@@ -2200,10 +2202,17 @@
+         (inventoryPosting NotPosted, reason PRE_WP_P1).
+
+
+-        Returns normative semantics for SHIPMENT-BUNDLE 3.0.0. Normative returns-semantics-v3.0.0.md governs module-specific validation, numeric/instant
+-        replay, entitlement, manual receiving and inherited Shipment root. 3.4.0: the only Inventory HTTP call is the
+-        CUSTOMER_RETURN posting on Received (MOD-0186 §34); for Received this overrides returns-semantics-v3.0.0.md
+-        ("Inventory and Warehouse HTTP calls ZERO"). No Warehouse HTTP, worker or publisher.'
++        Returns normative semantics for SHIPMENT-BUNDLE 3.6.0. Normative returns-semantics-v3.1.0.md governs module-specific validation, numeric/instant
++        replay, entitlement, manual receiving and the return''s correlation root. 3.4.0: the only Inventory HTTP call is the
++        CUSTOMER_RETURN posting on Received (MOD-0186 §34); for Received this overrides returns-semantics-v3.1.0.md
++        ("Inventory and Warehouse HTTP calls ZERO"). No Warehouse HTTP, worker or publisher.
++
++        3.6.0 (MOD-0186 r12 §36, RR-2…RR-5): the request''s X-Correlation-Id is only this command''s trace (response header,
++        error.correlationId, the command''s idempotency receipt and log lines); it need not equal the return''s root and a
++        different value is not a refusal, on every target including Received (§34). Lifecycle events, outbox envelopes and
++        audit rows carry the root stored at createReturn. A replay with the same Idempotency-Key and body returns the
++        original result with idempotentReplay=true; the request''s correlation is not compared. CORRELATION_ROOT_MISMATCH
++        is no longer a 409 of this operation.'
+       parameters:
+       - name: returnId
+         in: path
+@@ -2382,13 +2391,6 @@
+               schema:
+                 $ref: '#/components/schemas/Error'
+               examples:
+-                CORRELATION_ROOT_MISMATCH:
+-                  value:
+-                    error:
+-                      code: CORRELATION_ROOT_MISMATCH
+-                      message: CORRELATION ROOT MISMATCH
+-                      correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+-                    contractVersion: v1
+                 IDEMPOTENCY_KEY_REUSED:
+                   value:
+                     error:
+@@ -3336,8 +3338,10 @@
+         UUID; uretilen lifecycle event envelope'indaki correlationId ile birebir ayni tasinir. 3.5.1: Shipments
+         yollarinda (createShipment, transitionShipment, captureProofOfDelivery) bu kural yalniz createShipment icin
+         gecerlidir; sonraki Shipments komutlarinin event'leri saklanan koku tasir ve istegin korelasyonu komut izidir
+-        (operasyon aciklamalarina bakin). Loads, Returns ve Claims yollari bu surumde degismez; kendi normatif ek
+-        belgeleri gecerlidir.
++        (operasyon aciklamalarina bakin). Loads, Returns ve Claims yollari 3.5.1'de degismedi; kendi normatif ek
++        belgeleri gecerlidir. 3.6.0: Returns yollarinda (createReturn, transitionReturn) da bu kural yalniz createReturn
++        icin gecerlidir; sonraki Returns komutlarinin (Received dahil) event'leri createReturn'de saklanan iade kokunu
++        tasir ve istegin korelasyonu komut izidir (returns-semantics-v3.1.0.md). Loads ve Claims yollari degismez.
+       schema: { type: string, format: uuid }
+     IdempotencyKey:
+       name: Idempotency-Key
+diff --git a/docs/analysis/contracts/returns-semantics-v3.1.0.md b/docs/analysis/contracts/returns-semantics-v3.1.0.md
+new file mode 100644
+--- /dev/null
++++ b/docs/analysis/contracts/returns-semantics-v3.1.0.md
+@@ -0,0 +1,94 @@
++# Returns semantics v3.1.0 — SHIPMENT-BUNDLE 3.6.0 / wire v1
++## Authority and activation
++Annex v3.1.0 replaces returns-semantics-v3.0.0.md for queryReturns, createReturn and transitionReturn from
++SHIPMENT-BUNDLE 3.6.0 on; v3.0.0 is kept unchanged as history. Authority: MOD-0186 pack r12 §36 (RR-1…RR-9,
++C-1…C-4); owner decisions Beste 2026-11-20 (correlation C path) and 2026-11-24 (O-R11-1 option C), recorded in
++docs/records/decisions/2026-11/mod-0186-correlation-c-path-owner-decision-01.md. Lines not listed under
++"Changes from v3.0.0" keep the v3.0.0 text.
++Shipment root design is unchanged (shipment-root-semantics-v3.0.0.md). createReturn still reads the shipment's
++persisted lifecycleCorrelationId via published getShipment; it is not the return's root and is never compared.
++Real successful fresh create requires published AND implemented AND verified producer seam.
++Root schema is composed in this bundle; shipment-root-semantics-v3.0.0.md is its normative annex. Publication does not establish producer runtime uptake. Missing/null503; malformed502. No mismatch409 (3.1.0).
++No new root candidate, worker, publisher or source writes. Pending local outbox only.
++
++## Common validation boundaries (module-specific differences follow)
++JWT authentication parser rejection401; successful authentication with unusable/duplicate trusted
++identity403. Do not assert every duplicate sub reaches403: parser rejection may be401.
++Exact signed tenant_id/legal_entity_id/sub, non-nil UUID; no alias or last-wins duplicate bypass.
++UUID ASCII8-4-4-4-12, hex case allowed; no trim/braces/URN/32hex. Nil correlation/path/body
++syntactically valid, but never use default nil as proof of authoritative provenance.
++Header names case-insensitive; duplicates including identical values rejected400. Correlation required.
++POST Idempotency-Key exact decoded string1..128 Unicode scalars; no trim, scalar comma is data.
++Once-decoded ASCII-case-insensitive scope-query keys tenantId,tenant_id,X-Tenant-Id,
++legalEntityId,legal_entity_id,X-Legal-Entity-Id reject400; ordinary unknown keys do not bind scope.
++Body schemas unchanged, additional properties forbidden where frozen requires it.
++Auth -> trusted context/base grant -> correlation/scope/key headers -> scope match -> path/query/media/body
++-> exact target grant -> committed receipt fingerprint -> fresh reference/target ->
++business/lifecycle -> atomic persistence. Local Returns duplicate/positive checks precede source lookup.
++Valid incoming correlation is response trace; rejection-only generated trace if unavailable/invalid.
++Error.error.correlationId equals response X-Correlation-Id; fallback never creates business root.
++Shared Error and success shapes retained; no Response<T>/ProblemDetails wrapper.401 Bearer challenge.
++Receipt=(tenant,LE,operation,target-or-create,key); actor/root not identity. Current grants required.
++Same fingerprint replays original201/200 with idempotentReplay=true, no new writes or source reread;
++correlation not compared, header = current request. Changed payload409. Old result survives state changes/deletion within authorized scope.
++No receipt TTL or failed receipt. Unknown commit: recover receipt, otherwise503; do not promise rollback.
++Fresh failure before commit has no successful receipt/event. Legacy returns keep the root they carry; no back-fill.
++## D186-01/02 — eligibility and entitlement
++Delivered/Closed only; cap=ShipmentLine.quantity, not separately proven delivered quantity.
++Positive arbitrary-precision quantity, exact ordinal line/UoM; duplicate command lines422; no conversion.
++Source required omissions/type/enum/mismatched identity/duplicate lines/nonpositive source quantity502;
++optional shipmentId/status missing503; selected line absent404. First entitlement snapshot freezes numeric
++quantity/UoM/itemId/skuId; later drift409 RETURN_SOURCE_CHANGED. Equivalent numeric representation not drift.
++Entitlement key tenant+LE+shipmentId+lineNumber (not UoM). Count Requested/Authorized/InTransit/Received/
++Dispositioned/Closed; only Rejected/Cancelled release once. Closed/soft-delete never release.
++All lines plus aggregate/receipt/audit/outbox commit atomically; cap10,6+6 race -> one201,one422;
++4+6 -> both can commit. Snapshot HTTP read not a distributed lock; transition/replay do not reread.
++Frozen arrows ONLY Requested->Authorized|Rejected; Authorized->InTransit|Cancelled;
++InTransit->Received; Received->Dispositioned; Dispositioned->Closed.
++CORRECTION: prior chat summary mistakenly added InTransit->Cancelled; no-new-arrow scope wins;
++that arrow remains422 INVALID_RETURN_TRANSITION. No lifecycle policy expansion authorized.
++
++## D186-03/04 — bounded receiving
++Received is same-scope authorized manual assertion, not verified physical Warehouse receipt.
++Audit actor, command time, server commit time, manual-assertion evidence type. Opaque evidence strings.
++Inventory and Warehouse HTTP calls ZERO, including GET. inventoryTransactionReferenceId omitted/null/empty
++retained as opaque unverified text; no stock movement/reservation/verification claim.
++Dispositioned requires dispositionCode string length>=1, no trim/catalog; whitespace accepted;
++on other targets supplied value audited but does not change business disposition.
++
++## D186-05 — Returns-specific profile
++Read=create mapping supplychain.returns.read / .create. Transition requires .transition AND target:
++Authorized/Rejected .authorize; InTransit .transit; Cancelled .cancel; Received .receive;
++Dispositioned .disposition; Closed .close. Requested requires base, then invalid lifecycle422.
++Scope validation headers X-Tenant-Id/X-Legal-Entity-Id required; mismatch404 RETURN_NOT_FOUND.
++Auth401/context403/schema400/media415 use INVALID_REQUEST. Foreign/missing target404 RETURN_NOT_FOUND.
++Quantity fingerprint numeric exact (1.0=1.00); UUID by value; date-time by instant, no lost fractional
++precision. Arrays order significant; strings ordinal. Nullable omission=null; evidence omission=[];
++empty distinct; no trim. Raw first accepted values retained in audit/result.
++Shipment-detail codes RETURN_SHIPMENT_ROOT_UNAVAILABLE503 / RETURN_SHIPMENT_ROOT_INVALID502 (create only).
++CORRELATION_ROOT_MISMATCH is not a Returns code (3.1.0). Same-key changed valid payload409 IDEMPOTENCY_KEY_REUSED.
++
++## D186-06 — persistence and events
++Replica-set L3: returns,return_entitlements,returns_receipts,returns_audit,returns_outbox.
++Scoped unique number/receipt/entitlement/event indexes; internal version/CAS; no public concurrency field.
++RMA- + uppercase UUID-N. Known uncommitted collision at most3 new UUID attempts, then503;
++unknown commit never retries blindly with new ID. Raw decimal string+exact coefficient/scale, no rounding.
++One immutable audit/event per successful mutation. Fault after each write before commit rolls back all.
++ReturnRequested serverUTC/causation null; transition normalized instant/previous Return eventId causation.
++Persist the local create root (3.1.0 root rules below). Event IDs stable; Pending outbox, no worker/publisher.
++
++## 3.1.0 — correlation root (MOD-0186 r12 §36, SHIPMENT-BUNDLE 3.6.0)
++Root: the X-Correlation-Id the service receives on createReturn (behind the Gateway: the Gateway's), stored once as
++the return's CorrelationRoot, never changed, never derived from the shipment, never taken from X-Client-Correlation-Id.
++transitionReturn and the §34 Received path do not compare the request's correlation with the root; a different
++correlation is not a refusal. No other check moves (scope, grants, lifecycle, entitlement, §34 lease and keys).
++Trace: the request's correlation is the command's trace: response X-Correlation-Id, Error.error.correlationId, that
++command's idempotency receipt (existing field, read as trace) and log lines; it is forwarded on the shipment read and
++to INVENTORY on Received. Its rejection-only generated fallback is never a root.
++Events: every lifecycle event, outbox envelope and returns_audit row carries the stored root; causationId unchanged.
++The correlationId of a return envelope carries no link to the shipment; the link is shipmentId only. No consumer may
++use the envelope correlation to find the shipment. Returns created before MOD-0186 DL-6 carry the shipment's root.
++Replay: receipt identity as above; same fingerprint -> original result, idempotentReplay=true, header = current
++request's correlation; the correlation is not compared on create, transition or Received.
++Changes from v3.0.0 (v3.0.0 line numbers): 1, 3-7, 9, 24, 30-31, 33, 66-67, 76; this section is new. CORRELATION_ROOT_MISMATCH
++stays a Loads code (loads-semantics-v3.1.0.md); Claims keep claims-semantics-v3.0.0.md.
