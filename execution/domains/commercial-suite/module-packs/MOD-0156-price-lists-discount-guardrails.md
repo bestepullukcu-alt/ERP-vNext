@@ -585,6 +585,7 @@ PKS-001 (3 segment, lowercase-dotted), ad alanı `commercial.*` (K-O2). Aktör `
 
 - Rol önerisi (tohum değil): Pazarlama = price-lists read/create/update/import/submit/export + pricing-rules read/create/update/submit;
   Satış operasyonu = price-lists read/publish/export + pricing-rules read/publish + fx-rates read/create/update/import.
+  Dışa aktarma anahtarları (§22) için rol önerisi K-EXP-3.
 - Süreç içi arayüzler (§4.6.1) izin denetimi yapmaz; çağıran uç (MOD-0168) kendi izniyle korunur.
 - Tohum / atama yok → F-RBAC (W6-CFG grant betiği).
 
@@ -821,27 +822,33 @@ D1–D6, D9, D10, D15, D16 MOD-0168'e aittir (o paketin §19.b'si).
 
 ---
 
-## 22. Liste dışa aktarma — kurlar, kurallar, değişiklik geçmişi (ek, 2026-11-14)
+## 22. Liste dışa aktarma — kurlar, kurallar, değişiklik geçmişi (ek, 2026-11-14; r2 2026-11-27)
 
 > **ONAY BEKLİYOR — kod izni vermez.** Bu bölüm yalnız eklemedir; §1–§21'de yalnız §14 izin tablosu üç anahtarla genişler.
 > Kod yazılmadan önce bu pack sürümünün CT-APR-02 bağımsız incelemesi ve CT-APR-01 onay satırı gerekir.
 > **Kaynak:** sahip kararı `crm-sync-s1b-uic-01` (Beste, 2026-11-14) — UI uyum kapısı (MOD-0286 CI-3, `verify_datatable_page.py`
 > "Server mode: export declared server-side (BL-452)") üç sunucu listesinde dışa aktarma beyanı istiyor; sahip: "kırmızıyı
-> düzeltecekse olsun". Dışa aktarma gelene kadar üç satır UI uyum tabanında `FU-0156-EXPORT` adıyla durur; bu dilim kabul edilince
-> silinir.
+> düzeltecekse olsun". r2: bağımsız inceleme `docs/records/reviews/MOD-0156/2026-11-14-01e39486.md` F-1…F-9; K-EXP-1 sahip kararı
+> (Beste, 2026-11-27: "uygun").
 
 ### 22.1 Dışa aktarma — kapsam
 
 - Üç sunucu modlu liste (künye `screens`: FxRates, PricingRules, PricingHistory — `data_mode: server`) BL-452 ekran dışa
-  aktarmasını alır: **dosya = ekran** — listenin o an gösterdiği kolonlar, uygulanan süzgeçler ve sıralama; bütün eşleşen satırlar
-  (sayfa değil). Biçim `csv` ya da `xlsx`.
+  aktarmasını alır: **dosya = ekran** — listenin o an gösterdiği kolonlar (§22.3 tablosu) ve uygulanan süzgeçler; bütün eşleşen
+  satırlar (sayfa değil). Biçim `csv` ya da `xlsx`.
 - **Emsal (aynı ekran D, aynı vekil):** fiyat listeleri dışa aktarması —
-  `frontend/Diten.Web/Controllers/Commercial/CommercialPricingController.cs` `ExportLists` (`[HttpGet("api/price-lists/export")]`),
-  `ListExportContract` (biçim, kültür, kolon çözümü, hata kodları), `MaxPageSize = 200`, `ExportMax = 5000` (aşımda 413).
+  `frontend/Diten.Web/Controllers/Commercial/CommercialPricingController.cs` `ExportLists` (`[HttpGet("api/price-lists/export")]`,
+  ~:446-477), `ListExportContract` (`services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ListExport/ListExportContract.cs`:
+  biçim, kültür, kolon çözümü, hata kodları), `MaxPageSize = 200`, `ExportMax = 5000` (aşımda 413).
 - **CRM'de yeni uç YOK:** Web vekili mevcut liste uçlarını (`GET /api/commercial/fx-rates`, `/pricing-rules`, `/pricing-history`,
-  §15) sayfa sayfa okur ve dosyayı yazar — fiyat listesi emsaliyle aynı. CRM sorgu / depo değişmez; gateway değişmez (§15
-  rotaları zaten var).
-- Kapsam dışı: içe aktarma; fiyat listesi kalem dosyası (`GET /api/commercial/price-lists/export`, ayrı iş); yeni rapor / sütun.
+  §15) sayfa sayfa okur ve dosyayı yazar — fiyat listesi emsaliyle aynı. Kur dosyasında satan şirket ADI için vekil, sayfanın
+  kullandığı şirket kaynağını (`PU.loadCompanies` → Web vekilinin şirket arama ucu) bir kez daha okur (F-3); başka ek okuma yok.
+  CRM sorgu / depo değişmez; gateway değişmez (§15 rotaları zaten var).
+- **Önkoşul (F-4):** UI uyum tabanındaki üç `FU-0156-EXPORT` satırı `crm-sync-s1b-uic-01` kararıyla CRM senkron PR'ında
+  (`sync/crm-test-main-2026-11-09` → `test/crm-content-visit-e2e` → PR #425) gelir. Bu dilimin kodu o PR main'e girdikten sonra
+  başlar; AC-EXP-6 satırların varlığını ve silinmesini ölçer.
+- Kapsam dışı: içe aktarma; fiyat listesi kalem dosyası (`GET /api/commercial/price-lists/export`); yeni rapor / sütun; fiyat
+  listesi ekran dışa aktarmasının eksik testleri (F-8 notu, ayrı iş).
 
 ### 22.2 Dışa aktarma — uçlar ve izinler
 
@@ -849,36 +856,72 @@ D1–D6, D9, D10, D15, D16 MOD-0168'e aittir (o paketin §19.b'si).
 |---|---|---|
 | `GET /Commercial/Pricing/api/fx-rates/export` | `commercial.fx-rates.read` | `commercial.fx-rates.export` |
 | `GET /Commercial/Pricing/api/rules/export` | `commercial.pricing-rules.read` | `commercial.pricing-rules.export` |
-| `GET /Commercial/Pricing/api/history/export` | ekranın tür kuralı (§15: `price-lists.read` \| `pricing-rules.read` \| `fx-rates.read`) | `commercial.pricing-history.export` |
+| `GET /Commercial/Pricing/api/history/export` | `price-lists.read` \| `pricing-rules.read` \| `fx-rates.read` (ekranla aynı) | `commercial.pricing-history.export` |
 
-- Parametreler: `format` (`csv` \| `xlsx`), `columns[]` (ekranın kolon anahtarları; bilinmeyen kolon 400), ekranın süzgeç
-  parametreleri (liste vekilindekiyle aynı adlar ve doğrulama; geçersiz değer 400), `orderBy`. Kültür `Accept-Language`'dan
-  (`ListExportContract.ResolveCulture`).
-- **İzin iki katlı:** ilgili okuma izni **ve** dışa aktarma izni; biri yoksa 403 (fiyat listesi emsali `HasAny(ListsRead) || …`
-  deseninin aynısı). Değişiklik geçmişi dışa aktarması yalnız kullanıcının ekranda okuyabildiği türleri yazar (tür kuralı §15 ile
-  aynı; okuyamadığı tür süzgeçle istenirse 403).
+- **Parametreler (emsal sözleşmeyle aynı, F-7):** `format` (`csv` \| `xlsx`); `columns` — istemcinin gönderdiği **virgüllü**
+  kolon anahtarları (`diten-datatable.js` sunucu dışa aktarma çağrısı), bilinmeyen anahtar 400; ekranın süzgeç parametreleri
+  (liste vekilindekiyle aynı adlar ve doğrulama — kur: `legalEntity`, `fromCurrency`, `toCurrency`, `from`, `to`; kural:
+  `legalEntity`, `sku`, `status`, `search`; geçmiş: `entityType`, `from`, `to`); geçersiz değer 400. `search` yalnız kurallarda.
+  Dolu `orderBy` emsaldeki gibi 400 (üç listede sıralama kapalı); satır sırası CRM liste ucunun sırasıdır. Kültür
+  `Accept-Language`'dan (`ListExportContract.ResolveCulture`).
+- **İzin iki katlı:** ilgili okuma izni **ve** dışa aktarma izni; biri yoksa 403 (emsal `ExportLists` ilk satırı).
+- **Değişiklik geçmişi tür kuralı (F-1):** tek davranış — **CRM'in bugünkü kuralı**: kullanıcının okuyamadığı tür satırları
+  gelmez; okuyamadığı türü süzgeçle isterse CRM boş liste döner (`PricingControllers.cs` ~:265-276,
+  `PricingHistoryFeature.cs` ~:59-64) ve dosya **boş (yalnız başlık satırı), 200** olur. Vekil türü ayrıca denetlemez; CRM'e
+  kullanıcının kendi oturumuyla gider. Dışa aktarma izni yalnız dosya kapısıdır.
+- **Zorlama yeri (F-2, §14 için bilinçli sapma):** veri arka uçta **okuma** anahtarlarıyla korunur (CRM liste uçlarının
+  `[HasPermission]`'ı değişmez); üç dışa aktarma anahtarı **yalnız Web vekilinde** denetlenir — CRM'de karşılık gelen uç yoktur
+  (dosyayı vekil üretir). Bu yüzden:
+  - `PricingPermissions.cs`'e ayrı bir liste eklenir: `ProxyExportKeys` (üç anahtar; belge yorumu: "Web vekilinde denetlenir,
+    CRM'de ucu yok"). `All` (on altı, CRM'in zorladığı anahtarlar) ve CRM testi `PricingStructureAndMongoTests` (on altı) aynı kalır;
+    yeni CRM testi: `ProxyExportKeys` hiçbir CRM eyleminin `[HasPermission]`'ında yok (yansıma).
+  - `CrmManifestProvider.cs`'teki "CrmService enforces each one" yorumu "on altısını CrmService, üç dışa aktarma anahtarını Web
+    vekili zorlar" diye düzeltilir.
 - **Anahtarlar (PKS-001, `commercial.*`, K-O2):** `commercial.fx-rates.export`, `commercial.pricing-rules.export`,
   `commercial.pricing-history.export` — T2, okuma. CRM manifest'inde COMMERCIALPRICING sayfasının eylemleri olarak
   (`LISTS_EXPORT` emsali: `FX_EXPORT`, `RULES_EXPORT`, `HISTORY_EXPORT`, "Toolbar"); Auth kataloğuna manifest yoluyla girer.
-  Platform dosyasındaki bu satırlar §5'teki "yalnız CrmManifestProvider satırları" kapsamındadır.
-- 5000'den çok satır → 413 + makine kodu (`ListExportContract.TooLargeCode`); CRM okunamazsa vekilin hata yolu (§13.2).
+- **Repo kapsamı (F-6):** §5'e ek olarak bu dilimde değişen dosyalar — Web: `CommercialPricingController.cs` (üç uç),
+  `wwwroot/assets/js/Commercial/{FxRates,PricingRules,PricingHistory}/index.js`, ilgili `.resx` (gerekirse); CRM:
+  `PricingPermissions.cs` (yalnız `ProxyExportKeys` listesi ve yorum) + yeni yansıma testi; Platform: `CrmManifestProvider.cs`
+  (üç eylem + yorum) ve `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Crm/CrmManifestCommercialPricingTests.cs`
+  (beklenen küme 16 → 19).
+- 5000'den çok satır → 413 + makine kodu (`ListExportContract.TooLargeCode`); kullanıcı metni ekranın mevcut dışa aktarma hata
+  cümlesiyle (7 dil). CRM okunamazsa emsalin yolu: CRM yanıtı olduğu gibi döner (`CommercialPricingController.cs` ~:465
+  `ToProxyResultAsync`; F-9).
 - Denetim: dışa aktarma okuma işlemidir; fiyat listesi dışa aktarması gibi merkezi denetim kaydı yazmaz (§21 değişmez).
 
 ### 22.3 Dışa aktarma — ekran
 
 - Her üç sayfanın `index.js`'i: `export: { mode: 'server', url: endpoint + '/…/export', fileName: '…' }` (PriceLists emsali,
-  `wwwroot/assets/js/Commercial/PriceLists/index.js`). Dışa aktarma düğmesi dışa aktarma izni yoksa çizilmez (UX; zorlama vekilde).
-- Kolon başlıkları ve dosya adı kullanıcının dilinde (mevcut sayfa kaynakları, 7 dil); yeni görünen metin gerekirse 7 dil.
+  `wwwroot/assets/js/Commercial/PriceLists/index.js`) ve `exportPermitted` dışa aktarma iznine bağlanır (bugün `false`). Düğme izin
+  yoksa çizilmez (UX; zorlama vekilde).
+- **Kolon sözleşmesi (F-3) — dosya hücresi ekrandaki görünen metindir (HTML'siz):**
+
+| Ekran | Kolon anahtarı (`index.js` `name`) | Dosyadaki değer |
+|---|---|---|
+| Kurlar | `legalEntityId` | satan şirket adı (şirket kaynağından; bulunamazsa kimlik — ekranla aynı) |
+| Kurlar | `pair` | `FROM → TO` |
+| Kurlar | `rateDate` | tarih (kullanıcının kültürüyle) |
+| Kurlar | `rate` | kur (ekranın ondalık biçimi) |
+| Kurlar | `source` | kaynak |
+| Kurlar | `updatedAt` | son değişiklik zamanı ve değiştiren (ekrandaki iki satır, tek hücrede " · " ile) |
+| Kurallar | `skuName`, `maxDiscountPct`, `maxMf`, `maxCombinedPct`, `quantity`, `validFrom`, `status`, `ruleVersion` | ekrandaki metin; `status` kullanıcının dilinde durum adı |
+| Geçmiş | `at` | zaman (kullanıcının kültürüyle) |
+| Geçmiş | `byUserId` | ekrandaki "kim" değeri (bugün kimlik) |
+| Geçmiş | `entityType` | tür adı + eylem adı (+ ` · vN`), kullanıcının dilinde |
+| Geçmiş | `changes` | `alan: eski → yeni` öğeleri `; ` ile (boşsa `—`) |
+
+  `control` ve `action` kolonları dosyaya girmez. Kolon başlıkları sayfanın kaynaklarından (7 dil).
 - Yardım (UXH-001): ilgili sayfanın yardım adımlarına dışa aktarma cümlesi (7 dil).
 
 ### 22.4 Kabul ölçütleri — dışa aktarma
 
-- [ ] **AC-EXP-1** Üç uç da süzgeçli listeyle aynı satırları, ekranın kolonlarıyla, istenen biçimde (csv / xlsx) yazar; satır sırası ekranın sıralamasıdır; 200'den çok satırda bütün sayfalar okunur.
-- [ ] **AC-EXP-2** İzin: okuma izni yok → 403; dışa aktarma izni yok → 403; ikisi de var → 200. Değişiklik geçmişinde okunamayan tür dosyaya girmez.
-- [ ] **AC-EXP-3** Geçersiz `format`, bilinmeyen kolon, geçersiz süzgeç → 400 ve makine kodu; 5000'den çok satır → 413.
-- [ ] **AC-EXP-4** Kiracı: dosya yalnız çağıranın kiracısının satırlarını içerir (CRM liste uçlarının kiracı filtresi; başka kiracının satırı olan fikstürle ölçülür).
-- [ ] **AC-EXP-5** Manifest: üç anahtar COMMERCIALPRICING sayfasının eylemleri olarak tam birer kez; CRM manifest ad alanı testi (`crm.` / `commercial.`) yeşil.
-- [ ] **AC-EXP-6** UI uyum: üç sayfada `verify_datatable_page` "Server mode: export declared server-side" PASS; `uic_changed_pages.py --base <taban>` bu üç sayfa için YENİ KIRMIZI vermez ve taban satırları (`FU-0156-EXPORT`) "kapandı - satır silinmeli" olur → silinir.
+- [ ] **AC-EXP-1** Üç uç da süzgeçli listeyle aynı satırları, §22.3 kolon sözleşmesiyle, istenen biçimde (csv / xlsx) yazar; satır sırası CRM liste ucunun sırasıdır; 200'den çok satırda bütün sayfalar okunur; süzgeçler CRM'e iletilir.
+- [ ] **AC-EXP-2** İzin: okuma izni yok → 403; dışa aktarma izni yok → 403; ikisi de var → 200. Geçmişte okunamayan türün süzgeçle istenmesi → 200, yalnız başlık satırlı dosya (CRM boş liste).
+- [ ] **AC-EXP-3** Geçersiz `format`, bilinmeyen kolon, geçersiz süzgeç, dolu `orderBy` → 400 ve makine kodu; 5000'den çok satır → 413.
+- [ ] **AC-EXP-4** Kiracı (F-5): vekil kiracı parametresi almaz ve CRM isteğine kiracı yazmaz; CRM'e çağıranın oturumuyla (token) gider (Web testi: giden istek başlıkları ve sorgu dizesi). Kiracı filtresi CRM liste uçlarındadır ve mevcut CRM testleriyle korunur (uygulayıcı test adlarını raporda verir).
+- [ ] **AC-EXP-5** Manifest: üç anahtar COMMERCIALPRICING sayfasının eylemleri olarak tam birer kez; `CrmManifestCommercialPricingTests` 19 anahtar; CRM manifest ad alanı testi (`crm.` / `commercial.`) yeşil; CRM `ProxyExportKeys` yansıma testi yeşil.
+- [ ] **AC-EXP-6** UI uyum: üç sayfada `verify_datatable_page` "Server mode: export declared server-side" PASS; `uic_changed_pages.py --base <taban>` bu üç sayfa için YENİ KIRMIZI vermez; tabandaki üç `FU-0156-EXPORT` satırı "kapandı - satır silinmeli" olur ve silinir (önkoşul §22.1).
 - [ ] **AC-EXP-7** Değişmezlik: fiyat listesi dışa aktarması ve üç sayfanın liste / form / detay davranışı aynı; ilgili Web testleri tabanla aynı.
 
 ### 22.5 Sabotaj beklentileri — dışa aktarma
@@ -886,28 +929,33 @@ D1–D6, D9, D10, D15, D16 MOD-0168'e aittir (o paketin §19.b'si).
 | Sabotaj | Kırmızıya dönmesi gereken |
 |---|---|
 | Kur dışa aktarmasında dışa aktarma izni denetimini kaldır | AC-EXP-2 |
-| Geçmiş dışa aktarmasında tür kuralını kaldır (okunamayan tür yazılır) | AC-EXP-2 |
+| Geçmiş dışa aktarmasında `entityType` süzgecini CRM'e iletme | AC-EXP-1 |
 | Sayfa döngüsünü ilk sayfada kes | AC-EXP-1 |
 | 5000 sınırını kaldır | AC-EXP-3 |
+| Vekil CRM isteğine sorgudan gelen bir kiracı değeri eklesin | AC-EXP-4 |
 | Manifest'ten `commercial.pricing-rules.export` satırını sil | AC-EXP-5 |
+| `ProxyExportKeys`'ten birini bir CRM eyleminin `[HasPermission]`'ına koy | AC-EXP-5 |
 | Bir sayfanın `index.js`'inden `export: { mode: 'server' … }` beyanını kaldır | AC-EXP-6 |
 
 ### 22.6 Test beklentileri — dışa aktarma
 
-- `Diten.Web.Tests`: fiyat listesi dışa aktarma testleri emsaliyle (sahte gateway): çok sayfalı okuma, kolon / süzgeç / biçim,
-  403 / 400 / 413, geçmiş tür kuralı.
-- Platform: CRM manifest testleri (anahtar tam bir kez, sayfa eylemi; ad alanı testi).
+- `Diten.Web.Tests` (yeni yazılır — emsalde yalnız 403 ölçümü var, F-8): sahte gateway ile çok sayfalı okuma, §22.3 kolon
+  sözleşmesi (csv ve xlsx), süzgeç iletimi, 403 / 400 / 413, geçmiş tür kuralı (CRM boş liste → başlıklı boş dosya), giden istekte
+  kiracı parametresi yok.
+- CRM: `ProxyExportKeys` yansıma testi; `PricingStructureAndMongoTests` on altı anahtar değişmez.
+- Platform: `CrmManifestCommercialPricingTests` (19) ve CRM manifest ad alanı testi.
 - vitest (Node 22): üç `index.js`'in sunucu dışa aktarma beyanı ve izin yoksa düğmenin çizilmemesi.
 - UI uyum: seçici ve `--check-baseline` (taban satırlarının silinmesi).
-- CRM ve gateway paketleri değişmez; tabanla aynı.
+- Gateway paketi değişmez; tabanla aynı.
 
 ### 22.7 Kararlar
 
 | # | Karar | Durum |
 |---|---|---|
-| K-EXP-1 | Üç yeni dışa aktarma anahtarı (`commercial.fx-rates.export`, `commercial.pricing-rules.export`, `commercial.pricing-history.export`); okuma anahtarı tek başına dışa aktarmaya yetmez (fiyat listesi emsali) | **ÖNERİ (CT)** — CT-APR-01 onayıyla kesinleşir |
-| K-EXP-2 | Dosya Web vekilinde üretilir; CRM'e yeni uç eklenmez | **ÖNERİ (CT)** — fiyat listesi emsali |
+| K-EXP-1 | Üç yeni dışa aktarma anahtarı; okuma anahtarı tek başına dışa aktarmaya yetmez (fiyat listesi emsali) | **KAPANDI** (Beste, 2026-11-27: "uygun") |
+| K-EXP-2 | Dosya Web vekilinde üretilir; CRM'e yeni uç eklenmez; dışa aktarma anahtarları yalnız vekilde zorlanır (§22.2, §14 için bilinçli sapma) | **ÖNERİ (CT)** — CT-APR-01 onayıyla kesinleşir |
 | K-EXP-3 | Rol önerisi (tohum değil, §14 emsali): Satış operasyonu = üç dışa aktarma; Pazarlama = kurallar + geçmiş dışa aktarma | **ÖNERİ** — atama F-RBAC |
+| K-EXP-4 | Geçmiş tür kuralı: CRM'in bugünkü davranışı (okunamayan tür → boş sonuç / başlıklı boş dosya, 200); vekil ayrıca denetlemez | **ÖNERİ (CT)** — inceleme F-1 |
 
 ---
 
